@@ -142,6 +142,8 @@ interface MapObjectsOverlayProps {
   onSelectObjects?: (ids: string[]) => void
   /** O palco põe aqui o "apagar o ponto escolhido" (o Delete chama antes de apagar o objeto). */
   deleteVertexRef?: RefObject<() => boolean>
+  /** Objetos provisórios do pincel; não pertencem ainda ao documento do editor. */
+  previewIds?: readonly string[]
 }
 
 export function MapObjectsOverlay({
@@ -158,9 +160,11 @@ export function MapObjectsOverlay({
   onSelectObject,
   onSelectObjects,
   deleteVertexRef,
+  previewIds = [],
 }: MapObjectsOverlayProps): JSX.Element {
   const { editor } = useEditorStores()
   const { showToast } = useToast()
+  const previewSet = new Set(previewIds)
   const svgRef = useRef<SVGSVGElement>(null)
   const gestureRef = useRef<Gesture | null>(null)
   const [marquee, setMarquee] = useState<{
@@ -682,11 +686,14 @@ export function MapObjectsOverlay({
             {layer.objects.map((object) => (
               <g
                 key={object.id}
+                data-pin-scatter-preview={previewSet.has(object.id) ? object.id : undefined}
+                opacity={previewSet.has(object.id) ? 0.6 : undefined}
                 transform={`rotate(${object.rotation ?? 0} ${object.x} ${object.y})`}
               >
                 <MapObjectShape
                   key={object.id}
                   object={object}
+                  showLabel={!previewSet.has(object.id)}
                   unit={unit}
                   vertexIndex={
                     active && interactive && object.id === selectedObjectId && vertex
@@ -753,18 +760,20 @@ function MapObjectShape({
   object,
   unit,
   selected,
+  showLabel = true,
   showVertices = false,
   vertexIndex = -1,
 }: {
   object: TilemapObject
   unit: number
   selected: boolean
+  showLabel?: boolean
   /** Mostra as bolinhas dos pontos da forma (só no objeto escolhido da camada ativa). */
   showVertices?: boolean
   /** O ponto escolhido (fica cheio). */
   vertexIndex?: number
 }): JSX.Element {
-  const label = object.name || object.type
+  const label = showLabel ? object.name || object.type : ''
   const stroke = selected ? 'var(--color-pin-accent, #2563eb)' : 'var(--color-pin-text, #1f2937)'
   if (isPointObject(object)) {
     const r = POINT_PX * unit

@@ -1,8 +1,13 @@
 import type { ExtensionDefinition } from '#extensions'
-import { defineExtensionExamples, GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import {
+  defineExtensionDocumentation,
+  defineExtensionExamples,
+  GAME_3D_ADVANCED_LIFECYCLE,
+  validateManifest,
+} from '#extensions'
 import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
-import { gameKit3DPromptContext } from './ai'
+import { gameKit3DPromptSummary } from './aiSummary'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
 import { gameKit3DManifest } from './manifest'
 
@@ -36,6 +41,7 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
+  documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameKit3DDocs),
   examples: defineExtensionExamples(
     20,
     async () => (await import('./exampleCatalog')).gameKit3DExamples,
@@ -61,7 +67,8 @@ export const gameKit3DExtension: ExtensionDefinition = {
     },
   },
   ai: {
-    promptContext: gameKit3DPromptContext,
+    promptSummary: gameKit3DPromptSummary,
+    loadPromptContext: async () => (await import('./ai')).gameKit3DPromptContext,
   },
 }
 

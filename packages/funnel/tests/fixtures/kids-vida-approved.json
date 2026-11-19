@@ -537,7 +537,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "6f95de6f47f77399c3d9cc3706f82d1d43292ea96fc0f7ad9f49394cbe702cd9"
+    "sha256": "c115a53cf1eed2f030eb0cf8b2694a3189cd3fa7f6a4f79c5b5a9dc432eac7e4"
   },
   {
     "mode": "comunidade",
@@ -555,7 +555,7 @@
       "apoio": "junto",
       "condicao": "ritmo"
     },
-    "sha256": "3ddf90d956d8672aff1850b0c328824185bd5dfb12982dd90aeacf43b9deb65a"
+    "sha256": "ca1173b15e5142362d215404d8d7e0f3dfee90c4c77973d83bc001f2b52b2a78"
   },
   {
     "mode": "comunidade",
@@ -573,7 +573,7 @@
       "apoio": "junto",
       "condicao": "preco"
     },
-    "sha256": "c06128462418dc6e6fa6ad85a8bb8641dd88c0feddbb2cf9ccd74258bd9f0914"
+    "sha256": "81416171748f5e3779bdd7ec41a6d7ab7526c2e384dea6ceb003288132a4f761"
   },
   {
     "mode": "comunidade",
@@ -591,7 +591,7 @@
       "apoio": "junto",
       "condicao": "geral"
     },
-    "sha256": "c8862138a6fc70ff076d67585bcba4b9f90a9f28e15e3afbc6b57db9fdb538d4"
+    "sha256": "d967d0196b08629d97dd7cc0bb4fb30f93fea0b169256e353dedb24f9c9f8b0a"
   },
   {
     "mode": "comunidade",
@@ -609,7 +609,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "6cc595b79847d4b5dc18d5d4372f9f08b800499ac1d959a633538b20e64b87c5"
+    "sha256": "65e1b1f064363a2f4b5503fe5a37dfa08fe887cf738e5ddf3454318b3e9807a5"
   },
   {
     "mode": "comunidade",
@@ -627,7 +627,7 @@
       "apoio": "junto",
       "condicao": "interesse"
     },
-    "sha256": "cf5e5116bdc61b85b2fb7a1976905f27b3c2ae5e07e6b946d7b45f6f6eb43862"
+    "sha256": "7053de0ad077af2a778af080ab803d301a8ecb97e6d43706c23e245bef75e179"
   },
   {
     "mode": "comunidade",
@@ -933,7 +933,7 @@
       "apoio": "junto",
       "condicao": "conduzir"
     },
-    "sha256": "174fdd42a370f90e4dd853038d339b06fab635fc605613c958463a75e7d59711"
+    "sha256": "245c5cb51b8e4fc7219323d8e0690a756cf85cdeef1093249daab82251bbeeb6"
   },
   {
     "mode": "comunidade",
@@ -951,7 +951,7 @@
       "apoio": "sozinho",
       "condicao": "conduzir"
     },
-    "sha256": "c1fe1b2ffb7811fca5057bf0798806c016489f4e8bbaa96efe9664bd2db61f75"
+    "sha256": "aae8611886365289e47119f28983209ce61d7821d0928694c3420fa0c8c466e0"
   },
   {
     "mode": "comunidade",
@@ -969,7 +969,7 @@
       "apoio": "perto",
       "condicao": "ritmo"
     },
-    "sha256": "f3d07ae7e7c34492b0255a5f6ecfc208589e9d6e4e1df4aa4a50b6c2c38fb292"
+    "sha256": "e513d1ccc998b32752e79709b486ab977ef0e53b282c9f1ede03749d57019389"
   },
   {
     "mode": "comunidade",

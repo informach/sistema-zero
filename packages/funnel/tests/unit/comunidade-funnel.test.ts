@@ -49,13 +49,14 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
-  test('metadados espelham a página principal (9 a 17), sem preço estático', () => {
+  test('metadados espelham a oferta principal (5 a 17), sem preço estático', () => {
     const f = COMUNIDADE_DOS_CRIADORES
     expect(f.content.landing.h1).toBe(`${PAGINA_9A17.hero.title}${PAGINA_9A17.hero.destaque}`)
     expect(f.seoTitle).toBe(PAGINA_9A17.seoTitle)
     expect(f.seoDescription).toBe(PAGINA_9A17.description)
     expect(f.seoTitle).not.toMatch(/—|·/)
-    expect(f.seoTitle).toContain('9 a 17')
+    expect(f.seoTitle).toContain('habilidades cognitivas para a vida')
+    expect(f.seoDescription).toContain('5 a 17 anos')
     // Preço é dinâmico no catálogo: nunca fixo em metadado estático.
     expect(f.seoDescription).not.toContain('R$')
   })

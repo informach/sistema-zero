@@ -69,8 +69,10 @@
 
 ## 6. Jogo 3D Avançado
 
-- [ ] Mesma integração no motor existente, conservando atores animáveis e física/colisões compatíveis.
-- [ ] Regressão, quatro clipes, percurso real, reabertura/export, recursos, evidências/revisão/commit.
+- [x] Mesma integração no motor existente, conservando atores animáveis e física/colisões compatíveis.
+- [x] Regressão, quatro clipes, percurso real, reabertura/export, recursos, evidências/revisão/commit.
+
+19/11: [Avançado qualificado localmente](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-avancado.md), com quatro clipes, troca/recomeço, espera da câmera distante, recursos estáveis e descarte zerado. As correções compartilhadas de junta coplanar e apoio do Canvas foram requalificadas nos quatro motores. O orçamento original, a tipagem integral e os geradores passaram. Pro autoral e fechamento integrado permanecem pendentes; 8.4 continua aberto.
 
 ## 7. Fechamento
 

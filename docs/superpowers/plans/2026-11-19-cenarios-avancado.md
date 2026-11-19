@@ -39,38 +39,47 @@
 
 **Interfaces:** `g3k:loadScene { asset }` → `SZGameKit3D.loadScene("id")`; `g3k:sceneStart { charVar }` → `SZGameKit3D.sceneStart(personagem)`. Blocos `sz_g3k_load_scene` e `sz_g3k_scene_start`, primeiro em Ao iniciar, segundo com referência ao objeto ativo. Versão 0.23.0 → 0.24.0.
 
-- [ ] Testes vermelhos de seletor/ID, localização da paleta, aridade/referência e restrição de carregamento fora do quadro.
-- [ ] Ciclo código → parser de projeto → Blockly → IR → código gerenciado, com receita/ID preservados e sem rawJS para os novos comandos.
-- [ ] Implementar módulos/delegações, paleta e documentação. Conferir o registro dos nomes e os tipos de referência usados pelo próprio Avançado.
-- [ ] Rodar testes/auditorias de blocos, schema, arquitetura e drift de documentação antes do runtime.
+- [x] Testes vermelhos de seletor/ID, localização da paleta, aridade/referência e restrição de carregamento fora do quadro.
+- [x] Ciclo código → parser de projeto → Blockly → IR → código gerenciado, com receita/ID preservados e sem rawJS para os novos comandos.
+- [x] Implementar módulos/delegações, paleta e documentação. Conferir o registro dos nomes e os tipos de referência usados pelo próprio Avançado.
+- [x] Rodar testes/auditorias de blocos, schema, arquitetura e drift de documentação antes do runtime.
+- [x] Exemplo funcional obrigatório: Herói do Molda usa `loadScene` e `sceneStart` com cena autoral compilada, sem depender de fixtures nem acervo pago. Cobertura da paleta preservada; geradores oficiais reexecutados.
 
 ## 2. Preparo, chegada e ciclo de vida
 
 **Files:** novo `runtimeScene.ts` e `__tests__/scene3d.test.ts`; pontos focados em `runtime.ts`, `runtimeProject.ts` e na bancada existente. Usar Three/compilador/carregador reais; somente renderer sem WebGL pode ser substituído em teste unitário.
 
-- [ ] Vermelho com cena compilada real: API ausente e carga solicitada antes do `start`, sem criar DOM/GPU no topo do módulo.
-- [ ] Instalar na Scene existente e ligar à espera inicial. Testar a Scene/câmera/renderer preservados, origem deslocada, duas trocas sobre a base vigente e erro na próxima.
-- [ ] Chegada pendente/imediata, troca com outro início, `place` posterior, reciclagem/geração e molde com dimensão/pivô próprios.
-- [ ] Recomeço/reconstrução com carga atrasada e sem cenário na nova fábrica; conservar caches/pools e impedir montagem de uma partida encerrada.
-- [ ] Atualização de água/clipes/setores/ambiente no loop existente, pausa/estados e descarte final antes de encerrar renderer/caches. Conferir o `pagehide` real do Avançado.
+- [x] Vermelho com cena compilada real: API ausente e carga solicitada antes do `start`, sem criar DOM/GPU no topo do módulo.
+- [x] Instalar na Scene existente e ligar à espera inicial. Testar a Scene/câmera/renderer preservados, origem deslocada, duas trocas sobre a base vigente e erro na próxima.
+- [x] Chegada pendente/imediata, troca com outro início, `place` posterior, reciclagem/geração e molde com dimensão/pivô próprios.
+- [x] Recomeço/reconstrução com carga atrasada e sem cenário na nova fábrica; conservar caches/pools e impedir montagem de uma partida encerrada.
+- [x] Atualização de água/clipes/setores/ambiente no loop existente, pausa/estados e descarte final antes de encerrar renderer/caches. Conferir o `pagehide` real do Avançado.
 
 ## 3. Física, mouse e câmera
 
 **Files:** `runtimeScene.ts`, pontos focados de `runtimePhysics.ts`/`runtimeCamera.ts` e testes do motor.
 
-- [ ] Testar terreno fora da origem, recorte com queda, apoio em ponte/junta, salto/teto e parede fina com corpo rápido/pequeno.
-- [ ] Integrar contatos nativos sem apagar varredura contínua, sólidos autorais, bounce/atrito, plataformas e sensores. Testar corpos com e sem gravidade e modos fantasma.
-- [ ] Remover chão analítico somente com base importada ativa. Preservar o caminho legado e evitar dupla integração no mesmo quadro.
-- [ ] Consultas de mouse usam a superfície real; ausência de superfície não inventa acerto em y=0. Câmeras que seguem podem ser limitadas pelas superfícies, conservando o modo livre/FPS e seus controles.
-- [ ] Regressão de pool/geração/FSM, animações e quatro clipes, grade, colisões/rampas/carona, input e câmeras.
+- [x] Testar terreno fora da origem, recorte com queda, apoio em ponte/junta, salto/teto e parede fina com corpo rápido/pequeno.
+- [x] Integrar contatos nativos sem apagar varredura contínua, sólidos autorais, bounce/atrito, plataformas e sensores. Testar corpos com e sem gravidade e modos fantasma.
+- [x] Remover chão analítico somente com base importada ativa. Preservar o caminho legado e evitar dupla integração no mesmo quadro.
+- [x] Consultas de mouse usam a superfície real; ausência de superfície não inventa acerto em y=0. Câmeras que seguem podem ser limitadas pelas superfícies, conservando o modo livre/FPS e seus controles.
+- [x] Regressão de pool/geração/FSM, animações e quatro clipes, grade, colisões/rampas/carona, input e câmeras.
 
 ## 4. Qualificação e fechamento
 
+Achados em execução (ainda não constituem fechamento):
+
+- A junta coplanar de um teto produzia impulso lateral no resolvedor canônico por corrigir triângulos vizinhos sequencialmente. Reproduzido em vermelho; corrigido escolhendo a maior penetração na mesma pose por iteração. Borda externa continua colidindo. Suíte nativa: 255 testes, 5.234 asserções. Requalificar Mundo/Canvas/Jogo 3D e artefatos regenerados antes do corte.
+- Avançado: 567 testes/6.335 asserções/42 arquivos passaram em 21,80 s; 15 integrações reais incluem troca, geração, teto/junta, queda, bounce, carona, mouse e câmera. Um timeout de troca apareceu em execução conjunta anterior; isolado e suíte integral subsequente passaram sem alterar prazo. Não atribuir causa sem evidência.
+- O build revelou limites apertados: modo Blocos e, após a divisão de chunks, a carga inicial. Manual de IA passa pelo provider sob demanda já existente, com resumo operacional e teste de preservação do texto integral. Separar consulta leve de recuperação do codificador de documentos e validar persistência/grafo/orçamento sem elevar limites. Qualificação ainda pendente.
+- A bancada dos exemplos espera o evento real de menu em vez de sondagem arbitrária de 300 ms; prazo original dos testes permanece. Na nova partida com cena, o teste espera a promessa real da carga antes de simular movimento.
+- A revisão reproduziu o salto recusado pela alternância de apoio em superfície inclinada e a câmera seguindo a origem antes de o novo ator chegar. Ambos corrigidos com testes vermelhos/verdes, sem alterar velocidades ou prazos. A rodada final do Avançado/armazenamento/índice passou com 607 testes e 7.165 asserções. Ver [checkpoint em qualificação](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-avancado.md).
+
 **Files:** produtor/driver em `playground/cenarios-integration`, checkpoint/evidências e checklists dos motores.
 
-- [ ] Projeto montado pelos blocos/IR reais, modelos e controlador do Avançado, reabertura canônica, preview strict/export e `/jogar` local controlado.
-- [ ] Três ciclos com recursos estáveis, descarte final, 441 alturas/máscara contra Raylib, água/clipes, erro/cancelamento, movimento real, curvas, salto/pouso, pausa e recomeço. Não usar teletransporte como travessia.
-- [ ] Conferir os quatro clipes em execução, com estados/animações e evidências próprias; não declarar aceite perceptivo/IK ou aparelhos físicos sem esses testes.
-- [ ] Build/orçamento original antes da tipagem integral; regressões pertinentes, geradores/check, Biome/diff, tipagem e review do recorte. Corrigir causas, sem elevar limites.
-- [ ] Capturas/vídeos e recibo sem bytes privados, relatório de implementação/correções/provisórios/limites, revisão final e commit/push em staging.
+- [x] Projeto montado pelos blocos/IR reais, modelos e controlador do Avançado, reabertura canônica, preview strict/export e `/jogar` local controlado.
+- [x] Três ciclos com recursos estáveis, descarte final, 441 alturas/máscara contra Raylib, água/clipes, erro/cancelamento, movimento real, curvas, salto/pouso, pausa e recomeço. Não usar teletransporte como travessia.
+- [x] Conferir os quatro clipes em execução, com estados/animações e evidências próprias; não declarar aceite perceptivo/IK ou aparelhos físicos sem esses testes.
+- [x] Build/orçamento original antes da tipagem integral; regressões pertinentes, geradores/check, Biome/diff, tipagem e review do recorte. Corrigir causas, sem elevar limites.
+- [x] Capturas/vídeos e recibo sem bytes privados, relatório de implementação/correções/provisórios/limites, revisão final e commit/push em staging.
 - [ ] Somente então iniciar Pro autoral. O fechamento integrado de 8.4, 8.5/8.6, lotes 9–10, Faísca final, full review/CI e implantação/validação real permanecem pendentes.

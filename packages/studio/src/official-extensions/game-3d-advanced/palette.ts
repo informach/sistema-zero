@@ -19,6 +19,7 @@ export const GAME_KIT_THREE_D_PALETTE: ExtensionPaletteTree = [
         name: 'Preparar',
         types: [
           'sz_g3k_setup',
+          'sz_g3k_load_scene',
           'sz_g3k_world_size',
           'sz_g3k_scatter_decor',
           'sz_g3k_set_effects',
@@ -116,6 +117,7 @@ export const GAME_KIT_THREE_D_PALETTE: ExtensionPaletteTree = [
         name: 'Posição e direção',
         types: [
           'sz_g3k_place',
+          'sz_g3k_scene_start',
           'sz_g3k_set_yaw',
           'sz_g3k_look_at',
           'sz_g3k_face_velocity',

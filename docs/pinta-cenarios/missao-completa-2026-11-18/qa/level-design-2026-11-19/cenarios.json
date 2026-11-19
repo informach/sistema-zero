@@ -1,0 +1,316 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T18:52:28.367Z",
+    "duration": 215079.695,
+    "expected": 38,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "Phaser: plataforma precisa permite salto, pouso e vista de cima sem grade arredondada",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 3426,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser: cena 3 consulta os contornos e barra movimento através de parede fina",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 1592,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 532,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser portátil anima a versão fixada e conserva o último quadro",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 699,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser portátil renderiza o mapa real, anda, colide e atravessa portas",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 1458,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser: plataforma precisa permite salto, pouso e vista de cima sem grade arredondada",
+      "project": "touch",
+      "status": "passed",
+      "duration": 3293,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser: cena 3 consulta os contornos e barra movimento através de parede fina",
+      "project": "touch",
+      "status": "passed",
+      "duration": 1834,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa",
+      "project": "touch",
+      "status": "passed",
+      "duration": 661,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser portátil anima a versão fixada e conserva o último quadro",
+      "project": "touch",
+      "status": "passed",
+      "duration": 1082,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Phaser portátil renderiza o mapa real, anda, colide e atravessa portas",
+      "project": "touch",
+      "status": "passed",
+      "duration": 1979,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "modelo girado: guardar pela oficina, reutilizar vinculado, desfazer e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 3897,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 4136,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "modelo girado: guardar pela oficina, reutilizar vinculado, desfazer e reabrir",
+      "project": "touch",
+      "status": "passed",
+      "duration": 14200,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena",
+      "project": "touch",
+      "status": "passed",
+      "duration": 5297,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 4486,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "project": "touch",
+      "status": "passed",
+      "duration": 7236,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, histórico e reabertura",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 7471,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, histórico e reabertura",
+      "project": "touch",
+      "status": "passed",
+      "duration": 16420,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "plataforma precisa: salvar, reabrir, pousar e pular no teste lateral",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 3616,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "contornos autorais: editar colisão, desfazer, refazer e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 2388,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 2845,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "plataforma precisa: salvar, reabrir, pousar e pular no teste lateral",
+      "project": "touch",
+      "status": "passed",
+      "duration": 4482,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "contornos autorais: editar colisão, desfazer, refazer e reabrir",
+      "project": "touch",
+      "status": "passed",
+      "duration": 3074,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato",
+      "project": "touch",
+      "status": "passed",
+      "duration": 3721,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 5091,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "mapa autocontido de 48 px abre sem originais e cola objetos na grade correta",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 1812,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 3546,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+      "project": "touch",
+      "status": "passed",
+      "duration": 4506,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "mapa autocontido de 48 px abre sem originais e cola objetos na grade correta",
+      "project": "touch",
+      "status": "passed",
+      "duration": 2267,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos",
+      "project": "touch",
+      "status": "passed",
+      "duration": 4132,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 6881,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 4990,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir",
+      "project": "touch",
+      "status": "passed",
+      "duration": 15014,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real",
+      "project": "touch",
+      "status": "passed",
+      "duration": 6511,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 10700,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Começar: criar o bosque pronto e pintar materiais sem preparar regras",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 4636,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura",
+      "project": "touch",
+      "status": "passed",
+      "duration": 10701,
+      "retry": 0,
+      "attachments": []
+    },
+    {
+      "title": "Começar: criar o bosque pronto e pintar materiais sem preparar regras",
+      "project": "touch",
+      "status": "passed",
+      "duration": 4856,
+      "retry": 0,
+      "attachments": []
+    }
+  ]
+}

@@ -30,6 +30,7 @@ export class MundoDoTeste {
   private readonly naFace = new Vector3()
   private readonly naCapsula = new Vector3()
   private readonly normal = new Vector3()
+  private readonly normalMaisProfunda = new Vector3()
   private readonly raio = new Ray()
   private readonly ponto = new Vector3()
   private descartado = false
@@ -121,15 +122,20 @@ export class MundoDoTeste {
             }
             if (this.normal.lengthSq() < 0.9) return false
             const correcao = raio + margem - distancia
-            this.segmento.start.addScaledVector(this.normal, correcao)
-            this.segmento.end.addScaledVector(this.normal, correcao)
-            posicao.addScaledVector(this.normal, correcao)
-            maior = Math.max(maior, correcao)
-            if (normais.length < 32 && !normais.some((n) => n.dot(this.normal) > 0.999))
-              normais.push(this.normal.clone())
+            // Measure every constraint at the SAME pose. An internal diagonal can
+            // otherwise push sideways before its coplanar face resolves the ceiling.
+            if (correcao > maior) {
+              maior = correcao
+              this.normalMaisProfunda.copy(this.normal)
+            }
             return false
           },
         })
+      }
+      if (maior > 0) {
+        posicao.addScaledVector(this.normalMaisProfunda, maior)
+        if (normais.length < 32 && !normais.some((n) => n.dot(this.normalMaisProfunda) > 0.999))
+          normais.push(this.normalMaisProfunda.clone())
       }
       if (maior < margem * 2) break
     }

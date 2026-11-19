@@ -2,10 +2,9 @@ import { writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 /** Installed pinned vendors, real renderer; the subclass only records public counters. */
-export async function prepararVendors(pasta: string) {
+export async function prepararVendors(pasta: string, registrarVistas = false) {
   const vendors = {
-    three:
-      'export * from "three"; import { WebGLRenderer as RealRenderer } from "three"; export class WebGLRenderer extends RealRenderer { constructor(...args) { super(...args); (globalThis.__qaRenderers ??= []).push(this); } }',
+    three: `export * from "three"; import { WebGLRenderer as RealRenderer } from "three"; export class WebGLRenderer extends RealRenderer { constructor(...args) { super(...args); (globalThis.__qaRenderers ??= []).push(this); ${registrarVistas ? 'const render = this.render; this.render = (scene,camera) => { (this.__qaVistas ??= new WeakMap()).set(scene,camera); return render.call(this,scene,camera); };' : ''} } }`,
     GLTFLoader: 'export { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";',
     HDRLoader: 'export { HDRLoader } from "three/addons/loaders/HDRLoader.js";',
     SkeletonUtils: 'export * from "three/addons/utils/SkeletonUtils.js";',

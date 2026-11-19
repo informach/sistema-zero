@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\pintaImageSync.test.ts:
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material [31.00ms]
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > a sheet or map without its data chunk is refused; with it, accepted
+(pass) sync re-derives the data kinds, a map on ANY tileset change > a changed layer tileset re-derives the map (inspected with selection "map")
+(pass) sync re-derives the data kinds, a map on ANY tileset change > unchanged provenance keeps the material; one inspection per dependency rule
+(pass) one shared tileset copy: painting a piece updates every use > a tileset-only change re-derives the tileset material AND the map that uses it
+
+src\official-extensions\runtimePayloadBudget.test.ts:
+(pass) runtimes 3D: catraca de payload > game-3d cabe em 248700 caracteres e 70150 bytes gzip [16.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d (sem Kit Plataforma) cabe em 214600 caracteres e 60400 bytes gzip [15.00ms]
+(pass) runtimes 3D: catraca de payload > world-3d cabe em 357600 caracteres e 107000 bytes gzip [16.00ms]
+294 |     const name = variant ? `${extension.manifest.id} (${variant})` : extension.manifest.id
+295 |     const gzipLimit =
+296 |       process.platform === 'win32' ? (maxGzipBytesWindows ?? maxGzipBytes) : maxGzipBytes
+297 |     it(`${name} cabe em ${maxChars} caracteres e ${gzipLimit} bytes gzip`, async () => {
+298 |       const source = await bootstrapSource(extension, context)
+299 |       expect(source.length).toBeLessThanOrEqual(maxChars)
+                                  ^
+error: expect(received).toBeLessThanOrEqual(expected)
+
+Expected: <= 210700
+Received: 220689
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\src\official-extensions\runtimePayloadBudget.test.ts:299:29)
+(fail) runtimes 3D: catraca de payload > game-3d-advanced cabe em 210700 caracteres e 62100 bytes gzip
+
+src\projects\tilemapGame.test.ts:
+(pass) assembleTilemapGameProject > cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade [47.00ms]
+(pass) assembleTilemapGameProject > cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição [94.00ms]
+(pass) assembleTilemapGameProject > mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo [46.00ms]
+(pass) assembleTilemapGameProject > monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos [16.00ms]
+(pass) assembleTilemapGameProject > mapa SEM plataforma → mecânica TOP-DOWN
+(pass) assembleTilemapGameProject > mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo)
+(pass) assembleTilemapGameProject > tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN
+(pass) assembleTilemapGameProject > com camada da frente: 2º tilemap desenhado DEPOIS do jogador
+(pass) assembleTilemapGameProject > mapa inválido (sem grade/folha) → null
+
+ 17 pass
+ 1 fail
+ 77 expect() calls
+Ran 18 tests across 3 files. [2.15s]

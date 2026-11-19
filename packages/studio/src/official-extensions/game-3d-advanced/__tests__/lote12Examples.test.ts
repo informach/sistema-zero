@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test'
+import { resolverInicioDaCena } from '@sistemazero/molda-cenarios-motor/runtime'
 import * as Blockly from 'blockly/core'
 import { compileStatements, generateJS } from '#generators'
 import { type BehaviorIR, behaviorStatements, type JSStatement } from '#ir'
@@ -8,11 +9,14 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { carregarCena3DDoProjeto } from '../../../three/scene3d'
+import { criarInstaladorDeCenas3D } from '../../../three/scene3dCanvas'
 import { ARENA_CRISTAIS_SOURCE } from '../__gen_arenaCristais'
 import { HEROI_MOLDA_SOURCE } from '../__gen_heroiMolda'
 import { gameKit3DBlocks } from '../blocks'
 import { gameKit3DExamples } from '../exampleCatalog'
 import { arenaDosCristaisExample, heroiDoMoldaExample } from '../examples'
+import { CAMPO_DO_HEROI_ASSETS, CAMPO_DO_HEROI_ID } from '../sceneExampleAssets'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { type KitApi, loadExampleKit } from './kitHarness'
 import { collectTypes, stripIds } from './testUtils'
@@ -89,10 +93,13 @@ it('a Arena usa os blocos do lote 12 e os do Herói tocam a animação por estad
     'g3k:animSpeed',
     'g3k:playAnim', // o pulo toca "Esticar" uma vez, na mão
     'g3k:stopAnim', // o floco de gelo congela o boneco
+    'g3k:loadScene',
+    'g3k:sceneStart',
   ])
     expect(heroi.has(type)).toBe(true)
   expect(heroiDoMoldaExample.assets?.map((asset) => [asset.name, asset.kind])).toEqual([
     ['heroi-do-molda', 'model3d'],
+    ...CAMPO_DO_HEROI_ASSETS.map((asset) => [asset.name, asset.kind]),
   ])
 })
 
@@ -244,6 +251,20 @@ describe('Herói do Molda — o modelo animado de verdade', () => {
   it('carrega o .glb do Molda, troca a animação pelo estado e volta do pulo pelo fim da animação', async () => {
     const win = window as unknown as Record<string, unknown>
     const previous = win.__SZGAME_ASSETS_3D
+    const previousSdk = Object.getOwnPropertyDescriptor(window, 'SZScene3D')
+    const carregar = (
+      id: string,
+      sinal: AbortSignal,
+      ajustes?: Parameters<typeof carregarCena3DDoProjeto>[3],
+    ) => carregarCena3DDoProjeto(id, heroiDoMoldaExample.assets!, sinal, ajustes)
+    const instalador = criarInstaladorDeCenas3D(carregar)
+    const sdk: NonNullable<Window['SZScene3D']> = {
+      carregar,
+      instalar: instalador.instalar,
+      instalado: instalador.instalado,
+      inicio: resolverInicioDaCena,
+    }
+    Object.defineProperty(window, 'SZScene3D', { value: sdk, configurable: true })
     const asset = heroiDoMoldaExample.assets?.[0]
     win.__SZGAME_ASSETS_3D = {
       'heroi-do-molda': {
@@ -253,8 +274,26 @@ describe('Herói do Molda — o modelo animado de verdade', () => {
       },
     }
     try {
-      const { api, step, stage } = await loadExampleKit(jsDoExemplo(heroiDoMoldaExample))
+      const { api, step, stage, renderers } = await loadExampleKit(jsDoExemplo(heroiDoMoldaExample))
+      const base = instalador.instalado(renderers[0]!.scene!)!
+      expect(base.fisica.active()).toBe(true)
+      expect(heroiDoMoldaExample.assets!.find((a) => a.id === CAMPO_DO_HEROI_ID)?.kind).toBe(
+        'scene3d',
+      )
+      expect(base.dados.fonte.cenario).toBe('campo-do-heroi')
+      const cenaApi = api as KitApi & { loadScene(id: string): Promise<boolean> }
+      const carregarNaPartida = cenaApi.loadScene
+      let pedidoDaPartida: Promise<boolean> | undefined
+      cenaApi.loadScene = (id) => {
+        pedidoDaPartida = carregarNaPartida(id)
+        return pedidoDaPartida
+      }
       apertarBotao(stage, 'menu')
+      // A nova partida reexecuta a fábrica; esperar a instalação real, sem simular
+      // quadros no intervalo em que o motor corretamente mantém a simulação pausada.
+      expect(pedidoDaPartida).toBeDefined()
+      expect(await pedidoDaPartida).toBe(true)
+      expect(instalador.instalado(renderers[0]!.scene!)).not.toBe(base)
       const heroi = vivos(api, 'heroi')[0] as { _action?: { getClip(): { name: string } } | null }
       step(2)
       expect(api.stateOf(heroi)).toBe('parado')
@@ -292,6 +331,10 @@ describe('Herói do Molda — o modelo animado de verdade', () => {
       }
       expect(api.state()).toBe('vitoria')
     } finally {
+      window.dispatchEvent(new Event('pagehide'))
+      instalador.descartar()
+      if (previousSdk) Object.defineProperty(window, 'SZScene3D', previousSdk)
+      else Reflect.deleteProperty(window, 'SZScene3D')
       if (previous === undefined) delete win.__SZGAME_ASSETS_3D
       else win.__SZGAME_ASSETS_3D = previous
     }

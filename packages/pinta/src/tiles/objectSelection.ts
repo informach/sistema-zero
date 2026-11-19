@@ -8,8 +8,13 @@ import {
 } from '../core/project'
 import { updateMapObject } from './mapObjects'
 import { objectBounds } from './objectGeometry'
-export function cloneObjects(objects: readonly TilemapObject[], dx = 16, dy = 16): TilemapObject[] {
-  const ids = new Map(objects.map((o) => [o.id, newId()]))
+export function cloneObjects(
+  objects: readonly TilemapObject[],
+  dx = 16,
+  dy = 16,
+  idFor: (sourceId: string, index: number) => string = newId,
+): TilemapObject[] {
+  const ids = new Map(objects.map((o, index) => [o.id, idFor(o.id, index)]))
   return objects.map((o) => ({
     ...structuredClone(o),
     id: ids.get(o.id)!,

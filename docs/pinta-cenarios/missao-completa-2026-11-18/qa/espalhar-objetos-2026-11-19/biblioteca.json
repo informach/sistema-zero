@@ -1,0 +1,36 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T18:34:53.707Z",
+    "duration": 22728.959,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0,
+      "duration": 4135,
+      "attachments": []
+    },
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "project": "touch",
+      "status": "passed",
+      "retry": 0,
+      "duration": 3934,
+      "attachments": []
+    },
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0,
+      "duration": 9812,
+      "attachments": []
+    }
+  ]
+}

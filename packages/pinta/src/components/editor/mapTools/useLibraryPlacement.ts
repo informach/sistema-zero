@@ -9,9 +9,15 @@ import {
 } from 'react'
 import { COPY } from '../../../core/copy'
 import { safeSetPointerCapture } from '../../../core/pointer'
-import { effectiveLayer, type PintaAsset, type TilemapAsset } from '../../../core/project'
+import {
+  effectiveLayer,
+  isObjectLayer,
+  type PintaAsset,
+  type TilemapAsset,
+} from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import { libraryPlacement, placeLibraryObject } from '../../../tiles/libraryPlacement'
+import { pointOnMap } from './mapViewport'
 
 type Preview = NonNullable<ReturnType<typeof libraryPlacement>> & { source: PintaAsset }
 type Gesture = {
@@ -80,6 +86,17 @@ export function useLibraryPlacement(deps: {
         return
       }
       d.editor.getState().commit(next)
+      const accepted = d.editor.getState().asset
+      if (
+        accepted.kind !== 'tilemap' ||
+        !accepted.layers.some(
+          (layer) =>
+            isObjectLayer(layer) && layer.objects.some((object) => object.id === placed.object.id),
+        )
+      ) {
+        refused()
+        return
+      }
       if (selectObject) d.onSelect(placed.object.id)
       setMessage(COPY.scene.libraryPlaced(source.name))
     },
@@ -101,47 +118,23 @@ export function useLibraryPlacement(deps: {
       return current
     }
     function at(event: globalThis.PointerEvent, current: Gesture): Preview | null {
-      if (
-        event.clientX < 0 ||
-        event.clientY < 0 ||
-        event.clientX >= window.innerWidth ||
-        event.clientY >= window.innerHeight
-      )
-        return null
       const d = latest.current,
         paper = d.paperRef.current?.getBoundingClientRect(),
         stage = d.stageRef.current?.getBoundingClientRect()
-      if (
-        !paper ||
-        !stage ||
-        paper.width <= 0 ||
-        paper.height <= 0 ||
-        stage.width <= 0 ||
-        stage.height <= 0
+      if (!paper || !stage) return null
+      const point = pointOnMap(
+        { x: event.clientX, y: event.clientY },
+        {
+          paper,
+          stage,
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+          cols: d.map.cols,
+          rows: d.map.rows,
+          tileSize: d.tileSize,
+          pad: d.pad,
+        },
       )
-        return null
-      if (
-        event.clientX < stage.left ||
-        event.clientX >= stage.right ||
-        event.clientY < stage.top ||
-        event.clientY >= stage.bottom
-      )
-        return null
-      const point = {
-        x:
-          (((event.clientX - paper.left) / paper.width) * (d.map.cols + 2 * d.pad) - d.pad) *
-          d.tileSize,
-        y:
-          (((event.clientY - paper.top) / paper.height) * (d.map.rows + 2 * d.pad) - d.pad) *
-          d.tileSize,
-      }
-      if (
-        point.x < 0 ||
-        point.y < 0 ||
-        point.x >= d.map.cols * d.tileSize ||
-        point.y >= d.map.rows * d.tileSize
-      )
-        return null
+      if (!point) return null
       const result = libraryPlacement(d.map, d.layerId, current.source, d.tileSize, point, d.snap)
       return result ? { ...result, source: current.source } : null
     }

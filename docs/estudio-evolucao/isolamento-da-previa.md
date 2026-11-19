@@ -162,8 +162,9 @@ padrão**:
   passa a ser o da casca (o valor já muda de um deploy para outro).
 - Prova no navegador: `e2e/preview-shell.spec.ts` (playground com `?casca=1`, casca na outra
   origem local). Chromium: o jogo roda, fala com o console, Parar e Rodar funcionam, e o editor
-  responde durante 30 s de trabalho síncrono do jogo. Firefox: registrado no
-  `playwright.config.ts`, roda na CI da missão. WebKit fica de fora (a casca não é para ele).
+  responde durante 30 s de trabalho síncrono do jogo. Firefox e WebKit: registrados no
+  `playwright.config.ts` (qualificação por render e resposta real, `e51d3bb7`), rodam na CI da
+  missão.
 
 **Ligar no app é decisão da dona e mudança de deploy** (não feita): configurar a variável no
 studio-runtime com as origens do editor, mandar COOP `same-origin` + COEP `credentialless` na rota

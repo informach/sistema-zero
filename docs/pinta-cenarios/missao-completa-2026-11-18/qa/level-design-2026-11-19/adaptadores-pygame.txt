@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+src\export\setAdapters.test.ts:
+(pass) a zero-area legacy set remains readable as a degenerate footprint
+(pass) an affinely transformed ellipse retains its exact boundary under nonuniform scaling
+(pass) the embedded JS transformation is exactly the same helper, without external dependencies
+(pass) uniform set reflection and rotation preserve every authored rectangle corner
+(pass) real Pygame expansion and queries match the canonical affine geometry and reference namespaces [313.00ms]
+(pass) Pygame movement tests the rotated tile polygon rather than its expanded bounding box [141.00ms]
+
+ 6 pass
+ 0 fail
+ 5092 expect() calls
+Ran 6 tests across 1 file. [1038.00ms]

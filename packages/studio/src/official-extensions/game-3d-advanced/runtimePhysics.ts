@@ -227,6 +227,14 @@ export const gameKit3DPhysicsRuntimeSource = `
 
   // Pisa no chão-base (y=0): os pés do molde são a origem.
   function resolveGround(e) {
+    if (importedScene) {
+      // Ghosts still fall onto ground, but ignore walls; solid bodies used the capsule path.
+      if (e.body !== 0 && importedScene.fisica.active()) {
+        var mold = molds[e._mold];
+        supportImportedGround(e, SKIN, e._ly + (mold ? mold.col.minY : 0));
+      }
+      return;
+    }
     var p = e.mesh.position;
     var m = molds[e._mold];
     var foot = m ? m.col.minY : 0;
@@ -723,24 +731,29 @@ export const gameKit3DPhysicsRuntimeSource = `
     //    que ser parado por um piso invisível (tiro, drone, câmera). Já ser SÓLIDO
     //    é consequência de EXISTIR: parede para tudo que não é fantasma. Fundir os
     //    dois era o bug do tiro atravessando a parede.
-    var wantSolid = anySolid && e.body === 0;
+    var hasImported = importedScene && importedScene.fisica.active();
+    var wantSolid = (anySolid || hasImported) && e.body === 0;
     if (wantSolid && (dx || dy || dz || e.gravity)) {
       fillCandidates(e, dx, dz);
       var k = _candN > 0 ? substepsFor(e, dx, dy, dz) : 1;
+      if (hasImported) k = Math.max(k, importedBodySteps(e, dx, dy, dz));
       // Integra cada substep com a velocidade VIVA (dt/k). A varredura contínua
       // encontra o impacto mesmo quando o deslocamento pula a parede inteira; o
       // resolveSolids mantém a resposta de rampas/penetrações já existente.
       // Corrige a penetração que JÁ existia antes da varredura. Sem isso, o slab
       // devolve entry < 0 e um tiro que nasceu no sólido atravessa a outra face.
       resolveSolids(e);
+      if (hasImported) resolveImportedBody(e);
       var h = dt / k;
       for (var st = 0; st < k; st++) {
         moveContinuous(e, h);
         if (anySolid) resolveSolids(e);
+        if (hasImported) resolveImportedBody(e);
       }
       if (e.gravity) resolveGround(e);
       // 7. Grude no chão ao descer rampa/degrau (senão a descida vira trampolim).
       if (wasGrounded && !e.grounded && e.vy <= 0 && anySolid) snapDown(e);
+      if (wasGrounded && !e.grounded && e.vy <= 0 && hasImported) supportImportedGround(e, SNAP_DIST, null);
       // 8. Atrito: o mais ESCORREGADIO dos dois manda — gelo no chão OU no disco
       //    e escorrega igual. Não-definido (-1) vale 0 na superfície (gelo, o de
       //    sempre) e 1 em quem anda (sem opinião) → min = a superfície decide,

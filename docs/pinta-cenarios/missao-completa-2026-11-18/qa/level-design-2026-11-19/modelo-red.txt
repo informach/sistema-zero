@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapToolsUi.test.tsx:
+708 |     const layer = set.map.layers.find(isObjectLayer)!
+709 |     const object = layer.objects[0]!
+710 |     const { objectBounds } = await import('../../tiles/objectGeometry')
+711 |     const { effectiveLayer } = await import('../../core/project')
+712 |     const box = objectBounds(object), offset = effectiveLayer(set.map, layer)
+713 |     expect(box.x + offset.offsetX).toBeGreaterThanOrEqual(-1e-7)
+                                         ^
+error: expect(received).toBeGreaterThanOrEqual(expected)
+
+Expected: >= -1e-7
+Received: -16
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapToolsUi.test.tsx:713:36)
+(fail) guardar conjunto > guardar modelo conserva a caixa inteira do objeto girado e suas propriedades [687.00ms]
+
+ 0 pass
+ 53 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [1.71s]

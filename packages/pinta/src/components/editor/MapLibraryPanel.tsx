@@ -2,14 +2,9 @@ import type { JSX } from 'react'
 import { useState } from 'react'
 import { COPY } from '../../core/copy'
 import { embeddedTilesetOf } from '../../core/mapResourceVersions'
-import {
-  effectiveLayer,
-  isObjectLayer,
-  isTileLayer,
-  isTilesetKind,
-  type PintaAsset,
-} from '../../core/project'
-import { createMapSet, detachMapSet } from '../../tiles/sets'
+import { isObjectLayer, isTilesetKind, type PintaAsset } from '../../core/project'
+import { createObjectTemplate } from '../../tiles/objectTemplate'
+import { detachMapSet } from '../../tiles/sets'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { AssetThumb } from '../gallery/AssetCard'
 import { Button } from '../ui/Button'
@@ -58,37 +53,17 @@ export function MapLibraryPanel({
             const owner = chosen.layers.find(
               (l) => isObjectLayer(l) && l.objects.some((o) => o.id === selected.id),
             )!
-            const offset = effectiveLayer(chosen, owner)
-            const source = {
-              ...chosen,
-              layers: chosen.layers.map((l) =>
-                isObjectLayer(l)
-                  ? { ...l, objects: l.objects.filter((o) => o.id === selected.id) }
-                  : isTileLayer(l)
-                    ? { ...l, cells: new Int16Array(l.cells.length).fill(-1) }
-                    : l,
-              ),
-            }
-            const set = createMapSet(
-              source,
-              {
-                col: Math.floor((selected.x + offset.offsetX) / size),
-                row: Math.floor((selected.y + offset.offsetY) / size),
-                cols: Math.max(1, Math.ceil(selected.width / size)),
-                rows: Math.max(1, Math.ceil(selected.height / size)),
-              },
+            const set = createObjectTemplate(
+              chosen,
+              owner.id,
+              selected.id,
               size,
               COPY.scene.nomeDoModelo(selected.name),
             )
-            set.map.layers = [
-              {
-                id: `${set.id}-base`,
-                name: COPY.scene.base,
-                visible: true,
-                cells: new Int16Array(set.map.cols * set.map.rows).fill(-1),
-              },
-              ...set.map.layers.filter((l) => l.kind === 'group' || isObjectLayer(l)),
-            ]
+            if (!set) {
+              showToast(COPY.scene.conjuntoNaoGuardado)
+              return
+            }
             void gallery
               .getState()
               .createPrepared(set)

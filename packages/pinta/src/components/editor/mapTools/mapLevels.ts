@@ -39,6 +39,7 @@ const CREATE_TOOLS = [
   'object-ellipse',
   'object-polygon',
   'object-polyline',
+  'object-scatter',
   'autoExpand',
   'showCollision',
 ] as const

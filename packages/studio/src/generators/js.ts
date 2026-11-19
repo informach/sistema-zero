@@ -35,6 +35,10 @@ import {
   gameKit3DModelStatementToCode,
 } from '../official-extensions/game-3d-advanced/modelCodec'
 import {
+  collectSceneGameKit3DIdentifiers,
+  sceneGameKit3DStatementToCode,
+} from '../official-extensions/game-3d-advanced/sceneCodec'
+import {
   collectGameRulesExpressionIdentifiers,
   collectGameRulesIdentifiers,
   gameRulesStatementToCode,
@@ -3613,6 +3617,7 @@ ${pad}});`
         compileStatements(body, indent + 1, identifiers, childMapContext(mapContext, base + 1)),
     }
     const model =
+      sceneGameKit3DStatementToCode(stmt, codecTools) ??
       gameKit3DModelStatementToCode(stmt, codecTools) ??
       gameKit3DGameplayStatementToCode(stmt, codecTools)
     if (model !== undefined) return model
@@ -7399,6 +7404,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
 
   function gameKitThreeDStatementIdentifiers(): void {
     if (
+      collectSceneGameKit3DIdentifiers(stmt, names) ||
       collectGameKit3DModelIdentifiers(
         stmt,
         names,

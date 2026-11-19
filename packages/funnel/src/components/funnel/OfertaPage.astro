@@ -10,14 +10,13 @@ import Comunidade917Body from './oferta/Comunidade917Body.astro'
 import ComunidadeAdultoContinuarBody from './oferta/ComunidadeAdultoContinuarBody.astro'
 import ComunidadeAdultoOfertaBody from './oferta/ComunidadeAdultoOfertaBody.astro'
 import ComunidadeContinuarBody from './oferta/ComunidadeContinuarBody.astro'
-import ComunidadeMenor9Body from './oferta/ComunidadeMenor9Body.astro'
 import Desafio917Body from './oferta/Desafio917Body.astro'
 import DesafioAdultoBody from './oferta/DesafioAdultoBody.astro'
 
 // Cada funil tem o seu corpo de oferta, escolhido pela CHAVE do funil (nunca por exclusão: um funil
 // novo sem corpo declarado falha alto em vez de cair na página de outro produto).
 interface Props extends OfferPageData {
-  /** Comunidade Kids: a página 9 a 17 (`/oferta`), a "criar junto" ou a de continuidade. */
+  /** Comunidade Kids: oferta de 5 a 17 anos (`/oferta`) ou continuidade. */
   comunidadePage?: ComunidadeOfertaId
   /** Comunidade adulta: a continuidade (`/oferta/continuar`); sem valor, a página principal. */
   comunidadeAdultoPage?: ComunidadeAdultoSubpagina
@@ -39,9 +38,7 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 
 {
   corpo === 'comunidade' ? (
-    comunidadePage === 'criar-junto' ? (
-      <ComunidadeMenor9Body {...bodyProps} plans={plans} />
-    ) : comunidadePage === 'continuar' ? (
+    comunidadePage === 'continuar' ? (
       <ComunidadeContinuarBody {...bodyProps} plans={plans} />
     ) : (
       <Comunidade917Body {...bodyProps} plans={plans} />

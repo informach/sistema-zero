@@ -13,7 +13,6 @@ import {
 } from './idbTransaction'
 import {
   applicationBudgetKey,
-  PROJECT_RECOVERY_PREFIX,
   PROJECT_STORAGE_VERSION,
   type ProjectStorageVersion,
   projectApplicationsKey,
@@ -38,11 +37,8 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import {
-  ExitJournalError,
-  hasSynchronousExitJournal,
-  stageSynchronousExitJournal,
-} from './synchronousExitJournal'
+import { stageSynchronousExitJournal } from './synchronousExitJournal'
+import { ExitJournalError, hasSynchronousExitJournal } from './synchronousExitJournalProbe'
 
 export const PRO_APPLICATION_LIMITS = Object.freeze({
   operations: 20,
@@ -486,15 +482,7 @@ export async function loadRecoverableProjectDraft(
   return recovery.loadRecoverableProjectDraft(scope, id)
 }
 
-export async function listPreservedProjectDrafts(
-  scope: ProjectStorageScope,
-  knownKeys: readonly IDBValidKey[],
-) {
-  if (!knownKeys.some((key) => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX)))
-    return []
-  const recovery = await import('./projectIndexedRecovery')
-  return recovery.listPreservedProjectDrafts(scope, knownKeys)
-}
+export { listPreservedProjectDrafts } from './projectPreservedDrafts'
 
 export async function listProApplications(
   scope: ProjectStorageScope,

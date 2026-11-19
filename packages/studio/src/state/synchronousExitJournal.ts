@@ -1,6 +1,18 @@
 import { encodeExitJournal } from './exitJournalCodec'
+import {
+  EXIT_JOURNAL_PREFIX,
+  ExitJournalError,
+  exitJournalUnavailable,
+} from './synchronousExitJournalProbe'
 
-export const EXIT_JOURNAL_PREFIX = 'sz:studio-exit:'
+export {
+  captureExitJournalStorage,
+  EXIT_JOURNAL_PREFIX,
+  ExitJournalError,
+  exitJournalUnavailable,
+  hasSynchronousExitJournal,
+} from './synchronousExitJournalProbe'
+
 export interface ExitJournalIdentity {
   projectId: string
   writer: string
@@ -11,18 +23,6 @@ export interface ExitJournalEntry extends ExitJournalIdentity {
   encoded: string
   value: unknown
 }
-export class ExitJournalError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options)
-    this.name = 'ExitJournalError'
-  }
-}
-export function exitJournalUnavailable(cause?: unknown): ExitJournalError {
-  return new ExitJournalError(
-    'Não foi possível guardar a cópia de recuperação. Mantenha esta aba aberta até salvar ou exportar o projeto.',
-    { cause },
-  )
-}
 function keyFor(scope: string, identity: ExitJournalIdentity): string {
   return (
     EXIT_JOURNAL_PREFIX +
@@ -30,31 +30,6 @@ function keyFor(scope: string, identity: ExitJournalIdentity): string {
       .map(encodeURIComponent)
       .join('|')
   )
-}
-export function captureExitJournalStorage(): Storage | undefined {
-  try {
-    return globalThis.localStorage
-  } catch (error) {
-    // Inaccessible storage is different from an environment without Web Storage.
-    // Otherwise a later session could silently open an old IndexedDB revision
-    // while its newer exit copy is present but forbidden by browser policy.
-    const fail = (): never => {
-      throw exitJournalUnavailable(error)
-    }
-    return new Proxy({} as Storage, { get: fail, ownKeys: fail })
-  }
-}
-export function hasSynchronousExitJournal(storage: Storage | undefined, scope: string): boolean {
-  if (!storage) return false
-  try {
-    return Object.keys(storage).some(
-      (key) =>
-        key.startsWith(EXIT_JOURNAL_PREFIX) &&
-        key.slice(EXIT_JOURNAL_PREFIX.length).split('|')[1] === encodeURIComponent(scope),
-    )
-  } catch {
-    return true
-  } // The recovery boundary reports inaccessible storage explicitly.
 }
 /** Immutable token keys make acknowledgement safe across independent tabs. */
 export function stageSynchronousExitJournal(

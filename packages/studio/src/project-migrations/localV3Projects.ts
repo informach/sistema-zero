@@ -13,7 +13,7 @@ import {
 } from '../state/projectStorageKeys'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSummary, toProjectSummary } from '../state/projectSummary'
-import { hasSynchronousExitJournal } from '../state/synchronousExitJournal'
+import { hasSynchronousExitJournal } from '../state/synchronousExitJournalProbe'
 import { synchronousExitProjectIds } from '../state/synchronousExitJournalRead'
 import { migrateLocalProjects } from './localProjects'
 import { migrateLocalV3Project } from './localV3'

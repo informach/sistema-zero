@@ -102,11 +102,7 @@ describe('Comunidade: contraste dos pares novos da oferta', () => {
       /\.cdc \.fundo-alt \.kof-carta \.kof-link \{[^}]*color: var\(--kof-acao\)/,
     )
     // As páginas de oferta da Comunidade desenham os próprios links e botões: nenhum kof-link.
-    for (const corpo of [
-      'Comunidade917Body.astro',
-      'ComunidadeMenor9Body.astro',
-      'ComunidadeContinuarBody.astro',
-    ]) {
+    for (const corpo of ['Comunidade917Body.astro', 'ComunidadeContinuarBody.astro']) {
       const body = readFileSync(join(SRC, 'components', 'funnel', 'oferta', corpo), 'utf8')
       expect([corpo, body.includes('kof-link')]).toEqual([corpo, false])
     }

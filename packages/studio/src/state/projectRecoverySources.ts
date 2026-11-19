@@ -12,7 +12,7 @@ import {
   projectRecoveryKey,
 } from './projectStorageKeys'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { ExitJournalError } from './synchronousExitJournal'
+import { ExitJournalError } from './synchronousExitJournalProbe'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 type Source = { key: string; token: string }

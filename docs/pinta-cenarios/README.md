@@ -6,6 +6,10 @@ O [plano em execução](missao-completa-2026-11-18/plano.md) acompanha os lotes 
 e os critérios ainda pendentes. A integração em staging segue a autorização posterior
 do usuário, sem PR. A missão integral continua em andamento.
 
+O [pincel de objetos e conjuntos](missao-completa-2026-11-18/espalhar-objetos.md)
+permite compor decoração com afastamento, variação determinística e prévia,
+mantendo as definições vinculadas e um desfazer por gesto.
+
 O lote de [contornos autorais](missao-completa-2026-11-18/colisoes-autorais.md) acrescenta
 documento/envelope 7, cena 3 e PNG 4 com leitor específico. O código lê nuvem 6 e ainda
 declara 4 durante o rollout do leitor. [Provas e limites](missao-completa-2026-11-18/qa/colisoes-autorais/README.md).

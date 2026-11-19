@@ -1,0 +1,2550 @@
+{
+  "recibos": [
+    {
+      "nome": "completo",
+      "modo": "preview",
+      "ciclos": [
+        {
+          "x": 8.00299218592085,
+          "y": 0.283214392822185,
+          "z": 7.972506056563657,
+          "vx": 0,
+          "vy": -0.01747383470540198,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 20,
+          "tempo": 0.35013333333333363,
+          "geracao": 1,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.35013333333333363
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 1244,
+          "estado": "jogando"
+        },
+        {
+          "x": 8.005044771466054,
+          "y": 0.27886320915726015,
+          "z": 7.953645707517535,
+          "vx": 0,
+          "vy": -0.01829962894809073,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 29,
+          "tempo": 0.5334000000000008,
+          "geracao": 2,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06653333333333405
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 1349,
+          "estado": "jogando"
+        },
+        {
+          "x": 8.007512007362612,
+          "y": 0.27363302688509794,
+          "z": 7.93097531002938,
+          "vx": 0,
+          "vy": -0.018399587557555174,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.7334000000000017,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06663333333333443
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 1454,
+          "estado": "jogando"
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "caminhada": {
+          "x": 7.956730214713799,
+          "y": 0.2892167958241979,
+          "z": 5.888283118743802,
+          "vx": -0.0015318650454572463,
+          "vy": 0,
+          "vz": -1.4999992177962904,
+          "grounded": true,
+          "quadros": 221,
+          "tempo": 3.784499999999997,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.117733333333333
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente"],
+          "acao": "andar_frente",
+          "modelo": true,
+          "desenhos": 4402,
+          "estado": "jogando"
+        },
+        "corrida": {
+          "x": 7.941553559347781,
+          "y": 0.230854660809159,
+          "z": 5.0881499523065,
+          "vx": -0.00029101113354520824,
+          "vy": -0.7959134017481532,
+          "vz": -3.399999987545959,
+          "grounded": true,
+          "quadros": 242,
+          "tempo": 4.134599999999997,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.467833333333333
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "correr_frente",
+          "modelo": true,
+          "desenhos": 4633,
+          "estado": "jogando"
+        },
+        "alto": {
+          "x": 7.934715093573972,
+          "y": 0.550420324326138,
+          "z": 5.041588826295401,
+          "vx": 0,
+          "vy": 6.000000000000001,
+          "vz": 0,
+          "grounded": false,
+          "quadros": 246,
+          "tempo": 4.201299999999996,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.534533333333332
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "pulo_no_ar",
+          "modelo": true,
+          "desenhos": 4677,
+          "estado": "jogando"
+        },
+        "pouso": {
+          "x": 7.934436839966772,
+          "y": 0.23346986577606574,
+          "z": 5.042006645330058,
+          "vx": 0,
+          "vy": -1.6226888715864263,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 284,
+          "tempo": 4.8347999999999995,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.168033333333334
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 5095,
+          "estado": "jogando"
+        },
+        "curva": {
+          "x": 8.101825724841085,
+          "y": 0.2574009366587641,
+          "z": 5.0606765420036774,
+          "vx": 1.49988391061145,
+          "vy": 0,
+          "vz": 0.018661583236810084,
+          "grounded": true,
+          "quadros": 293,
+          "tempo": 4.984900000000001,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.318133333333336
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "andar_frente",
+          "modelo": true,
+          "desenhos": 5194,
+          "estado": "jogando"
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 8.007512007362612,
+          "y": 0.27363302688509794,
+          "z": 7.93097531002938,
+          "vx": 0,
+          "vy": -0.018399587557555174,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.7334000000000017,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06663333333333443
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 1454,
+          "estado": "pausado"
+        },
+        "depois": {
+          "x": 8.007512007362612,
+          "y": 0.27363302688509794,
+          "z": 7.93097531002938,
+          "vx": 0,
+          "vy": -0.018399587557555174,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.7334000000000017,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06663333333333443
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 1465,
+          "estado": "pausado"
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 8.00216463454723,
+          "y": 0.2849686817127013,
+          "z": 7.980110079595268,
+          "vx": 0,
+          "vy": -0.017569047410440408,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 11,
+          "tempo": 0.216733333333333,
+          "geracao": 1,
+          "chegada": [8.000118758087046, 0.2893056430904137, 7.998908781668583],
+          "partida": 3,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.216733333333333
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 6278,
+          "estado": "jogando"
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": [],
+      "rede": [],
+      "persistido": "encerra-conforme-contrato-do-avancado"
+    },
+    {
+      "nome": "buraco",
+      "modo": "preview",
+      "ciclos": [
+        {
+          "x": 10,
+          "y": 0.000010000000000022144,
+          "z": 0,
+          "vx": 0,
+          "vy": -1.1102230246251565e-16,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 20,
+          "tempo": 0.35013333333333324,
+          "geracao": 1,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 374,
+          "estado": "jogando"
+        },
+        {
+          "x": 10,
+          "y": 0.000010000000000022144,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 29,
+          "tempo": 0.5002333333333333,
+          "geracao": 2,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 473,
+          "estado": "jogando"
+        },
+        {
+          "x": 10,
+          "y": 0.00001000000000000393,
+          "z": 0,
+          "vx": 0,
+          "vy": -1.1102230246251565e-16,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.6502333333333334,
+          "geracao": 3,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 572,
+          "estado": "jogando"
+        }
+      ],
+      "comparadas": 0,
+      "movimentos": {
+        "caminhada": {
+          "x": 10.000000000060297,
+          "y": 0.00000999999999999699,
+          "z": 2.000700000000002,
+          "vx": -1.1797060279389303e-12,
+          "vy": 0,
+          "vz": 1.5,
+          "grounded": true,
+          "quadros": 139,
+          "tempo": 2.334033333333332,
+          "geracao": 3,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 1804,
+          "estado": "jogando"
+        },
+        "inicioQueda": {
+          "x": 10.000000000386452,
+          "y": -0.0014630036437740827,
+          "z": 4.027099105930369,
+          "vx": -7.610234127950137e-12,
+          "vy": -0.16565360185501166,
+          "vz": 1.5,
+          "grounded": true,
+          "quadros": 223,
+          "tempo": 3.7346333333333313,
+          "geracao": 3,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 2728,
+          "estado": "jogando"
+        },
+        "queda": {
+          "x": 10.00000000162663,
+          "y": -10.16922865461172,
+          "z": 4.25068463508129,
+          "vx": 0,
+          "vy": -19.859468630883228,
+          "vz": 0,
+          "grounded": false,
+          "quadros": 338,
+          "tempo": 5.651933333333352,
+          "geracao": 3,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 3993,
+          "estado": "jogando"
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 10,
+          "y": 0.00001000000000000393,
+          "z": 0,
+          "vx": 0,
+          "vy": -1.1102230246251565e-16,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.6502333333333334,
+          "geracao": 3,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 572,
+          "estado": "pausado"
+        },
+        "depois": {
+          "x": 10,
+          "y": 0.00001000000000000393,
+          "z": 0,
+          "vx": 0,
+          "vy": -1.1102230246251565e-16,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.6502333333333334,
+          "geracao": 3,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 583,
+          "estado": "pausado"
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 10,
+          "y": 0.000010000000000004797,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 11,
+          "tempo": 0.19993333333333374,
+          "geracao": 1,
+          "chegada": [0, 0.000010000000000010001, 0.25001],
+          "partida": 3,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.25,
+            "maxX": 0.25,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.25,
+            "maxZ": 0.25,
+            "r": 0.25,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 5,
+            "textures": 13
+          },
+          "cenas": [
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "estadosTocados": [],
+          "modelo": false,
+          "desenhos": 4224,
+          "estado": "jogando"
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": [],
+      "rede": [],
+      "persistido": "encerra-conforme-contrato-do-avancado"
+    },
+    {
+      "nome": "completo",
+      "modo": "export",
+      "ciclos": [
+        {
+          "x": 8.002990462371741,
+          "y": 0.2832180464963238,
+          "z": 7.9725218935346644,
+          "vx": 0,
+          "vy": -0.017468851903855442,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 20,
+          "tempo": 0.34993333333333343,
+          "geracao": 1,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.34993333333333343
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 364,
+          "estado": "jogando"
+        },
+        {
+          "x": 8.005039855142908,
+          "y": 0.27887363104930746,
+          "z": 7.9536908815522045,
+          "vx": 0,
+          "vy": -0.034188238396292925,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 29,
+          "tempo": 0.5334,
+          "geracao": 2,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.049933333333333246
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 469,
+          "estado": "jogando"
+        },
+        {
+          "x": 8.007103048469604,
+          "y": 0.27449996042608815,
+          "z": 7.934733062044004,
+          "vx": 0,
+          "vy": -0.018399575478317054,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.7168666666666669,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06663333333333307
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 574,
+          "estado": "jogando"
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "caminhada": {
+          "x": 7.950118754339908,
+          "y": 0.28942119813359124,
+          "z": 5.883183492698686,
+          "vx": -0.0015771083571551633,
+          "vy": 0,
+          "vz": -1.499999170909514,
+          "grounded": true,
+          "quadros": 143,
+          "tempo": 2.4675666666666656,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 1.8173333333333326
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente"],
+          "acao": "andar_frente",
+          "modelo": true,
+          "desenhos": 1762,
+          "estado": "jogando"
+        },
+        "corrida": {
+          "x": 7.931688280638463,
+          "y": 0.22655557275133642,
+          "z": 5.075555887246723,
+          "vx": -0.0009994028624437945,
+          "vy": -0.8045669759547109,
+          "vz": -3.3999998531167495,
+          "grounded": true,
+          "quadros": 165,
+          "tempo": 2.834266666666665,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.184033333333332
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "correr_frente",
+          "modelo": true,
+          "desenhos": 2004,
+          "estado": "jogando"
+        },
+        "alto": {
+          "x": 7.921859507977526,
+          "y": 0.5506282689387036,
+          "z": 5.032233288781769,
+          "vx": 0,
+          "vy": 6.000000000000001,
+          "vz": 0,
+          "grounded": false,
+          "quadros": 170,
+          "tempo": 2.917666666666665,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.267433333333332
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "pulo_no_ar",
+          "modelo": true,
+          "desenhos": 2059,
+          "estado": "jogando"
+        },
+        "pouso": {
+          "x": 7.921578259354101,
+          "y": 0.23370513302006266,
+          "z": 5.032627405448039,
+          "vx": 0,
+          "vy": -1.4664305335064771,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 208,
+          "tempo": 3.5511666666666644,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.9009333333333314
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2477,
+          "estado": "jogando"
+        },
+        "curva": {
+          "x": 8.093276067114177,
+          "y": 0.25572871210314574,
+          "z": 5.062945449166909,
+          "vx": 1.499878704537811,
+          "vy": 0,
+          "vz": 0.019075420676301642,
+          "grounded": true,
+          "quadros": 217,
+          "tempo": 3.7012666666666636,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.0510333333333306
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "andar_frente",
+          "modelo": true,
+          "desenhos": 2576,
+          "estado": "jogando"
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 8.007103048469604,
+          "y": 0.27449996042608815,
+          "z": 7.934733062044004,
+          "vx": 0,
+          "vy": -0.018399575478317054,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.7168666666666669,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06663333333333307
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 574,
+          "estado": "pausado"
+        },
+        "depois": {
+          "x": 8.007103048469604,
+          "y": 0.27449996042608815,
+          "z": 7.934733062044004,
+          "vx": 0,
+          "vy": -0.018399575478317054,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 38,
+          "tempo": 0.7168666666666669,
+          "geracao": 3,
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06663333333333307
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 585,
+          "estado": "pausado"
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 8.001751369698217,
+          "y": 0.2858447432559137,
+          "z": 7.9839073972364565,
+          "vx": 0,
+          "vy": -0.017569035559775792,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 11,
+          "tempo": 0.20003333333333317,
+          "geracao": 1,
+          "chegada": [8.000118758087046, 0.2893056430904137, 7.998908781668583],
+          "partida": 3,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.20003333333333317
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2824,
+          "estado": "jogando"
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": ["Service Worker registration blocked by Playwright"],
+      "rede": [],
+      "persistido": "encerra-conforme-contrato-do-avancado"
+    },
+    {
+      "nome": "completo",
+      "modo": "jogar",
+      "ciclos": [
+        {
+          "x": 8.002992172613354,
+          "y": 0.28321442103215216,
+          "z": 7.972506178840689,
+          "vx": 0,
+          "vy": -0.017569035559739543,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 20,
+          "tempo": 0.3501333333333344,
+          "geracao": 1,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.3501333333333344
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2223,
+          "estado": "jogando"
+        },
+        {
+          "x": 8.005597488756862,
+          "y": 0.2776915286625306,
+          "z": 7.948567019784985,
+          "vx": 0,
+          "vy": -0.018399575478927344,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 30,
+          "tempo": 0.5668333333333333,
+          "geracao": 2,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.0666333333333326
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2339,
+          "estado": "jogando"
+        },
+        {
+          "x": 8.007650434358029,
+          "y": 0.2733395817311808,
+          "z": 7.92970336233538,
+          "vx": 0,
+          "vy": -0.01839982445391647,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 39,
+          "tempo": 0.7500999999999995,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06673333333333298
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2444,
+          "estado": "jogando"
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "caminhada": {
+          "x": 7.951813989669902,
+          "y": 0.29199017864903604,
+          "z": 5.873100896251046,
+          "vx": -0.0015696871528977825,
+          "vy": 0,
+          "vz": -1.499999178693856,
+          "grounded": true,
+          "quadros": 225,
+          "tempo": 3.8511999999999977,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.167833333333334
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente"],
+          "acao": "andar_frente",
+          "modelo": true,
+          "desenhos": 5414,
+          "estado": "jogando"
+        },
+        "corrida": {
+          "x": 7.938856642209564,
+          "y": 0.24396055849011275,
+          "z": 5.064711201871292,
+          "vx": -0.00042850648204444727,
+          "vy": 0.3486561424505662,
+          "vz": -3.399999972997381,
+          "grounded": true,
+          "quadros": 244,
+          "tempo": 4.167999999999998,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.484633333333333
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "correr_frente",
+          "modelo": true,
+          "desenhos": 5623,
+          "estado": "jogando"
+        },
+        "alto": {
+          "x": 7.937951036520747,
+          "y": 0.563976721920904,
+          "z": 5.008876586329242,
+          "vx": 0,
+          "vy": 6,
+          "vz": 0,
+          "grounded": false,
+          "quadros": 248,
+          "tempo": 4.2347,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.5513333333333335
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "pulo_no_ar",
+          "modelo": true,
+          "desenhos": 5667,
+          "estado": "jogando"
+        },
+        "pouso": {
+          "x": 7.93749093807763,
+          "y": 0.24702781752191624,
+          "z": 5.009364137646004,
+          "vx": 0,
+          "vy": -1.0092791455573948,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 286,
+          "tempo": 4.868300000000004,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.184933333333337
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 6085,
+          "estado": "jogando"
+        },
+        "curva": {
+          "x": 8.119108406945562,
+          "y": 0.26331197834247966,
+          "z": 5.045884174658951,
+          "vx": 1.4998633713865261,
+          "vy": 0,
+          "vz": 0.020245176537731478,
+          "grounded": true,
+          "quadros": 295,
+          "tempo": 5.018400000000005,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.335033333333338
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
+          "acao": "andar_frente",
+          "modelo": true,
+          "desenhos": 6184,
+          "estado": "jogando"
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 8.007650434358029,
+          "y": 0.2733395817311808,
+          "z": 7.92970336233538,
+          "vx": 0,
+          "vy": -0.01839982445391647,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 39,
+          "tempo": 0.7500999999999995,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06673333333333298
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2444,
+          "estado": "pausado"
+        },
+        "depois": {
+          "x": 8.007650434358029,
+          "y": 0.2733395817311808,
+          "z": 7.92970336233538,
+          "vx": 0,
+          "vy": -0.01839982445391647,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 39,
+          "tempo": 0.7500999999999995,
+          "geracao": 3,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 2,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.06673333333333298
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 2455,
+          "estado": "pausado"
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 8.001889897504284,
+          "y": 0.28555108439803495,
+          "z": 7.982634523235591,
+          "vx": 0,
+          "vy": -0.01756428994456488,
+          "vz": 0,
+          "grounded": true,
+          "quadros": 12,
+          "tempo": 0.21683333333333332,
+          "geracao": 1,
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
+          "partida": 3,
+          "corpo": {
+            "kind": 2,
+            "minX": -0.41046342743154957,
+            "maxX": 0.41046342743154957,
+            "minY": 0,
+            "maxY": 1.16,
+            "minZ": -0.2573068607759798,
+            "maxZ": 0.2573068607759798,
+            "r": 0.41046342743154957,
+            "rampAxis": 2,
+            "rampY0": 0,
+            "rampY1": 1.16
+          },
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 39
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.21683333333333332
+            }
+          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
+          "acao": "parado_relaxado",
+          "modelo": true,
+          "desenhos": 7345,
+          "estado": "jogando"
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": [],
+      "rede": [
+        "http://127.0.0.1:5413/api/studio/play/11111111-1111-4111-8111-111111111114?reload=0",
+        "http://127.0.0.1:5413/api/studio/play/11111111-1111-4111-8111-111111111114?reload=0"
+      ],
+      "persistido": "encerra-conforme-contrato-do-avancado"
+    }
+  ],
+  "nota": "Avançado real via Blockly/IR, partida gerenciada e avatar do catálogo. Posição do início compilado registrada; percurso medido começa num trecho parcial conhecido da ponte, sem simular travessia por teletransporte. Evento pagehide persistido sintético verifica contrato; não é navegação real de bfcache. API de publicação local controlada; staging/conta real e dispositivos físicos não foram validados. Não aprova IK/direção de arte."
+}

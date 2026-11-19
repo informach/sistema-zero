@@ -683,6 +683,54 @@ describe('formas ponto a ponto', () => {
 })
 
 describe('guardar conjunto', () => {
+  it('guardar modelo conserva a caixa inteira do objeto girado e suas propriedades', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'casa', frameSize: 16 })
+    await abrirMapa({
+      level: 'create',
+      prepare: (base) => {
+        const map = comObjetos(base)
+        return addMapObject(
+          map,
+          map.layers.at(-1)!.id,
+          createMapObject({
+            name: 'casa-girada',
+            shape: 'art',
+            art: { assetId: sprite.id },
+            x: 32,
+            y: 16,
+            width: 32,
+            height: 16,
+            rotation: 90,
+            flipX: true,
+            properties: { moradores: 3 },
+          }),
+        )
+      },
+      extra: async (seed) => {
+        await seed.getState().createPrepared(sprite)
+      },
+    })
+    await ativarObjetos()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.pickObject('casa-girada') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.guardarModeloDoObjeto }))
+    await screen.findByText(COPY.scene.conjuntoGuardado(COPY.scene.nomeDoModelo('casa-girada')))
+    const gallery = createGalleryStore()
+    await gallery.getState().load()
+    const set = gallery.getState().assets.find((asset) => asset.kind === 'map-set')
+    if (set?.kind !== 'map-set') throw new Error('Modelo esperado')
+    const layer = set.map.layers.find(isObjectLayer)!
+    const object = layer.objects[0]!
+    const { objectBounds } = await import('../../tiles/objectGeometry')
+    const { effectiveLayer } = await import('../../core/project')
+    const box = objectBounds(object),
+      offset = effectiveLayer(set.map, layer)
+    expect(box.x + offset.offsetX).toBeGreaterThanOrEqual(-1e-7)
+    expect(box.y + offset.offsetY).toBeGreaterThanOrEqual(-1e-7)
+    expect(box.x + box.width + offset.offsetX).toBeLessThanOrEqual(set.map.cols * 16 + 1e-7)
+    expect(box.y + box.height + offset.offsetY).toBeLessThanOrEqual(set.map.rows * 16 + 1e-7)
+    expect(object).toMatchObject({ rotation: 90, flipX: true, properties: { moradores: 3 } })
+    expect(desfazer().disabled).toBe(true)
+  })
   it('diz que guardou e o conjunto aparece na galeria', async () => {
     await abrirMapa({
       level: 'advanced',
@@ -930,6 +978,129 @@ describe('inserção e colagem no espaço da camada', () => {
     await ativarObjetos()
     expect(screen.getByText(COPY.scene.desenhosDaBiblioteca)).toBeTruthy()
   })
+})
+
+describe('pincel de espalhar objetos', () => {
+  it('só aparece em Criar mais e o teclado entra e sai pela ferramenta normal', async () => {
+    await abrirMapa({ level: 'start', prepare: comObjetos })
+    await ativarObjetos()
+    expect(screen.queryByRole('button', { name: COPY.scene.scatterObjects }) === null).toBe(true)
+    fireEvent.keyDown(window, { key: 's' })
+    expect(ativa(COPY.tiles.objectSelect)).toBe(true)
+    fireEvent.change(nivel(), { target: { value: 'create' } })
+    fireEvent.keyDown(window, { key: 's' })
+    expect(ativa(COPY.scene.scatterObjects)).toBe(true)
+    expect(screen.getByText(COPY.scene.scatterChoose)).toBeTruthy()
+    fireEvent.keyDown(window, { key: 'v' })
+    expect(ativa(COPY.tiles.objectSelect)).toBe(true)
+    expect(desfazer().disabled).toBe(true)
+  })
+  async function prepareScatter() {
+    const sprite = createPixelSpriteAsset({ name: 'arvore-modelo', frameSize: 16 })
+    const { addMapObject, createMapObject } = await import('../../tiles/mapObjects')
+    const view = await abrirMapa({
+      level: 'create',
+      prepare: (base) => {
+        const map = comObjetos(base)
+        return addMapObject(
+          map,
+          map.layers.at(-1)!.id,
+          createMapObject({
+            name: 'arvore-modelo',
+            shape: 'art',
+            art: { assetId: sprite.id },
+            x: 0,
+            y: 0,
+            width: 8,
+            height: 8,
+            properties: { valor: 7 },
+          }),
+        )
+      },
+      extra: async (seed) => {
+        await seed.getState().createPrepared(sprite)
+      },
+    })
+    await ativarObjetos()
+    const svg = palcoDeObjetos(view.container),
+      paper = svg.parentElement
+    if (!paper?.parentElement) throw new Error('Palco esperado')
+    fixarCaixa(paper.parentElement, COLS * 16 * SCALE, ROWS * 16 * SCALE)
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.pickObject('arvore-modelo') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.scatterObjects }))
+    fireEvent.change(screen.getByRole('slider', { name: /^Densidade/ }), {
+      target: { value: '100' },
+    })
+    fireEvent.change(screen.getByRole('slider', { name: /Distância entre centros:/ }), {
+      target: { value: '0' },
+    })
+    return { ...view, canvas: grade() }
+  }
+  it('prévia não grava; o gesto interpolado grava exatamente os objetos mostrados e um desfazer', async () => {
+    const { container, canvas } = await prepareScatter()
+    const baseline = objetos(await mapaDoDisco())
+    fireEvent.pointerDown(canvas, { ...at(32, 32), button: 0 })
+    fireEvent.pointerMove(document, at(80, 32))
+    const preview = [...container.querySelectorAll('[data-pin-scatter-preview]')]
+    expect(preview.length).toBeGreaterThan(5)
+    expect(preview.every((element) => element.querySelector('text') === null)).toBe(true)
+    const ids = preview.map((g) => {
+      const id = g.getAttribute('data-pin-scatter-preview')
+      if (!id) throw new Error('Identidade da prévia esperada')
+      return id
+    })
+    expect(objetos(await mapaDoDisco())).toEqual(baseline)
+    expect(desfazer().disabled).toBe(true)
+    fireEvent.pointerUp(document, at(80, 32, 2))
+    expect(container.querySelectorAll('[data-pin-scatter-preview]').length).toBe(preview.length)
+    fireEvent.pointerUp(document, at(80, 32))
+    await noDisco(async () =>
+      expect(objetos(await mapaDoDisco())).toHaveLength(baseline.length + preview.length),
+    )
+    const final = objetos(await mapaDoDisco())
+    expect(final.slice(1).map((object) => object.id)).toEqual(ids)
+    for (const object of final) expect(object.properties.valor).toBe(7)
+    expect(container.querySelectorAll('[data-pin-scatter-preview]').length).toBe(0)
+    fireEvent.click(desfazer())
+    await noDisco(async () => expect(objetos(await mapaDoDisco())).toEqual(baseline))
+    expect(desfazer().disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await noDisco(async () => expect(objetos(await mapaDoDisco())).toEqual(final))
+  })
+  for (const way of [
+    'escape',
+    'pointercancel',
+    'capture',
+    'blur',
+    'outside',
+    'settings',
+    'tool',
+    'source',
+  ])
+    it(`cancelar por ${way} não confirma a prévia`, async () => {
+      const { container, canvas } = await prepareScatter()
+      fireEvent.pointerDown(canvas, { ...at(32, 32), button: 0 })
+      expect(container.querySelectorAll('[data-pin-scatter-preview]').length).toBeGreaterThan(0)
+      if (way === 'escape') fireEvent.keyDown(document, { key: 'Escape' })
+      if (way === 'pointercancel') fireEvent.pointerCancel(document, at(32, 32))
+      if (way === 'capture') fireEvent.lostPointerCapture(canvas, at(32, 32))
+      if (way === 'blur') fireEvent.blur(window)
+      if (way === 'settings')
+        fireEvent.change(screen.getByRole('slider', { name: /Distância entre centros:/ }), {
+          target: { value: '4' },
+        })
+      if (way === 'tool')
+        fireEvent.click(screen.getByRole('button', { name: COPY.tiles.objectSelect }))
+      if (way === 'source')
+        fireEvent.click(
+          screen.getByRole('button', { name: COPY.tiles.pickObject('arvore-modelo') }),
+        )
+      fireEvent.pointerUp(document, way === 'outside' ? at(200, 32) : at(32, 32))
+      await espera()
+      expect(container.querySelectorAll('[data-pin-scatter-preview]').length).toBe(0)
+      expect(objetos(await mapaDoDisco())).toHaveLength(1)
+      expect(desfazer().disabled).toBe(true)
+    })
 })
 
 it('biblioteca usa o tamanho inteiro do conjunto para posicioná-lo dentro do mapa', async () => {

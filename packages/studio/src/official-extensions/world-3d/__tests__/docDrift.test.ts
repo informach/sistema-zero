@@ -8,6 +8,7 @@ import {
 } from '../../__tests__/paletteDrift'
 import { world3DPromptContext } from '../ai'
 import { world3DBlocks, world3DToolboxCategory } from '../blocks'
+import { world3DDocs } from '../docs'
 import { world3DManifest } from '../manifest'
 import { WORLD_THREE_D_PALETTE } from '../palette'
 import { world3DRuntime } from '../runtime'
@@ -46,7 +47,7 @@ function runtimeMethods(): string[] {
 
 describe('Mundo 3D — doc × blocos (docDrift)', () => {
   it('cada sub-categoria (chip) da toolbox aparece nos docs do aluno pelo emoji', () => {
-    const docs = world3DManifest.docs
+    const docs = world3DDocs
     const missing = subcatNames(world3DToolboxCategory).filter((name) => {
       const emoji = leadEmoji(name)
       return emoji && !docs.includes(emoji)
@@ -55,7 +56,7 @@ describe('Mundo 3D — doc × blocos (docDrift)', () => {
   })
 
   it('o manual tem uma seção por família, na MESMA ordem da árvore, e cada seção de verdade', () => {
-    const docs = world3DManifest.docs
+    const docs = world3DDocs
     const at = WORLD_THREE_D_PALETTE.map((family) => docs.indexOf(`### ${family.name}\n`))
     expect(at.filter((index) => index < 0)).toEqual([])
     expect([...at].sort((a, b) => a - b)).toEqual(at)
@@ -69,7 +70,7 @@ describe('Mundo 3D — doc × blocos (docDrift)', () => {
 
   it('marcas e estúdios de fora só aparecem em "Créditos e inspirações", nunca nos blocos', () => {
     const brands = /folio|bruno simon|coastal|vocation vista|profissiona|animal crossing/i
-    const docs = world3DManifest.docs
+    const docs = world3DDocs
     const credits = docs.indexOf('### Créditos e inspirações')
     expect(credits).toBeGreaterThan(0)
     expect(docs.slice(0, credits)).not.toMatch(brands)
@@ -80,8 +81,8 @@ describe('Mundo 3D — doc × blocos (docDrift)', () => {
 
   it('o som é carregado em ⚙️ Ao iniciar (não em 🧩 Meus moldes) no manual e na IA', () => {
     // A área é citada (o contrato das áreas exige), mas para dizer que o mundo NÃO a usa.
-    expect(world3DManifest.docs).toContain('**🧩 Meus moldes** não é usada pelo Mundo 3D')
-    expect(world3DManifest.docs).not.toContain('Meus moldes** ficam as receitas')
+    expect(world3DDocs).toContain('**🧩 Meus moldes** não é usada pelo Mundo 3D')
+    expect(world3DDocs).not.toContain('Meus moldes** ficam as receitas')
     expect(world3DPromptContext).toContain(
       'loadSound é preparação de\npartida e vai em ⚙️ Ao iniciar',
     )
@@ -102,8 +103,8 @@ describe('Mundo 3D — doc × blocos (docDrift)', () => {
   })
 
   it('os textos existem e cabem nos tetos do Zod', () => {
-    expect(world3DManifest.docs.length).toBeGreaterThan(1000)
-    expect(world3DManifest.docs.length).toBeLessThan(48_000)
+    expect(world3DDocs.length).toBeGreaterThan(1000)
+    expect(world3DDocs.length).toBeLessThan(48_000)
     expect(world3DPromptContext.length).toBeGreaterThan(500)
     expect(world3DPromptContext.length).toBeLessThan(36_000)
     expect((world3DManifest.description ?? '').length).toBeLessThanOrEqual(500)

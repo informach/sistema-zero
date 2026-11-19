@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+src\tiles\cellAccess.test.ts:
+(pass) acesso cru às células do mapa > a varredura leu arquivos de verdade
+(pass) acesso cru às células do mapa > todo arquivo que lê células está na lista dos conferidos
+(pass) acesso cru às células do mapa > a lista não guarda arquivo que já não lê células
+(pass) acesso cru às células do mapa > a varredura pega o acesso sem colchete e a máscara escrita na mão
+(pass) acesso cru às células do mapa > não há pendência: quem decodifica a célula na mão é corrigido, não listado
+(pass) acesso cru às células do mapa > quem lê o índice da peça importa o cell.ts
+
+src\tiles\objectTemplate.test.ts:
+(pass) modelo conserva a geometria inteira com giros livres, propriedades e animação [16.00ms]
+(pass) offsets de grupo e camada entram uma vez e outras artes e células não entram no modelo
+(pass) identidade ausente, conjunto aninhado e modelo além do teto são recusados sem corte
+(pass) a versão de arte guardada continua autocontida no modelo e chega à cena [125.00ms]
+
+src\tiles\sets.test.ts:
+(pass) createMapSet > recorta as células do retângulo e os objetos que começam dentro dele, com ids novos
+(pass) createMapSet > objeto fora do retângulo fica de fora, e a camada de objetos vazia não entra
+(pass) createMapSet > conserva os bits de giro da célula e o que sai do mapa vira vazio
+(pass) createMapSet > 🚨 recusa guardar um pedaço que já tem uma instância de conjunto (sem conjunto dentro de conjunto) [16.00ms]
+(pass) createMapSet > o conjunto criado passa pelo sanitizador sem perder nada
+(pass) placeMapSet > põe UM objeto que aponta para o conjunto, do tamanho dele, sem copiar células
+(pass) placeMapSet > camada que não é de objetos (ou não existe): o mesmo mapa
+(pass) detachMapSet > troca a instância por cópias independentes das camadas, na ordem, antes da camada dona
+(pass) detachMapSet > 🚨 não escreve chave no valor padrão: solto na origem, o mapa continua no formato antigo
+(pass) detachMapSet > fora da origem só entra o deslocamento que difere de zero
+(pass) detachMapSet > opacidade e deslocamento da camada dona passam para as camadas soltas
+(pass) detachMapSet > instância espelhada: as células viram e o objeto de dentro ganha o espelho
+(pass) detachMapSet > instância girada 90 graus: o conjunto troca colunas por linhas e os objetos giram junto
+(pass) detachMapSet > 🚨 recusa (o MESMO mapa) em vez de cortar: conjunto maior que o mapa
+(pass) detachMapSet > 🚨 girado, o que conta é o tamanho depois do giro (cabe deitado, não cabe em pé)
+(pass) detachMapSet > recusa quando passa do teto de camadas que o editor deixa criar
+(pass) detachMapSet > recusa instância esticada, girada fora de 90 graus, de outro conjunto, ou em camada trancada
+(pass) recorte visual de conjuntos com deslocamento > peças desalinhadas fora do recorte não impedem guardar o pedaço
+(pass) recorte visual de conjuntos com deslocamento > copia as peças visíveis e compensa também o deslocamento herdado sem perder grupos
+(pass) recorte visual de conjuntos com deslocamento > recusa meia peça explicitamente e não altera o mapa
+(pass) recorte de objetos conserva deslocamentos fracionários e a posição visual do grupo [15.00ms]
+
+ 31 pass
+ 0 fail
+ 312 expect() calls
+Ran 31 tests across 3 files. [1209.00ms]

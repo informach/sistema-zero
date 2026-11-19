@@ -38,11 +38,13 @@ import { requestPythonStartingExtension } from '../python/extensions/startingExt
 import {
   listAllProjects,
   loadProjectSummariesByIds,
+  type ProjectSummary,
+} from '../state/projectListStorage'
+import {
   PROJECT_CHANGED_EVENT,
   PROJECT_THUMB_UPDATED_EVENT,
   type ProjectChangedDetail,
-  type ProjectSummary,
-} from '../state/persistence'
+} from '../state/projectPersistenceEvents'
 import { captureProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { type StudioHostChromeStatus, useStudioHostChrome } from '../studio/host-chrome'

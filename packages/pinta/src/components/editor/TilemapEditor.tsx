@@ -15,6 +15,7 @@ import { Panel } from '../ui/Panel'
 import { MapLibraryPanel } from './MapLibraryPanel'
 import { MapMinimapPanel } from './MapMinimapPanel'
 import { MapObjectPanel } from './MapObjectPanel'
+import { MapObjectScatterPanel } from './MapObjectScatterPanel'
 import { MapObjectSelectionPanel } from './MapObjectSelectionPanel'
 import { MapPlaytestDialog } from './MapPlaytestDialog'
 import { MapStage } from './MapStage'
@@ -107,6 +108,14 @@ function TilemapWorkspace({
 
   const objectPanel = activeObjectLayer ? (
     <>
+      {c.tool === 'object-scatter' ? (
+        <MapObjectScatterPanel
+          source={c.objectScatterSource}
+          settings={c.objectScatterSettings}
+          onChange={c.setObjectScatterSettings}
+          message={c.objectScatter.message}
+        />
+      ) : null}
       <MapObjectPanel
         layer={activeObjectLayer}
         selectedObjectId={c.selectedObjectId}

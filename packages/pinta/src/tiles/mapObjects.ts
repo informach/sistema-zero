@@ -157,10 +157,28 @@ export function addMapObject(
   layerId: string,
   object: TilemapObject,
 ): TilemapAsset {
+  return addMapObjects(tilemap, layerId, [object])
+}
+
+/** Insere o lote inteiro ou nada, com as mesmas guardas da inserção única. */
+export function addMapObjects(
+  tilemap: TilemapAsset,
+  layerId: string,
+  objects: readonly TilemapObject[],
+): TilemapAsset {
+  if (objects.length === 0) return tilemap
   return withObjectLayer(tilemap, layerId, (layer) => {
-    if (layer.objects.length >= PINTA_LIMITS.maxTilemapObjects) return layer
-    if (layer.objects.some((existing) => existing.id === object.id)) return layer
-    return { ...layer, objects: [...layer.objects, createMapObject(object)] }
+    if (layer.objects.length + objects.length > PINTA_LIMITS.maxTilemapObjects) return layer
+    const ids = new Set(layer.objects.map((object) => object.id))
+    const added: TilemapObject[] = []
+    for (const object of objects) {
+      if (ids.has(object.id)) return layer
+      const normalized = createMapObject(object)
+      if (ids.has(normalized.id)) return layer
+      ids.add(normalized.id)
+      added.push(normalized)
+    }
+    return { ...layer, objects: [...layer.objects, ...added] }
   })
 }
 
