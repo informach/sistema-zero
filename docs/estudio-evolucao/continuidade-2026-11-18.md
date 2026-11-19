@@ -245,3 +245,24 @@ O primeiro arranjo de teardown ainda falhou, e foi substituído: não fechar o
 último contexto WebKit Windows antes de terminar sua árvore pelo BrowserServer.
 Esse processo pertence exclusivamente ao laboratório. O relatório preserva
 as tentativas reprovadas e não afirma correção do WebKit nativo.
+
+
+## Retomada após CI 44402766082
+
+A qualificação do SHA 184b32782 concluiu com falhas em dois gates. Contratos
+Windows reprovaram gzip inicial (120.603 > 120.000); não foi falha do teardown
+WebKit, que passou. A correção 594cb6c3c adia somente a promoção/limpeza das
+cópias síncronas, mantendo a captura de saída síncrona no coordenador existente.
+Gzip local final 119.713, mesmos limites; 376 testes/2075 asserções e typecheck
+aprovados. A guarda do grafo também passou (31 asserções). Relatório específico:
+docs/qa/2026-11-18-studio-exit-recovery-loading.md.
+
+A shard Chromium Linux 1 parou no gate Pinta touch ANTES da suíte principal.
+O trace provou edição/exportação v5 antes de sair, seguida de formato v4 após
+Voltar/reload/reabrir. A repetição local passou, mas isso não elimina o achado.
+Não editar a frente ativa nem esconder o teste com espera; a pendência está em
+docs/qa/2026-11-18-studio-pinta-reopen-regression.md. Os gates agora executam
+independentemente: a suíte principal primeiro, Pinta depois mesmo em falha.
+
+R1/R2 e as etapas profissionais permanecem abertas. Continuar implementação,
+sem tratar o checkpoint ou a aprovação parcial da CI como conclusão da missão.
