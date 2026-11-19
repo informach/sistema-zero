@@ -1325,7 +1325,25 @@ const MaterialsBlockSchema = t.Object({
   ),
 })
 
+const CommercePresentation = {
+  title: t.Optional(t.String({ minLength: 1, maxLength: 160 })),
+  description: t.Optional(t.String({ maxLength: 600 })),
+  buttonLabel: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
+}
+const GiftBlockSchema = t.Object({
+  kind: t.Literal('gift'),
+  campaignCode: t.String({ pattern: '^[a-z0-9-]{4,32}$' }),
+  ...CommercePresentation,
+})
+const PurchaseBlockSchema = t.Object({
+  kind: t.Literal('purchase'),
+  offerRef: t.String({ pattern: '^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$' }),
+  ...CommercePresentation,
+})
+
 export const LessonBlockContentSchema = t.Union([
+  GiftBlockSchema,
+  PurchaseBlockSchema,
   InteractiveBlockSchema,
   RichTextBlockSchema,
   DialogueBlockSchema,

@@ -1271,6 +1271,15 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
 
 /** Fake do gateway do members: grants e master configuráveis por usuário. */
 export class FakeMembersGateway implements MembersGateway {
+  publicIdentities = new Map<string, { publicNickname: string; publicProfileEnabled: boolean }>()
+  async getPublicProfileIdentities(ids: string[]) {
+    return new Map(
+      ids.flatMap((id) => {
+        const identity = this.publicIdentities.get(id)
+        return identity ? [[id, identity] as const] : []
+      }),
+    )
+  }
   adultCapabilities = new Map<string, string[]>()
   adultIdentities = new Map<string, { displayName: string; publicEnabled: boolean }>()
   async getAdultCreatorState(userId: string) {

@@ -11,6 +11,29 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('operações comerciais de membro exigem o BFF assinado; consulta de assinatura é restrita ao funil', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const path of ['/referrals/internal/member-gifts', '/funnel/internal/commerce/pay']) {
+      expect(registry.resolve('POST', path, 'v1')?.route.auth).toMatchObject({
+        required: true,
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      })
+    }
+    expect(registry.resolve('GET', '/subscriptions/subscription-id', 'v1')?.route).toMatchObject({
+      auth: { required: true, strategies: ['hmac'], allowedConsumers: ['funnel'] },
+      upstreamAuth: 'resign',
+    })
+    expect(registry.resolve('GET', '/members/internal/commerce/access', 'v1')?.route).toMatchObject(
+      { auth: { strategies: ['hmac'], allowedConsumers: ['funnel'] } },
+    )
+    expect(registry.resolve('GET', '/members/commerce/access', 'v1')?.route).toMatchObject({
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+  })
   test('publicação de cursos separa leitura staff de aprovação admin e não aceita HMAC de aluno', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

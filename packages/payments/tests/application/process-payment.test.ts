@@ -6,6 +6,8 @@ import {
   CardDataIncompleteError,
   IdempotencyConflictError,
 } from '../../src/domain/payment/payment.errors'
+import { ValidationError } from '../../src/domain/shared/errors'
+import { buildErrorResponse } from '../../src/interfaces/http/error-handler'
 import {
   FakePixGateway,
   InMemoryIdempotencyStore,
@@ -57,6 +59,23 @@ describe('ProcessPaymentService (Pix)', () => {
     expect(view.pix?.copiaECola).toContain('PIX-FAKE')
     expect(repo.byId.size).toBe(1)
     expect(repo.outbox.some((e) => e.eventName === 'payment.created')).toBe(true)
+  })
+  test('sinaliza rejeição sem cobrança apenas antes dos efeitos externos', async () => {
+    const before = await service
+      .execute({ ...baseCommand, method: 'CREDIT_CARD' })
+      .catch((error) => error)
+    expect(
+      buildErrorResponse({ error: before, code: 'UNKNOWN', logger: silentLogger }).body,
+    ).toMatchObject({ paymentCreation: 'not_started', error: { code: 'VALIDATION_ERROR' } })
+    gateway.createPixCharge = async () => {
+      throw new ValidationError('Falha depois do envio')
+    }
+    const after = await service
+      .execute({ ...baseCommand, idempotencyKey: 'idem-after-effect' })
+      .catch((error) => error)
+    expect(
+      buildErrorResponse({ error: after, code: 'UNKNOWN', logger: silentLogger }).body,
+    ).not.toHaveProperty('paymentCreation')
   })
 
   test('Pix com customer → repassa nome/documento normalizado ao gateway (devedor)', async () => {

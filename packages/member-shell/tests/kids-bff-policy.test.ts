@@ -50,3 +50,18 @@ describe('permissões Kids na borda local', () => {
     expect(kidsMayUseBff(child, '/api/creations/pinta/id/upload', 'POST', 'child')).toBe(true)
   })
 })
+
+
+describe('blocos comerciais na área dos pais', () => {
+  const parent = { kind: 'parent', sessionId: 'session', authenticatedAt: 1 } as const
+  const child = { kind: 'student', sessionId: 'session', deviceId: 'device', grantId: 'grant' } as const
+  test.each(['/api/commerce', '/api/commerce/promotions', '/api/commerce/pending'])('%s exige sessão do responsável', (path) => {
+    for (const method of ['GET', 'POST']) {
+      expect(kidsMayUseBff(parent, path, method, 'parent')).toBe(true)
+      expect(kidsMayUseBff(child, path, method, 'child')).toBe(false)
+    }
+  })
+  test('não confunde outro prefixo com uma rota comercial', () => {
+    expect(kidsMayUseBff(parent, '/api/commerce-extra', 'POST', 'parent')).toBe(false)
+  })
+})

@@ -44,6 +44,46 @@ export function createAuthHttpGateway(opts: AuthHttpGatewayOptions): AuthGateway
   }
 
   return {
+    async getPublicStaffNames(ids) {
+      const names = new Map<string, string>()
+      // Auth's staff directory accepts at most 100 accounts per batch.
+      for (let offset = 0; offset < ids.length; offset += 100) {
+        const batch = ids.slice(offset, offset + 100)
+        const body = await post('/auth/internal/staff-directory', batch)
+        if (!Array.isArray(body)) throw new Error('Diretório público de equipe inválido')
+        for (const row of body) {
+          if (
+            row &&
+            typeof row === 'object' &&
+            'id' in row &&
+            typeof row.id === 'string' &&
+            batch.includes(row.id) &&
+            'active' in row &&
+            row.active === true &&
+            'name' in row &&
+            typeof row.name === 'string'
+          ) {
+            const name = row.name.trim().split(/\s+/)[0]
+            if (name) names.set(row.id, name)
+          }
+        }
+      }
+      return names
+    },
+    async getCertificateIdentity(accountId, profileId) {
+      const res = await doFetch(`${base}/auth/internal/profiles/certificate-identity`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ accountId, profileId }),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (res.status === 404) return null
+      if (!res.ok) throw new Error(`auth certificate identity respondeu ${res.status}`)
+      const body = (await res.json()) as Record<string, unknown>
+      if (typeof body.fullName !== 'string' || typeof body.confirmed !== 'boolean')
+        throw new Error('Identidade de certificado inválida')
+      return { fullName: body.fullName, confirmed: body.confirmed }
+    },
     async getAccountIdentities(ids: string[]): Promise<AccountIdentity[]> {
       if (ids.length === 0) return []
       const body = (await post('/auth/internal/users/emails', ids)) as { users?: unknown }
@@ -67,7 +107,13 @@ export function createAuthHttpGateway(opts: AuthHttpGatewayOptions): AuthGateway
       for (const p of body.profiles) {
         if (!p || typeof p !== 'object') continue
         const rec = p as Record<string, unknown>
-        if (typeof rec.id === 'string' && typeof rec.name === 'string') out.set(rec.id, rec.name)
+        if (typeof rec.id === 'string')
+          out.set(
+            rec.id,
+            typeof rec.publicNickname === 'string' && rec.publicNickname.trim()
+              ? rec.publicNickname.trim()
+              : 'Criador(a)',
+          )
       }
       return out
     },
@@ -80,9 +126,11 @@ export function createAuthHttpGateway(opts: AuthHttpGatewayOptions): AuthGateway
       for (const p of body.profiles) {
         if (!p || typeof p !== 'object') continue
         const rec = p as Record<string, unknown>
-        if (typeof rec.id !== 'string' || typeof rec.name !== 'string') continue
-        // 1º nome só (menos identificável) — espelha o `resolveDisplayName` do hub.
-        const firstName = rec.name.trim().split(/\s+/)[0] ?? ''
+        if (typeof rec.id !== 'string') continue
+        const firstName =
+          typeof rec.publicNickname === 'string' && rec.publicNickname.trim()
+            ? rec.publicNickname.trim()
+            : 'Criador(a)'
         out.set(rec.id, { firstName, public: rec.publicProfileEnabled === true })
       }
       return out

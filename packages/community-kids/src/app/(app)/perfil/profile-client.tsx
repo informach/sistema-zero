@@ -193,14 +193,13 @@ function IdentityCard({
 
 function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => void }) {
   const router = useRouter()
-  const [name, setName] = useState(profile.name)
   const [whatsapp, setWhatsapp] = useState(profile.whatsapp ?? '')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const parsed = ProfileSchema.safeParse({ name, whatsapp })
+    const parsed = ProfileSchema.pick({ whatsapp: true }).safeParse({ whatsapp })
     if (!parsed.success) {
       const next: Record<string, string> = {}
       for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message
@@ -212,7 +211,6 @@ function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => 
     try {
       // Telefone vazio → `null` (remove); a borda do auth aceita ambos.
       await apiSend(`/api/profiles/${profile.id}`, 'PATCH', {
-        name: parsed.data.name,
         whatsapp: parsed.data.whatsapp.length > 0 ? parsed.data.whatsapp : null,
       })
       toast.success('Perfil atualizado!')
@@ -227,15 +225,13 @@ function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => 
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-      <Field label="Nome" htmlFor="profileName" error={errors.name}>
-        <Input
-          id="profileName"
-          value={name}
-          maxLength={60}
-          onChange={(e) => setName(e.target.value)}
-          aria-invalid={Boolean(errors.name)}
-        />
-      </Field>
+      <div className="rounded-2xl border border-border p-4 text-sm">
+        <p className="font-semibold">Apelido público: {profile.name}</p>
+        <p className="mt-1 text-muted-foreground">
+          Seu responsável pode mudar seu apelido e confirmar seu nome completo na área dos pais, em
+          Família.
+        </p>
+      </div>
       <Field label="Telefone" htmlFor="profileWhatsapp" error={errors.whatsapp}>
         <Input
           id="profileWhatsapp"

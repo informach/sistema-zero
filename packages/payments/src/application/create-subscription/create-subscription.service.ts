@@ -15,6 +15,7 @@ import { IdempotencyKey } from '../../domain/value-objects/idempotency-key'
 import { Money } from '../../domain/value-objects/money'
 import type { Logger } from '../../infrastructure/logging/logger'
 import { type SubscriptionView, toSubscriptionView } from '../mappers/subscription-view'
+import { markPaymentNotCreated } from '../payment-creation-outcome'
 import { buildCyclePayment } from '../subscription/cycle-payment'
 import type { CreateSubscriptionCommand } from './create-subscription.command'
 import type { FirstChargeSetupService } from './first-charge-setup.service'
@@ -116,6 +117,7 @@ export class CreateSubscriptionService {
         })
       } else {
         await this.idempotency.release(command.consumerId, command.idempotencyKey, reservationId)
+        markPaymentNotCreated(error)
       }
       throw error
     }

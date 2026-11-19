@@ -1,3 +1,4 @@
+import { PendingPurchases } from '@sistemazero/member-shell/components/commerce/pending-purchases'
 import { PageBand, PageBody } from '@/components/community/page'
 import { PurchasesClient, SubscriptionsSection } from './purchases-client'
 
@@ -17,6 +18,7 @@ export default function PurchasesPage() {
         </div>
       </PageBand>
       <PageBody className="gap-10">
+        <PendingPurchases />
         <PurchasesClient />
       </PageBody>
     </>

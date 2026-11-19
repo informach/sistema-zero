@@ -24,6 +24,7 @@ export interface CreateProfileCommand {
    */
   privileged?: boolean
   name: string
+  publicNickname?: string
   avatarUrl?: string | null
   whatsapp?: string | null
   /**
@@ -93,6 +94,7 @@ export class CreateProfileService {
       id: this.newId(),
       accountUserId: cmd.accountUserId,
       name: cmd.name,
+      publicNickname: cmd.publicNickname,
       avatarUrl: cmd.avatarUrl,
       whatsapp: cmd.whatsapp,
       birthDate: cmd.birthDate,
@@ -117,6 +119,7 @@ export class CreateProfileService {
       .update(
         JSON.stringify({
           name: profile.name,
+          ...(profile.publicNickname ? { publicNickname: profile.publicNickname } : {}),
           avatarUrl: profile.avatarUrl,
           whatsapp: profile.whatsapp,
           birthDate: profile.birthDate,

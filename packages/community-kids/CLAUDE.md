@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Apelido no Arquipélago (full review da Aula 7, 19/11/2026)
+
+`activeProfile.name` contém o apelido público completo, não o nome civil. A página do
+Arquipélago transmite esse valor inteiro em `perfil.primeiroNome` (nome histórico do contrato);
+não cortar no primeiro espaço. Nome completo privado é reservado ao responsável e certificado.
+
+
+
 ## Presente Kids: 5 a 17 anos (13/11/2026)
 
 O cartão "Seja um embaixador" diz "família com criança de 5 a 17 anos" e o cartão de divulgação

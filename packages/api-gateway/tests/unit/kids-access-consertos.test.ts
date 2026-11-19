@@ -144,7 +144,7 @@ describe('identidade do aluno sem a ficha do responsável', () => {
         role: 'customer',
         status: 'active',
         kids: student,
-        pfl: { accountId: 'conta-1', name: 'Ana' },
+        pfl: { accountId: 'conta-1', name: 'Ana', nickname: 'Ana' },
       }),
     )
     expect(user).toMatchObject({

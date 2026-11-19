@@ -1,0 +1,2 @@
+ALTER TABLE "members"."cenario_blobs" ADD COLUMN "tipo_do_conteudo" varchar(80);--> statement-breakpoint
+ALTER TABLE "members"."cenario_blobs" ADD CONSTRAINT "cenario_blobs_conteudo_check" CHECK ("members"."cenario_blobs"."tipo_do_conteudo" is null or ("members"."cenario_blobs"."tipo" = 'modelo' and "members"."cenario_blobs"."tipo_do_conteudo" = 'model/gltf-binary') or ("members"."cenario_blobs"."tipo" in ('miniatura', 'capa') and "members"."cenario_blobs"."tipo_do_conteudo" in ('image/webp', 'image/png')));

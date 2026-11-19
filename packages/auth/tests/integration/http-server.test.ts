@@ -1623,7 +1623,8 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       items: [
         {
           id: profileId,
-          name: 'Miguel',
+          name: 'Criador(a)',
+          fullName: 'Miguel',
           avatarUrl: 'https://cdn.example/miguel.webp',
           birthDate: '2016-03-09',
           accountUserId: accountId,
@@ -1651,7 +1652,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     expect((await app.handle(post(path, { accountId, profileId }))).status).toBe(401)
     expect(await (await app.handle(post(path, { accountId, profileId }, headers))).json()).toEqual({
       valid: true,
-      name: 'Alice',
+      name: 'Criador(a)',
     })
     expect(
       await (await app.handle(post(path, { accountId: otherId, profileId }, headers))).json(),
@@ -1696,7 +1697,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
         {
           profileId,
           accountId,
-          name: 'Alice',
+          name: 'Criador(a)',
           accountName: 'Ana Souza',
           accountEmail: 'recados@example.com',
         },
@@ -1742,11 +1743,11 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     )
     expect(res.status).toBe(200)
     const json = (await res.json()) as {
-      items: { id: string; name: string }[]
+      items: { id: string; name: string; fullName: string }[]
       total: number
     }
     // Ordenação estável por nome asc: Alice antes de Bento; só os da família.
-    expect(json.items.map((i) => [i.id, i.name])).toEqual([
+    expect(json.items.map((i) => [i.id, i.fullName])).toEqual([
       [alice, 'Alice'],
       [bento, 'Bento'],
     ])
@@ -1795,15 +1796,15 @@ describe('Auth admin routes (/auth/admin/users)', () => {
 
     const page1 = (await (
       await app.handle(getReq('/auth/admin/profiles?limit=2&offset=0', actorHeaders('staff')))
-    ).json()) as { items: { name: string }[]; total: number }
+    ).json()) as { items: { name: string; fullName: string }[]; total: number }
     expect(page1.total).toBe(3) // Duda (archived) fica fora do total também
-    expect(page1.items.map((i) => i.name)).toEqual(['Ana', 'Bruno'])
+    expect(page1.items.map((i) => i.fullName)).toEqual(['Ana', 'Bruno'])
 
     const page2 = (await (
       await app.handle(getReq('/auth/admin/profiles?limit=2&offset=2', actorHeaders('staff')))
-    ).json()) as { items: { name: string }[]; total: number }
+    ).json()) as { items: { name: string; fullName: string }[]; total: number }
     expect(page2.total).toBe(3)
-    expect(page2.items.map((i) => i.name)).toEqual(['Caio'])
+    expect(page2.items.map((i) => i.fullName)).toEqual(['Caio'])
   })
 
   test(':id que não é uuid → 400 na borda (não 500 do banco)', async () => {
@@ -2216,12 +2217,82 @@ describe('Auth — perfis (estilo Netflix)', () => {
     id: string
     admissionState: 'pending' | 'ready'
     name: string
+    fullName: string
     avatarUrl: string | null
     whatsapp: string | null
     birthDate: string | null
     publicProfileEnabled: boolean
     sortOrder: number
   }
+
+  test('identidade: apelido público separado, certificado privado com ownership e criança sem edição', async () => {
+    const { app, allowance } = buildProfilesApp()
+    allowance.maxProfiles = 1
+    const response = await app.handle(
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        birthDate: '2016-05-10',
+        name: 'Maria Silva Santos',
+        publicNickname: 'Fada Azul',
+      }),
+    )
+    expect(response.status).toBe(201)
+    const { profile } = (await response.json()) as {
+      profile: Profile & { identityConfirmed: boolean }
+    }
+    expect(profile).toMatchObject({
+      name: 'Fada Azul',
+      fullName: 'Maria Silva Santos',
+      identityConfirmed: true,
+    })
+    const privatePath = '/auth/internal/profiles/certificate-identity'
+    const body = { accountId: ACCOUNT, profileId: profile.id }
+    expect((await app.handle(req('POST', privatePath, {}, body))).status).toBe(401)
+    const privateRes = await app.handle(
+      req('POST', privatePath, { 'x-internal-token': INTERNAL_TOKEN }, body),
+    )
+    expect(privateRes.headers.get('cache-control')).toContain('no-store')
+    expect(await privateRes.json()).toEqual({ fullName: 'Maria Silva Santos', confirmed: true })
+    expect(
+      (
+        await app.handle(
+          req(
+            'POST',
+            privatePath,
+            { 'x-internal-token': INTERNAL_TOKEN },
+            { ...body, accountId: OTHER },
+          ),
+        )
+      ).status,
+    ).toBe(404)
+    const childList = await app.handle(
+      req('GET', '/auth/profiles', gw(profile.id, { 'x-auth-account-id': ACCOUNT })),
+    )
+    expect(await childList.text()).not.toContain('Maria Silva Santos')
+    const batch = await app.handle(
+      req(
+        'POST',
+        '/auth/internal/profiles/batch',
+        { 'x-internal-token': INTERNAL_TOKEN },
+        { ids: [profile.id] },
+      ),
+    )
+    expect(await batch.text()).not.toContain('Maria Silva Santos')
+    for (const change of [{ name: 'Hackeado' }, { publicNickname: 'Outro apelido' }]) {
+      expect(
+        (
+          await app.handle(
+            req(
+              'PATCH',
+              `/auth/profiles/${profile.id}`,
+              gw(profile.id, { 'x-auth-account-id': ACCOUNT }),
+              change,
+            ),
+          )
+        ).status,
+      ).toBe(403)
+    }
+  })
 
   test('admission: criação exige requestId estável e ausência não grava perfil', async () => {
     const { app, allowance, profilesRepo } = buildProfilesApp()
@@ -2332,7 +2403,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
       const list = (await (await app.handle(req('GET', '/auth/profiles', headers))).json()) as {
         profiles: Profile[]
       }
-      expect(list.profiles.map((p) => p.name)).toEqual(['Sofia', 'Théo', 'Bia'])
+      expect(list.profiles.map((p) => p.fullName)).toEqual(['Sofia', 'Théo', 'Bia'])
       // Não chama o members p/ a equipe (teto resolvido na borda pelo papel).
       expect(allowance.calls).toBe(0)
     })
@@ -2397,7 +2468,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     const list = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
       profiles: Profile[]
     }
-    expect(list.profiles.map((p) => p.name)).toEqual(['Sofia', 'Théo'])
+    expect(list.profiles.map((p) => p.fullName)).toEqual(['Sofia', 'Théo'])
   })
 
   test('data de nascimento obrigatória: criar sem ela e apagá-la dão 400', async () => {
@@ -2452,7 +2523,8 @@ describe('Auth — perfis (estilo Netflix)', () => {
         req('PATCH', `/auth/profiles/${id}`, gw(), { name: 'Sofia Maria', whatsapp: '+55319' }),
       )
     ).json()) as { profile: Profile }
-    expect(patched.profile.name).toBe('Sofia Maria')
+    expect(patched.profile.fullName).toBe('Sofia Maria')
+    expect(patched.profile.name).toBe('Criador(a)')
     expect(patched.profile.whatsapp).toBe('+55319')
 
     // No teto (1) — não cria outro.
@@ -2555,7 +2627,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
           req('PATCH', `/auth/profiles/${id}`, gw(id, profileSession), { name: 'Sofia S' }),
         )
       ).status,
-    ).toBe(200)
+    ).toBe(403)
     // Mas tentar mexer na data de nascimento → 403 (só os pais).
     expect(
       (
@@ -2648,7 +2720,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
         req('GET', `/auth/internal/profiles/${id}/public`, { 'x-internal-token': INTERNAL_TOKEN }),
       )
     ).json()) as { name: string; publicProfileEnabled: boolean }
-    expect(ok).toEqual({ name: 'Sofia', publicProfileEnabled: true })
+    expect(ok).toEqual({ name: 'Criador(a)', publicProfileEnabled: true })
   })
 
   test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {
@@ -2725,7 +2797,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
     const body = (await res.json()) as { tokens: { accessToken: string } }
     const payload = decodeJwt(body.tokens.accessToken)
     expect(payload.sub).toBe(PROFILE_ID)
-    expect(payload.pfl).toEqual({ accountId, name: 'Sofia', pub: false })
+    expect(payload.pfl).toEqual({ accountId, name: 'Criador(a)', pub: false })
   })
 
   test('irmãos (Arquipélago, fase3-12): só na sessão de perfil, só id e nome, sem ela mesma', async () => {
@@ -2753,7 +2825,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
       req('GET', '/auth/profile-session/siblings', gwProfile(PROFILE_ID, accountId)),
     )
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ siblings: [{ id: IRMAO, name: 'Tomás' }] })
+    expect(await res.json()).toEqual({ siblings: [{ id: IRMAO, name: 'Criador(a)' }] })
     // Na sessão da conta (área dos pais) não existe: a grade completa é o /auth/profiles.
     const daConta = await app.handle(
       req('GET', '/auth/profile-session/siblings', gwAccount(accountId)),
@@ -2764,10 +2836,17 @@ describe('Auth — sessão de perfil (PR2)', () => {
   test('sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos', async () => {
     const { app, accountId, profilesRepo } = await setup()
     const ph = gwProfile(PROFILE_ID, accountId)
-    // Auto-serviço da criança: editar o PRÓPRIO perfil é permitido (nome/foto/telefone).
+    // Nome e apelido são exclusivos do responsável; telefone conserva auto-serviço.
     expect(
       (await app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { name: 'Sofia Maria' })))
         .status,
+    ).toBe(403)
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { whatsapp: '+5511999991111' }),
+        )
+      ).status,
     ).toBe(200)
     // Criar e arquivar seguem só na área dos pais (sessão da conta).
     expect(
@@ -3234,7 +3313,12 @@ describe('Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo
     expect(me.status).toBe(200)
     const body = (await me.json()) as Record<string, unknown>
     expect(body.user).toBeUndefined()
-    expect(body.profile).toMatchObject({ id: PROFILE_ID, name: 'Sofia', birthDate: '2016-05-01' })
+    expect((body.profile as Record<string, unknown>).fullName).toBeUndefined()
+    expect(body.profile).toMatchObject({
+      id: PROFILE_ID,
+      name: 'Criador(a)',
+      birthDate: '2016-05-01',
+    })
     expect(JSON.stringify(body).toLowerCase()).not.toContain(REGISTER_BODY.email.toLowerCase())
   })
 })
@@ -3341,8 +3425,8 @@ describe('Kids: fala da criança (voz → texto), consentimento dos pais por cri
       })
     }
     expect(stored()?.voiceInputEnabled).toBe(false)
-    // O auto-serviço dela (nome) segue igual.
-    expect((await patchProfile(gwChild(accountId), { name: 'Sofia S' })).status).toBe(200)
+    // A identidade também é exclusiva do responsável.
+    expect((await patchProfile(gwChild(accountId), { name: 'Sofia S' })).status).toBe(403)
   })
 
   test('o suporte nunca liga, mas pode desligar', async () => {

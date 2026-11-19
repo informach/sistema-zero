@@ -3,12 +3,15 @@ import type {
   ProfileAggregate,
 } from '../../domain/profile/profile.aggregate'
 
-/** View pública do perfil (grade Netflix). Sem `accountUserId`/`status`/timestamps. */
+/** View da própria família/sessão. fullName é privado; nunca usar esta view em lotes sociais. */
 export interface ProfileView {
   id: string
   /** The parent grade may show pending; child selectors require ready independently. */
   admissionState: ProfileAdmissionState
   name: string
+  fullName?: string
+  publicNickname: string | null
+  identityConfirmed: boolean
   avatarUrl: string | null
   whatsapp: string | null
   birthDate: string | null
@@ -22,11 +25,14 @@ export interface ProfileView {
   sortOrder: number
 }
 
-export function toProfileView(p: ProfileAggregate): ProfileView {
+export function toProfileView(p: ProfileAggregate, includePrivateIdentity = true): ProfileView {
   return {
     id: p.id,
     admissionState: p.admissionState,
-    name: p.name,
+    name: p.displayName,
+    ...(includePrivateIdentity ? { fullName: p.name } : {}),
+    publicNickname: p.publicNickname,
+    identityConfirmed: Boolean(p.identityConfirmedAt && p.publicNickname),
     avatarUrl: p.avatarUrl,
     whatsapp: p.whatsapp,
     birthDate: p.birthDate,

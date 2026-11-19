@@ -114,6 +114,14 @@ export function ChildCard({
         <UserAvatar avatarUrl={photoUrl} firstName={profile.name} size="xl" />
         <div className="min-w-0 flex-1 pt-1">
           <h3 className="sz-display break-words text-2xl leading-tight">{profile.name}</h3>
+          {profile.identityConfirmed !== true ? (
+            <Link
+              href={childEditHref(profile.id)}
+              className="mt-2 block text-sm text-primary underline underline-offset-4"
+            >
+              Confirme o nome completo e o apelido público para os próximos certificados.
+            </Link>
+          ) : null}
           {level ? (
             <div className="mt-1.5">
               <LevelChip label={level.label} color={level.colorVar} icon={level.icon} />

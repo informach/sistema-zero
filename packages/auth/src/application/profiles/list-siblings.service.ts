@@ -18,7 +18,9 @@ export class ListSiblingsService {
   async execute(accountUserId: string, ownProfileId: string): Promise<{ siblings: SiblingView[] }> {
     const list = await this.profiles.listActiveByAccount(accountUserId)
     return {
-      siblings: list.filter((p) => p.id !== ownProfileId).map((p) => ({ id: p.id, name: p.name })),
+      siblings: list
+        .filter((p) => p.id !== ownProfileId)
+        .map((p) => ({ id: p.id, name: p.displayName })),
     }
   }
 }

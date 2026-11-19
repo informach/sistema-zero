@@ -9,12 +9,14 @@ import {
   FileText,
   Film,
   FlaskConical,
+  Gift,
   Globe,
   ImageIcon,
   ListChecks,
   type LucideIcon,
   MessageCircle,
   Paperclip,
+  ShoppingBag,
   Volume2,
 } from 'lucide-react'
 import type { LessonBlockContent } from '@/lib/types'
@@ -34,6 +36,8 @@ const kinds: Record<LessonBlockContent['kind'], { label: string; icon: LucideIco
   certificate: { label: 'Certificado', icon: Award },
   coming_soon: { label: 'Em produção', icon: Clock },
   materials: { label: 'Materiais complementares', icon: Paperclip },
+  gift: { label: 'Presente / bolsa', icon: Gift },
+  purchase: { label: 'Compra / assinatura', icon: ShoppingBag },
 }
 export function LessonBlockKindBadge({ kind }: { kind: LessonBlockContent['kind'] }) {
   const { label, icon: Icon } = kinds[kind]

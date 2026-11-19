@@ -114,6 +114,48 @@ describe.skipIf(!target)('Auth profile admission / real migrations and stale wri
     throw new Error('Expected the profile writer to block on the held row')
   }
 
+  test('migration preserva legado privado; confirmação e novos perfis persistem as duas identidades', async () => {
+    const legacyProfile = await repository.findById(legacyActive)
+    expect(legacyProfile?.name).toBe('Antes ativo')
+    expect(legacyProfile?.publicNickname).toBeNull()
+    expect(legacyProfile?.identityConfirmedAt).toBeNull()
+    const { account, profile } = await pending(true)
+    const update = new UpdateProfileDetailsService(repository, () => now)
+    await update.execute({
+      accountUserId: account.id,
+      profileId: profile.id,
+      name: 'Maria Silva Santos',
+      publicNickname: 'Fada Azul',
+    })
+    const restored = await repository.findById(profile.id)
+    expect(restored?.name).toBe('Maria Silva Santos')
+    expect(restored?.displayName).toBe('Fada Azul')
+    expect(restored?.identityConfirmedAt).toEqual(now)
+    const fresh = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: account.id,
+      name: 'João Silva Santos',
+      publicNickname: 'Inventor Azul',
+      birthDate: '2016-04-10',
+      now,
+    })
+    expect(
+      (
+        await repository.createWithinLimit(fresh, 2, {
+          requestId: randomUUID(),
+          requestHash: 'b'.repeat(64),
+        })
+      ).outcome,
+    ).toBe('created')
+    expect((await repository.findById(fresh.id))?.displayName).toBe('Inventor Azul')
+    await update.execute({
+      accountUserId: account.id,
+      profileId: profile.id,
+      name: 'Maria Outro Nome',
+    })
+    expect((await repository.findById(profile.id))?.identityConfirmedAt).toBeNull()
+  })
+
   function holdTransaction(
     lock: (tx: Transaction) => Promise<unknown>,
     mutate: (tx: Transaction) => Promise<void> = async () => {},

@@ -91,6 +91,8 @@ function decodeIdentity(value: string | undefined): string | undefined {
  * da conta (`x-auth-user-name`). NUNCA vem do corpo — é a fonte confiável do nome.
  */
 export function resolveDisplayName(headers: Record<string, string | undefined>): string {
+  const nickname = decodeIdentity(headers['x-auth-profile-name'])?.trim()
+  if (nickname) return nickname
   const full = (
     decodeIdentity(headers['x-auth-profile-name']) ??
     decodeIdentity(headers['x-auth-user-name']) ??

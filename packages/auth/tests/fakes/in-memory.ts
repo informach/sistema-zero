@@ -613,6 +613,7 @@ export class InMemoryProfileRepository implements ProfileRepository, ProfileAdmi
         return {
           id: p.id,
           name: p.name,
+          publicNickname: p.publicNickname,
           avatarUrl: p.avatarUrl,
           birthDate: p.birthDate,
           accountUserId: p.accountUserId,
@@ -633,7 +634,7 @@ export class InMemoryProfileRepository implements ProfileRepository, ProfileAdmi
         const accountSearch = row.account
           ? `${row.account.firstName} ${row.account.lastName} ${row.account.email}`
           : null
-        return [row.name, accountSearch].some((h) => h?.toLowerCase().includes(q))
+        return [row.name, row.publicNickname, accountSearch].some((h) => h?.toLowerCase().includes(q))
       })
       // Ordenação estável do adapter: name asc, desempate por id asc.
       .sort(

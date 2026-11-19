@@ -35,6 +35,7 @@ import {
   type LiveRecordingSegmentTime,
   recordingChapters,
 } from '../../domain/live/recording-chapters'
+import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type {
   LiveCoursePort,
   LiveCourseRecord,
@@ -48,6 +49,7 @@ import type {
   LiveRepository,
 } from '../../domain/ports/live-repository.port'
 import type { LiveRewardsPort } from '../../domain/ports/live-rewards.port'
+import { PublicLiveIdentities } from './public-live-identities'
 
 export interface LiveContext {
   aggregate: LiveCohortAggregate
@@ -58,6 +60,8 @@ export interface LiveContext {
   role: 'teacher' | 'learner'
 }
 export interface LiveServiceOptions {
+  publicIdentities?: Pick<AuthGateway, 'getProfileNames'>
+  onIdentityError?: (error: unknown) => void
   /** Enabled only after actual media + supervision rehearsal, never inferred from credentials. */
   mediaReady?: boolean
   /** Revoke SFU/resources and writer leases immediately after a durable permission change. */
@@ -208,7 +212,14 @@ export class LiveService {
     private readonly profiles: LiveProfileOwnershipPort,
     private readonly options: LiveServiceOptions = {},
     private readonly id: () => string = randomUUID,
-  ) {}
+  ) {
+    this.publicIdentities = new PublicLiveIdentities(
+      options.publicIdentities,
+      options.onIdentityError,
+    )
+  }
+
+  private readonly publicIdentities: PublicLiveIdentities
 
   private readonly sectionsCache = new Map<string, { until: number; ids: string[] | null }>()
 
@@ -791,16 +802,7 @@ export class LiveService {
       occurrence.teachers = {}
       occurrence.participants = participant ? [participant] : []
       occurrence.messages =
-        admitted && canOpen
-          ? occurrence.messages
-              .filter((message) => !message.removed)
-              // Classmates' profile UUIDs never reach a child's browser.
-              .map((message) =>
-                message.role === 'learner' && message.authorId !== actor.id
-                  ? { ...message, authorId: null }
-                  : message,
-              )
-          : []
+        admitted && canOpen ? occurrence.messages.filter((message) => !message.removed) : []
     }
     // An unpublished recording (under review) never shows its Vimeo link or chapters to a child.
     if (role === 'learner' && !occurrence.recording.published) {
@@ -870,7 +872,7 @@ export class LiveService {
       await this.endExpiredOccurrence(context.occurrence.id)
       context = await this.requireContext(actor, sessionId)
     }
-    return this.view(actor, context)
+    return this.publicIdentities.room(this.view(actor, context))
   }
 
   /** Separate from recording: a slow recorder never delays the end of a class. */
@@ -932,6 +934,15 @@ export class LiveService {
     )
   }
 
+  private async mutateRoomView(
+    actor: LiveActor,
+    sessionId: string,
+    mutate: (context: LiveContext) => LiveRoomView | Promise<LiveRoomView>,
+  ): Promise<LiveRoomView> {
+    const view = await this.mutateRoom(actor, sessionId, mutate)
+    return this.publicIdentities.room(view)
+  }
+
   private async requireRef(sessionId: string) {
     const ref = await this.repository.sessionRef(sessionId)
     if (!ref) throw new LiveNotFoundError()
@@ -968,7 +979,7 @@ export class LiveService {
   }
 
   async join(actor: LiveActor, sessionId: string, request: LiveJoinRequest) {
-    const room = await this.mutateRoom(actor, sessionId, (context) => {
+    const room = await this.mutateRoomView(actor, sessionId, (context) => {
       this.operational(context, true)
       const { occurrence, role } = context
       if (role === 'teacher') occurrence.teachers[actor.id] = this.clock().toISOString()
@@ -987,7 +998,10 @@ export class LiveService {
         if (!participant) {
           participant = {
             learnerId: actor.id,
-            displayName: firstName(context.enrollment?.learnerName ?? actor.name),
+            displayName:
+              context.aggregate.cohort.course?.audience === 'adult'
+                ? firstName(context.enrollment?.learnerName ?? actor.name)
+                : actor.name.trim() || 'Criador(a)',
             deviceId: request.deviceId,
             admission: 'waiting',
             joinedAt: this.clock().toISOString(),
@@ -1001,6 +1015,8 @@ export class LiveService {
           }
           occurrence.participants.push(participant)
         }
+        if (context.aggregate.cohort.course?.audience !== 'adult')
+          participant.displayName = actor.name.trim() || 'Criador(a)'
         participant.seenAt = this.clock().toISOString()
       }
       occurrence.version++
@@ -1046,13 +1062,13 @@ export class LiveService {
           at: now,
         })
       occurrence.teachers[actor.id] = at
-      return this.view(actor, context)
+      return this.publicIdentities.room(this.view(actor, context))
     }
     const participant = this.participation(actor, context, deviceId)
     const reporting = report !== null && participant.admission === 'admitted'
     if (reporting && !sameActivity(participant.activity, report))
       // What the child is doing changed: the occurrence document, under the cohort lock.
-      return this.mutateRoom(actor, sessionId, (locked) => {
+      return this.mutateRoomView(actor, sessionId, (locked) => {
         this.operational(locked, true)
         const current = this.participation(actor, locked, deviceId)
         current.seenAt = at
@@ -1072,7 +1088,7 @@ export class LiveService {
       })
     participant.seenAt = at
     if (reporting && participant.activity) participant.activity.reportedAt = at
-    return this.view(actor, context)
+    return this.publicIdentities.room(this.view(actor, context))
   }
 
   /** The child's report, validated in shape (no I/O): parts are checked against the lesson. */
@@ -1109,7 +1125,7 @@ export class LiveService {
     kind: 'hand' | 'help',
     raised: boolean,
   ) {
-    return this.mutateRoom(actor, sessionId, (context) => {
+    return this.mutateRoomView(actor, sessionId, (context) => {
       this.operational(context)
       if (context.role !== 'learner') throw new LiveAccessError()
       if (supervisionStatus(context.occurrence.teachers, this.clock()) !== 'present')
@@ -1131,7 +1147,7 @@ export class LiveService {
     const message = text(raw, 500)
     if (/(?:https?:\/\/|www\.|(?:^|\s)[a-z0-9-]+\.(?:com|net|org|br)(?:[\s/]|$))/i.test(message))
       throw new ValidationError('Use o espaço de materiais para compartilhar links e arquivos.')
-    return this.mutateRoom(actor, sessionId, (context) => {
+    return this.mutateRoomView(actor, sessionId, (context) => {
       this.operational(context)
       const { occurrence } = context
       if (supervisionStatus(occurrence.teachers, this.clock()) !== 'present')
@@ -1154,7 +1170,10 @@ export class LiveService {
       occurrence.messages.push({
         id: this.id(),
         authorId: actor.id,
-        authorName: firstName(actor.name),
+        authorName:
+          context.role === 'teacher' || context.aggregate.cohort.course?.audience === 'adult'
+            ? firstName(actor.name)
+            : actor.name.trim() || 'Criador(a)',
         role: context.role,
         text: message,
         createdAt: this.clock().toISOString(),
@@ -1185,7 +1204,7 @@ export class LiveService {
         ? await this.publishedSections(ref.lessonId, true)
         : null
     let rewards: RewardCandidate[] = []
-    const room = await this.mutateRoom(actor, sessionId, (context) => {
+    const room = await this.mutateRoomView(actor, sessionId, (context) => {
       if (context.role !== 'teacher')
         throw new LiveAccessError('Somente a professora desta turma pode conduzir a sala.')
       const result = this.applyControl(actor, context, expectedVersion, command, sections)
@@ -1481,7 +1500,10 @@ export class LiveService {
   async authorizeMedia(actor: LiveActor, occurrenceId: string, deviceId: string) {
     const aggregate = await this.repository.findRoom({ occurrenceId })
     if (!aggregate) throw new LiveNotFoundError()
-    return this.mediaAccess(aggregate, actor, occurrenceId, deviceId)
+    const access = this.mediaAccess(aggregate, actor, occurrenceId, deviceId)
+    const [projected] = await this.publicIdentities.media([access])
+    if (!projected) throw new LiveUnavailableError('Identidade da sala indisponível.')
+    return projected
   }
 
   /**
@@ -1494,7 +1516,7 @@ export class LiveService {
     entries: { actor: LiveActor; deviceId: string }[],
   ): Promise<LiveMediaPublisherResult[]> {
     const aggregate = await this.repository.findRoom({ occurrenceId })
-    return entries.map(({ actor, deviceId }) => {
+    const results: LiveMediaPublisherResult[] = entries.map(({ actor, deviceId }) => {
       try {
         if (!aggregate) throw new LiveNotFoundError()
         return {
@@ -1504,6 +1526,16 @@ export class LiveService {
       } catch (error) {
         return { ok: false as const, error }
       }
+    })
+    const projected = await this.publicIdentities.media(
+      results.flatMap((result) => (result.ok ? [result.access] : [])),
+    )
+    let offset = 0
+    return results.map((result) => {
+      if (!result.ok) return result
+      const access = projected[offset++]
+      if (!access) throw new LiveUnavailableError('Identidade da sala indisponível.')
+      return { ok: true as const, access }
     })
   }
 
@@ -1598,7 +1630,7 @@ export class LiveService {
       } catch {
         segments = null
       }
-    return this.mutateRoom(actor, sessionId, (context) => {
+    return this.mutateRoomView(actor, sessionId, (context) => {
       if (context.role !== 'teacher') throw new LiveAccessError()
       const occurrence = occurrenceId
         ? context.aggregate.occurrences.find(

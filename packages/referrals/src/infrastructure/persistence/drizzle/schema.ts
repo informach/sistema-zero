@@ -223,13 +223,27 @@ export const scholarshipRedemptions = referralsSchema.table(
     muralVisitorPolicy: varchar({ length: 16 }),
     /** Oferta concedida pelo resgate `offer` (0010); null nos resgates anteriores. */
     giftOfferId: uuid(),
+    /**
+     * Vaga do presente (0011): `main` = o presente do público (um por e-mail e público);
+     * `parents:<slug>` = curso para pais, que não ocupa a vaga do presente e vale um por curso.
+     */
+    giftSlot: varchar({ length: 160 }).notNull().default('main'),
     muralVisitorGrantedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex('scholarship_redemptions_email_audience_uq').on(t.email, t.audience),
+    uniqueIndex('scholarship_redemptions_email_audience_slot_uq').on(
+      t.email,
+      t.audience,
+      t.giftSlot,
+    ),
+    check(
+      'scholarship_redemptions_gift_slot_check',
+      sql`${t.giftSlot} = 'main' or ${t.giftSlot} like 'parents:%' or ${t.giftSlot} like 'course:%' or ${t.giftSlot} like 'offer:%'`,
+    ),
     index('scholarship_redemptions_code_status_idx').on(t.codeId, t.status),
+    index('scholarship_redemptions_user_audience_idx').on(t.userId, t.audience),
     check('scholarship_redemptions_audience_check', sql`${t.audience} in ('kids','adult')`),
   ],
 )

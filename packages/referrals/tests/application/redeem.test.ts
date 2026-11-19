@@ -48,6 +48,27 @@ describe('RedeemScholarshipService', () => {
 
   const input = { code: 'cida-x7k2', name: 'Paula Prado', email: 'Paula@Example.com ' }
 
+  test('resgate autenticado concede para a conta confirmada sem registrar comprador', async () => {
+    const result = await service.execute(input, {
+      userId: '00000000-0000-4000-8000-000000000123',
+      audience: 'kids',
+    })
+    expect(result.kind).toBe('completed')
+    expect(repo.redemptions[0]?.userId).toBe('00000000-0000-4000-8000-000000000123')
+    expect(gateway.calls.some((c) => c.kind === 'ensureBuyer')).toBe(false)
+    const again = await service.execute(input, {
+      userId: '00000000-0000-4000-8000-000000000123',
+      audience: 'kids',
+    })
+    expect(again.kind).toBe('already_redeemed')
+    const changedEmail = await service.execute(
+      { ...input, email: 'novo@example.com' },
+      { userId: '00000000-0000-4000-8000-000000000123', audience: 'kids' },
+    )
+    expect(changedEmail.kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(1)
+  })
+
   /** Resgate ANTIGO em andamento (política `trial` de sete dias, antes do presente por oferta). */
   async function seedLegacyTrial() {
     const { redemption } = await repo.insertRedemption({
@@ -227,6 +248,42 @@ describe('RedeemScholarshipService', () => {
     expect(email.variables.orientacao).toBe(
       'Entre na área dos pais e abra o curso em Cursos para pais. O curso é para você assistir na sua conta, sem perfil de criança.',
     )
+  })
+
+  test('curso para pais não ocupa a vaga do presente: o mesmo e-mail resgata os dois', async () => {
+    const padrao = gateway.availabilityResult
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Transformando o vilão em aliado', learner: 'parents' },
+    }
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions.map((r) => r.giftSlot)).toEqual(['parents:cade-todo-mundo'])
+    // O mesmo curso para pais de novo: já resgatado.
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+
+    // O presente da criança, com o mesmo e-mail, entra na vaga do público.
+    gateway.availabilityResult = padrao
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions.map((r) => r.giftSlot)).toEqual(['parents:cade-todo-mundo', 'main'])
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(2)
+
+    // Catálogo fora: o presente do público concluído continua reconhecido, sem resgate novo.
+    catalog.fail = true
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(2)
+  })
+
+  test('presente da criança primeiro, curso para pais depois, com o mesmo e-mail', async () => {
+    expect((await service.execute(input)).kind).toBe('completed')
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Transformando o vilão em aliado', learner: 'parents' },
+    }
+    expect((await service.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions.map((r) => r.giftSlot)).toEqual(['main', 'parents:cade-todo-mundo'])
+    // O convite do embaixador olha só a vaga do presente do público.
+    expect((await repo.findRedemptionByEmail('paula@example.com', 'kids'))?.giftSlot).toBe('main')
   })
 
   test('resgate ANTIGO (trial) em andamento segue o caminho antigo: curso + Mural', async () => {

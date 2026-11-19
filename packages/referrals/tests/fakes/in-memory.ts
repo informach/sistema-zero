@@ -362,10 +362,15 @@ export class InMemoryReferralRepository implements ReferralRepository {
     courseSlug?: string
     attribution?: GiftAttribution | null
     gift?: RedemptionGift
+    giftSlot?: string
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
-    // Espelha o UNIQUE (email, audience).
+    // Espelha o UNIQUE (email, audience, gift_slot).
+    const giftSlot = input.giftSlot ?? 'main'
     const existing = this.redemptions.find(
-      (r) => r.email === input.email && r.audience === input.audience,
+      (r) =>
+        r.email === input.email &&
+        r.audience === input.audience &&
+        (r.giftSlot ?? 'main') === giftSlot,
     )
     if (existing) return { created: false, redemption: existing }
     const redemption: RedemptionRecord = {
@@ -395,6 +400,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       muralVisitorPolicy: input.gift ? 'offer' : 'trial',
       muralVisitorGrantedAt: null,
       giftOfferId: input.gift?.offerId ?? null,
+      giftSlot,
       createdAt: new Date(),
     }
     this.redemptions.push(redemption)
@@ -487,8 +493,25 @@ export class InMemoryReferralRepository implements ReferralRepository {
   async findRedemptionByEmail(
     email: string,
     audience: GiftAudience,
+    giftSlot = 'main',
   ): Promise<RedemptionRecord | null> {
-    return this.redemptions.find((r) => r.email === email && r.audience === audience) ?? null
+    return (
+      this.redemptions.find(
+        (r) => r.email === email && r.audience === audience && (r.giftSlot ?? 'main') === giftSlot,
+      ) ?? null
+    )
+  }
+
+  async listRedemptionsByEmail(email: string, audience: GiftAudience): Promise<RedemptionRecord[]> {
+    return this.redemptions
+      .filter((r) => r.email === email && r.audience === audience)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+  }
+  async listRedemptionsByAccount(
+    userId: string,
+    audience: GiftAudience,
+  ): Promise<RedemptionRecord[]> {
+    return this.redemptions.filter((r) => r.userId === userId && r.audience === audience)
   }
 
   async listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]> {
