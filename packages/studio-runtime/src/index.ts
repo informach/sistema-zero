@@ -39,6 +39,7 @@ import {
   proCheckModules,
   withCheckEntry,
 } from './check'
+import { serveClassicShell } from './classic-shell'
 import {
   InvalidBuildRequestError,
   PRO_BUILD_LIMITS,
@@ -121,6 +122,8 @@ export interface Env {
   PythonInspectionJobs?: PythonInspectionJobNamespace
   /** Trusted fixed launcher is served from an origin distinct from every embedding application. */
   STUDIO_PYTHON_PREVIEW_ORIGIN?: string
+  /** Origens do editor que podem embutir a casca da prévia do Clássico; vazio = rota desligada. */
+  STUDIO_CLASSIC_SHELL_PARENT_ORIGINS?: string
   PYTHON_PREVIEWS?: PythonInputBucket & Pick<PythonInputGcBucket, 'list'>
 }
 
@@ -173,6 +176,8 @@ export function createStudioRuntimeHandler(
     },
     async fetch(request: Request, env: Env): Promise<Response> {
       const url = new URL(request.url)
+      const classicShell = serveClassicShell(request, env.STUDIO_CLASSIC_SHELL_PARENT_ORIGINS)
+      if (classicShell) return classicShell
       if (url.pathname.startsWith('/v1/python-previews/')) {
         const configuration = env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256
         const bucket = env.PYTHON_PREVIEWS

@@ -15,7 +15,7 @@ import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { EditableStudioProject as Project } from '../src/core/editableProject'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
-import { E2E_AUTOSAVE_MS } from './initialQuery'
+import { E2E_AUTOSAVE_MS, PLAYGROUND_PREVIEW_SHELL_URL } from './initialQuery'
 import { DemoModalDialog, MODAL_DEMO } from './modalHarness'
 import moldaDemoAssets from './moldaDemoAssets.json'
 
@@ -345,6 +345,7 @@ function EditorScreen({
       <StudioEditor
         initialProject={state.project}
         onExit={onExit}
+        previewShellUrl={PLAYGROUND_PREVIEW_SHELL_URL}
         // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
         share={shareDemo}
         // O tutor é opt-in e só existe no editor completo; aulas não recebem esta prop.

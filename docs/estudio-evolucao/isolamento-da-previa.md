@@ -131,3 +131,55 @@ O que está provado e o que não está:
   iframe novo roda em 30 a 50 ms mesmo sem intervalo). Portanto a correção segue a hipótese, mas
   **não está provada no ambiente em que o defeito apareceu**. O portão fica aberto até alguém
   rodar `e2e/preview-hostile-programs.spec.ts` no Windows.
+
+## Lote 3 de 19/11/2026: vigia em outra origem, casca em outro site, decisão do WebKit
+
+### 3.1 O vigia funcionava só com `srcdoc`
+
+Com a prévia em outra origem (`previewOriginAdapter`, usado nas Oficinas ao vivo) o iframe usa
+`src`, e `PreviewIframe` lia o documento carregado com `getAttribute('srcdoc')`, que ali é nulo.
+Resultado: a detecção de jogo preso, a troca do iframe preso no Parar e o Rodar de novo com a
+prévia muda ficavam desligadas nesse modo. Agora o componente guarda qual documento o iframe
+mostra. Teste: `PreviewIframe.test.tsx` "em outra origem, o Parar reconhece o jogo preso" (falha
+com a leitura antiga).
+
+### 3.2 A casca em outro site
+
+O arranjo que isolou o Firefox na medição de 18/11 (página de outro site + COOP/COEP no host,
+recebendo o documento por mensagem e pondo num `srcdoc` interno) virou produto, **desligado por
+padrão**:
+
+- Contrato e página: `packages/core/src/studio/classic-shell.ts` (`sz-shell:ready`, `sz-shell:load`,
+  `sz-shell:loaded`). A casca confere a origem do host contra a lista do servidor, repassa as
+  mensagens nos dois sentidos com `targetOrigin` exato e barra qualquer `sz-shell:*` vindo do jogo.
+  O jogo dentro dela leva o MESMO sandbox (`allow-scripts allow-modals allow-pointer-lock`).
+- Rota: `packages/studio-runtime/src/classic-shell.ts`, em `/v1/classic-shell/1.html`. Sem
+  `STUDIO_CLASSIC_SHELL_PARENT_ORIGINS` a rota responde 404: nenhum deploy muda até alguém
+  configurar. Cabeçalhos: só `frame-ancestors` na CSP (um `srcdoc` herda a política de quem o
+  embute; qualquer outra diretiva restringiria o jogo), COEP `credentialless`, CORP `cross-origin`.
+- Editor: prop `previewShellUrl` (`StudioCommonProps`). Ignorada com `previewOriginAdapter` ou
+  `requireIsolatedPreview`. O documento do jogo é o mesmo, sem um byte a mais: só o `parentOrigin`
+  passa a ser o da casca (o valor já muda de um deploy para outro).
+- Prova no navegador: `e2e/preview-shell.spec.ts` (playground com `?casca=1`, casca na outra
+  origem local). Chromium: o jogo roda, fala com o console, Parar e Rodar funcionam, e o editor
+  responde durante 30 s de trabalho síncrono do jogo. Firefox e WebKit: registrados no
+  `playwright.config.ts`, rodam na CI da missão.
+
+**Ligar no app é decisão da dona e mudança de deploy** (não feita): configurar a variável no
+studio-runtime com as origens do editor, mandar COOP `same-origin` + COEP `credentialless` na rota
+do Clássico do `community-kids` (hoje só `/estudio/pro` e `/arquipelago` têm COEP) e acrescentar a
+origem da casca ao `frame-src`. O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
+mede o `srcdoc` do modo direto; no modo casca o documento é o mesmo, entregue por mensagem.
+
+### 3.3 WebKit: decisão registrada
+
+Medido em 18/11 (Linux e Windows): no WebKit 26.4 nenhum arranjo de iframe isolou (srcdoc, outro
+site, outro site com COOP/COEP: ~5 s de travamento do editor). Um Worker dedicado isolou a CPU,
+mas o WebKit não tem `transferControlToOffscreen` nem 2D/`requestAnimationFrame` em Worker. O
+Jogo 2D (11 mil linhas no documento, DOM, eventos, áudio e imagens) não roda em Worker sem um
+proxy de DOM, o que mudaria o que as aulas protegidas ensinam e não cabe nos 57 bytes de folga.
+
+Decisão: no WebKit a proteção continua a de hoje (vigia, marca de execução interrompida, troca do
+iframe preso, guarda de laço, limite de mensagens). Isolamento completo ali exige o Jogo 2D em
+Worker com proxy de DOM (estudo B4), fora deste lote. Uma saída ainda não medida é a janela
+própria aberta com `noopener` (troca de processo no WebKit); fica registrada como pendente.

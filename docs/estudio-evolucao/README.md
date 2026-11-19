@@ -45,13 +45,13 @@ isolamento pode acrescentar bytes a ele.
 | B0 | Medição do isolamento da prévia | **feito** (só Chromium) |
 | B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **parcial**: o reinício após trabalho nativo falha no Chromium 148/Windows, inclusive com os arquivos originais da branch |
 | B1 | Marca de execução e salvar antes do comando explícito de Rodar | Marca já existente; salvamento explícito implementado nesta continuação, com testes de falha/cancelamento/autoridade; atualizações automáticas ainda seguem o autosave |
-| B2 | Prévia em outra origem | pendente; depende de medir outros navegadores e de decisão dela |
-| B4 | Estudo do Jogo 2D em Worker | pendente |
+| B2 | Prévia em outra origem | **casca implementada e desligada** (19/11/2026, `isolamento-da-previa.md`): rota no studio-runtime sem origens = 404; ligar no app é deploy e decisão dela. Vigia do modo outra origem corrigido |
+| B4 | Estudo do Jogo 2D em Worker | pendente; decisão registrada para o WebKit (nenhum arranjo de iframe isola; Worker exige proxy de DOM) |
 | C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
 | C1 | Perfil de CPU e três desperdícios tirados: a edição com 10 mil blocos foi de 444 ms para 199 ms | **feito** |
 | C5 | Perfil no navegador: o que sobra é a quantidade de nós desenhados (abrir 5 mil blocos leva 18 s; arrastar prende a página) | **feito** (sem placa de vídeo) |
-| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | pendente |
-| D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente |
+| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos ~19,7 s → ~14,8 s); não criar os corpos distantes segue pendente |
+| D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente; persistência v4 com homologação em curso (`docs/qa/2026-11-19-studio-v4-homologacao.md`) |
 
 ## A1: o que existe e como rodar
 

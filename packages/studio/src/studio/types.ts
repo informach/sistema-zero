@@ -65,6 +65,13 @@ export interface StudioCommonProps {
   /** Required in a live room: a failed origin adapter never falls back to srcdoc. */
   previewOriginAdapter?: StudioPlayerOriginAdapter
   requireIsolatedPreview?: boolean
+  /**
+   * Casca da prévia do Clássico em outro site (`/v1/classic-shell/1.html` do studio-runtime).
+   * Opcional e desligada por padrão: com ela, o jogo roda num `srcdoc` DENTRO da casca, o que
+   * isola o editor no Firefox (medido). Precisa de COOP/COEP na página do host e da origem do
+   * host na lista da casca. Ignorada quando há `previewOriginAdapter` ou `requireIsolatedPreview`.
+   */
+  previewShellUrl?: string
   /** Project audio only; independent of the classroom microphone. */
   projectMuted?: boolean
   /**

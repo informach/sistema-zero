@@ -171,6 +171,28 @@ Arquivos: `components/preview/PreviewIframe.tsx`, `runTripwire.ts`,
   recuperação, medições antes/depois e limitações de hardware/acesso.
 - [ ] Revisar diff e executar verificações finais; commits e PR sem merge/deploy.
 
+## Estado em 19/11/2026 (staging, três frentes)
+
+Pedido da dona: isolamento, abertura incremental e homologação v4, em sequência v4 → abertura →
+isolamento. Nenhuma etapa abaixo passa a "concluída" pelos critérios da tabela final; o que mudou:
+
+- **Etapa 9 (persistência), v4:** restauração do backup como cópia nova, exportação de emergência,
+  prova do cliente v3 congelado depois da migração, acervo real (185 exemplos e cursos) migrado
+  idêntico, troca de perfil com gravação em voo no navegador real, Firefox no driver. CI da missão
+  em `465abc2f`: modo profundo Linux/Windows, Firefox Linux/Windows e reversão aprovados. Relatório:
+  `docs/qa/2026-11-19-studio-v4-homologacao.md`. Faltam Members (Verificar/Enviar, perfil no app),
+  aparelho físico e sessões longas.
+- **Etapa 2 (Clássico em escala):** abertura sem trabalho repetido (desenho sem a subida inútil pelo
+  DOM, memória de larguras da fonte carregada, pós-carga que rodava duas vezes). 5 mil blocos de
+  ~19,7 s para ~14,8 s nesta máquina; meta de 8 s NÃO atingida. Ver `classico-em-escala.md`.
+  Descartado: recolher na carga (o Blockly desenha os filhos de bloco recolhido).
+- **Etapa 1 (isolamento):** vigia em outra origem corrigido; casca em outro site implementada e
+  desligada por padrão (B2 com decisão: feito no código, ligar é deploy dela); WebKit com decisão
+  registrada (B4 continua estudo). Ver `isolamento-da-previa.md`.
+- Achados fora destas frentes, não corrigidos aqui: `blockLevels.test.ts`, a catraca do game-3d e
+  os cartões 3D da galeria reprovam desde a integração de cenas do Molda no Jogo 3D (`97028f4f`);
+  o orçamento cru do modo Blocos já reprovava na staging limpa.
+
 ## Evidência e limites
 
 Os resultados históricos no README são da sessão anterior, não validações desta.

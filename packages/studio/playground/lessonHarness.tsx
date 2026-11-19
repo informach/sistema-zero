@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { EditableStudioProject as Project } from '../src/core/editableProject'
 import { LESSON_DEFAULT_FEATURES } from '../src/studio/lessonFeatures'
 import type { StudioHandle, StudioLessonProps } from '../src/studio/types'
-import { PLAYGROUND_LESSON } from './initialQuery'
+import { PLAYGROUND_LESSON, PLAYGROUND_PREVIEW_SHELL_URL } from './initialQuery'
 
 /**
  * A aula dentro do playground (`/aula?aula=<curso>/<aula>&bloco=<chave>`): monta o Estúdio da aula
@@ -205,6 +205,7 @@ export function LessonHarness(): JSX.Element {
           features={{ ...LESSON_DEFAULT_FEATURES, extensions: false }}
           persistence="none"
           blockUnloadWhenDirty={false}
+          previewShellUrl={PLAYGROUND_PREVIEW_SHELL_URL}
         />
       </div>
     </Suspense>
