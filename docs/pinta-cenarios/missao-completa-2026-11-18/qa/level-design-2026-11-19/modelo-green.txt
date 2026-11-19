@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapToolsUi.test.tsx:
+(pass) guardar conjunto > guardar modelo conserva a caixa inteira do objeto girado e suas propriedades [968.00ms]
+
+ 1 pass
+ 53 filtered out
+ 0 fail
+ 6 expect() calls
+Ran 1 test across 1 file. [2.26s]

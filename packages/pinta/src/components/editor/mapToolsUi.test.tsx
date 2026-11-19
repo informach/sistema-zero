@@ -683,6 +683,54 @@ describe('formas ponto a ponto', () => {
 })
 
 describe('guardar conjunto', () => {
+  it('guardar modelo conserva a caixa inteira do objeto girado e suas propriedades', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'casa', frameSize: 16 })
+    await abrirMapa({
+      level: 'create',
+      prepare: (base) => {
+        const map = comObjetos(base)
+        return addMapObject(
+          map,
+          map.layers.at(-1)!.id,
+          createMapObject({
+            name: 'casa-girada',
+            shape: 'art',
+            art: { assetId: sprite.id },
+            x: 32,
+            y: 16,
+            width: 32,
+            height: 16,
+            rotation: 90,
+            flipX: true,
+            properties: { moradores: 3 },
+          }),
+        )
+      },
+      extra: async (seed) => {
+        await seed.getState().createPrepared(sprite)
+      },
+    })
+    await ativarObjetos()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.pickObject('casa-girada') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.guardarModeloDoObjeto }))
+    await screen.findByText(COPY.scene.conjuntoGuardado(COPY.scene.nomeDoModelo('casa-girada')))
+    const gallery = createGalleryStore()
+    await gallery.getState().load()
+    const set = gallery.getState().assets.find((asset) => asset.kind === 'map-set')
+    if (set?.kind !== 'map-set') throw new Error('Modelo esperado')
+    const layer = set.map.layers.find(isObjectLayer)!
+    const object = layer.objects[0]!
+    const { objectBounds } = await import('../../tiles/objectGeometry')
+    const { effectiveLayer } = await import('../../core/project')
+    const box = objectBounds(object),
+      offset = effectiveLayer(set.map, layer)
+    expect(box.x + offset.offsetX).toBeGreaterThanOrEqual(-1e-7)
+    expect(box.y + offset.offsetY).toBeGreaterThanOrEqual(-1e-7)
+    expect(box.x + box.width + offset.offsetX).toBeLessThanOrEqual(set.map.cols * 16 + 1e-7)
+    expect(box.y + box.height + offset.offsetY).toBeLessThanOrEqual(set.map.rows * 16 + 1e-7)
+    expect(object).toMatchObject({ rotation: 90, flipX: true, properties: { moradores: 3 } })
+    expect(desfazer().disabled).toBe(true)
+  })
   it('diz que guardou e o conjunto aparece na galeria', async () => {
     await abrirMapa({
       level: 'advanced',

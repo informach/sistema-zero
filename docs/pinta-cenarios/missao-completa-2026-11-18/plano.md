@@ -90,8 +90,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   prévia real verificados. Suíte completa com 2.155 aprovados; revisão final com
   77 aprovados e três perfis de navegador, mais regressão dos três de biblioteca.
   Provas e limites em `qa/espalhar-objetos-2026-11-19/README.md`.
-- [ ] 5. Completar ferramentas profissionais autorais e seus consumidores: caminhos, zonas,
+- [x] 5. Completar ferramentas profissionais autorais e seus consumidores: caminhos, zonas,
   portas, marcadores, colisões, animações, propriedades, regiões, profundidade e parallax.
+  Autoria e dados existentes conferidos; corrigido o modelo girado que era cortado.
+  Seis casos de autoria em desktop/toque/CPU, 38 cenários/Phaser e 2.160 testes Pinta
+  aprovados. Ver `level-design.md` e `qa/level-design-2026-11-19/README.md`.
+  Isso não encerra o rollout autenticado nem a validação externa das etapas 0b/7/9.
 - [ ] 6. Auditoria funcional de teclado/foco/cancelamento e mouse/toque, componentes atuais;
   fluxo infantil e testes em desktop, toque e CPU reduzida nesta máquina, conforme a
   disponibilidade informada pelo usuário. Testes com participantes são evidência distinta.
