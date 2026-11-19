@@ -1,0 +1,109 @@
+{
+  "ciclos": [
+    {
+      "bytes": 7418912,
+      "digest": "c6f2dcf21db9115c627592b59982bb1ab4a71cf4cf7f9b4b8543bcbd7d26c6f9",
+      "malhas": 23,
+      "triangulos": 31850,
+      "verticesMaximos": 22653
+    },
+    {
+      "bytes": 7418912,
+      "digest": "c6f2dcf21db9115c627592b59982bb1ab4a71cf4cf7f9b4b8543bcbd7d26c6f9",
+      "malhas": 23,
+      "triangulos": 31850,
+      "verticesMaximos": 22653
+    },
+    {
+      "bytes": 7418912,
+      "digest": "c6f2dcf21db9115c627592b59982bb1ab4a71cf4cf7f9b4b8543bcbd7d26c6f9",
+      "malhas": 23,
+      "triangulos": 31850,
+      "verticesMaximos": 22653
+    }
+  ],
+  "comparativos": [
+    {
+      "nome": "geral",
+      "erroMedio": 0.00006293402777777778,
+      "maximo": 22,
+      "canaisAcima16": 2
+    },
+    {
+      "nome": "aproximacao",
+      "erroMedio": 0.00033094618055555557,
+      "maximo": 29,
+      "canaisAcima16": 4
+    },
+    {
+      "nome": "rasante",
+      "erroMedio": 0,
+      "maximo": 0,
+      "canaisAcima16": 0
+    }
+  ],
+  "animacoes": [
+    {
+      "nome": "parado_relaxado",
+      "quadros": 12,
+      "erroMaximo": 0
+    },
+    {
+      "nome": "andar_frente",
+      "quadros": 12,
+      "erroMaximo": 0
+    },
+    {
+      "nome": "correr_frente",
+      "quadros": 12,
+      "erroMaximo": 0
+    },
+    {
+      "nome": "pulo_no_ar",
+      "quadros": 12,
+      "erroMaximo": 0
+    }
+  ],
+  "base": {
+    "geometries": 0,
+    "textures": 1
+  },
+  "gpuFinal": {
+    "geometries": 0,
+    "textures": 0
+  },
+  "variacoes": [
+    {
+      "ciclo": 0,
+      "json": "79b1f20597108f830191d40bbf21fe5953bc829b2ca88cffc009fc69b8f5ce7f",
+      "bin": "0363e47472ac160406534a3b602f6a320e6cc73384e36972d88f884b4689306f",
+      "diferencas": []
+    },
+    {
+      "ciclo": 1,
+      "json": "79b1f20597108f830191d40bbf21fe5953bc829b2ca88cffc009fc69b8f5ce7f",
+      "bin": "0363e47472ac160406534a3b602f6a320e6cc73384e36972d88f884b4689306f",
+      "diferencas": []
+    },
+    {
+      "ciclo": 2,
+      "json": "79b1f20597108f830191d40bbf21fe5953bc829b2ca88cffc009fc69b8f5ce7f",
+      "bin": "0363e47472ac160406534a3b602f6a320e6cc73384e36972d88f884b4689306f",
+      "diferencas": []
+    }
+  ],
+  "compartilhamento": {
+    "malhas": 1,
+    "referencias": [
+      0,
+      0
+    ]
+  },
+  "avisos": [
+    "Este destino aceita um arquivo de até 32 MiB e 8.192 partes visíveis. Cenas maiores podem usar o pacote Three dividido em recursos.",
+    "Água tem o acabamento estático do compilador; ondas e efeitos dinâmicos ficam no pacote Three.",
+    "Céu panorâmico, névoa e luz hemisférica não têm representação padrão neste GLB. O visualizador aplica seu ambiente.",
+    "O arquivo conserva a composição visual e as animações. Colisões, nado e regras de jogo são fornecidos pelos outros destinos, não pelo visualizador GLB."
+  ],
+  "console": []
+}
