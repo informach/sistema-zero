@@ -2,19 +2,32 @@ import type { Page, TestInfo } from '@playwright/test'
 
 declare global {
   interface Window {
-    studioMenuInteractionTrace?: unknown[]
+    studioRecordMenuInteraction?: (value: unknown) => Promise<void>
   }
 }
 
-/** Test-only, bounded event evidence; never changes focus, timing or event delivery. */
+const recordings = new WeakMap<Page, unknown[]>()
+
+/** Test-only evidence across frames, without layout reads or changes to focus/events. */
 export async function recordMenuInteractions(page: Page): Promise<void> {
+  const entries: unknown[] = []
+  recordings.set(page, entries)
+  await page.exposeBinding('studioRecordMenuInteraction', (source, value) => {
+    entries.push({ frame: source.frame.parentFrame() ? 'preview' : 'editor', value })
+    if (entries.length > 100) entries.shift()
+  })
   await page.addInitScript(() => {
-    if (window.top !== window) return
-    const entries: unknown[] = []
-    window.studioMenuInteractionTrace = entries
+    const nodes = new WeakMap<Element, number>()
+    let nextNode = 0
     const describe = (target: EventTarget | null) => {
       if (!(target instanceof Element)) return null
+      let identity = nodes.get(target)
+      if (identity === undefined) {
+        identity = ++nextNode
+        nodes.set(target, identity)
+      }
       return {
+        node: identity,
         tag: target.tagName,
         id: target.id,
         role: target.getAttribute('role'),
@@ -22,26 +35,44 @@ export async function recordMenuInteractions(page: Page): Promise<void> {
         classes: target.getAttribute('class')?.slice(0, 160),
       }
     }
-    for (const type of ['pointerdown', 'pointerup', 'click', 'focusin', 'load']) {
-      document.addEventListener(
+    for (const type of [
+      'pointerdown',
+      'pointerup',
+      'click',
+      'contextmenu',
+      'focusin',
+      'focus',
+      'blur',
+      'load',
+    ]) {
+      window.addEventListener(
         type,
         (event) => {
           if (type === 'load' && !(event.target instanceof HTMLIFrameElement)) return
           const pointer =
-            event instanceof MouseEvent ? { x: event.clientX, y: event.clientY } : null
+            event instanceof MouseEvent
+              ? {
+                  x: event.clientX,
+                  y: event.clientY,
+                  button: event.button,
+                  buttons: event.buttons,
+                }
+              : null
           const menu = document.querySelector('[role="menu"]')
-          entries.push({
+          const value = {
+            timeOrigin: performance.timeOrigin,
             time: performance.now(),
             type,
+            trusted: event.isTrusted,
+            window: event.target === window,
             target: describe(event.target),
             active: describe(document.activeElement),
             pointer,
-            hit: pointer ? describe(document.elementFromPoint(pointer.x, pointer.y)) : null,
-            menu: menu
-              ? { node: describe(menu), bounds: menu.getBoundingClientRect().toJSON() }
-              : null,
+            menu: describe(menu),
+          }
+          void window.studioRecordMenuInteraction?.(value).catch(() => {
+            // Navigation may destroy the diagnostic binding; never affect the game.
           })
-          if (entries.length > 100) entries.shift()
         },
         { capture: true, passive: true },
       )
@@ -51,9 +82,8 @@ export async function recordMenuInteractions(page: Page): Promise<void> {
 
 export async function attachMenuInteractions(page: Page, info: TestInfo): Promise<void> {
   if (info.status === info.expectedStatus || page.isClosed()) return
-  const entries = await page.evaluate(() => window.studioMenuInteractionTrace ?? [])
   await info.attach('menu-interactions.json', {
-    body: JSON.stringify(entries, null, 2),
+    body: JSON.stringify(recordings.get(page) ?? [], null, 2),
     contentType: 'application/json',
   })
 }
