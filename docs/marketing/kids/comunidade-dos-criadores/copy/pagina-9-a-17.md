@@ -1,8 +1,8 @@
 <!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/oferta/. Edite o código e rode `bun scripts/espelho-copy-comunidade.ts` (em packages/funnel). -->
 
-**seoTitle**: Comunidade dos Criadores para 9 a 17 anos | Sistema Zero
+**seoTitle**: Comunidade dos Criadores Kids: habilidades cognitivas para a vida | Sistema Zero
 
-**description**: Na Comunidade dos Criadores, seu filho exercita planejamento, raciocínio e persistência criando jogos com orientação. O interesse pela criação dá um motivo para começar; novos projetos trazem outras oportunidades de escolher, testar e explicar suas ideias.
+**description**: Habilidades cognitivas para a vida com criação de jogos e projetos orientados. De 5 a 17 anos; abaixo de 9, com acompanhante. Assinatura mensal ou anual.
 
 **topo.pular**: Ir para o conteúdo
 
@@ -18,21 +18,21 @@
 
 **topo.cta.label**: Ver planos e acesso
 
-**hero.eyebrow**: Comunidade dos Criadores · 9 a 17 anos
+**hero.eyebrow**: Comunidade dos Criadores · 5 a 17 anos
 
 **hero.title**: Ajude seu filho a resolver problemas e fazer escolhas com mais autonomia,
 
 **hero.destaque**: na escola e na vida.
 
-**hero.description**: Na Comunidade dos Criadores, seu filho exercita planejamento, raciocínio e persistência criando jogos com orientação. O interesse pela criação dá um motivo para começar; novos projetos trazem outras oportunidades de escolher, testar e explicar suas ideias.
+**hero.description**: Na Comunidade dos Criadores, seu filho pratica habilidades cognitivas para a vida: planejar, investigar uma dificuldade, rever uma tentativa e explicar suas ideias. A criação de jogos dá um motivo para começar; novos projetos trazem outras oportunidades de fazer escolhas, testar e continuar com orientação.
 
-**hero.benefits[0]**: Dividir uma tarefa em passos que consegue experimentar
+**hero.benefits[0]**: Planejar um passo e conferir o resultado
 
-**hero.benefits[1]**: Mostrar uma dúvida e investigar o que precisa mudar
+**hero.benefits[1]**: Fazer escolhas, observar consequências e rever tentativas
 
-**hero.benefits[2]**: Voltar a usar essas habilidades em novos projetos
+**hero.benefits[2]**: Explicar uma ideia e pedir ajuda quando precisar
 
-**hero.requirements**: 9 a 17 anos, com apoio conforme a necessidade · Computador, internet, mouse e teclado · Até 2 perfis Kids
+**hero.requirements**: 5 a 17 anos; abaixo de 9, com acompanhante · Computador, internet, mouse e teclado · Até 2 perfis Kids
 
 **hero.tela.alt**: A Chave do Farol no Estúdio real: blocos e resultado lado a lado.
 
@@ -46,17 +46,17 @@
 
 **hero.secondary.label**: Ver como a prática acontece
 
-**cta**: Ver planos e acesso
+**cta**: Quero ajudar meu filho
 
 **garantiaCurta**: Assinatura mensal ou anual · 7 dias para pedir reembolso integral
 
 **sections[0].tag**: O que você deseja para ele
 
-**sections[0].title**: Começar uma tarefa, fazer uma escolha e saber o que tentar quando algo não funciona.
+**sections[0].title**: Habilidades cognitivas para a vida, praticadas uma parte de cada vez.
 
-**sections[0].intro**: Essas situações aparecem na tarefa da escola, numa brincadeira e nas pequenas responsabilidades de casa. Você quer ajudar seu filho a participar delas com mais recursos, respeitando o jeito e o ritmo dele.
+**sections[0].intro**: Começar uma tarefa, conferir uma resposta e explicar uma dúvida são situações da escola e de casa. Seu filho encontra oportunidades de praticar essas ações com orientação, respeitando seu ritmo e o apoio de que precisa.
 
-**sections[0].paras[0]**: Uma atividade com objetivo, escolhas e resultado visível oferece uma oportunidade de prática. Na Comunidade, a programação de jogos reúne essas partes em projetos orientados. O interesse pode começar pela história, pelos personagens ou pela vontade de criar algo próprio.
+**sections[0].paras[0]**: Planejar, testar uma hipótese e rever uma tentativa oferecem oportunidades de exercitar funções executivas usadas nos contextos da vida diária. A criação de jogos reúne um objetivo, escolhas e resultados que ele consegue observar. O interesse pode começar pela história, pelos personagens ou pela vontade de criar algo próprio.
 
 **sections[0].visual.image.alt**: Zappy e os mascotes exploram um caminho com passos e escolhas.
 
@@ -81,6 +81,8 @@
 **sections[1].cards[2][1]**: A orientação ajuda a localizar a dificuldade. Depois do ajuste, ele pode mostrar o que mudou e contar como chegou à solução.
 
 **sections[1].paras[0]**: O ciclo de criação é imaginar, planejar, construir, testar, melhorar e compartilhar. O jogo dá uma tarefa concreta para exercitar essas ações. As aulas oferecem orientação; a criança participa das escolhas e das tentativas.
+
+**sections[1].paras[1]**: Ao escolher um personagem, mudar a posição de um objeto ou escrever um aviso, seu filho pode observar o efeito da própria decisão. Ao escolher uma coisa, ele abre mão de outra e vê o que essa escolha provocou: aprende causa e consequência e exercita a tolerância à frustração.
 
 **sections[1].visual.image.alt**: Blocos reais da Chave do Farol no Estúdio.
 
@@ -200,7 +202,7 @@
 
 **sections[6].cards[2][1]**: Veja se ele consegue apontar uma mudança ou explicar uma escolha. Pode participar falando, mostrando na tela ou convidando você para jogar.
 
-**sections[6].paras[0]**: Compare seu filho com o próprio percurso. O apoio pode variar entre atividades; reconhecer que precisa de ajuda também faz parte da autonomia. Para crianças menores de 9 anos, o responsável acompanha durante as atividades.
+**sections[6].paras[0]**: Compare seu filho com o próprio percurso. O apoio pode variar entre atividades; reconhecer que precisa de ajuda também faz parte da autonomia. Abaixo de 9 anos, fique ao lado durante as atividades: ajude na leitura e nos controles e deixe que ele escolha e teste com você.
 
 **sections[6].visual.image.alt**: Área dos pais com sugestões de perguntas para conversar sobre uma criação.
 
@@ -326,11 +328,11 @@
 
 **faq[1].question**: Para qual idade a Comunidade foi pensada?
 
-**faq[1].answer**: Para que crianças e adolescentes de 9 a 17 anos possam participar com mais autonomia, conforme sua leitura e sua familiaridade com o computador. Crianças menores também podem fazer, acompanhadas por um responsável durante as atividades. A idade orienta o ponto de partida; a ajuda depende de cada criança.
+**faq[1].answer**: Para crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos, um responsável acompanha durante as atividades: ajuda na leitura e nos controles, enquanto a criança escolhe e testa junto. A partir dos 9, a autonomia varia conforme o momento e a familiaridade com o computador. A idade orienta a proposta; o apoio considera o jeito e as necessidades de cada criança.
 
 **faq[2].question**: Meu filho é autista. Como saber se a proposta combina com ele?
 
-**faq[2].answer**: Observe seu interesse pela atividade, como compreende as orientações e de que apoio precisa. É possível pausar, rever e participar falando, apontando ou mostrando na tela. Comecem juntos e ajustem a duração e a ajuda. A Comunidade é uma proposta educacional; não oferece avaliação ou tratamento clínico nem promete um resultado igual para todas as crianças.
+**faq[2].answer**: Observe seu interesse pela atividade, como compreende as orientações e de que apoio precisa, em qualquer idade. É possível pausar, rever e participar falando, apontando ou mostrando na tela. Comecem juntos e ajustem a duração e a ajuda. A Comunidade é uma proposta educacional; não oferece avaliação ou tratamento clínico nem promete um resultado igual para todas as crianças.
 
 **faq[3].question**: Ele precisa gostar de videogame ou saber programar?
 
@@ -348,25 +350,29 @@
 
 **faq[6].answer**: Vocês podem enviar uma dúvida por escrito nos Recados, mostrando o que tentaram e onde pararam. A equipe responde por mensagens, sem aula individual ao vivo. O responsável continua ajudando conforme a necessidade da criança; para os menores de 9 anos, acompanha durante as atividades.
 
-**faq[7].question**: Todas as ferramentas ficam liberadas no primeiro dia?
+**faq[7].question**: E se ele se frustrar ou quiser parar?
 
-**faq[7].answer**: Os recursos acompanham a Jornada do Criador. Nas primeiras aulas, ele usa o Estúdio dentro do curso. Ao cumprir os requisitos e publicar os projetos do posto inicial, abrem o Estúdio livre e o Pinta. Outros recursos chegam nos postos seguintes. A assinatura mantém acesso aos recursos incluídos e aos cursos publicados durante seu período ativo.
+**faq[7].answer**: Acolha o desconforto e ajude a localizar a parte que ficou difícil. Vocês podem pausar, rever uma orientação ou escolher uma tentativa menor. O objetivo é oferecer oportunidades de aprender com o desafio, respeitando o ritmo da criança. As aulas gravadas permitem retomar depois, durante o acesso.
 
-**faq[8].question**: O Pensa e a ajuda do Zappy têm limites de uso?
+**faq[8].question**: Todas as ferramentas ficam liberadas no primeiro dia?
 
-**faq[8].answer**: A ajuda do Zappy no Estúdio e o Pensa usam inteligência artificial e consomem créditos, com limites por dia e por mês compartilhados pelos perfis da família. Você acompanha o saldo na sua área. As falas do Zappy nas aulas são preparadas pela equipe e não consomem esses créditos.
+**faq[8].answer**: Os recursos acompanham a Jornada do Criador. Nas primeiras aulas, ele usa o Estúdio dentro do curso. Ao cumprir os requisitos e publicar os projetos do posto inicial, abrem o Estúdio livre e o Pinta. Outros recursos chegam nos postos seguintes. A assinatura mantém acesso aos recursos incluídos e aos cursos publicados durante seu período ativo.
 
-**faq[9].question**: São dois perfis com a mesma assinatura?
+**faq[9].question**: O Pensa e a ajuda do Zappy têm limites de uso?
 
-**faq[9].answer**: Sim. A assinatura Kids permite até dois perfis de crianças ou adolescentes, cada um com seu progresso. O responsável administra o acesso pela própria conta.
+**faq[9].answer**: A ajuda do Zappy no Estúdio e o Pensa usam inteligência artificial e consomem créditos, com limites por dia e por mês compartilhados pelos perfis da família. Você acompanha o saldo na sua área. As falas do Zappy nas aulas são preparadas pela equipe e não consomem esses créditos.
 
-**faq[10].question**: Como funcionam pagamento, renovação e cancelamento?
+**faq[10].question**: São dois perfis com a mesma assinatura?
 
-**faq[10].answer**: O mensal custa {{preco_mensal}} e renova todo mês no cartão. O anual custa {{preco_anual}}: no Pix, é um pagamento à vista sem renovação automática; no cartão, renova uma vez por ano. Você cancela em Conta → Minhas compras, sem multa, e mantém o acesso até o fim do período pago. Nos primeiros sete dias, pode pedir a devolução integral do valor.
+**faq[10].answer**: Sim. A assinatura Kids permite até dois perfis de crianças ou adolescentes, cada um com seu progresso. O responsável administra o acesso pela própria conta.
 
-**faq[11].question**: Se eu cancelar, o trabalho dele desaparece?
+**faq[11].question**: Como funcionam pagamento, renovação e cancelamento?
 
-**faq[11].answer**: Perfil, progresso, projetos salvos, certificados e posto da Jornada ficam na conta. Os jogos publicados continuam disponíveis para jogar. O acesso aos cursos e às ferramentas da assinatura termina ao acabar o período pago; os registros preservados permitem retomar o percurso se vocês voltarem a assinar.
+**faq[11].answer**: O mensal custa {{preco_mensal}} e renova todo mês no cartão. O anual custa {{preco_anual}}: no Pix, é um pagamento à vista sem renovação automática; no cartão, renova uma vez por ano. Você cancela em Conta → Minhas compras, sem multa, e mantém o acesso até o fim do período pago. Nos primeiros sete dias, pode pedir a devolução integral do valor.
+
+**faq[12].question**: Se eu cancelar, o trabalho dele desaparece?
+
+**faq[12].answer**: Perfil, progresso, projetos salvos, certificados e posto da Jornada ficam na conta. Os jogos publicados continuam disponíveis para jogar. O acesso aos cursos e às ferramentas da assinatura termina ao acabar o período pago; os registros preservados permitem retomar o percurso se vocês voltarem a assinar.
 
 **closing.title**: Comecem por uma criação. Acompanhem as escolhas que ele faz pelo caminho.
 

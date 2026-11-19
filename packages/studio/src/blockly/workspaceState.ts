@@ -37,6 +37,7 @@ import {
   gameKit3DGameplayStatementToBlock,
 } from '../official-extensions/game-3d-advanced/gameplayCodec'
 import { gameKit3DModelStatementToBlock } from '../official-extensions/game-3d-advanced/modelCodec'
+import { sceneGameKit3DStatementToBlock } from '../official-extensions/game-3d-advanced/sceneCodec'
 import {
   gameRulesExpressionToBlock,
   gameRulesStatementToBlock,
@@ -5633,6 +5634,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       raw: rawJSBlock,
     }
     const model =
+      sceneGameKit3DStatementToBlock(stmt, codecTools) ??
       gameKit3DModelStatementToBlock(stmt, codecTools) ??
       gameKit3DGameplayStatementToBlock(stmt, codecTools)
     if (model) return model

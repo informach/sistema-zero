@@ -1,10 +1,29 @@
 import { expect, test } from 'bun:test'
+import { resolve } from 'node:path'
 import ts from 'typescript'
 import { gameKit3DRuntime } from '../runtime'
 
 const RUNTIME_FILE = 'game-3d-advanced-runtime.generated.js'
-const HOST_CONTRACT_FILE = 'game-3d-advanced-runtime-host.d.ts'
+const HOST_CONTRACT_FILE = resolve(
+  import.meta.dir,
+  'game-3d-advanced-runtime-host.d.ts',
+).replaceAll('\\', '/')
 const HOST_CONTRACT = `
+interface PontoDoSDK { x: number; y: number; z: number }
+interface CenaDoSDK {
+  dados: { nos: { volume: { max: { y: number } } }[] }
+  colisoes: {
+    limiteInferior: number | null
+    rastrear(de: unknown, ate: unknown): { ponto: PontoDoSDK; normal: PontoDoSDK; distancia: number } | null
+  }
+  fisica: {
+    active(): boolean
+    resolve(pes: PontoDoSDK, altura: number, raio: number): { position: PontoDoSDK; normals: PontoDoSDK[] }
+  }
+  atualizar(dt: number): void
+  quadro(camera: unknown, alvo: unknown): void
+  descartar(): void
+}
 interface SZGame3DAsset {
   kind?: string
   dataUrl?: string
@@ -12,6 +31,7 @@ interface SZGame3DAsset {
 
 interface Window {
   SZGameKit3D: unknown
+  SZScene3D?: import('../../../three/scene3dProtocol').Scene3DProtocol<unknown, {maxTextura?: number}, CenaDoSDK, CenaDoSDK, {posicao: PontoDoSDK; giro: number}>
   SZGameUIFont: { id: string; family: string; install(): void }
   __SZGAME_ASSETS?: Record<string, SZGame3DAsset>
   __SZGAME_ASSETS_3D?: Record<string, SZGame3DAsset>
@@ -41,6 +61,8 @@ test('o runtime injetado não contém referências ou propriedades semanticament
     noUnusedParameters: true,
     skipLibCheck: true,
     target: ts.ScriptTarget.ES2022,
+    // This injected program has a browser ABI, independently of the Bun test host.
+    types: [],
   }
   const defaultHost = ts.createCompilerHost(options)
   const virtualSources = new Map([

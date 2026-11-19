@@ -76,6 +76,8 @@ describe('Guarda dos template literals do Mundo 3D', () => {
   it('manifest.ts: o docs escapa a crase (é markdown — a tentação é grande)', () => {
     const src = readFileSync(join(DIR, 'manifest.ts'), 'utf8')
     expect(rawBackticksInside(src, 'docs: ')).toEqual([])
+    const docs = readFileSync(join(DIR, 'docs.ts'), 'utf8')
+    expect(rawBackticksInside(docs, 'world3DDocs =')).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {

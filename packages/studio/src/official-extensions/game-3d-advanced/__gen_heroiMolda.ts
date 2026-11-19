@@ -10,8 +10,11 @@
  *
  * `bun run gen:game-3d-examples` regrava a IR em examples.ts a partir daqui.
  */
+import { CAMPO_DO_HEROI_ID } from './sceneExampleAssets'
+
 export const HEROI_MOLDA_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 30, sky: "#7dd3fc", ground: "#4ade80" });
+SZGameKit3D.loadScene(${JSON.stringify(CAMPO_DO_HEROI_ID)});
 SZGameKit3D.setScreenText("inicio", "Herói do Molda", "Um herói feito no Molda! Ande com WASD, pule com espaço e pegue as cinco estrelas. Cuidado com os flocos de gelo: eles congelam o herói. Troque pelo seu herói e use os nomes das animações dele.", "Jogar");
 SZGameKit3D.setScreenText("vitoria", "Todas as estrelas!", "O seu herói pegou as cinco.", "Jogar de novo");
 SZGameKit3D.defineMold("heroi", { health: 3, speed: 5 }, function () {
@@ -32,6 +35,7 @@ SZGameKit3D.setStateAnim("heroi", "parado", "Acenar");
 SZGameKit3D.setStateAnim("heroi", "andando", "Esticar");
 SZGameKit3D.onEnterState("jogando", function () {
   const heroi = SZGameKit3D.spawn("heroi", 0, 0, 0);
+  SZGameKit3D.sceneStart(heroi);
   SZGameKit3D.cameraFollow(heroi, 8, 4);
   SZGameKit3D.spawn("estrela", 6, 0, 6);
   SZGameKit3D.spawn("estrela", -6, 0, 6);

@@ -1,8 +1,7 @@
 /**
  * Run after `bun run build`: node --import tsx tests/browser/comunidade-oferta.ts
  *
- * As páginas de oferta da Comunidade dos Criadores (20/10/2026): Kids 9 a 17 (`/oferta`), menor de
- * 9 (`/oferta/criar-junto`), continuidade Kids (`/oferta/continuar`), a adulta
+ * Oferta Kids unificada de 5 a 17 anos (`/oferta`), continuidade Kids (`/oferta/continuar`), a adulta
  * (`/pro/comunidade-dos-criadores/oferta`) e a continuidade adulta (`/oferta/continuar`). Sobe o
  * build com um catálogo falso (preços diferentes da reserva editorial, para provar que o SSR usa o
  * catálogo) e confere, em cada página: status, um h1, âncoras e ids, imagens, preços ao vivo,
@@ -112,17 +111,8 @@ interface Pagina {
 }
 const PAGINAS: Pagina[] = [
   {
-    nome: 'kids-9a17',
+    nome: 'kids-5a17',
     path: `${kidsBase}/oferta`,
-    basePath: kidsBase,
-    mensal: 'comunidade-dos-criadores-mensal',
-    anual: 'comunidade-dos-criadores-anual',
-    precos: [/109/, /899/],
-    nome_campo: 'Nome do responsável',
-  },
-  {
-    nome: 'kids-criar-junto',
-    path: `${kidsBase}/oferta/criar-junto`,
     basePath: kidsBase,
     mensal: 'comunidade-dos-criadores-mensal',
     anual: 'comunidade-dos-criadores-anual',
@@ -269,10 +259,16 @@ try {
     const texto = await page.locator('body').innerText()
     if (p.nome.startsWith('kids-')) {
       const copy = await page.locator('main').innerText()
-      if (p.nome === 'kids-9a17') mainKidsCopy = copy
+      if (p.nome === 'kids-5a17') mainKidsCopy = copy
       if (p.nome === 'kids-continuar') {
         assert.equal(copy.replace('Continue ajudando', 'Ajude'), mainKidsCopy)
       }
+      assert.match(copy, /5 a 17 anos/)
+      assert.match(copy, /abaixo de 9, com acompanhante/)
+      assert.match(copy, /habilidades cognitivas para a vida/)
+      assert.match(copy, /funções executivas/)
+      assert.match(copy, /causa e consequência/)
+      assert.match(copy, /tolerância à frustração/)
       assert.equal(await page.locator('footer').count(), 1)
       assert.equal(await page.locator('.c9-rodape,.cm9-faixa').count(), 0)
       assert.doesNotMatch(texto, /R\$\s*(97|970)(?:\D|$)/, 'FAQ also uses catalog prices')
@@ -397,19 +393,21 @@ try {
   }
   assert.equal(visiblePages[0], visiblePages[1], 'Only the adult continuation headline changes')
 
-  // As cinco páginas de perfil (até 20/10/2026) levam à página 9 a 17, com a mesma query.
+  // Criar-junto e os cinco perfis antigos levam à oferta 5 a 17 com cupom e atribuição intactos.
+  const queryLegada = '?cupom=QA&utm_source=embaixador&utm_medium=whatsapp&utm_campaign=familia'
   for (const antiga of [
+    'criar-junto',
     'tempo-de-tela',
     'criacao-de-jogos',
     'expressao-visual',
     'formacao-tecnologica',
     'habilidades-escolares',
   ]) {
-    const res = await page.request.get(`${origin}${kidsBase}/oferta/${antiga}?cupom=QA`, {
+    const res = await page.request.get(`${origin}${kidsBase}/oferta/${antiga}${queryLegada}`, {
       maxRedirects: 0,
     })
     assert.equal(res.status(), 301, antiga)
-    assert.equal(res.headers().location, `${kidsBase}/oferta?cupom=QA`, antiga)
+    assert.equal(res.headers().location, `${kidsBase}/oferta${queryLegada}`, antiga)
   }
   // A Como funciona (até 20/10/2026) leva à experiência da página de 9 a 17, com a mesma query.
   const comoFunciona = await page.request.get(`${origin}/como-funciona/?utm_source=qa`, {

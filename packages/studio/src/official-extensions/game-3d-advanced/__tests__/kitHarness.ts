@@ -357,13 +357,12 @@ export async function loadExampleKit(
   const api = win.SZGameKit3D as KitApi
   // O exemplo referencia o identificador SZGameKit3D "solto" — entra como
   // parâmetro (não confiar no reflexo de globais do happy-dom).
+  const ready = new Promise<void>((resolve) => api.onEnterState('menu', resolve))
   new Function('SZGameKit3D', 'window', exampleJs)(api, win)
-  // O start() do fim do exemplo espera Promise.all(pending). Os exemplos são
-  // asset-free (pending vazio, resolve num microtick), mas o poll fica: se um
-  // dia um exemplo ganhar asset e o gate regredir, é AQUI que ele congela.
-  for (let i = 0; i < 60 && !renderers[0]?.loop; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 5))
-  }
+  // O próprio evento do motor confirma modelos/cenário prontos; o prazo do teste
+  // continua responsável por detectar uma carga que nunca conclui.
+  await ready
+  await Promise.resolve()
   if (!renderers[0]?.loop) {
     throw new Error(`o loop nunca ligou — preso em "carregando"? estado: ${api.state()}`)
   }

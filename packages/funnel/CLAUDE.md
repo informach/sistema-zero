@@ -1,5 +1,13 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
+
+A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.
+
+`/oferta/criar-junto` é endereço antigo: 301 à principal, com a query intacta (cupom e atribuição). Saiu do sitemap, do despacho de corpos e dos novos destinos dos quizzes. O corpo, a copy tipada e o CSS separados foram retirados; o espelho anterior está em `docs/marketing/kids/comunidade-dos-criadores/copy/historico/2026-11-19-criar-junto/`. Os dois espelhos ativos são gerados por `bun scripts/espelho-copy-comunidade.ts`.
+
+Preços, seleção de plano, garantia, créditos, dois perfis e requisitos da Jornada continuam iguais. A FAQ explica acompanhamento abaixo de 9, apoio em qualquer idade e como acolher a frustração. Verificação: contratos de oferta e quiz, tipo/build e browser `tests/browser/comunidade-oferta.ts`, incluindo HTTP 301 com cupom/UTMs, planos e larguras de 320 a 1440.
+
 ## Página do minicurso gratuito para pais (18/11/2026)
 
 `/kids/vilao-em-aliado` é a página pública e indexável do curso para pais "Transformando o vilão em

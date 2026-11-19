@@ -9,6 +9,7 @@ import { gameKit3DGameplayRuntimeSource } from '../runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from '../runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from '../runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from '../runtimeProject'
+import { gameKit3DSceneRuntimeSource } from '../runtimeScene'
 
 /**
  * ⭐ A guarda que eu devia ter escrito na primeira vez.
@@ -68,6 +69,9 @@ describe('Guarda dos template literals do kit 3D', () => {
 
     const project = readFileSync(join(DIR, 'runtimeProject.ts'), 'utf8')
     expect(rawBackticksInside(project, 'gameKit3DProjectRuntimeSource =')).toEqual([])
+    const scene = readFileSync(join(DIR, 'runtimeScene.ts'), 'utf8')
+    expect(rawBackticksInside(scene, 'gameKit3DSceneRuntimeSource =')).toEqual([])
+    expect(gameKit3DSceneRuntimeSource).toContain('function loadScene(')
 
     const gameplay = readFileSync(join(DIR, 'runtimeGameplay.ts'), 'utf8')
     expect(rawBackticksInside(gameplay, 'gameKit3DGameplayRuntimeSource =')).toEqual([])
@@ -81,6 +85,8 @@ describe('Guarda dos template literals do kit 3D', () => {
   it('manifest.ts: o docs escapa a crase (é markdown — a tentação é grande)', () => {
     const src = readFileSync(join(DIR, 'manifest.ts'), 'utf8')
     expect(rawBackticksInside(src, 'docs: ')).toEqual([])
+    const fullDocs = readFileSync(join(DIR, 'docs.ts'), 'utf8')
+    expect(rawBackticksInside(fullDocs, 'gameKit3DDocs =')).toEqual([])
   })
 
   it('os módulos avaliam e entregam strings não-vazias (a prova final)', () => {

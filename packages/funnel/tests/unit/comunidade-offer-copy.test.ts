@@ -37,7 +37,6 @@ import {
   PAGINA_CONTINUAR,
   RELATOS_CONTINUAR,
 } from '../../src/funnels/comunidade-dos-criadores/oferta/pagina-continuar'
-import { PAGINA_MENOR9 } from '../../src/funnels/comunidade-dos-criadores/oferta/pagina-menor9'
 import { RELATOS, RELATOS_RESERVA } from '../../src/funnels/comunidade-dos-criadores/oferta/relatos'
 import type { RelatoId } from '../../src/funnels/comunidade-dos-criadores/oferta/types'
 import {
@@ -49,16 +48,13 @@ const SRC = join(import.meta.dir, '..', '..', 'src')
 const PASTA_IMG = join(SRC, '..', 'public', 'img', 'comunidade-dos-criadores')
 const source = (...parts: string[]) => readFileSync(join(SRC, ...parts), 'utf8')
 const raw917 = source('components', 'funnel', 'oferta', 'Comunidade917Body.astro')
-const rawMenor9 = source('components', 'funnel', 'oferta', 'ComunidadeMenor9Body.astro')
 const rawContinuar = source('components', 'funnel', 'oferta', 'ComunidadeContinuarBody.astro')
 const PAGINAS = [
   ['9a17', PAGINA_9A17],
-  ['criar-junto', PAGINA_MENOR9],
   ['continuar', PAGINA_CONTINUAR],
 ] as const
 const publicCopy = JSON.stringify({
   pagina917: PAGINA_9A17,
-  paginaMenor9: PAGINA_MENOR9,
   paginaContinuar: PAGINA_CONTINUAR,
   relatos: RELATOS,
 })
@@ -86,21 +82,20 @@ const arquivosDe = (modulo: unknown): string[] => {
   return achados
 }
 
-// Contratos editoriais e comerciais das páginas de oferta Kids (20/10/2026): 9 a 17 em `/oferta`,
-// "criar junto" (menor de 9) e a continuidade. O HTML, as âncoras e a responsividade ficam nos
-// testes de navegador.
-describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
-  test('três endereços; as cinco páginas de perfil de antes redirecionam para a de 9 a 17', () => {
+// Contratos da oferta Kids unificada (19/11/2026): 5 a 17 em /oferta e continuidade.
+// Criar-junto é um endereço histórico com 301. O comportamento HTTP é coberto no navegador.
+describe('Comunidade Kids: 5 a 17 e continuidade', () => {
+  test('oferta única e continuidade; criar-junto e os cinco perfis antigos redirecionam', () => {
     expect(comunidadeOfferPath('9a17')).toBe('/kids/comunidade-dos-criadores/oferta')
-    expect(comunidadeOfferPath('criar-junto')).toBe(
-      '/kids/comunidade-dos-criadores/oferta/criar-junto',
-    )
+    expect(comunidadeOfferPath('criar-junto')).toBe('/kids/comunidade-dos-criadores/oferta')
     expect(comunidadeOfferPath('continuar')).toBe('/kids/comunidade-dos-criadores/oferta/continuar')
-    for (const id of ['criar-junto', 'continuar']) expect(isComunidadeSubpagina(id)).toBe(true)
+    expect(isComunidadeSubpagina('continuar')).toBe(true)
+    expect(isComunidadeSubpagina('criar-junto')).toBe(false)
     for (const value of [undefined, '', '9a17', 'tempo-de-tela', 'toString', '__proto__'])
       expect(isComunidadeSubpagina(value)).toBe(false)
     expect([...COMUNIDADE_OFERTAS_ANTIGAS].sort()).toEqual([
       'criacao-de-jogos',
+      'criar-junto',
       'expressao-visual',
       'formacao-tecnologica',
       'habilidades-escolares',
@@ -115,7 +110,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     // O corpo é escolhido pela chave do funil: um funil novo nunca cai na página do Desafio.
     const despacho = source('components', 'funnel', 'OfertaPage.astro')
     expect(despacho).toContain('Funil sem corpo de oferta declarado')
-    expect(despacho).toContain("comunidadePage === 'criar-junto'")
+    expect(despacho).not.toContain('ComunidadeMenor9Body')
     expect(despacho).toContain('<ComunidadeContinuarBody {...bodyProps} plans={plans} />')
   })
 
@@ -178,7 +173,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('mesmo e-mail')
     expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('não são somados')
     expect(JSON.stringify(PAGINA_CONTINUAR)).not.toContain('9 a 14')
-    expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('9 a 17')
+    expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('5 a 17')
     const perguntas = PAGINA_CONTINUAR.faq.map((item) => item.question)
     expect(new Set(perguntas).size).toBe(perguntas.length)
   })
@@ -212,7 +207,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
 
   test('o espelho editorial (copy/pagina-*.md) é exatamente a copy que cada página renderiza', () => {
     // Gerado por scripts/espelho-copy-comunidade.ts: mudou a copy, rode o script (README da copy).
-    expect(Object.keys(MODULOS_ESPELHO).sort()).toEqual(['9a17', 'continuar', 'criar-junto'])
+    expect(Object.keys(MODULOS_ESPELHO).sort()).toEqual(['9a17', 'continuar'])
     for (const { arquivo, modulo } of Object.values(MODULOS_ESPELHO)) {
       const doc = readFileSync(join(PASTA_ESPELHO, arquivo), 'utf8').replaceAll('\r\n', '\n')
       expect([arquivo, doc]).toEqual([arquivo, espelhoDoModulo(modulo)])
@@ -271,7 +266,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     })
     for (const aviso of [valido.aviso, invalido.aviso])
       expect(lintLightCopy(aviso?.texto ?? '')).toEqual([])
-    for (const corpo of [raw917, rawMenor9]) {
+    for (const corpo of [raw917]) {
       expect(corpo).toContain('const cupom = cupomDaOferta(coupon)')
       expect(corpo).toContain('couponCode={cupom.codigo}')
       expect(corpo).toContain("role={cupom.aviso.alerta ? 'alert' : undefined}")
@@ -279,7 +274,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
   })
 
   test('preços vêm do catálogo e cada plano mantém sua seleção no pré-checkout', () => {
-    for (const corpo of [raw917, rawMenor9]) {
+    for (const corpo of [raw917]) {
       expect(corpo).toContain('plans?.main.intervalMonths === n')
       expect(corpo).toContain('mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents')
       expect(corpo).toContain('anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents')
@@ -361,7 +356,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
       const repetidas = [...new Set(conteudo.filter((a, i) => conteudo.indexOf(a) !== i))]
       expect([nome, repetidas]).toEqual([
         nome,
-        nome === 'criar-junto' ? [] : ['/img/desafio-primeiro-jogo/farol-estudio-real.webp'],
+        ['/img/desafio-primeiro-jogo/farol-estudio-real.webp'],
       ])
     }
   })
@@ -401,23 +396,15 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(source('components', 'funnel', 'oferta', 'ComunidadePraticaRelato.astro')).toContain(
       'const relato = RELATOS[id]',
     )
-    // Toda fala guardada aparece em alguma página (9 a 17, criar junto, continuidade, cartas do
+    // Toda fala guardada aparece em alguma página (oferta unificada, continuidade, cartas do
     // resultado do quiz ou citada numa dúvida) ou está na reserva, com o motivo.
     const citadas = new Set<string>([
       ...RELATOS_9A17,
       ...RELATOS_CONTINUAR,
-      ...relatosNoModulo('funnels', 'comunidade-dos-criadores', 'oferta', 'pagina-menor9.ts'),
       ...relatosNoModulo('funnels', 'comunidade-dos-criadores', 'quiz', 'result-copy-9a17.ts'),
       ...relatosNoModulo('funnels', 'comunidade-dos-criadores', 'quiz', 'result-copy-m9.ts'),
     ])
-    for (const id of relatosNoModulo(
-      'funnels',
-      'comunidade-dos-criadores',
-      'oferta',
-      'pagina-menor9.ts',
-    ))
-      expect([id, id in RELATOS]).toEqual([id, true])
-    const duvidas = JSON.stringify([PAGINA_9A17.faq, PAGINA_MENOR9.duvidas, PAGINA_CONTINUAR.faq])
+    const duvidas = JSON.stringify([PAGINA_9A17.faq, PAGINA_CONTINUAR.faq])
     for (const [id, relato] of Object.entries(RELATOS)) {
       const citada = citadas.has(id) || duvidas.includes(relato.fala)
       const reserva = id in RELATOS_RESERVA

@@ -18,7 +18,7 @@ export interface FisicaDaCena3D {
     position: Ponto
     normals: readonly Ponto[]
   }
-  raycast(from: Ponto, to: Ponto): { distance: number } | null
+  raycast(from: Ponto, to: Ponto): { distance: number; normal: Ponto } | null
 }
 
 export function criarFisicaDaCena3D(
@@ -40,7 +40,12 @@ export function criarFisicaDaCena3D(
         ponto.set(from.x, from.y, from.z),
         destino.set(to.x, to.y, to.z),
       )
-      return contato ? { distance: contato.distancia } : null
+      return contato
+        ? {
+            distance: contato.distancia,
+            normal: { x: contato.normal.x, y: contato.normal.y, z: contato.normal.z },
+          }
+        : null
     },
   }
 }

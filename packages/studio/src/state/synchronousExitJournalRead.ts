@@ -1,10 +1,10 @@
 import { decodeExitJournal } from './exitJournalDecode'
+import type { ExitJournalEntry } from './synchronousExitJournal'
 import {
   EXIT_JOURNAL_PREFIX,
-  type ExitJournalEntry,
   ExitJournalError,
   exitJournalUnavailable,
-} from './synchronousExitJournal'
+} from './synchronousExitJournalProbe'
 
 export function readSynchronousExitJournal(
   storage: Storage | undefined,

@@ -443,7 +443,7 @@ describe('Comunidade v6: o resultado em conversa', () => {
       rotulo: 'Ver as ideias dela virando jogo',
     })
     expect(r.tema).toBe('kids-m9')
-    expect(r.destino).toBe('/kids/comunidade-dos-criadores/oferta/criar-junto')
+    expect(r.destino).toBe('/kids/comunidade-dos-criadores/oferta')
     expect(r.blocos.find((b) => b.tipo === 'relato')).toMatchObject({
       texto: RELATOS.AV03.fala,
       autor: 'Débora, aluna, 7 anos',
@@ -579,7 +579,7 @@ describe('Comunidade v6: o resultado em conversa', () => {
       quiz_version: QUIZ_VERSION,
       ramo: 'm9',
       perfil_principal: 'B',
-      destino: '/kids/comunidade-dos-criadores/oferta/criar-junto',
+      destino: '/kids/comunidade-dos-criadores/oferta',
     })
     expect(buildCommunityResult(answers917({ idade: '18_mais' }))).toBeNull()
   })

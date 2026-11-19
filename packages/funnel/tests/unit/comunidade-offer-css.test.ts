@@ -24,7 +24,6 @@ const semComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
  */
 const novos = {
   'comunidade-917.css': '.c917',
-  'comunidade-menor9.css': '.cm9',
   'resultado-conversa.css': '.rc',
   'quiz-spin.css': '.qz',
   // A página adulta (arcade): as cores moram só nos tokens `--cda-*` do theme-arcade.css.

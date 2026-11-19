@@ -1,5 +1,4 @@
 import type { EditableStudioProject } from '../core/editableProject'
-import { perfSpanAsync } from '../core/perf'
 import type { ProjectAsset } from '../core/projectAssets'
 import {
   CURRENT_PROJECT_FORMAT_VERSION,
@@ -9,18 +8,20 @@ import {
 } from '../core/projectDocument'
 import { cancelPendingAutosavesFor } from '../persistence/service'
 import { hasStaleJavaScriptBridgeBlocks } from './bridgeAuthority'
-import {
-  conditionalGeneration,
-  conditionalWrite,
-  readAllKeys,
-  readValue,
-  readValues,
-} from './idbTransaction'
+import { conditionalGeneration, conditionalWrite, readAllKeys, readValue } from './idbTransaction'
 import { notifyProBuilderDeletion, proBuilderDeletionKey } from './proBuilderDeletion'
+import { loadHistoricalProject } from './projectListStorage'
 import { isProjectOpening } from './projectOpening'
 import {
+  notifyMirrorChanged,
+  notifyMirrorDeleted,
+  notifyMirrorThumbChanged,
+  notifyProjectChanged,
+  notifyRecoveredProjects,
+  notifyThumbUpdated,
+} from './projectPersistenceEvents'
+import {
   coordinatedProjectWrite,
-  listPreservedProjectDrafts,
   loadRecoverableProjectDraft,
   mutateProjectRecord,
   recoverProjectWrites,
@@ -29,9 +30,6 @@ import {
 } from './projectStorageCoordinator'
 import {
   APPLICATION_BUDGET_KEY,
-  localV3BaseIds,
-  PROJECT_META_KEY_PREFIX,
-  PROJECT_RECOVERY_PREFIX,
   PROJECT_STORAGE_VERSION,
   projectApplicationsKey,
   projectAssetsKey,
@@ -40,7 +38,6 @@ import {
   projectHeadKey,
   projectMetaKey,
   projectMigrationKey,
-  projectRecoveryPrefix,
   projectStateKey,
   projectThumbKey,
 } from './projectStorageKeys'
@@ -63,36 +60,24 @@ import {
   scopedProjectIdentity,
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
-import { type ProjectSummary, toProjectSummary } from './projectSummary'
-import { hasSynchronousExitJournal } from './synchronousExitJournal'
+import type { ProjectSummary } from './projectSummary'
+import { MAX_PROJECT_THUMB_CHARS, thumbDataUrlOf } from './projectThumbData'
 
+export {
+  listAllProjects,
+  listProjectSummariesLight,
+  loadProjectSummariesByIds,
+  loadProjectSummaryById,
+} from './projectListStorage'
+export {
+  PROJECT_CHANGED_EVENT,
+  PROJECT_THUMB_UPDATED_EVENT,
+  type ProjectChangedDetail,
+  type StudioCloudMirror,
+  setStudioCloudMirror,
+} from './projectPersistenceEvents'
 export type { ProjectSummary } from './projectSummary'
-/** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
-export const MAX_PROJECT_THUMB_CHARS = 300_000
-/** Evento de janela disparado quando uma miniatura termina de gravar. */
-export const PROJECT_THUMB_UPDATED_EVENT = 'sz:project-thumb-updated'
-/**
- * Evento da PÁGINA (`CustomEvent<{ id, deleted? }>`) disparado depois de toda escrita/apagamento
- * de projeto local — inclusive as silenciosas para a nuvem (restauro), porque o silêncio é para
- * o espelho, não para a lista. A lista de projetos relê SÓ aquele item (`loadProjectSummaryById`)
- * em vez de recarregar tudo (meta + capas de todos) a cada renomear/duplicar/apagar/restauro.
- */
-export const PROJECT_CHANGED_EVENT = 'sz:project-changed'
-export interface ProjectChangedDetail {
-  id: string
-  deleted?: boolean
-}
-
-function notifyProjectChanged(id: string, deleted = false): void {
-  if (typeof window === 'undefined') return
-  try {
-    window.dispatchEvent(
-      new CustomEvent<ProjectChangedDetail>(PROJECT_CHANGED_EVENT, { detail: { id, deleted } }),
-    )
-  } catch {
-    // Ambiente sem CustomEvent: a lista recarrega no próximo gesto, como antes.
-  }
-}
+export { MAX_PROJECT_THUMB_CHARS } from './projectThumbData'
 /**
  * Define o namespace do armazenamento local. O HOST chama ANTES de qualquer operação
  * (ProjectList/editor): no Estúdio Completo com o id do perfil kids; vazio = store padrão (a
@@ -102,29 +87,6 @@ function notifyProjectChanged(id: string, deleted = false): void {
 export function setStorageNamespace(namespace: string): void {
   setProjectStorageNamespace(namespace)
 }
-
-/**
- * "Guardado na sua conta" (18/08/2026): o HOST observa TODA escrita e apagamento
- * do armazenamento local por este gancho único — é por aqui que passam o autosave
- * (`PersistenceService`), renomear/duplicar/apagar do `ProjectCard`, o import e a
- * sincronia de desenhos do Pinta. O host relê o snapshot por `loadProjectById(id)`
- * na hora de subir (sempre o estado mais recente). Um só ponto: componentes não
- * sabem que a nuvem existe. `null` desliga (aula, playground, testes).
- */
-export interface StudioCloudMirror {
-  /** Alguma partição do projeto `id` foi gravada (autosave, renomear, assets). */
-  onChanged(id: string): void
-  /** O projeto `id` foi apagado localmente. */
-  onDeleted(id: string): void
-  /**
-   * A MINIATURA do projeto `id` foi gravada (a captura ao sair do editor, a capa escolhida). É
-   * um aviso à parte do `onChanged` de propósito: a capa não muda o `updatedAt` do projeto, e o
-   * host decide se vale uma subida só por ela (só quando a nuvem ainda não tem miniatura).
-   */
-  onThumbChanged?(id: string): void
-}
-
-let cloudMirror: StudioCloudMirror | null = null
 
 /**
  * Registro de projetos ABERTOS em algum editor desta página (qualquer store: a default
@@ -149,44 +111,6 @@ export function markProjectClosed(id: string): void {
 /** O projeto está aberto em algum editor desta página? */
 export function isProjectOpenAnywhere(id: string): boolean {
   return openProjectCounts.has(id)
-}
-
-export function setStudioCloudMirror(mirror: StudioCloudMirror | null): void {
-  cloudMirror = mirror
-}
-
-/** Best-effort: um espelho que lança nunca derruba a gravação local. */
-function notifyMirrorChanged(id: string): void {
-  try {
-    cloudMirror?.onChanged(id)
-  } catch {
-    // O espelho é do host; falha lá é problema de lá.
-  }
-}
-
-function notifyMirrorDeleted(id: string): void {
-  try {
-    cloudMirror?.onDeleted(id)
-  } catch {
-    // idem
-  }
-}
-
-function notifyMirrorThumbChanged(id: string): void {
-  try {
-    cloudMirror?.onThumbChanged?.(id)
-  } catch {
-    // idem
-  }
-}
-
-function notifyThumbUpdated(id: string): void {
-  if (typeof window === 'undefined') return
-  try {
-    window.dispatchEvent(new CustomEvent(PROJECT_THUMB_UPDATED_EVENT, { detail: id }))
-  } catch {
-    // Ambiente sem CustomEvent: a lista relê no próximo gesto.
-  }
 }
 
 function getStore(scope?: ProjectStorageScope) {
@@ -375,21 +299,6 @@ export async function loadProjectById(
   if (current) return current
 
   return loadHistoricalProject(id, storageScope)
-}
-
-function currentProjectSummary(
-  id: string,
-  value: unknown,
-  knownRecord = false,
-): ProjectSummary | null {
-  const summary = toProjectSummary(id, value)
-  if (PROJECT_STORAGE_VERSION !== 4 || (value === undefined && !knownRecord)) return summary
-  if (summary && isRecord(value) && value.id === id && value.storageVersion === 4) return summary
-  return {
-    ...(summary ?? toProjectSummary(id, { name: 'Projeto preservado' }))!,
-    migrationPending: true,
-    hasPreservedEdit: true,
-  }
 }
 
 /**
@@ -761,174 +670,4 @@ export async function adoptProjectThumbs(
     if (await writeProjectThumb(item.id, item.thumb, { silent: true }, captured)) adopted += 1
   }
   return adopted
-}
-
-function thumbDataUrlOf(value: unknown): string | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
-  const dataUrl = (value as { dataUrl?: unknown }).dataUrl
-  if (typeof dataUrl !== 'string') return undefined
-  if (!dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS)
-    return undefined
-  return dataUrl
-}
-
-export function listAllProjects(storageScope?: ProjectStorageScope): Promise<ProjectSummary[]> {
-  return perfSpanAsync('studio:projects:list', () =>
-    listAllProjectsInternal(storageScope, { withThumbs: true }),
-  )
-}
-
-/**
- * A lista LEVE: só os metadados (sem as capas). Para quem só precisa de id/nome/datas —
- * a varredura de desenhos do Pinta e a descida da nuvem comparavam ids pagando 1,5–12 MB
- * de capas em base64 por chamada. A lista de projetos continua usando `listAllProjects`
- * (com capas); o adapter local (`StudioPersistenceAdapter.list`) também.
- */
-export function listProjectSummariesLight(
-  storageScope?: ProjectStorageScope,
-): Promise<ProjectSummary[]> {
-  return perfSpanAsync('studio:projects:list-light', () =>
-    listAllProjectsInternal(storageScope, { withThumbs: false }),
-  )
-}
-
-/**
- * O resumo de UM projeto (meta + capa), para a lista atualizar só o card que mudou
- * (`PROJECT_CHANGED_EVENT`/`PROJECT_THUMB_UPDATED_EVENT`). `null` = não existe mais.
- */
-export async function loadProjectSummaryById(
-  id: string,
-  storageScope?: ProjectStorageScope,
-): Promise<ProjectSummary | null> {
-  const kvStore = getStore(storageScope)
-  const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
-  let summary = currentProjectSummary(id, meta)
-  if (!summary) {
-    const legacy = await loadHistoricalProject(id, storageScope)
-    summary = toProjectSummary(id, legacy)
-  }
-  if (!summary) return null
-  const thumbDataUrl = thumbDataUrlOf(thumb)
-  if (thumbDataUrl) summary.thumbDataUrl = thumbDataUrl
-  return summary
-}
-
-/**
- * Os resumos de VÁRIOS projetos num `getMany` só (meta + capa de cada): a lista drena os
- * ids que chegaram juntos (uma descida da nuvem traz vários) sem N idas ao IndexedDB.
- * Ausente/apagado → `null` na posição.
- */
-export async function loadProjectSummariesByIds(
-  ids: readonly string[],
-  storageScope?: ProjectStorageScope,
-): Promise<Array<ProjectSummary | null>> {
-  if (ids.length === 0) return []
-  const kvStore = getStore(storageScope)
-  const values = await readValues(
-    kvStore,
-    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
-  )
-  const out: Array<ProjectSummary | null> = []
-  for (let index = 0; index < ids.length; index += 1) {
-    const id = ids[index] as string
-    let summary = currentProjectSummary(id, values[index * 2])
-    if (!summary) {
-      const legacy = await loadHistoricalProject(id, storageScope)
-      summary = toProjectSummary(id, legacy)
-    }
-    if (summary) {
-      const thumbDataUrl = thumbDataUrlOf(values[index * 2 + 1])
-      if (thumbDataUrl) summary.thumbDataUrl = thumbDataUrl
-    }
-    out.push(summary)
-  }
-  return out
-}
-
-async function listAllProjectsInternal(
-  storageScope: ProjectStorageScope | undefined,
-  options: { withThumbs: boolean },
-): Promise<ProjectSummary[]> {
-  const scope = storageScope ?? captureProjectStorageScope()
-  const kvStore = scope.store
-  let allKeys = await readAllKeys(kvStore)
-  let pending: ProjectSummary[] = []
-  let blockedReads: Set<string> | undefined
-  if (
-    hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity) ||
-    localV3BaseIds(allKeys).length ||
-    allKeys.some(
-      (key) =>
-        typeof key === 'string' &&
-        (key.startsWith(PROJECT_RECOVERY_PREFIX) ||
-          key.startsWith(projectRecoveryPrefix(3)) ||
-          /^sz:(v2:)?project(?:-(?:meta|files|state|blocks|assets))?:/.test(key)),
-    )
-  ) {
-    const { prepareLocalProjectList } = await import('../project-migrations/localV3Projects')
-    const prepared = await prepareLocalProjectList(scope, allKeys)
-    allKeys = prepared.keys
-    pending = prepared.pending
-    blockedReads = prepared.blockedReads
-    notifyRecoveredProjects(scope, prepared.changed)
-  }
-  const metaKeys = allKeys.filter(
-    (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
-  )
-  const metaValues = await readValues(kvStore, metaKeys)
-  const summaries = metaKeys
-    .map((key, index) =>
-      currentProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index], true),
-    )
-    .filter((summary): summary is ProjectSummary => Boolean(summary))
-  for (const summary of summaries)
-    if (blockedReads?.has(summary.id)) {
-      summary.migrationPending = true
-      summary.hasPreservedEdit = true
-    }
-  const drafts = await listPreservedProjectDrafts(scope, allKeys)
-  const listed = new Set(summaries.map((summary) => summary.id))
-  summaries.push(...drafts.filter((draft) => !listed.has(draft.id)))
-  const preservedIds = new Set(drafts.map((draft) => draft.id))
-  for (const summary of summaries) if (preservedIds.has(summary.id)) summary.hasPreservedEdit = true
-  if (options.withThumbs || PROJECT_STORAGE_VERSION === 4) {
-    const currentIds = new Set(summaries.map((summary) => summary.id))
-    const pendingIds = new Set(pending.map((summary) => summary.id))
-    for (const summary of summaries) if (pendingIds.has(summary.id)) summary.hasPreservedEdit = true
-    summaries.push(...pending.filter((summary) => !currentIds.has(summary.id)))
-  }
-
-  // Anexa as miniaturas (partição própria) aos summaries que têm uma.
-  if (options.withThumbs && summaries.length > 0) {
-    const thumbValues = await readValues(
-      kvStore,
-      summaries.map((summary) => projectThumbKey(summary.id)),
-    )
-    for (let index = 0; index < summaries.length; index += 1) {
-      const summary = summaries[index]
-      const thumb = thumbDataUrlOf(thumbValues[index])
-      if (summary && thumb) summary.thumbDataUrl = thumb
-    }
-  }
-
-  summaries.sort((a, b) => b.updatedAt - a.updatedAt)
-  return summaries
-}
-
-function notifyRecoveredProjects(scope: ProjectStorageScope, ids: readonly string[]): void {
-  if (scope.identity !== captureProjectStorageScope().identity) return
-  for (const id of new Set(ids)) {
-    notifyMirrorChanged(id)
-    notifyProjectChanged(id)
-  }
-}
-
-/** Historical decoding and preparation share the existing rare migration boundary. */
-async function loadHistoricalProject(
-  id: string,
-  storageScope?: ProjectStorageScope,
-): Promise<StoredProjectRecord | null> {
-  const scope = storageScope ?? captureProjectStorageScope()
-  const { loadLocalHistoricalProject } = await import('../project-migrations/localProjects')
-  return loadLocalHistoricalProject(id, scope, (ids) => notifyRecoveredProjects(scope, ids))
 }

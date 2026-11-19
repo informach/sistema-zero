@@ -9,6 +9,7 @@ import { gameKit3DGameplayRuntimeSource } from './runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from './runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from './runtimeProject'
+import { gameKit3DSceneRuntimeSource } from './runtimeScene'
 
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
@@ -762,6 +763,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       updateCamera(0);
 
       worldReady = true;
+      prepareImportedScene();
       return true;
     } catch (e) {
       warn('não consegui montar o mundo 3D: ' + e);
@@ -1741,6 +1743,7 @@ const gameKit3DRuntimeAfterModelSource = `
   function recycle(e) {
     if (!e || typeof e !== 'object' || !e._mold) return;
     if (!e._alive) return;
+    importedArrivals.delete(e);
     // Para a animação ANTES de baixar o _alive: o stopAnim passa pelo isEntity, que
     // exige entidade viva — invertido, ele saía calado e a ação seguia mexendo nos
     // ossos de um boneco invisível até o slot ser reusado.
@@ -2974,7 +2977,8 @@ const gameKit3DRuntimeAfterModelSource = `
     currentDt = dt;
     // Sonda de FPS do orçamento (entre 1,5 s e 4 s; abaixo de 45 passa ao nível leve).
     renderBudget.sample(dt);
-    if (state === 'jogando') {
+    var waitingForScene = sceneRequest && sceneRequest.waitForRun;
+    if (state === 'jogando' && !waitingForScene) {
       // "Ir para a próxima fase" pedido no quadro anterior: troca aqui, fora dos laços.
       if (levelPending) startPendingLevel();
       // stepSystems também dentro de try/catch (como o renderFrame): um erro
@@ -2989,9 +2993,16 @@ const gameKit3DRuntimeAfterModelSource = `
       }
       // Um gancho pode ter terminado o jogo NESTE quadro — não rodar o update
       // da criança num jogo que acabou de acabar.
-      if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+      if (state === 'jogando' && !(sceneRequest && sceneRequest.waitForRun)) runHooks(updateHooks, dt, 'A cada quadro');
     }
-    updateCamera(state === 'jogando' ? dt : 0);
+    waitingForScene = sceneRequest && sceneRequest.waitForRun;
+    // A freshly rebuilt actor is not at its arrival yet. Keep the previous view
+    // and sector focus until preparation commits; dt=0 alone still lerps follow.
+    if (!waitingForScene) {
+      updateCamera(state === 'jogando' ? dt : 0);
+      occludeImportedCamera();
+      updateImportedScene(state === 'jogando' ? dt : 0);
+    }
     // Depois da câmera (a projeção precisa dela já posicionada). Só a PAUSA
     // congela o balão (fica na tela sem gastar o tempo); no 'fim'/'menu' ele
     // segue contando e some — senão uma fala em andamento na hora da morte
@@ -3448,11 +3459,12 @@ const gameKit3DRuntimeAfterModelSource = `
     renderBudget.observe();
     setState('carregando');
     var generation = lifecycleGeneration;
-    Promise.all(pending.slice()).then(function () {
+    Promise.all(pending.slice()).then(function completeStart() {
       // pagehide/beforeunload pode acontecer enquanto áudio/GLB ainda carrega.
       // A geração torna aquela continuação obsoleta antes de renderer/scene serem
       // anulados; ela não pode ressuscitar o loop de um iframe encerrado.
       if (disposed || generation !== lifecycleGeneration || !renderer) return;
+      if (sceneRequest) return sceneRequest.promise.then(completeStart);
       setState('menu');
       _lastT = 0;
       renderer.setAnimationLoop(gameLoop);
@@ -3470,23 +3482,17 @@ const gameKit3DRuntimeAfterModelSource = `
     if (disposed) return;
     disposed = true;
     lifecycleGeneration++;
-    models.cancelAll();
-    try { renderBudget.dispose(); } catch (e) {}
+    if (renderer) renderer.setAnimationLoop(null);
     try {
+      disposeImportedScene(true);
+      models.cancelAll();
+      try { renderBudget.dispose(); } catch (e) {}
       // Efeitos, música e AudioContext ficam fora da cena — o teardown do renderer
       // não os alcança. Sem isto poderiam continuar ativos na janela do bfcache.
       releaseFpsInput();
       disposeAudio();
       resetAccessibleHud();
       rules.dispose();
-      if (renderer) {
-        renderer.setAnimationLoop(null);
-        try { renderer.dispose(); } catch (e) {}
-        // dispose() sozinho NÃO devolve o contexto WebGL ao navegador — é o
-        // forceContextLoss() que libera o slot e evita a cena preta depois de
-        // vários "Atualizar".
-        try { renderer.forceContextLoss(); } catch (e) {}
-      }
       var disposedModelResources = { geometries: new Set(), materials: new Set(), textures: new Set(), skeletons: new Set() };
       if (scene && scene.traverse) {
         scene.traverse(function (o) {
@@ -3558,7 +3564,15 @@ const gameKit3DRuntimeAfterModelSource = `
       disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
-    } catch (e) {}
+    } catch (e) {
+      warn('Não consegui liberar uma parte do jogo: ' + e);
+    } finally {
+      // Keep GL property listeners alive until scene, caches and targets release their resources.
+      if (renderer) {
+        try { renderer.dispose(); } catch (e) {}
+        try { renderer.forceContextLoss(); } catch (e) {}
+      }
+    }
     renderer = null;
     scene = null;
     camera = null;
@@ -3576,6 +3590,8 @@ const gameKit3DRuntimeAfterModelSource = `
   window.addEventListener('pagehide', disposeAll);
   window.addEventListener('beforeunload', disposeAll);
 
+  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/
+
   // ---- API pública (1 método por bloco) ----
 
   function guard(name, fn) {
@@ -3590,6 +3606,8 @@ const gameKit3DRuntimeAfterModelSource = `
   }
 
   var api = {
+    loadScene: guard('loadScene', loadScene),
+    sceneStart: guard('sceneStart', sceneStart),
     // 🧰 O jogo
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
@@ -3674,6 +3692,8 @@ const gameKit3DRuntimeAfterModelSource = `
     // 🤖 Entidades
     place: guard('place', function (e, x, y, z) {
       if (!isEntity(e)) return;
+      importedArrivals.delete(e);
+      if (importedScene) e.grounded = false;
       e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
       touchStatic(e);
       gridSync(e);
@@ -3946,6 +3966,7 @@ const gameKit3DRuntimeSource = withGameRules3DRuntime(
   .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
   .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
   .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
+  .replace('  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/', () => gameKit3DSceneRuntimeSource)
 
 // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
 // contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do

@@ -23,11 +23,8 @@ import {
 } from './projectStorageKeys'
 import { isLocalHead } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import {
-  acknowledgeSynchronousExitJournal,
-  type ExitJournalEntry,
-  ExitJournalError,
-} from './synchronousExitJournal'
+import { acknowledgeSynchronousExitJournal, type ExitJournalEntry } from './synchronousExitJournal'
+import { ExitJournalError } from './synchronousExitJournalProbe'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 /** Out-of-band migration adapter; immutable source bytes remain owned by its reader. */

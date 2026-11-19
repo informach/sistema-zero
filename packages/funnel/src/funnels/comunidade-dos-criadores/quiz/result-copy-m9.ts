@@ -1,6 +1,6 @@
 // Copy do resultado em conversa do ramo menor de 9 (quiz v6, 20/10/2026): criar junto. A carta do
 // perfil B vem do Canvas aprovado em 19/10 (resultado-exemplos.py.txt, EX_M9); os perfis A e D
-// seguem os mesmos cinco movimentos, com os fatos da página "criar junto" (pagina-menor9.ts).
+// seguem os mesmos cinco movimentos, com os fatos de participação acompanhada da oferta Kids unificada.
 //
 // Texto no masculino; `paraFeminino` troca para "ela". Trechos entre [[ ]] são as respostas da
 // família devolvidas na carta. Nessa idade o adulto senta ao lado: nenhuma frase promete que a

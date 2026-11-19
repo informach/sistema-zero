@@ -110,6 +110,8 @@
     "gen:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts",
     "check:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts --check",
     "gen:game-3d-examples": "bun scripts/gen-game-3d-examples.ts",
+    "gen:game-3d-scene-example": "bun scripts/gen-game-3d-scene-example.ts",
+    "check:game-3d-scene-example": "bun scripts/gen-game-3d-scene-example.ts --check",
     "check:game-3d-examples": "bun scripts/gen-game-3d-examples.ts --check",
     "gen:world-3d-examples": "bun scripts/gen-world-3d-examples.ts",
     "check:world-3d-examples": "bun scripts/gen-world-3d-examples.ts --check",

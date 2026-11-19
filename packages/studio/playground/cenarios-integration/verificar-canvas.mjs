@@ -33,6 +33,7 @@ try {
       consoleErros = [],
       rede = []
     let frame
+    const parcial = {}
     pagina.on('pageerror', (e) => erros.push(e.message))
     pagina.on('console', (m) => {
       if (m.type() === 'error') consoleErros.push(m.text())
@@ -142,6 +143,11 @@ try {
           )
         }
         if (ciclo) assert.deepEqual(s.recursos, ciclos[0].recursos)
+        if (ciclo)
+          assert.ok(
+            Math.hypot(s.x - ciclos[0].x, s.z - ciclos[0].z) < 0.01,
+            'O personagem parado não deve deslizar na ponte entre trocas',
+          )
         ciclos.push(s)
       }
       let comparadas = 0
@@ -162,28 +168,56 @@ try {
         .locator('canvas')
         .first()
         .click({ position: { x: 450, y: 280 } })
-      const inicio = await frame.evaluate(() => window.__qaCanvas.estado())
-      await pagina.keyboard.down('w')
-      await frame.waitForFunction((z) => window.__qaCanvas.estado().z > z + 2, inicio.z, {
-        timeout: 20000,
-      })
-      await pagina.keyboard.up('w')
-      const movimentos = { caminhada: await frame.evaluate(() => window.__qaCanvas.estado()) }
+      let obstaculo = null
+      if (nome === 'completo') {
+        const antes = await frame.evaluate(() => window.__qaCanvas.estado())
+        await pagina.keyboard.down('w')
+        await frame.waitForFunction(() => window.__qaCanvas.estado().z > 8.65)
+        const junto = await frame.evaluate(() => window.__qaCanvas.estado().tempo)
+        await frame.waitForFunction((t) => window.__qaCanvas.estado().tempo > t + 1.4, junto)
+        await pagina.keyboard.up('w')
+        obstaculo = await frame.evaluate(() => window.__qaCanvas.estado())
+        assert.ok(
+          obstaculo.z > antes.z + 0.2,
+          'O controle precisa se aproximar do bloco sobre a ponte',
+        )
+        assert.ok(obstaculo.z <= 8.7501, 'O bloco físico em z=9 deve impedir atravessamento')
+        assert.ok(obstaculo.grounded)
+      }
+      // The complete scene has a solid crate ahead. Validate it, then walk back
+      // along the unblocked bridge. The hole fixture keeps its forward route.
+      const inicio = await frame.evaluate(() => window.__qaCanvas.estado()),
+        tecla = nome === 'completo' ? 's' : 'w',
+        sinal = nome === 'completo' ? -1 : 1
+      parcial.inicio = inicio
+      await pagina.keyboard.down(tecla)
+      await frame.waitForFunction(
+        ({ z, sinal }) => (window.__qaCanvas.estado().z - z) * sinal > 2,
+        { z: inicio.z, sinal },
+        { timeout: 20000 },
+      )
+      await pagina.keyboard.up(tecla)
+      const movimentos = {
+        caminhada: await frame.evaluate(() => window.__qaCanvas.estado()),
+        obstaculo,
+      }
+      parcial.movimentos = movimentos
       assert.ok(movimentos.caminhada.y > 0, 'A caminhada inicial precisa ter apoio')
       await pagina.screenshot({ path: resolve(pasta, `${etiqueta}-caminhada.png`) })
       if (nome === 'completo') {
         await pagina.keyboard.down('Shift')
-        await pagina.keyboard.down('w')
+        await pagina.keyboard.down(tecla)
         await frame.waitForFunction(
-          (z) => window.__qaCanvas.estado().z > z + 0.8,
+          (z) => z - window.__qaCanvas.estado().z > 0.8,
           movimentos.caminhada.z,
         )
-        await pagina.keyboard.up('w')
+        await pagina.keyboard.up(tecla)
         await pagina.keyboard.up('Shift')
         movimentos.corrida = await frame.evaluate(() => window.__qaCanvas.estado())
         assert.ok(movimentos.corrida.y > 0)
         await frame.waitForFunction(() => window.__qaCanvas.estado().grounded)
         const salto = await frame.evaluate(() => window.__qaCanvas.estado())
+        parcial.salto = salto
         await pagina.keyboard.down('Space')
         await frame.waitForFunction((y) => window.__qaCanvas.estado().y > y + 0.25, salto.y)
         movimentos.alto = await frame.evaluate(() => window.__qaCanvas.estado())
@@ -240,7 +274,7 @@ try {
       writeFileSync(
         resolve(pasta, `${etiqueta}-falha.json`),
         JSON.stringify(
-          { erro: String(error), erros, consoleErros, rede, estado, mensagens },
+          { erro: String(error), erros, consoleErros, rede, estado, mensagens, parcial },
           null,
           2,
         ),

@@ -1,5 +1,5 @@
 import { createStore } from 'idb-keyval'
-import { captureExitJournalStorage } from './synchronousExitJournal'
+import { captureExitJournalStorage } from './synchronousExitJournalProbe'
 
 export const GAME_STORAGE_KEY_PREFIX = 'sz:game-storage:'
 export const gameStorageKey = (projectId: string): string =>

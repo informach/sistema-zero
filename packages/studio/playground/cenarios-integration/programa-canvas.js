@@ -89,6 +89,7 @@ window.__qaCanvas = {
   pronto: () => pronto && quadros > 5,
   estado: () => ({
     ...fisica.body('criador'),
+    teclas: [...teclas],
     quadros,
     tempo,
     geracao,

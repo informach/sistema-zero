@@ -1,6 +1,6 @@
 // Funil "Comunidade dos Criadores" (kids, /kids/comunidade-dos-criadores) — a
 // ASSINATURA da plataforma inteira, com quiz opcional de orientação familiar.
-// As ofertas têm layout PRÓPRIO (Comunidade917Body, ComunidadeMenor9Body e
+// As ofertas têm layout PRÓPRIO (Comunidade917Body e
 // ComunidadeContinuarBody) com body próprio; a /oferta despacha pelo body
 // deste funil via `f.key`.
 //
@@ -45,7 +45,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Capa dedicada (card do checkout + og:image + JSON-LD): a arte "Corre, Dino!".
   checkoutImage: 'checkout-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  // SEO da página principal (9 a 17 anos, `/oferta`).
+  // SEO da oferta principal unificada (5 a 17 anos, `/oferta`).
   seoTitle: PAGINA_9A17.seoTitle,
   seoDescription: PAGINA_9A17.description,
   theme: 'kids',

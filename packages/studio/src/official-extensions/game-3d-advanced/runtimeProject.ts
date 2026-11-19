@@ -114,9 +114,10 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
   function executeProjectFactory() {
     if (typeof projectFactory !== 'function' || runningProjectFactory) return;
     runningProjectFactory = true;
+    beginImportedSceneFactory();
     try { projectFactory(); }
     catch (e) { warn('erro em "Ao iniciar": ' + e); }
-    runningProjectFactory = false;
+    finally { finishImportedSceneFactory(); runningProjectFactory = false; }
   }
 
   function runProject(fn) {

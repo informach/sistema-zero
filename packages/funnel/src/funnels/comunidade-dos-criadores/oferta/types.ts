@@ -1,7 +1,7 @@
 /**
- * As páginas de oferta da Comunidade Kids (20/10/2026): `9a17` em `/oferta`, `criar-junto` (menor
- * de 9, criando com o responsável) e `continuar` (a família que já começou na plataforma). As cinco
- * páginas de perfil de antes redirecionam para `/oferta` (`COMUNIDADE_OFERTAS_ANTIGAS`).
+ * Oferta Kids unificada de 5 a 17 anos em `/oferta` e continuidade em `/oferta/continuar`.
+ * `9a17` é a chave interna histórica da principal; `criar-junto` só é aceito como alias
+ * no gerador de caminhos. A rota antiga responde 301 para a principal com a query.
  */
 export type ComunidadeOfertaId = '9a17' | 'criar-junto' | 'continuar'
 

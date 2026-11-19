@@ -11,6 +11,7 @@ export async function criarTransporteDeEnsaio({
   comApoioPequeno = false,
   comTeto = false,
   comRampa = false,
+  comParedeAlta = false,
   fundo = 0,
 }: {
   comBuraco?: boolean
@@ -19,6 +20,7 @@ export async function criarTransporteDeEnsaio({
   comApoioPequeno?: boolean
   comTeto?: boolean
   comRampa?: boolean
+  comParedeAlta?: boolean
   fundo?: number
 } = {}) {
   const { host, resumo, fonte } = await criarFonteDeCenarioDeEnsaio(1),
@@ -122,6 +124,17 @@ export async function criarTransporteDeEnsaio({
           tipo: 'cenario.restaurar',
           documento: {
             ...aberto.documento,
+            instancias: aberto.documento.instancias.map((instancia) =>
+              comParedeAlta
+                ? {
+                    ...instancia,
+                    transformacao: {
+                      ...instancia.transformacao,
+                      escala: { ...instancia.transformacao.escala, y: 4 },
+                    },
+                  }
+                : instancia,
+            ),
             base: {
               tipo: 'terreno',
               cobertura: 'grade',

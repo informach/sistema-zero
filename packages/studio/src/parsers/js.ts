@@ -50,6 +50,7 @@ import {
   gameKit3DGameplaySimpleValue,
 } from '../official-extensions/game-3d-advanced/gameplayCodec'
 import { gameKit3DModelCallToIR } from '../official-extensions/game-3d-advanced/modelCodec'
+import { sceneGameKit3DCallToIR } from '../official-extensions/game-3d-advanced/sceneCodec'
 import {
   gameRulesCallToIR,
   gameRulesExpressionCallToIR,
@@ -9180,6 +9181,8 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
   if (!call) return null
   const { method, args } = call
   const tools = platformTools(source, ctx)
+  const scene = sceneGameKit3DCallToIR(method, args, tools)
+  if (scene !== undefined) return scene
   const model = gameKit3DModelCallToIR(method, args, tools)
   if (model !== undefined) return model
   const gameplay = gameKit3DGameplayCallToIR(method, args, tools)
