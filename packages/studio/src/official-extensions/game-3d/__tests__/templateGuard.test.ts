@@ -89,6 +89,6 @@ describe('Guarda dos template literals do Jogo 3D', () => {
   it('o import ESM do three usa o pino central (nunca uma URL/versão solta)', () => {
     // O three entra pelo importmap/CSP pinado; a versão vive em threeRuntimeContract.
     expect(gameThreeDExtension.runtime.esmImports?.three).toBe(THREE_CDN)
-    expect(THREE_CDN).toContain('three@0.180.0')
+    expect(THREE_CDN).toContain('three@0.184.0')
   })
 })

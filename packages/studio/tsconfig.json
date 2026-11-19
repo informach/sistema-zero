@@ -39,6 +39,7 @@
     "scripts/generate-visual-reference-games.ts",
     "scripts/python",
     "scripts/gen-pro-kit-*.ts",
+    "scripts/generate-scene3d-runtime.ts",
     "scripts/verify-canvas-*.ts",
     "scripts/verify-pro-*.ts",
     "scripts/verify-python-*.ts",

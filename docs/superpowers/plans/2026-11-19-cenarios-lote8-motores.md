@@ -36,10 +36,12 @@
 
 **Files:** entrada do carregador, script gerador verificável em `studio/scripts`, artefato gerado em `studio/src/three`, `preview/{assetsBridge,bootstrap,renderProject}.ts`, `runtime/javascript/classicDocument.ts`, `export/fileMap.ts` e montadores do preview do editor descobertos na revisão dos chamadores.
 
-- [ ] Empacotar a mesma função, sem editor/autoria/conta, mantendo imports somente de Three/addons e sem uma segunda cópia do Three. Geração fixa/check e inventário verificável.
-- [ ] Levar somente os assets necessários pelos canais existentes, incluindo manifesto e dados de terreno; relação por ID. Não passar JSON ao GLTFLoader. Conferir orçamento antes de embutir, sem truncar dependências silenciosamente.
-- [ ] Instalar o módulo apenas em projetos que contenham cenários. Importmap/ordem/hash de scripts devem funcionar em preview, captura, /jogar e export, com CSP inalterada e texturas embutidas por imagem.
-- [ ] Testar scripts hostis nos nomes/metadados, ausência de rede, resolução offline, export e descarte. Conferir orçamento do carregamento inicial e runtime portátil anterior.
+- [x] Empacotar a mesma função, sem editor/autoria/conta, mantendo imports somente de Three/addons e sem uma segunda cópia do Three. Geração fixa/check e inventário verificável.
+- [x] Levar somente os assets necessários pelos canais existentes, incluindo manifesto e dados de terreno; relação por ID. Não passar JSON ao GLTFLoader. Conferir orçamento antes de embutir, sem truncar dependências silenciosamente.
+- [x] Instalar o módulo apenas em projetos que contenham cenários. Importmap/ordem/hash de scripts devem funcionar em preview, captura, /jogar e export, com CSP inalterada e texturas embutidas por imagem.
+- [x] Testar scripts hostis nos nomes/metadados, ausência de rede, resolução offline, export e descarte. Conferir orçamento do carregamento inicial e runtime portátil anterior.
+
+19/11: [transporte/documento clássico/export e conversão Pro qualificados](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-transporte.md). A execução do SDK passou no sandbox real com CSP strict e no site exportado; os quatro motores ainda não recebem a cena pelos blocos. Projetos Pro autorais têm uma pendência explícita na seção 7. O teste de bytes do Pinta já falha em HEAD e está registrado, sem elevação de limite. 8.4 permanece aberto.
 
 ## 3. Mundo 3D
 
@@ -66,5 +68,6 @@
 
 ## 7. Fechamento
 
+- [ ] Projetos Pro autorais (além da conversão do clássico): oferecer consumo direto do cenário com os recursos materializados pelo coordenador existente, sem reescrever dependências autorais ou criar outro inventário. Qualificar fonte/export/execução antes de fechar 8.4.
 - [ ] Qualificação integrada dos quatro motores e Python pelo produto; conferência linha a linha de 8.4, tipagem, build/orçamento e full review do recorte.
 - [ ] Documentar resultado/limitações reais e enviar commits. Somente então iniciar 8.5; implantação e validação real de staging continuam no encerramento global, após todos os lotes.
