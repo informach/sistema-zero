@@ -1,0 +1,51 @@
+name: Diagnosticar fontes Ubuntu do CI
+
+on:
+  push:
+    branches: [pinta-runtime-image-20261119]
+    paths: [.github/workflows/pinta-apt-diagnostic-20261119.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  sources:
+    name: Fontes Ubuntu ${{ matrix.sample }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [one, two, three]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: e193c8f8f7ea6fbe1afca37141bcdd6f8dcb7f39
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - name: Registrar somente fontes e campos públicos do APT
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const files = ['/etc/apt/apt-mirrors.txt','/etc/apt/sources.list',...fs.readdirSync('/etc/apt/sources.list.d').filter(n=>/\.(?:list|sources)$/.test(n)).map(n=>'/etc/apt/sources.list.d/'+n)];
+          const sources = files.filter(f=>fs.existsSync(f)).map(file=>({file,content:fs.readFileSync(file,'utf8').split('\n').filter(l=>/^(?:deb(?:\s|\[)|(?:Types|URIs|Suites|Components|Signed-By|Enabled|Snapshot):|https?:|mirror\+file:)/.test(l.trim().replace(/^#\s*/,''))).map(l=>l.replace(/(https?:\/\/)[^/\s]*@/g,'$1[redacted]@').replace(/\?[^\s]*/g,'?[redacted]')).slice(0,24)}));
+          console.log(JSON.stringify({sources},null,2));
+          NODE
+          apt-config shell PINTA_SNAPSHOT APT::Snapshot PINTA_SOURCELIST Dir::Etc::sourcelist PINTA_SOURCEPARTS Dir::Etc::sourceparts
+      - name: Aplicar preflight atual e instalar dependências
+        run: |
+          sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+          bun install --frozen-lockfile
+      - name: Registrar estado após instalação
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          for(const file of ['/etc/apt/apt-mirrors.txt','/etc/apt/sources.list.d/ubuntu.sources']) if(fs.existsSync(file)) console.log(JSON.stringify({file,content:fs.readFileSync(file,'utf8').replace(/(https?:\/\/)[^/\s]*@/g,'$1[redacted]@').replace(/\?[^\s]*/g,'?[redacted]')}));
+          NODE
+      - name: Atualizar índices e conferir fontes necessárias
+        continue-on-error: true
+        run: sudo apt-get update -o APT::Update::Error-Mode=any
+      - name: Conferir candidatos dos pacotes
+        run: apt-cache policy fonts-freefont-ttf fonts-unifont libgtk-3-0
