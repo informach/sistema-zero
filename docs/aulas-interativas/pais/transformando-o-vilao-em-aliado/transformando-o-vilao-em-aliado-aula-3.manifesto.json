@@ -2,92 +2,77 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-3",
-  "title": "Programar é organizar a vida",
+  "title": "De onde veio essa ideia e por onde começar",
   "blocks": [
     {
-      "key": "video-a3-rotina",
-      "plannedVideo": "Título: Você já programa em casa\n\nBlocos coloridos em vez da tela preta, a rotina da manhã e a porta com chave em QUANDO, SE e ENTÃO, a sequência do banho e a causa e consequência. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1."
+      "key": "video-a3-historia",
+      "plannedVideo": "Título: De onde veio tudo isso\n\nContar a história da família, do André que jogava muito ao André que ensina a criar jogos. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a3-caminho",
-      "plannedVideo": "Título: Você consegue programar este caminho?\n\nA grade 4 por 4, da bolinha azul até a estrela, sem passar pelos quadrados escuros. A tela fica parada no fim para a pessoa pensar antes do quiz. Fala completa no roteiro, Parte 2."
+      "key": "video-a3-reconhece",
+      "plannedVideo": "Título: Você reconhece o seu filho aqui?\n\nReconhecer o filho em seis situações e ver como cada uma se liga à criação. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "quiz-a3",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 50,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Na grade, a bolinha azul está na linha de baixo, à esquerda, e a estrela na linha de cima, à direita. Os quadrados escuros ficam na segunda coluna, nas duas linhas do meio. Qual sequência leva a bolinha até a estrela?",
-            "choices": [
-              { "id": "a", "label": "Subir, subir, subir, direita, direita, direita." },
-              { "id": "b", "label": "Direita, subir, subir, subir, direita, direita." },
-              { "id": "c", "label": "Subir, direita, subir, direita, subir, direita." }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Subindo primeiro pela primeira coluna, a bolinha passa ao lado dos quadrados escuros sem tocar neles e depois vai para a direita até a estrela. As outras duas sequências batem num quadrado escuro. E existe outro caminho certo: ir pela direita até o fim e só depois subir. Se você errou, tudo bem: é disso que a próxima parte fala."
-          }
-        ]
-      }
+      "key": "video-a3-mundo",
+      "plannedVideo": "Título: Entrar no mundo dele\n\nMostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar. Fala completa em transformando-o-vilao-em-aliado-aula-3.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a3-erro",
-      "plannedVideo": "Título: E se a primeira tentativa não funcionar?\n\nA resposta do caminho, observar, mudar uma instrução e testar de novo, o olhar para o todo e para o ponto importante, e a ferramenta da rotina em forma de regra. Fala completa no roteiro, Parte 4."
-    },
-    {
-      "key": "para-casa-a3",
+      "key": "resumo-a3",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para fazer esta semana\n\nEscolham juntos uma rotina da casa e escrevam como regra:\n\n- **Quando** chegar da escola,\n- **se** tiver lição,\n- **então** lanchar, fazer a lição e só depois brincar.\n\nE quando algo der errado no dia a dia, experimente as três perguntas: **onde parou? O que dá para mudar? Vamos tentar de novo?**"
+        "markdown": "## Para consultar\n\nUm tema favorito, a necessidade de previsibilidade, a frustração ao perder, o gosto por sequência, o apego à tela ou o jeito mais calado: cada um pode ser uma porta de entrada para criar."
       }
     }
   ],
   "sections": [
     {
-      "key": "rotina",
-      "title": "Você já programa em casa",
-      "objective": "Entender programar como organizar passos, com a mesma lógica da rotina da casa, e ver a causa e a consequência que o jogo ensina.",
+      "key": "historia",
+      "title": "De onde veio tudo isso",
+      "objective": "Contar a história da família, do André que jogava muito ao André que ensina a criar jogos.",
       "intent": "explanation",
-      "blockKeys": ["video-a3-rotina"],
+      "blockKeys": ["video-a3-historia"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a3-rotina"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-historia"]
+      }
     },
     {
-      "key": "caminho",
-      "title": "Você consegue programar este caminho?",
-      "objective": "Viver na prática o que a criança vive ao programar: montar uma sequência que leve a bolinha até a estrela.",
-      "intent": "application",
-      "blockKeys": ["video-a3-caminho"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a3-caminho"] }
-    },
-    {
-      "key": "caminho-resposta",
-      "title": "Qual é o seu caminho?",
-      "objective": "Conferir a sequência pensada e o que fazer quando a primeira tentativa não funciona.",
-      "intent": "application",
-      "blockKeys": ["quiz-a3"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["quiz-a3"] }
-    },
-    {
-      "key": "erro",
-      "title": "E se a primeira tentativa não funcionar?",
-      "objective": "Ver o erro como pista e levar o observar, ajustar e testar para a rotina da casa.",
+      "key": "reconhece",
+      "title": "Você reconhece o seu filho aqui?",
+      "objective": "Reconhecer o filho em seis situações e ver como cada uma se liga à criação.",
       "intent": "explanation",
-      "blockKeys": ["video-a3-erro", "para-casa-a3"],
+      "blockKeys": ["video-a3-reconhece"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a3-erro"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-reconhece"]
+      }
+    },
+    {
+      "key": "mundo",
+      "title": "Entrar no mundo dele",
+      "objective": "Mostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-mundo", "resumo-a3"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-mundo"]
+      }
     }
+  ],
+  "retireBlockKeys": [
+    "video-a3-rotina",
+    "video-a3-caminho",
+    "video-a3-erro",
+    "para-casa-a3",
+    "quiz-a3"
   ]
 }
