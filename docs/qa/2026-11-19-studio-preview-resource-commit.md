@@ -47,6 +47,9 @@ alteração de estilos, blocos, categorias ou caminhos dos cursos.
   documento vazio intermediário, e a tela inicial do jogo apareceu.
 - Casca isolada no Chromium: **dois casos passaram**, funcionamento e
   resposta durante CPU ocupada, incluindo Parar e nova execução.
+- Cursos no navegador, com os gestos reais: aula 1 de Cadê (28 s) e dia 1
+  do Farol (1,4 min) passaram, sem regravar referências. Isso não cobre
+  todas as aulas nem as ações da página real do Members.
 - Galeria estreita com interação completa: **cinco aprovações e uma falha**
   em seis repetições. A falha foi um timeout em `keyboard.press`, depois
   da verificação do primeiro frame. Essa rodada não está verde; a falha
