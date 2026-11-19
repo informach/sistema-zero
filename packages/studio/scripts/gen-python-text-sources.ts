@@ -33,6 +33,12 @@ const bundles = [
   },
   // A Pygame-ce desktop export copies the learner module `pinta` and the platform fonts.
   {
+    directory: 'src/runtime/python/raylib/py',
+    paths: ['cenario.py'],
+    output: 'src/runtime/python/raylib/cenarioSources.generated.ts',
+    exportName: 'RAYLIB_CENARIO_SOURCES',
+  },
+  {
     directory: 'src/runtime/python/pygame/py',
     paths: ['pinta.py'],
     output: 'src/runtime/python/pygame/desktopSources.generated.ts',

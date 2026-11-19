@@ -11,12 +11,13 @@ import {
   type StudioProjectLanguage,
   StudioProjectLanguageSchema,
 } from '@sistemazero/core/studio/project-environment'
-import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   type StudioProjectCapability,
   type StudioRuntimeCatalog,
   selectStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
+import { PINTA_SCENE_RUNTIME_MESSAGE, pintaImageRuntimeCompatible } from './pintaImageCompatibility'
+import { MOLDA_SCENE_RUNTIME_MESSAGE, scene3DRuntimeCompatible } from './scene3dCompatibility'
 import { type StudioRuntimeProvider, StudioRuntimeUnavailableError } from './types'
 
 export interface StudioRuntimeRegistration {
@@ -67,21 +68,31 @@ export function assertStudioRuntimeOperationAccess(
     )
   if (
     (capability === 'execute' || capability === 'python-repl') &&
-    project.programmingLanguage === 'python' &&
-    project.assets?.some(
-      (asset) =>
+    project.programmingLanguage === 'python'
+  ) {
+    for (const asset of project.assets ?? []) {
+      if (
         asset &&
         typeof asset === 'object' &&
-        'pintaImage' in asset &&
-        PintaImageDerivationSchema.safeParse(asset.pintaImage).data?.recipe.selection.kind ===
-          'map-world',
-    ) &&
-    !release.manifest.python?.features.includes(PYTHON_PINTA_WORLD_FEATURE)
-  )
-    throw new StudioRuntimeUnavailableError(
-      'pinta-world-unavailable',
-      'O ambiente deste projeto precisa ser atualizado para jogar cenários com outros lugares. O mapa e o programa foram preservados.',
-    )
+        'kind' in asset &&
+        asset.kind === 'scene3d' &&
+        !scene3DRuntimeCompatible(project.runtime, catalog)
+      )
+        throw new StudioRuntimeUnavailableError(
+          'molda-scene-unavailable',
+          MOLDA_SCENE_RUNTIME_MESSAGE,
+        )
+      if (!asset || typeof asset !== 'object' || !('pintaImage' in asset)) continue
+      const image = PintaImageDerivationSchema.safeParse(asset.pintaImage).data
+      if (image && !pintaImageRuntimeCompatible(image, project.runtime, catalog))
+        throw new StudioRuntimeUnavailableError(
+          image.recipe.selection.kind === 'map-world'
+            ? 'pinta-world-unavailable'
+            : 'pinta-scene-unavailable',
+          PINTA_SCENE_RUNTIME_MESSAGE,
+        )
+    }
+  }
 }
 
 export function assertStudioRuntimeExecutionAccess(

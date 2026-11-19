@@ -67,17 +67,26 @@ describe.each(cursos)('curso para pais %s', (curso) => {
     expect(parentsLessonIssues(blocos)).toEqual([])
   })
 
-  test('sem travessão e com a fala da Helena (não ElevenLabs)', () => {
+  test('sem travessão e com a fala para o ElevenLabs de cada aula', () => {
     for (const nome of arquivos.filter((n) => /\.(md|json)$/.test(n))) {
       const texto = readFileSync(resolve(pasta, nome), 'utf8')
       expect({ nome, travessao: /[—–]/.test(texto) }).toEqual({ nome, travessao: false })
     }
     for (const nome of arquivos.filter((n) => n.endsWith('.roteiro.md'))) {
       const roteiro = readFileSync(resolve(pasta, nome), 'utf8')
-      expect(roteiro).toContain('**Fala da Helena:**')
-      expect(roteiro).not.toContain('**Fala para ElevenLabs:**')
+      // Desde 19/11/2026 a voz é gerada no ElevenLabs e a apresentadora é o avatar da Helena.
+      expect(roteiro).toContain('**Fala para ElevenLabs:**')
+      expect(roteiro).not.toContain('**Fala da Helena:**')
+      const copiavel = nome.replace('.roteiro.md', '.elevenlabs.txt')
+      expect({ copiavel, existe: arquivos.includes(copiavel) }).toEqual({ copiavel, existe: true })
+      const texto = readFileSync(resolve(pasta, copiavel), 'utf8')
+      // Só fala, tags e pausas: nada de título, rótulo ou nota de produção.
+      expect({ copiavel, producao: /^(#|\*\*|Na tela|Clipe|Depoimento)/m.test(texto) }).toEqual({
+        copiavel,
+        producao: false,
+      })
+      expect({ copiavel, travessao: /[—–]/.test(texto) }).toEqual({ copiavel, travessao: false })
     }
-    expect(arquivos.some((n) => n.endsWith('.elevenlabs.txt'))).toBe(false)
   })
 
   // Decisão da dona (15/11/2026): o curso é da Helena. Ninguém mais é citado, e o curso não fala da

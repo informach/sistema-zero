@@ -40,6 +40,52 @@ test.beforeEach(async ({ context }) => {
   await context.route('**/api/**', (route) => route.abort('internetdisconnected'))
 })
 
+test('o catálogo com leitor anterior recusa os dados avançados e permite escolher a imagem simples', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000)
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(fixture)
+  await expect(
+    page.getByRole('button', { name: 'Abrir vila-e-floresta (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.goto('/estudio?novo=1&python=1&leitor=antigo')
+  await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+  await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+  const card = dialog
+    .getByRole('listitem')
+    .filter({ has: page.getByText('vila-e-floresta', { exact: true }) })
+  const before = JSON.parse(
+    (await page.getByTestId('qa-project').textContent())!,
+  ) as PythonClassicProjectDocument
+  await card.getByRole('button', { name: 'Escolher imagem', exact: true }).click()
+  await expect(dialog.getByLabel('O que trazer', { exact: true })).toHaveValue('map')
+  await expect(
+    dialog.getByText(
+      'Atualize o ambiente deste projeto para receber este cenário. Você também pode escolher a imagem simples.',
+      { exact: true },
+    ),
+  ).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Adicionar imagem', exact: true })).toBeDisabled()
+  await page.screenshot({ path: info.outputPath('leitor-anterior-recusa.png') })
+  await dialog.getByLabel('O que trazer', { exact: true }).selectOption('tilemap')
+  await expect(dialog.getByRole('button', { name: 'Adicionar imagem', exact: true })).toBeEnabled()
+  await dialog.getByRole('button', { name: 'Adicionar imagem', exact: true }).click()
+  await expect
+    .poll(
+      async () => JSON.parse((await page.getByTestId('qa-project').textContent())!).assets?.length,
+    )
+    .toBe(1)
+  const after = JSON.parse(
+    (await page.getByTestId('qa-project').textContent())!,
+  ) as PythonClassicProjectDocument
+  expect(after.assets![0]!.pintaImage?.recipe.selection.kind).toBe('tilemap')
+  expect(after.assets![0]!.pintaImage?.output.dataVersion).toBeUndefined()
+  expect(after.files).toEqual(before.files)
+})
+
 test('Python traz o mundo pela interface e atualiza só o destino conservando o programa', async ({
   page,
   context,

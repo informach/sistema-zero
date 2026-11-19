@@ -67,6 +67,7 @@ import {
   StudioPublicationError,
   studioPublicationOwner,
   studioPublicProject,
+  studioRequiresPintaSceneReader,
 } from '../server/studio-publication'
 import {
   drainStudioPublicationCleanup,
@@ -345,6 +346,7 @@ export function createStudioRoutes(deps: {
   }
   async function publishRevision(options: {
     project: EditableStudioProject
+    requiresPintaSceneReader?: boolean
     source: string
     playId: string
     owner: string
@@ -501,6 +503,7 @@ export function createStudioRoutes(deps: {
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
+      let requiresPintaSceneReader = false
       // Metadado do projeto p/ o selo de nível do remix no card do Mural (derivado
       // do projeto JÁ saneado — cosmético; o gate real do remix é no clique).
       let studioMeta: StudioPublicProjectMetadata | null = null
@@ -538,6 +541,7 @@ export function createStudioRoutes(deps: {
         const project = await prepareEditableStudioProject(submitted.body.project)
         if (!project) return invalid()
         publicationProject = studioPublicProject(project)
+        requiresPintaSceneReader = studioRequiresPintaSceneReader(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf8')
         if (projectBytes.length > PROJECT_MAX_BYTES) return projectTooLarge()
@@ -607,6 +611,7 @@ export function createStudioRoutes(deps: {
         try {
           await publishRevision({
             project: publicationProject,
+            requiresPintaSceneReader,
             source: projectBytes.toString('utf8'),
             playId,
             owner,
@@ -844,6 +849,7 @@ export function createStudioRoutes(deps: {
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
+      let requiresPintaSceneReader = false
       // Metadado do projeto p/ o selo de nível do remix (cosmético; gate real no clique).
       let studioMeta: StudioPublicProjectMetadata | null = null
       try {
@@ -855,6 +861,7 @@ export function createStudioRoutes(deps: {
         const project = await prepareEditableStudioProject(rawProject)
         if (!project) return invalid()
         publicationProject = studioPublicProject(project)
+        requiresPintaSceneReader = studioRequiresPintaSceneReader(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
@@ -934,6 +941,7 @@ export function createStudioRoutes(deps: {
         try {
           await publishRevision({
             project: publicationProject,
+            requiresPintaSceneReader,
             source: projectBytes.toString('utf8'),
             playId,
             owner,
@@ -1443,6 +1451,7 @@ export function createStudioRoutes(deps: {
           return NextResponse.json(
             await publishRevision({
               project: studioPublicProject(project),
+              requiresPintaSceneReader: studioRequiresPintaSceneReader(project),
               source: JSON.stringify(studioPublicProject(project)),
               playId: input.playId,
               owner,

@@ -414,6 +414,8 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.review': 'Rever imagem escolhida',
   'pintaImport.image.back': 'Voltar',
   'pintaImport.image.unavailable': 'Não é possível preparar imagens do Pinta neste ambiente agora.',
+  'pintaImport.image.sceneRuntimeUnavailable':
+    'Atualize o ambiente deste projeto para receber este cenário. Você também pode escolher a imagem simples.',
   'pintaImport.image.needsTileset':
     'Este mapa precisa do conjunto de peças dele. Recupere o conjunto no Pinta.',
   'pintaImport.image.selectionMissing':

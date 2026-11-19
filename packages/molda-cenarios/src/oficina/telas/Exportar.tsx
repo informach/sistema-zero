@@ -116,17 +116,21 @@ export default function Exportar({
             >
               <option value="three">three.js · pacote para o navegador</option>
               <option value="glb">GLB · um arquivo 3D</option>
+              <option value="raylib">Python · pacote Raylib</option>
             </select>
           </label>
           <p className="text-mld-muted text-sm">
             {destino === 'three'
               ? 'Inclui a cena, os recursos e um exemplo para explorar sem login. Depois de extrair o ZIP, abra-o por um servidor local.'
-              : 'Inclui a composição e as animações em um arquivo de até 32 MiB. Água fica estática; céu, névoa e física dependem do programa que abrir.'}
+              : destino === 'raylib'
+                ? 'Inclui os modelos, dados, auxiliar Python e exemplo para Raylib 6.0.1.0. Água fica estática; colisões são aproximações por caixas. O solo mantém suas alturas e buracos.'
+                : 'Inclui a composição e as animações em um arquivo de até 32 MiB. Água fica estática; céu, névoa e física dependem do programa que abrir.'}
           </p>
           <label className="mcn-opcao">
             <input
               type="checkbox"
-              checked={juntar}
+              checked={juntar || destino === 'raylib'}
+              disabled={destino === 'raylib'}
               onChange={(ev) => {
                 tarefa.cancelar()
                 setJuntar(ev.target.checked)
@@ -135,12 +139,14 @@ export default function Exportar({
             <span>
               <strong>Juntar peças estáticas por região</strong>
               <small>
-                Reduz as malhas da cópia. Personagens e peças com propriedades de jogo ficam
-                separados.
+                {destino === 'raylib'
+                  ? 'O pacote Raylib sempre agrupa o estático. '
+                  : 'Reduz as malhas da cópia. '}
+                Personagens e peças com propriedades de jogo ficam separados.
               </small>
             </span>
           </label>
-          {juntar ? (
+          {juntar || destino === 'raylib' ? (
             <label className="mcn-campo">
               <span>Tamanho da região</span>
               <select
@@ -241,7 +247,7 @@ export default function Exportar({
               download={e.arquivo.nome}
             >
               <Download aria-hidden="true" className="size-4" />
-              Baixar {destino === 'three' ? 'ZIP' : 'GLB'}
+              Baixar {destino === 'glb' ? 'GLB' : 'ZIP'}
             </a>
           ) : (
             <Button

@@ -3,12 +3,8 @@ import { IDBFactory } from 'fake-indexeddb'
 import type { Project } from '../core/project'
 import { buildProProject } from '../core/proProject'
 import { localSnapshotsEqual } from '../project-migrations/localTransaction'
-import {
-  decodeExitJournal,
-  decodeRecoverySnapshot,
-  EXIT_JOURNAL_MAX_CHARS,
-  encodeExitJournal,
-} from './exitJournalCodec'
+import { EXIT_JOURNAL_MAX_CHARS, encodeExitJournal } from './exitJournalCodec'
+import { decodeExitJournal, decodeRecoverySnapshot } from './exitJournalDecode'
 import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
 import {
   bindProjectToDurableHead,
@@ -35,7 +31,8 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { readSynchronousExitJournal, stageSynchronousExitJournal } from './synchronousExitJournal'
+import { stageSynchronousExitJournal } from './synchronousExitJournal'
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 async function fixture() {
   const identity = `sync-recovery-${crypto.randomUUID()}`

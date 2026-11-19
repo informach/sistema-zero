@@ -7,7 +7,8 @@ import { nativeRecovery, recoverySourceIdentity } from './projectRecoveryGuards'
 import { projectFromRecovery, type RecoveryWrite } from './projectStorageCoordinator'
 import { projectRecoveryKey } from './projectStorageKeys'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { ExitJournalError, readSynchronousExitJournal } from './synchronousExitJournal'
+import { ExitJournalError } from './synchronousExitJournal'
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 type Source = { key: string; token: string }
 export interface PreparedRecoverySources {

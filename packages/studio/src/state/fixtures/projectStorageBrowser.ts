@@ -6,7 +6,7 @@ import {
   setAutosaveMaxWaitForTests,
 } from '../../persistence/service'
 import { localSnapshotsEqual } from '../../project-migrations/localTransaction'
-import { decodeRecoverySnapshot } from '../exitJournalCodec'
+import { decodeRecoverySnapshot } from '../exitJournalDecode'
 import { readAllKeys, readValue, readValues } from '../idbTransaction'
 import {
   coordinatedProjectWrite,
@@ -33,7 +33,7 @@ import {
 import { createProjectStorageScope, type ProjectStorageScope } from '../projectStorageRuntime'
 import type { ProjectStoreApi } from '../projectStore'
 import { prepareProjectForHost } from '../projectValidation'
-import { readSynchronousExitJournal } from '../synchronousExitJournal'
+import { readSynchronousExitJournal } from '../synchronousExitJournalRead'
 
 // Observe real browser transactions. window.name survives the same-origin reload
 // even when the departing document cannot deliver another async callback.

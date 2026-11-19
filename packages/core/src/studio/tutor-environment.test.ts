@@ -57,11 +57,11 @@ test('assistant metadata rejects ambiguous APIs and execution instructions', () 
     StudioTutorEnvironmentSchema.safeParse({ ...python, shadowedModules: ['pygame', 'pinta'] })
       .success,
   ).toBe(true)
-  // Every module a project may shadow fits at once (random, math, turtle, pygame, pinta, sz_audio).
+  // Every module a project may shadow fits at once, including the scene helper.
   expect(
     StudioTutorEnvironmentSchema.safeParse({
       ...python,
-      shadowedModules: ['random', 'math', 'turtle', 'pygame', 'pinta', 'sz_audio'],
+      shadowedModules: ['random', 'math', 'turtle', 'pygame', 'pinta', 'cenario', 'sz_audio'],
     }).success,
   ).toBe(true)
   expect(

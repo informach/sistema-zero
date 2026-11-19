@@ -78,134 +78,159 @@ test('o envio captura o PNG Python e a biblioteca canônica com todos os destino
   expect(result.second.provenance).toEqual(result.inspected)
   expect(result.childLayerName).toBe('Lugar editado depois')
 })
-test('um leitor congelado recusa a receita nova; sua aba antiga não sobrescreve o mundo offline', async ({
-  page,
-  context,
-}, testInfo) => {
-  const namespace = `pygame-world-${Date.now()}`
-  await open(page, 'current', namespace)
-  const id = await page.evaluate(async () => {
-    const api = window.worldProof
-    const raw = api.documentFixture('python', 'classic')
-    raw.assets = []
-    raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
-    const project = await api.prepareEditableStudioProject(raw)
-    if (!project) throw new Error('fixture inválida')
-    await api.persistProject(project)
-    return project.id
-  })
-  const old = await context.newPage()
-  await open(old, 'old', namespace)
-  await old.evaluate(async (id) => {
-    const api = window.worldProof
-    const project = await api.prepareEditableStudioProject(await api.loadProjectById(id))
-    if (!project) throw new Error('o leitor antigo não abriu o Python anterior')
-    window.worldRam = project
-  }, id)
-  const expected = await page.evaluate(async (id) => {
-    const api = window.worldProof
-    const current = await api.prepareEditableStudioProject(await api.loadProjectById(id))
-    if (!current) throw new Error('projeto ausente')
-    const derivation = (await (
-      await fetch('/fixtures/vila-mundo.derivation.json')
-    ).json()) as PintaImageDerivation
-    const bytes = await (await fetch('/fixtures/vila-mundo.png')).arrayBuffer()
-    let binary = ''
-    for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte)
-    const asset = {
-      id: 'vila',
-      name: 'vila',
-      kind: 'image' as const,
-      source: 'library' as const,
-      libOrigin: 'pinta' as const,
-      libId: `personal:${derivation.recipe.drawingId}`,
-      libRevision: 1,
-      dataUrl: `data:image/png;base64,${btoa(binary)}`,
-      width: derivation.output.width,
-      height: derivation.output.height,
-      pintaImage: derivation,
-      proPath: 'vila.png',
-    }
-    const next = api.advanceLocalRevision(current, { ...current, assets: [asset] })
-    const validated = await api.prepareEditableStudioProject(next)
-    if (!validated) throw new Error('mundo recusado pelo leitor atual')
-    await api.persistProject(validated)
-    return { sha256: derivation.output.sha256, files: current.files }
-  }, id)
-  await context.setOffline(true)
-  const conflict = await old.evaluate(async () => {
-    const api = window.worldProof,
-      previous = window.worldRam
-    const next = api.advanceLocalRevision(previous, { ...previous, name: 'edição da aba antiga' })
-    try {
-      await api.persistProject(next)
-      return 'saved'
-    } catch (error) {
-      return (error as Error).name
-    }
-  })
-  expect(conflict).toBe('ProjectWriteConflict')
-  const refused = await old.evaluate(async (id) => {
-    try {
-      await window.worldProof.prepareEditableStudioProject(
+for (const kind of ['world', 'scene'] as const)
+  test(`um leitor congelado recusa os dados ${kind}; sua aba antiga não sobrescreve o mapa offline`, async ({
+    page,
+    context,
+  }, testInfo) => {
+    const namespace = `pygame-world-${Date.now()}`
+    await open(page, 'current', namespace)
+    const id = await page.evaluate(async () => {
+      const api = window.worldProof
+      const raw = api.documentFixture('python', 'classic')
+      raw.assets = []
+      raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
+      const project = await api.prepareEditableStudioProject(raw)
+      if (!project) throw new Error('fixture inválida')
+      await api.persistProject(project)
+      return project.id
+    })
+    const old = await context.newPage()
+    await open(old, 'old', namespace)
+    await old.evaluate(async (id) => {
+      const api = window.worldProof
+      const project = await api.prepareEditableStudioProject(await api.loadProjectById(id))
+      if (!project) throw new Error('o leitor antigo não abriu o Python anterior')
+      window.worldRam = project
+    }, id)
+    const fixture = kind === 'world' ? 'vila-mundo' : 'vila-cena'
+    const expected = await page.evaluate(
+      async ({ id, fixture }) => {
+        const api = window.worldProof
+        const current = await api.prepareEditableStudioProject(await api.loadProjectById(id))
+        if (!current) throw new Error('projeto ausente')
+        const derivation = (await (
+          await fetch(`/fixtures/${fixture}.derivation.json`)
+        ).json()) as PintaImageDerivation
+        const bytes = await (await fetch(`/fixtures/${fixture}.png`)).arrayBuffer()
+        let binary = ''
+        for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte)
+        const asset = {
+          id: 'vila',
+          name: 'vila',
+          kind: 'image' as const,
+          source: 'library' as const,
+          libOrigin: 'pinta' as const,
+          libId: `personal:${derivation.recipe.drawingId}`,
+          libRevision: 1,
+          dataUrl: `data:image/png;base64,${btoa(binary)}`,
+          width: derivation.output.width,
+          height: derivation.output.height,
+          pintaImage: derivation,
+          proPath: 'vila.png',
+        }
+        const next = api.advanceLocalRevision(current, { ...current, assets: [asset] })
+        const validated = await api.prepareEditableStudioProject(next)
+        if (!validated) throw new Error('mundo recusado pelo leitor atual')
+        await api.persistProject(validated)
+        return { sha256: derivation.output.sha256, files: current.files }
+      },
+      { id, fixture },
+    )
+    await context.setOffline(true)
+    const conflict = await old.evaluate(async () => {
+      const api = window.worldProof,
+        previous = window.worldRam
+      const next = api.advanceLocalRevision(previous, { ...previous, name: 'edição da aba antiga' })
+      try {
+        await api.persistProject(next)
+        return 'saved'
+      } catch (error) {
+        return (error as Error).name
+      }
+    })
+    expect(conflict).toBe('ProjectWriteConflict')
+    const refused = await old.evaluate(async (id) => {
+      try {
+        await window.worldProof.prepareEditableStudioProject(
+          await window.worldProof.loadProjectById(id),
+        )
+        return false
+      } catch {
+        return true
+      }
+    }, id)
+    expect(refused).toBe(true)
+    const read = await page.evaluate(async (id) => {
+      const project = await window.worldProof.prepareEditableStudioProject(
         await window.worldProof.loadProjectById(id),
       )
-      return false
-    } catch {
-      return true
+      return {
+        name: project?.name,
+        sha256: project?.assets?.[0]?.pintaImage?.output.sha256,
+        recipeVersion: project?.assets?.[0]?.pintaImage?.recipe.version,
+        dataVersion: project?.assets?.[0]?.pintaImage?.output.dataVersion,
+        files: project?.files,
+      }
+    }, id)
+    expect(read.name).toBe('Meu jogo')
+    expect(read.sha256).toBe(expected.sha256)
+    expect(read.recipeVersion).toBe(kind === 'world' ? 2 : 1)
+    expect(read.dataVersion).toBe(kind === 'world' ? 3 : 2)
+    expect(read.files).toEqual(expected.files)
+    if (kind === 'scene') {
+      const unmarked = await page.evaluate(async (id) => {
+        const api = window.worldProof
+        const project = await api.prepareEditableStudioProject(await api.loadProjectById(id))
+        if (project?.programmingLanguage !== 'python' || !project.assets?.[0]?.pintaImage)
+          throw new Error('mapa estruturado ausente')
+        delete project.assets[0].pintaImage.output.dataVersion
+        return project
+      }, id)
+      // Reader A treats the PNG as opaque. Only the new marker prevents adopting data it
+      // cannot execute. This control reads a detached copy and never writes it to storage.
+      expect(
+        await old.evaluate(
+          async (raw) => !!(await window.worldProof.prepareEditableStudioProject(raw)),
+          unmarked,
+        ),
+      ).toBe(true)
     }
-  }, id)
-  expect(refused).toBe(true)
-  const read = await page.evaluate(async (id) => {
-    const project = await window.worldProof.prepareEditableStudioProject(
-      await window.worldProof.loadProjectById(id),
-    )
-    return {
-      name: project?.name,
-      sha256: project?.assets?.[0]?.pintaImage?.output.sha256,
-      recipeVersion: project?.assets?.[0]?.pintaImage?.recipe.version,
-      files: project?.files,
+    const materialized = await page.evaluate(async (id) => {
+      const api = window.worldProof
+      const project = await api.prepareEditableStudioProject(await api.loadProjectById(id))
+      if (project?.programmingLanguage !== 'python' || project.kind !== 'classic')
+        throw new Error('projeto Python ausente')
+      const snapshot = await api.preparePythonExecutionSnapshot(project)
+      const source = await api.buildPythonSourceFiles(project)
+      const asset = project.assets![0]!
+      const path = asset.proPath!
+      const runtime = snapshot.files.find((file) => file.path === path)!
+      const exported = source.files[path]
+      if (typeof exported === 'string' || !exported) throw new Error('PNG exportado ausente')
+      return {
+        sha256: runtime.sha256,
+        runtime: Array.from(runtime.bytes),
+        exported: Array.from(exported),
+        module: source.files['pinta.py'],
+        program: source.files['main.py'],
+        files: project.files,
+      }
+    }, id)
+    expect(materialized.sha256).toBe(expected.sha256)
+    expect(materialized.exported).toEqual(materialized.runtime)
+    expect(materialized.module).toContain('def abrir_destino(self, porta)')
+    expect(materialized.program).toBe(materialized.files['main.py'])
+    const output = testInfo.outputPath('source')
+    for (const [path, content] of [
+      ['pinta.py', materialized.module],
+      ['assets/vila.png', new Uint8Array(materialized.exported)],
+      ['main.py', materialized.program],
+    ] as const) {
+      if (typeof content !== 'string' && !(content instanceof Uint8Array))
+        throw new Error('arquivo inválido')
+      const target = resolve(output, path)
+      await mkdir(dirname(target), { recursive: true })
+      await writeFile(target, content)
     }
-  }, id)
-  expect(read.name).toBe('Meu jogo')
-  expect(read.sha256).toBe(expected.sha256)
-  expect(read.recipeVersion).toBe(2)
-  expect(read.files).toEqual(expected.files)
-  const materialized = await page.evaluate(async (id) => {
-    const api = window.worldProof
-    const project = await api.prepareEditableStudioProject(await api.loadProjectById(id))
-    if (project?.programmingLanguage !== 'python' || project.kind !== 'classic')
-      throw new Error('projeto Python ausente')
-    const snapshot = await api.preparePythonExecutionSnapshot(project)
-    const source = await api.buildPythonSourceFiles(project)
-    const asset = project.assets![0]!
-    const path = asset.proPath!
-    const runtime = snapshot.files.find((file) => file.path === path)!
-    const exported = source.files[path]
-    if (typeof exported === 'string' || !exported) throw new Error('PNG exportado ausente')
-    return {
-      sha256: runtime.sha256,
-      runtime: Array.from(runtime.bytes),
-      exported: Array.from(exported),
-      module: source.files['pinta.py'],
-      program: source.files['main.py'],
-      files: project.files,
-    }
-  }, id)
-  expect(materialized.sha256).toBe(expected.sha256)
-  expect(materialized.exported).toEqual(materialized.runtime)
-  expect(materialized.module).toContain('def abrir_destino(self, porta)')
-  expect(materialized.program).toBe(materialized.files['main.py'])
-  const output = testInfo.outputPath('source')
-  for (const [path, content] of [
-    ['pinta.py', materialized.module],
-    ['assets/vila.png', new Uint8Array(materialized.exported)],
-    ['main.py', materialized.program],
-  ] as const) {
-    if (typeof content !== 'string' && !(content instanceof Uint8Array))
-      throw new Error('arquivo inválido')
-    const target = resolve(output, path)
-    await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, content)
-  }
-})
+  })

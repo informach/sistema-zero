@@ -1,0 +1,5 @@
+src/studio/pinta-image.test.ts(49,64): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '{ mime: string; width: number; height: number; bytes: number; sha256: string; }' is not assignable to parameter of type '{ mime: "image/png" | "image/svg+xml"; width: number; height: number; bytes: number; sha256: string; dataVersion?: 2 | 3 | undefined; }'.
+      Types of property 'mime' are incompatible.
+        Type 'string' is not assignable to type '"image/png" | "image/svg+xml"'.

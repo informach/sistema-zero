@@ -9,7 +9,7 @@ import {
 const extensions = z
   .array(z.strictObject({ id: StudioCatalogIdSchema, version: StudioExactVersionSchema }))
   .max(100)
-const pythonModule = z.enum(['turtle', 'math', 'random', 'pygame', 'pinta', 'sz_audio'])
+const pythonModule = z.enum(['turtle', 'math', 'random', 'pygame', 'pinta', 'cenario', 'sz_audio'])
 
 /** Source context for assistance, never a runtime approval or package-install capability. */
 export const StudioTutorEnvironmentSchema = z

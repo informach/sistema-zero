@@ -14,8 +14,8 @@ import {
   acknowledgeSynchronousExitJournal,
   type ExitJournalEntry,
   ExitJournalError,
-  readSynchronousExitJournal,
 } from './synchronousExitJournal'
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 /** Called only after a confirmed write, when a mirror actually exists. */
 export async function retireConfirmedExitCopies(scope: ProjectStorageScope, projectId: string) {

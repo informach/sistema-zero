@@ -4,7 +4,7 @@ import {
   projectAssetFileExtension,
 } from './assetBinary'
 import { courseModelDataUrl, preloadCourseModels } from './courseModels'
-import { PRO_ASSET_DIRECTORY, PRO_ASSET_MANIFEST, validProAssetPath } from './proAssetPaths'
+import { PRO_ASSET_DIRECTORY, PRO_ASSET_MANIFEST, validProMaterialPath } from './proAssetPaths'
 import {
   asset3DManifest,
   assetManifest,
@@ -16,6 +16,7 @@ import {
 } from './project'
 import { type ProModelMetadata, readProModelMetadata } from './proModelMetadata'
 import type { ProjectTree } from './proProject'
+import { assertScene3DAssets } from './scene3d/validacao'
 
 export interface ProAssetManifestEntry {
   id: string
@@ -33,6 +34,7 @@ export interface ProAssetManifestEntry {
   width?: number
   height?: number
   model?: ProModelMetadata
+  dado3d?: ProjectAsset['dado3d']
   sprite?: ProjectAsset['sprite']
   tileset?: ProjectAsset['tileset']
   tilemap?: Omit<NonNullable<ProjectAsset['tilemap']>, 'tileset'> & {
@@ -64,7 +66,7 @@ function materialize(asset: ProjectAsset) {
     const identity = await digest(new TextEncoder().encode(asset.id))
     const extension = projectAssetFileExtension(mime, asset.kind)
     const path = asset.proPath ?? `${PRO_ASSET_DIRECTORY}/${identity}.${extension}`
-    if (!validProAssetPath(path))
+    if (!validProMaterialPath(path, asset.kind))
       throw new Error(`O caminho do material ${asset.name} não é válido.`)
     const files = new Map([[path, bytes]])
     const entry: ProAssetManifestEntry = {
@@ -84,6 +86,7 @@ function materialize(asset: ProjectAsset) {
       ...(asset.height ? { height: asset.height } : {}),
       ...(asset.sprite ? { sprite: asset.sprite } : {}),
       ...(asset.tileset ? { tileset: asset.tileset } : {}),
+      ...(asset.dado3d ? { dado3d: asset.dado3d } : {}),
     }
     if (asset.kind === 'model3d') {
       const metadata = readProModelMetadata(bytes)
@@ -125,6 +128,7 @@ export async function buildProAssetBundle(
   )
     throw new Error('Os materiais ultrapassaram o limite do projeto.')
   await preloadCourseModels(assets)
+  await assertScene3DAssets(assets)
   const files = new Map<string, Uint8Array>()
   const entries: ProAssetManifestEntry[] = []
   const ids = new Set<string>()

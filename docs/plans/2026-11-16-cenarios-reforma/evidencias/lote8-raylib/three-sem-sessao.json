@@ -1,0 +1,90 @@
+{
+  "movimento": {
+    "antes": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 8.005233827223703,
+        "y": 0.28662434143525173,
+        "z": 7.994550244116535
+      },
+      "altura": 1.16,
+      "velocidade": 0,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "depois": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 8.001683461986762,
+        "y": 0.264888857410893,
+        "z": 6.271597709847883
+      },
+      "altura": 1.16,
+      "velocidade": 1.5,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "pausado": true,
+    "retomado": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 8.005307065132502,
+        "y": 0.2860189574105001,
+        "z": 7.991903077971581
+      },
+      "altura": 1.16,
+      "velocidade": 0,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "falhas": [],
+    "distancia": 1.7229561922568108
+  },
+  "recursosSemSessao": 84,
+  "origensExternas": [],
+  "erros": [],
+  "pacote": {
+    "arquivos": 35,
+    "bytesZip": 6152064,
+    "bytesExtraidos": 9847828,
+    "fonte": {
+      "cenario": "cen-000b",
+      "revisao": 1,
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+    },
+    "origem": "Download pela interface da oficina"
+  }
+}

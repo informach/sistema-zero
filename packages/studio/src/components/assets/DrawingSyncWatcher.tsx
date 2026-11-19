@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { getPersonalAssetsNamespace } from '../../asset-library/personal'
 import { syncDrawingsIntoProjects } from '../../asset-library/personalSync'
 import { useProjectStoreApi } from '../../state/projectStore'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
+import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 
 /**
  * Reconcilia os desenhos do Pinta quando a janela do Estúdio volta ao foco — é
@@ -18,6 +19,8 @@ import { useStudioPintaLibrary } from '../../studio/pinta-library'
 export function DrawingSyncWatcher(): null {
   const storeApi = useProjectStoreApi()
   const pintaLibrary = useStudioPintaLibrary()
+  const environment = useStudioRuntimeEnvironment()
+  const runtimeCatalog = useCallback(() => environment?.catalog ?? null, [environment])
 
   useEffect(() => {
     // Só o Estúdio Completo tem biblioteca pessoal (namespace por PERFIL). Na
@@ -36,7 +39,11 @@ export function DrawingSyncWatcher(): null {
           : setTimeout(cb, 200)
       idle(() => {
         if (disposed) return
-        void syncDrawingsIntoProjects(storeApi, { pintaLibrary, signal: controller.signal })
+        void syncDrawingsIntoProjects(storeApi, {
+          pintaLibrary,
+          signal: controller.signal,
+          runtimeCatalog,
+        })
       })
     }
 
@@ -63,7 +70,7 @@ export function DrawingSyncWatcher(): null {
       window.removeEventListener('focus', run)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [storeApi, pintaLibrary])
+  }, [storeApi, pintaLibrary, runtimeCatalog])
 
   return null
 }

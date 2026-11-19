@@ -1,11 +1,10 @@
 import { expect, test } from 'bun:test'
 import {
-  decodeExitJournal,
-  decodeRecoverySnapshot,
   EXIT_JOURNAL_MAX_CHARS,
   encodeExitJournal,
   encodeRecoverySnapshot,
 } from './exitJournalCodec'
+import { decodeExitJournal, decodeRecoverySnapshot } from './exitJournalDecode'
 
 test('journal codec preserves unknown fields, undefined, arrays, tags and negative zero', () => {
   const value = {

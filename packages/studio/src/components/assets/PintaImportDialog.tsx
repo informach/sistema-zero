@@ -6,11 +6,13 @@ import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
 import { isPythonProject } from '../../core/editableProject'
 import { normalizeSearchText } from '../../core/searchText'
+import { pintaImageRuntimeCompatible } from '../../runtime/pintaImageCompatibility'
 import { readLocalRevision } from '../../state/projectStorageRevision'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioPintaDrawingSummary, useStudioPintaLibrary } from '../../studio/pinta-library'
+import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import {
   addPintaCreationToProject,
   projectAssetFromCreation,
@@ -83,6 +85,7 @@ export function PintaImportDialog({
 }: PintaImportDialogProps): JSX.Element {
   const t = useT()
   const adapter = useStudioPintaLibrary()
+  const environment = useStudioRuntimeEnvironment()
   const assets = useProjectStore(useShallow((s) => s.project?.assets ?? EMPTY_ASSETS))
   const storeApi = useProjectStoreApi()
   const python = useProjectStore((s) => !!s.project && isPythonProject(s.project))
@@ -96,12 +99,13 @@ export function PintaImportDialog({
     () => ({
       adapter,
       storeApi,
+      environment,
       active: false,
       lifetime: new AbortController(),
       pending: null as AbortController | null,
       preview: null as AbortController | null,
     }),
-    [adapter, storeApi],
+    [adapter, storeApi, environment],
   )
   const [selection, setSelection] = useState<{ owner: typeof owner; drawingId: string } | null>(
     () =>
@@ -257,6 +261,18 @@ export function PintaImportDialog({
       if (recipe && imageModel) {
         if (!result.asset.pintaImage) {
           setError(t('pintaImport.image.selectionChanged'))
+          return
+        }
+        if (
+          !state.project ||
+          !isPythonProject(state.project) ||
+          !pintaImageRuntimeCompatible(
+            result.asset.pintaImage,
+            state.project.runtime,
+            environment?.catalog,
+          )
+        ) {
+          setError(t('pintaImport.image.sceneRuntimeUnavailable'))
           return
         }
         imageModel.assertPintaImageFits(

@@ -10,9 +10,9 @@ Os pacotes de cenário também percorrem as portas cujos destinos estão dispon�
 conjuntos e animações; **Avançado** mostra as propriedades técnicas. Recursos já usados
 pelo mapa continuam visíveis nos níveis mais simples.
 
-O editor cria até 128×128 células, oito camadas e 64 peças por folha. Projetos importados
-podem conservar até 256×256, 32 camadas e 256 peças, respeitando o orçamento do documento;
-isso não libera criar novas camadas acima do limite de autoria.
+O editor cria até 256×256 células, 32 camadas e 256 peças por folha, respeitando o orçamento
+total de 2.097.152 células. Aulas podem manter limites menores: nelas, a atividade continua
+limitada a 128×128 células, oito camadas e 64 peças por folha, com aviso antes de ultrapassar.
 
 1. Escolha **Começar**, **Criar mais** ou **Avançado** em **Criar do meu jeito**. As ferramentas
    permitidas pela atividade continuam valendo em todos os níveis.
@@ -56,11 +56,16 @@ ligações da biblioteca para atualizar os desenhos sem substituir a programaç�
 
 No Estúdio com **Python/Pygame**, escolha **Cenário com outros lugares** ao trazer um mapa
 do Pinta. Essa opção leva também os destinos das portas e aparece quando o ambiente Python
-do projeto já tem o leitor atualizado. Ambientes anteriores conservam o mapa de um só lugar.
+do projeto já tem o leitor atualizado. Com um leitor anterior, mapas simples continuam
+disponíveis. Se o cenário usar recursos que ele não lê, o Estúdio avisa e conserva a imagem
+anterior e o programa.
 Um editor sem execução conectada também pode preparar o mundo para exportação no computador.
 **Mapa com camadas e objetos**
 continua disponível para trazer apenas um lugar; a imagem simples continua como antes.
 Revisar um material existente conserva a opção escolhida anteriormente.
+Quando aparecer esse aviso, você pode escolher a imagem simples explicitamente ou usar
+**Baixar fonte** para levar o jogo e o leitor atual ao computador. A imagem simples não leva
+os objetos e as colisões; o mapa original continua editável no Pinta.
 
 O programa pode usar `mapa = pinta.carregar_mapa('vila')` e `mapa.ponto_inicial()`.
 Quando o jogador atravessar uma porta, o programa chama `outro = mapa.abrir_destino(porta)`;

@@ -1,0 +1,31 @@
+{
+  "fonte": {
+    "cenario": "cen-000b",
+    "revisao": 1,
+    "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+  },
+  "consultasPorRuntime": 441,
+  "maiorErroDeAltura": 0,
+  "maiorErroDeAnimacao": 0,
+  "nos": 20,
+  "modelosCompartilhados": 17,
+  "clipes": [
+    {
+      "no": "visual-2",
+      "clipes": [
+        "parado_relaxado",
+        "andar_frente",
+        "correr_frente",
+        "pulo_no_ar"
+      ],
+      "ossos": 44
+    }
+  ],
+  "aguaEstatica": true,
+  "ciclos": 3,
+  "texturasNativasLiberadas": 66,
+  "studioTexturasDepoisDoDescarte": 0,
+  "descarteIdempotente": true,
+  "renderNative": "Janela oculta no Windows, Raylib 6.0.1.0",
+  "studioCpython": "Módulo real de transporte/desenho/GLB do Estúdio em CPython; não é prova de execução Pyodide/WebGL no navegador."
+}

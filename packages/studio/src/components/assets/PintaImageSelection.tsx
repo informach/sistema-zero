@@ -13,6 +13,7 @@ import { Button } from '#ui'
 import { assertPintaImageFits, pintaImageTargetLimits } from '../../asset-library/pintaImageTarget'
 import { isPythonProject } from '../../core/editableProject'
 import { projectUsesPgzero } from '../../core/pgzeroMediaPaths'
+import { pintaImageRuntimeCompatible } from '../../runtime/pintaImageCompatibility'
 import { hasPygameExtension } from '../../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../../runtime/python/turtle/contract'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
@@ -61,6 +62,10 @@ export default function PintaImageSelection({
   const facts = drawing.imageSelection
   const initial = target?.pintaImage?.recipe
   const environment = useStudioRuntimeEnvironment()
+  const catalog = environment?.catalog
+  const projectRuntime = useProjectStore((state) =>
+    state.project && isPythonProject(state.project) ? state.project.runtime : undefined,
+  )
   // Without an execution host this editor can still prepare a portable desktop source.
   // A host with a pinned older runtime keeps the historical map choice as the default.
   const linkedWorld =
@@ -181,6 +186,13 @@ export default function PintaImageSelection({
           const image = await adapter.previewImage!(recipe, limits, { signal })
           if (!valid()) return
           assertPintaImageFits(image, limits)
+          const project = store.getState().project
+          if (!project || !isPythonProject(project)) return
+          if (
+            !pintaImageRuntimeCompatible(image.derivation, projectRuntime, catalog) ||
+            !pintaImageRuntimeCompatible(image.derivation, project.runtime, environment?.catalog)
+          )
+            throw new Error(t('pintaImport.image.sceneRuntimeUnavailable'))
           if (pintaImageRecipeKey(image.derivation.recipe) !== recipeKey)
             throw new Error(t('pintaImport.image.selectionChanged'))
           setPreview({ phase: 'ready', key: recipeKey!, image, signal })
@@ -198,7 +210,19 @@ export default function PintaImageSelection({
       controller.abort()
       if (owner.preview === controller) owner.preview = null
     }
-  }, [adapter, facts, owner, recipe, recipeKey, store, t, target])
+  }, [
+    adapter,
+    facts,
+    owner,
+    recipe,
+    recipeKey,
+    store,
+    t,
+    target,
+    environment,
+    catalog,
+    projectRuntime,
+  ])
   const animation =
     facts?.kind === 'frame' ? facts.animations.find((item) => item.id === animationId) : undefined
   const count = facts?.kind === 'tile' ? facts.tileCount : (animation?.frameCount ?? 0)
@@ -360,8 +384,24 @@ export default function PintaImageSelection({
             owner.active &&
             !owner.lifetime.signal.aborted &&
             !owner.preview?.signal.aborted
-          )
+          ) {
+            const project = store.getState().project
+            if (!project || !isPythonProject(project)) return
+            if (
+              !pintaImageRuntimeCompatible(
+                preview.image.derivation,
+                project.runtime,
+                environment?.catalog,
+              )
+            ) {
+              setPreview({
+                phase: 'error',
+                message: t('pintaImport.image.sceneRuntimeUnavailable'),
+              })
+              return
+            }
             onConfirm(recipe)
+          }
         }}
       >
         {busy

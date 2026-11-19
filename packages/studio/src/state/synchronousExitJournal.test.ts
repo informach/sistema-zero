@@ -3,9 +3,9 @@ import {
   acknowledgeSynchronousExitJournal,
   captureExitJournalStorage,
   hasSynchronousExitJournal,
-  readSynchronousExitJournal,
   stageSynchronousExitJournal,
 } from './synchronousExitJournal'
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 function localStorageFixture() {
   const storage = globalThis.localStorage

@@ -8,7 +8,8 @@
     "./runtime": "./src/runtime.ts",
     "./v2": "./src/v2/index.ts",
     "./geometria": "./src/geometria.ts",
-    "./compilar": "./src/compilar/index.ts"
+    "./compilar": "./src/compilar/index.ts",
+    "./studio": "./src/compilar/studio.ts"
   },
   "scripts": {
     "test": "bun test",

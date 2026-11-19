@@ -1,0 +1,66 @@
+import { execFileSync } from 'node:child_process'
+import { resolve } from 'node:path'
+import { expect, test } from '@playwright/test'
+
+const root = resolve(import.meta.dirname, '../../..')
+const directory = resolve(root, '.tmp/pinta-physics-e2e')
+test.beforeAll(() => {
+  execFileSync('bun', [resolve(root, 'packages/pinta/scripts/homologacao/physics.ts'), directory], {
+    cwd: root,
+  })
+})
+
+test('o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato', async ({
+  page,
+  isMobile,
+}, testInfo) => {
+  await page.goto(`/?namespace=physics-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(directory, 'geometria-fisica.pinta.json'))
+  const open = page.getByRole('button', { name: 'Abrir geometria-fisica (Mapa)', exact: true })
+  await open.click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await page.reload()
+  await open.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByRole('button', { name: 'Testar com personagem', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  const canvas = dialog.locator('canvas')
+  await expect(canvas).toBeVisible()
+  const heroX = () =>
+    canvas.evaluate((c: HTMLCanvasElement) => {
+      const bytes = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data
+      let sum = 0,
+        count = 0
+      for (let i = 0; i < bytes.length; i += 4)
+        if (
+          bytes[i] === 37 &&
+          bytes[i + 1] === 99 &&
+          bytes[i + 2] === 235 &&
+          bytes[i + 3] === 255
+        ) {
+          sum += (i / 4) % c.width
+          count++
+        }
+      return count ? sum / count : -1
+    })
+  await expect.poll(heroX).toBeGreaterThan(0)
+  const move = dialog.getByRole('button', { name: 'Andar para a direita', exact: true })
+  await move.dispatchEvent('pointerdown', { pointerId: 1 })
+  await expect.poll(heroX).toBeGreaterThan(30)
+  // Keep walking long enough to cross the wall if only point samples were used.
+  await page.waitForTimeout(650)
+  const stopped = await heroX()
+  await move.dispatchEvent('pointerup', { pointerId: 1 })
+  expect(stopped).toBeGreaterThan(33)
+  expect(stopped).toBeLessThan(36)
+  await testInfo.attach('parede-fina', { body: await page.screenshot(), contentType: 'image/png' })
+  await testInfo.attach('posicao', {
+    body: JSON.stringify({ x: stopped, isMobile }),
+    contentType: 'application/json',
+  })
+})

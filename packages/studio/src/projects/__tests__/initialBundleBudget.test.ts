@@ -105,6 +105,8 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
       'projectIndexedRecovery',
       'projectRecoveryGuards',
       'projectRecoverySources',
+      'exitJournalDecode',
+      'synchronousExitJournalRead',
     ])
       expect(
         Object.keys(chunk.modules).filter((moduleId) =>
