@@ -5,7 +5,13 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, 'output/cenarios-reforma/lote8-interface'),
+  ensaiarRaylib = process.env.CENARIOS_QA_RAYLIB === '1',
+  saida = resolve(
+    raiz,
+    ensaiarRaylib
+      ? 'output/cenarios-reforma/lote8-raylib/interface'
+      : 'output/cenarios-reforma/lote8-interface',
+  ),
   fixture = JSON.parse(
     readFileSync(
       resolve(raiz, 'output/cenarios-reforma/lote8-integracao-terreno-juncao/resultado.json'),
@@ -277,7 +283,7 @@ try {
       assert.equal(zip.fonte.revisao, 1)
       assert.ok(zip.terreno && zip.aguas > 0 && zip.caminhos > 0 && zip.atores > 0)
       assert.equal(zip.urls, 1)
-      let glb
+      let glb, raylib
       if (indice === 0) {
         await dialogo.getByLabel('Para onde levar').selectOption('glb')
         assert.equal(await pagina.evaluate(() => window.__qaArquivos.vivos.size), 0)
@@ -331,6 +337,78 @@ try {
           avisos: v.issues.numWarnings,
           reaberto,
         }
+      }
+      if (ensaiarRaylib) {
+        await dialogo.getByLabel('Para onde levar').selectOption('raylib')
+        assert.equal(await pagina.evaluate(() => window.__qaArquivos.vivos.size), 0)
+        assert.equal(
+          await dialogo.getByLabel('Juntar peças estáticas por região').isChecked(),
+          true,
+        )
+        assert.equal(
+          await dialogo.getByLabel('Juntar peças estáticas por região').isDisabled(),
+          true,
+        )
+        await dialogo.getByRole('button', { name: 'Preparar arquivo', exact: true }).click()
+        await dialogo
+          .getByRole('link', { name: 'Baixar ZIP', exact: true })
+          .waitFor({ timeout: 60000 })
+        await pagina.screenshot({ path: resolve(saida, `${nome}-raylib.png`) })
+        const baixando = pagina.waitForEvent('download')
+        await dialogo.getByRole('link', { name: 'Baixar ZIP', exact: true }).click()
+        await (await baixando).saveAs(resolve(saida, `${nome}-raylib.zip`))
+        raylib = await pagina.evaluate(
+          async (u) => {
+            const { readZipFiles } = await import(u.arquivos),
+              { conferirConteudoCompilado } = await import(u.compilar),
+              blob = await (await fetch(document.querySelector('dialog a[download]').href)).blob(),
+              zip = await readZipFiles(new File([blob], 'cenario.zip'), {
+                maxBytes: 300 * 1024 ** 2,
+                maxEntries: 9000,
+              })
+            if (!zip.ok) throw Error(`ZIP Raylib recusado: ${zip.reason}`)
+            const arquivos = new Map(zip.files.map((f) => [f.path, f.bytes])),
+              cena = JSON.parse(new TextDecoder().decode(arquivos.get('cenario.json')))
+            await conferirConteudoCompilado(
+              cena,
+              new Map(cena.arquivos.map((a) => [a.caminho, arquivos.get(a.caminho)])),
+            )
+            const modelo = cena.arquivos.filter((a) => a.mime === 'model/gltf-binary')
+            if (modelo.some((a) => !a.caminho.startsWith('models/')))
+              throw Error('Modelo fora de models/')
+            for (const nome of [
+              'cenario.py',
+              'main.py',
+              'requisitos-raylib.txt',
+              'licencas-modelos.txt',
+              'LEIA-ME.txt',
+            ])
+              if (!arquivos.has(nome)) throw Error(`Pacote Raylib sem ${nome}`)
+            if (
+              !new TextDecoder()
+                .decode(arquivos.get('requisitos-raylib.txt'))
+                .includes('raylib==6.0.1.0')
+            )
+              throw Error('Versão Raylib divergente')
+            return {
+              bytes: blob.size,
+              arquivos: arquivos.size,
+              fonte: cena.fonte,
+              nos: cena.nos.length,
+              aguas: cena.aguas.length,
+              caminhos: cena.caminhos.length,
+              terreno: !!cena.terreno,
+              licencas: cena.licencas,
+              urls: window.__qaArquivos.vivos.size,
+            }
+          },
+          {
+            arquivos: modulo('packages/molda/src/import/arquivos.ts'),
+            compilar: modulo('packages/molda-cenarios-motor/src/compilar/index.ts'),
+          },
+        )
+        assert.deepEqual(raylib.fonte, zip.fonte)
+        assert.equal(raylib.urls, 1)
       }
       await dialogo.getByRole('button', { name: 'Fechar', exact: true }).click()
       assert.equal(await pagina.evaluate(() => window.__qaArquivos.vivos.size), 0)
@@ -598,6 +676,7 @@ try {
         oficinaLimites,
         zip,
         glb,
+        raylib,
         console: avisos,
         videoInicio,
         autoriaIntacta: true,

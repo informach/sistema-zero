@@ -50,7 +50,11 @@ export async function buildPythonSourceFiles(
     Object.assign(files, pgzero.files)
   }
   const raylib = hasRaylibExtension(project)
-    ? buildRaylibDesktopFiles({ occupied: Object.keys(files), directories })
+    ? buildRaylibDesktopFiles({
+        occupied: Object.keys(files),
+        directories,
+        entrypoint: project.python.entrypoint,
+      })
     : null
   if (raylib) Object.assign(files, raylib.files)
   // A Turtle game that uses Pinta drawings as shapes takes the module along, next to the main

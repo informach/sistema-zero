@@ -16,9 +16,18 @@ const modules = [
   'pinta',
   'pyray',
   'raylib',
+  'cenario',
   'sz_audio',
 ] as const
-const shadowableModules = ['random', 'math', 'turtle', 'pygame', 'pinta', 'sz_audio'] as const
+const shadowableModules = [
+  'random',
+  'math',
+  'turtle',
+  'pygame',
+  'pinta',
+  'cenario',
+  'sz_audio',
+] as const
 export type PythonOfficialModule = (typeof modules)[number]
 
 /** What decides the official modules: the project's paths, entry point and extensions. */
@@ -87,7 +96,7 @@ export function pythonOfficialModulesFor(context: PythonModuleContext) {
         // Pygame Zero draws with pygame.draw; the Pygame-ce extension owns pygame and pinta.
         (module !== 'pygame' || installed(PGZERO_EXTENSION.id) || installed(PYGAME_EXTENSION.id)) &&
         (module !== 'pinta' || installed(PYGAME_EXTENSION.id)) &&
-        ((module !== 'pyray' && module !== 'raylib') ||
+        ((module !== 'pyray' && module !== 'raylib' && module !== 'cenario') ||
           RAYLIB_EXTENSION_IDS.some((id) => installed(id))),
     ),
   )

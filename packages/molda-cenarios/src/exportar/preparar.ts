@@ -9,7 +9,7 @@ import {
 import type { CenariosHost } from '../oficina/portas'
 import { nomeDoArquivoExportado } from './nomes'
 
-export type DestinoDeArquivo = 'three' | 'glb'
+export type DestinoDeArquivo = 'three' | 'glb' | 'raylib'
 export interface OpcoesDoArquivo {
   destino: DestinoDeArquivo
   juntar: boolean
@@ -73,7 +73,9 @@ async function gerarArquivo(
       // Propriedades são opacas ao exportador genérico. Não presumir que uma
       // peça anotada possa ser assada/juntada: o consumidor pode movimentá-la.
       preservarHierarquia: (o) => Object.keys(o.propriedades ?? {}).length > 0,
-      ...(opcoes.juntar ? { juncaoEstatica: { tamanhoDaRegiao: opcoes.tamanhoDaRegiao } } : {}),
+      ...(opcoes.juntar && opcoes.destino !== 'raylib'
+        ? { juncaoEstatica: { tamanhoDaRegiao: opcoes.tamanhoDaRegiao } }
+        : {}),
     },
   )
   if (pacote.cena.fonte.digest !== preparo.digest)
@@ -109,6 +111,17 @@ async function gerarArquivo(
     blob = await exportarPacoteThree(pacote, sinal, (feitos, total) =>
       progresso({ etapa: 'arquivos', feitos, total, nome: 'Criando o pacote' }),
     )
+  } else if (opcoes.destino === 'raylib') {
+    const { exportarPacoteRaylib } = await import('./raylib'),
+      r = await exportarPacoteRaylib(pacote, sinal, {
+        tamanhoDaRegiao: opcoes.tamanhoDaRegiao,
+        progressoDaCompilacao: progresso,
+        progresso: (feitos, total) =>
+          progresso({ etapa: 'arquivos', feitos, total, nome: 'Criando o pacote Raylib' }),
+      })
+    blob = r.blob
+    Object.assign(medidas, r.medidas)
+    avisos.push(...r.avisos)
   } else if (opcoes.destino === 'glb') {
     const { exportarGlbUnico } = await import('./glb'),
       glb = await exportarGlbUnico(pacote, sinal, { progresso })
