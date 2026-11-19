@@ -70,6 +70,39 @@ jobs:
           set -o pipefail
           mkdir -p .cache/mission
           bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-aborted.txt
+      # Homologação v4 (lote 1.4, 19/11/2026): o modo profundo (10 mil blocos, migrações v1/v2/v3,
+      # replay de journal v3) só rodava em máquina local; Firefox não tinha prova de armazenamento.
+      - name: Deep v4 storage qualification (10k blocks, v1/v2/v3 migration)
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: all
+          STUDIO_STORAGE_DEEP: '1'
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-deep.txt
+      - name: Install Firefox for the storage lifecycle
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps firefox
+      - name: Firefox storage lifecycle, deep mode and profile switch
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: firefox
+          STUDIO_STORAGE_DEEP: '1'
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-firefox.txt
+      - name: Frozen v3 client after the v4 migration (downgrade proof)
+        if: runner.os == 'Linux'
+        run: |
+          set -o pipefail
+          reader="$RUNNER_TEMP/reader-v3"
+          git fetch --no-tags --depth=1 origin f9ddd5e164daed9ac9c7ce2b6fcf76daf07e97a0
+          git worktree add --detach "$reader" f9ddd5e164daed9ac9c7ce2b6fcf76daf07e97a0
+          (cd "$reader" && bun install --frozen-lockfile)
+          mkdir -p packages/studio/.cache/mission
+          (cd packages/studio && STORAGE_DOWNGRADE_BASELINE="$reader" STORAGE_DOWNGRADE_BROWSER=all bunx playwright test --config playwright.storage-downgrade.config.ts --trace off) 2>&1 | tee packages/studio/.cache/mission/storage-downgrade.txt
       - name: Verify integrated Pinta scene and native Python contracts
         if: runner.os == 'Linux'
         working-directory: packages/studio
