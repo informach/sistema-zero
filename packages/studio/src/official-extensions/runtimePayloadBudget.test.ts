@@ -263,11 +263,15 @@ const BUDGETS: readonly {
   // 27/10: +1_187, as texturas do .glb pela img (ver o Jogo 3D). Medido: 210_387 / 60_177.
   // 27/10: +257, o que não faz sombra no carregador comum (ver o Jogo 3D). Medido: 210_644.
   // Windows, mesmo conteúdo: 62_048 bytes gzip.
+  // 19/11: integração de cenários no Avançado em 2932075e4: +10_079 caracteres
+  // e +2_830 bytes gzip Linux em relação a 81dfb3d8d. Medição independente no CI
+  // 44600643248: 220_689 caracteres / 62_564 gzip; Windows: 64_974 gzip.
+  // SHA-256 do texto idêntico nos dois sistemas: 0e4887f24178b829c7c90aa064322e53d41d483185123767084b7433061807b7.
   {
     extension: gameKit3DExtension,
-    maxChars: 210_700,
-    maxGzipBytes: 61_600,
-    maxGzipBytesWindows: 62_100,
+    maxChars: 220_700,
+    maxGzipBytes: 62_600,
+    maxGzipBytesWindows: 65_000,
   },
 ]
 

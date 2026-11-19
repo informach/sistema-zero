@@ -13,11 +13,7 @@
           "quadros": 223,
           "tempo": 3.818099999999998,
           "geracao": 1,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -54,11 +50,7 @@
           "quadros": 232,
           "tempo": 4.134699999999999,
           "geracao": 2,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -100,11 +92,7 @@
           "quadros": 241,
           "tempo": 4.4682999999999975,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -154,11 +142,7 @@
           "quadros": 418,
           "tempo": 7.419200000000029,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -205,11 +189,7 @@
           "quadros": 438,
           "tempo": 7.752700000000033,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -256,11 +236,7 @@
           "quadros": 441,
           "tempo": 7.802800000000033,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -307,11 +283,7 @@
           "quadros": 477,
           "tempo": 8.40290000000003,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -358,11 +330,7 @@
           "quadros": 487,
           "tempo": 8.56970000000003,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -411,11 +379,7 @@
           "quadros": 247,
           "tempo": 4.568199999999999,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -462,11 +426,7 @@
           "quadros": 247,
           "tempo": 4.568199999999999,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -515,11 +475,7 @@
           "quadros": 226,
           "tempo": 3.8514000000000026,
           "geracao": 1,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 2,
           "proprio": true,
           "recursos": {
@@ -593,11 +549,7 @@
           "quadros": 245,
           "tempo": 4.1515999999999975,
           "geracao": 1,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -629,11 +581,7 @@
           "quadros": 254,
           "tempo": 4.318300000000001,
           "geracao": 2,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -670,11 +618,7 @@
           "quadros": 263,
           "tempo": 4.485000000000002,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -719,11 +663,7 @@
           "quadros": 369,
           "tempo": 6.2523000000000195,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -765,11 +705,7 @@
           "quadros": 472,
           "tempo": 7.969700000000035,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -811,11 +747,7 @@
           "quadros": 517,
           "tempo": 8.719800000000026,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -859,11 +791,7 @@
           "quadros": 269,
           "tempo": 4.5850000000000035,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -905,11 +833,7 @@
           "quadros": 269,
           "tempo": 4.5850000000000035,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -953,11 +877,7 @@
           "quadros": 241,
           "tempo": 4.0181999999999976,
           "geracao": 1,
-          "chegada": [
-            0,
-            0.58,
-            0
-          ],
+          "chegada": [0, 0.58, 0],
           "partida": 2,
           "proprio": true,
           "recursos": {
@@ -1026,11 +946,7 @@
           "quadros": 230,
           "tempo": 3.934899999999997,
           "geracao": 1,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1067,11 +983,7 @@
           "quadros": 239,
           "tempo": 4.268199999999997,
           "geracao": 2,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1113,11 +1025,7 @@
           "quadros": 248,
           "tempo": 4.601799999999996,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1167,11 +1075,7 @@
           "quadros": 351,
           "tempo": 6.3190000000000195,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1218,11 +1122,7 @@
           "quadros": 371,
           "tempo": 6.652500000000025,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1269,11 +1169,7 @@
           "quadros": 374,
           "tempo": 6.702500000000025,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1320,11 +1216,7 @@
           "quadros": 410,
           "tempo": 7.302700000000031,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1371,11 +1263,7 @@
           "quadros": 419,
           "tempo": 7.452800000000034,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1424,11 +1312,7 @@
           "quadros": 254,
           "tempo": 4.701799999999998,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1475,11 +1359,7 @@
           "quadros": 254,
           "tempo": 4.701799999999998,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1528,11 +1408,7 @@
           "quadros": 226,
           "tempo": 3.8514999999999993,
           "geracao": 1,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 2,
           "proprio": true,
           "recursos": {
@@ -1589,9 +1465,7 @@
       ],
       "erros": [],
       "consoleErros": [],
-      "avisos": [
-        "Service Worker registration blocked by Playwright"
-      ],
+      "avisos": ["Service Worker registration blocked by Playwright"],
       "rede": [],
       "persistido": true
     },
@@ -1608,11 +1482,7 @@
           "quadros": 230,
           "tempo": 3.9181999999999984,
           "geracao": 1,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1649,11 +1519,7 @@
           "quadros": 239,
           "tempo": 4.251599999999999,
           "geracao": 2,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1695,11 +1561,7 @@
           "quadros": 250,
           "tempo": 4.6182,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1749,11 +1611,7 @@
           "quadros": 433,
           "tempo": 7.669300000000028,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1800,11 +1658,7 @@
           "quadros": 452,
           "tempo": 7.98620000000003,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1851,11 +1705,7 @@
           "quadros": 455,
           "tempo": 8.036100000000031,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1902,11 +1752,7 @@
           "quadros": 491,
           "tempo": 8.636300000000022,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -1953,11 +1799,7 @@
           "quadros": 500,
           "tempo": 8.78640000000002,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -2006,11 +1848,7 @@
           "quadros": 256,
           "tempo": 4.718200000000001,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -2057,11 +1895,7 @@
           "quadros": 256,
           "tempo": 4.718200000000001,
           "geracao": 3,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 1,
           "proprio": true,
           "recursos": {
@@ -2110,11 +1944,7 @@
           "quadros": 225,
           "tempo": 3.8347999999999973,
           "geracao": 1,
-          "chegada": [
-            8,
-            0.8700308994593138,
-            8
-          ],
+          "chegada": [8, 0.8700308994593138, 8],
           "partida": 2,
           "proprio": true,
           "recursos": {

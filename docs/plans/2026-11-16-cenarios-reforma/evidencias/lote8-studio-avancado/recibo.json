@@ -15,11 +15,7 @@
           "quadros": 20,
           "tempo": 0.35013333333333363,
           "geracao": 1,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -52,10 +48,7 @@
               "tempo": 0.35013333333333363
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 1244,
@@ -72,11 +65,7 @@
           "quadros": 29,
           "tempo": 0.5334000000000008,
           "geracao": 2,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -114,10 +103,7 @@
               "tempo": 0.06653333333333405
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 1349,
@@ -134,11 +120,7 @@
           "quadros": 38,
           "tempo": 0.7334000000000017,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -181,10 +163,7 @@
               "tempo": 0.06663333333333443
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 1454,
@@ -204,11 +183,7 @@
           "quadros": 221,
           "tempo": 3.784499999999997,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -251,11 +226,7 @@
               "tempo": 3.117733333333333
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente"],
           "acao": "andar_frente",
           "modelo": true,
           "desenhos": 4402,
@@ -272,11 +243,7 @@
           "quadros": 242,
           "tempo": 4.134599999999997,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -319,12 +286,7 @@
               "tempo": 3.467833333333333
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "correr_frente",
           "modelo": true,
           "desenhos": 4633,
@@ -341,11 +303,7 @@
           "quadros": 246,
           "tempo": 4.201299999999996,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -388,12 +346,7 @@
               "tempo": 3.534533333333332
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "pulo_no_ar",
           "modelo": true,
           "desenhos": 4677,
@@ -410,11 +363,7 @@
           "quadros": 284,
           "tempo": 4.8347999999999995,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -457,12 +406,7 @@
               "tempo": 4.168033333333334
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 5095,
@@ -479,11 +423,7 @@
           "quadros": 293,
           "tempo": 4.984900000000001,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -526,12 +466,7 @@
               "tempo": 4.318133333333336
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "andar_frente",
           "modelo": true,
           "desenhos": 5194,
@@ -550,11 +485,7 @@
           "quadros": 38,
           "tempo": 0.7334000000000017,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -597,10 +528,7 @@
               "tempo": 0.06663333333333443
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 1454,
@@ -617,11 +545,7 @@
           "quadros": 38,
           "tempo": 0.7334000000000017,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.28930231487194336,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.28930231487194336, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -664,10 +588,7 @@
               "tempo": 0.06663333333333443
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 1465,
@@ -686,11 +607,7 @@
           "quadros": 11,
           "tempo": 0.216733333333333,
           "geracao": 1,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904137,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904137, 7.998908781668583],
           "partida": 3,
           "corpo": {
             "kind": 2,
@@ -723,10 +640,7 @@
               "tempo": 0.216733333333333
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 6278,
@@ -780,11 +694,7 @@
           "quadros": 20,
           "tempo": 0.35013333333333324,
           "geracao": 1,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -828,11 +738,7 @@
           "quadros": 29,
           "tempo": 0.5002333333333333,
           "geracao": 2,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -881,11 +787,7 @@
           "quadros": 38,
           "tempo": 0.6502333333333334,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -942,11 +844,7 @@
           "quadros": 139,
           "tempo": 2.334033333333332,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1000,11 +898,7 @@
           "quadros": 223,
           "tempo": 3.7346333333333313,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1058,11 +952,7 @@
           "quadros": 338,
           "tempo": 5.651933333333352,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1118,11 +1008,7 @@
           "quadros": 38,
           "tempo": 0.6502333333333334,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1176,11 +1062,7 @@
           "quadros": 38,
           "tempo": 0.6502333333333334,
           "geracao": 3,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1236,11 +1118,7 @@
           "quadros": 11,
           "tempo": 0.19993333333333374,
           "geracao": 1,
-          "chegada": [
-            0,
-            0.000010000000000010001,
-            0.25001
-          ],
+          "chegada": [0, 0.000010000000000010001, 0.25001],
           "partida": 3,
           "corpo": {
             "kind": 2,
@@ -1321,11 +1199,7 @@
           "quadros": 20,
           "tempo": 0.34993333333333343,
           "geracao": 1,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1358,10 +1232,7 @@
               "tempo": 0.34993333333333343
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 364,
@@ -1378,11 +1249,7 @@
           "quadros": 29,
           "tempo": 0.5334,
           "geracao": 2,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1420,10 +1287,7 @@
               "tempo": 0.049933333333333246
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 469,
@@ -1440,11 +1304,7 @@
           "quadros": 38,
           "tempo": 0.7168666666666669,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1487,10 +1347,7 @@
               "tempo": 0.06663333333333307
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 574,
@@ -1510,11 +1367,7 @@
           "quadros": 143,
           "tempo": 2.4675666666666656,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1557,11 +1410,7 @@
               "tempo": 1.8173333333333326
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente"],
           "acao": "andar_frente",
           "modelo": true,
           "desenhos": 1762,
@@ -1578,11 +1427,7 @@
           "quadros": 165,
           "tempo": 2.834266666666665,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1625,12 +1470,7 @@
               "tempo": 2.184033333333332
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "correr_frente",
           "modelo": true,
           "desenhos": 2004,
@@ -1647,11 +1487,7 @@
           "quadros": 170,
           "tempo": 2.917666666666665,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1694,12 +1530,7 @@
               "tempo": 2.267433333333332
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "pulo_no_ar",
           "modelo": true,
           "desenhos": 2059,
@@ -1716,11 +1547,7 @@
           "quadros": 208,
           "tempo": 3.5511666666666644,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1763,12 +1590,7 @@
               "tempo": 2.9009333333333314
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2477,
@@ -1785,11 +1607,7 @@
           "quadros": 217,
           "tempo": 3.7012666666666636,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1832,12 +1650,7 @@
               "tempo": 3.0510333333333306
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "andar_frente",
           "modelo": true,
           "desenhos": 2576,
@@ -1856,11 +1669,7 @@
           "quadros": 38,
           "tempo": 0.7168666666666669,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1903,10 +1712,7 @@
               "tempo": 0.06663333333333307
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 574,
@@ -1923,11 +1729,7 @@
           "quadros": 38,
           "tempo": 0.7168666666666669,
           "geracao": 3,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904136,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904136, 7.998908781668583],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -1970,10 +1772,7 @@
               "tempo": 0.06663333333333307
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 585,
@@ -1992,11 +1791,7 @@
           "quadros": 11,
           "tempo": 0.20003333333333317,
           "geracao": 1,
-          "chegada": [
-            8.000118758087046,
-            0.2893056430904137,
-            7.998908781668583
-          ],
+          "chegada": [8.000118758087046, 0.2893056430904137, 7.998908781668583],
           "partida": 3,
           "corpo": {
             "kind": 2,
@@ -2029,10 +1824,7 @@
               "tempo": 0.20003333333333317
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2824,
@@ -2067,9 +1859,7 @@
       ],
       "erros": [],
       "consoleErros": [],
-      "avisos": [
-        "Service Worker registration blocked by Playwright"
-      ],
+      "avisos": ["Service Worker registration blocked by Playwright"],
       "rede": [],
       "persistido": "encerra-conforme-contrato-do-avancado"
     },
@@ -2088,11 +1878,7 @@
           "quadros": 20,
           "tempo": 0.3501333333333344,
           "geracao": 1,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2125,10 +1911,7 @@
               "tempo": 0.3501333333333344
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2223,
@@ -2145,11 +1928,7 @@
           "quadros": 30,
           "tempo": 0.5668333333333333,
           "geracao": 2,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2187,10 +1966,7 @@
               "tempo": 0.0666333333333326
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2339,
@@ -2207,11 +1983,7 @@
           "quadros": 39,
           "tempo": 0.7500999999999995,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2254,10 +2026,7 @@
               "tempo": 0.06673333333333298
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2444,
@@ -2277,11 +2046,7 @@
           "quadros": 225,
           "tempo": 3.8511999999999977,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2324,11 +2089,7 @@
               "tempo": 3.167833333333334
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente"],
           "acao": "andar_frente",
           "modelo": true,
           "desenhos": 5414,
@@ -2345,11 +2106,7 @@
           "quadros": 244,
           "tempo": 4.167999999999998,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2392,12 +2149,7 @@
               "tempo": 3.484633333333333
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "correr_frente",
           "modelo": true,
           "desenhos": 5623,
@@ -2414,11 +2166,7 @@
           "quadros": 248,
           "tempo": 4.2347,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2461,12 +2209,7 @@
               "tempo": 3.5513333333333335
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "pulo_no_ar",
           "modelo": true,
           "desenhos": 5667,
@@ -2483,11 +2226,7 @@
           "quadros": 286,
           "tempo": 4.868300000000004,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2530,12 +2269,7 @@
               "tempo": 4.184933333333337
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 6085,
@@ -2552,11 +2286,7 @@
           "quadros": 295,
           "tempo": 5.018400000000005,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2599,12 +2329,7 @@
               "tempo": 4.335033333333338
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado",
-            "andar_frente",
-            "correr_frente"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado", "andar_frente", "correr_frente"],
           "acao": "andar_frente",
           "modelo": true,
           "desenhos": 6184,
@@ -2623,11 +2348,7 @@
           "quadros": 39,
           "tempo": 0.7500999999999995,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2670,10 +2391,7 @@
               "tempo": 0.06673333333333298
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2444,
@@ -2690,11 +2408,7 @@
           "quadros": 39,
           "tempo": 0.7500999999999995,
           "geracao": 3,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 2,
           "corpo": {
             "kind": 2,
@@ -2737,10 +2451,7 @@
               "tempo": 0.06673333333333298
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 2455,
@@ -2759,11 +2470,7 @@
           "quadros": 12,
           "tempo": 0.21683333333333332,
           "geracao": 1,
-          "chegada": [
-            8.000120328108826,
-            0.2893023148719433,
-            7.9988943553959
-          ],
+          "chegada": [8.000120328108826, 0.2893023148719433, 7.9988943553959],
           "partida": 3,
           "corpo": {
             "kind": 2,
@@ -2796,10 +2503,7 @@
               "tempo": 0.21683333333333332
             }
           ],
-          "estadosTocados": [
-            "pulo_no_ar",
-            "parado_relaxado"
-          ],
+          "estadosTocados": ["pulo_no_ar", "parado_relaxado"],
           "acao": "parado_relaxado",
           "modelo": true,
           "desenhos": 7345,
