@@ -60,3 +60,8 @@ Evidência local sobre o build cdc489d4b, sem retries:
 - Tipos completos do Estúdio: saída 0. Biome: quatro arquivos sem erros.
 
 Uma rodada anterior sem essa captura reproduziu o menu persistente em 1/10 repetições. O histórico do editor não recebeu o clique esquerdo embora a automação tenha completado a chamada; houve foco do iframe durante seu carregamento. Isso é indício, não causa demonstrada. As rodadas atuais não declaram a falha corrigida e não justificam alterar o menu sem uma reprodução causal. A opção STUDIO_MENU_REPRO_CPU desacelera somente a interação já pronta, é desativada por padrão e restaura o fator original em finally; não representa um aparelho físico.
+
+
+## Captura final da integração
+
+Na integração 3a57cecd4, a falha de Mais blocos reapareceu no caso Chromium da aba oculta. A captura agora inclui pointercancel, gotpointercapture, lostpointercapture e o resultado final de preventDefault do contextmenu. Ela usa buffer limitado no documento e mensagens apenas dos frames pertencentes ao teste, sem RPC por evento para Node. O produto não consome a fonte dessas mensagens, e os testes de isolamento não usam essa instrumentação. O caso passou em 12/12 repetições com essa captura, sem que isso seja apresentado como correção. Consulte `2026-11-19-studio-v4-integration-3a57cecd4.md` para os gates e o bloqueio restante.

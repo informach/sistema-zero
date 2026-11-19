@@ -19,16 +19,18 @@ export const mapTwoDUsed = (code: string): boolean => codeUsesPintaScenePlayer(c
 export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): string =>
   !context || mapTwoDUsed(context.code) ? '' : MAP_TWO_D_WITHOUT_SCENE_VARIANT
 /**
- * Tetos ABSOLUTOS do motor com cenário, em caracteres. Revisão de 18/11/2026: 435.572 no Jogo 2D
- * e 423.870 no Avançado (o cenário soma cerca de 15,1 mil a cada motor).
+ * Tetos ABSOLUTOS do motor com cenário, em caracteres. Física de cena 3 (19/11):
+ * 443.979 no Jogo 2D e 432.327 no Avançado. Geometria canônica e varredura contínua
+ * acrescentam cerca de 8,4 mil ao leitor anterior, apenas no chunk lazy de cenário.
  * A folga é menor que 1%: o bastante para um ajuste pequeno, pouco demais para outro
  * recurso entrar sem alguém medir e decidir. O motor sem cenário segue nos tetos de sempre
  * (422.500 no Jogo 2D e 415.000 no Avançado).
  */
-export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 437_900, gk: 426_000 } as const
-// 18/11, recursos e consultas: 15.138 caracteres sobre o legado, incluindo geometria
-// canônica gerada. A carga é lazy; os tetos absolutos e do bundle inicial não sobem.
-export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 15_500
+export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 446_000, gk: 434_500 } as const
+// Medidos 23.545 / 23.594 caracteres sobre o legado. Folga inferior a 1%; motores
+// sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
+// Reproduzir: bun packages/studio/scripts/measure-pinta-runtime.ts.
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 23_800
 function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `
@@ -41,7 +43,23 @@ function host(target: 'g2d' | 'gk'): string {
     image:function(url){var img=new Image();img.src=url;return img;},warn:function(message){console.warn('[Pinta] '+message);},
     frame:function(step){requestAnimationFrame(step);},
     collision:function(name,scene,rows,asset){${basic ? "var map=createTileMap({image:Object.prototype.hasOwnProperty.call(ASSETS,asset)?asset:'',tile:scene.tileSize,solid:'0',platform:'1',grid:rows.map(function(r){return r.join(' ');}).join(';')});placeTileMap(map,0,0,scene.tileSize);return map;" : "var key='_pinta:'+name;tilemaps[key]={rows:rows,artTile:scene.tileSize,imgKey:'',solid:{0:true},platform:{1:true}};tilePx=scene.tileSize;return key;"}},
-    collide:function(sprite,map){${basic ? 'collideTileMap(sprite,map);' : 'collideTilemap(sprite,map);'}}
+    collide:function(sprite,map){${basic ? 'collideTileMap(sprite,map);' : 'collideTilemap(sprite,map);'}},
+    precise:function(sprite,scene,map,move){
+      if(!sprite||${basic ? '_isDestroyedSprite(sprite)' : 'sprite._active===false'})return;
+      var previous=${basic ? '_motionPreviousPosition(sprite)' : '{x:num(sprite._prevX,num(sprite.x,0)),y:num(sprite._prevY,num(sprite.y,0))}'};
+      var dx=sprite.x-previous.x,dy=sprite.y-previous.y;
+      var bx=${basic ? '0' : 'num(sprite._hbX,0)'},by=${basic ? '0' : 'num(sprite._hbY,0)'};
+      var body={x:previous.x+bx,y:previous.y+by,width:${basic ? 'sprite.w' : 'hbW(sprite)'},height:${basic ? 'sprite.h' : 'hbH(sprite)'}};
+      var resolved=move(scene,body,dx,dy);
+      if(![resolved.x,resolved.y,body.width,body.height,dx,dy].every(Number.isFinite))return;
+      sprite.x=resolved.x-bx;sprite.y=resolved.y-by;
+      // The existing engine keeps one-way platforms, drop-through and its public
+      // contact bookkeeping. Precise solids never enter that legacy grid.
+      ${basic ? 'collideTileMap(sprite,map);' : 'collideTilemapPlatform(sprite,tilemaps[map],currentDt);'}
+      if(Math.abs(resolved.x-body.x-dx)>1e-7)sprite.vx=0;
+      if(Math.abs(resolved.y-body.y-dy)>1e-7){sprite.vy=0;if(${basic ? '_gravityPullsUp(world.gravity)?dy<0:dy>0' : 'dy>0'}){${basic ? '_confirmGroundSupport(sprite,null);' : 'sprite.onGround=true;'}}}
+      ${basic ? '_refreshRecordedMotionAfterCollision(sprite,previous);' : 'sprite._prevX=sprite.x;sprite._prevY=sprite.y;'}
+    }
   });
   _registerRuntimeDomain('map-2d',{${basic ? 'reset' : 'resetProject'}:_map2d.reset});
   `

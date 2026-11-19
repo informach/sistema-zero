@@ -198,6 +198,7 @@ export async function sceneToNative(
     updatedAt: now,
     cols,
     rows,
+    ...(scene.version === 3 ? { physics: 'precise' as const } : {}),
     tilesetId: scene.tilesets[0]!.id,
     ...(resources.length ? { resources } : {}),
     layers: layers.map((l) =>

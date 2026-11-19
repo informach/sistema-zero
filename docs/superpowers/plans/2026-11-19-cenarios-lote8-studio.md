@@ -60,11 +60,23 @@ Refinamento Python após `38c33c519`: usar uma porta opcional de resolução fí
 
 19/11: [ação atômica JavaScript implementada, testada e revisada](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-commit.md), oito casos novos e regressão pertinente. O preparo usa a entrada CPU `/conteudo`; a opção de junção é executada na fonte Molda antes de entregar o pacote, evitando levar o compilador/GLTFExporter ao carregamento do modo Blocos. O teste de orçamento voltou a passar sem ampliar limites. A galeria/adapter ainda não chamam a ação; Python continua pendente, portanto os checks de produto abaixo permanecem abertos.
 
-- [ ] Testar primeiro 48/49 malhas reais, 5 MiB/modelo, 24 MiB/projeto existente, projeto alterado durante preparo, nomes colididos, repetição, dois cenários compartilhando recurso e falha/cancelamento: projeto original intacto.
-- [ ] Preparar referências/digests e a opção de junção compartilhada. Se o orçamento não couber, retornar excesso nominal e alternativa real; nunca omitir dependências ou mudar autoria.
-- [ ] Ampliar o adapter existente com cenas/revisões e resultado de bundle. O host usa CenariosHost/preparo autorizado e perfil capturado; não confiar em papel passado pelo cliente. Manter as criações antigas e sua origem.
+- [x] Testar primeiro 48/49 malhas reais, 5 MiB/modelo, 24 MiB/projeto existente, projeto alterado durante preparo, nomes colididos, repetição, dois cenários compartilhando recurso e falha/cancelamento: projeto original intacto.
+- [x] Preparar referências/digests e a opção de junção compartilhada. Se o orçamento não couber, retornar excesso nominal e alternativa real; nunca omitir dependências ou mudar autoria.
+- [x] Ampliar o adapter existente com cenas/revisões e resultado de bundle. O host usa CenariosHost/preparo autorizado e perfil capturado; não confiar em papel passado pelo cliente. Manter as criações antigas e sua origem.
 - [x] Aplicar pelo store existente, com preservação de fontes Python e módulos autorais. Usar a fonte oficial `Cenario` para consumir a cena compilada; não criar outro runtime Python. [Recorte do preparo/store Python](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-python-importacao.md); adapter/interface continuam pendentes.
-- [ ] Ensaiar Trazer do Molda real, conta/ensaio autorizado, Classic/Pro e Python; reabrir/exportar offline e rever limites, cancelamento, recursos e UI nos temas/layouts existentes. Commit/checkpoint.
+- [x] Ensaiar Trazer do Molda real, conta/ensaio autorizado, Classic/Pro e Python; reabrir/exportar offline e rever limites, cancelamento, recursos e UI nos temas/layouts existentes. Commit/checkpoint.
+
+### Continuação 2.2 — Galeria e operação autorizada
+
+Depois de `deb6a3e36`, a frente exclusiva é a integração visual desta tarefa. Não iniciar os motores antes de fechar este fluxo.
+
+- [x] Fixar o contexto das criações antigas sem mutar namespace global: `molda/state/persistence.ts` recebe namespace opcional no acesso à instância compartilhada; `molda/export/studioLibrary.ts` aceita namespace/sinal na listagem e usa o contexto capturado nas exportações. Testar leitura de A com B ativo, cancelamento e gerações antigas/novas.
+- [x] Acrescentar uma capacidade opcional de cenários ao MESMO `StudioMoldaLibraryAdapter`, mantendo list/import das criações antigas. Resumos incluem jogo, espaço e revisão. Preparo retorna `PacoteCompilado`, sem gravar recursos na biblioteca pessoal. A entrada restrita `molda-cenarios/studio-library` lista pelo `CenariosHost` e compila a revisão autorizada com o compilador/junção existentes. Conferir digest, licenças, cancelamento e erro de revisão; conservar atores/hierarquias/propriedades.
+- [x] No host `use-studio-creation-libraries.ts`, separar namespace local de ID da pessoa. Capturar ambos e o lifetime antes de awaits, com `sessionFetch` e `x-sz-viewer` existentes; cada operação combina seu AbortSignal com o lifetime. StrictMode e A→B→A não revivem operações. Criações antigas continuam usando seu armazenamento; cenários somente leem o host e entregam pacote.
+- [x] Ampliar o diálogo existente com a escolha Criações/Cenários, busca por jogo/nome, revisão, origem/licenças, preparo e mensagem nominal de orçamento. A opção de junção é explícita e recompila na fonte; não oculta nem remove recursos para caber. Preparar/commitar somente no projeto/perfil capturados. Fechar/trocar aborta e não grava parcialmente. Oferecer o fluxo Python apenas ao Raylib 3D e à release compatível, preservando o restante da galeria e a identidade da interface.
+- [x] Testar adapter/host/diálogo e regressão das criações antigas, fluxo real no harness com host HTTP autorizado, layouts/temas, arquivo Python gerado, reabertura/export e cancelamentos. Revisão, tipagem e orçamento frescos, documentação/commit/push antes da tarefa 3.
+
+19/11: [galeria/host/interface qualificados](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-galeria.md), com fluxo HTTP de ensaio em oito combinações de tela/tema, preservação/reabertura e execução Python nativa/browser. Os quatro motores permanecem pendentes; isso não fecha 8.4.
 
 ## 3. Carregador compartilhado e quatro motores
 
@@ -74,7 +86,7 @@ Refinamento Python após `38c33c519`: usar uma porta opcional de resolução fí
 
 `carregarCena3DDoProjeto` resolve o envelope/referências pelos assets e reconstitui `PacoteCompilado`, conferindo bytes reais antes de chamar o carregador comum. Retorna cena, alturas, colisões, atores, metadados e descarte. Não consulta Palco/editor. Cada motor liga esse resultado à sua câmera/controlador/loop existentes.
 
-- [ ] Testar o carregador com a cena real do ensaio Raylib/Three: geometria, transformações, pintura, buracos/recortes, duas águas, três caminhos, atores/clipes, erro/cancelamento e três ciclos de recursos.
+- [x] Testar o carregador com a cena real do ensaio Raylib/Three: geometria, transformações, pintura, buracos/recortes, duas águas, três caminhos, atores/clipes, erro/cancelamento e três ciclos de recursos. [Carregador](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-carregador.md) e [documento/export](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-transporte.md) qualificados; os motores abaixo permanecem abertos.
 - [ ] Mundo 3D: bloco/seletor Usar o cenário, codec/IR e troca atômica da representação do mundo; heightAt usa alturas reais. Não sobrepor terreno antigo à cena.
 - [ ] Canvas 3D: bloco/seletor e `sz_t3d_load_scene`; mesma cena/consulta e ciclo de recursos, sem um segundo carregador.
 - [ ] Jogo 3D: mesmo bloco e integração no motor existente, conservando avatar, câmera e controles.

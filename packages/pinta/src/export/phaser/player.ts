@@ -28,7 +28,17 @@ class PintaGame extends Phaser.Scene {
           collision.add(cell);
         }
         return collision;
-      },collide:(sprite,group)=>this.physics.collide(sprite,group)
+      },collide:(sprite,group)=>this.physics.collide(sprite,group),
+      precise:(sprite,scene,group,move)=>{
+        const body=sprite.body,previous=body.prev;
+        const result=move(scene,{x:previous.x,y:previous.y,width:body.width,height:body.height},body.x-previous.x,body.y-previous.y);
+        const hitX=Math.abs(result.x-body.x)>1e-7,hitY=Math.abs(result.y-body.y)>1e-7;
+        // Arcade postUpdate applies position - prev to the game object. Correct
+        // only the body here; changing the sprite too would apply this twice.
+        body.position.set(result.x,result.y);
+        if(hitX)body.setVelocityX(0);if(hitY)body.setVelocityY(0);
+        this.physics.collide(sprite,group);
+      }
     });
     this.maps.createMapScene('mapa',PINTA_START);
     hero.setPosition(this.maps.mapSpawn('mapa','x'),this.maps.mapSpawn('mapa','y'));hero.body.reset(hero.x,hero.y);hero.body.setCollideWorldBounds(true);

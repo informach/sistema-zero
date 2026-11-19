@@ -80,7 +80,11 @@ export function projectHas3DMaterials(
   hasMoldaLibrary: boolean,
 ): boolean {
   const has3DFile = (project?.assets ?? []).some(
-    (asset) => asset.kind === 'model3d' || asset.kind === 'environment3d',
+    (asset) =>
+      asset.kind === 'model3d' ||
+      asset.kind === 'environment3d' ||
+      asset.kind === 'scene3d' ||
+      asset.kind === 'scene3d-data',
   )
   // Python: only Raylib reaches the Molda (its texture is an image in Raylib 2D too). Without
   // Raylib, the tab stays only to manage a 3D file left behind (removing Raylib 3D keeps it).

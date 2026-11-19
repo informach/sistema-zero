@@ -211,7 +211,37 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
     }
     return false
   }
-  if (queryTiles(scene.layers, scene.cols, scene.rows)) return true
+  const queryObjects = (
+    layers: PintaScene['layers'],
+    cols: number,
+    rows: number,
+    parent?: PintaSceneObject,
+  ): boolean => {
+    for (const layer of layers) {
+      if (layer.kind !== 'objects') continue
+      const state = sceneLayerState(layers, layer)
+      if (!state.visible) continue
+      for (const object of layer.objects) {
+        if (!object.collision) continue
+        const placed = { ...object, x: object.x + state.offsetX, y: object.y + state.offsetY }
+        if (
+          sceneObjectIntersectsBox(
+            parent
+              ? transformSceneSetObject(parent, placed, cols * tileSize, rows * tileSize, [])
+              : placed,
+            box,
+          )
+        )
+          return true
+      }
+    }
+    return false
+  }
+  if (
+    queryTiles(scene.layers, scene.cols, scene.rows) ||
+    queryObjects(scene.layers, scene.cols, scene.rows)
+  )
+    return true
   for (const layer of scene.layers) {
     if (layer.kind !== 'objects') continue
     const state = sceneLayerState(scene.layers, layer)
@@ -230,7 +260,54 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
       // Child layers may extend beyond the nominal set through offsets. The cell
       // ranges below supply the broad phase without clipping those authored tiles.
       if (queryTiles(set.layers, set.cols, set.rows, parent)) return true
+      if (queryObjects(set.layers, set.cols, set.rows, parent)) return true
     }
   }
   return false
+}
+
+/** Axis-separated continuous motion. The swept rectangle contains the entire
+ * translation, so even a zero-width authored line cannot be skipped. Each axis
+ * needs at most 40 queries, independently of velocity or the thinnest obstacle.
+ * A body initially overlapping may leave the obstacle; authoring never teleports it.
+ */
+export function sceneMoveBox(scene: PintaScene, box: SceneBox, dx: number, dy: number): SceneBox {
+  const result = { ...box }
+  if (
+    ![box.x, box.y, box.width, box.height, dx, dy].every(Number.isFinite) ||
+    box.width <= 0 ||
+    box.height <= 0
+  )
+    return result
+  for (const axis of ['x', 'y'] as const) {
+    const extent = axis === 'x' ? 'width' : 'height'
+    // No valid body can travel farther than the world on one axis. Clamping the
+    // request also keeps binary-search precision independent of untrusted speed.
+    const limit = (axis === 'x' ? scene.cols : scene.rows) * scene.tileSize
+    const delta = Math.max(-limit, Math.min(limit, axis === 'x' ? dx : dy))
+    if (!delta) continue
+    const swept = (fraction: number): SceneBox => ({
+      ...result,
+      [axis]: result[axis] + Math.min(0, delta * fraction),
+      [extent]: result[extent] + Math.abs(delta * fraction),
+    })
+    if (sceneIntersectsBox(scene, result)) {
+      const end = { ...result, [axis]: result[axis] + delta }
+      if (!sceneIntersectsBox(scene, end)) result[axis] = end[axis]
+      continue
+    }
+    if (!sceneIntersectsBox(scene, swept(1))) {
+      result[axis] += delta
+      continue
+    }
+    let low = 0,
+      high = 1
+    for (let iteration = 0; iteration < 38; iteration++) {
+      const middle = (low + high) / 2
+      if (sceneIntersectsBox(scene, swept(middle))) high = middle
+      else low = middle
+    }
+    result[axis] += delta * low
+  }
+  return result
 }

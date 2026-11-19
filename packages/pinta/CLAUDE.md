@@ -1,6 +1,6 @@
 # CLAUDE.md — @sistemazero/pinta
 
-## Formatos 4/5/6, tetos em dois níveis e carimbo na gravação (18/11/2026)
+## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
 
@@ -23,16 +23,22 @@ Contrato, retenção, provas e limites: `docs/pinta-cenarios/revisao-2026-11-18/
   os arredondava, conservando o carimbo 4; ele precisa recusar o novo documento. Conjuntos
   exigem pelo menos 4 e acompanham o formato do mapa interno.
 - `PINTA_RESOURCE_SCHEMA = 6`: catálogo de versões autocontidas de artes e seleção de animação
-  por objeto. `PINTA_MAX_SCHEMA = 6`. IDs da cópia são imutáveis; `sourceId` é proveniência,
+  por objeto. IDs da cópia são imutáveis; `sourceId` é proveniência,
   não dependência externa. Teto de 32 versões / 8 MiB físicos; limpeza explícita e histórico
   compartilhando as mesmas cópias. Contrato e provas em
   `docs/pinta-cenarios/missao-completa-2026-11-18/recursos-e-animacoes.md`.
+- `PINTA_COLLISION_SCHEMA = 7`: `collision: true` nos objetos e opção explícita
+  `physics: 'precise'` no mapa. `PINTA_MAX_SCHEMA = 7`. Campo ausente conserva o legado;
+  não gravar `false` nem promover jogos existentes silenciosamente. Conjuntos acompanham
+  o mapa interno. Cena 3 e PNG de dados 4 exigem o leitor `pinta-scene-physics-v1`;
+  receitas permanecem em 1 (mapa) / 2 (mundo). Nuvem lê 6 e ainda declara 4: documentos
+  6/7 ficam protegidos localmente até o rollout do leitor e a ativação posterior do gravador.
 - Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
   completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
   recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado
   medido no cabeçalho de `core/mapFormat4.test.ts`.
 - Quem só usa camadas continua em 3; documento antigo continua sem carimbo e byte a byte igual
-  (conferido contra o código de bf6e895f). A leitura aceita 3, 4, 5 e 6, inclusive o mapa completo que
+  (conferido contra o código de bf6e895f). A leitura aceita 3, 4, 5, 6 e 7, inclusive o mapa completo que
   já foi gravado com 3: ele é lido inteiro e passa a 4.
 - `tilemapNeedsV3` continua respondendo "precisa de formato novo (3 ou superior)?", que é a pergunta do
   desenho e da entrega ao Estúdio. Para o número, use `tilemapSchemaFor`, `tilesetSchemaFor` ou

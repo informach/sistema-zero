@@ -54,7 +54,7 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 | 6 | `video-a6-causa` | Fui eu que causei isso |
 | 6 | `video-a6-familia` | O assunto que abre a conversa |
 | 7 | `video-a7-plataforma` | Você no controle |
-| 7 | `video-a7-ferramentas` | O que tem lá dentro |
+| 7 | `video-a7-ferramentas` | O que tem na área da criança |
 | 7 | `video-a7-presente` | O presente: sete dias de Cadê Todo Mundo |
 
 As chaves de clipe mudaram em relação à versão de 17/11, porque as partes são outras. Nenhum vídeo havia sido gravado ou vinculado. Os manifestos listam as chaves antigas em `retireBlockKeys`.

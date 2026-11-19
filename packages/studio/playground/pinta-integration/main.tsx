@@ -48,7 +48,8 @@ function Studio() {
         }
         raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
         void (async () => {
-          if (new URLSearchParams(window.location.search).get('leitor') === 'antigo') {
+          const reader = new URLSearchParams(window.location.search).get('leitor')
+          if (reader === 'antigo' || reader === 'mundo') {
             // Authoring-only catalog: declares no new Pinta reader and cannot execute code.
             const release = await createStudioRuntimeRelease({
               manifestVersion: 1,
@@ -62,7 +63,12 @@ function Studio() {
               sourceTargets: ['desktop'],
               requiredBrowserFeatures: [],
               artifacts: [{ path: 'authoring-only.txt', sha256: 'b'.repeat(64) }],
-              python: { version: '3.14.2', packages: [], providedModules: [], features: [] },
+              python: {
+                version: '3.14.2',
+                packages: [],
+                providedModules: [],
+                features: reader === 'mundo' ? ['pinta-map-world-v1'] : [],
+              },
             })
             const catalog = await createStudioRuntimeCatalog({
               releases: [release],

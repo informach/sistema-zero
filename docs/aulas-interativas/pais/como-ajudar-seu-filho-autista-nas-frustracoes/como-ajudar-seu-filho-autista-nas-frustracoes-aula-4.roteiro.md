@@ -1,0 +1,63 @@
+# Roteiro de produção · como-ajudar-seu-filho-autista-nas-frustracoes-aula-4
+
+A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção, e a apresentadora é o avatar da Vivianne Lima, psicóloga da Laopa, durante toda a aula. A fala copiável da aula inteira está no arquivo `.elevenlabs.txt` ao lado. Os textos indicados em **Na tela** entram na edição e correspondem aos slides que a Vivianne preparou para o curso.
+
+## Parte 1. O ambiente e o seu tom
+
+**Clipe:** `video-a4-ambiente`
+
+**Na tela:** No "controle do ambiente", mostrar o primeiro ponto [na edição: Controle do ambiente: afaste o que aumenta a sobrecarga sensorial]. No "a segurança vem primeiro", destacar o cuidado [na edição: Segurança primeiro: afaste o que pode machucar e proteja a criança e quem está perto]. No "regulação pelo modelo", mostrar o segundo ponto [na edição: Regulação pelo modelo: respire fundo, fale baixo, use frases curtas]. No "um espelho para a criança", destacar a ideia [na edição: o tom emocional do adulto é um espelho]. No "regular junto", destacar a frase [na edição: Escutar é, também, regular junto].
+
+**Fala para ElevenLabs:**
+
+```text
+[warmly] Oi! Hoje a gente vai para o momento mais difícil, e por isso mesmo muito importante. [thoughtful] A crise começou. E agora, o que eu faço?
+
+[reassuring, encouraging voice] A primeira coisa que eu quero te dizer é: respira. [engaging, energetic, conversational voice] Porque aqui a gente vai falar de uma intervenção inteligente. E inteligente, nessa hora, quer dizer fazer menos, e fazer do jeito certo.
+
+[confident, clear, unhurried voice] O primeiro ponto é o controle do ambiente. [engaging, energetic, conversational voice] Lembra da sobrecarga sensorial? Então: afaste os elementos que aumentam essa sobrecarga.
+
+[curious] E o que seria isso na prática? [engaging, energetic, conversational voice] É desligar a televisão. É abaixar a luz, se der. É pedir para as outras pessoas darem um espaço. É tirar a criança do meio do barulho, ou tirar o barulho de perto dela. [thoughtful] Porque, se o ambiente já estava doendo, cada estímulo a mais é lenha na fogueira.
+
+[confident, clear, unhurried voice] E, dentro desse cuidado com o ambiente, a segurança vem primeiro. [engaging, energetic, conversational voice] Se na crise a criança se joga, se bate ou arremessa as coisas, o que eu faço? Eu tiro de perto o que pode machucar: o que é de vidro, o que é pesado, o que tem ponta. Se ela bate a cabeça, eu coloco uma almofada, alguma coisa macia, entre ela e o chão ou a parede. E eu afasto os irmãos e quem mais estiver por perto.
+
+[reassuring, encouraging voice] E eu fico ali, por perto, com calma. Sem segurar com força e sem brigar. Eu só uso o meu corpo para proteger, se for para evitar que ela se machuque. [warmly] E, se na sua casa as crises costumam ter esse risco de alguém se machucar, leva isso para a equipe que acompanha o seu filho, tá? Porque aí vale montar um plano pensado para ele.
+
+[confident, clear, unhurried voice] O segundo ponto é a regulação pelo modelo. [curious] E quem é o modelo? [warmly] É você.
+
+[confident, clear, unhurried voice] Então respire fundo, fale baixo e use frases curtas. [thoughtful] Porque o tom emocional do adulto é um espelho para a criança. Se eu grito, eu estou mostrando para ela mais desorganização. [reassuring, encouraging voice] Se eu fico firme e calma, eu estou emprestando para ela a calma que ela ainda não consegue ter sozinha.
+
+[warmly] E eu sei que não é fácil, tá, gente? Na hora da crise o nosso coração dispara também. [reassuring, encouraging voice] Mas é justamente por isso que a gente respira primeiro. A gente se regula para poder ajudar o outro a se regular.
+
+[warmly] No fundo, é isso: escutar é, também, regular junto.
+
+[upbeat, encouraging voice] E tem uma coisa que a gente precisa parar de fazer nessa hora. É o que eu te conto na próxima parte. Clique em Próxima parte.
+```
+
+## Parte 2. O que não fazer no auge
+
+**Clipe:** `video-a4-auge`
+
+**Na tela:** No "não negocie no auge da crise", mostrar o terceiro ponto [na edição: Não negocie no auge da crise]. No "não acessa o raciocínio lógico", ilustrar [na edição: no auge, o raciocínio lógico fica fora do ar]. No "a diferença entre controle e conexão é a escuta", destacar a frase. No "a empatia muda a rota da crise", fechar com a frase em destaque.
+
+**Fala para ElevenLabs:**
+
+```text
+[confident, clear, unhurried voice] O terceiro ponto é este: não negocie no auge da crise.
+
+[curious] Sabe por quê? [confident, clear, unhurried voice] Porque, durante a explosão, a criança não acessa o raciocínio lógico. [thoughtful] É como se aquela parte que pensa, que pondera, que entende uma explicação, ficasse fora do ar por um tempo.
+
+[engaging, energetic, conversational voice] Então, assim, sabe aquela hora em que a gente começa a explicar? [thoughtful] "Mas eu já te falei que não pode, porque isso, porque aquilo, e se você continuar assim eu vou tirar tal coisa." [confident, clear, unhurried voice] Nessa hora, intervenções verbais complexas só aumentam o caos. É mais estímulo em cima de quem já está transbordando.
+
+[reassuring, encouraging voice] Por isso, no auge, não é hora de explicar. Não é hora de perguntar por que ele fez aquilo. Não é hora de dar sermão, nem de combinar castigo, nem de prometer prêmio. [warmly] É hora de estar perto, com poucas palavras, com o ambiente mais calmo, e esperar a onda passar.
+
+[curious] "Mas, Vivi, então eu não faço nada?" [pleased, lively voice] Faz, sim! [engaging, energetic, conversational voice] Você já fez muita coisa: você tirou o que estava sobrecarregando, você baixou o seu tom, e você ficou ali. Isso é intervir.
+
+[warmly] E eu gosto de lembrar que a diferença entre controle e conexão é a escuta. [thoughtful] Quando eu quero controlar, eu falo mais alto, eu exijo, eu mando obedecer. [upbeat, encouraging voice] Quando eu quero conectar, eu observo, eu acolho, eu espero.
+
+[warmly] Porque a empatia muda a rota da crise.
+
+[engaging, energetic, conversational voice] Então, na hora da crise, são três coisas: deixar o ambiente seguro e calmo, acalmar o seu tom e não negociar no auge.
+
+[upbeat, encouraging voice] E quando a criança se acalma, aí sim chega a hora de conversar e de ensinar. É na próxima aula, que é a nossa última. Clique em Concluir aula para continuar.
+```

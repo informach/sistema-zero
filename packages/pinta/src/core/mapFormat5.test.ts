@@ -87,7 +87,7 @@ describe('formato 5: offsets fracionários recusados pelo leitor completo de sch
     const old = map()
     expect(withPintaSchemaStamp(old)).toBe(old)
     expect(envelopeVersionFor([old])).toBe(1)
-    expect(PINTA_MAX_SCHEMA).toBe(6)
+    expect(PINTA_MAX_SCHEMA).toBe(7)
     expect(sanitizePintaAsset({ ...rich, schema: PINTA_MAX_SCHEMA + 1 })).toBeNull()
     expect(sanitizePintaAsset({ ...set(rich), schema: PINTA_MAX_SCHEMA + 1 })).toBeNull()
     const future = { ...JSON.parse(galleryToPintaJson([rich])), version: PINTA_MAX_SCHEMA + 1 }

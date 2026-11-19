@@ -195,8 +195,28 @@ function sameObject(a: TilemapObject, b: TilemapObject): boolean {
     a.y !== b.y ||
     a.width !== b.width ||
     a.height !== b.height ||
-    JSON.stringify([a.shape, a.points, a.rotation, a.flipX, a.flipY, a.art, a.role, a.setId]) !==
-      JSON.stringify([b.shape, b.points, b.rotation, b.flipX, b.flipY, b.art, b.role, b.setId])
+    JSON.stringify([
+      a.shape,
+      a.points,
+      a.rotation,
+      a.flipX,
+      a.flipY,
+      a.art,
+      a.role,
+      a.setId,
+      a.collision,
+    ]) !==
+      JSON.stringify([
+        b.shape,
+        b.points,
+        b.rotation,
+        b.flipX,
+        b.flipY,
+        b.art,
+        b.role,
+        b.setId,
+        b.collision,
+      ])
   ) {
     return false
   }

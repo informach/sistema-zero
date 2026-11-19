@@ -20,6 +20,10 @@ O teste passou após essa mudança. A correção protege a ordenação da recupe
 
 Os ensaios são locais em Windows. Não comprovam isolamento DOM em Firefox/WebKit, aparelhos físicos de entrada ou memória prolongada. A revisão exata ainda exige CI.
 
+## Backport para a integração v3
+
+A mesma correção foi portada para a branch da PR após a integração 3D. O conflito no teste foi resolvido conservando o novo observador e todas as asserções anteriores de execução/heartbeat/parada; o wrapper de diagnóstico exclusivo do laboratório não é uma dependência da correção. Nesta branch, os dez arquivos de preview passaram em **104 testes / 503 asserções / 12,91 s** e o typecheck completo passou. A variação no total de asserções vem das repetições dos polls; os casos de teste permanecem os mesmos. A aprovação remota ainda precisa da revisão exata.
+
 ## Tentativa independente de Linux
 
 Foi preparado um container local Bun 1.3.11 com arquivos commitados, sem `.git` ou configurações locais. A instalação de dependências não terminou e não executou os testes; o Docker retornou 500. A preparação esgotou o espaço disponível e uma verificação npm concorrente reprovou explicitamente com ENOSPC. O arquivo TAR da tarefa (1.739.356.160 bytes) foi removido por caminho literal verificado, recuperando espaço. A falha npm deve ser repetida com espaço disponível e não conta como resultado do produto.

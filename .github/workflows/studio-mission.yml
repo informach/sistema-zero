@@ -39,8 +39,9 @@ jobs:
           bun --no-env-file test ./scripts/ci/configure-ubuntu-apt.test.ts
           bun --no-env-file test ./scripts/local-studio-stack/gateway-contract.test.ts ./scripts/local-studio-stack/isolation.test.ts ./scripts/local-studio-stack/python-input.test.ts
           bun test docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.test.ts
+          (cd packages/member-shell && bun test ./tests/studio-creation-libraries.test.ts)
           cd packages/core
-          bun test ./src/studio/pinta-image.test.ts ./src/studio/pinta-limits.test.ts ./src/studio/pinta-source-ref.test.ts ./src/studio/pinta-scene-geometry.test.ts ./src/studio/project-json-graph.test.ts
+          bun test ./src/studio/pinta-image.test.ts ./src/studio/pinta-limits.test.ts ./src/studio/pinta-source-ref.test.ts ./src/studio/pinta-scene-geometry.test.ts ./src/studio/project-json-graph.test.ts ./src/creations/pinta-format.test.ts
           cd ../molda-cenarios-core
           bun test tests/compilar-contratos.test.ts tests/compilar-fonte.test.ts tests/propriedades-entrada.test.ts tests/compilar-studio.test.ts tests/compilar-preparo-exportacao.test.ts tests/compilar-orcamento.test.ts
           cd ../molda-cenarios-motor
@@ -86,6 +87,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p .cache/mission
+          bun scripts/generate-scene3d-runtime.ts --check
           node scripts/test-isolated.mjs 2>&1 | tee .cache/mission/unit.txt
       - name: Typecheck
         working-directory: packages/studio
@@ -169,7 +171,7 @@ jobs:
           set -o pipefail
           mkdir -p .cache/mission
           if [ '${{ runner.os }}' = 'Windows' ]; then
-            bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
+            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           else
             bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           fi
@@ -177,6 +179,10 @@ jobs:
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
         run: bun run test:e2e:pinta-scenes
+      - name: Public 3D scene uses the actual preview and exported site
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.scene3d-document.config.ts
       - name: Actual Studio consumes Pinta scenes and versioned art updates
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio

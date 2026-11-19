@@ -284,6 +284,15 @@ export const PYTHON_PYGAME_CODECS: readonly PythonBlockCodec[] = Object.freeze([
   ]),
   method('pinta_layer_tiles', 'peças da camada', PINTA, 'value', 'camada', 'tiles'),
   method('pinta_solids', 'peças sólidas da camada', PINTA, 'value', 'camada', 'solidos'),
+  method(
+    'pinta_body_blocked',
+    'o cenário bloqueia este corpo',
+    PINTA,
+    'value',
+    'mapa',
+    'bloqueado',
+    [param('corpo', 'corpo', value(name('jogador')))],
+  ),
   method('pinta_platforms', 'plataformas da camada', PINTA, 'value', 'camada', 'plataformas'),
   method('pinta_objects', 'objetos do mapa', PINTA, 'value', 'mapa', 'objetos', [
     optional('tipo', 'do tipo', t('inimigo')),

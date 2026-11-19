@@ -3,6 +3,10 @@ import { expect, type Page, test } from '@playwright/test'
 import { nativeRecovery } from '../src/state/projectRecoveryGuards'
 import { PROJECT_STORAGE_VERSION } from '../src/state/projectStorageKeys'
 import { decodeProjectStorageValue } from '../src/state/projectStorageTransport'
+import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
+
+test.beforeEach(async ({ page }) => recordMenuInteractions(page))
+test.afterEach(async ({ page }, info) => attachMenuInteractions(page, info))
 
 /**
  * A gravação de SAÍDA do Estúdio: recarregar logo depois de uma mudança, SEM esperar o "Salvo",

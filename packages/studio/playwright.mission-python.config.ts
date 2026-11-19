@@ -10,6 +10,7 @@ export default defineConfig(runtime, {
     'python-classic.spec.ts',
     'python-games.spec.ts',
     'python-pinta-world.spec.ts',
+    'python-pinta-physics.spec.ts',
   ],
   retries: 0,
   projects: [{ name: 'chromium', use: { channel: 'chromium' } }],

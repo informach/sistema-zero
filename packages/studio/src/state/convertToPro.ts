@@ -1,4 +1,5 @@
 import { parse as parseJavaScript } from '@babel/parser'
+import { STUDIO_THREE_TYPES_VERSION } from '@sistemazero/core/studio/three-version'
 import { type DefaultTreeAdapterMap, parse, serialize } from 'parse5'
 import type { Project, ProjectTree } from '#core'
 import { loadProTemplate } from '../components/code/pro-templates'
@@ -77,7 +78,7 @@ export async function convertClassicToProTree(project: Project): Promise<Project
     if (packageNode?.kind !== 'file') throw new Error('O modelo Pro não tem package.json.')
     const pkg = JSON.parse(packageNode.content)
     pkg.dependencies = { ...pkg.dependencies, three: THREE_VERSION }
-    pkg.devDependencies = { ...pkg.devDependencies, '@types/three': THREE_VERSION }
+    pkg.devDependencies = { ...pkg.devDependencies, '@types/three': STUDIO_THREE_TYPES_VERSION }
     tree['package.json'] = { kind: 'file', content: `${JSON.stringify(pkg, null, 2)}\n` }
   }
   convertModuleSources(tree, project, imports)

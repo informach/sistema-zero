@@ -8,7 +8,7 @@ import { isTileLayer, type PintaAsset, type TilemapAsset } from '../core/project
 import { sceneMapClosure } from '../core/sceneMapClosure'
 
 export const WORLD_BUDGET_MESSAGE =
-  'Este cenário com outros lugares ficou grande demais. Traga só este lugar usando Mapa com camadas e objetos.'
+  'Este cenário ficou grande demais para este ambiente. Diminua a escala ou use desenhos menores.'
 
 /** Counts the actual expanded scene definitions, including a set shared by several maps. */
 export function pintaImageSceneCells(scene: PintaScene): number {

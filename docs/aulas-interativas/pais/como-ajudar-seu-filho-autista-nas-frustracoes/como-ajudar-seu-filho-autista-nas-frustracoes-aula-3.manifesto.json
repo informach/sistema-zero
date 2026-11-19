@@ -1,0 +1,71 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+  "title": "Antes da crise: de pais reativos a pais estrategistas",
+  "blocks": [
+    {
+      "key": "video-a3-rotina",
+      "plannedVideo": "Título: Rotina visual e clareza do que vai acontecer\n\nEnsinar a dar previsibilidade com apoios visuais e avisos antes das transições. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a3-treino",
+      "plannedVideo": "Título: Treino de pequenas frustrações\n\nEnsinar a treinar a espera em situações mínimas e seguras, reconhecendo cada conquista. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 2."
+    },
+    {
+      "key": "video-a3-pedir",
+      "plannedVideo": "Título: Ensinar um jeito de pedir\n\nEnsinar a criança a comunicar necessidade e emoção de um jeito que funcione, com fala, figuras ou sinais. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 3."
+    },
+    {
+      "key": "resumo-a3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- **Rotina visual e clareza:** quadros, agendas ilustradas ou cartões. Antes de cada transição, avise e mostre: \"Faltam cinco minutos para parar de brincar e jantar.\"\n- **Treino de pequenas frustrações:** comece com esperas mínimas e seguras, como dez segundos, e reconheça na hora cada vez que a criança esperar. Aumente aos poucos.\n- **Um jeito de pedir:** ensine, na calma, \"preciso de ajuda\", \"estou nervoso\" e \"posso esperar\", com a fala, com figuras ou com sinais."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "rotina",
+      "title": "Rotina visual e clareza do que vai acontecer",
+      "objective": "Ensinar a dar previsibilidade com apoios visuais e avisos antes das transições.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-rotina"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-rotina"]
+      }
+    },
+    {
+      "key": "treino",
+      "title": "Treino de pequenas frustrações",
+      "objective": "Ensinar a treinar a espera em situações mínimas e seguras, reconhecendo cada conquista.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-treino"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-treino"]
+      }
+    },
+    {
+      "key": "pedir",
+      "title": "Ensinar um jeito de pedir",
+      "objective": "Ensinar a criança a comunicar necessidade e emoção de um jeito que funcione, com fala, figuras ou sinais.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-pedir", "resumo-a3"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-pedir"]
+      }
+    }
+  ]
+}

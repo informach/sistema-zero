@@ -1,0 +1,88 @@
+{
+  "tiled": "1.12.2",
+  "format": "1.10",
+  "sceneEqual": true,
+  "warnings": [],
+  "probes": [
+    {
+      "name": "parede fina dentro do corpo",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "centro da elipse",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "canto livre da elipse",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "centro da parede girada",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "fora da parede girada",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "perna do polígono",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "vão do polígono",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "segmento da linha",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "sem fechamento da linha",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "ponto dentro do corpo",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "fora do ponto",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "centro da elipse sob base afim",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "fora da elipse sob base afim",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "borda esquerda do mundo",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "borda direita sem penetração",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "fora do mundo",
+      "expected": true,
+      "actual": true
+    }
+  ]
+}

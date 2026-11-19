@@ -22,6 +22,7 @@ import {
   tilemapNeedsV4,
   tilemapNeedsV5,
   tilemapNeedsV6,
+  tilemapNeedsV7,
   tilesetNeedsV4,
   withPintaSchemaStamp,
 } from '../core/project'
@@ -46,6 +47,7 @@ const COMPLETE_SCENE_VERSION = 4
 /** O leitor completo de 4 arredondava offsets; o envelope 5 recusa o arquivo inteiro nele. */
 const PRECISE_SCENE_VERSION = 5
 const RESOURCE_SCENE_VERSION = 6
+const COLLISION_SCENE_VERSION = 7
 const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
   BASE_VERSION,
   OBJECTS_VERSION,
@@ -53,6 +55,7 @@ const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
   COMPLETE_SCENE_VERSION,
   PRECISE_SCENE_VERSION,
   RESOURCE_SCENE_VERSION,
+  COLLISION_SCENE_VERSION,
 ])
 const UTF8 = new TextEncoder()
 
@@ -428,6 +431,14 @@ export function assetNeedsV5(asset: PintaAsset): boolean {
  * o arquivo inteiro com recado, em vez de importar os mapas cortados.
  */
 export function envelopeVersionFor(assets: readonly PintaAsset[]): number {
+  if (
+    assets.some((asset) =>
+      asset.kind === 'tilemap'
+        ? tilemapNeedsV7(asset)
+        : asset.kind === 'map-set' && tilemapNeedsV7(asset.map),
+    )
+  )
+    return COLLISION_SCENE_VERSION
   if (
     assets.some((asset) =>
       asset.kind === 'tilemap'

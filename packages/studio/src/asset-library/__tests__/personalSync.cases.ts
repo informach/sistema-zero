@@ -1315,6 +1315,7 @@ describe('C3 recipe sync', () => {
     previous.pintaImage!.recipe.selection = { kind: 'map' }
     previous.pintaImage!.provenance.dependencies = [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }]
     const raw = await pngWithPintaData(Buffer.from(previous.dataUrl.split(',')[1]!, 'base64'), {
+      format: 'pinta',
       kind: 'map',
       version: 1,
     })
@@ -1330,7 +1331,7 @@ describe('C3 recipe sync', () => {
     resolver.setProvenance({ ...previous.pintaImage!.provenance, sourceSha256: 'b'.repeat(64) })
     const updatedBytes = await pngWithPintaData(
       Buffer.from(derivedPintaAsset().dataUrl.split(',')[1]!, 'base64'),
-      { kind: 'map', version: 2 },
+      { format: 'pinta', kind: 'map', version: 2 },
     )
     resolver.adapter.previewImage = async () => {
       catalog = { profiles: [], releases: [] }

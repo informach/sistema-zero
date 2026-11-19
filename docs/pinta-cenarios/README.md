@@ -1,5 +1,15 @@
 # Pinta: cenários 2D
 
+## Continuação da missão
+
+O [plano em execução](missao-completa-2026-11-18/plano.md) acompanha os lotes verificados
+e os critérios ainda pendentes. A integração em staging segue a autorização posterior
+do usuário, sem PR. A missão integral continua em andamento.
+
+O lote de [contornos autorais](missao-completa-2026-11-18/colisoes-autorais.md) acrescenta
+documento/envelope 7, cena 3 e PNG 4 com leitor específico. O código lê nuvem 6 e ainda
+declara 4 durante o rollout do leitor. [Provas e limites](missao-completa-2026-11-18/qa/colisoes-autorais/README.md).
+
 ## Revisão integral de 18/11/2026
 
 [PR draft 274](https://github.com/informach/sistema-zero/pull/274): revisão e correções,
@@ -18,7 +28,7 @@ com autoridade, revisão, espelho e lápide transacionais. Veja as
 [provas, custos e limites](revisao-2026-11-18/qa/autoridade-local-026.md).
 Isso remove esse bloqueio específico; a missão integral e o rollout continuam parciais.
 
-A proteção atual usa nuvem **4**, documentos ricos **4** e documentos com deslocamentos
+Na revisão abaixo, a proteção usa nuvem **4**, documentos ricos **4** e documentos com deslocamentos
 fracionários **5**. Camadas sem recursos ricos continuam em **3** e os legados conservam sua
 representação. A versão 5 impede que o leitor completo intermediário 4 arredonde as frações.
 

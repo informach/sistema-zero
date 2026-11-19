@@ -16,6 +16,7 @@ import {
 } from './project'
 import { type ProModelMetadata, readProModelMetadata } from './proModelMetadata'
 import type { ProjectTree } from './proProject'
+import { criarTransporteDeCenas3D } from './scene3d/transporte'
 import { assertScene3DAssets } from './scene3d/validacao'
 
 export interface ProAssetManifestEntry {
@@ -156,6 +157,7 @@ export async function buildProAssetBundle(
             assetMetaManifest(assets),
             soundManifest(assets),
             asset3DManifest(assets),
+            criarTransporteDeCenas3D(assets),
           ),
         ),
       )

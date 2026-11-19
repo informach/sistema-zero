@@ -2,7 +2,10 @@ import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { initialKidsJourneyPolicy, projectAdultJourney } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
-import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_PINTA_PHYSICS_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioFreeRuntimeRequest,
   StudioLessonRuntimeRequest,
@@ -52,13 +55,17 @@ async function fixture(
   identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
   runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
   releaseCapabilities?: readonly StudioProjectCapability[],
-  completePintaReader = false,
+  completePintaReader: boolean | 'world' = false,
 ) {
   const f = await authoringFixture(
     language,
     kind,
     releaseCapabilities,
-    completePintaReader ? [PYTHON_PINTA_WORLD_FEATURE] : undefined,
+    completePintaReader
+      ? completePintaReader === 'world'
+        ? [PYTHON_PINTA_WORLD_FEATURE]
+        : [PYTHON_PINTA_WORLD_FEATURE, PYTHON_PINTA_PHYSICS_FEATURE]
+      : undefined,
   )
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
   if (language === 'python') {
@@ -483,9 +490,15 @@ async function fixture(
 
 for (const context of ['free', 'lesson', 'live'] as const)
   for (const supported of [false, true])
-    for (const version of [2, 3] as const)
+    for (const { version, world, malformed } of [
+      { version: 2, world: false, malformed: false },
+      { version: 3, world: true, malformed: false },
+      { version: 4, world: false, malformed: false },
+      { version: 4, world: true, malformed: false },
+      { version: 4, world: false, malformed: true },
+    ] as const)
       for (const revision of context === 'free' ? [false, true] : [false])
-        test(`${context}: ${revision ? 'revisão' : 'publicação'} de dados Pinta ${version} ${supported ? 'preserva a privacidade' : 'recusa o leitor anterior'}`, async () => {
+        test(`${context}: ${revision ? 'revisão' : 'publicação'} de dados Pinta ${version} ${world ? 'mundo' : 'mapa'} ${malformed ? (supported ? 'recusa bytes inválidos com leitor novo' : 'recusa bytes inválidos com leitor anterior') : supported ? 'preserva a privacidade' : 'recusa o leitor anterior'}`, async () => {
           const { pngWithPintaData } = await import('../../pinta/src/export/pngText')
           const f = await fixture(
             'classic',
@@ -495,7 +508,7 @@ for (const context of ['free', 'lesson', 'live'] as const)
             undefined,
             'active',
             undefined,
-            supported,
+            version === 4 && !supported ? 'world' : supported,
           )
           const initial = revision ? await (await f.publish()).json() : null
           const oldSource = initial
@@ -507,7 +520,12 @@ for (const context of ['free', 'lesson', 'live'] as const)
               'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
               'base64',
             ),
-            { format: 'pinta', kind: 'map', version },
+            {
+              format: 'pinta',
+              kind: 'map',
+              version,
+              ...(version === 4 && !malformed ? { scene: { version: 3 } } : {}),
+            },
           )
           const dataUrl = `data:image/png;base64,${Buffer.from(raw).toString('base64')}`
           f.project.assets = [
@@ -524,16 +542,15 @@ for (const context of ['free', 'lesson', 'live'] as const)
               dataUrl,
               pintaImage: {
                 recipe: {
-                  version: version === 3 ? 2 : 1,
+                  version: world ? 2 : 1,
                   algorithm: 'pinta-image-1',
                   drawingId: 'desenho-privado',
-                  selection: { kind: version === 3 ? 'map-world' : 'map' },
+                  selection: { kind: world ? 'map-world' : 'map' },
                   scale: 1,
                 },
                 provenance: {
                   sourceSha256: 'a'.repeat(64),
-                  dependencies:
-                    version === 2 ? [{ drawingId: 'tiles', sha256: 'b'.repeat(64) }] : [],
+                  dependencies: !world ? [{ drawingId: 'tiles', sha256: 'b'.repeat(64) }] : [],
                 },
                 output: {
                   mime: 'image/png',
@@ -562,8 +579,8 @@ for (const context of ['free', 'lesson', 'live'] as const)
                 }),
               )
             : await f.publish(f.project)
-          expect(response.status).toBe(supported ? 200 : 409)
-          if (supported) {
+          expect(response.status).toBe(malformed ? 400 : supported ? 200 : 409)
+          if (supported && !malformed) {
             const body = await response.json()
             const retained = await currentPublishedSource(
               f.bucket,
@@ -573,7 +590,7 @@ for (const context of ['free', 'lesson', 'live'] as const)
             expect(JSON.parse(retained!.source).assets[0].dataUrl).toBe(dataUrl)
           } else {
             expect(await response.json()).toMatchObject({
-              error: { code: 'RUNTIME_PINTA_READER_OUTDATED' },
+              error: { code: malformed ? 'INVALID_INPUT' : 'RUNTIME_PINTA_READER_OUTDATED' },
             })
             expect(f.state.posts).toBe(revision ? 1 : 0)
             if (initial)

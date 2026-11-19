@@ -193,17 +193,31 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
       first += count
     }
   }
+  const separateArt = (o: PintaSceneObject): boolean =>
+    !!o.art && ['ellipse', 'point', 'polygon', 'polyline'].includes(o.shape ?? '')
+  function artObject(o: PintaSceneObject): Record<string, unknown> {
+    return object({
+      ...o,
+      id: '',
+      shape: 'art',
+      points: undefined,
+      collision: undefined,
+      role: undefined,
+      properties: {},
+    })
+  }
   function object(o: PintaSceneObject): Record<string, unknown> {
     const sprite = scene.art?.find((a) => a.id === o.art?.assetId)?.sprite
     const animation = sprite?.animations.find((a) => a.id === o.art?.animationId)
     const tile =
       animation?.frames[0]?.tile ?? sprite?.animations[0]?.frames[0]?.tile ?? o.art?.tile ?? 0
-    const gid = o.art
-      ? cellToGid(
-          tile | (o.flipX ? CELL_FLIP_H : 0) | (o.flipY ? CELL_FLIP_V : 0),
-          firstgid.get(o.art.assetId) ?? artFirst.get(o.art.assetId)?.get(o.art.animationId) ?? 0,
-        )
-      : undefined
+    const gid =
+      o.art && !separateArt(o)
+        ? cellToGid(
+            tile | (o.flipX ? CELL_FLIP_H : 0) | (o.flipY ? CELL_FLIP_V : 0),
+            firstgid.get(o.art.assetId) ?? artFirst.get(o.art.assetId)?.get(o.art.animationId) ?? 0,
+          )
+        : undefined
     const objectProperties = properties(o.properties)
     const angle = ((o.rotation ?? 0) * Math.PI) / 180
     return {
@@ -223,6 +237,7 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
       ...(o.shape === 'polyline' ? { polyline: o.points ?? [] } : {}),
       properties: [
         ...objectProperties,
+        ...(o.collision ? [{ name: 'pinta:collision', type: 'bool', value: true }] : []),
         {
           name: 'pinta:object',
           type: 'string',
@@ -234,6 +249,7 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
             flipY: o.flipY,
             art: o.art,
             setId: o.setId,
+            ...(separateArt(o) ? { separateArt: true } : {}),
           }),
         },
       ],
@@ -301,11 +317,21 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
             set.rows * scene.tileSize,
             localIds,
           )
-          if (child.art && transformed.shape === 'polygon' && !child.points)
+          if (
+            child.art &&
+            transformSceneSetObject(
+              o,
+              { ...child, shape: 'art', points: undefined },
+              set.cols * scene.tileSize,
+              set.rows * scene.tileSize,
+              localIds,
+            ).shape === 'polygon'
+          )
             throw new TiledSceneCompatibilityError(
               'O Tiled não representa uma imagem com cisalhamento (shear). Use a mesma escala nos dois lados do conjunto ou retire o giro do desenho interno.',
             )
           objects.push(object(transformed))
+          if (separateArt(transformed)) objects.push(artObject(transformed))
         }
       return [
         {
@@ -366,6 +392,17 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
           objects: l.objects.map(object),
         },
         instances = l.objects.flatMap((o) => expanded(o, l))
+      const drawings = l.objects.filter(separateArt).map(artObject)
+      if (drawings.length)
+        instances.push({
+          ...common,
+          id: ++layerId,
+          name: `${l.name}: desenhos dos contornos`,
+          type: 'objectgroup',
+          draworder: 'index',
+          objects: drawings,
+          properties: [{ name: 'pinta:expanded', type: 'bool', value: true }],
+        })
       return instances.length
         ? {
             id: ++layerId,
@@ -405,7 +442,9 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
     properties: [
       { name: 'pinta:id', type: 'string', value: scene.id },
       { name: 'pinta:name', type: 'string', value: scene.name },
-      ...(scene.version === 2 ? [{ name: 'pinta:sceneVersion', type: 'int', value: 2 }] : []),
+      ...(scene.version >= 2
+        ? [{ name: 'pinta:sceneVersion', type: 'int', value: scene.version }]
+        : []),
       ...(scene.resources?.length
         ? [{ name: 'pinta:resources', type: 'string', value: JSON.stringify(scene.resources) }]
         : []),

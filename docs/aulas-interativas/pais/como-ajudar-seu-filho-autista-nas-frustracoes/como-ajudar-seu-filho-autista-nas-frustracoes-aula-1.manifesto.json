@@ -1,0 +1,62 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
+  "title": "Crise não é desobediência, é comunicação",
+  "blocks": [
+    {
+      "key": "video-a1-abertura",
+      "plannedVideo": "Título: Boas-vindas\n\nApresentar a Vivianne, o tema do curso e o caminho das cinco aulas. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a1-comunicacao",
+      "plannedVideo": "Título: O que ninguém te contou sobre a crise\n\nMostrar que a crise comunica um excesso de estímulos, uma mudança inesperada ou uma barreira, e convidar à escuta. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 2."
+    },
+    {
+      "key": "resumo-a1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- Crise não é desobediência. É comunicação.\n- A criança não está dando conta de um excesso de estímulos, de uma mudança inesperada ou de uma barreira que não sabe atravessar.\n- Nem toda fala é verbal: o grito, o silêncio, o olhar e a fuga também comunicam.\n- Antes de rotular, corrigir ou julgar, escute o que o comportamento está dizendo."
+      }
+    },
+    {
+      "key": "apostila",
+      "content": {
+        "kind": "materials",
+        "title": "Apostila do curso: Frustrações e crises",
+        "bookPreview": true,
+        "items": []
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "abertura",
+      "title": "Boas-vindas",
+      "objective": "Apresentar a Vivianne, o tema do curso e o caminho das cinco aulas.",
+      "intent": "explanation",
+      "blockKeys": ["video-a1-abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-abertura"]
+      }
+    },
+    {
+      "key": "comunicacao",
+      "title": "O que ninguém te contou sobre a crise",
+      "objective": "Mostrar que a crise comunica um excesso de estímulos, uma mudança inesperada ou uma barreira, e convidar à escuta.",
+      "intent": "explanation",
+      "blockKeys": ["video-a1-comunicacao", "resumo-a1", "apostila"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-comunicacao"]
+      }
+    }
+  ]
+}

@@ -4,7 +4,12 @@ import { envelopeVersionFor, galleryToPintaJson, importPintaJson } from '../expo
 import { addMapObject, createMapObject } from '../tiles/mapObjects'
 import { createMapSet } from '../tiles/sets'
 import { addObjectLayer } from '../tiles/tilemapOps'
-import { createPixelSpriteAsset, createTilemapAsset, sanitizePintaAsset } from './project'
+import {
+  createPixelSpriteAsset,
+  createTilemapAsset,
+  PINTA_MAX_SCHEMA,
+  sanitizePintaAsset,
+} from './project'
 
 function document() {
   const sprite = createPixelSpriteAsset({ name: 'arvore', frameSize: 16, now: 100 })
@@ -52,7 +57,7 @@ it('catálogo inválido não é cortado: recusa todo o mapa sem perder referênc
     })),
   ])
     expect(sanitizePintaAsset({ ...source, resources })).toBeNull()
-  expect(sanitizePintaAsset({ ...source, schema: 7 })).toBeNull()
+  expect(sanitizePintaAsset({ ...source, schema: PINTA_MAX_SCHEMA + 1 })).toBeNull()
 })
 
 it('um conjunto com versões guardadas atravessa arquivo e transporte sem ser recusado', () => {

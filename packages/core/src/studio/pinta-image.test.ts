@@ -27,6 +27,27 @@ const metadata = {
   output: { mime: 'image/png' as const, width: 16, height: 16, bytes: 72, sha256: 'b'.repeat(64) },
 }
 
+test('dados físicos 4 exigem o leitor físico para mapa e mundo sem mudar as receitas antigas', () => {
+  for (const world of [false, true]) {
+    const value = PintaImageDerivationSchema.parse({
+      ...metadata,
+      recipe: {
+        ...recipe,
+        version: world ? 2 : 1,
+        selection: { kind: world ? 'map-world' : 'map' },
+      },
+      provenance: {
+        ...metadata.provenance,
+        dependencies: world ? [] : [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }],
+      },
+      output: { ...metadata.output, dataVersion: 4 },
+    })
+    expect(pintaImageRequiredRuntimeFeature(value)).toBe('pinta-scene-physics-v1')
+    expect(value.recipe.version).toBe(world ? 2 : 1)
+    expect(pintaImageRecipeKey(value.recipe)).toBe(pintaImageRecipeKey({ ...value.recipe }))
+  }
+})
+
 test('a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga', () => {
   const map = {
     ...metadata,
@@ -47,7 +68,7 @@ test('a versão dos dados novos pertence à saída, sem mudar a identidade da re
     pintaImageRecipeKey(PintaImageDerivationSchema.parse(map).recipe),
   )
   expect(PintaImageDerivationSchema.parse(map).output).toEqual(metadata.output)
-  for (const dataVersion of [1, 3, 4])
+  for (const dataVersion of [1, 3, 5])
     expect(
       PintaImageDerivationSchema.safeParse({ ...map, output: { ...map.output, dataVersion } })
         .success,

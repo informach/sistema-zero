@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { canonicalJson } from '../creations/content-fingerprint'
-import { PYTHON_PINTA_WORLD_FEATURE } from './python-runtime-features'
+import { PYTHON_PINTA_PHYSICS_FEATURE, PYTHON_PINTA_WORLD_FEATURE } from './python-runtime-features'
 
 const id = z
   .string()
@@ -217,7 +217,7 @@ export const PintaImageDerivationSchema = z
     output: z.strictObject({
       mime: z.enum(['image/png', 'image/svg+xml']),
       // Legacy outputs keep their exact shape. New structured maps declare their reader.
-      dataVersion: z.union([z.literal(2), z.literal(3)]).optional(),
+      dataVersion: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
       width: positiveInteger,
       height: positiveInteger,
       bytes: positiveInteger,
@@ -228,8 +228,10 @@ export const PintaImageDerivationSchema = z
     if (
       value.output.dataVersion !== undefined &&
       !(
-        (value.recipe.selection.kind === 'map' && value.output.dataVersion === 2) ||
-        (value.recipe.selection.kind === 'map-world' && value.output.dataVersion === 3)
+        (value.recipe.selection.kind === 'map' &&
+          (value.output.dataVersion === 2 || value.output.dataVersion === 4)) ||
+        (value.recipe.selection.kind === 'map-world' &&
+          (value.output.dataVersion === 3 || value.output.dataVersion === 4))
       )
     ) {
       context.addIssue({
@@ -290,7 +292,8 @@ export type PintaImageDerivation = z.infer<typeof PintaImageDerivationSchema>
 /** A derivative's declared reader requirement; no permission is granted by this metadata. */
 export function pintaImageRequiredRuntimeFeature(
   image: PintaImageDerivation,
-): typeof PYTHON_PINTA_WORLD_FEATURE | undefined {
+): typeof PYTHON_PINTA_WORLD_FEATURE | typeof PYTHON_PINTA_PHYSICS_FEATURE | undefined {
+  if (image.output.dataVersion === 4) return PYTHON_PINTA_PHYSICS_FEATURE
   return image.output.dataVersion !== undefined || image.recipe.selection.kind === 'map-world'
     ? PYTHON_PINTA_WORLD_FEATURE
     : undefined
