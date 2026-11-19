@@ -1,5 +1,4 @@
 import { canonicalJson } from '@sistemazero/core/creations'
-import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
 import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
@@ -77,6 +76,8 @@ import {
   raylibRelocatedAssets,
   raylibRenamedAsset,
 } from '../core/raylibMediaPaths'
+import { isPythonMaterialPath, isScene3DAssetKind } from '../core/scene3d/assets'
+import { cenasQueUsamAsset, scene3DResourceChangeIssue } from '../core/scene3d/referencias'
 import type { StudioPersistenceAdapter } from '../persistence/types'
 import {
   emptyPythonWorkspaceState,
@@ -274,7 +275,7 @@ interface ProjectStore {
   /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
   addAsset: (input: NewAssetInput) => string | null
   importPintaMapBundle: (input: StudioPintaImportedAsset) => string | null
-  removeAsset: (id: string) => void
+  removeAsset: (id: string) => string | null
   /** Renomeia um asset. Devolve erro ou null. */
   renameAsset: (id: string, newName: string) => string | null
   /**
@@ -925,12 +926,14 @@ export function createProjectStore(
           next,
           isPythonProject(project)
             ? {
-                materialPath: isStudioPythonAssetPath,
+                materialPath: isPythonMaterialPath,
                 dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
               }
             : undefined,
         )
         assertProjectContentPreserved({ assets: next }, { ...project, assets: sanitized })
+        const sceneIssue = scene3DResourceChangeIssue(project.assets ?? [], sanitized)
+        if (sceneIssue) throw new Error(sceneIssue)
         if (isPythonProject(project)) {
           const error = commitPython({ ...project, assets: sanitized })
           if (error) throw new Error(error)
@@ -1457,7 +1460,7 @@ export function createProjectStore(
               return 'Este projeto abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
             asset.proPath = `assets/${name}.${extension}`
           }
-          if (!isStudioPythonAssetPath(asset.proPath))
+          if (!isPythonMaterialPath(asset.proPath, asset.kind))
             return 'Este formato de imagem ou som ainda não é compatível com o projeto Python.'
           return commitPython({ ...p, assets: [...assets, asset] })
         }
@@ -1466,10 +1469,13 @@ export function createProjectStore(
       },
       removeAsset: (id) => {
         const p = get().project
-        if (!p?.assets) return
+        if (!p?.assets) return null
+        const usadas = cenasQueUsamAsset(p.assets, id)
+        if (usadas.length)
+          return `Este material é usado pelos cenários: ${usadas.join(', ')}. Remova primeiro os cenários que dependem dele.`
         const target = p.assets.find((a) => a.id === id)
         const next = p.assets.filter((a) => a.id !== id)
-        if (next.length === p.assets.length) return
+        if (next.length === p.assets.length) return null
         // A capa escolhida era esta imagem: some junto (volta à foto automática).
         const { coverAssetName, ...rest } = p
         const wasCover = target !== undefined && coverAssetName === target.name
@@ -1478,6 +1484,7 @@ export function createProjectStore(
           isDirty: true,
           saveError: null,
         })
+        return null
       },
       updateAssetMeta: (id, meta) => {
         const p = get().project
@@ -1513,6 +1520,11 @@ export function createProjectStore(
         const target = p.assets.find((a) => a.id === id)
         if (!target) return 'Imagem não encontrada.'
         if (target.kind === 'audio') return 'Esse arquivo não é uma imagem.'
+        if (isScene3DAssetKind(target.kind))
+          return 'Traga uma nova revisão do cenário pelo Molda para alterar esses dados.'
+        const usadas = cenasQueUsamAsset(p.assets, id)
+        if (usadas.length && target.dataUrl !== image.dataUrl)
+          return `Este material é usado pelos cenários: ${usadas.join(', ')}. Traga uma nova revisão do cenário para preservar os recursos existentes.`
         if (target.pintaImage && image.pintaImage === undefined)
           return 'Prepare a imagem usando a receita do Pinta antes de atualizar este material.'
         let pintaImage: ProjectAsset['pintaImage']
@@ -1746,7 +1758,12 @@ export function createProjectStore(
           return 'Já existe uma imagem com esse nome.'
         }
         if (target.name === name) return null
-        if (isPythonProject(p) && (projectUsesPgzero(p) || projectUsesRaylib(p))) {
+        if (
+          isPythonProject(p) &&
+          !isScene3DAssetKind(target.kind) &&
+          !cenasQueUsamAsset(p.assets, id).length &&
+          (projectUsesPgzero(p) || projectUsesRaylib(p))
+        ) {
           // Pygame Zero finds the file by name and raylib by path: the file follows the name.
           const renamed = projectUsesRaylib(p)
             ? raylibRenamedAsset(p, target, name)
@@ -1848,12 +1865,14 @@ export function createProjectStore(
         if (isPythonProject(p)) {
           const assets = materials
             ? sanitizeProjectAssets(materials.assets, {
-                materialPath: isStudioPythonAssetPath,
+                materialPath: isPythonMaterialPath,
                 dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
               })
             : p.assets
           if (materials)
             assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          const sceneIssue = scene3DResourceChangeIssue(p.assets ?? [], assets ?? [])
+          if (sceneIssue) return sceneIssue
           const document = { ...p, ...pythonConfiguration, tree, assets }
           if (materials) {
             if (materials.coverAssetName) {
@@ -1882,6 +1901,8 @@ export function createProjectStore(
         if (materials) {
           const assets = sanitizeProjectAssets(materials.assets)
           assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          const sceneIssue = scene3DResourceChangeIssue(p.assets ?? [], assets)
+          if (sceneIssue) return sceneIssue
           if (
             materials.coverAssetName &&
             !assets.some((a) => a.kind === 'image' && a.name === materials.coverAssetName)

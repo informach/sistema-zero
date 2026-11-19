@@ -617,7 +617,13 @@ export function AssetsPanel({
               ? { projectId: pendingDeletion.operation.projectId, id: receipt.operationId }
               : null,
           )
-        } else removeAsset(pendingDeletion.id)
+        } else {
+          const issue = removeAsset(pendingDeletion.id)
+          if (issue) {
+            setError(issue)
+            return
+          }
+        }
         setPendingDeletion(null)
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : 'Não foi possível remover o material.')

@@ -17,6 +17,8 @@ const TAB_OF: Record<ProjectAsset['kind'], AssetsTab> = {
   audio: 'sounds',
   model3d: 'models3d',
   environment3d: 'models3d',
+  scene3d: 'models3d',
+  'scene3d-data': 'models3d',
   font: 'fonts',
 }
 const TAB_KEY: Record<AssetsTab, string> = {
