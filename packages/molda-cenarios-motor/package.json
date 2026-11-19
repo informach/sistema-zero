@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./compilar": "./src/compilar/index.ts",
     "./conteudo": "./src/compilar/conteudo.ts",
+    "./runtime": "./src/compilar/runtime-three.ts",
     "./raylib": "./src/compilar/raylib.ts"
   },
   "scripts": {
