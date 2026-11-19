@@ -6,7 +6,7 @@
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. O ambiente e o seu tom | Ensinar a reduzir os estímulos e a regular a criança pelo próprio modelo. |
+| 1. O ambiente e o seu tom | Ensinar a reduzir os estímulos, a cuidar da segurança e a regular a criança pelo próprio modelo. |
 | 2. O que não fazer no auge | Explicar por que não se negocia nem se explica no auge da crise. |
 
 **Formato:** vídeos com o avatar da Vivianne, com os textos de apoio inseridos na edição. Sem quiz nem tarefa.

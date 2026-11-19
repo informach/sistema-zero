@@ -87,6 +87,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p .cache/mission
+          bun scripts/generate-scene3d-runtime.ts --check
           node scripts/test-isolated.mjs 2>&1 | tee .cache/mission/unit.txt
       - name: Typecheck
         working-directory: packages/studio
@@ -178,6 +179,10 @@ jobs:
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
         run: bun run test:e2e:pinta-scenes
+      - name: Public 3D scene uses the actual preview and exported site
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.scene3d-document.config.ts
       - name: Actual Studio consumes Pinta scenes and versioned art updates
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio

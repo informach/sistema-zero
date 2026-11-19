@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { collectBundleLicenses } from '../../../scripts/lib/bundle-licenses'
 
 const raiz = resolve(fileURLToPath(new URL('../../..', import.meta.url))),
   entrada = resolve(raiz, 'packages/molda-cenarios-motor/src/compilar/portatil.ts'),
@@ -47,55 +48,7 @@ if (!resultado.metafile) throw Error('O empacotador não forneceu o inventário 
 const meta = (
     typeof resultado.metafile === 'string' ? JSON.parse(resultado.metafile) : resultado.metafile
   ) as { inputs: Record<string, unknown> },
-  dependencias = new Map<
-    string,
-    { nome: string; versao: string; licenca: string; texto: string }
-  >(),
-  pastas = new Set<string>()
-for (const arquivo of Object.keys(meta.inputs)) {
-  let pasta = dirname(resolve(raiz, arquivo))
-  if (!pasta.replaceAll('\\', '/').includes('/node_modules/')) continue
-  for (;;) {
-    if (pastas.has(pasta)) break
-    pastas.add(pasta)
-    const caminho = resolve(pasta, 'package.json')
-    if (existsSync(caminho)) {
-      const p = JSON.parse(readFileSync(caminho, 'utf8')) as {
-        name?: string
-        version?: string
-        license?: string
-      }
-      if (p.name && p.version && !p.name.startsWith('@sistemazero/')) {
-        const licenca = [
-          'LICENSE',
-          'LICENSE.md',
-          'LICENSE.txt',
-          'license',
-          'license.md',
-          'LICENSE-MIT',
-        ]
-          .map((n) => resolve(pasta, n))
-          .find(existsSync)
-        if (!licenca || !p.license) throw Error(`Falta a licença redistribuível de ${p.name}.`)
-        const chave = `${p.name}@${p.version}`
-        dependencias.set(chave, {
-          nome: p.name,
-          versao: p.version,
-          licenca: p.license,
-          texto: readFileSync(licenca, 'utf8').replaceAll('\r\n', '\n'),
-        })
-        break
-      }
-    }
-    const pai = dirname(pasta)
-    if (pai === pasta) break
-    pasta = pai
-  }
-}
-if (!dependencias.size) throw Error('Não identifiquei as licenças das dependências empacotadas.')
-const licencas = [...dependencias.values()].sort((a, b) =>
-    a.nome < b.nome ? -1 : a.nome > b.nome ? 1 : 0,
-  ),
+  licencas = collectBundleLicenses(raiz, Object.keys(meta.inputs)),
   digest = createHash('sha256').update(fonte).digest('hex'),
   texto =
     `// Gerado por bun --no-env-file scripts/gerar-runtime.ts (Bun 1.3.11). Não editar.\n` +

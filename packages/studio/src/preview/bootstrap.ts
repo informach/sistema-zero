@@ -84,6 +84,8 @@ export interface BuildPreviewDocInput {
    *  e descartaria um  em silêncio.
    */
   models3d?: Record<string, import('#core').Asset3DManifestEntry>
+  /** Scene manifests/fields plus ID references to the existing image/model channels. */
+  cenas3d?: import('../core/scene3d/transporte').TransporteDeCenas3D
   /**
    * A fonte da interface do JOGO, já resolvida por quem monta o documento.
    *
@@ -350,9 +352,15 @@ ${needsModules ? "Object.defineProperty(window.__SZSTUDIO_RUNTIME_INSPECTORS, 'g
       )
     : ''
   const assetsBridgeTag =
-    hasAssets || hasSounds || has3D
+    hasAssets || hasSounds || has3D || input.cenas3d
       ? trustedScriptTag(
-          buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds, input.models3d),
+          buildAssetsRuntime(
+            input.assets,
+            input.assetsMeta,
+            input.sounds,
+            input.models3d,
+            input.cenas3d,
+          ),
         )
       : ''
   // Bridge de FOTO: fica inerte até o editor pedir uma miniatura do jogo que já

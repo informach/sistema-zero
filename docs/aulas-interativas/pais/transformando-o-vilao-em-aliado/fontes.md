@@ -176,3 +176,24 @@ A fala afirma, como no encontro, que existem inúmeros estudos sobre programaç�
 
 - Apostila refeita em 18/11/2026 a partir dos roteiros. A frase da Isabela aparece sem o nome dela, e a apostila não revela o presente.
 - Geração da voz, avatar e edição dos 23 clipes; importação no Admin e publicação.
+
+## Aula 7 dentro da plataforma (19/11/2026)
+
+No encontro, a Helena falava de fora da plataforma e mandava as pessoas se cadastrarem. No curso, quem assiste já está logado na Área dos pais, na mesma plataforma em que a criança vai fazer o Cadê Todo Mundo. A Aula 7 foi reescrita partindo disso, conferindo o que o produto faz hoje:
+
+- **A conta já existe.** Falta só o perfil do filho. A fala apresenta os dois lados da plataforma (Área dos pais e área da criança).
+- **Três passos do presente:** clicar no botão abaixo do vídeo e informar nome e o mesmo e-mail da conta, na página que abre em outra aba; voltar à Área dos pais, em Família, e usar **Adicionar filho(a)** (nome do perfil e data de nascimento); **Autorizar aparelho**, escolher o prazo e gerar o código, que a criança digita em **Eu sou criador(a)**. Depois, Cursos e Cadê Todo Mundo.
+- **Prazo:** os sete dias contam do momento em que o presente é pego, e correm mesmo sem uso. A fala sugere pegar num dia em que já dê para começar.
+- **Ajustes de precisão:** "você enxerga tudo" virou acompanhar o progresso e as criações; o áudio é fala transformada em texto, sem guardar a gravação; "cancelar o acesso" virou "encerrar"; o atendimento fica no menu Ajuda; os e-mails citados são o do presente, o aviso de fim do prazo e o resumo da semana, que pode ser desligado (saiu a frase "não tem e-mail de venda", porque o aviso de fim do prazo fala da assinatura).
+- **Na tela:** as citações passam a pedir capturas das telas reais (Área dos pais, Família, Aparelhos, entrada da criança).
+
+### Pendências da Aula 7 para a dona decidir
+
+Levantadas em 19/11/2026 ao conferir a fala com o código. A fala atual descreve o produto como ele está; cada decisão abaixo pode pedir ajuste na fala.
+
+1. **A página do presente não reconhece quem está logado.** O link do bloco `presente` abre `sistemazero.com.br/bolsa/vilao-em-aliado-cade` em outra aba, no funil, e o formulário pede nome e e-mail de novo. Com um e-mail diferente do da conta, nasce uma conta nova e o presente vai para ela. Por isso a fala insiste no "mesmo e-mail da sua conta". Alternativa: a página reconhecer o login ou já vir com o e-mail preenchido (`packages/funnel/src/islands/BolsaResgate.tsx` e `src/pages/bolsa/[codigo].astro`). Se isso for feito, o primeiro passo da Parte 3 fica mais curto.
+2. **Mural sem aprovação dos pais.** O perfil público depende do responsável, mas publicar, comentar e reagir no Mural não tem etapa de aprovação, e o link de um jogo publicado abre para quem o tiver. A fala deixou de dizer que o responsável autoriza tudo o que é público e fala só do perfil. Decidir se o produto ganha essa aprovação ou se a fala deve explicar o Mural.
+3. **"Falar em vez de escrever" pode estar desligado.** A opção só aparece no perfil da criança com `VOICE_INPUT_ENABLED` ligado no servidor. Se estiver desligado em produção, tirar esse exemplo da Parte 1 e o item correspondente da apostila.
+4. **Um perfil de criança no presente.** A oferta `cade-todo-mundo-7-dias` não define `maxProfiles` e cai no padrão `DEFAULT_KIDS_MAX_PROFILES` (1 no código). Conferir o valor em produção e no Admin; a fala diz "o perfil de uma criança".
+5. **Idade.** "De 5 a 17 anos; abaixo de 9, com um adulto" é só texto: o código bloqueia apenas 18 anos ou mais.
+6. **Conferir no ambiente de destino** a campanha `vilao-em-aliado-cade` e a oferta dela, e se o menu Família aparece para a conta que só tem o curso para pais antes de pegar o presente.

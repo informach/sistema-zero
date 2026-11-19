@@ -5,7 +5,7 @@ Cursos feitos para os responsáveis, na área dos pais do Kids (**Cursos para pa
 | Curso | Aulas | Materiais e roteiros | Apostila |
 | --- | --- | --- | --- |
 | Transformando o vilão em aliado | 7 | [Abrir](transformando-o-vilao-em-aliado/README.md) | [PDF](transformando-o-vilao-em-aliado/apostila.pdf) |
-| Como ajudar seu filho autista a lidar com frustrações e evitar crises (bônus, com a Vivianne Lima) | 5 | [Abrir](como-ajudar-seu-filho-autista-nas-frustracoes/README.md) | Segunda etapa |
+| Como ajudar seu filho autista a lidar com frustrações e evitar crises (bônus, com a Vivianne Lima) | 5 | [Abrir](como-ajudar-seu-filho-autista-nas-frustracoes/README.md) | [PDF](como-ajudar-seu-filho-autista-nas-frustracoes/apostila.pdf) |
 
 Diferenças em relação aos cursos das crianças:
 
@@ -13,4 +13,4 @@ Diferenças em relação aos cursos das crianças:
 - **Texto na página:** curso para pais pode usar texto (`rich_text`), porque o público é adulto.
 - **Material:** a apostila do curso segue a [Receita do Passo a passo do projeto](../../aulas-interativas-tecnico/recursos/caderno-visual/README.md), com o nome "Apostila do curso".
 - **Transformando o vilão em aliado, refação de 18/11/2026:** o conteúdo integral do encontro de 13/11/2026 na voz da Helena, em sete aulas, sem tarefas ou quizzes. Os depoimentos exibidos no encontro entram fixos na edição. Convite único, na última aula: o Cadê Todo Mundo por sete dias. O presente é independente da emissão do certificado.
-- **Como ajudar seu filho autista a lidar com frustrações e evitar crises (19/11/2026):** curso bônus apresentado pela Vivianne Lima, psicóloga da Laopa, em cinco aulas. Segue os slides que ela preparou, enriquecidos pelo material em que ela se inspirou, na voz dela. Termina com certificado e sem oferta. A apostila vem numa segunda etapa.
+- **Como ajudar seu filho autista a lidar com frustrações e evitar crises (19/11/2026):** curso bônus apresentado pela Vivianne Lima, psicóloga da Laopa, em cinco aulas. Segue os slides que ela preparou, enriquecidos pelo material em que ela se inspirou, na voz dela. Termina com certificado e sem oferta. Tem apostila de consulta, com capa e cores próprias.

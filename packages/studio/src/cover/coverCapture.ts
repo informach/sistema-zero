@@ -12,16 +12,18 @@ import {
   loadExtensionBootstrapScripts,
 } from '#extensions'
 import { findExtension } from '#official-extensions'
-import { buildPreviewDoc, withCoreImports } from '#preview'
 import {
   type StudioPlayerOriginAdapter,
   validateIsolatedPreviewUrl,
 } from '../components/preview/playerOriginAdapter'
 import { type EditableStudioProject, isPythonProject } from '../core/editableProject'
+import { criarTransporteDeCenas3D } from '../core/scene3d/transporte'
 import { loadGameUiFont } from '../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildDomRasterizerRuntime } from '../preview/domRasterizerRuntime'
 import type { StudioRuntimeCapture } from '../runtime/capture'
+import { buildJavaScriptClassicDocument } from '../runtime/javascript/classicDocument'
+import { carregarModuloDeCenas3D } from '../three/scene3dResources'
 
 /**
  * Captura uma CAPA (print PNG) do projeto RODANDO, para a vitrine "Mural dos
@@ -109,12 +111,20 @@ async function runCapture(
   const gameUiFont = ctx.extensionScripts.length
     ? await loadGameUiFont(resolveGameUiFontId(project))
     : undefined
-  const doc = buildPreviewDoc({
+  const cenas3d = criarTransporteDeCenas3D(project.assets),
+    moduloDeCenas = cenas3d ? await carregarModuloDeCenas3D() : undefined
+  const doc = buildJavaScriptClassicDocument({
     html: project.files['index.html'] ?? '',
     css: project.files['style.css'] ?? '',
     js: project.files['script.js'] ?? '',
     // O harness vai POR ÚLTIMO: roda no `load`, depois das extensões e do aluno.
-    extensionScripts: [...ctx.extensionScripts, harness],
+    resources: {
+      extensionScripts: [...ctx.extensionScripts, harness],
+      extensionImports: ctx.extensionImports,
+      installedPermissions: ctx.permissions,
+      gameUiFont,
+      cenas3d: moduloDeCenas,
+    },
     extraFiles: project.extraFiles,
     // Sem o manifesto, um jogo com imagem cairia no placeholder fillRect e a capa
     // sairia sem os sprites — semeamos os assets também na captura.
@@ -129,12 +139,10 @@ async function runCapture(
     ),
     sounds: soundManifest(project.assets),
     models3d: asset3DManifest(project.assets),
-    gameUiFont,
+    cenas3d,
     parentOrigin,
-    installedPermissions: ctx.permissions,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     loopBudgetMs: opts.loopBudgetMs,
-    extensionImports: withCoreImports(ctx.extensionImports, project.files['script.js']),
   })
 
   return new Promise<string | null>((resolve) => {

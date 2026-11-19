@@ -20,6 +20,6 @@
 - [Durante a crise: a intervenção inteligente](como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.md)
 - [Depois da crise: onde a magia acontece](como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.md)
 
-**Formato:** cinco aulas e 12 partes com vídeo. Sem quiz nem tarefas. Sem oferta no final.
+**Formato:** cinco aulas e 12 partes com vídeo. Sem quiz nem tarefas. Sem oferta no final. Apostila opcional de consulta.
 
 **Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro.

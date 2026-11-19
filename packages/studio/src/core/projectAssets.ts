@@ -703,7 +703,7 @@ export function projectAssetBudgetChars(asset: { dataUrl: string; scene?: unknow
 export function assetManifest(
   assets: readonly ProjectAsset[] | undefined | null,
 ): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out: Record<string, string> = Object.create(null)
   if (!assets) return out
   for (const a of assets) {
     if (a && a.kind === 'image' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
@@ -721,7 +721,7 @@ export function assetManifest(
 export function soundManifest(
   assets: readonly ProjectAsset[] | undefined | null,
 ): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out: Record<string, string> = Object.create(null)
   if (!assets) return out
   for (const a of assets) {
     if (a && a.kind === 'audio' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
@@ -749,7 +749,7 @@ export interface Asset3DManifestEntry {
 export function asset3DManifest(
   assets: readonly ProjectAsset[] | undefined | null,
 ): Record<string, Asset3DManifestEntry> {
-  const out: Record<string, Asset3DManifestEntry> = {}
+  const out: Record<string, Asset3DManifestEntry> = Object.create(null)
   if (!assets) return out
   for (const a of assets) {
     if (!a || !isAsset3DKind(a.kind)) continue

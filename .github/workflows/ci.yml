@@ -221,6 +221,7 @@ jobs:
       - name: Cenários 3D (núcleo, motor, editor e agente)
         run: |
           bun run --cwd packages/molda-cenarios conferir:runtime
+          bun run --cwd packages/studio check:scene3d-runtime
           bun test --cwd packages/molda-cenarios-core
           bun test --cwd packages/molda-cenarios-motor
           bun test --cwd packages/molda-cenarios

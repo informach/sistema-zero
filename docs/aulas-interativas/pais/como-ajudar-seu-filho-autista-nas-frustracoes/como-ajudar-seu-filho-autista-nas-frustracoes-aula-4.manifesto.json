@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-a4-ambiente",
-      "plannedVideo": "Título: O ambiente e o seu tom\n\nEnsinar a reduzir os estímulos e a regular a criança pelo próprio modelo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 1."
+      "plannedVideo": "Título: O ambiente e o seu tom\n\nEnsinar a reduzir os estímulos, a cuidar da segurança e a regular a criança pelo próprio modelo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 1."
     },
     {
       "key": "video-a4-auge",
@@ -16,7 +16,7 @@
       "key": "resumo-a4",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\n- **Ambiente:** afaste o que aumenta a sobrecarga (som, luz, gente em volta).\n- **O seu tom:** respire fundo, fale baixo e com frases curtas. Você é o espelho da criança.\n- **Não negocie no auge:** nessa hora ela não acessa o raciocínio lógico. Explicação, sermão e combinado ficam para depois.\n- Fique perto, com poucas palavras, e espere a onda passar."
+        "markdown": "## Para consultar\n\n- **Segurança primeiro:** tire de perto o que pode machucar, proteja a criança e afaste quem está em volta. Se o risco de se machucar é frequente, leve para a equipe que acompanha o seu filho.\\n- **Ambiente:** afaste o que aumenta a sobrecarga (som, luz, gente em volta).\n- **O seu tom:** respire fundo, fale baixo e com frases curtas. Você é o espelho da criança.\n- **Não negocie no auge:** nessa hora ela não acessa o raciocínio lógico. Explicação, sermão e combinado ficam para depois.\n- Fique perto, com poucas palavras, e espere a onda passar."
       }
     }
   ],
@@ -24,7 +24,7 @@
     {
       "key": "ambiente",
       "title": "O ambiente e o seu tom",
-      "objective": "Ensinar a reduzir os estímulos e a regular a criança pelo próprio modelo.",
+      "objective": "Ensinar a reduzir os estímulos, a cuidar da segurança e a regular a criança pelo próprio modelo.",
       "intent": "explanation",
       "blockKeys": ["video-a4-ambiente"],
       "workspaceKey": null,
