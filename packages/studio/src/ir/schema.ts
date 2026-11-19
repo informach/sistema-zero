@@ -12139,6 +12139,8 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:createTorus',
   'g3d:createModel',
   'g3d:createModelFile',
+  'g3d:loadScene',
+  'g3d:sceneStart',
   'g3d:skyPhoto',
   'g3d:modelAnimation',
   'g3d:setColor',

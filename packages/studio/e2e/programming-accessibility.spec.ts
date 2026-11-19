@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { pasteBlocklyBlocks } from './helpers/blockly'
+import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
+
+test.beforeEach(async ({ page }) => recordMenuInteractions(page))
+test.afterEach(async ({ page }, info) => attachMenuInteractions(page, info))
 
 async function createProject(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('/')

@@ -1,4 +1,18 @@
 import { expect, type Page, test } from '@playwright/test'
+import {
+  disposeNativeInputTrace,
+  startNativeInputTrace,
+  stopNativeInputTrace,
+} from './helpers/nativeInputTrace'
+
+test.beforeEach(async ({ page }) => startNativeInputTrace(page))
+test.afterEach(async ({ page }, info) => stopNativeInputTrace(page, info))
+test.afterAll(async ({ browser }, info) => disposeNativeInputTrace(browser, info))
+
+import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
+
+test.beforeEach(async ({ page }) => recordMenuInteractions(page))
+test.afterEach(async ({ page }, info) => attachMenuInteractions(page, info))
 
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
@@ -61,6 +75,7 @@ test.describe('Aprender CSS — resultado visual e Ponte', () => {
     await page.getByRole('button', { name: 'Blocos', exact: true }).click()
     await page.getByRole('button', { name: 'Mais opções' }).click()
     await page.getByRole('menuitem', { name: 'Mostrar o jogo' }).click()
+    await expect(page.getByRole('menu', { name: 'Mais opções' })).toBeHidden()
     const backgroundBlock = page
       .locator('text.blocklyText', { hasText: 'Pintar o fundo de' })
       .locator('xpath=ancestor::*[contains(@class, "blocklyDraggable")][1]')
@@ -78,5 +93,20 @@ test.describe('Aprender CSS — resultado visual e Ponte', () => {
     await expect(page.locator('.monaco-editor .view-lines').first()).toContainText('#caixa', {
       timeout: 15_000,
     })
+  })
+
+  test('menu conserva a navegação ao reposicionar e fecha ao selecionar', async ({ page }) => {
+    await createProject(page)
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    const menu = page.getByRole('menu', { name: 'Mais opções' })
+    const last = menu.getByRole('menuitem').last()
+    await menu.getByRole('menuitem').first().press('End')
+    await expect(last).toBeFocused()
+    await page.setViewportSize({ width: 1180, height: 700 })
+    await expect(last).toBeFocused()
+    await last.press('Home')
+    await expect(menu.getByRole('menuitem').first()).toBeFocused()
+    await menu.getByRole('menuitem', { name: 'Mostrar o jogo' }).click()
+    await expect(menu).toBeHidden()
   })
 })

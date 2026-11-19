@@ -110,7 +110,7 @@ export const COMMON_CLASSES: ReadonlyArray<{ group: string; items: readonly Clas
     group: '🎞️ Animação · tempo',
     items: [
       { name: 'AnimationMixer', ns: 'THREE' },
-      { name: 'Clock', ns: 'THREE' },
+      { name: 'Timer', ns: 'THREE' },
     ],
   },
   {

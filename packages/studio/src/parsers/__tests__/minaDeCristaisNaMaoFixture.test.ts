@@ -89,7 +89,7 @@ for (let i = 0; i < totalCristais; i = i + 1) {
 cristais.instanceMatrix.needsUpdate = true;
 const mira = new THREE.Raycaster();
 const ponteiro = new THREE.Vector2(0, 0);
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let pontos = 0;
 let tempo = 45;
 let tempoSpawn = 1.4;
@@ -171,6 +171,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (rodando === true) {
     tempo = tempo - dt;

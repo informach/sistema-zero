@@ -10,6 +10,7 @@ export async function criarTransporteDeEnsaio({
   comPonte = false,
   comApoioPequeno = false,
   comTeto = false,
+  comRampa = false,
   fundo = 0,
 }: {
   comBuraco?: boolean
@@ -17,6 +18,7 @@ export async function criarTransporteDeEnsaio({
   comPonte?: boolean
   comApoioPequeno?: boolean
   comTeto?: boolean
+  comRampa?: boolean
   fundo?: number
 } = {}) {
   const { host, resumo, fonte } = await criarFonteDeCenarioDeEnsaio(1),
@@ -35,6 +37,25 @@ export async function criarTransporteDeEnsaio({
     buracos = [{ coluna: 0, linha: 0, digest }]
   }
   const pisos: Parameters<typeof host.editarCenario>[2] = []
+  if (comRampa)
+    pisos.push({
+      tipo: 'instancia.criar',
+      instancia: {
+        id: 'rampa',
+        nome: 'Rampa de apoio',
+        modelo: 'm',
+        grupo: null,
+        oculto: false,
+        bloqueado: false,
+        colisao: 'caixa',
+        apoio: { tipo: 'absoluto' },
+        transformacao: {
+          posicao: { x: 8, y: 0.5, z: 5 },
+          rotacao: { x: Math.PI / 2 - 0.15, y: 0, z: 0 },
+          escala: { x: 6, y: 6, z: 1 },
+        },
+      },
+    })
   if (comTeto)
     pisos.push({
       tipo: 'instancia.criar',

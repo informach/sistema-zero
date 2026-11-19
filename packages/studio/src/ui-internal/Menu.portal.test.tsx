@@ -9,6 +9,37 @@ afterEach(cleanup)
 const secoes = [{ id: 's', items: [{ id: 'salvar', label: 'Salvar', onSelect: () => {} }] }]
 
 describe('Menu: onde o painel abre', () => {
+  it('reposicionar por rolagem ou resize conserva o item que a criança está usando', () => {
+    render(
+      <Menu
+        trigger="⋯"
+        label="Mais"
+        sections={[
+          {
+            id: 's',
+            items: [
+              { id: 'primeiro', label: 'Primeiro', onSelect: () => {} },
+              { id: 'ultimo', label: 'Último', onSelect: () => {} },
+            ],
+          },
+        ]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mais' }))
+    const first = screen.getByRole('menuitem', { name: 'Primeiro' })
+    const last = screen.getByRole('menuitem', { name: 'Último' })
+    expect(document.activeElement === first).toBe(true)
+    fireEvent.keyDown(first, { key: 'End' })
+    expect(document.activeElement === last).toBe(true)
+    fireEvent.scroll(screen.getByRole('menu', { name: 'Mais' }))
+    expect(document.activeElement === last).toBe(true)
+    fireEvent(window, new Event('resize'))
+    expect(document.activeElement === last).toBe(true)
+    fireEvent.keyDown(last, { key: 'Escape' })
+    fireEvent.click(screen.getByRole('button', { name: 'Mais' }))
+    expect(document.activeElement === screen.getByRole('menuitem', { name: 'Primeiro' })).toBe(true)
+  })
+
   it('abre no document.body quando o host não escolheu outro contêiner', () => {
     render(<Menu trigger="⋯" label="Mais" sections={secoes} />)
     fireEvent.click(screen.getByRole('button', { name: 'Mais' }))

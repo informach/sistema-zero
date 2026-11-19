@@ -2702,6 +2702,10 @@ ${pad}});`
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createModelFile(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
       case 'g3d:skyPhoto':
         return `${pad}SZGame3D.skyPhoto(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)});`
+      case 'g3d:loadScene':
+        return `${pad}SZGame3D.loadScene(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)});`
+      case 'g3d:sceneStart':
+        return `${pad}SZGame3D.sceneStart(${identifiers.get(stmt.objVar)});`
       case 'g3d:setColor':
         return `${pad}SZGame3D.setColor(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.color)});`
       case 'g3d:setOpacity':
@@ -6373,12 +6377,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.size), names)
         return
       case 'g3d:skyPhoto':
+      case 'g3d:loadScene':
         names.add(stmt.worldVar)
         return
       case 'g3d:setColor':
       case 'g3d:setMaterial':
       case 'g3d:setVisible':
       case 'g3d:modelAnimation':
+      case 'g3d:sceneStart':
         names.add(stmt.objVar)
         return
       case 'g3d:setTexture':

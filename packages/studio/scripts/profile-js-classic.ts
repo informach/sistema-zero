@@ -91,6 +91,14 @@ const percentil95 = (valores: number[]) =>
   [...valores].sort((a, b) => a - b)[Math.ceil(valores.length * 0.95) - 1] ?? 0
 const ms = (valor: number) => Math.round(valor * 100) / 100
 
+// Transporte nativo: o mesmo estado completo e editável do ensaio, sem montar
+// SVGs nem confundir persistência com desempenho do renderizador Blockly.
+if (process.argv.includes('--blocks-fixture')) {
+  if (!process.env.SZ_PROFILE_BLOCKS) throw new Error('--blocks-fixture requires SZ_PROFILE_BLOCKS')
+  console.log(JSON.stringify(estadoCom(ALVOS[0] ?? 0)))
+  process.exit(0)
+}
+
 // Alguns campos dos blocos criam elementos ao nascer: o mesmo DOM de mentira dos testes.
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ensureBlocklyInitialized()

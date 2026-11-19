@@ -83,6 +83,7 @@ export function Menu({
   const sheet = useStudioSheets()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const focusedOnOpen = useRef(false)
 
   // Ancora o painel (fixed) no trigger; recalcula em resize/scroll. Alinha pela
   // borda escolhida via `right`/`left` (sem depender da largura medida do painel).
@@ -112,7 +113,14 @@ export function Menu({
 
   // Foca o 1º item habilitado ao abrir (após posicionar = painel já no DOM).
   useEffect(() => {
-    if (!open || !pos) return
+    if (!open) {
+      focusedOnOpen.current = false
+      return
+    }
+    // Rolagem capturada e resize reposicionam o painel. Não devem roubar o foco
+    // do item em uso (nem cancelar um clique entre pressionar e soltar).
+    if (!pos || focusedOnOpen.current) return
+    focusedOnOpen.current = true
     itemRefs.current.find((el) => el && !el.disabled)?.focus()
   }, [open, pos])
 

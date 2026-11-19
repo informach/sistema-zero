@@ -255,7 +255,7 @@ describe('CORE_EXAMPLES — corridaInfinitaNaMaoExample (Corrida Infinita 3D Cle
     for (const expected of [
       'importStar', // import * as THREE from 'three' — o motor à mostra
       'newInstance', // new THREE.X(...) na unha (renderer/cena/câmera/meshes)
-      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'animationLoop', // o laço de quadro com THREE.Timer (dt)
       'forRange', // posicionar o pool escalonado (índice i preservado)
       'forEach', // varrer o pool a cada quadro
       'funcDecl', // bateu (colisão) + reiniciar
@@ -446,7 +446,7 @@ describe('CORE_EXAMPLES — labirintoDosRobosNaMaoExample (labirinto Doom 3D Cle
       'mathUnary', // Math.sin/cos do yaw — a lição da base vetorial
       'event', // pointerdown/move/up (arrastar) + keydown/keyup (WASD/espaço)
       'eventProp', // event.clientX / event.code
-      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'animationLoop', // o laço de quadro com THREE.Timer (dt)
       'setProperty', // HUD em DOM (vida + pontos)
       'setStyle', // flash de dano + aviso de fim de jogo
       'memberCall', // setFromCamera/lookAt/add/remove na unha
@@ -509,7 +509,7 @@ describe('CORE_EXAMPLES — mundoDeBlocosNaMaoExample (Minecraft 3D Clear Code n
       'mathUnary', // Math.round — a célula do jogador
       'event', // pointerdown/move/up (arrastar) + keydown/keyup (WASD/pulo)
       'eventProp', // event.clientX / event.code
-      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'animationLoop', // o laço de quadro com THREE.Timer (dt)
       'setProperty', // HUD em DOM (tipo de bloco + contagem)
       'setStyle', // aviso de vitória (tocou a nuvem)
       'memberCall', // setFromCamera/add/remove na unha
@@ -633,7 +633,7 @@ describe('CORE_EXAMPLES — patrulhaEspacialNaMaoExample (Space Shooter 3D Clear
       'newInstance', // new THREE.X(...) na unha (renderer/cena/câmera/nave)
       'newExpr', // new THREE.Mesh(...) DENTRO das classes + new Meteoro()
       'classDecl', // Laser e Meteoro embrulham mesh + estado próprio
-      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'animationLoop', // o laço de quadro com THREE.Timer (dt)
       'funcDecl', // atirar/criarMeteoro (spawn por função) + colisões
       'call', // if (acertou(laser, meteoro)) — chamada como VALOR
       'arrayPush', // lasers.push(new Laser(…)) — o pool cresce por função
@@ -673,9 +673,9 @@ describe('CORE_EXAMPLES — patrulhaEspacialNaMaoExample (Space Shooter 3D Clear
       'Math.max(laser.mesh.position.x - 0.06, Math.min(mx, laser.mesh.position.x + 0.06))',
     )
     expect(code).toContain('dx * dx + dy * dy + dz * dz < meteoro.raio * meteoro.raio')
-    // dt REAL com THREE.Clock + placar e contagem de objetos no HUD em DOM
-    expect(code).toContain('const relogio = new THREE.Clock();')
-    expect(code).toContain('const dt = relogio.getDelta();')
+    // dt REAL com THREE.Timer + placar e contagem de objetos no HUD em DOM
+    expect(code).toContain('const relogio = new THREE.Timer();')
+    expect(code).toContain('relogio.update();\n  const dt = relogio.getDelta();')
     expect(code).toContain('document.getElementById("pontos").textContent = Math.floor(pontos);')
     expect(code).toContain('cena.children.length')
   })
@@ -1137,5 +1137,22 @@ describe('CORE_EXAMPLES — treinadorDeCriaturasNaMaoExample (pokemon FIEL na un
     expect(
       JSON.stringify(buildWorkspaceStateFromIR(treinadorDeCriaturasNaMaoExample.ir)),
     ).not.toContain('"sz_adv_raw_js"')
+  })
+})
+
+describe('exemplos 3D — API atual de tempo', () => {
+  it('atualiza o Timer antes de ler o delta em todos os exemplos que usam tempo', () => {
+    let timedExamples = 0
+    for (const example of CORE_EXAMPLES) {
+      const code = generateJS({ statements: behaviorStatements(example.ir) })
+      expect(code, example.name).not.toContain('new THREE.Clock(')
+      if (!code.includes('relogio.getDelta()')) continue
+      timedExamples++
+      expect(code, example.name).toContain('new THREE.Timer()')
+      expect(code, example.name).toMatch(/relogio\.update\(\);\s+const dt = relogio\.getDelta\(\);/)
+      expect(SZIRV2Schema.safeParse(example.ir).success, example.name).toBe(true)
+      expect(collectTypes(example.ir).has('rawJS'), example.name).toBe(false)
+    }
+    expect(timedExamples).toBe(13)
   })
 })

@@ -507,6 +507,12 @@ export function throwOnNextFakeIdbPut(
  * teste anterior deixou segurada não pode escalonar as do teste seguinte).
  */
 export function resetFakeIdb(): void {
+  // Reset both physical parts of the simulated project backend. Leaving an exit
+  // mirror alive while throwing away its fake IndexedDB would recover a previous
+  // test into the next test's empty database.
+  if (typeof localStorage !== 'undefined')
+    for (const key of Object.keys(localStorage))
+      if (key.startsWith('sz:studio-exit:')) localStorage.removeItem(key)
   transactions.length = 0
   liveTransactions = []
   nextFailure = null

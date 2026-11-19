@@ -56,12 +56,13 @@ Object.assign(window, { pintaWorldProof: { createPintaPersistence, exportImageAn
   await writeFile(
     entry,
     `import * as persistence from ${modulePath('state/persistence.ts')};
+import { PROJECT_STORAGE_VERSION } from ${modulePath('state/projectStorageKeys.ts')};
 import { prepareEditableStudioProject } from ${modulePath('state/editableProjectValidation.ts')};
 import { advanceLocalRevision } from ${modulePath('state/projectStorageRevision.ts')};
 import { documentFixture } from ${modulePath('state/fixtures/projectDocuments.ts')};
 import { preparePythonExecutionSnapshot } from ${modulePath('runtime/python/snapshot.ts')};
 import { buildPythonSourceFiles } from ${modulePath('export/pythonSource.ts')};
-Object.assign(window, { worldProof: { ...persistence, prepareEditableStudioProject, advanceLocalRevision, documentFixture, preparePythonExecutionSnapshot, buildPythonSourceFiles } });${native}`,
+Object.assign(window, { worldProof: { ...persistence, PROJECT_STORAGE_VERSION, prepareEditableStudioProject, advanceLocalRevision, documentFixture, preparePythonExecutionSnapshot, buildPythonSourceFiles } });${native}`,
   )
   const built = await Bun.build({
     entrypoints: [entry],

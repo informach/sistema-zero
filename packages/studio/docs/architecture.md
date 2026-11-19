@@ -203,3 +203,31 @@ pertencem à sessão, ao documento e ao pedido mais recente; respostas e erros
 atrasados não reabrem uma lista fechada. Falhas na inicialização também chegam
 ao estado de análise exibido em Problemas. O download revalida cancelamento e
 identidade entre cada fase de flush antes de continuar a próxima operação.
+
+
+## Identidade integral e recuperação local (19/11/2026)
+
+O codec de grafo em `@sistemazero/core/studio/project-json-graph` e sua leitura
+separada em `project-json-graph-decode` transportam snapshots profundos sem
+stringify recursivo, preservando campos desconhecidos, `undefined` e zero
+negativo. O formato v1 mantém os bytes do journal anterior. Os orçamentos são
+validados contra o guard estrutural existente; isso não amplia a capacidade do
+editor, do compilador ou dos materiais.
+
+`exitJournalCodec` aplica a cota síncrona de saída de 2.000.000 caracteres.
+`exitJournalDecode` e `synchronousExitJournalRead` pertencem à recuperação rara e
+não ao carregamento inicial da lista. Captura e verificação da cópia síncrona
+continuam no turno de pagehide/beforeunload, sem import dinâmico ou await novo.
+
+Ao promover um descendente, `projectRecoverySources` valida documentos das
+origens e seus espelhos, prepara arquivos integrais no namespace de backups
+existente e compara novamente snapshots completos no CAS. Promoção, arquivo e
+remoção dos journals consumidos são atômicos; falha conserva as fontes. Um
+formato futuro, conteúdo divergente ou arquivo conflitante bloqueia consumo.
+
+O preparo de importação 3D usa a identidade integral de grafo somente para sua
+revisão efêmera de base. Os hashes publicados e o JSON canônico de partes
+remotas continuam regidos por seus contratos anteriores. O store revalida base,
+perfil, projeto, permissões, pacote e fontes antes de publicar uma única mudança.
+Isso não declara uma interface completa de mundos 3D ou streaming em todos os
+motores. A escrita local padrão continua v3; o laboratório v4 permanece separado.

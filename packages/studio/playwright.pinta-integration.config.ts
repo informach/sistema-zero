@@ -20,7 +20,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'bun scripts/serve-pinta-integration-e2e.ts',
+    command: 'node scripts/serve-pinta-integration-e2e.ts',
     url: 'http://127.0.0.1:5403',
     reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
     timeout: 120000,

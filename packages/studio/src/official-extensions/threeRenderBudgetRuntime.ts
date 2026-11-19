@@ -188,8 +188,9 @@ const THREE_RENDER_BUDGET_TEMPLATE = `
     function shadowSize() { return isLight() ? 1024 : 2048; }
 
     function shadowType() {
-      if (isLight()) return THREE.PCFShadowMap != null ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
-      return THREE.PCFSoftShadowMap != null ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+      // Three r184 usa PCF também no lugar do antigo PCFSoft.
+      // A qualidade continua definida pela resolução do mapa em cada nível.
+      return THREE.PCFShadowMap;
     }
 
     // Configura a sombra do renderer e de uma luz pelo nível (mapa refeito se mudou).

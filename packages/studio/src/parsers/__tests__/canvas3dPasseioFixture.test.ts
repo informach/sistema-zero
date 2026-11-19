@@ -9,7 +9,7 @@ import { parseProjectFiles } from '../project'
  * Fixture-âncora do exemplo "Passeio 3D (na mão)": um mini-mundo dirigível em
  * three.js CRU (Canvas 3D do núcleo), a prova viva de que a essência do folio
  * do Bruno Simon é construível SÓ com blocos do núcleo — cena/câmera/renderer,
- * névoa, chão, carrinho de caixas dirigível por WASD com THREE.Clock, floresta
+ * névoa, chão, carrinho de caixas dirigível por WASD com THREE.Timer, floresta
  * INSTANCIADA (setMatrixAt), câmera que segue por lerp e ciclo dia/noite por
  * lerpColors. 0 rawJS, fixpoint textual e de blocos, e o drift da IR embutida
  * em `examples/core.ts` é guardado contra o parser vivo (mudou o parser →
@@ -116,7 +116,7 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener("keyup", (event) => {
   teclas[event.code] = false;
 });
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 const corDia = new THREE.Color("#8fbcd4");
 const corNoite = new THREE.Color("#0b1026");
 const corCeu = new THREE.Color("#8fbcd4");
@@ -124,6 +124,7 @@ const atras = new THREE.Vector3();
 let velocidade = 0;
 let tempoDia = 0;
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (teclas["KeyW"]) {
     velocidade = velocidade + 12 * dt;

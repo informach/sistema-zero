@@ -167,6 +167,10 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
         ],
       },
     }
+  // Metadado pedagógico somente na cópia do exemplo, sem alterar a arte de origem.
+  const assets = structuredClone(VILA_SCENE_ASSETS)
+  const ground = assets[0]?.scene?.layers.find((layer) => layer.id === 'layer-0')
+  if (ground) ground.properties = { ...ground.properties, descricao: 'Chão da vila' }
   return {
     name: target === 'g2d' ? 'A Vila e a Floresta' : 'A Vila e a Floresta (Avançado)',
     experience: 'game',
@@ -176,6 +180,6 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     concepts: ['Pinta', 'cenário', 'camadas', 'objetos', 'porta', 'propriedades', 'animação'],
     genre: 'exploração',
     ir,
-    assets: structuredClone(VILA_SCENE_ASSETS),
+    assets,
   }
 }

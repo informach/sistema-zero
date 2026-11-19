@@ -106,3 +106,14 @@ describe('createProProject', () => {
     await expect(createProProject('p2', 'X', 'nope')).rejects.toThrow()
   })
 })
+
+it('os modelos Three usam a versão atual com tipos compatíveis', async () => {
+  for (const id of ['three-js', 'three-ts', 'three-exploration', 'three-action', 'three-tactics']) {
+    const template = await loadProTemplate(id)
+    const node = template.tree['package.json']
+    if (node?.kind !== 'file') throw new Error(`Manifesto ausente: ${id}`)
+    const pkg = JSON.parse(node.content)
+    expect(pkg.dependencies.three, id).toBe('0.184.0')
+    if (id !== 'three-js') expect(pkg.devDependencies['@types/three'], id).toBe('0.184.1')
+  }
+})

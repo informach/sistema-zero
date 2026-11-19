@@ -29,8 +29,10 @@ import {
 } from './projectStorageCoordinator'
 import {
   APPLICATION_BUDGET_KEY,
+  localV3BaseIds,
   PROJECT_META_KEY_PREFIX,
   PROJECT_RECOVERY_PREFIX,
+  PROJECT_STORAGE_VERSION,
   projectApplicationsKey,
   projectAssetsKey,
   projectBlocksKey,
@@ -38,11 +40,11 @@ import {
   projectHeadKey,
   projectMetaKey,
   projectMigrationKey,
+  projectRecoveryPrefix,
   projectStateKey,
   projectThumbKey,
 } from './projectStorageKeys'
 import {
-  assembleProjectRecord,
   projectToAssetsRecord,
   projectToBlocksRecord,
   projectToFilesRecord,
@@ -50,7 +52,7 @@ import {
   projectToStateRecord,
   type StoredProjectRecord,
 } from './projectStorageRecords'
-import { copyLocalRevision, installLocalRevision, isLocalHead } from './projectStorageRevision'
+import { copyLocalRevision, readLocalRevision } from './projectStorageRevision'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
@@ -61,7 +63,8 @@ import {
   scopedProjectIdentity,
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
-import { type ProjectSummary, projectEnvironmentSummary, toProjectSummary } from './projectSummary'
+import { type ProjectSummary, toProjectSummary } from './projectSummary'
+import { hasSynchronousExitJournal } from './synchronousExitJournal'
 
 export type { ProjectSummary } from './projectSummary'
 /** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
@@ -266,6 +269,10 @@ export async function persistProject(
   const generation = conditionalGeneration(captured.identity)
   const requestWrite = async (scope: ProjectStorageScope) => {
     const id = project.id
+    // Reserve the mutation's place before asynchronous migration: a rename or
+    // later autosave must not overtake the document's first write.
+    if (PROJECT_STORAGE_VERSION === 4 && !options.exit && !readLocalRevision(project))
+      notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
     const scopedId = scopedProjectIdentity(scope, id)
     // `replace`: o que o snapshot não trouxer não pode sobreviver ao restauro (blocos
     // velhos, capa velha). Apagado na MESMA transação dos `put`, depois deles: se a
@@ -363,24 +370,26 @@ export async function loadProjectById(
     const draft = await loadRecoverableProjectDraft(scope, id)
     if (draft) return copyLocalRevision(draft, { ...draft })
   }
-  const kvStore = scope.store
-  const [meta, files, state, blocks, assets, head] = await readValues(kvStore, [
-    projectMetaKey(id),
-    projectFilesKey(id),
-    projectStateKey(id),
-    projectBlocksKey(id),
-    projectAssetsKey(id),
-    projectHeadKey(id),
-  ])
-  if (meta && files && state) {
-    // `assets` é a 4ª partição (opcional): ausente em projetos legados/pré-feature.
-    const project = assembleProjectRecord(id, meta, files, state, assets, blocks)
-    return project
-      ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
-      : null
-  }
+  const reader = await import('./projectStorageRead')
+  const current = await reader.readCurrentProject(id, scope)
+  if (current) return current
 
   return loadHistoricalProject(id, storageScope)
+}
+
+function currentProjectSummary(
+  id: string,
+  value: unknown,
+  knownRecord = false,
+): ProjectSummary | null {
+  const summary = toProjectSummary(id, value)
+  if (PROJECT_STORAGE_VERSION !== 4 || (value === undefined && !knownRecord)) return summary
+  if (summary && isRecord(value) && value.id === id && value.storageVersion === 4) return summary
+  return {
+    ...(summary ?? toProjectSummary(id, { name: 'Projeto preservado' }))!,
+    migrationPending: true,
+    hasPreservedEdit: true,
+  }
 }
 
 /**
@@ -399,26 +408,9 @@ export async function loadProjectShellById(
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   const draft = await loadRecoverableProjectDraft(scope, id)
   if (draft) return copyLocalRevision(draft, { ...draft })
-  const kvStore = scope.store
-  const [meta, files, assets, head] = await readValues(kvStore, [
-    projectMetaKey(id),
-    projectFilesKey(id),
-    projectAssetsKey(id),
-    projectHeadKey(id),
-  ])
-  if (meta && files) {
-    const project = assembleProjectRecord(
-      id,
-      meta,
-      files,
-      { id, ir: null, blocksState: null },
-      assets,
-    )
-    return project
-      ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
-      : null
-  }
-
+  const reader = await import('./projectStorageRead')
+  const current = await reader.readProjectShell(id, scope)
+  if (current) return current
   return loadHistoricalProject(id, storageScope)
 }
 
@@ -433,24 +425,18 @@ export async function loadProjectMetaById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<Record<string, unknown> | null> {
-  const kvStore = getStore(storageScope)
-  const meta = await readValue(kvStore, projectMetaKey(id))
-  if (isRecord(meta)) return meta
-  const historical = await loadHistoricalProject(id, storageScope)
-  if (!historical) return null
-  const migratedMeta = await readValue(kvStore, projectMetaKey(id))
-  return isRecord(migratedMeta) ? migratedMeta : null
+  const scope = storageScope ?? captureProjectStorageScope()
+  const reader = await import('./projectStorageRead')
+  return reader.readProjectMeta(id, scope, () => loadHistoricalProject(id, scope))
 }
 
 export async function loadProjectBlocksById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<unknown | null> {
-  const kvStore = getStore(storageScope)
-  const fromPartition = await readValue(kvStore, projectBlocksKey(id))
-  if (fromPartition != null) return fromPartition
-  const historical = await loadHistoricalProject(id, storageScope)
-  return historical?.blocksState ? { id, blocksState: historical.blocksState } : null
+  const scope = storageScope ?? captureProjectStorageScope()
+  const reader = await import('./projectStorageRead')
+  return reader.readProjectBlocks(id, scope, () => loadHistoricalProject(id, scope))
 }
 
 /**
@@ -480,21 +466,16 @@ export async function loadProjectAssetsSnapshotById(
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
 }> {
-  const [record, head, meta] = await readValues(getStore(storageScope), [
-    projectAssetsKey(id),
-    projectHeadKey(id),
-    projectMetaKey(id),
-  ])
-  const environment = isRecord(meta)
-    ? projectEnvironmentSummary(meta)
-    : { programmingLanguage: 'unknown' as const }
-  if (!isRecord(record)) return { assets: [], environment }
-  const assets =
-    isRecord(meta) && meta.programmingLanguage === 'python'
-      ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
-      : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
-  if (isLocalHead(head)) assetReadHeads.set(assets, head.token)
-  else if (head == null) assetReadHeads.set(assets, null)
+  const scope = storageScope ?? captureProjectStorageScope()
+  const reader = await import('./projectStorageRead')
+  const { assets, environment, observedHead } = await reader.readProjectAssetsSnapshot(
+    id,
+    scope,
+    async () => {
+      notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
+    },
+  )
+  if (observedHead !== undefined) assetReadHeads.set(assets, observedHead)
   return { assets, environment }
 }
 
@@ -679,7 +660,11 @@ export async function renameProjectMeta(
     async (scope) => {
       if (liveProject)
         return { done: renameLiveProject(liveProject, name, scope).then(() => undefined) }
-      await loadHistoricalProject(id, scope)
+      if (
+        PROJECT_STORAGE_VERSION !== 4 ||
+        (await readValue(scope.store, projectMetaKey(id))) === undefined
+      )
+        await loadHistoricalProject(id, scope)
       return {
         done: mutateProjectRecord(scope, id, [], (meta) => ({
           puts: [[projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }]],
@@ -817,7 +802,7 @@ export async function loadProjectSummaryById(
 ): Promise<ProjectSummary | null> {
   const kvStore = getStore(storageScope)
   const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
-  let summary = toProjectSummary(id, meta)
+  let summary = currentProjectSummary(id, meta)
   if (!summary) {
     const legacy = await loadHistoricalProject(id, storageScope)
     summary = toProjectSummary(id, legacy)
@@ -846,7 +831,7 @@ export async function loadProjectSummariesByIds(
   const out: Array<ProjectSummary | null> = []
   for (let index = 0; index < ids.length; index += 1) {
     const id = ids[index] as string
-    let summary = toProjectSummary(id, values[index * 2])
+    let summary = currentProjectSummary(id, values[index * 2])
     if (!summary) {
       const legacy = await loadHistoricalProject(id, storageScope)
       summary = toProjectSummary(id, legacy)
@@ -867,27 +852,25 @@ async function listAllProjectsInternal(
   const scope = storageScope ?? captureProjectStorageScope()
   const kvStore = scope.store
   let allKeys = await readAllKeys(kvStore)
-  if (allKeys.some((key) => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX))) {
-    notifyRecoveredProjects(scope, await recoverProjectWrites(scope, undefined, allKeys))
-    allKeys = await readAllKeys(kvStore)
-  }
   let pending: ProjectSummary[] = []
+  let blockedReads: Set<string> | undefined
   if (
+    hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity) ||
+    localV3BaseIds(allKeys).length ||
     allKeys.some(
       (key) =>
         typeof key === 'string' &&
-        /^sz:(?:v2:)?project(?:-(?:meta|files|state|blocks|assets))?:/.test(key),
+        (key.startsWith(PROJECT_RECOVERY_PREFIX) ||
+          key.startsWith(projectRecoveryPrefix(3)) ||
+          /^sz:(v2:)?project(?:-(?:meta|files|state|blocks|assets))?:/.test(key)),
     )
   ) {
-    const { migrateLocalProjects } = await import('../project-migrations/localProjects')
-    const migrated = await migrateLocalProjects(scope, allKeys)
-    if (scope.identity === captureProjectStorageScope().identity)
-      for (const id of migrated.changed) {
-        notifyMirrorChanged(id)
-        notifyProjectChanged(id)
-      }
-    allKeys = await readAllKeys(kvStore)
-    pending = migrated.pending
+    const { prepareLocalProjectList } = await import('../project-migrations/localV3Projects')
+    const prepared = await prepareLocalProjectList(scope, allKeys)
+    allKeys = prepared.keys
+    pending = prepared.pending
+    blockedReads = prepared.blockedReads
+    notifyRecoveredProjects(scope, prepared.changed)
   }
   const metaKeys = allKeys.filter(
     (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
@@ -895,21 +878,20 @@ async function listAllProjectsInternal(
   const metaValues = await readValues(kvStore, metaKeys)
   const summaries = metaKeys
     .map((key, index) =>
-      toProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index]),
+      currentProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index], true),
     )
     .filter((summary): summary is ProjectSummary => Boolean(summary))
+  for (const summary of summaries)
+    if (blockedReads?.has(summary.id)) {
+      summary.migrationPending = true
+      summary.hasPreservedEdit = true
+    }
   const drafts = await listPreservedProjectDrafts(scope, allKeys)
   const listed = new Set(summaries.map((summary) => summary.id))
   summaries.push(...drafts.filter((draft) => !listed.has(draft.id)))
-  const preservedIds = new Set(
-    allKeys.flatMap((key) =>
-      typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX)
-        ? [key.slice(PROJECT_RECOVERY_PREFIX.length, key.lastIndexOf(':'))]
-        : [],
-    ),
-  )
+  const preservedIds = new Set(drafts.map((draft) => draft.id))
   for (const summary of summaries) if (preservedIds.has(summary.id)) summary.hasPreservedEdit = true
-  if (options.withThumbs) {
+  if (options.withThumbs || PROJECT_STORAGE_VERSION === 4) {
     const currentIds = new Set(summaries.map((summary) => summary.id))
     const pendingIds = new Set(pending.map((summary) => summary.id))
     for (const summary of summaries) if (pendingIds.has(summary.id)) summary.hasPreservedEdit = true
@@ -941,35 +923,12 @@ function notifyRecoveredProjects(scope: ProjectStorageScope, ids: readonly strin
   }
 }
 
-/** Primeira abertura histórica: o módulo só entra quando não há registro atual. */
+/** Historical decoding and preparation share the existing rare migration boundary. */
 async function loadHistoricalProject(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
-  const old = await readValues(scope.store, [
-    `sz:project:${id}`,
-    `sz:project-meta:${id}`,
-    `sz:v2:project-meta:${id}`,
-  ])
-  if (!old.some(Boolean)) return null
-  const { migrateLocalProject } = await import('../project-migrations/localProjects')
-  const migrated = await migrateLocalProject(id, scope)
-  if (migrated && scope.identity === captureProjectStorageScope().identity) {
-    notifyMirrorChanged(migrated)
-    notifyProjectChanged(migrated)
-  }
-  const [meta, files, state, blocks, assets, head] = await readValues(scope.store, [
-    projectMetaKey(id),
-    projectFilesKey(id),
-    projectStateKey(id),
-    projectBlocksKey(id),
-    projectAssetsKey(id),
-    projectHeadKey(id),
-  ])
-  const project =
-    meta && files && state ? assembleProjectRecord(id, meta, files, state, assets, blocks) : null
-  return project
-    ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
-    : null
+  const { loadLocalHistoricalProject } = await import('../project-migrations/localProjects')
+  return loadLocalHistoricalProject(id, scope, (ids) => notifyRecoveredProjects(scope, ids))
 }

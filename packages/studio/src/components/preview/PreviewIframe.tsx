@@ -57,12 +57,7 @@ import {
   type PreviewBudgetInput,
   shouldPausePreviewRender,
 } from './previewBudget'
-import {
-  armRunTripwire,
-  disarmRunTripwire,
-  HEARTBEATS_TO_TRUST,
-  wasRunInterrupted,
-} from './runTripwire'
+import { armRunTripwire, disarmRunTripwire, wasRunInterrupted } from './runTripwire'
 import {
   projectUsesKeyboardControls,
   useTouchInput,
@@ -97,6 +92,7 @@ export function PreviewIframe(): JSX.Element {
   const persistence = useStudioPersistence()
   const pendingEdits = usePendingEditorEdits()
   const [preparingRun, setPreparingRun] = useState(false)
+  const [preparationError, setPreparationError] = useState<string | null>(null)
   const [sourceVersion, setSourceVersion] = useState(0)
   const fullProject = useProjectStore((s) => javaScriptProject(s.project))
   const { projectId, html, css, js, ir, installedExtensions, extraFiles, assets, hasChosenCover } =
@@ -135,6 +131,7 @@ export function PreviewIframe(): JSX.Element {
         flush: () => pendingEdits?.flush(),
         save: () => persistence.save(),
         pending: setPreparingRun,
+        error: setPreparationError,
       }),
     [projectStore, runIdentity, persistence, pendingEdits],
   )
@@ -355,7 +352,10 @@ export function PreviewIframe(): JSX.Element {
     })
   }
 
-  useEffect(() => () => preparation.cancel(), [preparation])
+  useEffect(() => {
+    setPreparationError(null)
+    return () => preparation.cancel()
+  }, [preparation])
 
   const installedIds = uniqueExtensionIds(
     installedExtensions.map((extension) => extension.id),
@@ -694,7 +694,9 @@ export function PreviewIframe(): JSX.Element {
   // Retain the committed game during preparation; Stop still installs the blank doc.
   const committedDoc = useRef({ projectId, document: PAUSED_PREVIEW_DOC })
   const doc =
-    previewRunning && preparingRun && committedDoc.current.projectId === projectId
+    previewRunning &&
+    (preparingRun || preparationError !== null) &&
+    committedDoc.current.projectId === projectId
       ? committedDoc.current.document
       : candidateDoc
   useLayoutEffect(() => {
@@ -821,16 +823,16 @@ export function PreviewIframe(): JSX.Element {
     setPreviewStalled(false)
   }, [doc])
 
-  // A marca de execução (ver `runTripwire.ts`): posta quando um jogo começa a rodar, tirada
-  // quando ele dá sinal de vida, quando para e quando o editor fecha direito.
-  const tripwireRef = useRef<{ projectId: string; heartbeats: number } | null>(null)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho (cada documento novo recomeça a contagem)
-  useEffect(() => {
+  // Sinal de vida anterior não prova que o jogo vai continuar respondendo. A marca só sai
+  // quando a execução termina de maneira controlada ou a página viva encerra.
+  // Arme na fase de layout do mesmo commit do srcdoc: um efeito passivo deixava o
+  // documento executável visível antes da marca e podia perder uma execução travada.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho de uma nova execução
+  useLayoutEffect(() => {
     // Só o jogo RODANDO põe a marca. Parado (inclusive na abertura), nada mexe nela: é a marca
     // deixada por uma aba que congelou que a abertura seguinte precisa encontrar.
     if (!projectId || !docIsLive) return
     armRunTripwire(projectId)
-    tripwireRef.current = { projectId, heartbeats: 0 }
     // Recarregar ou sair com a página VIVA também tira a marca (a desmontagem do React não roda
     // nessa hora). Numa aba congelada este aviso nunca chega a rodar, e a marca fica.
     const leaving = () => disarmRunTripwire(projectId)
@@ -838,7 +840,6 @@ export function PreviewIframe(): JSX.Element {
     return () => {
       window.removeEventListener('pagehide', leaving)
       disarmRunTripwire(projectId)
-      tripwireRef.current = null
     }
   }, [doc, docIsLive, projectId])
 
@@ -923,9 +924,6 @@ export function PreviewIframe(): JSX.Element {
       if (ev.data.kind === 'heartbeat') {
         lastHeartbeatRef.current = Date.now()
         setPreviewStalled((stalled) => (stalled ? false : stalled))
-        const tripwire = tripwireRef.current
-        if (tripwire && ++tripwire.heartbeats === HEARTBEATS_TO_TRUST)
-          disarmRunTripwire(tripwire.projectId)
         return
       }
       pushLog(ev.data)
@@ -971,6 +969,7 @@ export function PreviewIframe(): JSX.Element {
         runningRef.current ? handlersRef.current.refresh() : handlersRef.current.toggle(),
       stop: () => {
         preparation.cancel()
+        setPreparationError(null)
         if (runningRef.current) handlersRef.current.toggle()
       },
       reload: () => handlersRef.current.refresh(),
@@ -988,6 +987,8 @@ export function PreviewIframe(): JSX.Element {
         canStop: !observer,
         detail: 'Guardando o projeto…',
       }
+    if (preparationError)
+      return { phase: 'error', canRun: !observer, canStop: !observer, error: preparationError }
     if (!previewRunning) return { phase: 'idle', canRun: !observer, canStop: false }
     if (extensionRuntimeFailed || courseModelError)
       return {
@@ -1014,6 +1015,7 @@ export function PreviewIframe(): JSX.Element {
     return { phase: 'running', canRun: !observer, canStop: !observer }
   }, [
     preparingRun,
+    preparationError,
     previewRunning,
     observer,
     extensionRuntimeFailed,

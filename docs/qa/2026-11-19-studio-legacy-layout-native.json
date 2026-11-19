@@ -1,0 +1,123 @@
+{
+  "baseCommit": "e99cffbdd",
+  "scope": "legacy layouts v1/v2 consumed into v4; default writer remains v3",
+  "environment": "Windows development host, Chromium and WebKit, not physical low-end hardware",
+  "conditions": "one observation per engine in full suite; typecheck concurrently active; not editor latency or FPS",
+  "fullSuite": {
+    "tests": 517,
+    "assertions": 2744,
+    "files": 76,
+    "seconds": 58.09
+  },
+  "sourcesSha256": {
+    "bun.lock": "170ce719625e25023cdb29b1c959375a39e8f5ab1756be9f451f737e7a8d9b4b",
+    "packages/studio/src/project-migrations/localProjects.ts": "322ab52f568f4e1f5c08ebc2cd121bae0dff11ef533cfc737a94fab0ef04d519",
+    "packages/studio/src/state/projectStorageBrowser.test.ts": "96f34e980452a78db33addc7003935637ef12d1bdcc8c4657573120c6e9f5e43",
+    "packages/studio/src/state/fixtures/projectDeepStorageBrowser.ts": "70dc0760d7bda9639f77a9f83cbcfa3b1a194d96e31c94fb2faaca59186ac330",
+    "packages/studio/scripts/verify-project-storage-browser.mjs": "6d23585cc2e61aea8727c743298ce416382edd30611d2357d18e235b947c3117"
+  },
+  "observations": [
+    {
+      "engine": "chromium",
+      "result": {
+        "migration": {
+          "migrated": true,
+          "legacyCopy": true
+        },
+        "historicalLayouts": [
+          {
+            "prefix": "sz:",
+            "portableVersion": 1,
+            "migrated": true,
+            "archiveVersion": 2,
+            "signedZeroCopy": true,
+            "gameStorageUnchanged": true
+          },
+          {
+            "prefix": "sz:v2:",
+            "portableVersion": 2,
+            "migrated": true,
+            "archiveVersion": 2,
+            "signedZeroCopy": true,
+            "gameStorageUnchanged": true
+          }
+        ],
+        "legacyRecovery": {
+          "stagedBeforeReplay": true,
+          "sourceRetainedBeforeReplay": true,
+          "replayed": true,
+          "sourceAcknowledgedAfterReplay": true,
+          "archiveRetained": true,
+          "wireChars": 1769020,
+          "timingsMs": {
+            "sourceWrite": 45,
+            "sourceRead": 197,
+            "prepare": 146,
+            "stage": 40,
+            "verification": 373,
+            "replay": 1370,
+            "replayVerification": 407,
+            "total": 2578
+          }
+        },
+        "blocks": 10000,
+        "ids": 9920,
+        "depth": 2503,
+        "nativeCloneError": "RangeError",
+        "graphChars": 1767283,
+        "firstRoundTripMs": 376
+      }
+    },
+    {
+      "engine": "webkit",
+      "result": {
+        "migration": {
+          "migrated": true,
+          "legacyCopy": true
+        },
+        "historicalLayouts": [
+          {
+            "prefix": "sz:",
+            "portableVersion": 1,
+            "migrated": true,
+            "archiveVersion": 2,
+            "signedZeroCopy": true,
+            "gameStorageUnchanged": true
+          },
+          {
+            "prefix": "sz:v2:",
+            "portableVersion": 2,
+            "migrated": true,
+            "archiveVersion": 2,
+            "signedZeroCopy": true,
+            "gameStorageUnchanged": true
+          }
+        ],
+        "legacyRecovery": {
+          "stagedBeforeReplay": true,
+          "sourceRetainedBeforeReplay": true,
+          "replayed": true,
+          "sourceAcknowledgedAfterReplay": true,
+          "archiveRetained": true,
+          "wireChars": 1769020,
+          "timingsMs": {
+            "sourceWrite": 76,
+            "sourceRead": 286,
+            "prepare": 326,
+            "stage": 121,
+            "verification": 476,
+            "replay": 2052,
+            "replayVerification": 393,
+            "total": 3730
+          }
+        },
+        "blocks": 10000,
+        "ids": 9920,
+        "depth": 2503,
+        "nativeCloneError": null,
+        "graphChars": 1767283,
+        "firstRoundTripMs": 459
+      }
+    }
+  ]
+}

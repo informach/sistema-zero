@@ -151,8 +151,9 @@ canvas.addEventListener("pointerdown", () => {
     reiniciar();
   }
 });
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (!fimDeJogo) {
     tempo = tempo + dt;

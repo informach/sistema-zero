@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.32.0',
+  version: '0.33.0',
   description:
     'Blocos para criar jogos 3D com Three.js: cena, céu e câmera (um bloco com seis modos), objetos e modelos do Molda, movimento em "por segundo" e em graus, teclado e mouse, encostar, grupos que multiplicam um molde, placar, vida e telas de início e fim, tempo, sorteio e som. No fim, Kits prontos: "Desvie", "Travessia", "Corrida", "Empilhar" e "Plataforma". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -55,6 +55,9 @@ em um evento ou em um construtor.
 
 ### 🎬 Cena, céu e câmera
 
+- **Usar o cenário** carrega uma cena completa trazida do Molda, com terreno, recortes, água, modelos e iluminação. Mantém a câmera, os controles e os objetos do seu programa. Use em **Ao iniciar**; o primeiro carregamento segura o movimento até ficar pronto.
+- **Colocar … no início do cenário** usa o ponto inicial salvo no Molda e apoia o personagem no chão. Pode ser chamado logo depois de **Usar o cenário**, enquanto o arquivo ainda carrega. Uma posição explícita posterior tem prioridade.
+- Com cenário, **Fazer … andar com as setas**, gravidade e corpos consultam suas superfícies reais, com contato de cápsula vertical. Recortes deixam o personagem cair. A água conserva seu visual e dados; este comando não acrescenta um sistema de nado. Não adicione outro chão plano sobre o cenário para fazê-lo funcionar.
 - **Criar cena 3D em tela cheia**: cria o canvas ocupando a janela inteira (responsivo) + cena, câmera e luz, com uma cor de fundo. **Criar cena 3D no canvas** usa um \`<canvas>\` do HTML.
 - **A cada quadro da cena**: o laço que redesenha a cena. Vários na mesma cena rodam juntos, em ordem; se um corpo falhar, só ele pausa.
 - **Usar o céu 360°** troca o fundo por um céu de foto (\`.hdr\` do Molda ou enviado) que também ilumina e dá reflexo. Céu degradê, cor de fundo, luz ambiente, sol, luz pontual, neblina e sombras montam a atmosfera.

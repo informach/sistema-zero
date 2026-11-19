@@ -1,4 +1,8 @@
 import type { StudioProTemplateId } from '@sistemazero/core/studio/pro-templates'
+import {
+  STUDIO_THREE_TYPES_VERSION,
+  STUDIO_THREE_VERSION,
+} from '@sistemazero/core/studio/three-version'
 import type { ProjectTree } from '#core'
 
 // Versões PINADAS (em sincronia com WEB_CONTAINER_PACKAGE_DEPENDENCIES).
@@ -6,7 +10,7 @@ const VITE = '8.1.6'
 const TYPESCRIPT = '5.9.3'
 const PLUGIN_REACT = '6.0.2'
 const REACT = '19.2.0'
-const THREE = '0.180.0'
+const THREE = STUDIO_THREE_VERSION
 
 const f = (content: string) => ({ kind: 'file', content }) as const
 const dir = { kind: 'dir' } as const
@@ -225,7 +229,10 @@ export const BASE_TREES: Partial<Record<StudioProTemplateId, ProjectTree>> = {
   },
   'three-ts': {
     'package.json': f(
-      pkg({ three: THREE }, { vite: VITE, typescript: TYPESCRIPT, '@types/three': THREE }),
+      pkg(
+        { three: THREE },
+        { vite: VITE, typescript: TYPESCRIPT, '@types/three': STUDIO_THREE_TYPES_VERSION },
+      ),
     ),
     'vite.config.ts': f(VITE_CONFIG_VANILLA),
     'tsconfig.json': f(TSCONFIG),

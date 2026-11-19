@@ -83,12 +83,25 @@ for (const template of STUDIO_PRO_TEMPLATES.filter((value) => value.kitVersion))
         manifest,
         read: async (path) => new Uint8Array(await readFile(join(root, 'dist', path))),
       })
+      let collapseOnFirstBoot = template.engine === 'phaser'
       await page.route('https://runtime.test/**', async (route) => {
         const response = await serveArtifact(new Request(route.request().url()), bucket)
+        let body = Buffer.from(await response.arrayBuffer())
+        if (collapseOnFirstBoot && response.headers.get('content-type')?.includes('text/html')) {
+          collapseOnFirstBoot = false
+          body = Buffer.from(
+            body
+              .toString('utf8')
+              .replace(
+                '</head>',
+                '<style id="collapsed-preview">#stage { width:0!important; height:0!important; border:0!important }</style></head>',
+              ),
+          )
+        }
         await route.fulfill({
           status: response.status,
           headers: Object.fromEntries(response.headers),
-          body: Buffer.from(await response.arrayBuffer()),
+          body,
         })
       })
       const hostEntry = join(root, 'storage-host.ts')
@@ -116,18 +129,29 @@ for (const template of STUDIO_PRO_TEMPLATES.filter((value) => value.kitVersion))
         ),
       )
       await page.addScriptTag({ type: 'module', content: await readFile(hostBundle, 'utf8') })
-      await page.evaluate((url) => {
-        document.body.replaceChildren()
-        const iframe = document.createElement('iframe')
-        iframe.id = 'game'
-        iframe.name = JSON.stringify({ studioStorage: { token: 'a'.repeat(32), revision: 1 } })
-        iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
-        iframe.src = url
-        iframe.style.cssText = 'width:100%;height:740px;border:0'
-        document.body.append(iframe)
-      }, artifact.url)
+      await page.evaluate(
+        ({ url, hidden }) => {
+          document.body.replaceChildren()
+          const iframe = document.createElement('iframe')
+          iframe.id = 'game'
+          iframe.name = JSON.stringify({ studioStorage: { token: 'a'.repeat(32), revision: 1 } })
+          iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+          iframe.src = url
+          iframe.style.cssText = 'width:100%;height:740px;border:0'
+          if (hidden) iframe.style.display = 'none'
+          document.body.append(iframe)
+        },
+        { url: artifact.url, hidden: template.engine === 'phaser' },
+      )
       const frame = page.frameLocator('#game')
       await expect(frame.locator('#start')).toBeEnabled()
+      // A collapsed preview may finish booting before it has any layout size.
+      await page.locator('#game').evaluate((iframe) => {
+        iframe.style.display = ''
+      })
+      await frame
+        .locator('body')
+        .evaluate(() => document.getElementById('collapsed-preview')?.remove())
       await expect(frame.locator('canvas')).toBeVisible()
       await expect(frame.locator('#record')).toContainText('Recorde: 7 · Vitórias: 2')
       await frame.locator('body').evaluate(async () => {

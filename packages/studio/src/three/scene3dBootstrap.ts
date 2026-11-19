@@ -1,21 +1,27 @@
-import type { OpcoesDoRuntimeCompilado } from '@sistemazero/molda-cenarios-motor/runtime'
+import type {
+  CenaNoThree,
+  OpcoesDoRuntimeCompilado,
+} from '@sistemazero/molda-cenarios-motor/runtime'
 import { resolverInicioDaCena } from '@sistemazero/molda-cenarios-motor/runtime'
+import type { Scene } from 'three'
 import type { Asset3DManifestEntry } from '../core/projectAssets'
 import { resolverAssetsDoTransporte3D, type TransporteDeCenas3D } from '../core/scene3d/transporte'
 import { carregarCena3DDoProjeto } from './scene3d'
-import { criarInstaladorDeCenas3D } from './scene3dCanvas'
+import { type CenaNoCanvas, criarInstaladorDeCenas3D } from './scene3dCanvas'
+import type { Scene3DProtocol } from './scene3dProtocol'
 
 declare global {
   interface Window {
     __SZGAME_CENAS_3D?: TransporteDeCenas3D
     __SZGAME_ASSETS?: Record<string, string>
     __SZGAME_ASSETS_3D?: Record<string, Asset3DManifestEntry>
-    SZScene3D?: {
-      carregar: typeof carregarDoDocumento
-      inicio: typeof resolverInicioDaCena
-      instalar: ReturnType<typeof criarInstaladorDeCenas3D>['instalar']
-      instalado: ReturnType<typeof criarInstaladorDeCenas3D>['instalado']
-    }
+    SZScene3D?: Scene3DProtocol<
+      Scene,
+      OpcoesDoRuntimeCompilado,
+      CenaNoThree,
+      CenaNoCanvas,
+      ReturnType<typeof resolverInicioDaCena>
+    >
   }
 }
 
@@ -42,15 +48,21 @@ function carregarDoDocumento(
 
 const ligacoesCanvas = criarInstaladorDeCenas3D(carregarDoDocumento)
 // Before learner-owned renderer teardown, including programs without the lifecycle wrapper.
-window.addEventListener('pagehide', ligacoesCanvas.descartar, { once: true, capture: true })
+function aoSairDoDocumento(evento: PageTransitionEvent) {
+  if (evento.persisted) return
+  window.removeEventListener('pagehide', aoSairDoDocumento, true)
+  ligacoesCanvas.descartar()
+}
+window.addEventListener('pagehide', aoSairDoDocumento, { capture: true })
 
+const sdk: NonNullable<Window['SZScene3D']> = Object.freeze({
+  carregar: carregarDoDocumento,
+  inicio: resolverInicioDaCena,
+  instalar: ligacoesCanvas.instalar,
+  instalado: ligacoesCanvas.instalado,
+})
 Object.defineProperty(window, 'SZScene3D', {
-  value: Object.freeze({
-    carregar: carregarDoDocumento,
-    inicio: resolverInicioDaCena,
-    instalar: ligacoesCanvas.instalar,
-    instalado: ligacoesCanvas.instalado,
-  }),
+  value: sdk,
   configurable: true,
   writable: false,
 })

@@ -88,8 +88,8 @@ Depois de `deb6a3e36`, a frente exclusiva é a integração visual desta tarefa.
 
 - [x] Testar o carregador com a cena real do ensaio Raylib/Three: geometria, transformações, pintura, buracos/recortes, duas águas, três caminhos, atores/clipes, erro/cancelamento e três ciclos de recursos. [Carregador](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-carregador.md) e [documento/export](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-transporte.md) qualificados; os motores abaixo permanecem abertos.
 - [x] Mundo 3D: bloco/seletor Usar o cenário, codec/IR e troca atômica da representação do mundo; heightAt usa alturas reais. Não sobrepor terreno antigo à cena. [Qualificação, revisão e limites do ensaio local](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-mundo.md).
-- [ ] Canvas 3D: bloco/seletor e `sz_t3d_load_scene`; mesma cena/consulta e ciclo de recursos, sem um segundo carregador.
-- [ ] Jogo 3D: mesmo bloco e integração no motor existente, conservando avatar, câmera e controles.
+- [x] Canvas 3D: bloco/seletor e `sz_t3d_load_scene`; mesma cena/consulta e ciclo de recursos, sem um segundo carregador. [Qualificação e limites](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-canvas.md), enviado em `c20dd5edc`.
+- [x] Jogo 3D: mesmo bloco e integração no motor existente, conservando avatar, câmera e controles. [Qualificação e limites](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-jogo3d.md).
 - [ ] Jogo 3D Avançado: mesmo bloco e integração no motor existente; preservar atores animáveis e física/colisões compatíveis.
 - [ ] Reabrir/executar os quatro projetos, inclusive publicação local do projeto Mundo 3D em /jogar no harness, exports, CSP e regressão de recursos/controles. Implementar/testar/revisar cada motor antes do seguinte.
 

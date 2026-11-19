@@ -1,5 +1,6 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import { encodeProjectJsonGraph } from '@sistemazero/core/studio/project-json-graph'
 import {
   type ArquivoCompilado,
   avaliarOrcamentoDaCena,
@@ -102,7 +103,7 @@ export async function prepararImportacaoDeCena3D(
   const python = isPythonProject(capturado)
   if (python && !projectUsesRaylib3D(capturado))
     throw Error('Cenários 3D precisam da extensão Raylib 3D neste projeto Python.')
-  const baseHash = await sha256Hex(canonicalJson(capturado)),
+  const baseHash = await sha256Hex(encodeProjectJsonGraph(capturado)),
     { conferirConteudoCompilado, inspecionarGlbDaCompilacao } = await import(
       '@sistemazero/molda-cenarios-motor/conteudo'
     )

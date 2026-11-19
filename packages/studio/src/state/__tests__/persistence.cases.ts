@@ -66,6 +66,11 @@ const {
   PROJECT_CHANGED_EVENT,
   renameProjectMeta,
 } = await import('../persistence')
+const { installLocalRevision } = await import('../projectStorageRevision')
+const { captureProjectStorageScope } = await import('../projectStorageRuntime')
+function preparedCurrentProject(id: string, name: string) {
+  return installLocalRevision(createEmptyProject(id, name), captureProjectStorageScope().identity)
+}
 const { createProjectStore, MAX_BLOCKSTATE_BLOCKS, PROJECT_FILE_LIMITS, useProjectStore } =
   await import('../projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
@@ -199,14 +204,14 @@ describe('PersistenceService', () => {
     expect(lastFakeIdbWrite()?.outcome).toBe('complete')
     expect(writtenKeys()).toEqual(
       expect.arrayContaining([
-        'sz:v3:project-meta:project-1',
-        'sz:v3:project-files:project-1',
-        'sz:v3:project-state:project-1',
+        'sz:v4:project-meta:project-1',
+        'sz:v4:project-files:project-1',
+        'sz:v4:project-state:project-1',
       ]),
     )
-    expect(written('sz:v3:project-meta:project-1')).toMatchObject({ id: 'project-1' })
-    expect(written('sz:v3:project-files:project-1')).toMatchObject({ id: 'project-1' })
-    expect(written('sz:v3:project-state:project-1')).toMatchObject({ id: 'project-1' })
+    expect(written('sz:v4:project-meta:project-1')).toMatchObject({ id: 'project-1' })
+    expect(written('sz:v4:project-files:project-1')).toMatchObject({ id: 'project-1' })
+    expect(written('sz:v4:project-state:project-1')).toMatchObject({ id: 'project-1' })
 
     detach()
   })
@@ -244,12 +249,12 @@ describe('PersistenceService', () => {
 
     expect(writtenKeys()).toEqual(
       expect.arrayContaining([
-        'sz:v3:project-meta:project-1',
-        'sz:v3:project-files:project-1',
-        'sz:v3:project-state:project-1',
+        'sz:v4:project-meta:project-1',
+        'sz:v4:project-files:project-1',
+        'sz:v4:project-state:project-1',
       ]),
     )
-    expect(written('sz:v3:project-meta:project-1')).toMatchObject({ id: 'project-1' })
+    expect(written('sz:v4:project-meta:project-1')).toMatchObject({ id: 'project-1' })
 
     detach()
   })
@@ -265,17 +270,17 @@ describe('PersistenceService', () => {
     // uma transação só, com commit explícito: todas as partições somem juntas.
     expect(fakeIdbWrites()).toHaveLength(1)
     const write = lastFakeIdbWrite()
-    expect(fakeIdbPuts(write).get('sz:v3:project-source:project-1')).toEqual({ deleted: true })
+    expect(fakeIdbPuts(write).get('sz:v4:project-source:project-1')).toEqual({ deleted: true })
     expect(fakeIdbDeletes(write)).toEqual([
-      'sz:v3:project-meta:project-1',
-      'sz:v3:project-files:project-1',
-      'sz:v3:project-state:project-1',
-      'sz:v3:project-blocks:project-1',
+      'sz:v4:project-meta:project-1',
+      'sz:v4:project-files:project-1',
+      'sz:v4:project-state:project-1',
+      'sz:v4:project-blocks:project-1',
       // 4ª partição: assets embutidos (imagens/sprites).
-      'sz:v3:project-assets:project-1',
+      'sz:v4:project-assets:project-1',
       // 5ª partição: miniatura do card.
-      'sz:v3:project-thumb:project-1',
-      'sz:v3:project-applications:project-1',
+      'sz:v4:project-thumb:project-1',
+      'sz:v4:project-applications:project-1',
       // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
       'sz:game-storage:project-1',
     ])
@@ -340,12 +345,12 @@ describe('PersistenceService', () => {
     }
     expect(staged.write.puts.map(([key]) => key)).toEqual(
       expect.arrayContaining([
-        'sz:v3:project-meta:project-pagehide',
-        'sz:v3:project-files:project-pagehide',
-        'sz:v3:project-state:project-pagehide',
+        'sz:v4:project-meta:project-pagehide',
+        'sz:v4:project-files:project-pagehide',
+        'sz:v4:project-state:project-pagehide',
       ]),
     )
-    expect(new Map(staged.write.puts).get('sz:v3:project-meta:project-pagehide')).toMatchObject({
+    expect(new Map(staged.write.puts).get('sz:v4:project-meta:project-pagehide')).toMatchObject({
       id: 'project-pagehide',
     })
     expect(write?.steps.at(-1)).toEqual({ type: 'commit' })
@@ -384,11 +389,12 @@ describe('PersistenceService', () => {
     useProjectStore.getState().setProject(createEmptyProject('project-2', 'Projeto 2'))
 
     detach()
+    await waitForPersistenceCondition(() => fakeIdbWrites().length === 1)
     expect(fakeIdbWrites()).toHaveLength(1)
 
     await waitForAutosave()
     expect(fakeIdbWrites()).toHaveLength(1)
-    expect(written('sz:v3:project-meta:project-2')).toMatchObject({ id: 'project-2' })
+    expect(written('sz:v4:project-meta:project-2')).toMatchObject({ id: 'project-2' })
   })
 
   it('emite onChange no debounce com o snapshot completo, mesmo com persistence none', async () => {
@@ -480,7 +486,7 @@ describe('PersistenceService', () => {
         new Map(
           ([...fakeIdbPuts(flush).values()][0] as { write: { puts: Array<[string, unknown]> } })
             .write.puts,
-        ).get('sz:v3:project-files:project-voo') as { files: Record<string, string> }
+        ).get('sz:v4:project-files:project-voo') as { files: Record<string, string> }
       ).files['script.js'],
     ).toBe('console.log("durante o autosave");\n')
     expect(useProjectStore.getState().isDirty).toBe(true)
@@ -506,7 +512,7 @@ describe('PersistenceService', () => {
   it('um put que LANÇA (valor que não clona) falha o save sem gravar nada pela metade', async () => {
     // Antes (setMany), os pares pedidos antes do que lançou iam ao disco pelo auto-commit.
     const naoClona = new DOMException('Não dá para guardar isto.', 'DataCloneError')
-    throwOnNextFakeIdbPut(naoClona, (key) => String(key).startsWith('sz:v3:project-state:'))
+    throwOnNextFakeIdbPut(naoClona, (key) => String(key).startsWith('sz:v4:project-state:'))
 
     const detach = service.attach()
     useProjectStore.getState().setProject(createEmptyProject('project-clone', 'Projeto'))
@@ -537,12 +543,12 @@ describe('PersistenceService', () => {
     expect(fakeIdbWrites()).toHaveLength(1)
     expect(writtenKeys()).toEqual(
       expect.arrayContaining([
-        'sz:v3:project-meta:project-5',
-        'sz:v3:project-files:project-5',
-        'sz:v3:project-state:project-5',
+        'sz:v4:project-meta:project-5',
+        'sz:v4:project-files:project-5',
+        'sz:v4:project-state:project-5',
       ]),
     )
-    expect(written('sz:v3:project-meta:project-5')).toMatchObject({ id: 'project-5' })
+    expect(written('sz:v4:project-meta:project-5')).toMatchObject({ id: 'project-5' })
 
     detach()
   })
@@ -632,7 +638,7 @@ describe('importProjectFromJSON', () => {
     const project = store.getState().project
     if (!project) throw new Error('Projeto não foi hidratado')
     await persistProject(project)
-    expect(written('sz:v3:project-meta:tools')).toMatchObject({
+    expect(written('sz:v4:project-meta:tools')).toMatchObject({
       formatVersion: 2,
       projectTools: ['sz_js_const_create'],
     })
@@ -789,7 +795,7 @@ describe('importProjectFromJSON', () => {
     expect(imported.proMeta?.templateId).toBe('react-ts')
     expect(imported.tree?.['src/main.ts']?.kind).toBe('file')
     // O registro persistido (meta) carrega kind/proMeta.
-    expect(written(`sz:v3:project-meta:${imported.id}`)?.kind).toBe('pro')
+    expect(written(`sz:v4:project-meta:${imported.id}`)?.kind).toBe('pro')
   })
 
   it('recusa projeto pro com árvore inválida sem rebaixar ou gravar', async () => {
@@ -853,6 +859,7 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
 
   it('o rename lê o meta DEPOIS de um persistProject em voo do mesmo id, e grava por cima dele', async () => {
     const disk = new Map<string, unknown>()
+    idb.get.mockImplementation(async (key?: unknown) => disk.get(String(key)))
     idb.getMany.mockImplementation(async (...args: unknown[]) =>
       (args[0] as string[]).map((key) => disk.get(key)),
     )
@@ -863,7 +870,7 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     const inFlight = holdNextFakeIdbWrite()
 
     const persisting = persistProject({
-      ...createEmptyProject('rename-race', 'v1'),
+      ...preparedCurrentProject('rename-race', 'v1'),
     })
     await Bun.sleep(0)
     expect(fakeIdbWrites()).toHaveLength(1)
@@ -885,10 +892,10 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     const [persistWrite, renameWrite] = fakeIdbWrites()
     expect(persistWrite?.outcome).toBe('complete')
     expect(writtenKeys(renameWrite)).toEqual([
-      'sz:v3:project-meta:rename-race',
-      'sz:v3:project-head:rename-race',
+      'sz:v4:project-meta:rename-race',
+      'sz:v4:project-head:rename-race',
     ])
-    expect(written('sz:v3:project-meta:rename-race', renameWrite)?.name).toBe('v2')
+    expect(written('sz:v4:project-meta:rename-race', renameWrite)?.name).toBe('v2')
   })
 
   it('renames concorrentes do mesmo id serializam: o 2º lê o que o 1º GRAVOU (último vence)', async () => {
@@ -896,14 +903,18 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     // leitura do 2º, nascida depois dessa gravação, só começa quando ela termina. Sem isso os
     // dois leriam o mesmo meta de antes.
     const disk = new Map<string, unknown>([
-      ['sz:v3:project-meta:rename-seq', { id: 'rename-seq', name: 'base', updatedAt: 1 }],
+      [
+        'sz:v4:project-meta:rename-seq',
+        { id: 'rename-seq', name: 'base', updatedAt: 1, storageVersion: 4 },
+      ],
     ])
     // A ordem em que o "disco" é tocado: é ela que prova que a 2ª leitura veio depois da
     // 1ª gravação (o nome final seria "b" de qualquer jeito).
     const order: string[] = []
+    idb.get.mockImplementation(async (key?: unknown) => disk.get(String(key)))
     idb.getMany.mockImplementation(async (...args: unknown[]) => {
       const keys = args[0] as string[]
-      if (keys.includes('sz:v3:project-meta:rename-seq')) order.push('get')
+      if (keys.includes('sz:v4:project-meta:rename-seq')) order.push('get')
       return keys.map((key) => disk.get(key))
     })
     idb.setMany.mockImplementation(async (...args: unknown[]) => {
@@ -923,7 +934,7 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     expect(fakeIdbTransactions().every((transaction) => transaction.outcome === 'complete')).toBe(
       true,
     )
-    expect((disk.get('sz:v3:project-meta:rename-seq') as { name?: string }).name).toBe('b')
+    expect((disk.get('sz:v4:project-meta:rename-seq') as { name?: string }).name).toBe('b')
   })
 
   it('a gravação seguinte do mesmo projeto é PEDIDA sem esperar a anterior terminar, e o disco recebe na ordem', async () => {
@@ -933,14 +944,17 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     const landed: string[] = []
     idb.setMany.mockImplementation(async (...args: unknown[]) => {
       for (const [key, value] of args[0] as Array<[unknown, unknown]>) {
-        if (String(key).startsWith('sz:v3:project-meta:'))
+        if (String(key).startsWith('sz:v4:project-meta:'))
           landed.push(String((value as { name: string }).name))
       }
     })
     const inFlight = holdNextFakeIdbWrite()
 
-    const first = persistProject(createEmptyProject('ordem-da-fila', 'autosave'))
-    const second = persistProject({ ...createEmptyProject('ordem-da-fila', 'flush'), updatedAt: 2 })
+    const first = persistProject(preparedCurrentProject('ordem-da-fila', 'autosave'))
+    const second = persistProject({
+      ...preparedCurrentProject('ordem-da-fila', 'flush'),
+      updatedAt: 2,
+    })
     await Bun.sleep(0)
     expect(fakeIdbWrites().map((write) => write.outcome)).toEqual(['pending', 'pending'])
 
@@ -953,6 +967,7 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     // Senão um autosave pedido entre a leitura e a gravação do rename seria desfeito pelo
     // meta velho que o rename grava por cima.
     const disk = new Map<string, unknown>()
+    idb.get.mockImplementation(async (key?: unknown) => disk.get(String(key)))
     idb.getMany.mockImplementation(async (...args: unknown[]) =>
       (args[0] as string[]).map((key) => disk.get(key)),
     )
@@ -961,12 +976,12 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     })
     const inFlight = holdNextFakeIdbWrite()
 
-    const persisting = persistProject(createEmptyProject('fila-rename', 'antes'))
+    const persisting = persistProject(preparedCurrentProject('fila-rename', 'antes'))
     await Bun.sleep(0)
     const renaming = renameProjectMeta('fila-rename', 'renomeado')
     await Bun.sleep(0)
     const autosave = persistProject({
-      ...createEmptyProject('fila-rename', 'depois'),
+      ...preparedCurrentProject('fila-rename', 'depois'),
       updatedAt: 3,
     })
     await Bun.sleep(0)
@@ -988,9 +1003,9 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
       'readwrite',
       'readwrite',
     ])
-    expect(written('sz:v3:project-meta:fila-rename', transactions[2])?.name).toBe('renomeado')
-    expect(written('sz:v3:project-meta:fila-rename', transactions[3])).toBeUndefined()
-    expect((disk.get('sz:v3:project-meta:fila-rename') as { name: string }).name).toBe('renomeado')
+    expect(written('sz:v4:project-meta:fila-rename', transactions[2])?.name).toBe('renomeado')
+    expect(written('sz:v4:project-meta:fila-rename', transactions[3])).toBeUndefined()
+    expect((disk.get('sz:v4:project-meta:fila-rename') as { name: string }).name).toBe('renomeado')
   })
 })
 
@@ -1074,7 +1089,7 @@ describe('loadProject', () => {
 
   it('rejeita projeto atual sem arquivos canônicos válidos', async () => {
     idb.getMany.mockResolvedValueOnce([
-      { ...createEmptyProject('project-1', 'Corrompido') },
+      { ...createEmptyProject('project-1', 'Corrompido'), storageVersion: 4 },
       { id: 'project-1', files: { 'index.html': '<h1>ok</h1>' } },
       { id: 'project-1', ir: null },
     ])
@@ -1085,7 +1100,7 @@ describe('loadProject', () => {
 
   it('recusa projeto persistido corrompido antes de entrar no store', async () => {
     idb.getMany.mockResolvedValueOnce([
-      { ...createEmptyProject('project-1', 'Corrompido') },
+      { ...createEmptyProject('project-1', 'Corrompido'), storageVersion: 4 },
       { id: 'project-1', files: { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' } },
       { id: 'project-1', ir: null },
       {
@@ -1118,9 +1133,9 @@ describe('loadProject', () => {
     await persistProject(proProject)
     const byKey = fakeIdbPuts(lastFakeIdbWrite())
     idb.getMany.mockResolvedValueOnce([
-      byKey.get('sz:v3:project-meta:pro-1'),
-      byKey.get('sz:v3:project-files:pro-1'),
-      byKey.get('sz:v3:project-state:pro-1'),
+      byKey.get('sz:v4:project-meta:pro-1'),
+      byKey.get('sz:v4:project-files:pro-1'),
+      byKey.get('sz:v4:project-state:pro-1'),
     ])
 
     const loaded = await useProjectStore.getState().loadProject('pro-1')
@@ -1140,13 +1155,13 @@ describe('loadProject', () => {
     }
     await persistProject({ ...createEmptyProject('split-blocks', 'Projeto'), blocksState })
 
-    expect(written('sz:v3:project-meta:split-blocks')?.storageVersion).toBe(3)
-    expect(written('sz:v3:project-state:split-blocks')).toMatchObject({
+    expect(written('sz:v4:project-meta:split-blocks')?.storageVersion).toBe(4)
+    expect(written('sz:v4:project-state:split-blocks')).toMatchObject({
       id: 'split-blocks',
       ir: expect.anything(),
     })
-    expect(written('sz:v3:project-state:split-blocks')).not.toHaveProperty('blocksState')
-    expect(written('sz:v3:project-blocks:split-blocks')?.blocksState).toEqual(blocksState)
+    expect(written('sz:v4:project-state:split-blocks')).not.toHaveProperty('blocksState')
+    expect(written('sz:v4:project-blocks:split-blocks')?.blocksState).toEqual(blocksState)
   })
 
   it('substitui um rascunho local inteiro ao recomeçar uma aula', async () => {
@@ -1165,8 +1180,8 @@ describe('loadProject', () => {
     initial.blocksState = null
     await replaceLocalProject(initial)
 
-    expect(fakeIdbDeletes(lastFakeIdbWrite())).toContain(`sz:v3:project-blocks:${id}`)
-    expect(written(`sz:v3:project-files:${id}`)).toMatchObject({
+    expect(fakeIdbDeletes(lastFakeIdbWrite())).toContain(`sz:v4:project-blocks:${id}`)
+    expect(written(`sz:v4:project-files:${id}`)).toMatchObject({
       files: { 'index.html': '<main>Jogo novo</main>' },
     })
   })
@@ -1181,12 +1196,12 @@ describe('loadProject', () => {
 
     expect(fakeIdbWrites()).toHaveLength(1)
     const write = lastFakeIdbWrite()
-    expect(written('sz:v3:project-meta:bridge-code-ahead', write)?.bridgeCodeAhead).toBe(true)
-    expect(written('sz:v3:project-state:bridge-code-ahead', write)?.ir).toBeNull()
-    expect(fakeIdbPuts(write).has('sz:v3:project-blocks:bridge-code-ahead')).toBe(false)
+    expect(written('sz:v4:project-meta:bridge-code-ahead', write)?.bridgeCodeAhead).toBe(true)
+    expect(written('sz:v4:project-state:bridge-code-ahead', write)?.ir).toBeNull()
+    expect(fakeIdbPuts(write).has('sz:v4:project-blocks:bridge-code-ahead')).toBe(false)
     // O apagar vem DEPOIS dos put e antes do commit, na mesma transação: ou tudo, ou nada.
     expect(write?.steps.slice(-2)).toEqual([
-      { type: 'delete', key: 'sz:v3:project-blocks:bridge-code-ahead' },
+      { type: 'delete', key: 'sz:v4:project-blocks:bridge-code-ahead' },
       { type: 'commit' },
     ])
   })
@@ -1220,6 +1235,7 @@ describe('loadProject', () => {
         updatedAt: 20,
         mode: 'blocks',
         installedExtensions: [],
+        storageVersion: 4,
       },
       {
         id: 'fast-open',
@@ -1237,10 +1253,10 @@ describe('loadProject', () => {
 
     expect(idb.getMany).toHaveBeenCalledWith(
       [
-        'sz:v3:project-meta:fast-open',
-        'sz:v3:project-files:fast-open',
-        'sz:v3:project-assets:fast-open',
-        'sz:v3:project-head:fast-open',
+        'sz:v4:project-meta:fast-open',
+        'sz:v4:project-files:fast-open',
+        'sz:v4:project-assets:fast-open',
+        'sz:v4:project-head:fast-open',
       ],
       expect.anything(),
     )
@@ -1257,7 +1273,7 @@ describe('loadProject', () => {
     })
   })
 
-  it('load rápido local não lê state mesmo no storage v2', async () => {
+  it('load rápido recusa um marcador v2 dentro da partição atual sem ler state', async () => {
     idb.getMany.mockResolvedValueOnce([
       {
         id: 'fast-open-v2',
@@ -1281,24 +1297,10 @@ describe('loadProject', () => {
       undefined,
     ])
 
-    const loaded = await createLocalPersistenceAdapter().load('fast-open-v2')
-
-    expect(idb.getMany).toHaveBeenCalledWith(
-      [
-        'sz:v3:project-meta:fast-open-v2',
-        'sz:v3:project-files:fast-open-v2',
-        'sz:v3:project-assets:fast-open-v2',
-        'sz:v3:project-head:fast-open-v2',
-      ],
-      expect.anything(),
+    await expect(createLocalPersistenceAdapter().load('fast-open-v2')).rejects.toThrow(
+      'versão incompatível',
     )
     expect(idb.get).not.toHaveBeenCalled()
-    expect(loaded).toMatchObject({
-      id: 'fast-open-v2',
-      mode: 'blocks',
-      ir: null,
-      blocksState: null,
-    })
   })
 
   it('restore atual não busca blocos antigos dentro da partição de IR', async () => {
@@ -1308,7 +1310,7 @@ describe('loadProject', () => {
       blocksState: null,
     })
     expect(restored).toBeNull()
-    expect(idb.get).not.toHaveBeenCalledWith('sz:v3:project-state:sem-blocos', expect.anything())
+    expect(idb.get).not.toHaveBeenCalledWith('sz:v4:project-state:sem-blocos', expect.anything())
   })
 
   it('adapter local restaura blocksState pela partição separada', async () => {
@@ -1325,7 +1327,7 @@ describe('loadProject', () => {
       blocksState: null,
     })
 
-    expect(idb.get).toHaveBeenCalledWith('sz:v3:project-blocks:fast-open-blocks', expect.anything())
+    expect(idb.get).toHaveBeenCalledWith('sz:v4:project-blocks:fast-open-blocks', expect.anything())
     expect(restored).toEqual(blocksState)
   })
 
@@ -1335,7 +1337,15 @@ describe('loadProject', () => {
     const store = createProjectStore()
 
     const partitioned = (id: string, name: string) => [
-      { id, name, createdAt: 10, updatedAt: 20, mode: 'blocks', installedExtensions: [] },
+      {
+        id,
+        name,
+        createdAt: 10,
+        updatedAt: 20,
+        mode: 'blocks',
+        installedExtensions: [],
+        storageVersion: 4,
+      },
       {
         id,
         files: { 'index.html': '<h1>ok</h1>', 'style.css': '', 'script.js': '' },
@@ -1379,6 +1389,7 @@ describe('loadProject', () => {
         updatedAt: 20,
         mode: 'code',
         installedExtensions: [],
+        storageVersion: 4,
       },
       {
         id: 'project-split',
@@ -1424,10 +1435,10 @@ describe('listAllProjects', () => {
   })
 
   it('lista summaries indexados sem carregar projetos inteiros', async () => {
-    idb.keys.mockResolvedValueOnce(['sz:settings', 'sz:v3:project-meta:a', 'sz:v3:project-meta:b'])
+    idb.keys.mockResolvedValueOnce(['sz:settings', 'sz:v4:project-meta:a', 'sz:v4:project-meta:b'])
     idb.getMany.mockResolvedValueOnce([
-      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 20 },
-      { id: 'b', name: 'Projeto B', createdAt: 30, updatedAt: 40 },
+      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 20, storageVersion: 4 },
+      { id: 'b', name: 'Projeto B', createdAt: 30, updatedAt: 40, storageVersion: 4 },
     ])
 
     await expect(listAllProjects()).resolves.toEqual([
@@ -1454,37 +1465,37 @@ describe('listAllProjects', () => {
     // 2 getMany: os metas + as miniaturas (partição própria) — nunca o projeto inteiro.
     expect(idb.getMany).toHaveBeenCalledTimes(2)
     expect(idb.getMany).toHaveBeenCalledWith(
-      ['sz:v3:project-meta:a', 'sz:v3:project-meta:b'],
+      ['sz:v4:project-meta:a', 'sz:v4:project-meta:b'],
       expect.anything(),
     )
     expect(idb.getMany).toHaveBeenCalledWith(
-      ['sz:v3:project-thumb:a', 'sz:v3:project-thumb:b'],
+      ['sz:v4:project-thumb:a', 'sz:v4:project-thumb:b'],
       expect.anything(),
     )
   })
 
   it('backups históricos não reaparecem na lista de projetos ativos', async () => {
-    idb.keys.mockResolvedValueOnce(['sz:project-backup:legacy:hash', 'sz:v3:project-source:legacy'])
+    idb.keys.mockResolvedValueOnce(['sz:project-backup:legacy:hash', 'sz:v4:project-source:legacy'])
     await expect(listAllProjects()).resolves.toEqual([])
     expect(idb.getMany).not.toHaveBeenCalled()
   })
 
   it('a lista LEVE (`listProjectSummariesLight`) não lê as capas; `loadProjectSummaryById` relê meta + capa de UM projeto', async () => {
-    idb.keys.mockResolvedValueOnce(['sz:v3:project-meta:a', 'sz:v3:project-meta:b'])
+    idb.keys.mockResolvedValueOnce(['sz:v4:project-meta:a', 'sz:v4:project-meta:b'])
     idb.getMany.mockResolvedValueOnce([
-      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 20 },
-      { id: 'b', name: 'Projeto B', createdAt: 30, updatedAt: 40 },
+      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 20, storageVersion: 4 },
+      { id: 'b', name: 'Projeto B', createdAt: 30, updatedAt: 40, storageVersion: 4 },
     ])
     const light = await listProjectSummariesLight()
     expect(light.map((p) => p.id)).toEqual(['b', 'a'])
-    // Um getMany só (os metas): nenhuma chave `sz:v3:project-thumb:` foi pedida.
+    // Um getMany só (os metas): nenhuma chave `sz:v4:project-thumb:` foi pedida.
     expect(idb.getMany).toHaveBeenCalledTimes(1)
     const asked = (idb.getMany.mock.calls as unknown[][]).flatMap((call) => call[0] as string[])
-    expect(asked.some((key) => key.startsWith('sz:v3:project-thumb:'))).toBe(false)
+    expect(asked.some((key) => key.startsWith('sz:v4:project-thumb:'))).toBe(false)
 
     idb.getMany.mockClear()
     idb.getMany.mockResolvedValueOnce([
-      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 99 },
+      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 99, storageVersion: 4 },
       { id: 'a', dataUrl: 'data:image/jpeg;base64,AAA' },
     ])
     await expect(loadProjectSummaryById('a')).resolves.toEqual({
@@ -1498,7 +1509,7 @@ describe('listAllProjects', () => {
       thumbDataUrl: 'data:image/jpeg;base64,AAA',
     })
     expect(idb.getMany).toHaveBeenCalledWith(
-      ['sz:v3:project-meta:a', 'sz:v3:project-thumb:a'],
+      ['sz:v4:project-meta:a', 'sz:v4:project-thumb:a'],
       expect.anything(),
     )
     // Apagado: `null` (sem cair no legado quando nem ele existe).
@@ -1542,7 +1553,7 @@ describe('persistProject — assets só reescritos quando a referência muda', (
     const project = createEmptyProject('assets-first', 'Projeto')
     await persistProject(project)
 
-    expect(writtenKeys()).toContain('sz:v3:project-assets:assets-first')
+    expect(writtenKeys()).toContain('sz:v4:project-assets:assets-first')
   })
 
   it('reescreve meta/files/state mas NÃO assets quando a referência de assets não mudou', async () => {
@@ -1553,11 +1564,11 @@ describe('persistProject — assets só reescritos quando a referência muda', (
     await persistProject({ ...project, updatedAt: project.updatedAt + 1 })
 
     const keys = writtenKeys()
-    expect(keys).toContain('sz:v3:project-meta:assets-stable')
-    expect(keys).toContain('sz:v3:project-files:assets-stable')
-    expect(keys).toContain('sz:v3:project-state:assets-stable')
+    expect(keys).toContain('sz:v4:project-meta:assets-stable')
+    expect(keys).toContain('sz:v4:project-files:assets-stable')
+    expect(keys).toContain('sz:v4:project-state:assets-stable')
     // A partição grande NÃO é reescrita à toa no autosave debounced.
-    expect(keys).not.toContain('sz:v3:project-assets:assets-stable')
+    expect(keys).not.toContain('sz:v4:project-assets:assets-stable')
   })
 
   it('reescreve a partição de assets quando a referência muda (edição de imagem)', async () => {
@@ -1569,7 +1580,7 @@ describe('persistProject — assets só reescritos quando a referência muda', (
     const withNewAssets = { ...project, assets: [...(project.assets ?? [])] }
     await persistProject(withNewAssets)
 
-    expect(writtenKeys()).toContain('sz:v3:project-assets:assets-changed')
+    expect(writtenKeys()).toContain('sz:v4:project-assets:assets-changed')
   })
 
   it('reescreve a partição de assets na 1ª gravação após uma falha de write (ref não registrada)', async () => {
@@ -1583,7 +1594,7 @@ describe('persistProject — assets só reescritos quando a referência muda', (
     await persistProject({ ...project, updatedAt: project.updatedAt + 1 })
 
     expect(lastFakeIdbWrite()?.outcome).toBe('complete')
-    expect(writtenKeys()).toContain('sz:v3:project-assets:assets-retry')
+    expect(writtenKeys()).toContain('sz:v4:project-assets:assets-retry')
   })
 })
 
@@ -1613,11 +1624,11 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     // podia ir sem a outra).
     expect(fakeIdbWrites()).toHaveLength(1)
     expect(writtenKeys()).toEqual([
-      'sz:v3:project-assets:assets-sync',
-      'sz:v3:project-meta:assets-sync',
-      'sz:v3:project-head:assets-sync',
+      'sz:v4:project-assets:assets-sync',
+      'sz:v4:project-meta:assets-sync',
+      'sz:v4:project-head:assets-sync',
     ])
-    const meta = written('sz:v3:project-meta:assets-sync') as { updatedAt: number; name: string }
+    const meta = written('sz:v4:project-meta:assets-sync') as { updatedAt: number; name: string }
     expect(meta.name).toBe('Nave')
     expect(meta.updatedAt).toBeGreaterThanOrEqual(before)
   })
@@ -1642,7 +1653,14 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     const { loadProjectSnapshotForCloud } = await import('../../projects/importSnapshot')
     const base = createEmptyProject('01J00000000000000000000SAN', 'Com assets')
     idb.getMany.mockResolvedValueOnce([
-      { id: base.id, name: base.name, createdAt: 1, updatedAt: 2, mode: 'blocks' },
+      {
+        id: base.id,
+        name: base.name,
+        createdAt: 1,
+        updatedAt: 2,
+        storageVersion: 4,
+        mode: 'blocks',
+      },
       { id: base.id, files: base.files },
       { id: base.id, ir: null, blocksState: null },
       undefined,
@@ -1664,7 +1682,7 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     idb.getMany.mockClear()
     idb.get.mockClear()
     idb.getMany.mockResolvedValueOnce([
-      { id: 'p1', name: 'Um', createdAt: 1, updatedAt: 5, mode: 'blocks' },
+      { id: 'p1', name: 'Um', createdAt: 1, updatedAt: 5, storageVersion: 4, mode: 'blocks' },
       { id: 'p1', dataUrl: 'data:image/jpeg;base64,CAPA' },
       undefined,
       undefined,
@@ -1675,14 +1693,25 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     expect(sumiu).toBeNull()
     expect(idb.getMany).toHaveBeenCalledTimes(2)
     expect(idb.getMany).toHaveBeenCalledWith(
-      ['sz:project:p2', 'sz:project-meta:p2', 'sz:v2:project-meta:p2'],
+      [
+        'sz:v4:project-meta:p2',
+        'sz:v4:project-files:p2',
+        'sz:v4:project-state:p2',
+        'sz:v4:project-blocks:p2',
+        'sz:v4:project-assets:p2',
+        'sz:v4:project-head:p2',
+        'sz:project:p2',
+        'sz:v2:project:p2',
+        'sz:project-meta:p2',
+        'sz:v2:project-meta:p2',
+      ],
       expect.anything(),
     )
     expect((idb.getMany.mock.calls[0] as unknown[])[0]).toEqual([
-      'sz:v3:project-meta:p1',
-      'sz:v3:project-thumb:p1',
-      'sz:v3:project-meta:p2',
-      'sz:v3:project-thumb:p2',
+      'sz:v4:project-meta:p1',
+      'sz:v4:project-thumb:p1',
+      'sz:v4:project-meta:p2',
+      'sz:v4:project-thumb:p2',
     ])
   })
 
@@ -1708,9 +1737,9 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio-perfil-Z', 'kv')
     expect(idb.getMany).toHaveBeenCalledTimes(1)
     expect((idb.getMany.mock.calls[0] as unknown[])[0]).toEqual([
-      'sz:v3:project-assets:jogo-p',
-      'sz:v3:project-head:jogo-p',
-      'sz:v3:project-meta:jogo-p',
+      'sz:v4:project-assets:jogo-p',
+      'sz:v4:project-head:jogo-p',
+      'sz:v4:project-meta:jogo-p',
     ])
     expect(idb.get).not.toHaveBeenCalled()
     // Sem partição (legado) → lista vazia, sem lançar.
@@ -1729,11 +1758,11 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     // Gravar o que desceu e apagar o que o snapshot não trouxe é UMA transação só.
     expect(fakeIdbWrites()).toHaveLength(1)
     const write = lastFakeIdbWrite()
-    expect(writtenKeys(write)).toContain('sz:v3:project-meta:01J00000000000000000000RPL')
+    expect(writtenKeys(write)).toContain('sz:v4:project-meta:01J00000000000000000000RPL')
     expect(fakeIdbDeletes(write)).toEqual([
-      'sz:v3:project-thumb:01J00000000000000000000RPL',
-      'sz:v3:project-blocks:01J00000000000000000000RPL',
-      'sz:v3:project-applications:01J00000000000000000000RPL',
+      'sz:v4:project-thumb:01J00000000000000000000RPL',
+      'sz:v4:project-blocks:01J00000000000000000000RPL',
+      'sz:v4:project-applications:01J00000000000000000000RPL',
     ])
     expect(write?.outcome).toBe('complete')
   })
@@ -1780,9 +1809,9 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     expect(warnings).toEqual([])
     expect(project.blocksState).toBeNull()
     expect(fakeIdbWrites()).toHaveLength(1)
-    expect(writtenKeys()).toContain('sz:v3:project-meta:01J00000000000000000000STR')
+    expect(writtenKeys()).toContain('sz:v4:project-meta:01J00000000000000000000STR')
     expect(fakeIdbDeletes(lastFakeIdbWrite())).toContain(
-      'sz:v3:project-blocks:01J00000000000000000000STR',
+      'sz:v4:project-blocks:01J00000000000000000000STR',
     )
     // O `validate` do mesmo snapshot devolve o mesmo projeto, sem gravar nada a mais.
     const validated = await validateCloudProjectSnapshot(
@@ -1879,7 +1908,7 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     expect(restored.updatedAt).toBe(1_700_000_100_000)
     expect(restored.name).toBe('Vinda da nuvem')
     expect(changed).toHaveLength(2)
-    expect(written('sz:v3:project-meta:01J00000000000000000000RST')).toMatchObject({
+    expect(written('sz:v4:project-meta:01J00000000000000000000RST')).toMatchObject({
       id: '01J00000000000000000000RST',
       createdAt: 1_700_000_000_000,
     })
