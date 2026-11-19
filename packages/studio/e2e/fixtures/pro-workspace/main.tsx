@@ -50,6 +50,12 @@ if (new URLSearchParams(location.search).has('symbols')) {
     'export function zzUpdate() { return item349; }',
   ].join('\n')
 }
+if (new URLSearchParams(location.search).has('references')) {
+  project.tree['src/main.ts'].content = [
+    'export const score = 1;',
+    ...Array.from({ length: 251 }, () => 'console.log(score);'),
+  ].join('\n')
+}
 const runtime = {
   async build() {
     return {
@@ -57,6 +63,16 @@ const runtime = {
     }
   },
 }
+const startupProject = createEmptyProject('startup-hostile-browser', 'Primeira execução')
+startupProject.mode = 'bridge'
+startupProject.bridgeCodeAhead = true
+startupProject.files['script.js'] = [
+  'console.log("startup-first-run");',
+  'const dados = Array.from({ length: 300000 }, (_, i) => (i * 7919) % 10007);',
+  'const fim = Date.now() + 30000;',
+  'function gastar() { if (Date.now() < fim) { dados.slice().sort((a, b) => a - b); gastar(); } }',
+  'gastar();',
+].join('\n')
 const tutor: StudioTutorConfig = {
   adapter: {
     builder: {
@@ -135,7 +151,9 @@ function Fixture() {
       </output>
       <div style={{ flex: 1, minHeight: 0 }}>
         <StudioEditor
-          initialProject={project}
+          initialProject={
+            new URLSearchParams(location.search).has('startup') ? startupProject : project
+          }
           persistence="none"
           features={{ terminal: false }}
           proRuntime={runtime}

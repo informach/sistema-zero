@@ -219,10 +219,10 @@ jobs:
           else
             bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           fi
-      - name: Complete and incremental Pro file map on Windows
+      - name: Complete Pro file map and first-start interruption on Windows
         if: runner.os == 'Windows'
         working-directory: packages/studio
-        run: bunx playwright test --config e2e/pro-workspace.config.ts --grep 'complete file map|symbols|continuous edits' --retries=0
+        run: bunx playwright test --config e2e/pro-workspace.config.ts --grep 'complete file map|symbols|continuous edits|all references|first startup' --retries=0
       - name: Integrated Pinta and Phaser scenes on desktop and touch
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio

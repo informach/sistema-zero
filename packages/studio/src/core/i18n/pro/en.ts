@@ -185,6 +185,8 @@ export const en: Record<string, string> = {
   'pro.symbols.empty': 'This file has no functions or classes to map yet.',
   'pro.symbols.line': 'line {line}',
   'pro.references.close': 'Close references',
+  'pro.references.count': '{shown} of {total}',
+  'pro.references.more': 'Show more references',
   'pro.rename.current': 'Current name',
   'pro.rename.new': 'New name',
   'pro.rename.check': 'Check references',

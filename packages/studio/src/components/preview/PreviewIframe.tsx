@@ -224,6 +224,16 @@ export function PreviewIframe(): JSX.Element {
   } | null>(null)
   const autoStartedProjectId = useRef<string | null>(null)
   const [loadedSrcDoc, setLoadedSrcDoc] = useState<string | null>(null)
+  // An executable document may block before its first load event. Remember the
+  // submitted attempt, not only the last successfully loaded document.
+  const attemptedDocumentRef = useRef<string | null>(null)
+  const recordDocumentAttempt = useCallback((attempt: string | null) => {
+    if (attempt !== null && attemptedDocumentRef.current !== attempt) {
+      lastHeartbeatRef.current = Date.now()
+      setPreviewStalled(false)
+    }
+    attemptedDocumentRef.current = attempt
+  }, [])
   // Quando o documento da vez entrou (ver o filtro dos erros no ouvinte de mensagens).
   const docStartedAtRef = useRef(0)
   const [renderLargePreviewForInput, setRenderLargePreviewForInput] =
@@ -331,9 +341,12 @@ export function PreviewIframe(): JSX.Element {
    * (um por segundo) faltam há mais de `UNRESPONSIVE_AFTER_MS`. Com a aba escondida o navegador
    * segura os batimentos, e a falta deles não quer dizer nada.
    */
-  const previewIsUnresponsive = () => {
-    if (!previewRunning || loadedSrcDoc === null || loadedSrcDoc === PAUSED_PREVIEW_DOC)
-      return false
+  const previewNeedsProcessGap = () => {
+    const attempt = attemptedDocumentRef.current
+    if (!previewRunning || attempt === null) return false
+    // Canceling an unfinished startup must not reuse its potentially busy
+    // process, even before a heartbeat timeout or while the tab is hidden.
+    if (loadedSrcDoc !== attempt) return true
     if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return false
     return previewStalled || Date.now() - lastHeartbeatRef.current > UNRESPONSIVE_AFTER_MS
   }
@@ -344,7 +357,7 @@ export function PreviewIframe(): JSX.Element {
 
   const rerenderPreview = () => {
     // Rodar de novo com o jogo preso: sem iframe novo, o documento novo esperaria o travamento.
-    if (previewIsUnresponsive()) swapFrame(true)
+    if (previewNeedsProcessGap()) swapFrame(true)
     setRenderNonce((n) => n + 1)
   }
 
@@ -804,20 +817,36 @@ export function PreviewIframe(): JSX.Element {
   // existe: lê-lo deixava `loadedSrcDoc` nulo e desligava a detecção de jogo preso, o Parar que
   // troca o iframe preso e o Rodar de novo com a prévia muda (lote 3.1, 19/11/2026).
   const frameDocumentRef = useRef(effectiveDoc)
+  const directDocument = isolatedUrl ? doc : effectiveDoc
   // Na casca, quem diz o documento é a mensagem enviada a ela (efeito abaixo), não o render.
-  if (!shell) frameDocumentRef.current = isolatedUrl ? doc : effectiveDoc
+  if (!shell) frameDocumentRef.current = directDocument
   // A casca da geração atual do iframe avisou que está pronta para receber o documento.
   const [shellReadyGeneration, setShellReadyGeneration] = useState(-1)
   const frameGenerationRef = useRef(frameGeneration)
   frameGenerationRef.current = frameGeneration
   const shellReady = shell !== null && !frameAbsent && shellReadyGeneration === frameGeneration
+  useLayoutEffect(() => {
+    if (frameAbsent) {
+      recordDocumentAttempt(null)
+      return
+    }
+    if (!previewRunning) return
+    if (shell) {
+      if (!shellReady) recordDocumentAttempt(null)
+    } else if (directDocument !== PAUSED_PREVIEW_DOC) {
+      recordDocumentAttempt(directDocument)
+    }
+    // A requested blank document is not proof the preceding work stopped.
+    // Keep its attempt until the blank load is acknowledged or the frame leaves.
+  }, [frameAbsent, previewRunning, shell, shellReady, directDocument, recordDocumentAttempt])
   useEffect(() => {
     if (!shell || !shellReady) return
     const target = iframeRef.current?.contentWindow
     if (!target) return
     frameDocumentRef.current = effectiveDoc
+    if (previewRunning && effectiveDoc !== PAUSED_PREVIEW_DOC) recordDocumentAttempt(effectiveDoc)
     target.postMessage({ type: CLASSIC_SHELL_LOAD, document: effectiveDoc }, shell.origin)
-  }, [shell, shellReady, effectiveDoc])
+  }, [shell, shellReady, effectiveDoc, previewRunning, recordDocumentAttempt])
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
   }, [execution.muted])
@@ -851,12 +880,14 @@ export function PreviewIframe(): JSX.Element {
   useEffect(() => {
     if (wasRunningRef.current && !previewRunning) {
       const visible = typeof document === 'undefined' || document.visibilityState === 'visible'
+      const attempt = attemptedDocumentRef.current
       const stuck =
-        visible &&
-        loadedSrcDoc !== null &&
-        loadedSrcDoc !== PAUSED_PREVIEW_DOC &&
-        (previewStalled || Date.now() - lastHeartbeatRef.current > UNRESPONSIVE_AFTER_MS)
+        attempt !== null &&
+        (loadedSrcDoc !== attempt ||
+          (visible &&
+            (previewStalled || Date.now() - lastHeartbeatRef.current > UNRESPONSIVE_AFTER_MS)))
       swapFrame(stuck)
+      recordDocumentAttempt(null)
     }
     wasRunningRef.current = previewRunning
   }, [previewRunning])
@@ -910,6 +941,7 @@ export function PreviewIframe(): JSX.Element {
   useEffect(() => {
     if (!docIsLive) return
     const id = setInterval(() => {
+      if (attemptedDocumentRef.current === null) return
       // Aba em segundo plano: o navegador ESTRANGULA o setInterval do heartbeat
       // (e este também), então a ausência de heartbeats é esperada e NÃO indica
       // travamento — só consideramos travado com a aba visível, evitando o falso
@@ -1118,6 +1150,7 @@ export function PreviewIframe(): JSX.Element {
   // O documento entrou no iframe: o `load` de um `srcdoc` direto, ou `sz-shell:loaded` da casca.
   const frameLoadedRef = useRef(() => {})
   frameLoadedRef.current = () => {
+    if (frameDocumentRef.current === PAUSED_PREVIEW_DOC) recordDocumentAttempt(null)
     setLoadedSrcDoc(frameDocumentRef.current)
     frameGapStepRef.current = 0
     lastHeartbeatRef.current = Date.now()

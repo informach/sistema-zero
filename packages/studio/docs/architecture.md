@@ -204,6 +204,13 @@ atrasados não reabrem uma lista fechada. Falhas na inicialização também cheg
 ao estado de análise exibido em Problemas. O download revalida cancelamento e
 identidade entre cada fase de flush antes de continuar a próxima operação.
 
+O painel de referências conserva todos os destinos do serviço e monta lotes de
+cem, com contagem explícita e ação para continuar. A janela visual pertence ao
+resultado, não ao arquivo: uma nova consulta reinicia a paginação. Escolher um
+destino devolve foco ao editor. Sugestões automáticas do Monaco ficam habilitadas
+em código e strings; comentários usam solicitação explícita para evitar que uma
+sugestão tardia consuma Enter. Isso não altera diagnósticos nem tipos.
+
 
 ## Identidade integral e recuperação local (19/11/2026)
 

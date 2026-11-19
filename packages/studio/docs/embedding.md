@@ -153,7 +153,7 @@ CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-un
 ## 6. Limitações conhecidas
 
 - Multi-instância funciona (stores por instância), MAS: o WebContainer é singleton por aba e o atalho de teclado da busca de blocos fica com a última instância montada. Como o container é singleton, apenas UMA instância (não-profissional) pode usar o Terminal por aba — uma segunda mostra "Terminal já está em uso em outra instância nesta aba" em vez de sobrescrever os arquivos da primeira (namespacing por instância sob `/sz-<id>/` é item de backlog).
-- **Preview do editor é de MESMA THREAD:** o iframe `srcdoc` null-origin compartilha a thread principal do host. O guarda de laços corta loops síncronos instrumentados, mas trabalho síncrono pesado que NÃO é laço (`Array.from({length: 1e10})`, `JSON.parse` gigante, ReDoS, recursão profunda) congela a thread e o watchdog só DETECTA — não interrompe. No player público, configure `originAdapter` para navegar a uma origem/processo dedicado; o editor criativo continua local por compatibilidade.
+- **O preview local não garante isolamento de CPU:** a distribuição dos iframes entre processos depende do navegador, sites e cabeçalhos do host. O guarda corta laços instrumentados; watchdog e remoção do iframe são mecanismos complementares, sem garantia universal para trabalho nativo síncrono. Há dois contratos opt-in: `originAdapter` para documentos publicados e `previewShellUrl` para a casca do Clássico em outro site. Nenhum deles comprova isolamento somente por receber uma URL de outra origem. Conferir a matriz de navegador e os cabeçalhos do host antes de ativar.
 - **O perfil `creative` mantém o canal residual de GET passivo:** ele libera `https:` em `img/media/font/frame-src` para o ambiente de criação. O `StudioProjectPlayer` usa `strict` por padrão e fecha esse canal; só reabra com `securityProfile="creative"` quando o conteúdo publicado realmente depender de recursos externos.
 - **Tema do Monaco é GLOBAL por página** (consequência do namespace único do Monaco — há um só tema ativo via `monaco.editor.setTheme`). Duas instâncias simultâneas em Código/Ponte (ex.: rota `/dual`) acabam adotando o ÚLTIMO tema definido; não há isolamento de tema por instância no Monaco. O Blockly, ao contrário, aplica tema por workspace. (Os models, esses sim, são isolados por instância: o `path` é salgado com um id estável por instância.)
 - Settings (tema via toggle e fonte do código) são preferência do USUÁRIO, compartilhada entre instâncias e persistida em IndexedDB.
@@ -253,7 +253,7 @@ O player público usa `securityProfile="strict"` por padrão: imagens, fontes, m
 remotos ficam bloqueados, além de fetch/XHR. Projetos públicos que dependam deliberadamente de
 recursos externos podem optar por `securityProfile="creative"`.
 
-Para isolar também CPU/processo, o host pode publicar o documento numa origem dedicada:
+Para publicar o documento numa origem dedicada, o host pode fornecer o adaptador:
 
 ```tsx
 const originAdapter = {
@@ -272,6 +272,25 @@ const originAdapter = {
 
 Com o adaptador, o iframe usa `src`; sem ele, preserva o `srcDoc` de origem opaca. URLs de mesma
 origem, `data:` e `blob:` são recusadas pelo contrato.
+
+### Casca do Clássico em outro site
+
+`StudioEditor` e `StudioLesson` aceitam `previewShellUrl`, apontando para
+`/v1/classic-shell/1.html` do `studio-runtime` num site separado. O Worker serve
+a rota somente com `STUDIO_CLASSIC_SHELL_PARENT_ORIGINS` configurado com as
+origens autorizadas. Não combinar essa casca com `originAdapter` ou a sala que
+exige documentos publicados: esses contratos têm precedência própria.
+
+O host precisa encaminhar a propriedade ao componente e permitir a origem em
+`frame-src`. A existência da rota no código não ativa os consumidores do
+MemberShell. Não houve ativação no ambiente publicado nesta revisão.
+
+No ensaio de Firefox, somente COOP **e** COEP no documento principal, junto
+com a casca, preservaram a resposta durante trabalho síncrono. COOP sozinho
+e os cabeçalhos apenas da casca não bastaram. WebKit não demonstrou isolamento
+de CPU no arranjo testado. Não aplicar COEP globalmente sem conferir vídeos,
+imagens autenticadas e demais recursos das aulas.
+Consultar [as medições e os limites](../../../docs/qa/2026-11-19-studio-isolation-host-policies.md).
 
 Também exportado no index principal (`StudioProjectPlayer` + a função assíncrona pura
 `renderProjectToPreviewDocAsync(project): Promise<string>`, caso o host queira montar o srcdoc por

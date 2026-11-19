@@ -1,34 +1,17 @@
 import { readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { strFromU8, unzipSync } from 'fflate'
-import { build, type PreviewServer, preview } from 'vite'
+import type { PreviewServer } from 'vite'
+import { startWorkspaceFixture, stopWorkspaceFixture } from './helpers/workspaceFixture'
 import { inspectWorkspaceBuffers } from './proWorkspaceInspection'
 
 let server: PreviewServer
 test.beforeAll(async () => {
   test.setTimeout(180_000)
-  const configFile = fileURLToPath(new URL('../playground/vite.config.ts', import.meta.url))
-  const root = fileURLToPath(new URL('./fixtures/pro-workspace', import.meta.url))
-  const outDir = fileURLToPath(new URL('../.cache/e2e-pro-workspace', import.meta.url))
-  await build({
-    configFile,
-    root,
-    logLevel: 'warn',
-    build: { outDir, emptyOutDir: true, target: 'esnext' },
-  })
-  server = await preview({
-    configFile,
-    root,
-    build: { outDir },
-    preview: { host: '127.0.0.1', port: 0, strictPort: false },
-  })
+  server = await startWorkspaceFixture()
 })
 test.afterAll(async () => {
-  if (server)
-    await new Promise<void>((resolve, reject) =>
-      server.httpServer.close((error) => (error ? reject(error) : resolve())),
-    )
+  await stopWorkspaceFixture(server)
 })
 
 for (const tab of ['Arquivos', 'Saída']) {
@@ -125,6 +108,32 @@ test('searches the complete file map without mounting every symbol at once', asy
   const screenshot = test.info().outputPath('mapa-completo.png')
   await page.screenshot({ path: screenshot })
   await test.info().attach('mapa-completo', { path: screenshot, contentType: 'image/png' })
+})
+
+test('keeps all references reachable after the first hundred results', async ({ page }) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?references=1`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+Home')
+  for (const _ of 'export const s') await input.press('ArrowRight')
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Onde isto é usado' }).click()
+  const panel = page.getByRole('region', { name: 'Referências encontradas' })
+  await expect(panel).toContainText('100 de 252')
+  await expect(panel.getByRole('button', { name: /^src\/main.ts:/ })).toHaveCount(100)
+  await panel.getByRole('button', { name: 'Mostrar mais referências' }).click()
+  await expect(panel).toContainText('200 de 252')
+  await panel.getByRole('button', { name: 'Mostrar mais referências' }).click()
+  await expect(panel).toContainText('252 de 252')
+  await panel.getByRole('button', { name: 'src/main.ts:252', exact: true }).click()
+  await expect(input).toBeFocused()
+  await expect(page.locator('.monaco-editor .view-lines').first()).toContainText(
+    'console.log(score)',
+  )
+  await expect(panel.getByRole('button', { name: 'Mostrar mais referências' })).toHaveCount(0)
 })
 
 test('loads symbols opened before the language module arrives', async ({ page }) => {
@@ -522,8 +531,8 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
   const declaration = 'export const continuousEdit = 1'
   await input.press('Enter')
   await page.keyboard.type(comment)
-  // Enter should insert a line, not accept a word completion from the long comment.
-  await page.keyboard.press('Escape')
+  // Enter inside a comment must insert a line without needing to dismiss
+  // an asynchronous word suggestion first.
   await page.keyboard.press('Enter')
   await page.keyboard.type(declaration)
   const text = `\n${comment}\n${declaration}`

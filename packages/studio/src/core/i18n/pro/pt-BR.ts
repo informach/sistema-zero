@@ -188,6 +188,8 @@ export const ptBR: Record<string, string> = {
   'pro.symbols.empty': 'Este arquivo ainda não tem funções ou classes para mapear.',
   'pro.symbols.line': 'linha {line}',
   'pro.references.close': 'Fechar referências',
+  'pro.references.count': '{shown} de {total}',
+  'pro.references.more': 'Mostrar mais referências',
   'pro.rename.current': 'Nome de agora',
   'pro.rename.new': 'Nome novo',
   'pro.rename.check': 'Conferir referências',

@@ -19,6 +19,7 @@ function toolsFixture(language: ProLanguageSession | null) {
     language,
     editor: {
       current: {
+        focus: () => {},
         getModel: () => ({
           uri: { path: '/test/main.ts' },
           getValue: () => content,
@@ -142,6 +143,40 @@ it('keeps the latest reference search when an older request finishes afterwards'
   await act(async () => first.resolve([]))
   expect(view.queryByRole('region', { name: 'Referências encontradas' })).not.toBeNull()
   expect(view.queryByText(/Nenhuma referência encontrada/)).toBeNull()
+})
+
+it('keeps every reference reachable through bounded pages and resets a new search', async () => {
+  const items = Array.from({ length: 251 }, (_, index) => ({
+    path: `reference-${index}.ts`,
+    span: { start: 0, length: 5 },
+  }))
+  let calls = 0
+  const props = toolsFixture({
+    request: async () => (++calls === 1 ? items : items.slice(0, 1)),
+  } as unknown as ProLanguageSession)
+  for (const item of items) props.tree[item.path] = { kind: 'file', content: 'score' }
+  const visits: unknown[] = []
+  const view = render(<ProCodeTools {...props} navigate={(...location) => visits.push(location)} />)
+  const search = async () => {
+    act(() => tools?.openCommands())
+    await act(async () => {
+      fireEvent.click(view.getByRole('button', { name: /Onde isto é usado.*Shift/ }))
+    })
+  }
+  await search()
+  const panel = view.getByRole('region', { name: 'Referências encontradas' })
+  expect(panel.textContent).toContain('100 de 251')
+  expect(panel.querySelectorAll('button').length).toBe(102)
+  fireEvent.click(view.getByRole('button', { name: 'Mostrar mais referências' }))
+  expect(panel.textContent).toContain('200 de 251')
+  fireEvent.click(view.getByRole('button', { name: 'Mostrar mais referências' }))
+  expect(panel.textContent).toContain('251 de 251')
+  fireEvent.click(view.getByRole('button', { name: 'reference-250.ts:1' }))
+  expect(visits).toEqual([['reference-250.ts', 1, 1]])
+  expect(view.queryByRole('button', { name: 'Mostrar mais referências' })).toBeNull()
+  await search()
+  expect(panel.textContent).toContain('1 de 1')
+  expect(view.queryByRole('button', { name: 'reference-250.ts:1' })).toBeNull()
 })
 
 it('discards symbols from a replaced language session and loads the replacement', async () => {
