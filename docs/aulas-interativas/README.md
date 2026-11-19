@@ -12,7 +12,7 @@ Uma fonte editorial para as comunidades adulta e infantojuvenil, organizada em *
 | [Arquiteto(a) de Mundos](arquiteto/README.md) | Organização reservada ao posto; cursos ainda sem autoria nesta árvore |
 | [Gênio da Criação](genio/README.md) | Organização reservada ao posto; cursos ainda sem autoria nesta árvore |
 | [Lenda](lenda/README.md) | Especialização e participação; sem nova missão obrigatória |
-| [Para pais](pais/README.md) | Cursos para os responsáveis, na área dos pais: Transformando o vilão em aliado (a Helena grava, sem ElevenLabs) |
+| [Para pais](pais/README.md) | Cursos para os responsáveis, na área dos pais: Transformando o vilão em aliado (voz no ElevenLabs e avatar da Helena) |
 
 Os papéis seguem a [Jornada do Criador](../jornada-do-criador.md). Pastas e propostas não significam curso publicado. Fontes geradoras e orientações comuns continuam em `docs/aulas-interativas-tecnico/`; o acervo histórico continua em `docs/aulas-interativas-legado/`. Preservam-se slugs, nomes dos arquivos, IDs das aulas, certificados e conteúdo dos projetos.
 
