@@ -1,6 +1,6 @@
-import { projectMetadataSnapshot } from '../core/projectMetadata'
 import type { StudioProjectDocument } from '@sistemazero/core/studio/project-document'
 import type { Project } from '../core/project'
+import { isKnownProjectField, projectMetadataSnapshot } from '../core/projectMetadata'
 import {
   PROJECT_STORAGE_VERSION,
   projectAssetsKey,
@@ -113,8 +113,9 @@ export function assembleProjectRecord(
   // Partition layout is independent of the portable document format. Never leak
   // this local-only marker into a strict document, cloud snapshot or export.
   delete assembled.storageVersion
-  // IndexedDB can retain omitted optional projections as undefined; JSON cannot.
-  for (const key of Object.keys(assembled)) if (assembled[key] === undefined) delete assembled[key]
+  // Normalize only known optional projections; unknown field presence is document data.
+  for (const key of Object.keys(assembled))
+    if (assembled[key] === undefined && isKnownProjectField(key)) delete assembled[key]
   return assembled
 }
 
