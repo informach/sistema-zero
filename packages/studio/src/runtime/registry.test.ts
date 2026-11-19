@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { sha256Hex } from '@sistemazero/core/creations'
 import { PintaImageDerivationSchema } from '@sistemazero/core/studio/pinta-image'
-import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeCatalog,
   createStudioRuntimeRelease,
@@ -14,7 +17,7 @@ import {
 } from './registry'
 import type { StudioRuntimeProvider } from './types'
 
-async function scenario(language: 'javascript' | 'python', worlds = false) {
+async function scenario(language: 'javascript' | 'python', worlds = false, scenes = false) {
   const release = await createStudioRuntimeRelease({
     manifestVersion: 1,
     profileId: `${language}-test`,
@@ -38,7 +41,10 @@ async function scenario(language: 'javascript' | 'python', worlds = false) {
             version: '3.14.2',
             packages: [],
             providedModules: [],
-            features: worlds ? [PYTHON_PINTA_WORLD_FEATURE] : [],
+            features: [
+              ...(worlds ? [PYTHON_PINTA_WORLD_FEATURE] : []),
+              ...(scenes ? [PYTHON_MOLDA_SCENE_FEATURE] : []),
+            ],
           },
         }
       : {}),
@@ -103,6 +109,22 @@ async function scenario(language: 'javascript' | 'python', worlds = false) {
 }
 
 describe('lazy runtime routing', () => {
+  test('cenas do Molda exigem a capacidade na release selecionada antes de carregar o motor', async () => {
+    for (const supported of [false, true]) {
+      const py = await scenario('python', false, supported)
+      const registry = createStudioRuntimeRegistry([py.registration])
+      py.input.project.assets = [{ kind: 'scene3d' }]
+      const before = structuredClone(py.input.project)
+      if (supported) expect(await registry.load(py.input)).toBe(py.provider)
+      else {
+        await expect(registry.load(py.input)).rejects.toMatchObject({
+          reasonCode: 'molda-scene-unavailable',
+        })
+        expect(py.loads()).toBe(0)
+      }
+      expect(py.input.project).toEqual(before)
+    }
+  })
   test('dados avançados na receita map antiga exigem o leitor completo antes de carregar o motor', async () => {
     for (const supported of [false, true]) {
       const py = await scenario('python', supported)

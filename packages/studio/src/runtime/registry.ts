@@ -17,6 +17,7 @@ import {
   selectStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
 import { PINTA_SCENE_RUNTIME_MESSAGE, pintaImageRuntimeCompatible } from './pintaImageCompatibility'
+import { MOLDA_SCENE_RUNTIME_MESSAGE, scene3DRuntimeCompatible } from './scene3dCompatibility'
 import { type StudioRuntimeProvider, StudioRuntimeUnavailableError } from './types'
 
 export interface StudioRuntimeRegistration {
@@ -70,6 +71,17 @@ export function assertStudioRuntimeOperationAccess(
     project.programmingLanguage === 'python'
   ) {
     for (const asset of project.assets ?? []) {
+      if (
+        asset &&
+        typeof asset === 'object' &&
+        'kind' in asset &&
+        asset.kind === 'scene3d' &&
+        !scene3DRuntimeCompatible(project.runtime, catalog)
+      )
+        throw new StudioRuntimeUnavailableError(
+          'molda-scene-unavailable',
+          MOLDA_SCENE_RUNTIME_MESSAGE,
+        )
       if (!asset || typeof asset !== 'object' || !('pintaImage' in asset)) continue
       const image = PintaImageDerivationSchema.safeParse(asset.pintaImage).data
       if (image && !pintaImageRuntimeCompatible(image, project.runtime, catalog))

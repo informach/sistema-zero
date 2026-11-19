@@ -5,6 +5,7 @@ import { canonicalJson } from '@sistemazero/core/creations'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
 import {
+  PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_PINTA_WORLD_FEATURE,
   PYTHON_PROJECT_MISSION_FEATURE,
 } from '@sistemazero/core/studio/python-runtime-features'
@@ -235,6 +236,7 @@ export async function buildPythonRuntimeDistribution(
       ...TURTLE_RUNTIME_FEATURES,
       PYTHON_PROJECT_MISSION_FEATURE,
       PYTHON_PINTA_WORLD_FEATURE,
+      PYTHON_MOLDA_SCENE_FEATURE,
     ],
     previewHostAudioVersion: 1,
     ...(http.representations.length ? { httpRepresentations: http.representations } : {}),

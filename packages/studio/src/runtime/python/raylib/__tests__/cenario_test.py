@@ -239,6 +239,135 @@ class CenarioTest(unittest.TestCase):
         self.assertEqual(_rt._texture_count, antes)
         self.assertNotIn(_rt.DEFAULT_TEXTURE_ID, _rt.pending_free)
 
+    def test_resource_map_preserves_manifest_and_independent_animated_instances(self):
+        assets = self.folder / 'assets'
+        assets.mkdir()
+        physical = assets / 'pessoa-compartilhada.glb'
+        (self.folder / 'models/pessoa.glb').rename(physical)
+        second = copy.deepcopy(self.data['arquivos'][0])
+        second['caminho'] = 'outra/pessoa.glb'
+        self.data['arquivos'].append(second)
+        no = copy.deepcopy(self.data['nos'][0])
+        no.update(id='outra-pessoa', arquivo=second['caminho'])
+        self.data['nos'].append(no)
+        before = copy.deepcopy(self.data)
+        mapping = {a['caminho']: 'assets/pessoa-compartilhada.glb' for a in self.data['arquivos']}
+        s = cenario.Cenario(self.folder, self.data, arquivos=mapping)
+        try:
+            self.assertEqual(s.dados, before)
+            self.assertEqual(self.data, before)
+            self.assertEqual(len(s._modelos), 2)
+            self.assertIsNot(s._nos['pessoa'][1], s._nos['outra-pessoa'][1])
+            s.animar('pessoa', 0, 1.5)
+            P.begin_drawing()
+            s.desenhar()
+            P.end_drawing()
+        finally:
+            s.descartar()
+
+    def test_static_aliases_share_one_physical_model(self):
+        data = {'asset': {'version': '2.0'}, 'buffers': [{'byteLength': 36}],
+                'bufferViews': [{'buffer': 0, 'byteOffset': 0, 'byteLength': 36}],
+                'accessors': [{'bufferView': 0, 'componentType': 5126, 'count': 3,
+                               'type': 'VEC3', 'min': [0, 0, 0], 'max': [1, 1, 0]}],
+                'meshes': [{'primitives': [{'attributes': {'POSITION': 0}}]}],
+                'nodes': [{'mesh': 0}], 'scenes': [{'nodes': [0]}], 'scene': 0}
+        body = json.dumps(data).encode()
+        body += b' ' * (-len(body) % 4)
+        vertices = struct.pack('<9f', 0, 0, 0, 1, 0, 0, 0, 1, 0)
+        b = struct.pack('<5I', 0x46546c67, 2, 28 + len(body) + len(vertices), len(body), 0x4e4f534a) + body + struct.pack('<2I', len(vertices), 0x004e4942) + vertices
+        (self.folder / 'estatico.glb').write_bytes(b)
+        a = {'caminho': 'models/a.glb', 'bytes': len(b), 'digest': hashlib.sha256(b).hexdigest(),
+             'mime': 'model/gltf-binary', 'papel': 'modelo'}
+        self.data['arquivos'] = [a, {**a, 'caminho': 'models/b.glb'}]
+        self.data['nos'][0]['arquivo'] = a['caminho']
+        self.data['nos'].append({**copy.deepcopy(self.data['nos'][0]), 'id': 'segunda', 'arquivo': 'models/b.glb'})
+        s = cenario.carregar(self.guardar(), arquivos={'models/a.glb': 'estatico.glb', 'models/b.glb': 'estatico.glb'})
+        try:
+            self.assertEqual(len(s._modelos), 1)
+            self.assertIs(s._nos['pessoa'][1], s._nos['segunda'][1])
+            P.begin_drawing()
+            s.desenhar()
+            P.end_drawing()
+        finally:
+            s.descartar()
+
+    def test_resource_map_is_complete_local_and_rejected_before_gpu(self):
+        before = _rt.next_id
+        for mapping in [[], {}, {'extra.glb': 'models/pessoa.glb'},
+                        {'models/pessoa.glb': '../fora.glb'},
+                        {'models/pessoa.glb': '/fora.glb'},
+                        {'models/pessoa.glb': 'https://exemplo.test/a.glb'},
+                        {'models/pessoa.glb': 'models\\pessoa.glb'},
+                        {'models/pessoa.glb': None}]:
+            with self.assertRaises(ValueError):
+                cenario.Cenario(self.folder, self.data, arquivos=mapping)
+            self.assertEqual(_rt.next_id, before)
+
+    def test_terrain_fields_resolve_through_the_same_asset_map(self):
+        assets = self.folder / 'assets'
+        assets.mkdir()
+        heights = struct.pack('<' + 'f' * (65 * 65), *([3.5] * (65 * 65)))
+        holes = bytearray(64 * 64)
+        holes[0] = 1
+        mapping = {'models/pessoa.glb': 'models/pessoa.glb'}
+        for name, b, role in [('alturas', heights, 'alturas'), ('buracos', holes, 'buracos')]:
+            path = f'assets/{name}-por-id.bin'
+            (self.folder / path).write_bytes(b)
+            logical = f'terreno/{name}.bin'
+            self.data['arquivos'].append({'caminho': logical, 'mime': 'application/octet-stream',
+                'papel': role, 'bytes': len(b), 'digest': hashlib.sha256(b).hexdigest()})
+            mapping[logical] = path
+            self.assertFalse((self.folder / logical).exists())
+        self.data.pop('plano')
+        self.data['terreno'] = {'origem': {'x': 0, 'z': 0}, 'passo': 1, 'colunas': 64, 'linhas': 64,
+            'min': 0, 'max': 4, 'fundo': 0, 'cobertura': 'grade', 'pecas': [{'coluna': 0, 'linha': 0}],
+            'alturas': 'terreno/alturas.bin', 'buracos': 'terreno/buracos.bin', 'recortes': []}
+        s = cenario.Cenario(self.folder, self.data, arquivos=mapping)
+        try:
+            self.assertIsNone(s.altura(0.5, 0.5))
+            self.assertEqual(s.altura(1.5, 1.5), 3.5)
+            self.assertFalse(s.tem_chao(65, 1))
+        finally:
+            s.descartar()
+
+    def test_aliases_cannot_disguise_incompatible_manifest_entries(self):
+        before = _rt.next_id
+        a = copy.deepcopy(self.data['arquivos'][0])
+        a.update(caminho='dados.bin', mime='application/octet-stream')
+        self.data['arquivos'].append(a)
+        with self.assertRaisesRegex(ValueError, 'incompatíveis'):
+            cenario.Cenario(self.folder, self.data, arquivos={
+                'models/pessoa.glb': 'models/pessoa.glb', 'dados.bin': 'models/pessoa.glb'})
+        self.assertEqual(_rt.next_id, before)
+
+    def test_node_animation_without_skin_keeps_independent_models(self):
+        path = self.folder / 'models/pessoa.glb'
+        original = path.read_bytes()
+        n = struct.unpack_from('<I', original, 12)[0]
+        d = json.loads(original[20:20 + n])
+        d.pop('skins', None)
+        for no in d['nodes']:
+            no.pop('skin', None)
+        for mesh in d['meshes']:
+            for part in mesh['primitives']:
+                part['attributes'].pop('JOINTS_0', None)
+                part['attributes'].pop('WEIGHTS_0', None)
+        self.assertTrue(d['animations'])
+        body = json.dumps(d).encode()
+        body += b' ' * (-len(body) % 4)
+        tail = original[20 + n:]
+        b = struct.pack('<5I', 0x46546c67, 2, 20 + len(body) + len(tail), len(body), 0x4e4f534a) + body + tail
+        path.write_bytes(b)
+        self.data['arquivos'][0].update(bytes=len(b), digest=hashlib.sha256(b).hexdigest())
+        self.data['nos'].append({**copy.deepcopy(self.data['nos'][0]), 'id': 'outra'})
+        s = cenario.Cenario(self.folder, self.data)
+        try:
+            self.assertEqual(len(s._modelos), 2)
+            self.assertIsNot(s._nos['pessoa'][1], s._nos['outra'][1])
+        finally:
+            s.descartar()
+
 
 if __name__ == '__main__':
     try:

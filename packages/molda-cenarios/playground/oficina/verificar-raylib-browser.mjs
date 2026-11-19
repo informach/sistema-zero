@@ -3,25 +3,45 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
-const raiz = resolve(import.meta.dirname, '../../../..'),
+const mapaDeAssets = process.env.CENARIOS_QA_RESOURCE_MAP === '1',
+  raiz = resolve(import.meta.dirname, '../../../..'),
   saida = resolve(raiz, 'output/cenarios-reforma/lote8-raylib'),
   pasta = resolve(saida, 'pacote/extraido'),
   cena = JSON.parse(readFileSync(resolve(pasta, 'cenario.json'), 'utf8')),
   bytes = (nome) => readFileSync(resolve(pasta, nome)),
-  binarios = cena.arquivos
+  mapa = Object.fromEntries(
+    cena.arquivos.map((a) => [
+      a.caminho,
+      `assets/${a.digest}${a.mime === 'application/octet-stream' ? `-${a.papel}` : ''}.${a.caminho.split('.').at(-1)}`,
+    ]),
+  ),
+  binarios = (mapaDeAssets ? [] : cena.arquivos)
     .filter((a) => a.mime === 'application/octet-stream')
     .map((a) => [a.caminho, bytes(a.caminho).toString('base64')]),
-  assets = cena.arquivos
-    .filter((a) => a.mime !== 'application/octet-stream')
-    .map((a, i) => ({
-      id: `recurso-${i}`,
-      name: `recurso-${i}`,
-      kind: a.mime === 'model/gltf-binary' ? 'model3d' : 'image',
-      source: 'upload',
-      proPath: a.caminho,
-      ...(a.mime === 'model/gltf-binary' ? { originalFileName: a.caminho.split('/').at(-1) } : {}),
-      dataUrl: `data:${a.mime};base64,${bytes(a.caminho).toString('base64')}`,
-    })),
+  assets = [
+    ...new Map(
+      cena.arquivos
+        .filter((a) => mapaDeAssets || a.mime !== 'application/octet-stream')
+        .map((a, i) => ({
+          id: `recurso-${i}`,
+          name: `recurso-${i}`,
+          kind:
+            a.mime === 'model/gltf-binary'
+              ? 'model3d'
+              : a.mime === 'application/octet-stream'
+                ? 'scene3d-data'
+                : 'image',
+          source: 'upload',
+          proPath: mapaDeAssets ? mapa[a.caminho] : a.caminho,
+          ...(a.mime === 'application/octet-stream' ? { dado3d: { papel: a.papel } } : {}),
+          ...(a.mime === 'model/gltf-binary' || a.mime === 'application/octet-stream'
+            ? { originalFileName: a.caminho.split('/').at(-1) }
+            : {}),
+          dataUrl: `data:${a.mime};base64,${bytes(a.caminho).toString('base64')}`,
+        }))
+        .map((a) => [a.proPath, a]),
+    ).values(),
+  ],
   script = `import json, base64
 from pathlib import Path
 import pyray as p
@@ -33,7 +53,14 @@ for nome, conteudo in ${JSON.stringify(binarios)}:
     caminho.parent.mkdir(parents=True, exist_ok=True)
     caminho.write_bytes(base64.b64decode(conteudo))
 p.init_window(640, 420, 'Cenário compilado no Estúdio')
-lugar = cenario.carregar('cenario.json')
+dados = json.loads(Path('cenario.json').read_text())
+mapa = json.loads(${JSON.stringify(JSON.stringify(mapa))})
+if ${mapaDeAssets ? 'True' : 'False'}:
+    assert all(not Path(a['caminho']).exists() for a in dados['arquivos'])
+    lugar = cenario.Cenario(Path.cwd(), dados, arquivos=mapa)
+    print('mcn-mapa-assets', len(mapa))
+else:
+    lugar = cenario.carregar('cenario.json')
 camera = p.Camera3D(p.Vector3(34, 29, 42), p.Vector3(2, 1, 0), p.Vector3(0, 1, 0), 50, p.CAMERA_PERSPECTIVE)
 print('mcn-carregado', lugar.dados['fonte']['digest'], len(lugar.dados['nos']), lugar.tem_chao(8, 8))
 for no in lugar.dados['nos']:
@@ -58,7 +85,8 @@ p.close_window()
   erros = [],
   resultados = []
 pagina.on('pageerror', (e) => erros.push(e.message))
-const base = 'http://127.0.0.1:5317'
+const base = process.env.CENARIOS_QA_PYTHON_BASE ?? 'http://127.0.0.1:5317',
+  sufixo = mapaDeAssets ? '-mapa-assets' : ''
 try {
   for (const autoral of [false, true]) {
     await pagina.route('**/project/cenario-molda-qa', async (route) => {
@@ -122,7 +150,10 @@ try {
       assert.ok(stdout.includes('mcn-clipes 4'), stdout)
       const frame = pagina.frames().find((f) => f.url().includes('/frame.html'))
       assert.ok(frame)
-      await frame.locator('canvas').screenshot({ path: resolve(saida, 'pyodide-cenario.png') })
+      await frame
+        .locator('canvas')
+        .screenshot({ path: resolve(saida, `pyodide-cenario${sufixo}.png`) })
+      if (mapaDeAssets) assert.ok(stdout.includes('mcn-mapa-assets'), stdout)
     }
     resultados.push({ autoral, status: r.status, stdout })
     await pagina.evaluate(() => globalThis.providerProbe.dispose('game'))
@@ -130,12 +161,15 @@ try {
   }
   assert.deepEqual(erros, [])
   writeFileSync(
-    resolve(saida, 'pyodide.json'),
+    resolve(saida, `pyodide${sufixo}.json`),
     JSON.stringify(
       {
         resultados,
         erros,
-        nota: 'Fixture com os bytes do pacote real e fonte oficial do runtime. Escrita de dois binários pequenos pela fixture prepara o filesystem; não substitui o fluxo Trazer do Molda, ainda pendente no recorte de importação.',
+        mapaDeAssets,
+        nota: mapaDeAssets
+          ? 'Bytes reais materializados pelo pipeline de assets Python, sem escrever binários pelo programa. Manifesto lógico preservado e resolução física pelo auxiliar oficial. Não substitui o fluxo Trazer do Molda, ainda pendente.'
+          : 'Fixture com os bytes do pacote real e fonte oficial do runtime. Escrita de dois binários pequenos pela fixture prepara o filesystem; não substitui o fluxo Trazer do Molda, ainda pendente no recorte de importação.',
       },
       null,
       2,
