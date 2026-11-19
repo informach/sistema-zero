@@ -825,8 +825,10 @@ export function PreviewIframe(): JSX.Element {
 
   // Sinal de vida anterior não prova que o jogo vai continuar respondendo. A marca só sai
   // quando a execução termina de maneira controlada ou a página viva encerra.
+  // Arme na fase de layout do mesmo commit do srcdoc: um efeito passivo deixava o
+  // documento executável visível antes da marca e podia perder uma execução travada.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `doc` é o gatilho de uma nova execução
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Só o jogo RODANDO põe a marca. Parado (inclusive na abertura), nada mexe nela: é a marca
     // deixada por uma aba que congelou que a abertura seguinte precisa encontrar.
     if (!projectId || !docIsLive) return
