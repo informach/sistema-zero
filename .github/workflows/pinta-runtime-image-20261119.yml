@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      PINTA_SOURCE_SHA: cc1a416ae8d3b1a1c44afd9200e70966efe53c38
+      PINTA_SOURCE_SHA: 5595364428c339faff2e37efca39ad373a8d24ad
       STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: cc1a416ae8d3b1a1c44afd9200e70966efe53c38
+          ref: 5595364428c339faff2e37efca39ad373a8d24ad
           persist-credentials: false
       - uses: oven-sh/setup-bun@v2
         with:
@@ -30,6 +30,8 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$PINTA_SOURCE_SHA"
           bun install --frozen-lockfile
+      - name: Conferir SDKs gerados sem alterar seus bytes
+        run: bun run --cwd packages/studio check:scene3d-runtime
       - name: Conferir perfil e construir imagem sem credenciais de implantação
         working-directory: packages/studio-runtime
         run: bun run build:image
@@ -56,7 +58,7 @@ jobs:
           docker image inspect sistemazero-studio-runtime:verify --format '{{.Id}}' > .cache/pinta-runtime-image/image-id.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: pinta-staging-runtime-image-cc1a416ae
+          name: pinta-staging-runtime-image-559536442
           path: .cache/pinta-runtime-image/
           include-hidden-files: true
           if-no-files-found: error
