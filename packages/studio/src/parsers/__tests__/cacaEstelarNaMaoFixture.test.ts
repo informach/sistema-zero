@@ -100,7 +100,7 @@ for (let i = 0; i < totalTiros; i = i + 1) {
   tiros.setMatrixAt(i, molde.matrix);
 }
 tiros.instanceMatrix.needsUpdate = true;
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let pontos = 0;
 let escudo = 3;
 let tempoSpawn = 0.6;
@@ -166,6 +166,7 @@ document.addEventListener("keyup", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (rodando === true) {
     let mx = 0;

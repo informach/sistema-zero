@@ -1,3 +1,5 @@
+> Registro histórico: a solução intermediária de dois pins abaixo foi substituída em ec060ad92. Por decisão do responsável, os exemplos e executores 3D usam uma única versão atual. Consulte `2026-11-19-studio-three-single-version.md`.
+
 # Three clássico no verificador hospedado
 
 ## Regressão da integração

@@ -89,7 +89,7 @@ for (let i = 0; i < totalInimigos; i = i + 1) {
   inimigos.setMatrixAt(i, molde.matrix);
 }
 inimigos.instanceMatrix.needsUpdate = true;
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let pontos = 0;
 let recarga = 0;
 let tempoSpawn = 0.6;
@@ -108,6 +108,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   giro = giro + dt;
   torre.rotation.z = giro * 1.6;

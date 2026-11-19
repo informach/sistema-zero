@@ -1,5 +1,6 @@
 import { afterEach, expect, test } from 'bun:test'
 import { resolveStudioProRemoteDependencies } from '@sistemazero/core/studio/pro-dependencies'
+import { STUDIO_THREE_VERSION } from '@sistemazero/core/studio/three-version'
 import { parseBuildRequest } from '../../../studio-runtime/src/contracts'
 import { prepareRuntimeDependencyLock } from '../../../studio-runtime/src/dependency-lock'
 import { createEmptyProject } from '../core/project'
@@ -19,7 +20,7 @@ function fixture() {
     scripts: { dev: 'vite --host 0.0.0.0', build: 'vite build', own: 'echo criativo' },
     author: 'Aluno',
     custom: { keep: [1, 'cor'] },
-    dependencies: { three: '^0.180.0' },
+    dependencies: { three: `^${STUDIO_THREE_VERSION}` },
     devDependencies: { vite: '8.0.16', typescript: '5.9.3' },
   }
   store.getState().setProject({
@@ -143,4 +144,25 @@ test('only the exact retired spec is repaired; malformed or oversized manifests 
     ).toBeNull()
   for (const source of ['null', '[]', '{', JSON.stringify({ dependencies: [] }), ' '.repeat(16001)])
     expect(() => updateLegacyProToolchainManifest(source)).toThrow()
+})
+
+test('an unsupported Three pin is rejected without silently rewriting the project', async () => {
+  const { store, original, manifest } = fixture()
+  store.getState().setProject({
+    ...original,
+    tree: {
+      ...original.tree,
+      'package.json': {
+        kind: 'file',
+        content: JSON.stringify({ ...manifest, dependencies: { three: '0.180.0' } }),
+      },
+    },
+  })
+  const before = store.getState().project
+  const beforeTree = JSON.stringify(before?.tree)
+  await expect(
+    updateProToolchainBeforeExecution(store, prepare, new AbortController().signal),
+  ).rejects.toThrow(`O compilador remoto usa three@${STUDIO_THREE_VERSION}`)
+  expect(store.getState().project).toBe(before)
+  expect(JSON.stringify(store.getState().project?.tree)).toBe(beforeTree)
 })
