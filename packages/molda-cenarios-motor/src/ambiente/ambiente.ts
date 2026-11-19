@@ -1,3 +1,4 @@
+import type { CenaCompilada } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   type DocumentoDeCenario,
   type FonteDeAlturas,
@@ -98,6 +99,25 @@ export class AmbienteDoPalco {
     fonte: FonteDeAlturas | undefined,
     obterTextura: ObterTexturaDoCeu,
   ): EstadoDoAmbiente {
+    return this.definirResolvido(
+      doc.iluminacao,
+      (id) => {
+        const ref = doc.texturas?.find((t) => t.id === id)
+        return ref ? obterTextura(ref) : { erro: 'O panorama não está na tabela de texturas.' }
+      },
+      () => this.locais.definir(doc, fonte, this.resolucaoLocal),
+    )
+  }
+  definirCompilado(cena: CenaCompilada, obter: (id: string) => ReturnType<ObterTexturaDoCeu>) {
+    return this.definirResolvido(cena.ambiente, obter, () =>
+      this.locais.definirCompiladas(cena.marcadores, this.resolucaoLocal),
+    )
+  }
+  private definirResolvido(
+    parametros: IluminacaoDeCenario,
+    obter: (id: string) => ReturnType<ObterTexturaDoCeu>,
+    definirLocais: () => { luzes: number; sombras: number; carregando: number },
+  ): EstadoDoAmbiente {
     const estado: EstadoDoAmbiente = {
       ceu: 'padrao',
       luzes: 0,
@@ -107,7 +127,7 @@ export class AmbienteDoPalco {
       falhas: [],
     }
     if (this.destruido) return estado
-    const p = IluminacaoSchema.parse(doc.iluminacao)
+    const p = IluminacaoSchema.parse(parametros)
     this.aplicarParametros(p)
     let original: Texture | undefined
     if (p.ceu?.tipo === 'cor') {
@@ -120,10 +140,7 @@ export class AmbienteDoPalco {
       }
     } else if (p.ceu?.tipo === 'panorama' && !this.fotografia) {
       const ceu = p.ceu,
-        ref = doc.texturas?.find((t) => t.id === ceu.textura)
-      const recurso = ref
-        ? obterTextura(ref)
-        : { erro: 'O panorama não está na tabela de texturas.' }
+        recurso = obter(ceu.textura)
       original = recurso.textura
       if (recurso.erro) {
         estado.ceu = 'erro'
@@ -169,7 +186,7 @@ export class AmbienteDoPalco {
     if (this.panorama && this.panorama.original !== original) this.liberarPanorama()
     this.atualizarNevoa(0, 0)
     try {
-      const locais = this.locais.definir(doc, fonte, this.resolucaoLocal)
+      const locais = definirLocais()
       estado.luzes = locais.luzes
       estado.sombrasLocais = locais.sombras
       estado.carregando += locais.carregando

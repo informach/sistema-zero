@@ -1,5 +1,9 @@
 import { expect, test } from 'bun:test'
-import { criarDocumentoVazio, MarcadorSchema } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  criarDocumentoVazio,
+  MarcadorSchema,
+  transformacaoDoMarcador,
+} from '@sistemazero/molda-cenarios-core/v2'
 import {
   Color,
   DirectionalLight,
@@ -227,4 +231,42 @@ test('alterar resolução ou desligar sombra libera o target e permite recriaç�
   configurarSombra(luz, true, 512)
   expect(luz.castShadow).toBe(true)
   luz.dispose()
+})
+
+test('entrada compilada conserva posição apoiada e alvo girado das luzes nativas', () => {
+  const doc = criarDocumentoVazio('d', 'Luzes'),
+    nativas = new LuzesLocaisDoPalco(),
+    compiladas = new LuzesLocaisDoPalco()
+  doc.marcadores = [luz('p'), luz('f', true)]
+  try {
+    nativas.definir(doc)
+    compiladas.definirCompiladas(
+      doc.marcadores.map((m) => ({
+        id: m.id,
+        nome: m.nome,
+        posicao: transformacaoDoMarcador(doc, m).posicao,
+        giro: m.giro,
+        objeto: null,
+        configuracao: m.configuracao,
+      })),
+    )
+    const a = nativas.grupo.children.filter(
+        (n) => n instanceof PointLight || n instanceof SpotLight,
+      ),
+      b = compiladas.grupo.children.filter((n) => n instanceof PointLight || n instanceof SpotLight)
+    expect(b).toHaveLength(a.length)
+    for (let i = 0; i < a.length; i++) {
+      expect(b[i]!.position.toArray()).toEqual(a[i]!.position.toArray())
+      expect(b[i]!.intensity).toBe(a[i]!.intensity)
+      if (a[i] instanceof SpotLight)
+        expect((b[i] as SpotLight).target.position.toArray()).toEqual(
+          (a[i] as SpotLight).target.position.toArray(),
+        )
+    }
+    compiladas.definirCompiladas([])
+    expect(compiladas.grupo.children).toHaveLength(0)
+  } finally {
+    nativas.descartar()
+    compiladas.descartar()
+  }
 })

@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { zipSync } from 'fflate'
 import { readZipFiles } from './backupFile'
+import { zipFilesBlob } from './zip'
 
 function arquivo(entries: Record<string, Uint8Array>) {
   const bytes = zipSync(entries)
@@ -45,4 +46,39 @@ test('entradas de diretório do Windows não viram arquivos vazios da biblioteca
     { maxBytes: 10, maxEntries: 2 },
   )
   expect(r.ok && r.files.map((f) => f.path)).toEqual(['pasta/a.glb'])
+})
+
+test('escritor compartilhado conserva arquivos exatos, sem acrescentar backup ou guia da galeria', async () => {
+  const b = await zipFilesBlob(
+      [
+        { path: 'cenario.json', bytes: new TextEncoder().encode('{"nome":"Ilha"}') },
+        { path: 'modelos/a.glb', bytes: new Uint8Array([1, 3, 5, 7]) },
+      ],
+      { yieldBetween: null },
+    ),
+    r = await readZipFiles(new File([b], 'cenario.zip'), { maxBytes: 100, maxEntries: 2 })
+  expect(r.ok && r.files.map((f) => f.path)).toEqual(['cenario.json', 'modelos/a.glb'])
+  expect(r.ok && [...r.files[1]!.bytes]).toEqual([1, 3, 5, 7])
+})
+
+test('escritor compartilhado recusa colisões/caminhos hostis, orçamentos e cancelamento', async () => {
+  const f = (path: string) => ({ path, bytes: new Uint8Array([1, 2, 3]) })
+  for (const path of ['../fora', '/fora', 'C:/fora', 'a/../fora'])
+    await expect(zipFilesBlob([f(path)], { yieldBetween: null })).rejects.toThrow()
+  await expect(zipFilesBlob([f('A.glb'), f('a.glb')], { yieldBetween: null })).rejects.toThrow(
+    /repetido/,
+  )
+  await expect(zipFilesBlob([f('a')], { maxReadyBytes: 2, yieldBetween: null })).rejects.toThrow(
+    /limite/,
+  )
+  const c = new AbortController()
+  await expect(
+    zipFilesBlob([f('a'), f('b')], {
+      yieldBetween: null,
+      signal: c.signal,
+      onProgress: () => c.abort(),
+    }),
+  ).rejects.toThrow(/cancelada/)
+  await expect(zipFilesBlob([f('a')], { maxEntries: NaN })).rejects.toThrow(/limites/)
+  await expect(zipFilesBlob([f('a')], { maxReadyBytes: Infinity })).rejects.toThrow(/limites/)
 })

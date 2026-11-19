@@ -56,3 +56,12 @@ A CI remota de `a168d9c11` falhou no lint global (156 erros), na fronteira do Ar
 no ensaio de travamento da prévia do Estúdio. A implantação do leitor não foi comprovada;
 a escrita de nuvem 5 permanece desativada. O ciclo autenticado e os demais itens da missão
 continuam no [plano principal](../../plano.md), incluindo mapas ligados no caminho Python.
+
+## Integração com o avanço remoto
+
+O commit `8ec832486` foi combinado com a staging `acaf4b1a8`, sem mudar os arquivos do Molda.
+As verificações foram repetidas sobre a combinação: [tipos completos](merged-typecheck.log),
+[45 testes em sete arquivos](merged-tests.log), com 6.319 asserções e os casos isolados de
+biblioteca/sincronia, e [seis ensaios do navegador](merged-browser.log).
+O [resultado do navegador](merged-browser.json) registra os dois commits de entrada e os
+resultados, sem duplicar as capturas sintéticas da primeira execução.

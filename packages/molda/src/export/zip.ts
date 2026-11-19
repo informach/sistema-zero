@@ -13,6 +13,7 @@
  */
 import { COPY } from '../core/copy'
 import type { MoldaAsset, MoldaAssetKind } from '../core/model'
+import { literalLocalFilePath } from '../import/literalResourcePath'
 import { exportSkyHdrInWorker } from '../workers/skyExport'
 import {
   MAX_BACKUP_FILE_BYTES,
@@ -76,6 +77,8 @@ export type GalleryZipErrorCode =
   | 'too-many-entries'
   | 'ready-bytes'
   | 'compressed-bytes'
+  | 'invalid-path'
+  | 'invalid-limits'
 
 export class GalleryZipError extends Error {
   constructor(
@@ -219,6 +222,7 @@ interface GalleryZipChunks {
 async function buildGalleryZipChunks(
   assets: readonly MoldaAsset[],
   options: ZipGalleryOptions = {},
+  files?: readonly { path: string; bytes: Uint8Array }[],
 ): Promise<GalleryZipChunks> {
   throwIfAborted(options.signal)
   const { strToU8, Zip, ZipDeflate } = await import('fflate')
@@ -226,9 +230,22 @@ async function buildGalleryZipChunks(
   const maxEntries = options.maxEntries ?? MAX_CLASSIC_ZIP_ENTRIES
   const maxReadyBytes = options.maxReadyBytes ?? MAX_GALLERY_ZIP_READY_BYTES
   const maxCompressedBytes = options.maxCompressedBytes ?? MAX_GALLERY_ZIP_COMPRESSED_BYTES
+  if (
+    !Number.isSafeInteger(maxEntries) ||
+    maxEntries < 1 ||
+    maxEntries > MAX_CLASSIC_ZIP_ENTRIES ||
+    !Number.isSafeInteger(maxReadyBytes) ||
+    maxReadyBytes < 1 ||
+    maxReadyBytes >= 0xffffffff ||
+    !Number.isSafeInteger(maxCompressedBytes) ||
+    maxCompressedBytes < 1 ||
+    maxCompressedBytes >= 0xffffffff
+  )
+    throw new GalleryZipError('invalid-limits', 'Os limites do ZIP são inválidos.')
   const chunks: Uint8Array[] = []
   const readme: string[] = [...COPY.gallery.readme.intro, '']
   const taken = new Set<string>()
+  const paths = new Set<string>()
   let entryCount = 0
   let readyBytes = 0
   let compressedBytes = 0
@@ -270,6 +287,9 @@ async function buildGalleryZipChunks(
 
   const add = (path: string, bytes: Uint8Array) => {
     throwIfAborted(options.signal)
+    if (path !== literalLocalFilePath(path, 'arquivo do ZIP') || paths.has(path.toLowerCase()))
+      throw new GalleryZipError('invalid-path', 'O ZIP contém um caminho inválido ou repetido.')
+    paths.add(path.toLowerCase())
     entryCount += 1
     if (entryCount > maxEntries) {
       throw new GalleryZipError('too-many-entries', 'O ZIP passou do limite seguro de arquivos.')
@@ -285,45 +305,59 @@ async function buildGalleryZipChunks(
   }
 
   try {
-    for (const [index, asset] of assets.entries()) {
-      if (index > 0 && yieldBetween) await yieldBetween()
-      throwIfAborted(options.signal)
-      const prepared = await prepareAsset(asset, safeEntryName(asset.name, taken), options)
-      readme.push(prepared.readme)
-      if (!('skipped' in prepared)) add(prepared.path, prepared.bytes)
-      options.onProgress?.({
-        processed: index + 1,
-        total: assets.length,
-        readyBytes,
-        compressedBytes,
-      })
-    }
-    for (const [index, scene] of (options.scenes ?? []).entries()) {
-      if (yieldBetween) await yieldBetween()
-      throwIfAborted(options.signal)
-      const json = 'json' in scene ? scene.json : await scene.read()
-      throwIfAborted(options.signal)
-      if (json !== null) {
-        const file = safeEntryName(scene.name, taken)
-        add(`projetos/${file}.molda.json`, strToU8(json))
-        readme.push(COPY.gallery.readme.project(scene.name, file))
+    if (files) {
+      for (const [index, file] of files.entries()) {
+        if (yieldBetween) await yieldBetween()
+        add(file.path, file.bytes)
+        options.onProgress?.({
+          processed: index + 1,
+          total: files.length,
+          readyBytes,
+          compressedBytes,
+        })
       }
-      options.onProgress?.({
-        processed: assets.length + index + 1,
-        total: assets.length + (options.scenes?.length ?? 0),
-        readyBytes,
-        compressedBytes,
-      })
+    } else {
+      for (const [index, asset] of assets.entries()) {
+        if (index > 0 && yieldBetween) await yieldBetween()
+        throwIfAborted(options.signal)
+        const prepared = await prepareAsset(asset, safeEntryName(asset.name, taken), options)
+        readme.push(prepared.readme)
+        if (!('skipped' in prepared)) add(prepared.path, prepared.bytes)
+        options.onProgress?.({
+          processed: index + 1,
+          total: assets.length,
+          readyBytes,
+          compressedBytes,
+        })
+      }
+      for (const [index, scene] of (options.scenes ?? []).entries()) {
+        if (yieldBetween) await yieldBetween()
+        throwIfAborted(options.signal)
+        const json = 'json' in scene ? scene.json : await scene.read()
+        throwIfAborted(options.signal)
+        if (json !== null) {
+          const file = safeEntryName(scene.name, taken)
+          add(`projetos/${file}.molda.json`, strToU8(json))
+          readme.push(COPY.gallery.readme.project(scene.name, file))
+        }
+        options.onProgress?.({
+          processed: assets.length + index + 1,
+          total: assets.length + (options.scenes?.length ?? 0),
+          readyBytes,
+          compressedBytes,
+        })
+      }
+      add(MOLDA_GALLERY_ZIP_ENTRY, strToU8(galleryToJsonText(assets)))
+      add(README_ENTRY, strToU8(readme.join('\n')))
     }
-    add(MOLDA_GALLERY_ZIP_ENTRY, strToU8(galleryToJsonText(assets)))
-    add(README_ENTRY, strToU8(readme.join('\n')))
     throwIfAborted(options.signal)
     zip.end()
     await done
     // O total inclui a geração seguinte: repetir só `assets.length` fazia o contador do
     // botão andar para TRÁS (5/5 e depois 3/5) no instante antes de sumir.
-    const total = assets.length + (options.scenes?.length ?? 0)
+    const total = files ? files.length : assets.length + (options.scenes?.length ?? 0)
     options.onProgress?.({ processed: total, total, readyBytes, compressedBytes })
+    throwIfAborted(options.signal)
     return { chunks, compressedBytes }
   } catch (error) {
     if (!settled) zip.terminate()
@@ -332,6 +366,18 @@ async function buildGalleryZipChunks(
     }
     throw error
   }
+}
+
+/** Mesmo escritor incremental/cancelável da galeria, para pacotes com inventário próprio. */
+export async function zipFilesBlob(
+  files: readonly { path: string; bytes: Uint8Array }[],
+  options: Pick<
+    ZipGalleryOptions,
+    'signal' | 'yieldBetween' | 'onProgress' | 'maxEntries' | 'maxReadyBytes' | 'maxCompressedBytes'
+  > = {},
+): Promise<Blob> {
+  const { chunks } = await buildGalleryZipChunks([], options, files)
+  return new Blob(chunks as unknown as BlobPart[], { type: 'application/zip' })
 }
 
 /** Caminho do navegador: o Blob recebe os chunks sem uma concatenação binária extra. */
