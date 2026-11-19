@@ -88,12 +88,12 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 **Contrato:** `compilarCenario` recebe documento/revisão e portas de conteúdo por hash, prepara a cena pelo núcleo e retorna `Promise<PacoteCompilado>`. O motor é o único adaptador de materialização. Os destinos seguintes recebem somente o pacote e não consultam o estado privado do Palco.
 
-- [ ] Testar igualdade entre cenário desenhado e compilado: terreno com relevo/buraco/recorte/pintura, encontros de trilha/praça, estrada conformada, ponte arqueada e apoios, água de catálogo e procedural, conjuntos com giro/escala por eixo, modelo espelhado e animável.
+- [x] Testar igualdade entre cenário desenhado e compilado: terreno com relevo/buraco/recorte/pintura, encontros de trilha/praça, estrada conformada, ponte arqueada e apoios, água de catálogo e procedural, conjuntos com giro/escala por eixo, modelo espelhado e animável.
 - [x] Carregar/conferir todos os recursos autorizados da revisão; falha, digest errado e cancelamento descartam cópias/bitmaps/geometrias e não produzem manifesto parcial. Conteúdo original é somente leitura.
 - [x] Materializar terreno inteiro por setores, PNG16 e dados de alturas para runtimes. Conservar a topologia de buracos/recortes. Pintura em textura portátil por setor usa as mesmas camadas/pesos e amostras do editor; não substituir por uma cor média.
 - [x] Reutilizar os construtores de Água/Caminhos e fontes do Testar, incluindo geometrias de modelos conformados. Extrair colisões correspondentes. A malha de água estática usa material portátil; parâmetros dinâmicos continuam no manifesto para os runtimes que os suportam.
-- [ ] Gerar GLBs simples e dependências com os materiais/texturas corretos. Usar divisão de malha do núcleo e agrupar estático por região/material quando solicitado. Elementos animáveis ou definidos como atores pelo perfil não serão assados silenciosamente.
-- [ ] Validar o pacote final: caminhos/digests/bytes/referências, limites de malha, triângulos, memória, licenças e identificação da compilação. Três ciclos de compilação/cancelamento/descarte e comparação visual/física no navegador. Revisão e checkpoint.
+- [x] Gerar GLBs simples e dependências com os materiais/texturas corretos. Usar divisão de malha do núcleo e agrupar estático por região/material quando solicitado. Elementos animáveis ou definidos como atores pelo perfil não serão assados silenciosamente.
+- [x] Validar o pacote final: caminhos/digests/bytes/referências, limites de malha, triângulos, memória, licenças e identificação da compilação. Três ciclos de compilação/cancelamento/descarte e comparação visual/física no navegador. Revisão e checkpoint.
 
 ## 8.3 — Pacotes three.js, GLB único e interface de exportação
 
@@ -139,4 +139,4 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 ## Estado atual
 
-**Lote 8 aberto; 8.1 fechado, exclusivamente em 8.2.** [Compilador integrado e primeira prova do pacote](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-integracao.md): montagem integral e subpath público existentes, duas fixtures com ciclos, física, mesmas câmeras e Khronos. Falta junção estática com identidade e completar as provas indicadas antes de fechar 8.2. [Integração em execução](2026-11-18-cenarios-lote8-integracao.md). Exportadores/consumidores de 8.3–8.5 ainda pendentes. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.
+**Lote 8 aberto; 8.1 e 8.2 fechados localmente. Próximo recorte exclusivo: 8.3.** [Revisão do compilador e junção](../../plans/2026-11-16-cenarios-reforma/revisao-lote8-2-compilador.md): quatro combinações completas, inventário estável, descarte/cancelamento, picking após junção, física/apoios e Khronos conferidos. [Decisões de integração](2026-11-18-cenarios-lote8-integracao.md). Exportadores/consumidores de 8.3–8.5 continuam pendentes. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.

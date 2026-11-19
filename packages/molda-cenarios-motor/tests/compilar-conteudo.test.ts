@@ -153,6 +153,48 @@ test('cancelamento não retorna alturas parciais', async () => {
   )
 })
 
+test('faixas conferem nomes e triângulos reais do GLB, além do total declarado', async () => {
+  const origem = malhaDeEnsaio(),
+    j = { ...origem.j, nodes: origem.j.nodes.map((n, i) => ({ ...n, name: `malha${i}` })) },
+    bytes = glb(j, origem.bin),
+    a = new ArquivosDaCompilacao(new AbortController().signal)
+  try {
+    await a.adicionar('modelos/lote.glb', bytes, {
+      mime: 'model/gltf-binary',
+      papel: 'modelo',
+      malhas: 2,
+      triangulos: 2,
+      verticesMaximos: 3,
+    })
+    const cena: CenaCompilada = {
+      ...vazia(),
+      arquivos: a.descrever(),
+      nos: [
+        {
+          id: 'lote',
+          entidade: null,
+          arquivo: 'modelos/lote.glb',
+          matriz: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+          volume: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+          faixas: [0, 1].map((i) => ({
+            malha: `malha${i}`,
+            entidade: null,
+            primeiroTriangulo: 0,
+            triangulos: 1,
+          })),
+        },
+      ],
+    }
+    expect((await conferirConteudoCompilado(cena, a.arquivos)).cena.nos[0]!.faixas).toHaveLength(2)
+    cena.nos[0]!.faixas![1]!.malha = 'inexistente'
+    await expect(conferirConteudoCompilado(cena, a.arquivos)).rejects.toThrow(/malhas reais/)
+    cena.nos[0]!.faixas = [{ malha: 'malha0', entidade: null, primeiroTriangulo: 0, triangulos: 2 }]
+    await expect(conferirConteudoCompilado(cena, a.arquivos)).rejects.toThrow(/todas as malhas/)
+  } finally {
+    a.descartar()
+  }
+})
+
 test('GLB e imagem são medidos pelo conteúdo mesmo quando o hash do inventário é válido', async () => {
   const { j, bin } = malhaDeEnsaio(),
     bytes = glb(j, bin),

@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { criarConsultaDeEntidadesDoNo } from '../src/compilar/faixas'
 import { lerCenaCompilada } from '../src/compilar/schema'
 import { RotaCompiladaSchema, TerrenoCompiladoSchema } from '../src/compilar/schema-metadados'
 import { AguaSchema } from '../src/v2'
@@ -91,6 +92,39 @@ test('piso plano declara a colisão finita e não pode coexistir com relevo', ()
   expect(() => lerCenaCompilada({ ...comPiso, colisoes: [{ ...colisao, tipo: 'malha' }] })).toThrow(
     /piso plano/,
   )
+})
+
+test('faixas mantêm picking por entidade e recusam lacunas, sobreposição e entidade ausente', () => {
+  const d = cena(),
+    faixas = [
+      { malha: 'lote', entidade: 'casa', primeiroTriangulo: 0, triangulos: 1 },
+      { malha: 'lote', entidade: null, primeiroTriangulo: 1, triangulos: 2 },
+    ],
+    lote = {
+      ...d,
+      nos: [{ ...d.nos[0], entidade: null, faixas }],
+      arquivos: d.arquivos.map((a) => ({ ...a, triangulos: 3 })),
+    },
+    no = lerCenaCompilada(lote).nos[0]!,
+    buscar = criarConsultaDeEntidadesDoNo(no)
+  expect(buscar('lote', 0)).toBe('casa')
+  expect(buscar('lote', 1)).toBeNull()
+  expect(buscar('lote', 3)).toBeNull()
+  expect(buscar('outra', 0)).toBeNull()
+  expect(buscar('lote', 0.5)).toBeNull()
+  for (const patch of [{ primeiroTriangulo: 0 }, { primeiroTriangulo: 2 }, { entidade: 'ausente' }])
+    expect(() =>
+      lerCenaCompilada({
+        ...lote,
+        nos: [{ ...lote.nos[0], faixas: [faixas[0], { ...faixas[1], ...patch }] }],
+      }),
+    ).toThrow()
+  expect(() =>
+    lerCenaCompilada({ ...lote, nos: [{ ...lote.nos[0], preservarHierarquia: true }] }),
+  ).toThrow(/estático/)
+  expect(() =>
+    lerCenaCompilada({ ...lote, entidades: d.entidades.map((e) => ({ ...e, oculto: true })) }),
+  ).toThrow(/oculta/)
 })
 
 test('restauração de efeito só pode apontar para água com parâmetros e arquivo correspondentes', () => {

@@ -2,8 +2,8 @@ import { normalizeGlbImagePadding } from '@sistemazero/molda/gltf'
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import type { AnimationClip, Mesh, Object3D } from 'three'
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js'
+import { prepararAcabamentoDoGlb } from './acabamento-glb'
 import type { ArquivosDaCompilacao } from './arquivos'
-import { prepararImagensDoGlb } from './imagens-glb'
 import { inspecionarGlbDaCompilacao } from './inspecao-glb'
 
 /** Serializa somente raízes já preparadas: shaders de solo/água precisam de acabamento portátil.
@@ -57,7 +57,7 @@ export async function gravarGlbCompilado(
     )
       throw Error('O GLB excede o orçamento de memória ou de partes da compilação.')
   })
-  const imagens = prepararImagensDoGlb(raiz)
+  const acabamento = prepararAcabamentoDoGlb(raiz)
   let resultado: ArrayBuffer | { [key: string]: unknown }
   try {
     resultado = await new GLTFExporter().parseAsync(raiz, {
@@ -68,7 +68,7 @@ export async function gravarGlbCompilado(
       includeCustomExtensions: false,
     })
   } finally {
-    imagens.descartar()
+    acabamento.descartar()
   }
   sinal.throwIfAborted()
   if (!(resultado instanceof ArrayBuffer)) throw Error('O exportador não produziu um arquivo GLB.')

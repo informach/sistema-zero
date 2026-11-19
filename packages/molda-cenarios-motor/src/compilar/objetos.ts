@@ -129,7 +129,7 @@ export async function compilarObjetosDaCena(
         copia.descartar()
       }
     }
-    saida.adicionar(template, mundo, o.id)
+    saida.adicionar(template, mundo, o.id, undefined, preservar)
     saida.ancora(o.id, mundo)
     if (o.colisao !== 'nenhuma') {
       const chaveFisica = JSON.stringify([

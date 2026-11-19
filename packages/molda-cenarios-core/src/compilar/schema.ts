@@ -146,6 +146,31 @@ export const CenaCompiladaSchema = z
         )
       if (a?.mime !== 'model/gltf-binary' || a.papel === 'colisao')
         falhar(`O arquivo visual “${n.arquivo}” está ausente ou é incompatível.`)
+      if (n.faixas) {
+        if (n.entidade !== null || n.efeito || n.preservarHierarquia)
+          falhar('As faixas pertencem somente a um lote estático sem entidade única.')
+        const porMalha = new Map<string, typeof n.faixas>()
+        for (const f of n.faixas) {
+          conferirEntidade(f.entidade)
+          if (f.entidade !== null && entidades.get(f.entidade)?.oculto)
+            falhar('Uma entidade oculta não pode aparecer nas faixas do lote.')
+          const fs = porMalha.get(f.malha) ?? []
+          fs.push(f)
+          porMalha.set(f.malha, fs)
+        }
+        let total = 0
+        for (const fs of porMalha.values()) {
+          let fim = 0
+          for (const f of fs.sort((a, b) => a.primeiroTriangulo - b.primeiroTriangulo)) {
+            if (f.primeiroTriangulo !== fim)
+              falhar('As faixas precisam cobrir cada malha sem lacunas ou sobreposição.')
+            fim = f.primeiroTriangulo + f.triangulos
+          }
+          total += fim
+        }
+        if (total !== a?.triangulos)
+          falhar('As faixas não correspondem aos triângulos declarados do lote.')
+      }
       malhas += a?.malhas ?? 0
     }
     if (malhas > 32768) falhar('A cena compilada tem malhas demais para ser carregada.')

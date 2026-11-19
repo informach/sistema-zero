@@ -28,7 +28,7 @@
 
 ## Lotes e critérios de fechamento
 
-**Estado atual, 18/11:** lotes 0–7 implementados, testados e revisados localmente. [Fechamento de Caminhos](../../plans/2026-11-16-cenarios-reforma/revisao-lote6-caminhos.md) e [fechamento de Jogo, luz e céu](../../plans/2026-11-16-cenarios-reforma/revisao-lote7-jogo-luz.md). Lote 8 ativo: 8.1 fechado, próximo recorte exclusivo 8.2 — materialização pelo motor. [Plano](2026-11-18-cenarios-lote8-exportacao.md) e [contrato/preparação/inventário](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-contrato.md), suíte do núcleo com 336 testes aprovados. Todos os exportadores continuam pendentes. Lotes 8–10, composição final, full review, CI, implantação e validação remotas continuam pendentes.
+**Estado atual, 18/11:** lotes 0–7 implementados, testados e revisados localmente. Lote 8 ativo: 8.1 e 8.2 fechados; próximo recorte exclusivo 8.3 — pacotes/runtime e interface de exportação. [Plano](2026-11-18-cenarios-lote8-exportacao.md) e [revisão do compilador/junção](../../plans/2026-11-16-cenarios-reforma/revisao-lote8-2-compilador.md). Núcleo 348, motor 235 e oficina 110 testes aprovados; pacote integrado, identidade, física, cancelamento/descarte e aparência reabertos e conferidos. Exportadores/consumidores de 8.3–8.5 ainda pendentes. Lotes 8–10, composição final, full review, CI, implantação e validação remotas continuam pendentes.
 
 
 - [x] **0 — Fundação:** revisar documento v2 mínimo, escala por eixo, referências de biblioteca/hash, migração, inversão de lotes, CI e watchPatterns. Corrigir o teste da imagem Members para a dependência nova; testar sem afrouxar isolamento.

@@ -54,6 +54,7 @@ export class MontagemDaCompilacao {
     matriz: Matrix4,
     entidade: string | null,
     efeito?: 'agua',
+    preservarHierarquia?: boolean,
   ) {
     if (this.nos.length >= 32768) throw Error('A cena compilada excede o limite de nós visuais.')
     const caixa = template.volume.clone().applyMatrix4(matriz)
@@ -64,6 +65,7 @@ export class MontagemDaCompilacao {
       matriz: matriz.elements.slice(),
       volume: volumeDaCaixa(caixa),
       ...(efeito ? { efeito } : {}),
+      ...(preservarHierarquia ? { preservarHierarquia: true as const } : {}),
     })
     if (entidade !== null) {
       const atual = this.volumes.get(entidade)

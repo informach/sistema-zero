@@ -114,3 +114,9 @@ test('imagem de fonte com padding do exportador é normalizada sem alterar o has
   expect(() => inspecionarGlbDaCompilacao(bytes)).toThrow()
   expect(bytes).toEqual(antes)
 })
+test('GLB compacto não autoriza materialização multiplicada acima do orçamento', () => {
+  const { j, bin } = exemplo(30000)
+  j.nodes = Array.from({ length: 512 }, () => ({ mesh: 0 }))
+  j.scenes = [{ nodes: j.nodes.map((_, i) => i) }]
+  expect(() => inspecionarGlbDaCompilacao(glb(j, bin), { fonte: true })).toThrow(/materialização/)
+})

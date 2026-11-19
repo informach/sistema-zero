@@ -21,6 +21,7 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import { materialDaTextura } from '../projecao-textura'
 import { EspelhoAnimavel } from './espelho-animavel'
 import { dividirGeometriaComDeformacoes } from './geometria-animavel'
+import { conferirHierarquiaDaPele } from './hierarquia-da-pele'
 import { projetarTexturaAnimavel } from './projecao-animavel'
 
 export function temAnimacaoOuDeformacao(raiz: Object3D, animacoes: readonly AnimationClip[] = []) {
@@ -48,6 +49,7 @@ export function normalizarRaizAnimavel(
     textura?: { mapa: Texture; repeticaoMetros: number; escala: Vector3 }
   } = {},
 ) {
+  conferirHierarquiaDaPele(entrada, animacoes)
   const espelhar = Object.values(aparencia.espelho ?? {}).some(Boolean)
   if (espelhar && (!aparencia.caixa || aparencia.caixa.isEmpty()))
     throw Error('O reflexo animável precisa da caixa real do modelo.')

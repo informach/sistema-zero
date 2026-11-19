@@ -4,7 +4,8 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, 'output/cenarios-reforma/lote8-objeto'),
+  facetado = process.env.CENARIOS_QA_OBJETO_FACETADO === '1',
+  saida = resolve(raiz, `output/cenarios-reforma/lote8-objeto${facetado ? '-facetado' : ''}`),
   modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/')}`
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome', headless: true }),
@@ -53,6 +54,23 @@ try {
         }),
         matriz = matrizDoObjeto(doc, o, new T.Matrix4()),
         canvas = document.createElement('canvas')
+      let geometriaFacetada
+      if (urls.facetado) {
+        geometriaFacetada = new T.BufferGeometry()
+          .setAttribute(
+            'position',
+            new T.Float32BufferAttribute([-1, 0, -1.5, 1, 0, -1.5, -1, 1, -1.5, -1, 0, 1.5], 3),
+          )
+          .setIndex([0, 1, 2, 0, 3, 1])
+        geometriaFacetada.computeVertexNormals()
+        const anterior = modelo.partes[0].geometria
+        modelo.partes[0].geometria = geometriaFacetada
+        modelo.partes[0].material.flatShading = true
+        modelo.raiz.traverse((m) => {
+          if (m.isMesh && m.geometry === anterior) m.geometry = geometriaFacetada
+        })
+        o.aparencia = { cor: '#ffd98a' }
+      }
       canvas.width = 2
       canvas.height = 2
       canvas
@@ -76,12 +94,15 @@ try {
       const scene = new T.Scene(),
         pai = new T.Group(),
         representacoes = new RepresentacoesDoModelo(pai, modelo),
-        lote = representacoes.obter(o.espelho, { textura, repeticaoMetros: 1.5 }),
+        lote = representacoes.obter(
+          o.espelho,
+          urls.facetado ? undefined : { textura, repeticaoMetros: 1.5 },
+        ),
         camera = new T.PerspectiveCamera(40, 1, 0.1, 100),
         renderer = new T.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true })
       lote.preencher([{ id: 'o', matriz, cor: o.aparencia.cor }])
       scene.add(pai)
-      scene.add(new T.HemisphereLight('#ffffff', '#ffffff', 2))
+      scene.add(new T.HemisphereLight('#ffffff', urls.facetado ? '#314e70' : '#ffffff', 2))
       camera.position.set(10, 6, 5)
       camera.lookAt(2, 0.5, -3)
       renderer.setSize(224, 224)
@@ -135,6 +156,8 @@ try {
           erroMedio: soma / n,
           erroMaximo: maximo,
           amostras: n,
+          facetado: urls.facetado,
+          normaisPorFace: carregado.partes.every((p) => p.material.flatShading === true),
           antes: antes.png,
           depois: depois.png,
         }
@@ -144,11 +167,13 @@ try {
         arquivos.descartar()
         representacoes.descartar()
         modelo.descartar()
+        geometriaFacetada?.dispose()
         textura.dispose()
         renderer.dispose()
       }
     },
     {
+      facetado,
       three: modulo('node_modules/three/build/three.module.js'),
       representacoes: modulo('packages/molda-cenarios-motor/src/representacoes.ts'),
       formas: modulo('packages/molda-cenarios-motor/src/formas.ts'),
@@ -170,6 +195,7 @@ try {
   assert.ok(r.amostras > 1000)
   assert.ok(r.erroMedio < 1.5)
   assert.ok(r.erroMaximo <= 15)
+  if (facetado) assert.equal(r.normaisPorFace, true)
 } finally {
   await browser.close()
 }

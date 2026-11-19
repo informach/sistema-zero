@@ -54,3 +54,16 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 [Primeiro pacote integrado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-integracao.md): `compilarCenario` e o subpath público `motor/compilar` existem, e o oceano está integrado. Piso próprio e terreno/catálogo passaram em três ciclos completos/cancelados, reabertura independente, consultas físicas, mesmas câmeras e validação Khronos. Foram corrigidos o recorte de piso com rotação no nó e a recompressão WebP. As afirmações acima sobre montagem/subpath inexistentes descrevem o ponto inicial deste plano.
 
 8.2 permanece ativo até a junção estática com identidade e as provas restantes. Não iniciar outro lote ou implantação. A restauração das ondas e os consumidores pertencem à sequência planejada do próprio lote 8.
+
+## Próximo recorte — junção estática sem perder entidades
+
+1. Consumir o pacote compilado, sem consultar o Palco. Manter colisões, entidades/âncoras, marcadores, terreno/água e licenças. Atores identificados pelo perfil precisam de sinal explícito no nó portátil; animações/skins/morphs e lâminas com efeito não entram na junção.
+2. Juntar instâncias compatíveis por região, material carregado e layout de atributos, usando as transformações já compiladas e os utilitários existentes de geometria. Não criar outro assentamento. Conservar materiais distintos/transparência; não prometer redução de materiais diferentes nem atlas automático.
+3. Registrar faixas de triângulos por malha e entidade no manifesto. Âncoras isoladas não bastam para picking/interação depois de uma junção. O conferidor deve verificar referência, intervalos, ausência de sobreposição e correspondência com as malhas reais do GLB. Chão sem entidade usa faixa nula; atores continuam nós próprios.
+4. Usar marca transitória de origem na geometria somente durante remapeamento/divisão em até 65.000 vértices; removê-la do GLB final. Reutilizar o divisor e a transformação estática. Limitar memória/trabalho antes de concatenar.
+5. Emitir somente os arquivos ainda referenciados. Não alterar entrada nem produzir pacote parcial em cancelamento/erro. A junção fica opcional: a escolha por região/material não elimina excedentes de bytes/texturas de um destino.
+6. Provar redução efetiva de malhas em instâncias repetidas, matrizes/reflexos/UVs e mesma imagem/física; picking por triângulo conserva cada ID; atores e água continuam independentes. Testar limites, referências hostis, cancelamento e descarte, incluindo reabertura e Khronos. Só então fechar os itens restantes de 8.2.
+
+## Fechamento local de 8.2
+
+[Compilador e junção revisados](../../plans/2026-11-16-cenarios-reforma/revisao-lote8-2-compilador.md). Os seis itens acima foram implementados e verificados. Quatro combinações completas, identidade por faixa, apoios físicos, limites de decoder e acabamento facetado conferidos. **8.2 fechado; lote 8 aberto, próximo 8.3.** As pendências de montagem/subpath/junção registradas nas seções anteriores são o histórico das decisões, não o estado atual. Sem antecipar lotes 9–10 ou implantação.

@@ -14,6 +14,11 @@ import { ArquivosDaCompilacao } from './arquivos'
 import { compilarChaoECaminhos, type SuperficiesDaCompilacao } from './chao-caminhos'
 import { conferirConteudoCompilado } from './conteudo'
 import { pixelsDaTexturaCompilada } from './imagens'
+import {
+  juntarEstaticosDoPacote,
+  type OpcoesDaJuncaoEstatica,
+  tamanhoDaRegiaoDaJuncao,
+} from './juncao'
 import { compilarMetadadosDaCena } from './metadados'
 import { cederDuranteCompilacao, MontagemDaCompilacao } from './montagem'
 import {
@@ -27,7 +32,9 @@ import { type ConteudoDaCompilacao, carregarRecursosDaCompilacao } from './recur
 import { montarSuperficiesDaCompilacao } from './superficies'
 import { gravarDadosDoTerreno } from './terreno'
 
-export type OpcoesDaCompilacao = OpcoesDosObjetosCompilados
+export interface OpcoesDaCompilacao extends OpcoesDosObjetosCompilados {
+  juncaoEstatica?: Pick<OpcoesDaJuncaoEstatica, 'tamanhoDaRegiao'>
+}
 export interface ResultadoDaCompilacao extends PacoteCompilado {
   /** Avisos do gerador original, sem esconder decisões de implantação da estrutura. */
   avisos: readonly { id: string; mensagem: string }[]
@@ -42,6 +49,25 @@ export async function compilarCenario(
   conteudo: ConteudoDaCompilacao,
   sinal: AbortSignal,
   opcoes: OpcoesDaCompilacao = {},
+): Promise<ResultadoDaCompilacao> {
+  sinal.throwIfAborted()
+  if (opcoes.juncaoEstatica) tamanhoDaRegiaoDaJuncao(opcoes.juncaoEstatica.tamanhoDaRegiao)
+  const base = await compilarBase(entrada, fonte, contexto, conteudo, sinal, opcoes)
+  if (!opcoes.juncaoEstatica) return base
+  const unida = await juntarEstaticosDoPacote(base, sinal, {
+    ...opcoes.juncaoEstatica,
+    progresso: opcoes.progresso,
+  })
+  return { ...unida, avisos: base.avisos }
+}
+
+async function compilarBase(
+  entrada: DocumentoDeCenario,
+  fonte: FonteDaCompilacao,
+  contexto: ContextoDeLicencas,
+  conteudo: ConteudoDaCompilacao,
+  sinal: AbortSignal,
+  opcoes: OpcoesDaCompilacao,
 ): Promise<ResultadoDaCompilacao> {
   sinal.throwIfAborted()
   const original = validarDocumento(entrada),

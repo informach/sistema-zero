@@ -22,6 +22,13 @@ export async function conferirConteudoCompilado(
 ): Promise<ConteudoConferidoDaCena> {
   const cena = lerCenaCompilada(entrada)
   await conferirInventarioCompilado(cena, arquivos, sinal)
+  const faixasPorArquivo = new Map<string, typeof cena.nos>()
+  for (const n of cena.nos)
+    if (n.faixas) {
+      const nos = faixasPorArquivo.get(n.arquivo) ?? []
+      nos.push(n)
+      faixasPorArquivo.set(n.arquivo, nos)
+    }
   let memoria = 0
   for (const a of cena.arquivos) {
     sinal?.throwIfAborted()
@@ -34,7 +41,29 @@ export async function conferirConteudoCompilado(
         r.verticesMaximos !== a.verticesMaximos
       )
         throw Error(`As medidas reais de “${a.caminho}” não correspondem ao manifesto.`)
-      memoria += r.bytesNumericos + r.bytesDePixels
+      const nomes = new Map<string, typeof r.partesNomeadas>()
+      for (const p of r.partesNomeadas) {
+        const ps = nomes.get(p.nome) ?? []
+        ps.push(p)
+        nomes.set(p.nome, ps)
+      }
+      for (const n of faixasPorArquivo.get(a.caminho) ?? []) {
+        if (r.animavel) throw Error('Um lote com faixas não pode conter animação ou deformação.')
+        const malhas = new Map<string, number>()
+        for (const f of n.faixas!) malhas.set(f.malha, (malhas.get(f.malha) ?? 0) + f.triangulos)
+        if (malhas.size !== r.malhas)
+          throw Error('As faixas não identificam todas as malhas do lote.')
+        for (const [nome, triangulos] of malhas) {
+          const partes = nomes.get(nome) ?? []
+          if (
+            partes.length !== 1 ||
+            partes[0]!.primitivas !== 1 ||
+            partes[0]!.triangulos !== triangulos
+          )
+            throw Error('As faixas não correspondem às malhas reais do GLB.')
+        }
+      }
+      memoria += r.bytesDeMaterializacao + r.bytesDePixels
     } else if (a.mime === 'image/png' || a.mime === 'image/webp') {
       if (a.papel === 'alturas') {
         if (a.caminho !== cena.terreno?.pngAlturas)

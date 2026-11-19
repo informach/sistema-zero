@@ -5,8 +5,12 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const terreno = process.env.CENARIOS_QA_TERRENO === '1',
+  juntar = process.env.CENARIOS_QA_JUNCAO === '1',
   raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, `output/cenarios-reforma/lote8-integracao${terreno ? '-terreno' : ''}`),
+  saida = resolve(
+    raiz,
+    `output/cenarios-reforma/lote8-integracao${terreno ? '-terreno' : ''}${juntar ? '-juncao' : ''}`,
+  ),
   modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/')}`
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome', headless: true }),
@@ -20,6 +24,9 @@ try {
     async (u) => {
       const T = await import(u.three),
         C = await import(u.core),
+        { criarConsultaDeEntidadesDoNo } = await import(
+          u.core.replace('/v2/index.ts', '/compilar/index.ts')
+        ),
         { compilarCenario } = await import(u.compilar),
         { lerGlb } = await import(u.modelos),
         { MundoDoTeste } = await import(u.fisica),
@@ -150,6 +157,7 @@ try {
         for (const [id, url, biblioteca] of [
           ['avatar', u.avatar, 'cute'],
           ['ponte', u.ponte, 'adventure'],
+          ['caminho-catalogo', u.caminho, 'reino'],
         ]) {
           const b = new Uint8Array(await (await fetch(url)).arrayBuffer())
           modelos.set(id, b)
@@ -236,6 +244,63 @@ try {
             encaixeModelo: { eixo: 'z', pisoLocal: 0 },
           }),
         )
+        d.caminhos.push(
+          C.CaminhoSchema.parse({
+            id: 'estrada',
+            nome: 'Piso real conformado',
+            grupo: null,
+            oculto: false,
+            bloqueado: false,
+            tipo: 'estrada',
+            acabamento: 'caminho-catalogo',
+            largura: 2.6,
+            pontos: [
+              { x: -5, z: -3 },
+              { x: 5, z: -3 },
+              { x: 15, z: -1 },
+            ],
+            encaixeModelo: { eixo: 'x', baseLocal: 0 },
+          }),
+        )
+        const modeloDaPonte = await lerGlb(modelos.get('ponte').slice().buffer),
+          mundoDaPonte = new MundoDoTeste(
+            modeloDaPonte.partes.map((p) => ({ geometria: p.geometria, matriz: p.matriz })),
+          )
+        try {
+          d.modelos.find((m) => m.id === 'ponte').volume = {
+            min: {
+              x: modeloDaPonte.caixa.min.x,
+              y: modeloDaPonte.caixa.min.y,
+              z: modeloDaPonte.caixa.min.z,
+            },
+            max: {
+              x: modeloDaPonte.caixa.max.x,
+              y: modeloDaPonte.caixa.max.y,
+              z: modeloDaPonte.caixa.max.z,
+            },
+          }
+          const contato = mundoDaPonte.rastrear(
+            new T.Vector3(0, 5, 0),
+            new T.Vector3(0, -5, 0),
+          )?.ponto
+          if (!contato) throw Error('A fixture precisa de um contato real no piso da ponte.')
+          d.instancias.push({
+            ...d.instancias[0],
+            id: 'sobre-ponte',
+            nome: 'Apoio sobre a ponte',
+            transformacao: identidade(0, 0, 0),
+            apoio: {
+              tipo: 'objeto',
+              objeto: 'ponte',
+              parte: 'modelo/0',
+              contato: { x: contato.x, y: contato.y, z: contato.z },
+              deslocamento: 0,
+            },
+          })
+        } finally {
+          mundoDaPonte.descartar()
+          modeloDaPonte.descartar()
+        }
         const origem = C.criarDocumentoVazio('origem', 'Conjunto de ensaio')
         origem.formas = d.formas
         origem.instancias = [
@@ -303,6 +368,20 @@ try {
         provas = [],
         carregados = []
       let pacote, gpuFinal
+      let semJuncao
+      if (u.juntar) {
+        const p = await compilarCenario(d, fonte, contexto, portas, new AbortController().signal, {
+          preservarHierarquia: (o) => o.propriedades?.ator === true,
+        })
+        semJuncao = {
+          malhas: p.cena.nos.reduce(
+            (s, n) => s + p.cena.arquivos.find((a) => a.caminho === n.arquivo).malhas,
+            0,
+          ),
+          entidades: JSON.stringify(p.cena.entidades),
+          colisoes: JSON.stringify(p.cena.colisoes),
+        }
+      }
       const rendererDosCiclos = new T.WebGLRenderer(),
         cenaDoCiclo = new T.Scene(),
         cameraDoCiclo = new T.PerspectiveCamera(50, 1, 0.1, 3000)
@@ -326,14 +405,26 @@ try {
             contexto,
             portas,
             new AbortController().signal,
-            { preservarHierarquia: (o) => o.propriedades?.ator === true },
+            {
+              preservarHierarquia: (o) => o.propriedades?.ator === true,
+              ...(u.juntar ? { juncaoEstatica: {} } : {}),
+            },
           )
           if (JSON.stringify(d) !== original) throw Error('A compilação alterou a autoria.')
           ciclos.push({
+            inventario: await C.digestDosBytes(
+              new TextEncoder().encode(
+                JSON.stringify(p.cena.arquivos.map((a) => [a.caminho, a.digest, a.bytes])),
+              ),
+            ),
             arquivos: p.arquivos.size,
             bytes: [...p.arquivos.values()].reduce((s, b) => s + b.length, 0),
             nos: p.cena.nos.length,
             colisoes: p.cena.colisoes.length,
+            malhas: p.cena.nos.reduce(
+              (s, n) => s + p.cena.arquivos.find((a) => a.caminho === n.arquivo).malhas,
+              0,
+            ),
           })
           pacote = p
           const copias = []
@@ -360,8 +451,13 @@ try {
           let cancelou = false
           try {
             await compilarCenario(d, fonte, contexto, portas, controller.signal, {
+              ...(u.juntar ? { juncaoEstatica: {} } : {}),
               progresso: (p) => {
-                if (p.etapa === 'arquivos' && p.feitos === 0)
+                if (
+                  u.juntar
+                    ? p.nome === 'Juntando peças estáticas' && p.feitos === 1
+                    : p.etapa === 'arquivos' && p.feitos === 0
+                )
                   controller.abort(new DOMException('Ensaio cancelado', 'AbortError'))
               },
             })
@@ -378,6 +474,21 @@ try {
       }
       if (gpuFinal.geometries !== 0 || gpuFinal.textures !== 0)
         throw Error('Renderer não liberou os recursos após o ciclo.')
+      if (u.juntar) {
+        if (
+          JSON.stringify(pacote.cena.entidades) !== semJuncao.entidades ||
+          JSON.stringify(pacote.cena.colisoes) !== semJuncao.colisoes
+        )
+          throw Error('A junção alterou âncoras/colisões.')
+        if (ciclos[0].malhas >= semJuncao.malhas)
+          throw Error('A junção não reduziu as malhas da fixture.')
+        const { juntarEstaticosDoPacote } = await import(
+            u.compilar.replace('compilar.ts', 'juncao.ts')
+          ),
+          outra = await juntarEstaticosDoPacote(pacote, new AbortController().signal)
+        if (JSON.stringify(outra.cena) !== JSON.stringify(pacote.cena))
+          throw Error('Repetir a junção alterou uma cena já reunida.')
+      }
       const { carregarRecursosDaCompilacao } = await import(
           u.compilar.replace('compilar.ts', 'recursos.ts')
         ),
@@ -415,20 +526,32 @@ try {
             ? criarPlanoDoCenario(d.base.largura, d.base.comprimento)
             : undefined,
         raiz = new T.Group(),
-        fontes = []
+        fontes = [],
+        fontesObjetos = [],
+        corpos = new Map()
       if (piso) antes.add(piso)
       if (superficies.terreno) antes.add(superficies.terreno.grupo)
       antes.add(superficies.aguas.grupo, superficies.caminhos.grupo)
       for (const o of superficies.preparada.objetos) {
-        const rep = new RepresentacoesDoModelo(antes, referencias.modelos.get(o.modelo))
+        const modelo = referencias.modelos.get(o.modelo),
+          rep = new RepresentacoesDoModelo(antes, modelo),
+          matriz = matrizDaTransformacao(o.transformacao, new T.Matrix4()),
+          lote = rep.obter(o.espelho)
         representacoes.push(rep)
-        rep.obter(o.espelho).preencher([
+        lote.preencher([
           {
             id: o.id,
-            matriz: matrizDaTransformacao(o.transformacao, new T.Matrix4()),
+            matriz,
             cor: o.aparencia?.cor,
           },
         ])
+        corpos.set(o.id, { caixa: modelo.caixa, matriz })
+        for (const p of lote.fontes())
+          fontesObjetos.push({
+            objeto: o.id,
+            geometria: p.geometria,
+            matriz: matriz.clone().multiply(p.matriz),
+          })
       }
       try {
         for (const n of [...pacote.cena.nos, ...pacote.cena.colisoes]) {
@@ -446,6 +569,10 @@ try {
           if (n.entidade === 'ator' && pacote.cena.nos.includes(n) && modelo.animacoes.length !== 4)
             throw Error('Os quatro clipes do avatar não foram conservados.')
           if (pacote.cena.nos.includes(n)) {
+            const consultar = criarConsultaDeEntidadesDoNo(n)
+            modelo.raiz.traverse((m) => {
+              if (m.isMesh) m.userData.consultarOrigem = consultar
+            })
             const g = new T.Group()
             g.matrixAutoUpdate = false
             g.matrix.copy(matriz)
@@ -454,6 +581,16 @@ try {
           } else
             for (const p of modelo.partes)
               fontes.push({ geometria: p.geometria, matriz: matriz.clone().multiply(p.matriz) })
+        }
+        raiz.updateWorldMatrix(true, true)
+        for (const [x, z, id] of [
+          [0, -6, 'a'],
+          [6, -6, 'b'],
+        ]) {
+          const raio = new T.Raycaster(new T.Vector3(x, 5, z), new T.Vector3(0, -1, 0), 0, 10),
+            hit = raio.intersectObject(raiz, true)[0]
+          if (!hit || hit.object.userData.consultarOrigem(hit.object.name, hit.faceIndex) !== id)
+            throw Error('O picking perdeu a identidade da peça.')
         }
         const fisica = new MundoDoTeste(fontes)
         try {
@@ -477,6 +614,42 @@ try {
             if (!hit || Math.abs(hit.ponto.y - h) > 0.001)
               throw Error(`Colisão incorreta em ${x},${z}: ${hit?.ponto.y} esperado ${h}`)
             provas.push({ x, z, altura: hit.ponto.y })
+          }
+          if (u.terreno) {
+            const { prepararColisoesDoTeste } = await import(
+                u.compilar.replace('compilar/compilar.ts', 'teste/fontes.ts')
+              ),
+              nativas = prepararColisoesDoTeste(
+                superficies.preparada.documento,
+                fontesObjetos,
+                corpos,
+                [
+                  ...superficies.terreno.fontesDoTeste(),
+                  ...superficies.caminhos.fontesDoTeste(),
+                  ...superficies.aguas.fontesDoTeste(),
+                ],
+              ),
+              original = new MundoDoTeste(nativas.fontes)
+            try {
+              for (const [x, z] of [
+                [4, -3],
+                [10, -2],
+                [8, 5],
+                [8, 10],
+                [8, 16],
+              ]) {
+                const de = new T.Vector3(x, 8, z),
+                  ate = new T.Vector3(x, -8, z),
+                  a = original.rastrear(de, ate),
+                  b = fisica.rastrear(de, ate)
+                if (!a || !b || Math.abs(a.ponto.y - b.ponto.y) > 1e-5)
+                  throw Error(`Apoio/estrutura diferiu da física nativa em ${x},${z}.`)
+                provas.push({ x, z, altura: b.ponto.y, alturaNativa: a.ponto.y })
+              }
+            } finally {
+              original.descartar()
+              nativas.descartar()
+            }
           }
           const fora = u.terreno ? 25 : 17
           if (fisica.rastrear(new T.Vector3(fora, 5, fora), new T.Vector3(fora, -5, fora)))
@@ -561,6 +734,7 @@ try {
             png,
             recursos,
             cena: pacote.cena,
+            malhasSemJuncao: semJuncao?.malhas,
             arquivos,
           }
         } finally {
@@ -580,9 +754,11 @@ try {
     },
     {
       terreno,
+      juntar,
       lago: modulo('output/molda-cenarios/acervo/lago_nadavel.87f49a705905.glb'),
       avatar: modulo('output/cenarios-reforma/lote3-testar-avatar/avatar-cute-ensaio.glb'),
       ponte: modulo('output/molda-cenarios/acervo/ponte_04_pacote.8d256d9aefcc.glb'),
+      caminho: modulo('output/molda-cenarios/acervo/caminho_terra_reto.804d14830d95.glb'),
       three: modulo('node_modules/three/build/three.module.js'),
       core: modulo('packages/molda-cenarios-core/src/v2/index.ts'),
       compilar: modulo('packages/molda-cenarios-motor/src/compilar/compilar.ts'),
@@ -628,13 +804,15 @@ try {
   assert.equal(r.autoriaIntacta, true)
   assert.deepEqual(r.ciclos[0], r.ciclos[1])
   assert.deepEqual(r.ciclos[1], r.ciclos[2])
-  assert.equal(r.cena.nos.filter((n) => n.entidade === 'a' || n.entidade === 'b').length, 2)
-  assert.equal(
-    new Set(
-      r.cena.nos.filter((n) => n.entidade === 'a' || n.entidade === 'b').map((n) => n.arquivo),
-    ).size,
-    1,
-  )
+  if (!juntar) {
+    assert.equal(r.cena.nos.filter((n) => n.entidade === 'a' || n.entidade === 'b').length, 2)
+    assert.equal(
+      new Set(
+        r.cena.nos.filter((n) => n.entidade === 'a' || n.entidade === 'b').map((n) => n.arquivo),
+      ).size,
+      1,
+    )
+  } else assert.ok(r.ciclos[0].malhas < r.malhasSemJuncao)
   for (const c of r.ciclos) assert.deepEqual(c.gpu.depois, c.gpu.base)
   for (const c of r.comparativos) {
     assert.ok(c.erroMedio < 1, `${c.nome}: erro médio`)
