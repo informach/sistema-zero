@@ -9,13 +9,11 @@ import * as Blockly from 'blockly/core'
  *   `blockly_compressed.js`: uma atribuição, nenhuma leitura). Os eventos ficam numa cadeia
  *   `next` só, com cada SVG dentro do anterior, então a subida pelo DOM é O(profundidade) por
  *   bloco: 0,9 s com 5 mil, quadrático no tamanho.
- * - `dom.getTextWidth` chama `getComputedStyle` por campo (3,1 s com 5 mil). O Blockly já tem
- *   memória de larguras (texto + classe), mas só dura o desenho de UM bloco
- *   (`renderEfficiently`). Ligá-la só durante `workspaces.load` (tentado em 18/11) não pega
- *   nada: o desenho acontece depois, no quadro seguinte.
+ * - `dom.getTextWidth` chama `getComputedStyle` por campo (3,1 s com 5 mil). Medir menos aqui
+ *   NÃO é seguro (ver o aviso abaixo): fica como está.
  *
- * Nenhuma das duas muda o resultado: o mesmo desenho, sem a conta que ninguém usa e sem medir
- * de novo o mesmo texto com a mesma classe e a mesma fonte.
+ * O atalho do Drawer não muda o resultado: o mesmo desenho, sem a conta que ninguém usa. A fonte
+ * dos blocos é carregada antes de abrir, para o primeiro desenho já sair com ela.
  */
 
 type DrawerFactory = (block: Blockly.BlockSvg, info: unknown) => unknown
@@ -55,29 +53,19 @@ export function drawerShortcutDepthForTests(): number {
   return skipSurfaceXY
 }
 
-/** Prazo de segurança: a memória nunca sobrevive à abertura, mesmo se o fim não vier. */
-const OPENING_CACHE_MAX_MS = 60_000
+type OpeningFontSet = Pick<FontFaceSet, 'status' | 'ready'> & { load?: FontFaceSet['load'] }
 
-/**
- * Liga a memória de larguras de texto do Blockly durante a abertura inteira (carga + desenho
- * + repintura). Só quando as fontes da página já carregaram: medir antes da fonte é o defeito
- * que a repintura pós-carga existe para consertar, e a memória o tornaria permanente.
- * Devolve o desligar, idempotente.
- */
-export function beginOpeningTextWidthCache(doc: Document = document): () => void {
-  const fonts = (doc as Document & { fonts?: { status?: string } }).fonts
-  if (fonts?.status !== 'loaded') return () => undefined
-  Blockly.utils.dom.startTextWidthCache()
-  let active = true
-  const stop = () => {
-    if (!active) return
-    active = false
-    clearTimeout(safety)
-    Blockly.utils.dom.stopTextWidthCache()
-  }
-  const safety = setTimeout(stop, OPENING_CACHE_MAX_MS)
-  return stop
+function fontsOf(doc: Document): OpeningFontSet | undefined {
+  return (doc as Document & { fonts?: OpeningFontSet }).fonts
 }
+
+/*
+ * ⚠️ REMOVIDO na revisão de 19/11/2026: a memória GLOBAL de larguras de texto do Blockly durante a
+ * abertura. A chave dela é texto + classe, e a mesma frase com a mesma classe tem fonte calculada
+ * diferente conforme onde está: a largura de um bloco passava para outro (o cabeçalho "Ao iniciar"
+ * saía 8 px mais estreito, 41 de 70 blocos da aula diferentes do desenho de antes). O próprio Blockly
+ * só a liga dentro do desenho de UM bloco. Não religar sem a prova de geometria igual.
+ */
 
 /** Espera máxima pela fonte antes de abrir: depois disso, abre como sempre abriu. */
 export const OPENING_FONTS_MAX_WAIT_MS = 1500
@@ -91,17 +79,34 @@ export const OPENING_FONTS_MAX_WAIT_MS = 1500
 export function waitForOpeningFonts(
   doc: Document = document,
   maxMs: number = OPENING_FONTS_MAX_WAIT_MS,
+  /** A fonte dos blocos (`fontStyle` do tema): carregada ANTES, para não chegar no meio do desenho. */
+  blockFont?: string,
 ): Promise<void> {
-  const fonts = (doc as Document & { fonts?: { status?: string; ready?: Promise<unknown> } }).fonts
-  if (fonts?.status !== 'loading' || typeof fonts.ready?.then !== 'function')
-    return Promise.resolve()
-  const ready = fonts.ready
+  const fonts = fontsOf(doc)
+  if (!fonts) return Promise.resolve()
+  const waits: Promise<unknown>[] = []
+  if (blockFont && typeof fonts.load === 'function') {
+    try {
+      waits.push(fonts.load(blockFont))
+    } catch {
+      // Especificação de fonte inválida: abre como sempre abriu.
+    }
+  }
+  if (fonts.status === 'loading' && typeof fonts.ready?.then === 'function') waits.push(fonts.ready)
+  if (!waits.length) return Promise.resolve()
   return new Promise((resolve) => {
     const timer = setTimeout(resolve, maxMs)
     const done = () => {
       clearTimeout(timer)
       resolve()
     }
-    ready.then(done, done)
+    Promise.allSettled(waits).then(done, done)
   })
+}
+
+/** O `font` CSS dos blocos a partir do `fontStyle` do tema do workspace. */
+export function blockFontSpec(workspace: Blockly.WorkspaceSvg): string | undefined {
+  const style = workspace.getTheme?.()?.fontStyle
+  if (!style?.family) return undefined
+  return `${style.weight ?? 'normal'} ${style.size ?? 12}pt ${style.family}`
 }

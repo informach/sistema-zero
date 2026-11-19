@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 import * as Blockly from 'blockly/core'
 import {
   drawerShortcutDepthForTests,
@@ -90,5 +93,37 @@ describe('espera pela fonte antes de abrir', () => {
     await waitForOpeningFonts(docWith({ status: 'loading', ready: new Promise(() => {}) }), 20)
     expect(performance.now() - started).toBeLessThan(1_000)
     expect(OPENING_FONTS_MAX_WAIT_MS).toBeLessThanOrEqual(1_500)
+  })
+})
+
+describe('fonte dos blocos antes de abrir', () => {
+  it('a fonte dos blocos é carregada antes de abrir', async () => {
+    const loaded: string[] = []
+    const fonts = {
+      status: 'loaded',
+      ready: Promise.resolve(),
+      load: async (font: string) => {
+        loaded.push(font)
+        return []
+      },
+    }
+    await waitForOpeningFonts({ fonts } as unknown as Document, 1_000, "500 13pt 'Baloo 2'")
+    expect(loaded).toEqual(["500 13pt 'Baloo 2'"])
+  })
+})
+
+describe('guarda de atualização do Blockly', () => {
+  it('topLeft_ continua sem leitura no Blockly instalado (senão o atalho do Drawer muda o desenho)', () => {
+    const require = createRequire(import.meta.url)
+    // O subpath não está no `exports` do pacote: parte da entrada principal (mesma pasta).
+    const compressed = readFileSync(
+      join(dirname(require.resolve('blockly')), 'blockly_compressed.js'),
+      'utf8',
+    )
+    const uses = compressed.match(/topLeft_/g) ?? []
+    // Uma única ocorrência: a atribuição no construtor do Drawer. Se o Blockly passar a LER o
+    // valor, revise `installDrawerOriginShortcut` antes de atualizar.
+    expect(uses.length).toBe(1)
+    expect(compressed).toContain('topLeft_=a.getRelativeToSurfaceXY()')
   })
 })

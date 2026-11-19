@@ -224,28 +224,32 @@ resolvidos no bundle e confirmados no código-fonte do Blockly 12.5.1 extraído 
 | Pós-carga duplicada | uma repintura inteira + um `regenerateFromBlocks` a mais | O Blockly despacha eventos em `requestAnimationFrame → setTimeout(0)`. O fallback "se o FINISHED_LOADING não vier" era um microtask e rodava SEMPRE antes do evento; os dois salvavam, regeneravam e repintavam tudo. |
 | `svgResize` | 1,5 s | layout forçado da página inteira; cai com menos nós, não com menos código. |
 
-**O que mudou** (`src/blockly/openingRender.ts`, `BlocklyPanel.tsx`):
+**O que mudou** (`src/blockly/openingRender.ts`, `BlocklyPanel.tsx`), depois da revisão do mesmo dia:
 
 1. O `Drawer` nasce sem a subida pelo DOM (o valor descartado vira a origem só durante
-   `makeDrawer_`).
-2. A abertura espera a fonte da página (no máximo 1,5 s; depois disso abre como antes) e liga a
-   memória de larguras do próprio Blockly da carga até a fila de desenho esvaziar depois da
-   repintura. Medir antes da fonte era o risco que derrubou a tentativa de 18/11; agora a
-   memória só liga com `document.fonts.status === 'loaded'`. A tentativa anterior também não
-   pegava nada: cobria só `workspaces.load`, e o desenho acontece no quadro seguinte.
+   `makeDrawer_`). Um teste reprova se uma versão nova do Blockly passar a ler `topLeft_`.
+2. A fonte dos blocos (`fontStyle` do tema, `500 13pt 'Baloo 2'`) é carregada ANTES de abrir, no
+   máximo 1,5 s. Achado da revisão: no código anterior, campos medidos antes de essa face chegar
+   ficavam com a largura errada até serem editados (o Blockly não mede de novo um campo limpo).
+   Conferido no navegador: a folga entre a caixa do campo e o texto desenhado era irregular antes
+   (36,2 · 38,3 · 38,6 · 39,7 px) e agora é constante; o cabeçalho "Ao iniciar" ficou com 202,1 px
+   de texto + 16 de folga.
 3. O fallback pós-carga passou para o mesmo caminho do despacho do Blockly e só trabalha quando
-   o evento não veio.
+   o evento não veio (antes salvava, regenerava e repintava tudo duas vezes).
 
-Medições no navegador: 4 076 → 90 chamadas de `getComputedStyle` em texto (2 mil blocos).
+⚠️ **Tentado e retirado na revisão:** ligar a memória de larguras do Blockly durante a abertura
+inteira. A chave dela é texto + classe, que não descreve a fonte calculada de cada lugar; o ganho
+medido depois de retirá-la ficou o mesmo. Não religar sem a prova de geometria igual.
+
+Medido contra a staging atual sem o commit da abertura (mesma máquina, ordem alternada):
 
 | Blocos | Abrir antes | depois | Maior tarefa antes | depois |
 |---|---|---|---|---|
-| 2 002 | 5,4 a 6,0 s | 4,2 a 4,8 s | 2,3 a 2,5 s | 1,6 a 1,9 s |
-| 5 002 | 19,4 a 20,0 s | 14,5 a 15,1 s | 9,9 a 10,2 s | 7,6 a 8,1 s |
+| 2 002 | 5,4 a 6,3 s | 4,3 s | 2,1 a 2,2 s | 1,6 a 1,7 s |
+| 5 002 | 16,7 a 17,8 s | 13,9 a 14,0 s | 8,3 a 9,3 s | 7,0 a 7,2 s |
 
-"Abrir" é o campo "480" editável; `settledMs` (contagem de blocos desenhados parada por 1 s,
-acrescentado ao script) ficou a menos de 10 ms dele em todas as amostras. Duas amostras por
-braço: é ordem de grandeza, não p95.
+"Abrir" é `settledMs` (contagem de blocos desenhados parada por 1 s, acrescentado ao script). Duas
+amostras por braço: é ordem de grandeza, não p95.
 
 **O que isso NÃO resolve.** A meta de 8 s com 5 mil blocos continua longe. O que sobra é criar e
 desenhar todos os SVGs (criação ~2,2 s, desenho, layout ~1,5 s). Fica descartada a ideia de

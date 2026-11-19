@@ -50,7 +50,7 @@ isolamento pode acrescentar bytes a ele.
 | C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
 | C1 | Perfil de CPU e três desperdícios tirados: a edição com 10 mil blocos foi de 444 ms para 199 ms | **feito** |
 | C5 | Perfil no navegador: o que sobra é a quantidade de nós desenhados (abrir 5 mil blocos leva 18 s; arrastar prende a página) | **feito** (sem placa de vídeo) |
-| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos ~19,7 s → ~14,8 s); não criar os corpos distantes segue pendente |
+| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos ~17,2 s → ~14,0 s); não criar os corpos distantes segue pendente |
 | D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente; persistência v4 com homologação em curso (`docs/qa/2026-11-19-studio-v4-homologacao.md`) |
 
 ## A1: o que existe e como rodar

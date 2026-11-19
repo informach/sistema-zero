@@ -41,6 +41,23 @@ CI da missão no SHA exato `465abc2f` (run 44579789798, `workflow_dispatch` na s
 | Recarga com commit de saída abortado | aprovado | aprovado |
 | Recarga WebKit Linux antes da suíte | aprovado | — |
 
+## Revisão e CI em `bc1b2ab2` (run 44591434760)
+
+Falhas que eram deste trabalho, corrigidas no commit seguinte:
+
+- **Firefox no Windows** (driver de armazenamento): o navegador levou 44 s só para abrir e o
+  prazo único de 55 s, contado desde antes de abrir, matou o driver na 8ª recarga, com tudo
+  verificado até ali. Agora abrir tem folga própria (90 s) e cada motor mantém os mesmos 55 s
+  para o armazenamento, contados da fase `launched`. Provado que morde (com 2 s, reprova).
+- **hosted-runtime**: o perfil de validação do runtime cobre `studio-runtime/src` e
+  `core/src/studio`, onde entrou a casca. Regenerado com o Bun da CI (1.3.11); os contratos
+  gerados não mudaram, só a impressão.
+- **Suíte isolada Linux**: o teste novo do `PreviewIframe` trocava o endereço da página de teste
+  e não o devolvia, e o `StudioProjectPlayer` (mesmo processo) reprovava. Agora restaura.
+- **"Restaurar uma cópia"**: num card "Preservado" a migração parou antes do backup. Agora,
+  sem backup, a cópia sai dos registros originais que continuam no lugar; avisos do import
+  aparecem ("Cópia restaurada, mas com partes de fora") em vez de sumirem.
+
 ## O que continua aberto
 
 - A suíte isolada da CI para no primeiro arquivo vermelho, e hoje o primeiro é
@@ -49,7 +66,8 @@ CI da missão no SHA exato `465abc2f` (run 44579789798, `workflow_dispatch` na s
   testes de Jogo 3D/extensões (mesma origem), do Node 24 (o contêiner tem Node 22), do build de
   conversão (dependência do runtime não instalada aqui) e o orçamento do modo Blocos (abaixo).
 - `initialBundleBudget.test.ts` já reprovava na staging limpa: o modo Blocos tinha 4 750 580 bytes
-  crus para um teto de 4 750 000. A abertura do lote 2 somou 1 283. O teto não foi alterado.
+  crus para um teto de 4 750 000. A abertura do lote 2 soma algumas centenas de bytes (menos depois
+  da revisão, que tirou a memória de larguras). O teto não foi alterado.
 - Verificar/Enviar e troca de perfil no app conectado (Members) não foram verificados: não há
   acesso à plataforma implantada nesta sessão.
 - Aparelho físico, sessões longas e Safari real seguem sem prova.

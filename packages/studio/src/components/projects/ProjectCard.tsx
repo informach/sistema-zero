@@ -213,14 +213,20 @@ export const ProjectCard = memo(function ProjectCard({
   const handleRestoreBackup = async () => {
     closeMenu()
     try {
-      const backups = await import('../../project-migrations/localBackups')
-      const [latest] = await backups.listLocalProjectBackups(summary.id)
-      if (!latest) {
+      const { restorePreservedProject } = await import('../../project-migrations/localBackups')
+      const copy = await restorePreservedProject(summary.id)
+      if (!copy) {
         setNotice(t('projects.preserved.noBackup'))
         return
       }
-      const copy = await backups.restoreLocalProjectBackup(latest)
-      setNotice(t('projects.preserved.restored'))
+      if (copy.warnings.length) console.warn('[studio] cópia restaurada com avisos', copy.warnings)
+      setNotice(
+        t(
+          copy.warnings.length
+            ? 'projects.preserved.restoredPartial'
+            : 'projects.preserved.restored',
+        ),
+      )
       onChanged(copy.id)
     } catch (error) {
       console.error('[studio] restaurar backup', error)
@@ -491,7 +497,11 @@ export const ProjectCard = memo(function ProjectCard({
             (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
             ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
         <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sz-fg-soft text-xs">
-          <span className="whitespace-nowrap">
+          {/* O recado de restaurar/baixar é mais longo que a data: quebra em vez de vazar do card. */}
+          <span
+            className={notice ? undefined : 'whitespace-nowrap'}
+            role={notice ? 'status' : undefined}
+          >
             {notice
               ? notice
               : summary.migrationPending
