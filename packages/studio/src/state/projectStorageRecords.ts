@@ -1,7 +1,9 @@
 import type { StudioProjectDocument } from '@sistemazero/core/studio/project-document'
+import { projectMetadataSnapshot } from '../core/projectMetadata'
 import type { Project } from '../core/project'
 import {
   PROJECT_STORAGE_VERSION,
+  type ProjectStorageVersion,
   projectAssetsKey,
   projectBlocksKey,
   projectFilesKey,
@@ -13,15 +15,19 @@ import {
 export type StorableProjectDocument = Project | StudioProjectDocument
 export type StoredProjectRecord = Record<string, unknown> & { id: string }
 
-export function projectToMetaRecord(project: StorableProjectDocument) {
+export function projectToMetaRecord(
+  project: StorableProjectDocument,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
+) {
   return {
+    ...projectMetadataSnapshot(project).metadata,
     id: project.id,
     name: project.name,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     mode: project.mode,
     installedExtensions: project.installedExtensions,
-    storageVersion: PROJECT_STORAGE_VERSION,
+    storageVersion: version,
     // Modo profissional: discriminante + metadados do dev-server. Ausentes em
     // projetos classic (undefined é preservado pelo structured clone do IDB).
     kind: project.kind,
@@ -116,12 +122,15 @@ export function assembleProjectRecord(
   return assembled
 }
 
-export function projectStorageEntries(project: StorableProjectDocument): Array<[string, unknown]> {
+export function projectStorageEntries(
+  project: StorableProjectDocument,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
+): Array<[string, unknown]> {
   return [
-    [projectMetaKey(project.id), projectToMetaRecord(project)],
-    [projectFilesKey(project.id), projectToFilesRecord(project)],
-    [projectStateKey(project.id), projectToStateRecord(project)],
-    [projectBlocksKey(project.id), projectToBlocksRecord(project)],
-    [projectAssetsKey(project.id), projectToAssetsRecord(project)],
+    [projectMetaKey(project.id, version), projectToMetaRecord(project, version)],
+    [projectFilesKey(project.id, version), projectToFilesRecord(project)],
+    [projectStateKey(project.id, version), projectToStateRecord(project)],
+    [projectBlocksKey(project.id, version), projectToBlocksRecord(project)],
+    [projectAssetsKey(project.id, version), projectToAssetsRecord(project)],
   ]
 }

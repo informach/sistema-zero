@@ -1,6 +1,59 @@
 import { readValues, writeInOneTransaction } from '../idbTransaction'
 import { encodeProjectJsonGraph } from '../projectJsonGraph'
 import type { ProjectStorageScope } from '../projectStorageRuntime'
+import { createEmptyProject } from '../../core/project'
+import { migrateLocalV3Project } from '../../project-migrations/localV3'
+import { projectStorageEntries } from '../projectStorageRecords'
+import { projectHeadKey, projectMetaKey } from '../projectStorageKeys'
+
+async function qualifyLegacyMigration(scope: ProjectStorageScope) {
+  const original = Object.assign(createEmptyProject('native-v3-migration', 'Antes da migração'), {
+    futureMetadata: { reference: 'preserved-scene', enabled: false },
+  })
+  const head = {
+    version: 1,
+    token: 'legacy-head-one',
+    writer: 'old-native-tab',
+    base: null,
+    sequence: 1,
+  }
+  await writeInOneTransaction(scope.store, {
+    puts: [...projectStorageEntries(original, 3), [projectHeadKey(original.id, 3), head]],
+  })
+  if ((await migrateLocalV3Project(original.id, scope)) !== original.id)
+    throw new Error('Native migration did not preserve identity')
+  const [metadata, legacyHead] = await readValues(scope.store, [
+    projectMetaKey(original.id, 4),
+    projectHeadKey(original.id, 3),
+  ])
+  const read = metadata as { name?: string; futureMetadata?: unknown }
+  if (
+    read?.name !== original.name ||
+    encodeProjectJsonGraph(read.futureMetadata) !==
+      encodeProjectJsonGraph(original.futureMetadata) ||
+    encodeProjectJsonGraph(legacyHead) !== encodeProjectJsonGraph(head)
+  )
+    throw new Error('Native migration changed metadata or legacy head')
+  await writeInOneTransaction(scope.store, {
+    puts: [
+      ...projectStorageEntries({ ...original, name: 'Editou na aba antiga' }, 3),
+      [projectHeadKey(original.id, 3), { ...head, token: 'legacy-head-two', sequence: 2 }],
+    ],
+  })
+  const recovered = await migrateLocalV3Project(original.id, scope)
+  if (!recovered || recovered === original.id)
+    throw new Error('Native old writer was not separated')
+  const [current, copy] = await readValues(scope.store, [
+    projectMetaKey(original.id, 4),
+    projectMetaKey(recovered, 4),
+  ])
+  if (
+    (current as { name?: string })?.name !== original.name ||
+    (copy as { name?: string })?.name !== 'Editou na aba antiga (edição recuperada)'
+  )
+    throw new Error('Native old writer overwrote the current revision')
+  return { migrated: true, legacyCopy: true }
+}
 
 function identity(value: unknown) {
   const pending = [{ value, depth: 0 }]
@@ -81,7 +134,9 @@ export async function qualifyDeepStorage(scope: ProjectStorageScope) {
     (metadata as { revision?: number })?.revision !== 2
   )
     throw new Error('Incompatible storage write was not atomic')
+  const migration = await qualifyLegacyMigration(scope)
   return {
+    migration,
     ...shape,
     nativeCloneError,
     graphChars: encoded.length,

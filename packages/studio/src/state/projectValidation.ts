@@ -1,3 +1,4 @@
+import { projectMetadataSnapshot } from '../core/projectMetadata'
 /** Validação compartilhada de projetos. Sem React, Blockly, disco ou efeitos de gravação. */
 
 import {
@@ -1050,6 +1051,7 @@ export function sanitizeJavaScriptProjectPayload(
   const bridgeCodeAhead = !isPro && r.bridgeCodeAhead === true
 
   const project: Project = {
+    ...projectMetadataSnapshot(r).unknown,
     ...base,
     // Documentos JavaScript v2 podem trazer o idioma explícito. Preservá-lo evita uma
     // falsa perda de conteúdo ao abrir cópias aprovadas e manifestos existentes.

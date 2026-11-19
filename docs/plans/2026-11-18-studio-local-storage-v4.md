@@ -105,3 +105,67 @@ O bloqueio de tamanho inicial foi resolvido neste ensaio, mas não se concluiu
 a etapa: ainda faltam preparo de payload pesado fora do CAS, migração completa,
 cliente antigo, histórico/budgets/tombstones/rascunhos e homologação do fluxo de
 edição real. A ativação e integração na PR continuam bloqueadas por esses itens.
+
+## Contrato de migração a implementar
+
+- Centralizar a versão nas funções de chaves existentes (argumento interno
+  opcional 3/4), mantendo v3 ativo até finalizar os gates. `projectStorageEntries`
+  usa a mesma versão na chave e no marcador local; formato portátil não muda.
+- Capturar partições v3, cabeça, aplicações, orçamento e miniatura; converter e
+  calcular hash plano fora da transação. Promover pelo `promoteLocalMigration`
+  existente, comparando a fonte completa. Backup v4 guarda **todos** os registros
+  originais, inclusive propriedades desconhecidas. Não usar stringify recursivo.
+- Conservar cabeças/tombstones v3. Uma aba v3 ainda aberta pode confirmar outra
+  edição no namespace antigo; a próxima leitura v4 importa essa edição como
+  cópia, sem sobrescrever a atual. Uma cabeça v3 excluída sem meta semeia a
+  tombstone v4 antes de migrar v1/v2; não ressuscitar um projeto apagado.
+- Primeira importação com mesma identidade conserva cabeça e histórico ativos.
+  Validar inteiro/limites/pertencimento dos registros e orçamento antes de
+  promover; não deixar a política de expiração descartar histórico na migração.
+  Cópias com identidade nova arquivam cabeça/histórico originais integralmente;
+  não reaplicar inversos com identidade/hash inválidos como se fossem atuais.
+- Não perder campos raiz ao reparticionar: metadados desconhecidos precisam
+  sobreviver, ou produzir pendência explícita antes de qualquer promoção.
+  Partições e símbolos locais não devem vazar como metadados de documento.
+- Rascunhos v3 nativos e cópias síncronas devem ser classificados pelas chaves
+  das partições, não tratados como payload v4. Migrar primeiro a base durável
+  quando existir. Um registro completo pode virar recovery v4 pelo CAS atual;
+  um registro incompleto depende da partição/base ou backup exato e não pode
+  virar bloco opaco/vazio para passar o teste.
+- Cada fonte de recovery recebe um recibo imutável v4 por hash do **payload
+  inteiro**, incluindo campos desconhecidos. Enfileirar no journal existente e
+  arquivar o original na mesma transação, comparando a fonte. Remover a fonte
+  IndexedDB só nessa promoção; reconhecer a cópia síncrona somente depois.
+  O recibo torna um crash entre promoção e reconhecimento idempotente.
+- Reusar a chave canônica de recovery com escritor/token derivados do hash da
+  fonte para não sobrescrever outra revisão com token reutilizado. A base antiga
+  só autoriza o CAS se ainda corresponder à cabeça atual. Caso contrário o fluxo
+  existente cria cópia recuperada. Nunca usar a cabeça atual como força de escrita.
+- O carregamento chama a migração antes de oferecer as entradas v3 ao recovery
+  v4. Listagem e abertura reconhecem também v3/tombstones/rascunhos; uma fonte
+  futura/corrompida continua preservada e aparece como pendência compreensível.
+- Preparar envelopes profundos fora do CAS quando o conteúdo já é conhecido.
+  A captura na saída permanece síncrona e conserva o limite do journal; falta de
+  quota/permissão continua exigindo salvar/exportar, sem confirmação fictícia.
+
+## Ensaio de migração da base — 19/11/2026
+
+Implementada a promoção v3→v4 pelo CAS existente, ainda sem ativação nos
+carregadores. A versão padrão continua 3. O backup conserva as partições
+originais, campos desconhecidos, cabeça e histórico. Escrita posterior de uma
+aba v3 produz cópia; não substitui a revisão v4. Históricos incompatíveis,
+campos conflitantes e partições de outro projeto bloqueiam a promoção.
+
+A repartição e a validação de documentos antigos agora conservam metadados
+raiz desconhecidos, sem executar getters nem copiar partições como metadados.
+Os testes incluem falha na segunda escrita da transação real e edição
+concorrente antes do CAS. A preparação de payload conhecido ocorre antes dele.
+
+Verificação nesta branch experimental: 464 testes, 2.500 asserções, 73 arquivos,
+zero falhas (43,67 s), incluindo Chromium e WebKit nativos com dez mil registros
+de blocos, migração da base e aborto de saída. Typecheck aprovado. Bundle inicial:
+367.407 bytes brutos, 119.756 gzip, 35 asserções; teto de 120.000 inalterado.
+
+Pendências para ativar: migração dos journals v3 nativos e síncronos, validação
+integral deles, carregadores/listagem, layouts v1/v2 e homologação do editor.
+Este checkpoint não conclui a migração nem foi integrado à PR de produto.

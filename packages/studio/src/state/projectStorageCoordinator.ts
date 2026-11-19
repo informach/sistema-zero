@@ -1,4 +1,5 @@
 import type { EditableStudioProject } from '../core/editableProject'
+import { isDocumentRecord } from '../core/projectDocumentGuards'
 import { encodeExitJournal } from './exitJournalCodec'
 import {
   conditionalGeneration,
@@ -132,12 +133,10 @@ export function journal(value: unknown): ProApplicationRecord[] {
     throw new Error('O histórico local precisa ser conferido; nenhuma revisão foi sobrescrita.')
   return value as ProApplicationRecord[]
 }
-function budget(value: unknown): Budget {
+export function applicationBudget(value: unknown): Budget {
   if (value === undefined) return {}
   if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
+    !isDocumentRecord(value) ||
     Object.values(value).some((n) => !Number.isSafeInteger(n) || (n as number) < 0)
   )
     throw new Error('O orçamento do histórico local está incompatível.')
@@ -183,7 +182,7 @@ function journalWrite(
       )
     records.splice(expired, 1)
   }
-  const totals = { ...budget(aggregate), [id]: bytes() }
+  const totals = { ...applicationBudget(aggregate), [id]: bytes() }
   if (
     Object.values(totals).reduce((sum, size) => sum + size, 0) > PRO_APPLICATION_LIMITS.profileBytes
   )
@@ -284,7 +283,7 @@ async function commit(
       }
       let history = journalWrite(id, oldJournal, oldBudget, applications)
       if (incoming.resetApplications) {
-        const totals = { ...budget(oldBudget) }
+        const totals = { ...applicationBudget(oldBudget) }
         delete totals[id]
         history = {
           puts: [[APPLICATION_BUDGET_KEY, totals]],
