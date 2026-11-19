@@ -75,6 +75,6 @@ test('os números de hoje estão travados: mudar é seguir o procedimento do pin
   expect({
     leitura: PINTA_MAX_READ_FORMAT_VERSION as number,
     escrita: PINTA_MAP_WRITE_FORMAT_VERSION as number,
-  }).toEqual({ leitura: 5, escrita: 4 })
+  }).toEqual({ leitura: 6, escrita: 4 })
   expect(pintaCanReadFormatVersion(PINTA_MAP_WRITE_FORMAT_VERSION)).toBe(true)
 })

@@ -1,0 +1,25 @@
+
+Running 15 tests using 1 worker
+
+(node:7592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › e2e-runtime\python-pinta-physics.spec.ts:6:3 › Pinta physics 1x checks all outlines in real browser Python (2.7s)
+  ✓   2 [chrome] › e2e-runtime\python-pinta-physics.spec.ts:6:3 › Pinta physics 2x checks all outlines in real browser Python (1.9s)
+  ✓   3 [chrome] › e2e-runtime\python-pinta-world.spec.ts:6:3 › Pinta world 1x renders and crosses doors in real browser Python (2.3s)
+  ✓   4 [chrome] › e2e-runtime\python-pinta-world.spec.ts:6:3 › Pinta world 2x renders and crosses doors in real browser Python (2.4s)
+pygame-ce no navegador: 57.5 fps (56.2, 59.2, 59, 59.4, 53.8)
+  ✓   5 [chrome] › e2e-runtime\python-pygame-performance.spec.ts:6:1 › Pygame-ce keeps a playable frame rate with a full tile map, alpha sprites and text (10.4s)
+  ✓   6 [chrome] › e2e-runtime\python-pygame.spec.ts:5:1 › Pygame-ce update(None) keeps the displayed pixels until a real refresh (1.8s)
+  ✓   7 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game pong runs with assets and input (1.7s)
+  ✓   8 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game space-shooter runs with assets and input (2.0s)
+  ✓   9 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game platformer runs with assets and input (1.9s)
+  ✓  10 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game monster-battle runs with assets and input (2.4s)
+  ✓  11 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game pirate-maker runs with assets and input (1.9s)
+  ✓  12 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game vampire-survivor runs with assets and input (2.1s)
+  ✓  13 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game pydew-valley runs with assets and input (1.9s)
+  ✓  14 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game python-monsters runs with assets and input (2.6s)
+  ✓  15 [chrome] › e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game super-pirate-world runs with assets and input (2.2s)
+
+  15 passed (42.9s)

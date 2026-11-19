@@ -1,3 +1,5 @@
+import { godotPhysics } from './physics'
+
 export const godotProject = `config_version=5
 [application]
 config/name="Meu mapa do Pinta"
@@ -24,6 +26,9 @@ var animated_cells: Array = []
 var animated_art: Array = []
 var elapsed: float = 0.0
 var map_objects: Array = []
+var solid_tile_layers: Array = []
+
+${godotPhysics}
 
 func _effective(layers: Array, layer: Dictionary) -> Dictionary:
     var result: Dictionary = {"px":layer.get("parallaxX",1.0),"py":layer.get("parallaxY",1.0)}
@@ -105,6 +110,7 @@ func _load_map(key: String) -> void:
     animated_art.clear()
     elapsed = 0.0
     map_objects.clear()
+    solid_tile_layers.clear()
     scene_data = maps[key]
     world = Node2D.new()
     add_child(world)
@@ -157,6 +163,8 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
                     ts = candidate
             if ts.is_empty():
                 continue
+            if scene_data.get("version",1) >= 3:
+                solid_tile_layers.append({"node":node,"layer":layer,"cols":cols,"rows":rows,"tileset":ts})
             var tile_set := TileSet.new()
             var size: int = int(scene_data.tileSize)
             tile_set.tile_size = Vector2i(size,size)
@@ -168,7 +176,7 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
             for index in range(int(ts.count)):
                 var at := Vector2i(index % int(ts.columns),index / int(ts.columns))
                 source.create_tile(at)
-                if layer.get("collision",false) or index in ts.solid or index in ts.platform:
+                if (scene_data.get("version",1) < 3 and (layer.get("collision",false) or index in ts.solid)) or index in ts.platform:
                     var td: TileData = source.get_tile_data(at,0)
                     td.add_collision_polygon(0)
                     var h: float = size / 2.0
@@ -287,7 +295,12 @@ func _physics_process(delta: float) -> void:
     elapsed += delta * 1000
     if is_instance_valid(player):
         player.velocity = Input.get_vector("ui_left","ui_right","ui_up","ui_down") * 120
+        var previous := player.global_position
         player.move_and_slide()
+        if scene_data.get("version",1) >= 3:
+            var body_size: Vector2 = Vector2.ONE * scene_data.tileSize * 0.65
+            var result := mover_corpo(Rect2(previous - body_size / 2,body_size),player.global_position - previous)
+            player.global_position = result.position + body_size / 2
         for entry in map_objects:
             var object: Dictionary = entry.data
             if not entry.node.is_visible_in_tree() or object.get("role", "") != "door":

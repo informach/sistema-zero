@@ -14,6 +14,7 @@ import {
   type PintaAsset,
   type TilemapAsset,
   tileLayerTilesetId,
+  tilemapNeedsV7,
 } from '../../../core/project'
 import { paintSelectionOverlay } from '../../../pixel/render'
 import { getPintaStorageNamespace } from '../../../state/persistence'
@@ -58,6 +59,15 @@ export function useTilemapController(model: ReadyMapModel) {
   const zoom = useSession((state) => state.zoom)
   const stamp = useSession((state) => state.stamp)
   const autoExpand = useSession((state) => state.autoExpand)
+  const physicsRequiredByObjects = tilemap.layers.some(
+    (layer) =>
+      isObjectLayer(layer) &&
+      layer.objects.some((object) => {
+        if (object.collision) return true
+        const set = model.galleryAssets.find((asset) => asset.id === object.setId)
+        return set?.kind === 'map-set' && tilemapNeedsV7(set.map)
+      }),
+  )
 
   const [mapBrush, setMapBrush] = useState(DEFAULT_MAP_BRUSH)
   const [level, setLevelState] = useState<MapLevel>(() => readMapLevel(getPintaStorageNamespace()))
@@ -498,6 +508,7 @@ export function useTilemapController(model: ReadyMapModel) {
     cellPx,
     mapBrush,
     playtest,
+    physicsRequiredByObjects,
     snapObjects,
     showCollision,
     panning,
@@ -514,6 +525,11 @@ export function useTilemapController(model: ReadyMapModel) {
     // ações
     setLevel,
     setPlaytest,
+    setPrecisePhysics: (enabled: boolean): void => {
+      const state = editor.getState()
+      if (state.asset.kind !== 'tilemap' || (state.asset.physics === 'precise') === enabled) return
+      state.commit({ ...state.asset, physics: enabled ? 'precise' : undefined })
+    },
     setMapBrush,
     setActiveLayerId,
     chooseObject,

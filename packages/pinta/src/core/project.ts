@@ -30,6 +30,7 @@ import {
   createBitmap,
   createPixelLayer,
   normalizeAssetName,
+  PINTA_COLLISION_SCHEMA,
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
@@ -54,6 +55,7 @@ export {
   createVectorSpriteAsset,
   createVectorTilesetAsset,
   normalizeAssetName,
+  PINTA_COLLISION_SCHEMA,
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAP_SCHEMA,
@@ -515,6 +517,8 @@ export interface TilemapObject {
   art?: { assetId: string; tile?: number; animationId?: string }
   setId?: string
   role?: MapObjectRole
+  /** The authored outline stops a character; never inferred from free properties or role. */
+  collision?: true
 }
 
 /** Camada de OBJETOS: não tem peças, só a lista de objetos. */
@@ -545,6 +549,8 @@ export type TilemapLayer = TilemapTileLayer | TilemapObjectLayer | TilemapGroupL
 
 export interface TilemapAsset extends PintaAssetBase {
   kind: 'tilemap'
+  /** Explicit opt-in for existing maps; scene 1/2 games keep their previous tile-grid physics. */
+  physics?: 'precise'
   /**
    * As peças PADRÃO do mapa (um TilesetAsset do MESMO perfil). Camada de peças
    * sem `tilesetId` próprio usa estas; a ponte do Estúdio leva a grade só das
@@ -791,6 +797,7 @@ export function tilemapNeedsV5(tilemap: TilemapAsset): boolean {
 
 export function tilemapNeedsV6(tilemap: TilemapAsset): boolean {
   return (
+    tilemapNeedsV7(tilemap) ||
     !!tilemap.resources?.length ||
     tilemap.layers.some(
       (layer) =>
@@ -800,8 +807,18 @@ export function tilemapNeedsV6(tilemap: TilemapAsset): boolean {
   )
 }
 
+export function tilemapNeedsV7(tilemap: TilemapAsset): boolean {
+  return (
+    tilemap.physics === 'precise' ||
+    tilemap.layers.some(
+      (layer) => isObjectLayer(layer) && layer.objects.some((object) => object.collision === true),
+    )
+  )
+}
+
 /** O carimbo que este mapa precisa levar, ou `undefined` quando cabe no formato antigo. */
 export function tilemapSchemaFor(tilemap: TilemapAsset): number | undefined {
+  if (tilemapNeedsV7(tilemap)) return PINTA_COLLISION_SCHEMA
   if (tilemapNeedsV6(tilemap)) return PINTA_RESOURCE_SCHEMA
   if (tilemapNeedsV5(tilemap)) return PINTA_PRECISE_SCHEMA
   if (tilemapNeedsV4(tilemap)) return PINTA_SCENE_SCHEMA
@@ -1463,6 +1480,7 @@ export function sanitizeObjectProperties(raw: unknown): Record<string, TilemapOb
  */
 export function objectNeedsV4(o: TilemapObject): boolean {
   return (
+    o.collision === true ||
     o.shape !== undefined ||
     o.rotation !== undefined ||
     o.flipX === true ||
@@ -1476,6 +1494,7 @@ export function objectNeedsV4(o: TilemapObject): boolean {
 
 export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<TilemapObject> {
   const out: Partial<TilemapObject> = {}
+  if (o.collision === true) out.collision = true
   if (typeof o.shape === 'string' && (MAP_OBJECT_SHAPES as readonly string[]).includes(o.shape))
     out.shape = o.shape as MapObjectShape
   if (out.shape === 'polygon' || out.shape === 'polyline') {
@@ -1754,6 +1773,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         ...base,
         kind: 'tilemap',
         tilesetId: mapTilesetId,
+        ...(record.physics === 'precise' ? { physics: 'precise' as const } : {}),
         cols: record.cols,
         rows: record.rows,
         layers: sanitizeLayerTree(layers),
@@ -1771,7 +1791,8 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         (record.schema !== PINTA_MAP_SCHEMA &&
           record.schema !== PINTA_SCENE_SCHEMA &&
           record.schema !== PINTA_PRECISE_SCHEMA &&
-          record.schema !== PINTA_RESOURCE_SCHEMA) ||
+          record.schema !== PINTA_RESOURCE_SCHEMA &&
+          record.schema !== PINTA_COLLISION_SCHEMA) ||
         !record.map ||
         typeof record.map !== 'object' ||
         (record.map as Record<string, unknown>).kind !== 'tilemap'

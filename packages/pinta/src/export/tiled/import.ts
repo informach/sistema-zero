@@ -782,11 +782,13 @@ export async function importTiledScene(
               properties: plain(p, whereObject, warnings, LIMITS.objectProperties),
               ...(typeof e.role === 'string' ? { role: e.role } : {}),
               ...(typeof e.setId === 'string' ? { setId: e.setId } : {}),
+              ...(p['pinta:collision'] === true ? { collision: true } : {}),
               ...(at.rotation ? { rotation: at.rotation } : {}),
               ...(shape ? { shape } : {}),
               ...(shape === 'polygon' || shape === 'polyline'
                 ? { points: points.map(rec).map((q) => ({ x: number(q.x), y: number(q.y) })) }
                 : {}),
+              ...(e.separateArt === true && original ? { art: original } : {}),
               ...(g
                 ? {
                     // O desenho original do Pinta volta igual quando ainda aponta para a mesma peça.

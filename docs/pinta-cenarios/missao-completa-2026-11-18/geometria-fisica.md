@@ -8,7 +8,7 @@ ficar entre todas as amostras. O personagem então atravessava a parede. A repro
 usa apenas dados nativos existentes: conjunto de 16 colunas reduzido para 1 pixel,
 uma peça sólida, coordenadas inteiras e nenhum formato novo.
 
-Isso é diferente da grade aproximada dos motores JavaScript publicados. Esses
+Na base deste diagnóstico, isso é diferente da grade aproximada dos motores JavaScript publicados. Esses
 motores ainda precisam de um contrato novo para adotar física diferente sem trocar
 silenciosamente a interpretação dos jogos já publicados. No Pygame, as peças de
 conjuntos já usam quadriláteros, mas formas de objeto ainda não são paredes autorais.
@@ -46,24 +46,32 @@ Aceite deste lote:
 
 [Evidências locais e limites](qa/geometria-fisica/README.md).
 
+## Segundo lote: contornos autorais protegidos
+
+O [contrato e guia dos contornos](colisoes-autorais.md) registra a evolução seguinte:
+documento/envelope 7, cena 3, PNG 4 e capacidade própria do runtime. Há marca de
+barreira no painel existente, histórico, preservação em conjuntos, corpo e varredura
+contínua nos motores JavaScript/Pygame, consulta afim no Godot e ida e volta no Tiled.
+As cenas antigas não recebem a física nova implicitamente.
+
+O [registro de QA](qa/colisoes-autorais/README.md) separa a qualificação local e o
+artefato exato de Python/Wasm do rollout em staging. O gravador de nuvem continua
+no formato 4 durante a publicação do leitor; os documentos 6/7 não são enviados
+com uma declaração insuficiente.
+
 ## Fechamento restante da etapa 2b
 
-Este lote não conclui a etapa. A função matemática de formas está pronta para a
-integração, mas isso não oferece ainda uma ferramenta de parede por objeto.
+Os lotes funcionais não concluem sozinhos a etapa nem a missão inteira.
 
-- Acrescentar marca autoral explícita de colisão por objeto, com controle no painel
-  existente e histórico, seleção múltipla, cópia, conjuntos e templates completos.
-- Elevar formato nativo/envelope e contrato de cena para que leitores que removem
-  essa marca recusem o documento. Conservar as cenas antigas com a física anterior.
-- Acrescentar capacidade de runtime e versões de dados PNG/mundo correspondentes;
-  conferir importação, atualização, execução, pacote web e publicação. Preservar a
-  autoridade offline e os checkpoints quando a escrita de nuvem ainda não foi ativada.
-- Integrar corpo, formas, peças transformadas e plataformas aos dois motores do
-  Estúdio e ao Pygame. Verificar o Phaser e os adaptadores externos com os mesmos
-  casos, incluindo limites, contatos, concavidade e transformações afins.
-- Medir o custo das consultas e a carga adicional dos motores antes de decidir
-  tetos. O percurso local por células não comprova desempenho do pior caso de
-  centenas de instâncias reduzidas ou sobrepostas.
+- Fechar a semântica e a execução comum das plataformas de mão única sob giros,
+  espelhos e deslocamentos fracionários. Os motores preservam seus resolvedores
+  anteriores para plataformas; a nova consulta precisa cobre sólidos.
+- Qualificar a atualização de cena 2 para 3 em jogos abertos e fechados e o ciclo
+  de publicação/restauração com a conta de staging após rollout do leitor/runtime.
+- Ampliar as medições para muitas instâncias reduzidas ou sobrepostas. Os 16
+  corpos e a CPU reduzida da fixture não comprovam o pior caso dos limites autorais.
+- Exercitar a marca nas ferramentas de templates e espalhamento quando elas forem
+  concluídas nas respectivas etapas, preservando suas propriedades e vínculos.
 
 Não usar um nome reservado dentro das propriedades livres para simular o novo
 campo, nem habilitar o gravador de nuvem antes do leitor. As provas de staging e

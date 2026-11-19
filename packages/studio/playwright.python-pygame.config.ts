@@ -11,6 +11,7 @@ export default defineConfig({
     'python-pygame.spec.ts',
     'python-pygame-performance.spec.ts',
     'python-pinta-world.spec.ts',
+    'python-pinta-physics.spec.ts',
   ],
   fullyParallel: false,
   workers: 1,

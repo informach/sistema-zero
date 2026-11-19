@@ -70,6 +70,58 @@ test('a capacidade mínima conserva clientes 5 em documentos compatíveis e prot
   expect(db().get(LOCAL_ASSET_PREFIX + base.id)).toMatchObject({ capability: 5, asset: null })
 })
 
+test('026: uma aba anterior não retira colisões do documento 7 e sua edição é recuperada offline', async () => {
+  const local = client(),
+    base = map()
+  await local.persistAsset(base)
+  const stale = await client().loadAssetById(base.id)
+  if (!stale) throw new Error('Mapa ausente')
+  const physical = withPintaSchemaStamp({
+    ...base,
+    physics: 'precise' as const,
+    layers: [
+      ...base.layers,
+      {
+        id: 'walls',
+        kind: 'objects' as const,
+        name: 'Paredes',
+        visible: true,
+        objects: [
+          {
+            id: 'ellipse',
+            name: 'Lago',
+            type: '',
+            x: 1,
+            y: 1,
+            width: 10,
+            height: 8,
+            shape: 'ellipse' as const,
+            collision: true as const,
+            properties: {},
+          },
+        ],
+      },
+    ],
+  })
+  await local.persistAsset(physical)
+  expect(db().get(LOCAL_ASSET_PREFIX + base.id)).toMatchObject({
+    capability: 7,
+    asset: { schema: 7 },
+  })
+  // A pre-authority tab writes only its legacy mirror, with a later timestamp.
+  db().set(`pinta:asset:${base.id}`, {
+    ...stale,
+    name: 'minha-edicao-antiga',
+    updatedAt: Date.now(),
+  })
+  const reopened = client()
+  expect(await reopened.loadAssetById(base.id)).toEqual(physical)
+  const recovered = await reopened.listAllAssets()
+  expect(recovered).toHaveLength(2)
+  expect(recovered.find((asset) => asset.id !== base.id)?.name).toContain('copia')
+  expect(recovered.find((asset) => asset.id === base.id)).toEqual(physical)
+})
+
 test('rebaixamento deliberado na instância que observou5 continua permitido', async () => {
   const a = client(),
     m = precise()
