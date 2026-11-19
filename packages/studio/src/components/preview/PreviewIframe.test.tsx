@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import 'fake-indexeddb/auto'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { clear } from 'idb-keyval'
@@ -11,6 +11,40 @@ import { useUIStore } from '../../state/uiStore'
 import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
+
+/** Preserve real storage behavior; report ordering only when the original assertion fails. */
+async function traceTripwire(run: () => Promise<void>): Promise<void> {
+  const storage = window.localStorage
+  const setItem = storage.setItem.bind(storage)
+  const removeItem = storage.removeItem.bind(storage)
+  const changes: Array<{ operation: string; key: string; time: number; stack?: string }> = []
+  const record = (operation: string, key: string) => {
+    if (!key.startsWith('sz:run-tripwire:')) return
+    changes.push({ operation, key, time: performance.now(), stack: new Error().stack })
+    if (changes.length > 20) changes.shift()
+  }
+  const set = spyOn(storage, 'setItem').mockImplementation((key, value) => {
+    record('set', key)
+    setItem(key, value)
+  })
+  const remove = spyOn(storage, 'removeItem').mockImplementation((key) => {
+    record('remove', key)
+    removeItem(key)
+  })
+  try {
+    await run()
+  } catch (error) {
+    console.error('Tripwire ordering at failure', {
+      changes,
+      phase: useProRun.getState().state?.phase,
+      running: useUIStore.getState().previewRunning,
+    })
+    throw error
+  } finally {
+    set.mockRestore()
+    remove.mockRestore()
+  }
+}
 
 describe('PreviewIframe', () => {
   beforeEach(async () => {
@@ -106,53 +140,54 @@ describe('PreviewIframe', () => {
 
   // Em navegador que não isola a prévia, um jogo que congela a aba congelaria de novo a cada
   // abertura do projeto (a prévia roda sozinha). A marca de execução quebra o laço.
-  it('a marca de execução permanece após sinais de vida e só sai ao parar ou sair corretamente', async () => {
-    const project = createPreviewProject()
-    const chave = `sz:run-tripwire:${project.id}`
-    window.localStorage.removeItem(chave)
-    useProjectStore.setState({ project, isDirty: false, saveError: null })
-    const montada = render(<PreviewIframe />)
-    const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
-    fireEvent.load(iframe)
-    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
-    expect(window.localStorage.getItem(chave)).not.toBeNull()
+  it('a marca de execução permanece após sinais de vida e só sai ao parar ou sair corretamente', async () =>
+    traceTripwire(async () => {
+      const project = createPreviewProject()
+      const chave = `sz:run-tripwire:${project.id}`
+      window.localStorage.removeItem(chave)
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
+      const montada = render(<PreviewIframe />)
+      const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+      fireEvent.load(iframe)
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      expect(window.localStorage.getItem(chave)).not.toBeNull()
 
-    const contentWindow = iframe.contentWindow
-    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
-    const batimento = () =>
-      act(() => {
-        window.dispatchEvent(
-          new MessageEvent('message', {
-            source: contentWindow,
-            origin: 'null',
-            data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
-          }),
-        )
-      })
-    batimento()
-    batimento()
-    expect(window.localStorage.getItem(chave)).not.toBeNull()
-    batimento()
-    expect(window.localStorage.getItem(chave)).not.toBeNull()
-    // Um jogo pode travar depois de já ter enviado batimentos. Encerrar corretamente,
-    // não um batimento anterior, é o que permite a próxima abertura automática.
+      const contentWindow = iframe.contentWindow
+      if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+      const batimento = () =>
+        act(() => {
+          window.dispatchEvent(
+            new MessageEvent('message', {
+              source: contentWindow,
+              origin: 'null',
+              data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+            }),
+          )
+        })
+      batimento()
+      batimento()
+      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      batimento()
+      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      // Um jogo pode travar depois de já ter enviado batimentos. Encerrar corretamente,
+      // não um batimento anterior, é o que permite a próxima abertura automática.
 
-    // A aba congelou com o jogo rodando: nada desmontou, a marca ficou. Na abertura seguinte...
-    montada.unmount()
-    expect(window.localStorage.getItem(chave)).toBeNull()
-    window.localStorage.setItem(chave, String(Date.now()))
-    useUIStore.setState({ previewRunning: true })
-    render(<PreviewIframe />)
-    fireEvent.load(screen.getByTitle('Pré-visualização'))
-    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('idle'))
-    expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
-    expect(window.localStorage.getItem(chave)).toBeNull()
+      // A aba congelou com o jogo rodando: nada desmontou, a marca ficou. Na abertura seguinte...
+      montada.unmount()
+      expect(window.localStorage.getItem(chave)).toBeNull()
+      window.localStorage.setItem(chave, String(Date.now()))
+      useUIStore.setState({ previewRunning: true })
+      render(<PreviewIframe />)
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
+      await waitFor(() => expect(useProRun.getState().state?.phase).toBe('idle'))
+      expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
+      expect(window.localStorage.getItem(chave)).toBeNull()
 
-    // ...a prévia espera o Rodar, e aí roda (com a marca posta de novo).
-    act(() => useProRun.getState().actions?.run())
-    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
-    expect(window.localStorage.getItem(chave)).not.toBeNull()
-  })
+      // ...a prévia espera o Rodar, e aí roda (com a marca posta de novo).
+      act(() => useProRun.getState().actions?.run())
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      expect(window.localStorage.getItem(chave)).not.toBeNull()
+    }))
 
   it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })

@@ -36,3 +36,11 @@ A integração principal `76c2a2d54`, ainda v3, terminou com **12/12 jobs aprova
 No laboratório c81, os cinco percursos protegidos das aulas e os cinco cenários hostis do Windows passaram; o job Windows reprovou exclusivamente no observador da aba oculta ainda preso ao v3. O job de medição de isolamento falhou antes dos testes por divergência de tamanho no espelho APT; foi solicitada uma repetição somente desse job após o término do run, sem desabilitar verificação de pacotes.
 
 Continuam pendentes a revisão remota exata, as falhas intermitentes de colagem/marca, a integração dos commits mais recentes da branch principal e a missão global. Os números acima são de laboratório/CI e não comprovam hardware físico de entrada, metas universais de FPS ou homologação completa de todos os recursos.
+
+## Instrumentação da próxima reprodução
+
+Os testes de comportamento/CSS agora capturam um histórico limitado a cem eventos de ponteiro, foco e carregamento do iframe. O anexo `menu-interactions.json` é produzido somente em falha. Não há eventos sintéticos, mudança de foco, retry de clique, alteração de prazo ou listener no produto. A captura usa somente fixtures de laboratório e não inclui conteúdo dos arquivos do projeto.
+
+O teste da marca conserva todas as asserções e encaminha as operações reais de localStorage. Em falha, registra até vinte operações da própria marca, suas pilhas e o estado de execução; as funções originais são restauradas em `finally`. Essa evidência deve distinguir armação tardia, remoção inesperada e interferência de outro ciclo de preview antes de escolher uma correção.
+
+Com a captura ativa, os dois fluxos Chromium passaram novamente (**17,7 s**) e os **29 testes de PreviewIframe passaram**. Isso valida a execução local da captura, não resolve nem explica por si só as falhas remotas.
