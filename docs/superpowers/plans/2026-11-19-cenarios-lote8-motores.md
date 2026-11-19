@@ -47,9 +47,11 @@
 
 **Files:** `official-extensions/world-3d/{blocks,worldIR,worldCodec,palette,runtime,manifest}.ts`, seletores existentes de materiais e contratos pertinentes descobertos pelos testes de blocos.
 
-- [ ] Bloco/seletor Usar o cenário, com referência por ID e codec/IR de ida e volta.
-- [ ] Carregar pela função compartilhada, esperar preparo no lifecycle existente e trocar terreno/água/ambiente atomicamente. `heightAt` e superfícies dirigíveis consultam os dados físicos reais, incluindo recortes e pontes; conservar avatar/carrinho/câmera e controles.
-- [ ] Testes do motor, percurso real no navegador, publicação local /jogar, reabertura/export, CSP e três ciclos de recursos. Capturas/vídeo, revisão e commit antes de Canvas 3D.
+- [x] Bloco/seletor Usar o cenário, com referência por ID e codec/IR de ida e volta.
+- [x] Carregar pela função compartilhada, esperar preparo no lifecycle existente e trocar terreno/água/ambiente atomicamente. `heightAt` e superfícies dirigíveis consultam os dados físicos reais, incluindo recortes e pontes; conservar avatar/carrinho/câmera e controles.
+- [x] Testes do motor, percurso real no navegador, publicação local /jogar, reabertura/export, CSP e três ciclos de recursos. Capturas/vídeo, revisão e commit antes de Canvas 3D.
+
+19/11: [Mundo 3D qualificado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-mundo.md), com limites da publicação controlada, percurso parcial na ponte e fallbacks do host registrados. Não substitui a implantação/conta real no encerramento global. Os outros três motores e Pro autoral permanecem abertos; 8.4 não está concluído.
 
 ## 4. Canvas 3D
 

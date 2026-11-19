@@ -25,6 +25,8 @@ import { conferirConteudoCompilado } from './conteudo'
 import { AguaDaCenaCompilada } from './runtime-agua'
 import { custoDaInstanciaCompilada, instanciarModeloCompilado } from './runtime-modelos'
 
+export { resolverInicioDaCena } from './inicio'
+
 export interface OpcoesDoRuntimeCompilado {
   /** Capacidade real do renderer; 4096 é o padrão portátil, não uma medição do aparelho. */
   maxTextura?: number

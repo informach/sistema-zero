@@ -18,6 +18,7 @@ export const WORLD_THREE_D_PALETTE: ExtensionPaletteTree = [
         name: 'Criar e moldar o chão',
         types: [
           'sz_w3d_setup',
+          'sz_w3d_use_scene',
           'sz_w3d_terrain',
           'sz_w3d_flatten',
           'sz_w3d_path',

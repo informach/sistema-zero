@@ -21,9 +21,14 @@ const ASSETS: ProjectAsset[] = [
   a('explosao', 'audio'),
   a('caixa', 'model3d', { originalFileName: 'caixa.glb' }),
   a('ceu', 'environment3d', { originalFileName: 'ceu.hdr' }),
+  a('vila', 'scene3d', { id: 'cena-vila' }),
+  a('alturas-internas', 'scene3d-data'),
 ]
 
 describe('filterAssetsForPicker — grade por família de asset', () => {
+  it('oferece cenas completas sem expor campos internos ou modelos soltos no seletor de cenário', () => {
+    expect(filterAssetsForPicker(ASSETS, 'scene3d').map((x) => x.id)).toEqual(['cena-vila'])
+  })
   it("kind '3d' → só modelo .glb + céu .hdr (nada de imagem/som)", () => {
     expect(filterAssetsForPicker(ASSETS, '3d').map((x) => x.name)).toEqual(['caixa', 'ceu'])
   })

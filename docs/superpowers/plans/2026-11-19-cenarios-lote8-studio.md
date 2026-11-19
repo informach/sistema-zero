@@ -87,7 +87,7 @@ Depois de `deb6a3e36`, a frente exclusiva é a integração visual desta tarefa.
 `carregarCena3DDoProjeto` resolve o envelope/referências pelos assets e reconstitui `PacoteCompilado`, conferindo bytes reais antes de chamar o carregador comum. Retorna cena, alturas, colisões, atores, metadados e descarte. Não consulta Palco/editor. Cada motor liga esse resultado à sua câmera/controlador/loop existentes.
 
 - [x] Testar o carregador com a cena real do ensaio Raylib/Three: geometria, transformações, pintura, buracos/recortes, duas águas, três caminhos, atores/clipes, erro/cancelamento e três ciclos de recursos. [Carregador](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-carregador.md) e [documento/export](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-transporte.md) qualificados; os motores abaixo permanecem abertos.
-- [ ] Mundo 3D: bloco/seletor Usar o cenário, codec/IR e troca atômica da representação do mundo; heightAt usa alturas reais. Não sobrepor terreno antigo à cena.
+- [x] Mundo 3D: bloco/seletor Usar o cenário, codec/IR e troca atômica da representação do mundo; heightAt usa alturas reais. Não sobrepor terreno antigo à cena. [Qualificação, revisão e limites do ensaio local](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-mundo.md).
 - [ ] Canvas 3D: bloco/seletor e `sz_t3d_load_scene`; mesma cena/consulta e ciclo de recursos, sem um segundo carregador.
 - [ ] Jogo 3D: mesmo bloco e integração no motor existente, conservando avatar, câmera e controles.
 - [ ] Jogo 3D Avançado: mesmo bloco e integração no motor existente; preservar atores animáveis e física/colisões compatíveis.
