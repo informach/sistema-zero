@@ -23,3 +23,6 @@ Typecheck completo com cache incremental: saída 0 (`python-flush-typecheck.txt`
 ## Resultado da integração anterior
 
 O run e8a5f942f aprovou 11 de 12 jobs. Passaram todos os navegadores, executor hospedado, isolamento, auditoria e contratos Linux. O job Python executou 81 testes em Chrome, Edge e Chromium, incluindo seis casos dos mundos ligados Pinta 1×/2×. O job linux-chromium-1 executou duas provas contra cada leitor histórico, com checkout/dependências congelados próprios. A falha Windows acima não foi ocultada nem tratada como execução global aprovada.
+
+
+A reprodução antecipada controla também performance.now(), evitando depender de o processo receber CPU dentro de 30 ms. O teste de duração real original continua sem mock e com sua exigência original. Após esse ajuste: 26 testes / 748 asserções do supervisor aprovados, typecheck incremental completo com saída 0 (`python-flush-clock-*`).

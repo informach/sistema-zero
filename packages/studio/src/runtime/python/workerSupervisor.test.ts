@@ -708,6 +708,7 @@ test('an early timer cannot finish saved-file flushing before its deadline or re
   live.boot()
   live.supervisor.run()
   const timers = spyOn(globalThis, 'setTimeout')
+  const clock = spyOn(performance, 'now').mockReturnValue(1000)
   try {
     let settled = false
     const waiting = live.supervisor.flushSaved(30).then(() => {
@@ -725,6 +726,7 @@ test('an early timer cannot finish saved-file flushing before its deadline or re
     early()
     expect(timers.mock.calls.length).toBe(count)
   } finally {
+    clock.mockRestore()
     timers.mockRestore()
   }
 })
