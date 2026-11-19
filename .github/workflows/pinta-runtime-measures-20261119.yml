@@ -1,4 +1,4 @@
-name: Medir payload antes e depois da integração de cenas
+name: Qualificar copia nativa Firefox Linux e medir runtimes
 
 on:
   push:
@@ -9,6 +9,40 @@ permissions:
   contents: read
 
 jobs:
+  firefox-copy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: c3e9f483d87ecf112436779608ea136855db3f72
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - run: bun install --frozen-lockfile
+      - working-directory: packages/studio
+        run: bunx playwright install --with-deps firefox
+      - name: Conferir programa inteiro e casca sem retries
+        working-directory: packages/studio
+        env:
+          CI: 'true'
+          PLAYWRIGHT_OUTPUT_DIR: './.cache/pinta-firefox-linux'
+        run: |
+          mkdir -p ../../.cache
+          node node_modules/@playwright/test/cli.js test --project=firefox --retries=0 --reporter=list,json | tee ../../.cache/pinta-firefox-linux.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pinta-firefox-linux-c3e9f483d
+          path: |
+            .cache/pinta-firefox-linux.log
+            packages/studio/.cache/pinta-firefox-linux
+          retention-days: 7
+          if-no-files-found: error
   measure:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
