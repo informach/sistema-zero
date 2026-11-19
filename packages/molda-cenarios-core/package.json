@@ -9,7 +9,8 @@
     "./v2": "./src/v2/index.ts",
     "./geometria": "./src/geometria.ts",
     "./compilar": "./src/compilar/index.ts",
-    "./studio": "./src/compilar/studio.ts"
+    "./studio": "./src/compilar/studio.ts",
+    "./publicacao": "./src/publicacao.ts"
   },
   "scripts": {
     "test": "bun test",

@@ -69,6 +69,7 @@
     "@sistemazero/molda": "workspace:*",
     "@sistemazero/molda-cenarios": "workspace:*",
     "@sistemazero/molda-cenarios-core": "workspace:*",
+    "@sistemazero/molda-cenarios-motor": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/ui": "workspace:*",

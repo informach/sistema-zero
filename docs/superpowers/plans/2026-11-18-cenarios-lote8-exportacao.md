@@ -114,10 +114,10 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 - [x] Gerar pacote Raylib com `models/`, `cenario_<nome>.py`, `cenario.py`, dados e exemplo. Agrupar estático por região/material para reduzir chamadas. Runtime carrega, desenha, consulta altura e verifica colisões por caixa conforme o contrato do destino; não chamar essas caixas de física de malha.
 - [x] Acrescentar o módulo oficial ao Raylib 2D/3D existente, distribuição browser e export desktop, com a versão upstream já fixada. Módulo da pessoa tem precedência; sem sobrescrever `cenario.py` autoral. Conferir execução CPython e runtime Python do Estúdio.
-- [ ] Criar asset `scene3d` estrito com manifesto compacto e referências a assets `model3d` comuns. Validar dependências, hashes, nomes/IDs, MIME, dimensões/limites e remoção/rename. Importar cena/dependências atomicamente pela biblioteca existente, preservando origem/licença.
-- [ ] Acrescentar “Usar o cenário” e o tipo de seletor adequado aos quatro destinos. Um adaptador compartilhado carrega a cena; cada motor conecta cena/colisões/altura à sua API. Mundo 3D usa o mapa de alturas como fonte de `heightAt`; Canvas 3D oferece `sz_t3d_load_scene`; Jogo 3D e Avançado conservam seus controladores.
-- [ ] Medir projeto existente mais a importação antes de gravar: 48 malhas, 5 MB/modelo, 24 MB/projeto. Oferecer junção estática quando resolver o excedente; caso contrário, erro concreto e projeto intacto. Repetição de importação não duplica recursos idênticos nem perde IDs usados por blocos.
-- [ ] Executar o mesmo cenário nos quatro runtimes, com relevo, objetos, água, caminhos, início e metadados; conferir export/reabertura, CSP/offline aplicável e projeto acima do orçamento. Testar importação Python no fluxo “Trazer do Molda”. Revisão e checkpoint.
+- [x] Criar asset `scene3d` estrito com manifesto compacto e referências a assets `model3d` comuns. Validar dependências, hashes, nomes/IDs, MIME, dimensões/limites e remoção/rename. Importar cena/dependências atomicamente pela biblioteca existente, preservando origem/licença.
+- [x] Acrescentar “Usar o cenário” e o tipo de seletor adequado aos quatro destinos. Um adaptador compartilhado carrega a cena; cada motor conecta cena/colisões/altura à sua API. Mundo 3D usa o mapa de alturas como fonte de `heightAt`; Canvas 3D oferece `sz_t3d_load_scene`; Jogo 3D e Avançado conservam seus controladores.
+- [x] Medir projeto existente mais a importação antes de gravar: 48 malhas, 5 MB/modelo, 24 MB/projeto. Oferecer junção estática quando resolver o excedente; caso contrário, erro concreto e projeto intacto. Repetição de importação não duplica recursos idênticos nem perde IDs usados por blocos.
+- [x] Executar o mesmo cenário nos quatro runtimes, com relevo, objetos, água, caminhos, início e metadados; conferir export/reabertura, CSP/offline aplicável e projeto acima do orçamento. Testar importação Python no fluxo “Trazer do Molda”. Revisão e checkpoint. Fechamento integrado, Pro autoral e limites reais no [checkpoint de 8.4](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-pro.md), enviado em `4b26a3e69`.
 
 ## 8.5 — Publicação versionada e perfil do Arquipélago
 
@@ -139,7 +139,7 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 ## Estado atual
 
-**Lote 8 aberto; 8.1, 8.2 e 8.3 fechados localmente. Recorte exclusivo ativo: 8.4.** [Interface, download e revisão de 8.3](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-interface-exportacao.md), apoiados nos checkpoints anteriores de runtime Three, leitura ZIP, GLB único e preparo autorizado. Python/Raylib e Estúdio são a próxima entrega; publicação em 8.5, lotes 9–10, composição e encerramento global permanecem pendentes.
+**Lote 8 aberto; 8.1, 8.2, 8.3 e 8.4 fechados localmente. Recorte exclusivo ativo: 8.5.** [Fechamento integrado de 8.4](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-pro.md), enviado em `4b26a3e69`. O histórico abaixo descreve os cortes intermediários. Publicação/perfil em 8.5, fechamento 8.6, lotes 9–10, composição e encerramento global permanecem pendentes.
 
 Continuação de 8.4, 19/11: [pacote/auxiliar Raylib implementado, testado e revisado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-raylib.md). 810 testes, execução nativa e Pyodide, oito layouts/temas e três ciclos de recursos. 8.4 segue aberto para scene3d, importação atômica, quatro motores e fluxo Python no produto.
 

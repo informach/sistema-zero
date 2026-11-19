@@ -60,6 +60,7 @@ import type {
   ExecutorDeCenarios as Executor,
   TransacaoDeCenarios as Transacao,
 } from './cenarios-transacao'
+import { travarEspacoDeCenarios } from './cenarios-transacao'
 import { ConjuntosNoPostgres } from './conjuntos.repository'
 import type { Database } from './db'
 import {
@@ -73,6 +74,7 @@ import {
   cenarioModelos,
   cenarioMundoBibliotecas,
   cenarioMundos,
+  cenarioPublicacaoArquivos,
   cenarioRetratos,
   cenarioRevisoes,
   cenarioTexturas,
@@ -229,9 +231,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
   /** Uma escrita por vez em cada espaço: é o que segura a cota e os tetos de quantidade. */
   private comTrava<T>(espacoId: string, tarefa: (tx: Transacao) => Promise<T>): Promise<T> {
     return this.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtextextended(${`cenarios-espaco:${espacoId}`}, 0))`,
-      )
+      await travarEspacoDeCenarios(tx, espacoId)
       return tarefa(tx)
     })
   }
@@ -383,6 +383,7 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         and(
           eq(cenarioBlobs.espacoId, espacoId),
           inArray(cenarioBlobs.digest, candidatos),
+          sql`not exists (select 1 from ${cenarioPublicacaoArquivos} p where p.espaco_id = ${espacoId} and p.digest = ${cenarioBlobs.digest})`,
           sql`not exists (select 1 from ${cenarioConjuntoVersoes} v
             join ${cenarioConjuntos} s on s.id = v.conjunto_id
             join ${cenarioBibliotecas} b on b.id = s.biblioteca_id

@@ -1,3 +1,8 @@
+import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
+import {
+  MAX_BYTES_DO_MANIFESTO,
+  MIME_DO_MANIFESTO,
+} from '@sistemazero/molda-cenarios-core/publicacao'
 import {
   type DocumentoDeCenario,
   type FragmentoBasico,
@@ -24,13 +29,22 @@ export const TIPOS_DE_ESPACO = ['conta', 'equipe'] as const
 export type TipoDeEspaco = (typeof TIPOS_DE_ESPACO)[number]
 
 /** O que guarda cada arquivo: o `.glb` do modelo, o retrato dele ou a capa de um cenário. */
-export const TIPOS_DE_BLOB = ['modelo', 'miniatura', 'capa', 'textura', 'terreno'] as const
+export const TIPOS_DE_BLOB = [
+  'modelo',
+  'miniatura',
+  'capa',
+  'textura',
+  'terreno',
+  'manifesto-compilado',
+  'recurso-compilado',
+] as const
 export type TipoDeBlob = (typeof TIPOS_DE_BLOB)[number]
 export const TIPOS_DE_CONTEUDO = [
   'model/gltf-binary',
   'image/webp',
   'image/png',
   'application/octet-stream',
+  MIME_DO_MANIFESTO,
 ] as const
 export type TipoDeConteudo = (typeof TIPOS_DE_CONTEUDO)[number]
 export interface ConferenciaDeBlob {
@@ -43,7 +57,10 @@ export const ehImagemDeCenario = (tipo: TipoDeBlob) =>
   tipo === 'miniatura' || tipo === 'capa' || tipo === 'textura'
 /** A mesma imagem pode servir ao retrato de um modelo e à capa de um cenário. */
 export const tiposDeBlobCompativeis = (a: TipoDeBlob, b: TipoDeBlob) =>
-  a === b || (ehImagemDeCenario(a) && ehImagemDeCenario(b))
+  a === b ||
+  (ehImagemDeCenario(a) && ehImagemDeCenario(b)) ||
+  (a === 'recurso-compilado' && (b === 'modelo' || ehImagemDeCenario(b))) ||
+  (b === 'recurso-compilado' && (a === 'modelo' || ehImagemDeCenario(a)))
 
 export const LIMITES_DOS_CENARIOS = {
   /** Espaço de uma conta: 2 GB. Separado do 1 GB das criações do perfil. */
@@ -62,6 +79,8 @@ export const LIMITES_DOS_CENARIOS = {
   capaBytes: 512 * 1024,
   texturaBytes: MAX_BYTES_DE_TEXTURA_CENARIO,
   terrenoBytes: MAX_BYTES_RECURSO_TERRENO,
+  manifestoCompiladoBytes: MAX_BYTES_DO_MANIFESTO,
+  recursoCompiladoBytes: LIMITES_DA_EXPORTACAO.bytesDoPacote,
   /** Arquivos reservados por chamada: o gateway limita os pedidos por minuto. */
   reservaPorChamada: 50,
   paginaDeModelos: 200,
@@ -75,6 +94,8 @@ export const TIPO_DO_CONTEUDO: Record<TipoDeBlob, TipoDeConteudo> = {
   capa: 'image/webp',
   textura: 'image/webp',
   terreno: 'application/octet-stream',
+  'manifesto-compilado': MIME_DO_MANIFESTO,
+  'recurso-compilado': 'application/octet-stream',
 }
 export const TETO_DO_BLOB: Record<TipoDeBlob, number> = {
   modelo: LIMITES_DOS_CENARIOS.modeloBytes,
@@ -82,6 +103,8 @@ export const TETO_DO_BLOB: Record<TipoDeBlob, number> = {
   capa: LIMITES_DOS_CENARIOS.capaBytes,
   textura: LIMITES_DOS_CENARIOS.texturaBytes,
   terreno: LIMITES_DOS_CENARIOS.terrenoBytes,
+  'manifesto-compilado': LIMITES_DOS_CENARIOS.manifestoCompiladoBytes,
+  'recurso-compilado': LIMITES_DOS_CENARIOS.recursoCompiladoBytes,
 }
 
 /**
