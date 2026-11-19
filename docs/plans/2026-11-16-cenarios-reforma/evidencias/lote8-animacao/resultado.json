@@ -10,10 +10,7 @@
     "verticesMaximos": 64998
   },
   "partes": 2,
-  "vertices": [
-    64998,
-    3
-  ],
+  "vertices": [64998, 3],
   "clipes": 1,
   "quadros": [
     {

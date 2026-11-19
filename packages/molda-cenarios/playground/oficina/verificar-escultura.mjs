@@ -93,7 +93,9 @@ try {
       aoPreverTerreno: (e) => {
         q.escultura = e
       },
-      aoMedir: (e) => { q.medidas = e },
+      aoMedir: (e) => {
+        q.medidas = e
+      },
       aoEsculpir: (g) => {
         q.gestos++
         q.enviando = true
@@ -168,36 +170,63 @@ try {
       await q.controlador[acao]()
     }, acao)
     await p.waitForFunction(() => window.__escultura.pronto)
-    const altura = await p.evaluate((p) => window.__escultura.palco.fonteDeAlturas()(p.x, p.z), centro)
+    const altura = await p.evaluate(
+      (p) => window.__escultura.palco.fonteDeAlturas()(p.x, p.z),
+      centro,
+    )
     assert.ok(Math.abs(altura - (acao === 'desfazer' ? 0 : final.altura)) < 0.001)
     historico.push({ acao, altura })
   }
-  const revisaoAntesDeCancelar = await p.evaluate(() => window.__escultura.controlador.getState().revisao)
+  const revisaoAntesDeCancelar = await p.evaluate(
+    () => window.__escultura.controlador.getState().revisao,
+  )
   const recursos = []
   for (const cancelamento of ['Escape', 'blur', 'pointercancel', 'toque-duplo']) {
     await p.mouse.move(640, 460)
     await p.mouse.down()
     await p.waitForFunction(() => window.__escultura.escultura?.ativo)
     if (cancelamento === 'Escape') await p.keyboard.press('Escape')
-    else await p.evaluate((tipo) => {
-      const canvas = document.querySelector('canvas')
-      if (tipo === 'blur') window.dispatchEvent(new Event('blur'))
-      else if (tipo === 'pointercancel') canvas.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1, bubbles: true }))
-      else canvas.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 2, pointerType: 'touch', isPrimary: false, clientX: 650, clientY: 460, bubbles: true }))
-    }, cancelamento)
+    else
+      await p.evaluate((tipo) => {
+        const canvas = document.querySelector('canvas')
+        if (tipo === 'blur') window.dispatchEvent(new Event('blur'))
+        else if (tipo === 'pointercancel')
+          canvas.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1, bubbles: true }))
+        else
+          canvas.dispatchEvent(
+            new PointerEvent('pointerdown', {
+              pointerId: 2,
+              pointerType: 'touch',
+              isPrimary: false,
+              clientX: 650,
+              clientY: 460,
+              bubbles: true,
+            }),
+          )
+      }, cancelamento)
     await p.mouse.up()
     await p.waitForFunction(() => !window.__escultura.escultura?.ativo)
-    await p.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))))
+    await p.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    )
     const cancelado = await p.evaluate((p) => {
       const q = window.__escultura
-      return { altura: q.palco.fonteDeAlturas()(p.x, p.z), revisao: q.controlador.getState().revisao, gestos: q.gestos, recursos: { geometrias: q.medidas.geometrias, texturas: q.medidas.texturas } }
+      return {
+        altura: q.palco.fonteDeAlturas()(p.x, p.z),
+        revisao: q.controlador.getState().revisao,
+        gestos: q.gestos,
+        recursos: { geometrias: q.medidas.geometrias, texturas: q.medidas.texturas },
+      }
     }, centro)
     assert.equal(cancelado.revisao, revisaoAntesDeCancelar, cancelamento)
     assert.equal(cancelado.gestos, 1, cancelamento)
     assert.ok(Math.abs(cancelado.altura - final.altura) < 0.001, cancelamento)
     recursos.push(cancelado.recursos)
   }
-  assert.ok(recursos.every(r => JSON.stringify(r) === JSON.stringify(recursos[0])), 'Cancelar não acumula geometrias/texturas')
+  assert.ok(
+    recursos.every((r) => JSON.stringify(r) === JSON.stringify(recursos[0])),
+    'Cancelar não acumula geometrias/texturas',
+  )
   const reaberto = await p.evaluate(async () => {
     const q = window.__escultura,
       aberto = await q.host.abrirCenario(q.controlador.getState().documento.id)
@@ -206,21 +235,46 @@ try {
   assert.equal(reaberto.revisao, revisaoAntesDeCancelar)
   assert.equal(reaberto.base.pecas.length, 1)
   const cabecaNova = await p.evaluate(async () => {
-    const q = window.__escultura, origem = q.controlador.getState().documento,
+    const q = window.__escultura,
+      origem = q.controlador.getState().documento,
       estado = q.palco.estadoDoTerreno()
     estado.campo.alturas.fill(8)
-    const tentativa = q.guardarGestoDeTerreno(q.controlador, q.palco, { documentoDeOrigem: origem, estado, regioes: { alturas: { x0: 0, z0: 0, x1: 64, z1: 64 } } }).catch(e => e.name)
+    const tentativa = q
+      .guardarGestoDeTerreno(q.controlador, q.palco, {
+        documentoDeOrigem: origem,
+        estado,
+        regioes: { alturas: { x0: 0, z0: 0, x1: 64, z1: 64 } },
+      })
+      .catch((e) => e.name)
     q.controlador.executar([{ tipo: 'iluminacao.definir', iluminacao: { hora: 8 } }])
     const erro = await tentativa
     await q.controlador.terminar()
-    return { erro, basePreservada: JSON.stringify(q.controlador.getState().documento.base) === JSON.stringify(origem.base) }
+    return {
+      erro,
+      basePreservada:
+        JSON.stringify(q.controlador.getState().documento.base) === JSON.stringify(origem.base),
+    }
   })
   assert.deepEqual(cabecaNova, { erro: 'AbortError', basePreservada: true })
   assert.deepEqual(erros, [])
   await p.screenshot({ path: resolve(saida, 'guardado.png') })
   writeFileSync(
     resolve(saida, 'resultados.json'),
-    JSON.stringify({ ...final, previa, centro, historico, recursos, cabecaNova, cancelamentos: 4, revisaoReaberta: reaberto.revisao, erros }, null, 2),
+    JSON.stringify(
+      {
+        ...final,
+        previa,
+        centro,
+        historico,
+        recursos,
+        cabecaNova,
+        cancelamentos: 4,
+        revisaoReaberta: reaberto.revisao,
+        erros,
+      },
+      null,
+      2,
+    ),
   )
   await p.evaluate(() => window.__escultura.palco.destruir())
 } catch (e) {

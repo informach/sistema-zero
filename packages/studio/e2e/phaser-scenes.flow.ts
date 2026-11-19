@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test'
 import type { PintaScene, PintaSceneObject } from '@sistemazero/core/studio/pinta-scene'
+import type { SceneBox } from '@sistemazero/core/studio/pinta-scene-geometry'
 
 type Game = {
   surface: { context: CanvasRenderingContext2D }
   hero: { x: number; y: number; body: { reset(x: number, y: number): void } }
+  physics: { world: { gravity: { y: number } } }
   maps: {
     mapSize(name: string, axis: string): number
     mapObjects(name: string, type: string): PintaSceneObject[]
@@ -15,6 +17,125 @@ type Game = {
     mapObjectById(name: string, id: string): { name: string } | null
   }
 }
+
+test('Phaser: plataforma precisa permite salto, pouso e vista de cima sem grade arredondada', async ({
+  page,
+  request,
+}, info) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('http://127.0.0.1:5293/platforms/')
+  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
+  const fixture = (await (
+    await request.get('http://127.0.0.1:5293/platforms/platform-probes.json')
+  ).json()) as {
+    cases: {
+      name: string
+      scene: PintaScene
+      previous: SceneBox
+      desired: SceneBox
+      gravity: number
+      result: SceneBox | null
+    }[]
+  }
+  const probes = await page.evaluate(({ cases }) => {
+    const land = (
+      window as unknown as {
+        scenePlatformLanding: (
+          scene: PintaScene,
+          previous: SceneBox,
+          desired: SceneBox,
+          gravity: number,
+        ) => SceneBox | null
+      }
+    ).scenePlatformLanding
+    return cases.map((item) => ({
+      name: item.name,
+      expected: item.result,
+      actual: land(item.scene, item.previous, item.desired, item.gravity),
+    }))
+  }, fixture)
+  for (const probe of probes) {
+    if (probe.expected === null) expect(probe.actual, probe.name).toBeNull()
+    else {
+      expect(probe.actual, probe.name).not.toBeNull()
+      for (const key of ['x', 'y', 'width', 'height'] as const)
+        expect(probe.actual![key], `${probe.name}.${key}`).toBeCloseTo(probe.expected[key], 5)
+    }
+  }
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  const performanceResult = await page.evaluate(({ cases }) => {
+    const land = (
+      window as unknown as {
+        scenePlatformLanding: (
+          scene: PintaScene,
+          previous: SceneBox,
+          desired: SceneBox,
+          gravity: number,
+        ) => SceneBox | null
+      }
+    ).scenePlatformLanding
+    const times: number[] = []
+    for (let i = 0; i < 101; i++) {
+      const start = performance.now()
+      for (const item of cases) land(item.scene, item.previous, item.desired, item.gravity)
+      if (i) times.push(performance.now() - start)
+    }
+    times.sort((a, b) => a - b)
+    return {
+      cpuRate: 4,
+      cases: cases.length,
+      batches: times.length,
+      medianMs: times[50],
+      p95Ms: times[94],
+      maxMs: times[99],
+    }
+  }, fixture)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
+  await cdp.detach()
+  expect(performanceResult.p95Ms).toBeLessThan(16.7)
+  await page.evaluate(() => {
+    window.pintaGame.physics.world.gravity.y = 300
+    window.pintaGame.hero.body.reset(40, 10)
+  })
+  await page.keyboard.down('ArrowDown')
+  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeGreaterThan(28)
+  await page.waitForTimeout(350)
+  const normal = await page.evaluate(() => window.pintaGame.hero.y)
+  await page.keyboard.up('ArrowDown')
+  expect(normal).toBeCloseTo(28.25, 3)
+  await page.evaluate(() => window.pintaGame.hero.body.reset(40, 60))
+  await page.keyboard.down('ArrowUp')
+  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeLessThan(25)
+  await page.keyboard.up('ArrowUp')
+  await page.evaluate(() => {
+    window.pintaGame.physics.world.gravity.y = -300
+    window.pintaGame.hero.body.reset(40, 70)
+  })
+  await page.keyboard.down('ArrowUp')
+  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeLessThan(43)
+  await page.waitForTimeout(350)
+  const inverted = await page.evaluate(() => window.pintaGame.hero.y)
+  await page.keyboard.up('ArrowUp')
+  expect(inverted).toBeCloseTo(42.25, 3)
+  await page.evaluate(() => {
+    window.pintaGame.physics.world.gravity.y = 0
+    window.pintaGame.hero.body.reset(40, 10)
+  })
+  await page.keyboard.down('ArrowDown')
+  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeGreaterThan(50)
+  await page.keyboard.up('ArrowDown')
+  expect(errors).toEqual([])
+  await info.attach('plataforma-phaser', {
+    body: JSON.stringify({ normal, inverted, probes, performance: performanceResult }),
+    contentType: 'application/json',
+  })
+  await info.attach('plataforma-phaser-imagem', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+})
 
 test('Phaser: cena 3 consulta os contornos e barra movimento através de parede fina', async ({
   page,

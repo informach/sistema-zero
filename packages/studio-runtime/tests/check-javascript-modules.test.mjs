@@ -1,11 +1,20 @@
 import { afterEach, expect, test } from 'bun:test'
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import {
   createImageThreeModuleResolver,
   createPinnedThreeModuleResolver,
 } from '../runtime/check-javascript-modules.mjs'
+
+test('the offline image and lock share the single Studio renderer pin', async () => {
+  const image = JSON.parse(await readFile(new URL('../runtime/package.json', import.meta.url)))
+  const lock = JSON.parse(await readFile(new URL('../runtime/package-lock.json', import.meta.url)))
+  expect(image.dependencies.three).toBe('0.184.0')
+  expect(lock.packages['node_modules/three'].version).toBe(image.dependencies.three)
+  expect(image.dependencies['three-classic']).toBeUndefined()
+  expect(lock.packages['node_modules/three-classic']).toBeUndefined()
+})
 
 const directories = []
 test('the immutable image serves only the current Studio Three pin', async () => {

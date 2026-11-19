@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\tileGestures.test.ts:
+(pass) somente o ponteiro dono cancela; soltar depois não confirma o gesto descartado
+(pass) cancelar crescimento à esquerda restaura dimensões, peças e posições dos objetos
+(pass) cancelamento tardio não recoloca o documento antigo sobre a cópia adotada após conflito
+
+ 3 pass
+ 0 fail
+ 18 expect() calls
+Ran 3 tests across 1 file. [11.17s]

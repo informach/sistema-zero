@@ -73,7 +73,13 @@ export const VILA_SCENE_ASSETS: ProjectAsset[] = [
         },
       ],
       layers: [
-        { id: 'vila', name: 'Vila', visible: true, kind: 'group' },
+        {
+          id: 'vila',
+          name: 'Vila',
+          visible: true,
+          properties: { ambiente: 'vila' },
+          kind: 'group',
+        },
         {
           id: 'layer-0',
           name: 'Chão',
@@ -888,7 +894,13 @@ export const VILA_SCENE_ASSETS: ProjectAsset[] = [
           cols: 2,
           rows: 2,
           layers: [
-            { id: 'pedaco-camada-0', name: 'Vila', visible: true, kind: 'group' },
+            {
+              id: 'pedaco-camada-0',
+              name: 'Vila',
+              visible: true,
+              properties: { ambiente: 'vila' },
+              kind: 'group',
+            },
             {
               id: 'pedaco-camada-1',
               name: 'Chão',

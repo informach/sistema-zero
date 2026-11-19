@@ -38,8 +38,16 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     { type: 'consoleLog', value: ref('chaves') },
     {
       type: 'var',
-      name: 'portaPorReferencia',
-      value: value('mapObjectById', [str('mapa'), str('door')]),
+      name: 'morador',
+      value: value('mapObjectNamed', [str('mapa'), str('Morador')]),
+    },
+    {
+      type: 'var',
+      name: 'portaDoMorador',
+      value: value('mapObjectById', [
+        str('mapa'),
+        value('mapObjectProperty', [ref('morador'), str('porta')]),
+      ]),
     },
     {
       type: 'var',
@@ -48,7 +56,11 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     },
     {
       type: 'consoleLog',
-      value: value('mapLayerProperty', [str('mapa'), str('layer-0'), str('descricao')]),
+      value: value('mapObjectField', [ref('portaDoMorador'), str('name')]),
+    },
+    {
+      type: 'consoleLog',
+      value: value('mapLayerProperty', [str('mapa'), str('vila'), str('ambiente')]),
     },
     {
       type: 'consoleLog',
@@ -163,7 +175,7 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     name: target === 'g2d' ? 'A Vila e a Floresta' : 'A Vila e a Floresta (Avançado)',
     experience: 'game',
     description:
-      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, leia o início, os lugares e as propriedades da porta.',
+      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, siga a referência da porta do morador, encontre sua arte e leia as propriedades da camada e da peça.',
     difficulty: 'intermediate',
     concepts: ['Pinta', 'cenário', 'camadas', 'objetos', 'porta', 'propriedades', 'animação'],
     genre: 'exploração',

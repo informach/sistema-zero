@@ -12,12 +12,7 @@
   "clipes": [
     {
       "no": "visual-2",
-      "clipes": [
-        "parado_relaxado",
-        "andar_frente",
-        "correr_frente",
-        "pulo_no_ar"
-      ],
+      "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
       "ossos": 44
     }
   ],

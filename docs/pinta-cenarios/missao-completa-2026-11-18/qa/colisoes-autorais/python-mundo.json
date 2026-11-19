@@ -36,14 +36,7 @@
       }
     ],
     "quiet": false,
-    "reporter": [
-      [
-        "list"
-      ],
-      [
-        "json"
-      ]
-    ],
+    "reporter": [["list"], ["json"]],
     "reportSlowTests": {
       "max": 5,
       "threshold": 300000

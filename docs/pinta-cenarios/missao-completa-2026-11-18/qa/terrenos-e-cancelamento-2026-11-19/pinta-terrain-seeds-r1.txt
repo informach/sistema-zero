@@ -1,0 +1,23 @@
+
+Running 3 tests using 1 worker
+
+(node:9260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (15.5s)
+(node:31868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  2 [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (11.3s)
+(node:41260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41260) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [cpu-4x] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (27.6s)
+
+  3 passed (1.0m)

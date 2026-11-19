@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-19T12:40:14.044Z",
+  "results": [
+    {
+      "name": "complete",
+      "found": true,
+      "sha256": "6b0fb35eb00a4f59aa036a52113686e6067d90ca2bbbb35eaf7b056d1727b28f"
+    },
+    {
+      "name": "catalog",
+      "found": true,
+      "sha256": "a01b9ebed3fbad55378758175dcb1a1b8f7580ef72efde4bb817afc7c8b07566"
+    }
+  ]
+}

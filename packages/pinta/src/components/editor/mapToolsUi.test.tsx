@@ -297,6 +297,27 @@ describe('balde no mapa', () => {
 })
 
 describe('terreno, espalhar e animação da peça', () => {
+  for (const cancel of ['pointercancel', 'Escape'] as const)
+    it(`cancelar a prévia com ${cancel} não grava nem ocupa o desfazer`, async () => {
+      await abrirMapa({ level: 'create' })
+      const grid = grade()
+      tocar(grid, 8, 8)
+      expect(desfazer().disabled).toBe(false)
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+      fireEvent.pointerDown(grid, at(24, 24))
+      fireEvent.pointerMove(grid, at(72, 40))
+      if (cancel === 'pointercancel') fireEvent.pointerCancel(grid, at(72, 40))
+      else fireEvent.keyDown(window, { key: 'Escape' })
+      // A soltura tardia depois de cancelar não pode confirmar a linha.
+      fireEvent.pointerUp(grid, at(72, 40))
+      fireEvent.click(desfazer())
+      expect(desfazer().disabled).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
+      await screen.findByRole('button', { name: /Abrir fase/ })
+      expect((await mapaDoDisco()).layers.find(isTileLayer)!.cells.every((c) => c === -1)).toBe(
+        true,
+      )
+    })
   it('"Peças (separe por vírgula)" aceita a vírgula digitada', async () => {
     await abrirMapa({ level: 'create' })
     fireEvent.click(screen.getByRole('checkbox', { name: COPY.scene.espalharComOPincel }))

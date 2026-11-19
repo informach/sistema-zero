@@ -1,0 +1,39 @@
+
+Running 1 test using 1 worker
+
+(node:44508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44508) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (10.1s)
+
+
+  1) [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      179 |   const filled = await backup(page)
+      180 |   assertSeams(filled, 0)
+    > 181 |   expect(map(filled).layers[0]!.cells.every((cell) => cell >= 0)).toBe(true)
+          |                                                                   ^
+      182 |   const land = map(filled).layers[0]
+      183 |   await tool('Lago')
+      184 |   await page.getByLabel('Terreno', { exact: true }).selectOption({ label: 'Areia e água' })
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\pinta-terrain-scenes.flow.ts:181:67
+
+    Error Context: .cache\pinta-terrain-desktop-20261119-r2\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-desktop\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-terrain-desktop-20261119-r2\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-desktop\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-terrain-desktop-20261119-r2\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-desktop\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura

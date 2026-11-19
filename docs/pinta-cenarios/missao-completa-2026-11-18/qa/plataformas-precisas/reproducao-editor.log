@@ -1,0 +1,26 @@
+bun test v1.3.11 (af24e281)
+
+..\..\.cache\platform-editor.repro.test.ts:
+12 |   }
+13 |   const world = playtestWorldFromScene(scene)
+14 |   let state = { ...playtestStart(world), x: 42, y: 20 }
+15 |   for (let i = 0; i < 100; i++) state = stepPlaytest(state, { x: 0, y: 0, jump: false }, 16, world, 'side').state
+16 |   expect(state.onGround).toBe(true)
+17 |   expect(state.y + playtestBody(16, 'side').hh).toBeCloseTo(40.25, 5)
+                                                     ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 40.25
+Received: 191.9870400000001
+
+Expected precision: 5
+Expected difference: < 0.000005
+Received difference: 151.7370400000001
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\.cache\platform-editor.repro.test.ts:17:49)
+(fail) a vista lateral pousa na peça real da plataforma reduzida e fracionária
+
+ 0 pass
+ 1 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [561.00ms]

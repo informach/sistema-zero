@@ -1,0 +1,111 @@
+{
+  "at": "2026-11-19T15:48:51.190Z",
+  "base": "a391e9235165d45b3b1b007ff90408d2923af628",
+  "scope": "local editor terrain workflow and cancellation",
+  "browser": {
+    "stats": {
+      "startTime": "2026-11-19T15:35:52.736Z",
+      "duration": 60704.353,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "project": "desktop",
+        "status": "passed",
+        "duration": 15522,
+        "cpuSlowdown": 1,
+        "isMobile": false,
+        "simulated": false
+      },
+      {
+        "project": "touch",
+        "status": "passed",
+        "duration": 11284,
+        "cpuSlowdown": 1,
+        "isMobile": true,
+        "simulated": true
+      },
+      {
+        "project": "cpu-4x",
+        "status": "passed",
+        "duration": 27589,
+        "cpuSlowdown": 4,
+        "isMobile": false,
+        "simulated": true
+      }
+    ]
+  },
+  "fullPinta": {
+    "passed": 2110,
+    "skipped": 3,
+    "failed": 0,
+    "assertions": 19180,
+    "files": 179
+  },
+  "nativeConditionalReplay": {
+    "passed": 18,
+    "skipped": 0,
+    "failed": 0,
+    "assertions": 5231,
+    "files": 2,
+    "python": "native Windows with pygame-ce 2.5.8"
+  },
+  "focused": {
+    "passed": 85,
+    "failed": 0,
+    "assertions": 832,
+    "boundaries": {
+      "passed": 3,
+      "assertions": 18
+    }
+  },
+  "typecheck": {
+    "exitCode": 0
+  },
+  "biome": {
+    "exitCode": 0,
+    "files": 16144,
+    "warnings": 303,
+    "infos": 245
+  },
+  "sources": [
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/tileGestures.ts",
+      "sha256": "ede80ff75e324aa1f30be2a7084b74b171884c8926cea4a2cf594b8b8231cce5"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/useMapKeyboard.ts",
+      "sha256": "9644f2e6e5aca87b8ebf05c8980093157e0c88f89cb6c14cf3f70d6f12f88cfe"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/useTilemapController.ts",
+      "sha256": "364c5a50ec505dd5d585f8e66f0ef08808e37511ce50afa25afcfc13118875e0"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapToolsUi.test.tsx",
+      "sha256": "ed044f7e177789b39d54ee9d73c7ac23eb6ca0b82e9ba013f532114b08a5d5b8"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/tileGestures.test.ts",
+      "sha256": "b8e83c3187ec8cc445da5ccba28eeaa90715ae53675b6c5fbc10408dd72dd13c"
+    },
+    {
+      "path": "packages/pinta/scripts/homologacao/terrains.ts",
+      "sha256": "a2090f4a706de7614dba8835bb6a645bda4c57a39160216a002d82504747ed7c"
+    },
+    {
+      "path": "packages/studio/e2e/pinta-terrain-scenes.flow.ts",
+      "sha256": "3d87a8a80eee6db5e4cc8e938a2ad685b7c9761efed9a28b82d1e37a15cc0719"
+    },
+    {
+      "path": "packages/studio/playwright.pinta-terrain.config.ts",
+      "sha256": "43c53230326415022a437c5ab3d8d331251887169f1996b94c152bacaee4e09e"
+    }
+  ],
+  "stagingQualified": false,
+  "otherPhysicalDevicesQualified": false,
+  "beginnerPresetsQualified": false
+}

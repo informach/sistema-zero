@@ -887,6 +887,14 @@ class Mapa:
             return self._cena.bloqueado(rect)
         return any(rect.colliderect(other) for other in self.solidos())
 
+    def pouso(self, anterior, atual, gravidade=1):
+        """Corpo FRect apoiado numa plataforma, ou None. Não altera os corpos recebidos.
+
+        Use depois das paredes; gravidade zero ignora plataformas na vista de cima.
+        Para descer por uma plataforma, o jogo omite esta consulta durante a queda.
+        """
+        return self._cena.pouso(anterior, atual, gravidade) if self._cena else None
+
     def objeto_por_id(self, referencia):
         """O objeto de uma propriedade de referência, ou None se ele não existe."""
         return next((objeto for objeto in self.objetos() if objeto.id == referencia), None)
@@ -1267,9 +1275,91 @@ class _CenaCompleta:
             return inside
         return pygame.FRect(0, 0, objeto['width'], objeto['height']).collidepoint(p)
 
-    def mover(self, dx, dy):
+    def _pecas_plataforma(self, query):
+        """Visit only covered cells, keeping the native document authoritative."""
+        contexts = [(None, self.dados)]
+        for instance in self.objetos:
+            definition = next((s for s in self.dados.get('sets', []) if s['id'] == instance.get('setId')), None)
+            if definition and instance['width'] > 0 and instance['height'] > 0:
+                contexts.append((instance, definition))
+        for parent, definition in contexts:
+            cols, rows = definition['cols'], definition['rows']
+            def local(point):
+                if parent is None:
+                    return point
+                p = (pygame.Vector2(point) - (parent['x'], parent['y'])).rotate(-parent.get('rotation', 0))
+                return ((parent['width'] - p.x if parent.get('flipX') else p.x) / parent['width'] * cols * self.tamanho,
+                        (parent['height'] - p.y if parent.get('flipY') else p.y) / parent['height'] * rows * self.tamanho)
+            corners = [local(p) for p in (query.topleft, query.topright, query.bottomright, query.bottomleft)]
+            left, right = min(p[0] for p in corners), max(p[0] for p in corners)
+            top, bottom = min(p[1] for p in corners), max(p[1] for p in corners)
+            for layer in definition['layers']:
+                if layer['kind'] != 'tiles' or layer.get('collision'):
+                    continue
+                state = self.efetiva(definition['layers'], layer)
+                if not state['visible']:
+                    continue
+                ts = next(t for t in self.dados['tilesets'] if t['id'] == layer['tilesetId'])
+                if not ts['platform']:
+                    continue
+                for row in range(max(0, math.floor((top - state['y'] - 1e-7) / self.tamanho)), min(rows, math.ceil((bottom - state['y'] + 1e-7) / self.tamanho))):
+                    for col in range(max(0, math.floor((left - state['x'] - 1e-7) / self.tamanho)), min(cols, math.ceil((right - state['x'] + 1e-7) / self.tamanho))):
+                        cell = layer['cells'][row * cols + col]
+                        if cell < 0 or (cell & 4095) not in ts['platform'] or (cell & 4095) in ts['solid']:
+                            continue
+                        tile = dict(id='', x=col * self.tamanho + state['x'], y=row * self.tamanho + state['y'], width=self.tamanho, height=self.tamanho, properties={})
+                        if parent is not None:
+                            tile = transformar_objeto_conjunto(parent, tile, cols * self.tamanho, rows * self.tamanho, [])
+                        points = tile.get('points', [{'x':0,'y':0},{'x':tile['width'],'y':0},{'x':tile['width'],'y':tile['height']},{'x':0,'y':tile['height']}])
+                        yield [(pygame.Vector2(p['x'],p['y']).rotate(tile.get('rotation',0)) + (tile['x'],tile['y'])) for p in points]
+
+    def pouso(self, anterior, atual, gravidade=1):
+        """FRect on a one-way floor, or None. Gravity zero keeps top-down motion free."""
+        anterior, atual = pygame.FRect(anterior), pygame.FRect(atual)
+        values = [*anterior, *atual, gravidade]
+        if self.dados.get('version', 1) < 3 or not all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in values) or not gravidade or min(anterior.width,anterior.height,atual.width,atual.height) <= 0:
+            return None
+        direction = 1 if gravidade > 0 else -1
+        # FRect stores float32; admit its coordinate rounding, not a whole pixel.
+        epsilon = max(1e-6, max(abs(v) for v in [*anterior,*atual]) * 2**-23)
+        if (atual.y - anterior.y) * direction < -epsilon:
+            return None
+        selected, was_supported = None, False
+        for polygon in self._pecas_plataforma(anterior.union(atual).inflate(epsilon * 2, epsilon * 2)):
+            def surface(body):
+                left, right = max(body.left,min(p.x for p in polygon)), min(body.right,max(p.x for p in polygon))
+                if right - left <= 1e-9:
+                    return None
+                heights = []
+                for a,b in zip(polygon,polygon[1:] + polygon[:1]):
+                    if left <= a.x <= right:
+                        heights.append(a.y)
+                    if a.x != b.x:
+                        for x in (left,right):
+                            if min(a.x,b.x) <= x <= max(a.x,b.x):
+                                heights.append(a.y + (b.y - a.y) * (x - a.x) / (b.x - a.x))
+                return (min(heights) if direction > 0 else max(heights)) if heights else None
+            floor = surface(atual)
+            if floor is None:
+                continue
+            old_floor = surface(anterior)
+            if old_floor is None:
+                old_floor = floor
+            old_feet, feet = (anterior.bottom,atual.bottom) if direction > 0 else (anterior.top,atual.top)
+            if (old_feet - old_floor) * direction > epsilon or (feet - floor) * direction < -epsilon:
+                continue
+            candidate = atual.copy()
+            candidate.y = floor - (atual.height if direction > 0 else 0)
+            if selected is None or (candidate.y - selected.y) * direction < 0:
+                selected, was_supported = candidate, abs(old_feet - old_floor) <= epsilon
+        if selected is not None and self.bloqueado(selected):
+            return anterior.copy() if was_supported and not self.bloqueado(anterior) else None
+        return selected
+
+    def mover(self, dx, dy, *, gravidade=0):
         if not all(math.isfinite(value) for value in (dx, dy)):
             return
+        anterior = self.jogador.copy()
         if self.dados.get('version', 1) >= 3:
             for eixo, delta, limite, tamanho in [('x', dx, self.dados['cols'] * self.tamanho, 'width'), ('y', dy, self.dados['rows'] * self.tamanho, 'height')]:
                 delta = max(-limite, min(limite, delta))
@@ -1307,6 +1397,10 @@ class _CenaCompleta:
                     if self.bloqueado(self.jogador):
                         self.jogador = antes
         self.jogador.clamp_ip(pygame.FRect(0, 0, self.dados['cols'] * self.tamanho, self.dados['rows'] * self.tamanho))
+        if gravidade and self.dados.get('version', 1) >= 3:
+            support = self.pouso(anterior, self.jogador, gravidade)
+            if support is not None:
+                self.jogador = support
         for porta in self.objetos:
             if porta.get('role') == 'door' and self.contem(porta, *self.jogador.center):
                 destino = self.propriedade(porta, 'destino') or self.propriedade(porta, 'destination')

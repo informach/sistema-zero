@@ -24,7 +24,7 @@ const pacote = resolve(aqui, '..')
 const FAISCA = resolve(pacote, '../../docs/aulas-interativas/faisca')
 const SAIDA = resolve(pacote, process.env.PROTECTED_LESSONS_DIR ?? '.cache/protected-lessons')
 
-/** O `script.js` que cada parte deixa pronto, guardado no repositório. */
+/** O `script.js` que cada parte deixa pronto, guardado como texto exato, sem formatação. */
 const REFERENCIAS = resolve(aqui, 'fixtures/protected-lessons')
 /** Só com decisão da dona: regravar é admitir que o que foi ensinado mudou. */
 const REGRAVAR = process.env.PROTECTED_LESSONS_UPDATE === '1'
@@ -167,7 +167,7 @@ for (const { curso, arquivo } of AULAS) {
         const projeto = await projetoAssentado(page)
         writeFileSync(projetoEm, JSON.stringify(projeto))
         const gerado = semChaveDeEvento(projeto.files['script.js'] ?? '')
-        const referencia = resolve(REFERENCIAS, arquivo, `${parte.key}.script.js`)
+        const referencia = resolve(REFERENCIAS, arquivo, `${parte.key}.script.txt`)
         if (REGRAVAR || !existsSync(referencia)) {
           if (!REGRAVAR && process.env.CI) throw new Error(`Falta a referência ${referencia}`)
           mkdirSync(dirname(referencia), { recursive: true })

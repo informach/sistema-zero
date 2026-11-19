@@ -294,6 +294,11 @@ export const PYTHON_PYGAME_CODECS: readonly PythonBlockCodec[] = Object.freeze([
     [param('corpo', 'corpo', value(name('jogador')))],
   ),
   method('pinta_platforms', 'plataformas da camada', PINTA, 'value', 'camada', 'plataformas'),
+  method('pinta_body_landing', 'corpo apoiado na plataforma', PINTA, 'value', 'mapa', 'pouso', [
+    param('anterior', 'corpo antes de mover', value(name('antes'))),
+    param('atual', 'corpo depois de mover', value(name('jogador'))),
+    optional('gravidade', 'direção da gravidade', n(1)),
+  ]),
   method('pinta_objects', 'objetos do mapa', PINTA, 'value', 'mapa', 'objetos', [
     optional('tipo', 'do tipo', t('inimigo')),
   ]),

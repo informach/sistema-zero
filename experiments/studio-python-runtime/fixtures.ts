@@ -171,6 +171,8 @@ export async function runtimeFixtureProject(
   if (isPintaWorldFixture(name)) return pintaWorldProject(name)
   const { isPintaPhysicsFixture, pintaPhysicsProject } = await import('./pintaPhysicsFixtures')
   if (isPintaPhysicsFixture(name)) return pintaPhysicsProject(name)
+  const { isPintaPlatformFixture, pintaPlatformProject } = await import('./pintaPlatformFixtures')
+  if (isPintaPlatformFixture(name)) return pintaPlatformProject(name)
   const { isGameFixture, gameFixtureProject } = await import('./gameFixtures')
   if (isGameFixture(name)) return gameFixtureProject(name)
   const source = cases[name]

@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+(node:45664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (9.9s)
+
+
+  1) [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura
+
+    TypeError: Cannot read properties of undefined (reading 'terrains')
+
+      158 |   const transition = await backup(page)
+      159 |   assertSeams(transition, 0)
+    > 160 |   const terrain = transition.find((a) => a.name === 'Campos')!.terrains![0]!.tiles
+          |                                                              ^
+      161 |   expect(
+      162 |     map(transition).layers[0]!.cells.some((cell) => {
+      163 |       const p = terrain[String(cell)]
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\pinta-terrain-scenes.flow.ts:160:62
+
+    Error Context: .cache\pinta-terrain-desktop-20261119-r1\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-desktop\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-terrain-desktop-20261119-r1\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-desktop\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-terrain-desktop-20261119-r1\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-desktop\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura

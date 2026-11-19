@@ -1,0 +1,224 @@
+{
+  "recordedAt": "2026-11-19T10:44:10.295Z",
+  "baseCommit": "b6f8d4603f5cb905f0002d6fe4b5221520ce3315",
+  "sourceFingerprint": "58246b8ab1306c8f09c6c2b35b5d6bdcf7a5b4808ec6ac2510cac8bf7564f471",
+  "distribution": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+  "gates": {
+    "pinta-completo.log": {
+      "pass": 2108,
+      "fail": 0
+    },
+    "core.log": {
+      "pass": 55,
+      "fail": 0
+    },
+    "estudio.log": {
+      "pass": 94,
+      "fail": 0
+    },
+    "publicacao.log": {
+      "pass": 85,
+      "fail": 0
+    },
+    "navegador.json": {
+      "startTime": "2026-11-19T10:04:36.859Z",
+      "duration": 34798.642,
+      "expected": 10,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "integracao.json": {
+      "startTime": "2026-11-19T10:16:16.029Z",
+      "duration": 138915.69,
+      "expected": 12,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "normalization": "LF; espaços finais de texto removidos",
+  "limitations": [
+    "Apenas esta máquina; toque e CPU 4× são simulados.",
+    "Godot headless não comprova inspeção visual.",
+    "Artefato local não publicado/ativado; rollout e ciclo autenticado pendentes.",
+    "Resultados gráficos variáveis do lote anterior conservados; uma rodada a 47.6 fps não prova estabilidade.",
+    "Matriz técnica de consultas e fluxo UI pequeno são distintos do ciclo completo da Vila."
+  ],
+  "files": {
+    "comandos.json": {
+      "bytes": 3493,
+      "sha256": "4afd427bc320e55dee0f5e65890bbcba400d6333f5411a7d4dd344f711b0fc57"
+    },
+    "core.log": {
+      "bytes": 5752,
+      "sha256": "007fb904fede5d3be8964494f488667c447cfe236fbf48363615c12585a8efe8"
+    },
+    "distribuicao-python.json": {
+      "bytes": 28603,
+      "sha256": "575331f34a08753e03e600e0e3e1f3367f001d994ac90d87ecbc8606c46dbe6b"
+    },
+    "estilo.log": {
+      "bytes": 44,
+      "sha256": "2d725b790d2090e8387fff35cb17a6a0f3da864fa3d502a67519e502aae7594b"
+    },
+    "estudio.log": {
+      "bytes": 10601,
+      "sha256": "de701b9ae71c314950b0bf9caa1ba6756a1e02bd9a5621d11ac84ccb371c0d20"
+    },
+    "geradores.log": {
+      "bytes": 3916,
+      "sha256": "ab0b95d6c4d8c0ba5f127d64db951b16130f492d8973b830d772c4912dcaef7a"
+    },
+    "godot.log": {
+      "bytes": 879,
+      "sha256": "48b0fa5ee0a98c0b2873fb9711b100b6d97795e28a18fa9f80612ded8fcac39d"
+    },
+    "integracao.json": {
+      "bytes": 1260229,
+      "sha256": "ba36caa832b7147d129bad7b86f9fe9bfcac820bf6f45324af3cde86d42cd4a7"
+    },
+    "integracao.log": {
+      "bytes": 8458,
+      "sha256": "f645b21836706e1171721052cd11a76bbecf6dbf074aba8e29eca0c40c7f2a06"
+    },
+    "medidas.json": {
+      "bytes": 8092,
+      "sha256": "3533d5602134570556acc7df7b39dd31189d010b90a3c0d74d3e22b02c008562"
+    },
+    "navegador.json": {
+      "bytes": 1142102,
+      "sha256": "ea87dd616eac69384f45c807b445db2c21946911b20921f399d90d754c117709"
+    },
+    "navegador.log": {
+      "bytes": 2798,
+      "sha256": "83075573c68ad95b437bba8d744ab18f060eb1a2e3cdad2f14747896a7a43286"
+    },
+    "perfil-validacao.json": {
+      "bytes": 118,
+      "sha256": "dc3dbd93bc5f5bdd2b8ce39f53e2c8969f5ae3fe4a4a74fc72e097a1ac899d13"
+    },
+    "peso-runtime.json": {
+      "bytes": 1103,
+      "sha256": "94de198774d98412b7c1ead0e8b045ff7ecac4a56f5b96a3764d299f555aa860"
+    },
+    "pinta-completo.log": {
+      "bytes": 239378,
+      "sha256": "bc6c6d2bcaccdea9b27164d16c47e95040b649ecaa80e0588c1de8b9b27f87c9"
+    },
+    "plataforma-editor-imagem-desktop.png": {
+      "bytes": 81387,
+      "sha256": "abf66ecfd06c49a24737462612f582afa737384bf458493ec5783907b0a5e731"
+    },
+    "plataforma-editor-imagem-touch.png": {
+      "bytes": 187579,
+      "sha256": "8757288a585a20945372571a9c50ac303e9a0ce02805a9feb305c2dc71c8c222"
+    },
+    "plataforma-jogar-imagem-desktop.png": {
+      "bytes": 28498,
+      "sha256": "cc6cb64153db1043069bb7f537e89b4ddfb80c50bd171dbf8757e4a1b0dff011"
+    },
+    "plataforma-phaser-imagem-desktop.png": {
+      "bytes": 6030,
+      "sha256": "e4b83bbc1bbecc9772e7df208e8b16fe31acba058f817e8f620f33544c61896e"
+    },
+    "plataforma-phaser-imagem-touch.png": {
+      "bytes": 19464,
+      "sha256": "dbdba13339838c9859067dc3c98b5d7c820ebde2ab0d281c9ca00d8304467eb8"
+    },
+    "publicacao.log": {
+      "bytes": 7639,
+      "sha256": "cd90b9c394d3b83cdc7d2df64d6dd3d807446b477810517a492a20833f6c2eda"
+    },
+    "pygame-257.log": {
+      "bytes": 150,
+      "sha256": "a1de724564aa60fc3a93fac0b5d277733ca510a10d61066b38f37234df921baa"
+    },
+    "pygame-258.log": {
+      "bytes": 150,
+      "sha256": "d87972a57a80155b1efbc79f104fe77443a932d9383f4752ad1a1ee2693de590"
+    },
+    "python-1x.json": {
+      "bytes": 1015,
+      "sha256": "e4e700bba8523c5f962412612034867eeb96cec999eebc729482fcf100e67099"
+    },
+    "python-1x.png": {
+      "bytes": 2015,
+      "sha256": "834096ab2c469a453731d6db3d9cb4cf7d29e06ff2a5c1ff1ebfae97f2aa8a69"
+    },
+    "python-2x.json": {
+      "bytes": 1015,
+      "sha256": "56829813a38bb1ab3aad3b0a6a49d0fbd371d714452a8f0a3383557e7d34f542"
+    },
+    "python-2x.png": {
+      "bytes": 2030,
+      "sha256": "7d75094b3cadab2b311ddcf20fbaf7a0bb8e467d15aba1a6e797bd9db4134ffd"
+    },
+    "python-navegador.json": {
+      "bytes": 920198,
+      "sha256": "33f0aeeee10f572ca23194cbf49f1b463d9313edf36357be98100babe78484c9"
+    },
+    "python-navegador.log": {
+      "bytes": 2828,
+      "sha256": "4172eaa2547036b2ce296db89cefc7428c49e30f28fcd54f1eb2607ef67b19be"
+    },
+    "python-repeticao.json": {
+      "bytes": 4920,
+      "sha256": "f65d314452ad92b5fe722ed250f21ebc636878129c83dd6d3672a28e25468cb0"
+    },
+    "python-repeticao.log": {
+      "bytes": 658,
+      "sha256": "f7f2a113036e3162ad81a7f1387a6ed6fe962c7df96b1e99a218da8ac764bca4"
+    },
+    "README.md": {
+      "bytes": 5889,
+      "sha256": "fb4990830133552b0ec18cd90f20109c91133b126602a3ea28c74602d1b37704"
+    },
+    "recompilacao-python.log": {
+      "bytes": 976,
+      "sha256": "f62d0f70c364969fac9d333a5debc5afcce8cd459619bca3899262e2b94340f2"
+    },
+    "reproducao-editor.log": {
+      "bytes": 952,
+      "sha256": "d75ddc668d397376c042b26c664e4c0e34bcf101dd73e7f725f2355807d9062b"
+    },
+    "reproducao-gerador.log": {
+      "bytes": 26973,
+      "sha256": "31bb0e4aef4f6c2fc79dad7c952c6b5279578088595b732b91f9a0c97c6e0cbc"
+    },
+    "reproducao-jogo.log": {
+      "bytes": 1022,
+      "sha256": "a1969143d3930b2922da5eabe6b6b2e3895123c35a3a3cf56e13e00510e0ad5c"
+    },
+    "reproducao-motores.log": {
+      "bytes": 1836,
+      "sha256": "35be8012cce5ef7f118c7b917c8c138286a41120b1fd7deedc592e17db195e44"
+    },
+    "tipos-core.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tipos-estudio.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tipos-pinta.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tipos.json": {
+      "bytes": 877,
+      "sha256": "87b162bdbc6dbf0a8ce1d8ffa04e91f5edc0fbd193add84ee8c4cf1f78b487c9"
+    },
+    "verification-report.md": {
+      "bytes": 4624,
+      "sha256": "a0a4ec245464b9243fbcb04ca9a2aaac24e06d94e3e697527422a5b99e585633"
+    }
+  },
+  "evidenceNormalization": {
+    "at": "2026-11-19T10:49:43.656Z",
+    "previousReceiptSha256": "00a4cfac9d51ad188064e5d91156e207c6330d8d7fb1e085158316a520bbe304",
+    "canonicalArtifactDataUnchanged": true,
+    "reason": "Formatação JSON exigida pelo CI; resultados de teste preservados."
+  }
+}

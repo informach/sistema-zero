@@ -28,6 +28,8 @@ export interface PlaytestWorld {
   solidAt: (x: number, y: number) => boolean
   /** Full-body query for authored scenes; legacy/custom worlds may keep point sampling. */
   intersectsSolid?: (body: SceneBox) => boolean
+  moveSolid?: (body: SceneBox, dx: number, dy: number) => SceneBox
+  platformLanding?: (previous: SceneBox, desired: SceneBox) => SceneBox | null
   spawn: PlaytestPoint
   doors: readonly PlaytestArea[]
   hazards: readonly PlaytestArea[]
@@ -132,6 +134,13 @@ function moveAxis(
 ): { value: number; blocked: boolean } {
   let value = state[axis]
   if (delta === 0) return { value, blocked: false }
+  if (world.moveSolid) {
+    const { hw, hh } = playtestBody(world.tileSize, view)
+    const body = { x: state.x - hw, y: state.y - hh, width: hw * 2, height: hh * 2 }
+    const resolved = world.moveSolid(body, axis === 'x' ? delta : 0, axis === 'y' ? delta : 0)
+    value = resolved[axis] + (axis === 'x' ? hw : hh)
+    return { value, blocked: Math.abs(value - state[axis] - delta) > 1e-7 }
+  }
   const at = (v: number): boolean =>
     axis === 'x' ? playtestFree(world, view, v, state.y) : playtestFree(world, view, state.x, v)
   const maxStep = Math.max(1, world.tileSize / 4)
@@ -193,7 +202,21 @@ export function stepPlaytest(
   const movedY = moveAxis(world, view, next, 'y', next.vy * dt)
   next.y = movedY.value
   if (view === 'side') {
-    if (movedY.blocked) {
+    const { hw, hh } = playtestBody(world.tileSize, view)
+    const supported =
+      next.vy >= 0
+        ? world.platformLanding?.(
+            { x: state.x - hw, y: state.y - hh, width: hw * 2, height: hh * 2 },
+            { x: next.x - hw, y: next.y - hh, width: hw * 2, height: hh * 2 },
+          )
+        : null
+    if (supported) {
+      if (Math.abs(supported.x + hw - next.x) > 1e-7) next.vx = 0
+      next.x = supported.x + hw
+      next.y = supported.y + hh
+      next.vy = 0
+      next.onGround = true
+    } else if (movedY.blocked) {
       // Bateu descendo = pousou; bateu subindo = cabeça no teto.
       next.onGround = next.vy > 0
       next.vy = 0

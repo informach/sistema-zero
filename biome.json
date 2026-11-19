@@ -92,6 +92,10 @@
   },
   "overrides": [
     {
+      "includes": ["docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.json"],
+      "json": { "formatter": { "expand": "always" } }
+    },
+    {
       "includes": ["packages/studio/src/examples/python/pygameGames/*.generated.ts"],
       "linter": {
         "rules": {

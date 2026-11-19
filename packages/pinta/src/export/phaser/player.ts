@@ -20,8 +20,10 @@ class PintaGame extends Phaser.Scene {
       camera:()=>({x:Math.max(0,hero.x-320),y:Math.max(0,hero.y-240)}),screen:ctx=>ctx.setTransform(1,0,0,1,0,0),
       image:url=>this.textures.get(url).getSourceImage(),warn:message=>console.warn(message),
       collision:(name,scene,rows)=>{
-        if(collision)collision.destroy(true);collision=this.physics.add.staticGroup();
+        if(collision)collision.destroy(true);collision=null;
         this.physics.world.setBounds(0,0,scene.cols*scene.tileSize,scene.rows*scene.tileSize);
+        if(scene.version===3)return null;
+        collision=this.physics.add.staticGroup();
         for(let y=0;y<rows.length;y++)for(let x=0;x<rows[y].length;x++)if(rows[y][x]>=0){
           const cell=this.add.rectangle((x+0.5)*scene.tileSize,(y+0.5)*scene.tileSize,scene.tileSize,scene.tileSize).setVisible(false);
           this.physics.add.existing(cell,true);if(rows[y][x]===1){cell.body.checkCollision.down=false;cell.body.checkCollision.left=false;cell.body.checkCollision.right=false;}
@@ -29,15 +31,19 @@ class PintaGame extends Phaser.Scene {
         }
         return collision;
       },collide:(sprite,group)=>this.physics.collide(sprite,group),
-      precise:(sprite,scene,group,move)=>{
+      precise:(sprite,scene,group,move,land)=>{
         const body=sprite.body,previous=body.prev;
-        const result=move(scene,{x:previous.x,y:previous.y,width:body.width,height:body.height},body.x-previous.x,body.y-previous.y);
+        const before={x:previous.x,y:previous.y,width:body.width,height:body.height};
+        let result=move(scene,before,body.x-previous.x,body.y-previous.y);
+        const gravity=body.gravity.y+this.physics.world.gravity.y;
+        const support=body.velocity.y*gravity>=0?land(scene,before,result,gravity):null;
+        if(support)result=support;
         const hitX=Math.abs(result.x-body.x)>1e-7,hitY=Math.abs(result.y-body.y)>1e-7;
         // Arcade postUpdate applies position - prev to the game object. Correct
         // only the body here; changing the sprite too would apply this twice.
         body.position.set(result.x,result.y);
         if(hitX)body.setVelocityX(0);if(hitY)body.setVelocityY(0);
-        this.physics.collide(sprite,group);
+        if(support){body.blocked[gravity<0?'up':'down']=true;body.setVelocityY(0);}
       }
     });
     this.maps.createMapScene('mapa',PINTA_START);

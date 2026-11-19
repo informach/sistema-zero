@@ -22,6 +22,13 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
 - [x] 0a. Reauditar staging e recuperar matriz R01–R33 e critérios originais.
 - [ ] 0b. Acrescentar ensaio de implantação gradual/rollback de versões e executar o ciclo
   autenticado entre clientes de staging com a conta de teste fornecida pelo usuário.
+  Login confirmado e runtime C4 armazenado no R2 real, com 128 objetos conferidos;
+  nenhuma ativação realizada. Provas e limites em `qa/runtime-c4-staging/README.md`.
+  O CI remoto de `7347a7707` encontrou quatro bloqueios adicionais; diagnóstico,
+  correções e limites da prova local em `qa/ci-remoto-2026-11-19/README.md`.
+  A recompilação `132db1b…` passou por 16 casos Pinta/Pygame e 83 casos do runtime,
+  com upload e leitura independente de 128 objetos em staging, sem ativação.
+  Provas em `qa/runtime-132-local/README.md` e `qa/runtime-132-staging/README.md`.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
@@ -53,13 +60,23 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   teste com personagem do editor. Geometria analítica e consulta local sem grade
   achatada em `geometria-fisica.md`. O segundo lote acrescenta marca autoral, controles,
   documento 7/cena 3/PNG 4, varredura nos motores e adaptadores externos;
-  ver `colisoes-autorais.md`. Plataformas de mão única transformadas e o ciclo de
-  atualização/publicação autenticado ainda precisam do fechamento descrito ali.
+  ver `colisoes-autorais.md`. A continuação integra plataformas de mão única
+  transformadas, testa os consumidores reais e corrige o jogo criado pelo botão;
+  provas locais em `qa/plataformas-precisas/README.md`. O ciclo de atualização e
+  publicação autenticado ainda depende do rollout descrito na etapa 0b.
   O lote foi commitado em `db4ba7aa8` e integrado com staging em `04acef30b`;
   nova distribuição e regressões em `qa/colisoes-autorais-pos-merge/README.md`.
-  O próximo lote tem critérios e arquitetura em `plataformas-precisas.md`.
+  Critérios e arquitetura das plataformas em `plataformas-precisas.md`.
+  A revisão ampliada acrescenta consultas executáveis ao exemplo da Vila, conserva
+  as imagens e fecha os inventários e manuais. Runner oficial: 11.543 aprovados,
+  mais os quatro casos condicionados ao Chromium reexecutados sem omissão;
+  `qa/fechamento-integracao/README.md`. Isso não encerra o ciclo autenticado.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
   transição, prévia, determinismo, vizinhos, undo/redo e cancelamento em navegador.
+  Gestos verificados em desktop, toque e CPU 4×; corrigido cancelamento por Esc e
+  `pointercancel`, incluindo crescimento e recuperação de conflito. Provas em
+  `qa/terrenos-e-cancelamento-2026-11-19/README.md`. Modelos de terrenos prontos para
+  o iniciante ainda precisam de entrega e homologação antes de fechar esta etapa.
 - [ ] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.
 - [ ] 4b. Pincel de objetos/conjuntos: densidade, afastamento, semente, prévia e um histórico
   por gesto; manter diferença entre conjunto vinculado e cópia independente.

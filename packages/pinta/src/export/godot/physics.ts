@@ -77,6 +77,15 @@ func bloqueado(rect: Rect2) -> bool:
         if entry.data.get("collision",false) and entry.node.is_visible_in_tree() and entry.node.global_transform.determinant() != 0:
             if _outline_hits(entry.data,_local_body(entry.node,rect)):
                 return true
+    return _visit_tiles(rect,false,func(_entry: Dictionary,col: int,row: int,query: PackedVector2Array) -> bool:
+        var local_query := PackedVector2Array()
+        var size: float = scene_data.tileSize
+        for point in query:
+            local_query.append(point - Vector2(col * size,row * size))
+        return _outline_hits({"width":size,"height":size},local_query)
+    )
+
+func _visit_tiles(rect: Rect2, platforms: bool, visit: Callable) -> bool:
     var size: float = scene_data.tileSize
     for entry in solid_tile_layers:
         if not entry.node.is_visible_in_tree() or entry.node.global_transform.determinant() == 0:
@@ -85,17 +94,82 @@ func bloqueado(rect: Rect2) -> bool:
         var bounds := Rect2(query[0],Vector2.ZERO)
         for point in query:
             bounds = bounds.expand(point)
-        for row in range(maxi(0,floori(bounds.position.y / size)),mini(entry.rows,ceili(bounds.end.y / size))):
-            for col in range(maxi(0,floori(bounds.position.x / size)),mini(entry.cols,ceili(bounds.end.x / size))):
+        for row in range(maxi(0,floori((bounds.position.y - 1e-7) / size)),mini(entry.rows,ceili((bounds.end.y + 1e-7) / size))):
+            for col in range(maxi(0,floori((bounds.position.x - 1e-7) / size)),mini(entry.cols,ceili((bounds.end.x + 1e-7) / size))):
                 var cell: int = int(entry.layer.cells[row * entry.cols + col])
-                if cell < 0 or (not entry.layer.get("collision",false) and not (cell & ${CELL_MAX_TILES - 1}) in entry.tileset.solid):
+                if cell < 0:
                     continue
-                var local_query := PackedVector2Array()
-                for point in query:
-                    local_query.append(point - Vector2(col * size,row * size))
-                if _outline_hits({"width":size,"height":size},local_query):
+                var index: int = cell & ${CELL_MAX_TILES - 1}
+                var solid: bool = entry.layer.get("collision",false) or index in entry.tileset.solid
+                if (platforms and (solid or not index in entry.tileset.platform)) or (not platforms and not solid):
+                    continue
+                if visit.call(entry,col,row,query):
                     return true
     return false
+
+func _platform_surface(points: PackedVector2Array, body: Rect2, direction: float) -> Variant:
+    var left := INF
+    var right := -INF
+    for point in points:
+        left = minf(left,point.x)
+        right = maxf(right,point.x)
+    left = maxf(left,body.position.x)
+    right = minf(right,body.end.x)
+    if right - left <= 1e-9:
+        return null
+    var heights: Array[float] = []
+    for index in range(points.size()):
+        var a := points[index]
+        var b := points[(index + 1) % points.size()]
+        if a.x >= left and a.x <= right:
+            heights.append(a.y)
+        if a.x == b.x:
+            continue
+        for x in [left,right]:
+            if x >= minf(a.x,b.x) and x <= maxf(a.x,b.x):
+                heights.append(a.y + (b.y - a.y) * (x - a.x) / (b.x - a.x))
+    if heights.is_empty():
+        return null
+    return heights.min() if direction > 0 else heights.max()
+
+func pouso(previous: Rect2, desired: Rect2, gravity: float = 1) -> Variant:
+    if not is_finite(gravity) or gravity == 0 or not previous.position.is_finite() or not previous.size.is_finite() or not desired.position.is_finite() or not desired.size.is_finite():
+        return null
+    if minf(minf(previous.size.x,previous.size.y),minf(desired.size.x,desired.size.y)) <= 0:
+        return null
+    var direction := signf(gravity)
+    # Vector2 uses float32 in the standard Godot build, as FRect does in Pygame.
+    var epsilon := 1e-6
+    for value in [previous.position.x,previous.position.y,previous.end.x,previous.end.y,desired.position.x,desired.position.y,desired.end.x,desired.end.y]:
+        epsilon = maxf(epsilon,absf(value) * pow(2,-23))
+    if (desired.position.y - previous.position.y) * direction < -epsilon:
+        return null
+    var choice: Dictionary = {"body":null,"was_supported":false}
+    _visit_tiles(previous.merge(desired).grow(epsilon),true,func(entry: Dictionary,col: int,row: int,_query: PackedVector2Array) -> bool:
+        var size: float = scene_data.tileSize
+        var points := PackedVector2Array()
+        for offset in [Vector2.ZERO,Vector2(size,0),Vector2(size,size),Vector2(0,size)]:
+            points.append(entry.node.to_global(Vector2(col * size,row * size) + offset))
+        var floor: Variant = _platform_surface(points,desired,direction)
+        if floor == null:
+            return false
+        var old_floor: Variant = _platform_surface(points,previous,direction)
+        if old_floor == null:
+            old_floor = floor
+        var feet: float = desired.end.y if direction > 0 else desired.position.y
+        var old_feet: float = previous.end.y if direction > 0 else previous.position.y
+        if (old_feet - old_floor) * direction > epsilon or (feet - floor) * direction < -epsilon:
+            return false
+        var candidate := desired
+        candidate.position.y = floor - (desired.size.y if direction > 0 else 0)
+        if choice.body == null or (candidate.position.y - choice.body.position.y) * direction < 0:
+            choice.body = candidate
+            choice.was_supported = absf(old_feet - old_floor) <= epsilon
+        return false
+    )
+    if choice.body != null and bloqueado(choice.body):
+        return previous if choice.was_supported and not bloqueado(previous) else null
+    return choice.body
 
 func mover_corpo(rect: Rect2, displacement: Vector2) -> Rect2:
     if not displacement.is_finite():

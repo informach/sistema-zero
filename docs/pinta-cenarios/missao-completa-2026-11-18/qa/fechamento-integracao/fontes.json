@@ -1,0 +1,50 @@
+{
+  "baseCommit": "72b2e8ab2f6fd634cfe59c119bbf5c749637332e",
+  "sourceFingerprint": "abc4db1230b8069c7d71f611e9faaa33e2dedd5da97420936fa9006046091879",
+  "files": [
+    {
+      "path": "packages/pinta/scripts/homologacao/fixture.ts",
+      "sha256": "9e53b9c409caa4b7eb23d374f1d29223d638a7bfcdce43efb4d36f59ef642cdc"
+    },
+    {
+      "path": "packages/studio/docs/game-2d-audit-2026-07-20.md",
+      "sha256": "833a5d4dc9d2af4db1ebbbfa4b8509ef5890f558d5ed40a1e605f88227ed8cee"
+    },
+    {
+      "path": "packages/studio/src/examples/__gen_serverExamplesIndex.ts",
+      "sha256": "1cd62d17dd4079d4732785373cc01523fc49f3a72a23f9fb031495465763667e"
+    },
+    {
+      "path": "packages/studio/src/examples/pintaScenes.generated.ts",
+      "sha256": "660b0f1da12c36b7a3dc8c56ddd3c837e482cc6a750b06791c1a612e9d8f9618"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/__tests__/blockAudit.test.ts",
+      "sha256": "dc8731869f4cb92ee68a6ea9dd396648e1b7b0e7c0c99f59b3b93a3d08261a98"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/docs.ts",
+      "sha256": "91f5f5659a52d64751ed92732a0cd946efa88507bec77553449a95b50af19ab3"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/__tests__/docDrift.test.ts",
+      "sha256": "41f9843aef03941a34ad19100d38cf29ecbbd687d66fff5f5cdac0ab17b4d3e3"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/examples.ts",
+      "sha256": "00e3c46604140c8185b297c5ea56eb242478f5c6c133a7b6a1fe4e123de136a3"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/runtime.test.ts",
+      "sha256": "2a432297cb08d8a7c48d7ef3131d7cba2d3c5cb6538bc68fb0d97f45e8fe0b20"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/scene-2d/docs.ts",
+      "sha256": "284b4f72a16aefdb367aa118a916eb995d97fb9cc40d73b6362d0e8c5b6c477c"
+    },
+    {
+      "path": "packages/studio/src/preview/__tests__/sceneDocumentBytes.test.ts",
+      "sha256": "48a56a7ce5082fe7843181870a7cbe157c3e858ba6f5d5b32befc64dde0e0403"
+    }
+  ]
+}

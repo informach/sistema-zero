@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapToolsUi.test.tsx:
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com pointercancel não grava nem ocupa o desfazer [531.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com Escape não grava nem ocupa o desfazer [297.00ms]
+
+ 2 pass
+ 34 filtered out
+ 0 fail
+ 6 expect() calls
+Ran 2 tests across 1 file. [1.52s]

@@ -1,0 +1,207 @@
+{
+  "at": "2026-11-19T10:49:43.819Z",
+  "baseCommit": "59bcb42ddd369e3efa2272c4fae81dff16382fe7",
+  "scope": "docs/pinta-cenarios JSON",
+  "filesChecked": 100,
+  "canonicalDataPreservedBeforeReceiptRefresh": true,
+  "receiptsRefreshed": [
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais-pos-merge/verificacao.json",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/verificacao.json",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/verificacao.json"
+  ],
+  "preexistingMismatches": [],
+  "changed": [
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais-pos-merge/distribuicao.json",
+      "beforeSha256": "dd5f6746af4db9e177e07b421659feae891963bb652e820b4735c33f7b5965af",
+      "afterSha256": "b8178fad6cd27467e565183c77d04f8bad3bb89d3b1f18f9b2fadffaafce0669",
+      "beforeCanonicalSha256": "b2dd1ee1694178173526dff73172ed77a8d7a71f79701695d2a4430c428eb7c5",
+      "afterCanonicalSha256": "b2dd1ee1694178173526dff73172ed77a8d7a71f79701695d2a4430c428eb7c5",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais-pos-merge/mundo-1x.json",
+      "beforeSha256": "7b9f2548288717a785682d110eec7ebae156164ee920fc76e2b4285e21e0bee1",
+      "afterSha256": "a89ff7e5e7179b617787ac3fcf81630ab4081bda675eb173fff05564f5f99860",
+      "beforeCanonicalSha256": "917990749a18a8aab6c6879392805096e0e4d4a57e5733b90bb945678dbbd905",
+      "afterCanonicalSha256": "917990749a18a8aab6c6879392805096e0e4d4a57e5733b90bb945678dbbd905",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais-pos-merge/mundo-2x.json",
+      "beforeSha256": "fd46ae5f2ea0f487d212099a6d13376494f7f0d0c1102c5bd5a112b421c2c788",
+      "afterSha256": "b84a0974f2a32ec17691c626851df9751c6a1dd16299ed8f2b18d800027d7290",
+      "beforeCanonicalSha256": "f8712068fd09208d2064f7bbcef85b4e76da4ae91b73f99fce6ddd3f1795c428",
+      "afterCanonicalSha256": "f8712068fd09208d2064f7bbcef85b4e76da4ae91b73f99fce6ddd3f1795c428",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais-pos-merge/python.json",
+      "beforeSha256": "87269d00d73dc3695171965d3ae7a7a54dfa32611376ffa5534f5ac093594b87",
+      "afterSha256": "17da62cd90857e130f9ea9e50d726ba64d1640acffd0b823ba0ba2c62c9bae51",
+      "beforeCanonicalSha256": "60194b724018200cb8f286703b50cc51f6b6dc9f809133dcc68a5f0e9f523872",
+      "afterCanonicalSha256": "60194b724018200cb8f286703b50cc51f6b6dc9f809133dcc68a5f0e9f523872",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais-pos-merge/verificacao.json",
+      "beforeSha256": "096de6608f75f77b1d6606c245620978af3ab2cf87ed12901524af62fcea9e8f",
+      "afterSha256": "b06b9a79201edda5dbe7118534b5cf87f6ffa11cea702d0946841bfbbdf273b0",
+      "beforeCanonicalSha256": "289e37c701b445f8057f1b538f265869f962efb1f412eb2c7c5bf377ef11de0b",
+      "afterCanonicalSha256": "f8180ee5f1e3851b9f4220af3e4c287c2770935fb7df01ea946600c5052d4eb8",
+      "receiptHashesRefreshed": true
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/desempenho-repeticoes.json",
+      "beforeSha256": "f3ec451cf0af0958087b7b5106ea5e0ab24b478d7551a454ab28a26a852604d2",
+      "afterSha256": "8d463b6ee0785b399c5068230940084223455a5d26b9105eaeb49294da65d2d5",
+      "beforeCanonicalSha256": "50245c195164c1b65c9d212f0cca469d98e78158eb1179fd266d51bd75cebb51",
+      "afterCanonicalSha256": "50245c195164c1b65c9d212f0cca469d98e78158eb1179fd266d51bd75cebb51",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/distribuicao-python.json",
+      "beforeSha256": "2ba2af97910eea412694f04664aaba7e48326fa8245a47bdeff6ef12c5c41a41",
+      "afterSha256": "c72a6d93c3e3e98a8a148a529ff2dfbb5526426a74e2aae277c2e103969a01f3",
+      "beforeCanonicalSha256": "ae548eb7fe8a3cd6d5a06859f72d3a0798deed823806b9007899b4859c26da18",
+      "afterCanonicalSha256": "ae548eb7fe8a3cd6d5a06859f72d3a0798deed823806b9007899b4859c26da18",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/integracao.json",
+      "beforeSha256": "dc4d99e70a719ffe5037df58b13ee1758a26b2680b4762954a10fe4c15520fda",
+      "afterSha256": "594bcb35814c91ab591c0e9066e8e2b49d24b4de2d66a357c7a32f9648edc21f",
+      "beforeCanonicalSha256": "da131411c09f3cdaf65bdaa9720304ef34ffe9d5cda1ea5c1c824e48c8ebe044",
+      "afterCanonicalSha256": "da131411c09f3cdaf65bdaa9720304ef34ffe9d5cda1ea5c1c824e48c8ebe044",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/python-1x.json",
+      "beforeSha256": "2a82989cbd17e2b18f189d44aa1585e9517ae1f1be0268be4d02ea856c9cd59e",
+      "afterSha256": "7fcf0da5920fcc464fd1b94f6cdaa996b12ef0fa005eb483e8182e9a7f8a8435",
+      "beforeCanonicalSha256": "23485b0e505259baadbbe88978ba275de4bc9351a15770fba1edfd740b75fb4f",
+      "afterCanonicalSha256": "23485b0e505259baadbbe88978ba275de4bc9351a15770fba1edfd740b75fb4f",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/python-2x.json",
+      "beforeSha256": "ef3458d273baac977dbc029763047a52ad13cdf247932c0accae7f60537f7d08",
+      "afterSha256": "4511c689ab7c6d53dcd45bd39e83611630df8bca1a9038a0bc942c7019054554",
+      "beforeCanonicalSha256": "8911a9beec0365460bdf8bf2bdfbfddf7357d2b0890afc8dd96d53c12afba866",
+      "afterCanonicalSha256": "8911a9beec0365460bdf8bf2bdfbfddf7357d2b0890afc8dd96d53c12afba866",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/python-mundo-1x.json",
+      "beforeSha256": "fdd0f4f171ad2c7dac5ba206f3511c5a48aab6e8949beb369ce0e41ce5bbfabb",
+      "afterSha256": "ab695e955a2ab43b1665bfc2dca4373edb2f6d4d2221be6e3ad59016dfd9e166",
+      "beforeCanonicalSha256": "eda76a3117ebdc0cf4d4555dcf6828b19c8e72f91a6aad92dc15138b5c5fda77",
+      "afterCanonicalSha256": "eda76a3117ebdc0cf4d4555dcf6828b19c8e72f91a6aad92dc15138b5c5fda77",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/python-mundo-2x.json",
+      "beforeSha256": "2a2a01778ca2211a10eb03980643266336c7e97d039aba2d477a6fffe75ddd0a",
+      "afterSha256": "f9474a35e5b67fb5b958fb5ce6b21296089e19f19398b257c5a8ab2c903510a0",
+      "beforeCanonicalSha256": "d86a8f3468d05f4355915288fce2e88b903b33c5a9afdfe39df83b41f3201c04",
+      "afterCanonicalSha256": "d86a8f3468d05f4355915288fce2e88b903b33c5a9afdfe39df83b41f3201c04",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/python-mundo.json",
+      "beforeSha256": "99e98c7ebe68b09cb262fa4bbc449e586585c7b4c2fc70aa904ec1756908beff",
+      "afterSha256": "36aa48962b61441a1ed46c290947bbd9ac8616276d40f8a0aed7b6681006b9eb",
+      "beforeCanonicalSha256": "75a4c6cb2154d4d6752b800d8e21e316e0e8ae5904a0c3826bc47d845e904dae",
+      "afterCanonicalSha256": "75a4c6cb2154d4d6752b800d8e21e316e0e8ae5904a0c3826bc47d845e904dae",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/python-navegador.json",
+      "beforeSha256": "dd0addd2bb909670410bfcc2c2c26207c01fc7cb219fdc005c07e9a62f061c19",
+      "afterSha256": "463ee029d933e569cdf480acbbaf3e85039d1cf8051a88deebd5b9f09d761bf5",
+      "beforeCanonicalSha256": "3dd82e4e8e58de7da722ccd670d6e5958bea0d5823c7f4dfea7527d591644beb",
+      "afterCanonicalSha256": "3dd82e4e8e58de7da722ccd670d6e5958bea0d5823c7f4dfea7527d591644beb",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/colisoes-autorais/verificacao.json",
+      "beforeSha256": "6d37312d182a8d12250f99e12c194e23065cf31bd9fa5b338dd0964caccaae90",
+      "afterSha256": "70b73f055aba8d096dacb5b839137b8b5c2038b59b079840f886429b5b0f3748",
+      "beforeCanonicalSha256": "abd9f977a02d88e38a2c696d36313718c7e18367b509963aa6b60bbdddc8a769",
+      "afterCanonicalSha256": "f3fc5f96d3ead6f021a6aaf1d4e58917cfecceb93add6b6d4b6c910719571d6c",
+      "receiptHashesRefreshed": true
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/comandos.json",
+      "beforeSha256": "e9bd0a5aa6de007c7b7a0affb4a6dcb6d3e442087b1b3231a57909bf62bc1969",
+      "afterSha256": "4afd427bc320e55dee0f5e65890bbcba400d6333f5411a7d4dd344f711b0fc57",
+      "beforeCanonicalSha256": "8af5de546b36b768d471582f36501d6eec16b92c0ee029164c27e0b79b216452",
+      "afterCanonicalSha256": "8af5de546b36b768d471582f36501d6eec16b92c0ee029164c27e0b79b216452",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/distribuicao-python.json",
+      "beforeSha256": "4bf4d6557d5da05fff54887458f0f1e2c6e4153c9cf0309bcf69f80c62a30717",
+      "afterSha256": "575331f34a08753e03e600e0e3e1f3367f001d994ac90d87ecbc8606c46dbe6b",
+      "beforeCanonicalSha256": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+      "afterCanonicalSha256": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/integracao.json",
+      "beforeSha256": "2197cd44ade69cd0023fc71f46a12fe5a23178d6e342c05e7ea0cc64a4fc6219",
+      "afterSha256": "ba36caa832b7147d129bad7b86f9fe9bfcac820bf6f45324af3cde86d42cd4a7",
+      "beforeCanonicalSha256": "097f40f558cf388b67c64e8510ea2035ad019f0b39e633b8965ddfc3094e0160",
+      "afterCanonicalSha256": "097f40f558cf388b67c64e8510ea2035ad019f0b39e633b8965ddfc3094e0160",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/navegador.json",
+      "beforeSha256": "0a41f377086632e47db8de2cdbc697bfb7d84a887713c4078f8e441a67717180",
+      "afterSha256": "ea87dd616eac69384f45c807b445db2c21946911b20921f399d90d754c117709",
+      "beforeCanonicalSha256": "219f4780ce16ab1af3f83f7bbb4ae5fe6fbbe05d47dbf3f9d13f8075899ad97f",
+      "afterCanonicalSha256": "219f4780ce16ab1af3f83f7bbb4ae5fe6fbbe05d47dbf3f9d13f8075899ad97f",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/python-1x.json",
+      "beforeSha256": "7328c5264294966730958d82afd41f98b128b0f0c3a16191d34f60b537605caa",
+      "afterSha256": "e4e700bba8523c5f962412612034867eeb96cec999eebc729482fcf100e67099",
+      "beforeCanonicalSha256": "a3a334ec762eca79f9224cc6489b92d2b512c187f86e329601520b1bfa03fc29",
+      "afterCanonicalSha256": "a3a334ec762eca79f9224cc6489b92d2b512c187f86e329601520b1bfa03fc29",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/python-2x.json",
+      "beforeSha256": "d934b89f54103a8bc8499ab3d95659d14e805791e81eb1573f6be31c862c6074",
+      "afterSha256": "56829813a38bb1ab3aad3b0a6a49d0fbd371d714452a8f0a3383557e7d34f542",
+      "beforeCanonicalSha256": "e7cb91ceb5d7bfc58af8b3322da647341162c24cae62018c47908a93722d4a0f",
+      "afterCanonicalSha256": "e7cb91ceb5d7bfc58af8b3322da647341162c24cae62018c47908a93722d4a0f",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/python-navegador.json",
+      "beforeSha256": "e4c25475766e8f15c05504b512b73ef72749ab288fb8cd14d8529299e22a4680",
+      "afterSha256": "33f0aeeee10f572ca23194cbf49f1b463d9313edf36357be98100babe78484c9",
+      "beforeCanonicalSha256": "b43289c5cd0ccec7e64c0cb7f1908eab47c321231774ac2144db95cce87b2a87",
+      "afterCanonicalSha256": "b43289c5cd0ccec7e64c0cb7f1908eab47c321231774ac2144db95cce87b2a87",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/python-repeticao.json",
+      "beforeSha256": "15d5a9bc1b43f9584fde70b466452f3c66843f9e932a293f4ee31f29259e6739",
+      "afterSha256": "f65d314452ad92b5fe722ed250f21ebc636878129c83dd6d3672a28e25468cb0",
+      "beforeCanonicalSha256": "1a91b878bf62e7f0cba445a44fe39ae10802fd197af3e1652f4828e5bd53ae4d",
+      "afterCanonicalSha256": "1a91b878bf62e7f0cba445a44fe39ae10802fd197af3e1652f4828e5bd53ae4d",
+      "receiptHashesRefreshed": false
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/verificacao.json",
+      "beforeSha256": "00a4cfac9d51ad188064e5d91156e207c6330d8d7fb1e085158316a520bbe304",
+      "afterSha256": "692ac44940f3d0348402bfb051ba3186fed07307d86758dba596b863e4a770be",
+      "beforeCanonicalSha256": "4ece252da7daceac2a848133b55697af2f280e4078dc41cb100a5f597affd4a7",
+      "afterCanonicalSha256": "93e658e5b53283c6038d2a18274d6accbee8e728155d40c4a8fec5de284b97b9",
+      "receiptHashesRefreshed": true
+    }
+  ]
+}

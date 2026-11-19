@@ -4,7 +4,11 @@
  * botões, roda o relógio (um passo por quadro da tela, pelo tempo que passou) e DESENHA.
  */
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
-import { sceneIntersectsBox } from '@sistemazero/core/studio/pinta-scene-geometry'
+import {
+  sceneIntersectsBox,
+  sceneMoveBox,
+  scenePlatformLanding,
+} from '@sistemazero/core/studio/pinta-scene-geometry'
 import {
   sceneObjects,
   sceneSolidAt,
@@ -60,6 +64,8 @@ export function playtestWorldFromScene(scene: PintaScene): PlaytestWorld {
     tileSize: scene.tileSize,
     solidAt: (x, y) => sceneSolidAt(scene, x, y),
     intersectsSolid: (box) => sceneIntersectsBox(scene, box),
+    moveSolid: (body, dx, dy) => sceneMoveBox(scene, body, dx, dy),
+    platformLanding: (previous, desired) => scenePlatformLanding(scene, previous, desired),
     spawn: sceneSpawn(scene),
     doors: objects.filter((o) => o.role === 'door').map(area),
     hazards: objects.filter((o) => o.role === 'danger').map(area),

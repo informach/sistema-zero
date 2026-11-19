@@ -1,0 +1,52 @@
+
+Running 3 tests using 1 worker
+
+(node:40588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (9.6s)
+(node:42344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:42344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  2 [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (6.9s)
+(node:38112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [cpu-4x] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (23.9s)
+
+
+  1) [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      180 |   const filled = await backup(page)
+      181 |   assertSeams(filled, 0)
+    > 182 |   expect(map(filled).layers[0]!.cells.every((cell) => cell >= 0)).toBe(true)
+          |                                                                   ^
+      183 |   const land = map(filled).layers[0]
+      184 |   await tool('Lago')
+      185 |   await page.getByLabel('Terreno', { exact: true }).selectOption({ label: 'Areia e água' })
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\pinta-terrain-scenes.flow.ts:182:67
+
+    Error Context: .cache\pinta-terrain-all-20261119-r1\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-touch\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-terrain-all-20261119-r1\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-touch\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-terrain-all-20261119-r1\pinta-terrain-scenes.flow.-a6acb-ento-histórico-e-reabertura-touch\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura
+  2 passed (44.1s)

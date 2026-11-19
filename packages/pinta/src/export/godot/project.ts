@@ -176,7 +176,7 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
             for index in range(int(ts.count)):
                 var at := Vector2i(index % int(ts.columns),index / int(ts.columns))
                 source.create_tile(at)
-                if (scene_data.get("version",1) < 3 and (layer.get("collision",false) or index in ts.solid)) or index in ts.platform:
+                if scene_data.get("version",1) < 3 and (layer.get("collision",false) or index in ts.solid or index in ts.platform):
                     var td: TileData = source.get_tile_data(at,0)
                     td.add_collision_polygon(0)
                     var h: float = size / 2.0

@@ -3201,7 +3201,7 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     extension: 'game-2d',
     name: 'A Vila e a Floresta',
     description:
-      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, leia o início, os lugares e as propriedades da porta.',
+      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, siga a referência da porta do morador, encontre sua arte e leia as propriedades da camada e da peça.',
     difficulty: 'intermediate',
     concepts: ['Pinta', 'cenário', 'camadas', 'objetos', 'porta', 'propriedades', 'animação'],
     genre: 'exploração',
@@ -5674,7 +5674,7 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
     extension: 'game-2d-advanced',
     name: 'A Vila e a Floresta (Avançado)',
     description:
-      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, leia o início, os lugares e as propriedades da porta.',
+      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, siga a referência da porta do morador, encontre sua arte e leia as propriedades da camada e da peça.',
     difficulty: 'advanced',
     concepts: ['Pinta', 'cenário', 'camadas', 'objetos', 'porta', 'propriedades', 'animação'],
     genre: 'exploração',

@@ -34,17 +34,13 @@
       "title": "O ciclo de criação de um jogo",
       "objective": "Apresentar o ciclo de criação e a relação dele com a redação, o trabalho e o pensar por conta própria.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a6-ciclo"
-      ],
+      "blockKeys": ["video-a6-ciclo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a6-ciclo"
-        ]
+        "blockIds": ["video-a6-ciclo"]
       }
     },
     {
@@ -52,17 +48,13 @@
       "title": "Uma regra de cada vez",
       "objective": "Demonstrar, em captura de tela, a criação de duas regras de um esconde-esconde.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a6-demonstracao"
-      ],
+      "blockKeys": ["video-a6-demonstracao"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a6-demonstracao"
-        ]
+        "blockIds": ["video-a6-demonstracao"]
       }
     },
     {
@@ -70,17 +62,13 @@
       "title": "Fui eu que causei isso",
       "objective": "Explicar a causa e consequência: a criança percebe que é agente do que acontece.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a6-causa"
-      ],
+      "blockKeys": ["video-a6-causa"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a6-causa"
-        ]
+        "blockIds": ["video-a6-causa"]
       }
     },
     {
@@ -88,18 +76,13 @@
       "title": "O assunto que abre a conversa",
       "objective": "Mostrar como o jogo vira assunto em casa e ponto de partida para outras conversas.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a6-familia",
-        "resumo-a6"
-      ],
+      "blockKeys": ["video-a6-familia", "resumo-a6"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a6-familia"
-        ]
+        "blockIds": ["video-a6-familia"]
       }
     }
   ],

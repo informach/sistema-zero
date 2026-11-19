@@ -315,19 +315,14 @@ deixe 0 e 0 para o golpe inteiro machucar, como antes.
 
 ### 🗺️ Mapas e profundidade
 
-Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG):
-
-- **Carregar o mapa … do meu desenho**. Monta um mapa de peças (tiles) do Pinta
-  (grade, peças e sólidos já vêm juntos). Dê um nome e use no comecinho.
-- **Desenhar o mapa … (camada chão / topos / frente)**. O segredo da
-  profundidade: o **chão** ANTES dos personagens; DEPOIS deles os **topos** (só as
-  peças sólidas) OU a **frente** (a camada da frente que você marcou no Pinta,
-  como copas de árvore). Assim o herói passa POR TRÁS. No "Desenhar o jogo".
-- **Desenhar … e os personagens por profundidade** (Y-sort). Desenha na ordem
-  certa: quem está mais embaixo na tela aparece na FRENTE. Entram o personagem que
-  você passar, TODOS os grupos vivos e os NPCs (se o jogo tiver o Kit RPG).
-- **Desenhar a sombra de …**. Uma sombrinha embaixo do personagem (ele gruda no
-  chão em vez de flutuar). Use antes de desenhar o personagem.
+- **Carregar o mapa … do meu desenho**: em Ao iniciar, nomeie e carregue o mapa do
+  Pinta. Grade, peças e sólidos vêm juntos.
+- **Desenhar o mapa … (camada chão / topos / frente)**: em Desenhar o jogo,
+  desenhe chão antes dos personagens. Depois, topos (peças sólidas) ou frente
+  marcada no Pinta, como copas de árvores: o herói passa por trás.
+- **Desenhar … e os personagens por profundidade** (Y-sort): quem está mais embaixo
+  aparece na frente. Inclui o personagem escolhido, todos os grupos vivos e NPCs do Kit RPG.
+- **Desenhar a sombra de …**: use antes do personagem para apoiá-lo visualmente no chão.
 
 ${sceneReference}
 

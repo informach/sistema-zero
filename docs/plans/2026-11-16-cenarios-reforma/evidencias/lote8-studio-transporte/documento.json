@@ -2661,15 +2661,8 @@
           "animacoes": [
             {
               "id": "visual-2",
-              "clipes": [
-                "parado_relaxado",
-                "andar_frente",
-                "correr_frente",
-                "pulo_no_ar"
-              ],
-              "ossos": [
-                44
-              ],
+              "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
+              "ossos": [44],
               "matrizesFinitas": true
             }
           ],
@@ -5343,15 +5336,8 @@
           "animacoes": [
             {
               "id": "visual-2",
-              "clipes": [
-                "parado_relaxado",
-                "andar_frente",
-                "correr_frente",
-                "pulo_no_ar"
-              ],
-              "ossos": [
-                44
-              ],
+              "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
+              "ossos": [44],
               "matrizesFinitas": true
             }
           ],
@@ -8025,15 +8011,8 @@
           "animacoes": [
             {
               "id": "visual-2",
-              "clipes": [
-                "parado_relaxado",
-                "andar_frente",
-                "correr_frente",
-                "pulo_no_ar"
-              ],
-              "ossos": [
-                44
-              ],
+              "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
+              "ossos": [44],
               "matrizesFinitas": true
             }
           ],
@@ -10723,15 +10702,8 @@
           "animacoes": [
             {
               "id": "visual-2",
-              "clipes": [
-                "parado_relaxado",
-                "andar_frente",
-                "correr_frente",
-                "pulo_no_ar"
-              ],
-              "ossos": [
-                44
-              ],
+              "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
+              "ossos": [44],
               "matrizesFinitas": true
             }
           ],
@@ -13405,15 +13377,8 @@
           "animacoes": [
             {
               "id": "visual-2",
-              "clipes": [
-                "parado_relaxado",
-                "andar_frente",
-                "correr_frente",
-                "pulo_no_ar"
-              ],
-              "ossos": [
-                44
-              ],
+              "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
+              "ossos": [44],
               "matrizesFinitas": true
             }
           ],
@@ -16087,15 +16052,8 @@
           "animacoes": [
             {
               "id": "visual-2",
-              "clipes": [
-                "parado_relaxado",
-                "andar_frente",
-                "correr_frente",
-                "pulo_no_ar"
-              ],
-              "ossos": [
-                44
-              ],
+              "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
+              "ossos": [44],
               "matrizesFinitas": true
             }
           ],

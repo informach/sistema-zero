@@ -43,6 +43,10 @@ export type W3DModelTarget = 'personagem' | 'amigo' | 'carro'
 interface Common {
   __id?: string
 }
+interface UseSceneNode extends Common {
+  type: 'w3d:useScene'
+  scene: string
+}
 interface CollectibleNode extends Common {
   type: 'w3d:collectible'
   n: JSExpr
@@ -84,6 +88,7 @@ interface ModelAnimNode extends Common {
 }
 
 export type World3DNewStatement =
+  | UseSceneNode
   | CollectibleNode
   | OnCollectItemNode
   | RemoveNamedNode
@@ -92,6 +97,7 @@ export type World3DNewStatement =
   | ModelAnimNode
 
 export const W3D_NEW_STATEMENT_TYPES = [
+  'w3d:useScene',
   'w3d:collectible',
   'w3d:onCollectItem',
   'w3d:removeNamed',
@@ -107,7 +113,11 @@ export function isWorld3DNewStatement(value: JSStatement): value is World3DNewSt
 }
 
 /** Configuram o mundo uma vez (o modelo do personagem/amigo/carro e o clipe de cada estado). */
-export const W3D_NEW_START_ONLY_TYPES: readonly string[] = ['w3d:useModel', 'w3d:modelAnim']
+export const W3D_NEW_START_ONLY_TYPES: readonly string[] = [
+  'w3d:useScene',
+  'w3d:useModel',
+  'w3d:modelAnim',
+]
 
 type IdField = { __id: z.ZodOptional<z.ZodString> }
 
@@ -121,6 +131,7 @@ export function world3DNewStatementSchemas(
   id: IdField,
 ) {
   return [
+    z.object({ type: z.literal('w3d:useScene'), scene: z.string().max(64), ...id }),
     z.object({
       type: z.literal('w3d:collectible'),
       n: expr,

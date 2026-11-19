@@ -55,6 +55,9 @@ fecham a lista.
 ### 🌍 Mundo
 
 **Criar e moldar o chão**
+- **Usar o cenário …**. Escolha um cenário que trouxe do Molda, em **⚙️ Ao iniciar**.
+  O mundo usa o chão, as águas e os objetos desse cenário; os controles continuam os mesmos.
+  Nesse caso não precisa montar outro chão com os blocos de morros e água.
 - **Criar o mundo 3D: … de … metros de lado**. O primeiro bloco. O estilo
   muda as cores E o chão: na ❄️ neve tudo escorrega de propósito; na 🌙 lua a
   gravidade é fraquinha (pulos flutuantes!), o céu nasce estrelado e o chão vem

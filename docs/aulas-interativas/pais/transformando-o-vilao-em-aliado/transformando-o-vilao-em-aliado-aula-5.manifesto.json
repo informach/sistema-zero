@@ -34,17 +34,13 @@
       "title": "\"Será que ele vai ter foco?\"",
       "objective": "Responder à dúvida sobre o foco com o relato de pais: já que vai focar, que foque aprendendo.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a5-foco"
-      ],
+      "blockKeys": ["video-a5-foco"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a5-foco"
-        ]
+        "blockIds": ["video-a5-foco"]
       }
     },
     {
@@ -52,17 +48,13 @@
       "title": "\"Será que não vai ser difícil?\"",
       "objective": "Responder à dúvida sobre a dificuldade com a história da Isabela e os níveis de suporte.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a5-dificil"
-      ],
+      "blockKeys": ["video-a5-dificil"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a5-dificil"
-        ]
+        "blockIds": ["video-a5-dificil"]
       }
     },
     {
@@ -70,17 +62,13 @@
       "title": "Também ajuda na escola",
       "objective": "Mostrar como a criação dá sentido ao que a escola ensina: matemática, português, ciências, artes e planejamento.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a5-escola"
-      ],
+      "blockKeys": ["video-a5-escola"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a5-escola"
-        ]
+        "blockIds": ["video-a5-escola"]
       }
     },
     {
@@ -88,24 +76,15 @@
       "title": "O que a gente mais deseja: que eles sejam felizes",
       "objective": "Retomar a reflexão da primeira aula: a felicidade que desejamos passa pela autonomia e pelas habilidades que a vida adulta exige.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a5-feliz",
-        "resumo-a5"
-      ],
+      "blockKeys": ["video-a5-feliz", "resumo-a5"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a5-feliz"
-        ]
+        "blockIds": ["video-a5-feliz"]
       }
     }
   ],
-  "retireBlockKeys": [
-    "video-a5-suporte",
-    "para-casa-a5",
-    "quiz-a5"
-  ]
+  "retireBlockKeys": ["video-a5-suporte", "para-casa-a5", "quiz-a5"]
 }

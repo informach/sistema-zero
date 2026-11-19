@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+tests\fronteira.test.ts:
+(pass) fronteira do jogo > o leitor de imports pega todas as formas [16.00ms]
+(pass) fronteira do jogo > o jogo só importa o permitido [234.00ms]
+(pass) fronteira do jogo > o núcleo de cenários só depende de módulos puros, zod e do contrato de criações [47.00ms]
+(pass) fronteira do jogo > o avatar-quarto, dividido com a plataforma, não importa nada da plataforma
+(pass) fronteira do jogo > o contrato não importa o jogo, React nem three [16.00ms]
+(pass) fronteira do jogo > o Admin do jogo não importa o jogo, o serviço nem o Admin (lacunas, 01/11/2026)
+(pass) fronteira do jogo > nenhum pacote da plataforma importa o jogo ou o serviço do jogo [1594.00ms]
+
+ 7 pass
+ 0 fail
+ 7 expect() calls
+Ran 7 tests across 1 file. [2.20s]

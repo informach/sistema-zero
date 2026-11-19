@@ -1,7 +1,9 @@
 import type { OpcoesDoRuntimeCompilado } from '@sistemazero/molda-cenarios-motor/runtime'
+import { resolverInicioDaCena } from '@sistemazero/molda-cenarios-motor/runtime'
 import type { Asset3DManifestEntry } from '../core/projectAssets'
 import { resolverAssetsDoTransporte3D, type TransporteDeCenas3D } from '../core/scene3d/transporte'
 import { carregarCena3DDoProjeto } from './scene3d'
+import { criarInstaladorDeCenas3D } from './scene3dCanvas'
 
 declare global {
   interface Window {
@@ -10,6 +12,9 @@ declare global {
     __SZGAME_ASSETS_3D?: Record<string, Asset3DManifestEntry>
     SZScene3D?: {
       carregar: typeof carregarDoDocumento
+      inicio: typeof resolverInicioDaCena
+      instalar: ReturnType<typeof criarInstaladorDeCenas3D>['instalar']
+      instalado: ReturnType<typeof criarInstaladorDeCenas3D>['instalado']
     }
   }
 }
@@ -35,8 +40,17 @@ function carregarDoDocumento(
   }
 }
 
+const ligacoesCanvas = criarInstaladorDeCenas3D(carregarDoDocumento)
+// Before learner-owned renderer teardown, including programs without the lifecycle wrapper.
+window.addEventListener('pagehide', ligacoesCanvas.descartar, { once: true, capture: true })
+
 Object.defineProperty(window, 'SZScene3D', {
-  value: Object.freeze({ carregar: carregarDoDocumento }),
+  value: Object.freeze({
+    carregar: carregarDoDocumento,
+    inicio: resolverInicioDaCena,
+    instalar: ligacoesCanvas.instalar,
+    instalado: ligacoesCanvas.instalado,
+  }),
   configurable: true,
   writable: false,
 })

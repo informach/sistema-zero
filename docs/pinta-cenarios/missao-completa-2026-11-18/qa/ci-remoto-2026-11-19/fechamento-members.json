@@ -1,0 +1,16 @@
+{
+  "workspaces": [
+    "arquipelago-contracts",
+    "core",
+    "members",
+    "molda",
+    "molda-cenarios-core",
+    "molda-cenarios-motor",
+    "pinta",
+    "studio",
+    "ui"
+  ],
+  "contentValidatorImported": true,
+  "imageBuilt": false,
+  "applicationBooted": false
+}

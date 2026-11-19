@@ -203,11 +203,16 @@ const BUDGETS: readonly {
   // 27/10: +1_228, as texturas do .glb pela img (ver o Jogo 3D). Medido: 346_158 / 100_414.
   // 27/10: +257, o que não faz sombra no carregador comum (ver o Jogo 3D). Medido: 346_415.
   // Windows, mesmo conteúdo: 103_642 bytes gzip.
+  // 19/11: cef2ebd8a integra cenários compilados ao Mundo 3D: terreno, apoio,
+  // colisões e descarte. O fragmento novo mede 9_585 caracteres; o runtime completo
+  // mede 357_521 caracteres / 106_864 bytes gzip no Windows (Bun 1.3.11).
+  // Tetos próximos da medida, com gzip limitado a 107_000 nas duas plataformas.
+  // A execução Linux do CI continua conferindo seu compressor real.
   {
     extension: worldThreeDExtension,
-    maxChars: 346_500,
-    maxGzipBytes: 102_900,
-    maxGzipBytesWindows: 103_700,
+    maxChars: 357_600,
+    maxGzipBytes: 107_000,
+    maxGzipBytesWindows: 107_000,
   },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento

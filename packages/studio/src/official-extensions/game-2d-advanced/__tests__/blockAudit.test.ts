@@ -110,7 +110,7 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
     // Inclui os dois blocos-lista de nome (cenário e pista), ocultos na paleta.
     // Quatro comandos visuais nativos substituem os blocos Canvas nos exemplos.
-    // Quatro consultas estruturadas Pinta, com o mesmo contrato do Jogo 2D.
+    // 19/11: quatro consultas de referência/propriedades do cenário completo do Pinta.
     expect(gameKitBlocks.length).toBe(408)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')

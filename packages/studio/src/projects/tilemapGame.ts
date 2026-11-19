@@ -1,4 +1,8 @@
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import {
+  sceneObjectIntersectsBox,
+  sceneVisitColliders,
+} from '@sistemazero/core/studio/pinta-scene-geometry'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
@@ -95,7 +99,7 @@ function buildIR(
 ): SZIR {
   const size = Math.max(8, meta.tileSize - 4)
   const move = platformer
-    ? { type: 'g2d:platformer' as const, spriteVar: 'jogador', ctxVar: 'ctx', speed: 4, jump: 11 }
+    ? { type: 'g2d:platformerWithTerrain' as const, spriteVar: 'jogador', speed: 4, jump: 11 }
     : { type: 'g2d:topDown' as const, spriteVar: 'jogador', speed: 3 }
   const js: SZIR['js'] = [
     { type: 'g2d:createTileMapFromAsset', varName: 'mapa', image: mapName },
@@ -140,6 +144,7 @@ function buildIR(
       type: 'g2d:updateEachFrame',
       body: [
         { type: 'g2d:clear' },
+        ...(platformer ? [{ type: 'g2d:applyGravity' as const, spriteVar: 'jogador' }] : []),
         move,
         { type: 'g2d:collideWorld', spriteVar: 'jogador', worldVar: 'mundo' },
         { type: 'g2d:followCameraInWorld', spriteVar: 'jogador', worldVar: 'mundo' },
@@ -278,15 +283,29 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
       method,
       args: [str('mapa'), str(axis)],
     })
-  const platformer = scene.layers.some(
-    (l) =>
-      l.kind === 'tiles' &&
-      l.visible &&
-      l.cells.some(
-        (c) =>
-          c >= 0 && scene.tilesets.find((t) => t.id === l.tilesetId)?.platform.includes(c & 4095),
-      ),
-  )
+  const world = {
+    x: 0,
+    y: 0,
+    width: scene.cols * scene.tileSize,
+    height: scene.rows * scene.tileSize,
+  }
+  // The opt-in scene uses actual visible pieces, including transformed sets.
+  // Keep the previous generation rule for scenes 1/2 and existing game programs.
+  const platformer =
+    scene.version === 3
+      ? sceneVisitColliders(scene, world, 'platform', (tile) =>
+          sceneObjectIntersectsBox(tile, world),
+        )
+      : scene.layers.some(
+          (l) =>
+            l.kind === 'tiles' &&
+            l.visible &&
+            l.cells.some(
+              (c) =>
+                c >= 0 &&
+                scene.tilesets.find((t) => t.id === l.tilesetId)?.platform.includes(c & 4095),
+            ),
+        )
   const old = buildIR(
     image,
     null,
@@ -356,10 +375,10 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
         { type: 'g2d:clear' },
         ...(platformer
           ? [
+              { type: 'g2d:applyGravity' as const, spriteVar: 'jogador' },
               {
-                type: 'g2d:platformer' as const,
+                type: 'g2d:platformerWithTerrain' as const,
                 spriteVar: 'jogador',
-                ctxVar: 'ctx',
                 speed: 4,
                 jump: 11,
               },

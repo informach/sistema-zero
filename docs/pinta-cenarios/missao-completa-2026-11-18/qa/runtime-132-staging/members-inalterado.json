@@ -1,0 +1,5 @@
+{
+  "STUDIO_AUTHORING_POLICY_SHA256": "022e5b54bce19be4a83b90fad0049b8d951e0d88d9e9cdb2eb6a896bf17544d8",
+  "STUDIO_RUNTIME_HOSTS_JSON": "[{\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"2026-10-22-visual-games-3\",\"manifestSha256\":\"bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80\"},\"origin\":\"https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev\"},{\"runtime\":{\"profileId\":\"python-browser\",\"releaseId\":\"2026-10-25-integrated-games-2\",\"manifestSha256\":\"0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1\"},\"origin\":\"https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev\"}]",
+  "STUDIO_PYTHON_RUNTIME_URL": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+}

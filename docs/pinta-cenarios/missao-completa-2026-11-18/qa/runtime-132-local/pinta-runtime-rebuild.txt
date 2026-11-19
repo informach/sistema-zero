@@ -1,0 +1,13 @@
+▲ [WARNING] The CommonJS "module" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
+
+    .cache/studio-python-runtime/distributions/.boot-loader-22SM1W/pyodide.asm.mjs:1:61853:
+      1 │ ...(typeof module!="undefined"){module.exports=MiniLZ4}return MiniL...
+        ╵                                 ~~~~~~
+
+  This file is considered to be an ECMAScript module because of the "export" keyword here:
+
+    .cache/studio-python-runtime/distributions/.boot-loader-22SM1W/pyodide.asm.mjs:2:19976:
+      2 │ ...urn compiled};return moduleRtn}export default _createPyodideModule;
+        ╵                                   ~~~~~~
+
+{"hash":"132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e","directory":"C:\\Users\\tocha\\projects\\sistema-zero-pinta-retomada-20261119\\.cache\\studio-python-runtime\\distributions\\132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e","files":126,"bytes":26006491,"matchesUploadedC4":false}

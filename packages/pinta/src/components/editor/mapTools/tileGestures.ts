@@ -305,11 +305,33 @@ export function createTileGestures(deps: TileGestureDeps) {
     deps.onGestureEnd()
   }
 
+  /** Cancelar restaura também o crescimento do mapa e não cria uma jogada no histórico. */
+  function cancel(event?: PointerEvent<HTMLCanvasElement>): boolean {
+    const pan = panRef.current
+    if (pan && (!event || event.pointerId === pan.pointerId)) {
+      panRef.current = null
+      deps.setPanning(false)
+      return true
+    }
+    const gesture = gestureRef.current
+    if (!gesture || (event && event.pointerId !== gesture.pointerId)) return false
+    gestureRef.current = null
+    previewCellsRef.current = []
+    deps.hoverRef.current(null)
+    const state = editor.getState()
+    // A recuperação de conflito pode ter adotado outra cópia durante o gesto.
+    if (state.asset.id === gesture.base.id) state.replace(gesture.base)
+    const current = editor.getState().asset
+    if (current.kind === 'tilemap') deps.repaintMap(current)
+    deps.onGestureEnd()
+    return true
+  }
+
   function leave(): void {
     deps.hoverRef.current(null)
     const current = editor.getState().asset
     if (!gestureRef.current && current.kind === 'tilemap') deps.repaintMap(current)
   }
 
-  return { down, move, up, leave }
+  return { down, move, up, cancel, leave }
 }

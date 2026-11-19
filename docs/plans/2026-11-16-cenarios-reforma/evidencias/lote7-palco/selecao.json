@@ -1,17 +1,7 @@
 {
   "retratoSemGuias": true,
-  "escolhidos": [
-    "m",
-    "m"
-  ],
-  "areas": [
-    [
-      "m"
-    ],
-    [
-      "m"
-    ]
-  ],
+  "escolhidos": ["m", "m"],
+  "areas": [["m"], ["m"]],
   "estados": [
     {
       "carregando": 0,

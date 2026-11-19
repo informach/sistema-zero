@@ -30,17 +30,13 @@
       "title": "De onde veio tudo isso",
       "objective": "Contar a história da família, do André que jogava muito ao André que ensina a criar jogos.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a3-historia"
-      ],
+      "blockKeys": ["video-a3-historia"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a3-historia"
-        ]
+        "blockIds": ["video-a3-historia"]
       }
     },
     {
@@ -48,17 +44,13 @@
       "title": "Você reconhece o seu filho aqui?",
       "objective": "Reconhecer o filho em seis situações e ver como cada uma se liga à criação.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a3-reconhece"
-      ],
+      "blockKeys": ["video-a3-reconhece"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a3-reconhece"
-        ]
+        "blockIds": ["video-a3-reconhece"]
       }
     },
     {
@@ -66,18 +58,13 @@
       "title": "Entrar no mundo dele",
       "objective": "Mostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a3-mundo",
-        "resumo-a3"
-      ],
+      "blockKeys": ["video-a3-mundo", "resumo-a3"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a3-mundo"
-        ]
+        "blockIds": ["video-a3-mundo"]
       }
     }
   ],

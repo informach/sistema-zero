@@ -124,6 +124,7 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_primitive: { W: 1, H: 1, D: 1 },
   sz_t3d_terrain: { SIZE: 160, SEGMENTS: 48, HILLS: 4, SMOOTH: 18 },
   sz_t3d_water_wave: { DT: 1 / 60 },
+  sz_t3d_update_scene: { DT: 1 / 60 },
   sz_t3d_grass_wave: { DT: 1 / 60 },
   sz_t3d_road: { X1: -20, Z1: 0, X2: 20, Z2: 0, WIDTH: 6, SEGMENTS: 24 },
   sz_t3d_building: { X: 0, Z: 0, W: 8, H: 10, D: 8 },

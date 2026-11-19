@@ -32,6 +32,9 @@ export const CANVAS3D_BLOCK_TYPES = [
   'sz_t3d_set_matrix_at',
   'sz_t3d_instances_dirty',
   'sz_t3d_load_model',
+  'sz_t3d_load_scene',
+  'sz_t3d_update_scene',
+  'sz_t3d_physics_scene',
   'sz_t3d_load_sound',
   'sz_t3d_traverse',
   'sz_t3d_renderer_config',
@@ -203,6 +206,19 @@ export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   Record<string, readonly Canvas3DReferenceField[]>
 > = {
   threeRendererSetup: [{ field: 'canvas', kind: 'canvas' }],
+  threeSceneLoad: [
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'renderer', kind: 'renderer3d' },
+  ],
+  threeSceneUpdate: [
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'camera', kind: 'camera3d' },
+    { field: 'focus', kind: 'object3d' },
+  ],
+  physicsLiteScene: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'scene', kind: 'scene3d' },
+  ],
   threeCameraSetup: [{ field: 'canvas', kind: 'canvas' }],
   threeLightSetup: [{ field: 'scene', kind: 'scene3d' }],
   rendererConfig: [{ field: 'renderer', kind: 'renderer3d' }],
@@ -297,6 +313,7 @@ export const CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS: Readonly<
   Record<string, readonly Canvas3DPhysicsIdDeclarationField[]>
 > = {
   physicsLiteStaticBox: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
+  physicsLiteScene: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
   physicsLiteStaticSphere: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
   physicsLiteStaticObject: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
   physicsLiteBody: [{ field: 'id', ownerField: 'world', kinds: ['body', 'resource'] }],
@@ -432,6 +449,7 @@ export const CANVAS3D_START_ONLY_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
 
 /** Atualizações que precisam de um loop ou de uma função chamada por um loop. */
 export const CANVAS3D_CONTINUOUS_BLOCK_TYPES = [
+  'sz_t3d_update_scene',
   'sz_t3d_water_wave',
   'sz_t3d_grass_wave',
   'sz_t3d_physics_step',
@@ -450,6 +468,8 @@ export const CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES: readonly Canvas3DBlockType[]
   'sz_t3d_light_create',
   'sz_t3d_renderer_responsive',
   'sz_t3d_load_environment',
+  'sz_t3d_load_scene',
+  'sz_t3d_physics_scene',
   'sz_t3d_load_model',
   'sz_t3d_load_sound',
   'sz_t3d_bloom_setup',
@@ -510,6 +530,7 @@ export const CANVAS3D_PHYSICS_RESOURCE_DECLARATION_FIELDS: Readonly<
   Partial<Record<Canvas3DBlockType, readonly string[]>>
 > = {
   sz_t3d_physics_static_box: ['ID'],
+  sz_t3d_physics_scene: ['ID'],
   sz_t3d_physics_static_sphere: ['ID'],
   sz_t3d_physics_static_object: ['ID'],
   sz_t3d_physics_body: ['ID'],
@@ -530,6 +551,7 @@ export const CANVAS3D_VARIABLE_BRANCH_BINDERS: Readonly<
 > = {
   sz_t3d_traverse: { DO: ['PARAM'] },
   sz_t3d_load_model: { DO: ['PARAM'], DO_ERROR: ['ERROR_PARAM'] },
+  sz_t3d_load_scene: { DO: ['PARAM'], DO_ERROR: ['ERROR_PARAM'] },
   sz_t3d_load_sound: { DO: ['PARAM'], DO_ERROR: ['ERROR_PARAM'] },
   sz_t3d_physics_on_collision: { DO: ['BODY_PARAM', 'COLLIDER_PARAM'] },
   sz_t3d_physics_on_trigger: { DO: ['BODY_PARAM', 'TRIGGER_PARAM', 'ENTERING_PARAM'] },
@@ -543,6 +565,9 @@ export const CANVAS3D_OBJECT_BRANCH_BINDERS: Readonly<
 }
 
 export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
+  'threeSceneLoad',
+  'threeSceneUpdate',
+  'physicsLiteScene',
   'threeSceneSetup',
   'threeRendererSetup',
   'threeCameraSetup',
@@ -587,12 +612,15 @@ export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
 ] as const
 
 export const CANVAS3D_CONTINUOUS_STATEMENT_TYPES: ReadonlySet<string> = new Set([
+  'threeSceneUpdate',
   'waterTime',
   'grassTime',
   'physicsLiteStep',
 ])
 
 export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
+  'threeSceneLoad',
+  'physicsLiteScene',
   'threeSceneSetup',
   'threeRendererSetup',
   'threeCameraSetup',

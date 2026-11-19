@@ -11,7 +11,16 @@ const fixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-e-floresta.pinta.json'
 const closedFixture = resolve(root, '.tmp/pinta-resources-e2e/resources-frozen.pinta.json')
 const worldFixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-porta-sem-destino.pinta.json')
 const physicsFixture = resolve(root, '.tmp/pinta-object-physics/contornos-do-cenario.pinta.json')
+const platformFixture = resolve(root, '.tmp/pinta-platform-physics/platforms.pinta.json')
 test.beforeAll(() => {
+  execFileSync(
+    'bun',
+    [
+      resolve(root, 'packages/pinta/scripts/homologacao/platforms.ts'),
+      resolve(platformFixture, '..'),
+    ],
+    { cwd: root },
+  )
   execFileSync(
     'bun',
     [
@@ -42,6 +51,95 @@ test.beforeAll(() => {
     ],
     { cwd: root },
   )
+})
+
+test('Jogar meu mapa cria e executa a plataforma de um conjunto com a física precisa', async ({
+  page,
+  context,
+}, info) => {
+  test.setTimeout(120000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(platformFixture)
+  await page.getByRole('button', { name: 'Abrir plataformas-precisas (Mapa)', exact: true }).click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  await page.getByRole('button', { name: 'Jogar meu mapa', exact: true }).click()
+  await expect(page).toHaveURL(/\/estudio/)
+  await expect
+    .poll(async () => JSON.stringify((await snapshot(page)).ir))
+    .toContain('g2d:platformerWithTerrain')
+  await page.getByRole('button', { name: /^Rodar(?: de novo)?$/ }).click()
+  const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas').first()
+  await expect(canvas).toBeVisible()
+  const feet = () =>
+    canvas.evaluate((node: HTMLCanvasElement) => {
+      const pixels = node.getContext('2d')!.getImageData(0, 0, node.width, node.height).data
+      const rows = new Uint16Array(node.height)
+      for (let i = 0; i < pixels.length; i += 4)
+        if (
+          pixels[i] === 74 &&
+          pixels[i + 1] === 222 &&
+          pixels[i + 2] === 128 &&
+          pixels[i + 3] === 255
+        )
+          rows[Math.floor(i / 4 / node.width)]!++
+      let bottom = -1
+      // The actor is 12 px wide; the decorative floor is only 4 px wide.
+      // This prevents a moved floor image from masquerading as a moved actor.
+      for (let y = 0; y < rows.length; y++) if (rows[y]! >= 8) bottom = y
+      return bottom
+    })
+  await expect.poll(feet).toBeGreaterThan(37)
+  await page.waitForTimeout(400)
+  const resting = await feet()
+  expect(resting).toBeLessThanOrEqual(41)
+  const before = await snapshot(page),
+    asset = before.assets?.find((a) => a.scene)
+  if (!asset?.libId) throw Error('O jogo perdeu o vínculo com o Pinta')
+  const edit = await context.newPage()
+  edit.on('pageerror', (error) => errors.push(error.message))
+  await edit.goto(`/pinta?desenho=${encodeURIComponent(asset.libId.slice('personal:'.length))}`)
+  const editTip = edit.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await editTip.isVisible()) await editTip.click()
+  await edit.getByLabel('Nível das ferramentas', { exact: true }).selectOption('advanced')
+  await edit.getByRole('button', { name: 'Objetos', exact: true }).click()
+  await edit.getByText('Deslocamento e distância', { exact: true }).click()
+  await edit.getByLabel('Deslocar Y', { exact: true }).fill('8.25')
+  await edit.getByLabel('Deslocar Y', { exact: true }).press('Enter')
+  await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
+    timeout: 15000,
+  })
+  await page.bringToFront()
+  await page.evaluate(() => window.dispatchEvent(new FocusEvent('focus')))
+  const offset = async () =>
+    (await snapshot(page)).assets
+      ?.find((a) => a.id === asset.id)
+      ?.scene?.layers.find((l) => l.kind === 'objects')?.offsetY
+  await expect.poll(offset, { timeout: 15000 }).toBe(8.25)
+  const after = await snapshot(page)
+  expect(after.ir).toEqual(before.ir)
+  expect(after.files).toEqual(before.files)
+  expect(after.blocksState).toEqual(before.blocksState)
+  await page.getByRole('button', { name: /^Rodar(?: de novo)?$/ }).click()
+  await expect.poll(feet).toBeGreaterThan(45)
+  await page.waitForTimeout(400)
+  const updated = await feet()
+  expect(updated).toBeLessThanOrEqual(49)
+  await edit.close()
+  await page.goto(`/estudio?project=${encodeURIComponent(before.id)}`)
+  await expect.poll(offset).toBe(8.25)
+  expect((await snapshot(page)).files).toEqual(before.files)
+  expect(errors).toEqual([])
+  await info.attach('plataforma-jogar', {
+    body: JSON.stringify({ resting, updated, project: (await snapshot(page)).id }),
+    contentType: 'application/json',
+  })
+  await info.attach('plataforma-jogar-imagem', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
 })
 const snapshot = async (page: Page): Promise<Project> =>
   JSON.parse((await page.getByTestId('qa-project').textContent()) ?? 'null')

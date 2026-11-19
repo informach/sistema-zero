@@ -84,11 +84,19 @@ describe('fronteira do jogo', () => {
     expect(fora).toEqual([])
   })
 
-  test('o núcleo de cenários é puro e só depende de seus módulos e zod', () => {
+  test('o núcleo de cenários só depende de módulos puros, zod e do contrato de criações', () => {
     const fora: string[] = []
     for (const f of arquivos(join(PACOTES, 'molda-cenarios-core', 'src')))
       for (const alvo of importsDe(readFileSync(f, 'utf8')))
-        if (!alvo.startsWith('.') && alvo !== 'zod') fora.push(`${relative(PACOTES, f)} → ${alvo}`)
+        if (!alvo.startsWith('.') && alvo !== 'zod' && alvo !== '@sistemazero/core/creations')
+          fora.push(`${relative(PACOTES, f)} → ${alvo}`)
+    // The shared canonical hash is already a declared core dependency. Its barrel
+    // must remain pure too; this does not admit the platform or arbitrary core paths.
+    for (const f of arquivos(join(PACOTES, 'core', 'src', 'creations')).filter(
+      (path) => !path.endsWith('.test.ts'),
+    ))
+      for (const alvo of importsDe(readFileSync(f, 'utf8')))
+        if (!alvo.startsWith('.')) fora.push(`${relative(PACOTES, f)} → ${alvo}`)
     expect(fora).toEqual([])
   })
 

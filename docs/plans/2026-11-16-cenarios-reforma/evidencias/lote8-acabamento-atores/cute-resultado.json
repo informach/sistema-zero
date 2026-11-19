@@ -19,12 +19,7 @@
   "alturaCompilada": 1.1700404965322315,
   "pecasOriginais": 6,
   "pecasCompiladas": 6,
-  "clipes": [
-    "parado_relaxado",
-    "andar_frente",
-    "correr_frente",
-    "pulo_no_ar"
-  ],
+  "clipes": ["parado_relaxado", "andar_frente", "correr_frente", "pulo_no_ar"],
   "quadros": [
     {
       "clipe": "parado_relaxado",

@@ -1,14 +1,14 @@
 [
- {
-  "checkId": "revelar-ao-toque",
-  "label": "O toque revela só o personagem daquele esconderijo.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "outros-esconderijos",
-  "label": "Outros esconderijos também respondem aos próprios toques.",
-  "passed": true,
-  "execucao": true
- }
+  {
+    "checkId": "revelar-ao-toque",
+    "label": "O toque revela só o personagem daquele esconderijo.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "outros-esconderijos",
+    "label": "Outros esconderijos também respondem aos próprios toques.",
+    "passed": true,
+    "execucao": true
+  }
 ]

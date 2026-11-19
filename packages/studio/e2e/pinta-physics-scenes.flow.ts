@@ -12,6 +12,66 @@ test.beforeAll(() => {
       cwd: root,
     },
   )
+  execFileSync(
+    'bun',
+    [
+      resolve(root, 'packages/pinta/scripts/homologacao/platforms.ts'),
+      resolve(directory, 'platforms'),
+    ],
+    { cwd: root },
+  )
+})
+
+test('plataforma precisa: salvar, reabrir, pousar e pular no teste lateral', async ({
+  page,
+  isMobile,
+}, info) => {
+  await page.goto(`/?namespace=platforms-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(directory, 'platforms/platforms.pinta.json'))
+  const open = page.getByRole('button', { name: 'Abrir plataformas-precisas (Mapa)', exact: true })
+  await open.click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await page.reload()
+  await open.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByRole('button', { name: 'Testar com personagem', exact: true }).click()
+  const dialog = page.getByRole('dialog'),
+    canvas = dialog.locator('canvas')
+  await dialog.getByRole('button', { name: 'Vista de lado', exact: true }).click()
+  const feet = () =>
+    canvas.evaluate((c: HTMLCanvasElement) => {
+      const bytes = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data
+      let bottom = -1
+      for (let i = 0; i < bytes.length; i += 4)
+        if (bytes[i] === 37 && bytes[i + 1] === 99 && bytes[i + 2] === 235 && bytes[i + 3] === 255)
+          bottom = Math.max(bottom, Math.floor(i / 4 / c.width))
+      return bottom
+    })
+  await expect.poll(feet).toBeGreaterThan(37)
+  await page.waitForTimeout(400)
+  const resting = await feet()
+  expect(resting).toBeLessThanOrEqual(40)
+  const jump = dialog.getByRole('button', { name: 'Pular', exact: true })
+  await jump.dispatchEvent('pointerdown', { pointerId: 1 })
+  await expect.poll(feet).toBeLessThan(32)
+  await jump.dispatchEvent('pointerup', { pointerId: 1 })
+  await expect.poll(feet).toBeGreaterThan(37)
+  await page.waitForTimeout(300)
+  const landed = await feet()
+  expect(landed).toBeLessThanOrEqual(40)
+  await info.attach('plataforma-editor', {
+    body: JSON.stringify({ resting, landed, isMobile }),
+    contentType: 'application/json',
+  })
+  await info.attach('plataforma-editor-imagem', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
 })
 
 test('contornos autorais: editar colisão, desfazer, refazer e reabrir', async ({

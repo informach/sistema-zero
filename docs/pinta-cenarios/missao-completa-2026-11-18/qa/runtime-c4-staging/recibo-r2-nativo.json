@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-19T12:36:20.197Z",
+  "status": 200,
+  "unauthorizedStatus": 401,
+  "artifactSha256": "6702b4a8bdad91d9f60543c887d6c9b8e29bb298c2f9d30a4a980f341d5a65a3",
+  "receipt": {
+    "version": 1,
+    "state": "complete",
+    "planSha256": "19e14f0b6a575a901544de8358bd7906f0a99bfc4a1f080a190a8d41b3f3be07",
+    "operationalSha256": "fa1f81be1c8d0cc5d8c184350396974eed3f8e6106741eb8223229b202b5cc26",
+    "distributionSha256": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+    "releaseManifestSha256": "d9ac5ea3503278be9fae8338ae03365f828120f6398eb01cb34938b53deca68f",
+    "configurationSha256": "a01b9ebed3fbad55378758175dcb1a1b8f7580ef72efde4bb817afc7c8b07566",
+    "workerVersion": "134ca7cf-da95-460d-bf26-1d11ace82d42",
+    "nonce": "e5d13cc3eb2fef76069a53e5e023e1e4",
+    "files": 126,
+    "verifiedObjects": 128,
+    "bodyCleanupConfirmed": true,
+    "failures": [],
+    "activationPerformed": false
+  }
+}

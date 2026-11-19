@@ -1,0 +1,48 @@
+{
+  "at": "2026-11-19T11:27:19.620Z",
+  "baseCommit": "8ded2cdde72c5e31a7beb0f0f6e61d7125e57b2a",
+  "scope": "Correção autorizada de artefatos QA/CI, sem fonte de editores/motores Molda.",
+  "gates": {
+    "globalCi": {
+      "command": "bun run ci",
+      "exitCode": 0,
+      "files": 16066,
+      "errors": 0,
+      "warnings": 303,
+      "infos": 245
+    },
+    "protectedLessons": {
+      "command": "bunx --no-install playwright test e2e/protected-lessons.spec.ts --project=chromium",
+      "cwd": "packages/studio",
+      "exitCode": 0,
+      "passed": 5,
+      "duration": "7.7m",
+      "runtimeObjectives": false,
+      "note": "Sem SZ_CHECK_CHROMIUM/PW_CHROMIUM: execução dos jogos pelo verificador de objetivos permanece distinta do navegador que monta as aulas."
+    }
+  },
+  "canonicalJsonFilesPreserved": 147,
+  "exactCodeSnapshotsPreserved": 13,
+  "files": {
+    "aulas-protegidas.log": {
+      "bytes": 114207,
+      "sha256": "2c49d8db4ae4f4e5f3fa07814ddf50d2244bb6f68cc2904336c6e30dae95f4dc"
+    },
+    "ci.log": {
+      "bytes": 579734,
+      "sha256": "44676e6d649521cd4f131bb136bdf413d45f66c909bd4ec7ca749d5f7d8d93f7"
+    },
+    "diagnostico-anterior.json": {
+      "bytes": 50322,
+      "sha256": "b2119357e32b08afd189b461b7ab4b6b3c4e229f45686ae421c5205398453153"
+    },
+    "preservacao.json": {
+      "bytes": 57848,
+      "sha256": "cc9b666a1e704460dea7a1a53791ba8b73b6025c31cf86b26b290ac630059fc9"
+    },
+    "README.md": {
+      "bytes": 1527,
+      "sha256": "9cac224bc3e53853a4ea7f5b984f67f892652d7d176da3351d4978fc5522d418"
+    }
+  }
+}
