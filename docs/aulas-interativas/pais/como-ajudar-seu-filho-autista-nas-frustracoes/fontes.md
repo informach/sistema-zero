@@ -84,6 +84,10 @@ Segunda passada em todas as aulas, sem mudar estrutura, clipes ou ordem:
 - **Tags:** a abertura da Aula 4 saiu do tom animado para `[warmly]`.
 - **Para consultar:** o texto de cada aula virou lista.
 
+## A apostila
+
+Gerada em 19/11/2026, depois da revisão dos roteiros. Traz só o que está nas falas, resumido em cards; nenhuma estratégia aparece nela sem estar numa aula. A Vivianne confere a apostila junto com os roteiros. A capa foi desenhada para o curso (não veio da Laopa nem da Vivianne) e pode ser trocada.
+
 ## A voz
 
 Marcas tiradas dos áudios e usadas na fala: "então, assim", "tá?", "né?", "gente", "os meninos", "uai", perguntas que ela mesma responde ("E por quê?", "E o que quer dizer isso?"), a primeira pessoa dentro da cena ("o que eu faço? Eu aviso antes"), exemplos de casa e diminutivos ("quadrinho", "caderninho", "devagarzinho"). As muletas aparecem com medida, para a voz gerada soar natural e não caricata.
