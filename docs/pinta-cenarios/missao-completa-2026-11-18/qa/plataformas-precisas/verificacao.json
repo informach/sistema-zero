@@ -47,16 +47,16 @@
   ],
   "files": {
     "comandos.json": {
-      "bytes": 3649,
-      "sha256": "e9bd0a5aa6de007c7b7a0affb4a6dcb6d3e442087b1b3231a57909bf62bc1969"
+      "bytes": 3493,
+      "sha256": "4afd427bc320e55dee0f5e65890bbcba400d6333f5411a7d4dd344f711b0fc57"
     },
     "core.log": {
       "bytes": 5752,
       "sha256": "007fb904fede5d3be8964494f488667c447cfe236fbf48363615c12585a8efe8"
     },
     "distribuicao-python.json": {
-      "bytes": 28639,
-      "sha256": "4bf4d6557d5da05fff54887458f0f1e2c6e4153c9cf0309bcf69f80c62a30717"
+      "bytes": 28603,
+      "sha256": "575331f34a08753e03e600e0e3e1f3367f001d994ac90d87ecbc8606c46dbe6b"
     },
     "estilo.log": {
       "bytes": 44,
@@ -75,8 +75,8 @@
       "sha256": "48b0fa5ee0a98c0b2873fb9711b100b6d97795e28a18fa9f80612ded8fcac39d"
     },
     "integracao.json": {
-      "bytes": 1260272,
-      "sha256": "2197cd44ade69cd0023fc71f46a12fe5a23178d6e342c05e7ea0cc64a4fc6219"
+      "bytes": 1260229,
+      "sha256": "ba36caa832b7147d129bad7b86f9fe9bfcac820bf6f45324af3cde86d42cd4a7"
     },
     "integracao.log": {
       "bytes": 8458,
@@ -87,8 +87,8 @@
       "sha256": "3533d5602134570556acc7df7b39dd31189d010b90a3c0d74d3e22b02c008562"
     },
     "navegador.json": {
-      "bytes": 1142165,
-      "sha256": "0a41f377086632e47db8de2cdbc697bfb7d84a887713c4078f8e441a67717180"
+      "bytes": 1142102,
+      "sha256": "ea87dd616eac69384f45c807b445db2c21946911b20921f399d90d754c117709"
     },
     "navegador.log": {
       "bytes": 2798,
@@ -139,32 +139,32 @@
       "sha256": "d87972a57a80155b1efbc79f104fe77443a932d9383f4752ad1a1ee2693de590"
     },
     "python-1x.json": {
-      "bytes": 1014,
-      "sha256": "7328c5264294966730958d82afd41f98b128b0f0c3a16191d34f60b537605caa"
+      "bytes": 1015,
+      "sha256": "e4e700bba8523c5f962412612034867eeb96cec999eebc729482fcf100e67099"
     },
     "python-1x.png": {
       "bytes": 2015,
       "sha256": "834096ab2c469a453731d6db3d9cb4cf7d29e06ff2a5c1ff1ebfae97f2aa8a69"
     },
     "python-2x.json": {
-      "bytes": 1014,
-      "sha256": "d934b89f54103a8bc8499ab3d95659d14e805791e81eb1573f6be31c862c6074"
+      "bytes": 1015,
+      "sha256": "56829813a38bb1ab3aad3b0a6a49d0fbd371d714452a8f0a3383557e7d34f542"
     },
     "python-2x.png": {
       "bytes": 2030,
       "sha256": "7d75094b3cadab2b311ddcf20fbaf7a0bb8e467d15aba1a6e797bd9db4134ffd"
     },
     "python-navegador.json": {
-      "bytes": 920247,
-      "sha256": "e4c25475766e8f15c05504b512b73ef72749ab288fb8cd14d8529299e22a4680"
+      "bytes": 920198,
+      "sha256": "33f0aeeee10f572ca23194cbf49f1b463d9313edf36357be98100babe78484c9"
     },
     "python-navegador.log": {
       "bytes": 2828,
       "sha256": "4172eaa2547036b2ce296db89cefc7428c49e30f28fcd54f1eb2607ef67b19be"
     },
     "python-repeticao.json": {
-      "bytes": 4969,
-      "sha256": "15d5a9bc1b43f9584fde70b466452f3c66843f9e932a293f4ee31f29259e6739"
+      "bytes": 4920,
+      "sha256": "f65d314452ad92b5fe722ed250f21ebc636878129c83dd6d3672a28e25468cb0"
     },
     "python-repeticao.log": {
       "bytes": 658,
@@ -214,5 +214,11 @@
       "bytes": 4624,
       "sha256": "a0a4ec245464b9243fbcb04ca9a2aaac24e06d94e3e697527422a5b99e585633"
     }
+  },
+  "evidenceNormalization": {
+    "at": "2026-11-19T10:49:43.656Z",
+    "previousReceiptSha256": "00a4cfac9d51ad188064e5d91156e207c6330d8d7fb1e085158316a520bbe304",
+    "canonicalArtifactDataUnchanged": true,
+    "reason": "Formatação JSON exigida pelo CI; resultados de teste preservados."
   }
 }

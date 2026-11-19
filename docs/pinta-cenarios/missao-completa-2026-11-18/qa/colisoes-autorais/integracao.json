@@ -26,18 +26,13 @@
         "name": "desktop",
         "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "pinta-studio.flow.ts"
-        ],
+        "testMatch": ["pinta-studio.flow.ts"],
         "timeout": 30000
       }
     ],
     "quiet": false,
     "reporter": [
-      [
-        "list",
-        null
-      ],
+      ["list", null],
       [
         "json",
         {

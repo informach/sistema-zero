@@ -1,11 +1,7 @@
 [
   {
     "cwd": "packages/pinta",
-    "argv": [
-      "bun",
-      "test",
-      "src"
-    ],
+    "argv": ["bun", "test", "src"],
     "env": {
       "PYTHON": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/.tmp/pinta-python-257/Scripts/python.exe",
       "PYTHONIOENCODING": "utf-8"
@@ -59,11 +55,7 @@
   },
   {
     "cwd": "packages/member-shell",
-    "argv": [
-      "bun",
-      "test",
-      "tests/studio-python-publish.test.ts"
-    ],
+    "argv": ["bun", "test", "tests/studio-python-publish.test.ts"],
     "exitCode": 0,
     "log": "publicacao.log",
     "completedAt": "2026-11-19T10:22:26.030Z",
@@ -123,37 +115,19 @@
   },
   {
     "cwd": "packages/core",
-    "argv": [
-      "node",
-      "node_modules/typescript/bin/tsc",
-      "--noEmit",
-      "--pretty",
-      "false"
-    ],
+    "argv": ["node", "node_modules/typescript/bin/tsc", "--noEmit", "--pretty", "false"],
     "exitCode": 0,
     "elapsedMs": 8602
   },
   {
     "cwd": "packages/pinta",
-    "argv": [
-      "node",
-      "node_modules/typescript/bin/tsc",
-      "--noEmit",
-      "--pretty",
-      "false"
-    ],
+    "argv": ["node", "node_modules/typescript/bin/tsc", "--noEmit", "--pretty", "false"],
     "exitCode": 0,
     "elapsedMs": 14990
   },
   {
     "cwd": "packages/studio",
-    "argv": [
-      "node",
-      "node_modules/typescript/bin/tsc",
-      "--noEmit",
-      "--pretty",
-      "false"
-    ],
+    "argv": ["node", "node_modules/typescript/bin/tsc", "--noEmit", "--pretty", "false"],
     "exitCode": 0,
     "elapsedMs": 255858
   }

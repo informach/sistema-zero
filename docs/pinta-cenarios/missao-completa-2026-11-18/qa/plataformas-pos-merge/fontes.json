@@ -1,0 +1,169 @@
+{
+  "at": "2026-11-19T11:21:05.022Z",
+  "verifiedCommit": "81b88e3819115156126fbc87f2ae7f1ad37be766",
+  "mergedCommit": "59bcb42ddd369e3efa2272c4fae81dff16382fe7",
+  "integratedRemote": "973bebd82db16d417b9c8dd2ba8e75f8e455c905",
+  "unchanged": true,
+  "files": [
+    {
+      "path": "experiments/studio-python-runtime/fixtures.ts",
+      "verifiedBlob": "ca430c4345c842fdcaf6ac576ab763c14d94b3c4",
+      "mergedBlob": "ca430c4345c842fdcaf6ac576ab763c14d94b3c4"
+    },
+    {
+      "path": "experiments/studio-python-runtime/pintaPhysicsFixtures.ts",
+      "verifiedBlob": "5228bef1514ab9315082c98ecfdde70d0fa6274d",
+      "mergedBlob": "5228bef1514ab9315082c98ecfdde70d0fa6274d"
+    },
+    {
+      "path": "experiments/studio-python-runtime/pintaPlatformFixtures.ts",
+      "verifiedBlob": "924a6c2aa33fc2e7727be6ed09262de8f550252d",
+      "mergedBlob": "924a6c2aa33fc2e7727be6ed09262de8f550252d"
+    },
+    {
+      "path": "packages/core/scripts/gen-pinta-scene-transform.ts",
+      "verifiedBlob": "072630ff52a0d041009ceebc52652796ac750b0b",
+      "mergedBlob": "072630ff52a0d041009ceebc52652796ac750b0b"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-geometry.ts",
+      "verifiedBlob": "d5dbdb78fa53a21f03d484c0e026d3ff75911a5d",
+      "mergedBlob": "d5dbdb78fa53a21f03d484c0e026d3ff75911a5d"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-platform.test.ts",
+      "verifiedBlob": "d678bbe2f6171fa81ffddacb2c189d9fa79ac894",
+      "mergedBlob": "d678bbe2f6171fa81ffddacb2c189d9fa79ac894"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-player.ts",
+      "verifiedBlob": "8b211cf0a12a52299af0e9185f6e64b0f2433647",
+      "mergedBlob": "8b211cf0a12a52299af0e9185f6e64b0f2433647"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-transform.generated.ts",
+      "verifiedBlob": "d61fed342f4ef2852fab8634b425c4d7c363da7d",
+      "mergedBlob": "d61fed342f4ef2852fab8634b425c4d7c363da7d"
+    },
+    {
+      "path": "packages/pinta/scripts/homologacao/platforms-godot.gd",
+      "verifiedBlob": "f67558fc977e01edad231a144932518c9fff67ea",
+      "mergedBlob": "f67558fc977e01edad231a144932518c9fff67ea"
+    },
+    {
+      "path": "packages/pinta/scripts/homologacao/platforms.ts",
+      "verifiedBlob": "2dc24d2013747c652333be8ff8f4da7a08742ede",
+      "mergedBlob": "2dc24d2013747c652333be8ff8f4da7a08742ede"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/MapPlaytestDialog.tsx",
+      "verifiedBlob": "fdb443ebd32136ed29916178daf57aaef4201df8",
+      "mergedBlob": "fdb443ebd32136ed29916178daf57aaef4201df8"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/playtest.ts",
+      "verifiedBlob": "58a8f913e6ff4589519aedadab8c1b8cc8a6762d",
+      "mergedBlob": "58a8f913e6ff4589519aedadab8c1b8cc8a6762d"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/playtestGeometry.test.ts",
+      "verifiedBlob": "a1eae6f3f4be22dd43989dcdeb145766bc42090d",
+      "mergedBlob": "a1eae6f3f4be22dd43989dcdeb145766bc42090d"
+    },
+    {
+      "path": "packages/pinta/src/export/godot/physics.ts",
+      "verifiedBlob": "da80b0953cf37e75ae4329fb23eb4975aa301566",
+      "mergedBlob": "da80b0953cf37e75ae4329fb23eb4975aa301566"
+    },
+    {
+      "path": "packages/pinta/src/export/godot/project.ts",
+      "verifiedBlob": "48c5350cfdeed4836e5abcd3710a1b3d2c0e72da",
+      "mergedBlob": "48c5350cfdeed4836e5abcd3710a1b3d2c0e72da"
+    },
+    {
+      "path": "packages/pinta/src/export/phaser/player.ts",
+      "verifiedBlob": "87543c5f37b00fda433941cfe30726ed0e021cec",
+      "mergedBlob": "87543c5f37b00fda433941cfe30726ed0e021cec"
+    },
+    {
+      "path": "packages/pinta/src/export/pygameProject.ts",
+      "verifiedBlob": "13b72dacf93ee433178160b50a0fe33f96ed7fc8",
+      "mergedBlob": "13b72dacf93ee433178160b50a0fe33f96ed7fc8"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/validation-profile.json",
+      "verifiedBlob": "0f8abc46f4d447a64dd614442246dfa5f9eb35cf",
+      "mergedBlob": "0f8abc46f4d447a64dd614442246dfa5f9eb35cf"
+    },
+    {
+      "path": "packages/studio/e2e-runtime/python-pinta-physics.spec.ts",
+      "verifiedBlob": "ecf17ee0f41110df263e1f73922803a9862e839e",
+      "mergedBlob": "ecf17ee0f41110df263e1f73922803a9862e839e"
+    },
+    {
+      "path": "packages/studio/e2e/phaser-scenes.flow.ts",
+      "verifiedBlob": "b45b528e1c8a0419d9e8fdeff7e6497784cacba9",
+      "mergedBlob": "b45b528e1c8a0419d9e8fdeff7e6497784cacba9"
+    },
+    {
+      "path": "packages/studio/e2e/pinta-physics-scenes.flow.ts",
+      "verifiedBlob": "14a06872c78931f7b1045b1afde7e301c673251c",
+      "mergedBlob": "14a06872c78931f7b1045b1afde7e301c673251c"
+    },
+    {
+      "path": "packages/studio/e2e/pinta-studio.flow.ts",
+      "verifiedBlob": "47b9a2c9d4bac8f9ee678864f49243296fdeca71",
+      "mergedBlob": "47b9a2c9d4bac8f9ee678864f49243296fdeca71"
+    },
+    {
+      "path": "packages/studio/playwright.pinta.config.ts",
+      "verifiedBlob": "1d633c3cec1855212245e4cbdf53a133d2e6244c",
+      "mergedBlob": "1d633c3cec1855212245e4cbdf53a133d2e6244c"
+    },
+    {
+      "path": "packages/studio/scripts/python/test-pinta-platforms.py",
+      "verifiedBlob": "c431e75fc5e9a1d807c7cd6b560714313a6c6394",
+      "mergedBlob": "c431e75fc5e9a1d807c7cd6b560714313a6c6394"
+    },
+    {
+      "path": "packages/studio/scripts/serve-pinta-scene-package.ts",
+      "verifiedBlob": "fb70d9dd06b9602d6c730db4fc6c351e3ad69e71",
+      "mergedBlob": "fb70d9dd06b9602d6c730db4fc6c351e3ad69e71"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/bootstrap.ts",
+      "verifiedBlob": "2c4450deee96c8fa9692bebb4815baada02cc2b1",
+      "mergedBlob": "2c4450deee96c8fa9692bebb4815baada02cc2b1"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/runtime.test.ts",
+      "verifiedBlob": "7d9110d8cfd7bcd4996a1c89b1d07c07ea8e6b28",
+      "mergedBlob": "7d9110d8cfd7bcd4996a1c89b1d07c07ea8e6b28"
+    },
+    {
+      "path": "packages/studio/src/projects/tilemapGame.test.ts",
+      "verifiedBlob": "ce43518acedf868130ae9f4f8521a239a61f245b",
+      "mergedBlob": "ce43518acedf868130ae9f4f8521a239a61f245b"
+    },
+    {
+      "path": "packages/studio/src/projects/tilemapGame.ts",
+      "verifiedBlob": "e9e3320d049cee1eaa65b66b0835352003f30099",
+      "mergedBlob": "e9e3320d049cee1eaa65b66b0835352003f30099"
+    },
+    {
+      "path": "packages/studio/src/python/extensions/pygame/catalog.ts",
+      "verifiedBlob": "d21edf3a91b2398abe36a08bcf2c68964e220048",
+      "mergedBlob": "d21edf3a91b2398abe36a08bcf2c68964e220048"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/pygame/desktopSources.generated.ts",
+      "verifiedBlob": "223142241ff16c1df112585c2bffa033da9ad67a",
+      "mergedBlob": "223142241ff16c1df112585c2bffa033da9ad67a"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/pygame/py/pinta.py",
+      "verifiedBlob": "c4e4d56a20e6d2003616cde71f84bc8e362e637e",
+      "mergedBlob": "c4e4d56a20e6d2003616cde71f84bc8e362e637e"
+    }
+  ]
+}

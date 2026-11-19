@@ -1,0 +1,86 @@
+{
+  "at": "2026-11-19T11:21:05.299Z",
+  "head": "59bcb42ddd369e3efa2272c4fae81dff16382fe7",
+  "integratedRemote": "973bebd82db16d417b9c8dd2ba8e75f8e455c905",
+  "gates": {
+    "studio": {
+      "pass": 94,
+      "fail": 0,
+      "assertions": 6694,
+      "files": 12
+    },
+    "publication": {
+      "pass": 85,
+      "fail": 0,
+      "assertions": 566
+    },
+    "integrationFull": {
+      "pass": 12,
+      "fail": 0,
+      "proof": "integracao-completa.log"
+    },
+    "integrationFinal": {
+      "startTime": "2026-11-19T11:05:21.366Z",
+      "duration": 88890.406,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "studioTypes": {
+      "exitCode": 0,
+      "session": 79082,
+      "proof": "tipos-estudio.log",
+      "note": "TSC completo observado com saída 0 no commit 59bcb42dd; repetição posterior cancelada não é usada como gate."
+    }
+  },
+  "sourceBlobsPreserved": true,
+  "distribution": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+  "limitations": [
+    "Qualificação local; autenticação, publicação do runtime e ativação do writer permanecem pendentes.",
+    "Rodada final de 3 testes não substitui nem duplica os 12 casos da integração completa.",
+    "Sem aparelhos adicionais: toque e CPU reduzida são simulações nesta máquina."
+  ],
+  "files": {
+    "estudio.log": {
+      "bytes": 10551,
+      "sha256": "daf33998cb695df0092ff83a7c2090720e35ff8fd99e0974821779342f75db8e"
+    },
+    "fontes.json": {
+      "bytes": 7035,
+      "sha256": "a5411226caa9a158e2f4f5409d4cb4f5fba97336692791155b224990f081f38a"
+    },
+    "integracao-completa.log": {
+      "bytes": 8862,
+      "sha256": "cba8b2942200fc06b2ab70936d3c68569823392b39606011b4d27712c2e6da83"
+    },
+    "integracao-final.json": {
+      "bytes": 119348,
+      "sha256": "bf4f661b6344b4844b7431f595cbdd742f60779d5a3b72f60edc5e87df9973a5"
+    },
+    "integracao-final.log": {
+      "bytes": 7161,
+      "sha256": "493c990ca24aa949715706d3502dc69293c32acec1c1a0ba648f3dbfd473c52d"
+    },
+    "normalizacao-json.json": {
+      "bytes": 13378,
+      "sha256": "dc7f29ea3d2b948f4d58cd9049adbeaf1690485725cac81868ad50d48193f3ba"
+    },
+    "publicacao.log": {
+      "bytes": 7559,
+      "sha256": "5fb9871423ecdef588e58940479e0a3c9fd91110fd2e08492d3d3d1d25f6ce77"
+    },
+    "README.md": {
+      "bytes": 1644,
+      "sha256": "b455f9feff0beab660457979238d881f90cfcd4168bfdfdc80c216aee6226ad0"
+    },
+    "runtime.log": {
+      "bytes": 976,
+      "sha256": "80e0c8338048ea61d5698c77175af2ea289477691ecd394130c03ad9de194e97"
+    },
+    "tipos-estudio.log": {
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    }
+  }
+}

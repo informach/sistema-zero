@@ -36,24 +36,24 @@
       "sha256": "0e8b1d68d0e159ad02e7c5ce49def5408daf5fbc9c6cc0a712bb953af9922f3b"
     },
     "distribuicao.json": {
-      "bytes": 28639,
-      "sha256": "dd5f6746af4db9e177e07b421659feae891963bb652e820b4735c33f7b5965af"
+      "bytes": 28603,
+      "sha256": "b8178fad6cd27467e565183c77d04f8bad3bb89d3b1f18f9b2fadffaafce0669"
     },
     "estudio.log": {
       "bytes": 10195,
       "sha256": "09b5ac59e8fa63cc33329aa20060e76aaf8877a6806f2797fcbc2e2d96e6cd37"
     },
     "mundo-1x.json": {
-      "bytes": 1036,
-      "sha256": "7b9f2548288717a785682d110eec7ebae156164ee920fc76e2b4285e21e0bee1"
+      "bytes": 1037,
+      "sha256": "a89ff7e5e7179b617787ac3fcf81630ab4081bda675eb173fff05564f5f99860"
     },
     "mundo-1x.png": {
       "bytes": 1993,
       "sha256": "468fea5eab936e7b1cf12bfccffed22a5a94e6ef2038250aac2e357b7c6ebbf8"
     },
     "mundo-2x.json": {
-      "bytes": 1036,
-      "sha256": "fd46ae5f2ea0f487d212099a6d13376494f7f0d0c1102c5bd5a112b421c2c788"
+      "bytes": 1037,
+      "sha256": "b84a0974f2a32ec17691c626851df9751c6a1dd16299ed8f2b18d800027d7290"
     },
     "mundo-2x.png": {
       "bytes": 1990,
@@ -64,8 +64,8 @@
       "sha256": "fbd2e88613b8461c0b6d4e7f8921534e512b12c9b0461c048a3d63f6687cb8dd"
     },
     "python.json": {
-      "bytes": 907956,
-      "sha256": "87269d00d73dc3695171965d3ae7a7a54dfa32611376ffa5534f5ac093594b87"
+      "bytes": 907906,
+      "sha256": "17da62cd90857e130f9ea9e50d726ba64d1640acffd0b823ba0ba2c62c9bae51"
     },
     "python.log": {
       "bytes": 2544,
@@ -79,5 +79,11 @@
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
+  },
+  "evidenceNormalization": {
+    "at": "2026-11-19T10:49:43.641Z",
+    "previousReceiptSha256": "096de6608f75f77b1d6606c245620978af3ab2cf87ed12901524af62fcea9e8f",
+    "canonicalArtifactDataUnchanged": true,
+    "reason": "Formatação JSON exigida pelo CI; resultados de teste preservados."
   }
 }
