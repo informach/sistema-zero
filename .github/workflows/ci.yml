@@ -521,8 +521,8 @@ jobs:
           bun run --cwd packages/arquipelago typecheck
           bun run --cwd packages/arquipelago build
       - name: Instalar Chromium para a prova do jogo
-        working-directory: packages/studio
-        run: bunx playwright install --with-deps chromium
+        working-directory: packages/arquipelago
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium
       - name: Recuperação de tempo no navegador
         working-directory: packages/arquipelago
         run: bun run test:tempo-browser

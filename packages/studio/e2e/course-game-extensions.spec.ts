@@ -1,22 +1,10 @@
-import { createRequire } from 'node:module'
 import { expect, type Page, test } from '@playwright/test'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
+import { montarProjetoFarol } from '../../../docs/aulas-interativas-tecnico/qa/desafio-farol-projeto'
 import { FAROL_LAYOUT } from '../src/arte/farol-assets'
 import { JARDIM_PARES } from '../src/arte/jardim-assets'
 import { createCheckScope, prepareClassicCheckDocument } from '../src/check/serverCheck'
 import type { Project } from '../src/core/project'
-
-// The authoring sources live outside the ESM Studio package and use the root's CommonJS scope.
-const require = createRequire(import.meta.url)
-const {
-  montarProjetoCadeTodoMundoCompleto,
-}: {
-  montarProjetoCadeTodoMundoCompleto(): Project
-} = require('../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto')
-const {
-  montarProjetoFarol,
-}: {
-  montarProjetoFarol(stage: 'concluido'): Project
-} = require('../../../docs/aulas-interativas-tecnico/qa/desafio-farol-projeto')
 
 /** Reads the same closure reader that checks lesson execution objectives; never mutates game state. */
 async function value(page: Page, scope: string, name: string, path = ''): Promise<unknown> {

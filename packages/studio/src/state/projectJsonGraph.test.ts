@@ -1,8 +1,8 @@
-import { decodeProjectJsonGraph } from './projectJsonGraphDecode'
 import { expect, test } from 'bun:test'
 import { STUDIO_PROJECT_JSON_LIMITS } from '@sistemazero/core/studio/project-json'
 import { EXIT_JOURNAL_MAX_CHARS, encodeExitJournal } from './exitJournalCodec'
 import { encodeProjectJsonGraph } from './projectJsonGraph'
+import { decodeProjectJsonGraph } from './projectJsonGraphDecode'
 
 test('the existing exit journal wire stays byte-identical after sharing the graph codec', () => {
   const value = { x: undefined, z: -0, nested: [[], [0], [-1]] }

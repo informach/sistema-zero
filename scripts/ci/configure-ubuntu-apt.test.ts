@@ -127,7 +127,9 @@ test('every Ubuntu job prepares signed sources before its first apt or Playwrigh
   const prepared: string[] = []
   for (const job of jobs) {
     if (!/^ {4}runs-on: ubuntu-(?:latest|\d+\.\d+)\r?$/m.test(job)) continue
-    const install = job.search(/apt-get|playwright install --with-deps/)
+    const install = job.search(
+      /apt-get|(?:playwright|playwright-core\/cli\.js) install --with-deps/,
+    )
     if (install === -1) continue
     const name = /^ {2}([a-z][a-z0-9-]*):/.exec(job)?.[1]
     if (!name) throw new Error('Ubuntu job name is required')

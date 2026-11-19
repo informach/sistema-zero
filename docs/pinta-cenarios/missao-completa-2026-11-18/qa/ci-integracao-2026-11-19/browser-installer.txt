@@ -1,0 +1,25 @@
+Chrome for Testing 148.0.7778.96 (playwright chromium v1223)
+  Install location:    C:\Users\tocha\AppData\Local\ms-playwright\chromium-1223
+  Download url:        https://cdn.playwright.dev/builds/cft/148.0.7778.96/win64/chrome-win64.zip
+
+FFmpeg (playwright ffmpeg v1011)
+  Install location:    C:\Users\tocha\AppData\Local\ms-playwright\ffmpeg-1011
+  Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-win64.zip
+  Download fallback 1: https://playwright.download.prss.microsoft.com/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-win64.zip
+  Download fallback 2: https://cdn.playwright.dev/builds/ffmpeg/1011/ffmpeg-win64.zip
+
+Chrome Headless Shell 148.0.7778.96 (playwright chromium-headless-shell v1223)
+  Install location:    C:\Users\tocha\AppData\Local\ms-playwright\chromium_headless_shell-1223
+  Download url:        https://cdn.playwright.dev/builds/cft/148.0.7778.96/win64/chrome-headless-shell-win64.zip
+
+FFmpeg (playwright ffmpeg v1011)
+  Install location:    C:\Users\tocha\AppData\Local\ms-playwright\ffmpeg-1011
+  Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-win64.zip
+  Download fallback 1: https://playwright.download.prss.microsoft.com/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-win64.zip
+  Download fallback 2: https://cdn.playwright.dev/builds/ffmpeg/1011/ffmpeg-win64.zip
+
+Winldd (playwright winldd v1007)
+  Install location:    C:\Users\tocha\AppData\Local\ms-playwright\winldd-1007
+  Download url:        https://cdn.playwright.dev/dbazure/download/playwright/builds/winldd/1007/winldd-win64.zip
+  Download fallback 1: https://playwright.download.prss.microsoft.com/dbazure/download/playwright/builds/winldd/1007/winldd-win64.zip
+  Download fallback 2: https://cdn.playwright.dev/builds/winldd/1007/winldd-win64.zip

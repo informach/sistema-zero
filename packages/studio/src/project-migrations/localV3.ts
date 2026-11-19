@@ -1,6 +1,6 @@
 import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocument'
 import { prepareEditableStudioProject } from '../state/editableProjectValidation'
-import { readValues, type IdbWrite } from '../state/idbTransaction'
+import { type IdbWrite, readValues } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
 import {
   applicationBudget,
