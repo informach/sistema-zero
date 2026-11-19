@@ -49,7 +49,7 @@ export default defineConfig({
       testMatch: [
         /preview-security\.spec\.ts/,
         /preview-executes-user-code\.spec\.ts/,
-        /preview-shell\.spec\.ts/,
+        /preview-shell(?:-performance)?\.spec\.ts/,
       ],
       use: { ...devices['Desktop Firefox'] },
     },
@@ -60,7 +60,7 @@ export default defineConfig({
       // a mudança voltou em 0 de 10 recargas. Só os specs dessa gravação: o resto da suíte é
       // coberto pelo Chromium, e duplicá-lo não traria sinal novo.
       // A casca: só o funcionamento (nenhum arranjo de iframe isolou o WebKit na medição).
-      testMatch: [/reload-flush\.spec\.ts/, /preview-shell\.spec\.ts/],
+      testMatch: [/reload-flush\.spec\.ts/, /preview-shell(?:-performance)?\.spec\.ts/],
       use: { ...devices['Desktop Safari'] },
     },
   ],

@@ -1,5 +1,12 @@
 # Evolução do Estúdio (Clássico e Pro)
 
+Retomada de 19/11/2026: o trabalho agora ocorre na `staging` da pasta
+principal, conforme orientação da dona, preservando alterações das frentes
+paralelas e sem novas worktrees. A revisão atual e a correção do ciclo de
+vida da montagem sob demanda estão em
+[`studio-retomada-staging.md`](../qa/2026-11-19-studio-retomada-staging.md).
+O histórico abaixo não representa homologação integral da revisão atual.
+
 Registro vivo da missão. Branch `estudio-evolucao`, criada da `staging` em `bf6e895f` (17/11/2026).
 Os incrementos até `37f4d4e3a` foram integrados à `staging`. Isso não concluiu a missão.
 Esta frente não implantou em produção. A revisão e a continuação estão registradas em
