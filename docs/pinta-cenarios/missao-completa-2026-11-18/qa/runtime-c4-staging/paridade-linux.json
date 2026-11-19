@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-19T12:12:33.280Z",
+  "node": "v24.15.0",
+  "previousPlanSha256": "19e14f0b6a575a901544de8358bd7906f0a99bfc4a1f080a190a8d41b3f3be07",
+  "linuxPlanSha256": "03c8d7657851fc796f3ced1449abde3f14d1e4610714b3c4c18a0b3eeeab5207",
+  "releaseManifestSha256": "d9ac5ea3503278be9fae8338ae03365f828120f6398eb01cb34938b53deca68f",
+  "distributionSha256": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+  "onlyDirectoryAndPlanDigestChanged": true,
+  "activationPerformed": false
+}

@@ -24,12 +24,11 @@ export function sceneDocumentation(api: 'SZGame2D' | 'SZGameKit', examples = fal
   return `
 ### Cenários e pista com sprites
 
-Em **Ao iniciar**, adicione os cenários e escolha se ficam bem ao fundo, atrás dos personagens
-ou na frente. Partes vazias do Pinta são transparentes; pintar de branco cobre o que está atrás.
-Cada cenário tem seu nome. Nos outros blocos, escolha esse nome na lista.
+Em **Ao iniciar**, nomeie os cenários e escolha: fundo, atrás dos personagens ou frente.
+Vazio no Pinta é transparente; branco cobre as camadas de trás. Use o mesmo nome nos outros blocos.
 
-Crie uma pista para o fundo e use sprites normais. Eles conservam imagem, animação, tamanho,
-transparência e efeitos. O motor calcula tempo, câmera, perspectiva e ordem de desenho.
+Use sprites normais na pista, com imagem, animação, tamanho, transparência e efeitos.
+O motor calcula tempo, câmera, perspectiva e ordem de desenho.
 ${
   basic
     ? `Escolha o jogador com suas vidas em **Na pista … usar … como jogador**, habilite as setas e o
@@ -43,20 +42,17 @@ personagem acompanhado. Vida e dano usam **Dar … vidas a …** e **Machucar �
 como nos outros jogos da extensão.`
 }
 
-Coloque outros sprites pela lateral e pela distância: lateral 0 é centro, negativa é esquerda,
-positiva é direita. Distância é o número de passos desde o começo. **Na pista … repetir** distribui cópias
-em linha ou em um padrão; a quantidade inclui o primeiro sprite. Não precisa criar listas nem
-objetos de dados. O tamanho do sprite continua em unidades da pista: o motor só muda como aparece.
+Posicione sprites por lateral (0 centro, negativa esquerda, positiva direita) e distância em passos
+desde o começo. **Na pista … repetir** distribui cópias em linha ou padrão e conta o primeiro sprite.
+Sem listas ou objetos de dados. O tamanho continua em unidades da pista; muda apenas sua projeção.
 
-Posicionar e repetir também funcionam durante a partida, em eventos de tempo ou encontro.
+Posicionar e repetir funcionam na partida, em eventos de tempo ou encontro.
 Em **Eventos**, use ${basic ? '**Quando o jogador da pista … encontrar …**' : '**Quando o personagem da pista … encontrar …**'} para somar pontos ou tirar vida.
-**Recolher o sprite encontrado** remove só aquela cópia. Os encontros consideram as posições
-na pista, inclusive quando outro sprite vem em direção ao jogador. Não use sobreposição de
-retângulos da tela como encontro na pista.
+**Recolher o sprite encontrado** remove só a cópia encontrada. Encontros usam posições na pista,
+inclusive sprites vindo ao jogador; não use sobreposição dos retângulos da tela.
 
-No grupo **Animação**, use **Animar … com desenho … animação …** com o nome criado no Pinta.
-A extensão encontra os quadros e a velocidade. Funciona dentro e fora da pista.
-Pedir a mesma animação a cada quadro mantém sua reprodução, sem voltar ao começo.
+Em **Animação**, **Animar … com desenho … animação …** encontra nome, quadros e velocidade do Pinta,
+dentro ou fora da pista. Repetir o pedido a cada quadro mantém a reprodução, sem reiniciá-la.
 
 ${
   basic
@@ -92,6 +88,6 @@ ${sceneMethods(api === 'SZGame2D' ? 'g2d' : 'gk')
       `- **${entry.message.replace(/%\d+/g, '…')}**: \`${entry.method}\`. ${entry.tooltip}`,
   )
   .join('\n')}
-${examples ? `Abra **Descida da Neve (${basic ? 'Jogo 2D' : 'Jogo 2D Avançado'})**. O básico ensina controles, sprites e coleta. O intermediário combina controles, vida, encontros, placar e telas; exige seis estrelas na chegada. **Descida da Neve (Canvas)** deixa as contas e funções à mostra, sem extensão.` : ''}
+${examples ? `Abra **Descida da Neve (${basic ? 'Jogo 2D' : 'Jogo 2D Avançado'})**. ${basic ? 'Aprenda controles, sprites e coleta.' : 'Combine controles, vida, encontros, placar e telas; exige seis estrelas na chegada.'} **Descida da Neve (Canvas)** mostra contas e funções, sem extensão.` : ''}
 `.trim()
 }

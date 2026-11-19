@@ -80,10 +80,12 @@ describe('bytes do documento com e sem cenário', () => {
 
     expect(metaDoDocumento(novo).vila).toEqual({ tilemap: MAPA, scene: CENA })
     expect(novo).toContain('createMap2D')
-    // A cena (uma folha de 60 mil) e o motor do cenário (cerca de 11 mil) entram só aqui.
+    // A cena (folha de 60 mil) e o motor com sólidos/plataformas precisos entram só aqui.
+    // 19/11: diferença medida 86.736 bytes; teto 87.000 (< 1% de folga).
+    // O caminho sem cenário acima continua sem carregar o motor nem os dados completos.
     const diferenca = bytes(novo) - bytes(antigo)
     expect(diferenca).toBeGreaterThan(60_000 + 9_000)
-    expect(diferenca).toBeLessThan(60_000 + 14_000)
+    expect(diferenca).toBeLessThan(60_000 + 27_000)
     for (const doc of [semCena, antigo, novo]) expect(doc).not.toContain('tilemapFront')
   })
 

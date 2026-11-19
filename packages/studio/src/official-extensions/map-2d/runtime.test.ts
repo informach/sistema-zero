@@ -2,6 +2,8 @@ import { expect, it } from 'bun:test'
 import { PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
 import { sceneSolidAt } from '@sistemazero/core/studio/pinta-scene-runtime'
 import type { ExtensionBootstrapContext } from '#extensions'
+import { compileStatements } from '#generators'
+import { VILA_SCENE_ASSETS } from '../../examples/pintaScenes.generated'
 import { gameTwoDRuntime } from '../game-2d/runtime'
 import { gameKitRuntime } from '../game-2d-advanced/runtime'
 import {
@@ -11,6 +13,7 @@ import {
   mapTwoDBootstrapVariant,
 } from './bootstrap'
 import type { MapTwoDApi } from './contract'
+import { pintaSceneExample } from './examples'
 import { mapTwoDSource } from './runtime'
 
 const scene = {
@@ -163,6 +166,37 @@ it('scene references resolve inside their map without changing legacy property v
 })
 
 for (const target of ['g2d', 'gk'] as const) {
+  it(`${target}: o exemplo da Vila executa as referências e propriedades dos blocos novos`, async () => {
+    const namespace = target === 'g2d' ? 'SZGame2D' : 'SZGameKit'
+    const metadata = Object.fromEntries(VILA_SCENE_ASSETS.map((asset) => [asset.name, asset]))
+    const win: Record<string, unknown> = {
+      addEventListener() {},
+      performance: { now: () => 0 },
+      devicePixelRatio: 1,
+      __SZGAME_ASSETS: {},
+      __SZGAME_ASSET_META: metadata,
+    }
+    new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+    const start = pintaSceneExample(target).ir.behavior.start.filter(
+      (statement) =>
+        statement.type === `${target}:sceneCommand` ||
+        statement.type === 'var' ||
+        statement.type === 'consoleLog',
+    )
+    const messages: unknown[] = []
+    const run = new Function(
+      namespace,
+      'console',
+      `${compileStatements(start, 0)}\nreturn { portaDoMorador, imagemDoMorador };`,
+    )
+    const result = run(win[namespace], { log: (value: unknown) => messages.push(value) })
+    expect(result.portaDoMorador.id).toBe('door')
+    expect(result.portaDoMorador.name).toBe('Porta da cabana')
+    expect(result.imagemDoMorador).toBe(metadata['vila-e-floresta']?.scene?.art?.[0]?.image)
+    expect(result.imagemDoMorador).toStartWith('data:image/png;base64,')
+    expect(messages).toEqual(['Porta da cabana', 1, 'Porta da cabana', 'vila', 0.8])
+  })
+
   it(`${target}: plataforma precisa conserva o piso pequeno, salto e apoio`, async () => {
     const precise = PintaSceneSchema.parse({
       ...scene,

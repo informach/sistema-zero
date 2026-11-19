@@ -1,0 +1,78 @@
+{
+  "at": "2026-11-19T12:48:25.751Z",
+  "state": "uploaded-and-native-readback-verified-not-activated",
+  "distributionSha256": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+  "releaseManifestSha256": "d9ac5ea3503278be9fae8338ae03365f828120f6398eb01cb34938b53deca68f",
+  "configurationSha256": "a01b9ebed3fbad55378758175dcb1a1b8f7580ef72efde4bb817afc7c8b07566",
+  "verifiedObjects": 128,
+  "activationPerformed": false,
+  "operatorDeleted": true,
+  "limitations": [
+    "Não é ativação de catálogo, publicação de jogo ou liberação do gravador.",
+    "Falhas anteriores de proxy conservadas; sua causa interna não foi determinada.",
+    "Sem medição de heap; conclusão do upload no Worker real é evidência de execução, não perfil de memória.",
+    "A qualificação ampliada das capacidades e o ciclo autenticado continuam gates próprios."
+  ],
+  "files": {
+    "aprovacao-operacional.json": {
+      "bytes": 577,
+      "sha256": "47f1a0d2b5b54f0ab1543a037d8169a92e8a81117089be1df900adc69bbb244c"
+    },
+    "artefato-canonico.txt": {
+      "bytes": 95476,
+      "sha256": "6702b4a8bdad91d9f60543c887d6c9b8e29bb298c2f9d30a4a980f341d5a65a3"
+    },
+    "dry-run.log": {
+      "bytes": 729,
+      "sha256": "7757b932214e5ac0d2ef544b48791d66ec5a3774d0fa0b61605800e3a19c2070"
+    },
+    "implantacao-operador.json": {
+      "bytes": 506,
+      "sha256": "c288c2df981e725d32d140976ac6ab627c1cd4c9be419b3768f9daf03929ee51"
+    },
+    "leitura-independente.json": {
+      "bytes": 343,
+      "sha256": "5ad72780ec00716a3d1a4cf3da577005befa0ad671eb6cc7f316d85308b77f56"
+    },
+    "limpeza-operador.json": {
+      "bytes": 316,
+      "sha256": "1e5a259f9c766f78f6b084d203c179f5b83b0f8792f352b9739745985ad9fbfc"
+    },
+    "paridade-linux.json": {
+      "bytes": 506,
+      "sha256": "036ab77e0f14c130a942d6a0884ad4ec8658952f1f93be694bf36ef641401f39"
+    },
+    "plano.json": {
+      "bytes": 819034,
+      "sha256": "86f237f2c902bb1da4f9114875e4d61bda455375f992f8130f3eb1630eec83d8"
+    },
+    "qualificacao-upload.json": {
+      "bytes": 1457,
+      "sha256": "e80880883c6fedefa8f90d96a1667ab6b845b5243b9b0435bed8d7c4a9d14bf1"
+    },
+    "README.md": {
+      "bytes": 2702,
+      "sha256": "3ecd3964038049f4afdad16471cee462dcf50de5d19f78a4b692f58152de3401"
+    },
+    "recibo-r2-nativo.json": {
+      "bytes": 944,
+      "sha256": "1f3dfa9271de52ca403444f63737a084b6800cfe82ed84f53053a689e4f558e1"
+    },
+    "sdk-bun-windows.log": {
+      "bytes": 181,
+      "sha256": "b8c3bfab2929a8ca8596874dd6333bdab461e477969ab9d64b49a0259f9e2135"
+    },
+    "sdk-node-linux.log": {
+      "bytes": 8646,
+      "sha256": "8a6b16dd049368eb1a039b179ec3e3792d4a7def85a46dbad3fb8b1d8eca71ff"
+    },
+    "sdk-node-windows.log": {
+      "bytes": 38,
+      "sha256": "e2c55ebe54b1c0d58591d9bf8a4333f4e4d66a6c00f1bdaf0718afd3f7a07436"
+    },
+    "testes-promotor.log": {
+      "bytes": 6196,
+      "sha256": "b5d5d3c9c5ed06db7bc2438e5ecf9546abe38f3d1ee8033d6b5cf7e68bde68af"
+    }
+  }
+}

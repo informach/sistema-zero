@@ -36,6 +36,36 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     },
     { type: 'consoleLog', value: value('mapObjectField', [ref('portaDaCabana'), str('name')]) },
     { type: 'consoleLog', value: ref('chaves') },
+    {
+      type: 'var',
+      name: 'morador',
+      value: value('mapObjectNamed', [str('mapa'), str('Morador')]),
+    },
+    {
+      type: 'var',
+      name: 'portaDoMorador',
+      value: value('mapObjectById', [
+        str('mapa'),
+        value('mapObjectProperty', [ref('morador'), str('porta')]),
+      ]),
+    },
+    {
+      type: 'var',
+      name: 'imagemDoMorador',
+      value: value('mapResourceImage', [str('mapa'), str('morador')]),
+    },
+    {
+      type: 'consoleLog',
+      value: value('mapObjectField', [ref('portaDoMorador'), str('name')]),
+    },
+    {
+      type: 'consoleLog',
+      value: value('mapLayerProperty', [str('mapa'), str('vila'), str('ambiente')]),
+    },
+    {
+      type: 'consoleLog',
+      value: value('mapTileProperty', [str('mapa'), str('vila-pecas'), num(0), str('atrito')]),
+    },
     { type: 'var', name: 'naPorta', value: { type: 'bool', value: false } },
   ]
   const events: JSStatement[] = [
@@ -141,7 +171,7 @@ export function pintaSceneExample(target: 'g2d' | 'gk'): ExtensionExample {
     name: target === 'g2d' ? 'A Vila e a Floresta' : 'A Vila e a Floresta (Avançado)',
     experience: 'game',
     description:
-      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, leia o início, os lugares e as propriedades da porta.',
+      'Ande com as setas e entre pela porta da cabana. O cenário conserva 18 camadas, água animada, árvores na frente, objetos e conjuntos do Pinta. Nos blocos, siga a referência da porta do morador, encontre sua arte e leia as propriedades da camada e da peça.',
     difficulty: 'intermediate',
     concepts: ['Pinta', 'cenário', 'camadas', 'objetos', 'porta', 'propriedades', 'animação'],
     genre: 'exploração',

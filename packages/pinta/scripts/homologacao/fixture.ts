@@ -145,7 +145,9 @@ export function vilaEFloresta(): { assets: PintaAsset[]; map: TilemapAsset; caba
     ...createTilemapAsset({ name: 'vila-e-floresta', tilesetId: land.id, cols: 32, rows: 24, now }),
     id: 'vila-e-floresta',
   }
-  const layers: TilemapLayer[] = [{ id: 'vila', kind: 'group', name: 'Vila', visible: true }]
+  const layers: TilemapLayer[] = [
+    { id: 'vila', kind: 'group', name: 'Vila', visible: true, properties: { ambiente: 'vila' } },
+  ]
   const names = [
     'Chão',
     'Caminhos',

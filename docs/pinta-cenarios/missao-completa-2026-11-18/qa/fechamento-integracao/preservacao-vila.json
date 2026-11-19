@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-19T12:33:28.976Z",
+  "results": [
+    {
+      "id": "vila-e-floresta",
+      "pngSha256": "f8f775a5d213c070da4c111e3f623062918619e07e6007bae3df5b2b179a7d16",
+      "dataUrlSha256": "f2c08fb13dadc95c0e1bdf9d2a5182ab4781f834987d25eed2ff36c7fd9c6c4e",
+      "pixelsAndEncodedImageUnchanged": true,
+      "remainingAssetDataUnchanged": true
+    },
+    {
+      "id": "cabana",
+      "pngSha256": "6c113ec3fd50b67fe87568a034bb8f1fb09c5cdc2da0fea7c7462eb90d4cd8a3",
+      "dataUrlSha256": "35e5c86e148e67e2c2b9d2a2fe16a20d7050048889fa5c2a59777679bc6e7c8d",
+      "pixelsAndEncodedImageUnchanged": true,
+      "remainingAssetDataUnchanged": true
+    }
+  ]
+}

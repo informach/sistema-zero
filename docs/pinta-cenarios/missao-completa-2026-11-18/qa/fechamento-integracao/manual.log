@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\scene-2d\docs.test.ts:
+(pass) o manual da cena cita blocos que existem > SZGame2D: todo nome em negrito é a cara de um bloco real
+(pass) o manual da cena cita blocos que existem > SZGameKit: todo nome em negrito é a cara de um bloco real
+(pass) o manual da cena cita blocos que existem > a régua morde um nome inventado
+
+src\official-extensions\game-2d-advanced\__tests__\manifest.test.ts:
+(pass) game-2d-advanced — capacidades declaradas > declara storage quando o runtime usa Web Storage
+(pass) game-2d-advanced — capacidades declaradas > o manual cabe no limite de sanidade do schema
+(pass) game-2d-advanced — capacidades declaradas > ⭐ o manifest leva só o RESUMO — o manual não viaja no chunk de entrada
+
+ 6 pass
+ 0 fail
+ 11 expect() calls
+Ran 6 tests across 2 files. [971.00ms]
