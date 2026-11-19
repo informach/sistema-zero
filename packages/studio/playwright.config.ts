@@ -45,7 +45,12 @@ export default defineConfig({
       // Firefox existe para o risco que justificou o segundo engine: CSP/SRI e
       // execução no documento isolado. A galeria completa já é coberta pelo
       // Chromium e duplicá-la adicionava centenas de casos sem sinal novo.
-      testMatch: [/preview-security\.spec\.ts/, /preview-executes-user-code\.spec\.ts/],
+      // A casca em outro site (lote 3.2) existe por causa do Firefox: o arranjo que o isolou.
+      testMatch: [
+        /preview-security\.spec\.ts/,
+        /preview-executes-user-code\.spec\.ts/,
+        /preview-shell\.spec\.ts/,
+      ],
       use: { ...devices['Desktop Firefox'] },
     },
     {
@@ -54,7 +59,8 @@ export default defineConfig({
       // commit explícito (11/09/2026), recarregando logo depois de trazer os arquivos do Molda,
       // a mudança voltou em 0 de 10 recargas. Só os specs dessa gravação: o resto da suíte é
       // coberto pelo Chromium, e duplicá-lo não traria sinal novo.
-      testMatch: [/reload-flush\.spec\.ts/],
+      // A casca: só o funcionamento (nenhum arranjo de iframe isolou o WebKit na medição).
+      testMatch: [/reload-flush\.spec\.ts/, /preview-shell\.spec\.ts/],
       use: { ...devices['Desktop Safari'] },
     },
   ],

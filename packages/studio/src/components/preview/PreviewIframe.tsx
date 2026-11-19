@@ -1,3 +1,8 @@
+import {
+  CLASSIC_SHELL_LOAD,
+  isClassicShellLoaded,
+  isClassicShellReady,
+} from '@sistemazero/core/studio/classic-shell'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -88,6 +93,19 @@ export function chosenCoverPausesSnapshots(
 
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
+  // Casca em outro site (lote 3.2): o jogo roda num `srcdoc` dentro de uma página de outra
+  // origem. Desligada sem `shellUrl`; nunca junto do adaptador de origem nem da sala isolada.
+  const shell = useMemo(() => {
+    if (!execution.shellUrl || execution.originAdapter || execution.requireIsolatedPreview)
+      return null
+    if (typeof window === 'undefined') return null
+    try {
+      const url = validateIsolatedPreviewUrl(execution.shellUrl, window.location.origin)
+      return { url, origin: new URL(url).origin }
+    } catch {
+      return null
+    }
+  }, [execution.shellUrl, execution.originAdapter, execution.requireIsolatedPreview])
   const projectStore = useProjectStoreApi()
   const persistence = useStudioPersistence()
   const pendingEdits = usePendingEditorEdits()
@@ -641,7 +659,9 @@ export function PreviewIframe(): JSX.Element {
         cenas3d: moduloDeCenas,
       },
       extraFiles: debouncedExtraFiles,
-      parentOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
+      // Na casca, o `parent` do jogo é a casca: as mensagens do jogo vão a ela, que as repassa.
+      parentOrigin:
+        shell?.origin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
       loopBudgetMs: previewSecurity.loopBudgetMs,
       // Semeia o estado salvo (lido do ref: deliberadamente FORA das deps do memo
@@ -688,6 +708,7 @@ export function PreviewIframe(): JSX.Element {
     previewSecurity,
     renderNonce,
     execution.editingAccess,
+    shell?.origin,
   ])
 
   // An automatic source debounce must not bypass an explicit run awaiting a save.
@@ -771,6 +792,24 @@ export function PreviewIframe(): JSX.Element {
   const isolatedUrl = remoteDocument?.document === doc ? remoteDocument.url : null
   const requiresRemoteDocument = Boolean(originAdapter) || execution.requireIsolatedPreview
   const effectiveDoc = requiresRemoteDocument ? PAUSED_PREVIEW_DOC : doc
+  // O documento que o iframe montado mostra. Com outra origem (`src`), o atributo `srcdoc` não
+  // existe: lê-lo deixava `loadedSrcDoc` nulo e desligava a detecção de jogo preso, o Parar que
+  // troca o iframe preso e o Rodar de novo com a prévia muda (lote 3.1, 19/11/2026).
+  const frameDocumentRef = useRef(effectiveDoc)
+  // Na casca, quem diz o documento é a mensagem enviada a ela (efeito abaixo), não o render.
+  if (!shell) frameDocumentRef.current = isolatedUrl ? doc : effectiveDoc
+  // A casca da geração atual do iframe avisou que está pronta para receber o documento.
+  const [shellReadyGeneration, setShellReadyGeneration] = useState(-1)
+  const frameGenerationRef = useRef(frameGeneration)
+  frameGenerationRef.current = frameGeneration
+  const shellReady = shell !== null && !frameAbsent && shellReadyGeneration === frameGeneration
+  useEffect(() => {
+    if (!shell || !shellReady) return
+    const target = iframeRef.current?.contentWindow
+    if (!target) return
+    frameDocumentRef.current = effectiveDoc
+    target.postMessage({ type: CLASSIC_SHELL_LOAD, document: effectiveDoc }, shell.origin)
+  }, [shell, shellReady, effectiveDoc])
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
   }, [execution.muted])
@@ -887,7 +926,17 @@ export function PreviewIframe(): JSX.Element {
       // própria origem caso o navegador a reporte.
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
-      if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
+      if (shell && ev.origin === shell.origin) {
+        // Os avisos da própria casca (o jogo não consegue mandá-los: a casca os barra).
+        if (isClassicShellReady(ev.data)) {
+          setShellReadyGeneration(frameGenerationRef.current)
+          return
+        }
+        if (isClassicShellLoaded(ev.data)) {
+          frameLoadedRef.current()
+          return
+        }
+      } else if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
       // Cap de taxa: depois da autenticação barata (referência + origem) e ANTES
       // da validação/structured-clone caras. Conta mensagens por janela de 1s e
       // descarta o excedente — uma rajada (Worker/microtask) não derruba o host.
@@ -942,7 +991,7 @@ export function PreviewIframe(): JSX.Element {
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [pushLog, scheduleStorageFlush])
+  }, [pushLog, scheduleStorageFlush, shell])
 
   // Descarrega o estado salvo pendente quando a aba/IDE fecha — a última jogada
   // antes de um F5 não pode se perder na janela do throttle. (O unmount/troca de
@@ -1059,6 +1108,23 @@ export function PreviewIframe(): JSX.Element {
   }, [gameError, gameErrorHint, highlight, t])
   useEffect(() => () => highlight.getState().setRuntimeMark(null), [highlight])
 
+  // O documento entrou no iframe: o `load` de um `srcdoc` direto, ou `sz-shell:loaded` da casca.
+  const frameLoadedRef = useRef(() => {})
+  frameLoadedRef.current = () => {
+    setLoadedSrcDoc(frameDocumentRef.current)
+    frameGapStepRef.current = 0
+    lastHeartbeatRef.current = Date.now()
+    setPreviewStalled(false)
+    iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
+    // Foca o jogo após um Play/Atualizar explícito, para que as setas do
+    // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
+    // após ação explícita (a flag não é setada em reload por edição).
+    if (focusOnLoadRef.current) {
+      focusOnLoadRef.current = false
+      iframeRef.current?.focus()
+    }
+  }
+
   return (
     <div className="relative flex h-full flex-col bg-sz-bg">
       {frameAbsent ? (
@@ -1068,28 +1134,16 @@ export function PreviewIframe(): JSX.Element {
           key={frameGeneration}
           ref={iframeRef}
           title="Pré-visualização"
-          src={isolatedUrl ?? undefined}
-          srcDoc={isolatedUrl ? undefined : effectiveDoc}
+          src={shell ? shell.url : (isolatedUrl ?? undefined)}
+          srcDoc={shell || isolatedUrl ? undefined : effectiveDoc}
           onLoad={() => {
-            setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
-            frameGapStepRef.current = 0
-            lastHeartbeatRef.current = Date.now()
-            setPreviewStalled(false)
-            iframeRef.current?.contentWindow?.postMessage(
-              { type: 'sz:audio', muted: execution.muted },
-              '*',
-            )
-            // Foca o jogo após um Play/Atualizar explícito, para que as setas do
-            // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
-            // após ação explícita (a flag não é setada em reload por edição).
-            if (focusOnLoadRef.current) {
-              focusOnLoadRef.current = false
-              iframeRef.current?.focus()
-            }
+            // Na casca, o `load` é o da página dela; o do jogo chega por `sz-shell:loaded`.
+            if (!shell) frameLoadedRef.current()
           }}
           // `allow-pointer-lock` permite que a câmera FPS capture o mouse após um clique.
           // Mantemos o iframe sem `allow-same-origin` para preservar o isolamento do preview.
-          sandbox="allow-scripts allow-modals allow-pointer-lock"
+          // A casca (outro site, página fixa) não leva sandbox: o jogo DENTRO dela leva este mesmo.
+          sandbox={shell ? undefined : 'allow-scripts allow-modals allow-pointer-lock'}
           // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
           // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
           // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).

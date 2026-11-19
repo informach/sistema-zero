@@ -18,3 +18,11 @@ export const PLAYGROUND_LESSON =
         escala: Number(initialQuery.get('escala')) || 0,
       }
     : null
+
+// `?casca=1` (lote 3.2): a prévia do Clássico roda dentro da casca servida pelo próprio servidor
+// do playground na OUTRA origem local (127.0.0.1 ⇄ localhost são sites diferentes). Só testes.
+const outroHost = window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost'
+export const PLAYGROUND_PREVIEW_SHELL_URL =
+  initialQuery.get('casca') === '1'
+    ? `${window.location.protocol}//${outroHost}:${window.location.port}/v1/classic-shell/1.html`
+    : undefined
