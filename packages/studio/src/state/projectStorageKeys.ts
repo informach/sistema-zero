@@ -28,7 +28,9 @@ export const projectApplicationsKey = (id: string, version?: ProjectStorageVersi
 export const applicationBudgetKey = (version: ProjectStorageVersion = PROJECT_STORAGE_VERSION) =>
   `sz:v${version}:application-budget`
 export const APPLICATION_BUDGET_KEY = applicationBudgetKey()
-export const PROJECT_RECOVERY_PREFIX = projectKey('recovery', '')
+export const projectRecoveryPrefix = (version?: ProjectStorageVersion) =>
+  projectKey('recovery', '', version)
+export const PROJECT_RECOVERY_PREFIX = projectRecoveryPrefix()
 export const projectRecoveryKey = (id: string, writer: string, version?: ProjectStorageVersion) =>
   projectKey('recovery', `${id}:${writer}`, version)
 export const projectBackupKey = (id: string, hash: string, version?: ProjectStorageVersion) =>

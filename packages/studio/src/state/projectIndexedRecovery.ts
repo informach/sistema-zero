@@ -1,5 +1,12 @@
 import type { EditableStudioProject } from '../core/editableProject'
-import { conditionalGeneration, conditionalWrite, readAllKeys, readValues } from './idbTransaction'
+import {
+  conditionalGeneration,
+  conditionalWrite,
+  type IdbWrite,
+  prepareProjectStorageWrite,
+  readAllKeys,
+  readValues,
+} from './idbTransaction'
 import {
   commitProjectRecovery,
   journal,
@@ -9,19 +16,22 @@ import {
 } from './projectStorageCoordinator'
 import {
   PROJECT_RECOVERY_PREFIX,
+  PROJECT_STORAGE_VERSION,
+  type ProjectStorageVersion,
   projectHeadKey,
   projectMetaKey,
   projectMigrationKey,
   projectRecoveryKey,
+  projectRecoveryPrefix,
 } from './projectStorageKeys'
 import { projectStorageEntries } from './projectStorageRecords'
 import {
   acceptsLocalHead,
   installLocalRevision,
   isLocalHead,
+  type LocalHead,
   ProjectWriteConflict,
   readLocalRevision,
-  type LocalHead,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
 import { toProjectSummary } from './projectSummary'
@@ -34,13 +44,12 @@ export async function recoverIndexedProjectWrites(
   synchronousTokens: ReadonlySet<string> = new Set(),
   mustCopy?: (recovery: RecoveryWrite) => boolean,
   deferRecovery?: (recovery: RecoveryWrite) => boolean,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
 ): Promise<{ recovered: string[]; consumed: Set<string> }> {
+  const prefix = projectRecoveryPrefix(version)
   const keys = (knownKeys ?? (await readAllKeys(scope.store))).filter(
     (key): key is string =>
-      typeof key === 'string' &&
-      key.startsWith(
-        projectId ? `${PROJECT_RECOVERY_PREFIX}${projectId}:` : PROJECT_RECOVERY_PREFIX,
-      ),
+      typeof key === 'string' && key.startsWith(projectId ? `${prefix}${projectId}:` : prefix),
   )
   const values = await readValues(scope.store, keys)
   if (!keys.length) return { recovered: [], consumed: new Set() }
@@ -50,10 +59,11 @@ export async function recoverIndexedProjectWrites(
   const valid: RecoveryWrite[] = []
   for (const [index, value] of values.entries()) {
     try {
-      const recovery = nativeRecovery(value, keys[index]!)
+      const recovery = nativeRecovery(value, keys[index]!, version)
       // Validate the whole document before promoting raw partitions over a
       // readable save. Preparation runs outside the conditional transaction.
-      if (await prepareEditableStudioProject(projectFromRecovery(recovery))) valid.push(recovery)
+      if (await prepareEditableStudioProject(projectFromRecovery(recovery, version)))
+        valid.push(recovery)
     } catch {
       // Keep incompatible originals pending; never execute their writes.
     }
@@ -62,7 +72,7 @@ export async function recoverIndexedProjectWrites(
   const consumed = new Set<string>()
   const sourceOf = (recovery: RecoveryWrite) =>
     recoverySourceIdentity({
-      key: projectRecoveryKey(recovery.projectId, recovery.head.writer),
+      key: projectRecoveryKey(recovery.projectId, recovery.head.writer, version),
       token: recovery.head.token,
     })
   const confirmed = (recovery: RecoveryWrite) => {
@@ -81,6 +91,7 @@ export async function recoverIndexedProjectWrites(
         conditionalGeneration(scope.identity),
         synchronousTokens.has(sourceOf(recovery)),
         (stored) => localSnapshotsEqual(stored, recovery),
+        version,
       )
       recovered.push(recovery.projectId)
       confirmed(recovery)
@@ -89,10 +100,10 @@ export async function recoverIndexedProjectWrites(
       // prevent access to the committed document or the rest of the profile.
       if (error instanceof ProjectWriteConflict) {
         try {
-          const copied = await copyConflictingRecovery(scope, recovery)
+          const copied = await copyConflictingRecovery(scope, recovery, version)
           if (copied) recovered.push(copied)
           const [remaining] = await readValues(scope.store, [
-            projectRecoveryKey(recovery.projectId, recovery.head.writer),
+            projectRecoveryKey(recovery.projectId, recovery.head.writer, version),
           ])
           if (copied) confirmed(recovery)
           else if (remaining === undefined) consumed.add(sourceOf(recovery))
@@ -182,31 +193,50 @@ export async function listPreservedProjectDrafts(
 async function copyConflictingRecovery(
   scope: ProjectStorageScope,
   recovery: RecoveryWrite,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
 ): Promise<string | undefined> {
   if (recovery.incompleteBlocks) return
   const { localSnapshotsEqual } = await import('../project-migrations/localTransaction')
   const source = recovery.projectId
-  const raw = projectFromRecovery(recovery)
+  const raw = projectFromRecovery(recovery, version)
   if (!raw) return
   const { prepareEditableStudioProject } = await import('./editableProjectValidation')
   const project = await prepareEditableStudioProject(raw)
   if (!project) return
   const id = `recuperado-${source.slice(0, 28)}-${recovery.head.token.replaceAll('-', '').slice(0, 24)}`
   const copy = { ...project, id, name: `${project.name.slice(0, 176)} (edição recuperada)` }
-  const stagedKey = projectRecoveryKey(source, recovery.head.writer)
+  const stagedKey = projectRecoveryKey(source, recovery.head.writer, version)
   const sources = (recovery.replacesRecovery ?? []).filter(
     (entry) =>
-      entry.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${source}:`) && entry.key !== stagedKey,
+      entry.key.startsWith(`${projectRecoveryPrefix(version)}${source}:`) &&
+      entry.key !== stagedKey,
   )
+  const copyWrite: IdbWrite = {
+    puts: [
+      ...projectStorageEntries(copy, version),
+      [projectMigrationKey(id, version), { exitRecovery: recovery }],
+      [
+        projectHeadKey(id, version),
+        {
+          version: 1,
+          token: crypto.randomUUID(),
+          writer: '',
+          base: null,
+          sequence: 0,
+        } satisfies LocalHead,
+      ],
+    ],
+  }
+  const physicalCopy = version === 4 ? await prepareProjectStorageWrite(copyWrite) : copyWrite
   return conditionalWrite(
     scope.store,
     scope.identity,
     conditionalGeneration(scope.identity),
     [
       stagedKey,
-      projectMetaKey(id),
-      projectHeadKey(id),
-      projectMigrationKey(id),
+      projectMetaKey(id, version),
+      projectHeadKey(id, version),
+      projectMigrationKey(id, version),
       ...sources.map((entry) => entry.key),
     ],
     ([latest, existing, targetHead, provenance, ...ancestors]) => {
@@ -239,23 +269,7 @@ async function copyConflictingRecovery(
       ]
       return {
         write: {
-          puts:
-            existing || targetHead
-              ? []
-              : [
-                  ...projectStorageEntries(copy),
-                  [projectMigrationKey(id), { exitRecovery: recovery }],
-                  [
-                    projectHeadKey(id),
-                    {
-                      version: 1,
-                      token: crypto.randomUUID(),
-                      writer: '',
-                      base: null,
-                      sequence: 0,
-                    } satisfies LocalHead,
-                  ],
-                ],
+          puts: existing || targetHead ? [] : physicalCopy.puts,
           deletes,
         },
         result: isLocalHead(targetHead) && targetHead.deleted ? undefined : id,

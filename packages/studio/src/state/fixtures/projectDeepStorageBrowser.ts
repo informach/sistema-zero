@@ -1,3 +1,4 @@
+import { recoverLocalV3ProjectWrites } from '../../project-migrations/localV3RecoveryReplay'
 import { readValues, writeInOneTransaction } from '../idbTransaction'
 import { encodeProjectJsonGraph } from '../projectJsonGraph'
 import type { ProjectStorageScope } from '../projectStorageRuntime'
@@ -82,9 +83,31 @@ async function qualifyLegacyDeepStaging(scope: ProjectStorageScope, blocks: unkn
     if (localStorage.getItem(sourceKey) !== entry.encoded)
       throw new Error('Native legacy staging acknowledged an unconfirmed source')
     const verifiedAt = performance.now()
+    const recovered = await recoverLocalV3ProjectWrites(sourceScope, project.id)
+    const replayedAt = performance.now()
+    const [savedBlocks, savedHead, pending, savedArchive] = await readValues(scope.store, [
+      projectBlocksKey(project.id, 4),
+      projectHeadKey(project.id, 4),
+      projectRecoveryKey(project.id, recovery.head.writer, 4),
+      prepared.backupKey,
+    ])
+    if (
+      !recovered.includes(project.id) ||
+      encodeProjectJsonGraph((savedBlocks as { blocksState: unknown }).blocksState) !==
+        encodeProjectJsonGraph(blocks) ||
+      encodeProjectJsonGraph(savedHead) !== encodeProjectJsonGraph(recovery.head) ||
+      encodeProjectJsonGraph(savedArchive) !== encodeProjectJsonGraph(prepared.archive) ||
+      pending !== undefined ||
+      localStorage.getItem(sourceKey) !== null
+    )
+      throw new Error('Native legacy replay lost content or acknowledged before confirmation')
+    const replayVerifiedAt = performance.now()
     return {
-      pendingOnly: true,
-      sourceRetained: true,
+      stagedBeforeReplay: true,
+      sourceRetainedBeforeReplay: true,
+      replayed: true,
+      sourceAcknowledgedAfterReplay: true,
+      archiveRetained: true,
       wireChars: entry.encoded.length,
       timingsMs: {
         sourceWrite: Math.round(sourceStored - start),
@@ -92,12 +115,14 @@ async function qualifyLegacyDeepStaging(scope: ProjectStorageScope, blocks: unkn
         prepare: Math.round(preparedAt - sourceRead),
         stage: Math.round(stagedAt - preparedAt),
         verification: Math.round(verifiedAt - stagedAt),
-        total: Math.round(verifiedAt - start),
+        replay: Math.round(replayedAt - verifiedAt),
+        replayVerification: Math.round(replayVerifiedAt - replayedAt),
+        total: Math.round(replayVerifiedAt - start),
       },
     }
   } finally {
-    // Fixture teardown releases its own localStorage quota after checking retention.
-    // The production helper does not acknowledge this source; v4 archive/journal remain.
+    // Release only this fixture's source on failure. Successful replay must have
+    // acknowledged it through production code before this teardown runs.
     localStorage.removeItem(sourceKey)
   }
 }

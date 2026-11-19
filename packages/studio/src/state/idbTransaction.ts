@@ -1,4 +1,5 @@
 import type { UseStore } from 'idb-keyval'
+
 type ProjectTransport = typeof import('./projectStorageTransport')
 let projectTransport: ProjectTransport | undefined
 let transportLoading: Promise<void> | undefined
@@ -8,13 +9,15 @@ const usesProjectTransport = (key: IDBValidKey) =>
 /** Opening a v4 document loads its codec before a live transaction, never on pagehide. */
 function prepareProjectTransport(keys: readonly IDBValidKey[]): Promise<void> | undefined {
   if (projectTransport || !keys.some(usesProjectTransport)) return
-  return (transportLoading ??= import('./projectStorageTransport')
+  if (transportLoading) return transportLoading
+  transportLoading = import('./projectStorageTransport')
     .then((module) => {
       projectTransport = module
     })
     .finally(() => {
       transportLoading = undefined
-    }))
+    })
+  return transportLoading
 }
 const encodeProjectStorageValue = (key: IDBValidKey, value: unknown) =>
   projectTransport ? projectTransport.encodeProjectStorageValue(key, value) : value
@@ -224,6 +227,16 @@ export function conditionalWrite<T>(
     }
     return done
   })
+}
+
+/** Prepare deep project values before a live CAS; exit capture must stay synchronous. */
+export async function prepareProjectStorageWrite(write: IdbWrite): Promise<IdbWrite> {
+  const ready = prepareProjectTransport((write.puts ?? []).map(([key]) => key))
+  if (ready) await ready
+  return {
+    ...write,
+    puts: write.puts?.map(([key, value]) => [key, encodeProjectStorageValue(key, value)]),
+  }
 }
 
 /** Grava `puts` e apaga `deletes` numa transação readwrite só. Escrita vazia não abre transação. */

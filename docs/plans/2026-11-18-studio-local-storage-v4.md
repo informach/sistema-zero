@@ -288,3 +288,22 @@ explícitas, sem usar o total agrupado como custo de preparo. Nenhum FPS foi med
 A ativação padrão permanece v3. Faltam reconhecimento condicional dos originais,
 coleta conjunta de espelhos/journals, integração de base/listagem/abertura,
 compatibilidade v1/v2 e homologação da abertura efetiva em v4.
+
+
+## Continuação de 19/11 — replay real para v4, ainda sem ativação
+
+Base atual integrada: `7fe761fb9`, com snapshot remoto `613404239`; correções subsequentes `a83f368e2` e `be46906bc`. As afirmações anteriores de que o replay não estava conectado descrevem as revisões anteriores. O helper de migração agora coleta fontes v3 nativas/síncronas, preserva espelhos e identidade, migra a base, arquiva snapshots imutáveis e usa o mesmo motor CAS direcionado à v4. A confirmação remove fontes apenas após promoção/cópia confirmada e comparação exata do original e de seu arquivo de segurança.
+
+O preparo físico v4 é feito antes de abrir o CAS. Nenhum preparo assíncrono foi introduzido no pagehide. Fontes antigas inválidas continuam preservadas. Recibos usam o armazenamento de backup já existente; não há nova fila/base.
+
+Qualificação nativa nova: 10.000 registros, 9.920 IDs existentes, profundidade 2.503, grafo completo e arquivo preservados após replay nos dois engines, com reconhecimento de fonte feito pelo produto antes do teardown. Relatórios: `docs/qa/2026-11-19-studio-versioned-recovery-replay.md` e `docs/qa/2026-11-19-studio-legacy-replay-native.json`.
+
+Sequência restante antes de ativar:
+
+1. Corrigir digest/backup e migração profunda dos layouts v1/v2, com preservação de marcadores/recibos e campos desconhecidos.
+2. Ligar migração de bases/journals à listagem e a todos os carregadores, inclusive quando existe v4 e uma aba antiga volta a escrever.
+3. Preparar o transporte antes de permitir edição de projeto novo/saída fria; preservar captura síncrona.
+4. Qualificar troca de perfil, fontes concorrentes, quota, exclusões, histórico e versões futuras no fluxo integrado do produto.
+5. Ativar apenas no laboratório, repetir suítes/curso/navegadores/limites e homologar antes de levar a branch da missão.
+
+O padrão permanece v3; esta etapa não fecha renderização/virtualização do Blockly (R2), depuração/profiler/testes autorais nem a missão global.

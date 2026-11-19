@@ -1,0 +1,95 @@
+{
+  "baseCommit": "be46906bc",
+  "qualification": "full storage suite, Windows development host, not physical entry-level hardware",
+  "conditions": "one observation per engine; full test suite and typecheck shared this host; no FPS or typing percentile claim",
+  "storageDefault": 3,
+  "replayDestination": 4,
+  "model": "10000 block records, 9920 existing IDs, depth 2503; full graph equality, not mounted Blockly SVGs",
+  "verification": "production recovery acknowledges original localStorage bytes only after complete v4 promotion, retaining original archive; 12 immediate reloads and independent tabs per engine",
+  "sourcesSha256": {
+    "bun.lock": "170ce719625e25023cdb29b1c959375a39e8f5ab1756be9f451f737e7a8d9b4b",
+    "packages/studio/src/project-migrations/localV3RecoveryReplay.ts": "70b4a2936f78a60022386d7f07865023840442b52eb0bf0357a10adb3db6decc",
+    "packages/studio/src/project-migrations/localV3Recovery.ts": "ba00b293f8c9da8182a333a1d8dc682406e1206bca221483bb67b3d124f2929c",
+    "packages/studio/src/state/idbTransaction.ts": "a2544825d3d7d4c8b12dbb6e955c6d7a459a7f0dc0a02e7398fa85e7de312b8c",
+    "packages/studio/src/state/projectSynchronousExitRecovery.ts": "a90f8154e28acb987ffe884661e0ba12cb31deef7da4553b0e812d82da829e63",
+    "packages/studio/src/state/projectIndexedRecovery.ts": "3b7cb493ba7c06a5b8c74c70df2de8ce00a9b19938d4c5cd2939fea0016d2eda",
+    "packages/studio/src/state/projectStorageCoordinator.ts": "bd891b8ce6b784016f49446a32ac116fda1a1cdeed25bf18d68aa191ccc0b939",
+    "packages/studio/src/state/fixtures/projectDeepStorageBrowser.ts": "80958de8ff8fe332b3c0bfdff788e23fcbea4807185ae920f5ee6c52ceac5e15",
+    "packages/studio/scripts/verify-project-storage-browser.mjs": "6d23585cc2e61aea8727c743298ce416382edd30611d2357d18e235b947c3117"
+  },
+  "observations": [
+    {
+      "engine": "chromium",
+      "result": {
+        "migration": {
+          "migrated": true,
+          "legacyCopy": true
+        },
+        "legacyRecovery": {
+          "stagedBeforeReplay": true,
+          "sourceRetainedBeforeReplay": true,
+          "replayed": true,
+          "sourceAcknowledgedAfterReplay": true,
+          "archiveRetained": true,
+          "wireChars": 1769020,
+          "timingsMs": {
+            "sourceWrite": 43,
+            "sourceRead": 239,
+            "prepare": 158,
+            "stage": 42,
+            "verification": 402,
+            "replay": 1443,
+            "replayVerification": 415,
+            "total": 2741
+          }
+        },
+        "blocks": 10000,
+        "ids": 9920,
+        "depth": 2503,
+        "nativeCloneError": "RangeError",
+        "graphChars": 1767283,
+        "firstRoundTripMs": 395
+      }
+    },
+    {
+      "engine": "webkit",
+      "result": {
+        "migration": {
+          "migrated": true,
+          "legacyCopy": true
+        },
+        "legacyRecovery": {
+          "stagedBeforeReplay": true,
+          "sourceRetainedBeforeReplay": true,
+          "replayed": true,
+          "sourceAcknowledgedAfterReplay": true,
+          "archiveRetained": true,
+          "wireChars": 1769020,
+          "timingsMs": {
+            "sourceWrite": 73,
+            "sourceRead": 336,
+            "prepare": 310,
+            "stage": 121,
+            "verification": 511,
+            "replay": 2173,
+            "replayVerification": 408,
+            "total": 3932
+          }
+        },
+        "blocks": 10000,
+        "ids": 9920,
+        "depth": 2503,
+        "nativeCloneError": null,
+        "graphChars": 1767283,
+        "firstRoundTripMs": 463
+      }
+    }
+  ],
+  "fullSuite": {
+    "tests": 510,
+    "assertions": 2702,
+    "files": 76,
+    "seconds": 57.45,
+    "log": ".cache/mission/legacy-replay-reviewed-full.txt"
+  }
+}

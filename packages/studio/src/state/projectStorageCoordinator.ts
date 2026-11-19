@@ -6,14 +6,16 @@ import {
   conditionalWrite,
   type IdbWrite,
   interruptConditionalTransactions,
+  prepareProjectStorageWrite,
   readAllKeys,
   readValues,
   writeInOneTransaction,
 } from './idbTransaction'
 import {
-  APPLICATION_BUDGET_KEY,
-  type ProjectStorageVersion,
+  applicationBudgetKey,
   PROJECT_RECOVERY_PREFIX,
+  PROJECT_STORAGE_VERSION,
+  type ProjectStorageVersion,
   projectApplicationsKey,
   projectAssetsKey,
   projectBlocksKey,
@@ -21,6 +23,7 @@ import {
   projectHeadKey,
   projectMetaKey,
   projectRecoveryKey,
+  projectRecoveryPrefix,
   projectStateKey,
 } from './projectStorageKeys'
 import { assembleProjectRecord, type StoredProjectRecord } from './projectStorageRecords'
@@ -142,6 +145,7 @@ function journalWrite(
   before: unknown,
   aggregate: unknown,
   additions: ProApplicationRecord[],
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
 ): IdbWrite {
   if (!additions.length) return {}
   if (additions.some((record) => record.projectId !== id))
@@ -187,8 +191,8 @@ function journalWrite(
     )
   return {
     puts: [
-      [projectApplicationsKey(id), records],
-      [APPLICATION_BUDGET_KEY, totals],
+      [projectApplicationsKey(id, version), records],
+      [applicationBudgetKey(version), totals],
     ],
   }
 }
@@ -227,22 +231,25 @@ export async function commitProjectRecovery(
   generation: number,
   rejectEqualSequence = false,
   unchangedRecovery?: (stored: unknown) => boolean,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
 ): Promise<void> {
   const { projectId: id, head, write, applications } = incoming
-  const recoveryKey = projectRecoveryKey(id, head.writer)
+  const physicalWrite = version === 4 ? await prepareProjectStorageWrite(write) : write
+  const recoveryKey = projectRecoveryKey(id, head.writer, version)
   const sources = (incoming.incompleteBlocks ? [] : (incoming.replacesRecovery ?? [])).filter(
     (source) =>
-      source.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${id}:`) && source.key !== recoveryKey,
+      source.key.startsWith(`${projectRecoveryPrefix(version)}${id}:`) &&
+      source.key !== recoveryKey,
   )
   await conditionalWrite(
     scope.store,
     scope.identity,
     generation,
     [
-      projectHeadKey(id),
-      projectMetaKey(id),
-      projectApplicationsKey(id),
-      APPLICATION_BUDGET_KEY,
+      projectHeadKey(id, version),
+      projectMetaKey(id, version),
+      projectApplicationsKey(id, version),
+      applicationBudgetKey(version),
       recoveryKey,
       ...sources.map((source) => source.key),
     ],
@@ -279,21 +286,25 @@ export async function commitProjectRecovery(
           throw new ProjectWriteConflict()
         }
       }
-      let history = journalWrite(id, oldJournal, oldBudget, applications)
+      let history = journalWrite(id, oldJournal, oldBudget, applications, version)
       if (incoming.resetApplications) {
         const totals = { ...applicationBudget(oldBudget) }
         delete totals[id]
         history = {
-          puts: [[APPLICATION_BUDGET_KEY, totals]],
-          deletes: [projectApplicationsKey(id)],
+          puts: [[applicationBudgetKey(version), totals]],
+          deletes: [projectApplicationsKey(id, version)],
         }
       }
       const staged = recovery as RecoveryWrite | undefined
       return {
         write: {
-          puts: [...(write.puts ?? []), [projectHeadKey(id), head], ...(history.puts ?? [])],
+          puts: [
+            ...(physicalWrite.puts ?? []),
+            [projectHeadKey(id, version), head],
+            ...(history.puts ?? []),
+          ],
           deletes: [
-            ...(write.deletes ?? []),
+            ...(physicalWrite.deletes ?? []),
             ...(history.deletes ?? []),
             ...(staged?.version === 1 && staged.head.sequence <= head.sequence
               ? [recoveryKey]
@@ -409,9 +420,11 @@ export async function recoverIndexedProjectWrites(
   synchronousTokens: ReadonlySet<string> = new Set(),
   mustCopy?: (recovery: RecoveryWrite) => boolean,
   deferRecovery?: (recovery: RecoveryWrite) => boolean,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
 ): Promise<{ recovered: string[]; consumed: Set<string> }> {
   const keys = knownKeys ?? (await readAllKeys(scope.store))
-  const prefix = projectId ? `${PROJECT_RECOVERY_PREFIX}${projectId}:` : PROJECT_RECOVERY_PREFIX
+  const recoveryPrefix = projectRecoveryPrefix(version)
+  const prefix = projectId ? `${recoveryPrefix}${projectId}:` : recoveryPrefix
   if (!keys.some((key) => typeof key === 'string' && key.startsWith(prefix)))
     return { recovered: [], consumed: new Set() }
   const recovery = await import('./projectIndexedRecovery')
@@ -422,6 +435,7 @@ export async function recoverIndexedProjectWrites(
     synchronousTokens,
     mustCopy,
     deferRecovery,
+    version,
   )
 }
 

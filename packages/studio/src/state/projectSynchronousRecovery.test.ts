@@ -1,23 +1,27 @@
-import { recoverSynchronousProjectWrites } from './projectSynchronousExitRecovery'
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
 import { buildProProject } from '../core/proProject'
+import { migrateLocalV3Project } from '../project-migrations/localV3'
+import { prepareLocalV3Recovery, stageLocalV3Recovery } from '../project-migrations/localV3Recovery'
+import { recoverLocalV3ProjectWrites } from '../project-migrations/localV3RecoveryReplay'
 import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
 import {
   bindProjectToDurableHead,
   coordinatedProjectWrite,
   loadRecoverableProjectDraft,
   projectExitRecoveryStatus,
+  type RecoveryWrite,
   recoverProjectWrites,
   stageProjectExit,
-  type RecoveryWrite,
 } from './projectStorageCoordinator'
 import {
+  applicationBudgetKey,
   PROJECT_META_KEY_PREFIX,
   projectApplicationsKey,
   projectFilesKey,
-  projectMigrationKey,
+  projectHeadKey,
   projectMetaKey,
+  projectMigrationKey,
   projectRecoveryKey,
 } from './projectStorageKeys'
 import { projectStorageEntries } from './projectStorageRecords'
@@ -28,7 +32,11 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { stageSynchronousExitJournal } from './synchronousExitJournal'
+import { recoverSynchronousProjectWrites } from './projectSynchronousExitRecovery'
+import {
+  acknowledgeSynchronousExitJournal,
+  stageSynchronousExitJournal,
+} from './synchronousExitJournal'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 async function fixture() {
@@ -639,7 +647,6 @@ test('inaccessible exit copies block recovery without acknowledging or modifying
   }
 })
 
-
 test('projected recovery uses the prepared snapshot and acknowledges its original source only after commit', async () => {
   const f = await fixture()
   try {
@@ -654,18 +661,21 @@ test('projected recovery uses the prepared snapshot and acknowledges its origina
         expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
           tree: { 'main.ts': { content: 'prepared source' } },
         })
-        expect(await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer))).toBeUndefined()
+        expect(
+          await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer)),
+        ).toBeUndefined()
         acknowledged.push(entry.encoded)
       },
     })
     expect(acknowledged).toEqual([projected.encoded])
     // The adapter owns acknowledgement: replay must not remove a different source.
-    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([source])
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
+      source,
+    ])
   } finally {
     f.close()
   }
 })
-
 
 test('a failed source acknowledgement can retry after the destination is already confirmed', async () => {
   const f = await fixture()
@@ -687,10 +697,14 @@ test('a failed source acknowledgement can retry after the destination is already
     expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
       tree: { 'main.ts': { content: 'confirmed before ack failure' } },
     })
-    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([source])
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
+      source,
+    ])
     await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, replay)
     expect(acknowledgements).toBe(2)
-    expect(await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer))).toBeUndefined()
+    expect(
+      await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer)),
+    ).toBeUndefined()
   } finally {
     f.close()
   }
@@ -715,16 +729,252 @@ test('a failed destination transaction never acknowledges a prepared legacy sour
       }
       return tx
     }
-    await expect(recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
-      entries: [{ ...source, encoded: 'legacy-bytes-still-pending' }],
-      acknowledge: async () => { acknowledged = true },
-    })).rejects.toThrow()
+    await expect(
+      recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
+        entries: [{ ...source, encoded: 'legacy-bytes-still-pending' }],
+        acknowledge: async () => {
+          acknowledged = true
+        },
+      }),
+    ).rejects.toThrow()
     expect(aborted).toBe(true)
     expect(acknowledged).toBe(false)
     expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
       tree: { 'main.ts': { content: 'initial' } },
     })
-    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([source])
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
+      source,
+    ])
+  } finally {
+    f.close()
+  }
+})
+
+test('prepared legacy recovery promotes only v4 partitions after base migration', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('legacy pending edit in v4')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const prepared = await prepareLocalV3Recovery(source, f.scope)
+    await migrateLocalV3Project(draft.id, f.scope)
+    await stageLocalV3Recovery(f.scope, prepared)
+    let acknowledged = false
+    const recovered = await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
+      version: 4,
+      entries: [{ ...source, value: prepared.projected }],
+      acknowledge: async (entry) => {
+        expect(entry.encoded).toBe(source.encoded)
+        expect(await readValue(f.scope.store, projectFilesKey(draft.id, 4))).toMatchObject({
+          tree: { 'main.ts': { content: 'legacy pending edit in v4' } },
+        })
+        acknowledged = true
+      },
+    })
+    expect(recovered).toContain(draft.id)
+    expect(acknowledged).toBe(true)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id, 3))).toBeUndefined()
+    expect(
+      await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer, 4)),
+    ).toBeUndefined()
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
+      source,
+    ])
+  } finally {
+    f.close()
+  }
+})
+
+test('v4 replay records inverse history and its budget only in the destination namespace', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('v4 with undo')
+    const record: ProApplicationRecord = {
+      version: 1,
+      operationId: 'v4-operation',
+      source: 'editor',
+      projectId: draft.id,
+      beforeHash: 'a'.repeat(64),
+      afterHash: 'b'.repeat(64),
+      createdAt: 1,
+      bytes: 512,
+      inverse: {
+        baseHash: 'b'.repeat(64),
+        summary: 'Undo',
+        patches: [{ path: 'main.ts', before: 'c'.repeat(64), content: 'initial' }],
+      },
+    }
+    const revision = readLocalRevision(draft)!
+    revision.lineage.pending.set(record.operationId, { sequence: revision.sequence, record })
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const prepared = await prepareLocalV3Recovery(source, f.scope)
+    await migrateLocalV3Project(draft.id, f.scope)
+    await stageLocalV3Recovery(f.scope, prepared)
+    await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
+      version: 4,
+      entries: [{ ...source, value: prepared.projected }],
+      acknowledge: async () => {},
+    })
+    expect(await readValue(f.scope.store, projectApplicationsKey(draft.id, 4))).toEqual([record])
+    expect(await readValue(f.scope.store, applicationBudgetKey(4))).toEqual({ [draft.id]: 512 })
+    expect(await readValue(f.scope.store, projectApplicationsKey(draft.id, 3))).toBeUndefined()
+    expect(await readValue(f.scope.store, applicationBudgetKey(3))).toBeUndefined()
+  } finally {
+    f.close()
+  }
+})
+
+test('v4 recovery conflicts preserve the winner and create a complete v4 copy', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('old pending edit')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const prepared = await prepareLocalV3Recovery(source, f.scope)
+    await migrateLocalV3Project(draft.id, f.scope)
+    const winner = {
+      ...f.project,
+      tree: { 'main.ts': { kind: 'file' as const, content: 'newer winner' } },
+    }
+    const winnerHead = {
+      version: 1,
+      token: 'newer-winner',
+      writer: 'other-tab',
+      base: null,
+      sequence: 1,
+    }
+    await writeInOneTransaction(f.scope.store, {
+      puts: [...projectStorageEntries(winner, 4), [projectHeadKey(draft.id, 4), winnerHead]],
+    })
+    await stageLocalV3Recovery(f.scope, prepared)
+    const recovered = await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
+      version: 4,
+      entries: [{ ...source, value: prepared.projected }],
+      acknowledge: async () => {},
+    })
+    expect(recovered).toHaveLength(1)
+    const id = recovered[0]!
+    expect(id).toStartWith('recuperado-')
+    expect(await readValue(f.scope.store, projectFilesKey(id, 4))).toMatchObject({
+      tree: { 'main.ts': { content: 'old pending edit' } },
+    })
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id, 4))).toMatchObject({
+      tree: { 'main.ts': { content: 'newer winner' } },
+    })
+    expect(await readValue(f.scope.store, projectHeadKey(draft.id, 4))).toEqual(winnerHead)
+    expect(await readValue(f.scope.store, projectMigrationKey(id, 4))).toEqual({
+      exitRecovery: prepared.projected,
+    })
+    expect(await readValue(f.scope.store, projectFilesKey(id, 3))).toBeUndefined()
+    expect(
+      await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer, 4)),
+    ).toBeUndefined()
+  } finally {
+    f.close()
+  }
+})
+
+for (const mode of ['synchronous', 'mirrored', 'native-only'] as const)
+  test(`legacy sources retire only after complete v4 recovery: ${mode}`, async () => {
+    const native = mode !== 'synchronous'
+    const f = await fixture()
+    try {
+      const draft = f.edit('complete legacy recovery')
+      await stageProjectExit(
+        draft,
+        { puts: projectStorageEntries(draft) },
+        native ? f.scope : f.failed,
+      )
+      const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+      if (mode === 'native-only')
+        acknowledgeSynchronousExitJournal(f.scope.exitJournalStorage, source)
+      if (native)
+        expect(
+          await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer, 3)),
+        ).toBeDefined()
+      expect(await recoverLocalV3ProjectWrites(f.scope, draft.id)).toContain(draft.id)
+      expect(await readValue(f.scope.store, projectFilesKey(draft.id, 4))).toMatchObject({
+        tree: { 'main.ts': { content: 'complete legacy recovery' } },
+      })
+      expect(
+        await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer, 3)),
+      ).toBeUndefined()
+      expect(
+        await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer, 4)),
+      ).toBeUndefined()
+      expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
+      const backups = (await readAllKeys(f.scope.store)).filter((key) =>
+        String(key).startsWith(`sz:v4:project-backup:${draft.id}:recovery-`),
+      )
+      expect(backups).toHaveLength(1)
+      expect(await readValue(f.scope.store, backups[0]!)).toMatchObject({
+        sourceVersion: 3,
+        encoded: source.encoded,
+      })
+    } finally {
+      f.close()
+    }
+  })
+
+test('a returning old tab becomes a v4 copy instead of overwriting the previously recovered edit', async () => {
+  const f = await fixture()
+  try {
+    const first = f.edit('first recovered edit')
+    await stageProjectExit(first, { puts: projectStorageEntries(first) }, f.scope)
+    await recoverLocalV3ProjectWrites(f.scope, first.id)
+    const second = f.edit('returning old tab edit')
+    await stageProjectExit(second, { puts: projectStorageEntries(second) }, f.scope)
+    const recovered = await recoverLocalV3ProjectWrites(f.scope, second.id)
+    expect(recovered).toHaveLength(1)
+    expect(recovered[0]).toStartWith('recuperado-')
+    expect(await readValue(f.scope.store, projectFilesKey(first.id, 4))).toMatchObject({
+      tree: { 'main.ts': { content: 'first recovered edit' } },
+    })
+    expect(await readValue(f.scope.store, projectFilesKey(recovered[0]!, 4))).toMatchObject({
+      tree: { 'main.ts': { content: 'returning old tab edit' } },
+    })
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
+  } finally {
+    f.close()
+  }
+})
+
+test('mismatched legacy mirrors cannot migrate the base or acknowledge either source', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('original synchronous source')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const captured = structuredClone(source.value) as RecoveryWrite
+    const other: RecoveryWrite = {
+      ...captured,
+      write: {
+        ...captured.write,
+        puts: captured.write.puts!.map(([key, value]) => [
+          key,
+          key === projectFilesKey(draft.id, 3)
+            ? {
+                ...(value as object),
+                tree: { 'main.ts': { kind: 'file', content: 'different native source' } },
+              }
+            : value,
+        ]),
+      },
+    }
+    const key = projectRecoveryKey(draft.id, source.writer, 3)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, other]] })
+    await expect(recoverLocalV3ProjectWrites(f.scope, draft.id)).rejects.toThrow('mesma revisão')
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id, 3))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(await readValue(f.scope.store, key)).toEqual(other)
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
+      source,
+    ])
+    expect((await readAllKeys(f.scope.store)).some((key) => String(key).startsWith('sz:v4:'))).toBe(
+      false,
+    )
   } finally {
     f.close()
   }
