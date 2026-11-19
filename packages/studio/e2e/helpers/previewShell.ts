@@ -104,8 +104,9 @@ export async function replaceBridgeScript(page: Page, code: string): Promise<voi
     await page.evaluate((text) => navigator.clipboard.writeText(text), code)
     await page.keyboard.press(`${modifier}+V`)
   }
-  if (page.context().browser()?.browserType().name() === 'firefox') {
-    // O textarea do Monaco contém só a janela acessível perto do cursor no Linux.
+  if (page.context().browser()?.browserType().name() !== 'webkit') {
+    // Chromium e Firefox podem manter no textarea apenas a janela acessível
+    // perto do cursor (inclusive no Chromium Linux da CI).
     // Copiar a seleção pelo teclado lê o programa real, inclusive as linhas fora
     // dessa janela. Limpar antes evita confundir a colagem anterior com a cópia.
     await page.evaluate(() => navigator.clipboard.writeText('conferencia-da-copia'))
