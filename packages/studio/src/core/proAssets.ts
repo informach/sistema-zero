@@ -166,6 +166,10 @@ export async function buildProAssetBundle(
     }
     files.set('public/sz-assets.js', await runtime)
   }
+  if (assets.some((asset) => asset.kind === 'scene3d')) {
+    const { arquivosDeCenas3DPro } = await import('../three/scene3dPro')
+    for (const [path, bytes] of await arquivosDeCenas3DPro(assets, entries)) files.set(path, bytes)
+  }
   if (tree)
     for (const path of files.keys()) {
       for (const [existing, node] of Object.entries(tree)) {

@@ -1,14 +1,20 @@
 import { afterEach, expect, test } from 'bun:test'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import type { ProjectAsset } from '#core'
 import { buildProAssetBundle } from '../../core/proAssets'
+import { criarTransporteDeEnsaio } from '../../testing/scene3dTransportFixture'
 import { createProAssetSync } from './proAssetSync'
 
 const roots: string[] = []
 afterEach(async () => {
-  for (const root of roots.splice(0)) await rm(root, { recursive: true, force: true })
+  for (const root of roots.splice(0)) {
+    const target = resolve(root)
+    if (dirname(target) !== resolve(tmpdir()) || !basename(target).startsWith('studio-assets-'))
+      throw new Error('Diretório temporário inesperado; limpeza recusada.')
+    await rm(target, { recursive: true, force: true })
+  }
 })
 const drawing = (color: string): ProjectAsset => ({
   id: 'drawing',
@@ -82,6 +88,31 @@ test('mounts real bytes and no assets are rewritten by code edits', async () => 
   f.assets = [drawing('blue')]
   await f.sync.sync(new Set(['']))
   expect(await readFile(join(f.root, f.path), 'utf-8')).toContain('blue')
+})
+
+test('o mesmo coordenador monta os módulos de cenário e retira só as projeções ao remover o último', async () => {
+  const f = await fixture()
+  f.assets = (await criarTransporteDeEnsaio()).assets
+  await f.sync.sync()
+  const paths = [
+    'studio-generated/molda-cenarios.mjs',
+    'studio-generated/molda-cenarios-runtime.mjs',
+    'studio-generated/molda-cenarios.d.mts',
+  ]
+  for (const path of paths) {
+    expect(f.sync.owns(path)).toBe(true)
+    expect((await readFile(join(f.root, path))).byteLength).toBeGreaterThan(0)
+  }
+  const author = join(f.root, 'studio-generated/my-code.ts')
+  await writeFile(author, 'export const meuJogo = true')
+  const count = f.writes
+  await f.sync.sync(new Set(['src/main.ts']))
+  expect(f.writes).toBe(count)
+  f.assets = []
+  await f.sync.sync()
+  for (const path of paths)
+    await expect(readFile(join(f.root, path))).rejects.toHaveProperty('code', 'ENOENT')
+  expect(await readFile(author, 'utf8')).toBe('export const meuJogo = true')
 })
 
 test('new terminal image files are retained in the durable library at their original public path', async () => {

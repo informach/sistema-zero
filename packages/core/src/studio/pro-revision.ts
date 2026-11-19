@@ -1,6 +1,7 @@
 import { canonicalJson } from '../creations/content-fingerprint'
 import { studioProBuildFileLimitError } from './pro-build'
 import type { StudioProRevisionConfiguration } from './pro-revision-configuration'
+import { isStudioProScene3DFile } from './pro-scene3d'
 import { isStudioDocumentTemplateId, isStudioProjectId } from './project-format'
 import { copyStudioProjectJson } from './project-json'
 
@@ -199,7 +200,7 @@ export async function createStudioProRevision(
     throw new Error('Manifesto de arquivos inválido.')
   const validAssetPath = python
     ? (await import('./project-environment')).isStudioPythonAssetPath
-    : (path: string) => path.startsWith('public/')
+    : (path: string) => path.startsWith('public/') || isStudioProScene3DFile(path)
   const assetPaths: string[] = []
   for (const [path, hash] of Object.entries(input.assetFiles)) {
     const lower = path.toLowerCase()

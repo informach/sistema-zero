@@ -1,0 +1,1467 @@
+{
+  "recibos": [
+    {
+      "nome": "completo",
+      "modo": "source",
+      "ciclos": [
+        {
+          "x": 8,
+          "y": 0.8848347121932367,
+          "z": 5,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 45,
+          "tempo": 0.25009999999999993,
+          "geracao": 1,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.25009999999999993
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 8,
+          "y": 0.8848347121932367,
+          "z": 5,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 54,
+          "tempo": 0.4833000000000002,
+          "geracao": 2,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.08320000000000027
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 8,
+          "y": 0.8848347121932367,
+          "z": 5,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 63,
+          "tempo": 0.7168999999999998,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.08340000000000009
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "obstaculo": {
+          "x": 8.001608901581765,
+          "y": 0.9039069984721042,
+          "z": 8.74999,
+          "vx": 3.1505767749446672e-21,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 323,
+          "tempo": 5.051900000000004,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.418399999999998
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "caminhada": {
+          "x": 8.00328778581128,
+          "y": 0.9071150395232416,
+          "z": 6.739893756255162,
+          "vx": 8.591944248535322e-17,
+          "vy": 0,
+          "vz": -1.0644475920679874,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 426,
+          "tempo": 6.769100000000021,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 6.135600000000015
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "corrida": {
+          "x": 8.00328778581128,
+          "y": 0.9015935958611638,
+          "z": 5.923839001556325,
+          "vx": 1.0852829823872236e-20,
+          "vy": 0,
+          "vz": -2.4125775661306923,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 445,
+          "tempo": 7.085900000000024,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 6.452400000000018
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "alto": {
+          "x": 8.00328778581128,
+          "y": 1.2149269291944973,
+          "z": 5.862197644741687,
+          "vx": 3.722520629588177e-21,
+          "vy": 5.900000000000001,
+          "vz": -0.8275141051828274,
+          "grounded": false,
+          "teclas": [
+            "Space"
+          ],
+          "quadros": 448,
+          "tempo": 7.135900000000024,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 6.502400000000018
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "pouso": {
+          "x": 8.00328778581128,
+          "y": 0.909108257566865,
+          "z": 5.830016665415413,
+          "vx": 1.118662067406594e-26,
+          "vy": 0,
+          "vz": -0.0000024867790720997326,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 483,
+          "tempo": 7.719500000000032,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 7.086000000000026
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "curva": {
+          "x": 8.15004293974864,
+          "y": 0.9285127981719492,
+          "z": 5.830016589460738,
+          "vx": 1.0492965174959132,
+          "vy": 0,
+          "vz": -3.539617680233729e-8,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 492,
+          "tempo": 7.869500000000033,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 7.236000000000027
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      },
+      "falha": {
+        "erro": "Error: Escolha um cenário disponível neste projeto.",
+        "conservou": true,
+        "ativa": true
+      },
+      "abortado": {
+        "erro": "AbortError",
+        "conservou": true,
+        "ativa": true
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "mesmaThree": true,
+      "sdkGlobalPreservado": true,
+      "erros": [],
+      "consoleErros": []
+    },
+    {
+      "nome": "buraco",
+      "modo": "source",
+      "ciclos": [
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 16,
+          "tempo": 0.21660000000000007,
+          "geracao": 1,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 25,
+          "tempo": 0.3666000000000001,
+          "geracao": 2,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 34,
+          "tempo": 0.5166999999999999,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      ],
+      "comparadas": 0,
+      "movimentos": {
+        "inicioQueda": {
+          "x": 10,
+          "y": -0.061666666666666536,
+          "z": 4.517126642001725,
+          "vx": 0,
+          "vy": -5.133333333333332,
+          "vz": 1.4970302318023907,
+          "grounded": false,
+          "teclas": [
+            "KeyW"
+          ],
+          "quadros": 302,
+          "tempo": 4.985000000000005,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "queda": {
+          "x": 10,
+          "y": -10.236666666666672,
+          "z": 4.5753444781198835,
+          "vx": 0,
+          "vy": -21.633333333333347,
+          "vz": 1.6019257093371527e-7,
+          "grounded": false,
+          "teclas": [],
+          "quadros": 347,
+          "tempo": 5.735300000000013,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      },
+      "falha": {
+        "erro": "Error: Escolha um cenário disponível neste projeto.",
+        "conservou": true,
+        "ativa": true
+      },
+      "abortado": {
+        "erro": "AbortError",
+        "conservou": true,
+        "ativa": true
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "mesmaThree": true,
+      "sdkGlobalPreservado": true,
+      "erros": [],
+      "consoleErros": []
+    },
+    {
+      "nome": "completo",
+      "modo": "export",
+      "ciclos": [
+        {
+          "x": 8,
+          "y": 0.8848347121932367,
+          "z": 5,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 45,
+          "tempo": 0.23320000000000007,
+          "geracao": 1,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.23320000000000007
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 8,
+          "y": 0.8848347121932367,
+          "z": 5,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 54,
+          "tempo": 0.4665000000000004,
+          "geracao": 2,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.08330000000000018
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 8,
+          "y": 0.8848347121932367,
+          "z": 5,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 63,
+          "tempo": 0.6835000000000003,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.08349999999999978
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "obstaculo": {
+          "x": 8.001608901581765,
+          "y": 0.9039069984721042,
+          "z": 8.74999,
+          "vx": 3.1505767749446672e-21,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 322,
+          "tempo": 5.001700000000007,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.401699999999999
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "caminhada": {
+          "x": 8.00328778581128,
+          "y": 0.9071150395232416,
+          "z": 6.739893756255162,
+          "vx": 8.591944248535322e-17,
+          "vy": 0,
+          "vz": -1.0644475920679874,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 425,
+          "tempo": 6.719000000000028,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 6.11900000000002
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "corrida": {
+          "x": 8.00328778581128,
+          "y": 0.9015935958611638,
+          "z": 5.923839001556325,
+          "vx": 1.0852829823872236e-20,
+          "vy": 0,
+          "vz": -2.4125775661306923,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 444,
+          "tempo": 7.03580000000003,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 6.435800000000023
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "alto": {
+          "x": 8.00328778581128,
+          "y": 1.2149269291944973,
+          "z": 5.862197644741687,
+          "vx": 3.722520629588177e-21,
+          "vy": 5.900000000000001,
+          "vz": -0.8275141051828274,
+          "grounded": false,
+          "teclas": [
+            "Space"
+          ],
+          "quadros": 447,
+          "tempo": 7.085900000000031,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 6.485900000000023
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "pouso": {
+          "x": 8.00328778581128,
+          "y": 0.909108257566865,
+          "z": 5.830016665415413,
+          "vx": 1.118662067406594e-26,
+          "vy": 0,
+          "vz": -0.0000024867790720997326,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 482,
+          "tempo": 7.669400000000036,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 7.069400000000028
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "curva": {
+          "x": 8.15004293974864,
+          "y": 0.9285127981719492,
+          "z": 5.830016589460738,
+          "vx": 1.0492965174959132,
+          "vy": 0,
+          "vz": -3.539617680233729e-8,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 491,
+          "tempo": 7.819400000000038,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 7.2194000000000305
+            }
+          ],
+          "recursos": {
+            "geometries": 24,
+            "textures": 22
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      },
+      "falha": {
+        "erro": "Error: Escolha um cenário disponível neste projeto.",
+        "conservou": true,
+        "ativa": true
+      },
+      "abortado": {
+        "erro": "AbortError",
+        "conservou": true,
+        "ativa": true
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "mesmaThree": true,
+      "sdkGlobalPreservado": true,
+      "erros": [],
+      "consoleErros": []
+    },
+    {
+      "nome": "buraco",
+      "modo": "export",
+      "ciclos": [
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 17,
+          "tempo": 0.2168,
+          "geracao": 1,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 26,
+          "tempo": 0.3668,
+          "geracao": 2,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vx": 0,
+          "vy": 0,
+          "vz": 0,
+          "grounded": true,
+          "teclas": [],
+          "quadros": 35,
+          "tempo": 0.5167999999999999,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      ],
+      "comparadas": 0,
+      "movimentos": {
+        "inicioQueda": {
+          "x": 10,
+          "y": -0.061666666666666536,
+          "z": 4.517126642001725,
+          "vx": 0,
+          "vy": -5.133333333333332,
+          "vz": 1.4970302318023907,
+          "grounded": false,
+          "teclas": [
+            "KeyW"
+          ],
+          "quadros": 304,
+          "tempo": 5.001900000000006,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        },
+        "queda": {
+          "x": 10,
+          "y": -10.236666666666672,
+          "z": 4.5753444781198835,
+          "vx": 0,
+          "vy": -21.633333333333347,
+          "vz": 1.6019257093371527e-7,
+          "grounded": false,
+          "teclas": [],
+          "quadros": 349,
+          "tempo": 5.75210000000001,
+          "geracao": 3,
+          "falha": null,
+          "clipes": [],
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "proprio": true,
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "fisica": {
+            "bodies": 1,
+            "statics": 1,
+            "triggers": 0,
+            "limits": {
+              "bodies": 256,
+              "statics": 2048,
+              "triggers": 512
+            }
+          }
+        }
+      },
+      "falha": {
+        "erro": "Error: Escolha um cenário disponível neste projeto.",
+        "conservou": true,
+        "ativa": true
+      },
+      "abortado": {
+        "erro": "AbortError",
+        "conservou": true,
+        "ativa": true
+      },
+      "final": {
+        "geometries": 0,
+        "textures": 0
+      },
+      "mesmaThree": true,
+      "sdkGlobalPreservado": true,
+      "erros": [],
+      "consoleErros": []
+    }
+  ],
+  "nota": "Pro criado diretamente, sem conversão. Mesma receita do painel, coordenador local, reabertura, revisão e export de fontes. Dev-server e build Vite reais usam o npm Three instalado por alias de ensaio, sem alterar o package.json autoral. Não valida conta, implantação, sandbox do host remoto, PWA, IK, arte ou aparelhos físicos."
+}

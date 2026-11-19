@@ -82,4 +82,4 @@ Achados em execução (ainda não constituem fechamento):
 - [x] Conferir os quatro clipes em execução, com estados/animações e evidências próprias; não declarar aceite perceptivo/IK ou aparelhos físicos sem esses testes.
 - [x] Build/orçamento original antes da tipagem integral; regressões pertinentes, geradores/check, Biome/diff, tipagem e review do recorte. Corrigir causas, sem elevar limites.
 - [x] Capturas/vídeos e recibo sem bytes privados, relatório de implementação/correções/provisórios/limites, revisão final e commit/push em staging.
-- [ ] Somente então iniciar Pro autoral. O fechamento integrado de 8.4, 8.5/8.6, lotes 9–10, Faísca final, full review/CI e implantação/validação real permanecem pendentes.
+- [x] Somente então iniciar Pro autoral. Avançado foi enviado em `2932075e4` antes desse início; Pro e a conferência integrada estão no [checkpoint seguinte](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-pro.md). 8.5/8.6, lotes 9–10, Faísca final, full review/CI e implantação/validação real permanecem pendentes.
