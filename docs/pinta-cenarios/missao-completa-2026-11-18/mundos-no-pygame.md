@@ -69,4 +69,25 @@ mantém um cache de superfícies de todos os mapas.
 
 As provas locais e nativas não substituem o rollout e o ciclo autenticado da etapa 0b.
 
+## Qualificação do artefato no navegador (etapa 2a)
+
+Usar o servidor de qualificação já existente, fixado no SHA da distribuição compilada.
+Ele verifica os bytes de todos os arquivos antes de servir o worker protegido. A fixture
+reutiliza o produtor do Pinta e a Vila autoral; não substitui Pyodide, pygame-ce ou o leitor.
+O controle de portas pertence somente ao programa Python da fixture.
+
+- [x] Compilar a distribuição com Bun 1.4.3 isolado e os fornecedores fixados por SHA.
+- [x] Demonstrar que os novos ensaios recusam uma fixture ausente, antes de implementá-la.
+- [x] Executar mundos 1×/2× no worker real, verificar pixels, animação, propriedades,
+  colisores, ponto inicial, porta de ida/volta por teclado e recusa de caminho externo.
+- [x] Executar regressões pygame e PyDew Valley no mesmo artefato; guardar identificação
+  de Python, pygame-ce, distribuição e imagens sem credenciais.
+- [ ] Rever compatibilidade com runtimes antigos, tipos e testes; registrar o que falta
+  para ativar o artefato em staging. Qualificação local não concede aprovação de publicação.
+
+O ensaio real encontrou e corrigiu uma diferença do RWops Emscripten: `BytesIO` não era
+aceito. O adaptador de imagem temporária conserva os bytes capturados e limpa os arquivos
+ao terminar. Provas, versões, limites e reprodução:
+[Python no navegador](qa/python-no-navegador/README.md).
+
 Provas e reprodução: [QA do mundo Python](qa/mundos-no-pygame/README.md).

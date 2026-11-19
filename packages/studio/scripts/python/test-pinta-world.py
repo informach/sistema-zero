@@ -123,6 +123,37 @@ def colliding_names(path):
             door.propriedades.clear()
             assert root.abrir_destino(door) is None
     return 4
+
+
+def memory_images(path):
+    png = path.read_bytes()
+    reference = pinta._imagem_em_memoria(png)
+    decoded_paths = []
+    original_load = pygame.image.load
+    def load_temporary(path):
+        decoded_paths.append(Path(path))
+        assert Path(path).is_absolute()
+        assert Path(path).name == 'image.png'
+        assert Path(path).read_bytes() == png
+        return original_load(path)
+    with patch.object(sys, 'platform', 'emscripten'), patch.object(pygame.image, 'load', side_effect=load_temporary):
+        actual = pinta._imagem_em_memoria(png)
+    assert pygame.image.tobytes(actual, 'RGBA') == pygame.image.tobytes(reference, 'RGBA')
+    assert decoded_paths and all(not path.parent.exists() for path in decoded_paths)
+    failed_paths = []
+    def invalid_image(path):
+        failed_paths.append(Path(path))
+        return original_load(path)
+    with patch.object(sys, 'platform', 'emscripten'), patch.object(pygame.image, 'load', side_effect=invalid_image):
+        try:
+            pinta._imagem_em_memoria(b'not a PNG')
+        except pygame.error:
+            pass
+        else:
+            raise AssertionError('SDL must reject a corrupt image')
+    assert failed_paths and all(not path.parent.exists() for path in failed_paths)
+    return 2
+
 try:
     for scale, name in [(1, 'vila-mundo'), (2, 'vila-mundo-2x')]:
         root = pinta.carregar_mapa(str(folder / f'{name}.png'))
@@ -163,6 +194,7 @@ try:
         pygame.image.save(surface, str(folder / f'{name}-render.png'))
         results.append({'scale': scale, 'layers': len(root.camadas), 'destinationLayers': len(child.camadas),
                         'solids': len(root.solidos()), 'colors': colors, 'door': child.nome})
+    memory = memory_images(folder / 'vila-mundo.png')
     rejected = refusals(folder / 'vila-mundo.png')
     resolution = colliding_names(folder / 'vila-mundo.png')
     if len(sys.argv) > 2:
@@ -170,6 +202,6 @@ try:
         assert len(exported.camadas) == 18
         assert exported.abrir_destino(next(o for o in exported.objetos() if o.id == 'door')).nome == 'cabana'
     print(json.dumps({'pygame': pygame.version.ver, 'worlds': results, 'refusalsAndBudgets': rejected, 'resolutionChecks': resolution,
-                      'exportedModule': len(sys.argv) > 2}, ensure_ascii=False))
+                      'exportedModule': len(sys.argv) > 2, 'memoryImageChecks': memory}, ensure_ascii=False))
 finally:
     pygame.quit()

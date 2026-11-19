@@ -26,6 +26,8 @@ import base64
 import io
 import copy
 import math
+import sys
+import tempfile
 
 import pygame
 
@@ -122,6 +124,15 @@ def _carregar(nome):
 
 
 def _imagem_em_memoria(bytes_):
+    # pygame-ce's Emscripten RWops accepts paths, not Python file-like callbacks.
+    # The bytes remain the captured authority: use a private MEMFS file, never a
+    # name from the map or project. Remove it even when SDL rejects the image.
+    if sys.platform == 'emscripten':
+        with tempfile.TemporaryDirectory(prefix='pinta-image-') as directory:
+            caminho = os.path.join(directory, 'image.png')
+            with open(caminho, 'wb') as arquivo:
+                arquivo.write(bytes_)
+            return _adequar_imagem(pygame.image.load(caminho))
     return _adequar_imagem(pygame.image.load(io.BytesIO(bytes_)))
 
 
@@ -755,7 +766,7 @@ class Mapa:
                 if caminho not in cena.imagens:
                     raw = (self._mundo.imagens[caminho] if self._mundo
                            else base64.b64decode(caminho.split(',', 1)[1]))
-                    source = pygame.image.load(io.BytesIO(raw)).convert_alpha()
+                    source = _imagem_em_memoria(raw).convert_alpha()
                     cena.imagens[caminho] = pygame.transform.scale(source, (round(source.get_width() * escala), round(source.get_height() * escala)))
                 return cena.imagens[caminho]
             cena.imagem = imagem

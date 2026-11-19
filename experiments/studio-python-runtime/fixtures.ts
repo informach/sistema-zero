@@ -167,6 +167,8 @@ export async function runtimeFixtureProject(
   if (isRaylibExampleFixture(name)) return raylibExampleProject(name)
   const { isPygameExampleFixture, pygameExampleProject } = await import('./pygameFixtures')
   if (isPygameExampleFixture(name)) return pygameExampleProject(name)
+  const { isPintaWorldFixture, pintaWorldProject } = await import('./pintaWorldFixtures')
+  if (isPintaWorldFixture(name)) return pintaWorldProject(name)
   const { isGameFixture, gameFixtureProject } = await import('./gameFixtures')
   if (isGameFixture(name)) return gameFixtureProject(name)
   const source = cases[name]
