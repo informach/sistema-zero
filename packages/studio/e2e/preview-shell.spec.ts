@@ -102,7 +102,22 @@ async function replaceBridgeScript(page: Page, code: string): Promise<void> {
     await page.evaluate((text) => navigator.clipboard.writeText(text), code)
     await page.keyboard.press(`${modifier}+V`)
   }
-  await expect(input).toHaveValue(code)
+  if (page.context().browser()?.browserType().name() === 'firefox') {
+    // O textarea do Monaco contém só a janela acessível perto do cursor no Linux.
+    // Copiar a seleção pelo teclado lê o programa real, inclusive as linhas fora
+    // dessa janela. Limpar antes evita confundir a colagem anterior com a cópia.
+    await page.evaluate(() => navigator.clipboard.writeText('conferencia-da-copia'))
+    await page.keyboard.press(`${modifier}+A`)
+    await page.keyboard.press(`${modifier}+C`)
+    await expect
+      .poll(async () =>
+        (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n'),
+      )
+      .toBe(code.replace(/\r\n/g, '\n'))
+    await page.keyboard.press('ArrowRight')
+  } else {
+    await expect(input).toHaveValue(code)
+  }
 }
 
 async function maiorAtrasoDaPagina(page: Page, ms: number): Promise<number> {
