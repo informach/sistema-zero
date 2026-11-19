@@ -139,4 +139,4 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 ## Estado atual
 
-**Lote 8 aberto; 8.1 e 8.2 fechados localmente. Próximo recorte exclusivo: 8.3.** [Revisão do compilador e junção](../../plans/2026-11-16-cenarios-reforma/revisao-lote8-2-compilador.md): quatro combinações completas, inventário estável, descarte/cancelamento, picking após junção, física/apoios e Khronos conferidos. [Decisões de integração](2026-11-18-cenarios-lote8-integracao.md). Exportadores/consumidores de 8.3–8.5 continuam pendentes. Lotes 0–7 fechados localmente; 8–10 e encerramento global pendentes.
+**Lote 8 aberto; 8.1 e 8.2 fechados localmente. Recorte exclusivo ativo: 8.3.** [Runtime/pacote Three](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-runtime-three.md) conferidos; [gargalo ZIP corrigido](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-zip-faixas.md) com conteúdo/CRC/limites preservados. Próximo passo exclusivo: GLB único, depois preparo autorizado e interface; não fechar 8.3. [Plano do recorte](2026-11-18-cenarios-lote8-runtime.md). 8.4/8.5, lotes 9–10, composição e encerramento global permanecem pendentes.

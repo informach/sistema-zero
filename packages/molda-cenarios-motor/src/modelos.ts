@@ -46,12 +46,23 @@ export interface ModeloCarregado {
   descartar(): void
 }
 
-function novoLeitor(): GLTFLoader {
+function novoLeitor(falhas: unknown[]): GLTFLoader {
   const leitor = new GLTFLoader()
   // No Chrome o GLTFLoader lê as imagens de dentro do .glb com fetch(blob:), que a política de
   // segurança dos apps recusa (connect-src não libera blob:), e o modelo sairia sem textura,
   // em silêncio. Pela <img>, que o img-src blob: deixa, funciona em qualquer host.
   leitor.register((parser: GLTFParser) => {
+    // O GLTFLoader converte falha de imagem em textura null. A cena inteira deve
+    // falhar, em vez de parecer válida com parte da arte perdida silenciosamente.
+    const carregarImagem = parser.loadImageSource.bind(parser)
+    parser.loadImageSource = async (...argumentos) => {
+      try {
+        return await carregarImagem(...argumentos)
+      } catch (erro) {
+        falhas.push(erro)
+        throw erro
+      }
+    }
     parser.fileLoader = new ArquivoDoConjunto(
       parser.options.manager,
       new RecursosDoConjunto(new Map(), 'modelo.glb'),
@@ -90,7 +101,8 @@ function descartarMaterial(material: Material) {
 
 /** Lê um GLB e o deixa pronto para desenhar muitas cópias. Quem chama descarta. */
 export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
-  const gltf = await novoLeitor().parseAsync(bytes, '')
+  const falhas: unknown[] = [],
+    gltf = await novoLeitor(falhas).parseAsync(bytes, '')
   const raiz = gltf.scene
   raiz.updateMatrixWorld(true)
   const partes: ParteDoModelo[] = []
@@ -108,6 +120,8 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
   })
   let triangulos = 0
   try {
+    if (falhas.length)
+      throw Error('Não consegui decodificar uma imagem do modelo GLB.', { cause: falhas[0] })
     raiz.traverse((no) => {
       const malha = no as Mesh
       if (!malha.isMesh) return

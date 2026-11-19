@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { PintaClient } from '../../../member-shell/src/components/creator/pinta-client'
 import { useStudioCreationLibraries } from '../../../member-shell/src/components/creator/use-studio-creation-libraries'
 import type { EditableStudioProject } from '../../src/core/editableProject'
+import { createEmptyProject } from '../../src/core/project'
 import '@fontsource/baloo-2/latin-700.css'
 import '@fontsource/nunito/latin-400.css'
 import '@fontsource/nunito/latin-700.css'
@@ -22,6 +23,12 @@ function Studio() {
   const { pintaLibrary } = useStudioCreationLibraries(profile, true, false)
   useEffect(() => {
     let active = true
+    if (new URLSearchParams(window.location.search).get('novo') === '1') {
+      const project = createEmptyProject(crypto.randomUUID(), 'Meu jogo com mapas')
+      setInitial(project)
+      setObserved(project)
+      return
+    }
     void (async () => {
       const summaries = (await adapter.list?.()) ?? []
       const selected =

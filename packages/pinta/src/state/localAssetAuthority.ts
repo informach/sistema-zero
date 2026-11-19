@@ -86,7 +86,11 @@ const checkpoint = (asset: PintaAsset | null): LocalDocument => ({
 })
 
 /** Normal reads visit only the dependency closure; a fork expands for atomic budgeting. */
-export function selectLocalAssetRecords(ids: readonly string[], signal?: AbortSignal) {
+export function selectLocalAssetRecords(
+  ids: readonly string[],
+  signal?: AbortSignal,
+  includeSceneMaps = false,
+) {
   return (records: ReadonlyMap<string, unknown>): readonly string[] | null => {
     signal?.throwIfAborted()
     const found = new Set(ids)
@@ -97,6 +101,8 @@ export function selectLocalAssetRecords(ids: readonly string[], signal?: AbortSi
       const doc = document(protectedRaw),
         legacy = validAsset(raw, id)
       if (doc && !localValuesEqual(legacy, doc.asset)) return null
+      // Named legacy doors require the authoritative map inventory in this same transaction.
+      if (includeSceneMaps && [doc?.asset, legacy].some((a) => a?.kind === 'tilemap')) return null
       for (const asset of [doc?.asset, legacy])
         if (asset) for (const ref of pintaAssetDependencyIds(asset)) found.add(ref)
       if (found.size > 225) return null

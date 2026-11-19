@@ -220,6 +220,7 @@ jobs:
       # controlador do editor e o cliente dos agentes. Nenhum outro job os executava.
       - name: Cenários 3D (núcleo, motor, editor e agente)
         run: |
+          bun run --cwd packages/molda-cenarios conferir:runtime
           bun test --cwd packages/molda-cenarios-core
           bun test --cwd packages/molda-cenarios-motor
           bun test --cwd packages/molda-cenarios

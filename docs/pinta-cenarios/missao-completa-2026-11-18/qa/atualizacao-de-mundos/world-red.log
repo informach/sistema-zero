@@ -1,0 +1,147 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personalSync.test.ts:
+37 |       readOutput(child.stdout),
+38 |       readOutput(child.stderr),
+39 |     ])
+40 |     const output = Bun.stripANSI(`${stdout}\n${stderr}`)
+41 |     if (exit !== 0 || !/\b[1-9]\d* pass\b/.test(output) || !/\b0 fail\b/.test(output))
+42 |       throw new Error(`Isolated cases ${fixture} exited ${exit}:\n${output.slice(-12_000)}`)
+                     ^
+error: Isolated cases ./src/asset-library/__tests__/personalSync.cases.ts exited 1:
+bun test v1.3.11 (af24e281)
+
+
+src\asset-library\__tests__\personalSync.cases.ts:
+(pass) personalIdOf / drawingNeedsSync > extrai o id do Pinta só de assets da biblioteca pessoal
+(pass) personalIdOf / drawingNeedsSync > compara os BYTES: mesmo desenho não gera trabalho
+(pass) personalIdOf / drawingNeedsSync > ORIGEM cruzada (registro do Molda no id de um desenho do Pinta) nunca sincroniza; sem as duas marcas, seguem os bytes
+(pass) reconcileDrawingsFromRestoredProject (jogo que desceu da nuvem) > relógio remoto aparentemente maior não decide o vencedor: preserva os dois lados [203.00ms]
+(pass) reconcileDrawingsFromRestoredProject (jogo que desceu da nuvem) > relógio remoto aparentemente menor também não decide o vencedor [31.00ms]
+(pass) reconcileDrawingsFromRestoredProject (jogo que desceu da nuvem) > preserva os dois lados quando um asset legado diverge sem carimbo de revisão [32.00ms]
+(pass) updateAssetImage (a ação da store) > troca os pixels e NÃO mexe em nome/id/libId
+(pass) updateAssetImage (a ação da store) > mesmos bytes = no-op (não suja o projeto)
+(pass) updateAssetImage (a ação da store) > recusa quando a imagem nova estoura a cota do projeto, sem tocar no asset
+(pass) updateAssetImage (a ação da store) > mesma geometria PRESERVA o tileset configurado no Estúdio
+(pass) updateAssetImage (a ação da store) > geometria DIFERENTE descarta o tileset (os índices não valem mais)
+357 |       { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana', 'd1') },
+358 |     ])
+359 |     await savePersonalAsset({ id: 'unrelated', name: 'outro-mapa', dataUrl: PNG, scene: linkedScene('unrelated') })
+360 |     const result = await syncDrawingsIntoProjects(useProjectStore)
+361 |     expect(result.failures).toEqual([])
+362 |     expect(useProjectStore.getState().project?.assets?.map((asset) => asset.libId)).toEqual(['personal:d1', 'personal:cabana'])
+                                                                                          ^
+error: expect(received).toEqual(expected)
+
+  [
+    "personal:d1",
+-   "personal:cabana",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\asset-library\__tests__\personalSync.cases.ts:362:85)
+(fail) syncDrawingsIntoProjects > uma porta nova acrescenta seu destino aos jogos aberto e fechado, conservando os programas [62.00ms]
+374 |     const original = linkedScene('d1')
+375 |     await savePersonalAsset({ id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'missing') })
+376 |     seedOpenProject([drawingAsset({ scene: original })])
+377 |     const before = useProjectStore.getState().project
+378 |     const result = await syncDrawingsIntoProjects(useProjectStore)
+379 |     expect(result.failures.length).toBeGreaterThan(0)
+                                         ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\asset-library\__tests__\personalSync.cases.ts:379:36)
+(fail) syncDrawingsIntoProjects > um destino perdido conserva o mundo anterior, em vez de atualizar só a raiz [16.00ms]
+389 |       drawingAsset({ scene: linkedScene('d1') }),
+390 |       ...Array.from({ length: PROJECT_ASSET_LIMITS.maxAssetsCount - 1 }, (_, i) => drawingAsset({ id: `f${i}`, name: `f${i}`, libId: '' })),
+391 |     ])
+392 |     const before = useProjectStore.getState().project
+393 |     const result = await syncDrawingsIntoProjects(useProjectStore)
+394 |     expect(result.failures.length).toBeGreaterThan(0)
+                                         ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\asset-library\__tests__\personalSync.cases.ts:394:36)
+(fail) syncDrawingsIntoProjects > uma porta nova que não cabe recusa a raiz e o destino juntos [15.00ms]
+(pass) syncDrawingsIntoProjects > uma propriedade de cenário muda sem mudar o PNG e atualiza o jogo sem tocar na programação [16.00ms]
+(pass) syncDrawingsIntoProjects > desenho que saiu do envelope antigo tira o mapa velho do jogo aberto e a sincronia converge [31.00ms]
+(pass) syncDrawingsIntoProjects > mesmos bytes e mesma cena, mas mapa velho sobrando: a sobra sai (não é "nada a fazer")
+(pass) syncDrawingsIntoProjects > desenho SEM cena conserva o mapa montado no Estúdio (a herança por geometria continua)
+(pass) syncDrawingsIntoProjects > peças configuradas no Estúdio não fazem a varredura regravar o jogo para sempre [94.00ms]
+(pass) syncDrawingsIntoProjects > atualiza o projeto ABERTO quando o desenho mudou no Pinta [16.00ms]
+(pass) syncDrawingsIntoProjects > a varredura lista os jogos pela lista LEVE (nunca lê as capas) e relê a partição de assets de cada um [140.00ms]
+(pass) syncDrawingsIntoProjects > alcança TAMBÉM os jogos fechados (a decisão dela) [63.00ms]
+(pass) syncDrawingsIntoProjects > ignora imagem que não veio do Pinta [15.00ms]
+(pass) syncDrawingsIntoProjects > desenho apagado no Pinta NÃO apaga nem zera o asset do jogo [16.00ms]
+(pass) syncDrawingsIntoProjects > é idempotente: a 2ª rodada não escreve nada [16.00ms]
+(pass) syncDrawingsIntoProjects > sem desenho novo desde a última passada, NÃO toca no IndexedDB [15.00ms]
+(pass) syncDrawingsIntoProjects > jogo aberto NO MEIO da varredura não perde a atualização [31.00ms]
+(pass) syncDrawingsIntoProjects > não estoura a cota de um jogo fechado (o load descartaria as imagens) [63.00ms]
+(pass) syncDrawingsIntoProjects > bytes que o load descartaria NÃO vão ao jogo fechado: recusa registrada e projeto intocado [62.00ms]
+(pass) syncDrawingsIntoProjects > duas chamadas ao mesmo tempo viram UMA varredura [16.00ms]
+(pass) syncDrawingsIntoProjects > troca de perfil não compartilha single-flight nem redireciona escritas em voo [188.00ms]
+(pass) syncDrawingsIntoProjects > a recusa fica guardada para o painel mostrar (o sucesso é silencioso) [15.00ms]
+(pass) C3 recipe sync > classic: synchronized recipes survive storage, execution materialization and offline source export [110.00ms]
+(pass) C3 recipe sync > pro: synchronized recipes survive storage, execution materialization and offline source export [62.00ms]
+(pass) C3 recipe sync > javascript classic: a canonical copy skipped during opening catches up with the same marker [109.00ms]
+(pass) C3 recipe sync > javascript pro: a canonical copy skipped during opening catches up with the same marker [94.00ms]
+(pass) C3 recipe sync > python classic: a canonical copy skipped during opening catches up with the same marker [94.00ms]
+(pass) C3 recipe sync > python pro: a canonical copy skipped during opening catches up with the same marker [94.00ms]
+(pass) C3 recipe sync > historical closed JS with an observed absent head still updates atomically [62.00ms]
+(pass) C3 recipe sync > an observed absent head refuses a competing writer that created the first head [31.00ms]
+(pass) C3 recipe sync > an opening project cannot hydrate a stale material snapshot after the closed sync committed [110.00ms]
+(pass) C3 recipe sync > updates open and closed PNG recipes through one native inspection while keeping canonical personal bytes and project identities [78.00ms]
+(pass) C3 recipe sync > Pygame Zero: an SVG recipe is reapplied as SVG when the drawing changes, open and closed, at the same images/ path [62.00ms]
+(pass) C3 recipe sync > detects a dependency change with unchanged source and personal marker, without loading JS asset partitions or rasterizing unchanged recipes [79.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after project-aba [15.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after language-aba [16.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after owner-aba [15.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after profile-aba [16.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after cancel [16.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after edit [15.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after remove [16.00ms]
+(pass) C3 recipe sync > a pending PNG cannot commit after adapter [31.00ms]
+(pass) C3 recipe sync > preserves the last PNG and reports missing instead of adopting a substitute [16.00ms]
+(pass) C3 recipe sync > preserves the last PNG and reports recipe instead of adopting a substitute [15.00ms]
+(pass) C3 recipe sync > preserves the last PNG and reports digest instead of adopting a substitute [16.00ms]
+(pass) C3 recipe sync > preserves the last PNG and reports quota instead of adopting a substitute [16.00ms]
+(pass) C3 recipe sync > closed material/head changes win over a pending derivation [78.00ms]
+(pass) C3 recipe sync > closed writes require an observed head and recheck their guard inside the transaction [31.00ms]
+(pass) C3 recipe sync > a queued closed write is revoked before its turn without touching its observed head [31.00ms]
+(pass) C3 recipe sync > an opening acquired after queue admission still fences the conditional transaction [32.00ms]
+(pass) Pinta derived images retain their source link until recipe-aware synchronization > restoring a frame never creates a personal copy of its PNG or changes its drawing link
+(pass) Pinta derived images retain their source link until recipe-aware synchronization > open and closed derived frames keep PNG, recipe and source identity when canonical artwork changes [62.00ms]
+(pass) criações 3D do Molda (model3d/environment3d) > bytes iguais = nada a fazer; tipo cruzado NUNCA sincroniza
+(pass) criações 3D do Molda (model3d/environment3d) > o .glb novo chega ao projeto ABERTO com o nome do arquivo novo, sem tocar em nome/libId [16.00ms]
+(pass) criações 3D do Molda (model3d/environment3d) > chega ao jogo FECHADO com o nome do arquivo (o sanitize do load exige o .glb) [62.00ms]
+(pass) criações 3D do Molda (model3d/environment3d) > .glb que cresceu e não cabe no jogo fechado vira recusa, sem tocar no asset [63.00ms]
+(pass) criações 3D do Molda (model3d/environment3d) > mergeDrawingIntoAsset (jogo FECHADO) valida pelo mesmo portão: bytes de imagem, extensão errada ou GLB torto viram null
+(pass) criações 3D do Molda (model3d/environment3d) > updateAssetImage valida MIME × extensão × assinatura e recusa imagem num model3d
+(pass) criações 3D do Molda (model3d/environment3d) > jogo que desce da nuvem com o .glb divergente: a cópia adotada guarda kind, origem e nome do arquivo
+(pass) M2 (full review 26/09/2026): a religação que MUDA o projeto restaurado muda também o `updatedAt` > com um desenho divergente: grava e persiste `updatedAt` NOVO (maior que o da nuvem) e acorda o espelho [31.00ms]
+(pass) M2 (full review 26/09/2026): a religação que MUDA o projeto restaurado muda também o `updatedAt` > sem mudança (o desenho é o mesmo): a data da nuvem é preservada e o espelho fica em silêncio [31.00ms]
+
+3 tests failed:
+(fail) syncDrawingsIntoProjects > uma porta nova acrescenta seu destino aos jogos aberto e fechado, conservando os programas [62.00ms]
+(fail) syncDrawingsIntoProjects > um destino perdido conserva o mundo anterior, em vez de atualizar só a raiz [16.00ms]
+(fail) syncDrawingsIntoProjects > uma porta nova que não cabe recusa a raiz e o destino juntos [15.00ms]
+
+ 68 pass
+ 3 fail
+ 340 expect() calls
+Ran 71 tests across 1 file. [3.42s]
+
+      at runIsolatedStudioCases (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\__tests__\isolatedCases.ts:42:17)
+(fail) personalSync.test.ts mock cases own an isolated module realm [3484.00ms]
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [3.93s]

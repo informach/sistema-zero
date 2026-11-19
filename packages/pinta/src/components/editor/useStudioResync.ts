@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { dependentTilemaps } from '../../core/dependentTilemaps'
 import type { PintaAsset } from '../../core/project'
 import type { PintaHostAdapter, PintaStudioResyncResult } from '../../core/types'
-import { buildStudioPayload, validateStudioPayloadSize } from '../../export/studioBridge'
+import { buildStudioMapBundle } from '../../export/studioMapBundle'
 import type { PintaGalleryStore } from '../../state/galleryStore'
 import { createLatestTaskQueue, type LatestTaskQueue } from '../../state/latestTaskQueue'
 
@@ -31,27 +31,12 @@ async function sendResync(job: ResyncJob): Promise<PintaStudioResyncResult> {
   const errors: unknown[] = []
   for (const asset of targets) {
     try {
-      const payload = await buildStudioPayload(asset, (id) => assets.get(id) ?? null, {
+      const payload = await buildStudioMapBundle(asset, [...assets.values()], {
         animationId: asset.id === job.asset.id ? job.animationId : null,
         frameIndex: asset.id === job.asset.id ? job.frameIndex : 0,
       })
-      // Tetos do Estúdio (o mesmo funil do envio manual: o reenvio silencioso
-      // também não pode atravessar um payload que o Estúdio recusaria). Sem
-      // `reason`: o que não cabe (ou não rasterizou) fica em SILÊNCIO, o teto já é
-      // avisado no "Usar no Estúdio".
-      if (!payload || validateStudioPayloadSize(payload) !== 'ok') continue
-      result = await job.send({
-        id: asset.id,
-        name: asset.name,
-        dataUrl: payload.dataUrl,
-        width: payload.width,
-        height: payload.height,
-        ...(payload.sprite ? { sprite: payload.sprite } : {}),
-        ...(payload.tileset ? { tileset: payload.tileset } : {}),
-        ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
-        ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
-        ...(payload.scene ? { scene: payload.scene } : {}),
-      })
+      if (!payload) continue
+      result = await job.send(payload)
       if (result.updated) updated = true
       else if (result.reason === 'failed' && !failure) failure = result
     } catch (error) {

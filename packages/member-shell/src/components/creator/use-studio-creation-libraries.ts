@@ -2,6 +2,7 @@
 
 import type { StudioMoldaLibraryAdapter, StudioPintaLibraryAdapter } from '@sistemazero/studio'
 import { useLayoutEffect, useMemo } from 'react'
+import { savePintaStudioBundle } from './save-pinta-studio-bundle'
 
 /** Same ownership, validation and namespace rules for classic and Pro hosts. */
 export function useStudioCreationLibraries(
@@ -132,6 +133,7 @@ export function useStudioCreationLibraries(
           imageResult ?? (await lib.exportAssetForStudio(drawingId, { namespace, signal }))
         signal.throwIfAborted()
         if (!result.ok) {
+          if (result.reason === 'map-links-invalid') return { ok: false, error: result.message }
           if (result.reason === 'not-found') {
             return {
               ok: false,
@@ -152,9 +154,8 @@ export function useStudioCreationLibraries(
             code: 'raster-failed',
           }
         }
-        const bridge = await import('@sistemazero/studio/personal-assets')
         signal.throwIfAborted()
-        const saved = await bridge.savePersonalAsset(result.asset, { namespace })
+        const saved = await savePintaStudioBundle(result.asset, namespace, signal)
         signal.throwIfAborted()
         if (!saved.ok) {
           return {
@@ -175,9 +176,9 @@ export function useStudioCreationLibraries(
                   height: imageResult.image.derivation.output.height,
                   pintaImage: imageResult.image.derivation,
                 }
-              : result.asset),
-            name: saved.name ?? result.asset.name,
-            libRevision: saved.updatedAt,
+              : saved.asset),
+            name: saved.asset.name,
+            libRevision: saved.asset.libRevision,
           },
         }
       },

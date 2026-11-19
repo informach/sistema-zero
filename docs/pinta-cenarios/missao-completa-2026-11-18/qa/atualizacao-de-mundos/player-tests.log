@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\map-2d\runtime.test.ts:
+(pass) scene references resolve inside their map without changing legacy property values [16.00ms]
+(pass) g2d: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs [16.00ms]
+(pass) g2d: uma imagem comum não encobre o ID do mapa de destino
+(pass) g2d: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+(pass) gk: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs [31.00ms]
+(pass) gk: uma imagem comum não encobre o ID do mapa de destino
+(pass) gk: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+(pass) object references inside two instances resolve to the corresponding set child
+(pass) scene 2 animates the selected sequence in both JavaScript game engines
+(pass) tile objects animate in scene 2 while published scene 1 keeps its static behavior
+(pass) a collision set scaled 2 by 2 fills every covered root cell
+(pass) set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds [47.00ms]
+(pass) monta a grade de colisão, os objetos e os eventos sem perder dados
+(pass) confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício
+(pass) caminhos e pontos usam seu contorno, inclusive após rotação
+(pass) compõe camadas, espelho e opacidade nos pixels
+(pass) sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto [31.00ms]
+
+src\official-extensions\map-2d\__tests__\engines.test.ts:
+(pass) cenário do Pinta nos dois motores > g2d: o personagem para no chão sólido do cenário
+(pass) cenário do Pinta nos dois motores > g2d: o início e o tamanho vêm da cena, e seguem o mapa quando ele muda [16.00ms]
+(pass) cenário do Pinta nos dois motores > g2d: "Quando entrar em área" vale sem desenhar a camada de trás
+(pass) cenário do Pinta nos dois motores > g2d: mapa com nome diferente do desenho não avisa imagem que falta
+(pass) cenário do Pinta nos dois motores > gk: o personagem para no chão sólido do cenário [15.00ms]
+(pass) cenário do Pinta nos dois motores > gk: o início e o tamanho vêm da cena, e seguem o mapa quando ele muda
+(pass) cenário do Pinta nos dois motores > gk: "Quando entrar em área" vale sem desenhar a camada de trás [16.00ms]
+(pass) cenário do Pinta nos dois motores > gk: mapa com nome diferente do desenho não avisa imagem que falta
+(pass) cenário do Pinta nos dois motores > os blocos antigos dizem que o desenho é um cenário e apontam o bloco novo [31.00ms]
+
+src\official-extensions\map-2d\__tests__\hostVariant.test.ts:
+(pass) variante do cenário pelo caminho do host > Jogo 2D: jogo sem cenário recebe o motor de sempre, sem um byte do cenário [16.00ms]
+(pass) variante do cenário pelo caminho do host > Jogo 2D: jogo com bloco de cenário recebe o motor completo, dentro do teto
+(pass) variante do cenário pelo caminho do host > Jogo 2D: a chave da prévia muda quando o primeiro bloco de cenário entra
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: jogo sem cenário recebe o motor de sempre, sem um byte do cenário
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: jogo com bloco de cenário recebe o motor completo, dentro do teto
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: a chave da prévia muda quando o primeiro bloco de cenário entra
+(pass) variante do cenário pelo caminho do host > os números medidos em 18/11/2026
+
+ 33 pass
+ 0 fail
+ 6284 expect() calls
+Ran 33 tests across 3 files. [954.00ms]

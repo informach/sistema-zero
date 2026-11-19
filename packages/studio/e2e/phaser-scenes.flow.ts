@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test'
-import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import type { PintaScene, PintaSceneObject } from '@sistemazero/core/studio/pinta-scene'
 
 type Game = {
   surface: { context: CanvasRenderingContext2D }
   hero: { x: number; y: number; body: { reset(x: number, y: number): void } }
   maps: {
     mapSize(name: string, axis: string): number
-    mapObjects(name: string, type: string): Array<{ name: string }>
+    mapObjects(name: string, type: string): PintaSceneObject[]
+    useMapDoor(name: string, sprite: Game['hero'], door: PintaSceneObject): void
     createMapScene(name: string, asset: string): void
     mapResourceImage(name: string, id: string): string | null
     mapLayerProperty(name: string, id: string, key: string): unknown
@@ -14,6 +15,49 @@ type Game = {
     mapObjectById(name: string, id: string): { name: string } | null
   }
 }
+
+test('Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa', async ({
+  page,
+  request,
+}) => {
+  const scenes = (await (await request.get('http://127.0.0.1:5293/maps.json')).json()) as Record<
+    string,
+    PintaScene
+  >
+  const withCollision = {
+    ...scenes,
+    cabana: scenes['vila-e-floresta']!,
+    'cabana-by-id': scenes.cabana!,
+  }
+  await page.route('http://127.0.0.1:5293/main.js', async (route) => {
+    const response = await route.fetch()
+    const source = await response.text()
+    const prefix = `const PINTA_MAPS=${JSON.stringify(scenes)};`
+    expect(source.startsWith(prefix)).toBe(true)
+    await route.fulfill({
+      response,
+      body: source.replace(prefix, `const PINTA_MAPS=${JSON.stringify(withCollision)};`),
+    })
+  })
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('http://127.0.0.1:5293/')
+  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
+  const widths = await page.evaluate(() => {
+    const { maps, hero } = window.pintaGame
+    maps.createMapScene('mapa', 'cabana')
+    const named = maps.mapSize('mapa', 'width')
+    const door = maps.mapObjects('mapa', 'door')[0]!
+    hero.body.reset(door.x, door.y)
+    maps.useMapDoor('mapa', hero, {
+      ...door,
+      properties: { destino: { type: 'asset', value: 'cabana' } },
+    })
+    return { named, destination: maps.mapSize('mapa', 'width') }
+  })
+  expect(widths).toEqual({ named: 512, destination: 128 })
+  expect(errors).toEqual([])
+})
 
 test('Phaser portátil anima a versão fixada e conserva o último quadro', async ({
   page,

@@ -1,13 +1,15 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { createHash } from 'node:crypto'
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import { PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
 import type { UseStore } from 'idb-keyval'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { beginProjectOpening, isProjectOpening } from '../../state/projectOpening'
 import { projectHeadKey } from '../../state/projectStorageKeys'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
 import type { StudioPintaLibraryAdapter } from '../../studio/pinta-library'
-import { fakeUseStore } from '../../testing/fakeIdbStore'
+import { failNextFakeIdbWrite, fakeUseStore } from '../../testing/fakeIdbStore'
+import type { PersonalAsset } from '../personal'
 
 /**
  * "Editei o desenho no Pinta → o jogo se atualiza sozinho."
@@ -28,6 +30,8 @@ const kvOf = (store?: UseStore | { name?: string }): KV => {
   return kv
 }
 let reads = 0
+let personalInventoryReads = 0
+let beforePersonalInventory: (() => Promise<void>) | undefined
 /** Chaves pedidas em `getMany` (prova que a varredura usa a lista LEVE, sem capas). */
 const askedKeys: string[] = []
 
@@ -39,6 +43,10 @@ mock.module('idb-keyval', () => ({
   },
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     reads += 1
+    if (store?.name?.includes('personal-assets')) {
+      personalInventoryReads += 1
+      await beforePersonalInventory?.()
+    }
     for (const key of keys) if (typeof key === 'string') askedKeys.push(key)
     return keys.map((key) => kvOf(store).get(key))
   },
@@ -68,14 +76,18 @@ mock.module('idb-keyval', () => ({
   },
 }))
 
-const { createEmptyProject } = await import('#core')
+const { createEmptyProject, PROJECT_ASSET_LIMITS } = await import('#core')
 type ProjectAsset = import('#core').ProjectAsset
-const { listPersonalAssets, savePersonalAsset, setPersonalAssetsNamespace } = await import(
-  '../personal'
-)
+const {
+  listPersonalAssets,
+  savePersonalAsset,
+  savePersonalAssetBundle,
+  setPersonalAssetsNamespace,
+} = await import('../personal')
 const {
   loadProjectAssetsById,
   loadProjectMetaById,
+  loadProjectById,
   persistProject,
   persistProjectAssets,
   setStorageNamespace,
@@ -137,6 +149,8 @@ let testScope = 0
 beforeEach(() => {
   dbs.clear()
   reads = 0
+  personalInventoryReads = 0
+  beforePersonalInventory = undefined
   localStorage.clear()
   testScope += 1
   const namespace = `personal-sync-test-${testScope}`
@@ -330,6 +344,317 @@ describe('updateAssetImage (a ação da store)', () => {
 })
 
 describe('syncDrawingsIntoProjects', () => {
+  const linkedScene = (id: string, destination?: string) =>
+    PintaSceneSchema.parse({
+      version: 1,
+      id,
+      name: id,
+      tileSize: 16,
+      cols: 1,
+      rows: 1,
+      tilesets: [
+        { id: 'ts', name: 'peças', image: PNG, columns: 1, count: 1, solid: [], platform: [] },
+      ],
+      layers: [
+        {
+          id: 'objects',
+          name: 'Portas',
+          kind: 'objects',
+          visible: true,
+          objects: destination
+            ? [
+                {
+                  id: 'door',
+                  name: 'Outra área',
+                  type: '',
+                  role: 'door',
+                  x: 0,
+                  y: 0,
+                  width: 16,
+                  height: 16,
+                  properties: { destino: { type: 'asset', value: destination } },
+                },
+              ]
+            : [],
+        },
+      ],
+    })
+
+  it('uma porta nova acrescenta seu destino aos jogos aberto e fechado, conservando os programas', async () => {
+    const oldScene = linkedScene('d1')
+    await savePersonalAsset({ id: 'd1', name: 'vila', dataUrl: PNG, scene: oldScene })
+    const first = await getPersonalAsset('d1')
+    const original = drawingAsset({
+      name: 'nome-usado-pelo-programa',
+      scene: oldScene,
+      libRevision: first?.updatedAt,
+    })
+    seedOpenProject([original])
+    const opened = useProjectStore.getState().project!
+    const closed = {
+      ...createEmptyProject('mundo-fechado', 'Mundo fechado'),
+      mode: 'bridge' as const,
+      bridgeCodeAhead: true as const,
+      assets: [{ ...original, id: 'closed-map' }],
+    }
+    closed.files['script.js'] = 'const programaDaCrianca = 31;'
+    await persistProject(closed)
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana', 'd1') },
+    ])
+    await savePersonalAsset({
+      id: 'unrelated',
+      name: 'outro-mapa',
+      dataUrl: PNG,
+      scene: linkedScene('unrelated'),
+    })
+    personalInventoryReads = 0
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.failures).toEqual([])
+    expect(useProjectStore.getState().project?.assets?.map((asset) => asset.libId)).toEqual([
+      'personal:d1',
+      'personal:cabana',
+    ])
+    expect((await loadProjectAssetsById(closed.id)).map((asset) => asset.libId)).toEqual([
+      'personal:d1',
+      'personal:cabana',
+    ])
+    expect(useProjectStore.getState().project?.assets?.[0]?.name).toBe(original.name)
+    expect(useProjectStore.getState().project?.files).toEqual(opened.files)
+    expect(useProjectStore.getState().project?.ir).toEqual(opened.ir)
+    expect(useProjectStore.getState().project?.blocksState).toEqual(opened.blocksState)
+    expect((await loadProjectById(closed.id))?.files).toEqual(closed.files)
+    expect(result.updatedInOpenProject).toBe(2)
+    expect(result.updatedInOtherProjects).toBe(1)
+    expect(personalInventoryReads).toBe(1)
+    const unchanged = useProjectStore.getState().project
+    expect(await syncDrawingsIntoProjects(useProjectStore)).toMatchObject({
+      updatedInOpenProject: 0,
+      updatedInOtherProjects: 0,
+      failures: [],
+    })
+    expect(useProjectStore.getState().project === unchanged).toBe(true)
+  })
+
+  it('um destino perdido conserva o mundo anterior, em vez de atualizar só a raiz', async () => {
+    const original = linkedScene('d1')
+    await savePersonalAsset({
+      id: 'd1',
+      name: 'vila',
+      dataUrl: PNG,
+      scene: linkedScene('d1', 'missing'),
+    })
+    seedOpenProject([drawingAsset({ scene: original })])
+    const before = useProjectStore.getState().project
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.failures.length).toBeGreaterThan(0)
+    expect(useProjectStore.getState().project === before).toBe(true)
+  })
+
+  it('uma porta nova que não cabe recusa a raiz e o destino juntos', async () => {
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+    ])
+    seedOpenProject([
+      drawingAsset({ scene: linkedScene('d1') }),
+      ...Array.from({ length: PROJECT_ASSET_LIMITS.maxAssetsCount - 1 }, (_, i) =>
+        drawingAsset({ id: `f${i}`, name: `f${i}`, libId: '' }),
+      ),
+    ])
+    const before = useProjectStore.getState().project
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.failures.length).toBeGreaterThan(0)
+    expect(useProjectStore.getState().project === before).toBe(true)
+    // Freeing space does not change the personal marker. The refused sweep must remain pending.
+    useProjectStore.setState({ project: { ...before!, assets: before!.assets!.slice(0, 1) } })
+    const recovered = await syncDrawingsIntoProjects(useProjectStore)
+    expect(recovered.failures).toEqual([])
+    expect(recovered.updatedInOpenProject).toBe(2)
+    expect(useProjectStore.getState().project?.assets?.map((a) => a.libId)).toEqual([
+      'personal:d1',
+      'personal:cabana',
+    ])
+  })
+
+  for (const change of [
+    'project-aba',
+    'language-aba',
+    'owner-aba',
+    'profile-aba',
+    'cancel',
+    'remove',
+    'derived',
+  ] as const) {
+    it(`um mundo pendente não entra depois de ${change}`, async () => {
+      await savePersonalAssetBundle([
+        { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+        { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+      ])
+      seedOpenProject([drawingAsset({ scene: linkedScene('d1') })])
+      const project = useProjectStore.getState().project!
+      const release = Promise.withResolvers<void>(),
+        entered = Promise.withResolvers<void>()
+      beforePersonalInventory = async () => {
+        entered.resolve()
+        await release.promise
+      }
+      const controller = new AbortController()
+      const pending = syncDrawingsIntoProjects(useProjectStore, { signal: controller.signal })
+      await entered.promise
+      if (change === 'project-aba') {
+        useProjectStore.setState({ project: { ...project, id: 'other' } })
+        useProjectStore.setState({ project })
+      } else if (change === 'language-aba') {
+        useProjectStore.setState({
+          project: await refinePythonProjectDocument({
+            ...documentFixture('python', 'classic'),
+            id: project.id,
+            assets: [],
+          }),
+        })
+        useProjectStore.setState({ project })
+      } else if (change === 'owner-aba') {
+        useProjectStore.getState().setEditingAccess('observer')
+        useProjectStore.getState().setEditingAccess('author')
+      } else if (change === 'profile-aba') {
+        setStorageNamespace('world-other-profile')
+        setPersonalAssetsNamespace('world-other-profile')
+        setStorageNamespace(`personal-sync-test-${testScope}`)
+        setPersonalAssetsNamespace(`personal-sync-test-${testScope}`)
+      } else if (change === 'cancel') controller.abort()
+      else if (change === 'remove')
+        useProjectStore.setState({ project: { ...project, assets: [] } })
+      else
+        useProjectStore.setState({
+          project: { ...project, assets: [{ ...project.assets![0]!, libId: 'personal:other' }] },
+        })
+      const expected = useProjectStore.getState().project
+      release.resolve()
+      const result = await pending
+      expect(result.updatedInOpenProject).toBe(0)
+      expect(useProjectStore.getState().project).toBe(expected)
+    })
+  }
+
+  it('a falha do catálogo recusa o mundo e a próxima conferência pode tentar novamente', async () => {
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+    ])
+    seedOpenProject([drawingAsset({ scene: linkedScene('d1') })])
+    const before = useProjectStore.getState().project
+    beforePersonalInventory = async () => {
+      throw new Error('Leitura interrompida')
+    }
+    const failed = await syncDrawingsIntoProjects(useProjectStore)
+    expect(failed.failures.join(' ')).toContain('conferir os mapas')
+    expect(useProjectStore.getState().project).toBe(before)
+    beforePersonalInventory = undefined
+    expect((await syncDrawingsIntoProjects(useProjectStore)).updatedInOpenProject).toBe(2)
+  })
+
+  it('raiz e destinos vêm da mesma captura, sem combinar a raiz antiga com o destino novo', async () => {
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+      { id: 'jardim', name: 'jardim', dataUrl: PNG, scene: linkedScene('jardim') },
+    ])
+    seedOpenProject([drawingAsset({ scene: linkedScene('d1') })])
+    beforePersonalInventory = async () => {
+      beforePersonalInventory = undefined
+      const kv = [...dbs.entries()].find(([name]) => name.includes('personal-assets'))![1]
+      kv.set('asset:d1', {
+        ...(kv.get('asset:d1') as PersonalAsset),
+        scene: linkedScene('d1', 'jardim'),
+      })
+      kv.set('asset:jardim', {
+        id: 'jardim',
+        name: 'jardim',
+        kind: 'image',
+        dataUrl: PNG,
+        updatedAt: 10,
+        scene: linkedScene('jardim'),
+      })
+    }
+    expect((await syncDrawingsIntoProjects(useProjectStore)).failures).toEqual([])
+    expect(useProjectStore.getState().project?.assets?.map((a) => a.libId)).toEqual([
+      'personal:d1',
+      'personal:jardim',
+    ])
+  })
+
+  it('um jogo fechado que abre durante a captura conserva a partição e atualiza no próximo foco', async () => {
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+    ])
+    const closed = createEmptyProject('mundo-em-abertura', 'Jogo')
+    closed.assets = [drawingAsset({ scene: linkedScene('d1') })]
+    await persistProject(closed)
+    seedOpenProject([])
+    beforePersonalInventory = async () => {
+      beforePersonalInventory = undefined
+      useProjectStore.setState({ project: closed })
+    }
+    const first = await syncDrawingsIntoProjects(useProjectStore)
+    expect(first.updatedInOtherProjects).toBe(0)
+    expect(first.updatedInOpenProject).toBe(0)
+    expect(await loadProjectAssetsById(closed.id)).toEqual(closed.assets)
+    expect((await syncDrawingsIntoProjects(useProjectStore)).updatedInOpenProject).toBe(2)
+    expect(useProjectStore.getState().project?.assets?.map((a) => a.libId)).toEqual([
+      'personal:d1',
+      'personal:cabana',
+    ])
+  })
+
+  it('a recusa de cota conserva o mundo fechado inteiro e não consome sua atualização', async () => {
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+    ])
+    const closed = createEmptyProject('mundo-cheio', 'Jogo')
+    closed.assets = [
+      drawingAsset({ scene: linkedScene('d1') }),
+      ...Array.from({ length: PROJECT_ASSET_LIMITS.maxAssetsCount - 1 }, (_, i) =>
+        drawingAsset({ id: `f${i}`, name: `f${i}`, libId: '' }),
+      ),
+    ]
+    await persistProject(closed)
+    const before = await loadProjectAssetsById(closed.id)
+    seedOpenProject([])
+    const first = await syncDrawingsIntoProjects(useProjectStore)
+    expect(first.failures.join(' ')).toContain('limite de arquivos')
+    expect(first.updatedInOtherProjects).toBe(0)
+    expect(await loadProjectAssetsById(closed.id)).toEqual(before)
+    closed.assets = closed.assets.slice(0, 1)
+    await persistProject(closed)
+    expect((await syncDrawingsIntoProjects(useProjectStore)).updatedInOtherProjects).toBe(1)
+    expect((await loadProjectAssetsById(closed.id)).map((a) => a.libId)).toEqual([
+      'personal:d1',
+      'personal:cabana',
+    ])
+  })
+
+  it('uma falha física ao salvar o mundo fechado conserva os bytes e permite nova tentativa', async () => {
+    await savePersonalAssetBundle([
+      { id: 'd1', name: 'vila', dataUrl: PNG, scene: linkedScene('d1', 'cabana') },
+      { id: 'cabana', name: 'cabana', dataUrl: PNG, scene: linkedScene('cabana') },
+    ])
+    const closed = createEmptyProject('mundo-sem-disco', 'Jogo')
+    closed.assets = [drawingAsset({ scene: linkedScene('d1') })]
+    await persistProject(closed)
+    const before = await loadProjectAssetsById(closed.id)
+    seedOpenProject([])
+    failNextFakeIdbWrite(new DOMException('Sem espaço', 'QuotaExceededError'))
+    const first = await syncDrawingsIntoProjects(useProjectStore)
+    expect(first.updatedInOtherProjects).toBe(0)
+    expect(await loadProjectAssetsById(closed.id)).toEqual(before)
+    expect(first.failures.join(' ')).toContain('salvar os mapas')
+    expect((await syncDrawingsIntoProjects(useProjectStore)).updatedInOtherProjects).toBe(1)
+  })
+
   it('uma propriedade de cenário muda sem mudar o PNG e atualiza o jogo sem tocar na programação', async () => {
     const scene = {
       version: 1 as const,

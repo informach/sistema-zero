@@ -46,6 +46,23 @@ export interface StudioPintaImagePreview {
   derivation: PintaImageDerivation
 }
 
+export interface StudioPintaImportedAsset {
+  id: string
+  name: string
+  dataUrl: string
+  width?: number
+  height?: number
+  sprite?: unknown
+  tileset?: unknown
+  tilemap?: unknown
+  tilemapFront?: unknown
+  scene?: unknown
+  libRevision?: number
+  pintaImage?: PintaImageDerivation
+  /** Destination maps, captured and imported together with the root. */
+  maps?: Omit<StudioPintaImportedAsset, 'maps' | 'pintaImage'>[]
+}
+
 export type StudioPintaImportResult =
   | {
       ok: true
@@ -54,22 +71,7 @@ export type StudioPintaImportResult =
        * pode ganhar sufixo no upsert — use ESTE nome). Os metadados chegam
        * `unknown` e o `addAsset` re-sanitiza no `#core`, como no upload.
        */
-      asset: {
-        id: string
-        name: string
-        dataUrl: string
-        width?: number
-        height?: number
-        sprite?: unknown
-        tileset?: unknown
-        tilemap?: unknown
-        tilemapFront?: unknown
-        scene?: unknown
-        /** Revisão persistida na biblioteca pessoal pelo host. */
-        libRevision?: number
-        /** Captured PNG recipe. The canonical personal-library record remains separate. */
-        pintaImage?: PintaImageDerivation
-      }
+      asset: StudioPintaImportedAsset
     }
   | {
       /** Mensagem amigável pronta para exibir na modal. */

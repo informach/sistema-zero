@@ -1,0 +1,6 @@
+{
+  "command": "bunx tsc --noEmit --incremental --tsBuildInfoFile .cache/pinta-mission.tsbuildinfo",
+  "exitCode": 0,
+  "baseStaging": "2ab6ff9479b74b339549741377d3ff4d9e6d9d83",
+  "scope": "Studio completo, incluindo o harness com PintaClient e o adapter reais do member-shell"
+}
