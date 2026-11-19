@@ -25,13 +25,31 @@ for (const [path, content] of Object.entries(files)) {
   await mkdir(resolve(target, '..'), { recursive: true })
   await writeFile(target, content)
 }
-const child = Bun.spawn([process.env.PYTHON ?? 'python', 'serve.py', '--port', '0'], {
-  cwd: directory,
-  stdout: 'pipe',
-  stderr: 'pipe',
-  windowsHide: true,
-  env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1', PYTHONUTF8: '1' },
-})
+const unavailableDNS = process.env.STUDIO_EXPORT_BLOCK_DNS === '1'
+if (unavailableDNS)
+  await writeFile(
+    resolve(directory, 'verify-no-dns.py'),
+    `import runpy
+import socket
+import sys
+
+def unavailable(*args, **kwargs):
+    raise RuntimeError("DNS lookup is unavailable for this numeric loopback server")
+socket.getfqdn = unavailable
+sys.argv = ["serve.py", "--port", "0"]
+runpy.run_path("serve.py", run_name="__main__")
+`,
+  )
+const child = Bun.spawn(
+  [process.env.PYTHON ?? 'python', unavailableDNS ? 'verify-no-dns.py' : 'serve.py', '--port', '0'],
+  {
+    cwd: directory,
+    stdout: 'pipe',
+    stderr: 'pipe',
+    windowsHide: true,
+    env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1', PYTHONUTF8: '1' },
+  },
+)
 let ready!: (url: URL) => void
 let failed!: (error: Error) => void
 const listening = new Promise<URL>((resolve, reject) => {
@@ -65,6 +83,7 @@ const deadline = setTimeout(() => {
 }, 8000)
 try {
   const origin = await listening
+  clearTimeout(deadline)
   const request = (path: string, init: RequestInit = {}) =>
     fetch(new URL(path, origin), { ...init, redirect: 'error', signal: AbortSignal.timeout(2000) })
   const page = await request('')
@@ -101,6 +120,7 @@ try {
   assert.equal(await longSource.text(), files[longSourcePath])
   for (const path of [
     'serve.py',
+    'verify-no-dns.py',
     'project/',
     'project/%2e%2e/%2e%2e/serve.py',
     'project/%5c..%5cserve.py',
@@ -109,6 +129,12 @@ try {
     assert.equal((await request(path)).status, 404, path)
   assert.equal((await request('', { headers: { host: 'attacker.test' } })).status, 400)
   console.log(JSON.stringify({ verified: true, directory }))
+} catch (error) {
+  if (child.exitCode === null) child.kill()
+  const [output, errors] = await Promise.all([stdout, stderr])
+  throw new Error(`Static server proof failed: ${String(error)}\n${output}\n${errors}`, {
+    cause: error,
+  })
 } finally {
   clearTimeout(deadline)
   if (child.exitCode === null) child.kill()
