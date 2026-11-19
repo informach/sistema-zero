@@ -3,6 +3,8 @@ import 'fake-indexeddb/auto'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { clear } from 'idb-keyval'
 import { createEmptyProject, type Project } from '#core'
+import * as gameUiFonts from '../../official-extensions/gameUiFont'
+import * as gameStorage from '../../state/gameStorage'
 import { useHighlightStore } from '../../state/highlightStore'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
@@ -62,6 +64,109 @@ describe('PreviewIframe', () => {
 
   // Desde o redesenho de 11/2026 a prévia não tem barra própria: Rodar, Parar e Atualizar moram
   // na barra de cima e no palco (`ClassicStage`), que chamam as ações que ela publica no `proRun`.
+  it('não anuncia execução enquanto a leitura do estado salvo ainda segura o documento', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    const originalLoad = gameStorage.loadGameStorage
+    let release = () => {}
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const read = spyOn(gameStorage, 'loadGameStorage').mockImplementation(async (id) => {
+      await pending
+      return originalLoad(id)
+    })
+    try {
+      render(<PreviewIframe />)
+      await act(async () => {})
+      expect(read).toHaveBeenCalledWith(project.id)
+      expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
+      expect(useProRun.getState().state?.phase).toBe('preparing')
+      expect(screen.getByTitle('Pré-visualização').getAttribute('aria-busy')).toBe('true')
+      await act(async () => release())
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      expect(useProRun.getState().state?.phase).toBe('running')
+      expect(screen.getByTitle('Pré-visualização').getAttribute('aria-busy')).toBe('false')
+    } finally {
+      release()
+      read.mockRestore()
+    }
+  })
+
+  it('preserva o jogo ao preparar outra fonte e permite Parar durante a preparação', async () => {
+    const base = createPreviewProject()
+    const project: Project = {
+      ...base,
+      installedExtensions: [{ id: 'game-2d', version: '2.1.0', installedAt: 0 }],
+    }
+    const originalLoad = gameUiFonts.loadGameUiFont
+    let release = () => {}
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const load = spyOn(gameUiFonts, 'loadGameUiFont').mockImplementation(async (...args) => {
+      if (args[0] === 'bungee') await pending
+      return originalLoad(...args)
+    })
+    try {
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
+      render(<PreviewIframe />)
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      const runningDoc = getPreviewSrcDoc()
+      act(() =>
+        useProjectStore.setState({
+          project: {
+            ...project,
+            files: { ...project.files, 'script.js': 'SZGame2D.useFont("bungee");' },
+          },
+          isDirty: true,
+        }),
+      )
+      await waitFor(() => expect(load.mock.calls.some((args) => args[0] === 'bungee')).toBe(true), {
+        timeout: 3000,
+      })
+      expect(useProRun.getState().state?.phase).toBe('preparing')
+      expect(getPreviewSrcDoc() === runningDoc).toBe(true)
+      act(() => useProRun.getState().actions?.stop())
+      await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
+      await act(async () => release())
+      expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
+      expect(useProRun.getState().state?.phase).toBe('idle')
+      await act(async () => useProRun.getState().actions?.run())
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Bungee'))
+    } finally {
+      release()
+      load.mockRestore()
+    }
+  })
+
+  it('aguarda comando explícito sem anunciar execução nem bloquear o botão Rodar', async () => {
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    render(
+      <StudioExecutionProvider
+        value={{
+          editingAccess: 'author',
+          autoRun: false,
+          requireIsolatedPreview: false,
+          muted: false,
+        }}
+      >
+        <PreviewIframe />
+      </StudioExecutionProvider>,
+    )
+    await act(async () => {})
+    expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC)
+    expect(useProRun.getState().state).toMatchObject({
+      phase: 'idle',
+      canRun: true,
+      canStop: false,
+    })
+    await act(async () => useProRun.getState().actions?.run())
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    expect(useProRun.getState().state?.phase).toBe('running')
+  })
+
   it('executa ao montar, reexecuta ao atualizar e volta a executar ao sair de parado', async () => {
     useProjectStore.setState({
       project: createPreviewProject(),
@@ -171,23 +276,23 @@ describe('PreviewIframe', () => {
   it('Rodar de novo mantém o mesmo iframe; Parar põe um iframe novo no lugar', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
     render(<PreviewIframe />)
-    const primeiro = screen.getByTitle('Pré-visualização')
-    fireEvent.load(primeiro)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
     const rodando = await waitFor(() => {
       const doc = getPreviewSrcDoc()
       expect(doc).toContain('Preview automático')
       return doc
     })
+    const primeiro = screen.getByTitle('Pré-visualização')
     fireEvent.load(primeiro)
 
     act(() => useProRun.getState().actions?.reload?.())
     await waitFor(() => expect(getPreviewSrcDoc()).not.toBe(rodando))
-    expect(screen.getByTitle('Pré-visualização')).toBe(primeiro)
+    expect(screen.getByTitle('Pré-visualização') === primeiro).toBe(true)
 
     act(() => useProRun.getState().actions?.stop())
     await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
     const depoisDeParar = screen.getByTitle('Pré-visualização')
-    expect(depoisDeParar).not.toBe(primeiro)
+    expect(depoisDeParar === primeiro).toBe(false)
     expect(depoisDeParar.getAttribute('sandbox')).toBe(
       'allow-scripts allow-modals allow-pointer-lock',
     )
@@ -224,9 +329,9 @@ describe('PreviewIframe', () => {
       window.localStorage.removeItem(chave)
       useProjectStore.setState({ project, isDirty: false, saveError: null })
       const montada = render(<PreviewIframe />)
-      const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
-      fireEvent.load(iframe)
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
       await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
       expect(window.localStorage.getItem(chave)).not.toBeNull()
 
       const contentWindow = iframe.contentWindow
@@ -269,9 +374,9 @@ describe('PreviewIframe', () => {
   it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
     render(<PreviewIframe />)
-    const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
-    fireEvent.load(iframe)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
     await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
     const contentWindow = iframe.contentWindow
     if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
     act(() => {

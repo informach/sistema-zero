@@ -289,6 +289,15 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   await card.click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 
+  // On the narrow layout the child is still looking at Blocks. Open the actual
+  // game panel before requiring visible pixels or delivering keyboard controls.
+  const gameTab = page.getByRole('tab', { name: 'Jogo', exact: true })
+  if (await gameTab.isVisible()) {
+    await gameTab.click()
+    await expect(gameTab).toHaveAttribute('aria-selected', 'true')
+    await expect(page.locator('iframe[title="Pré-visualização"]')).toBeVisible()
+  }
+
   let preview: FrameLocator
   try {
     preview = await expectFirstFrame(page, contract.slowMountMs)
@@ -316,6 +325,8 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
           }
         }
         return {
+          url: location.href,
+          readyState: document.readyState,
           bodyChildren: document.body.children.length,
           bodyTags: Array.from(document.body.children, (child) => child.tagName),
           canvases: Array.from(document.querySelectorAll('canvas'), (canvas) => ({
@@ -336,11 +347,25 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         }
       })
       .catch(() => null)
+    const hostDebug = await page
+      .locator('iframe[title="Pré-visualização"]')
+      .evaluate((iframe) => {
+        const source = iframe.getAttribute('srcdoc') ?? ''
+        return {
+          documentChars: source.length,
+          pausedDocument: source === '<!doctype html><html lang="pt-BR"><body></body></html>',
+          sandbox: iframe.getAttribute('sandbox'),
+          preparing: iframe.getAttribute('aria-busy'),
+          visible: iframe.getBoundingClientRect().height > 0,
+        }
+      })
+      .catch(() => null)
     throw new Error(
       [
         detail,
         ...currentDiagnostics(),
         frameDebug ? JSON.stringify(frameDebug) : 'iframe indisponível',
+        hostDebug ? JSON.stringify({ host: hostDebug }) : 'host indisponível',
       ]
         .filter(Boolean)
         .join('\n'),
