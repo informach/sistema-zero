@@ -19,9 +19,9 @@ import {
   acceptsLocalHead,
   installLocalRevision,
   isLocalHead,
+  type LocalHead,
   ProjectWriteConflict,
   readLocalRevision,
-  type LocalHead,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
 import { toProjectSummary } from './projectSummary'
@@ -51,6 +51,7 @@ export async function recoverIndexedProjectWrites(
   for (const [index, value] of values.entries()) {
     try {
       const recovery = nativeRecovery(value, keys[index]!)
+      if (projectId !== undefined && recovery.projectId !== projectId) continue
       // Validate the whole document before promoting raw partitions over a
       // readable save. Preparation runs outside the conditional transaction.
       if (await prepareEditableStudioProject(projectFromRecovery(recovery))) valid.push(recovery)
@@ -120,8 +121,7 @@ export async function loadRecoverableProjectDraft(
   const { nativeRecovery } = await import('./projectRecoveryGuards')
   const valid = records.filter((value, index) => {
     try {
-      nativeRecovery(value, keys[index]!)
-      return true
+      return nativeRecovery(value, keys[index]!).projectId === id
     } catch {
       return false
     }

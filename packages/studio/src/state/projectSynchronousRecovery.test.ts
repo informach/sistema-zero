@@ -7,16 +7,16 @@ import {
   coordinatedProjectWrite,
   loadRecoverableProjectDraft,
   projectExitRecoveryStatus,
+  type RecoveryWrite,
   recoverProjectWrites,
   stageProjectExit,
-  type RecoveryWrite,
 } from './projectStorageCoordinator'
 import {
   PROJECT_META_KEY_PREFIX,
   projectApplicationsKey,
   projectFilesKey,
-  projectMigrationKey,
   projectMetaKey,
+  projectMigrationKey,
   projectRecoveryKey,
 } from './projectStorageKeys'
 import { projectStorageEntries } from './projectStorageRecords'
@@ -27,8 +27,7 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { stageSynchronousExitJournal } from './synchronousExitJournal'
-import { readSynchronousExitJournal } from './synchronousExitJournal'
+import { readSynchronousExitJournal, stageSynchronousExitJournal } from './synchronousExitJournal'
 
 async function fixture() {
   const identity = `sync-recovery-${crypto.randomUUID()}`
@@ -633,6 +632,30 @@ test('inaccessible exit copies block recovery without acknowledging or modifying
       tree: { 'main.ts': { content: 'initial' } },
     })
     expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(1)
+  } finally {
+    f.close()
+  }
+})
+
+test('overlapping project prefixes cannot recover a different owner through a colon in its writer', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('must remain pending for its actual owner')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const captured = entry.value as RecoveryWrite
+    const incoming: RecoveryWrite = {
+      ...captured,
+      head: { ...captured.head, base: null, writer: 'section:writer' },
+    }
+    const key = projectRecoveryKey(draft.id, incoming.head.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, incoming]] })
+    expect(await loadRecoverableProjectDraft(f.scope, `${draft.id}:section`)).toBeNull()
+    expect(await recoverProjectWrites(f.scope, `${draft.id}:section`)).toEqual([])
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(await readValue(f.scope.store, key)).toEqual(incoming)
   } finally {
     f.close()
   }
