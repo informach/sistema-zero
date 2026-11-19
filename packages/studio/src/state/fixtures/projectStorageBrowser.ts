@@ -25,6 +25,7 @@ import { advanceLocalRevision, installLocalRevision, isLocalHead } from '../proj
 import { createProjectStorageScope } from '../projectStorageRuntime'
 import type { ProjectStoreApi } from '../projectStore'
 import { prepareProjectForHost } from '../projectValidation'
+import { qualifyDeepStorage } from './projectDeepStorageBrowser'
 
 // Observe real browser transactions. window.name survives the same-origin reload
 // even when the departing document cannot deliver another async callback.
@@ -186,6 +187,7 @@ createPersistenceService(store, {
 }).attach()
 Object.assign(window, {
   storageHarness: {
+    qualifyDeepStorage: () => qualifyDeepStorage(scope),
     previousLifecycle,
     recoveredProjectIds,
     recoveredHead: isLocalHead(head) ? head : null,

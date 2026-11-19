@@ -1,4 +1,25 @@
 import type { UseStore } from 'idb-keyval'
+type ProjectTransport = typeof import('./projectStorageTransport')
+let projectTransport: ProjectTransport | undefined
+let transportLoading: Promise<void> | undefined
+const usesProjectTransport = (key: IDBValidKey) =>
+  typeof key === 'string' && key.startsWith('sz:v4:project-')
+
+/** Opening a v4 document loads its codec before a live transaction, never on pagehide. */
+function prepareProjectTransport(keys: readonly IDBValidKey[]): Promise<void> | undefined {
+  if (projectTransport || !keys.some(usesProjectTransport)) return
+  return (transportLoading ??= import('./projectStorageTransport')
+    .then((module) => {
+      projectTransport = module
+    })
+    .finally(() => {
+      transportLoading = undefined
+    }))
+}
+const encodeProjectStorageValue = (key: IDBValidKey, value: unknown) =>
+  projectTransport ? projectTransport.encodeProjectStorageValue(key, value) : value
+const decodeProjectStorageValue = (key: IDBValidKey, value: unknown) =>
+  projectTransport ? projectTransport.decodeProjectStorageValue(key, value) : value
 
 // idb-keyval calls even an already-open database through Promise.then. A dying
 // page may never enter that callback. Retain its existing connection/store name
@@ -140,6 +161,8 @@ export function conditionalWrite<T>(
   keys: readonly IDBValidKey[],
   decide: (values: unknown[]) => { write: IdbWrite; result: T },
 ): Promise<T> {
+  const ready = prepareProjectTransport(keys)
+  if (ready) return ready.then(() => conditionalWrite(store, identity, generation, keys, decide))
   return openTransaction(store, 'readwrite', (objectStore) => {
     const transaction = objectStore.transaction
     if (conditionalGeneration(identity) !== generation) {
@@ -171,7 +194,8 @@ export function conditionalWrite<T>(
       const finish = () => {
         try {
           const { write, result } = decide(values)
-          for (const [key, value] of write.puts ?? []) objectStore.put(value, key)
+          for (const [key, value] of write.puts ?? [])
+            objectStore.put(encodeProjectStorageValue(key, value), key)
           for (const key of write.deletes ?? []) objectStore.delete(key)
           decided = result
           conditionalTransactions.get(identity)?.delete(transaction)
@@ -185,8 +209,13 @@ export function conditionalWrite<T>(
       keys.forEach((key, index) => {
         const request = objectStore.get(key)
         request.onsuccess = () => {
-          values[index] = request.result
-          if (--remaining === 0) finish()
+          try {
+            values[index] = decodeProjectStorageValue(key, request.result)
+            if (--remaining === 0) finish()
+          } catch (error) {
+            failure = error
+            abortQuietly(transaction)
+          }
         }
       })
     } catch (error) {
@@ -202,8 +231,13 @@ export function writeInOneTransaction(store: UseStore, write: IdbWrite): Promise
   const puts = write.puts ?? []
   const deletes = write.deletes ?? []
   if (puts.length === 0 && deletes.length === 0) return Promise.resolve()
+  // A synchronous exit write must not introduce a module-loading boundary. Normal
+  // document opening/CAS prepares this codec; a cold direct caller cannot write
+  // an unreadable native value or silently postpone its exit requests.
+  if (!projectTransport && puts.some(([key]) => usesProjectTransport(key)))
+    return Promise.reject(new Error('Abra o armazenamento do projeto antes de gravar esta versão.'))
   return inOneTransaction(store, 'readwrite', (objectStore) => {
-    for (const [key, value] of puts) objectStore.put(value, key)
+    for (const [key, value] of puts) objectStore.put(encodeProjectStorageValue(key, value), key)
     for (const key of deletes) objectStore.delete(key)
     // Gravar não lê resultado nenhum: o `complete` basta.
     return { reads: [], result: () => undefined }
@@ -216,9 +250,15 @@ export function writeInOneTransaction(store: UseStore, write: IdbWrite): Promise
  */
 export function readValues(store: UseStore, keys: readonly IDBValidKey[]): Promise<unknown[]> {
   if (keys.length === 0) return Promise.resolve([])
+  const ready = prepareProjectTransport(keys)
+  if (ready) return ready.then(() => readValues(store, keys))
   return inOneTransaction(store, 'readonly', (objectStore) => {
     const requests = keys.map((key) => objectStore.get(key))
-    return { reads: requests, result: () => requests.map((request) => request.result as unknown) }
+    return {
+      reads: requests,
+      result: () =>
+        requests.map((request, index) => decodeProjectStorageValue(keys[index]!, request.result)),
+    }
   })
 }
 

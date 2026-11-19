@@ -8,6 +8,20 @@ import { fileURLToPath } from 'node:url'
 test('actual pagehide: large pending CAS + latest draft survive reload; two tabs conflict', async () => {
   const browser = process.env.STUDIO_STORAGE_BROWSER ?? 'all'
   if (!['all', 'chromium', 'webkit'].includes(browser)) throw new Error('Unknown storage browser')
+  let deepBlocks: string | undefined
+  if (process.env.STUDIO_STORAGE_DEEP === '1') {
+    const fixture = Bun.spawn(
+      [process.execPath, 'scripts/profile-js-classic.ts', '--blocks-fixture'],
+      { env: { ...process.env, SZ_PROFILE_BLOCKS: '10000' }, stdout: 'pipe', stderr: 'pipe' },
+    )
+    const [code, output, error] = await Promise.all([
+      fixture.exited,
+      Bun.readableStreamToText(fixture.stdout),
+      Bun.readableStreamToText(fixture.stderr),
+    ])
+    if (code !== 0) throw new Error(`Deep fixture generation failed: ${error}`)
+    deepBlocks = output
+  }
   // Bun.build shares the test process's resolver cache (including module mocks).
   // Compile in a clean process so the browser exercises actual production modules.
   const temporaryRoot = resolve(tmpdir())
@@ -39,6 +53,11 @@ test('actual pagehide: large pending CAS + latest draft survive reload; two tabs
     await rm(directory, { recursive: true, force: true })
   }
   const server = createServer((request, response) => {
+    if (request.url === '/deep-blocks.json') {
+      response.writeHead(deepBlocks ? 200 : 404, { 'Content-Type': 'application/json' })
+      response.end(deepBlocks ?? '{}')
+      return
+    }
     response.writeHead(200, {
       'Content-Type': request.url?.startsWith('/fixture.js') ? 'text/javascript' : 'text/html',
     })

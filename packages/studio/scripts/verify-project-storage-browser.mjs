@@ -47,6 +47,11 @@ for (const [name, engine] of [
     const page = await context.newPage()
     await page.goto(fixtureURL(`reload-${name}`))
     await page.waitForFunction(() => Boolean(window.storageHarness))
+    if (process.env.STUDIO_STORAGE_DEEP === '1') {
+      const deep = await page.evaluate(() => window.storageHarness.qualifyDeepStorage())
+      assert.ok(deep.blocks >= 10_000)
+      phase(`deep-storage-verified:${JSON.stringify(deep)}`)
+    }
     const cdp = name === 'chromium' ? await context.newCDPSession(page) : null
     for (let round = 0; round < 12; round++) {
       if (cdp) await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 })
