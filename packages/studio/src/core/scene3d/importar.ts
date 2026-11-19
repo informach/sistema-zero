@@ -87,24 +87,21 @@ function kindDoArquivo(a: ArquivoCompilado): 'model3d' | 'image' | 'scene3d-data
 export async function prepararImportacaoDeCena3D(
   projeto: EditableStudioProject,
   entrada: PacoteCompilado,
-  opcoes: { sinal?: AbortSignal; agrupar?: boolean; tamanhoDaRegiao?: number } = {},
+  opcoes: { sinal?: AbortSignal } = {},
 ): Promise<PlanoDeImportacaoDeCena3D> {
   const sinal = opcoes.sinal ?? new AbortController().signal
   sinal.throwIfAborted()
   // Capture before hashing/dynamic imports yield. Neither editor buffers nor packet bytes are borrowed.
   const capturado = copyStudioProjectJson(projeto) as EditableStudioProject,
-    origem = copiarPacote(entrada, sinal)
+    pacote = copiarPacote(entrada, sinal)
   if (isPythonProject(capturado))
     throw Error('O preparo de fontes e caminhos Python precisa acompanhar esta importação.')
   const baseHash = await sha256Hex(canonicalJson(capturado)),
-    motor = await import('@sistemazero/molda-cenarios-motor/compilar')
+    { conferirConteudoCompilado, inspecionarGlbDaCompilacao } = await import(
+      '@sistemazero/molda-cenarios-motor/conteudo'
+    )
   sinal.throwIfAborted()
-  await motor.conferirConteudoCompilado(origem.cena, origem.arquivos, sinal)
-  const pacote = opcoes.agrupar
-    ? await motor.juntarEstaticosDoPacote(origem, sinal, {
-        tamanhoDaRegiao: opcoes.tamanhoDaRegiao,
-      })
-    : origem
+  await conferirConteudoCompilado(pacote.cena, pacote.arquivos, sinal)
   await assertScene3DAssets(capturado.assets ?? [], sinal)
   const atuais = capturado.assets ?? [],
     next = [...atuais],
@@ -223,7 +220,7 @@ export async function prepararImportacaoDeCena3D(
         metadados = new Map(d.cena.arquivos.map((f) => [f.caminho, f]))
       malhas += d.cena.nos.reduce((s, n) => s + metadados.get(n.arquivo)!.malhas!, 0)
     } else if (a.kind === 'model3d' && !referenciados.has(a.id))
-      malhas += motor.inspecionarGlbDaCompilacao(bytes, { fonte: true, luzes: true }).malhas
+      malhas += inspecionarGlbDaCompilacao(bytes, { fonte: true, luzes: true }).malhas
   }
   const orcamento = avaliarOrcamentoDaCena({ malhas, arquivos }, 'studio')
   if (!orcamento.permitido) throw new OrcamentoDeImportacaoDeCenaExcedido(orcamento)

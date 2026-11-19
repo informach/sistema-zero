@@ -2,7 +2,7 @@
 
 19/11/2026, continuação de `33e90f06f`. **Recorte do preparo puro JavaScript; importação pelo produto e 8.4 continuam abertos.**
 
-`prepararImportacaoDeCena3D` captura o conteúdo do projeto e copia o pacote antes dos awaits. Usa o preflight e, quando solicitado, o agrupador estático existentes. Produz um plano serializável, com hash da base, lista completa de assets, ID do cenário, quantidade adicionada e orçamento. A função não grava no projeto, na biblioteca ou na conta.
+`prepararImportacaoDeCena3D` captura o conteúdo do projeto e copia o pacote antes dos awaits. Usa o preflight existente e recebe o pacote já agrupado quando essa opção é solicitada à fonte Molda. Produz um plano serializável, com hash da base, lista completa de assets, ID do cenário, quantidade adicionada e orçamento. A função não grava no projeto, na biblioteca ou na conta. A [revisão do commit atômico](checkpoint-lote8-studio-commit.md) explica a separação do compilador para conservar o orçamento do editor.
 
 Recursos são compartilhados por conteúdo, MIME/tipo e papel quando binários. Nomes/IDs anteriores são conservados. Revisão nova acrescenta um envelope e reaproveita recursos, sem reescrever a anterior. A reimportação privilegia os IDs da revisão já usada; uma cópia idêntica acrescentada posteriormente não desvia seus vínculos. O nome técnico do arquivo novo usa um identificador limitado/portátil; o caminho compilado completo continua no manifesto, sem truncar a procedência.
 

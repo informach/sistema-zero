@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./compilar": "./src/compilar/index.ts"
+    "./compilar": "./src/compilar/index.ts",
+    "./conteudo": "./src/compilar/conteudo.ts"
   },
   "scripts": {
     "test": "bun test",

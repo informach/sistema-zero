@@ -56,6 +56,8 @@ Python: recursos novos em `cenarios/modelos`, `cenarios/imagens`, `cenarios/dado
 
 19/11: [preparo puro JavaScript testado e revisado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-preparo.md), dez casos reais; ação do store, caminhos/fontes Python, adapter e interface continuam pendentes. Os checks abaixo não fecham com o preparo sozinho. A divergência Canvas2D registrada pela sessão Pinta em `dd4f0959c` precisa ser conferida na qualificação integrada antes de fechar 8.4; tipagem integral local e redução DOM/Worker/Bun passaram, sem supressão.
 
+19/11: [ação atômica JavaScript implementada, testada e revisada](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-commit.md), oito casos novos e regressão pertinente. O preparo usa a entrada CPU `/conteudo`; a opção de junção é executada na fonte Molda antes de entregar o pacote, evitando levar o compilador/GLTFExporter ao carregamento do modo Blocos. O teste de orçamento voltou a passar sem ampliar limites. A galeria/adapter ainda não chamam a ação; Python continua pendente, portanto os checks de produto abaixo permanecem abertos.
+
 - [ ] Testar primeiro 48/49 malhas reais, 5 MiB/modelo, 24 MiB/projeto existente, projeto alterado durante preparo, nomes colididos, repetição, dois cenários compartilhando recurso e falha/cancelamento: projeto original intacto.
 - [ ] Preparar referências/digests e a opção de junção compartilhada. Se o orçamento não couber, retornar excesso nominal e alternativa real; nunca omitir dependências ou mudar autoria.
 - [ ] Ampliar o adapter existente com cenas/revisões e resultado de bundle. O host usa CenariosHost/preparo autorizado e perfil capturado; não confiar em papel passado pelo cliente. Manter as criações antigas e sua origem.

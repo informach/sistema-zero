@@ -227,9 +227,11 @@ test('preparo captura o projeto e o pacote antes de ceder execução', async () 
 })
 
 test('a alternativa de junção usa o agrupador real e conserva a autoria original', async () => {
+  const { juntarEstaticosDoPacote } = await import('@sistemazero/molda-cenarios-motor/compilar')
   const p = await pacote(49),
     antes = JSON.stringify(p.cena),
-    plano = await prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), p, { agrupar: true })
+    agrupado = await juntarEstaticosDoPacote(p, new AbortController().signal),
+    plano = await prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), agrupado)
   expect(plano.orcamento.malhas).toBeLessThan(49)
   expect(plano.orcamento.permitido).toBe(true)
   expect(JSON.stringify(p.cena)).toBe(antes)
