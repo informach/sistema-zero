@@ -9,6 +9,7 @@ import {
   soundManifest,
 } from '#core'
 import { isDocumentRecord } from '../core/projectDocument'
+import { criarTransporteDeCenas3D } from '../core/scene3d/transporte'
 import { extensionBootstrapContext } from '../extensions/runtime'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import {
@@ -82,6 +83,7 @@ export async function renderProjectToPreviewDocAsync(
   const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
   // Modelos da biblioteca dos cursos: o projeto guarda a referência, o jogo precisa do arquivo.
   await preloadCourseModels(assets, files['script.js'])
+  const cenas3d = criarTransporteDeCenas3D(assets)
   const resources = await loadJavaScriptClassicResources(
     installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
     resolveGameUiFontId({ ir: playableProject.ir, files }),
@@ -91,6 +93,7 @@ export async function renderProjectToPreviewDocAsync(
       js: files['script.js'],
       extraFiles,
     }),
+    !!cenas3d,
   )
 
   return buildJavaScriptClassicDocument({
@@ -106,6 +109,7 @@ export async function renderProjectToPreviewDocAsync(
     ),
     sounds: soundManifest(assets),
     models3d: asset3DManifest(assets),
+    cenas3d,
     parentOrigin: opts.parentOrigin,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     securityProfile: opts.securityProfile,

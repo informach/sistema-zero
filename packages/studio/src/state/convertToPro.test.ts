@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { createEmptyProject, type Project } from '#core'
 import { javaScriptProject } from '../core/editableProject'
 import { buildProFileMap } from '../export/fileMap'
+import { THREE_VERSION } from '../three/threeRuntimeContract'
 import { convertClassicToProTree } from './convertToPro'
 import { sanitizeProjectForHost, useProjectStore } from './projectStore'
 import { sanitizeProTree } from './proTree'
@@ -64,7 +65,9 @@ describe('convertClassicToProTree', () => {
     expect(tree['src/converted/sz-ext']?.kind).toBe('dir')
     const index = (tree['index.html'] as { content: string }).content
     expect(index).not.toContain('importmap')
-    expect((tree['package.json'] as { content: string }).content).toContain('"three": "0.180.0"')
+    expect((tree['package.json'] as { content: string }).content).toContain(
+      `"three": "${THREE_VERSION}"`,
+    )
     expect(index).toContain('src="/src/converted/sz-ext/game-3d.js"')
     expect(index).toContain('src="/script.js" defer')
   })
