@@ -10,6 +10,7 @@ Curso bônus do Sistema Zero **para pais e responsáveis**, apresentado por Vivi
 | --- | --- |
 | Título, descrições e organização | [Módulos](modulos.md) |
 | Fontes, cobertura e pontos para a Vivianne conferir | [Fontes](fontes.md) |
+| Consulta opcional | [Apostila](apostila.pdf) |
 
 | Aula | Conteúdo | Roteiro | Texto para o ElevenLabs | Importação no Admin |
 | --- | --- | --- | --- | --- |
@@ -47,10 +48,13 @@ Curso bônus do Sistema Zero **para pais e responsáveis**, apresentado por Vivi
 2. No Admin, criar o curso com o slug `como-ajudar-seu-filho-autista-nas-frustracoes`, audiência Kids e **Para quem: Pais**, fora da Jornada, no formato gravado. Criar as cinco aulas com os slugs dos manifestos.
 3. Preencher título e descrições conforme [Módulos](modulos.md) e importar os cinco manifestos.
 4. Os vídeos estão como `plannedVideo`. Vincular as gravações.
-5. O bloco `certificado` fica na Aula 5 e registra a conclusão.
+5. O bloco `apostila` fica na Aula 1, como no outro curso para pais.
+6. O bloco `certificado` fica na Aula 5 e registra a conclusão.
 
 ## Estado desta entrega
 
 Roteiros, resumos de aula, textos para o ElevenLabs e manifestos escritos em 19/11/2026. Faltam a conferência da Vivianne, a geração da voz e dos vídeos, a importação no Admin e a publicação.
 
-**Apostila:** fica para a segunda etapa, depois da aprovação dos roteiros, com capa e cores a definir. Quando ela existir, entra o bloco de apostila na Aula 1.
+**Apostila (19/11/2026):** 10 páginas de consulta, sem campos para preencher: o mapa das aulas, uma ou duas folhas por aula e um resumo final de antes, durante e depois. Só traz o que está nas falas. O texto mora em `docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-caderno.ts`. Mudou uma fala? Confira se a apostila precisa acompanhar.
+
+**Tema visual:** a capa foi desenhada para este curso, a pedido da dona: a tempestade que vira calmaria, com um adulto e uma criança de mãos dadas, a partir da mensagem final da Vivianne. Dela saem as cores: azul-petróleo, verde-água e amarelo. O desenho de origem é o `capa.svg`, na pasta do gerador, exportado para `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-como-ajudar-seu-filho-autista-nas-frustracoes.jpg`. Se vier uma ilustração nova, basta trocar esse arquivo e gerar de novo.

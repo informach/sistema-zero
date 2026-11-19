@@ -18,6 +18,15 @@
         "kind": "rich_text",
         "markdown": "## Para consultar\n\n- Crise não é desobediência. É comunicação.\n- A criança não está dando conta de um excesso de estímulos, de uma mudança inesperada ou de uma barreira que não sabe atravessar.\n- Nem toda fala é verbal: o grito, o silêncio, o olhar e a fuga também comunicam.\n- Antes de rotular, corrigir ou julgar, escute o que o comportamento está dizendo."
       }
+    },
+    {
+      "key": "apostila",
+      "content": {
+        "kind": "materials",
+        "title": "Apostila do curso: Frustrações e crises",
+        "bookPreview": true,
+        "items": []
+      }
     }
   ],
   "sections": [
@@ -40,7 +49,7 @@
       "title": "O que ninguém te contou sobre a crise",
       "objective": "Mostrar que a crise comunica um excesso de estímulos, uma mudança inesperada ou uma barreira, e convidar à escuta.",
       "intent": "explanation",
-      "blockKeys": ["video-a1-comunicacao", "resumo-a1"],
+      "blockKeys": ["video-a1-comunicacao", "resumo-a1", "apostila"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],

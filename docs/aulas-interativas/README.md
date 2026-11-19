@@ -25,7 +25,7 @@ Os papéis seguem a [Jornada do Criador](../jornada-do-criador.md). Pastas e pro
 | Corre, Dino! | 13 | [Abrir](inventor/corre-dino/README.md) | [PDF](inventor/corre-dino/passo-a-passo-do-projeto.pdf) |
 | O Jogo do Meu Jeito | 8 | [Abrir](construtor/o-jogo-do-meu-jeito/README.md) | [PDF](construtor/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf) |
 | Transformando o vilão em aliado (para pais) | 7 | [Abrir](pais/transformando-o-vilao-em-aliado/README.md) | [Apostila](pais/transformando-o-vilao-em-aliado/apostila.pdf) |
-| Como ajudar seu filho autista a lidar com frustrações e evitar crises (para pais, bônus) | 5 | [Abrir](pais/como-ajudar-seu-filho-autista-nas-frustracoes/README.md) | Segunda etapa |
+| Como ajudar seu filho autista a lidar com frustrações e evitar crises (para pais, bônus) | 5 | [Abrir](pais/como-ajudar-seu-filho-autista-nas-frustracoes/README.md) | [Apostila](pais/como-ajudar-seu-filho-autista-nas-frustracoes/apostila.pdf) |
 
 Em cada aula:
 
