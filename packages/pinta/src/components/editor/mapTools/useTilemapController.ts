@@ -125,6 +125,7 @@ export function useTilemapController(model: ReadyMapModel) {
   // As ações que dependem da camada ativa religam a cada render; os listeners chamam por aqui.
   const deleteSelectionRef = useRef<() => void>(() => {})
   const deleteObjectRef = useRef<() => boolean>(() => false)
+  const cancelGestureRef = useRef<() => boolean>(() => false)
   const stampPendingRef = useRef<() => void>(() => {})
   // A barra do pedaço: clicar NELA não pode desselecionar.
   const selectionBarRef = useRef<HTMLDivElement>(null)
@@ -281,6 +282,7 @@ export function useTilemapController(model: ReadyMapModel) {
     hasSelection: () => selRef.current !== null,
     deleteSelectionRef,
     deleteObjectRef,
+    cancelGestureRef,
   })
   useWheelZoom(stageRef, paperRef)
 
@@ -378,6 +380,7 @@ export function useTilemapController(model: ReadyMapModel) {
     onGestureEnd: () => setPaintTick((v) => v + 1),
     isLocked,
   })
+  cancelGestureRef.current = () => tiles.cancel()
 
   // A ferramenta de agora decide quem recebe o ponteiro do palco de peças.
   const canvasHandlers =
@@ -393,7 +396,7 @@ export function useTilemapController(model: ReadyMapModel) {
           onPointerDown: tiles.down,
           onPointerMove: tiles.move,
           onPointerUp: tiles.up,
-          onPointerCancel: tiles.up,
+          onPointerCancel: tiles.cancel,
           onPointerLeave: tiles.leave,
         }
 

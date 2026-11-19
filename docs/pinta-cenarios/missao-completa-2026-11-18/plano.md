@@ -73,6 +73,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   `qa/fechamento-integracao/README.md`. Isso não encerra o ciclo autenticado.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
   transição, prévia, determinismo, vizinhos, undo/redo e cancelamento em navegador.
+  Gestos verificados em desktop, toque e CPU 4×; corrigido cancelamento por Esc e
+  `pointercancel`, incluindo crescimento e recuperação de conflito. Provas em
+  `qa/terrenos-e-cancelamento-2026-11-19/README.md`. Modelos de terrenos prontos para
+  o iniciante ainda precisam de entrega e homologação antes de fechar esta etapa.
 - [ ] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.
 - [ ] 4b. Pincel de objetos/conjuntos: densidade, afastamento, semente, prévia e um histórico
   por gesto; manter diferença entre conjunto vinculado e cópia independente.

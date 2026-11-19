@@ -39,9 +39,19 @@ export function useMapKeyboard(options: {
   deleteSelectionRef: RefObject<() => void>
   /** Apaga os objetos escolhidos; devolve se a tecla foi usada. */
   deleteObjectRef: RefObject<() => boolean>
+  /** Cancela o gesto ativo de pintura sem confirmar a prévia. */
+  cancelGestureRef: RefObject<() => boolean>
 }): void {
-  const { session, mode, level, allowTools, hasSelection, deleteSelectionRef, deleteObjectRef } =
-    options
+  const {
+    session,
+    mode,
+    level,
+    allowTools,
+    hasSelection,
+    deleteSelectionRef,
+    deleteObjectRef,
+    cancelGestureRef,
+  } = options
   // Zoom pelo teclado (Ctrl+= / Ctrl+- / Ctrl+0), como nos outros dois editores.
   useActionShortcuts([
     { combo: shortcut('zoomIn'), run: () => session.getState().zoomIn(), repeat: true },
@@ -56,11 +66,15 @@ export function useMapKeyboard(options: {
   // biome-ignore lint/correctness/useExhaustiveDependencies: as ações chegam por ref, o listener é um só
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
-      if (event.key !== 'Delete' && event.key !== 'Backspace') return
+      if (event.key !== 'Delete' && event.key !== 'Backspace' && event.key !== 'Escape') return
       if (event.ctrlKey || event.metaKey || event.defaultPrevented) return
       if (isTextEntryTarget(event.target)) return
       // Com uma janela do Pinta aberta, o desenho atrás dela fica quieto.
       if (isPintaModalOpen()) return
+      if (event.key === 'Escape') {
+        if (cancelGestureRef.current()) event.preventDefault()
+        return
+      }
       if (!hasSelection()) {
         if (deleteObjectRef.current()) event.preventDefault()
         return

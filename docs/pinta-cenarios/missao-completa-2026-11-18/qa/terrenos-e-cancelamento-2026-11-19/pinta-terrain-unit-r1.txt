@@ -1,0 +1,97 @@
+bun test v1.3.11 (af24e281)
+
+src\tiles\terrain.test.ts:
+(pass) terreno inteligente não estraga peças de fora > modo corner: as vizinhas com peça de fora ficam como estavam
+(pass) terreno inteligente não estraga peças de fora > modo edge: as vizinhas com peça de fora ficam como estavam
+(pass) terreno inteligente não estraga peças de fora > modo mixed: as vizinhas com peça de fora ficam como estavam
+(pass) terreno inteligente não estraga peças de fora > a casa pintada troca a peça de fora por uma do terreno
+(pass) terreno inteligente não estraga peças de fora > a vizinha vazia ganha a borda e a vizinha do terreno se ajusta
+(pass) terreno inteligente não estraga peças de fora > vizinha sem encaixe novo não é sorteada de novo
+(pass) terreno inteligente não estraga peças de fora > camada trancada não é pintada
+(pass) terrainRegion > junta as casas vizinhas com a mesma peça e para na peça diferente
+(pass) terrainRegion > com terreno, compara o encaixe e não o número da peça
+(pass) terrainRegion > fora do mapa ou camada que não existe devolve vazio
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 0
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 4096
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 8192
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 12288
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 16384
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 20480
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 24576
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 28672
+(pass) regressões da revisão de terrenos > balde no vazio não atravessa árvores ou casas alheias ao terreno
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 0
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 4096 [16.00ms]
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 8192
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 12288
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 16384
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 20480
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 24576
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 28672
+
+src\components\editor\mapToolsUi.test.tsx:
+(pass) níveis do editor de mapa > colisão de camada em Criar mais não abre controles técnicos e permanece ao voltar para Começar [781.00ms]
+(pass) níveis do editor de mapa > perfil novo abre em "Começar": poucas ferramentas, poucos painéis e o teste [344.00ms]
+(pass) níveis do editor de mapa > "Criar mais" e "Avançado" mostram mais, e a escolha fica guardada [484.00ms]
+(pass) níveis do editor de mapa > a letra do atalho respeita o nível [266.00ms]
+(pass) níveis do editor de mapa > o que o mapa já usa aparece mesmo em "Começar" [187.00ms]
+(pass) camadas do mapa > subir a camada que já está em cima e pedir grupo no teto não criam desfazer [3125.00ms]
+(pass) camadas do mapa > camada trancada: marcar colisão avisa e não muda nada [297.00ms]
+(pass) camadas do mapa > nomes vêm do texto central e os alvos de toque têm 44 px [125.00ms]
+(pass) balde no mapa > área que já está igual não cria desfazer; a pintada cria um [219.00ms]
+(pass) balde no mapa > a peça virada enche a área virada [1219.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com pointercancel não grava nem ocupa o desfazer [312.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com Escape não grava nem ocupa o desfazer [250.00ms]
+(pass) terreno, espalhar e animação da peça > "Peças (separe por vírgula)" aceita a vírgula digitada [141.00ms]
+(pass) terreno, espalhar e animação da peça > o nome do terreno grava ao sair do campo: um desfazer por nome [219.00ms]
+(pass) terreno, espalhar e animação da peça > a duração do quadro só vale ao sair do campo: "500" grava 500, uma vez [296.00ms]
+(pass) objetos do mapa > arte: guardar versão, desfazer/refazer, reconectar e limpar sem perder a animação escolhida [8844.00ms]
+(pass) objetos do mapa > Delete sem nada escolhido não cria desfazer [172.00ms]
+(pass) objetos do mapa > distribuir com dois objetos não cria desfazer; alinhar cria um [2516.00ms]
+(pass) objetos do mapa > colar põe a cópia onde o ponteiro esteve por último sem encaixe [2484.00ms]
+(pass) objetos do mapa > biblioteca: o desenho nasce no ponteiro, e a camada trancada avisa [1391.00ms]
+(pass) formas ponto a ponto > cada toque põe um ponto; Enter fecha o polígono; Esc cancela [1578.00ms]
+(pass) formas ponto a ponto > tocar no primeiro ponto e o toque duplo também fecham [2531.00ms]
+(pass) formas ponto a ponto > arrastar um ponto muda a forma com um desfazer; Delete tira o ponto [2781.00ms]
+(pass) formas ponto a ponto > tocar num trecho põe um ponto novo, e o Delete tira o ponto escolhido [2485.00ms]
+(pass) formas ponto a ponto > objeto girado tem alças: puxar o canto muda o tamanho [1422.00ms]
+(pass) guardar conjunto > diz que guardou e o conjunto aparece na galeria [265.00ms]
+(pass) editor de conjunto > ação que não muda nada não cria desfazer; apagar uma casa cria um [422.00ms]
+(pass) minimapa > tocar no minimapa leva o palco para aquele lugar [16.00ms]
+(pass) minimapa > mostra o retângulo da parte que aparece na tela e segue a rolagem [31.00ms]
+(pass) testar com personagem > abre com o boneco do Pinta, os personagens da galeria e as duas vistas [234.00ms]
+(pass) inserção e colagem no espaço da camada > biblioteca desconta offset herdado e respeita encaixe false [1375.00ms]
+(pass) inserção e colagem no espaço da camada > biblioteca desconta offset herdado e respeita encaixe true [1297.00ms]
+(pass) inserção e colagem no espaço da camada > colar desconta offset herdado e respeita encaixe false [2344.00ms]
+(pass) inserção e colagem no espaço da camada > colar desconta offset herdado e respeita encaixe true [2391.00ms]
+(pass) inserção e colagem no espaço da camada > Começar mostra a biblioteca de desenhos [156.00ms]
+(pass) biblioteca usa o tamanho inteiro do conjunto para posicioná-lo dentro do mapa [1328.00ms]
+
+src\components\editor\mapTools\mapTools.test.ts:
+(pass) balde > enche com a peça do carimbo, com os bits de virar
+(pass) balde > sem carimbo, enche com a peça escolhida
+(pass) balde > área que já está igual e camada trancada devolvem o MESMO mapa (nada a gravar)
+(pass) balde > com "espalhar" ligado, o balde espalha na região inteira [15.00ms]
+(pass) pincel > lápis, borracha e carimbo
+(pass) pincel > terreno sem as peças de borda avisa e não muda o mapa
+(pass) guarda dos commits > mesmo conteúdo em outro objeto não é gravado; conteúdo diferente é
+(pass) seleção de um pedaço do mapa > pedaço só de grade vazia não vira seleção
+(pass) seleção de um pedaço do mapa > marca, levanta, leva para outro lugar e carimba com UM desfazer
+(pass) seleção de um pedaço do mapa > levantar e soltar no MESMO lugar não cria desfazer
+(pass) seleção de um pedaço do mapa > camada trancada: o pedaço não é levantado e apagar não grava nada
+(pass) seleção de um pedaço do mapa > apagar o pedaço marcado limpa as casas com um desfazer; de novo, nada
+(pass) níveis das ferramentas > cada nível mostra mais ferramentas que o anterior
+(pass) níveis das ferramentas > soma com a curadoria da aula e nunca a alarga
+(pass) níveis das ferramentas > a letra do atalho só liga o que está na caixa
+(pass) níveis das ferramentas > os painéis de cada nível
+(pass) níveis das ferramentas > colisão de camada aparece em Criar mais e continua acessível quando o mapa a usa
+(pass) níveis das ferramentas > o que o mapa já usa aparece em qualquer nível
+(pass) níveis das ferramentas > o nível fica guardado por perfil; sem nada guardado é "Começar"
+(pass) minimapa > as cores de um conjunto de peças são calculadas uma vez e reusadas
+(pass) minimapa > o retângulo do que aparece na tela, em frações do mapa
+(pass) relógio das peças animadas > a chave só muda quando algum quadro troca
+
+ 85 pass
+ 0 fail
+ 832 expect() calls
+Ran 85 tests across 3 files. [45.39s]
