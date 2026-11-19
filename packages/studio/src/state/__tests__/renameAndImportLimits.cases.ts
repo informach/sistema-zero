@@ -92,8 +92,8 @@ describe('renameProject (escrita só-metadado, #4)', () => {
     //    inteiro (que reescreveria meta+files+state a partir do snapshot estale do disco).
     expect(fakeIdbWrites()).toHaveLength(1)
     const puts = fakeIdbPuts(fakeIdbWrites()[0])
-    expect([...puts.keys()]).toEqual(['sz:v3:project-meta:p-rename', 'sz:v3:project-head:p-rename'])
-    const value = puts.get('sz:v3:project-meta:p-rename') as Record<string, unknown>
+    expect([...puts.keys()]).toEqual(['sz:v4:project-meta:p-rename', 'sz:v4:project-head:p-rename'])
+    const value = puts.get('sz:v4:project-meta:p-rename') as Record<string, unknown>
     expect(value.name).toBe('Nome novo')
     // O registro de meta NÃO carrega files/state — eles ficam intocados no disco.
     expect(value).not.toHaveProperty('files')

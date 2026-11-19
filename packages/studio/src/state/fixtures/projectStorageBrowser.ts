@@ -1,5 +1,5 @@
 import demoAssets from '../../../playground/moldaDemoAssets.json'
-import type { Project } from '../../core/project'
+import { createEmptyProject, type Project } from '../../core/project'
 import {
   createPersistenceService,
   setAutosaveDelayForTests,
@@ -7,8 +7,9 @@ import {
 } from '../../persistence/service'
 import { localSnapshotsEqual } from '../../project-migrations/localTransaction'
 import { decodeRecoverySnapshot } from '../exitJournalDecode'
-import { readAllKeys, readValue, readValues } from '../idbTransaction'
+import { readAllKeys, readValue, readValues, writeInOneTransaction } from '../idbTransaction'
 import {
+  bindProjectToDurableHead,
   coordinatedProjectWrite,
   projectExitRecoveryStatus,
   recoverProjectWrites,
@@ -106,6 +107,47 @@ const scope =
         }),
       }
     : nativeScope
+// A separate document proves that binding prepares the transport before any
+// current-version read has incidentally loaded it in this JavaScript realm.
+if (new URLSearchParams(location.search).has('cold-bind')) {
+  let coldWriteRejected = false
+  const cold = createEmptyProject(`${id}-cold`, 'Primeira saída profunda')
+  try {
+    await writeInOneTransaction(scope.store, { puts: projectStorageEntries(cold) })
+  } catch {
+    coldWriteRejected = true
+  }
+  if (!coldWriteRejected) throw new Error('Cold transport probe unexpectedly wrote a document')
+  await bindProjectToDurableHead(cold, scope)
+  let futureMetadata: Record<string, unknown> = { leaf: 'preserved', absent: undefined, zero: -0 }
+  for (let depth = 0; depth < 40_000; depth++) futureMetadata = { child: futureMetadata }
+  const draft = Object.assign(advanceLocalRevision(cold, { ...cold }), { futureMetadata })
+  await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, scope)
+  const key = projectRecoveryKey(draft.id, readLocalRevision(draft)!.lineage.writer)
+  const nativePresent = (await readAllKeys(scope.store)).includes(key)
+  if (!nativePresent) throw new Error('Binding did not prepare a complete native exit copy')
+  await recoverProjectWrites(scope, draft.id)
+  const meta = (await readValue(scope.store, projectMetaKey(draft.id))) as {
+    futureMetadata: Record<string, unknown>
+  }
+  let leaf = meta.futureMetadata
+  for (let depth = 0; depth < 40_000; depth++) leaf = leaf.child as Record<string, unknown>
+  if (leaf.leaf !== 'preserved' || !Object.hasOwn(leaf, 'absent') || !Object.is(leaf.zero, -0))
+    throw new Error('Cold exit recovery changed the deep document')
+  const nativeAcknowledged = !(await readAllKeys(scope.store)).includes(key)
+  const synchronousAcknowledged =
+    readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, draft.id).length === 0
+  Object.assign(window, {
+    coldStorageResult: {
+      coldWriteRejected,
+      nativePresent,
+      nativeAcknowledged,
+      synchronousAcknowledged,
+      depth: 40_000,
+    },
+  })
+  await new Promise<void>(() => {}) // The driver inspects this document and closes it.
+}
 const recoveredProjectIds = await recoverProjectWrites(scope, id)
 const [meta, files, stateRecord, assets, blocks, head] = await readValues(scope.store, [
   projectMetaKey(id),
@@ -225,7 +267,7 @@ Object.assign(window, {
       await stageProjectExit(child, { puts: projectStorageEntries(child) }, scope)
       await save(child)
       const keys = (await readAllKeys(scope.store)).filter((key) =>
-        String(key).startsWith(`sz:project-backup:${base.id}:recovery-`),
+        String(key).startsWith(`sz:v4:project-backup:${base.id}:recovery-`),
       )
       if (keys.length !== 1) throw new Error('Missing unique ancestor archive')
       const archive = (await readValue(scope.store, keys[0]!)) as { encoded: string }

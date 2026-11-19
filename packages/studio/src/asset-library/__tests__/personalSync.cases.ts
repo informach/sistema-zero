@@ -2229,3 +2229,67 @@ describe('M2 (full review 26/09/2026): a religação que MUDA o projeto restaura
     }
   })
 })
+
+it('a pending migration preserves the drawing update for the next successful sweep', async () => {
+  await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+  const project = createEmptyProject('pending-drawing', 'Desenho preservado')
+  project.assets = [drawingAsset({})]
+  await persistProject(project)
+  await syncDrawingsIntoProjects(useProjectStore)
+  await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+  const { readValue, writeInOneTransaction } = await import('../../state/idbTransaction')
+  const { projectMetaKey } = await import('../../state/projectStorageKeys')
+  const scope = captureProjectStorageScope()
+  const key = projectMetaKey(project.id)
+  const readable = (await readValue(scope.store, key)) as Record<string, unknown>
+  const future = { ...readable, storageVersion: 999 }
+  await writeInOneTransaction(scope.store, { puts: [[key, future]] })
+  const refused = await syncDrawingsIntoProjects(useProjectStore)
+  expect(refused.failures).toEqual([])
+  expect(refused.updatedInOtherProjects).toBe(0)
+  expect(await readValue(scope.store, key)).toEqual(future)
+  await writeInOneTransaction(scope.store, { puts: [[key, readable]] })
+  const recovered = await syncDrawingsIntoProjects(useProjectStore)
+  expect(recovered.failures).toEqual([])
+  expect(recovered.updatedInOtherProjects).toBe(1)
+  expect((await loadProjectAssetsById(project.id))[0]?.dataUrl).toBe(PNG_NOVO)
+})
+
+it('an unreadable legacy project keeps the drawing revision pending even in the lightweight list', async () => {
+  await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+  await syncDrawingsIntoProjects(useProjectStore)
+  const project = createEmptyProject('legacy-pending-drawing', 'Projeto preservado')
+  project.assets = [drawingAsset({})]
+  const { readValue, writeInOneTransaction } = await import('../../state/idbTransaction')
+  const { projectMetaKey } = await import('../../state/projectStorageKeys')
+  const { projectStorageEntries } = await import('../../state/projectStorageRecords')
+  const scope = captureProjectStorageScope()
+  const key = projectMetaKey(project.id, 3)
+  await writeInOneTransaction(scope.store, {
+    puts: [
+      ...projectStorageEntries(project, 3),
+      [
+        projectHeadKey(project.id, 3),
+        {
+          version: 1,
+          token: 'legacy-drawing-head',
+          writer: 'legacy-client',
+          base: null,
+          sequence: 1,
+        },
+      ],
+    ],
+  })
+  const readable = (await readValue(scope.store, key)) as Record<string, unknown>
+  await writeInOneTransaction(scope.store, { puts: [[key, { ...readable, formatVersion: 9999 }]] })
+  await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+  expect(await syncDrawingsIntoProjects(useProjectStore)).toMatchObject({
+    failures: [],
+    updatedInOtherProjects: 0,
+  })
+  await writeInOneTransaction(scope.store, { puts: [[key, readable]] })
+  const recovered = await syncDrawingsIntoProjects(useProjectStore)
+  expect(recovered.failures).toEqual([])
+  expect(recovered.updatedInOtherProjects).toBe(1)
+  expect((await loadProjectAssetsById(project.id))[0]?.dataUrl).toBe(PNG_NOVO)
+})

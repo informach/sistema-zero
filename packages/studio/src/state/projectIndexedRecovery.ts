@@ -175,9 +175,16 @@ export async function listPreservedProjectDrafts(
     (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX),
   )
   const records = await readValues(scope.store, keys)
-  return records.flatMap((value) => {
-    const draft = value as RecoveryWrite | undefined
-    if (draft?.version !== 1 || !Array.isArray(draft.write?.puts)) return []
+  const { nativeRecovery } = await import('./projectRecoveryGuards')
+  return records.flatMap((value, index) => {
+    let draft: RecoveryWrite
+    try {
+      draft = nativeRecovery(value, keys[index]!)
+    } catch {
+      // Discovery reports the preserved source as pending. It cannot advertise
+      // another project as recoverable without a matching full storage identity.
+      return []
+    }
     const project = projectFromRecovery(draft)
     if (!project) return []
     const summary = toProjectSummary(project.id, project)

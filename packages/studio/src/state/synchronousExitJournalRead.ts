@@ -51,3 +51,31 @@ export function readSynchronousExitJournal(
   }
   return result
 }
+
+/** Enumerate owners before decoding bodies so one future payload can be isolated by ID. */
+export function synchronousExitProjectIds(storage: Storage | undefined, scope: string): string[] {
+  if (!storage) return []
+  const ids = new Set<string>()
+  let keys: string[]
+  try {
+    keys = Object.keys(storage)
+  } catch (error) {
+    throw exitJournalUnavailable(error)
+  }
+  for (const key of keys) {
+    if (!key.startsWith(EXIT_JOURNAL_PREFIX)) continue
+    const parts = key.slice(EXIT_JOURNAL_PREFIX.length).split('|')
+    if (parts[1] !== encodeURIComponent(scope)) continue
+    try {
+      const id = decodeURIComponent(parts[2] ?? '')
+      if (!id) throw new Error('Identidade ausente')
+      ids.add(id)
+    } catch (error) {
+      throw new ExitJournalError(
+        'Uma cópia de recuperação não tem identidade legível. Ela foi preservada.',
+        { cause: error },
+      )
+    }
+  }
+  return [...ids]
+}

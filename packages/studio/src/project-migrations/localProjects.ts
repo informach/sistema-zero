@@ -1,16 +1,27 @@
 import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocument'
 import { prepareProjectStorageWrite, readValues } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
+import { recoverProjectWrites } from '../state/projectStorageCoordinator'
 import {
   PROJECT_STORAGE_VERSION,
   type ProjectStorageVersion,
+  projectAssetsKey,
   projectBackupKey,
+  projectBlocksKey,
+  projectFilesKey,
   projectHeadKey,
   projectMetaKey,
   projectMigrationKey,
+  projectStateKey,
   projectThumbKey,
 } from '../state/projectStorageKeys'
-import { assembleProjectRecord, projectStorageEntries } from '../state/projectStorageRecords'
+import { readCurrentProject } from '../state/projectStorageRead'
+import {
+  assembleProjectRecord,
+  projectStorageEntries,
+  type StoredProjectRecord,
+} from '../state/projectStorageRecords'
+import { installLocalRevision, isLocalHead } from '../state/projectStorageRevision'
 import { gameStorageKey, type ProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSummary, projectEnvironmentSummary } from '../state/projectSummary'
 import { prepareProjectForHost } from '../state/projectValidation'
@@ -272,4 +283,52 @@ export async function migrateLocalProjects(
     }
   }
   return { changed, pending }
+}
+
+/** Point-read adapter over the same migrations; it never bypasses current-part guards. */
+export async function loadLocalHistoricalProject(
+  id: string,
+  scope: ProjectStorageScope,
+  notifyChanged: (ids: string[]) => void,
+): Promise<StoredProjectRecord | null> {
+  const historicalKeys = [
+    `sz:project:${id}`,
+    `sz:v2:project:${id}`,
+    `sz:project-meta:${id}`,
+    `sz:v2:project-meta:${id}`,
+  ]
+  let old: readonly unknown[]
+  if (PROJECT_STORAGE_VERSION === 4) {
+    notifyChanged(await recoverProjectWrites(scope, id))
+    // One atomic probe for the destination and older formats. Missing IDs must
+    // not pay a separate transaction for each generation of local storage.
+    const snapshot = await readValues(scope.store, [
+      projectMetaKey(id),
+      projectFilesKey(id),
+      projectStateKey(id),
+      projectBlocksKey(id),
+      projectAssetsKey(id),
+      projectHeadKey(id),
+      ...historicalKeys,
+    ])
+    const current = await readCurrentProject(id, scope, snapshot.slice(0, 6))
+    if (current) return current
+    old = snapshot.slice(6)
+  } else old = await readValues(scope.store, historicalKeys)
+  if (!old.some(Boolean)) return null
+  const migrated = await migrateLocalProject(id, scope)
+  if (migrated) notifyChanged([migrated])
+  const [meta, files, state, blocks, assets, head] = await readValues(scope.store, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectStateKey(id),
+    projectBlocksKey(id),
+    projectAssetsKey(id),
+    projectHeadKey(id),
+  ])
+  const project =
+    meta && files && state ? assembleProjectRecord(id, meta, files, state, assets, blocks) : null
+  return project
+    ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
+    : null
 }

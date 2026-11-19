@@ -66,7 +66,13 @@ export async function recoverLocalV3ProjectWrites(
     (key): key is string => typeof key === 'string' && key.startsWith(prefix),
   )
   const values = await readValues(scope.store, keys)
+  // Missing is different from an existing record whose invalid payload is undefined.
+  const stillPresent = values.some((value) => value === undefined)
+    ? new Set(await readAllKeys(scope.store))
+    : undefined
   for (const [index, value] of values.entries()) {
+    // Captured keys may outlive a journal consumed by another replay/tab.
+    if (value === undefined && !stillPresent?.has(keys[index]!)) continue
     const recovery = nativeRecovery(value, keys[index]!, 3)
     if (projectId !== undefined && recovery.projectId !== projectId) continue
     const entry: ExitJournalEntry = {

@@ -451,6 +451,10 @@ export async function recoverProjectWrites(
   projectId?: string,
   knownKeys?: readonly IDBValidKey[],
 ): Promise<string[]> {
+  if (PROJECT_STORAGE_VERSION === 4) {
+    const { prepareLocalV4ProjectReads } = await import('../project-migrations/localV3Projects')
+    return (await prepareLocalV4ProjectReads(scope, knownKeys, projectId)).changed
+  }
   if (!hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity))
     return (await recoverIndexedProjectWrites(scope, projectId, knownKeys)).recovered
   const { recoverSynchronousProjectWrites } = await import('./projectSynchronousExitRecovery')
@@ -513,6 +517,9 @@ export async function bindProjectToDurableHead(
     await ensureProjectHead(scope, project.id)
     ;[head] = await readValues(scope.store, [projectHeadKey(project.id)])
   }
+  // Capture the baseline before preparation: a restore must not inherit permission
+  // to overwrite a document that was newly migrated/recovered during this await.
+  if (PROJECT_STORAGE_VERSION === 4) await recoverProjectWrites(scope, project.id)
   installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
 }
 

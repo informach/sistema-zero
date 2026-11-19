@@ -1,6 +1,6 @@
 /** A versão faz parte das chaves: abas antigas não escrevem nos projetos atuais. */
 export type ProjectStorageVersion = 3 | 4
-export const PROJECT_STORAGE_VERSION: ProjectStorageVersion = 3
+export const PROJECT_STORAGE_VERSION: ProjectStorageVersion = 4
 const projectKey = (
   part: string,
   id: string,
@@ -35,3 +35,23 @@ export const projectRecoveryKey = (id: string, writer: string, version?: Project
   projectKey('recovery', `${id}:${writer}`, version)
 export const projectBackupKey = (id: string, hash: string, version?: ProjectStorageVersion) =>
   projectKey('backup', `${id}:${hash}`, version)
+
+/** Retained v3 control records alone are not an active legacy base after migration. */
+export function localV3BaseIds(keys: readonly IDBValidKey[]): string[] {
+  const present = new Set(keys)
+  const ids = new Set<string>()
+  for (const key of keys) {
+    if (typeof key !== 'string') continue
+    const match =
+      /^sz:v3:project-(meta|files|state|blocks|assets|thumb|head|applications|source):(.+)$/.exec(
+        key,
+      )
+    if (!match) continue
+    const [, part, id] = match
+    if (!id) continue
+    const data = ['meta', 'files', 'state', 'blocks', 'assets', 'thumb'].includes(part!)
+    if (data || (!present.has(projectMetaKey(id, 4)) && !present.has(projectHeadKey(id, 4))))
+      ids.add(id)
+  }
+  return [...ids]
+}

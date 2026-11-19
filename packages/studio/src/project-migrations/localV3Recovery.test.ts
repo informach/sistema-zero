@@ -13,6 +13,7 @@ import {
   prepareLocalV3Recovery,
   stageLocalV3Recovery,
 } from './localV3Recovery'
+import { recoverLocalV3ProjectWrites } from './localV3RecoveryReplay'
 
 async function fixture() {
   const identity = `legacy-recovery-${crypto.randomUUID()}`
@@ -328,3 +329,38 @@ test('quota on the second staging put rolls back the archive and keeps the nativ
     f.close()
   }
 })
+
+test('an already consumed journal in a captured key list does not block reopening the confirmed v4 project', async () => {
+  const f = await fixture()
+  try {
+    const key = projectRecoveryKey(f.project.id, f.entry.writer, 3)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, f.entry.value]] })
+    const observed = await readAllKeys(f.scope.store)
+    expect(await recoverLocalV3ProjectWrites(f.scope, f.project.id, observed)).toContain(
+      f.project.id,
+    )
+    const confirmed = await readValue(f.scope.store, projectMetaKey(f.project.id, 4))
+    expect(confirmed).toMatchObject({ name: f.project.name })
+    expect(await readValue(f.scope.store, key)).toBeUndefined()
+    expect(await recoverLocalV3ProjectWrites(f.scope, f.project.id, observed)).toEqual([])
+    expect(await readValue(f.scope.store, projectMetaKey(f.project.id, 4))).toEqual(confirmed)
+  } finally {
+    f.close()
+  }
+})
+
+for (const payload of [undefined, null, 0, { version: 2 }])
+  test(`a present invalid journal is preserved rather than treated as a disappeared source: ${String(payload)}`, async () => {
+    const f = await fixture()
+    try {
+      const key = projectRecoveryKey(f.project.id, f.entry.writer, 3)
+      await writeInOneTransaction(f.scope.store, { puts: [[key, payload]] })
+      const observed = await readAllKeys(f.scope.store)
+      await expect(recoverLocalV3ProjectWrites(f.scope, f.project.id, observed)).rejects.toThrow()
+      expect(await readAllKeys(f.scope.store)).toContain(key)
+      expect(await readValue(f.scope.store, key)).toEqual(payload)
+      expect(await readValue(f.scope.store, projectMetaKey(f.project.id, 4))).toBeUndefined()
+    } finally {
+      f.close()
+    }
+  })

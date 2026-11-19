@@ -120,11 +120,20 @@ describe('corte local com IndexedDB transacional', () => {
       formatVersion: 2,
     })
     const backupKeys = (await readAllKeys(scope.store)).filter((key) =>
-      String(key).startsWith('sz:project-backup:'),
+      String(key).startsWith('sz:v4:project-backup:'),
     )
     expect(backupKeys).toHaveLength(1)
     expect(await readValue(scope.store, backupKeys[0]!)).toMatchObject({
-      records: [original, undefined, undefined, undefined, undefined, undefined, undefined],
+      version: 2,
+      records: {
+        'sz:project:old': original,
+        'sz:project-meta:old': undefined,
+        'sz:project-files:old': undefined,
+        'sz:project-state:old': undefined,
+        'sz:project-blocks:old': undefined,
+        'sz:project-assets:old': undefined,
+        'sz:project-thumb:old': undefined,
+      },
     })
     const currentFiles = {
       id: 'old',
@@ -142,7 +151,7 @@ describe('corte local com IndexedDB transacional', () => {
     await migrateLocalProject('old', scope)
     expect(await readValue(scope.store, projectFilesKey('old'))).toEqual(currentFiles)
     const metas = (await readAllKeys(scope.store)).filter((key) =>
-      String(key).startsWith('sz:v3:project-meta:recuperado-'),
+      String(key).startsWith(projectMetaKey('recuperado-')),
     )
     expect(metas).toHaveLength(1)
     const recovery = await readValue(scope.store, metas[0]!)
@@ -150,7 +159,7 @@ describe('corte local com IndexedDB transacional', () => {
     await migrateLocalProject('old', scope)
     expect(
       (await readAllKeys(scope.store)).filter((key) =>
-        String(key).startsWith('sz:v3:project-meta:recuperado-'),
+        String(key).startsWith(projectMetaKey('recuperado-')),
       ),
     ).toEqual(metas)
   })
@@ -170,9 +179,7 @@ describe('corte local com IndexedDB transacional', () => {
     })
     await migrateLocalProject('old', scope)
     expect(
-      (await readAllKeys(scope.store)).filter((key) =>
-        String(key).startsWith('sz:v3:project-meta:'),
-      ),
+      (await readAllKeys(scope.store)).filter((key) => String(key).startsWith(projectMetaKey(''))),
     ).toEqual([])
   })
 

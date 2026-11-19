@@ -28,6 +28,11 @@ const KNOWN_METADATA = new Set([
   'storageVersion',
 ])
 
+/** Known optional projections can be normalized; future fields must retain presence. */
+export function isKnownProjectField(key: string): boolean {
+  return PARTITION_FIELDS.has(key) || KNOWN_METADATA.has(key)
+}
+
 export function projectMetadataSnapshot(project: object) {
   const metadata: Array<[string, unknown]> = []
   const unknown: Array<[string, unknown]> = []

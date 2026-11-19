@@ -103,6 +103,7 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     ).toEqual([])
     for (const module of [
       'projectStorageTransport',
+      'projectStorageRead',
       'projectJsonGraphDecode',
       'projectIndexedRecovery',
       'projectRecoveryGuards',

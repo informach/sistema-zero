@@ -44,6 +44,20 @@ for (const [name, engine] of [
     context.on('page', (page) =>
       page.on('pageerror', (error) => process.stderr.write(`${name}: ${error.message}\n`)),
     )
+    const cold = await context.newPage()
+    const coldURL = new URL(fixtureURL(`cold-${name}`))
+    coldURL.searchParams.set('cold-bind', '1')
+    await cold.goto(coldURL.href, { waitUntil: 'commit' })
+    await cold.waitForFunction(() => Boolean(window.coldStorageResult))
+    assert.deepEqual(await cold.evaluate(() => window.coldStorageResult), {
+      coldWriteRejected: true,
+      nativePresent: true,
+      nativeAcknowledged: true,
+      synchronousAcknowledged: true,
+      depth: 40_000,
+    })
+    phase('cold-bind-native-exit-verified')
+    await cold.close()
     const page = await context.newPage()
     await page.goto(fixtureURL(`reload-${name}`))
     await page.waitForFunction(() => Boolean(window.storageHarness))

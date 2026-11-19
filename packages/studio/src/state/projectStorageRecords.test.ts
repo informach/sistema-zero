@@ -1,12 +1,13 @@
 import { expect, test } from 'bun:test'
-import { documentFixture } from './fixtures/projectDocuments'
 import { createEmptyProject } from '../core/project'
-import { prepareProjectForHost } from './projectValidation'
+import { documentFixture } from './fixtures/projectDocuments'
+import { PROJECT_STORAGE_VERSION } from './projectStorageKeys'
 import {
   assembleProjectRecord,
   projectStorageEntries,
   projectToMetaRecord,
 } from './projectStorageRecords'
+import { prepareProjectForHost } from './projectValidation'
 
 test('a migration chooses one namespace for every partition without changing the portable version', () => {
   const project = documentFixture('javascript', 'classic')
@@ -16,7 +17,7 @@ test('a migration chooses one namespace for every partition without changing the
     expect(projectToMetaRecord(project, version).storageVersion).toBe(version)
     expect(projectToMetaRecord(project, version).formatVersion).toBe(project.formatVersion)
   }
-  expect(projectStorageEntries(project)[0]?.[0]).toStartWith('sz:v3:')
+  expect(projectStorageEntries(project)[0]?.[0]).toStartWith(`sz:v${PROJECT_STORAGE_VERSION}:`)
 })
 
 test('legacy host validation keeps unknown metadata before it reaches local storage', async () => {
@@ -85,4 +86,28 @@ test('nested executable metadata is rejected and local symbols never become docu
   Object.assign(project, { futureMetadata: metadata })
   expect(() => projectToMetaRecord(project)).toThrow()
   expect(reads).toBe(0)
+})
+
+test('partition round-trip preserves unknown root undefined and signed zero', () => {
+  const project = Object.assign(createEmptyProject('future-metadata', 'Futuro'), {
+    futureSlot: undefined,
+    futureZero: -0,
+    futureMetadata: { absent: undefined, zero: -0 },
+  })
+  const entries = projectStorageEntries(project)
+  const part = (name: string) => entries.find(([key]) => key.includes(`:project-${name}:`))?.[1]
+  const restored = assembleProjectRecord(
+    project.id,
+    part('meta'),
+    part('files'),
+    part('state'),
+    part('assets'),
+    part('blocks'),
+  )!
+  expect(Object.hasOwn(restored, 'futureSlot')).toBe(true)
+  expect(restored.futureSlot).toBeUndefined()
+  expect(Object.is(restored.futureZero, -0)).toBe(true)
+  expect(Object.hasOwn(restored.futureMetadata as object, 'absent')).toBe(true)
+  expect(Object.is((restored.futureMetadata as { zero: number }).zero, -0)).toBe(true)
+  expect(Object.hasOwn(restored, 'python')).toBe(false)
 })

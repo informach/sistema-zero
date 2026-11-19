@@ -32,6 +32,8 @@ import { projectStorageEntries } from './projectStorageRecords'
 import {
   advanceLocalRevision,
   copyLocalRevision,
+  installLocalRevision,
+  localHead,
   type ProApplicationRecord,
   readLocalRevision,
 } from './projectStorageRevision'
@@ -43,7 +45,7 @@ import {
 } from './synchronousExitJournal'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
-async function fixture() {
+async function fixture(version: 3 | 4 = 4) {
   const identity = `sync-recovery-${crypto.randomUUID()}`
   const database = await new Promise<IDBDatabase>((resolve, reject) => {
     const request = new IDBFactory().open(identity, 1)
@@ -75,7 +77,19 @@ async function fixture() {
     'dev',
     'vanilla-vite',
   )
-  await coordinatedProjectWrite(project, { puts: projectStorageEntries(project) }, scope)
+  if (version === 3) {
+    const head = {
+      version: 1 as const,
+      token: crypto.randomUUID(),
+      writer: 'legacy-base',
+      base: null,
+      sequence: 0,
+    }
+    await writeInOneTransaction(scope.store, {
+      puts: [...projectStorageEntries(project, 3), [projectHeadKey(project.id, 3), head]],
+    })
+    installLocalRevision(project, scope.identity, head)
+  } else await coordinatedProjectWrite(project, { puts: projectStorageEntries(project) }, scope)
   const edit = (content: string) =>
     advanceLocalRevision(project, {
       ...project,
@@ -93,6 +107,35 @@ async function fixture() {
         if (key.startsWith('sz:studio-exit:') && key.split('|')[1] === encodeURIComponent(identity))
           localStorage.removeItem(key)
     },
+  }
+}
+
+/** Explicit historical wire fixture: never uses the current namespace to simulate an old client. */
+async function stageLegacyExit(project: Project, _write: unknown, scope: ProjectStorageScope) {
+  const revision = readLocalRevision(project)!
+  const head = localHead(revision)
+  const incoming: RecoveryWrite = {
+    version: 1,
+    projectId: project.id,
+    head,
+    write: { puts: projectStorageEntries(project, 3) },
+    applications: [...revision.lineage.pending.values()]
+      .filter((entry) => entry.sequence <= revision.sequence)
+      .map((entry) => entry.record),
+    incompleteBlocks: false,
+  }
+  stageSynchronousExitJournal(
+    scope.exitJournalStorage,
+    scope.identity,
+    { projectId: project.id, writer: head.writer, token: head.token },
+    incoming,
+  )
+  try {
+    await writeInOneTransaction(scope.store, {
+      puts: [[projectRecoveryKey(project.id, head.writer, 3), incoming]],
+    })
+  } catch {
+    // An aborted native write is covered by the synchronous copy, like the historical client.
   }
 }
 
@@ -182,7 +225,7 @@ for (const mode of ['native', 'synchronous-only', 'confirmed-save'] as const)
       )
       expect(metas).toEqual([projectMetaKey(child.id)])
       const archives = (await readAllKeys(f.scope.store)).filter((key) =>
-        String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+        String(key).startsWith(`sz:v4:project-backup:${parent.id}:recovery-`),
       )
       expect(archives).toHaveLength(1)
       const archive = (await readValue(f.scope.store, archives[0]!)) as {
@@ -413,12 +456,12 @@ test('a native revision replaced before the conditional write stays pending with
 test('a reused native token cannot acknowledge different content through an existing recovered copy', async () => {
   const f = await fixture()
   try {
+    const winner = { ...f.project, name: 'Another writer' }
+    await bindProjectToDurableHead(winner, f.scope)
     const draft = f.edit('copied original')
     await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
     const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
     const source = structuredClone(entry.value) as { write: { puts: [string, unknown][] } }
-    const winner = { ...f.project, name: 'Another writer' }
-    await bindProjectToDurableHead(winner, f.scope)
     await coordinatedProjectWrite(winner, { puts: projectStorageEntries(winner) }, f.scope)
     const key = projectRecoveryKey(draft.id, entry.writer)
     await writeInOneTransaction(f.scope.store, { puts: [[key, source]] })
@@ -769,10 +812,10 @@ test('a failed destination transaction never acknowledges a prepared legacy sour
 })
 
 test('prepared legacy recovery promotes only v4 partitions after base migration', async () => {
-  const f = await fixture()
+  const f = await fixture(3)
   try {
     const draft = f.edit('legacy pending edit in v4')
-    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    await stageLegacyExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
     const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
     const prepared = await prepareLocalV3Recovery(source, f.scope)
     await migrateLocalV3Project(draft.id, f.scope)
@@ -804,7 +847,7 @@ test('prepared legacy recovery promotes only v4 partitions after base migration'
 })
 
 test('v4 replay records inverse history and its budget only in the destination namespace', async () => {
-  const f = await fixture()
+  const f = await fixture(3)
   try {
     const draft = f.edit('v4 with undo')
     const record: ProApplicationRecord = {
@@ -824,7 +867,7 @@ test('v4 replay records inverse history and its budget only in the destination n
     }
     const revision = readLocalRevision(draft)!
     revision.lineage.pending.set(record.operationId, { sequence: revision.sequence, record })
-    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    await stageLegacyExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
     const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
     const prepared = await prepareLocalV3Recovery(source, f.scope)
     await migrateLocalV3Project(draft.id, f.scope)
@@ -844,10 +887,10 @@ test('v4 replay records inverse history and its budget only in the destination n
 })
 
 test('v4 recovery conflicts preserve the winner and create a complete v4 copy', async () => {
-  const f = await fixture()
+  const f = await fixture(3)
   try {
     const draft = f.edit('old pending edit')
-    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    await stageLegacyExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
     const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
     const prepared = await prepareLocalV3Recovery(source, f.scope)
     await migrateLocalV3Project(draft.id, f.scope)
@@ -896,10 +939,10 @@ test('v4 recovery conflicts preserve the winner and create a complete v4 copy', 
 for (const mode of ['synchronous', 'mirrored', 'native-only'] as const)
   test(`legacy sources retire only after complete v4 recovery: ${mode}`, async () => {
     const native = mode !== 'synchronous'
-    const f = await fixture()
+    const f = await fixture(3)
     try {
       const draft = f.edit('complete legacy recovery')
-      await stageProjectExit(
+      await stageLegacyExit(
         draft,
         { puts: projectStorageEntries(draft) },
         native ? f.scope : f.failed,
@@ -936,13 +979,13 @@ for (const mode of ['synchronous', 'mirrored', 'native-only'] as const)
   })
 
 test('a returning old tab becomes a v4 copy instead of overwriting the previously recovered edit', async () => {
-  const f = await fixture()
+  const f = await fixture(3)
   try {
     const first = f.edit('first recovered edit')
-    await stageProjectExit(first, { puts: projectStorageEntries(first) }, f.scope)
+    await stageLegacyExit(first, { puts: projectStorageEntries(first) }, f.scope)
     await recoverLocalV3ProjectWrites(f.scope, first.id)
     const second = f.edit('returning old tab edit')
-    await stageProjectExit(second, { puts: projectStorageEntries(second) }, f.scope)
+    await stageLegacyExit(second, { puts: projectStorageEntries(second) }, f.scope)
     const recovered = await recoverLocalV3ProjectWrites(f.scope, second.id)
     expect(recovered).toHaveLength(1)
     expect(recovered[0]).toStartWith('recuperado-')
@@ -959,10 +1002,10 @@ test('a returning old tab becomes a v4 copy instead of overwriting the previousl
 })
 
 test('mismatched legacy mirrors cannot migrate the base or acknowledge either source', async () => {
-  const f = await fixture()
+  const f = await fixture(3)
   try {
     const draft = f.edit('original synchronous source')
-    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    await stageLegacyExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
     const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
     const captured = structuredClone(source.value) as RecoveryWrite
     const other: RecoveryWrite = {
@@ -1012,7 +1055,10 @@ test('overlapping project prefixes cannot recover a different owner through a co
     const key = projectRecoveryKey(draft.id, incoming.head.writer)
     await writeInOneTransaction(f.scope.store, { puts: [[key, incoming]] })
     expect(await recoverLocalV3ProjectWrites(f.scope, `${draft.id}:section`)).toEqual([])
-    expect(await readValue(f.scope.store, projectMetaKey(draft.id, 4))).toBeUndefined()
+    expect(await readValue(f.scope.store, projectMetaKey(draft.id, 4))).toMatchObject({
+      id: draft.id,
+      name: 'Journal',
+    })
     expect(await loadRecoverableProjectDraft(f.scope, `${draft.id}:section`)).toBeNull()
     expect(await recoverProjectWrites(f.scope, `${draft.id}:section`)).toEqual([])
     expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
@@ -1123,7 +1169,7 @@ test('an archive write failure rolls back promotion and retains both ancestor an
           store.put = (value, key) => {
             if (
               typeof key === 'string' &&
-              key.startsWith(`sz:project-backup:${parent.id}:recovery-`)
+              key.startsWith(`sz:v4:project-backup:${parent.id}:recovery-`)
             ) {
               injected = true
               throw new DOMException('Archive quota', 'QuotaExceededError')
@@ -1143,7 +1189,7 @@ test('an archive write failure rolls back promotion and retains both ancestor an
     expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(2)
     expect(
       (await readAllKeys(f.scope.store)).filter((key) =>
-        String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+        String(key).startsWith(`sz:v4:project-backup:${parent.id}:recovery-`),
       ),
     ).toEqual([])
   } finally {
@@ -1166,7 +1212,7 @@ test('a previously archived identity cannot consume a later source with the same
     await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.scope)
     await recoverProjectWrites(f.scope, child.id)
     const archiveKey = (await readAllKeys(f.scope.store)).find((key) =>
-      String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+      String(key).startsWith(`sz:v4:project-backup:${parent.id}:recovery-`),
     )!
     const archive = await readValue(f.scope.store, archiveKey)
     const captured = parentEntry.value as RecoveryWrite
@@ -1383,7 +1429,7 @@ test('a parent replaced after preparation is not discarded using the old snapsho
     await recoverProjectWrites(f.scope, child.id)
     expect(injected).toBe(true)
     const archives = (await readAllKeys(f.scope.store)).filter((path) =>
-      String(path).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+      String(path).startsWith(`sz:v4:project-backup:${parent.id}:recovery-`),
     )
     expect(archives).toHaveLength(1)
     const archive = (await readValue(f.scope.store, archives[0]!)) as { encoded: string }
@@ -1410,7 +1456,7 @@ test('a deep ancestor is archived without requiring a deep native structured clo
     ]
     await coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope)
     const archiveKey = (await readAllKeys(f.scope.store)).find((key) =>
-      String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+      String(key).startsWith(`sz:v4:project-backup:${parent.id}:recovery-`),
     )!
     const archive = (await readValue(f.scope.store, archiveKey)) as { encoded: string }
     expect(localSnapshotsEqual(decodeRecoverySnapshot(archive.encoded), entry.value)).toBe(true)
@@ -1439,7 +1485,7 @@ test('a native-only ancestor above the exit quota remains complete in its durabl
     readLocalRevision(child)!.lineage.recoverySources = [{ key, token: original.head.token }]
     await coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope)
     const archiveKey = (await readAllKeys(f.scope.store)).find((key) =>
-      String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+      String(key).startsWith(`sz:v4:project-backup:${parent.id}:recovery-`),
     )!
     const archive = (await readValue(f.scope.store, archiveKey)) as { encoded: string }
     expect(archive.encoded.length).toBeGreaterThan(EXIT_JOURNAL_MAX_CHARS)
