@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+scripts\ci\configure-ubuntu-apt.test.ts:
+(pass) replaces the exact Azure http archive in mirror lists
+(pass) replaces the exact Azure https archive in mirror lists
+(pass) replaces signed Ubuntu EC2 http archive sources used by current runners
+(pass) replaces signed Ubuntu EC2 https archive sources used by current runners
+(pass) EC2 lookalikes, unrelated archives and comments remain unchanged
+(pass) preserves deb822 signatures, components, suites, multiple URIs and CRLF
+(pass) preserves traditional source options and does not match third-party or lookalike URLs
+(pass) updates only existing APT source files and is idempotent on the real filesystem
+(pass) does not invent sources when runner configuration is absent
+(pass) the CI pins a supported Ubuntu runner rather than silently moving to an incompatible release
+(pass) every Ubuntu job prepares signed sources before its first apt or Playwright dependency install
+
+ 11 pass
+ 0 fail
+ 39 expect() calls
+Ran 11 tests across 1 file. [362.00ms]

@@ -8,6 +8,7 @@ import {
   studioBuildResponseSchema,
 } from '@sistemazero/agent-integrations/sistemazero'
 import { z } from 'zod'
+import { STUDIO_THREE_VERSION } from '../../core/src/studio/three-version'
 import { parseBuildRequest, verifyBuildBinaries } from '../../studio-runtime/src/contracts'
 import { Dispatcher } from '../src/execution/dispatcher'
 import { setupStaff } from '../src/integrations/staff'
@@ -24,7 +25,7 @@ test('Studio snapshot preserves reviewed binary bytes and dependency declaration
   setupStaff(supervisor, dispatcher)
   const sources = {
     'index.html': '<main>Fixture</main>',
-    'package.json': JSON.stringify({ dependencies: { three: '0.180.0' } }),
+    'package.json': JSON.stringify({ dependencies: { three: STUDIO_THREE_VERSION } }),
     'vite.config.ts': 'untrusted()',
   }
   const material = Buffer.from([0, 255, 128, 1])
@@ -63,7 +64,7 @@ test('Studio snapshot preserves reviewed binary bytes and dependency declaration
     expect(request.build.files['package.json']).toBe(sources['package.json'])
     expect(request.build.files['vite.config.ts']).toBeUndefined()
     const runtime = parseBuildRequest(request.build)
-    expect(runtime.dependencies.dependencies.three).toBe('0.180.0')
+    expect(runtime.dependencies.dependencies.three).toBe(STUDIO_THREE_VERSION)
     expect(runtime.files['package.json']).toBeUndefined()
     expect(runtime.parentOrigin).toBe(input.parentOrigin)
     expect(Buffer.from(runtime.binaries!['public/material.bin']!.base64, 'base64')).toEqual(

@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+src\blockly\__tests__\blockLevels.test.ts:
+(pass) blockLevels — conformidade dos conjuntos > nenhum bloco está em dois conjuntos ao mesmo tempo (disjunção par a par)
+(pass) blockLevels — conformidade dos conjuntos > todo tipo listado nos conjuntos é um bloco REAL do catálogo (sem typo/obsoleto)
+(pass) blockLevels — conformidade dos conjuntos > nenhum conjunto superior captura blocos da categoria Jogo 3D
+(pass) blockLevels — conformidade dos conjuntos > nenhum conjunto superior captura blocos do Jogo 2D básico
+(pass) blockLevels — conformidade dos conjuntos > não duplica a progressão de Programação nos conjuntos genéricos
+(pass) resolveBlockLevel — amostras representativas > facilitadores + kit essencial de lógica = iniciante-2d
+(pass) resolveBlockLevel — amostras representativas > o Jogo 3D tem o núcleo exato no iniciante-3d e o resto no intermediario-3d
+(pass) resolveBlockLevel — amostras representativas > todas as ferramentas do Jogo 2D pertencem ao Iniciante 2D
+(pass) resolveBlockLevel — amostras representativas > programação real guiada + SVG + kits prontos do Jogo 2D Avançado = intermediario-2d
+(pass) resolveBlockLevel — amostras representativas > mantém unidades pedagógicas no mesmo degrau
+(pass) resolveBlockLevel — amostras representativas > oferece cada evento junto do valor que seu texto ensina a usar
+(pass) resolveBlockLevel — amostras representativas > Mundo 3D = intermediario-3d (prefixo inteiro)
+(pass) resolveBlockLevel — amostras representativas > Canvas 3D INTEIRO = avancado-3d (macros + técnicos; reclassificado 26/07)
+(pass) resolveBlockLevel — amostras representativas > na unha em 2D (Canvas/HTML/CSS crus + expert) = avancado-2d
+(pass) resolveBlockLevel — amostras representativas > Jogo 3D Avançado (g3k) = avancado-3d (prefixo inteiro; uma extensão por degrau) [16.00ms]
+(pass) resolveBlockLevel — amostras representativas > Canvas 3D cru (three.js técnico, sz_t3d_) = avancado-3d
+
+ 16 pass
+ 0 fail
+ 373 expect() calls
+Ran 16 tests across 1 file. [685.00ms]

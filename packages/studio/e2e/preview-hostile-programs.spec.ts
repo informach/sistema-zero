@@ -1,5 +1,9 @@
 import { expect, type Page, test } from '@playwright/test'
 
+// A homologação de isolamento usa o Chromium completo, como measure-preview-isolation.mjs.
+// O headless shell padrão tem outro modelo de processos e não representa essa capacidade.
+test.use({ channel: 'chromium' })
+
 /**
  * Programas hostis na prévia do Clássico (pacote B da evolução do Estúdio).
  *
