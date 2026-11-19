@@ -1,0 +1,26 @@
+{
+  "owner": "8870ff3c20cf7d8a9d4b1cd318a78748e050f2e9",
+  "merge": "8d7041f3540925d8c4b6a1dcc92f0df6a19c21f5",
+  "incomingFiles": 42,
+  "incomingPreservedExactly": true,
+  "qualifiedSourceFilesUnchanged": 10,
+  "tests": {
+    "architecture": {
+      "passed": 7,
+      "assertions": 7
+    },
+    "integration": {
+      "passed": 42,
+      "assertions": 6322
+    },
+    "globalStyle": {
+      "files": 16117,
+      "exit": 0
+    },
+    "runtimeProfileExit": 0
+  },
+  "limits": {
+    "dockerImageLocallyQualified": false,
+    "authenticatedRolloutQualified": false
+  }
+}
