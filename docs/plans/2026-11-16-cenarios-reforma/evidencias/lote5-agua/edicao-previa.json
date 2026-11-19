@@ -8,9 +8,7 @@
   "alturaNova": 10,
   "recusouAntiga": true,
   "autoriaIntacta": true,
-  "selecoes": [
-    "mar"
-  ],
+  "selecoes": ["mar"],
   "cacheDeOutraFerramentaPreservada": true,
   "erros": []
 }

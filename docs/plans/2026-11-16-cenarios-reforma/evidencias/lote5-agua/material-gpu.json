@@ -46,11 +46,7 @@
       "esperado": 255
     }
   ],
-  "variantes": [
-    "mar",
-    "rio",
-    "cachoeira"
-  ],
+  "variantes": ["mar", "rio", "cachoeira"],
   "maxTextura": 16384,
   "erros": []
 }

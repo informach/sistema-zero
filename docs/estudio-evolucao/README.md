@@ -100,7 +100,7 @@ cd packages/studio && bun test src/blockly/__tests__/protectedCourses.test.ts
      **execução** no executor do servidor (`studio-runtime/runtime/check-objectives.mjs`, com o
      documento que o Members monta). É o caminho inteiro menos o Worker e o contêiner;
   2. o `script.js` que a parte deixa pronto contra a referência guardada em
-     `e2e/fixtures/protected-lessons/<aula>/<parte>.script.js` (13 arquivos);
+     `e2e/fixtures/protected-lessons/<aula>/<parte>.script.txt` (13 arquivos, código gerado exato, sem formatação);
   3. nas partes de chegada (Cadê aula 2 "contar-achados" e Farol dia 3 "decisao"), que o jogo
      montado é o **projeto final do curso**, linha por linha.
 

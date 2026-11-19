@@ -35,17 +35,13 @@
       "title": "O maior vilão dos pais",
       "objective": "Abrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a1-abertura"
-      ],
+      "blockKeys": ["video-a1-abertura"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a1-abertura"
-        ]
+        "blockIds": ["video-a1-abertura"]
       }
     },
     {
@@ -53,25 +49,15 @@
       "title": "A pergunta que muda tudo",
       "objective": "Trocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a1-pergunta",
-        "resumo-a1",
-        "apostila"
-      ],
+      "blockKeys": ["video-a1-pergunta", "resumo-a1", "apostila"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a1-pergunta"
-        ]
+        "blockIds": ["video-a1-pergunta"]
       }
     }
   ],
-  "retireBlockKeys": [
-    "video-a1-tres-usos",
-    "para-casa-a1",
-    "quiz-a1"
-  ]
+  "retireBlockKeys": ["video-a1-tres-usos", "para-casa-a1", "quiz-a1"]
 }

@@ -34,17 +34,13 @@
       "title": "Assistir, jogar ou criar",
       "objective": "Comparar a tecnologia ao fogo e apresentar os três usos da tela: assistir, jogar e criar.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a2-tres-usos"
-      ],
+      "blockKeys": ["video-a2-tres-usos"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-tres-usos"
-        ]
+        "blockIds": ["video-a2-tres-usos"]
       }
     },
     {
@@ -52,17 +48,13 @@
       "title": "Função executiva e o exemplo do Lego",
       "objective": "Explicar a função executiva e a diferença entre o Lego com manual e o Lego sem manual.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a2-funcoes"
-      ],
+      "blockKeys": ["video-a2-funcoes"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-funcoes"
-        ]
+        "blockIds": ["video-a2-funcoes"]
       }
     },
     {
@@ -70,17 +62,13 @@
       "title": "Criar em vez de só consumir",
       "objective": "Apresentar a proposta de criar em vez de só consumir, usando o interesse da criança a favor.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a2-criar"
-      ],
+      "blockKeys": ["video-a2-criar"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-criar"
-        ]
+        "blockIds": ["video-a2-criar"]
       }
     },
     {
@@ -88,25 +76,15 @@
       "title": "Mais tempo de tela?",
       "objective": "Responder ao receio de aumentar o tempo de tela com o relato de pais: o que acontece é uma substituição.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a2-tempo",
-        "resumo-a2"
-      ],
+      "blockKeys": ["video-a2-tempo", "resumo-a2"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a2-tempo"
-        ]
+        "blockIds": ["video-a2-tempo"]
       }
     }
   ],
-  "retireBlockKeys": [
-    "video-a2-por-dentro",
-    "video-a2-autoria",
-    "para-casa-a2",
-    "quiz-a2"
-  ]
+  "retireBlockKeys": ["video-a2-por-dentro", "video-a2-autoria", "para-casa-a2", "quiz-a2"]
 }

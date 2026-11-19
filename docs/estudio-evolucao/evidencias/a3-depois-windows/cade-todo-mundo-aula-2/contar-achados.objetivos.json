@@ -1,26 +1,26 @@
 [
- {
-  "checkId": "revelar-ao-toque",
-  "label": "O toque revela só o personagem daquele esconderijo.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "somar-achado",
-  "label": "Cada novo personagem acrescenta 1 a Achados.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "nao-recontar",
-  "label": "Toques no vazio ou no mesmo lugar mantêm a contagem.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "mensagem-tres-achados",
-  "label": "A mensagem aparece depois dos três achados.",
-  "passed": true,
-  "execucao": true
- }
+  {
+    "checkId": "revelar-ao-toque",
+    "label": "O toque revela só o personagem daquele esconderijo.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "somar-achado",
+    "label": "Cada novo personagem acrescenta 1 a Achados.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "nao-recontar",
+    "label": "Toques no vazio ou no mesmo lugar mantêm a contagem.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "mensagem-tres-achados",
+    "label": "A mensagem aparece depois dos três achados.",
+    "passed": true,
+    "execucao": true
+  }
 ]

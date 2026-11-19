@@ -30,17 +30,13 @@
       "title": "Programar não é um bicho de sete cabeças",
       "objective": "Desmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a4-blocos"
-      ],
+      "blockKeys": ["video-a4-blocos"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a4-blocos"
-        ]
+        "blockIds": ["video-a4-blocos"]
       }
     },
     {
@@ -48,17 +44,13 @@
       "title": "Um passo a passo para chegar a um objetivo",
       "objective": "Definir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a4-passo"
-      ],
+      "blockKeys": ["video-a4-passo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a4-passo"
-        ]
+        "blockIds": ["video-a4-passo"]
       }
     },
     {
@@ -66,25 +58,15 @@
       "title": "O que esse vai e volta treina",
       "objective": "Relacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a4-olhar",
-        "resumo-a4"
-      ],
+      "blockKeys": ["video-a4-olhar", "resumo-a4"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a4-olhar"
-        ]
+        "blockIds": ["video-a4-olhar"]
       }
     }
   ],
-  "retireBlockKeys": [
-    "video-a4-interesse",
-    "video-a4-escola",
-    "para-casa-a4",
-    "quiz-a4"
-  ]
+  "retireBlockKeys": ["video-a4-interesse", "video-a4-escola", "para-casa-a4", "quiz-a4"]
 }

@@ -11,9 +11,7 @@
   "bloqueioTeste": true,
   "bloqueioRetrato": true,
   "cancelouWorker": true,
-  "avisos": [
-    "Mantenha pelo menos 2 pontos."
-  ],
+  "avisos": ["Mantenha pelo menos 2 pontos."],
   "pontos": [
     {
       "x": -8.000091785758816,
@@ -23,7 +21,7 @@
     {
       "x": -4.000000611467539,
       "y": 0,
-      "z": 1.9021893216120134e-07
+      "z": 1.9021893216120134e-7
     },
     {
       "x": 0,
@@ -31,8 +29,6 @@
       "z": -4.000085270736889
     }
   ],
-  "workers": [
-    "caminho.worker.ts"
-  ],
+  "workers": ["caminho.worker.ts"],
   "erros": []
 }

@@ -94,10 +94,7 @@
   ],
   "compartilhamento": {
     "malhas": 1,
-    "referencias": [
-      0,
-      0
-    ]
+    "referencias": [0, 0]
   },
   "avisos": [
     "Este destino aceita um arquivo de até 32 MiB e 8.192 partes visíveis. Cenas maiores podem usar o pacote Three dividido em recursos.",

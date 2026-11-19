@@ -17,15 +17,11 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "🗂️ Áreas do projeto"
-      ],
+      "caminhoNaPaleta": ["🗂️ Áreas do projeto"],
       "cor": "#eab308",
       "dica": "Os blocos daqui esperam: só rodam quando a tecla, o clique ou o encontro acontece.",
       "encaixe": null,
-      "extensoes": [
-        "sz_project_area_safe_delete"
-      ],
+      "extensoes": ["sz_project_area_safe_delete"],
       "message0": "⚡ Quando acontecer %1",
       "message1": "%1",
       "nivel": "iniciante-2d"
@@ -46,15 +42,11 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "🗂️ Áreas do projeto"
-      ],
+      "caminhoNaPaleta": ["🗂️ Áreas do projeto"],
       "cor": "#14b8a6",
       "dica": "Os blocos daqui repetem o tempo todo, muitas vezes por segundo.",
       "encaixe": null,
-      "extensoes": [
-        "sz_project_area_safe_delete"
-      ],
+      "extensoes": ["sz_project_area_safe_delete"],
       "message0": "🔁 Enquanto estiver rodando %1",
       "message1": "%1",
       "nivel": "iniciante-2d"
@@ -75,15 +67,11 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "🗂️ Áreas do projeto"
-      ],
+      "caminhoNaPaleta": ["🗂️ Áreas do projeto"],
       "cor": "#b95510",
       "dica": "Os blocos daqui rodam UMA vez, quando o jogo abre (e de novo a cada nova partida).",
       "encaixe": null,
-      "extensoes": [
-        "sz_project_area_safe_delete"
-      ],
+      "extensoes": ["sz_project_area_safe_delete"],
       "message0": "⚙️ Ao iniciar %1",
       "message1": "%1",
       "nivel": "iniciante-2d"
@@ -116,11 +104,7 @@
           "type": "field_name_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Grupos",
-        "Participação e limpeza"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Grupos", "Participação e limpeza"],
       "cor": "#bf3a7c",
       "dica": "Põe um sprite que já existe dentro do grupo. A partir daí, tudo que o grupo faz (atualizar, desenhar, colisões) vale para ele também. Repetido não entra duas vezes.",
       "encaixe": {
@@ -148,9 +132,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Pôr o sprite %1 no grupo %2",
       "nivel": "iniciante-2d",
@@ -190,11 +172,7 @@
           "type": "field_sprite_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Movimento",
-        "Velocidade e gravidade"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Movimento", "Velocidade e gravidade"],
       "cor": "#c73d81",
       "dica": "Soma o vx à posição x e o vy à posição y uma vez, em pixels por quadro. Defina a velocidade antes ou altere com gravidade e controles. Use a cada quadro; se vx e vy forem 0, ele não se move.",
       "encaixe": {
@@ -222,9 +200,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Mover o sprite %1 usando vx e vy",
       "nivel": "iniciante-2d",
@@ -264,11 +240,7 @@
           "type": "field_sprite_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Movimento",
-        "Bordas e rebatidas"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Movimento", "Bordas e rebatidas"],
       "cor": "#c73d81",
       "dica": "Impede o sprite de sair pelas bordas da tela (gruda na borda em vez de sumir).",
       "encaixe": {
@@ -296,9 +268,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Manter o sprite %1 dentro da tela",
       "nivel": "iniciante-2d",
@@ -332,11 +302,7 @@
       ],
       "area": "start",
       "args0": [],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Desenho e efeitos",
-        "Efeitos"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Desenho e efeitos", "Efeitos"],
       "cor": "#b73877",
       "dica": "Apaga tudo o que foi desenhado. Use no começo de cada quadro, antes de desenhar de novo.",
       "encaixe": {
@@ -364,9 +330,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Limpar a tela",
       "nivel": "iniciante-2d",
@@ -385,9 +349,7 @@
       ]
     },
     "sz_g2d_create_group": {
-      "anterior": [
-        "JSStartRoot"
-      ],
+      "anterior": ["JSStartRoot"],
       "area": "start",
       "args0": [
         {
@@ -396,30 +358,20 @@
           "type": "field_input"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Grupos",
-        "Criar e percorrer"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Grupos", "Criar e percorrer"],
       "cor": "#bf3a7c",
       "dica": "Cria um grupo vazio para guardar MUITOS sprites do mesmo tipo (tiros, inimigos, estrelas).",
       "encaixe": {
         "nested": [],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Criar grupo de sprites %1",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSStartRoot"
-      ]
+      "seguinte": ["JSStartRoot"]
     },
     "sz_g2d_create_image_sprite": {
-      "anterior": [
-        "JSStartRoot"
-      ],
+      "anterior": ["JSStartRoot"],
       "area": "start",
       "args0": [
         {
@@ -453,31 +405,21 @@
           "type": "field_asset_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Sprites",
-        "Criar e trocar aparência"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
       "cor": "#c74283",
       "dica": "Cria um sprite que mostra uma imagem da sua biblioteca. Em \"imagem\", use o nome do asset (ex.: heroi). Se a imagem ainda não existe, aparece um retângulo até ela carregar.",
       "emLinha": true,
       "encaixe": {
         "nested": [],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Criar sprite %1 em x %2 y %3 largura %4 altura %5 com imagem %6",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSStartRoot"
-      ]
+      "seguinte": ["JSStartRoot"]
     },
     "sz_g2d_create_sprite": {
-      "anterior": [
-        "JSStartRoot"
-      ],
+      "anterior": ["JSStartRoot"],
       "area": "start",
       "args0": [
         {
@@ -511,26 +453,18 @@
           "type": "field_colour_sz"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Sprites",
-        "Criar e trocar aparência"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
       "cor": "#c74283",
       "dica": "Cria um personagem ou objeto retangular e guarda pelo nome escolhido. Faça isso uma vez em “Ao iniciar”.",
       "emLinha": true,
       "encaixe": {
         "nested": [],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Criar sprite %1 em x %2 y %3 largura %4 altura %5 cor %6",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSStartRoot"
-      ]
+      "seguinte": ["JSStartRoot"]
     },
     "sz_g2d_destroy_sprite": {
       "anterior": [
@@ -554,11 +488,7 @@
           "type": "field_sprite_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Sprites",
-        "Criar e trocar aparência"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
       "cor": "#c74283",
       "dica": "Retira o sprite de todos os grupos do motor e encerra seu desenho, contato e clique. A variável continua existindo, mas esse sprite não volta a funcionar. Crie outro sprite para substituí-lo.",
       "encaixe": {
@@ -586,9 +516,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Destruir o sprite %1",
       "nivel": "iniciante-2d",
@@ -607,12 +535,7 @@
       ]
     },
     "sz_g2d_draw_backdrop": {
-      "anterior": [
-        "JSLoopStmt",
-        "JSFunctionStmt",
-        "JSAsyncStmt",
-        "JSDerivedMethodStmt"
-      ],
+      "anterior": ["JSLoopStmt", "JSFunctionStmt", "JSAsyncStmt", "JSDerivedMethodStmt"],
       "area": "start",
       "args0": [
         {
@@ -621,36 +544,19 @@
           "type": "field_asset_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Cenários",
-        "Fundos"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Cenários", "Fundos"],
       "cor": "#af3672",
       "dica": "Desenha o cenário cobrindo a tela neste quadro. Use logo após limpar para ficar atrás dos sprites. Para reaparecer sozinho em todo quadro, use “Pôr o cenário atrás de tudo” em Ao iniciar.",
       "emLinha": true,
       "encaixe": {
-        "forbiddenDirectNested": [
-          "event-body",
-          "constructor-body"
-        ],
-        "nested": [
-          "loop-body",
-          "function-body",
-          "async-function-body",
-          "derived-method-body"
-        ],
+        "forbiddenDirectNested": ["event-body", "constructor-body"],
+        "nested": ["loop-body", "function-body", "async-function-body", "derived-method-body"],
         "role": "command",
         "root": []
       },
       "message0": "Desenhar o cenário %1",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSLoopStmt",
-        "JSFunctionStmt",
-        "JSAsyncStmt",
-        "JSDerivedMethodStmt"
-      ]
+      "seguinte": ["JSLoopStmt", "JSFunctionStmt", "JSAsyncStmt", "JSDerivedMethodStmt"]
     },
     "sz_g2d_draw_group": {
       "anterior": [
@@ -675,11 +581,7 @@
           "type": "field_name_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Grupos",
-        "Desenho e ordem"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Grupos", "Desenho e ordem"],
       "cor": "#bf3a7c",
       "dica": "Desenha todos os sprites do grupo. Use a cada quadro, depois de mover.",
       "encaixe": {
@@ -707,9 +609,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Desenhar o grupo %1",
       "nivel": "iniciante-2d",
@@ -770,28 +670,11 @@
         },
         {
           "name": "ALIGN",
-          "options": [
-            [
-              "à esquerda",
-              "left"
-            ],
-            [
-              "no centro",
-              "center"
-            ],
-            [
-              "à direita",
-              "right"
-            ]
-          ],
+          "options": [["à esquerda", "left"], ["no centro", "center"], ["à direita", "right"]],
           "type": "field_dropdown"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Vida e placar",
-        "Indicadores e texto na tela"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
       "cor": "#bc397a",
       "dica": "Escreve texto ou um valor na tela: título, pergunta, variável ou item de lista. Escolha o alinhamento.",
       "emLinha": true,
@@ -820,9 +703,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6",
       "nivel": "iniciante-2d",
@@ -887,11 +768,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Vida e placar",
-        "Indicadores e texto na tela"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Vida e placar", "Indicadores e texto na tela"],
       "cor": "#bc397a",
       "dica": "Escreve \"rótulo valor\" (ex.: Pontos: 5) na tela. Ligue o valor à variável do placar.",
       "emLinha": true,
@@ -920,9 +797,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Mostrar placar %1 valor %2 em x %3 y %4 cor %5 tamanho %6",
       "nivel": "iniciante-2d",
@@ -962,11 +837,7 @@
           "type": "field_sprite_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Sprites",
-        "Criar e trocar aparência"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
       "cor": "#c74283",
       "dica": "Desenha o sprite na tela do jogo. Use a cada quadro, depois de \"Limpar a tela\".",
       "encaixe": {
@@ -994,9 +865,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Desenhar o sprite %1",
       "nivel": "iniciante-2d",
@@ -1015,53 +884,31 @@
       ]
     },
     "sz_g2d_enable_classic_controls": {
-      "anterior": [
-        "JSStartRoot"
-      ],
+      "anterior": ["JSStartRoot"],
       "area": "start",
       "args0": [
         {
           "name": "MODE",
           "options": [
-            [
-              "automáticos no celular",
-              "auto"
-            ],
-            [
-              "sempre visíveis",
-              "always"
-            ],
-            [
-              "só as quatro direções",
-              "directions"
-            ],
-            [
-              "sem botões na tela",
-              "off"
-            ]
+            ["automáticos no celular", "auto"],
+            ["sempre visíveis", "always"],
+            ["só as quatro direções", "directions"],
+            ["sem botões na tela", "off"]
           ],
           "type": "field_dropdown"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Controles",
-        "Teclado, ações e toque"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
       "cor": "#c43c7f",
       "dica": "Liga teclado e botões de toque acessíveis. Aceita mais de um dedo para andar e pular ao mesmo tempo.",
       "encaixe": {
         "nested": [],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Ativar controles clássicos %1",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSStartRoot"
-      ]
+      "seguinte": ["JSStartRoot"]
     },
     "sz_g2d_on_group_click": {
       "anterior": [
@@ -1104,17 +951,11 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Controles",
-        "Teclado, ações e toque"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Controles", "Teclado, ações e toque"],
       "cor": "#c43c7f",
       "dica": "Identifica o sprite tocado para ler os dados ou mudar a aparência. Se dois integrantes estiverem sobrepostos, escolhe o desenhado por cima. Vale também para sprites criados depois.",
       "encaixe": {
-        "forbiddenNested": [
-          "loop-body"
-        ],
+        "forbiddenNested": ["loop-body"],
         "nested": [
           "function-body",
           "async-function-body",
@@ -1123,9 +964,7 @@
           "derived-method-body"
         ],
         "role": "event",
-        "root": [
-          "events"
-        ]
+        "root": ["events"]
       },
       "message0": "Quando clicar/tocar num sprite do grupo %1 chamá-lo de %2",
       "message1": "fazer %1",
@@ -1179,18 +1018,12 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Colisões",
-        "Encostar e bloquear"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Colisões", "Encostar e bloquear"],
       "cor": "#c13b7e",
       "dica": "Roda o que está dentro quando os dois sprites se encostam (ex.: pegar moeda, levar dano). Dispara uma vez a cada vez que começam a encostar.",
       "emLinha": true,
       "encaixe": {
-        "forbiddenNested": [
-          "loop-body"
-        ],
+        "forbiddenNested": ["loop-body"],
         "nested": [
           "function-body",
           "async-function-body",
@@ -1199,9 +1032,7 @@
           "derived-method-body"
         ],
         "role": "event",
-        "root": [
-          "events"
-        ]
+        "root": ["events"]
       },
       "message0": "Quando o sprite %1 começar a encostar no sprite %2",
       "message1": "fazer %1",
@@ -1242,11 +1073,7 @@
           "type": "field_asset_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Sprites",
-        "Criar e trocar aparência"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Sprites", "Criar e trocar aparência"],
       "cor": "#c74283",
       "dica": "Troca a imagem que o sprite mostra (e cancela a animação atual dele).",
       "encaixe": {
@@ -1274,9 +1101,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Trocar imagem do sprite %1 para %2",
       "nivel": "iniciante-2d",
@@ -1321,11 +1146,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Sprites",
-        "Aparência"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Sprites", "Aparência"],
       "cor": "#c74283",
       "dica": "100% = totalmente visível; 0% = invisível. Bom para fantasmas, fades e piscadas.",
       "emLinha": true,
@@ -1354,9 +1175,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Deixar o sprite %1 com %2 % de visibilidade",
       "nivel": "iniciante-2d",
@@ -1406,11 +1225,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Movimento",
-        "Velocidade e gravidade"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Movimento", "Velocidade e gravidade"],
       "cor": "#c73d81",
       "dica": "Define quanto o sprite anda na horizontal (vx) e na vertical (vy) a cada quadro.",
       "emLinha": true,
@@ -1439,9 +1254,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Definir a velocidade do sprite %1 em x %2 y %3 pixels por quadro",
       "nivel": "iniciante-2d",
@@ -1460,9 +1273,7 @@
       ]
     },
     "sz_g2d_setup_stage": {
-      "anterior": [
-        "JSStartRoot"
-      ],
+      "anterior": ["JSStartRoot"],
       "area": "start",
       "args0": [
         {
@@ -1481,26 +1292,18 @@
           "type": "field_colour_sz"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Jogo e telas",
-        "Preparar a área do jogo"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Jogo e telas", "Preparar a área do jogo"],
       "cor": "#c74686",
       "dica": "Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”.",
       "emLinha": true,
       "encaixe": {
         "nested": [],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Preparar o jogo em tela cheia, tela %1 × %2, fundo %3",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSStartRoot"
-      ]
+      "seguinte": ["JSStartRoot"]
     },
     "sz_g2d_sprite_x": {
       "area": "value",
@@ -1511,11 +1314,7 @@
           "type": "field_sprite_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Movimento",
-        "Posição e tamanho"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Movimento", "Posição e tamanho"],
       "cor": "#c73d81",
       "dica": "A posição x (borda esquerda) do sprite. Use numa conta ou pra posicionar outra coisa.",
       "encaixe": {
@@ -1554,11 +1353,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Movimento",
-        "Movimentos prontos"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Movimento", "Movimentos prontos"],
       "cor": "#c73d81",
       "dica": "Movimento de cima pra baixo (visão de topo) nas 4 direções. A diagonal não fica mais rápida que andar reto.",
       "emLinha": true,
@@ -1587,9 +1382,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Mover sprite %1 em 4 direções com setas, velocidade %2",
       "nivel": "iniciante-2d",
@@ -1608,9 +1401,7 @@
       ]
     },
     "sz_g2d_update_each_frame": {
-      "anterior": [
-        "JSLoopRoot"
-      ],
+      "anterior": ["JSLoopRoot"],
       "area": "loops",
       "args1": [
         {
@@ -1630,11 +1421,7 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "Jogo 2D",
-        "Tempo",
-        "Quadros e intervalos"
-      ],
+      "caminhoNaPaleta": ["Jogo 2D", "Tempo", "Quadros e intervalos"],
       "cor": "#b43775",
       "dica": "Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo.",
       "emLinha": true,
@@ -1642,16 +1429,12 @@
         "nested": [],
         "phase": "update",
         "role": "loop",
-        "root": [
-          "loops"
-        ]
+        "root": ["loops"]
       },
       "message0": "A cada quadro do jogo",
       "message1": "fazer %1",
       "nivel": "iniciante-2d",
-      "seguinte": [
-        "JSLoopRoot"
-      ]
+      "seguinte": ["JSLoopRoot"]
     },
     "sz_js_if_else": {
       "anterior": [
@@ -1693,10 +1476,7 @@
           "type": "input_statement"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "❓ Lógica & Se"
-      ],
+      "caminhoNaPaleta": ["Programação", "❓ Lógica & Se"],
       "cor": "#b85410",
       "dica": "Executa o \"então\" quando a condição for verdadeira. Use + para juntar \"senão se\" e \"senão\".",
       "emLinha": true,
@@ -1725,9 +1505,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Se %1",
       "message1": "então %1",
@@ -1775,10 +1553,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "🏷️ Variáveis"
-      ],
+      "caminhoNaPaleta": ["Programação", "🏷️ Variáveis"],
       "cor": "#b95d1d",
       "dica": "Muda o valor de uma variável que já existe.",
       "emLinha": true,
@@ -1807,9 +1582,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Alterar variável %1 para %2",
       "nivel": "iniciante-2d",
@@ -1855,10 +1628,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "🏷️ Variáveis"
-      ],
+      "caminhoNaPaleta": ["Programação", "🏷️ Variáveis"],
       "cor": "#b95d1d",
       "dica": "Cria uma variável e guarda nela um valor: número, conta, aleatório, etc.",
       "emLinha": true,
@@ -1887,10 +1657,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start",
-          "molds"
-        ]
+        "root": ["start", "molds"]
       },
       "message0": "Criar variável %1 com valor %2",
       "nivel": "iniciante-2d",
@@ -1937,10 +1704,7 @@
           "type": "field_name_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "🏷️ Variáveis"
-      ],
+      "caminhoNaPaleta": ["Programação", "🏷️ Variáveis"],
       "cor": "#b95d1d",
       "dica": "Soma ou tira uma quantidade do valor atual de uma variável.",
       "encaixe": {
@@ -1968,9 +1732,7 @@
           "game-event-body"
         ],
         "role": "command",
-        "root": [
-          "start"
-        ]
+        "root": ["start"]
       },
       "message0": "Somar %1 em variável %2",
       "nivel": "iniciante-2d",
@@ -1993,23 +1755,11 @@
       "args0": [
         {
           "name": "VALUE",
-          "options": [
-            [
-              "verdadeiro",
-              "true"
-            ],
-            [
-              "falso",
-              "false"
-            ]
-          ],
+          "options": [["verdadeiro", "true"], ["falso", "false"]],
           "type": "field_dropdown"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "❓ Lógica & Se"
-      ],
+      "caminhoNaPaleta": ["Programação", "❓ Lógica & Se"],
       "cor": "#98691b",
       "dica": "Um valor lógico: verdadeiro ou falso.",
       "encaixe": {
@@ -2032,38 +1782,14 @@
         {
           "name": "OP",
           "options": [
-            [
-              "=",
-              "==="
-            ],
-            [
-              "≠",
-              "!=="
-            ],
-            [
-              "= (solto)",
-              "=="
-            ],
-            [
-              "≠ (solto)",
-              "!="
-            ],
-            [
-              ">",
-              ">"
-            ],
-            [
-              "<",
-              "<"
-            ],
-            [
-              "≥",
-              ">="
-            ],
-            [
-              "≤",
-              "<="
-            ]
+            ["=", "==="],
+            ["≠", "!=="],
+            ["= (solto)", "=="],
+            ["≠ (solto)", "!="],
+            [">", ">"],
+            ["<", "<"],
+            ["≥", ">="],
+            ["≤", "<="]
           ],
           "type": "field_dropdown"
         },
@@ -2073,10 +1799,7 @@
           "type": "input_value"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "❓ Lógica & Se"
-      ],
+      "caminhoNaPaleta": ["Programação", "❓ Lógica & Se"],
       "cor": "#98691b",
       "dica": "Compara dois valores e devolve verdadeiro ou falso.",
       "emLinha": true,
@@ -2098,10 +1821,7 @@
           "value": 0
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "🔣 Valores"
-      ],
+      "caminhoNaPaleta": ["Programação", "🔣 Valores"],
       "cor": "#98691b",
       "dica": "Um valor numérico.",
       "encaixe": {
@@ -2122,10 +1842,7 @@
           "type": "field_input"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "🔣 Valores"
-      ],
+      "caminhoNaPaleta": ["Programação", "🔣 Valores"],
       "cor": "#98691b",
       "dica": "Um valor de texto.",
       "encaixe": {
@@ -2147,10 +1864,7 @@
           "type": "field_name_picker"
         }
       ],
-      "caminhoNaPaleta": [
-        "Programação",
-        "🔣 Valores"
-      ],
+      "caminhoNaPaleta": ["Programação", "🔣 Valores"],
       "cor": "#98691b",
       "dica": "Usa o conteúdo de uma variável já criada como valor.",
       "encaixe": {
@@ -2177,9 +1891,7 @@
                 "Jogo 2D"
               ],
               "chave": "projeto",
-              "modos": [
-                "blocks"
-              ],
+              "modos": ["blocks"],
               "nivel": "iniciante-2d",
               "paleta": [
                 {
@@ -2965,9 +2677,7 @@
                 "Jogo 2D"
               ],
               "chave": "projeto",
-              "modos": [
-                "blocks"
-              ],
+              "modos": ["blocks"],
               "nivel": "iniciante-2d",
               "paleta": [
                 {
@@ -3643,9 +3353,7 @@
           "partes": [
             {
               "gestos": {
-                "video-a2-retomada": [
-                  "próxima parte"
-                ]
+                "video-a2-retomada": ["próxima parte"]
               },
               "parte": "retomada",
               "titulo": "Volte ao seu jardim",
@@ -3841,9 +3549,7 @@
                 "Jogo 2D"
               ],
               "chave": "projeto",
-              "modos": [
-                "blocks"
-              ],
+              "modos": ["blocks"],
               "nivel": "iniciante-2d",
               "paleta": [
                 {
@@ -4685,9 +4391,7 @@
               "verificacoes": [
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -4702,37 +4406,25 @@
                 },
                 {
                   "id": "andar-cima",
-                  "le": [
-                    "gesto press",
-                    "jogo spritePosition personagem"
-                  ],
+                  "le": ["gesto press", "jogo spritePosition personagem"],
                   "rotulo": "Com a seta para cima, o personagem sobe.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "andar-baixo",
-                  "le": [
-                    "gesto press",
-                    "jogo spritePosition personagem"
-                  ],
+                  "le": ["gesto press", "jogo spritePosition personagem"],
                   "rotulo": "Com a seta para baixo, o personagem desce.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "andar-esquerda",
-                  "le": [
-                    "gesto press",
-                    "jogo spritePosition personagem"
-                  ],
+                  "le": ["gesto press", "jogo spritePosition personagem"],
                   "rotulo": "Com a seta para a esquerda, o personagem vai para a esquerda.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "andar-direita",
-                  "le": [
-                    "gesto press",
-                    "jogo spritePosition personagem"
-                  ],
+                  "le": ["gesto press", "jogo spritePosition personagem"],
                   "rotulo": "Com a seta para a direita, o personagem vai para a direita.",
                   "tipo": "behavior"
                 }
@@ -4784,9 +4476,7 @@
               "verificacoes": [
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -4824,9 +4514,7 @@
                 "Jogo 2D"
               ],
               "chave": "projeto",
-              "modos": [
-                "blocks"
-              ],
+              "modos": ["blocks"],
               "nivel": "iniciante-2d",
               "paleta": [
                 {
@@ -5643,9 +5331,7 @@
               "verificacoes": [
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -5725,18 +5411,13 @@
               "verificacoes": [
                 {
                   "id": "memoria-em-execucao",
-                  "le": [
-                    "gesto approachSprite",
-                    "jogo value temChave"
-                  ],
+                  "le": ["gesto approachSprite", "jogo value temChave"],
                   "rotulo": "Guarde a coleta e continue com a chave ao se afastar.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -5761,9 +5442,7 @@
                 },
                 {
                   "id": "memoria",
-                  "le": [
-                    "bloco sz_js_var_create em start campos {NAME}"
-                  ],
+                  "le": ["bloco sz_js_var_create em start campos {NAME}"],
                   "rotulo": "Crie temChave começando em falso.",
                   "tipo": "usesBlock"
                 },
@@ -5845,18 +5524,13 @@
               "verificacoes": [
                 {
                   "id": "memoria-em-execucao",
-                  "le": [
-                    "gesto approachSprite",
-                    "jogo value temChave"
-                  ],
+                  "le": ["gesto approachSprite", "jogo value temChave"],
                   "rotulo": "Guarde a coleta e continue com a chave ao se afastar.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -5881,9 +5555,7 @@
                 },
                 {
                   "id": "memoria",
-                  "le": [
-                    "bloco sz_js_var_create em start campos {NAME}"
-                  ],
+                  "le": ["bloco sz_js_var_create em start campos {NAME}"],
                   "rotulo": "Crie temChave começando em falso.",
                   "tipo": "usesBlock"
                 },
@@ -5942,9 +5614,7 @@
                 "Jogo 2D"
               ],
               "chave": "projeto",
-              "modos": [
-                "blocks"
-              ],
+              "modos": ["blocks"],
               "nivel": "iniciante-2d",
               "paleta": [
                 {
@@ -6811,18 +6481,13 @@
                 },
                 {
                   "id": "memoria-em-execucao",
-                  "le": [
-                    "gesto approachSprite",
-                    "jogo value temChave"
-                  ],
+                  "le": ["gesto approachSprite", "jogo value temChave"],
                   "rotulo": "Guarde a coleta e continue com a chave ao se afastar.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -6847,9 +6512,7 @@
                 },
                 {
                   "id": "memoria",
-                  "le": [
-                    "bloco sz_js_var_create em start campos {NAME}"
-                  ],
+                  "le": ["bloco sz_js_var_create em start campos {NAME}"],
                   "rotulo": "Crie temChave começando em falso.",
                   "tipo": "usesBlock"
                 },
@@ -7010,18 +6673,13 @@
                 },
                 {
                   "id": "memoria-em-execucao",
-                  "le": [
-                    "gesto approachSprite",
-                    "jogo value temChave"
-                  ],
+                  "le": ["gesto approachSprite", "jogo value temChave"],
                   "rotulo": "Guarde a coleta e continue com a chave ao se afastar.",
                   "tipo": "behavior"
                 },
                 {
                   "id": "direcional",
-                  "le": [
-                    "bloco sz_g2d_enable_classic_controls em start campos {MODE}"
-                  ],
+                  "le": ["bloco sz_g2d_enable_classic_controls em start campos {MODE}"],
                   "rotulo": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
                   "tipo": "usesBlock"
                 },
@@ -7046,9 +6704,7 @@
                 },
                 {
                   "id": "memoria",
-                  "le": [
-                    "bloco sz_js_var_create em start campos {NAME}"
-                  ],
+                  "le": ["bloco sz_js_var_create em start campos {NAME}"],
                   "rotulo": "Crie temChave começando em falso.",
                   "tipo": "usesBlock"
                 },
@@ -7391,9 +7047,7 @@
         "sz_val_variable": 2
       },
       "curso": "cade-todo-mundo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "11d794e3c43e7210",
       "origem": "aula-1/projeto/inicial",
       "saneamentoNaoMudaNada": true,
@@ -7425,9 +7079,7 @@
         "sz_val_variable": 2
       },
       "curso": "cade-todo-mundo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "0f944478e7047233",
       "origem": "aula-2/projeto/inicial",
       "saneamentoNaoMudaNada": true,
@@ -7460,9 +7112,7 @@
         "sz_val_variable": 2
       },
       "curso": "cade-todo-mundo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "619c71961d068b20",
       "origem": "projeto-final",
       "saneamentoNaoMudaNada": true,
@@ -7492,9 +7142,7 @@
         "sz_val_variable": 2
       },
       "curso": "desafio-primeiro-jogo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "f37df04ea80477e9",
       "origem": "dia-1/projeto/inicial",
       "saneamentoNaoMudaNada": true,
@@ -7527,9 +7175,7 @@
         "sz_val_variable": 2
       },
       "curso": "desafio-primeiro-jogo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "22fab7f0fb35ab24",
       "origem": "dia-2/projeto/inicial",
       "saneamentoNaoMudaNada": true,
@@ -7566,9 +7212,7 @@
         "sz_val_variable": 2
       },
       "curso": "desafio-primeiro-jogo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "0e7adf55795dbd4e",
       "origem": "dia-3/projeto/inicial",
       "saneamentoNaoMudaNada": true,
@@ -7606,9 +7250,7 @@
         "sz_val_variable": 3
       },
       "curso": "desafio-primeiro-jogo",
-      "extensoes": [
-        "game-2d@1.2.0"
-      ],
+      "extensoes": ["game-2d@1.2.0"],
       "impressaoDosBlocos": "be98d648fc187ce9",
       "origem": "projeto-final",
       "saneamentoNaoMudaNada": true,

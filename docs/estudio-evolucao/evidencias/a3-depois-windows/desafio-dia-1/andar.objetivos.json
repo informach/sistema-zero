@@ -1,38 +1,38 @@
 [
- {
-  "checkId": "direcional",
-  "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
-  "passed": true,
-  "execucao": false
- },
- {
-  "checkId": "andar",
-  "label": "Dentro de A cada quadro do jogo, mova o personagem.",
-  "passed": true,
-  "execucao": false
- },
- {
-  "checkId": "andar-cima",
-  "label": "Com a seta para cima, o personagem sobe.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "andar-baixo",
-  "label": "Com a seta para baixo, o personagem desce.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "andar-esquerda",
-  "label": "Com a seta para a esquerda, o personagem vai para a esquerda.",
-  "passed": true,
-  "execucao": true
- },
- {
-  "checkId": "andar-direita",
-  "label": "Com a seta para a direita, o personagem vai para a direita.",
-  "passed": true,
-  "execucao": true
- }
+  {
+    "checkId": "direcional",
+    "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "andar",
+    "label": "Dentro de A cada quadro do jogo, mova o personagem.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "andar-cima",
+    "label": "Com a seta para cima, o personagem sobe.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "andar-baixo",
+    "label": "Com a seta para baixo, o personagem desce.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "andar-esquerda",
+    "label": "Com a seta para a esquerda, o personagem vai para a esquerda.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "andar-direita",
+    "label": "Com a seta para a direita, o personagem vai para a direita.",
+    "passed": true,
+    "execucao": true
+  }
 ]

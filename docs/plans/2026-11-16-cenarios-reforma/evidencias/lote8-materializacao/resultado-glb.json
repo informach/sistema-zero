@@ -9,16 +9,8 @@
     "triangulos": 12,
     "verticesMaximos": 24
   },
-  "tamanhos": [
-    2,
-    1,
-    3
-  ],
-  "centro": [
-    4,
-    2.5,
-    -3
-  ],
+  "tamanhos": [2, 1, 3],
+  "centro": [4, 2.5, -3],
   "medidas": {
     "malhas": 1,
     "triangulos": 12,
@@ -27,22 +19,5 @@
     "bytesDePixels": 16,
     "animavel": false
   },
-  "pixels": [
-    255,
-    0,
-    0,
-    255,
-    0,
-    255,
-    0,
-    255,
-    0,
-    0,
-    255,
-    255,
-    255,
-    255,
-    255,
-    255
-  ]
+  "pixels": [255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255]
 }

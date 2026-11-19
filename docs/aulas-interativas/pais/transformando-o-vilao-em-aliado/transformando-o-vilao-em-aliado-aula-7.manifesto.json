@@ -53,17 +53,13 @@
       "title": "Você no controle",
       "objective": "Explicar a segurança da plataforma e o controle que o responsável tem.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a7-plataforma"
-      ],
+      "blockKeys": ["video-a7-plataforma"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a7-plataforma"
-        ]
+        "blockIds": ["video-a7-plataforma"]
       }
     },
     {
@@ -71,17 +67,13 @@
       "title": "O que tem lá dentro",
       "objective": "Mostrar o que existe na plataforma: cursos, ferramentas de criação e canal de atendimento.",
       "intent": "explanation",
-      "blockKeys": [
-        "video-a7-ferramentas"
-      ],
+      "blockKeys": ["video-a7-ferramentas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a7-ferramentas"
-        ]
+        "blockIds": ["video-a7-ferramentas"]
       }
     },
     {
@@ -89,20 +81,13 @@
       "title": "O presente: sete dias de Cadê Todo Mundo",
       "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final.",
       "intent": "delivery",
-      "blockKeys": [
-        "video-a7-presente",
-        "presente",
-        "certificado"
-      ],
+      "blockKeys": ["video-a7-presente", "presente", "certificado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-a7-presente",
-          "certificado"
-        ]
+        "blockIds": ["video-a7-presente", "certificado"]
       }
     }
   ]
