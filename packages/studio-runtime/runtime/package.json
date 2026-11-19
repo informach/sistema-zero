@@ -13,6 +13,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "three": "0.180.0",
+    "three-studio": "npm:three@0.184.0",
     "typescript": "5.9.3",
     "vite": "8.1.6"
   }
