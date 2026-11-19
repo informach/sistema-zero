@@ -312,9 +312,7 @@
           "vy": 5.900000000000001,
           "vz": -0.8275141051828274,
           "grounded": false,
-          "teclas": [
-            "Space"
-          ],
+          "teclas": ["Space"],
           "quadros": 448,
           "tempo": 7.135900000000024,
           "geracao": 3,
@@ -623,9 +621,7 @@
           "vy": -5.133333333333332,
           "vz": 1.4970302318023907,
           "grounded": false,
-          "teclas": [
-            "KeyW"
-          ],
+          "teclas": ["KeyW"],
           "quadros": 302,
           "tempo": 4.985000000000005,
           "geracao": 3,
@@ -1043,9 +1039,7 @@
           "vy": 5.900000000000001,
           "vz": -0.8275141051828274,
           "grounded": false,
-          "teclas": [
-            "Space"
-          ],
+          "teclas": ["Space"],
           "quadros": 447,
           "tempo": 7.085900000000031,
           "geracao": 3,
@@ -1354,9 +1348,7 @@
           "vy": -5.133333333333332,
           "vz": 1.4970302318023907,
           "grounded": false,
-          "teclas": [
-            "KeyW"
-          ],
+          "teclas": ["KeyW"],
           "quadros": 304,
           "tempo": 5.001900000000006,
           "geracao": 3,
