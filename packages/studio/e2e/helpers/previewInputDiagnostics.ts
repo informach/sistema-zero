@@ -103,6 +103,52 @@ export function configurePreviewInputDiagnostics(): void {
       }
       if (window === window.top) {
         Reflect.set(window, channel, records)
+        // A native key may remain pending across a navigation even when both
+        // renderers answer. Keep a bounded diff of the actual fixture documents
+        // to distinguish source regeneration from runtime/resource changes.
+        const documents = new WeakMap<HTMLIFrameElement, string>()
+        const observeDocument = (frame: HTMLIFrameElement) => {
+          if (frame.title !== 'Pré-visualização') return
+          const next = frame.srcdoc
+          const previous = documents.get(frame) ?? ''
+          if (next === previous) return
+          documents.set(frame, next)
+          let start = 0
+          while (start < previous.length && start < next.length && previous[start] === next[start])
+            start++
+          let end = 0
+          while (
+            end < previous.length - start &&
+            end < next.length - start &&
+            previous[previous.length - end - 1] === next[next.length - end - 1]
+          )
+            end++
+          retain({
+            type: 'preview-document',
+            time: Date.now(),
+            previousBytes: previous.length,
+            bytes: next.length,
+            start,
+            removed: previous.slice(start, previous.length - end).slice(0, 1024),
+            inserted: next.slice(start, next.length - end).slice(0, 1024),
+          })
+        }
+        new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            if (mutation.type === 'attributes' && mutation.target instanceof HTMLIFrameElement)
+              observeDocument(mutation.target)
+            for (const node of mutation.addedNodes) {
+              if (!(node instanceof Element)) continue
+              if (node instanceof HTMLIFrameElement) observeDocument(node)
+              for (const frame of node.querySelectorAll('iframe')) observeDocument(frame)
+            }
+          }
+        }).observe(document, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['srcdoc'],
+        })
         window.addEventListener('message', (event) => {
           const data = event.data
           if (data?.source !== channel || typeof data.type !== 'string') return

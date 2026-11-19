@@ -70,3 +70,21 @@ PIDs verificados de seus processos Vite; a consulta posterior confirmou
 ausência de listeners nas duas portas. O build redundante e os dois logs
 listados no checkpoint permanecem: a revisão automática bloqueou a
 exclusão com `blocked by policy`.
+
+## Resultado ampliado e próxima observação
+
+O run `44633216192` concluiu cem casos Linux: 98 passaram e dois Duelo
+de Heróis ficaram pendentes em ArrowDown. A navegação do iframe ocorreu
+25–31 ms após o início da tecla; cinco segundos depois, editor e jogo
+responderam à leitura CDP com `readyState=complete`. Não há prova de loop
+de CPU nessas duas falhas. O controle bloqueado passou. Windows foi
+cancelado e não vale como aprovação.
+
+O observador opt-in passa a registrar diferenças limitadas dos documentos
+reais dos fixtures: posição da mudança, tamanhos e até 1.024 caracteres
+removidos/inseridos, dentro do mesmo buffer de duzentos registros. Sem
+alterar o documento, a navegação ou a entrada. Serve para distinguir uma
+nova geração de fonte de uma troca de runtime/recursos; não é coletor
+de código em produção. Um segundo controle verifica diferença, limite
+e integridade do atributo. Os dois controles passaram localmente em
+11 s; TypeScript focado não emitiu erros.

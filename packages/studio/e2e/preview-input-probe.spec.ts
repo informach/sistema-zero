@@ -8,6 +8,46 @@ import {
 configurePreviewInputDiagnostics()
 test.use({ channel: 'chromium' })
 
+test('document observer records a bounded source transition without changing it', async ({
+  page,
+}) => {
+  test.skip(process.env.STUDIO_INPUT_DIAGNOSTICS !== '1', 'Opt-in diagnostic control')
+  await page.route('http://127.0.0.1:19992/', (route) =>
+    route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: '<iframe title="Pré-visualização" srcdoc="prefix-initial-suffix"></iframe>',
+    }),
+  )
+  await page.goto('http://127.0.0.1:19992/')
+  const frame = page.locator('iframe')
+  const replacement = `prefix-${'x'.repeat(2000)}-suffix`
+  await frame.evaluate((node, source) => {
+    if (!(node instanceof HTMLIFrameElement)) throw new Error('Expected the preview iframe')
+    node.srcdoc = source
+  }, replacement)
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const records = Reflect.get(window, 'sz-e2e-preview-input') as Array<
+          Record<string, unknown>
+        >
+        return records.filter((record) => record.type === 'preview-document').length
+      }),
+    )
+    .toBe(2)
+  const events = (await page.evaluate(() => Reflect.get(window, 'sz-e2e-preview-input'))) as Array<
+    Record<string, unknown>
+  >
+  expect(events.filter((record) => record.type === 'preview-document').at(-1)).toMatchObject({
+    previousBytes: 'prefix-initial-suffix'.length,
+    bytes: replacement.length,
+    start: 7,
+    removed: 'initial',
+    inserted: 'x'.repeat(1024),
+  })
+  await expect(frame).toHaveAttribute('srcdoc', replacement)
+})
+
 test('input observer records a native key waiting on synchronous game work', async ({ page }) => {
   test.skip(
     process.env.STUDIO_INPUT_DIAGNOSTICS !== '1',
