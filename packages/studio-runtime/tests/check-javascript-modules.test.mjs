@@ -1,8 +1,19 @@
 import { afterEach, expect, test } from 'bun:test'
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { THREE_VERSION } from '../../studio/src/three/threeRuntimeContract'
 import { createPinnedThreeModuleResolver } from '../runtime/check-javascript-modules.mjs'
+
+test('the offline classic renderer matches the editor without replacing the Pro dependency', async () => {
+  const image = JSON.parse(await readFile(new URL('../runtime/package.json', import.meta.url)))
+  const lock = JSON.parse(await readFile(new URL('../runtime/package-lock.json', import.meta.url)))
+  expect(image.dependencies['three-classic']).toBe(`npm:three@${THREE_VERSION}`)
+  expect(lock.packages['node_modules/three-classic'].name).toBe('three')
+  expect(lock.packages['node_modules/three-classic'].version).toBe(THREE_VERSION)
+  expect(image.dependencies.three).toBe('0.180.0')
+  expect(lock.packages['node_modules/three'].version).toBe('0.180.0')
+})
 
 const directories = []
 afterEach(async () => {

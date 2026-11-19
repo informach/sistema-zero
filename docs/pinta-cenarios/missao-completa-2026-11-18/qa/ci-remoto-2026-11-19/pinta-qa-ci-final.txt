@@ -1,0 +1,2 @@
+$ biome ci . "--diagnostic-level=error" "--max-diagnostics=none"
+[0m[36mChecked 16105 files in 37[0m[0m[2m[36ms[0m[0m[36m.[0m[0m[36m No fixes applied.[0m

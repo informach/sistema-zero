@@ -1,0 +1,33 @@
+bun test v1.3.11 (af24e281)
+
+tests\check-javascript-modules.test.mjs:
+(pass) the offline classic renderer matches the editor without replacing the Pro dependency
+(pass) the pinned package and its relative JS dependencies are available without external network [15.00ms]
+(pass) the resolver cannot expose another version, package, origin, non-JS file or escaped path [16.00ms]
+(pass) a substituted trusted package fails before serving any module
+(pass) a linked module directory cannot escape the immutable package [16.00ms]
+(pass) an oversized official module fails closed
+
+tests\contracts.test.ts:
+(pass) a imagem inclui os módulos locais importados pelo executor de objetivos [16.00ms]
+(pass) contrato do executor Pro > validates actual project dependencies instead of inferring them from its starter
+(pass) contrato do executor Pro > rejects unavailable libraries, versions and manifest installation features
+(pass) contrato do executor Pro > accepts a completed npm range lock and rejects stale roots, transitives and integrity [16.00ms]
+(pass) contrato do executor Pro > the public package catalog exactly matches installed image versions
+(pass) contrato do executor Pro > aceita a árvore válida e remove arquivos de configuração não confiáveis
+(pass) contrato do executor Pro > rejeita travessia, node_modules e env
+(pass) contrato do executor Pro > exige identificador opaco, template conhecido e index
+(pass) contrato do executor Pro > gera dependências e configuração apenas a partir do template confiável
+(pass) contrato do executor Pro > imagem instala dependências reproduzíveis pelo lockfile [15.00ms]
+
+tests\dependency-lock.test.ts:
+(pass) dependency preparation uses the installed exact graph and rejects arbitrary versions, registries and workspaces [16.00ms]
+(pass) generated graph installs independently with npm ci and npm ls without changing the lock [10094.00ms]
+
+tests\python-sdk-source-copy.test.ts:
+(pass) SDK packaging preserves source/package/lock bytes without installed dependencies [547.00ms]
+
+ 19 pass
+ 0 fail
+ 99 expect() calls
+Ran 19 tests across 4 files. [11.00s]

@@ -7,6 +7,11 @@ assert.equal(process.cwd(), '/app')
 assert.equal(process.getuid(), 1000)
 assert.equal(Bun.version, '1.4.4')
 assert.equal(process.env.NODE_ENV, 'production')
+// Resolve the content validator and its GLB inspector in the production closure.
+const { conferirConteudoCompilado } = await import(
+  Bun.resolveSync('@sistemazero/molda-cenarios-motor/conteudo', '/app/packages/studio')
+)
+assert.equal(typeof conferirConteudoCompilado, 'function')
 // Capability flags are optional at boot. Exercise their enabled composition in the
 // actual Bun image too, without starting workers, migrations or a database client.
 const { Elysia } = await import(Bun.resolveSync('elysia', '/app/packages/members'))
@@ -46,7 +51,9 @@ const workspaces = [
   'arquipelago-contracts',
   'core',
   'members',
+  'molda',
   'molda-cenarios-core',
+  'molda-cenarios-motor',
   'pinta',
   'studio',
   'ui',
@@ -77,6 +84,8 @@ for (const [consumer, workspace] of [
   ['members', 'pinta'],
   ['members', 'studio'],
   ['studio', 'ui'],
+  ['studio', 'molda-cenarios-motor'],
+  ['molda-cenarios-motor', 'molda'],
 ]) {
   assert.equal(
     realpathSync(Bun.resolveSync(`@sistemazero/${workspace}`, `/app/packages/${consumer}`)),

@@ -15,7 +15,8 @@ COPY patches ./patches
 RUN bun install --frozen-lockfile --production --filter '@sistemazero/members...' \
     && mkdir -p packages/members/node_modules packages/core/node_modules \
        packages/studio/node_modules packages/pinta/node_modules packages/ui/node_modules \
-       packages/arquipelago-contracts/node_modules packages/molda-cenarios-core/node_modules
+       packages/arquipelago-contracts/node_modules packages/molda-cenarios-core/node_modules \
+       packages/molda-cenarios-motor/node_modules packages/molda/node_modules
 
 FROM base AS runtime
 # Preserva a store e os links do Bun, sem copiar o cache global do instalador.
@@ -27,6 +28,8 @@ COPY --from=dependencies /app/packages/pinta/node_modules ./packages/pinta/node_
 COPY --from=dependencies /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=dependencies /app/packages/arquipelago-contracts/node_modules ./packages/arquipelago-contracts/node_modules
 COPY --from=dependencies /app/packages/molda-cenarios-core/node_modules ./packages/molda-cenarios-core/node_modules
+COPY --from=dependencies /app/packages/molda-cenarios-motor/node_modules ./packages/molda-cenarios-motor/node_modules
+COPY --from=dependencies /app/packages/molda/node_modules ./packages/molda/node_modules
 COPY package.json tsconfig.base.json ./
 COPY packages/members/package.json packages/members/tsconfig.json packages/members/drizzle.config.ts ./packages/members/
 # Inclui schema, SQL e journal das migrations, além do grafo real de inicialização.
@@ -44,6 +47,12 @@ COPY packages/arquipelago-contracts/src ./packages/arquipelago-contracts/src
 # Molda Cenários: o documento do cenário e os comandos, que o members roda a cada lote do editor.
 COPY packages/molda-cenarios-core/package.json packages/molda-cenarios-core/tsconfig.json ./packages/molda-cenarios-core/
 COPY packages/molda-cenarios-core/src ./packages/molda-cenarios-core/src
+# Validador de conteúdo usado pelo Studio no servidor; não carrega o renderer.
+COPY packages/molda-cenarios-motor/package.json packages/molda-cenarios-motor/tsconfig.json ./packages/molda-cenarios-motor/
+COPY packages/molda-cenarios-motor/src ./packages/molda-cenarios-motor/src
+# A inspeção GLB do validador reutiliza o importador puro já existente do Molda.
+COPY packages/molda/package.json packages/molda/tsconfig.json ./packages/molda/
+COPY packages/molda/src ./packages/molda/src
 # Entradas operacionais existentes; não são executadas durante o build.
 COPY packages/members/scripts/bootstrap-kids-journey.ts \
      packages/members/scripts/adopt-arquipelago-gallery.ts \

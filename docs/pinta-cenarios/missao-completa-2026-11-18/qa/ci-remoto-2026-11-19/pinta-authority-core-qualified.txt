@@ -1,0 +1,54 @@
+bun test v1.3.11 (af24e281)
+
+src\state\editorStore.test.ts:
+(pass) editorStore — commit/undo/redo > o orçamento da aula recusa a transação inteira antes de histórico e autosave [125.00ms]
+(pass) editorStore — commit/undo/redo > commit grava história e bumpa updatedAt
+(pass) editorStore — commit/undo/redo > replace NÃO gasta undo
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > undo restaura os mapas ANTES; redo reaplica os mapas DEPOIS
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > undo ATRAVÉS de uma edição comum (pincel) ainda restaura os mapas do remap anterior
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > editor sem assets ligados (sprite/mapa) segue igual — undo comum
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > persiste asset principal e mapas ligados na mesma operação observável
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > só publica asset principal e mapas ligados depois da persistência confirmar [16.00ms]
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > falha ao persistir mapas ligados mantém o editor sujo e mostra erro
+(pass) editorStore — autosave debounced + flush > salva sozinho após o debounce e avisa a galeria (onSaved) [62.00ms]
+(pass) editorStore — autosave debounced + flush > flush salva imediatamente (sem esperar o debounce)
+(pass) editorStore — autosave debounced + flush > falha de persistência vira badge de erro e continua sujo (retry no próximo flush)
+(pass) editorStore — autosave debounced + flush > sem edição não persiste nada [63.00ms]
+(pass) recuperação de uma gravação já confirmada como cópia > adota a cópia, cancela histórico/gestos antigos e continua salvando no ID novo
+(pass) recuperação de uma gravação já confirmada como cópia > edição feita enquanto o save estava em voo permanece suja para retry [62.00ms]
+(pass) assetBytes > mede os bitmaps dominantes
+(pass) assetBytes > kinds vetoriais crescem com o número de shapes (orçamento do undo)
+(pass) assetBytes > conta o PNG da figura (senão o orçamento do undo mente)
+(pass) conjunto (map-set) no orçamento do desfazer > pesa o que o mapa de dentro pesa, e as células entram uma vez por buffer [16.00ms]
+
+src\state\localAuthority.test.ts:
+(pass) 026: escrita legada preserva a autoridade5 e recupera RAM4 como cópia
+(pass) a capacidade mínima conserva clientes 5 em documentos compatíveis e protege conteúdo 6 [15.00ms]
+(pass) 026: uma aba anterior não retira colisões do documento 7 e sua edição é recuperada offline
+(pass) rebaixamento deliberado na instância que observou5 continua permitido
+(pass) duas instâncias atuais não substituem a revisão que outra confirmou
+(pass) relógios iguais não confundem edição antiga com confirmação atual [16.00ms]
+(pass) lápide impede ressurreição por gravador antigo, preservando sua edição
+(pass) restaurar deliberadamente depois da própria exclusão respeita a revisão
+(pass) exclusão antiga por ID não apaga uma autoridade já promovida
+(pass) falha de put pinta:asset: aborta autoridade e espelho
+(pass) falha de put pinta:local: aborta autoridade e espelho
+(pass) falha durante recuperação mantém tanto o checkpoint5 como o espelho antigo
+(pass) envelope futuro {"version":2} permanece intocado
+(pass) envelope futuro {"capability":8} permanece intocado
+(pass) checkpoint inválido não é trocado silenciosamente pelo espelho
+(pass) captura usa a autoridade e suas dependências, sem preferir o espelho legado
+(pass) outra instância/perfil não recebe documentos nem recuperação deste banco [16.00ms]
+(pass) primeira leitura protege o legado antes de receber uma edição de outra aba
+(pass) releitura parcial conserva avisos de outros documentos futuros
+(pass) listagem não autentica RAM antiga de mapas ligados a outro editor
+(pass) cada autosave avança apenas a linhagem que gravou; desfazer próprio continua possível
+(pass) reinício observa lápide e pode restaurar deliberadamente a sua revisão
+(pass) lote com formato futuro aborta todos os outros membros [15.00ms]
+(pass) cópias contam nos32MiB; recusa conserva ambas e apagar libera espaço atomicamente [422.00ms]
+(pass) ler lápide em outra instância não autentica RAM com origem anterior à exclusão [16.00ms]
+
+ 44 pass
+ 0 fail
+ 145 expect() calls
+Ran 44 tests across 2 files. [2.19s]

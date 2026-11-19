@@ -61,8 +61,11 @@ export async function createPinnedThreeModuleResolver(packageRoot, version) {
 /** Lazy: ordinary 2D checks never resolve or read the Three package. */
 export async function createImageThreeModuleResolver() {
   const require = createRequire(import.meta.url)
-  const entry = require.resolve('three')
+  // Pro's published dependency contract remains on its own pinned Three package.
+  // Classic documents use the editor's renderer, installed under a separate alias.
+  const entry = require.resolve('three-classic')
   const root = path.dirname(path.dirname(entry))
   const image = JSON.parse(await fs.readFile(new URL('./package.json', import.meta.url), 'utf8'))
-  return createPinnedThreeModuleResolver(root, image.dependencies.three)
+  const version = image.dependencies['three-classic']?.replace(/^npm:three@/, '')
+  return createPinnedThreeModuleResolver(root, version)
 }

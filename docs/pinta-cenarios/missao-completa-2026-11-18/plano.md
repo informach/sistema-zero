@@ -24,6 +24,8 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   autenticado entre clientes de staging com a conta de teste fornecida pelo usuário.
   Login confirmado e runtime C4 armazenado no R2 real, com 128 objetos conferidos;
   nenhuma ativação realizada. Provas e limites em `qa/runtime-c4-staging/README.md`.
+  O CI remoto de `7347a7707` encontrou quatro bloqueios adicionais; diagnóstico,
+  correções e limites da prova local em `qa/ci-remoto-2026-11-19/README.md`.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

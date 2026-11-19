@@ -10,6 +10,7 @@ mentira, que só anota as chamadas:
 Os casos com pygame de verdade (pixels, fontes, janela) continuam só no modo normal.
 """
 import json
+import base64
 import os
 import struct
 import sys
@@ -128,9 +129,12 @@ def objetos_do_mapa_com_conjuntos(salvar):
             {'id': 'hidden', 'kind': 'objects', 'name': 'Escondidos', 'visible': False, 'objects': [
                 {'id': 'hidden', 'name': 'Escondido', 'type': 'item', 'x': 1, 'y': 1,
                  'width': 1, 'height': 1, 'properties': {}}]}]
-        scene = {'version': 1, 'name': 'vila', 'cols': 2, 'rows': 2, 'tileSize': 16,
+        # The original scene-v1 exporter already wrote an ID and embedded PNGs.
+        # Keep this legacy fixture on that real wire contract, including unused art.
+        image = 'data:image/png;base64,' + base64.b64encode(png_minimo(None, 16, 16)).decode()
+        scene = {'version': 1, 'id': 'vila', 'name': 'vila', 'cols': 2, 'rows': 2, 'tileSize': 16,
                  'tilesets': [{'id': 't', 'name': 'pecas', 'columns': 1, 'count': 1,
-                               'solid': [], 'platform': [], 'image': 'unused.png'}],
+                               'solid': [], 'platform': [], 'image': image}],
                  'layers': layers, 'sets': [{'id': 'house', 'name': 'Casa', 'cols': 1, 'rows': 1,
                     'layers': [{'id': 'inside', 'kind': 'objects', 'name': 'Dentro', 'objects': [
                         {'id': 'a', 'name': 'Chave', 'type': 'item', 'x': 2, 'y': 0,
@@ -154,7 +158,7 @@ def objetos_do_mapa_com_conjuntos(salvar):
                     obj[key] *= escala
         data = {'format': 'pinta', 'version': 2, 'kind': 'map', 'name': 'vila', 'scale': escala,
                 'tileSize': 16 * escala, 'cols': 2, 'rows': 2,
-                'tilesets': [{'name': 'pecas', 'columns': 1, 'count': 1, 'solid': [], 'platform': []}],
+                'tilesets': [{'name': 'pecas', 'y': 0, 'columns': 1, 'count': 1, 'solid': [], 'platform': []}],
                 'layers': legacy, 'scene': scene}
         nome = f'conjunto-{escala}'
         salvar(nome, data)
@@ -171,6 +175,16 @@ def objetos_do_mapa_com_conjuntos(salvar):
         assert a.propriedades == {'local': 'copy/b', 'external': 'outside', 'vida': 3}
         assert a.tipos_das_propriedades == {'local': 'object', 'external': 'object', 'vida': 'int'}
         assert a is mapa.objetos('item')[1], 'consultar novamente conserva a identidade do objeto'
+        for change in ('id', 'image', 'atlas'):
+            broken = copy.deepcopy(data)
+            if change == 'id':
+                broken['scene'].pop('id')
+            elif change == 'image':
+                broken['scene']['tilesets'][0]['image'] = 'unused.png'
+            else:
+                broken['tilesets'][0]['y'] = 100000
+            salvar(nome, broken)
+            expect_error(lambda: pinta.carregar_mapa(nome), ValueError, 'cenário')
         # v1 e v2 sem cena continuam lendo as camadas e devolvendo as mesmas instâncias.
         for versao in (1, 2):
             antigo = dict(data, version=versao)
@@ -180,7 +194,7 @@ def objetos_do_mapa_com_conjuntos(salvar):
             assert mapa_antigo._cena is None
             assert [obj.id for obj in mapa_antigo.objetos()] == ['copy', 'outside', 'hidden']
             assert mapa_antigo.objetos('item')[0] is mapa_antigo.camada('Objetos')[1]
-    return 6
+    return 12
 
 
 def main():
@@ -332,11 +346,14 @@ def main():
 
 
 
-def png_minimo(dados):
-    """Um PNG só com cabeçalho, o bloco ``pinta`` e o fim: basta para ``ler_dados``."""
+def png_minimo(dados, largura=1, altura=1):
+    """PNG RGBA transparente real, sem depender do decoder ou do pygame de teste."""
     def bloco(tipo, corpo):
         return struct.pack('>I', len(corpo)) + tipo + corpo + struct.pack('>I', zlib.crc32(tipo + corpo) & 0xFFFFFFFF)
-    png = b'\x89PNG\r\n\x1a\n' + bloco(b'IHDR', struct.pack('>IIBBBBB', 1, 1, 8, 6, 0, 0, 0)) + bloco(b'IEND', b'')
+    png = (b'\x89PNG\r\n\x1a\n'
+           + bloco(b'IHDR', struct.pack('>IIBBBBB', largura, altura, 8, 6, 0, 0, 0))
+           + bloco(b'IDAT', zlib.compress(bytes((1 + largura * 4) * altura)))
+           + bloco(b'IEND', b''))
     return with_pinta_data(png, dados) if dados is not None else png
 
 
@@ -446,7 +463,7 @@ def logica_sem_pygame():
     assert pinta.Objeto({'name': 'bau', 'properties': {'ouro': {'type': 'int', 'value': 3}, 'aberto': True}}).propriedades == {'ouro': 3, 'aberto': True}
     conferidos += 4
     conferidos += objetos_do_mapa_com_conjuntos(
-        lambda nome, dados: Path('assets', nome + '.png').write_bytes(png_minimo(dados)))
+        lambda nome, dados: Path('assets', nome + '.png').write_bytes(png_minimo(dados, 32, 32)))
     print(f'pinta (sem pygame): {conferidos} conferências de lógica pura passaram.')
 
 
