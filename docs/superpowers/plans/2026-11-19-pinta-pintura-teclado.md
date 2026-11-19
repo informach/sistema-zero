@@ -7,4 +7,8 @@ Design: `docs/plans/2026-11-19-pinta-pintura-teclado-design.md`.
 - [x] Cobrir contratos, curadoria, recusa, recuperação e seleção nas operações.
 - [x] Homologar navegador, layout, rolagem, histórico e reabertura.
 - [x] Revisar, executar gates e registrar o commit verificado.
-- [ ] Integrar staging e concluir a auditoria da etapa 6.
+- [x] Integrar staging e concluir a auditoria da etapa 6.
+
+Lote `473a2bf49`; integração local e gates em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/pintura-por-teclado-2026-11-19/pos-merge/`.
+O rollout autenticado da etapa 0b é uma entrega distinta e continua aberto.
