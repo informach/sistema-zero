@@ -107,6 +107,10 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     ler('cenarios', '/mundos/:id/cenarios'),
     escrever('cenario-criar', 'POST', '/mundos/:id/cenarios'),
     ler('cenario', '/cenarios/:id'),
+    escrever('cenario-exportacao', 'POST', '/cenarios/:id/exportacao', {
+      corpo: 1024,
+      porMinuto: 30,
+    }),
     ler('cenario-historico', '/cenarios/:id/historico'),
     ler('cenario-revisoes', '/cenarios/:id/revisoes'),
     escrever('cenario-historico-mover', 'POST', '/cenarios/:id/historico'),

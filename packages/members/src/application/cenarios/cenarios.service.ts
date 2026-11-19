@@ -49,6 +49,7 @@ import type { MovimentoDoHistorico, ResumoDoHistorico } from '../../domain/cenar
 import type { BlobReservado, CenariosRepository } from '../../domain/ports/cenarios-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import { ConjuntosService } from './conjuntos.service'
+import { ExportacaoDeCenariosService } from './exportacao.service'
 
 export interface EspacoView {
   id: string
@@ -139,12 +140,14 @@ const resumoView = (c: ResumoDeCenario): ResumoDeCenarioView => ({
  */
 export class CenariosService {
   readonly conjuntos: ConjuntosService
+  readonly exportacao: ExportacaoDeCenariosService
   constructor(
     private readonly repo: CenariosRepository,
     private readonly clock: () => Date,
     private readonly abertura: AberturaDosCenarios,
     private readonly novoId: () => string = randomUUID,
   ) {
+    this.exportacao = new ExportacaoDeCenariosService(repo, (ator, id) => this.cenarioDe(ator, id))
     this.conjuntos = new ConjuntosService(repo, {
       exigirAberto: (ator) => this.exigirAberto(ator),
       bibliotecaDe: (ator, id) => this.bibliotecaDe(ator, id),

@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { prepararCenaParaCompilacao } from '../src/compilar/preparar'
+import { referenciasDaCenaParaCompilacao } from '../src/compilar/referencias'
 import {
   capturarFragmento,
   criarDocumentoVazio,
@@ -254,6 +255,49 @@ test('conjunto é expandido uma vez, conserva procedência e confere a licença 
   expect(p.montagens.map((m) => m.id)).toEqual(['raiz'])
   expect(p.licencas.map((l) => l.id)).toEqual(['pack'])
   expect(JSON.stringify(d)).toBe(antes)
+})
+
+test('seleção autorizável dispensa alturas e concorda com a expansão de conjuntos e suas camadas', () => {
+  const origem = cena(),
+    a = objeto('a', 'm'),
+    b = objeto('b', 'nao-usado')
+  origem.modelos[1]!.volume = origem.modelos[0]!.volume
+  origem.camadas = [{ id: 'oculta', nome: 'Oculta', oculto: true, bloqueado: false }]
+  b.camada = 'oculta'
+  origem.instancias = [a, b]
+  const conteudo = capturarFragmento(origem, ['a', 'b'], 'conta'),
+    d = criarDocumentoVazio('c', 'Conjuntos')
+  terreno(d)
+  d.definicoesConjuntos = [
+    { id: 'd', nome: 'Canteiro', biblioteca: 'livre', conjunto: 'canteiro', revisao: 2, conteudo },
+  ]
+  d.montagens = [
+    {
+      id: 'm',
+      nome: 'Montagem',
+      grupo: null,
+      oculto: false,
+      bloqueado: false,
+      definicao: 'd',
+      transformacao: pose(10, 0, 20),
+      apoio: { tipo: 'terreno', deslocamento: 0 },
+    },
+  ]
+  const original = JSON.stringify(d),
+    refs = referenciasDaCenaParaCompilacao(d),
+    p = prepararCenaParaCompilacao(d, { cenario: d.id, revisao: 2 }, licencas, () => 7)
+  expect(refs.bibliotecas).toEqual(['livre'])
+  expect(refs.modelos.map((m) => [m.biblioteca, m.digest])).toEqual(
+    p.modelos.map((m) => [m.biblioteca, m.digest]),
+  )
+  expect(refs.conjuntos.map((c) => c.revisao)).toEqual([2])
+  expect(p.objetos).toHaveLength(1)
+  expect(JSON.stringify(d)).toBe(original)
+  d.montagens[0]!.oculto = true
+  expect(referenciasDaCenaParaCompilacao(d).bibliotecas).toEqual([])
+  expect(
+    prepararCenaParaCompilacao(d, { cenario: d.id, revisao: 3 }, licencas, () => 7).licencas,
+  ).toEqual([])
 })
 
 test('perfil sem conversão, alturas ausentes e identificação/revisão inconsistentes impedem compilação', () => {

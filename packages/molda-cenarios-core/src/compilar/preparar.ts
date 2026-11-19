@@ -24,6 +24,7 @@ import {
   conferirLicencasDaCompilacao,
   type LicencaDaBiblioteca,
 } from './licencas'
+import { referenciasDaCenaParaCompilacao } from './referencias'
 
 export interface MarcadorPreparado {
   marcador: MarcadorDeCenario
@@ -95,34 +96,9 @@ export function prepararCenaParaCompilacao(
           : {}),
       }),
     ),
-    idsModelos = new Set<string>(),
-    idsTexturas = new Set<string>(),
-    bibliotecas = new Set<string>()
-  for (const o of objetos) {
-    idsModelos.add(o.modelo)
-    if (o.aparencia?.textura) idsTexturas.add(o.aparencia.textura.id)
-  }
-  for (const a of aguas)
-    if ((a.tipo === 'lago' || a.tipo === 'represa') && a.modelo) idsModelos.add(a.modelo)
-  for (const c of caminhos) {
-    if (c.acabamento) idsModelos.add(c.acabamento)
-    if (c.aparencia?.textura) idsTexturas.add(c.aparencia.textura.id)
-  }
-  if (documento.base.tipo === 'terreno')
-    for (const c of documento.base.solo?.camadas ?? []) if (c.textura) idsTexturas.add(c.textura.id)
-  if (documento.iluminacao.ceu?.tipo === 'panorama')
-    idsTexturas.add(documento.iluminacao.ceu.textura)
-  const modelos = documento.modelos.filter((m) => idsModelos.has(m.id)),
-    formas = (documento.formas ?? []).filter((f) => idsModelos.has(f.id)),
-    texturas = (documento.texturas ?? []).filter((t) => idsTexturas.has(t.id))
-  for (const r of [...modelos, ...texturas]) bibliotecas.add(r.biblioteca)
-  const definicoes = new Map(original.definicoesConjuntos?.map((d) => [d.id, d]))
-  for (const m of montagens) {
-    const d = definicoes.get(m.definicao)
-    if (!d) throw Error('A definição do conjunto não está disponível para a compilação.')
-    bibliotecas.add(d.biblioteca)
-  }
-  const licencas = conferirLicencasDaCompilacao([...bibliotecas], contexto)
+    { modelos, formas, texturas } = referenciasDaCenaParaCompilacao(documento),
+    referencias = referenciasDaCenaParaCompilacao(original),
+    licencas = conferirLicencasDaCompilacao(referencias.bibliotecas, contexto)
   return {
     fonte: origem,
     documento,

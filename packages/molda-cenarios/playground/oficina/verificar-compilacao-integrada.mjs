@@ -759,7 +759,7 @@ try {
       avatar: modulo('output/cenarios-reforma/lote3-testar-avatar/avatar-cute-ensaio.glb'),
       ponte: modulo('output/molda-cenarios/acervo/ponte_04_pacote.8d256d9aefcc.glb'),
       caminho: modulo('output/molda-cenarios/acervo/caminho_terra_reto.804d14830d95.glb'),
-      three: modulo('node_modules/three/build/three.module.js'),
+      three: modulo('packages/molda-cenarios/playground/oficina/qa-three.ts'),
       core: modulo('packages/molda-cenarios-core/src/v2/index.ts'),
       compilar: modulo('packages/molda-cenarios-motor/src/compilar/compilar.ts'),
       modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),
