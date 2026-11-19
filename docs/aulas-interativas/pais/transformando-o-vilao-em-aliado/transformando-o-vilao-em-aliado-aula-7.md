@@ -6,9 +6,9 @@
 
 | Parte | O que a explicação desenvolve |
 | --- | --- |
-| 1. Você no controle | Explicar a segurança da plataforma e o controle que o responsável tem. |
-| 2. O que tem lá dentro | Mostrar o que existe na plataforma: cursos, ferramentas de criação e canal de atendimento. |
-| 3. O presente: sete dias de Cadê Todo Mundo | Entregar o presente, o Cadê Todo Mundo por sete dias, fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. |
+| 1. Você no controle | Mostrar que o presente fica na mesma plataforma, nos dois lados dela (área dos pais e área da criança), e o controle que o responsável tem. |
+| 2. O que tem na área da criança | Mostrar o que existe na área da criança, cursos e ferramentas de criação, e o atendimento na área dos pais. |
+| 3. O presente: sete dias de Cadê Todo Mundo | Entregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. |
 
 **Formato:** vídeos com a Helena. Único convite do curso: o presente do Cadê Todo Mundo por sete dias, pelo botão abaixo do vídeo. Sem quiz nem tarefa.
 

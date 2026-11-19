@@ -556,16 +556,19 @@
         "pairs": [
           [
             "A sua conta",
-            "Você cria a conta de responsável e, dentro dela, o perfil do seu filho."
+            "A conta de responsável você já tem. Dentro dela, na área dos pais, você cria o perfil do seu filho."
           ],
           [
             "Perfil privado",
             "O perfil da criança é privado por padrão. Só fica visível dentro da plataforma, e só se você autorizar."
           ],
-          ["Áudio", "A criança só envia mensagem de voz à equipe se você autorizar."],
+          [
+            "Falar em vez de escrever",
+            "A criança só pode falar em vez de escrever se você autorizar. A fala vira texto, e a gravação não fica guardada."
+          ],
           [
             "Aparelho e tempo",
-            "Você escolhe o aparelho e por quanto tempo o acesso vale. Pode cancelar quando quiser."
+            "Você autoriza o aparelho e escolhe por quanto tempo o acesso vale. A criança entra com um código, e você pode encerrar quando quiser."
           ]
         ]
       },
@@ -580,7 +583,7 @@
       },
       {
         "kind": "note",
-        "text": "Na área dos pais há um canal de atendimento para dúvidas, sugestões e pedidos de novos temas de jogo."
+        "text": "Na área dos pais, no menu Ajuda, há o atendimento para dúvidas, sugestões e pedidos de novos temas de jogo."
       },
       {
         "kind": "delivery",
