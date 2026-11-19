@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { digestDoDocumentoDeCenario } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   type ComandoDeCenario,
   capturarFragmento,
@@ -17,6 +18,7 @@ import {
   type ModoDosCenarios,
 } from '../../src/domain/cenarios/cenarios'
 import {
+  BibliotecaRestritaError,
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
   CenarioInvalidoError,
@@ -360,6 +362,116 @@ describe('mundos e cenários', () => {
     }
     return { ...base, mundo, cenario, definir }
   }
+
+  test('exportação usa revisão salva, ignora acervo ocioso e recebe licença/papel reais', async () => {
+    const base = await comCenario()
+    const vazio = await base.servico.exportacao.preparar(ana, base.cenario.id, 0)
+    expect(vazio.contexto.bibliotecas).toEqual([])
+    await base.servico.editarCenario(ana, base.cenario.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'preparar-exportacao',
+      comandos: [base.definir, { tipo: 'instancia.criar', instancia: objeto('a', 'arvore') }],
+    })
+    const antes = await base.servico.abrirCenario(ana, base.cenario.id),
+      p = await base.servico.exportacao.preparar(ana, base.cenario.id, 1)
+    expect(p.espacoId).toBe(base.espaco.id)
+    expect(p.fonte).toEqual({ cenario: base.cenario.id, revisao: 1 })
+    expect(p.documento).toEqual(antes.documento)
+    expect(p.digest).toBe(await digestDoDocumentoDeCenario(antes.documento))
+    expect(p.contexto).toEqual({
+      equipe: true,
+      bibliotecas: [{ id: base.biblioteca.id, nome: 'Aventura', licenca: 'restrita' }],
+    })
+    expect(await base.servico.abrirCenario(ana, base.cenario.id)).toEqual(antes)
+    await expect(base.servico.exportacao.preparar(ana, base.cenario.id, 0)).rejects.toBeInstanceOf(
+      CenarioDesatualizadoError,
+    )
+    await expect(
+      base.servico.exportacao.preparar(ana, base.cenario.id, NaN),
+    ).rejects.toBeInstanceOf(CenarioInvalidoError)
+  })
+
+  test('exportação não herda privilégio da conta nem de sessão de suporte e não abre outro espaço', async () => {
+    const base = await comCenario()
+    await base.servico.editarCenario(ana, base.cenario.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'preparar-exportacao',
+      comandos: [base.definir, { tipo: 'instancia.criar', instancia: objeto('a', 'arvore') }],
+    })
+    for (const ator of [
+      { ...ana, equipe: false },
+      { ...ana, suporte: true },
+    ])
+      await expect(base.servico.exportacao.preparar(ator, base.cenario.id, 1)).rejects.toThrow()
+    await expect(
+      base.servico.exportacao.preparar({ ...ana, contaId: OUTRA }, base.cenario.id, 1),
+    ).rejects.toBeInstanceOf(CenarioNaoEncontradoError)
+    // Abre a ferramenta para a conta, sem promover a pessoa a membro da equipe.
+    const comum = await comBiblioteca(ana, 'aberto'),
+      [modelo] = await trazerArvore(comum),
+      mundo = await comum.servico.criarMundo(ana, comum.espaco.id, 'Mundo'),
+      c = await comum.servico.criarCenario(ana, mundo.id, 'Cena')
+    await comum.servico.editarCenario(ana, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'guardar-modelo',
+      comandos: [
+        {
+          tipo: 'modelo.definir',
+          modelo: {
+            id: 'm',
+            biblioteca: comum.biblioteca.id,
+            modelo: modelo!.id,
+            digest: digest('a'),
+          },
+        },
+        { tipo: 'instancia.criar', instancia: objeto('a', 'm') },
+      ],
+    })
+    for (const ator of [
+      { ...ana, equipe: false },
+      { ...ana, suporte: true },
+    ])
+      await expect(comum.servico.exportacao.preparar(ator, c.id, 1)).rejects.toBeInstanceOf(
+        BibliotecaRestritaError,
+      )
+  })
+
+  test('exportação recusa arquivo ausente/papel incorreto e edição concorrente durante o preparo', async () => {
+    const base = await comCenario()
+    await base.servico.editarCenario(ana, base.cenario.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'preparar-exportacao',
+      comandos: [base.definir, { tipo: 'instancia.criar', instancia: objeto('a', 'arvore') }],
+    })
+    const lerBlobs = base.repo.blobsConfirmados.bind(base.repo)
+    base.repo.blobsConfirmados = async () => new Map()
+    await expect(base.servico.exportacao.preparar(ana, base.cenario.id, 1)).rejects.toBeInstanceOf(
+      CenarioArquivoAusenteError,
+    )
+    base.repo.blobsConfirmados = async () =>
+      new Map([[digest('a'), { tipo: 'textura', bytes: 1000, tipoDoConteudo: 'image/png' }]])
+    await expect(base.servico.exportacao.preparar(ana, base.cenario.id, 1)).rejects.toBeInstanceOf(
+      CenarioArquivoAusenteError,
+    )
+    base.repo.blobsConfirmados = lerBlobs
+    const listar = base.repo.bibliotecas.bind(base.repo)
+    base.repo.bibliotecas = async () => []
+    await expect(base.servico.exportacao.preparar(ana, base.cenario.id, 1)).rejects.toBeInstanceOf(
+      CenarioNaoEncontradoError,
+    )
+    base.repo.bibliotecas = async (id) => {
+      const lista = await listar(id)
+      await base.servico.editarCenario(ana, base.cenario.id, {
+        revisaoEsperada: 1,
+        operacaoId: 'edicao-concorrente',
+        comandos: [{ tipo: 'cenario.renomear', nome: 'Novo nome' }],
+      })
+      return lista
+    }
+    await expect(base.servico.exportacao.preparar(ana, base.cenario.id, 1)).rejects.toBeInstanceOf(
+      CenarioDesatualizadoError,
+    )
+  })
 
   test('um mundo só usa bibliotecas do próprio espaço', async () => {
     const base = await comCenario()

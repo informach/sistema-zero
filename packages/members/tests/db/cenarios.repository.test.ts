@@ -30,9 +30,11 @@ import postgres from 'postgres'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
 import { chaveDoBlob } from '../../src/domain/cenarios/cenarios'
 import {
+  BibliotecaRestritaError,
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
   CenarioInvalidoError,
+  CenarioNaoEncontradoError,
   CenariosSemEspacoError,
 } from '../../src/domain/cenarios/cenarios.errors'
 import type {
@@ -1678,6 +1680,84 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(2000)
     // Apagar a outra biblioteca solta a pedra, que era a última a usá-la.
     expect(await repo.apagarBiblioteca(outra!.id, DEPOIS)).toEqual([digest('b')])
+  })
+
+  test('exportação reabre revisão e licença reais no Postgres, inclusive modelo fixado removido do catálogo', async () => {
+    const { espaco, biblioteca } = await comBiblioteca(),
+      ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
+      comum = { ...ator, equipe: false },
+      abrir = () => new CenariosService(repo, () => AGORA, { modo: 'aberto', lista: new Set() }),
+      s = abrir()
+    await guardar(espaco.id, 'a')
+    const [m] = (await repo.criarModelos(
+        biblioteca.id,
+        [modelo('a', 'Árvore')],
+        10,
+        CONTA,
+        AGORA,
+      ))!,
+      mundo = await s.criarMundo(ator, espaco.id, 'Mundo'),
+      c = await s.criarCenario(ator, mundo.id, 'Vila')
+    await s.editarCenario(ator, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: randomUUID(),
+      comandos: [
+        {
+          tipo: 'modelo.definir',
+          modelo: { id: 'm', modelo: m!.id, biblioteca: biblioteca.id, digest: digest('a') },
+        },
+        {
+          tipo: 'instancia.criar',
+          instancia: {
+            id: 'o',
+            nome: 'Árvore',
+            grupo: null,
+            modelo: 'm',
+            oculto: false,
+            bloqueado: false,
+            apoio: { tipo: 'absoluto' },
+            colisao: 'caixa',
+            transformacao: {
+              posicao: { x: 0, y: 0, z: 0 },
+              rotacao: { x: 0, y: 0, z: 0 },
+              escala: { x: 1, y: 1, z: 1 },
+            },
+          },
+        },
+      ],
+    })
+    const antes = await repo.cenario(c.id),
+      p = await abrir().exportacao.preparar(ator, c.id, 1)
+    expect(p.documento).toEqual(antes!.documento)
+    expect(p.contexto.bibliotecas).toEqual([
+      { id: biblioteca.id, nome: 'Aventura', licenca: 'restrita' },
+    ])
+    // Esperar a consulta antes da asserção evita o bloqueio de IO do matcher
+    // rejects do Bun 1.3.11 com uma conexão postgres.js já aquecida.
+    expect(
+      await abrir()
+        .exportacao.preparar(comum, c.id, 1)
+        .catch((e) => e),
+    ).toBeInstanceOf(BibliotecaRestritaError)
+    expect(
+      await abrir()
+        .exportacao.preparar(ator, c.id, 0)
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioDesatualizadoError)
+    expect(
+      await abrir()
+        .exportacao.preparar({ ...comum, contaId: randomUUID() }, c.id, 1)
+        .catch((e) => e),
+    ).toBeInstanceOf(CenarioNaoEncontradoError)
+    await repo.editarBiblioteca(biblioteca.id, { nome: 'Meus modelos', licenca: 'propria' }, AGORA)
+    expect(await repo.apagarModelos(biblioteca.id, [m!.id], AGORA)).toEqual([])
+    const livre = await abrir().exportacao.preparar(comum, c.id, 1)
+    expect(livre.contexto).toEqual({
+      equipe: false,
+      bibliotecas: [{ id: biblioteca.id, nome: 'Meus modelos', licenca: 'propria' }],
+    })
+    expect(livre.digest).toBe(p.digest)
+    expect(await repo.cenario(c.id)).toEqual(antes)
   })
 
   test('retratos: imagem da revisão atrasada não troca a capa; repetição, histórico e coleta são coerentes', async () => {

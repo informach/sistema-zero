@@ -1,3 +1,4 @@
+import { conferirPreparoDeExportacao } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   digestDosBytes,
   lerRecursoDeTerreno,
@@ -145,6 +146,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       throw new ErroDaOficina('Sem conexão agora. Tente de novo.', 0, null, null)
     }
     const lido: unknown = await resposta.json().catch(() => null)
+    sinal?.throwIfAborted()
     if (resposta.ok) return lido as T
     const envelope = objeto(lido)
     const erro = objeto(envelope?.error)
@@ -629,6 +631,17 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     },
     async abrirCenario(id): Promise<CenarioAberto> {
       return cenarioAberto(await pedir<CenarioDoServidor>('GET', `cenarios/${id}`))
+    },
+    async prepararExportacao(id, revisaoEsperada, sinal) {
+      sinal?.throwIfAborted()
+      const dados = await conferirPreparoDeExportacao(
+        await pedir('POST', `cenarios/${id}/exportacao`, { revisaoEsperada }, sinal),
+        id,
+        revisaoEsperada,
+      )
+      sinal?.throwIfAborted()
+      espacoDoCenario.set(id, dados.espacoId)
+      return dados
     },
     async moverHistorico(id, revisaoEsperada, acao, operacaoId) {
       return cenarioAberto(

@@ -11,7 +11,7 @@ Referência: plano normativo de Claude e `2026-11-18-cenarios-lote8-exportacao.m
 - [x] Empacotar Three com ZIP existente do Molda, manifesto, recursos usados, licenças, LEIA-ME e exploração independente. Reabrir sem login em servidor estático.
 - [x] Corrigir a leitura ZIP compartilhada: perfil real encontrou 47,6 s na reabertura. [Correção e prova](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-zip-faixas.md): leitura por faixas limitadas, pacote real reaberto em 262,5 ms, conteúdo/CRC/cotas preservados. Não alterou o módulo portátil.
 - [x] GLB único conserva composição e animações suportadas, com validação independente. [Revisão, limitações e evidências](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-glb-unico.md).
-- [ ] Preparação autorizada da revisão real no Members, contrato equivalente nos hosts memória/HTTP/BFF. Nenhuma permissão confiada ao cliente; salvar pendente bloqueia revisão errada.
+- [x] Preparação autorizada da revisão real no Members, contrato equivalente nos hosts memória/HTTP/BFF. Nenhuma permissão confiada ao cliente. [Revisão e ensaios](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-preparo-autorizado.md). A guarda de salvamento na interface continua no item seguinte.
 - [ ] Fluxo visual nos componentes existentes do Molda: revisão, destino, recursos/limites, licenças nominais, junção, progresso, cancelamento, repetir e baixar. Testar quatro layouts e temas, erros e autoria intacta.
 - [ ] Revisar, documentar, commitar e enviar as evidências. Só fechar 8.3 com todo seu escopo; 8.4/8.5 e encerramento global permanecem pendentes.
 
