@@ -1,0 +1,529 @@
+tests\artifacts.test.ts:
+(pass) commits immutable files then serves real bytes with sandbox CSP and CORS [16.00ms]
+(pass) unknown, encoded traversal, incomplete and expired artifacts are never served
+(pass) changed build bytes abort publication and remove partial files
+(pass) validates output limits, duplicate names and canonical paths before uploading
+tests\bosque-browser.test.ts:
+(pass) Bosque: o executor real aprova os gabaritos e reprova os projetos iniciais [186750.00ms]
+tests\bounded-operations.test.ts:
+(pass) native work is bounded, visits each item once and finishes with no pending operation
+(pass) a falsy failure stops admission and drains the already admitted operation before rejecting
+(pass) invalid budgets never start native work; an empty selection has no side effects
+tests\cade-garden-browser.test.ts:
+(pass) Cadê: os objetivos executam a solução, erros plausíveis e personalizações no navegador real [62266.00ms]
+tests\capabilities.test.ts:
+(pass) full UTF-8 Canvas envelope crosses the exact boundary with replaced art [250.00ms]
+(pass) Canvas manual creation uses the complete source/material envelope within the same contract at every layer
+(pass) Oversized material profiles and unsupported paths cannot enter a paid remote builder run
+tests\capacity.test.ts:
+(pass) o sandbox de execução oferece a CPU usada na qualificação dos programas
+tests\check-approach-3d.test.mjs:
+(pass) 3D route follows the bridge and the actual position; height cannot be faked by the image [79.00ms]
+(pass) 3D route around a solid obstacle takes one detour, not a staircase of short legs [15.00ms]
+(pass) objeto parado: quadros=%s, leitura lenta=%s
+(pass) objeto parado: quadros=%s, leitura lenta=%s
+(pass) objeto parado: quadros=%s, leitura lenta=%s
+(pass) objeto parado: quadros=%s, leitura lenta=%s
+(pass) route from the key crosses the narrow bridge away from its edges [16.00ms]
+(pass) pulsos adaptativos respeitam a distância com velocidade 1
+(pass) pulsos adaptativos respeitam a distância com velocidade 4
+(pass) pulsos adaptativos respeitam a distância com velocidade 8
+(pass) com a seta apertada e a leitura lenta (um quadro por leitura), chega sem passar do ponto [15.00ms]
+tests\check-approach.test.mjs:
+(pass) navigation routes around a key instead of crossing it on a door-only trial
+(pass) an interrupted navigation releases its pressed key and every observation handle
+tests\check-click-target.test.mjs:
+(pass) uses current positions and sizes, choosing a visible exclusive part of partial overlaps [16.00ms]
+(pass) empty click is outside all visible current group rectangles
+(pass) repeat sends same admitted logical point even if original is hidden, but refuses a different actor
+(pass) sprite gesture uses the real existing rectangle when hidden, without bypassing other actors
+(pass) CSS size, centering and borders map in CSS pixels independently of backing DPR
+(pass) logical dimensions already admitted by the engine have no duplicate absolute-click cap
+(pass) adaptive sprite clicks hit official track-projected bounds instead of raw world coordinates
+(pass) projected group obstacles fence empty and repeated gestures; offscreen tracks never fall back to raw boxes
+(pass) official projection capabilities are captured before mutable facades and refuse sprite accessors
+(pass) private reader retains actor identity even when its variable/index is replaced
+(pass) reader rejects an untrusted Proxy group member before descriptor observation
+(pass) reader never invokes target accessors or admits unsupported/non-finite geometry
+(pass) isolated geometry refuses ambiguous/occluded/transformed stages instead of guessing
+(pass) unknown group accessor never runs during observation and mutable indexOf is not called
+(pass) private reader does not use the mutable public Game2D facade
+tests\check-javascript-modules.test.mjs:
+(pass) the offline image and lock share the single Studio renderer pin
+(pass) the immutable image serves only the current Studio Three pin
+(pass) the image retains the original 256-module limit [297.00ms]
+(pass) the image retains the original 32 MiB retention limit [47.00ms]
+(pass) the pinned package and its relative JS dependencies are available without external network
+(pass) the resolver cannot expose another version, package, origin, non-JS file or escaped path [16.00ms]
+(pass) a substituted trusted package fails before serving any module
+(pass) a linked module directory cannot escape the immutable package [15.00ms]
+(pass) an oversized official module fails closed
+tests\check-models-ready.test.mjs:
+(pass) modelos ainda pendentes no prazo não autorizam os passos do objetivo [16.00ms]
+(pass) falha de observação não é tratada como zero modelos pendentes
+(pass) quadros continuamente lentos encerram com indisponibilidade
+(pass) jogo 2D não espera nem inspeciona modelos 3D
+(pass) só libera após carregar, observar quadros estáveis e reconferir pendências
+(pass) primeiro quadro atrasado não conta como janela estável
+(pass) uma leitura que nunca responde fica limitada pelo relógio do executor [15016.00ms]
+tests\check.test.ts:
+(pass) POST /v1/check > somente navegação 3D usa capacidade dedicada; ausência da capacidade falha fechada [16.00ms]
+(pass) POST /v1/check > directional observation remains conclusive only with its complete official idle/action evidence
+(pass) POST /v1/check > clássico: serve o documento, julga com a régua do core e devolve a captura
+(pass) POST /v1/check > relatório ausente é indisponibilidade, nunca reprovação guardável
+(pass) POST /v1/check > leitura truncada/erro é indisponível, mas valor divergente observado reprova
+(pass) POST /v1/check > Pro: compila com a entrada do teste e avisa o script que é kit [15.00ms]
+(pass) POST /v1/check > Pro que não compila não cumpre nada (é resposta, não falha do executor)
+(pass) POST /v1/check > a verificação da criança não pede captura
+(pass) POST /v1/check > objetivo que o navegador não conseguiu testar é falha do executor, não "não passou"
+(pass) POST /v1/check > Pro que falha sem erro do Vite (tempo esgotado) é falha do executor
+(pass) POST /v1/check > o executor que falha vira 500, nunca aprovação
+(pass) POST /v1/check > limite de frequência, token e pedido inválido
+(pass) o pedido de teste > movimento oficial é admitido no clássico e recusado no Pro antes de abrir o jogo
+(pass) o pedido de teste > clickTarget é admitido no clássico e recusado no Pro antes de abrir o jogo
+(pass) o pedido de teste > approachSprite é admitido no clássico e recusado no Pro antes de abrir o jogo
+(pass) o pedido de teste > recusa objetivo malformado, arquivo inexistente e caminho reservado
+(pass) o pedido de teste > navegação 3D é recusada no Pro antes de reservar o executor
+(pass) o pedido de teste > a regra em JavaScript vale no clássico e no Pro e só passa com true
+(pass) o pedido de teste > a entrada do Pro importa cada módulo uma vez e guarda no escopo sorteado
+(pass) Pro observes an explicitly exported value from an existing project module
+tests\classic-shell.test.ts:
+(pass) rota da casca da prévia do Clássico > sem origens configuradas a rota não existe
+(pass) rota da casca da prévia do Clássico > outras rotas seguem para o resto do worker
+(pass) rota da casca da prévia do Clássico > serve a página com frame-ancestors das origens e os cabeçalhos de isolamento
+(pass) rota da casca da prévia do Clássico > só GET e HEAD
+tests\click-target-cdp.test.ts:
+(pass) native Node24 CDP path ownership contracts, including under Bun CI [172.00ms]
+tests\container-rollout.test.ts:
+(pass) deploy completion cannot approve an old image, an active rollout or an unhealthy pool
+(pass) a target image must be healthy and stable in two independent observations
+(pass) a retired verification never accepts a late healthy response
+tests\contracts.test.ts:
+(pass) a imagem inclui os módulos locais importados pelo executor de objetivos
+(pass) contrato do executor Pro > validates actual project dependencies instead of inferring them from its starter
+(pass) contrato do executor Pro > rejects unavailable libraries, versions and manifest installation features
+(pass) contrato do executor Pro > accepts a completed npm range lock and rejects stale roots, transitives and integrity [16.00ms]
+(pass) contrato do executor Pro > the public package catalog exactly matches installed image versions
+(pass) contrato do executor Pro > aceita a árvore válida e remove arquivos de configuração não confiáveis
+(pass) contrato do executor Pro > rejeita travessia, node_modules e env
+(pass) contrato do executor Pro > exige identificador opaco, template conhecido e index
+(pass) contrato do executor Pro > gera dependências e configuração apenas a partir do template confiável
+(pass) contrato do executor Pro > imagem instala dependências reproduzíveis pelo lockfile
+tests\dependency-lock.test.ts:
+(pass) dependency preparation uses the installed exact graph and rejects arbitrary versions, registries and workspaces [16.00ms]
+(pass) generated graph installs independently with npm ci and npm ls without changing the lock [9593.00ms]
+tests\execution-observation-browser.test.ts:
+(fail) the native observer never grades a truncated response or incomplete script context [109.00ms]
+tests\farol-autoral-browser.test.ts:
+(pass) farol-meu-jogo-do-arquipelago: gabarito executável, inicial incompleto e erros causais [5437.00ms]
+(pass) farol-meu-jogo-do-arquipelago-ponte: gabarito executável, inicial incompleto e erros causais [5359.00ms]
+tests\farol-browser.test.ts:
+(pass) Farol: observação real da memória e dos dois caminhos da porta respeita posições e rejeita regras incorretas [207469.00ms]
+tests\game-kit-model.test.ts:
+(pass) simultaneous rows disappear atomically, retain board height, and score once [15.00ms]
+(pass) rotation at the wall preserves a valid piece; blocked movement leaves it unchanged
+(pass) game over prevents subsequent mutations and twenty resets keep bounded state
+tests\game-kits.test.ts:
+(pass) vanilla-js: original sources typecheck and trusted Vite builds without external resources [766.00ms]
+(pass) vanilla-vite: original sources typecheck and trusted Vite builds without external resources [1078.00ms]
+(pass) react-ts: original sources typecheck and trusted Vite builds without external resources [1297.00ms]
+(pass) three-js: original sources typecheck and trusted Vite builds without external resources [609.00ms]
+(pass) three-ts: original sources typecheck and trusted Vite builds without external resources [1532.00ms]
+(pass) canvas-puzzle: original sources typecheck and trusted Vite builds without external resources [1062.00ms]
+(pass) canvas-survival: original sources typecheck and trusted Vite builds without external resources [1250.00ms]
+(pass) phaser-arcade: original sources typecheck and trusted Vite builds without external resources [2094.00ms]
+(pass) phaser-platformer: original sources typecheck and trusted Vite builds without external resources [2141.00ms]
+(pass) three-exploration: original sources typecheck and trusted Vite builds without external resources [1765.00ms]
+(pass) canvas-grid-arena: original sources typecheck and trusted Vite builds without external resources [1141.00ms]
+(pass) phaser-tactics: original sources typecheck and trusted Vite builds without external resources [2187.00ms]
+(pass) three-tactics: original sources typecheck and trusted Vite builds without external resources [1813.00ms]
+(pass) three-action: original sources typecheck and trusted Vite builds without external resources [1859.00ms]
+tests\host-bridge.test.ts:
+(pass) Pro host bridge authenticates controls/audio, bounds keys and releases held keys
+tests\inline-preview.test.ts:
+(pass) inline-preview > embute assets locais e impõe CSP/referrer sem manter recursos externos [94.00ms]
+(pass) inline-preview > insere a CSP antes de qualquer script em script antes do head [93.00ms]
+(pass) inline-preview > insere a CSP antes de qualquer script em comentário que contém head antes do head real [94.00ms]
+(pass) inline-preview > insere a CSP antes de qualquer script em head com atributos e caixa diferente [94.00ms]
+tests\motion-observation.test.ts:
+(pass) native Node24 motion observation contracts, including under Bun CI [203.00ms]
+tests\nuvens-browser.test.ts:
+(fail) Ilha das Nuvens: o executor real aprova os gabaritos e reprova os projetos iniciais [31.00ms]
+tests\owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [62.00ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4344.00ms]
+(pass) output overflow is bounded and retires the owned native process [359.00ms]
+tests\pedido-do-nico-browser.test.ts:
+(pass) nico-a-placa-da-noite: gabarito executável, inicial incompleto e erros causais [12328.00ms]
+tests\pedidos-das-ilhas-browser.test.ts:
+(pass) capi-a-lanterna-da-cabana: gabarito executável, inicial incompleto e erros causais [8703.00ms]
+(pass) bento-o-letreiro-da-confeitaria: gabarito executável, inicial incompleto e erros causais [7437.00ms]
+(pass) mare-a-boia-de-luz: gabarito executável, inicial incompleto e erros causais [7360.00ms]
+(pass) floco-a-luz-do-iglu: gabarito executável, inicial incompleto e erros causais [8922.00ms]
+(pass) jade-a-fogueira-dos-ninhos: gabarito executável, inicial incompleto e erros causais [7984.00ms]
+(pass) irie-o-farol-das-nuvens: gabarito executável, inicial incompleto e erros causais [9719.00ms]
+tests\pico-browser.test.ts:
+(pass) Pico Gelado: o executor real aprova os gabaritos e reprova os projetos iniciais [224187.00ms]
+tests\portable-path.test.ts:
+(pass) the generated Node container module uses the canonical portable paths, including dotfiles [78.00ms]
+tests\publications.test.ts:
+(pass) promotion survives preview expiry/deletion, preserves exact source/art and never invokes a compiler on read [16.00ms]
+(pass) verified cover checks the retained manifest and file before returning bytes
+(pass) moderation leaves a tombstone that prevents stale or new requests from resurrecting the link [15.00ms]
+(pass) reservation retirement fences an absent pointer and rejects a late promotion
+(pass) a new published revision winning the CAS cannot be erased by retirement of an older reservation
+(pass) a malformed terminal runtime record does not authorize deleting retained artifacts
+(pass) a terminal timestamp cannot conceal retained runtime data
+(pass) reservation retirement checks owner, initial source and single-revision state before deleting
+(pass) bounded collection retains all history, fresh orphan copies and ambiguous successful commits
+(pass) only validated, intact, current previews can be promoted, with no pointer on failure
+(pass) idempotency, owner checks, concurrent CAS, rollback and disable preserve the previous valid revision [16.00ms]
+(pass) moderation gates HTML, materials and conditional reads; authorization failure closes access
+(pass) published artifacts authorize a visible adult or Kids post, never an absent post
+(pass) adult visibility does not wait for a slow Kids authorization endpoint
+(pass) publication visibility never follows a redirect or trusts its apparent successful body
+tests\python-browser-resources.test.js:
+(pass) private boot maps only metadata bound to the exact verified runtime files and pin [79.00ms]
+(pass) trusted browser map preserves original source bytes and serves only verified listed files [15.00ms]
+(pass) compressed approval metadata maps the exact logical runtime set without exposing transport artifacts [63.00ms]
+(pass) changed source/hash/size, duplicate entries and parent escapes cannot enter the browser map
+(pass) real filesystem links cannot escape the declared runtime directory even with a matching hash [15.00ms]
+(pass) closed routing refuses external URLs, unlisted paths and writes while retaining frame CSP
+tests\python-configuration-storage.test.ts:
+(pass) catalog storage is canonical, native checksum/create-only and conflicting bytes never overwrite [32.00ms]
+(pass) concurrent loads share one bounded read and memoize only the exact bucket and digest [15.00ms]
+(pass) transient storage failures and missing catalogs do not poison the digest cache
+(pass) one cancelled caller does not retire another waiter sharing the same immutable read [16.00ms]
+(pass) the last cancellation retires a late R2 body and permits a fresh retry
+(pass) cancellation stops a stalled body; context withdrawal rejects even a successful shared load [15.00ms]
+(pass) the catalog deadline retires an uncooperative GET without requiring caller cancellation
+(pass) catalog identity, advertised size, stream size, bytes and schema are independently verified [16.00ms]
+tests\python-delivery-qualification.test.ts:
+(pass) native Node delivery checks raw gzip, rejection and connection cleanup [594.00ms]
+tests\python-distribution-wire.test.ts:
+(pass) native workerd/R2 serve exactly one layer of gzip with correct HTTP semantics [1062.00ms]
+tests\python-distributions.test.ts:
+(pass) current distribution metadata cannot repin an existing immutable runtime marker [16.00ms]
+(pass) deployment metadata exposes only an approved complete distribution and rechecks revocation
+(pass) distribution closure and hash match the approved release, including defensive capture [16.00ms]
+(pass) incomplete uploads cannot execute; retry and concurrent uploads preserve immutable files
+(pass) mismatched bytes and preexisting corrupt storage fail closed without replacing existing objects [15.00ms]
+(pass) anonymous editor/player requests share immutable artifacts with isolated policy and correct caching
+(pass) unknown files, forged completion, absent checksums, malformed requests and revoked versions never stream
+(pass) server configuration captures the approved descriptors and rejects unsafe parent origins
+(pass) approval array, later descriptors and status callback are captured before verification awaits [16.00ms]
+(pass) policy exceptions after a storage read cancel every unreturned body
+tests\python-execution-qualifier.test.ts:
+(pass) the qualifier requires all explicit pins and an origin matching its environment
+(pass) production execution requires the production environment and exact runtime Worker
+(pass) preview cleanup failure still awaits input retirement and cannot qualify [47.00ms]
+(pass) lost validation response still removes a possibly created preview before the known input [15.00ms]
+(pass) cancellation of an unacknowledged noncooperative admission stays unknown with no invented cleanup
+(pass) noncooperative PNG persistence is cancellable and cannot hold known resources indefinitely [32.00ms]
+(pass) a failing cleanup checkpoint is reported but does not suppress cleanup HTTP
+(pass) all three API oracles bind real Core schemas, callbacks and PNG; retirement is serial and awaited [15.00ms]
+(pass) production API flow preserves all oracles and cleanup; crossed targets fail before dispatch [16.00ms]
+(pass) a changed plan pin is rejected before artifact reads or any remote operation [16.00ms]
+(pass) lost-admission remains unknown, never retries or claims cleanup
+(pass) invalid-admission remains unknown, never retries or claims cleanup
+(pass) open-503 remains unknown, never retries or claims cleanup [15.00ms]
+(pass) persisted-open-408 remains unknown, never retries or claims cleanup
+(pass) persisted-open-409 remains unknown, never retries or claims cleanup
+(pass) report-revision cannot qualify despite successful transport and still retires every known input [16.00ms]
+(pass) missing-marker cannot qualify despite successful transport and still retires every known input [31.00ms]
+(pass) bad-png cannot qualify despite successful transport and still retires every known input [16.00ms]
+(pass) stream-too-large cannot qualify despite successful transport and still retires every known input [15.00ms]
+(pass) receipt-recipe cannot qualify despite successful transport and still retires every known input [16.00ms]
+(pass) cleanup-503 is not an ACK and prevents admitting another case
+(pass) cleanup-false is not an ACK and prevents admitting another case [16.00ms]
+(pass) primary failure survives alongside cleanup failure and no resource is retried
+(pass) an unexpectedly admitted anonymous request is still owned and cleaned before failure [15.00ms]
+(pass) checkpoint failure after admission cannot discard ownership; before dispatch creates no unknown admission
+(pass) caller cancellation after admission aborts work but uses independent awaited cleanup [16.00ms]
+tests\python-file-stream.test.ts:
+(pass) stream preserves original binary bytes and validates empty and nonempty content
+(pass) short, excessive and modified streams reject completion and never become accepted files
+(pass) backpressure consumes a 32MiB input incrementally rather than producing it before the sink [47.00ms]
+(pass) abort cancels a pending producer and rejects both consumer and verification
+tests\python-http-negotiation.test.ts:
+(pass) negotiates gzip without overriding exclusions or explicit identity preference
+(pass) conditional GET/HEAD matches only the selected representation, with weak tag comparison
+tests\python-http-representations.test.ts:
+(pass) serves negotiated stored gzip with logical MIME/policy and representation-specific validators [32.00ms]
+(pass) HEAD and conditional responses select the same representation and retire every unreturned stream
+(pass) edge negotiation uses authoritative original client encoding before rewritten headers [15.00ms]
+(pass) missing/corrupt declared gzip and revocation never silently fall back to identity
+(pass) HEAD/304 recheck policy after asynchronous stream retirement; retired releases remain usable [31.00ms]
+(pass) HTTP representations are optional, closed over declared immutable artifacts and defensively captured
+(pass) upload verifies decoded equality and never completes invalid or overexpanding gzip releases [16.00ms]
+(pass) rejects ambiguous, missing, recursive, orphaned or noncanonical HTTP representation references [16.00ms]
+tests\python-input-gc.test.ts:
+(pass) input GC removes expired bytes, keeps admission tombstones and preserves active and permanent content [15.00ms]
+(pass) GC does not delete files based on corrupted admission metadata
+(pass) bounded GC commits its cursor only after successful deletion and safely retries a failed checkpoint
+(pass) a transient deletion failure rejects the page without committing its cursor [16.00ms]
+(pass) GC holding an old admission preserves an active input reopened after remove
+(pass) GC holding an old admission preserves an active input reopened after lifecycle [16.00ms]
+(pass) transient metadata get failure does not checkpoint the GC page
+(pass) transient metadata body failure does not checkpoint the GC page
+tests\python-input-maintenance.test.ts:
+(pass) stored input GC resumes its verified checkpoint and persists only confirmed page progress
+(pass) a corrupted persistent GC checkpoint is rejected before listing or deletion
+tests\python-inputs.test.ts:
+(pass) inputs store metadata, transfer exact bytes separately and recover an idempotent request
+(pass) ownership, execution, revision and expiry cannot be supplied by another input reference
+(pass) a lifecycle-recreated nonce in the same clock tick has a distinct generation and rejects the old reference [16.00ms]
+(pass) a delayed remove cannot delete the admission or files of a generation recreated by lifecycle
+(pass) unregistered and corrupt upload streams are cancelled without creating source files
+(pass) cancelled metadata reads reclaim a body that arrives after the operation retires
+(pass) duplicate upload cleanup remains cancellable when the R2 body does not acknowledge cancellation [15.00ms]
+(pass) a rejected stored file returns its error even when body cancellation is unresponsive
+tests\python-inspection.test.ts:
+(pass) operational failures identify the phase without logging private errors or source [16.00ms]
+(pass) trusted process diagnostics accept only a fixed phase and never publish stderr
+(pass) a rejected SDK command exposes only the trusted process phase, preserving its error
+(pass) a cleanup failure is identified separately and cannot publish a successful report [16.00ms]
+(pass) isolated inspection stages only verified bytes and fixed trusted command, binds report, owns cleanup
+(pass) mission preparation does not expire on the shorter inspection clock
+(pass) the mission clock still cancels trusted work and retires its sandbox [15.00ms]
+(pass) compressed deployments stage logical files through the real registry while retaining full approval metadata
+(pass) failed compilation is a complete report, not an approval or a transport failure [16.00ms]
+(pass) explicit structure inspection stages the capability and refuses a compile-only passed report
+(pass) modified runtime/project bytes and stale reports cannot yield inspection evidence [16.00ms]
+(pass) forged metadata is denied before creating a container [15.00ms]
+(pass) cancellation reclaims its container and settles even if the SDK operation never responds
+(pass) cancellation during cleanup rejects an otherwise valid late report
+(pass) unresponsive cleanup is bounded and never publishes an inspection report [5016.00ms]
+(pass) body ownership survives cancellation between read resolution and await continuation
+(pass) full validation compiles then executes in one sandbox and destroys only after both phases [15.00ms]
+(pass) invalid compilation never starts learner execution, and an unsupported playtest capability fails closed [16.00ms]
+(pass) stale execution evidence and altered capture bytes cannot approve the compiled revision [16.00ms]
+(pass) cancellation during the second phase rejects its late report and destroys the sole owner
+(pass) a noncooperative trusted phase cannot retain the job after its owner is cancelled [15.00ms]
+(pass) a body arriving after cancelled read is reclaimed without starting a job
+tests\python-job-controller.test.ts:
+(pass) controlled controller races run in an isolated Bun process, without claiming SDK qualification [391.00ms]
+(pass) actual DO controller persists pre-start cancellation and terminal admission without SDK [5078.00ms]
+tests\python-job-state.test.ts:
+(pass) real workerd SQLite keeps exclusive job ownership, terminal fences and state through DO reset [4641.00ms]
+tests\python-mission-diagnostics.test.ts:
+(pass) a command result with success false carries its stage even when the SDK does not throw
+(pass) a rejected SDK command without stderr uses only the trusted stage journal and preserves its error
+(pass) unknown, oversized and invalid diagnostic files never become stages or replace the original failure
+(pass) retired owners neither read a diagnostic nor accept a result arriving after their fence
+(pass) stderr stages need no extra read and a missing file cannot hide a command failure
+tests\python-operational-artifact.test.ts:
+(pass) offline artifact uses canonical factory, explicit approval and exact frame/source pins [1406.00ms]
+(pass) missing/wrong approval is refused without creating output; output is exclusive and tamper detected [1422.00ms]
+(pass) overbudget manifest is refused before reading missing payloads or creating output [469.00ms]
+tests\python-operational-promoter.test.ts:
+(pass) fixed frame returns views without per-file copies; malformed/order/trailing/over-budget refused
+(pass) unconfigured Worker and missing explicit approval are fail closed without I/O [15.00ms]
+(pass) private request factory binds the exact frame and does not perform I/O
+(pass) HMAC binds exact plan/origin/version/nonce/expiry; auth negatives precede storage [32.00ms]
+(pass) synthetic storage port: real store functions keep marker/config order, readback and idempotence [15.00ms]
+(pass) readback uses at most four native reads and retains ownership until they all settle [16.00ms]
+(pass) one isolate admits one body; second authorized request429 is never read [16.00ms]
+(pass) primary and falsy cleanup rejections stay separate and raw data never reaches receipt [15.00ms]
+(pass) tampered body is refused before any write; frame reader preserves abort and falsy cleanup [16.00ms]
+(pass) undefined native-port failure before marker remains primary; retry fills immutable partial files [15.00ms]
+(pass) expiry immediately after native-port object acquisition still closes its real stream [16.00ms]
+(pass) abort during an actual pending stream read settles it and cancels once before rejection
+tests\python-playtest-driver.test.ts:
+(pass) isolated Node driver regression: stdin [422.00ms]
+(pass) isolated Node driver regression: stdin-completed [453.00ms]
+(pass) isolated Node driver regression: click-race [484.00ms]
+(pass) isolated Node driver regression: key-race [391.00ms]
+(pass) isolated Node driver regression: infra-click [422.00ms]
+tests\python-previews.test.ts:
+(pass) preview registries reject malformed current deployment metadata before any write
+(pass) preview streams exact project bytes, commits last, shares runtime and keeps authored files inert [62.00ms]
+(pass) preview refuses stale scope, missing marker, tampered bytes/checksums and path aliases [31.00ms]
+(pass) a completion marker alone never authorizes preview delivery and every response rechecks the decision [16.00ms]
+(pass) preview rejects corrupt source before publishing and keeps a collectable failed record [16.00ms]
+(pass) cancel or configuration withdrawal between writes never commits a preview [31.00ms]
+(pass) preview captures its signal, ports and authorization callback before asynchronous storage
+(pass) a native put with a missing acknowledgement cannot block cancellation [15.00ms]
+(pass) a deterministically invalid GC record does not starve valid expired previews [16.00ms]
+(pass) unresponsive body retirement cannot retain an aborted preview request [16.00ms]
+(pass) preview garbage collection preserves live previews and all other namespaces, retries failed deletes [15.00ms]
+tests\python-promotion.test.ts:
+(pass) offline plan is deterministic, binds distinct hashes and registers real Python categories [1015.00ms]
+(pass) a product promotion exposes Pygame-ce, the two Raylib extensions and their own blocks [391.00ms]
+(pass) a product promotion refuses a manifest without pgzero/pgzero/__init__.py even when the remaining hashes match [390.00ms]
+(pass) a product promotion refuses a manifest without raylib/_szraylib/_camera3d.py even when the remaining hashes match [516.00ms]
+(pass) a product promotion refuses a manifest without raylib-renderer.mjs even when the remaining hashes match [734.00ms]
+(pass) a product promotion refuses a manifest without pgzero/freesansbold.ttf even when the remaining hashes match [422.00ms]
+(pass) a product promotion refuses a manifest without LICENSE-raylib.txt even when the remaining hashes match [1203.00ms]
+(pass) promotion rejects a distribution that omits the Pygame-ce file pygame/_szpygame/__init__.py [516.00ms]
+(pass) promotion rejects a distribution that omits the Pygame-ce file pygame/pinta.py [531.00ms]
+(pass) promotion rejects a distribution that omits the Pygame-ce file pygame_ce-2.5.7-cp314-cp314-pyemscripten_2026_0_wasm32.whl [719.00ms]
+(pass) promotion rejects a Pygame-ce wheel other than the one the Studio pinned [422.00ms]
+(pass) promotion selects APIs from an explicit current-format implementation feature array [1797.00ms]
+(pass) repeating the current deployment preserves its exact approved policy and plan identity [1078.00ms]
+(pass) a new release reconciles an interrupted retirement in worker without rewriting its baseline [2187.00ms]
+(pass) a new release reconciles an interrupted retirement in members without rewriting its baseline [1157.00ms]
+(pass) interrupted retirement recovery never reconciles a revoked release in worker [562.00ms]
+(pass) interrupted retirement recovery never reconciles a revoked release in members [641.00ms]
+(pass) recovery still rejects a divergent final state when the requested release is retired [953.00ms]
+(pass) a new active release retires only superseded releases of its Python profile in staging [1266.00ms]
+(pass) a new active release retires only superseded releases of its Python profile in production [1312.00ms]
+(pass) production reuses immutable release bytes with its own origins and catalog [953.00ms]
+(pass) existing JS and current-format Python statuses and origins survive merge in staging [516.00ms]
+(pass) existing JS and current-format Python statuses and origins survive merge in production [594.00ms]
+(pass) permanent identity, HTTPS origins and immutable collision are enforced in staging [484.00ms]
+(pass) permanent identity, HTTPS origins and immutable collision are enforced in production [453.00ms]
+(pass) environment and bucket crossings fail before the upload connector [344.00ms]
+(pass) adding a release preserves revoked releases, parents and state consistency in staging [687.00ms]
+(pass) adding a release preserves revoked releases, parents and state consistency in production [516.00ms]
+(pass) CLI prepare creates an immutable pinned plan in staging [766.00ms]
+(pass) CLI prepare creates an immutable pinned plan in production [609.00ms]
+(pass) proxy setup failure removes only its temporary configuration and never touches storage [437.00ms]
+(pass) upload preserves failure identities and cleans its config: upload error [454.00ms]
+(pass) upload preserves failure identities and cleans its config: undefined rejection [437.00ms]
+(pass) upload preserves failure identities and cleans its config: disposal error [484.00ms]
+(pass) upload preserves failure identities and cleans its config: both errors [422.00ms]
+(pass) upload preserves failure identities and cleans its config: undefined primary and disposal error [438.00ms]
+(pass) directory removal failure preserves every failure after connect [750.00ms]
+(pass) directory removal failure preserves every failure after upload [734.00ms]
+(pass) directory removal failure preserves every failure after dispose [891.00ms]
+(pass) directory removal failure preserves every failure after success [859.00ms]
+(pass) manifest mismatch, path escape, gzip mismatch and bytes drift fail offline [375.00ms]
+(pass) directory symlinks/junctions are rejected even when their bytes are valid [94.00ms]
+(pass) valid gzip with matching artifact hashes must still reproduce every logical byte and its length [656.00ms]
+(pass) upload uses conditional storage, marker then catalog, idempotence and disposal in staging [1016.00ms]
+(pass) upload uses conditional storage, marker then catalog, idempotence and disposal in production [969.00ms]
+(pass) tampered plans and drift never connect; upload failure cannot create a completion marker [843.00ms]
+(pass) a catalog upload failure preserves complete runtime objects and retry publishes only the catalog [1610.00ms]
+tests\python-publication-recipe.test.ts:
+(pass) classic Python revisions retain a canonical v2 recipe with runtime, extensions, entrypoint and lock [15.00ms]
+(pass) pro Python revisions retain a canonical v2 recipe with runtime, extensions, entrypoint and lock [16.00ms]
+(pass) a v2 recipe is rejected when not canonical, not bound to the source, or rehashed with other dependencies [16.00ms]
+(pass) an unsupported Python recipe is rejected on read and replay without rewriting stored objects
+(pass) current revisions replay idempotently and retain their bytes through update, disable, restore and collection [15.00ms]
+(pass) GC keeps runtimes referenced by current revisions, history and disabled publications, removing only orphan revisions [16.00ms]
+(pass) GC failure mid-page is safe: nothing referenced is lost, the cursor is not advanced and a rerun completes [15.00ms]
+(pass) an unreadable publication record retains all of its objects without stalling collection of others [16.00ms]
+tests\python-publications.test.ts:
+(pass) classic Python retains exact source and recipe without JS compiler or public artifact URL
+(pass) pro Python retains exact source and recipe without JS compiler or public artifact URL [16.00ms]
+(pass) Python promotion rejects malformed, wrong-language, wrong-project, runtime and dependency source before writing
+(pass) all shared valid project ID prefixes remain readable, retryable and updatable after publication [78.00ms]
+(pass) Python idempotency binds the recipe; language, kind, runtime, owner and project cannot migrate implicitly
+(pass) Python CAS, restore, disable, moderation and garbage collection preserve only retained immutable revisions [15.00ms]
+(pass) Python source resolution rejects missing/tampered source, manifest and approval binding [16.00ms]
+tests\python-r2-inputs.test.ts:
+(pass) real workerd R2 verifies binary, empty, corrupt and quota-sized streamed inputs [15312.00ms]
+tests\python-requests.test.ts:
+(pass) mission ingress refuses an older runtime before creating any execution owner [15.00ms]
+(pass) mission execution admits only bound probes and rechecks report identity, errors and cleanup [16.00ms]
+(pass) validation checks configuration, release and input generation before starting learner execution [94.00ms]
+(pass) protected preview is generated only after both phases and confirmed sandbox destruction [31.00ms]
+(pass) unconfigured or unapproved previews fail before creating a sandbox
+(pass) validation delegates its exact request and rechecks the complete report [16.00ms]
+(pass) inspect and validate refuse bare references and omitted modes before admitting any job [15.00ms]
+(pass) private Python protocol opens idempotently, streams original bytes and inspects only the captured revision [16.00ms]
+(pass) registry resolves exact configured identity, returns copies and reflects revocation
+(pass) an approved descriptor without its completed upload cannot create an input [16.00ms]
+(pass) invalid revision and mismatched Python versions are rejected before creating input files
+(pass) quota denial retires the unconsumed binary stream and never creates a sandbox
+(pass) a configuration change during inspection rejects its late report and destroys the owned sandbox [15.00ms]
+(pass) a runtime change during inspection rejects its late report and destroys the owned sandbox [16.00ms]
+(pass) a input change during inspection rejects its late report and destroys the owned sandbox [15.00ms]
+(pass) an incomplete input cannot execute code and forged references cannot start a sandbox [16.00ms]
+(pass) input closure during the final runtime marker check rejects a late report [16.00ms]
+(pass) ingress delegates inspection without creating an unowned sandbox and revalidates its exact report [15.00ms]
+(pass) ingress cancels owned execution before closing its input and does not acknowledge pending cleanup [16.00ms]
+(pass) ingress refuses a delegated report when its input is closed during the job
+tests\python-sdk-contract.test.ts:
+(pass) SDK mission envelope preserves probes, structure and immutable identity without a playtest recipe
+(pass) SDK compilation/inspection sends the current envelope with structure=false
+(pass) SDK compilation/inspection sends the current envelope with structure=true
+(pass) SDK validation preserves recipe and preview=false in its current envelope
+(pass) SDK validation preserves recipe and preview=true in its current envelope
+(pass) manual playtest recipes use the current V1 recipe contract, independently of publication V2 [15.00ms]
+(pass) SDK request construction does not invent the current structure field for an old seed
+tests\python-sdk-source-copy.test.ts:
+(pass) SDK packaging preserves source/package/lock bytes without installed dependencies [63.00ms]
+tests\quadros-bosque-browser.test.ts:
+(pass) bosque-chuva-de-pinhas: gabarito executável, inicial incompleto e erros causais [7906.00ms]
+(pass) bosque-bolotas-para-o-alto: gabarito executável, inicial incompleto e erros causais [4828.00ms]
+(pass) bosque-quebrar-as-pinhas: gabarito executável, inicial incompleto e erros causais [14781.00ms]
+(pass) bosque-tres-vidas: gabarito executável, inicial incompleto e erros causais [17813.00ms]
+(pass) bosque-fim-e-outra-partida: gabarito executável, inicial incompleto e erros causais [29406.00ms]
+tests\quadros-nuvens-browser.test.ts:
+(pass) nuvens-plantar-com-moedas: gabarito executável, inicial incompleto e erros causais [10594.00ms]
+(pass) nuvens-canteiro-ocupado: gabarito executável, inicial incompleto e erros causais [8812.00ms]
+(pass) nuvens-producao: gabarito executável, inicial incompleto e erros causais [16860.00ms]
+(pass) nuvens-colher-os-canteiros: gabarito executável, inicial incompleto e erros causais [10922.00ms]
+(pass) nuvens-meta-do-jardim: gabarito executável, inicial incompleto e erros causais [33859.00ms]
+tests\quadros-pico-browser.test.ts:
+(pass) pico-pulo-com-apoio: gabarito executável, inicial incompleto e erros causais [24359.00ms]
+(pass) pico-agua-volta-ao-comeco: gabarito executável, inicial incompleto e erros causais [26079.00ms]
+(pass) pico-proxima-fase: gabarito executável, inicial incompleto e erros causais [30406.00ms]
+(pass) pico-fim-do-jogo: gabarito executável, inicial incompleto e erros causais [34906.00ms]
+(pass) pico-de-volta-a-fase-1: gabarito executável, inicial incompleto e erros causais [46109.00ms]
+tests\quadros-recife-browser.test.ts:
+(pass) recife-uma-bolha-por-vez: gabarito executável, inicial incompleto e erros causais [17282.00ms]
+(pass) recife-alvo-preso: gabarito executável, inicial incompleto e erros causais [22515.00ms]
+(pass) recife-alvo-em-outro-lugar: gabarito executável, inicial incompleto e erros causais [13156.00ms]
+(pass) recife-tempo-de-partida: gabarito executável, inicial incompleto e erros causais [58610.00ms]
+(pass) recife-nova-partida: gabarito executável, inicial incompleto e erros causais [63062.00ms]
+tests\quadros-vale-browser.test.ts:
+(pass) vale-onda-de-cinza: gabarito executável, inicial incompleto e erros causais [12297.00ms]
+(pass) vale-relogio-da-onda: gabarito executável, inicial incompleto e erros causais [32703.00ms]
+(pass) vale-ninho-atingido: gabarito executável, inicial incompleto e erros causais [42907.00ms]
+(pass) vale-alcance-da-torre: gabarito executável, inicial incompleto e erros causais [51656.00ms]
+(pass) vale-ondas-que-crescem: gabarito executável, inicial incompleto e erros causais [35953.00ms]
+tests\recife-browser.test.ts:
+(fail) Recife Coral: o executor real aprova os gabaritos e reprova os projetos iniciais [47.00ms]
+tests\runtime-handler.test.ts:
+(pass) scheduled cleanup drains Kids and adult publication queues with the worker token
+(pass) reservation retirement authenticates before storage and validates its immutable identity
+(pass) default handler wires only configured approved Python distributions and invalidates changed configuration [16.00ms]
+(pass) Python internal routes authenticate before reading metadata or binary bodies
+(pass) JavaScript and health routes never load a configured Python catalog [15.00ms]
+(pass) public Python serving rejects digest/bucket changes or cancellation during catalog and artifact awaits [31.00ms]
+(pass) default Python input handler uses approved config, private storage and stable owner quotas [16.00ms]
+(pass) handler do Studio Runtime > an outdated image cannot label validation as current or publish an artifact
+(pass) handler do Studio Runtime > preflight uses build paths, dependencies and binary hashes without allocating a sandbox
+(pass) handler do Studio Runtime > dependency preparation is authenticated, bounded and does not boot a container
+(pass) handler do Studio Runtime > validation owns an isolated container and includes exactly four proofs and one pack
+(pass) handler do Studio Runtime > a failed typecheck prevents build; a failed playtest prevents artifact publication; both destroy the container [16.00ms]
+(pass) handler do Studio Runtime > duplicate browser proofs and oversized capture cannot produce a review artifact [78.00ms]
+(pass) handler do Studio Runtime > health check é público e token inválido não cria sandbox
+(pass) handler do Studio Runtime > rate limit responde 429 antes de criar sandbox
+(pass) handler do Studio Runtime > rejeita corpo maior que o contrato antes de criar sandbox
+(pass) handler do Studio Runtime > build válido devolve um artefato e sempre limpa a pasta temporária
+(pass) handler do Studio Runtime > erro de compilação responde 422 e ainda limpa a pasta [15.00ms]
+(pass) handler do Studio Runtime > falha do sandbox responde 500 e tenta limpar a pasta
+tests\sua-ilha-browser.test.ts:
+(pass) sua-ilha-passos-na-areia: gabarito executável, inicial incompleto e erros causais [26953.00ms]
+(pass) sua-ilha-a-primeira-concha: gabarito executável, inicial incompleto e erros causais [18250.00ms]
+(pass) sua-ilha-o-balde-do-nico: gabarito executável, inicial incompleto e erros causais [41297.00ms]
+(pass) sua-ilha-a-concha-rosa: gabarito executável, inicial incompleto e erros causais [31140.00ms]
+(pass) sua-ilha-a-mare-volta: gabarito executável, inicial incompleto e erros causais [23485.00ms]
+(pass) sua-ilha-pega-conchas: gabarito executável, inicial incompleto e erros causais [36125.00ms]
+(pass) sua-ilha-pega-conchas-aviso: gabarito executável, inicial incompleto e erros causais [25109.00ms]
+(pass) sua-ilha-pega-conchas-rosa: gabarito executável, inicial incompleto e erros causais [22828.00ms]
+(pass) sua-ilha-pega-conchas-esvaziar: gabarito executável, inicial incompleto e erros causais [26641.00ms]
+tests\trusted-build.test.ts:
+(pass) build real ignora PostCSS executável fornecido pelo projeto e preserva CSS/TS [250.00ms]
+tests\typecheck-project.test.ts:
+(pass) HTML-only revisions have no source program, while an explicit empty tsconfig remains an error [578.00ms]
+(pass) real remote typechecking resolves installed declarations and reports semantic errors in closed files [5141.00ms]
+(pass) an installed but undeclared library cannot silently pass, and noCheck does not suppress evidence [4890.00ms]
+(pass) external config and compiler plugins fail explicitly instead of executing project code [594.00ms]
+tests\vale-browser.test.ts:
+(pass) Vale dos Dinos: o executor real aprova os gabaritos e reprova os projetos iniciais [101781.00ms]
+tests\vale-texto-browser.test.ts:
+(pass) Vale em texto: o executor real aprova o gabarito e reprova o inicial e os erros [76234.00ms]
+tests\vila-doce-browser.test.ts:
+(pass) Vila Doce: o executor real aprova os gabaritos e reprova os projetos iniciais [172406.00ms]
+(fail) the native observer never grades a truncated response or incomplete script context [109.00ms]
+(fail) Ilha das Nuvens: o executor real aprova os gabaritos e reprova os projetos iniciais [31.00ms]
+(fail) Recife Coral: o executor real aprova os gabaritos e reprova os projetos iniciais [47.00ms]
+ 447 pass
+ 3 fail
+ 6030 expect() calls
+Ran 450 tests across 72 files. [2163.87s]

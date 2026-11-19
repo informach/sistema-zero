@@ -129,6 +129,8 @@ nativeTest(
         'check-click-target.mjs',
         'check-javascript-modules.mjs',
         'check-approach.mjs',
+        'check-approach-3d.mjs',
+        'check-models-ready.mjs',
       ])
         await writeFile(path.join(temporary, file), await readFile(path.join(runtime, file)))
       await writeFile(

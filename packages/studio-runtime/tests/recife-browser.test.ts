@@ -83,7 +83,7 @@ nativeTest(
           if (contact?.type !== 'g2d:onOverlap') throw Error('Contato ausente')
           contact.body = []
         }
-        if (d.tipo === 'quadro-das-cores') {
+        if (d.slug === 'recife-mira-de-bolhas') {
           wrong('mira-parada', ['mirar'], (behavior) =>
             visit(behavior.loops, (s) => {
               if (s.type === 'g2d:arrowsX') s.speed = 0
