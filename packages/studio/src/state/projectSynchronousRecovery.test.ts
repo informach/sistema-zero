@@ -1,3 +1,4 @@
+import { recoverSynchronousProjectWrites } from './projectSynchronousExitRecovery'
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
 import { buildProProject } from '../core/proProject'
@@ -633,6 +634,97 @@ test('inaccessible exit copies block recovery without acknowledging or modifying
       tree: { 'main.ts': { content: 'initial' } },
     })
     expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(1)
+  } finally {
+    f.close()
+  }
+})
+
+
+test('projected recovery uses the prepared snapshot and acknowledges its original source only after commit', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('prepared source')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const projected = { ...source, encoded: 'original-legacy-wire-kept-for-ack' }
+    const acknowledged: string[] = []
+    await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
+      entries: [projected],
+      acknowledge: async (entry) => {
+        expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+          tree: { 'main.ts': { content: 'prepared source' } },
+        })
+        expect(await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer))).toBeUndefined()
+        acknowledged.push(entry.encoded)
+      },
+    })
+    expect(acknowledged).toEqual([projected.encoded])
+    // The adapter owns acknowledgement: replay must not remove a different source.
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([source])
+  } finally {
+    f.close()
+  }
+})
+
+
+test('a failed source acknowledgement can retry after the destination is already confirmed', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('confirmed before ack failure')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const projected = { ...source, encoded: 'legacy-source-bytes' }
+    let acknowledgements = 0
+    const replay = {
+      entries: [projected],
+      acknowledge: async () => {
+        acknowledgements++
+        if (acknowledgements === 1) throw new Error('source store temporarily unavailable')
+      },
+    }
+    await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, replay)
+    expect(acknowledgements).toBe(1)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'confirmed before ack failure' } },
+    })
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([source])
+    await recoverSynchronousProjectWrites(f.scope, draft.id, undefined, replay)
+    expect(acknowledgements).toBe(2)
+    expect(await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer))).toBeUndefined()
+  } finally {
+    f.close()
+  }
+})
+
+test('a failed destination transaction never acknowledges a prepared legacy source', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('must survive failed destination')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const source = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    let acknowledged = false
+    let aborted = false
+    // The driver reuses its warm connection. Inject at that connection rather
+    // than a UseStore wrapper which correctly stops running after first read.
+    const transaction = f.database.transaction.bind(f.database)
+    f.database.transaction = (names, mode, options) => {
+      const tx = transaction(names, mode, options)
+      if (mode === 'readwrite') {
+        aborted = true
+        tx.abort()
+      }
+      return tx
+    }
+    await expect(recoverSynchronousProjectWrites(f.scope, draft.id, undefined, {
+      entries: [{ ...source, encoded: 'legacy-bytes-still-pending' }],
+      acknowledge: async () => { acknowledged = true },
+    })).rejects.toThrow()
+    expect(aborted).toBe(true)
+    expect(acknowledged).toBe(false)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([source])
   } finally {
     f.close()
   }
