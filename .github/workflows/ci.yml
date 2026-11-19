@@ -663,6 +663,9 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:scenes
 
+      - name: Instalar Chromium do consumidor dos cartões de divulgação
+        run: node packages/studio/node_modules/playwright-core/cli.js install --with-deps chromium
+
       - name: Cartões de divulgação com QR legível no PNG
         run: node packages/ui/tests/share-card-browser.mjs
 

@@ -811,6 +811,62 @@ describe('testar com personagem', () => {
 })
 
 describe('inserção e colagem no espaço da camada', () => {
+  async function prepareDrag() {
+    const view = await abrirMapa({
+      level: 'create',
+      prepare: comObjetos,
+      extra: async (seed) => {
+        await seed.getState().create({ kind: 'pixel-sprite', name: 'arvore', frameSize: 16 })
+      },
+    })
+    await ativarObjetos()
+    const svg = palcoDeObjetos(view.container)
+    const paper = svg.parentElement
+    if (!paper?.parentElement) throw new Error('Palco esperado')
+    fixarCaixa(paper.parentElement, COLS * 16 * SCALE, ROWS * 16 * SCALE)
+    const card = screen.getByRole('button', { name: COPY.scene.dynamicPorNoMapa('arvore') })
+    fireEvent.pointerDown(card, { ...at(200, 25), button: 0 })
+    fireEvent.pointerMove(document, at(43, 27))
+    return { card, ...view }
+  }
+  it('arrastar mostra prévia sem salvar e só a soltura cria um objeto e um desfazer', async () => {
+    const { card } = await prepareDrag()
+    expect(screen.getByRole('img', { name: COPY.scene.libraryPreview })).toBeTruthy()
+    expect(objetos(await mapaDoDisco())).toHaveLength(0)
+    expect(desfazer().disabled).toBe(true)
+    fireEvent.pointerUp(document, at(43, 27, 2))
+    expect(screen.getByRole('img', { name: COPY.scene.libraryPreview })).toBeTruthy()
+    fireEvent.pointerUp(document, at(43, 27))
+    fireEvent.click(card, { detail: 1 })
+    await noDisco(async () => {
+      const list = objetos(await mapaDoDisco())
+      expect(list).toHaveLength(1)
+      expect([list[0]!.x, list[0]!.y]).toEqual([32, 16])
+    })
+    expect(screen.queryByRole('img', { name: COPY.scene.libraryPreview }) === null).toBe(true)
+    fireEvent.click(desfazer())
+    await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(0))
+    expect(desfazer().disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
+  })
+  for (const cancellation of ['escape', 'pointercancel', 'capture', 'blur', 'outside'])
+    it(`cancelar arrasto por ${cancellation} não grava nem insere pelo clique posterior`, async () => {
+      const { card } = await prepareDrag()
+      if (cancellation === 'escape') fireEvent.keyDown(document, { key: 'Escape' })
+      if (cancellation === 'pointercancel') fireEvent.pointerCancel(document, at(43, 27))
+      if (cancellation === 'capture') fireEvent.lostPointerCapture(card, at(43, 27))
+      if (cancellation === 'blur') fireEvent.blur(window)
+      fireEvent.pointerUp(document, cancellation === 'outside' ? at(200, 25) : at(43, 27))
+      fireEvent.click(card, { detail: 1 })
+      await espera()
+      expect(screen.queryByRole('img', { name: COPY.scene.libraryPreview }) === null).toBe(true)
+      expect(objetos(await mapaDoDisco())).toHaveLength(0)
+      expect(desfazer().disabled).toBe(true)
+      // O teclado continua disponível depois de cancelar o arrasto.
+      fireEvent.click(card, { detail: 0 })
+      await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
+    })
   const deslocado = (m: TilemapAsset): TilemapAsset => {
     const next = comObjetos(m),
       layer = next.layers.at(-1)!

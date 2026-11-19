@@ -1,0 +1,95 @@
+bun test v1.3.11 (af24e281)
+
+src\blockly\__tests__\blockLevels.test.ts:
+(pass) blockLevels — conformidade dos conjuntos > nenhum bloco está em dois conjuntos ao mesmo tempo (disjunção par a par)
+(pass) blockLevels — conformidade dos conjuntos > todo tipo listado nos conjuntos é um bloco REAL do catálogo (sem typo/obsoleto)
+(pass) blockLevels — conformidade dos conjuntos > nenhum conjunto superior captura blocos da categoria Jogo 3D
+(pass) blockLevels — conformidade dos conjuntos > nenhum conjunto superior captura blocos do Jogo 2D básico
+(pass) blockLevels — conformidade dos conjuntos > não duplica a progressão de Programação nos conjuntos genéricos
+(pass) resolveBlockLevel — amostras representativas > facilitadores + kit essencial de lógica = iniciante-2d
+139 |     // Lista LITERAL pelo mesmo motivo do Jogo 2D: trocar um bloco por outro mantém o
+140 |     // número e muda o degrau dos dois (review 3D, 10/2026).
+141 |     const game3dTypes = [...KNOWN].filter((type) => type.startsWith('sz_g3d_'))
+142 |     expect(game3dTypes.length).toBeGreaterThan(100)
+143 |     const core = game3dTypes.filter((type) => resolveBlockLevel(type) === 'iniciante-3d').sort()
+144 |     expect(core).toEqual(INICIANTE_3D_G3D_ESPERADO)
+                       ^
+error: expect(received).toEqual(expected)
+
+  [
+    "sz_g3d_add_score",
+    "sz_g3d_after_seconds",
+    "sz_g3d_animate",
+    "sz_g3d_animation_done",
+    "sz_g3d_apply_gravity",
+    "sz_g3d_camera_mode",
+    "sz_g3d_camera_shake",
+    "sz_g3d_collides",
+    "sz_g3d_control_keys",
+    "sz_g3d_create_block",
+    "sz_g3d_create_box",
+    "sz_g3d_create_fullscreen_scene",
+    "sz_g3d_create_group",
+    "sz_g3d_create_model_file",
+    "sz_g3d_create_sphere",
+    "sz_g3d_end_game",
+    "sz_g3d_every_seconds",
+    "sz_g3d_frame_scene",
+    "sz_g3d_hit_any",
+    "sz_g3d_hud_text",
+    "sz_g3d_hurt",
+    "sz_g3d_jump",
+    "sz_g3d_key_down",
++   "sz_g3d_load_scene",
+    "sz_g3d_move_towards",
+    "sz_g3d_on_canvas_click",
+    "sz_g3d_on_click_object",
+    "sz_g3d_on_key",
+    "sz_g3d_on_life_over",
+    "sz_g3d_on_timer_end",
+    "sz_g3d_on_touch",
+    "sz_g3d_on_touch_group",
+    "sz_g3d_play_animation",
+    "sz_g3d_play_effect",
+    "sz_g3d_prune_offscreen",
+    "sz_g3d_random_between",
+    "sz_g3d_remove_object",
+    "sz_g3d_restart",
++   "sz_g3d_scene_start",
+    "sz_g3d_score",
+    "sz_g3d_set_color",
+    "sz_g3d_set_life",
+    "sz_g3d_set_position",
+    "sz_g3d_set_screen_text",
+    "sz_g3d_set_solid",
+    "sz_g3d_set_visible",
+    "sz_g3d_sky_photo",
+    "sz_g3d_spawn_copy",
+    "sz_g3d_spin",
+    "sz_g3d_start_timer",
+    "sz_g3d_time_left",
+    "sz_g3d_top_down",
+    "sz_g3d_update_group_no_gravity",
+    "sz_g3d_walk_animations",
+    "sz_g3d_walk_area",
+  ]
+
+- Expected  - 0
++ Received  + 2
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\src\blockly\__tests__\blockLevels.test.ts:144:18)
+(fail) resolveBlockLevel — amostras representativas > o Jogo 3D tem o núcleo exato no iniciante-3d e o resto no intermediario-3d
+(pass) resolveBlockLevel — amostras representativas > todas as ferramentas do Jogo 2D pertencem ao Iniciante 2D
+(pass) resolveBlockLevel — amostras representativas > programação real guiada + SVG + kits prontos do Jogo 2D Avançado = intermediario-2d
+(pass) resolveBlockLevel — amostras representativas > mantém unidades pedagógicas no mesmo degrau
+(pass) resolveBlockLevel — amostras representativas > oferece cada evento junto do valor que seu texto ensina a usar
+(pass) resolveBlockLevel — amostras representativas > Mundo 3D = intermediario-3d (prefixo inteiro)
+(pass) resolveBlockLevel — amostras representativas > Canvas 3D INTEIRO = avancado-3d (macros + técnicos; reclassificado 26/07)
+(pass) resolveBlockLevel — amostras representativas > na unha em 2D (Canvas/HTML/CSS crus + expert) = avancado-2d
+(pass) resolveBlockLevel — amostras representativas > Jogo 3D Avançado (g3k) = avancado-3d (prefixo inteiro; uma extensão por degrau)
+(pass) resolveBlockLevel — amostras representativas > Canvas 3D cru (three.js técnico, sz_t3d_) = avancado-3d
+
+ 15 pass
+ 1 fail
+ 243 expect() calls
+Ran 16 tests across 1 file. [720.00ms]

@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+tests\studio-contract.test.ts:
+ 98 |         input: 'Capture fixture',
+ 99 |         mode: 'plan',
+100 |       }),
+101 |     )
+102 |     await supervisor.waitRun(run.id, AbortSignal.timeout(10000))
+103 |     expect(runSchema.parse(await call('run.get', { id: run.id })).state).toBe('succeeded')
+                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "succeeded"
+Received: "failed"
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\agent-runtime\tests\studio-contract.test.ts:103:74)
+(fail) Studio snapshot preserves reviewed binary bytes and dependency declarations across the runtime contract [188.00ms]
+(pass) Studio response accepts expiring compiled artifacts and validation evidence, never legacy HTML or unsafe preview URLs [15.00ms]
+
+ 1 pass
+ 1 fail
+ 9 expect() calls
+Ran 2 tests across 1 file. [430.00ms]

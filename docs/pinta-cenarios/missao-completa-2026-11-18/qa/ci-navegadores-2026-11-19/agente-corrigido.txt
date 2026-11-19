@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+tests\studio-contract.test.ts:
+(pass) Studio snapshot preserves reviewed binary bytes and dependency declarations across the runtime contract [250.00ms]
+(pass) Studio response accepts expiring compiled artifacts and validation evidence, never legacy HTML or unsafe preview URLs
+
+ 2 pass
+ 0 fail
+ 17 expect() calls
+Ran 2 tests across 1 file. [471.00ms]

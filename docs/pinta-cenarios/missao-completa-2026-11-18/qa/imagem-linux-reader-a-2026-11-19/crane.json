@@ -1,0 +1,10 @@
+{
+  "version": "0.22.1",
+  "primarySource": "https://github.com/google/go-containerregistry/releases/download/v0.22.1/go-containerregistry_Windows_x86_64.tar.gz",
+  "archiveSha256": "0e073ea8192c3b8442ec8aaf44d53c1050a09084669fae3a6ceb0f2026cf8b21",
+  "binarySha256": "e22e47202cece45d09fe92919bdb683f56f548d360cb96f6a852defd965c935d",
+  "githubReleaseDigestVerified": true,
+  "officialChecksumsVerified": true,
+  "signatureVerificationClaimed": false,
+  "binary": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-retomada-20261119\\.tmp\\pinta-crane-0.22.1\\crane.exe"
+}

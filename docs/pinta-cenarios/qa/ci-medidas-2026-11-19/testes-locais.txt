@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+src\extensions\projectRunContext.test.ts:
+(pass) ProjectRunContext > compõe quadro, cadências, pausa e retomada num único RAF
+(pass) ProjectRunContext > aborta e descarta todos os recursos em LIFO uma única vez
+(pass) ProjectRunContext > acompanha timers e RAFs avulsos e remove os que já terminaram
+(pass) ProjectRunContext > executa no iframe a mesma factory e descarta a execução anterior no begin [15.00ms]
+
+src\official-extensions\runtimePayloadBudget.test.ts:
+(pass) runtimes 3D: catraca de payload > game-3d cabe em 248700 caracteres e 70150 bytes gzip [31.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d (sem Kit Plataforma) cabe em 214600 caracteres e 60400 bytes gzip
+(pass) runtimes 3D: catraca de payload > world-3d cabe em 357600 caracteres e 107000 bytes gzip [31.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d-advanced cabe em 210700 caracteres e 62100 bytes gzip [16.00ms]
+
+src\official-extensions\game-2d\__tests__\runtimeTypecheck.test.ts:
+(pass) o runtime injetado não contém referências ou propriedades semanticamente inválidas [8938.00ms]
+(pass) o typecheck do arquivo composto detecta dependência interna ausente
+(pass) a dívida de parâmetros JS sem tipo não pode crescer [203.00ms]
+(pass) volume ZERO deixa mudo de verdade (não cai em fallback)
+(pass) as funções públicas mantêm a ordem de parâmetros do contrato TypeScript [219.00ms]
+(pass) a guarda de assinatura detecta uma troca de parâmetros [203.00ms]
+
+src\official-extensions\game-2d-advanced\__tests__\runtimeTypecheck.test.ts:
+(pass) o inventário canônico não tem chaves repetidas
+(pass) a dívida de parâmetros JS sem tipo não pode crescer [187.00ms]
+(pass) as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato [547.00ms]
+(pass) a guarda de assinatura detecta uma troca de parâmetros [578.00ms]
+(pass) a guarda de assinatura também alcança eventos delegados ao controlador de pista [172.00ms]
+(pass) o runtime injetado passa pela análise semântica do TypeScript [6000.00ms]
+
+ 20 pass
+ 0 fail
+ 46 expect() calls
+Ran 20 tests across 4 files. [18.25s]
