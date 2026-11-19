@@ -1,4 +1,4 @@
-import { synchronousRecovery } from './projectRecoveryGuards'
+import { synchronousRecovery, recoverySourceIdentity } from './projectRecoveryGuards'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 import { encodeExitJournal } from './exitJournalCodec'
 import { conditionalGeneration, conditionalWrite, readValues } from './idbTransaction'
@@ -18,12 +18,27 @@ import {
 
 /** Called only after a confirmed write, when a mirror actually exists. */
 export async function retireConfirmedExitCopies(scope: ProjectStorageScope, projectId: string) {
-  for (const entry of readSynchronousExitJournal(
-    scope.exitJournalStorage,
-    scope.identity,
-    projectId,
-  ))
-    await retireMatchingSynchronousRecovery(scope, entry, synchronousRecovery(entry))
+  const entries = readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, projectId)
+  const confirmed = new Set<string>()
+  for (const entry of entries) {
+    const incoming = synchronousRecovery(entry)
+    if (await retireMatchingSynchronousRecovery(scope, entry, incoming)) {
+      if (!incoming.incompleteBlocks)
+        for (const source of incoming.replacesRecovery ?? [])
+          confirmed.add(recoverySourceIdentity(source))
+    }
+  }
+  for (const entry of entries) {
+    if (
+      confirmed.has(
+        recoverySourceIdentity({
+          key: projectRecoveryKey(entry.projectId, entry.writer),
+          token: entry.token,
+        }),
+      )
+    )
+      await retireSynchronousRecovery(scope, entry, synchronousRecovery(entry))
+  }
 }
 
 async function matchesCommittedRecovery(
@@ -66,6 +81,15 @@ async function retireMatchingSynchronousRecovery(
   incoming: RecoveryWrite,
 ): Promise<boolean> {
   if (!(await matchesCommittedRecovery(scope, incoming))) return false
+  await retireSynchronousRecovery(scope, entry, incoming)
+  return true
+}
+
+async function retireSynchronousRecovery(
+  scope: ProjectStorageScope,
+  entry: ExitJournalEntry,
+  incoming: RecoveryWrite,
+): Promise<void> {
   const key = projectRecoveryKey(incoming.projectId, incoming.head.writer)
   await conditionalWrite(
     scope.store,
@@ -87,7 +111,6 @@ async function retireMatchingSynchronousRecovery(
   } catch (error) {
     console.warn('[studio] cópia confirmada; limpeza de recuperação pendente:', error)
   }
-  return true
 }
 
 /** Replay the same recovery protocol; no competing model, writer or project store. */
@@ -122,17 +145,31 @@ export async function recoverSynchronousProjectWrites(
         'A mesma revisão contém recuperações diferentes. Ambas foram preservadas.',
       )
   }
+  const identity = (entry: ExitJournalEntry) =>
+    recoverySourceIdentity({
+      key: projectRecoveryKey(entry.projectId, entry.writer),
+      token: entry.token,
+    })
+  const confirmedSources = new Set<string>()
   const pending: ExitJournalEntry[] = []
   for (const entry of entries) {
     try {
-      if (!(await retireMatchingSynchronousRecovery(scope, entry, synchronousRecovery(entry))))
-        pending.push(entry)
+      const incoming = synchronousRecovery(entry)
+      if (!(await retireMatchingSynchronousRecovery(scope, entry, incoming))) pending.push(entry)
+      else if (!incoming.incompleteBlocks)
+        for (const source of incoming.replacesRecovery ?? [])
+          confirmedSources.add(recoverySourceIdentity(source))
     } catch (error) {
       if (projectId) throw error
       console.warn('[studio] cópia de recuperação preservada:', error)
     }
   }
-  entries = pending
+  entries = []
+  for (const entry of pending) {
+    if (confirmedSources.has(identity(entry)))
+      await retireSynchronousRecovery(scope, entry, synchronousRecovery(entry))
+    else entries.push(entry)
+  }
   const groups = new Map<string, RecoveryWrite[]>()
   const groupKey = (value: RecoveryWrite) =>
     JSON.stringify([value.projectId, value.head.writer, value.head.base, value.head.sequence])
@@ -160,14 +197,33 @@ export async function recoverSynchronousProjectWrites(
     }
     return false
   }
-  const tokens = new Set(entries.map((entry) => entry.token))
-  const first = await recoverIndexedProjectWrites(scope, projectId, knownKeys, tokens, mustCopy)
+  const superseded = new Set(
+    entries.flatMap((entry) =>
+      (synchronousRecovery(entry).replacesRecovery ?? []).map(recoverySourceIdentity),
+    ),
+  )
+  const deferRecovery = (value: RecoveryWrite) =>
+    superseded.has(
+      recoverySourceIdentity({
+        key: projectRecoveryKey(value.projectId, value.head.writer),
+        token: value.head.token,
+      }),
+    )
+  const tokens = new Set(entries.map(identity))
+  const first = await recoverIndexedProjectWrites(
+    scope,
+    projectId,
+    knownKeys,
+    tokens,
+    mustCopy,
+    deferRecovery,
+  )
   const recovered = new Set(first.recovered)
   const consumed = first.consumed
-  for (const entry of entries) {
+  for (const entry of entries.filter((entry) => !superseded.has(identity(entry)))) {
     try {
       const incoming = synchronousRecovery(entry)
-      if (!consumed.has(entry.token) && !(await matchesCommittedRecovery(scope, incoming))) {
+      if (!consumed.has(identity(entry)) && !(await matchesCommittedRecovery(scope, incoming))) {
         const key = projectRecoveryKey(incoming.projectId, incoming.head.writer)
         await conditionalWrite(
           scope.store,
@@ -191,10 +247,11 @@ export async function recoverSynchronousProjectWrites(
           undefined,
           tokens,
           mustCopy,
+          deferRecovery,
         )
         for (const id of next.recovered) recovered.add(id)
         for (const token of next.consumed) consumed.add(token)
-        if (!consumed.has(entry.token))
+        if (!consumed.has(identity(entry)))
           throw new ExitJournalError(
             'A cópia de recuperação ainda não pôde ser aplicada. Ela foi preservada.',
           )
@@ -208,6 +265,10 @@ export async function recoverSynchronousProjectWrites(
       if (projectId) throw error
       console.warn('[studio] cópia de recuperação preservada:', error)
     }
+  }
+  for (const entry of entries) {
+    if (superseded.has(identity(entry)) && consumed.has(identity(entry)))
+      await retireSynchronousRecovery(scope, entry, synchronousRecovery(entry))
   }
   return [...recovered]
 }

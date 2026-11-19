@@ -225,3 +225,28 @@ zero falhas, 52,14 s, com estresse nativo e aborto nos dois motores. Bundle:
 18,63 s. Typecheck completo aprovado. A guarda inicial também exige ausência
 dos novos módulos raros. A versão padrão continua 3; este commit de laboratório
 não ativa, enfileira ou reconhece rascunhos v3 projetados.
+
+## Ancestrais antes da integração de rascunhos
+
+A projeção v3→v4 depende de um replay correto dos ancestrais declarados. Um teste
+realista com fallback de rascunho, nova edição e saída reproduziu a criação de
+uma cópia obsoleta depois de confirmar a filha. Outro reproduziu a mesma falha
+após salvamento normal. A correção agora consome chave de projeto/escritor/token,
+aguarda a filha ainda disponível só no espelho e conserva ancestrais quando os
+blocos estão incompletos. Escritor independente com token repetido permanece
+separado. Os três caminhos exigem preservação do metadado desconhecido da fonte.
+
+Regressão do laboratório: 485 testes/2.588 asserções, 76 arquivos, zero falhas,
+52,14 s, com estresse nativo e aborto. A integração na branch principal da missão
+inclui também a correção isolável dos metadados legados, sem ativar v4. Typecheck,
+prova no editor e orçamento finais da alteração de ancestrais são os próximos
+gates antes do commit correspondente neste laboratório.
+
+Checkpoint dos ancestrais e identidade interna: 487 testes/2.592 asserções,
+76 arquivos, zero falhas, 47,74 s. Typecheck completo aprovado. Bundle do laboratório:
+365.532 bytes brutos, 119.218 gzip, dois arquivos; 35 asserções em 14,51 s.
+As guardas exigem também ID interno das partições e marcador de layout coerente.
+O caminho de recuperação completo já foi qualificado no editor real na branch da
+missão; ver docs/qa/2026-11-19-studio-recovery-ancestors-metadata.md no commit
+2f1ba1330 e a guarda adicional no commit 34322fa34. Esta branch continua com v3
+padrão e projeções v4 somente nos contratos experimentais.

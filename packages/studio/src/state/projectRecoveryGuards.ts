@@ -1,3 +1,4 @@
+import { isDocumentRecord } from '../core/projectDocumentGuards'
 import {
   journal,
   latestRecoveries,
@@ -81,7 +82,11 @@ export function synchronousRecovery(
         !Array.isArray(pair) ||
         pair.length !== 2 ||
         typeof pair[0] !== 'string' ||
-        !keys.has(pair[0]),
+        !keys.has(pair[0]) ||
+        (pair[0] !== projectThumbKey(entry.projectId, version) &&
+          (!isDocumentRecord(pair[1]) || pair[1].id !== entry.projectId)) ||
+        (pair[0] === projectMetaKey(entry.projectId, version) &&
+          (!isDocumentRecord(pair[1]) || pair[1].storageVersion !== version)),
     ) ||
     (recovery.write.deletes !== undefined &&
       (!Array.isArray(recovery.write.deletes) ||
@@ -89,7 +94,7 @@ export function synchronousRecovery(
     !projectFromRecovery(recovery, version)
   )
     throw new ExitJournalError(
-      'A cópia de recuperação contém partições incompatíveis. Ela foi preservada.',
+      'A cópia de recuperação contém partições incompatíveis ou de outro projeto. Ela foi preservada.',
     )
   const putKeys = recovery.write.puts.map(([key]) => key)
   const deleteKeys = recovery.write.deletes ?? []
@@ -128,4 +133,9 @@ export function nativeRecovery(
     },
     version,
   )
+}
+
+/** Identity of the exact staged revision, including its writer and project. */
+export function recoverySourceIdentity(source: { key: string; token: string }): string {
+  return JSON.stringify([source.key, source.token])
 }
