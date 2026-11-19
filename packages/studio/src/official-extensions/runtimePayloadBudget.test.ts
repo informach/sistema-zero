@@ -112,11 +112,17 @@ const BUDGETS: readonly {
   // depois de carregar o modelo, inclusive nas cópias. Acrescenta 481 caracteres nas duas
   // variantes. Medição isolada: 238_497; gzip Bun 1.3.11 Linux 64_810 / Windows 67_291;
   // Bun 1.4.4 Linux 65_235. O teto cobre os compressores medidos, sem mudar o runtime.
+  // 19/11: integração remota 97028f4f3 dos cenários Molda no Jogo 3D (runtimeScene),
+  // mais o ciclo de vida compartilhado: +10_179 caracteres. Medido no Bun 1.3.11,
+  // fonte 386eb685b: 248_676 caracteres; gzip Linux 67_504 / Windows 70_105.
+  // Antes (e193c8f8f): 238_497; gzip Linux 64_810 / Windows 67_291.
+  // Evidência: execução 44586083565 e docs/pinta-cenarios/qa/ci-medidas-2026-11-19.
+  // Ajuste restrito à guarda de QA; não modifica os motores 3D.
   {
     extension: gameThreeDExtension,
-    maxChars: 238_550,
-    maxGzipBytes: 65_300,
-    maxGzipBytesWindows: 67_550,
+    maxChars: 248_700,
+    maxGzipBytes: 67_550,
+    maxGzipBytesWindows: 70_150,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -144,9 +150,12 @@ const BUDGETS: readonly {
     // 29/10: o andar com as setas respeita o sólido (ver acima). Medido: 203_934; gzip 55_608.
     // Mesma correção do cubo de reserva: 204_415; gzip Bun 1.3.11 Linux 55_387 /
     // Windows 57_577; Bun 1.4.4 Linux 55_749. Crescimento funcional, sem Kit adicional.
-    maxChars: 204_450,
-    maxGzipBytes: 55_800,
-    maxGzipBytesWindows: 57_650,
+    // 19/11: mesma integração de cenas, +10_179 caracteres, sem incluir o Kit.
+    // Bun 1.3.11: 214_594; gzip Linux 58_082 / Windows 60_393.
+    // Antes: 204_415; gzip Linux 55_387 / Windows 57_577. Evidência acima.
+    maxChars: 214_600,
+    maxGzipBytes: 58_100,
+    maxGzipBytesWindows: 60_400,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO

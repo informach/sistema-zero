@@ -1,0 +1,24 @@
+{
+  "platform": "win32",
+  "bun": "1.3.11",
+  "variants": [
+    {
+      "name": "complete",
+      "characters": 248676,
+      "bytes": 248933,
+      "gzipBytes": 70105,
+      "sha256": "1606c6f346185114e3ad9d563a2a7243625d3a67b48c3ad14bbf0fa724f0090e"
+    },
+    {
+      "name": "without-platform",
+      "characters": 214594,
+      "bytes": 214807,
+      "gzipBytes": 60393,
+      "sha256": "bc919a126b7236beb15821bd8aaeadd0a839616afe038f265846cf5c5d0e7618"
+    }
+  ],
+  "parameters": {
+    "basic": 1498,
+    "advanced": 1400
+  }
+}

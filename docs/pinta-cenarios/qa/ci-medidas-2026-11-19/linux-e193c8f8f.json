@@ -1,0 +1,25 @@
+{
+  "sourceSha": "e193c8f8f7ea6fbe1afca37141bcdd6f8dcb7f39",
+  "platform": "linux",
+  "bun": "1.3.11",
+  "variants": [
+    {
+      "name": "complete",
+      "characters": 238497,
+      "bytes": 238741,
+      "gzipBytes": 64810,
+      "sha256": "13121ee54eed2b0f6f3e098cdd8c65d8c236e74e261716b747fe8dc705e72c81"
+    },
+    {
+      "name": "without-platform",
+      "characters": 204415,
+      "bytes": 204615,
+      "gzipBytes": 55387,
+      "sha256": "e2153585af48318980bd6fb225bcbf9b7905ecc19f716ada410bfe2a84cdfb7b"
+    }
+  ],
+  "parameters": {
+    "basic": 1497,
+    "advanced": 1399
+  }
+}

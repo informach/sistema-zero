@@ -424,7 +424,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // pública do contrato, como o `onOverlap` ao lado.
   // +2: despacho comum de tecla e borda do pad; ambos com JSDoc explícito. O contador
   // sintático também conta parâmetros tipados, e a prova semântica acima continua exigida.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1497)
+  // +1 (19/11): pageHide(event) no ciclo de vida compartilhado preserva o jogo
+  // quando event.persisted indica BFCache. A guarda semântica acima permanece.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1498)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {
