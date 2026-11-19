@@ -35,6 +35,69 @@ import type { BlockDefinition } from './types'
 const C = CATEGORY_COLORS.canvas3d
 
 export const CANVAS3D_BLOCKS: BlockDefinition[] = [
+  {
+    type: 'sz_t3d_load_scene',
+    placement: 'resource-creator',
+    bodyExecution: 'deferred-callback',
+    message0: 'carregar cenário %1',
+    args0: [{ type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'scene3d' }],
+    message1: 'na cena %1 · tela %2',
+    args1: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'RENDERER', text: 'renderizador', kind: 'renderer3d' },
+    ],
+    message2: 'deu certo: %1 %2',
+    args2: [
+      { type: 'field_input', name: 'PARAM', text: 'cenario' },
+      { type: 'input_statement', name: 'DO' },
+    ],
+    message3: 'deu erro: %1 %2',
+    args3: [
+      { type: 'field_input', name: 'ERROR_PARAM', text: 'erro' },
+      { type: 'input_statement', name: 'DO_ERROR' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrega o cenário completo trazido do Molda. O ramo de sucesso recebe o cenário pronto; câmera, tela e objetos do seu programa continuam os mesmos.',
+  },
+  {
+    type: 'sz_t3d_update_scene',
+    placement: 'loop-command',
+    message0: 'atualizar cenário %1 · câmera %2',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'camera3d' },
+    ],
+    message1: 'tempo do quadro %1 · ponto de atenção %2',
+    args1: [
+      { type: 'input_value', name: 'DT', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'FOCUS', text: 'camera', kind: 'object3d' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'No laço do seu programa, atualiza animações, águas e regiões visíveis do cenário. O ponto de atenção pode ser a posição do personagem ou da câmera.',
+  },
+  {
+    type: 'sz_t3d_physics_scene',
+    placement: 'resource-creator',
+    message0: 'usar física do cenário %1 no mundo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
+    ],
+    message1: 'chamando de %1',
+    args1: [{ type: 'field_input', name: 'ID', text: 'cenario' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga o chão e os triângulos reais do cenário à física leve já preparada. Conserva os corpos e controles do seu programa.',
+  },
   // ───────────────────────── 🧊 Biblioteca 3D (base) ─────────────────────────
   {
     // O bloco-raiz: a criança põe primeiro. Sua presença liga o importmap do
@@ -1070,7 +1133,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'criar física leve %1 usando altura %2',
     args0: [
       { type: 'field_input', name: 'WORLD', text: 'fisica' },
-      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: '', kind: 'optional-function' },
     ],
     message1: 'gravidade %1 · passos extras no máximo %2',
     args1: [
@@ -1082,7 +1145,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara movimento, gravidade e colisões. Use a altura criada pelo terreno automático.',
+      'Prepara gravidade e colisões. A altura vazia usa chão plano. Após carregar um cenário do Molda, ligue-o à física para usar suas superfícies e recortes.',
   },
   {
     type: 'sz_t3d_physics_static_box',
@@ -1602,6 +1665,8 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     colour: C,
     types: [
       'sz_t3d_load_model',
+      'sz_t3d_load_scene',
+      'sz_t3d_update_scene',
       'sz_t3d_load_environment',
       'sz_t3d_load_sound',
       'sz_t3d_traverse',
@@ -1632,6 +1697,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     colour: C,
     types: [
       'sz_t3d_physics_setup',
+      'sz_t3d_physics_scene',
       'sz_t3d_physics_static_box',
       'sz_t3d_physics_static_sphere',
       'sz_t3d_physics_static_object',

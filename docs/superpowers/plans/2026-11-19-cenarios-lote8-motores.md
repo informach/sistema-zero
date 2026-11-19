@@ -51,12 +51,14 @@
 - [x] Carregar pela função compartilhada, esperar preparo no lifecycle existente e trocar terreno/água/ambiente atomicamente. `heightAt` e superfícies dirigíveis consultam os dados físicos reais, incluindo recortes e pontes; conservar avatar/carrinho/câmera e controles.
 - [x] Testes do motor, percurso real no navegador, publicação local /jogar, reabertura/export, CSP e três ciclos de recursos. Capturas/vídeo, revisão e commit antes de Canvas 3D.
 
-19/11: [Mundo 3D qualificado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-mundo.md), com limites da publicação controlada, percurso parcial na ponte e fallbacks do host registrados. Não substitui a implantação/conta real no encerramento global. Os outros três motores e Pro autoral permanecem abertos; 8.4 não está concluído.
+19/11: [Mundo 3D qualificado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-mundo.md), com limites da publicação controlada, percurso parcial na ponte e fallbacks do host registrados. Não substitui a implantação/conta real no encerramento global. Os outros três motores e Pro autoral permaneciam abertos neste corte; 8.4 não estava concluído.
 
 ## 4. Canvas 3D
 
-- [ ] `sz_t3d_load_scene`, seletor e tradução/contratos do núcleo; usar o mesmo carregador e ciclo de recursos.
-- [ ] Consultas de chão e colisões reais, preservação de câmera/loop/código, reabertura/export, testes e revisão antes do próximo motor.
+- [x] `sz_t3d_load_scene`, seletor e tradução/contratos do núcleo; usar o mesmo carregador e ciclo de recursos.
+- [x] Consultas de chão e colisões reais, preservação de câmera/loop/código, reabertura/export, testes e revisão antes do próximo motor.
+
+19/11: [Canvas 3D qualificado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-canvas.md). O programa conserva renderer/câmera/loop; as consultas físicas usam os triângulos canônicos, com cápsula vertical arcade. Preview, export e player local passaram; evidências distinguem o ensaio técnico da composição final. Jogo 3D, Avançado e Pro autoral continuam abertos; 8.4 permanece incompleto.
 
 ## 5. Jogo 3D
 

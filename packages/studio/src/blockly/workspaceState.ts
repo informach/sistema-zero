@@ -800,6 +800,38 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
 
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
+    case 'threeSceneLoad':
+      return block(
+        'sz_t3d_load_scene',
+        {
+          ASSET: stmt.asset,
+          SCENE: stmt.scene,
+          RENDERER: stmt.renderer,
+          PARAM: stmt.param,
+          ERROR_PARAM: stmt.errorParam ?? 'erro',
+        },
+        { DO: statementsToBlocks(stmt.body), DO_ERROR: statementsToBlocks(stmt.errorBody ?? []) },
+        stmt.__id,
+      )
+    case 'threeSceneUpdate': {
+      const dt = exprToValueBlock(stmt.dt)
+      return dt
+        ? block(
+            'sz_t3d_update_scene',
+            { SCENE: stmt.scene, CAMERA: stmt.camera, FOCUS: stmt.focus },
+            {},
+            stmt.__id,
+            { DT: dt },
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteScene':
+      return block(
+        'sz_t3d_physics_scene',
+        { SCENE: stmt.scene, WORLD: stmt.world, ID: stmt.id },
+        {},
+        stmt.__id,
+      )
     case 'loaderLoad': {
       // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
       // literal de string). O parser já classificou o recurso semanticamente;
@@ -1116,7 +1148,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       if (!vs) return rawJSBlock(stmt)
       return block(
         'sz_t3d_physics_setup',
-        { WORLD: stmt.world, HEIGHT_FN: stmt.heightFunction },
+        { WORLD: stmt.world, HEIGHT_FN: stmt.heightFunction ?? '' },
         {},
         stmt.__id,
         vs,

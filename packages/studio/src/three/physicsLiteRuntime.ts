@@ -36,6 +36,35 @@ function createSZPhysicsLite(options) {
   var activeCollisions = Object.create(null);
   var currentCollisions = Object.create(null);
   var queryStamp = 1;
+  // Scene queries are borrowed. Loading/disposal belongs to the shared scene SDK.
+  var sceneCollider = null;
+  var sceneGround = false;
+
+  function activeScene() {
+    if (sceneCollider && !sceneCollider.provider.active()) {
+      var oldId = sceneCollider.id;
+      sceneCollider = null;
+      delete allIds[oldId];
+      clearActiveFor(oldId);
+    }
+    return sceneCollider;
+  }
+  function setScene(id, provider) {
+    var key = safeId(id, 'cenario');
+    if (!provider || typeof provider.active !== 'function' ||
+        typeof provider.resolve !== 'function' || typeof provider.raycast !== 'function' ||
+        !provider.active()) throw new Error('Escolha um cenário carregado para a física.');
+    var previous = activeScene();
+    if (!previous || previous.id !== key) assertUnique(key);
+    if (!previous && staticColliders.length >= maxStatics) throw new Error('Limite de colisores por mundo atingido.');
+    if (previous) {
+      delete allIds[previous.id];
+      clearActiveFor(previous.id);
+    }
+    allIds[key] = 'scene';
+    sceneCollider = { id: key, provider: provider };
+    sceneGround = true;
+  }
 
   function flatGround() { return 0; }
   function finite(value, fallback) {
@@ -147,6 +176,7 @@ function createSZPhysicsLite(options) {
     if (allIds[id]) throw new Error('Já existe um item físico chamado "' + id + '".');
   }
   function claimId(id, kind) {
+    activeScene();
     assertUnique(id);
     allIds[id] = kind;
   }
@@ -163,7 +193,7 @@ function createSZPhysicsLite(options) {
   }
   function addStaticBox(id, x, y, z, width, height, depth) {
     var key = safeId(id, 'colisor');
-    if (staticColliders.length >= maxStatics) throw new Error('Limite de colisores par mundo atingido.');
+    if (staticColliders.length + (activeScene() ? 1 : 0) >= maxStatics) throw new Error('Limite de colisores por mundo atingido.');
     claimId(key, 'static');
     var collider = makeBox(key, x, y, z, width, height, depth);
     try {
@@ -177,7 +207,7 @@ function createSZPhysicsLite(options) {
   }
   function addStaticSphere(id, x, y, z, radius) {
     var key = safeId(id, 'colisor');
-    if (staticColliders.length >= maxStatics) throw new Error('Limite de colisores por mundo atingido.');
+    if (staticColliders.length + (activeScene() ? 1 : 0) >= maxStatics) throw new Error('Limite de colisores por mundo atingido.');
     claimId(key, 'static');
     var collider = {
       id: key,
@@ -218,7 +248,7 @@ function createSZPhysicsLite(options) {
     var base = safeId(prefix, 'cidade');
     var entries = city && city.userData && city.userData.szCityColliders;
     if (!Array.isArray(entries)) throw new Error('A cidade não possui dados de colisão.');
-    if (staticColliders.length + entries.length > maxStatics) {
+    if (staticColliders.length + entries.length + (activeScene() ? 1 : 0) > maxStatics) {
       throw new Error('A cidade excede o limite de colisores deste mundo.');
     }
     for (var checkIndex = 0; checkIndex < entries.length; checkIndex += 1) {
@@ -516,6 +546,10 @@ function createSZPhysicsLite(options) {
     return true;
   }
   function solveGround(body) {
+    if (sceneGround) {
+      solveScene(body);
+      return;
+    }
     var ground = finite(groundHeight(body.x, body.z), 0);
     var bottom = body.y - body.hy;
     if (bottom > ground) return;
@@ -526,6 +560,39 @@ function createSZPhysicsLite(options) {
     var keep = Math.max(0, 1 - body.friction * fixedStep * 8);
     body.vx *= keep;
     body.vz *= keep;
+  }
+  function solveScene(body) {
+    var scene = activeScene();
+    if (!scene) return;
+    // Native surfaces use the canonical upright capsule. Authored simple
+    // colliders retain their existing AABB/sphere behavior.
+    var radius = Math.min(body.hx, body.hy, body.hz);
+    var contact = scene.provider.resolve(
+      { x: body.x, y: body.y - body.hy, z: body.z }, body.hy * 2, radius
+    );
+    body.x = contact.position.x;
+    body.y = contact.position.y + body.hy;
+    body.z = contact.position.z;
+    var supported = false;
+    for (var index = 0; index < contact.normals.length; index += 1) {
+      var normal = contact.normals[index];
+      var speed = body.vx * normal.x + body.vy * normal.y + body.vz * normal.z;
+      if (normal.y > 0.5 && speed <= 0.00001) supported = true;
+      if (speed < 0) {
+        var response = speed * (1 + body.bounce);
+        body.vx -= response * normal.x;
+        body.vy -= response * normal.y;
+        body.vz -= response * normal.z;
+      }
+    }
+    if (supported) {
+      body.grounded = true;
+      if (Math.abs(body.vy) < 0.1) body.vy = 0;
+      var keep = Math.max(0, 1 - body.friction * fixedStep * 8);
+      body.vx *= keep;
+      body.vz *= keep;
+    }
+    if (contact.normals.length) emitCollision(body.id, scene.id);
   }
   function solveStatics(body) {
     var candidates = nearby(staticGrid, body);
@@ -577,6 +644,11 @@ function createSZPhysicsLite(options) {
     var travel = Math.max(Math.abs(body.vx), Math.abs(body.vy), Math.abs(body.vz)) * fixedStep;
     var safeTravel = Math.max(0.05, Math.min(body.hx, body.hy, body.hz) * 0.5);
     var slices = Math.max(1, Math.min(8, Math.ceil(travel / safeTravel)));
+    if (activeScene()) {
+      safeTravel = Math.min(body.hx, body.hy, body.hz) * 0.45;
+      slices = Math.max(1, Math.ceil(travel / safeTravel));
+      if (slices > 2048) throw new Error('Corpo pequeno ou rápido demais para resolver a colisão do cenário com segurança.');
+    }
     var sliceStep = fixedStep / slices;
     for (var slice = 0; slice < slices; slice += 1) {
       body.x += body.vx * sliceStep;
@@ -687,6 +759,14 @@ function createSZPhysicsLite(options) {
         best = { id: collider.id, distance: distance };
       }
     }
+    var scene = activeScene();
+    if (scene) {
+      var hit = scene.provider.raycast(
+        { x: ox, y: oy, z: oz },
+        { x: ox + nx * limit, y: oy + ny * limit, z: oz + nz * limit }
+      );
+      if (hit && (!best || hit.distance < best.distance)) best = { id: scene.id, distance: hit.distance };
+    }
     return best;
   }
   function rebuildGrid(items) {
@@ -713,6 +793,7 @@ function createSZPhysicsLite(options) {
     activeCollisions = nextCollisions;
   }
   function remove(id) {
+    activeScene();
     var key = text(id, '');
     var kind = allIds[key];
     if (!kind) return false;
@@ -729,6 +810,8 @@ function createSZPhysicsLite(options) {
     } else if (kind === 'static') {
       staticColliders = staticColliders.filter(function (item) { return item.id !== key; });
       staticGrid = rebuildGrid(staticColliders);
+    } else if (kind === 'scene') {
+      sceneCollider = null;
     } else {
       triggers = triggers.filter(function (item) { return item.id !== key; });
       triggerGrid = rebuildGrid(triggers);
@@ -738,6 +821,8 @@ function createSZPhysicsLite(options) {
     return true;
   }
   function clear() {
+    sceneCollider = null;
+    sceneGround = false;
     bodies = Object.create(null);
     allIds = Object.create(null);
     bodyIds = [];
@@ -769,9 +854,10 @@ function createSZPhysicsLite(options) {
     return unsubscribe(triggerListeners, listener);
   }
   function stats() {
+    var scene = activeScene();
     return {
       bodies: bodyIds.length,
-      statics: staticColliders.length,
+      statics: staticColliders.length + (scene ? 1 : 0),
       triggers: triggers.length,
       limits: { bodies: maxBodies, statics: maxStatics, triggers: maxTriggers }
     };
@@ -796,7 +882,8 @@ function createSZPhysicsLite(options) {
     setVelocity: setVelocity,
     stats: stats,
     step: step,
-    teleport: teleport
+    teleport: teleport,
+    setScene: setScene
   };
 }
 `.trim()

@@ -7,6 +7,7 @@ import { identityMinifiers } from '../../src/export/minify'
 import { renderProjectToPreviewDocAsync } from '../../src/preview/renderProject'
 import { prepareEditableStudioProject } from '../../src/state/editableProjectValidation'
 import { criarTransporteDeEnsaio } from '../../src/testing/scene3dTransportFixture'
+import { prepararVendors } from './preparar-vendors'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 const raiz = resolve(import.meta.dirname, '../../../..'),
@@ -76,40 +77,7 @@ for (const [nome, assets] of [
     }
   }
 }
-// Test-only instrumentation of the actual WebGLRenderer, not a renderer stub.
-const vendors = {
-  three:
-    'export * from "three"; import { WebGLRenderer as RealRenderer } from "three"; export class WebGLRenderer extends RealRenderer { constructor(...args) { super(...args); (globalThis.__qaRenderers ??= []).push(this); } }',
-  GLTFLoader: 'export { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";',
-  HDRLoader: 'export { HDRLoader } from "three/addons/loaders/HDRLoader.js";',
-  SkeletonUtils: 'export * from "three/addons/utils/SkeletonUtils.js";',
-}
-for (const [nome, texto] of Object.entries(vendors)) {
-  const entrada = resolve(pasta, `${nome}.entry.js`)
-  await writeFile(entrada, texto)
-  const resultado = await Bun.build({
-    entrypoints: [entrada],
-    target: 'browser',
-    format: 'esm',
-    minify: true,
-    external: nome === 'three' ? [] : ['three'],
-    plugins: [
-      {
-        name: 'installed-vendor',
-        setup(build) {
-          build.onResolve({ filter: /^three(?:\/.*)?$/ }, ({ path }) =>
-            nome !== 'three' && path === 'three'
-              ? { path, external: true }
-              : { path: Bun.resolveSync(path, resolve(raiz, 'packages/studio')) },
-          )
-        },
-      },
-    ],
-  })
-  if (!resultado.success || resultado.outputs.length !== 1)
-    throw new AggregateError(resultado.logs, 'Falha no vendor do Mundo')
-  await writeFile(resolve(pasta, `${nome}.js`), await resultado.outputs[0]!.text())
-}
+await prepararVendors(pasta)
 console.log(
   'Mundo 3D: documentos canônicos com cena da galeria e recorte sintético, Three real instrumentado para observar recursos.',
 )

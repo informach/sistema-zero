@@ -892,6 +892,48 @@ function compileStatementCode(
     case 'mountRenderer':
       return `${pad}document.body.appendChild(${identifiers.get(stmt.renderer)}.domElement);`
 
+    case 'threeSceneLoad': {
+      const context = identifiers.getProjectRunContextIdentifier()
+      const controller = identifiers.reserveInternal(`${stmt.param}Cancelamento`)
+      const prefix = context ? [] : [`${pad}const ${controller} = new AbortController();`]
+      const signal = context ? `${context}.signal` : `${controller}.signal`
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, base + prefix.length + 1),
+      )
+      const errorBody = compileStatements(
+        stmt.errorBody ?? [],
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, base + prefix.length + Math.max(1, countLines(body)) + 2),
+      )
+      const errorParam = identifiers.get(stmt.errorParam ?? 'erro')
+      const good = lifecycleCallback(identifiers, identifiers.get(stmt.param), body, pad)
+      const bad = lifecycleCallback(
+        identifiers,
+        errorParam,
+        errorBody || `${'  '.repeat(indent + 1)}console.log(${errorParam});`,
+        pad,
+      )
+      const load = `window.SZScene3D.instalar(${JSON.stringify(stmt.asset)}, ${identifiers.get(stmt.scene)}, ${signal}, { maxTextura: ${identifiers.get(stmt.renderer)}.capabilities.maxTextureSize })`
+      const missing =
+        'Promise.reject(new Error("Traga um cenário do Molda para este projeto antes de carregar."))'
+      return [
+        ...prefix,
+        `${pad}(window.SZScene3D ? ${load} : ${missing}).then(${good}, ${bad});`,
+      ].join('\n')
+    }
+    case 'threeSceneUpdate': {
+      const handle = identifiers.reserveInternal('cenarioAtual'),
+        focus = identifiers.get(stmt.focus)
+      return `${pad}const ${handle} = window.SZScene3D?.instalado(${identifiers.get(stmt.scene)});\n${pad}if (${handle}) {\n${pad}  ${handle}.atualizar(${compileExpr(stmt.dt, 0, identifiers, recAt(base + 2))});\n${pad}  ${handle}.quadro(${identifiers.get(stmt.camera)}, ${focus}.getWorldPosition(${focus}.position.clone()));\n${pad}}`
+    }
+    case 'physicsLiteScene': {
+      const handle = identifiers.reserveInternal('cenarioFisico')
+      return `${pad}const ${handle} = window.SZScene3D?.instalado(${identifiers.get(stmt.scene)});\n${pad}if (!${handle}) throw new Error("Ligue a física depois que o cenário carregar.");\n${pad}${identifiers.get(stmt.world)}.setScene(${JSON.stringify(stmt.id)}, ${handle}.fisica);`
+    }
     case 'loaderLoad': {
       const body = compileStatements(
         stmt.body,
@@ -1586,10 +1628,12 @@ function compileStatementCode(
     }
     case 'physicsLiteSetup': {
       const world = identifiers.get(stmt.world)
-      const heightFunction = identifiers.get(stmt.heightFunction)
+      const ground = stmt.heightFunction
+        ? `groundHeight: ${identifiers.get(stmt.heightFunction)}, `
+        : ''
       const gravity = compileExpr(stmt.gravity, 0, identifiers, recAt(base))
       const maxSubSteps = compileExpr(stmt.maxSubSteps, 0, identifiers, recAt(base))
-      return `${pad}const ${world} = createSZPhysicsLite({ groundHeight: ${heightFunction}, gravity: ${gravity}, maxSubSteps: ${maxSubSteps} });`
+      return `${pad}const ${world} = createSZPhysicsLite({ ${ground}gravity: ${gravity}, maxSubSteps: ${maxSubSteps} });`
     }
     case 'physicsLiteStaticBox': {
       const world = identifiers.get(stmt.world)
@@ -4867,6 +4911,24 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       if (stmt.param) names.add(stmt.param)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'threeSceneLoad':
+      names.add(stmt.scene)
+      names.add(stmt.renderer)
+      names.add(stmt.param)
+      names.add(stmt.errorParam ?? 'erro')
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      for (const child of stmt.errorBody ?? []) collectStatementIdentifiers(child, names)
+      return
+    case 'threeSceneUpdate':
+      names.add(stmt.scene)
+      names.add(stmt.camera)
+      names.add(stmt.focus)
+      collectExprIdentifiers(stmt.dt, names)
+      return
+    case 'physicsLiteScene':
+      names.add(stmt.world)
+      names.add(stmt.scene)
+      return
     case 'loaderLoad':
       names.add(stmt.loaderVar)
       names.add(stmt.param)
@@ -5023,7 +5085,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'physicsLiteSetup':
       names.add(stmt.world)
-      names.add(stmt.heightFunction)
+      if (stmt.heightFunction) names.add(stmt.heightFunction)
       collectExprIdentifiers(stmt.gravity, names)
       collectExprIdentifiers(stmt.maxSubSteps, names)
       return
