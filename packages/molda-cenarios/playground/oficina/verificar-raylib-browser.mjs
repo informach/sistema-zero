@@ -10,7 +10,14 @@ const projetoImportado = process.env.CENARIOS_QA_PROJECT_FILE
   raiz = resolve(import.meta.dirname, '../../../..'),
   saida = resolve(raiz, 'output/cenarios-reforma/lote8-raylib'),
   pasta = resolve(saida, 'pacote/extraido'),
-  cena = JSON.parse(readFileSync(resolve(pasta, 'cenario.json'), 'utf8')),
+  cena = projetoImportado
+    ? JSON.parse(
+        Buffer.from(
+          projetoImportado.assets.find((a) => a.kind === 'scene3d').dataUrl.split(',')[1],
+          'base64',
+        ).toString('utf8'),
+      ).cena
+    : JSON.parse(readFileSync(resolve(pasta, 'cenario.json'), 'utf8')),
   bytes = (nome) => readFileSync(resolve(pasta, nome)),
   mapa = Object.fromEntries(
     cena.arquivos.map((a) => [
@@ -18,33 +25,35 @@ const projetoImportado = process.env.CENARIOS_QA_PROJECT_FILE
       `assets/${a.digest}${a.mime === 'application/octet-stream' ? `-${a.papel}` : ''}.${a.caminho.split('.').at(-1)}`,
     ]),
   ),
-  binarios = (mapaDeAssets ? [] : cena.arquivos)
+  binarios = (projetoImportado || mapaDeAssets ? [] : cena.arquivos)
     .filter((a) => a.mime === 'application/octet-stream')
     .map((a) => [a.caminho, bytes(a.caminho).toString('base64')]),
-  assets = [
-    ...new Map(
-      cena.arquivos
-        .filter((a) => mapaDeAssets || a.mime !== 'application/octet-stream')
-        .map((a, i) => ({
-          id: `recurso-${i}`,
-          name: `recurso-${i}`,
-          kind:
-            a.mime === 'model/gltf-binary'
-              ? 'model3d'
-              : a.mime === 'application/octet-stream'
-                ? 'scene3d-data'
-                : 'image',
-          source: 'upload',
-          proPath: mapaDeAssets ? mapa[a.caminho] : a.caminho,
-          ...(a.mime === 'application/octet-stream' ? { dado3d: { papel: a.papel } } : {}),
-          ...(a.mime === 'model/gltf-binary' || a.mime === 'application/octet-stream'
-            ? { originalFileName: a.caminho.split('/').at(-1) }
-            : {}),
-          dataUrl: `data:${a.mime};base64,${bytes(a.caminho).toString('base64')}`,
-        }))
-        .map((a) => [a.proPath, a]),
-    ).values(),
-  ],
+  assets = projetoImportado
+    ? []
+    : [
+        ...new Map(
+          cena.arquivos
+            .filter((a) => mapaDeAssets || a.mime !== 'application/octet-stream')
+            .map((a, i) => ({
+              id: `recurso-${i}`,
+              name: `recurso-${i}`,
+              kind:
+                a.mime === 'model/gltf-binary'
+                  ? 'model3d'
+                  : a.mime === 'application/octet-stream'
+                    ? 'scene3d-data'
+                    : 'image',
+              source: 'upload',
+              proPath: mapaDeAssets ? mapa[a.caminho] : a.caminho,
+              ...(a.mime === 'application/octet-stream' ? { dado3d: { papel: a.papel } } : {}),
+              ...(a.mime === 'model/gltf-binary' || a.mime === 'application/octet-stream'
+                ? { originalFileName: a.caminho.split('/').at(-1) }
+                : {}),
+              dataUrl: `data:${a.mime};base64,${bytes(a.caminho).toString('base64')}`,
+            }))
+            .map((a) => [a.proPath, a]),
+        ).values(),
+      ],
   script = `import json, base64
 from pathlib import Path
 import pyray as p
@@ -209,7 +218,7 @@ try {
         mapaDeAssets,
         projetoImportado: projetoImportado?.kind ?? null,
         nota: projetoImportado
-          ? 'Projeto criado pelo preparo/store reais, reaberto e exportado. Executa o módulo Python gerado com os assets do projeto; adapter/interface Trazer do Molda ainda não participam desta prova.'
+          ? 'Projeto importado, reaberto e exportado. Executa o módulo Python gerado com os assets do projeto; a origem da importação consta no recibo produtor. A fonte esperada vem do manifesto do próprio projeto.'
           : mapaDeAssets
             ? 'Bytes reais materializados pelo pipeline de assets Python, sem escrever binários pelo programa. Manifesto lógico preservado e resolução física pelo auxiliar oficial. Não substitui o fluxo Trazer do Molda, ainda pendente.'
             : 'Fixture com os bytes do pacote real e fonte oficial do runtime. Escrita de dois binários pequenos pela fixture prepara o filesystem; não substitui o fluxo Trazer do Molda, ainda pendente no recorte de importação.',

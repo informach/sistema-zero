@@ -5,6 +5,7 @@ import { readGlbSummary } from '../../../core/glbSummary'
 import { useT } from '../../../studio/i18n'
 import type { EditTarget } from '../creationOrigin'
 import { EditInOriginButton } from '../EditInOriginButton'
+import { Scene3DAssetRow } from '../Scene3DAssetRow'
 import {
   AssetNameInput,
   AssetRow,
@@ -15,6 +16,7 @@ import {
 
 export interface Models3DTabProps extends AssetsTabCommon {
   models3d: ProjectAsset[]
+  dadosDeCenario?: ProjectAsset[]
   allowUpload: boolean
   busy: boolean
   /** Quem CONSOME .glb/.hdr está instalado (ver `has3DConsumer.ts`). */
@@ -70,6 +72,7 @@ function ModelBadges({ asset }: { asset: ProjectAsset }): JSX.Element | null {
  */
 export function Models3DTab({
   models3d,
+  dadosDeCenario = [],
   allowUpload,
   busy,
   has3DExtension,
@@ -159,6 +162,15 @@ export function Models3DTab({
             )}
             <ul className="flex flex-col gap-2">
               {models3d.map((asset) => {
+                if (asset.kind === 'scene3d')
+                  return (
+                    <Scene3DAssetRow
+                      key={asset.id}
+                      asset={asset}
+                      onRename={onRename}
+                      onDelete={onDelete}
+                    />
+                  )
                 const editTarget = editTargetOf(asset)
                 return (
                   <AssetRow key={asset.id}>
@@ -200,6 +212,34 @@ export function Models3DTab({
           </>
         )}
       </section>
+      {dadosDeCenario.length > 0 && (
+        <details className="rounded-md border border-sz-border p-3">
+          <summary className="text-xs font-semibold text-sz-fg-soft">
+            {t('moldaScenes.terrainData', { n: dadosDeCenario.length })}
+          </summary>
+          <p className="my-2 text-xs text-sz-fg-soft">{t('moldaScenes.terrainDataHint')}</p>
+          <ul className="flex flex-col gap-2">
+            {dadosDeCenario.map((asset) => (
+              <AssetRow key={asset.id}>
+                <span aria-hidden>🗺️</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs">
+                    {t(
+                      asset.dado3d?.papel === 'alturas'
+                        ? 'moldaScenes.heights'
+                        : 'moldaScenes.holes',
+                    )}
+                  </p>
+                  <p className="truncate font-mono text-[10px] text-sz-fg-soft" title={asset.name}>
+                    {asset.name}
+                  </p>
+                </div>
+                <DeleteAssetButton asset={asset} onDelete={onDelete} />
+              </AssetRow>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   )
 }

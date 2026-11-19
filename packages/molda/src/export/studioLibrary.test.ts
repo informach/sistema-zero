@@ -5,6 +5,7 @@ import { migrateLegacyModel } from '../scene/migrateLegacy'
 import {
   createMoldaPersistence,
   getDefaultMoldaPersistence,
+  getMoldaStorageNamespace,
   resetMoldaPersistenceForTests,
   setMoldaGenerationStoreFactory,
   setMoldaStorageNamespace,
@@ -26,6 +27,33 @@ beforeEach(() => {
 })
 
 describe('studio-library', () => {
+  test('contexto explícito lista/exporta A com B ativo sem trocar o namespace global', async () => {
+    const a = await nativeDatabase(),
+      b = await nativeDatabase()
+    setMoldaGenerationStoreFactory((namespace) => (namespace === 'perfil-a' ? a.store : b.store))
+    try {
+      await createMoldaPersistence({ namespace: 'perfil-a' }).save(makeModel({ name: 'modelo-a' }))
+      await createMoldaPersistence({ namespace: 'perfil-b' }).save(makeModel({ name: 'modelo-b' }))
+      setMoldaStorageNamespace('perfil-b')
+      const lista = await listGalleryForStudio({ namespace: 'perfil-a' })
+      expect(lista.map((v) => v.name)).toEqual(['modelo-a'])
+      const exportado = await exportAssetForStudio('model-1', { namespace: 'perfil-a' })
+      expect(exportado.ok && exportado.asset.name).toBe('modelo-a')
+      expect(getMoldaStorageNamespace()).toBe('perfil-b')
+      const controle = new AbortController()
+      controle.abort()
+      await expect(
+        listGalleryForStudio({ namespace: 'perfil-a', signal: controle.signal }),
+      ).rejects.toHaveProperty('name', 'AbortError')
+      await expect(
+        exportAssetForStudio('model-1', { namespace: 'perfil-a', signal: controle.signal }),
+      ).rejects.toHaveProperty('name', 'AbortError')
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      a.close()
+      b.close()
+    }
+  })
   test('listing captures both generations before a profile switch during the legacy read', async () => {
     const a = await nativeDatabase(),
       b = await nativeDatabase()

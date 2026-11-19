@@ -44,8 +44,8 @@ const MoldaImportDialog = lazy(() =>
  * usado" (a busca literal no projeto) e "Como usar neste jogo" (os exemplos revisados de
  * sempre). Os caminhos e IDs são os canônicos do manifesto (JS) ou do runtime Python; a régua de
  * colisão com os fontes Python continua a de `editorAssetEntries`. Com os adapters do host, a aba
- * Imagens ganha "Trazer do Pinta" e a 3D "Trazer do Molda" (o Molda já some no Python pelo
- * próprio hook); só para quem edita. "Trazer", e não "Desenhar": a galeria traz o que a criança
+ * Imagens ganha "Trazer do Pinta" e a 3D "Trazer do Molda" (inclusive Python com Raylib 3D);
+ * só para quem edita. "Trazer", e não "Desenhar": a galeria traz o que a criança
  * já desenhou, o Studio não abre o editor do Pinta.
  */
 export function ProAssetPaths({
@@ -140,7 +140,9 @@ export function ProAssetPaths({
   const tabs: AssetsTab[] = [
     'images',
     'sounds',
-    ...(language === 'javascript' || counts.models3d ? (['models3d'] as const) : []),
+    ...(language === 'javascript' || counts.models3d || moldaLibrary
+      ? (['models3d'] as const)
+      : []),
     ...(counts.fonts ? (['fonts'] as const) : []),
   ]
   const [tab, setTab] = useState<AssetsTab>('images')
@@ -377,6 +379,11 @@ function ProAssetDetail({
         </div>
       </div>
       <div className="flex flex-col gap-1">
+        {original?.kind === 'scene3d' && original.cena3dPython && (
+          <code className="break-all text-xs text-sz-fg-soft">
+            from {original.cena3dPython.modulo.split('/').at(-1)?.slice(0, -3)} import carregar
+          </code>
+        )}
         <span className="text-xs font-black uppercase tracking-wide text-sz-fg-mute">
           {t('pro.materials.useInCode')}
         </span>

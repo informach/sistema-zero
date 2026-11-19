@@ -1,0 +1,3 @@
+mcn-carregado 966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60 20 False
+mcn-clipes 4
+mcn-descartado

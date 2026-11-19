@@ -3,6 +3,17 @@ import { LIMITES_DA_EXPORTACAO } from './limites'
 import { CenaCompiladaSchema } from './schema'
 import { type ArquivoCompilado, CaminhoCompiladoSchema } from './schema-arquivos'
 
+/** Gallery data from the authorized host; not embedded in the compiled scene. */
+export interface CenaDisponivelParaStudio {
+  id: string
+  nome: string
+  revisao: number
+  jogo: { id: string; nome: string }
+  espaco: { id: string; nome: string; tipo: 'conta' | 'equipe' }
+  miniatura: string | null
+  atualizadoEm: string
+}
+
 export const MAX_BYTES_DA_CENA_PARA_STUDIO = 1024 * 1024
 export const MIME_DA_CENA_PARA_STUDIO = 'application/vnd.sistemazero.cena3d+json'
 export const PapelDoDado3DSchema = z.enum(['alturas', 'buracos'])
