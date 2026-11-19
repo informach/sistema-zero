@@ -36,6 +36,7 @@ import {
   Cloud,
   CloudOff,
   Copy,
+  Download,
   Flag,
   Haze,
   History,
@@ -129,6 +130,7 @@ import { Aparencia } from './Aparencia'
 import { Caminhos, FERRAMENTAS_CAMINHOS } from './Caminhos'
 import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
+import Exportar from './Exportar'
 import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
 import { FERRAMENTAS_JOGO, FERRAMENTAS_LUZ, Jogo } from './Jogo'
@@ -278,6 +280,7 @@ function OficinaAberta({
   const [escolhendoPersonagem, setEscolhendoPersonagem] = useState(false)
   const [personagemDaBiblioteca, setPersonagemDaBiblioteca] = useState<ModeloDoCenario | null>(null)
   const [janelaTeste, setJanelaTeste] = useState(false)
+  const [exportacaoAberta, setExportacaoAberta] = useState(false)
   const [preparandoTeste, setPreparandoTeste] = useState(false)
   const [erroTeste, setErroTeste] = useState<string | null>(null)
   const [conjuntosCarregando, setConjuntosCarregando] = useState(0)
@@ -1021,6 +1024,7 @@ function OficinaAberta({
   // Atalhos do teclado, quando a pessoa não está escrevendo num campo.
   useEffect(() => {
     const aoApertar = (evento: KeyboardEvent) => {
+      if (document.querySelector('dialog[open]')) return
       if (ensaioAtivo.current) return
       if (
         aguaAtual.current.ocupado ||
@@ -1178,6 +1182,17 @@ function OficinaAberta({
       className="mld-workshop mcn-oficina flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
     >
       {conjuntos.janela}
+      {exportacaoAberta ? (
+        <Exportar
+          host={host}
+          id={documento.id}
+          nome={documento.nome}
+          revisao={estado.revisao}
+          controlador={controlador}
+          aoFechar={() => setExportacaoAberta(false)}
+          aoReabrir={() => controlador.recarregar()}
+        />
+      ) : null}
       {janelaTeste ? (
         <PrepararTeste
           documento={documento}
@@ -1406,6 +1421,29 @@ function OficinaAberta({
           </fieldset>
         </div>
         <div className="mld-workshop-file-actions">
+          {!conjunto ? (
+            <button
+              type="button"
+              className="sz-tool-icon-btn min-h-11 min-w-11"
+              aria-label="Exportar cenário"
+              title="Exportar cenário"
+              disabled={
+                emEnsaio ||
+                estado.ocupado ||
+                estado.salvamento !== 'guardado' ||
+                edicaoAberta ||
+                gestoAtivo ||
+                terreno.ocupado ||
+                terreno.preparando ||
+                preparandoMolde ||
+                conjuntos.ocupado ||
+                conjuntosCarregando > 0
+              }
+              onClick={() => setExportacaoAberta(true)}
+            >
+              <Download aria-hidden="true" />
+            </button>
+          ) : null}
           <button
             type="button"
             className="sz-tool-pill sz-tool-pill--primary mcn-botao-testar"

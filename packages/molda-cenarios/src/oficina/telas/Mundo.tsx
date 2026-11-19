@@ -1,5 +1,5 @@
 import { Button, IconButton } from '@sistemazero/molda/ui'
-import { ArrowLeft, Boxes, Copy, Map as Mapa, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Boxes, Copy, Download, Map as Mapa, Pencil, Plus, Trash2 } from 'lucide-react'
 import { type JSX, useState } from 'react'
 import { COPY, plural } from '../copy'
 import { bibliotecaVivaDoMolda } from '../moldes'
@@ -14,12 +14,14 @@ import {
   useCarga,
 } from '../pecas'
 import type { Biblioteca, CenariosHost, Mundo as MundoDoHost, ResumoDeCenario } from '../portas'
+import Exportar from './Exportar'
 
 type Janela =
   | { tipo: 'novo' }
   | { tipo: 'nome' }
   | { tipo: 'apagar'; cenario: ResumoDeCenario }
   | { tipo: 'bibliotecas' }
+  | { tipo: 'exportar'; cenario: ResumoDeCenario }
   | null
 
 export function EscolherBibliotecas({
@@ -222,6 +224,13 @@ export function Mundo({
                         </button>
                         <div className="flex items-center justify-end gap-1">
                           <IconButton
+                            aria-label={`Exportar: ${cenario.nome}`}
+                            title={`Exportar: ${cenario.nome}`}
+                            onClick={() => setJanela({ tipo: 'exportar', cenario })}
+                          >
+                            <Download aria-hidden="true" className="size-4" />
+                          </IconButton>
+                          <IconButton
                             aria-label={`${COPY.mundo.duplicar}: ${cenario.nome}`}
                             onClick={async () => {
                               await host.duplicarCenario(cenario.id)
@@ -304,6 +313,16 @@ export function Mundo({
             const cenario = await host.criarCenario(mundo.id, nome)
             aoAbrirCenario(cenario.id)
           }}
+        />
+      ) : null}
+      {janela?.tipo === 'exportar' ? (
+        <Exportar
+          host={host}
+          id={janela.cenario.id}
+          nome={janela.cenario.nome}
+          revisao={janela.cenario.revisao}
+          aoFechar={() => setJanela(null)}
+          aoReabrir={() => aoAbrirCenario(janela.cenario.id)}
         />
       ) : null}
       {janela?.tipo === 'nome' && mundo ? (
