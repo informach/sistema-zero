@@ -36,6 +36,16 @@ export function readScene3DDataMetadata(value: unknown): { papel: PapelDoDado3D 
   return role.success ? { papel: role.data } : undefined
 }
 
+export function readScene3DPythonMetadata(value: unknown): { modulo: string } | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const record = value as Record<string, unknown>
+  if (Object.keys(record).length !== 1 || typeof record.modulo !== 'string') return undefined
+  return isStudioPortablePath(record.modulo) &&
+    /(?:^|\/)cenario_[a-z0-9_]+\.py$/.test(record.modulo)
+    ? { modulo: record.modulo }
+    : undefined
+}
+
 /** Closed encodings: these are compiler artifacts, never arbitrary executable attachments. */
 export function isValidScene3DDataUrl(
   value: string,

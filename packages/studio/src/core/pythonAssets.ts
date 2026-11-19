@@ -34,6 +34,7 @@ export interface PythonAssetManifestEntry {
   width?: number
   height?: number
   dado3d?: ProjectAsset['dado3d']
+  cena3dPython?: ProjectAsset['cena3dPython']
 }
 
 export interface PythonAssetBundle {
@@ -100,6 +101,7 @@ export async function buildPythonAssetBundle(
       name: asset.name,
       kind: asset.kind,
       ...(asset.dado3d ? { dado3d: asset.dado3d } : {}),
+      ...(asset.cena3dPython ? { cena3dPython: asset.cena3dPython } : {}),
       path,
       mime,
       bytes: bytes.byteLength,

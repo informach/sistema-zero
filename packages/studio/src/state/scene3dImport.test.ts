@@ -1,8 +1,12 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterEach, expect, spyOn, test } from 'bun:test'
 import { lerCenaCompilada, type PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
 import { digestAssetBytes } from '../core/assetBinary'
+import { isPythonProject } from '../core/editableProject'
 import { createEmptyProject } from '../core/project'
+import * as importador from '../core/scene3d/importar'
 import { prepararImportacaoDeCena3D } from '../core/scene3d/importar'
+import { RAYLIB_3D_EXTENSION } from '../runtime/python/raylib/contract'
+import { pythonEnvironmentFixture } from './fixtures/pythonEnvironment'
 import { captureProjectStorageScope, setProjectStorageNamespace } from './projectStorageRuntime'
 import { createProjectStore } from './projectStore'
 
@@ -55,6 +59,72 @@ async function fixture() {
   store.setState({ project, isDirty: false })
   return { store, project, plano: await prepararImportacaoDeCena3D(project, await pacote()) }
 }
+
+test('Python Classic/Pro aplica fontes e assets em uma atualização, preserva main e repete sem gravar', async () => {
+  for (const kind of ['classic', 'pro'] as const) {
+    const { project } = await pythonEnvironmentFixture(kind),
+      store = createProjectStore()
+    project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+    store.setState({ project, isDirty: false })
+    const entrada = await pacote(),
+      plano = await prepararImportacaoDeCena3D(project, entrada),
+      principal =
+        project.kind === 'pro'
+          ? project.tree[project.python.entrypoint]
+          : project.files[project.python.entrypoint]
+    let atualizacoes = 0
+    const off = store.subscribe(() => atualizacoes++)
+    expect(await store.getState().importScene3DBundle(plano)).toBeNull()
+    expect(atualizacoes).toBe(1)
+    const atual = store.getState().project!
+    if (!isPythonProject(atual)) throw Error('fixture')
+    expect(
+      atual.kind === 'pro'
+        ? atual.tree[atual.python.entrypoint]
+        : atual.files[atual.python.entrypoint],
+    ).toEqual(principal)
+    const fonte = plano.fontesPython![0]!
+    expect(atual.kind === 'pro' ? atual.tree[fonte.caminho] : atual.files[fonte.caminho]).toEqual(
+      atual.kind === 'pro' ? { kind: 'file', content: fonte.texto } : fonte.texto,
+    )
+    const repetido = await prepararImportacaoDeCena3D(atual, entrada)
+    expect(await store.getState().importScene3DBundle(repetido)).toBeNull()
+    expect(atualizacoes).toBe(1)
+    off()
+  }
+})
+
+test('fontes Python adulteradas no plano não entram no projeto, nem deixam assets pela metade', async () => {
+  const { project } = await pythonEnvironmentFixture('classic'),
+    store = createProjectStore()
+  project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+  store.setState({ project, isDirty: false })
+  const plano = await prepararImportacaoDeCena3D(project, await pacote())
+  plano.fontesPython![0]!.texto = 'raise RuntimeError("adulterado")'
+  expect(await store.getState().importScene3DBundle(plano)).toContain('preparo')
+  expect(store.getState().project).toBe(project)
+  expect(store.getState().isDirty).toBe(false)
+})
+
+test('uma alteração em memória durante a última espera do preparo também impede o commit', async () => {
+  const { store, project, plano } = await fixture(),
+    preparar = importador.prepararImportacaoDeCena3D,
+    revisao = spyOn(importador, 'prepararImportacaoDeCena3D').mockImplementation(
+      async (...args) => {
+        const pronto = await preparar(...args)
+        project.name = 'Edição feita durante o último await'
+        return pronto
+      },
+    )
+  try {
+    expect(await store.getState().importScene3DBundle(plano)).toContain('mudou')
+    expect(store.getState().project).toBe(project)
+    expect(store.getState().project?.assets).toEqual(project.assets)
+    expect(store.getState().isDirty).toBe(false)
+  } finally {
+    revisao.mockRestore()
+  }
+})
 
 test('importação aplica cena e recursos em uma atualização e conserva o programa', async () => {
   const { store, project, plano } = await fixture()

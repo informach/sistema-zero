@@ -3,7 +3,10 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
-const mapaDeAssets = process.env.CENARIOS_QA_RESOURCE_MAP === '1',
+const projetoImportado = process.env.CENARIOS_QA_PROJECT_FILE
+    ? JSON.parse(readFileSync(process.env.CENARIOS_QA_PROJECT_FILE, 'utf8'))
+    : null,
+  mapaDeAssets = process.env.CENARIOS_QA_RESOURCE_MAP === '1',
   raiz = resolve(import.meta.dirname, '../../../..'),
   saida = resolve(raiz, 'output/cenarios-reforma/lote8-raylib'),
   pasta = resolve(saida, 'pacote/extraido'),
@@ -74,6 +77,7 @@ for quadro in range(8):
     lugar.desenhar()
     p.end_mode_3d()
     p.end_drawing()
+input('mcn-pronto-captura: ')
 lugar.descartar()
 lugar.descartar()
 print('mcn-descartado')
@@ -86,30 +90,40 @@ p.close_window()
   resultados = []
 pagina.on('pageerror', (e) => erros.push(e.message))
 const base = process.env.CENARIOS_QA_PYTHON_BASE ?? 'http://127.0.0.1:5317',
-  sufixo = mapaDeAssets ? '-mapa-assets' : ''
+  sufixo = projetoImportado
+    ? `-importado-${projetoImportado.kind}`
+    : mapaDeAssets
+      ? '-mapa-assets'
+      : ''
 try {
   for (const autoral of [false, true]) {
     await pagina.route('**/project/cenario-molda-qa', async (route) => {
       const resposta = await route.fetch({ url: `${base}/project/raylibSceneModels3d` }),
-        projeto = await resposta.json()
-      assert.equal(projeto.kind, 'pro')
+        baseProjeto = await resposta.json(),
+        projeto = !autoral && projetoImportado ? structuredClone(projetoImportado) : baseProjeto
+      assert.equal(baseProjeto.kind, 'pro')
+      if (!autoral && projetoImportado) {
+        projeto.runtime = baseProjeto.runtime
+        projeto.python.dependencyLock.runtimeManifestSha256 = baseProjeto.runtime.manifestSha256
+      }
       projeto.name = 'Cenário compilado · prova local'
       delete projeto.coverAssetName
-      projeto.assets = autoral ? [] : assets
+      if (autoral || !projetoImportado) projeto.assets = autoral ? [] : assets
       projeto.ir = null
       projeto.blocksState = null
-      projeto.tree = {
-        src: { kind: 'dir' },
-        'src/main.py': {
-          kind: 'file',
-          content: autoral
-            ? "import cenario\nassert cenario.IDENTIDADE == 'autoral'\nprint('mcn-autoral-preservado')\n"
-            : script,
-        },
-        ...(!autoral
-          ? { 'cenario.json': { kind: 'file', content: JSON.stringify(cena) } }
-          : { 'src/cenario.py': { kind: 'file', content: "IDENTIDADE = 'autoral'\n" } }),
-      }
+      if (autoral || !projetoImportado)
+        projeto.tree = {
+          src: { kind: 'dir' },
+          'src/main.py': {
+            kind: 'file',
+            content: autoral
+              ? "import cenario\nassert cenario.IDENTIDADE == 'autoral'\nprint('mcn-autoral-preservado')\n"
+              : script,
+          },
+          ...(!autoral
+            ? { 'cenario.json': { kind: 'file', content: JSON.stringify(cena) } }
+            : { 'src/cenario.py': { kind: 'file', content: "IDENTIDADE = 'autoral'\n" } }),
+        }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -125,6 +139,37 @@ try {
       f.style.cssText = 'width:800px;height:600px;border:0'
     })
     await pagina.evaluate(() => globalThis.providerProbe.run('game'))
+    if (!autoral) {
+      await pagina.waitForFunction(
+        () => {
+          const r = globalThis.providerProbe.read('game')
+          return (
+            (r.status === 'waiting-input' && r.events.some((e) => e.type === 'input-request')) ||
+            r.status === 'failed' ||
+            r.status === 'completed'
+          )
+        },
+        null,
+        { timeout: 60000 },
+      )
+      const r = await pagina.evaluate(() => globalThis.providerProbe.read('game'))
+      assert.equal(r.status, 'waiting-input', JSON.stringify(r))
+      const pedido = r.events.findLast((e) => e.type === 'input-request')
+      assert.ok(pedido)
+      assert.ok(r.events.some((e) => e.type === 'console' && e.text.includes('mcn-pronto-captura')))
+      const frame = pagina.frames().find((f) => f.url().includes('/frame.html'))
+      assert.ok(frame)
+      const path = resolve(saida, `pyodide-cenario${sufixo}.png`)
+      await frame.locator('canvas').screenshot({ path })
+      const png = readFileSync(path)
+      assert.equal(png.readUInt32BE(16), 640)
+      assert.equal(png.readUInt32BE(20), 420)
+      await pagina.evaluate(
+        (requestId) =>
+          globalThis.providerProbe.input('game', requestId, { kind: 'line', text: 'continuar' }),
+        pedido.requestId,
+      )
+    }
     const fim = autoral ? 'mcn-autoral-preservado' : 'mcn-descartado'
     await pagina.waitForFunction(
       (s) => {
@@ -148,12 +193,7 @@ try {
     if (!autoral) {
       assert.ok(stdout.includes(cena.fonte.digest), stdout)
       assert.ok(stdout.includes('mcn-clipes 4'), stdout)
-      const frame = pagina.frames().find((f) => f.url().includes('/frame.html'))
-      assert.ok(frame)
-      await frame
-        .locator('canvas')
-        .screenshot({ path: resolve(saida, `pyodide-cenario${sufixo}.png`) })
-      if (mapaDeAssets) assert.ok(stdout.includes('mcn-mapa-assets'), stdout)
+      if (mapaDeAssets && !projetoImportado) assert.ok(stdout.includes('mcn-mapa-assets'), stdout)
     }
     resultados.push({ autoral, status: r.status, stdout })
     await pagina.evaluate(() => globalThis.providerProbe.dispose('game'))
@@ -167,9 +207,12 @@ try {
         resultados,
         erros,
         mapaDeAssets,
-        nota: mapaDeAssets
-          ? 'Bytes reais materializados pelo pipeline de assets Python, sem escrever binários pelo programa. Manifesto lógico preservado e resolução física pelo auxiliar oficial. Não substitui o fluxo Trazer do Molda, ainda pendente.'
-          : 'Fixture com os bytes do pacote real e fonte oficial do runtime. Escrita de dois binários pequenos pela fixture prepara o filesystem; não substitui o fluxo Trazer do Molda, ainda pendente no recorte de importação.',
+        projetoImportado: projetoImportado?.kind ?? null,
+        nota: projetoImportado
+          ? 'Projeto criado pelo preparo/store reais, reaberto e exportado. Executa o módulo Python gerado com os assets do projeto; adapter/interface Trazer do Molda ainda não participam desta prova.'
+          : mapaDeAssets
+            ? 'Bytes reais materializados pelo pipeline de assets Python, sem escrever binários pelo programa. Manifesto lógico preservado e resolução física pelo auxiliar oficial. Não substitui o fluxo Trazer do Molda, ainda pendente.'
+            : 'Fixture com os bytes do pacote real e fonte oficial do runtime. Escrita de dois binários pequenos pela fixture prepara o filesystem; não substitui o fluxo Trazer do Molda, ainda pendente no recorte de importação.',
       },
       null,
       2,

@@ -46,7 +46,7 @@ type PapelDoDado3D = 'alturas' | 'buracos'
 
 ## 2. Preparação e commit atômico de importação
 
-**Files:** `studio/src/core/scene3d/importar.ts`, `state/projectStore.ts` e ações de workspace pertinentes; `studio/molda-library.ts`, `components/assets/{addCreationToProject,MoldaImportDialog,AssetsPanel,ProAssetPaths}.tsx/ts`; `member-shell/src/components/creator/use-studio-creation-libraries.ts`; entrada pública restrita para cenários na oficina, sem ciclo de dependências.
+**Files:** `studio/src/core/scene3d/{importar,python}.ts`, `state/projectStore.ts` e ações de workspace pertinentes; `studio/src/studio/molda-library.ts`, `components/assets/{addCreationToProject,MoldaImportDialog,AssetsPanel,ProAssetPaths}.tsx/ts`; `member-shell/src/components/creator/use-studio-creation-libraries.ts`; entrada pública restrita para cenários na oficina, sem ciclo de dependências.
 
 `prepararImportacaoDeCena3D` recebe pacote compilado conferido, identificação da fonte e captura do projeto. Produz plano serializável com assets/referências e fontes Python opcionais. O commit revalida o projeto ativo e os recursos concorrentes, aplica uma única atualização do store e preserva fontes/IDs anteriores. Deduplicar por conteúdo, tipo e papel, não por nome. O namespace físico Python dos recursos é comum aos cenários, com nomes por digest, evitando multiplicar os mesmos arquivos em cada revisão.
 
@@ -63,7 +63,7 @@ Refinamento Python após `38c33c519`: usar uma porta opcional de resolução fí
 - [ ] Testar primeiro 48/49 malhas reais, 5 MiB/modelo, 24 MiB/projeto existente, projeto alterado durante preparo, nomes colididos, repetição, dois cenários compartilhando recurso e falha/cancelamento: projeto original intacto.
 - [ ] Preparar referências/digests e a opção de junção compartilhada. Se o orçamento não couber, retornar excesso nominal e alternativa real; nunca omitir dependências ou mudar autoria.
 - [ ] Ampliar o adapter existente com cenas/revisões e resultado de bundle. O host usa CenariosHost/preparo autorizado e perfil capturado; não confiar em papel passado pelo cliente. Manter as criações antigas e sua origem.
-- [ ] Aplicar pelo store existente, com preservação de fontes Python e módulos autorais. Usar a fonte oficial `Cenario` para consumir a cena compilada; não criar outro runtime Python.
+- [x] Aplicar pelo store existente, com preservação de fontes Python e módulos autorais. Usar a fonte oficial `Cenario` para consumir a cena compilada; não criar outro runtime Python. [Recorte do preparo/store Python](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-python-importacao.md); adapter/interface continuam pendentes.
 - [ ] Ensaiar Trazer do Molda real, conta/ensaio autorizado, Classic/Pro e Python; reabrir/exportar offline e rever limites, cancelamento, recursos e UI nos temas/layouts existentes. Commit/checkpoint.
 
 ## 3. Carregador compartilhado e quatro motores
