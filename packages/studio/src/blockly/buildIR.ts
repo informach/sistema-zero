@@ -1488,6 +1488,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       // `document.body.appendChild(renderizador.domElement)` — nó dedicado
       // (document.body é denylistado no parser genérico).
       return { kind: 'js', value: { type: 'mountRenderer', renderer: f(block, 'R') } }
+    case 'sz_t3d_load_scene':
+      return {
+        kind: 'js',
+        value: {
+          type: 'threeSceneLoad',
+          asset: f(block, 'ASSET'),
+          scene: f(block, 'SCENE'),
+          renderer: f(block, 'RENDERER'),
+          param: f(block, 'PARAM') || 'cenario',
+          body: getStatementChildren(block, 'DO', seen),
+          errorParam: f(block, 'ERROR_PARAM') || 'erro',
+          errorBody: getStatementChildren(block, 'DO_ERROR', seen),
+        },
+      }
     case 'sz_t3d_load_model':
       // `carregador.load('nome', (modelo) => { … })` — carregamento async (GLTF/HDR).
       // URL é o NOME do asset 3D (campo seletor), vira string literal.
@@ -1518,6 +1532,27 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
           errorParam: f(block, 'ERROR_PARAM') || 'erro',
           errorBody: getStatementChildren(block, 'DO_ERROR', seen),
+        },
+      }
+    case 'sz_t3d_update_scene':
+      return {
+        kind: 'js',
+        value: {
+          type: 'threeSceneUpdate',
+          scene: f(block, 'SCENE'),
+          camera: f(block, 'CAMERA'),
+          focus: f(block, 'FOCUS'),
+          dt: exprInput(block, 'DT', { type: 'num', value: 1 / 60 }),
+        },
+      }
+    case 'sz_t3d_physics_scene':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteScene',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID'),
+          scene: f(block, 'SCENE'),
         },
       }
     case 'sz_t3d_traverse':
@@ -1806,7 +1841,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'physicsLiteSetup',
           world: f(block, 'WORLD') || 'fisica',
-          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+          heightFunction: f(block, 'HEIGHT_FN').trim() || undefined,
           gravity: exprInput(block, 'GRAVITY', { type: 'num', value: -22 }),
           maxSubSteps: exprInput(block, 'SUBSTEPS', { type: 'num', value: 3 }),
         },

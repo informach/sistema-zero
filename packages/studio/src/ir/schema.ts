@@ -97,6 +97,7 @@ import {
   isCanvas3DResourceCreatorExpression,
   isCanvas3DResourceCreatorStatement,
 } from '../three/canvas3dContract'
+import { type Canvas3DSceneStatement, canvas3DSceneSchemas } from '../three/canvas3dSceneIR'
 import { FULLSCREEN_GAME3D_KITS, type FullscreenGame3DKit } from '../three/fullscreenKits'
 import {
   GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
@@ -1842,6 +1843,7 @@ interface JSStatementCommon {
 }
 
 export type JSStatement =
+  | Canvas3DSceneStatement
   | (JSStatementCommon & { type: 'var'; name: string; value: JSExpr; kind?: 'let' | 'const' })
   // Declaração sem valor inicial (`let x;`).
   | (JSStatementCommon & { type: 'declareVar'; name: string })
@@ -5494,7 +5496,7 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'physicsLiteSetup'
       world: string
-      heightFunction: string
+      heightFunction?: string
       gravity: JSExpr
       maxSubSteps: JSExpr
     })
@@ -7741,6 +7743,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     ...platformGameThreeDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...gameRulesStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...world3DNewStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...canvas3DSceneSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...gameKit3DModelStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...gameKit3DGameplayStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
@@ -10759,7 +10762,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('physicsLiteSetup'),
       world: irText(),
-      heightFunction: irText(),
+      heightFunction: irText().optional(),
       gravity: JSExprSchema,
       maxSubSteps: JSExprSchema,
       ...idField,

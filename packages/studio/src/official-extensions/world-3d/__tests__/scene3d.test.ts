@@ -3,6 +3,7 @@ import { type CenaNoThree, resolverInicioDaCena } from '@sistemazero/molda-cenar
 import { Vector3 } from 'three'
 import { criarTransporteDeEnsaio } from '../../../testing/scene3dTransportFixture'
 import { carregarCena3DDoProjeto } from '../../../three/scene3d'
+import { criarInstaladorDeCenas3D } from '../../../three/scene3dCanvas'
 import { loadStartedWorld, pressKey, releaseKey } from './kitHarness'
 
 afterEach(() => {
@@ -16,14 +17,18 @@ afterEach(() => {
 async function instalarCarregador(opcoes: Parameters<typeof criarTransporteDeEnsaio>[0] = {}) {
   const plano = await criarTransporteDeEnsaio(opcoes),
     carregados: CenaNoThree[] = []
+  const carregar: NonNullable<Window['SZScene3D']>['carregar'] = (id, sinal, opcoes) => {
+    return carregarCena3DDoProjeto(id, plano.assets, sinal, opcoes).then((r) => {
+      carregados.push(r)
+      return r
+    })
+  }
+  const ligacoes = criarInstaladorDeCenas3D(carregar)
   window.SZScene3D = {
     inicio: resolverInicioDaCena,
-    carregar(id, sinal, opcoes) {
-      return carregarCena3DDoProjeto(id, plano.assets, sinal, opcoes).then((r) => {
-        carregados.push(r)
-        return r
-      })
-    },
+    carregar,
+    instalar: ligacoes.instalar,
+    instalado: ligacoes.instalado,
   }
   return { plano, carregados }
 }

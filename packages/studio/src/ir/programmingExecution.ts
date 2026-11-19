@@ -91,6 +91,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'imageOnError',
     'imageOnLoad',
     'loaderLoad',
+    'threeSceneLoad',
     'onClickAssign',
     'physicsLiteCollisionEvent',
     'physicsLiteTriggerEvent',
@@ -324,6 +325,7 @@ function localVariablesForChild(
     case 'requestFrameDo':
       return first === 'body' && statement.param ? [statement.param] : []
     case 'loaderLoad':
+    case 'threeSceneLoad':
       if (first === 'body') return [statement.param]
       return first === 'errorBody' && statement.errorParam ? [statement.errorParam] : []
     case 'traverseEach':
