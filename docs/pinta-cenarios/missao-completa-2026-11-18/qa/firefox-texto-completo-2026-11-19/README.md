@@ -19,3 +19,10 @@ renderização, console, Parar/Rodar, carga real de 30 s, início em menos de de
 segundos, observação externa de três segundos e teto de intervalo de 500 ms.
 A prova Linux da correção ainda será registrada separadamente. Nenhuma
 asserção de execução, duração ou isolamento foi removida.
+
+A [qualificação Linux 44604789667](https://github.com/informach/sistema-zero/actions/runs/44604789667)
+passou pelos sete casos Firefox, sem omissões, retries ou instabilidade, na fonte
+`c3e9f483d87ecf112436779608ea136855db3f72`. [Recibo](linux-green.json).
+Isso inclui segurança, execução, renderização da casca e carga longa; não apenas
+a conferência de texto. A prova anterior de que Linux ainda estava pendente fica
+superada por esta execução.
