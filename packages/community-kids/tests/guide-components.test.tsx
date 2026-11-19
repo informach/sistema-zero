@@ -98,14 +98,22 @@ describe('formulário do primeiro perfil', () => {
     const birthDate = screen.getByLabelText('Data de nascimento da criança') as HTMLInputElement
     expect(birthDate.max).toBe('2026-08-15')
 
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
+      target: { value: 'Sofia' },
+    })
     fireEvent.change(birthDate, { target: { value: '2008-08-16' } })
     const form = container.querySelector('form')
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
 
     expect(onSave).toHaveBeenCalledWith(
-      { name: 'Sofia', birthDate: '2008-08-16', publicProfileEnabled: false },
+      {
+        name: 'Sofia',
+        publicNickname: 'Sofia',
+        birthDate: '2008-08-16',
+        publicProfileEnabled: false,
+      },
       undefined,
     )
   })
@@ -122,7 +130,10 @@ describe('formulário do primeiro perfil', () => {
       />,
     )
 
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
+      target: { value: 'Sofia' },
+    })
     fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
       target: { value: '2016-05-10' },
     })
@@ -131,7 +142,12 @@ describe('formulário do primeiro perfil', () => {
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
     expect(onSave).toHaveBeenCalledWith(
-      { name: 'Sofia', birthDate: '2016-05-10', publicProfileEnabled: false },
+      {
+        name: 'Sofia',
+        publicNickname: 'Sofia',
+        birthDate: '2016-05-10',
+        publicProfileEnabled: false,
+      },
       undefined,
     )
   })
@@ -153,7 +169,10 @@ describe('formulário do primeiro perfil', () => {
     // O formulário não abre já com erro.
     expect(screen.queryByText('Informe a data de nascimento da criança.')).toBeNull()
 
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
+      target: { value: 'Sofia' },
+    })
     const form = container.querySelector('form')
     if (!form) throw new Error('form semântico não renderizado')
     // Sem `noValidate`, o navegador barraria o envio com o aviso dele e a mensagem abaixo nunca
@@ -179,7 +198,8 @@ describe('formulário do primeiro perfil', () => {
       />,
     )
 
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), {
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
       target: { value: 'Pessoa adulta' },
     })
     fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
@@ -208,6 +228,7 @@ describe('formulário do primeiro perfil', () => {
           profile: {
             id: '11111111-1111-4111-8111-111111111111',
             name: 'Sofia',
+            publicNickname: 'Sofia',
             avatarUrl: null,
             whatsapp: null,
             birthDate: null,
@@ -246,6 +267,7 @@ describe('formulário do primeiro perfil', () => {
           profile: {
             id: '11111111-1111-4111-8111-111111111111',
             name: 'Sofia',
+            publicNickname: 'Sofia',
             avatarUrl: null,
             whatsapp: null,
             birthDate: '2000-01-01',
@@ -260,7 +282,8 @@ describe('formulário do primeiro perfil', () => {
       />,
     )
 
-    fireEvent.change(screen.getByLabelText('Nome do perfil'), {
+    fireEvent.change(screen.getByLabelText('Apelido público'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Nome completo da criança'), {
       target: { value: 'Sofia Silva' },
     })
     const form = container.querySelector('form')
@@ -268,7 +291,12 @@ describe('formulário do primeiro perfil', () => {
     fireEvent.submit(form)
 
     expect(onSave).toHaveBeenCalledWith(
-      { name: 'Sofia Silva', birthDate: '2000-01-01', publicProfileEnabled: false },
+      {
+        name: 'Sofia Silva',
+        publicNickname: 'Sofia',
+        birthDate: '2000-01-01',
+        publicProfileEnabled: false,
+      },
       expect.objectContaining({ id: '11111111-1111-4111-8111-111111111111' }),
     )
   })

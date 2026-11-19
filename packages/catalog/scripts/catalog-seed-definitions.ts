@@ -659,6 +659,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     content: {
       badge: 'O primeiro jogo',
       ctaLabel: 'Quero o Cadê Todo Mundo',
+      maxProfiles: 1,
     },
     items: [
       {

@@ -65,6 +65,10 @@ export function lessonContentLabel(block: Block): string {
       return 'Conteúdo em HTML'
     case 'certificate':
       return 'Certificado do curso'
+    case 'gift':
+      return c.title || 'Presente / bolsa'
+    case 'purchase':
+      return c.title || 'Compra / assinatura'
     case 'coming_soon':
       return c.message || 'Aula em produção'
     case 'materials':

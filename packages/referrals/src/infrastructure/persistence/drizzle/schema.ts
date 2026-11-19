@@ -240,9 +240,10 @@ export const scholarshipRedemptions = referralsSchema.table(
     ),
     check(
       'scholarship_redemptions_gift_slot_check',
-      sql`${t.giftSlot} = 'main' or ${t.giftSlot} like 'parents:%'`,
+      sql`${t.giftSlot} = 'main' or ${t.giftSlot} like 'parents:%' or ${t.giftSlot} like 'course:%' or ${t.giftSlot} like 'offer:%'`,
     ),
     index('scholarship_redemptions_code_status_idx').on(t.codeId, t.status),
+    index('scholarship_redemptions_user_audience_idx').on(t.userId, t.audience),
     check('scholarship_redemptions_audience_check', sql`${t.audience} in ('kids','adult')`),
   ],
 )

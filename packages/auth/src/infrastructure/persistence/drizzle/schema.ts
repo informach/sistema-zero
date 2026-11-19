@@ -233,6 +233,8 @@ export const profiles = auth.table(
     /** Responsável dono do perfil (`auth.users.id`). */
     accountUserId: uuid('account_user_id').notNull(),
     name: text('name').notNull(),
+    publicNickname: text('public_nickname'),
+    identityConfirmedAt: timestamp('identity_confirmed_at', { withTimezone: true }),
     // URL pública da foto (só http(s); upload é do app cliente → R2; fora das claims).
     avatarUrl: text('avatar_url'),
     // WhatsApp de contato do perfil (opcional; sem envio automático na v1).

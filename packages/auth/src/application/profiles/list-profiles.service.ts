@@ -12,6 +12,6 @@ export class ListProfilesService {
     const list = options.includePending
       ? await this.profiles.listForParent(accountUserId)
       : await this.profiles.listActiveByAccount(accountUserId)
-    return { profiles: list.map(toProfileView) }
+    return { profiles: list.map((profile) => toProfileView(profile, options.includePending)) }
   }
 }

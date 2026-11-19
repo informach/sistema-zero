@@ -11,7 +11,9 @@ import {
   processedWebhooks,
 } from './schema'
 
-export type Lead = typeof leads.$inferSelect
+export type Lead = Omit<typeof leads.$inferSelect, 'memberContext'> & {
+  memberContext?: typeof leads.$inferSelect.memberContext
+}
 /** Campos do lead atualizáveis via updateLead (contato/funil/perfil; respostas em quiz_answers). */
 export type LeadUpdate = Partial<typeof leads.$inferInsert>
 /** O funil cuja assinatura continua a jornada do Desafio (`recordCommunitySubscription`). */
@@ -240,7 +242,11 @@ function quizScopeWhere(scope?: QuizScope): SQL[] {
   return where
 }
 
-export function createFunnelRepo(db: Database): FunnelRepo {
+export type FunnelDatabase = Pick<
+  Database,
+  'select' | 'insert' | 'update' | 'delete' | 'execute' | 'transaction'
+>
+export function createFunnelRepo(db: FunnelDatabase): FunnelRepo {
   return {
     async createLead(funnel = null, attribution = null, quizDefinitionId = null) {
       const [row] = await db

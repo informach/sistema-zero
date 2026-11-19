@@ -1,5 +1,6 @@
 'use client'
 
+import { PendingPurchases } from '@sistemazero/member-shell/components/commerce/pending-purchases'
 import { useState } from 'react'
 import { ParentPasswordChange } from '@/components/kids/profile-management'
 import { AiTransparencyNotice, FamilyAiCredits } from '../_components/ai-credits-card'
@@ -28,6 +29,7 @@ export function AccountClient({ parentName }: { parentName?: string }) {
         {/* "Minhas compras" é o nome que os Termos de Uso e as páginas de venda dão ao lugar do
             cancelamento: o título precisa continuar existindo nesta página. */}
         <ParentSection title="Minhas compras" id="parents-my-purchases" className="min-w-0">
+          <PendingPurchases />
           <ParentSubscriptions />
           <PurchaseHistory />
         </ParentSection>

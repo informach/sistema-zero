@@ -91,12 +91,13 @@ export class SelectProfileService {
         profileId: profile.id,
         claim: {
           accountId: account.id,
-          name: profile.name,
+          name: profile.displayName,
+          nickname: profile.publicNickname ?? undefined,
           pub: profile.publicProfileEnabled,
         },
       },
       impersonation,
     })
-    return { profile: toProfileView(profile), tokens }
+    return { profile: toProfileView(profile, false), tokens }
   }
 }

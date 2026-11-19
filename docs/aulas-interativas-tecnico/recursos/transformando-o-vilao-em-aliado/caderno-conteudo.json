@@ -41,7 +41,7 @@
           },
           {
             "title": "Aula 7. Um presente para vocês experimentarem",
-            "text": "O ambiente onde a criança cria. Página {{pagina:a7}}.",
+            "text": "O ambiente, os controles do responsável e as ferramentas. Páginas {{pagina:a7}} a {{pagina:a7-ferramentas}}.",
             "pageId": "a7"
           }
         ]
@@ -549,22 +549,30 @@
     "id": "a7",
     "kicker": "Aula 7 · O ambiente",
     "title": "Um lugar seguro para criar",
-    "subtitle": "O responsável tem o controle do que a criança faz na plataforma.",
+    "subtitle": "Nome completo privado, apelido público e escolhas do responsável.",
     "items": [
       {
         "kind": "pairs",
         "pairs": [
           [
             "A sua conta",
-            "A conta de responsável você já tem. Dentro dela, na área dos pais, você cria o perfil do seu filho."
+            "A conta de responsável você já tem. Em Família, você cria o perfil do seu filho ou usa o perfil que ele já tem."
+          ],
+          [
+            "Nome completo e apelido público",
+            "O nome completo fica no cadastro privado da família e serve para o certificado da criança. Na plataforma e nas criações compartilhadas aparece o apelido público escolhido pelo responsável."
           ],
           [
             "Perfil privado",
-            "O perfil da criança é privado por padrão. Só fica visível dentro da plataforma, e só se você autorizar."
+            "A página com apelido, avatar e conquistas é privada por padrão. Só fica visível dentro da plataforma se você autorizar."
+          ],
+          [
+            "Criações no Mural",
+            "A criança pode publicar suas criações e compartilhar o link de jogar, inclusive fora da plataforma. A identificação é pelo apelido. A opção de perfil público não pede aprovação de cada publicação."
           ],
           [
             "Falar em vez de escrever",
-            "A criança só pode falar em vez de escrever se você autorizar. A fala vira texto, e a gravação não fica guardada."
+            "A criança só pode falar em vez de escrever se você autorizar. A fala vira texto, e a plataforma não guarda a gravação."
           ],
           [
             "Aparelho e tempo",
@@ -572,6 +580,19 @@
           ]
         ]
       },
+      {
+        "kind": "note",
+        "text": "Se o cadastro antigo tem um apelido no campo do nome, confirme o nome completo e o apelido em Família antes dos próximos certificados. Combine com a criança para deixar informações pessoais fora de títulos, textos e criações."
+      }
+    ],
+    "theme": "ambar"
+  },
+  {
+    "id": "a7-ferramentas",
+    "kicker": "Aula 7 · Criação e ajuda",
+    "title": "As ferramentas e o atendimento",
+    "subtitle": "O plano e a etapa da criança definem o que fica liberado.",
+    "items": [
       {
         "kind": "pairs",
         "pairs": [

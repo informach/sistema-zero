@@ -105,6 +105,7 @@ export class AuthTokenService {
             profileId: profile.profileId,
             accountId: profile.claim.accountId,
             name: profile.claim.name,
+            nickname: profile.claim.nickname,
             pub: profile.claim.pub,
           }
         : undefined,

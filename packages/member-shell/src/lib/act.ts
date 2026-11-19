@@ -47,6 +47,6 @@ export function parseProfileClaim(value: unknown): ProfileClaim | undefined {
   const accountId = typeof c.accountId === 'string' && c.accountId.length > 0 ? c.accountId : null
   if (!accountId) return undefined
   const pfl: ProfileClaim = { accountId }
-  if (typeof c.name === 'string' && c.name.length > 0) pfl.name = c.name
+  pfl.name = typeof c.nickname === 'string' && c.nickname.trim() ? c.nickname.trim() : 'Criador(a)'
   return pfl
 }

@@ -77,9 +77,11 @@ export function CertificateBlockView({
           return
         }
         setError(
-          code === 'CERTIFICATE_NOT_ELIGIBLE'
-            ? copy.notEligible
-            : 'Não foi possível gerar o certificado agora. Tente novamente.',
+          code === 'PROFILE_IDENTITY_REQUIRED'
+            ? 'Antes de emitir, peça ao responsável para abrir Família, editar seu perfil e confirmar seu nome completo e apelido público. O certificado usa seu nome completo.'
+            : code === 'CERTIFICATE_NOT_ELIGIBLE'
+              ? copy.notEligible
+              : 'Não foi possível gerar o certificado agora. Tente novamente.',
         )
         return
       }

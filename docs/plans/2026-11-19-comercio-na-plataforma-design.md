@@ -31,6 +31,8 @@ Consultar oferta e cadastro, completar dados, escolher pagamento suportado, acom
 
 Apresentação no Início é opcional e configurável no catálogo, com título, texto, imagem e botão. Consultar assinatura/acesso reais antes de sugerir compra. Assinatura correspondente ativa ou período pago ainda válido encaminha ao gerenciamento. Compra pendente deve ser retomada. Falha de consulta não significa ausência de assinatura. Direitos preexistentes não são reduzidos.
 
+Também há apresentação manual para componentes em outras páginas. Sem apresentação de compra no Início, a primeira entrada usa a oferta principal de comunidade do próprio ambiente, respeitando a desativação explícita. O editor pode criar uma campanha associada à origem do curso. Presentes de cursos diferentes têm escopos separados; o Cadê conserva a vaga histórica e nenhuma repetição renova prazo. A tentativa de pagamento salva o pedido canônico antes do efeito externo e o reutiliza integralmente em retomadas.
+
 ## Aparência e acessibilidade
 
 Usar Button, Input, Dialog, tokens e classes já existentes; cards arredondados, tipografia e cores da Área dos pais; tema adulto herdado no app adulto. Preservar foco/teclado, rótulos, mensagens de processamento e experiência móvel. Não incorporar landing page nem criar identidade visual nova.

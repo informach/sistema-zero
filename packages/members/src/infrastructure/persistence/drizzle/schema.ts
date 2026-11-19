@@ -180,6 +180,8 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   // Materiais complementares (migration `0090`) — a lista de arquivos/imagens/links que a autora
   // põe no ponto que quiser da seção. Substituiu o lugar `support_block_ids`, que saiu.
   'materials',
+  'gift',
+  'purchase',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',

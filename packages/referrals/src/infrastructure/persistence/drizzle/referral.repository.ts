@@ -884,6 +884,22 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .orderBy(scholarshipRedemptions.createdAt)
     return rows.map(toRedemption)
   }
+  async listRedemptionsByAccount(
+    userId: string,
+    audience: GiftAudience,
+  ): Promise<RedemptionRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(scholarshipRedemptions)
+      .where(
+        and(
+          eq(scholarshipRedemptions.userId, userId),
+          eq(scholarshipRedemptions.audience, audience),
+        ),
+      )
+      .orderBy(scholarshipRedemptions.createdAt)
+    return rows.map(toRedemption)
+  }
 
   async listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]> {
     const rows = await this.db

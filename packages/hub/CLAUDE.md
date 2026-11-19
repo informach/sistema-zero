@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/hub
 
+## Identidade pública Kids (full review da Aula 7, 19/11/2026)
+
+Toda leitura Kids de autor consulta a identidade pública atual em lote, inclusive quando
+`authorId === authorAccountId` (perfil-padrão legado). UUID igual não identifica equipe.
+O Members resolve perfis primeiro e somente nomes de equipe ativa pelo diretório interno do
+Auth para os demais IDs. Sem identidade ou durante falha, mostrar `Criador(a)` e não ligar
+perfil público; nunca voltar ao nome privado do snapshot. Adultos seguem a projeção existente.
+Regressões: `tests/unit/public-author-identities.test.ts` e integração de showcase.
+
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,

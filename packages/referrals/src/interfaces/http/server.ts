@@ -19,6 +19,7 @@ import { adminRoutes } from './admin.routes'
 import { campaignsRoutes } from './campaigns.routes'
 import { internalRoutes } from './internal.routes'
 import { meRoutes } from './me.routes'
+import { memberGiftRoutes } from './member-gifts.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './webhooks.routes'
 
 export interface HttpDeps {
@@ -136,6 +137,14 @@ export function createServer(deps: HttpDeps) {
           repo: deps.repo,
           bonusAmountCents: deps.bonusAmountCents,
           bonusAnnualAmountCents: deps.bonusAnnualAmountCents,
+          internalToken: deps.internalToken,
+        }),
+      )
+      .use(
+        memberGiftRoutes({
+          repo: deps.repo,
+          redeem: deps.redeem,
+          campaigns: deps.campaigns,
           internalToken: deps.internalToken,
         }),
       )

@@ -23,6 +23,28 @@ import { buildContent, EMPTY_BLOCK } from '../src/lib/lesson-block-form'
 import { prepareStudioAuthoringOptions } from '../src/lib/studio-authoring-options'
 import type { LessonBlockContent } from '../src/lib/types'
 
+test('presente e compra não são requisitos de conclusão da aula', () => {
+  const blocks = [
+    { id: crypto.randomUUID(), content: { kind: 'gift' as const, campaignCode: 'presente-curso' } },
+    { id: crypto.randomUUID(), content: { kind: 'purchase' as const, offerRef: 'curso-oferta' } },
+  ]
+  const section = defaultLessonSection(
+    crypto.randomUUID(),
+    'Convites opcionais',
+    blocks.map((b) => b.id),
+  )
+  const document: LessonDraftDocument<LessonBlockContent> = {
+    title: 'Aula',
+    slug: 'aula',
+    estimatedMinutes: null,
+    attachments: [],
+    plannedVideos: [],
+    blocks,
+    sections: [section],
+  }
+  expect(sectionCompletionCandidates(document, section)).toEqual([])
+})
+
 test('exemplos por parte preservam nomes no limite sem alterar o inicial ou partir emoji', async () => {
   for (const language of ['javascript', 'python'] as const) {
     for (const kind of ['classic', 'pro'] as const) {

@@ -1,0 +1,3 @@
+ALTER TABLE "referrals"."scholarship_redemptions" DROP CONSTRAINT "scholarship_redemptions_gift_slot_check";--> statement-breakpoint
+CREATE INDEX "scholarship_redemptions_user_audience_idx" ON "referrals"."scholarship_redemptions" USING btree ("user_id","audience");--> statement-breakpoint
+ALTER TABLE "referrals"."scholarship_redemptions" ADD CONSTRAINT "scholarship_redemptions_gift_slot_check" CHECK ("referrals"."scholarship_redemptions"."gift_slot" = 'main' or "referrals"."scholarship_redemptions"."gift_slot" like 'parents:%' or "referrals"."scholarship_redemptions"."gift_slot" like 'course:%' or "referrals"."scholarship_redemptions"."gift_slot" like 'offer:%');
