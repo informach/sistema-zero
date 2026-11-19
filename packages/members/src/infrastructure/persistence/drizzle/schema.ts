@@ -48,6 +48,10 @@ import type {
   StudioProRevision,
 } from '@sistemazero/core/studio'
 import type {
+  MimeDaPublicacao,
+  PerfilDePublicacao,
+} from '@sistemazero/molda-cenarios-core/publicacao'
+import type {
   ComandoDeCenario,
   DocumentoDeCenario,
   FragmentoBasico,
@@ -71,6 +75,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -3258,9 +3263,23 @@ export const cenarioBlobs = members.table(
       .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
     /** SHA-256 do conteúdo: com o espaço, é o endereço do arquivo no bucket. */
     digest: varchar('digest', { length: 64 }).notNull(),
-    tipo: text('tipo').$type<'modelo' | 'miniatura' | 'capa' | 'textura' | 'terreno'>().notNull(),
+    tipo: text('tipo')
+      .$type<
+        | 'modelo'
+        | 'miniatura'
+        | 'capa'
+        | 'textura'
+        | 'terreno'
+        | 'manifesto-compilado'
+        | 'recurso-compilado'
+      >()
+      .notNull(),
     tipoDoConteudo: varchar('tipo_do_conteudo', { length: 80 }).$type<
-      'model/gltf-binary' | 'image/webp' | 'image/png' | 'application/octet-stream'
+      | 'model/gltf-binary'
+      | 'image/webp'
+      | 'image/png'
+      | 'application/octet-stream'
+      | 'application/vnd.sistemazero.cena-compilada+json'
     >(),
     terreno: jsonb('terreno').$type<MetadadosDeTerreno>(),
     bytes: integer('bytes').notNull(),
@@ -3274,11 +3293,11 @@ export const cenarioBlobs = members.table(
     primaryKey({ columns: [t.espacoId, t.digest] }),
     check(
       'cenario_blobs_tipo_check',
-      sql`${t.tipo} in ('modelo', 'miniatura', 'capa', 'textura', 'terreno')`,
+      sql`${t.tipo} in ('modelo', 'miniatura', 'capa', 'textura', 'terreno', 'manifesto-compilado', 'recurso-compilado')`,
     ),
     check(
       'cenario_blobs_conteudo_check',
-      sql`${t.tipoDoConteudo} is null or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa', 'textura') and ${t.tipoDoConteudo} in ('image/webp', 'image/png')) or (${t.tipo} = 'terreno' and ${t.tipoDoConteudo} = 'application/octet-stream')`,
+      sql`(${t.tipoDoConteudo} is null and ${t.tipo} not in ('manifesto-compilado', 'recurso-compilado')) or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa', 'textura') and ${t.tipoDoConteudo} in ('image/webp', 'image/png')) or (${t.tipo} = 'terreno' and ${t.tipoDoConteudo} = 'application/octet-stream') or (${t.tipo} = 'manifesto-compilado' and ${t.tipoDoConteudo} = 'application/vnd.sistemazero.cena-compilada+json') or (${t.tipo} = 'recurso-compilado' and ${t.tipoDoConteudo} in ('model/gltf-binary', 'image/webp', 'image/png', 'application/octet-stream'))`,
     ),
     check(
       'cenario_blobs_terreno_check',
@@ -3300,6 +3319,14 @@ export const cenarioBlobs = members.table(
     ),
     check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
     check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),
+    check(
+      'cenario_blobs_compilado_mime_check',
+      sql`${t.tipo} not in ('manifesto-compilado', 'recurso-compilado') or ${t.tipoDoConteudo} is not null`,
+    ),
+    check(
+      'cenario_blobs_compilado_bytes_check',
+      sql`(${t.tipo} <> 'manifesto-compilado' or ${t.bytes} <= 16777216) and (${t.tipo} <> 'recurso-compilado' or ${t.bytes} <= 268435456)`,
+    ),
   ],
 )
 
@@ -3605,7 +3632,106 @@ export const cenarioRetratos = members.table(
   ],
 )
 
+/** Versões de execução imutáveis. A fonte é proveniência, sem FK que apague a publicação. */
+export const cenarioPublicacoes = members.table(
+  'cenario_publicacoes',
+  {
+    id: uuid('id').primaryKey(),
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'restrict' }),
+    perfil: text('perfil').$type<PerfilDePublicacao['tipo']>().notNull(),
+    ilha: text('ilha').$type<PerfilDePublicacao['ilha']>().notNull(),
+    versao: integer('versao').notNull(),
+    fonteCenarioId: uuid('fonte_cenario_id').notNull(),
+    fonteRevisao: integer('fonte_revisao').notNull(),
+    fonteDigest: varchar('fonte_digest', { length: 64 }).notNull(),
+    manifestoDigest: varchar('manifesto_digest', { length: 64 }).notNull(),
+    manifestoBytes: integer('manifesto_bytes').notNull(),
+    operacaoId: uuid('operacao_id').notNull(),
+    digestDaOperacao: varchar('digest_da_operacao', { length: 64 }).notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('cenario_publicacoes_operacao_uq').on(t.operacaoId),
+    uniqueIndex('cenario_publicacoes_versao_uq').on(t.perfil, t.ilha, t.versao),
+    unique('cenario_publicacoes_espaco_uq').on(t.id, t.espacoId),
+    unique('cenario_publicacoes_destino_uq').on(t.id, t.perfil, t.ilha),
+    foreignKey({
+      name: 'cenario_publicacoes_manifesto_fk',
+      columns: [t.espacoId, t.manifestoDigest],
+      foreignColumns: [cenarioBlobs.espacoId, cenarioBlobs.digest],
+    }).onDelete('restrict'),
+    check(
+      'cenario_publicacoes_perfil_check',
+      sql`${t.perfil} = 'arquipelago-v2' and ${t.ilha} in ('sua-ilha', 'bosque', 'vila-doce', 'recife', 'pico', 'vale-dos-dinos', 'nuvens')`,
+    ),
+    check('cenario_publicacoes_versao_check', sql`${t.versao} > 0 and ${t.fonteRevisao} >= 0`),
+    check(
+      'cenario_publicacoes_digest_check',
+      sql`${t.fonteDigest} ~ '^[a-f0-9]{64}$' and ${t.manifestoDigest} ~ '^[a-f0-9]{64}$' and ${t.digestDaOperacao} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check(
+      'cenario_publicacoes_manifesto_bytes_check',
+      sql`${t.manifestoBytes} between 1 and 16777216`,
+    ),
+  ],
+)
+
+/** Referências de todas as versões, não apenas a corrente. Participam da cota e da limpeza. */
+export const cenarioPublicacaoArquivos = members.table(
+  'cenario_publicacao_arquivos',
+  {
+    publicacaoId: uuid('publicacao_id').notNull(),
+    espacoId: uuid('espaco_id').notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    bytes: integer('bytes').notNull(),
+    mime: varchar('mime', { length: 80 }).$type<MimeDaPublicacao>().notNull(),
+    papel: text('papel').$type<'manifesto' | 'recurso'>().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.publicacaoId, t.digest] }),
+    foreignKey({
+      name: 'cenario_publicacao_arquivos_versao_fk',
+      columns: [t.publicacaoId, t.espacoId],
+      foreignColumns: [cenarioPublicacoes.id, cenarioPublicacoes.espacoId],
+    }).onDelete('cascade'),
+    foreignKey({
+      name: 'cenario_publicacao_arquivos_blob_fk',
+      columns: [t.espacoId, t.digest],
+      foreignColumns: [cenarioBlobs.espacoId, cenarioBlobs.digest],
+    }).onDelete('restrict'),
+    index('cenario_publicacao_arquivos_blob_idx').on(t.espacoId, t.digest),
+    check('cenario_publicacao_arquivos_bytes_check', sql`${t.bytes} between 1 and 268435456`),
+    check(
+      'cenario_publicacao_arquivos_tipo_check',
+      sql`(${t.papel} = 'manifesto' and ${t.mime} = 'application/vnd.sistemazero.cena-compilada+json') or (${t.papel} = 'recurso' and ${t.mime} in ('model/gltf-binary', 'image/png', 'image/webp', 'application/octet-stream'))`,
+    ),
+  ],
+)
+
+export const cenarioPerfisPublicados = members.table(
+  'cenario_perfis_publicados',
+  {
+    perfil: text('perfil').$type<PerfilDePublicacao['tipo']>().notNull(),
+    ilha: text('ilha').$type<PerfilDePublicacao['ilha']>().notNull(),
+    publicacaoId: uuid('publicacao_id').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.perfil, t.ilha] }),
+    foreignKey({
+      name: 'cenario_perfis_publicados_destino_fk',
+      columns: [t.publicacaoId, t.perfil, t.ilha],
+      foreignColumns: [cenarioPublicacoes.id, cenarioPublicacoes.perfil, cenarioPublicacoes.ilha],
+    }).onDelete('restrict'),
+  ],
+)
+
 export const schema = {
+  cenarioPublicacoes,
+  cenarioPublicacaoArquivos,
+  cenarioPerfisPublicados,
   creatorJourneyCourseGrants,
   kidsJourneyPolicy,
   kidsJourneyPreparations,

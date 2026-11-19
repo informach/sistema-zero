@@ -199,6 +199,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     )
     for (const comando of soloDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
+    const publicacoesDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0164_cenarios_publicacoes.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of publicacoesDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
   afterAll(async () => {
