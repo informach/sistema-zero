@@ -1,0 +1,862 @@
+bun test v1.3.11 (af24e281)
+
+docs\aulas-interativas-tecnico\qa\avatares-video.test.ts:
+(pass) a professora grava a pergunta e a explicação em sequência; a edição substitui só a pergunta [16.00ms]
+(pass) a dificuldade citada conserva a condição para quem está acompanhando
+(pass) âncora ausente, repetida ou fora de ordem impede uma substituição incorreta
+(pass) as 40 aulas têm master copiável, tabela rastreável e derivados atualizados [5313.00ms]
+
+docs\aulas-interativas-tecnico\qa\cabana.test.ts:
+(pass) O segredo da cabana > 2d: todas as etapas e o roundtrip usam somente blocos do iniciante [282.00ms]
+(pass) O segredo da cabana > 2d: a pergunta da cabana usa o bloco "e" do iniciante
+(pass) O segredo da cabana > 2d: os objetivos de cada etapa são válidos e cabem no prazo da parte [31.00ms]
+(pass) O segredo da cabana > 2d: a entrada não traz a variável, a coleta nem a pergunta resolvidas [16.00ms]
+(pass) O segredo da cabana > 3d: todas as etapas e o roundtrip usam somente blocos do iniciante [62.00ms]
+(pass) O segredo da cabana > 3d: a pergunta da cabana usa o bloco "e" do iniciante [16.00ms]
+(pass) O segredo da cabana > 3d: os objetivos de cada etapa são válidos e cabem no prazo da parte [15.00ms]
+(pass) O segredo da cabana > 3d: a entrada não traz a variável, a coleta nem a pergunta resolvidas
+(pass) O segredo da cabana > o farol continua pedindo só a chave [16.00ms]
+(pass) quiz da Cabana > as duas revisões são válidas, com previsões de uma só resposta certa [16.00ms]
+(pass) quiz da Cabana > as cenas 2D do quiz saem do motor da experiência [125.00ms]
+(pass) manifestos da Cabana > 2d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega [31.00ms]
+(pass) manifestos da Cabana > 3d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega
+
+docs\aulas-interativas-tecnico\qa\cade-todo-mundo-manifestos.test.ts:
+(pass) curso gratuito Cadê Todo Mundo? > o manifesto aceita leitura do caderno somente como booleano [15.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > Aula 1 apresenta o caderno antes da experiência e conclui a cena sem pergunta final
+(pass) curso gratuito Cadê Todo Mundo? > Aula 2 remete ao caderno da Aula 1 sem duplicar o bloco [16.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > só a Aula 2 permite compartilhar após o envio, sem exigir publicação para concluir [15.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > a prática e a entrega respeitam as regras de seção; a cena declara o jardim [16.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > as partes com vídeo têm ponte; a revisão tem somente Zappy e quiz
+(pass) curso gratuito Cadê Todo Mundo? > o certificado fala de aventura e de criador
+(pass) curso gratuito Cadê Todo Mundo? > a cena exige vídeo e descoberta; a prática exige vídeo e projeto [16.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > objetivos observáveis são válidos para blocos e exigem execução real [47.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > aula-1 não aprova a reação programada no evento de outro grupo
+(pass) curso gratuito Cadê Todo Mundo? > aula-2 não aprova a reação programada no evento de outro grupo [15.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > inventário de blocos corresponde ao jogo completo
+(pass) curso gratuito Cadê Todo Mundo? > o Estúdio das duas aulas mostra somente os blocos do curso [16.00ms]
+(pass) curso gratuito Cadê Todo Mundo? > o projeto inicial das duas aulas usa somente blocos de programação e Jogo 2D [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\cade-todo-mundo-projeto.test.ts:
+(pass) projeto inicial Cadê Todo Mundo? > os seis SVGs embutidos correspondem aos quadros da folha do Pinta [78.00ms]
+(pass) projeto inicial Cadê Todo Mundo? > leva arte própria embutida, sem Pinta ou rede [16.00ms]
+(pass) projeto inicial Cadê Todo Mundo? > personagens e esconderijos usam as dimensões e posições da arte nova
+(pass) projeto inicial Cadê Todo Mundo? > prepara o jardim e deixa a regra do toque vazia para a criança
+(pass) projeto inicial Cadê Todo Mundo? > a segunda aula retoma o primeiro achado se não houver projeto salvo
+(pass) projeto inicial Cadê Todo Mundo? > a abertura usa uma cópia jogável completa sem alterar o projeto inicial
+(pass) projeto inicial Cadê Todo Mundo? > um esconderijo tocado conta uma só vez e a vitória aparece no terceiro [31.00ms]
+
+docs\aulas-interativas-tecnico\qa\convite-da-experiencia.test.ts:
+(pass) o vídeo da experiência explica o conceito e convida a investigar > a varredura encontrou os vídeos de experiência dos cursos
+(pass) o vídeo da experiência explica o conceito e convida a investigar > cade-todo-mundo-aula-1/toque-e-resposta: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > cade-todo-mundo-aula-2/variavel-achados: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-1/quadro: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-1/limite: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-2/contexto: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-3/condicao: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-3/posicao: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-1/ponto-de-vista: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-2/posicao-3d: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-2/contato-3d: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-3/pergunta-com-nao: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ponte-aula-1/experiencia: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > moedas-aula-1/experiencia: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > simbolos-aula-1/experiencia: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > cabana-aula-1/experiencia: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-chuva-de-asteroides/intervalo-das-pedras: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-chuva-de-asteroides/posicao-sorteada: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-comecar-partida/estado-do-jogo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/seta-e-velocidade: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/tamanho-do-passinho: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/limite-da-tela: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/ordem-dos-desenhos: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/tecla-e-repeticao: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/escrito-e-lido: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/direcao-do-tiro: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/tiro-que-sai-da-tela: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-3/trombada: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-4/vidas-no-comeco: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-4/respiro: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-5/meta-do-jogo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-5/reiniciar: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-pontos/caixa-de-pontos: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/uma-vez-e-sempre: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/coordenadas: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/criar-e-mostrar: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/desenho-por-quadro: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-01/aparencia-e-regras: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-01/copias: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-02/bordas: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-02/espelho: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-02/luz: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-03/quadros: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-03/fantasma: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-04/preenchimento-contorno: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-05/camadas: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-05/mudanca-pequena: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-06/nomes: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-06/recorte: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-07/dois-relogios: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-08/copia-publicada: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/uma-vez-e-sempre: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/limite-da-tela: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/coordenadas: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/criar-e-mostrar: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-02/quadros: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-02/camadas: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-02/descricao: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-03/gravidade-modelo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-03/impulso-modelo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-04/area-que-espera: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-04/dedo-e-pulo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-05/espaco-e-tempo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-05/numero-negativo: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-06/visivel-guardado: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-07/condicao: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-08/convite: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-09/contato: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-09/trocar-nao-limpa: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-10/caixa-decide: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-11/guardar-mudar-mostrar: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-11/quando-o-placar-cresce: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-12/sorteio-tira-na-hora: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-12/regua-negativos: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-13/o-que-o-freio-segura: sem tour pelos controles nem roteiro de testes
+(pass) o vídeo da experiência explica o conceito e convida a investigar > cade-todo-mundo-aula-1/toque-e-resposta: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > cade-todo-mundo-aula-2/variavel-achados: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-1/quadro: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-1/limite: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-2/contexto: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-3/condicao: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > desafio-dia-3/posicao: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-1/ponto-de-vista: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-2/posicao-3d: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-2/contato-3d: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ilha-aula-3/pergunta-com-nao: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > ponte-aula-1/experiencia: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > moedas-aula-1/experiencia: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > simbolos-aula-1/experiencia: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > cabana-aula-1/experiencia: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-chuva-de-asteroides/intervalo-das-pedras: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-chuva-de-asteroides/posicao-sorteada: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-comecar-partida/estado-do-jogo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/seta-e-velocidade: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/tamanho-do-passinho: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/limite-da-tela: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-1/ordem-dos-desenhos: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/tecla-e-repeticao: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/escrito-e-lido: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/direcao-do-tiro: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-2/tiro-que-sai-da-tela: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-3/trombada: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-4/vidas-no-comeco: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-4/respiro: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-5/meta-do-jogo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-dia-5/reiniciar: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-pontos/caixa-de-pontos: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/uma-vez-e-sempre: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/coordenadas: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/criar-e-mostrar: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > nave-contra-asteroides-primeira-nave/desenho-por-quadro: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-01/aparencia-e-regras: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-01/copias: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-02/bordas: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-02/espelho: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-02/luz: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-03/quadros: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-03/fantasma: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-04/preenchimento-contorno: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-05/camadas: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-05/mudanca-pequena: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-06/nomes: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-06/recorte: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-07/dois-relogios: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > meu-jeito-aula-08/copia-publicada: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/uma-vez-e-sempre: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/limite-da-tela: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/coordenadas: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-01/criar-e-mostrar: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-02/quadros: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-02/camadas: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-02/descricao: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-03/gravidade-modelo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-03/impulso-modelo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-04/area-que-espera: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-04/dedo-e-pulo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-05/espaco-e-tempo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-05/numero-negativo: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-06/visivel-guardado: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-07/condicao: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-08/convite: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-09/contato: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-09/trocar-nao-limpa: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-10/caixa-decide: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-11/guardar-mudar-mostrar: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-11/quando-o-placar-cresce: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-12/sorteio-tira-na-hora: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-12/regua-negativos: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) o vídeo da experiência explica o conceito e convida a investigar > corre-dino-aula-13/o-que-o-freio-segura: a instrução da página diz o que comparar, sem sequência de cliques
+(pass) a retomada lembra o conceito, não um controle da experiência > a varredura encontrou as retomadas dos cursos
+(pass) a retomada lembra o conceito, não um controle da experiência > cade-todo-mundo-aula-1/video-a1-programar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > cade-todo-mundo-aula-2/video-a2-contagem: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-1/video-d1-andar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-1/video-d1-borda: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-2/video-d2-recolher: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-2/video-d2-guardar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-2/video-d2-programar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-3/video-d3-sem-chave: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-3/video-d3-decisao: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > desafio-dia-3/video-d3-posicionar-chave: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > ilha-aula-2/video-posicao: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > ilha-aula-2/video-recolher: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > ponte-aula-1/video-alavanca: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > ponte-aula-1/video-sobe: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > ponte-aula-1/video-atravessar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > moedas-aula-1/video-contador: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > moedas-aula-1/video-coleta: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > moedas-aula-1/video-placar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > moedas-aula-1/video-bau: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > simbolos-aula-1/video-sol: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > simbolos-aula-1/video-lua: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > simbolos-aula-1/video-estrela: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > cabana-aula-1/video-emblema: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > cabana-aula-1/video-porta: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-chuva-de-asteroides/video-grupo-e-relogio: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-chuva-de-asteroides/video-asteroide: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-comecar-partida/video-embrulhar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-comecar-partida/video-relogio-e-tiro: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-comecar-partida/video-enter: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-1/video-setas-e-rastro: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-1/video-limpeza: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-1/video-limite-da-nave: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-1/video-fundo-estrelado: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-2/video-criar-tiro: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-2/video-faxina: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-3/video-colisao: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-4/video-vidas: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-4/video-batida-e-coracoes: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-4/video-dano: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-5/video-finais: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-dia-5/video-enter: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-pontos/video-pontos-e-placar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > nave-contra-asteroides-primeira-nave/video-montar-areas-tela: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-01/video-exportar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-01/video-importar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-02/video-nova-nave: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-02/video-contorno: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-02/video-volume: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-03/video-primeiro-fogo: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-03/video-segundo-fogo: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-04/video-novo-asteroide: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-05/video-chama: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-05/video-quadro-pedra: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-06/video-trazer-artes: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-06/video-trocar-nave: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-06/video-folha-nave: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-07/video-folha-pedra: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > meu-jeito-aula-08/video-teste-completo: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-01/video-area-e-tela: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-01/video-borda: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-02/video-motor-e-dino: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-02/video-limpeza: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-02/video-ordem-certa: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-02/video-descrever-jogo: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-03/video-aplicar-gravidade: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-03/video-comando-de-pulo: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-04/video-som-no-pulo: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-05/video-grupo-e-relogio: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-05/video-criar-cactos: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-05/video-mover-e-desenhar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-06/video-faxina: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-07/video-estado-inicio: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-07/video-embrulhar: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-07/video-relogio: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-08/video-menu: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-08/video-entrada-ampla: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-09/video-batida-acaba-partida: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-09/video-caminho-de-volta: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-10/video-ligar-raio-x: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-10/video-ajustar-area: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-11/video-caixinha-dos-pontos: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-11/video-numero-na-tela: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-11/video-relogio-dos-pontos: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-12/video-lugar-diferente: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-12/video-velocidade-propria: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-13/video-numero-que-manda: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-13/video-relogio-da-dificuldade: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > corre-dino-aula-13/video-acelerador-e-freio: sem botão nem interruptor ligado/desligado
+(pass) a retomada lembra o conceito, não um controle da experiência > a regra reprova o interruptor e aceita o conceito ligado a alguma coisa
+
+docs\aulas-interativas-tecnico\qa\corre-dino-flexibilidade.test.ts:
+(pass) aula-01: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-02: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-03: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-04: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-05: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-06: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-07: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-08: aceita escolhas coerentes sem copiar números ou frases da demonstração [16.00ms]
+(pass) aula-09: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-10: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-11: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-12: aceita escolhas coerentes sem copiar números ou frases da demonstração
+(pass) aula-13: aceita escolhas coerentes sem copiar números ou frases da demonstração [15.00ms]
+(pass) etapa 1/area-e-tela: recusa W=0
+(pass) etapa 2/ordem-certa: recusa SPEED=0
+(pass) etapa 5/criar-cactos: recusa VX=1
+(pass) etapa 5/grupo-e-relogio: recusa SECS=0
+(pass) etapa 10/ajustar-area: recusa PERCENT=69
+(pass) etapa 10/ajustar-area: recusa PERCENT=86
+(pass) relogio-pontos: recusa intervalo 0.4 fora da faixa ensinada
+(pass) relogio-pontos: recusa intervalo 3.1 fora da faixa ensinada
+(pass) acelerar-com-limite: recusa intervalo 1 fora da faixa ensinada
+(pass) acelerar-com-limite: recusa intervalo 11 fora da faixa ensinada
+(pass) o freio recusa o limite -15 fora da faixa ensinada
+(pass) o freio recusa o limite -6 fora da faixa ensinada
+(pass) criar-dino/dino: conserva o mundo do curso e recusa X=1000000
+(pass) criar-dino/dino: conserva o mundo do curso e recusa Y=-1000000
+(pass) criar-dino/dino: conserva o mundo do curso e recusa X=480
+(pass) criar-dino/dino: conserva o mundo do curso e recusa Y=270
+(pass) numero-na-tela/mostrar-pontos: conserva o mundo do curso e recusa X=1000000
+(pass) numero-na-tela/mostrar-pontos: conserva o mundo do curso e recusa Y=-1000000
+(pass) area-e-tela/tela: conserva o mundo do curso e recusa W=500
+(pass) faxina: recusa o medidor provisório mesmo com posição expressao
+(pass) faxina: recusa o medidor provisório mesmo com posição borda
+(pass) entrega: recusa o medidor provisório mesmo com posição expressao [16.00ms]
+(pass) entrega: recusa o medidor provisório mesmo com posição borda
+(pass) descricao-completa: descrição incompleta: Corra com o dino e pule os cactos apertando espaço
+(pass) descricao-completa: descrição incompleta: Pule os cactos com espaço e seta para cima.
+(pass) descricao-completa: descrição incompleta: Pule os cactos com espaço, seta para baixo ou toque na tela.
+(pass) descricao-completa: descrição incompleta: Pule cactos: espacoso, seta para cima e toque.
+(pass) descricao-completa: descrição completa: Desvie dos obstáculos: pule com Espaço, seta para cima ou toque.
+(pass) descricao-completa: descrição completa: PARA SALTAR OBSTÁCULOS: use SPACE, ARROWUP ou TOCAR a tela.
+(pass) descricao-completa: descrição completa: Evite os cactos: use barra de espaço, seta superior ou toque para saltar.
+(pass) entrega: descrição incompleta: Corra com o dino e pule os cactos apertando espaço
+(pass) entrega: descrição incompleta: Pule os cactos com espaço e seta para cima.
+(pass) entrega: descrição incompleta: Pule os cactos com espaço, seta para baixo ou toque na tela.
+(pass) entrega: descrição incompleta: Pule cactos: espacoso, seta para cima e toque.
+(pass) entrega: descrição completa: Desvie dos obstáculos: pule com Espaço, seta para cima ou toque.
+(pass) entrega: descrição completa: PARA SALTAR OBSTÁCULOS: use SPACE, ARROWUP ou TOCAR a tela.
+(pass) entrega: descrição completa: Evite os cactos: use barra de espaço, seta superior ou toque para saltar.
+
+docs\aulas-interativas-tecnico\qa\corre-dino.test.ts:
+(pass) os 13 marcos continuam iguais ao jogo original independente dos critérios [828.00ms]
+(pass) aula-01: continuidade, paleta, geração estável e critérios praticáveis [63.00ms]
+(pass) aula-02: continuidade, paleta, geração estável e critérios praticáveis [47.00ms]
+(pass) aula-03: continuidade, paleta, geração estável e critérios praticáveis [47.00ms]
+(pass) aula-04: continuidade, paleta, geração estável e critérios praticáveis [31.00ms]
+(pass) aula-05: continuidade, paleta, geração estável e critérios praticáveis [31.00ms]
+(pass) aula-06: continuidade, paleta, geração estável e critérios praticáveis [31.00ms]
+(pass) aula-07: continuidade, paleta, geração estável e critérios praticáveis [47.00ms]
+(pass) aula-08: continuidade, paleta, geração estável e critérios praticáveis [32.00ms]
+(pass) aula-09: continuidade, paleta, geração estável e critérios praticáveis [46.00ms]
+(pass) aula-10: continuidade, paleta, geração estável e critérios praticáveis [47.00ms]
+(pass) aula-11: continuidade, paleta, geração estável e critérios praticáveis [63.00ms]
+(pass) aula-12: continuidade, paleta, geração estável e critérios praticáveis [62.00ms]
+(pass) aula-13: continuidade, paleta, geração estável e critérios praticáveis [63.00ms]
+(pass) os cinco quizzes são isolados, explicam o erro e permitem corrigir
+(pass) a abertura é jogável e o caderno aparece uma vez, com consulta opcional [47.00ms]
+(pass) linguagem comum nas falas, no Zappy e no Passo a passo do projeto [62.00ms]
+(pass) experiências: conceito, analogia, o jogo dela e um convite, sem tour nem roteiro de testes (02/11/2026)
+(pass) jogo pronto: um exemplo só, na primeira pessoa, e a vez passa no fim
+(pass) montagens seguem no imperativo e a publicação comemora com o link [16.00ms]
+(pass) falas conversam: ponte com convite e saída, retomada no jogo e sem "então" de ligação [15.00ms]
+(pass) retomadas curtas: o problema, a lembrança e um anúncio só [16.00ms]
+(pass) falas citam os rótulos que a criança vê
+(pass) fase 7: sem trocar o estado para jogando e voltar, e o envio confere o estado inicio
+(pass) P10: sem valor opcional na montagem da área e dos pontos
+(pass) D3: a régua dos negativos fica na aula 12, entre o lugar e a velocidade
+(pass) aula-01/experiencia-uma-vez-e-sempre: a instrução escrita conclui a experiência [16.00ms]
+(pass) aula-01/experiencia-tela: a instrução escrita conclui a experiência
+(pass) aula-01/experiencia-coordenadas: a instrução escrita conclui a experiência [15.00ms]
+(pass) aula-01/descoberta: a instrução escrita conclui a experiência
+(pass) aula-02/experiencia-laco: a instrução escrita conclui a experiência
+(pass) aula-02/experiencia-camadas: a instrução escrita conclui a experiência
+(pass) aula-02/experiencia-descricao: a instrução escrita conclui a experiência [16.00ms]
+(pass) aula-03/experiencia-gravidade: a instrução escrita conclui a experiência
+(pass) aula-03/experiencia-impulso: a instrução escrita conclui a experiência
+(pass) aula-04/experiencia-tres-areas: a instrução escrita conclui a experiência
+(pass) aula-04/experiencia-dedo-e-pulo: a instrução escrita conclui a experiência [16.00ms]
+(pass) aula-05/experiencia-ritmo: a instrução escrita conclui a experiência
+(pass) aula-05/experiencia-velocidade: a instrução escrita conclui a experiência
+(pass) aula-06/experiencia-visivel-guardado: a instrução escrita conclui a experiência [15.00ms]
+(pass) aula-07/experiencia-condicao: a instrução escrita conclui a experiência
+(pass) aula-08/experiencia-convite: a instrução escrita conclui a experiência
+(pass) aula-09/experiencia-contato: a instrução escrita conclui a experiência [16.00ms]
+(pass) aula-09/experiencia-restart: a instrução escrita conclui a experiência
+(pass) aula-10/experiencia-hitbox: a instrução escrita conclui a experiência
+(pass) aula-11/experiencia-variavel: a instrução escrita conclui a experiência
+(pass) aula-11/experiencia-score: a instrução escrita conclui a experiência [15.00ms]
+(pass) aula-12/experiencia-random: a instrução escrita conclui a experiência
+(pass) aula-12/experiencia-number-line: a instrução escrita conclui a experiência
+(pass) aula-13/experiencia-aceleracao: a instrução escrita conclui a experiência
+
+docs\aulas-interativas-tecnico\qa\curso-para-pais.test.ts:
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > tem aulas, módulos, fontes e, quando há conteúdo de apostila, o PDF
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.manifesto.json passa no validador do core
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.manifesto.json passa no validador do core
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.manifesto.json passa no validador do core
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.manifesto.json passa no validador do core
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.manifesto.json passa no validador do core
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > sem travessão e com a fala para o ElevenLabs de cada aula
+(pass) curso para pais como-ajudar-seu-filho-autista-nas-frustracoes > o que os pais leem não cita outra autora nem a palestra de origem
+(pass) curso para pais transformando-o-vilao-em-aliado > tem aulas, módulos, fontes e, quando há conteúdo de apostila, o PDF
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-1.manifesto.json passa no validador do core
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-2.manifesto.json passa no validador do core
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-3.manifesto.json passa no validador do core
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-4.manifesto.json passa no validador do core
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-5.manifesto.json passa no validador do core [15.00ms]
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-6.manifesto.json passa no validador do core
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-7.manifesto.json passa no validador do core
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-1.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-2.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-3.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-4.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-5.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-6.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > transformando-o-vilao-em-aliado-aula-7.manifesto.json não usa Estúdio nem Pinta (régua de publicação)
+(pass) curso para pais transformando-o-vilao-em-aliado > sem travessão e com a fala para o ElevenLabs de cada aula
+(pass) curso para pais transformando-o-vilao-em-aliado > o que os pais leem não cita outra autora nem a palestra de origem
+
+docs\aulas-interativas-tecnico\qa\desafio-farol-direcao.test.ts:
+(pass) only the prepared movement part combines taught structure with the four runtime directions
+(pass) Farol direction candidate uses the canonical engine axes and a private idle per real key
+(pass) the explicit bound path can vary without selecting a name, color or movement magnitude
+(pass) missing or unsafe binding is an authoring failure, never a guessed learner target
+
+docs\aulas-interativas-tecnico\qa\desafio-farol-manifestos.test.ts:
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > todos os quatro manifestos têm conclusões coerentes [47.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > cada seção comum tem um vídeo; a atividade exige vídeo e ação da criança [31.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > as três montagens oferecem somente Programação e Jogo 2D [31.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > o jogo pronto exige participação, sem exigir vitória ou alimentar a cadeia de criação [32.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > o caderno tem leitor opcional sem um mapa adicional que não faz parte das aulas
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > o Dia 1 abre com o jogo pronto e o caderno e alterna experiência e montagem [62.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a experiência compara a porta com e sem chave antes da prática, sem pergunta redundante
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a memória é experimentada antes da construção, com quatro descobertas e sem outra pergunta [16.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > as respostas da porta são etapas do mesmo projeto, com uma entrega só no fim
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a pergunta nova não herda a resposta da antiga memória e conserva as outras três
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a publicação retoma o mesmo projeto enviado e não bloqueia a conclusão por publicar [47.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a celebração mantém a emissão do certificado e aposenta a apresentação comercial
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > os critérios de Estúdio não aprovam as retomadas antes da criança programar [78.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a meta da porta recusa uma condição que não consulta temChave [15.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a coleta não passa se temChave só muda no encontro com o farol [32.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a coleta precisa atualizar o aviso dentro do encontro com a chave
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a decisão precisa do aviso no ramo then [15.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a decisão precisa do aviso no ramo else [16.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > avisos com palavras próprias não são reprovados por copiar um texto diferente [15.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > cada roteiro cobre as partes e gravações do manifesto na mesma ordem [16.00ms]
+(pass) Desafio do Primeiro Jogo — A Chave do Farol > a ajuda opcional aponta para tutoriais existentes, sem exigir sua leitura [31.00ms]
+(pass) Farol execution objectives remain pending until the native observer reports their behavior [16.00ms]
+
+docs\aulas-interativas-tecnico\qa\desafio-farol-personalizacao.test.ts:
+(pass) personalização completa do Farol > combinação aventureiro / praia-tropical conserva coleta, porta, barco e reinício [78.00ms]
+(pass) personalização completa do Farol > combinação menina-de-laco / costa-rochosa conserva coleta, porta, barco e reinício [47.00ms]
+(pass) personalização completa do Farol > combinação marinheira / ilha-nevada conserva coleta, porta, barco e reinício [62.00ms]
+(pass) personalização completa do Farol > combinação menino-de-bone / noite-na-ilha conserva coleta, porta, barco e reinício [63.00ms]
+(pass) personalização completa do Farol > combinação exploradora-de-chapeu / praia-tropical conserva coleta, porta, barco e reinício [62.00ms]
+(pass) personalização completa do Farol > combinação pirata / costa-rochosa conserva coleta, porta, barco e reinício [63.00ms]
+(pass) personalização completa do Farol > combinação mergulhador / ilha-nevada conserva coleta, porta, barco e reinício [47.00ms]
+(pass) personalização completa do Farol > combinação robo / noite-na-ilha conserva coleta, porta, barco e reinício [47.00ms]
+(pass) personalização completa do Farol > um projeto salvo recebe novas escolhas sem perder imagens, código ou mensagens próprias [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\desafio-farol-projeto.test.ts:
+(pass) projeto preparado A Chave do Farol > dia-1 usa Jogo 2D e somente variáveis, valores e condições simples
+(pass) projeto preparado A Chave do Farol > dia-2 usa Jogo 2D e somente variáveis, valores e condições simples
+(pass) projeto preparado A Chave do Farol > dia-3 usa Jogo 2D e somente variáveis, valores e condições simples
+(pass) projeto preparado A Chave do Farol > concluido usa Jogo 2D e somente variáveis, valores e condições simples
+(pass) projeto preparado A Chave do Farol > usa os SVGs originais, incluindo as duas versões da porta e o cenário sem atores
+(pass) projeto preparado A Chave do Farol > três retomadas válidas, uma extensão e arte inteiramente local [31.00ms]
+(pass) projeto preparado A Chave do Farol > as imagens de personagem vêm logo depois do original, com a mesma caixa e o mesmo contato
+(pass) projeto preparado A Chave do Farol > trocar a imagem do sprite personagem não muda o jogo: mesmo tamanho, mesmos encontros [188.00ms]
+(pass) projeto preparado A Chave do Farol > o jogo real anda, recolhe a chave uma vez e só acende o farol depois dela [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\desafio-farol-regressoes.test.ts:
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-2 aceita inverter o par do encontro sem trocar as ações dos sprites [47.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-3 aceita inverter o par do encontro sem trocar as ações dos sprites [16.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > não confunde os dois nomes do encontro com personagem encontrando a si mesmo
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-2 recusa retirada e memória separadas em eventos que deixam de disparar após a chave sair [31.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-3 recusa retirada e memória separadas em eventos que deixam de disparar após a chave sair [16.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-2 aceita guardar a coleta antes de retirar a chave no mesmo encontro [31.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-3 aceita guardar a coleta antes de retirar a chave no mesmo encontro [16.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > Dia 3 aceita acender o farol antes de registrar a vitória no mesmo então [31.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > recusa movimento e borda soltos fora de A cada quadro [15.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-2 recusa a perda do movimento anterior [16.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > dia-3 recusa a perda do movimento anterior
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > Dia 3 recusa temChave começando verdadeiro [16.00ms]
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > Dia 3 recusa coleta que não guarda a chave
+(pass) Farol: conservar o que já foi construído e verificar o encaixe real > a etapa sem chave aceita então vazio, mas a montagem seguinte exige a resposta com chave [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\destinos-publicacao.test.ts:
+(pass) os destinos reconhecem as cinco ofertas, sem confundir slugs semelhantes
+(pass) todas as aulas projetam somente o vínculo do curso, sem mutar a fonte ou seus projetos [187.00ms]
+
+docs\aulas-interativas-tecnico\qa\diretrizes-pedagogicas.test.ts:
+(pass) diretrizes dos cursos curtos > cade-todo-mundo: uma revisão final, sem vídeo, antes do certificado preservado
+(pass) diretrizes dos cursos curtos > desafio: uma revisão final, sem vídeo, antes do certificado preservado [31.00ms]
+(pass) diretrizes dos cursos curtos > recusa quiz antes da fala e vídeo misturado ao quiz
+(pass) diretrizes dos cursos curtos > recusa ponte ausente mesmo em caderno e feedback ausente no quiz
+(pass) diretrizes dos cursos curtos > recusa HTML/CSS na paleta e no projeto de jogo inicial
+
+docs\aulas-interativas-tecnico\qa\envio-final.test.ts:
+(pass) os doze cursos têm um ponto de envio por projeto, com as partes intermediárias independentes dele [78.00ms]
+(pass) cade-todo-mundo-aula-2 exige a versão atual no único envio, depois das escolhas
+(pass) desafio-dia-3 exige a versão atual no único envio, depois das escolhas
+
+docs\aulas-interativas-tecnico\qa\faisca-falas.test.ts:
+(pass) Ilha: o arquivo de gravação contém todas as falas atuais, com o mesmo texto
+(pass) Ponte: o arquivo de gravação contém todas as falas atuais, com o mesmo texto
+(pass) Moedas: o arquivo de gravação contém todas as falas atuais, com o mesmo texto
+(pass) Símbolos: o arquivo de gravação contém todas as falas atuais, com o mesmo texto
+(pass) Cabana: o arquivo de gravação contém todas as falas atuais, com o mesmo texto
+
+docs\aulas-interativas-tecnico\qa\farois-basicos.test.ts:
+(pass) Faróis no Faísca > todas as etapas usam somente blocos iniciantes, inclusive depois de ler o JavaScript [140.00ms]
+(pass) Faróis no Faísca > o arquivo importável leva malhas reais, mesmo com cache vazio [47.00ms]
+
+docs\aulas-interativas-tecnico\qa\gravar-arquivo.test.ts:
+(pass) regenerar conteúdo idêntico preserva o horário da revisão usada na gravação [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\guia-da-plataforma.test.ts:
+(pass) o texto do guia segue a régua das aulas
+(pass) prints de cade-todo-mundo > toda tela das páginas tem print, e todo print existe
+(pass) prints de cade-todo-mundo > as marcas cabem na imagem e têm legenda
+(pass) prints de cade-todo-mundo > os botões citados nas legendas são os da tela, com o mesmo nome
+(pass) prints de desafio-primeiro-jogo > toda tela das páginas tem print, e todo print existe
+(pass) prints de desafio-primeiro-jogo > as marcas cabem na imagem e têm legenda
+(pass) prints de desafio-primeiro-jogo > os botões citados nas legendas são os da tela, com o mesmo nome
+(pass) o texto do Passo a passo de cade-todo-mundo segue a régua das aulas [16.00ms]
+(pass) o texto do Passo a passo de desafio-farol segue a régua das aulas [15.00ms]
+(pass) o texto do Passo a passo de transformando-o-vilao-em-aliado segue a régua das aulas [16.00ms]
+
+docs\aulas-interativas-tecnico\qa\ilha-do-farol.test.ts:
+(pass) A Ilha do Farol > os números dos blocos e do código têm no máximo uma casa decimal em cada etapa e modelo [218.00ms]
+(pass) A Ilha do Farol > o projeto portátil e os exemplos entregues nas três aulas também usam números simples [78.00ms]
+(pass) A Ilha do Farol > três aulas válidas, sem certificado, com exemplos portáteis dentro do orçamento [32.00ms]
+(pass) A Ilha do Farol > todas as soluções intermediárias cumprem sua montagem e só usam extensão/Programação [62.00ms]
+(pass) A Ilha do Farol > a entrada não contém as montagens que a criança ainda vai fazer [16.00ms]
+(pass) A Ilha do Farol > o projeto leva só a referência dos modelos, com todas as variações da personalização
+(pass) A Ilha do Farol > a cena das experiências tem os nós que a experiência move e esconde
+
+docs\aulas-interativas-tecnico\qa\ilha-obstaculos.test.ts:
+(pass) os obstáculos da Ilha > são os pedaços sólidos da pedra e dos coqueiros publicados [32.00ms]
+(pass) os obstáculos da Ilha > o caminho do robô não passa por dentro de nenhum obstáculo, e a chave escondida fica ao alcance
+
+docs\aulas-interativas-tecnico\qa\jardim-secreto.test.ts:
+(pass) O Jardim Secreto > 2d: manifesto preserva aula reservada, projeto contínuo e uma entrega
+(pass) O Jardim Secreto > 2d: todas as etapas e o roundtrip usam somente blocos básicos [32.00ms]
+(pass) O Jardim Secreto > 2d: entrada não traz movimento, coleta, memória ou decisão resolvidos
+(pass) O Jardim Secreto > 2d: projetos portáteis não dependem de cache nem referências compactas
+(pass) O Jardim Secreto > 3d: manifesto preserva aula reservada, projeto contínuo e uma entrega [15.00ms]
+(pass) O Jardim Secreto > 3d: todas as etapas e o roundtrip usam somente blocos básicos [31.00ms]
+(pass) O Jardim Secreto > 3d: entrada não traz movimento, coleta, memória ou decisão resolvidos
+(pass) O Jardim Secreto > 3d: projetos portáteis não dependem de cache nem referências compactas [16.00ms]
+(pass) O Jardim Secreto > quiz misto mantém resposta única, demonstrações 1/3/4 e pergunta 2 sem cena
+
+docs\aulas-interativas-tecnico\qa\jogos-extensoes-visuais.test.ts:
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > o inventário alcança os cinco cursos e os projetos atuais [47.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > aula-1.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > aula-2.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > cabana-aula-1.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > cabana-aula-2.manifesto.json [15.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > cade-todo-mundo-aula-1.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > cade-todo-mundo-aula-2.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > cade-todo-mundo-certificado.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-01.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-02.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-03.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-04.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-05.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-06.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-07.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-08.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-09.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-10.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-11.manifesto.json [15.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-12.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > corre-dino-aula-13.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > desafio-certificado.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > desafio-dia-1.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > desafio-dia-2.manifesto.json [15.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > desafio-dia-3.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > ilha-aula-1.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > ilha-aula-2.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > ilha-aula-3.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-desenho-aula-1.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-01.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-02.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-03.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-04.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-05.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-06.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-07.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > meu-jeito-aula-08.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > moedas-aula-1.manifesto.json [15.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > moedas-aula-2.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-chuva-de-asteroides.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-comecar-partida.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-dia-1.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-dia-2.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-dia-3.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-dia-4.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-dia-5.manifesto.json [15.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-pontos.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > nave-contra-asteroides-primeira-nave.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > ponte-aula-1.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > ponte-aula-2.manifesto.json [15.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > simbolos-aula-1.manifesto.json [16.00ms]
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > simbolos-aula-2.manifesto.json
+(pass) jogos dos cursos JavaScript usam os recursos visuais das extensões > a guarda encontra blocos proibidos aninhados e alcança os gabaritos
+
+docs\aulas-interativas-tecnico\qa\matriz-compatibilidade.test.ts:
+(pass) retrato dos cursos protegidos > o retrato de hoje é igual ao guardado
+(pass) retrato dos cursos protegidos > cobre os 23 tipos do Cadê e os 28 do Farol
+(pass) a paleta de cada aula > cade-todo-mundo/aula-1: as categorias de cima, na ordem, com "Blocos deste jogo" em terceiro
+(pass) a paleta de cada aula > cade-todo-mundo/aula-1: todo bloco da lista da aula está na paleta, e nada de fora dela
+(pass) a paleta de cada aula > cade-todo-mundo/aula-1: cada gesto de paleta do roteiro existe na paleta de verdade [16.00ms]
+(pass) a paleta de cada aula > cade-todo-mundo/aula-2: as categorias de cima, na ordem, com "Blocos deste jogo" em terceiro
+(pass) a paleta de cada aula > cade-todo-mundo/aula-2: todo bloco da lista da aula está na paleta, e nada de fora dela
+(pass) a paleta de cada aula > cade-todo-mundo/aula-2: cada gesto de paleta do roteiro existe na paleta de verdade
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-1: as categorias de cima, na ordem, com "Blocos deste jogo" em terceiro
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-1: todo bloco da lista da aula está na paleta, e nada de fora dela
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-1: cada gesto de paleta do roteiro existe na paleta de verdade
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-2: as categorias de cima, na ordem, com "Blocos deste jogo" em terceiro
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-2: todo bloco da lista da aula está na paleta, e nada de fora dela
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-2: cada gesto de paleta do roteiro existe na paleta de verdade [16.00ms]
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-3: as categorias de cima, na ordem, com "Blocos deste jogo" em terceiro
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-3: todo bloco da lista da aula está na paleta, e nada de fora dela
+(pass) a paleta de cada aula > desafio-primeiro-jogo/dia-3: cada gesto de paleta do roteiro existe na paleta de verdade
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_set_opacity
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_on_group_click
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_enable_classic_controls
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_top_down
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_clamp_to_screen
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_on_overlap
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_destroy_sprite
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_set_image
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_g2d_create_image_sprite
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_js_var_increment
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_js_var_create
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_js_var_assign
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_js_if_else
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_val_bool
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_val_text
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_val_variable
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_frame_start
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_frame_events
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > sz_frame_loops
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > as opções do Ativar controles clássicos, com "só as quatro direções" valendo `directions`
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > verdadeiro e falso guardam `true` e `false` no campo VALUE (as verificações leem isso)
+(pass) o que as aulas mostram (tabela escrita à mão, não regravável) > os valores que os blocos trazem encaixados na paleta: 50, 3, 0, 1 e a condição x > 0 [15.00ms]
+(pass) os projetos que os cursos carregam > são sete: o inicial de cada aula e o jogo final de cada curso
+(pass) os projetos que os cursos carregam > todos passam pelo portão de importação sem perder nem mudar um bloco [94.00ms]
+(pass) os projetos que os cursos carregam > só usam blocos da lista do curso (mais as áreas internas) [78.00ms]
+(pass) os projetos que os cursos carregam > declaram o Jogo 2D na versão 1.2.0 (a extensão hoje é mais nova; fica registrado, sem migrar)
+
+docs\aulas-interativas-tecnico\qa\meu-desenho.test.ts:
+(pass) Meu primeiro desenho no Pinta > o manifesto é válido, do curso reservado, com as quatro partes na ordem [16.00ms]
+(pass) Meu primeiro desenho no Pinta > as conclusões passam pelas réguas de publicação do core e do Estúdio
+(pass) Meu primeiro desenho no Pinta > o desenho é entregue ANTES do jogo, e as duas entregas pedem o envio em dia [15.00ms]
+(pass) Meu primeiro desenho no Pinta > a vaga de arte liga o Pinta ao Estúdio sem nenhum problema de curso
+(pass) Meu primeiro desenho no Pinta > o desenho inicial é um quadro vetorial quadrado, vazio e com o nome da vaga [16.00ms]
+(pass) Meu primeiro desenho no Pinta > o objetivo da montagem: o gabarito cumpre, o jogo inicial não
+(pass) Meu primeiro desenho no Pinta > o objetivo que roda o jogo é válido e cabe no prazo da parte
+(pass) Meu primeiro desenho no Pinta > o gabarito só troca a imagem da chave e põe o desenho nos materiais
+(pass) Meu primeiro desenho no Pinta > os exemplos do Estúdio são válidos e a paleta é só do iniciante, sem HTML nem CSS [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\meu-jeito.test.ts:
+(pass) aula-01: geração, pedagogia e entrega externa [47.00ms]
+(pass) aula-02: geração, pedagogia e entrega externa
+(pass) aula-03: geração, pedagogia e entrega externa
+(pass) aula-04: geração, pedagogia e entrega externa
+(pass) aula-05: geração, pedagogia e entrega externa
+(pass) aula-06: geração, pedagogia e entrega externa
+(pass) aula-07: geração, pedagogia e entrega externa [16.00ms]
+(pass) aula-08: geração, pedagogia e entrega externa
+(pass) a entrega precisa ser obrigatória, posterior e da mesma ferramenta
+(pass) os marcos de código preservam a referência e o jogo de abertura tem as folhas corretas [78.00ms]
+(pass) quatro quizzes isolados corrigem cada alternativa errada com explicação
+(pass) aula-01/experimento-tema-e-regra: a instrução conclui a experiência sem perguntas
+(pass) aula-01/experiencia-copia: a instrução conclui a experiência sem perguntas
+(pass) aula-02/experimento-bordas: a instrução conclui a experiência sem perguntas
+(pass) aula-02/experimento-espelho: a instrução conclui a experiência sem perguntas
+(pass) aula-02/experiencia-luz: a instrução conclui a experiência sem perguntas [15.00ms]
+(pass) aula-03/experiencia-quadros: a instrução conclui a experiência sem perguntas
+(pass) aula-03/experiencia-fantasma: a instrução conclui a experiência sem perguntas
+(pass) aula-04/experiencia-cores: a instrução conclui a experiência sem perguntas
+(pass) aula-05/experimento-camadas: a instrução conclui a experiência sem perguntas
+(pass) aula-05/experimento-tanto-que-muda: a instrução conclui a experiência sem perguntas
+(pass) aula-06/experimento-nomes: a instrução conclui a experiência sem perguntas [16.00ms]
+(pass) aula-06/experimento-recorte: a instrução conclui a experiência sem perguntas
+(pass) aula-07/experimento-dois-relogios: a instrução conclui a experiência sem perguntas
+(pass) aula-08/experimento-copia-publicada: a instrução conclui a experiência sem perguntas
+(pass) as experiências convidam a investigar: ideia, controles, sem resultado antes do teste
+(pass) o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim
+(pass) o conteúdo visível usa curso, aula, parte e Passo a passo do projeto [16.00ms]
+(pass) o Passo a passo do projeto é apresentado à criança, com ler e baixar como convite
+(pass) a ponte do Zappy convida e termina na ação real de saída
+(pass) a retomada é uma ponte curta: problema, lembrança e um anúncio colado ao passo
+(pass) a conferência aparece uma vez, depois do teste, com o gatilho genérico
+(pass) cada montagem diz o porquê de algum resultado, e o Mapa não manda pausar [15.00ms]
+(pass) todos os percursos de experiência estão cobertos
+
+docs\aulas-interativas-tecnico\qa\moedas.test.ts:
+(pass) Moedas no caminho > 2d: todas as etapas e o roundtrip usam somente blocos do iniciante [78.00ms]
+(pass) Moedas no caminho > 2d: os objetivos de cada etapa são válidos e cabem no prazo da parte [16.00ms]
+(pass) Moedas no caminho > 2d: a entrada não traz contador, coleta, número na tela nem baú resolvidos
+(pass) Moedas no caminho > 3d: todas as etapas e o roundtrip usam somente blocos do iniciante [62.00ms]
+(pass) Moedas no caminho > 3d: os objetivos de cada etapa são válidos e cabem no prazo da parte [16.00ms]
+(pass) Moedas no caminho > 3d: a entrada não traz contador, coleta, número na tela nem baú resolvidos
+(pass) Moedas no caminho > 2D: a coleta usa o evento novo do grupo, e o baú, o "pelo menos" [15.00ms]
+(pass) quiz das Moedas > as duas revisões são válidas, com previsões de uma só resposta certa [16.00ms]
+(pass) quiz das Moedas > as cenas 2D do quiz saem do motor da experiência
+(pass) manifestos das Moedas > 2d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega [16.00ms]
+(pass) manifestos das Moedas > 3d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega [15.00ms]
+
+docs\aulas-interativas-tecnico\qa\nave-contra-asteroides-flexibilidade.test.ts:
+(pass) primeira-nave: aceita valores e textos próprios conservando sentido e vínculos
+(pass) dia-1: aceita valores e textos próprios conservando sentido e vínculos
+(pass) dia-2: aceita valores e textos próprios conservando sentido e vínculos
+(pass) chuva-de-asteroides: aceita valores e textos próprios conservando sentido e vínculos
+(pass) dia-3: aceita valores e textos próprios conservando sentido e vínculos
+(pass) pontos: aceita valores e textos próprios conservando sentido e vínculos [32.00ms]
+(pass) dia-4: aceita valores e textos próprios conservando sentido e vínculos
+(pass) comecar-partida: aceita valores e textos próprios conservando sentido e vínculos
+(pass) dia-5: aceita valores e textos próprios conservando sentido e vínculos [15.00ms]
+(pass) etapa %s/criar-nave mantém a intenção de nave (sz_g2d_create_ship/W=%s)
+(pass) etapa %s/setas mantém a intenção de setas (sz_g2d_arrows_x/SPEED=%s)
+(pass) etapa %s/setas mantém a intenção de setas (sz_g2d_arrows_x/SPEED=%s)
+(pass) etapa %s/tiro-da-nave mantém a intenção de disparo (sz_g2d_spawn_bullet/VY=%s)
+(pass) etapa %s/asteroide mantém a intenção de asteroide (sz_g2d_spawn_asteroid/VY=%s)
+(pass) etapa %s/relogio mantém a intenção de relogio (sz_g2d_every_frames/N=%s)
+(pass) etapa %s/dano mantém a intenção de dano-protegido (sz_g2d_damage_sprite/AMOUNT=%s)
+(pass) etapa %s/finais mantém a intenção de alvo (sz_js_const_create/VALUE=%s)
+(pass) o placar pode ter palavras próprias, mas não um rótulo em branco
+(pass) criar-nave/nave: conserva o mundo do curso e recusa X=1000000
+(pass) criar-nave/nave: conserva o mundo do curso e recusa Y=-1000000
+(pass) criar-nave/nave: conserva o mundo do curso e recusa X=800
+(pass) criar-nave/nave: conserva o mundo do curso e recusa Y=480
+(pass) placar/placar: conserva o mundo do curso e recusa X=1000000
+(pass) placar/placar: conserva o mundo do curso e recusa Y=-1000000
+(pass) vidas/coracoes: conserva o mundo do curso e recusa X=1000000
+(pass) vidas/coracoes: conserva o mundo do curso e recusa Y=-1000000
+(pass) montar-areas-e-tela/tela: conserva o mundo do curso e recusa W=960
+
+docs\aulas-interativas-tecnico\qa\nave-contra-asteroides-prioridade.test.ts:
+(pass) original: aceita a prioridade ensinada, mesmo com um Se alheio entre os finais [78.00ms]
+(pass) original-extra: aceita a prioridade ensinada, mesmo com um Se alheio entre os finais [94.00ms]
+(pass) inverted: recusa vitória sobrescrevendo derrota, mesmo com outro Se depois [78.00ms]
+(pass) inverted-extra: recusa vitória sobrescrevendo derrota, mesmo com outro Se depois [94.00ms]
+
+docs\aulas-interativas-tecnico\qa\nave-contra-asteroides.test.ts:
+(pass) os cinco marcos e a base final são exatamente os originais [16.00ms]
+(pass) primeira-nave: geração estável, continuidade, paleta e critérios praticáveis [46.00ms]
+(pass) dia-1: geração estável, continuidade, paleta e critérios praticáveis [32.00ms]
+(pass) dia-2: geração estável, continuidade, paleta e critérios praticáveis [31.00ms]
+(pass) chuva-de-asteroides: geração estável, continuidade, paleta e critérios praticáveis [31.00ms]
+(pass) dia-3: geração estável, continuidade, paleta e critérios praticáveis [31.00ms]
+(pass) pontos: geração estável, continuidade, paleta e critérios praticáveis [47.00ms]
+(pass) dia-4: geração estável, continuidade, paleta e critérios praticáveis [47.00ms]
+(pass) comecar-partida: geração estável, continuidade, paleta e critérios praticáveis [47.00ms]
+(pass) dia-5: geração estável, continuidade, paleta e critérios praticáveis [63.00ms]
+(pass) as revisões corrigem erros com explicações; só acontecem após conteúdo ensinado
+(pass) a etapa da abertura espera Enter e preserva movimento, tiros e asteroides depois de começar [78.00ms]
+(pass) experiências: ideia, convite e controles reais, sem blocos nem resultado antes do teste (02/11/2026)
+(pass) falas para a criança: sem o nome interno da parte e com a publicação comemorada
+(pass) falas para a criança: botões da aula pelo nome novo e o Mapa como convite (06/10/2026)
+(pass) pontes do Zappy: convidam e terminam na ação de saída (06/10/2026)
+(pass) retomadas: primeiro o problema no seu jogo, depois a lembrança e um anúncio só (06/10/2026)
+(pass) conferência: uma lista só por montagem e, com teste, depois dele (06/10/2026) [15.00ms]
+(pass) mapa e rótulos: o Mapa não aponta para o vídeo e o som do disparo é tiro grande (06/10/2026)
+(pass) conversa: sem "então" de ligação, sem "aperte" e sem troque e volte na entrega (06/10/2026)
+(pass) primeira-nave/experiencia-areas: a instrução narrada conclui once-vs-always
+(pass) primeira-nave/experiencia-coordenadas: a instrução narrada conclui coordinates [16.00ms]
+(pass) primeira-nave/experiencia-criar-mostrar: a instrução narrada conclui world
+(pass) primeira-nave/experiencia-quadro: a instrução narrada conclui draw-loop
+(pass) dia-1/experiencia-seta-e-velocidade: a instrução narrada conclui lighthouse-walk
+(pass) dia-1/experiencia-tamanho-do-passinho: a instrução narrada conclui lighthouse-walk
+(pass) dia-1/experiencia-limite-da-tela: a instrução narrada conclui lighthouse-walk [16.00ms]
+(pass) dia-1/experiencia-camadas: a instrução narrada conclui layers
+(pass) dia-2/experiencia-tres-areas: a instrução narrada conclui once-vs-always
+(pass) dia-2/experiencia-escrito-e-lido: a instrução narrada conclui fixed-vs-read
+(pass) dia-2/experiencia-direcao: a instrução narrada conclui velocity [15.00ms]
+(pass) dia-2/experiencia-faxina: a instrução narrada conclui cleanup
+(pass) chuva-de-asteroides/experiencia-relogio: a instrução narrada conclui spawn
+(pass) chuva-de-asteroides/experiencia-sorteio: a instrução narrada conclui random
+(pass) dia-3/experiencia-trombada: a instrução narrada conclui collision-pair
+(pass) pontos/experiencia-variavel: a instrução narrada conclui variable
+(pass) dia-4/experiencia-uma-vez: a instrução narrada conclui once-vs-always
+(pass) dia-4/experiencia-protecao: a instrução narrada conclui invincibility [16.00ms]
+(pass) comecar-partida/experiencia-estado: a instrução narrada conclui game-state
+(pass) dia-5/experiencia-meta-do-jogo: a instrução narrada conclui score-goal
+(pass) dia-5/experiencia-reiniciar: a instrução narrada conclui restart
+
+docs\aulas-interativas-tecnico\qa\pedagogical-project-examples.test.ts:
+(pass) cade-todo-mundo-aula-1: every structural part has its own valid transient solution and useful checkpoint [16.00ms]
+(pass) cade-todo-mundo-aula-2: every structural part has its own valid transient solution and useful checkpoint
+(pass) desafio-dia-1: every structural part has its own valid transient solution and useful checkpoint [16.00ms]
+(pass) desafio-dia-2: every structural part has its own valid transient solution and useful checkpoint [15.00ms]
+(pass) desafio-dia-3: every structural part has its own valid transient solution and useful checkpoint [16.00ms]
+(pass) Cadê keeps revealing as a legitimate prerequisite while counting remains a new intention
+(pass) Farol structural evidence accepts different colors and positive movement magnitudes [16.00ms]
+
+docs\aulas-interativas-tecnico\qa\ponte.test.ts:
+(pass) A ponte apressada > 2d: todas as etapas e o roundtrip usam somente blocos do iniciante [47.00ms]
+(pass) A ponte apressada > 2d: a ponte sobe sozinha pelo "depois de segundos" dentro do encontro
+(pass) A ponte apressada > 2d: os objetivos de cada etapa são válidos e cabem no prazo da parte [15.00ms]
+(pass) A ponte apressada > 2d: a entrada não traz a alavanca nem o tempo resolvidos [16.00ms]
+(pass) A ponte apressada > 3d: todas as etapas e o roundtrip usam somente blocos do iniciante [47.00ms]
+(pass) A ponte apressada > 3d: a ponte sobe sozinha pelo "depois de segundos" dentro do encontro
+(pass) A ponte apressada > 3d: os objetivos de cada etapa são válidos e cabem no prazo da parte [15.00ms]
+(pass) A ponte apressada > 3d: a entrada não traz a alavanca nem o tempo resolvidos [16.00ms]
+(pass) A ponte apressada > 3d: o cenário e a pedra são sólidos, e o caminho do robô cabe no executor
+(pass) A ponte apressada > o farol continua pedindo só a chave [16.00ms]
+(pass) quiz da Ponte > as duas revisões são válidas, com previsões de uma só resposta certa [15.00ms]
+(pass) quiz da Ponte > as cenas 2D do quiz saem do motor da experiência
+(pass) manifestos da Ponte > 2d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega [16.00ms]
+(pass) manifestos da Ponte > 3d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega
+
+docs\aulas-interativas-tecnico\qa\roteiro-elevenlabs.test.ts:
+(pass) o texto copiável conserva a fala e separa partes, sem notas de produção
+(pass) a condução tem energia e muda de intenção sem alterar a instrução
+(pass) uma substituição usa exatamente a frase do master e suas âncoras
+(pass) recusa clipes duplicados, SSML e anotações de edição no texto de síntese
+
+docs\aulas-interativas-tecnico\qa\simbolos.test.ts:
+(pass) O baú dos símbolos > 2d: todas as etapas e o roundtrip usam somente blocos do iniciante [46.00ms]
+(pass) O baú dos símbolos > 2d: a ordem é lembrada por passo e conferida com o "=" de Programação [16.00ms]
+(pass) O baú dos símbolos > 2d: os objetivos de cada etapa são válidos e cabem no prazo da parte
+(pass) O baú dos símbolos > 2d: a entrada não traz o passo nem as perguntas resolvidas [16.00ms]
+(pass) O baú dos símbolos > 3d: todas as etapas e o roundtrip usam somente blocos do iniciante [47.00ms]
+(pass) O baú dos símbolos > 3d: a ordem é lembrada por passo e conferida com o "=" de Programação
+(pass) O baú dos símbolos > 3d: os objetivos de cada etapa são válidos e cabem no prazo da parte [15.00ms]
+(pass) O baú dos símbolos > 3d: a entrada não traz o passo nem as perguntas resolvidas
+(pass) O baú dos símbolos > 2d: entre duas pedras cabe o corpo do personagem (30 px) com folga
+(pass) O baú dos símbolos > 3d: as pedras ficam no chão de andar, com a lua um passo à frente
+(pass) O baú dos símbolos > o farol continua pedindo só a chave [16.00ms]
+(pass) quiz dos símbolos > as duas revisões são válidas, com previsões de uma só resposta certa
+(pass) quiz dos símbolos > as cenas 2D do quiz saem do motor da experiência
+(pass) manifestos dos símbolos > 2d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega [15.00ms]
+(pass) manifestos dos símbolos > 3d: aula reservada, projeto contínuo, experiência só no 2D e uma entrega [16.00ms]
+
+docs\aulas-interativas-tecnico\qa\video-experiencia.test.ts:
+(pass) vídeo da experiência no molde do Cadê (02/11/2026) > apresentar o Zappy não é demonstrar um controle da experiência [16.00ms]
+(pass) vídeo da experiência no molde do Cadê (02/11/2026) > Cadê, Desafio, Ilha e os quatro Poderes: conceito, analogia e um convite [93.00ms]
+(pass) vídeo da experiência no molde do Cadê (02/11/2026) > ⭐ o convite de TODA experiência livre termina no mesmo fecho (08/11/2026) [16.00ms]
+(pass) vídeo da experiência no molde do Cadê (02/11/2026) > reprova o tour pelos controles e a sequência de testes do formato antigo
+
+docs\aulas-interativas-tecnico\qa\vocabulario-crianca.test.ts:
+(pass) quem recebe e responde é a equipe também nas notas e nos planos de vídeo [360.00ms]
+(pass) linguagem comum nos cursos > as 51 aulas usam os mesmos rótulos de tela para os dois públicos [62.00ms]
+(pass) linguagem comum nos cursos > a concordância e o destinatário são conferidos no texto público [2000.00ms]
+(pass) linguagem comum nos cursos > o detector distingue o comando antigo do nome de um nível do jogo
+(pass) linguagem comum nos cursos > o scanner ignora projetos e identificadores, mas inclui objetivos e publicação
+
+ 782 pass
+ 0 fail
+ 115000 expect() calls
+Ran 782 tests across 37 files. [19.07s]

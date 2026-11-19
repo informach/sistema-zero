@@ -78,3 +78,15 @@ usar callback no `replace`. O SHA-256 do runtime gerado antes e depois permanece
 `1df990a64efea4d5b4b7503a4dfe6c774f45cd14c38c9a50501eeb2d7bd7f7a9`.
 O guard existente conserva a proteção contra `$&`; os dez testes de fonte e
 orçamento passaram, com vinte asserções. Nenhuma outra linha do motor foi editada.
+
+No run `44554280218`, o lote de testes do Studio passou. O bloqueio seguinte foi
+o snapshot dos cursos protegidos: seu gerador expande arrays, enquanto o formatter
+havia compactado os arrays curtos. Todos os valores JSON eram idênticos e o
+Markdown legível também era idêntico. O conserto mantém gerador, teste byte a byte
+e Markdown intactos: reserializa o mesmo JSON e configura `expand: always` somente
+para esse arquivo gerado. O formatter continua ativo; nenhuma guarda foi relaxada.
+[Hashes e conservação integral](matriz-cursos-correcao.json).
+
+O lote completo dos cursos e vocabulário passou localmente: **782 testes,
+115.000 asserções, 37 arquivos**, sem falha. O snapshot não mudou o conteúdo das
+aulas, os blocos, as paletas ou a programação ensinada. [Log](cursos-782-testes.txt).
