@@ -939,6 +939,7 @@ async function loadHistoricalProject(
   const scope = storageScope ?? captureProjectStorageScope()
   const old = await readValues(scope.store, [
     `sz:project:${id}`,
+    `sz:v2:project:${id}`,
     `sz:project-meta:${id}`,
     `sz:v2:project-meta:${id}`,
   ])

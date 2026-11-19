@@ -1675,7 +1675,7 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     expect(sumiu).toBeNull()
     expect(idb.getMany).toHaveBeenCalledTimes(2)
     expect(idb.getMany).toHaveBeenCalledWith(
-      ['sz:project:p2', 'sz:project-meta:p2', 'sz:v2:project-meta:p2'],
+      ['sz:project:p2', 'sz:v2:project:p2', 'sz:project-meta:p2', 'sz:v2:project-meta:p2'],
       expect.anything(),
     )
     expect((idb.getMany.mock.calls[0] as unknown[])[0]).toEqual([
