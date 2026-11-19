@@ -333,8 +333,8 @@ src\core\paletteLibrary.test.ts:
 
 src\core\perf.test.ts:
 (pass) perf (medições leves atrás de flag) > desligado por padrão: nenhuma marca, nenhuma medida, e as funções só passam o valor
-[sz:perf] pinta:sync 0.0ms 
-[sz:perf] pinta:falha 0.2ms 
+[sz:perf] pinta:sync 0.0ms
+[sz:perf] pinta:falha 0.2ms
 [sz:perf] pinta:ab 0.0ms {
   itens: 3,
 }
