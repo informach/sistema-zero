@@ -14,6 +14,7 @@ import {
   RESTORED_COPY_SUFFIX,
   readLocalProjectBackup,
   restoreLocalProjectBackup,
+  restorePreservedProject,
 } from './localBackups'
 import { migrateLocalProject } from './localProjects'
 import { migrateLocalV3Project } from './localV3'
@@ -209,4 +210,42 @@ test('a exportação de emergência leva só os registros deste projeto e o jour
   expect(payload.exitJournal).toEqual([
     [`sz:studio-exit:1|${scope.identity}|${original.id}|w|t`, '{"x":1}'],
   ])
+})
+
+const fakeImport = async (raw: unknown, opts: { name: string }) => ({
+  project: { id: `copia-${(raw as { id: string }).id}`, name: opts.name },
+  warnings: [] as string[],
+})
+
+test('card preservado sem backup: a cópia vem dos registros que continuam no lugar', async () => {
+  const scope = database()
+  // A migração não chegou a promover: as partições v3 estão aí e não há backup.
+  const original = await seedV3(scope)
+  expect(await listLocalProjectBackups(original.id, scope)).toEqual([])
+  const imported: unknown[] = []
+  const copy = await restorePreservedProject(original.id, {
+    scope,
+    importSnapshot: async (raw, opts) => {
+      imported.push(raw)
+      return fakeImport(raw, opts)
+    },
+  })
+  expect(copy).toMatchObject({ source: 'records', name: `${original.name}${RESTORED_COPY_SUFFIX}` })
+  expect((imported[0] as { files: unknown }).files).toEqual(original.files)
+  // Nada foi apagado nem regravado.
+  expect(await readValue(scope.store, `sz:v3:project-meta:${original.id}`)).toBeDefined()
+})
+
+test('com backup, o card preservado restaura o backup', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const copy = await restorePreservedProject(original.id, { scope, importSnapshot: fakeImport })
+  expect(copy?.source).toBe('backup')
+})
+
+test('sem backup e sem registros, não inventa cópia', async () => {
+  expect(
+    await restorePreservedProject('nada-aqui', { scope: database(), importSnapshot: fakeImport }),
+  ).toBeNull()
 })

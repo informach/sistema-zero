@@ -183,8 +183,8 @@ isolamento. Nenhuma etapa abaixo passa a "concluída" pelos critérios da tabela
   `docs/qa/2026-11-19-studio-v4-homologacao.md`. Faltam Members (Verificar/Enviar, perfil no app),
   aparelho físico e sessões longas.
 - **Etapa 2 (Clássico em escala):** abertura sem trabalho repetido (desenho sem a subida inútil pelo
-  DOM, memória de larguras da fonte carregada, pós-carga que rodava duas vezes). 5 mil blocos de
-  ~19,7 s para ~14,8 s nesta máquina; meta de 8 s NÃO atingida. Ver `classico-em-escala.md`.
+  DOM, fonte dos blocos carregada antes, pós-carga que rodava duas vezes). 5 mil blocos de
+  ~17,2 s para ~14,0 s nesta máquina; meta de 8 s NÃO atingida. Ver `classico-em-escala.md`.
   Descartado: recolher na carga (o Blockly desenha os filhos de bloco recolhido).
 - **Etapa 1 (isolamento):** vigia em outra origem corrigido; casca em outro site implementada e
   desligada por padrão (B2 com decisão: feito no código, ligar é deploy dela); WebKit com decisão

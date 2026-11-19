@@ -117,44 +117,51 @@ describe('PreviewIframe', () => {
   it('em outra origem, o Parar reconhece o jogo preso e troca o iframe com o intervalo', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
     // A validação compara com a origem do host; o happy-dom começa sem endereço ("null").
+    // ⚠️ O endereço é global do processo: os outros arquivos da pasta rodam no mesmo processo e
+    // conferem a origem (o `StudioProjectPlayer` reprovava). Volta ao endereço de antes no fim.
     const happyDOM = (window as unknown as { happyDOM?: { setURL(url: string): void } }).happyDOM
+    const previousURL = window.location.href
     happyDOM?.setURL('http://localhost:5173/estudio')
-    const adapter = {
-      createPreviewUrl: async () => 'https://previa.exemplo.test/jogo.html',
-      releasePreviewUrl: () => undefined,
-    }
-    render(
-      <StudioExecutionProvider
-        value={{
-          editingAccess: 'author',
-          autoRun: true,
-          requireIsolatedPreview: true,
-          muted: false,
-          originAdapter: adapter,
-        }}
-      >
-        <PreviewIframe />
-      </StudioExecutionProvider>,
-    )
-    fireEvent.load(screen.getByTitle('Pré-visualização'))
-    const frame = await waitFor(
-      () => {
-        const iframe = screen.getByTitle('Pré-visualização')
-        expect(iframe.getAttribute('src')).toBe('https://previa.exemplo.test/jogo.html')
-        return iframe
-      },
-      { timeout: 3000 },
-    )
-    fireEvent.load(frame)
-    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
-    // Nenhum batimento desde o load, e o relógio passou do limite de silêncio.
-    const realNow = Date.now
-    Date.now = () => realNow() + 10_000
     try {
-      act(() => useProRun.getState().actions?.stop())
-      expect(document.querySelector('[data-sz-preview-gap]')).not.toBeNull()
+      const adapter = {
+        createPreviewUrl: async () => 'https://previa.exemplo.test/jogo.html',
+        releasePreviewUrl: () => undefined,
+      }
+      render(
+        <StudioExecutionProvider
+          value={{
+            editingAccess: 'author',
+            autoRun: true,
+            requireIsolatedPreview: true,
+            muted: false,
+            originAdapter: adapter,
+          }}
+        >
+          <PreviewIframe />
+        </StudioExecutionProvider>,
+      )
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
+      const frame = await waitFor(
+        () => {
+          const iframe = screen.getByTitle('Pré-visualização')
+          expect(iframe.getAttribute('src')).toBe('https://previa.exemplo.test/jogo.html')
+          return iframe
+        },
+        { timeout: 3000 },
+      )
+      fireEvent.load(frame)
+      await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
+      // Nenhum batimento desde o load, e o relógio passou do limite de silêncio.
+      const realNow = Date.now
+      Date.now = () => realNow() + 10_000
+      try {
+        act(() => useProRun.getState().actions?.stop())
+        expect(document.querySelector('[data-sz-preview-gap]')).not.toBeNull()
+      } finally {
+        Date.now = realNow
+      }
     } finally {
-      Date.now = realNow
+      happyDOM?.setURL(previousURL)
     }
   })
 

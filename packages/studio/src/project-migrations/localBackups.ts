@@ -235,3 +235,49 @@ export async function exportPreservedProjectRecords(
     exitJournal: journal,
   })
 }
+
+/**
+ * O que está guardado AGORA para o projeto, em qualquer layout (v1, v2, v3 ou v4). É o caso do
+ * card "Preservado": a migração parou antes de promover, então não há backup, mas as partições
+ * originais continuam no lugar.
+ */
+export async function readPreservedProjectRecords(
+  projectId: string,
+  scope: ProjectStorageScope = captureProjectStorageScope(),
+): Promise<StoredProjectRecord | null> {
+  const keys = (await readAllKeys(scope.store)).filter(
+    (key): key is string => typeof key === 'string' && partOf(key, projectId) !== null,
+  )
+  if (!keys.length) return null
+  const values = await readValues(scope.store, keys)
+  return projectFromStorageRecords(
+    projectId,
+    keys.map((key, index) => [key, values[index]] as const),
+  )
+}
+
+/**
+ * "Restaurar uma cópia" do card preservado: o backup mais recente; sem backup, os registros que
+ * continuam no lugar. Sempre uma cópia NOVA pelo import; nada do que existe é apagado.
+ * Devolve `null` quando nem o backup nem os registros reconstroem o projeto.
+ */
+export async function restorePreservedProject(
+  projectId: string,
+  opts: Parameters<typeof restoreLocalProjectBackup>[1] = {},
+): Promise<{ id: string; name: string; warnings: string[]; source: 'backup' | 'records' } | null> {
+  const scope = opts.scope ?? captureProjectStorageScope()
+  for (const backup of await listLocalProjectBackups(projectId, scope)) {
+    if (!(await readLocalProjectBackup(backup, scope))) continue
+    return { ...(await restoreLocalProjectBackup(backup, { ...opts, scope })), source: 'backup' }
+  }
+  const document = await readPreservedProjectRecords(projectId, scope)
+  if (!document) return null
+  const baseName = typeof document.name === 'string' && document.name ? document.name : 'Projeto'
+  const importSnapshot =
+    opts.importSnapshot ?? (await import('../projects/importSnapshot')).importProjectSnapshot
+  const { project, warnings } = await importSnapshot(document, {
+    name: `${baseName.slice(0, 175)}${RESTORED_COPY_SUFFIX}`,
+    namespace: opts.namespace ?? scope.namespace,
+  })
+  return { id: project.id, name: project.name, warnings, source: 'records' }
+}

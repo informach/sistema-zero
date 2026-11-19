@@ -8,8 +8,8 @@ import { expect, type Page, test } from '@playwright/test'
  * `srcdoc` dentro da casca, com o sandbox de sempre.
  *
  * O que se prova aqui: o jogo funciona igual (roda, fala com o console do editor, Parar e Rodar
- * de novo) e, no Firefox, o editor responde enquanto o jogo faz trabalho síncrono pesado. No
- * WebKit nenhum arranjo de iframe isolou na medição: lá só o funcionamento é conferido.
+ * de novo) e, no Firefox, o editor responde enquanto o jogo faz trabalho síncrono pesado. O
+ * WebKit fica de fora: nenhum arranjo de iframe o isolou na medição, e a casca não é para ele.
  */
 
 async function createProject(page: Page): Promise<void> {
@@ -19,6 +19,7 @@ async function createProject(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 }
 
+/** O mesmo caminho de `preview-executes-user-code.spec.ts`, já provado no Firefox da CI. */
 async function replaceBridgeScript(page: Page, code: string): Promise<void> {
   await page.getByRole('button', { name: 'Ponte' }).click()
   await page.getByRole('button', { name: 'script.js' }).first().click()
@@ -26,10 +27,11 @@ async function replaceBridgeScript(page: Page, code: string): Promise<void> {
   await editor.waitFor({ state: 'visible', timeout: 15_000 })
   const input = editor.getByRole('textbox', { name: 'Editor content' })
   await editor.locator('.view-line').first().click()
-  await page.keyboard.press('ControlOrMeta+A')
+  await page.keyboard.press('Control+A')
   await page.keyboard.press('Backspace')
   await expect(input).toHaveValue('')
-  await page.keyboard.insertText(code)
+  await page.evaluate((text) => navigator.clipboard.writeText(text), code)
+  await page.keyboard.press('Control+V')
   await expect(input).toHaveValue(code)
 }
 
@@ -90,8 +92,7 @@ test.describe('prévia dentro da casca em outro site', () => {
     await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
   })
 
-  test('trabalho síncrono longo do jogo não trava o editor', async ({ page, browserName }) => {
-    test.skip(browserName === 'webkit', 'no WebKit nenhum arranjo de iframe isolou (medido)')
+  test('trabalho síncrono longo do jogo não trava o editor', async ({ page }) => {
     await createProject(page)
     await replaceBridgeScript(
       page,

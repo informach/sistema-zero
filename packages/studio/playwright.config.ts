@@ -59,8 +59,7 @@ export default defineConfig({
       // commit explícito (11/09/2026), recarregando logo depois de trazer os arquivos do Molda,
       // a mudança voltou em 0 de 10 recargas. Só os specs dessa gravação: o resto da suíte é
       // coberto pelo Chromium, e duplicá-lo não traria sinal novo.
-      // A casca: só o funcionamento (nenhum arranjo de iframe isolou o WebKit na medição).
-      testMatch: [/reload-flush\.spec\.ts/, /preview-shell\.spec\.ts/],
+      testMatch: [/reload-flush\.spec\.ts/],
       use: { ...devices['Desktop Safari'] },
     },
   ],
