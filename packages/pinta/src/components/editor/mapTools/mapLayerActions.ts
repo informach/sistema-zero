@@ -40,7 +40,7 @@ export function createMapLayerActions(deps: {
         if (state.asset.layers.length > 1) showToast(COPY.tiles.lastTileLayer)
         return
       }
-      state.commit(next)
+      if (!state.commit(next)) return
       if (id === deps.activeLayerId) setActiveLayerId(next.layers[0]?.id ?? null)
     },
     add(): void {

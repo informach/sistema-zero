@@ -1,0 +1,55 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T20:05:26.621Z",
+    "duration": 39317.343,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7788,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura",
+      "project": "touch",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4871,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura",
+      "project": "cpu-4x",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 19087,
+          "retry": 0
+        }
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "packages/pinta/src/components/editor/mapTools/mapObjectActions.ts": "87bba2d043d670ae757b9c08e6692a968d9e075fdac19dfa4cf0ea7ce8b0e0f7",
+    "packages/pinta/src/components/editor/mapTools/commitGuard.ts": "9eaf53df3107cf023549879c8863143c6e0ea66c44efb63cc3813ede786de756",
+    "packages/pinta/src/state/editorStore.ts": "4521f99dba1c8b455322b3330c3f0cdb674d039dec835cec8b9ec05b0990c3a8",
+    "packages/pinta/src/components/editor/MapObjectPanel.tsx": "05887f01c54ef7c327913303012aeb9b3ff7552f9e61939f78787a8b9136552c",
+    "packages/studio/e2e/pinta-keyboard-scenes.flow.ts": "94305fb1d433c938e2bb75d57f36b7641ae19852dac050e6c7b3024c0b78be0d"
+  }
+}

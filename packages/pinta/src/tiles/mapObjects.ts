@@ -104,6 +104,13 @@ export function snapToGrid(value: number, step: number): number {
   return Math.round(value / step) * step
 }
 
+/** Um marcador fica no centro da casa; áreas e artes usam as bordas. */
+export function snapObjectPoint(value: number, tileSize: number, snap: boolean): number {
+  return snap && tileSize > 0
+    ? Math.floor(value / tileSize) * tileSize + tileSize / 2
+    : Math.round(value)
+}
+
 /**
  * Um objeto novo, já dentro dos tetos. Sem `width`/`height` nasce PONTO. Os
  * campos de texto são cortados e as propriedades passam pelo mesmo filtro do

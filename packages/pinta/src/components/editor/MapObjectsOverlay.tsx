@@ -32,6 +32,7 @@ import {
   nextObjectName,
   objectAt,
   objectLayerById,
+  snapObjectPoint,
   snapToGrid,
   updateMapObject,
 } from '../../tiles/mapObjects'
@@ -217,8 +218,7 @@ export function MapObjectsOverlay({
   const snapEdge = (value: number): number =>
     snap ? snapToGrid(value, tileSize) : Math.round(value)
   /** Ponto: no MEIO da peça com o encaixe ligado ("o ponto está naquela casa"). */
-  const snapPoint = (value: number): number =>
-    snap ? Math.floor(value / tileSize) * tileSize + tileSize / 2 : Math.round(value)
+  const snapPoint = (value: number): number => snapObjectPoint(value, tileSize, snap)
 
   function currentLayer(): TilemapObjectLayer | null {
     const asset = editor.getState().asset

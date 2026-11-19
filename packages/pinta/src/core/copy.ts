@@ -904,6 +904,7 @@ export const COPY = {
     objectRect: 'Desenhar uma área',
     objectSnap: 'Encaixar os objetos na grade',
     objectsPanel: 'Objetos',
+    addMarker: 'Pôr um marcador',
     objectsEmpty:
       'Nenhum objeto ainda. Use "Marcar um ponto" ou "Desenhar uma área" e toque no mapa.',
     objectNamePrefix: 'Objeto',

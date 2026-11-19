@@ -8,13 +8,14 @@ import {
   type AnyTilesetAsset,
   createTilemapAsset,
   createTilesetAsset,
+  isObjectLayer,
   type TilemapAsset,
 } from '../../../core/project'
 import { createEditorStore } from '../../../state/editorStore'
 import { tileLayerAt } from '../../../testing/fixtures'
 import { CELL_FLIP_H, cellTile, makeCell } from '../../../tiles/cell'
 import type { CellPos, CellRect } from '../../../tiles/cellGeometry'
-import { addMapGroup, updateMapLayer } from '../../../tiles/layerTree'
+import { addMapGroup, setMapLayerParent, updateMapLayer } from '../../../tiles/layerTree'
 import { addMapObject, createMapObject } from '../../../tiles/mapObjects'
 import { addObjectLayer, setCell } from '../../../tiles/tilemapOps'
 import { DEFAULT_MAP_BRUSH } from '../MapTerrainPanel'
@@ -28,6 +29,7 @@ import {
   readMapLevel,
   writeMapLevel,
 } from './mapLevels'
+import { createMapObjectActions } from './mapObjectActions'
 import { cachedMinimapColors, minimapViewRect, tilesetMinimapColors } from './minimapView'
 import { createMapSelectionController, type MapSelection } from './selectionController'
 import { animationFrameKey } from './useMapAnimation'
@@ -141,6 +143,146 @@ describe('pincel', () => {
 })
 
 describe('guarda dos commits', () => {
+  it('marcador usa o offset herdado uma vez, com uma entrada de histórico', () => {
+    let map = addMapGroup(addObjectLayer(mapa(), 'Objetos'), 'Região')
+    const layer = map.layers.find(isObjectLayer)!
+    const group = map.layers.at(-1)!
+    map = updateMapLayer(map, group.id, { offsetX: 2.5, offsetY: 3.5 })
+    map = updateMapLayer(map, layer.id, { offsetX: 4, offsetY: 5 })
+    map = setMapLayerParent(map, layer.id, group.id)
+    const store = loja(map)
+    let selected: string[] = []
+    const actions = createMapObjectActions({
+      editor: store,
+      activeObjectLayer: layer,
+      showToast: () => {},
+      selectedObjectId: null,
+      selectedObjectIds: [],
+      setSelectedObjectId: () => {},
+      chooseObjects: (ids) => {
+        selected = ids
+      },
+    })
+    actions.addMarker({ x: 20, y: 32.5 }, 16, true)
+    const live = store.getState().asset as TilemapAsset
+    const added = live.layers.find(isObjectLayer)!.objects[0]!
+    expect(added).toMatchObject({ x: 8, y: 24, width: 0, height: 0 })
+    expect(selected).toEqual([added.id])
+    store.getState().undo()
+    expect(store.getState().asset).toBe(map)
+    expect(store.getState().canUndo).toBe(false)
+    store.getState().redo()
+    expect(
+      (store.getState().asset as TilemapAsset).layers.find(isObjectLayer)!.objects[0]!.id,
+    ).toBe(added.id)
+  })
+  it('marcador não nasce fora do mapa quando a camada inteira está deslocada para longe', () => {
+    let map = addObjectLayer(mapa(), 'Objetos')
+    const id = map.layers.at(-1)!.id
+    map = updateMapLayer(map, id, { offsetX: 1000 })
+    const store = loja(map)
+    const selected: string[] = [],
+      messages: string[] = []
+    const actions = createMapObjectActions({
+      editor: store,
+      activeObjectLayer: map.layers.find(isObjectLayer)!,
+      showToast: (m) => messages.push(m),
+      selectedObjectId: null,
+      selectedObjectIds: [],
+      setSelectedObjectId: () => {},
+      chooseObjects: (ids) => selected.push(...ids),
+    })
+    actions.addMarker({ x: 20, y: 20 }, 16, true)
+    expect(store.getState().asset).toBe(map)
+    expect(store.getState().canUndo).toBe(false)
+    expect(selected).toHaveLength(0)
+    expect(messages).toHaveLength(1)
+  })
+  it('marcador recusado pelo host ou camada trancada não muda documento nem seleção', () => {
+    for (const locked of [false, true]) {
+      let map = addObjectLayer(mapa(), 'Objetos')
+      const id = map.layers.at(-1)!.id
+      if (locked) map = updateMapLayer(map, id, { locked: true })
+      const store = createEditorStore({
+        asset: map,
+        acceptEdit: () => locked,
+        persist: async () => {},
+      })
+      const selected: string[] = []
+      const messages: string[] = []
+      const actions = createMapObjectActions({
+        editor: store,
+        activeObjectLayer: map.layers.find(isObjectLayer)!,
+        showToast: (m) => messages.push(m),
+        selectedObjectId: null,
+        selectedObjectIds: [],
+        setSelectedObjectId: () => {},
+        chooseObjects: (ids) => selected.push(...ids),
+      })
+      actions.addMarker({ x: 20, y: 20 }, 16, false)
+      expect(store.getState().asset).toBe(map)
+      expect(store.getState().canUndo).toBe(false)
+      expect(selected).toHaveLength(0)
+      expect(messages).toHaveLength(locked ? 1 : 0)
+    }
+  })
+  it('não anuncia gravação quando o host recusa a edição', async () => {
+    const map = mapa()
+    let writes = 0
+    const store = createEditorStore({
+      asset: map,
+      acceptEdit: () => false,
+      persist: async () => {
+        writes++
+      },
+    })
+    expect(commitIfChanged(store.getState(), { ...map, name: 'Recusado' })).toBe(false)
+    expect(store.getState().asset).toBe(map)
+    expect(store.getState().canUndo).toBe(false)
+    await store.getState().flush()
+    expect(writes).toBe(0)
+  })
+  it('não anuncia gravação de uma linhagem anterior à recuperação', () => {
+    const map = mapa()
+    const store = loja(map)
+    expect(
+      commitIfChanged(store.getState(), { ...map, id: 'linhagem-antiga', name: 'Antigo' }),
+    ).toBe(false)
+    expect(store.getState().asset).toBe(map)
+    expect(store.getState().canUndo).toBe(false)
+  })
+  it('apagar objeto recusado conserva a seleção e o objeto', () => {
+    let map = addObjectLayer(mapa(), 'Objetos')
+    const layerId = map.layers.at(-1)!.id
+    const object = createMapObject({ name: 'Porta' })
+    map = addMapObject(map, layerId, object)
+    const layer = map.layers.at(-1)!
+    if (!isObjectLayer(layer)) throw new Error('camada de objetos esperada')
+    let selected: string[] = [object.id]
+    const store = createEditorStore({
+      asset: map,
+      acceptEdit: () => false,
+      persist: async () => {},
+    })
+    const actions = createMapObjectActions({
+      editor: store,
+      showToast: () => {},
+      activeObjectLayer: layer,
+      selectedObjectId: object.id,
+      selectedObjectIds: selected,
+      chooseObjects: (ids) => {
+        selected = ids
+      },
+      setSelectedObjectId: (id) => {
+        selected = id ? [id] : []
+      },
+    })
+    actions.remove(object.id)
+    expect(selected).toEqual([object.id])
+    actions.deleteSelected()
+    expect(selected).toEqual([object.id])
+    expect(store.getState().asset).toBe(map)
+  })
   it('mesmo conteúdo em outro objeto não é gravado; conteúdo diferente é', () => {
     const m = setCell(mapa(), tileLayerAt(mapa()).id, 0, 0, 1)
     const base = mapa()

@@ -88,6 +88,28 @@ async function objetosNoDisco() {
 }
 
 describe('camada de objetos no editor de mapa', () => {
+  it('cria um marcador pelos controles e conserva edição e desfazer no disco', async () => {
+    await abrirMapa()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addObjectLayer }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pôr um marcador' }))
+    const name = screen.getByLabelText(COPY.tiles.objectName)
+    fireEvent.change(name, { target: { value: 'Inicio pelo teclado' } })
+    fireEvent.blur(name)
+    await waitFor(
+      async () => expect((await objetosNoDisco())[0]?.name).toBe('Inicio pelo teclado'),
+      { timeout: 5000 },
+    )
+    expect((await objetosNoDisco())[0]).toMatchObject({ x: 40, y: 24, width: 0, height: 0 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect((screen.getByLabelText(COPY.tiles.objectName) as HTMLInputElement).value).toBe(
+      'Objeto 1',
+    )
+    await waitFor(async () => expect((await objetosNoDisco())[0]?.name).toBe('Objeto 1'), {
+      timeout: 5000,
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(async () => expect(await objetosNoDisco()).toHaveLength(0), { timeout: 5000 })
+  })
   it('cria a camada, marca um ponto e edita nome, tipo e propriedades', async () => {
     const { container } = await abrirMapa()
 

@@ -29,6 +29,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   A recompilação `132db1b…` passou por 16 casos Pinta/Pygame e 83 casos do runtime,
   com upload e leitura independente de 128 objetos em staging, sem ativação.
   Provas em `qa/runtime-132-local/README.md` e `qa/runtime-132-staging/README.md`.
+  O Worker leitor A e as imagens qualificadas foram implantados em staging;
+  módulo, perfil, digest e objetivo real no contêiner conferidos. Isso não ativa
+  a distribuição Python nem o gravador. O aplicativo leitor nos hosts, abas
+  offline e rollback continuam pendentes; ver `qa/leitor-a-runtime-staging-2026-11-19/README.md`.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
@@ -99,6 +103,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
 - [ ] 6. Auditoria funcional de teclado/foco/cancelamento e mouse/toque, componentes atuais;
   fluxo infantil e testes em desktop, toque e CPU reduzida nesta máquina, conforme a
   disponibilidade informada pelo usuário. Testes com participantes são evidência distinta.
+  Primeiro lote: criação de marcador por controles/teclado, resultado de recusa
+  no store e preservação de seleção. Três perfis nativos e 90 testes focados
+  aprovados; suíte final com 2.194 aprovados, zero falhas/omissões e três perfis
+  nativos repetidos após a revisão. Ver `teclado-e-marcadores.md` e
+  `qa/teclado-e-marcadores-2026-11-19/README.md`. Pintura e navegação por teclado
+  continuam nesta etapa antes de marcá-la concluída.
 - [ ] 7a. Evoluir contratos externos e fixtures para dados novos: Tiled JSON/TMX/TSX reais,
   pacotes Phaser/Pygame e Godot; preservar PNG/SVG/.pinta.json/ZIP e relatórios de conversão.
 - [ ] 7b. Executar ferramentas nativas e Godot com render visual; repetir round-trip e jogos.

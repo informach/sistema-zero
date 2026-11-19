@@ -1,0 +1,111 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\mapTools.test.ts:
+(pass) balde > enche com a peça do carimbo, com os bits de virar
+(pass) balde > sem carimbo, enche com a peça escolhida
+(pass) balde > área que já está igual e camada trancada devolvem o MESMO mapa (nada a gravar)
+(pass) balde > com "espalhar" ligado, o balde espalha na região inteira
+(pass) pincel > lápis, borracha e carimbo
+(pass) pincel > terreno sem as peças de borda avisa e não muda o mapa
+(pass) guarda dos commits > marcador usa o offset herdado uma vez, com uma entrada de histórico [16.00ms]
+183 |     const store = loja(map)
+184 |     const selected: string[] = [], messages: string[] = []
+185 |     const actions = createMapObjectActions({ editor: store, activeObjectLayer: map.layers.find(isObjectLayer)!, showToast: m => messages.push(m), selectedObjectId: null,
+186 |       selectedObjectIds: [], setSelectedObjectId: () => {}, chooseObjects: ids => selected.push(...ids) })
+187 |     actions.addMarker({ x: 20, y: 20 }, 16, true)
+188 |     expect(store.getState().asset).toBe(map)
+                                         ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "1600a399-9e29-4b3e-a010-e2d65a054479",
+  kind: "tilemap",
+  name: "fase",
+  createdAt: 1795119691582,
+  updatedAt: 1795119691582,
+  tilesetId: "ts",
+  cols: 4,
+  rows: 4,
+  layers: [
+    {
+      id: "8b1826d0-8d0b-4fe0-a8ba-4f28a57ee92a",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(16) [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
+    }, {
+      kind: "objects",
+      id: "55562001-97ec-414d-9c6c-ff90dadd6d3b",
+      name: "Objetos",
+      visible: true,
+      objects: [],
+      offsetX: 1000,
+    }
+  ],
+}
+Received: {
+  id: "1600a399-9e29-4b3e-a010-e2d65a054479",
+  kind: "tilemap",
+  name: "fase",
+  createdAt: 1795119691582,
+  updatedAt: 1795119691582,
+  tilesetId: "ts",
+  cols: 4,
+  rows: 4,
+  layers: [
+    {
+      id: "8b1826d0-8d0b-4fe0-a8ba-4f28a57ee92a",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(16) [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
+    }, {
+      kind: "objects",
+      id: "55562001-97ec-414d-9c6c-ff90dadd6d3b",
+      name: "Objetos",
+      visible: true,
+      objects: [
+        {
+          id: "1c0d4e4c-c258-4350-9694-549f8695a5f8",
+          name: "Objeto 1",
+          type: "",
+          x: 0,
+          y: 24,
+          width: 0,
+          height: 0,
+          properties: {},
+        }
+      ],
+      offsetX: 1000,
+    }
+  ],
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapTools\mapTools.test.ts:188:36)
+(fail) guarda dos commits > marcador não nasce fora do mapa quando a camada inteira está deslocada para longe
+(pass) guarda dos commits > marcador recusado pelo host ou camada trancada não muda documento nem seleção
+(pass) guarda dos commits > não anuncia gravação quando o host recusa a edição
+(pass) guarda dos commits > não anuncia gravação de uma linhagem anterior à recuperação
+(pass) guarda dos commits > apagar objeto recusado conserva a seleção e o objeto
+(pass) guarda dos commits > mesmo conteúdo em outro objeto não é gravado; conteúdo diferente é
+(pass) seleção de um pedaço do mapa > pedaço só de grade vazia não vira seleção
+(pass) seleção de um pedaço do mapa > marca, levanta, leva para outro lugar e carimba com UM desfazer
+(pass) seleção de um pedaço do mapa > levantar e soltar no MESMO lugar não cria desfazer
+(pass) seleção de um pedaço do mapa > camada trancada: o pedaço não é levantado e apagar não grava nada
+(pass) seleção de um pedaço do mapa > apagar o pedaço marcado limpa as casas com um desfazer; de novo, nada
+(pass) níveis das ferramentas > cada nível mostra mais ferramentas que o anterior
+(pass) níveis das ferramentas > soma com a curadoria da aula e nunca a alarga
+(pass) níveis das ferramentas > a letra do atalho só liga o que está na caixa
+(pass) níveis das ferramentas > os painéis de cada nível
+(pass) níveis das ferramentas > colisão de camada aparece em Criar mais e continua acessível quando o mapa a usa
+(pass) níveis das ferramentas > o que o mapa já usa aparece em qualquer nível
+(pass) níveis das ferramentas > o nível fica guardado por perfil; sem nada guardado é "Começar"
+(pass) minimapa > as cores de um conjunto de peças são calculadas uma vez e reusadas
+(pass) minimapa > o retângulo do que aparece na tela, em frações do mapa
+(pass) relógio das peças animadas > a chave só muda quando algum quadro troca
+
+1 tests failed:
+(fail) guarda dos commits > marcador não nasce fora do mapa quando a camada inteira está deslocada para longe
+
+ 27 pass
+ 1 fail
+ 134 expect() calls
+Ran 28 tests across 1 file. [805.00ms]

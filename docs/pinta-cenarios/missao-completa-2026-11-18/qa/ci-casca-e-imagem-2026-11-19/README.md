@@ -81,3 +81,8 @@ O limite de espera do render verde é 15 segundos, igual ao teste original do `b
 As tentativas falhas anteriores ficam registradas como diagnóstico, não como
 aprovações. A rodada final não usou repetição automática. Nada aqui comprova
 telefone físico, participantes infantis ou desempenho geral de qualquer aparelho.
+
+A continuação do CI encontrou o `textarea` acessível parcial do Monaco no
+Firefox/Linux. A conferência pelo teclado agora lê o programa inteiro por
+seleção/cópia, com sentinela para evitar falso positivo da colagem anterior.
+Veja [o diagnóstico e as novas provas](../firefox-texto-completo-2026-11-19/README.md).

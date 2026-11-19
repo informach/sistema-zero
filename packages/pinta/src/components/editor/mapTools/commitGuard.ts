@@ -40,6 +40,5 @@ export function sameAssetContent(a: PintaAsset, b: PintaAsset): boolean {
 /** Grava com desfazer só quando mudou de verdade. Devolve se gravou. */
 export function commitIfChanged(state: PintaEditorState, next: PintaAsset): boolean {
   if (sameAssetContent(state.asset, next)) return false
-  state.commit(next)
-  return true
+  return state.commit(next)
 }

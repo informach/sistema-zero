@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src\export\scenePackage.test.ts:
+(pass) Pygame and Godot retain affine art and explicitly report omitted incompatible Tiled supplements [47.00ms]
+(pass) the portable Pygame package actually renders the sheared child footprint [390.00ms]
+(pass) pacote Tiled > traz mapas, folhas, imagens, o backup editável e mais nada [125.00ms]
+(pass) pacote Phaser > o ZIP tem a página, o jogo, o Phaser fixado e a licença [219.00ms]
+(pass) pacote Phaser > a página e o jogo não pedem nada da internet [109.00ms]
+(pass) pacote Phaser > as cenas embutidas no main.js são as do maps.json e apontam para imagens do pacote [110.00ms]
+(pass) projeto Pygame portátil > o ZIP tem o módulo, o exemplo e os requisitos [62.00ms]
+(pass) projeto Pygame portátil > todo .py do projeto compila no Python (py_compile) [172.00ms]
+(pass) projeto Pygame portátil > o Python só lê arquivos que estão no pacote [47.00ms]
+(pass) projeto Godot > o ZIP tem o projeto, a cena e o script; os textos passam na conferência [63.00ms]
+(pass) projeto Godot > toda peça que o script pede ao atlas existe na folha e cabe na imagem [46.00ms]
+(pass) projeto Godot > a conferência dos textos pega recurso não declarado, arquivo ausente e seção malformada
+
+src\export\setAdapters.test.ts:
+(pass) a zero-area legacy set remains readable as a degenerate footprint
+(pass) an affinely transformed ellipse retains its exact boundary under nonuniform scaling
+(pass) the embedded JS transformation is exactly the same helper, without external dependencies
+(pass) uniform set reflection and rotation preserve every authored rectangle corner
+(pass) real Pygame expansion and queries match the canonical affine geometry and reference namespaces [406.00ms]
+(pass) Pygame movement tests the rotated tile polygon rather than its expanded bounding box [203.00ms]
+
+ 18 pass
+ 0 fail
+ 5231 expect() calls
+Ran 18 tests across 2 files. [3.54s]

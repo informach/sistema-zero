@@ -35,7 +35,7 @@ export function MapSetEditor(): JSX.Element {
         savedAsset: state.savedAsset.kind === 'map-set' ? state.savedAsset.map : state.savedAsset,
         commit: (a) => {
           const next = changed(a)
-          if (next) outer.editor.getState().commit(next)
+          return next ? outer.editor.getState().commit(next) : false
         },
         replace: (a) => {
           const next = changed(a)

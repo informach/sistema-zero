@@ -33,6 +33,7 @@ import { MAP_EDITOR_LIMITS } from './mapTools/mapEditorLimits'
 interface MapObjectPanelProps {
   layer: TilemapObjectLayer
   selectedObjectId: string | null
+  onAddMarker?: () => void
   /** Mostra tipo, forma, giro e propriedades (o nível "Começar" esconde; o que já existe fica). */
   detailed?: boolean
   onSelectObject: (id: string | null, additive?: boolean) => void
@@ -55,6 +56,7 @@ const FIELD =
 export function MapObjectPanel({
   layer,
   selectedObjectId,
+  onAddMarker,
   detailed = true,
   onSelectObject,
   onUpdateObject,
@@ -67,6 +69,11 @@ export function MapObjectPanel({
   return (
     <>
       <Panel title={COPY.tiles.objectsPanel}>
+        {onAddMarker ? (
+          <Button variant="barOutline" className="mb-2 w-full" onClick={onAddMarker}>
+            {COPY.tiles.addMarker}
+          </Button>
+        ) : null}
         {layer.objects.length === 0 ? (
           <p className="text-sm text-pin-muted">{COPY.tiles.objectsEmpty}</p>
         ) : (

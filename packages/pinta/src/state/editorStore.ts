@@ -29,8 +29,8 @@ export interface PintaEditorState {
   canUndo: boolean
   canRedo: boolean
 
-  /** Aplica uma edição commitada: grava história + agenda autosave. */
-  commit(next: PintaAsset): void
+  /** Aplica a edição, grava história e agenda autosave. False se o host/linhagem recusar. */
+  commit(next: PintaAsset): boolean
   /**
    * Como `commit`, mas a edição TAMBÉM remapeia ASSETS LIGADOS (ex.: editar uma
    * peça do tileset remapeia as células dos mapas dependentes). Os mapas entram
@@ -207,14 +207,14 @@ export function createEditorStore(options: {
       next: PintaAsset,
       recordHistory: boolean,
       linked?: { before: PintaAsset[]; after: PintaAsset[] },
-    ): void {
+    ): boolean {
       const current = get().asset
       // A controller from a gesture that began before conflict recovery may still finish.
       // It must never put the old document back into the adopted copy or its history.
-      if (next.id !== current.id) return
+      if (next.id !== current.id) return false
       const acceptEdit = options.acceptEdit
       if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
-        return
+        return false
       const previousLinked = linked
         ? mergeLinkedAssets(currentLinked, linked.before)
         : currentLinked
@@ -231,6 +231,7 @@ export function createEditorStore(options: {
         canRedo: history.canRedo(),
       })
       scheduleAutosave()
+      return true
     }
 
     return {
@@ -244,7 +245,7 @@ export function createEditorStore(options: {
       canRedo: false,
 
       commit(next) {
-        apply(next, true)
+        return apply(next, true)
       },
 
       commitLinked(next, linked) {

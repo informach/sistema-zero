@@ -1,0 +1,102 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapObjectsUi.test.tsx:
+(pass) camada de objetos no editor de mapa > cria um marcador pelos controles e conserva edição e desfazer no disco [3703.00ms]
+(pass) camada de objetos no editor de mapa > cria a camada, marca um ponto e edita nome, tipo e propriedades [1750.00ms]
+(pass) camada de objetos no editor de mapa > desenha uma área arrastando, encaixa na grade e o Delete apaga o objeto [344.00ms]
+(pass) camada de objetos no editor de mapa > o nome digitado não se perde quando o toque no mapa troca de objeto antes do blur [1500.00ms]
+(pass) camada de objetos no editor de mapa > trocar de objeto sem ter mudado o texto não cria um desfazer vazio [484.00ms]
+(pass) camada de objetos no editor de mapa > com uma janela do Pinta aberta, o Delete não apaga o objeto escolhido [406.00ms]
+(pass) camada de objetos no editor de mapa > a chave recusada (repetida) volta ao nome gravado em vez de mostrar o que não foi salvo [532.00ms]
+(pass) camada de objetos no editor de mapa > a última camada de PEÇAS não tem lixeira; a de objetos tem [250.00ms]
+(pass) peças por camada no editor de mapa > a camada escolhe outras peças do MESMO tamanho; as de outro tamanho não aparecem [1250.00ms]
+
+src\components\editor\mapToolsUi.test.tsx:
+(pass) níveis do editor de mapa > colisão de camada em Criar mais não abre controles técnicos e permanece ao voltar para Começar [234.00ms]
+(pass) níveis do editor de mapa > perfil novo abre em "Começar": poucas ferramentas, poucos painéis e o teste [141.00ms]
+(pass) níveis do editor de mapa > "Criar mais" e "Avançado" mostram mais, e a escolha fica guardada [375.00ms]
+(pass) níveis do editor de mapa > a letra do atalho respeita o nível [281.00ms]
+(pass) níveis do editor de mapa > o que o mapa já usa aparece mesmo em "Começar" [140.00ms]
+(pass) camadas do mapa > subir a camada que já está em cima e pedir grupo no teto não criam desfazer [3141.00ms]
+(pass) camadas do mapa > camada trancada: marcar colisão avisa e não muda nada [266.00ms]
+(pass) camadas do mapa > nomes vêm do texto central e os alvos de toque têm 44 px [125.00ms]
+(pass) balde no mapa > área que já está igual não cria desfazer; a pintada cria um [172.00ms]
+(pass) balde no mapa > a peça virada enche a área virada [1265.00ms]
+(pass) terreno, espalhar e animação da peça > terreno pronto no Começar: cores acessíveis, volta ao lápis e não avisa peça vazia [1375.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com pointercancel não grava nem ocupa o desfazer [266.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com Escape não grava nem ocupa o desfazer [281.00ms]
+(pass) terreno, espalhar e animação da peça > "Peças (separe por vírgula)" aceita a vírgula digitada [156.00ms]
+(pass) terreno, espalhar e animação da peça > o nome do terreno grava ao sair do campo: um desfazer por nome [188.00ms]
+(pass) terreno, espalhar e animação da peça > a duração do quadro só vale ao sair do campo: "500" grava 500, uma vez [250.00ms]
+(pass) objetos do mapa > arte: guardar versão, desfazer/refazer, reconectar e limpar sem perder a animação escolhida [8703.00ms]
+(pass) objetos do mapa > Delete sem nada escolhido não cria desfazer [141.00ms]
+(pass) objetos do mapa > distribuir com dois objetos não cria desfazer; alinhar cria um [2390.00ms]
+(pass) objetos do mapa > colar põe a cópia onde o ponteiro esteve por último sem encaixe [2297.00ms]
+(pass) objetos do mapa > biblioteca: o desenho nasce no ponteiro, e a camada trancada avisa [1438.00ms]
+(pass) formas ponto a ponto > cada toque põe um ponto; Enter fecha o polígono; Esc cancela [1328.00ms]
+(pass) formas ponto a ponto > tocar no primeiro ponto e o toque duplo também fecham [2250.00ms]
+(pass) formas ponto a ponto > arrastar um ponto muda a forma com um desfazer; Delete tira o ponto [2515.00ms]
+(pass) formas ponto a ponto > tocar num trecho põe um ponto novo, e o Delete tira o ponto escolhido [2516.00ms]
+(pass) formas ponto a ponto > objeto girado tem alças: puxar o canto muda o tamanho [1422.00ms]
+(pass) guardar conjunto > guardar modelo conserva a caixa inteira do objeto girado e suas propriedades [437.00ms]
+(pass) guardar conjunto > diz que guardou e o conjunto aparece na galeria [250.00ms]
+(pass) editor de conjunto > ação que não muda nada não cria desfazer; apagar uma casa cria um [407.00ms]
+(pass) minimapa > tocar no minimapa leva o palco para aquele lugar
+(pass) minimapa > mostra o retângulo da parte que aparece na tela e segue a rolagem [31.00ms]
+(pass) testar com personagem > abre com o boneco do Pinta, os personagens da galeria e as duas vistas [297.00ms]
+(pass) inserção e colagem no espaço da camada > arrastar mostra prévia sem salvar e só a soltura cria um objeto e um desfazer [3422.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por escape não grava nem insere pelo clique posterior [1281.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por pointercancel não grava nem insere pelo clique posterior [1312.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por capture não grava nem insere pelo clique posterior [1344.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por blur não grava nem insere pelo clique posterior [1297.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por outside não grava nem insere pelo clique posterior [1422.00ms]
+(pass) inserção e colagem no espaço da camada > biblioteca desconta offset herdado e respeita encaixe false [1359.00ms]
+(pass) inserção e colagem no espaço da camada > biblioteca desconta offset herdado e respeita encaixe true [1250.00ms]
+(pass) inserção e colagem no espaço da camada > colar desconta offset herdado e respeita encaixe false [2328.00ms]
+(pass) inserção e colagem no espaço da camada > colar desconta offset herdado e respeita encaixe true [2328.00ms]
+(pass) inserção e colagem no espaço da camada > Começar mostra a biblioteca de desenhos [219.00ms]
+(pass) pincel de espalhar objetos > só aparece em Criar mais e o teclado entra e sai pela ferramenta normal [281.00ms]
+(pass) pincel de espalhar objetos > prévia não grava; o gesto interpolado grava exatamente os objetos mostrados e um desfazer [3469.00ms]
+(pass) pincel de espalhar objetos > cancelar por escape não confirma a prévia [750.00ms]
+(pass) pincel de espalhar objetos > cancelar por pointercancel não confirma a prévia [610.00ms]
+(pass) pincel de espalhar objetos > cancelar por capture não confirma a prévia [265.00ms]
+(pass) pincel de espalhar objetos > cancelar por blur não confirma a prévia [188.00ms]
+(pass) pincel de espalhar objetos > cancelar por outside não confirma a prévia [187.00ms]
+(pass) pincel de espalhar objetos > cancelar por settings não confirma a prévia [250.00ms]
+(pass) pincel de espalhar objetos > cancelar por tool não confirma a prévia [203.00ms]
+(pass) pincel de espalhar objetos > cancelar por source não confirma a prévia [375.00ms]
+(pass) biblioteca usa o tamanho inteiro do conjunto para posicioná-lo dentro do mapa [1188.00ms]
+
+src\components\editor\mapTools\mapTools.test.ts:
+(pass) balde > enche com a peça do carimbo, com os bits de virar
+(pass) balde > sem carimbo, enche com a peça escolhida
+(pass) balde > área que já está igual e camada trancada devolvem o MESMO mapa (nada a gravar)
+(pass) balde > com "espalhar" ligado, o balde espalha na região inteira
+(pass) pincel > lápis, borracha e carimbo
+(pass) pincel > terreno sem as peças de borda avisa e não muda o mapa
+(pass) guarda dos commits > marcador usa o offset herdado uma vez, com uma entrada de histórico
+(pass) guarda dos commits > marcador recusado pelo host ou camada trancada não muda documento nem seleção
+(pass) guarda dos commits > não anuncia gravação quando o host recusa a edição
+(pass) guarda dos commits > não anuncia gravação de uma linhagem anterior à recuperação
+(pass) guarda dos commits > apagar objeto recusado conserva a seleção e o objeto
+(pass) guarda dos commits > mesmo conteúdo em outro objeto não é gravado; conteúdo diferente é
+(pass) seleção de um pedaço do mapa > pedaço só de grade vazia não vira seleção
+(pass) seleção de um pedaço do mapa > marca, levanta, leva para outro lugar e carimba com UM desfazer
+(pass) seleção de um pedaço do mapa > levantar e soltar no MESMO lugar não cria desfazer
+(pass) seleção de um pedaço do mapa > camada trancada: o pedaço não é levantado e apagar não grava nada
+(pass) seleção de um pedaço do mapa > apagar o pedaço marcado limpa as casas com um desfazer; de novo, nada
+(pass) níveis das ferramentas > cada nível mostra mais ferramentas que o anterior
+(pass) níveis das ferramentas > soma com a curadoria da aula e nunca a alarga
+(pass) níveis das ferramentas > a letra do atalho só liga o que está na caixa
+(pass) níveis das ferramentas > os painéis de cada nível
+(pass) níveis das ferramentas > colisão de camada aparece em Criar mais e continua acessível quando o mapa a usa
+(pass) níveis das ferramentas > o que o mapa já usa aparece em qualquer nível
+(pass) níveis das ferramentas > o nível fica guardado por perfil; sem nada guardado é "Começar"
+(pass) minimapa > as cores de um conjunto de peças são calculadas uma vez e reusadas
+(pass) minimapa > o retângulo do que aparece na tela, em frações do mapa
+(pass) relógio das peças animadas > a chave só muda quando algum quadro troca
+
+ 90 pass
+ 0 fail
+ 1220 expect() calls
+Ran 90 tests across 3 files. [71.41s]

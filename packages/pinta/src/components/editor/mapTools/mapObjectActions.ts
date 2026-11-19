@@ -2,16 +2,21 @@
 import { COPY } from '../../../core/copy'
 import {
   effectiveLayer,
+  PINTA_LIMITS,
   type TilemapAsset,
   type TilemapObjectLayer,
   type TilemapObjectPropertyValue,
 } from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import {
+  addMapObject,
+  createMapObject,
   type MapObjectPatch,
+  nextObjectName,
   nextPropertyKey,
   objectLayerById,
   removeMapObject,
+  snapObjectPoint,
   updateMapObject,
   withObjectProperty,
   withoutObjectProperty,
@@ -38,10 +43,12 @@ export function createMapObjectActions(deps: {
     return true
   }
 
-  function commitEdit(edit: (map: TilemapAsset, objectLayerId: string) => TilemapAsset): void {
+  function commitEdit(edit: (map: TilemapAsset, objectLayerId: string) => TilemapAsset): boolean {
     const state = editor.getState()
-    if (state.asset.kind !== 'tilemap' || !activeObjectLayer) return
-    if (!commitIfChanged(state, edit(state.asset, activeObjectLayer.id))) locked(state.asset)
+    if (state.asset.kind !== 'tilemap' || !activeObjectLayer) return false
+    const accepted = commitIfChanged(state, edit(state.asset, activeObjectLayer.id))
+    if (!accepted) locked(state.asset)
+    return accepted
   }
 
   function update(id: string, patch: MapObjectPatch): void {
@@ -82,11 +89,43 @@ export function createMapObjectActions(deps: {
   }
 
   return {
+    addMarker(position: { x: number; y: number }, tileSize: number, snap: boolean): void {
+      const state = editor.getState()
+      if (state.asset.kind !== 'tilemap' || !activeObjectLayer || locked(state.asset)) return
+      const map = state.asset
+      const layer = objectLayerById(map, activeObjectLayer.id)
+      if (!layer) return
+      const offset = effectiveLayer(map, layer)
+      const coordinate = (value: number, shift: number, cells: number): number | null => {
+        const minimum = Math.max(0, Math.ceil(-shift))
+        const maximum = Math.min(PINTA_LIMITS.maxObjectCoord, Math.floor(cells * tileSize - shift))
+        return maximum < minimum
+          ? null
+          : Math.max(minimum, Math.min(maximum, snapObjectPoint(value - shift, tileSize, snap)))
+      }
+      const x = coordinate(position.x, offset.offsetX, map.cols)
+      const y = coordinate(position.y, offset.offsetY, map.rows)
+      if (x === null || y === null) {
+        showToast(COPY.scene.libraryUnavailable)
+        return
+      }
+      const object = createMapObject({
+        name: nextObjectName(layer),
+        x,
+        y,
+      })
+      const next = addMapObject(map, layer.id, object)
+      if (next === map) {
+        showToast(COPY.tiles.objectLimit)
+        return
+      }
+      if (commitIfChanged(state, next)) deps.chooseObjects([object.id])
+    },
     update,
     setProperty,
     remove(id: string): void {
-      commitEdit((map, objectLayerId) => removeMapObject(map, objectLayerId, id))
-      if (id === deps.selectedObjectId) deps.setSelectedObjectId(null)
+      const accepted = commitEdit((map, objectLayerId) => removeMapObject(map, objectLayerId, id))
+      if (accepted && id === deps.selectedObjectId) deps.setSelectedObjectId(null)
     },
     removeProperty(id: string, key: string): void {
       const properties = liveProperties(id)
@@ -109,8 +148,8 @@ export function createMapObjectActions(deps: {
           s.asset,
         ),
       )
-      deps.chooseObjects([])
-      return removed
+      if (removed) deps.chooseObjects([])
+      return true
     },
   }
 }

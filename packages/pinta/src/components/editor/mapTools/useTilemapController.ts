@@ -33,6 +33,7 @@ import { useWheelZoom } from '../useWheelZoom'
 import { paintMapCanvas } from './mapCanvas'
 import { createMapLayerActions } from './mapLayerActions'
 import {
+  isMapToolAvailable,
   type MapLevel,
   mapFeaturesFor,
   mapFeaturesInUse,
@@ -588,6 +589,8 @@ export function useTilemapController(model: ReadyMapModel) {
     selectStamp,
     trackPointer,
     placementPoint,
+    canAddMarker: isMapToolAvailable(level, allowTools, 'object-point'),
+    addMarker: () => objects.addMarker(placementPoint(), tileSize, snapObjects),
     libraryPlacement,
     copySelection,
     saveSelectionAsSet,

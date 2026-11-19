@@ -119,6 +119,7 @@ function TilemapWorkspace({
       <MapObjectPanel
         layer={activeObjectLayer}
         selectedObjectId={c.selectedObjectId}
+        onAddMarker={c.canAddMarker ? c.addMarker : undefined}
         detailed={features.objectDetails}
         onSelectObject={c.chooseObject}
         onUpdateObject={c.objects.update}
