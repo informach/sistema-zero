@@ -206,3 +206,50 @@ Próximo passo para a abertura, não feito: carregar a pilha em pedaços, desmon
 longe enquanto carrega (o DOM pequeno tira o custo que cresce), e desenhar de novo só o que está
 à vista. Mexe na carga de todo projeto, então precisa da prova de que o estado e o código saem
 iguais nos sete projetos dos cursos antes de entrar.
+
+## Abertura sem trabalho repetido (19/11/2026, lote 2.2)
+
+Linux deste contêiner, Chromium 1243 sem interface e sem placa de vídeo, 1440×900, fixture
+`/aula?…&escala=N`, dois builds locais (`baseline` = staging antes do lote, `candidate`) servidos
+lado a lado e medidos com `scripts/measure-classic-opening.mjs` em ordem alternada. Não comparar
+com as tabelas acima (outra máquina e outra sessão).
+
+**O que o perfil de CPU mostrou** (5 mil blocos, `SZ_CLASSIC_OPEN_CPU_PROFILE=1`, nomes
+resolvidos no bundle e confirmados no código-fonte do Blockly 12.5.1 extraído do source map):
+
+| Onde | Custo | Por quê |
+|---|---|---|
+| `dom.getTextWidth` | 3,1 s | `getComputedStyle` por campo. A memória de larguras do Blockly dura só o desenho de UM bloco. Contagem no navegador: 4 076 medições para 90 textos distintos (2 mil blocos). |
+| Construtor do `Drawer` | 0,9 s | `topLeft_ = block.getRelativeToSurfaceXY()` em todo desenho, e nada lê `topLeft_` (uma atribuição, nenhuma leitura no `blockly_compressed.js`). A cadeia única de eventos faz a subida pelo DOM ser O(profundidade). |
+| Pós-carga duplicada | uma repintura inteira + um `regenerateFromBlocks` a mais | O Blockly despacha eventos em `requestAnimationFrame → setTimeout(0)`. O fallback "se o FINISHED_LOADING não vier" era um microtask e rodava SEMPRE antes do evento; os dois salvavam, regeneravam e repintavam tudo. |
+| `svgResize` | 1,5 s | layout forçado da página inteira; cai com menos nós, não com menos código. |
+
+**O que mudou** (`src/blockly/openingRender.ts`, `BlocklyPanel.tsx`):
+
+1. O `Drawer` nasce sem a subida pelo DOM (o valor descartado vira a origem só durante
+   `makeDrawer_`).
+2. A abertura espera a fonte da página (no máximo 1,5 s; depois disso abre como antes) e liga a
+   memória de larguras do próprio Blockly da carga até a fila de desenho esvaziar depois da
+   repintura. Medir antes da fonte era o risco que derrubou a tentativa de 18/11; agora a
+   memória só liga com `document.fonts.status === 'loaded'`. A tentativa anterior também não
+   pegava nada: cobria só `workspaces.load`, e o desenho acontece no quadro seguinte.
+3. O fallback pós-carga passou para o mesmo caminho do despacho do Blockly e só trabalha quando
+   o evento não veio.
+
+Medições no navegador: 4 076 → 90 chamadas de `getComputedStyle` em texto (2 mil blocos).
+
+| Blocos | Abrir antes | depois | Maior tarefa antes | depois |
+|---|---|---|---|---|
+| 2 002 | 5,4 a 6,0 s | 4,2 a 4,8 s | 2,3 a 2,5 s | 1,6 a 1,9 s |
+| 5 002 | 19,4 a 20,0 s | 14,5 a 15,1 s | 9,9 a 10,2 s | 7,6 a 8,1 s |
+
+"Abrir" é o campo "480" editável; `settledMs` (contagem de blocos desenhados parada por 1 s,
+acrescentado ao script) ficou a menos de 10 ms dele em todas as amostras. Duas amostras por
+braço: é ordem de grandeza, não p95.
+
+**O que isso NÃO resolve.** A meta de 8 s com 5 mil blocos continua longe. O que sobra é criar e
+desenhar todos os SVGs (criação ~2,2 s, desenho, layout ~1,5 s). Fica descartada a ideia de
+recolher os corpos distantes na carga: `render_management.renderBlock` desenha todos os filhos de
+um bloco recolhido do mesmo jeito. O caminho que resta é não criar os corpos distantes
+(estado JSON guardado fora do workspace e montado ao chegar perto), com `save` recompondo o
+estado inteiro. Ainda não foi feito.

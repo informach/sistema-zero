@@ -1,4 +1,5 @@
 import { registerFieldColour } from '@blockly/field-colour'
+import { installDrawerOriginShortcut } from './openingRender'
 // Plugin oficial que adiciona uma categoria "Buscar" à toolbox com filtro ao
 // vivo dos blocos pelo texto (auto-registra a categoria `kind: 'search'`).
 import '@blockly/toolbox-search'
@@ -271,6 +272,8 @@ export function ensureBlocklyInitialized(): void {
   // Traduz a UI nativa do Blockly (menu de contexto: Desfazer, Refazer,
   // "Arrumar Blocos", Recolher/Expandir, Excluir, etc.) para PT-BR.
   Blockly.setLocale(PtBr as unknown as Record<string, string>)
+  // O desenho não sobe o DOM inteiro por bloco para guardar uma posição que ninguém lê.
+  installDrawerOriginShortcut()
   // Blockly 11 removeu FieldColour do core — registramos o plugin oficial
   // para que `field_colour` continue funcionando (usado por extensões) e
   // adicionamos `field_colour_sz` com paleta MakeCode + input HEX.

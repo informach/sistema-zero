@@ -103,12 +103,31 @@ try {
             .first()
             .waitFor({ state: 'visible', timeout: 120_000 })
           await page.waitForFunction(() => !document.querySelector('[data-aula-bloco] [inert]'))
+          const measured = await page.evaluate(() => window.__openingMeasurement())
+          // "Aberto" de verdade (19/11/2026): o campo pronto pode aparecer antes de o resto
+          // ser desenhado. `settledMs` espera a contagem de blocos desenhados ficar parada por
+          // 1 s, a mesma régua do `e2e/classic-scale.spec.ts`; os dois números vão juntos.
+          const settled = await page.evaluate(async () => {
+            const count = () => document.querySelectorAll('.blocklyDraggable').length
+            let last = count()
+            let stableSince = performance.now()
+            while (performance.now() - stableSince < 1000) {
+              await new Promise((resolve) => setTimeout(resolve, 100))
+              const now = count()
+              if (now !== last) {
+                last = now
+                stableSince = performance.now()
+              }
+            }
+            return { settledMs: stableSince, drawnBlocks: last }
+          })
           const sample = {
             arm: arm.name,
             size,
             repeat,
             cpuProfileEnabled: Boolean(profiler),
-            ...(await page.evaluate(() => window.__openingMeasurement())),
+            ...measured,
+            ...settled,
           }
           report.samples.push(sample)
           console.log(JSON.stringify(sample))
