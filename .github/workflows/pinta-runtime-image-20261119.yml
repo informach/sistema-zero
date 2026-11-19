@@ -1,0 +1,64 @@
+name: Qualificar imagem Linux de staging do Pinta
+
+on:
+  push:
+    branches: [pinta-runtime-image-20261119]
+    paths: [.github/workflows/pinta-runtime-image-20261119.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PINTA_SOURCE_SHA: e193c8f8f7ea6fbe1afca37141bcdd6f8dcb7f39
+      STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: e193c8f8f7ea6fbe1afca37141bcdd6f8dcb7f39
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Conferir fonte fixa e instalar dependências
+        run: |
+          test "$(git rev-parse HEAD)" = "$PINTA_SOURCE_SHA"
+          bun install --frozen-lockfile
+      - name: Conferir perfil e construir imagem sem credenciais de implantação
+        working-directory: packages/studio-runtime
+        run: bun run build:image
+      - name: Executar contratos reais na imagem
+        working-directory: packages/studio-runtime
+        run: |
+          bun tests/image-smoke.ts
+          bun tests/validation-smoke.ts
+      - name: Preparar distribuição hermética para os ensaios nativos
+        run: bun packages/studio/scripts/build-python-runtime.ts
+      - name: Executar Python e Three reais sem rede externa
+        run: |
+          bun packages/studio-runtime/tests/python-mission-smoke.ts
+          bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
+          bun packages/studio-runtime/tests/three-objectives-smoke.ts
+      - name: Empacotar somente a imagem qualificada e seus recibos
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/pinta-runtime-image
+          docker image save sistemazero-studio-runtime:verify | gzip -1 > .cache/pinta-runtime-image/runtime-image.tar.gz
+          sha256sum .cache/pinta-runtime-image/runtime-image.tar.gz > .cache/pinta-runtime-image/SHA256SUMS
+          cp packages/studio-runtime/runtime/validation-profile.json .cache/pinta-runtime-image/validation-profile.json
+          printf '%s\n' "$PINTA_SOURCE_SHA" > .cache/pinta-runtime-image/source-sha.txt
+          docker image inspect sistemazero-studio-runtime:verify --format '{{.Id}}' > .cache/pinta-runtime-image/image-id.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pinta-staging-runtime-image-e193c8f8f
+          path: .cache/pinta-runtime-image/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
