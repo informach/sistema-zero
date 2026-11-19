@@ -1,6 +1,11 @@
 name: Studio native input diagnostics
 
 on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-input-diagnostics.yml'
+      - 'packages/studio/e2e/helpers/previewInputDiagnostics.ts'
   workflow_dispatch:
 
 permissions:

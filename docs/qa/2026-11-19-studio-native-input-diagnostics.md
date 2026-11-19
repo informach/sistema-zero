@@ -32,11 +32,15 @@ os anexos registraram as dez transições nativas de tecla de cada caso
 (WASD e espaço), sem modificadores. A coleta e o helper de eventos Python
 passaram em checagem TypeScript focada; Biome dos arquivos passou.
 
-O workflow manual `studio-input-diagnostics.yml` executa os cinco casos
+O workflow `studio-input-diagnostics.yml` executa os cinco casos
 suspeitos, três vezes, em Linux e Windows com Chromium completo. Mantém
 os prazos, as teclas e os critérios originais, sem retries. Seu objetivo
 é obter reprodução e evidência antes de alterar o produto. Uma execução
 diagnóstica verde não apaga as falhas anteriores nem conclui a missão.
+
+O disparo manual inicial retornou 404 porque o workflow novo não existe
+na branch padrão. Para não alterar a `main`, o recorte é disparado por
+push em `staging` restrito a esse YAML e ao helper diagnóstico.
 
 Os servidores de diagnóstico nas portas 5357/5358 foram encerrados pelos
 PIDs verificados de seus processos Vite; a consulta posterior confirmou
