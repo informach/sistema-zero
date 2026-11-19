@@ -108,9 +108,13 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     ).toEqual([])
     expect(
       Object.keys(chunk.modules).filter((moduleId) =>
-        ['projectJsonGraphDecode.ts', 'exitJournalDecode.ts', 'synchronousExitJournalRead.ts'].some(
-          (file) => moduleId.replace(/\\/g, '/').endsWith(`/state/${file}`),
-        ),
+        [
+          'projectJsonGraphDecode.ts',
+          'exitJournalDecode.ts',
+          'synchronousExitJournalRead.ts',
+          'projectIndexedRecovery.ts',
+          'projectRecoveryGuards.ts',
+        ].some((file) => moduleId.replace(/\\/g, '/').endsWith(`/state/${file}`)),
       ),
     ).toEqual([])
   }

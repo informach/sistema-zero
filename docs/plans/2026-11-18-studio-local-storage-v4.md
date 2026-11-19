@@ -1,6 +1,7 @@
 # Armazenamento local v4: árvores profundas sem perda
 
-Branch de laboratório: estudio-deep-storage-v4-20261118, criada em 4bf685ecc.
+Origem do laboratório: estudio-deep-storage-v4-20261118, criada em 4bf685ecc.
+Branch atual: estudio-deep-storage-boundary-20261118; base promovida em 5028657f6.
 A missão/PR273 permanece em estudio-missao-completar-20261118. Não promover
 este laboratório enquanto migração, testes nativos e compatibilidade falharem.
 
@@ -132,15 +133,19 @@ edição real. A ativação e integração na PR continuam bloqueadas por esses 
   quando existir. Um registro completo pode virar recovery v4 pelo CAS atual;
   um registro incompleto depende da partição/base ou backup exato e não pode
   virar bloco opaco/vazio para passar o teste.
-- Cada fonte de recovery recebe um recibo imutável v4 por hash do **payload
-  inteiro**, incluindo campos desconhecidos. Enfileirar no journal existente e
-  arquivar o original na mesma transação, comparando a fonte. Remover a fonte
-  IndexedDB só nessa promoção; reconhecer a cópia síncrona somente depois.
+- Cada fonte de recovery recebe um recibo imutável v4, indexado pelo hash da
+  identidade e token, contendo o **payload original inteiro** e seu hash,
+  incluindo campos desconhecidos. Reutilização da identidade com outro payload
+  bloqueia a promoção e conserva as duas fontes. Enfileirar no journal existente
+  e arquivar o original comparando a fonte. Remover a fonte IndexedDB e reconhecer
+  a cópia síncrona somente depois da confirmação durável correspondente.
   O recibo torna um crash entre promoção e reconhecimento idempotente.
-- Reusar a chave canônica de recovery com escritor/token derivados do hash da
-  fonte para não sobrescrever outra revisão com token reutilizado. A base antiga
-  só autoriza o CAS se ainda corresponder à cabeça atual. Caso contrário o fluxo
-  existente cria cópia recuperada. Nunca usar a cabeça atual como força de escrita.
+- Conservar escritor/token ao projetar as chaves v3 em v4: são necessários para
+  reconhecer a cabeça importada e as relações entre descendentes. Um recibo
+  imutável por identidade/token compara o payload original inteiro e recusa
+  reutilização com outro conteúdo. A base antiga só autoriza o CAS se ainda
+  corresponder à cabeça atual. Caso contrário o fluxo existente cria cópia
+  recuperada. Nunca usar a cabeça atual como força de escrita.
 - O carregamento chama a migração antes de oferecer as entradas v3 ao recovery
   v4. Listagem e abertura reconhecem também v3/tombstones/rascunhos; uma fonte
   futura/corrompida continua preservada e aparece como pendência compreensível.
@@ -169,3 +174,54 @@ de blocos, migração da base e aborto de saída. Typecheck aprovado. Bundle ini
 Pendências para ativar: migração dos journals v3 nativos e síncronos, validação
 integral deles, carregadores/listagem, layouts v1/v2 e homologação do editor.
 Este checkpoint não conclui a migração nem foi integrado à PR de produto.
+
+
+## Reforço do protocolo antes de migrar journals — 19/11/2026
+
+A revisão reproduziu três falhas no caminho nativo: token reutilizado com outro
+conteúdo entre espelhos, partição de outro projeto e documento de formato futuro.
+A correção foi qualificada na branch da PR (5b954982d), sem ativar v4. O mesmo
+validador raro agora protege controle, identidade e namespace dos journals.
+Neste laboratório ele aceita parâmetro explícito 3/4, testando também chaves de
+ancestrais e recusa de contratos futuros, sem mudar o namespace padrão.
+
+Um ensaio posterior reproduziu snapshot obsoleto aplicado depois de trocar o
+journal antes do CAS. A transação agora compara a fonte inteira e a recuperação
+seguinte aplica o novo conteúdo. A cópia recuperada também compara fonte e
+arquivo original para não reconhecer outro payload só pelo token. A preparação
+rara foi separada do coordenador inicial; a captura de saída continua síncrona.
+Os testes e typecheck finais dessa divisão estão sendo registrados antes do
+checkpoint. A migração de journals continua sem ativação e sem integração nos
+carregadores; não considerar a missão nem a migração concluídas.
+
+Regressão do laboratório após a divisão e comparação no CAS: 474 testes,
+2.542 asserções, 75 arquivos, zero falhas, 53,47 s; inclui o estresse de dez mil
+registros e migração de base nos dois motores nativos, com aborto de saída.
+
+## Preparo e arquivo imutável do rascunho v3
+
+O laboratório agora prepara uma projeção v3→v4 mantendo escritor, token, base,
+sequência e ancestrais. Muda as chaves locais e o marcador do meta, sem alterar
+código, blocos, materiais ou histórico. O documento inteiro é validado antes do
+preparo. A fonte é capturada por valor: alterações posteriores não afetam o
+snapshot. Metadados legados desconhecidos, undefined e zero negativo sobrevivem.
+
+O arquivo usa o backup da mesma base IndexedDB e a promoção CAS existente.
+A chave identifica projeto/escritor/token; o registro contém o grafo completo e
+seu SHA-256, pela função de hash já existente. Um token com outro conteúdo não
+sobrescreve o recibo. O arquivo não apaga journals, não reconhece espelhos e não
+enfileira a projeção. Fontes trocadas e falta de quota preservam o original.
+
+Seis testes específicos/24 asserções passaram, incluindo injeção real de quota,
+concorrência de fonte, idempotência, metadados desconhecidos e identidade alheia.
+Com a guarda de namespaces, oito testes/32 asserções passaram. Typecheck completo
+aprovado após tipar a fixture pelo contrato RecoveryWrite (a primeira execução
+rejeitou o literal version alargado para number). A conexão desta preparação com
+o replay/listagem e reconhecimento das fontes permanece por implementar.
+
+Checkpoint final deste preparo: 480 testes/2.566 asserções, 76 arquivos,
+zero falhas, 52,14 s, com estresse nativo e aborto nos dois motores. Bundle:
+365.506 bytes brutos, 119.211 gzip, dois arquivos; 35 asserções aprovadas em
+18,63 s. Typecheck completo aprovado. A guarda inicial também exige ausência
+dos novos módulos raros. A versão padrão continua 3; este commit de laboratório
+não ativa, enfileira ou reconhece rascunhos v3 projetados.

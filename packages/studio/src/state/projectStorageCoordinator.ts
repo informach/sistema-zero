@@ -12,6 +12,7 @@ import {
 } from './idbTransaction'
 import {
   APPLICATION_BUDGET_KEY,
+  type ProjectStorageVersion,
   PROJECT_RECOVERY_PREFIX,
   projectApplicationsKey,
   projectAssetsKey,
@@ -19,13 +20,11 @@ import {
   projectFilesKey,
   projectHeadKey,
   projectMetaKey,
-  projectMigrationKey,
   projectRecoveryKey,
   projectStateKey,
 } from './projectStorageKeys'
 import {
   assembleProjectRecord,
-  projectStorageEntries,
   type StoredProjectRecord,
 } from './projectStorageRecords'
 import {
@@ -39,7 +38,6 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { toProjectSummary } from './projectSummary'
 import {
   ExitJournalError,
   hasSynchronousExitJournal,
@@ -226,11 +224,12 @@ function prepare(
   }
 }
 
-async function commit(
+export async function commitProjectRecovery(
   scope: ProjectStorageScope,
   incoming: RecoveryWrite,
   generation: number,
   rejectEqualSequence = false,
+  unchangedRecovery?: (stored: unknown) => boolean,
 ): Promise<void> {
   const { projectId: id, head, write, applications } = incoming
   const recoveryKey = projectRecoveryKey(id, head.writer)
@@ -251,6 +250,8 @@ async function commit(
       ...sources.map((source) => source.key),
     ],
     ([rawHead, meta, oldJournal, oldBudget, recovery, ...sourceValues]) => {
+      if (unchangedRecovery && !unchangedRecovery(recovery))
+        throw new Error('A recuperação mudou antes da gravação. A revisão atual foi preservada.')
       const current = isLocalHead(rawHead) ? rawHead : undefined
       if (rawHead !== undefined && !current) throw new ProjectWriteConflict()
       // Existing documents without a head must have been opened first, never blind-overwritten.
@@ -321,7 +322,7 @@ export function coordinatedProjectWrite(
   resetApplications = false,
 ): Promise<void> {
   const incoming = { ...prepare(project, write, scope), resetApplications }
-  return commit(scope, incoming, generation).then(async () => {
+  return commitProjectRecovery(scope, incoming, generation).then(async () => {
     const stamp = readLocalRevision(project)!
     stamp.lineage.durableToken = incoming.head.token
     stamp.lineage.recovery = false
@@ -403,7 +404,7 @@ export function stageProjectExit(
     })
 }
 
-/** Kept when conflicting; recovery never replaces a newer writer's document. */
+/** Load recovery preparation only when a native journal is actually present. */
 export async function recoverIndexedProjectWrites(
   scope: ProjectStorageScope,
   projectId?: string,
@@ -411,45 +412,12 @@ export async function recoverIndexedProjectWrites(
   synchronousTokens: ReadonlySet<string> = new Set(),
   mustCopy?: (recovery: RecoveryWrite) => boolean,
 ): Promise<{ recovered: string[]; consumed: Set<string> }> {
-  const keys = (knownKeys ?? (await readAllKeys(scope.store))).filter(
-    (key): key is string =>
-      typeof key === 'string' &&
-      key.startsWith(
-        projectId ? `${PROJECT_RECOVERY_PREFIX}${projectId}:` : PROJECT_RECOVERY_PREFIX,
-      ),
-  )
-  const values = await readValues(scope.store, keys)
-  const recovered: string[] = []
-  const consumed = new Set<string>()
-  for (const recovery of latestRecoveries(values)) {
-    try {
-      if (mustCopy?.(recovery)) throw new ProjectWriteConflict()
-      await commit(
-        scope,
-        recovery,
-        conditionalGeneration(scope.identity),
-        synchronousTokens.has(recovery.head.token),
-      )
-      recovered.push(recovery.projectId)
-      consumed.add(recovery.head.token)
-    } catch (error) {
-      // One failed recovery (quota, incompatible journal or corrupt draft) must not
-      // prevent access to the committed document or the rest of the profile.
-      if (error instanceof ProjectWriteConflict) {
-        try {
-          const copied = await copyConflictingRecovery(scope, recovery)
-          if (copied) recovered.push(copied)
-          const [remaining] = await readValues(scope.store, [
-            projectRecoveryKey(recovery.projectId, recovery.head.writer),
-          ])
-          if (copied || remaining === undefined) consumed.add(recovery.head.token)
-        } catch {
-          /* The complete original draft stays in its recovery partition. */
-        }
-      }
-    }
-  }
-  return { recovered, consumed }
+  const keys = knownKeys ?? (await readAllKeys(scope.store))
+  const prefix = projectId ? `${PROJECT_RECOVERY_PREFIX}${projectId}:` : PROJECT_RECOVERY_PREFIX
+  if (!keys.some((key) => typeof key === 'string' && key.startsWith(prefix)))
+    return { recovered: [], consumed: new Set() }
+  const recovery = await import('./projectIndexedRecovery')
+  return recovery.recoverIndexedProjectWrites(scope, projectId, keys, synchronousTokens, mustCopy)
 }
 
 /** Keep uncommon synchronous-journal decoding out of the initial project list. */
@@ -464,160 +432,39 @@ export async function recoverProjectWrites(
   return recoverSynchronousProjectWrites(scope, projectId, knownKeys)
 }
 
-export function projectFromRecovery(recovery: RecoveryWrite): StoredProjectRecord | null {
+export function projectFromRecovery(
+  recovery: RecoveryWrite,
+  version?: ProjectStorageVersion,
+): StoredProjectRecord | null {
   const records = new Map(recovery.write.puts)
   const id = recovery.projectId
   return assembleProjectRecord(
     id,
-    records.get(projectMetaKey(id)),
-    records.get(projectFilesKey(id)),
-    records.get(projectStateKey(id)),
-    records.get(projectAssetsKey(id)),
-    records.get(projectBlocksKey(id)),
+    records.get(projectMetaKey(id, version)),
+    records.get(projectFilesKey(id, version)),
+    records.get(projectStateKey(id, version)),
+    records.get(projectAssetsKey(id, version)),
+    records.get(projectBlocksKey(id, version)),
   )
 }
 
-/** Editor-only fallback. Cloud/export-by-ID continue reading the committed document. */
+/** Editor-only fallback; cloud/export keep reading the committed revision. */
 export async function loadRecoverableProjectDraft(
   scope: ProjectStorageScope,
   id: string,
 ): Promise<EditableStudioProject | null> {
-  const keys = (await readAllKeys(scope.store)).filter(
-    (key): key is string =>
-      typeof key === 'string' && key.startsWith(`${PROJECT_RECOVERY_PREFIX}${id}:`),
-  )
-  if (!keys.length) return null
-  const [rawHead, ...records] = await readValues(scope.store, [projectHeadKey(id), ...keys])
-  const head = isLocalHead(rawHead) ? rawHead : undefined
-  const eligible = latestRecoveries(records).filter(
-    (draft) =>
-      !draft.incompleteBlocks &&
-      (head?.token === draft.head.token || acceptsLocalHead(head, draft.head)),
-  )
-  if (eligible.length !== 1) return null // Never choose between competing writers silently.
-  const draft = eligible[0]!
-  try {
-    const raw = projectFromRecovery(draft)
-    const { prepareEditableStudioProject } = await import('./editableProjectValidation')
-    const project = raw && (await prepareEditableStudioProject(raw))
-    if (!project) return null
-    installLocalRevision(project, scope.identity, head)
-    const stamp = readLocalRevision(project)!
-    stamp.lineage.recovery = true
-    stamp.lineage.recoverySources = [
-      ...(draft.replacesRecovery ?? []),
-      { key: projectRecoveryKey(id, draft.head.writer), token: draft.head.token },
-    ]
-    for (const record of journal(draft.applications))
-      stamp.lineage.pending.set(record.operationId, { sequence: stamp.sequence, record })
-    return project
-  } catch {
-    return null
-  }
+  const recovery = await import('./projectIndexedRecovery')
+  return recovery.loadRecoverableProjectDraft(scope, id)
 }
 
 export async function listPreservedProjectDrafts(
   scope: ProjectStorageScope,
   knownKeys: readonly IDBValidKey[],
 ) {
-  const keys = knownKeys.filter(
-    (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX),
-  )
-  const records = await readValues(scope.store, keys)
-  return records.flatMap((value) => {
-    const draft = value as RecoveryWrite | undefined
-    if (draft?.version !== 1 || !Array.isArray(draft.write?.puts)) return []
-    const project = projectFromRecovery(draft)
-    if (!project) return []
-    const summary = toProjectSummary(project.id, project)
-    if (!summary) return []
-    return [
-      {
-        ...summary,
-        hasPreservedEdit: true as const,
-        ...(draft.incompleteBlocks ? { migrationPending: true as const } : {}),
-      },
-    ]
-  })
-}
-
-/** Complete conflicting drafts become a new document, never a merge into the winner. */
-async function copyConflictingRecovery(
-  scope: ProjectStorageScope,
-  recovery: RecoveryWrite,
-): Promise<string | undefined> {
-  if (recovery.incompleteBlocks) return
-  const source = recovery.projectId
-  const raw = projectFromRecovery(recovery)
-  if (!raw) return
-  const { prepareEditableStudioProject } = await import('./editableProjectValidation')
-  const project = await prepareEditableStudioProject(raw)
-  if (!project) return
-  const id = `recuperado-${source.slice(0, 28)}-${recovery.head.token.replaceAll('-', '').slice(0, 24)}`
-  const copy = { ...project, id, name: `${project.name.slice(0, 176)} (edição recuperada)` }
-  const stagedKey = projectRecoveryKey(source, recovery.head.writer)
-  const sources = (recovery.replacesRecovery ?? []).filter(
-    (entry) =>
-      entry.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${source}:`) && entry.key !== stagedKey,
-  )
-  return conditionalWrite(
-    scope.store,
-    scope.identity,
-    conditionalGeneration(scope.identity),
-    [
-      stagedKey,
-      projectMetaKey(id),
-      projectHeadKey(id),
-      projectMigrationKey(id),
-      ...sources.map((entry) => entry.key),
-    ],
-    ([latest, existing, targetHead, provenance, ...ancestors]) => {
-      const draft = latest as RecoveryWrite | undefined
-      if (draft?.head.token !== recovery.head.token) return { write: {}, result: undefined }
-      // An inconsistent live head cannot stand in for a recovered document.
-      if (!existing && targetHead && !(isLocalHead(targetHead) && targetHead.deleted))
-        return { write: {}, result: undefined }
-      // Keep inverse patches and all source journal fields with the recovered copy.
-      const archived = provenance as { exitRecovery?: RecoveryWrite } | undefined
-      if (
-        existing &&
-        !(isLocalHead(targetHead) && targetHead.deleted) &&
-        archived?.exitRecovery?.head.token !== recovery.head.token
-      )
-        return { write: {}, result: undefined }
-      const deletes = [
-        stagedKey,
-        ...sources.flatMap((entry, index) =>
-          (ancestors[index] as RecoveryWrite | undefined)?.head.token === entry.token
-            ? [entry.key]
-            : [],
-        ),
-      ]
-      return {
-        write: {
-          puts:
-            existing || targetHead
-              ? []
-              : [
-                  ...projectStorageEntries(copy),
-                  [projectMigrationKey(id), { exitRecovery: recovery }],
-                  [
-                    projectHeadKey(id),
-                    {
-                      version: 1,
-                      token: crypto.randomUUID(),
-                      writer: '',
-                      base: null,
-                      sequence: 0,
-                    } satisfies LocalHead,
-                  ],
-                ],
-          deletes,
-        },
-        result: isLocalHead(targetHead) && targetHead.deleted ? undefined : id,
-      }
-    },
-  )
+  if (!knownKeys.some((key) => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX)))
+    return []
+  const recovery = await import('./projectIndexedRecovery')
+  return recovery.listPreservedProjectDrafts(scope, knownKeys)
 }
 
 export async function listProApplications(

@@ -1,0 +1,131 @@
+import {
+  journal,
+  latestRecoveries,
+  projectFromRecovery,
+  type RecoveryWrite,
+} from './projectStorageCoordinator'
+import {
+  PROJECT_STORAGE_VERSION,
+  type ProjectStorageVersion,
+  projectMetaKey,
+  projectFilesKey,
+  projectStateKey,
+  projectBlocksKey,
+  projectAssetsKey,
+  projectThumbKey,
+  projectRecoveryKey,
+} from './projectStorageKeys'
+import { ExitJournalError, type ExitJournalEntry } from './synchronousExitJournal'
+
+export function synchronousRecovery(
+  entry: ExitJournalEntry,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
+): RecoveryWrite {
+  const recovery = latestRecoveries([entry.value])[0]
+  if (
+    !recovery ||
+    recovery.projectId !== entry.projectId ||
+    recovery.head.writer !== entry.writer ||
+    recovery.head.token !== entry.token
+  )
+    throw new ExitJournalError(
+      'A identidade da cópia de recuperação é inválida. Ela foi preservada.',
+    )
+  const knownFields = [
+    'version',
+    'projectId',
+    'head',
+    'write',
+    'applications',
+    'resetApplications',
+    'incompleteBlocks',
+    'replacesRecovery',
+  ]
+  if (
+    Object.keys(recovery).some((key) => !knownFields.includes(key)) ||
+    Object.keys(recovery.head).some(
+      (key) => !['version', 'writer', 'token', 'base', 'sequence'].includes(key),
+    ) ||
+    Object.keys(recovery.write).some((key) => !['puts', 'deletes'].includes(key)) ||
+    recovery.head.sequence < 0 ||
+    !Array.isArray(recovery.applications) ||
+    (recovery.resetApplications === true && recovery.applications.length > 0) ||
+    (recovery.resetApplications !== undefined && typeof recovery.resetApplications !== 'boolean') ||
+    (recovery.incompleteBlocks !== undefined && typeof recovery.incompleteBlocks !== 'boolean') ||
+    (recovery.replacesRecovery !== undefined &&
+      (!Array.isArray(recovery.replacesRecovery) ||
+        recovery.replacesRecovery.some(
+          (source) =>
+            !source ||
+            typeof source.key !== 'string' ||
+            typeof source.token !== 'string' ||
+            Object.keys(source).some((key) => key !== 'key' && key !== 'token') ||
+            !source.key.startsWith(projectRecoveryKey(entry.projectId, '', version)),
+        )))
+  )
+    throw new ExitJournalError(
+      'O contrato da cópia de recuperação é incompatível. Ela foi preservada.',
+    )
+  const keys = new Set([
+    projectMetaKey(entry.projectId, version),
+    projectFilesKey(entry.projectId, version),
+    projectStateKey(entry.projectId, version),
+    projectBlocksKey(entry.projectId, version),
+    projectAssetsKey(entry.projectId, version),
+    projectThumbKey(entry.projectId, version),
+  ])
+  if (
+    !Array.isArray(recovery.write.puts) ||
+    recovery.write.puts.some(
+      (pair) =>
+        !Array.isArray(pair) ||
+        pair.length !== 2 ||
+        typeof pair[0] !== 'string' ||
+        !keys.has(pair[0]),
+    ) ||
+    (recovery.write.deletes !== undefined &&
+      (!Array.isArray(recovery.write.deletes) ||
+        recovery.write.deletes.some((key) => typeof key !== 'string' || !keys.has(key)))) ||
+    !projectFromRecovery(recovery, version)
+  )
+    throw new ExitJournalError(
+      'A cópia de recuperação contém partições incompatíveis. Ela foi preservada.',
+    )
+  const putKeys = recovery.write.puts.map(([key]) => key)
+  const deleteKeys = recovery.write.deletes ?? []
+  const applications = journal(recovery.applications)
+  if (
+    new Set(putKeys).size !== putKeys.length ||
+    new Set(deleteKeys).size !== deleteKeys.length ||
+    deleteKeys.some((key) => putKeys.includes(key)) ||
+    new Set(applications.map((record) => record.operationId)).size !== applications.length
+  )
+    throw new ExitJournalError(
+      'A cópia de recuperação contém operações repetidas ou conflitantes. Ela foi preservada.',
+    )
+  return recovery
+}
+
+/** Validate persisted control records before they can mutate any project partition. */
+export function nativeRecovery(
+  value: unknown,
+  key: string,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
+): RecoveryWrite {
+  const record = value as RecoveryWrite | undefined
+  if (!record || key !== projectRecoveryKey(record.projectId, record.head?.writer, version))
+    throw new ExitJournalError(
+      'A identidade da recuperação nativa é incompatível. Ela foi preservada.',
+    )
+  return synchronousRecovery(
+    {
+      key,
+      encoded: '',
+      value,
+      projectId: record.projectId,
+      writer: record.head.writer,
+      token: record.head.token,
+    },
+    version,
+  )
+}
