@@ -27,6 +27,7 @@ import {
 } from '#preview'
 import { Button } from '#ui'
 import { javaScriptProject } from '../../core/editableProject'
+import { criarTransporteDeCenas3D } from '../../core/scene3d/transporte'
 import { resolveCoverAsset } from '../../cover/coverAsset'
 import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
 import { useDebounced } from '../../hooks/useDebounced'
@@ -47,6 +48,7 @@ import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
+import { carregarModuloDeCenas3D, type ModuloDeCenas3D } from '../../three/scene3dResources'
 import { validateIsolatedPreviewUrl } from './playerOriginAdapter'
 import { createRunPreparation } from './prepareRun'
 import {
@@ -371,6 +373,7 @@ export function PreviewIframe(): JSX.Element {
     key: string
     status: 'loading' | 'ready' | 'error'
     scripts: string[]
+    cenas3d?: ModuloDeCenas3D
   }>({ key: '', status: 'ready', scripts: [] })
 
   const extensionContext = useMemo(
@@ -393,24 +396,29 @@ export function PreviewIframe(): JSX.Element {
   )
   const bootstrapContextRef = useRef(bootstrapContext)
   bootstrapContextRef.current = bootstrapContext
+  const transporteDeCenas = useMemo(() => criarTransporteDeCenas3D(assets), [assets])
+  const comCenas3D = !!transporteDeCenas
   const runtimeKey = useMemo(
     () =>
-      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}`,
-    [debouncedIds, extensionContext, bootstrapContext],
+      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}`,
+    [debouncedIds, extensionContext, bootstrapContext, comCenas3D],
   )
 
   useEffect(() => {
     void runtimeAttempt
     const { extensions } = extensionContext
-    if (extensions.length === 0) {
+    if (extensions.length === 0 && !comCenas3D) {
       setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts: [] })
       return
     }
     let active = true
     setExtensionRuntimeState({ key: runtimeKey, status: 'loading', scripts: [] })
-    void loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current).then(
-      (scripts) => {
-        if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts })
+    void Promise.all([
+      loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current),
+      comCenas3D ? carregarModuloDeCenas3D() : undefined,
+    ]).then(
+      ([scripts, cenas3d]) => {
+        if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts, cenas3d })
       },
       () => {
         if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'error', scripts: [] })
@@ -419,7 +427,7 @@ export function PreviewIframe(): JSX.Element {
     return () => {
       active = false
     }
-  }, [runtimeKey, runtimeAttempt, extensionContext])
+  }, [runtimeKey, runtimeAttempt, extensionContext, comCenas3D])
 
   // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
   // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
@@ -451,6 +459,7 @@ export function PreviewIframe(): JSX.Element {
   const extensionRuntimesLoading =
     extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'loading'
   const extensionScripts = extensionRuntimesReady ? extensionRuntimeState.scripts : []
+  const moduloDeCenas = extensionRuntimesReady ? extensionRuntimeState.cenas3d : undefined
 
   const { extensionImports, installedPermissions } = extensionContext
 
@@ -517,7 +526,9 @@ export function PreviewIframe(): JSX.Element {
       html: debouncedHtml,
       css: debouncedCss,
       js: debouncedJs,
-      extensionScripts,
+      extensionScripts: moduloDeCenas
+        ? [moduloDeCenas.script, ...extensionScripts]
+        : extensionScripts,
       gameUiFont: gameUiFontState.bundle ?? undefined,
       extraFiles: debouncedExtraFiles,
     }),
@@ -526,6 +537,7 @@ export function PreviewIframe(): JSX.Element {
       debouncedCss,
       debouncedJs,
       extensionScripts,
+      moduloDeCenas,
       gameUiFontState.bundle,
       debouncedExtraFiles,
     ],
@@ -626,6 +638,7 @@ export function PreviewIframe(): JSX.Element {
         extensionImports,
         installedPermissions,
         gameUiFont: gameUiFontState.bundle ?? undefined,
+        cenas3d: moduloDeCenas,
       },
       extraFiles: debouncedExtraFiles,
       parentOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
@@ -641,6 +654,7 @@ export function PreviewIframe(): JSX.Element {
       assetsMeta,
       sounds: soundsManifest,
       models3d: models3dManifest,
+      cenas3d: transporteDeCenas,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -662,6 +676,8 @@ export function PreviewIframe(): JSX.Element {
     debouncedCss,
     debouncedJs,
     extensionScripts,
+    moduloDeCenas,
+    transporteDeCenas,
     debouncedExtraFiles,
     installedPermissions,
     extensionImports,

@@ -1,5 +1,6 @@
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import { sanitizeSceneMeta } from '../core/projectAssets'
+import { resolverAssetsDoTransporte3D, type TransporteDeCenas3D } from '../core/scene3d/transporte'
 /**
  * Runtime injetado no `<head>` do iframe (ANTES dos runtimes de extensão e do
  * código do aluno) que semeia o MANIFESTO de assets do projeto em
@@ -199,6 +200,7 @@ export function buildAssetsRuntime(
   meta: Record<string, AssetPreviewMeta> = {},
   sounds: Record<string, string> = {},
   models3d: Record<string, Asset3DManifestEntry> = {},
+  cenas3d?: TransporteDeCenas3D,
 ): string {
   const safe = clampManifest(assets, ASSET_DATA_URL_PREFIX)
   // Doubly-encoded: o seed entra como STRING JSON + JSON.parse em runtime (não como
@@ -235,6 +237,12 @@ export function buildAssetsRuntime(
   // runtime escolhe o loader (GLTFLoader × RGBELoader) e carrega por `.parse()`
   // de um ArrayBuffer — NUNCA por fetch (a rede é bloqueada no preview).
   const safe3D = clamp3DManifest(models3d)
+  if (cenas3d) resolverAssetsDoTransporte3D(cenas3d, safe, safe3D)
+  const cenas3dBlock = cenas3d
+    ? `
+  var CENAS3D = JSON.parse(${JSON.stringify(JSON.stringify(cenas3d))});
+  Object.defineProperty(window, '__SZGAME_CENAS_3D', { value: CENAS3D, writable: false, configurable: true });`
+    : ''
   const models3dBlock =
     Object.keys(safe3D).length > 0
       ? `
@@ -362,6 +370,6 @@ export function buildAssetsRuntime(
     Object.defineProperty(window, '__SZGAME_ASSETS', { value: ASSETS, writable: false, configurable: true });
   } catch (e) {
     try { window.__SZGAME_ASSETS = ASSETS; } catch (e2) {}
-  }${metaBlock}${soundsBlock}${models3dBlock}${assetFetchBlock}${imageSrcBlock}
+  }${metaBlock}${soundsBlock}${models3dBlock}${cenas3dBlock}${assetFetchBlock}${imageSrcBlock}
 })();`
 }

@@ -12,6 +12,7 @@ import {
 import { extensionBootstrapContext, loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildProAssetBundle } from '../core/proAssets'
+import { criarTransporteDeCenas3D } from '../core/scene3d/transporte'
 import { gameUiFontBootstrapScript, loadGameUiFont } from '../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
@@ -20,6 +21,7 @@ import { coreImportsForCode } from '../preview/coreImports'
 import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { buildInputRuntime } from '../preview/inputBridge'
 import { transpileExtra } from '../preview/transpile'
+import { carregarModuloDeCenas3D } from '../three/scene3dResources'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml, hasCanonicalCssLink } from './productionHtml'
 import {
@@ -172,6 +174,20 @@ export async function buildClassicFileMap(
   const extensionScriptSrcs: string[] = []
   const importmap: Record<string, string> = {}
   let usesEsmImports = false
+  const cenas3d = criarTransporteDeCenas3D(project.assets)
+  if (cenas3d) {
+    const modulo = await carregarModuloDeCenas3D(),
+      src = 'sz-ext/molda-cenarios.js',
+      path = `public/${src}`
+    if (path in files)
+      throw Error(
+        `O arquivo ${src} está reservado para o carregador do cenário. O original foi mantido.`,
+      )
+    files[path] = modulo.script
+    extensionScriptSrcs.push(src)
+    Object.assign(importmap, modulo.imports)
+    usesEsmImports = true
+  }
   // O MESMO contexto do preview e da capa (o código do aluno como ele é, antes do export): o
   // site publicado leva a mesma variante de cada runtime que o preview rodou.
   const bootstrapContext = extensionBootstrapContext({
@@ -232,8 +248,8 @@ export async function buildClassicFileMap(
       // reinjetar nem reajustar (a tag já está deferida e correta).
       hasExternalJs = true
       jsIsModule = false
-    } else {
-      // Detecção ambígua (zero ou vários scripts inline candidatos): não mexemos
+    } else if (findInlineClassicScripts(rawHtml, false).length > 0) {
+      // Scripts globais no head ou vários no body: não mexemos
       // no HTML do aluno, só avisamos para que ele coloque o JS em script.js — só
       // assim a biblioteca 3D (module) carrega ANTES do código que a usa.
       warnings.push(
@@ -261,7 +277,8 @@ export async function buildClassicFileMap(
   if (
     Object.keys(manifest).length > 0 ||
     Object.keys(soundsExport).length > 0 ||
-    Object.keys(models3dExport).length > 0
+    Object.keys(models3dExport).length > 0 ||
+    cenas3d
   ) {
     assetsScriptSrc = 'sz-assets.js'
     files['public/sz-assets.js'] = buildAssetsRuntime(
@@ -269,6 +286,7 @@ export async function buildClassicFileMap(
       assetMetaManifest(project.assets, bootstrapContext),
       soundsExport,
       models3dExport,
+      cenas3d,
     )
     // Cada asset (imagem OU som) TAMBÉM vira arquivo real `public/<nome>`: um
     // `background: url('background.png')` no CSS do aluno resolve RELATIVO no site
@@ -441,7 +459,7 @@ interface InlineScriptMatch {
  * `type="module"`, e sem outro `type` não-JS). Usado pela externalização A2: só
  * agimos quando há EXATAMENTE um candidato (ambíguo = aviso, não chute).
  */
-function findInlineClassicScripts(html: string): InlineScriptMatch[] {
+function findInlineClassicScripts(html: string, bodyOnly = true): InlineScriptMatch[] {
   const bodyStart = bodyContentStart(html)
   const out: InlineScriptMatch[] = []
   const re = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
@@ -450,7 +468,7 @@ function findInlineClassicScripts(html: string): InlineScriptMatch[] {
     const attrs = m[1] ?? ''
     const content = m[2] ?? ''
     const start = m.index
-    const isInBody = start >= bodyStart
+    const isInBody = !bodyOnly || start >= bodyStart
     const hasSrc = /[\s"']src=/i.test(attrs)
     const typeMatch = attrs.match(/\btype=["']?([^"'\s>]*)/i)
     const type = (typeMatch?.[1] ?? '').toLowerCase()

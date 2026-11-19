@@ -14,6 +14,7 @@
       "!bun.lock",
       "!packages/pinta/src/export/phaser/phaser.generated.ts",
       "!packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "!packages/studio/src/three/scene3dRuntime.generated.ts",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
       "!packages/studio/src/examples/python/pygame/*/desenhos.pinta.json",
