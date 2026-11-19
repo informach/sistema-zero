@@ -10,6 +10,7 @@ import {
 } from '../core/projectDocumentGuards'
 import { sanitizePythonProjectAssets } from '../core/pythonAssets'
 import type { PythonClassicProjectDocument, PythonProjectDocument } from '../core/pythonProject'
+import { assertScene3DAssets } from '../core/scene3d/validacao'
 import { copyLocalRevision } from './projectStorageRevision'
 
 export type {
@@ -49,6 +50,7 @@ export async function refinePythonProjectDocument(
   const project = copyLocalRevision(raw as { id: string }, { ...document, id, assets })
   assertProjectContentPreserved(document, project)
   await assertPintaImageAssets(assets)
+  await assertScene3DAssets(assets)
   const issue = pythonProjectLayoutIssue(project)
   if (issue?.code === 'too-large') throw new ProjectTooLargeError(issue.message)
   if (issue) throw new ProjectDocumentError(issue.code, issue.message)

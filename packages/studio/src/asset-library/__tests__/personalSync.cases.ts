@@ -345,6 +345,67 @@ describe('updateAssetImage (a ação da store)', () => {
 })
 
 describe('syncDrawingsIntoProjects', () => {
+  it('a revisão 3D conserva recursos compartilhados quando a arte pessoal é editada', async () => {
+    const png =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
+      bytes = Buffer.from(png.split(',')[1]!, 'base64'),
+      artifact = {
+        formato: 'studio-cena3d',
+        versao: 1,
+        cena: {
+          formato: 'molda-cena-compilada',
+          versao: 1,
+          nome: 'Vila',
+          unidade: 'metro',
+          eixoVertical: 'y',
+          fonte: { cenario: 'vila', revisao: 1, digest: 'a'.repeat(64) },
+          arquivos: [
+            {
+              caminho: 'texturas/flor.png',
+              mime: 'image/png',
+              papel: 'textura',
+              largura: 1,
+              altura: 1,
+              bytes: bytes.length,
+              digest: createHash('sha256').update(bytes).digest('hex'),
+            },
+          ],
+          entidades: [],
+          nos: [],
+          colisoes: [],
+          aguas: [],
+          caminhos: [],
+          marcadores: [],
+          texturas: [],
+          fontes: { modelos: [], texturas: [], conjuntos: [] },
+          licencas: [],
+          ambiente: { hora: 12 },
+        },
+        recursos: [{ caminho: 'texturas/flor.png', asset: 'asset-1' }],
+      },
+      scene: ProjectAsset = {
+        id: 'vila',
+        name: 'vila',
+        kind: 'scene3d',
+        source: 'library',
+        originalFileName: 'vila.json',
+        dataUrl: `data:application/vnd.sistemazero.cena3d+json;base64,${Buffer.from(JSON.stringify(artifact)).toString('base64')}`,
+      },
+      image = drawingAsset({ dataUrl: png })
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: png })
+    seedOpenProject([image, scene])
+    const before = useProjectStore.getState().project!,
+      closed = { ...createEmptyProject('cena-fechada', 'Cena fechada'), assets: [image, scene] }
+    await persistProject(closed)
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.failures).toEqual([])
+    expect(result.updatedInOpenProject).toBe(0)
+    expect(result.updatedInOtherProjects).toBe(0)
+    expect(useProjectStore.getState().project!.assets).toEqual(before.assets)
+    expect(await loadProjectAssetsById(closed.id)).toEqual(closed.assets)
+  })
+
   const linkedScene = (id: string, destination?: string) =>
     PintaSceneSchema.parse({
       version: 1,

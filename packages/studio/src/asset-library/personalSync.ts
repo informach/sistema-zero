@@ -72,6 +72,7 @@ function sameDrawingContent(asset: DrawingContent, drawing: DrawingContent): boo
 import { ulid } from 'ulid'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset, projectAssetBudgetChars } from '#core'
 import { perfSpanAsync } from '../core/perf'
+import { idsDosRecursosDeCena3D } from '../core/scene3d/referencias'
 import {
   listProjectSummariesLight,
   loadProjectAssetsSnapshotById,
@@ -268,7 +269,14 @@ export async function reconcileDrawingsFromRestoredProject(
     const id = personalIdOf(asset)
     // A captured frame is deliberately different from the canonical spritesheet.
     // It must retain the editable drawing identity, never become a personal copy.
-    if (!id || asset.kind === 'audio' || asset.kind === 'font' || asset.pintaImage !== undefined)
+    if (
+      !id ||
+      asset.kind === 'audio' ||
+      asset.kind === 'font' ||
+      asset.kind === 'scene3d' ||
+      asset.kind === 'scene3d-data' ||
+      asset.pintaImage !== undefined
+    )
       continue
     try {
       const drawing = drawings.get(id) ?? null
@@ -569,9 +577,11 @@ async function sweepUnmeasured(
       let changed = false
       const updatedPythonImages: PintaImageDerivation[] = []
       let next = [...assets]
+      const recursosDeCenas = idsDosRecursosDeCena3D(assets)
       for (let index = 0; index < next.length; index++) {
         const asset = next[index]
         if (!asset) continue
+        if (recursosDeCenas.has(asset.id)) continue
         if (pythonProject && asset.pintaImage !== undefined) {
           if (!context.python?.current()) break
           try {
@@ -746,8 +756,10 @@ async function syncOpenProject(
         context.namespace,
       )
     if (!isContextActive(context)) return
+    const recursosDeCenas = idsDosRecursosDeCena3D(openProject.assets)
     for (const asset of openProject.assets) {
       if (!active || context.callerSignal?.aborted) return
+      if (recursosDeCenas.has(asset.id)) continue
       if (pythonProject && asset.pintaImage !== undefined) {
         if (!context.python?.current()) return
         const attempt = `${openProject.id}\u0000${asset.id}`

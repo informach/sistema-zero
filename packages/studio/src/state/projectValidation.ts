@@ -51,6 +51,7 @@ import {
   projectFormatVersion,
   retainProjectTools,
 } from '../core/projectDocument'
+import { assertScene3DAssets } from '../core/scene3d/validacao'
 import {
   type ExtensionCompatibilityEntry,
   findExtensionConflict,
@@ -1100,6 +1101,7 @@ export async function prepareProjectForHost(
 ): Promise<Project | null> {
   if (raw == null) return null
   const project = sanitizeProjectForHost(await prepareProjectDocument(raw), options)
+  if (project) await assertScene3DAssets(project.assets ?? [])
   return project && typeof raw === 'object' ? copyLocalRevision(raw as Project, project) : project
 }
 

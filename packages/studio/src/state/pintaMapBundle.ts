@@ -12,6 +12,7 @@ import {
   sanitizeTilesetMeta,
 } from '../core/projectAssets'
 import { assertProjectContentPreserved } from '../core/projectDocument'
+import { scene3DResourceChangeIssue } from '../core/scene3d/referencias'
 import type { StudioPintaImportedAsset } from '../studio/pinta-library'
 
 /** Pure preflight. No program, project identity or store mutation happens here. */
@@ -73,6 +74,8 @@ export function preparePintaMapBundle(
   )
     throw new Error('Estes mapas ultrapassam o espaço do projeto. O jogo foi mantido.')
   const sanitized = sanitizeProjectAssets(next)
+  const sceneIssue = scene3DResourceChangeIssue(current, sanitized)
+  if (sceneIssue) throw new Error(sceneIssue)
   try {
     assertProjectContentPreserved({ assets: next }, { assets: sanitized })
   } catch (cause) {
