@@ -4,9 +4,22 @@ import { nativeRecovery } from '../src/state/projectRecoveryGuards'
 import { PROJECT_STORAGE_VERSION } from '../src/state/projectStorageKeys'
 import { decodeProjectStorageValue } from '../src/state/projectStorageTransport'
 import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
+import {
+  disposeNativeInputTrace,
+  startNativeInputTrace,
+  stopNativeInputTrace,
+} from './helpers/nativeInputTrace'
 
-test.beforeEach(async ({ page }) => recordMenuInteractions(page))
-test.afterEach(async ({ page }, info) => attachMenuInteractions(page, info))
+test.afterAll(async ({ browser }, info) => disposeNativeInputTrace(browser, info))
+
+test.beforeEach(async ({ page }) => {
+  await startNativeInputTrace(page)
+  await recordMenuInteractions(page)
+})
+test.afterEach(async ({ page }, info) => {
+  await stopNativeInputTrace(page, info)
+  await attachMenuInteractions(page, info)
+})
 
 /**
  * A gravação de SAÍDA do Estúdio: recarregar logo depois de uma mudança, SEM esperar o "Salvo",
@@ -71,6 +84,7 @@ function saveStatus(page: Page, label: string) {
 async function openMenuItem(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'Mais opções' }).click()
   await page.getByRole('menuitem', { name, exact: true }).click()
+  await expect(page.getByRole('menuitem', { name, exact: true })).toBeHidden()
 }
 
 /**
