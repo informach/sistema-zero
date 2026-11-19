@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { createTilemapAsset, createTilesetAsset, isTileLayer } from '../../src/core/project'
 import { galleryToPintaJson } from '../../src/export/projectJson'
 import { findTemplate } from '../../src/templates/catalog'
+import { addMapGroup, setMapLayerParent, updateMapLayer } from '../../src/tiles/layerTree'
 import { createMapSet } from '../../src/tiles/sets'
 import { addObjectLayer } from '../../src/tiles/tilemapOps'
 
@@ -32,3 +33,17 @@ await writeFile(
   resolve(directory, 'biblioteca.pinta.json'),
   galleryToPintaJson([sheet, hero, ghost, set, map]),
 )
+
+let big = createTilemapAsset({
+  name: 'mapa-grande-do-teclado',
+  tilesetId: sheet.id,
+  cols: 64,
+  rows: 48,
+})
+const groundId = big.layers[0]!.id
+big = addMapGroup(big, 'Região deslocada')
+const groupId = big.layers.at(-1)!.id
+big = updateMapLayer(big, groupId, { offsetX: 2.5, offsetY: 3.5 })
+big = updateMapLayer(big, groundId, { offsetX: 4, offsetY: 5 })
+big = setMapLayerParent(big, groundId, groupId)
+await writeFile(resolve(directory, 'teclado-grande.pinta.json'), galleryToPintaJson([sheet, big]))

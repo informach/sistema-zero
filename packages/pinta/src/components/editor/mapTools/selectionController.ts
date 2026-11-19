@@ -10,11 +10,11 @@ import {
   stampRegionAt,
 } from '../../../tiles/mapSelection'
 import type { TileStamp } from '../../../tiles/stamp'
-import { commitIfChanged } from './commitGuard'
+import { commitIfChanged, sameAssetContent } from './commitGuard'
 export type MapSelection =
   | { kind: 'marquee'; start: CellPos; rect: CellRect | null }
   | { kind: 'rect'; rect: CellRect }
-  | { kind: 'floating'; stamp: TileStamp; at: CellPos; remaining: TilemapAsset }
+  | { kind: 'floating'; stamp: TileStamp; at: CellPos; remaining: TilemapAsset; base: TilemapAsset }
 interface Options {
   tilemap: TilemapAsset
   layerId: string
@@ -44,36 +44,68 @@ export function createMapSelectionController({
   renderSelection,
   isLocked,
 }: Options) {
+  function clearSelection(): void {
+    selRef.current = null
+    movingRef.current = null
+    setSelRect(null)
+  }
+  function cancelSelection(): void {
+    selPointerRef.current = null
+    clearSelection()
+    renderSelection()
+  }
   /** Apaga o pedaço: levantado some, assentado limpa as células (Delete). */
   function deleteMapSelection(): void {
     const sel = selRef.current
     const state = editor.getState()
-    if (!sel || state.asset.kind !== 'tilemap') return
-    selRef.current = null
-    movingRef.current = null
-    setSelRect(null)
-    selfCommitRef.current = true
+    if (!sel || state.asset.kind !== 'tilemap' || state.asset.id !== tilemap.id || isLocked?.())
+      return
+    if (sel.kind === 'floating' && sel.base !== state.asset) return
     const next =
       sel.kind === 'floating'
         ? sel.remaining
         : sel.kind === 'rect'
           ? clearRegion(state.asset, layerId, sel.rect)
           : state.asset
-    if (!commitIfChanged(state, next)) selfCommitRef.current = false
+    selfCommitRef.current = !sameAssetContent(state.asset, next)
+    if (selfCommitRef.current && !commitIfChanged(state, next)) {
+      selfCommitRef.current = false
+      return
+    }
+    clearSelection()
   }
 
-  function stampPending(): void {
+  function stampPending(): boolean {
     const sel = selRef.current
-    selRef.current = null
-    movingRef.current = null
-    setSelRect(null)
+    selfCommitRef.current = false
     if (sel?.kind === 'floating' && tilemap) {
+      const state = editor.getState()
+      if (state.asset !== sel.base) return false
       // Soltar no mesmo lugar (ou numa camada trancada) não muda nada: nada é gravado.
-      selfCommitRef.current = commitIfChanged(
-        editor.getState(),
-        stampRegionAt(sel.remaining, layerId, sel.at, sel.stamp),
-      )
+      const next = stampRegionAt(sel.remaining, layerId, sel.at, sel.stamp)
+      selfCommitRef.current = !sameAssetContent(state.asset, next)
+      if (selfCommitRef.current && !commitIfChanged(state, next)) {
+        selfCommitRef.current = false
+        return false
+      }
     }
+    clearSelection()
+    return true
+  }
+
+  /** Seleção por coordenadas, compartilhada por ponteiro e teclado. */
+  function selectRect(rect: CellRect | null): void {
+    const before = editor.getState().asset
+    if (before.kind !== 'tilemap' || before.id !== tilemap.id) return
+    if (!stampPending()) return
+    const { asset } = editor.getState()
+    if (asset.kind !== 'tilemap' || asset.id !== tilemap.id) return
+    selPointerRef.current = null
+    if (rect && hasFilledCell(asset, layerId, rect)) {
+      selRef.current = { kind: 'rect', rect }
+      setSelRect(rect)
+    }
+    renderSelection()
   }
 
   function selectDown(event: PointerEvent<HTMLCanvasElement>): void {
@@ -102,6 +134,7 @@ export function createMapSelectionController({
         const { remaining, floating } = extractRegion(tilemap, layerId, r)
         selRef.current = {
           kind: 'floating',
+          base: tilemap,
           stamp: floating,
           at: { col: r.col, row: r.row },
           remaining,
@@ -112,7 +145,7 @@ export function createMapSelectionController({
         return
       }
     }
-    stampPending()
+    if (!stampPending()) return
     selRef.current = {
       kind: 'marquee',
       start: p,
@@ -148,16 +181,17 @@ export function createMapSelectionController({
     if (sel?.kind === 'marquee') {
       // Pedaço só de grade VAZIA não vira seleção (a grade de fundo é
       // referência, não desenho) — mesma régua do editor de pixel.
-      if (sel.rect && tilemap && hasFilledCell(tilemap, layerId, sel.rect)) {
-        selRef.current = { kind: 'rect', rect: sel.rect }
-        setSelRect(sel.rect)
-      } else {
-        selRef.current = null
-        setSelRect(null)
-      }
-      renderSelection()
+      selectRect(sel.rect)
     }
   }
 
-  return { deleteMapSelection, stampPending, selectDown, selectMove, selectUp }
+  return {
+    deleteMapSelection,
+    stampPending,
+    selectDown,
+    selectMove,
+    selectUp,
+    selectRect,
+    cancelSelection,
+  }
 }

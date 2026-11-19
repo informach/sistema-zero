@@ -20,6 +20,24 @@ const PLATFORM_FILL = 'rgba(250,204,21,0.32)'
 /** O respiro (`p-2`) em volta do papel dentro da área que rola. */
 const STAGE_PADDING = 8
 
+/** O canvas continua limitado ao viewport, mesmo quando o papel é muito maior. */
+export function mapCanvasViewport(
+  fullWidth: number,
+  fullHeight: number,
+  stage: Pick<HTMLElement, 'clientWidth' | 'clientHeight' | 'scrollLeft' | 'scrollTop'> | null,
+): MapViewport {
+  // O padding inicial rola para fora. Descontá-lo dos dois lados deixava uma
+  // faixa de oito pixels do papel sem pintar no fim da rolagem.
+  const width = Math.min(fullWidth, Math.max(1, stage?.clientWidth || 1024))
+  const height = Math.min(fullHeight, Math.max(1, stage?.clientHeight || 768))
+  return {
+    width,
+    height,
+    x: Math.max(0, Math.min(fullWidth - width, (stage?.scrollLeft ?? 0) - STAGE_PADDING)),
+    y: Math.max(0, Math.min(fullHeight - height, (stage?.scrollTop ?? 0) - STAGE_PADDING)),
+  }
+}
+
 export interface MapCanvasOptions {
   canvas: HTMLCanvasElement
   stage: HTMLElement | null
@@ -44,10 +62,7 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
   if (!ctx) return null
   const fullWidth = (map.cols + 2 * pad) * cellPx,
     fullHeight = (map.rows + 2 * pad) * cellPx
-  const width = Math.min(fullWidth, Math.max(1, (stage?.clientWidth || 1024) - 2 * STAGE_PADDING))
-  const height = Math.min(fullHeight, Math.max(1, (stage?.clientHeight || 768) - 2 * STAGE_PADDING))
-  const x = Math.max(0, Math.min(fullWidth - width, (stage?.scrollLeft ?? 0) - STAGE_PADDING))
-  const y = Math.max(0, Math.min(fullHeight - height, (stage?.scrollTop ?? 0) - STAGE_PADDING))
+  const { width, height, x, y } = mapCanvasViewport(fullWidth, fullHeight, stage)
   canvas.width = width
   canvas.height = height
   canvas.style.transform = `translate(${x}px, ${y}px)`

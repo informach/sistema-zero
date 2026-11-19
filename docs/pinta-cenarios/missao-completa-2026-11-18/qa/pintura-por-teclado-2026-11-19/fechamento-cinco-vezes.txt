@@ -1,0 +1,32 @@
+[WebServer] (node:50836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 5 tests using 1 worker
+
+(node:47700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (5.0s)
+(node:49520) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  2 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (3.5s)
+(node:50384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (3.4s)
+(node:36412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  4 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (4.5s)
+(node:40512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  5 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (4.2s)
+
+  5 passed (29.3s)

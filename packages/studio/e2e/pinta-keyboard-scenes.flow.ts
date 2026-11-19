@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, type Locator, type Page, test } from '@playwright/test'
 import { COPY } from '../../pinta/src/core/copy'
-import { isObjectLayer, type PintaAsset } from '../../pinta/src/core/project'
+import { isObjectLayer, isTileLayer, type PintaAsset } from '../../pinta/src/core/project'
 
 const root = resolve(import.meta.dirname, '../../..')
 const directory = resolve(root, '.tmp/pinta-keyboard-e2e')
@@ -31,6 +31,252 @@ async function tabTo(page: Page, target: Locator) {
   }
   throw new Error('Controle não alcançado por Tab')
 }
+
+async function cursorPixel(page: Page): Promise<number[]> {
+  const box = await page.locator('[data-pin-keyboard-cell]').boundingBox()
+  if (!box) throw new Error('Casa do teclado esperada')
+  const png = await page.screenshot({
+    clip: { x: box.x + box.width / 2, y: box.y + box.height / 2, width: 1, height: 1 },
+  })
+  return page.evaluate(
+    async (data) => {
+      const image = new Image()
+      image.src = data
+      await image.decode()
+      const canvas = document.createElement('canvas')
+      canvas.width = canvas.height = 1
+      const context = canvas.getContext('2d')!
+      context.drawImage(image, 0, 0)
+      return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3)
+    },
+    `data:image/png;base64,${png.toString('base64')}`,
+  )
+}
+
+test('pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.setTimeout(150_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', {
+    rate: Number(info.project.metadata.cpuSlowdown ?? 1),
+  })
+  await page.goto(`/?namespace=keyboard-paint-${info.project.name}-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(directory, 'biblioteca.pinta.json'))
+  const open = page.getByRole('button', { name: 'Abrir vila-da-biblioteca (Mapa)', exact: true })
+  await open.click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByLabel(COPY.scene.nivelDasFerramentas, { exact: true }).selectOption('create')
+  await page.getByRole('button', { name: 'Chão', exact: true }).click()
+  const grid = page.getByRole('img', { name: COPY.tiles.mapGrid, exact: true })
+  await page.getByRole('button', { name: 'Voltar', exact: true }).focus()
+  await tabTo(page, grid)
+  await page.keyboard.press('Control+Home')
+  await page.keyboard.press('Enter')
+  await expect.poll(() => cursorPixel(page)).toEqual([145, 70, 61])
+  await page.keyboard.press('l')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('[data-pin-keyboard-area]')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('[data-pin-keyboard-area]')).toHaveCount(0)
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('m')
+  await page.keyboard.press('Control+Home')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await tabTo(page, page.getByRole('button', { name: COPY.tiles.copyPiece, exact: true }))
+  await page.keyboard.press('Enter')
+  await tabTo(page, grid)
+  await page.keyboard.press('Control+Home')
+  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight')
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect.poll(() => cursorPixel(page)).toEqual([145, 70, 61])
+  await info.attach('pintura-por-teclado', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  const assets = await backup(page),
+    map = assets.find((a) => a.kind === 'tilemap')
+  if (map?.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const cells = map.layers.find(isTileLayer)!.cells
+  expect(cells[0]).toBe(0)
+  expect(cells[1 * 8 + 2]).toBe(0)
+  expect(cells[2 * 8 + 2]).toBe(0)
+  expect(cells[3 * 8 + 4]).toBe(0)
+  expect(cells.filter((c) => c >= 0)).toHaveLength(4)
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(open).toBeVisible()
+  await page.reload()
+  await open.click()
+  const reopened = (await backup(page)).find((a) => a.kind === 'tilemap')
+  if (reopened?.kind !== 'tilemap') throw new Error('Mapa esperado')
+  expect(reopened.layers).toEqual(map.layers)
+  await cdp.detach()
+})
+
+test('mapa rolado: cursor visível e deslocamento herdado aplicado uma vez', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.setTimeout(150_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', {
+    rate: Number(info.project.metadata.cpuSlowdown ?? 1),
+  })
+  await page.goto(`/?namespace=keyboard-scroll-${info.project.name}-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(directory, 'teclado-grande.pinta.json'))
+  await page
+    .getByRole('button', { name: 'Abrir mapa-grande-do-teclado (Mapa)', exact: true })
+    .click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByLabel(COPY.scene.nivelDasFerramentas, { exact: true }).selectOption('advanced')
+  await page.getByRole('button', { name: 'Chão', exact: true }).click()
+  const grid = page.getByRole('img', { name: COPY.tiles.mapGrid, exact: true })
+  await page.getByRole('button', { name: 'Voltar', exact: true }).focus()
+  await tabTo(page, grid)
+  await page.keyboard.press('Control+Home')
+  const origin = await page.locator('.pin-paper').boundingBox(),
+    cursor = await page.locator('[data-pin-keyboard-cell]').boundingBox()
+  if (!origin || !cursor) throw new Error('Papel e casa esperados')
+  const scale = cursor.width / 16
+  expect(cursor.x - origin.x).toBeCloseTo(6.5 * scale, 1)
+  expect(cursor.y - origin.y).toBeCloseTo(8.5 * scale, 1)
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Control+End')
+  await page.keyboard.press('Enter')
+  const end = await page.locator('[data-pin-keyboard-cell]').boundingBox(),
+    viewport = page.viewportSize()!
+  if (!end) throw new Error('Casa final esperada')
+  expect(end.x + end.width / 2).toBeGreaterThanOrEqual(0)
+  expect(end.y + end.height / 2).toBeGreaterThanOrEqual(0)
+  expect(end.x + end.width / 2).toBeLessThan(viewport.width)
+  expect(end.y + end.height / 2).toBeLessThan(viewport.height)
+  await expect.poll(() => cursorPixel(page)).toEqual([145, 70, 61])
+  await info.attach('cursor-no-mapa-rolado', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  const map = (await backup(page)).find((a) => a.kind === 'tilemap')
+  if (map?.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const cells = map.layers.find(isTileLayer)!.cells
+  expect(cells[0]).toBe(0)
+  expect(cells[64 * 48 - 1]).toBe(0)
+  expect(cells.filter((c) => c >= 0)).toHaveLength(2)
+  await cdp.detach()
+})
+
+test('terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.setTimeout(150_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', {
+    rate: Number(info.project.metadata.cpuSlowdown ?? 1),
+  })
+  await page.goto(`/?namespace=keyboard-terrain-${info.project.name}-${Date.now()}`)
+  await page.getByRole('button', { name: 'Criar novo', exact: true }).click()
+  await page.getByRole('button', { name: /Modelos prontos/ }).click()
+  await page.getByRole('button', { name: /Bosque com terrenos/ }).click()
+  await page.getByRole('textbox', { name: 'Qual o nome?', exact: true }).fill('bosque-pelo-teclado')
+  await page.getByRole('button', { name: 'Começar a desenhar', exact: true }).click()
+  const grid = page.getByRole('img', { name: COPY.tiles.mapGrid, exact: true })
+  await expect(grid).toBeVisible()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  const readMap = async () => {
+    const map = (await backup(page)).find((a) => a.kind === 'tilemap')
+    if (map?.kind !== 'tilemap') throw new Error('Bosque esperado')
+    return map
+  }
+  const initial = await readMap()
+  await page.getByLabel('Terreno', { exact: true }).selectOption({ label: 'Grama e terra' })
+  const grass = page.getByRole('button', { name: 'Pintar Grama e terra, cor 1', exact: true })
+  await grass.focus()
+  await grass.press('Enter')
+  await tabTo(page, grid)
+  await page.keyboard.press('Control+Home')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  const painted = await readMap()
+  expect(painted.layers).not.toEqual(initial.layers)
+  await page.keyboard.press('Control+z')
+  expect((await readMap()).layers).toEqual(initial.layers)
+  await page.keyboard.press('Control+y')
+  expect((await readMap()).layers).toEqual(painted.layers)
+  await tabTo(page, grid)
+  await page.keyboard.press('e')
+  await page.keyboard.press('Enter')
+  expect((await readMap()).layers).not.toEqual(painted.layers)
+  await page.keyboard.press('Control+z')
+  expect((await readMap()).layers).toEqual(painted.layers)
+  await page.getByLabel(COPY.scene.nivelDasFerramentas, { exact: true }).selectOption('create')
+  const earth = page.getByRole('button', { name: 'Pintar Grama e terra, cor 2', exact: true })
+  await earth.focus()
+  await earth.press('Enter')
+  await tabTo(page, grid)
+  await page.keyboard.press('u')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  const rectangle = await readMap()
+  expect(rectangle.layers).not.toEqual(painted.layers)
+  await tabTo(page, grid)
+  await page.keyboard.press('g')
+  await page.keyboard.press('Enter')
+  const filled = await readMap()
+  await info.attach('mapa-depois-do-balde', {
+    body: JSON.stringify(filled),
+    contentType: 'application/json',
+  })
+  expect(filled.layers).not.toEqual(rectangle.layers)
+  await tabTo(page, grid)
+  await page.keyboard.press('i')
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('button', { name: COPY.tools.pencil, exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await info.attach('terreno-pelo-teclado', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Abrir bosque-pelo-teclado (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'Abrir bosque-pelo-teclado (Mapa)', exact: true }).click()
+  const reopened = await readMap()
+  await info.attach('mapa-reaberto', {
+    body: JSON.stringify(reopened),
+    contentType: 'application/json',
+  })
+  expect(reopened.layers).toEqual(filled.layers)
+  await cdp.detach()
+})
 
 test('marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura', async ({
   page,
@@ -113,6 +359,7 @@ test('marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura', 
     .find((o) => o.name === 'Chegada pelo teclado')
   expect(point).toMatchObject({ x: 24, y: 32, role: 'start', width: 0, height: 0 })
   await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(open).toBeVisible()
   await page.reload()
   await open.click()
   const reopened = (await backup(page)).find((a) => a.kind === 'tilemap')

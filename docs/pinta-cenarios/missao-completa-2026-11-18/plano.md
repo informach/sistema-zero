@@ -100,15 +100,20 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   Seis casos de autoria em desktop/toque/CPU, 38 cenários/Phaser e 2.160 testes Pinta
   aprovados. Ver `level-design.md` e `qa/level-design-2026-11-19/README.md`.
   Isso não encerra o rollout autenticado nem a validação externa das etapas 0b/7/9.
-- [ ] 6. Auditoria funcional de teclado/foco/cancelamento e mouse/toque, componentes atuais;
+- [x] 6. Auditoria funcional de teclado/foco/cancelamento e mouse/toque, componentes atuais;
   fluxo infantil e testes em desktop, toque e CPU reduzida nesta máquina, conforme a
   disponibilidade informada pelo usuário. Testes com participantes são evidência distinta.
   Primeiro lote: criação de marcador por controles/teclado, resultado de recusa
   no store e preservação de seleção. Três perfis nativos e 90 testes focados
   aprovados; suíte final com 2.194 aprovados, zero falhas/omissões e três perfis
   nativos repetidos após a revisão. Ver `teclado-e-marcadores.md` e
-  `qa/teclado-e-marcadores-2026-11-19/README.md`. Pintura e navegação por teclado
-  continuam nesta etapa antes de marcá-la concluída.
+  `qa/teclado-e-marcadores-2026-11-19/README.md`. O segundo lote acrescenta pintura,
+  terrenos, conta-gotas, seleção e navegação por teclado, com cancelamento, rolagem
+  e guardas do host. Suíte final com 2.192 aprovados sem omissões e 12 casos nativos
+  em três perfis, mais cinco repetições de fechamento. Provas, falhas da revisão
+  e limites em `qa/pintura-por-teclado-2026-11-19/README.md` e guia em
+  `pintura-por-teclado.md`. O ciclo autenticado permanece na etapa 0b;
+  esses perfis não comprovam uso em aparelhos físicos adicionais ou com crianças.
 - [ ] 7a. Evoluir contratos externos e fixtures para dados novos: Tiled JSON/TMX/TSX reais,
   pacotes Phaser/Pygame e Godot; preservar PNG/SVG/.pinta.json/ZIP e relatórios de conversão.
 - [ ] 7b. Executar ferramentas nativas e Godot com render visual; repetir round-trip e jogos.

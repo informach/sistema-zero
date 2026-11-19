@@ -4,9 +4,9 @@
  * quando nada muda (é assim que quem chama sabe que não há o que gravar).
  */
 import type { AnyTilesetAsset, TilemapAsset, TileTerrain } from '../../../core/project'
-import type { CellPos } from '../../../tiles/cellGeometry'
+import { type CellPos, lineCells, normalizeCellRect, rectCells } from '../../../tiles/cellGeometry'
 import { scatterTiles } from '../../../tiles/scatter'
-import { stampCells, type TileStamp } from '../../../tiles/stamp'
+import { blockCells, stampCells, type TileStamp } from '../../../tiles/stamp'
 import { paintTerrain, terrainRegion } from '../../../tiles/terrain'
 import { floodFillCells, setCells } from '../../../tiles/tilemapOps'
 import type { MapBrushSettings } from '../MapTerrainPanel'
@@ -26,6 +26,33 @@ export interface MapBrushContext {
 
 export function brushTerrain(context: MapBrushContext): TileTerrain | undefined {
   return context.tileset?.terrains?.find((t) => t.id === context.brush.terrainId)
+}
+
+/** O mesmo traço em blocos para carimbo por ponteiro ou teclado. */
+export function targetBrushCells(cells: CellPos[], context: MapBrushContext): CellPos[] {
+  const { erasing, stamp, anchor } = context
+  return !erasing && stamp && anchor
+    ? cells.flatMap((cell) => blockCells(cell, anchor, stamp))
+    : cells
+}
+
+/** A mesma área de prévia/edição para as duas formas de entrada. */
+export function shapeBrushCells(
+  map: TilemapAsset,
+  tool: 'line' | 'rect',
+  anchor: CellPos,
+  target: CellPos,
+): CellPos[] {
+  return tool === 'line'
+    ? lineCells(anchor, target)
+    : rectCells(
+        normalizeCellRect(anchor, target, map.cols, map.rows) ?? {
+          col: anchor.col,
+          row: anchor.row,
+          cols: 1,
+          rows: 1,
+        },
+      )
 }
 
 /** Pinta `cells` com a ferramenta de agora. `unmatched` = faltaram peças de borda do terreno. */

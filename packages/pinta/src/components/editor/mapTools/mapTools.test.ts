@@ -309,8 +309,17 @@ describe('guarda dos commits', () => {
 })
 
 describe('seleção de um pedaço do mapa', () => {
-  function montar(inicial: TilemapAsset, locked = false) {
-    const store = loja(inicial)
+  function montar(
+    inicial: TilemapAsset,
+    locked = false,
+    acceptEdit?: (map: import('../../../core/project').PintaAsset) => boolean,
+  ) {
+    const store = createEditorStore({
+      asset: inicial,
+      acceptEdit,
+      persist: async () => {},
+      autosaveDelayMs: 100000,
+    })
     const selRef = { current: null as MapSelection | null },
       movingRef = { current: null as { offset: CellPos } | null },
       selPointerRef = { current: null as number | null },
@@ -355,6 +364,41 @@ describe('seleção de um pedaço do mapa', () => {
     const m = mapa()
     return setCell(m, tileLayerAt(m).id, 1, 1, 2)
   }
+  it('recusar apagar ou carimbar conserva a seleção e não cria histórico', () => {
+    const t = montar(comPeca(), false, () => false)
+    t.arrastar({ col: 1, row: 1 }, { col: 1, row: 1 })
+    t.controller().deleteMapSelection()
+    expect(t.selRef.current?.kind).toBe('rect')
+    t.arrastar({ col: 1, row: 1 }, { col: 2, row: 2 })
+    expect(t.selRef.current?.kind).toBe('floating')
+    t.controller().stampPending()
+    expect(t.selRef.current?.kind).toBe('floating')
+    expect(t.store.getState().canUndo).toBe(false)
+    expect(t.selfCommitRef.current).toBe(false)
+  })
+  it('carimbo levantado não substitui uma revisão editada depois dele', () => {
+    const t = montar(comPeca())
+    t.arrastar({ col: 1, row: 1 }, { col: 1, row: 1 })
+    t.arrastar({ col: 1, row: 1 }, { col: 2, row: 2 })
+    const state = t.store.getState()
+    state.commit({ ...state.asset, name: 'Revisão nova' })
+    const revised = t.store.getState().asset
+    expect(t.controller().stampPending()).toBe(false)
+    expect(t.store.getState().asset).toBe(revised)
+    t.store.getState().undo()
+    expect(t.store.getState().canUndo).toBe(false)
+  })
+  it('selecionar o destino de um pedaço flutuante usa a revisão recém-carimbada', () => {
+    const t = montar(comPeca())
+    t.arrastar({ col: 1, row: 1 }, { col: 1, row: 1 })
+    t.arrastar({ col: 1, row: 1 }, { col: 2, row: 2 })
+    const destination = { col: 2, row: 2, cols: 1, rows: 1 }
+    t.controller().selectRect(destination)
+    expect(t.selRef.current).toEqual({ kind: 'rect', rect: destination })
+    expect(tileLayerAt(t.store.getState().asset as TilemapAsset).cells[10]).toBe(2)
+    t.store.getState().undo()
+    expect(t.store.getState().canUndo).toBe(false)
+  })
   it('pedaço só de grade vazia não vira seleção', () => {
     const t = montar(comPeca())
     t.arrastar({ col: 2, row: 2 }, { col: 3, row: 3 })

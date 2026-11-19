@@ -162,6 +162,9 @@ export const COPY = {
     libraryPlaced: (name: string) => `${name} colocado no cenário.`,
     libraryPreview: 'Prévia do desenho no cenário',
     scatterObjects: 'Espalhar desenhos',
+    keyboardMapHelp:
+      'Use as setas para escolher uma casa e Enter para usar a ferramenta. Linha, retângulo e seleção usam dois pontos. Esc cancela. Ctrl+Home vai ao começo e Ctrl+End ao fim do mapa.',
+    keyboardMapAnchor: 'Primeiro ponto escolhido. Enter termina; Esc cancela.',
     scatterWith: (name: string) => `Pinte com ${name}.`,
     scatterChoose: 'Selecione um desenho ou conjunto no cenário para usar como pincel.',
     scatterWidth: 'Tamanho do pincel (casas)',

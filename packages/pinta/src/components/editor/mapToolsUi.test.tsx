@@ -126,6 +126,158 @@ async function mapaDoDisco(): Promise<TilemapAsset> {
   if (map?.kind !== 'tilemap') throw new Error('mapa esperado no disco')
   return map
 }
+
+describe('pintura do mapa pelo teclado', () => {
+  it('conta-gotas e pintura rápidos usam a peça recém-escolhida antes do próximo render', async () => {
+    await abrirMapa({
+      level: 'create',
+      open: /Abrir picker/,
+      extra: async (seed) => {
+        const sheet = createTilesetAsset({ name: 'duas-pecas', tileSize: 16 })
+        sheet.tiles.push({ ...sheet.tiles[0]!, data: new Uint8Array(16 * 16).fill(2) })
+        sheet.solid.push(false)
+        sheet.platform.push(false)
+        await seed.getState().createPrepared(sheet)
+        const map = createTilemapAsset({
+          name: 'picker',
+          tilesetId: sheet.id,
+          cols: COLS,
+          rows: ROWS,
+        })
+        await seed.getState().createPrepared(setCell(map, map.layers[0]!.id, 1, 1, 1))
+      },
+    })
+    const grid = grade()
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'Home', ctrlKey: true })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    fireEvent.keyDown(grid, { key: 'i' })
+    act(() => {
+      fireEvent.keyDown(grid, { key: 'Enter' })
+      fireEvent.keyDown(grid, { key: 'ArrowRight' })
+      fireEvent.keyDown(grid, { key: 'Enter' })
+    })
+    await noDisco(async () => {
+      const maps = createGalleryStore()
+      await maps.getState().load()
+      const map = maps.getState().assets.find((a) => a.kind === 'tilemap' && a.name === 'picker')
+      if (map?.kind !== 'tilemap') throw new Error('Mapa esperado')
+      expect(map.layers.find(isTileLayer)!.cells[1 * COLS + 2]).toBe(1)
+    })
+  })
+  it('trocar para conta-gotas e usar Enter antes do próximo render não executa a borracha anterior', async () => {
+    await abrirMapa({ level: 'create', prepare: (map) => setCell(map, map.layers[0]!.id, 1, 1, 0) })
+    const grid = grade()
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'Home', ctrlKey: true })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    fireEvent.keyDown(grid, { key: 'e' })
+    act(() => {
+      fireEvent.keyDown(grid, { key: 'i' })
+      fireEvent.keyDown(grid, { key: 'Enter' })
+    })
+    expect(desfazer().disabled).toBe(true)
+    expect(ativa(COPY.tools.pencil)).toBe(true)
+    expect((await mapaDoDisco()).layers.find(isTileLayer)!.cells[1 * COLS + 1]).toBe(0)
+  })
+  it('o ponto escolhido por teclado também posiciona o marcador da biblioteca', async () => {
+    await abrirMapa()
+    const grid = grade()
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'Home', ctrlKey: true })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addObjectLayer }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addMarker }))
+    await noDisco(async () =>
+      expect(objetos(await mapaDoDisco())[0]).toMatchObject({ x: 40, y: 24 }),
+    )
+  })
+  it('alcança a grade, move sem gravar e pinta uma casa com Enter e um desfazer', async () => {
+    await abrirMapa()
+    const grid = grade()
+    expect(grid.tabIndex).toBe(0)
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    expect(desfazer().disabled).toBe(true)
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    await noDisco(async () => {
+      const map = await mapaDoDisco()
+      expect(map.layers.find(isTileLayer)!.cells.filter((value) => value >= 0)).toHaveLength(1)
+    })
+    fireEvent.click(desfazer())
+    await noDisco(async () =>
+      expect(
+        (await mapaDoDisco()).layers.find(isTileLayer)!.cells.every((value) => value === -1),
+      ).toBe(true),
+    )
+    expect(desfazer().disabled).toBe(true)
+  })
+  it('linha pelo teclado tem prévia fora do salvamento, Esc e um histórico por confirmação', async () => {
+    await abrirMapa({ level: 'create' })
+    const grid = grade()
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'Home', ctrlKey: true })
+    fireEvent.keyDown(grid, { key: 'l' })
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    expect(document.querySelector('[data-pin-keyboard-area]')).not.toBeNull()
+    expect(desfazer().disabled).toBe(true)
+    expect(
+      (await mapaDoDisco()).layers.find(isTileLayer)!.cells.every((value) => value === -1),
+    ).toBe(true)
+    fireEvent.keyDown(grid, { key: 'Escape' })
+    expect(document.querySelector('[data-pin-keyboard-area]')).toBeNull()
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    await noDisco(async () =>
+      expect(
+        (await mapaDoDisco()).layers.find(isTileLayer)!.cells.filter((value) => value >= 0),
+      ).toHaveLength(2),
+    )
+    fireEvent.click(desfazer())
+    await noDisco(async () =>
+      expect(
+        (await mapaDoDisco()).layers.find(isTileLayer)!.cells.every((value) => value === -1),
+      ).toBe(true),
+    )
+    expect(desfazer().disabled).toBe(true)
+  })
+  it('seleção por dois pontos permite copiar e carimbar pelos controles sem apagar a origem', async () => {
+    await abrirMapa({ level: 'create', prepare: (map) => setCell(map, map.layers[0]!.id, 1, 1, 0) })
+    const grid = grade()
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'Home', ctrlKey: true })
+    fireEvent.keyDown(grid, { key: 'm' })
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.copyPiece }))
+    act(() => grid.focus())
+    fireEvent.keyDown(grid, { key: 'Home', ctrlKey: true })
+    for (let i = 0; i < 3; i++) fireEvent.keyDown(grid, { key: 'ArrowRight' })
+    fireEvent.keyDown(grid, { key: 'ArrowDown' })
+    fireEvent.keyDown(grid, { key: 'Enter' })
+    await noDisco(async () => {
+      const cells = (await mapaDoDisco()).layers.find(isTileLayer)!.cells
+      expect(cells[1 * COLS + 1]).toBe(0)
+      expect(cells[2 * COLS + 4]).toBe(0)
+    })
+    fireEvent.click(desfazer())
+    await noDisco(async () =>
+      expect(
+        (await mapaDoDisco()).layers.find(isTileLayer)!.cells.filter((value) => value >= 0),
+      ).toHaveLength(1),
+    )
+  })
+})
 const objetos = (map: TilemapAsset) => map.layers.find(isObjectLayer)?.objects ?? []
 /** Com uma camada de objetos pronta e ativa. */
 const comObjetos = (map: TilemapAsset): TilemapAsset => addObjectLayer(map, 'Objetos')

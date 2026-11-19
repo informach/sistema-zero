@@ -14,13 +14,20 @@ import type { AnyTilesetAsset, PintaAsset, TilemapAsset } from '../../../core/pr
 import type { PintaEditorStore } from '../../../state/editorStore'
 import type { PintaSessionStore } from '../../../state/sessionStore'
 import { cellTile } from '../../../tiles/cell'
-import { type CellPos, lineCells, normalizeCellRect, rectCells } from '../../../tiles/cellGeometry'
-import { blockCells, type TileStamp } from '../../../tiles/stamp'
+import { type CellPos, lineCells } from '../../../tiles/cellGeometry'
+import type { TileStamp } from '../../../tiles/stamp'
 import { cellAt, growTilemap } from '../../../tiles/tilemapOps'
 import { isTileBlank } from '../../../tiles/tilesetOps'
 import type { MapBrushSettings } from '../MapTerrainPanel'
 import { commitIfChanged } from './commitGuard'
-import { applyMapBrush, brushTerrain, fillWithBrush, type MapBrushContext } from './mapBrush'
+import {
+  applyMapBrush,
+  brushTerrain,
+  fillWithBrush,
+  type MapBrushContext,
+  shapeBrushCells,
+  targetBrushCells,
+} from './mapBrush'
 
 export interface TileGesture {
   base: PintaAsset
@@ -92,10 +99,7 @@ export function createTileGestures(deps: TileGestureDeps) {
 
   /** As casas-alvo de um traço (o carimbo pinta em BLOCOS encaixados). */
   function targetCells(cells: CellPos[]): CellPos[] {
-    const g = gestureRef.current,
-      stamp = deps.stamp
-    if (tool !== 'eraser' && stamp && g) return cells.flatMap((c) => blockCells(c, g.anchor, stamp))
-    return cells
+    return targetBrushCells(cells, brushContext())
   }
 
   /**
@@ -170,17 +174,7 @@ export function createTileGestures(deps: TileGestureDeps) {
     const g = gestureRef.current
     if (g?.base.kind !== 'tilemap') return
     const target = deps.clampCell(cell)
-    const shape =
-      tool === 'line'
-        ? lineCells(g.anchor, target)
-        : rectCells(
-            normalizeCellRect(g.anchor, target, tilemap.cols, tilemap.rows) ?? {
-              col: g.anchor.col,
-              row: g.anchor.row,
-              cols: 1,
-              rows: 1,
-            },
-          )
+    const shape = shapeBrushCells(tilemap, tool === 'line' ? 'line' : 'rect', g.anchor, target)
     const next = applyTiles(g.base, shape, true)
     editor.getState().replace(next)
     deps.repaintMap(next)
@@ -335,5 +329,5 @@ export function createTileGestures(deps: TileGestureDeps) {
     if (!gestureRef.current && current.kind === 'tilemap') deps.repaintMap(current)
   }
 
-  return { down, move, up, cancel, leave }
+  return { down, move, up, cancel, leave, pickAt }
 }

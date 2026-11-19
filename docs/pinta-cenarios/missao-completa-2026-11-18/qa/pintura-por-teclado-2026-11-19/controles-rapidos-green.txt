@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapToolsUi.test.tsx:
+(pass) pintura do mapa pelo teclado > conta-gotas e pintura rápidos usam a peça recém-escolhida antes do próximo render [1703.00ms]
+(pass) pintura do mapa pelo teclado > trocar para conta-gotas e usar Enter antes do próximo render não executa a borracha anterior [266.00ms]
+
+ 2 pass
+ 58 filtered out
+ 0 fail
+ 21 expect() calls
+Ran 2 tests across 1 file. [3.11s]

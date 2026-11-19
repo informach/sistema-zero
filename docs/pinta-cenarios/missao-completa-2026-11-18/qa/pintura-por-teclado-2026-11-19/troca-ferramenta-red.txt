@@ -1,0 +1,59 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\useKeyboardPainting.test.tsx:
+150 |   const t = setup('line')
+151 |   t.press('Enter')
+152 |   t.press('ArrowRight')
+153 |   expect(t.previewRef.current).not.toBeNull()
+154 |   t.changeTool('rect')
+155 |   expect(t.previewRef.current).toBeNull()
+                                     ^
+error: expect(received).toBeNull()
+
+Received: {
+  base: {
+    id: "f713c2f6-1623-4ff0-bcff-ac022dfbbcb4",
+    kind: "tilemap",
+    name: "teclado",
+    createdAt: 1795124285415,
+    updatedAt: 1795124285415,
+    tilesetId: "32c4e724-9cf0-4b2f-a026-2f1adbfd1da2",
+    cols: 4,
+    rows: 4,
+    layers: [
+      {
+        id: "bbb42e02-1be9-42d5-ba58-640ce93caf84",
+        name: "Chão",
+        visible: true,
+        cells: Int16Array(16) [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
+      }
+    ],
+  },
+  map: {
+    id: "f713c2f6-1623-4ff0-bcff-ac022dfbbcb4",
+    kind: "tilemap",
+    name: "teclado",
+    createdAt: 1795124285415,
+    updatedAt: 1795124285415,
+    tilesetId: "32c4e724-9cf0-4b2f-a026-2f1adbfd1da2",
+    cols: 4,
+    rows: 4,
+    layers: [
+      {
+        id: "bbb42e02-1be9-42d5-ba58-640ce93caf84",
+        name: "Chão",
+        visible: true,
+        cells: Int16Array(16) [ 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
+      }
+    ],
+  },
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapTools\useKeyboardPainting.test.tsx:155:32)
+(fail) changing only the tool clears a two-point preview immediately [47.00ms]
+
+ 0 pass
+ 8 filtered out
+ 1 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [1333.00ms]

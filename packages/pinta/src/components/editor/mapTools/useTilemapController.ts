@@ -30,6 +30,7 @@ import { useEditorStores, useSession, useToolCuration } from '../editorContext'
 import { DEFAULT_MAP_BRUSH } from '../MapTerrainPanel'
 import type { MapTool, MapToolMode } from '../TilemapPanels'
 import { useWheelZoom } from '../useWheelZoom'
+import { keyboardCellBounds } from './keyboardPainting'
 import { paintMapCanvas } from './mapCanvas'
 import { createMapLayerActions } from './mapLayerActions'
 import {
@@ -43,6 +44,7 @@ import {
 import { createMapObjectActions } from './mapObjectActions'
 import { createMapSelectionController, type MapSelection } from './selectionController'
 import { createTileGestures, type PanGesture, type TileGesture } from './tileGestures'
+import { type KeyboardMapPreview, useKeyboardPainting } from './useKeyboardPainting'
 import { useLibraryPlacement } from './useLibraryPlacement'
 import { useMapAnimation } from './useMapAnimation'
 import { useMapKeyboard } from './useMapKeyboard'
@@ -113,6 +115,8 @@ export function useTilemapController(model: ReadyMapModel) {
   const paperRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef({ x: 0, y: 0, width: 0, height: 0 })
+  const keyboardPreviewRef = useRef<KeyboardMapPreview | null>(null)
+  const keyboardCursorRef = useRef<HTMLDivElement>(null)
   const animationTimeRef = useRef(0)
   const chunkCache = useMemo(() => new TileChunkCache(), [])
   useEffect(() => () => chunkCache.clear(), [chunkCache])
@@ -185,7 +189,7 @@ export function useTilemapController(model: ReadyMapModel) {
       const viewport = paintMapCanvas({
         canvas,
         stage: stageRef.current,
-        map,
+        map: keyboardPreviewRef.current?.base === map ? keyboardPreviewRef.current.map : map,
         pad,
         cellPx,
         tileSize,
@@ -404,6 +408,53 @@ export function useTilemapController(model: ReadyMapModel) {
     showToast,
   })
 
+  const keyboard = useKeyboardPainting({
+    editor,
+    map: tilemap,
+    layerId,
+    enabled: activeTileLayer !== null,
+    isAvailable: (currentTool) => isMapToolAvailable(level, allowTools, currentTool),
+    getTool: () => session.getState().tool as MapTool,
+    getBrush: () => ({
+      layerId,
+      erasing: session.getState().tool === 'eraser',
+      selectedTile: session.getState().frameIndex,
+      stamp: session.getState().stamp,
+      anchor: null,
+      tileset,
+      brush: mapBrush,
+    }),
+    tool,
+    canUse: () =>
+      gestureRef.current === null && panRef.current === null && selPointerRef.current === null,
+    brush: {
+      layerId,
+      erasing: tool === 'eraser',
+      selectedTile,
+      stamp,
+      anchor: null,
+      tileset,
+      brush: mapBrush,
+    },
+    tileSize,
+    previewRef: keyboardPreviewRef,
+    cursorRef: keyboardCursorRef,
+    stageRef,
+    position: placementPoint,
+    onCursor: (cell) => {
+      hoverRef.current(cell)
+      const bounds = cell ? keyboardCellBounds(tilemap, layerId, cell, tileSize) : null
+      if (bounds)
+        lastPointRef.current = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
+    },
+    repaint: repaintMap,
+    showToast,
+    pickCell: tiles.pickAt,
+    selectRect: selection.selectRect,
+    cancelSelection: selection.cancelSelection,
+  })
+  cancelGestureRef.current = () => keyboard.cancel() || tiles.cancel()
+
   // A ferramenta de agora decide quem recebe o ponteiro do palco de peças.
   const canvasHandlers =
     tool === 'object-scatter'
@@ -564,6 +615,8 @@ export function useTilemapController(model: ReadyMapModel) {
     selectedObjectIds,
     // refs do palco
     canvasRef,
+    keyboardCursorRef,
+    keyboard,
     paperRef,
     stageRef,
     selectionBarRef,
