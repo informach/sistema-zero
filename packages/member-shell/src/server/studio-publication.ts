@@ -12,10 +12,13 @@ import {
   type StudioPublication,
   type StudioPythonPublication,
 } from '@sistemazero/core/studio'
+import { pintaImageRequiredRuntimeFeature } from '@sistemazero/core/studio/pinta-image'
+import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioPublicationRuntimeDecision,
   StudioRuntimeCandidate,
 } from '@sistemazero/core/studio/runtime-authorization'
+import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import type { EditableStudioProject, Project, PythonProjectDocument } from '@sistemazero/studio'
 import { isCourseModelLibId } from '@sistemazero/studio/course-models'
@@ -32,16 +35,28 @@ import {
 
 /** The selected Python release does not declare `publish`, or this context does not grant it. */
 export const STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED = 'RUNTIME_PUBLISH_NOT_ALLOWED'
+export const STUDIO_PINTA_READER_OUTDATED = 'RUNTIME_PINTA_READER_OUTDATED'
 
 export class StudioPublicationError extends Error {
   constructor(
     readonly status: number,
     message: string,
     /** Specific public error code; callers fall back to their generic publication code. */
-    readonly code?: typeof STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
+    readonly code?: typeof STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED | typeof STUDIO_PINTA_READER_OUTDATED,
   ) {
     super(message)
   }
+}
+
+/** Capture this requirement before stripping private recipe/provenance for publication. */
+export function studioRequiresPintaSceneReader(project: EditableStudioProject): boolean {
+  return (
+    project.programmingLanguage === 'python' &&
+    project.assets?.some(
+      (asset) =>
+        asset.pintaImage && pintaImageRequiredRuntimeFeature(asset.pintaImage) !== undefined,
+    ) === true
+  )
 }
 
 /** Publish game content, never private tutoring notes or links to the author's workspace. */
@@ -249,6 +264,8 @@ export async function publishStudioProRevision(options: {
  */
 export async function publishStudioPythonRevision(options: {
   project: PythonProjectDocument
+  /** Server-only requirement captured from the private validated project, never a request flag. */
+  requiresPintaSceneReader?: boolean
   playId: string
   owner: string
   requestId: string
@@ -298,6 +315,18 @@ export async function publishStudioPythonRevision(options: {
       403,
       'O ambiente Python deste projeto ainda não permite publicar no Mural.',
       STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
+    )
+  if (
+    (options.requiresPintaSceneReader || studioRequiresPintaSceneReader(original)) &&
+    !selectStudioRuntimeRelease(
+      decision.catalog,
+      project.runtime,
+    )?.manifest.python?.features.includes(PYTHON_PINTA_WORLD_FEATURE)
+  )
+    throw new StudioPublicationError(
+      409,
+      'O ambiente deste projeto precisa ser atualizado para publicar este cenário. O mapa e o programa foram preservados.',
+      STUDIO_PINTA_READER_OUTDATED,
     )
   const result = await callStudioPublication(
     {

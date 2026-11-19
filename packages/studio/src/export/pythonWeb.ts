@@ -1,4 +1,5 @@
 import { canonicalJson } from '@sistemazero/core/creations'
+import { pintaImageRequiredRuntimeFeature } from '@sistemazero/core/studio/pinta-image'
 import { StudioPythonWebPayloadSchema } from '@sistemazero/core/studio/python-execution-content'
 import {
   STUDIO_PYTHON_DISTRIBUTION_LIMITS,
@@ -9,6 +10,7 @@ import {
 } from '@sistemazero/core/studio/python-runtime-distribution'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import type { StudioRuntimeEnvironment } from '../runtime/environment'
+import { PINTA_SCENE_RUNTIME_MESSAGE } from '../runtime/pintaImageCompatibility'
 import { preparePythonExecutionSnapshot } from '../runtime/python/snapshot'
 import { fetchPythonWebBytes, pythonWebBytesSha256 } from '../runtime/python/webFiles'
 import { PYTHON_WEB_METADATA_BYTES } from '../runtime/python/webPayload'
@@ -80,6 +82,12 @@ export async function buildPythonWebFiles(
     throw new Error(
       'Esta versão do ambiente Python não oferece exportação web. Ela continua disponível para executar e baixar a fonte.',
     )
+  for (const asset of project.assets ?? []) {
+    if (!asset.pintaImage) continue
+    const required = pintaImageRequiredRuntimeFeature(asset.pintaImage)
+    if (required && !deployment.release.manifest.python?.features.includes(required))
+      throw new Error(PINTA_SCENE_RUNTIME_MESSAGE)
+  }
   const files: ExportFileMap = pythonWebTemplates(runtimeHash)
   for (const file of studioPythonLogicalFiles(deployment.distribution)) {
     const bytes = await fetchPythonWebBytes(

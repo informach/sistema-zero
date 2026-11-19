@@ -555,6 +555,7 @@ async function finish(
     provenance: prepared.provenance,
     output: {
       mime,
+      ...(prepared.data && prepared.data.version > 1 ? { dataVersion: prepared.data.version } : {}),
       width: prepared.width,
       height: prepared.height,
       bytes: bytes.byteLength,

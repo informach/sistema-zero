@@ -1,0 +1,120 @@
+bun test v1.3.11 (af24e281)
+
+packages\core\src\studio\pinta-image.test.ts:
+ 8 |         throw new core.$ZodAsyncError();
+ 9 |     }
+10 |     if (result.issues.length) {
+11 |         const e = new (_params?.Err ?? _Err)(result.issues.map((iss) => util.finalizeIssue(iss, ctx, core.config())));
+12 |         util.captureStackTrace(e, _params?.callee);
+13 |         throw e;
+                   ^
+ZodError: [
+  {
+    "code": "unrecognized_keys",
+    "keys": [
+      "dataVersion"
+    ],
+    "path": [
+      "output"
+    ],
+    "message": "Unrecognized key: \"dataVersion\""
+  }
+]
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\node_modules\.bun\zod@4.3.6\node_modules\zod\v4\core\parse.js:13:15)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\core\src\studio\pinta-image.test.ts:32:45)
+(fail) a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga
+(pass) um mundo é uma seleção explícita, com identidade própria e PNG com dados
+(pass) o envelope do mundo recusa versões, ciclos binários, IDs duplicados e excesso acumulado [16.00ms]
+(pass) Pinta derived image identity > revision and output changes keep identity; distinct positions/scale do not
+(pass) Pinta derived image identity > rejects unknown metadata, missing selections and invented frame identities
+(pass) Pinta derived image identity > an SVG recipe is explicit: legacy recipes keep their key, svg gets its own
+(pass) Pinta derived image identity > checks the destination quotas independently before allocation
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > the new kinds parse, keep their own identity and never request SVG
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > dependency rule per kind: none, the default tileset, or every tileset (1..8)
+
+packages\pinta\src\export\portableImageData.test.ts:
+51 |   expect((await pintaData(before)).version).toBe(1)
+52 |   expect(Object.hasOwn(before.derivation.output, 'dataVersion')).toBe(false)
+53 |   map.layers[0]!.opacity = 0.5
+54 |   const after = await render()
+55 |   expect((await pintaData(after)).version).toBe(2)
+56 |   expect(after.derivation.output.dataVersion).toBe(2)
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: undefined
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\pinta\src\export\portableImageData.test.ts:56:47)
+(fail) o produtor identifica dados avançados e conserva o envelope do mapa legado [16.00ms]
+110 |     assets: [tileset, child, unrelated],
+111 |     raster: nativeRaster(),
+112 |   })
+113 |   const data = await pintaData(before)
+114 |   expect(data.version).toBe(3)
+115 |   expect(before.derivation.output.dataVersion).toBe(3)
+                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: undefined
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\pinta\src\export\portableImageData.test.ts:115:48)
+(fail) o mundo Python carrega o destino e o ciclo sem aninhar mundos ou incluir desenhos alheios [15.00ms]
+(pass) o mundo privado conserva animações e não exige documentos externos [16.00ms]
+(pass) o mundo recusa as superfícies temporárias de uma instância de conjunto ampliada [31.00ms]
+(pass) a captura do mundo não muda com uma edição concorrente; canvases são liberados em sequência [16.00ms]
+(pass) o mundo recusa resolução e soma de pixels antes de criar um canvas
+(pass) cancelar durante a preparação do mundo libera o canvas e não entrega um pacote parcial
+(pass) o PNG jogável leva o atlas inteiro da animação fixada, além da folha do terreno
+(pass) spritesheet — the whole sheet with its animations embedded > one row per animation, columns = most frames, frames left-aligned, scaled crisp
+(pass) spritesheet — the whole sheet with its animations embedded > raw bytes: iTXt right after IHDR, keyword "pinta", compression 1, method 0
+(pass) spritesheet — the whole sheet with its animations embedded > the hitbox comes from the drawing, in output pixels relative to the frame
+(pass) spritesheet — the whole sheet with its animations embedded > a vector sprite sheet is rasterized whole, still PNG with data
+(pass) tileset — the whole tile sheet with solid/platform marks > columns = min(count, 8), row-major, empty tiles keep their slot [16.00ms]
+(pass) tileset — the whole tile sheet with solid/platform marks > a vector tileset sheet
+(pass) map — an atlas of every tileset, layers and objects embedded > stacks the sheets (default first), keeps layer order, scales objects
+(pass) map — an atlas of every tileset, layers and objects embedded > the flat tilemap image keeps exactly one dependency on the same map
+(pass) map — an atlas of every tileset, layers and objects embedded > a change in ANY tileset changes the map provenance (the sync re-derives) [15.00ms]
+(pass) map — an atlas of every tileset, layers and objects embedded > without its default tileset the map is refused
+(pass) determinism, limits and refusals > the same input gives the same bytes and SHA
+(pass) determinism, limits and refusals > respects the destination limits with a friendly message
+(pass) determinism, limits and refusals > a scale that would split a frame in a fraction of a pixel is refused
+(pass) determinism, limits and refusals > the kind must match the drawing, and SVG is never accepted
+(pass) pngText — the chunk writer/reader > CRC-32 matches the PNG reference values
+
+packages\studio\src\runtime\registry.test.ts:
+111 |         provenance: { sourceSha256: 'a'.repeat(64), dependencies: [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }] },
+112 |         output: { mime: 'image/png', width: 1, height: 1, bytes: 1, sha256: 'b'.repeat(64), dataVersion: 2 },
+113 |       } }]
+114 |       if (supported) expect(await registry.load(py.input)).toBe(py.provider)
+115 |       else {
+116 |         await expect(registry.load(py.input)).rejects.toMatchObject({ reasonCode: 'pinta-scene-unavailable' })
+                                                            ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\runtime\registry.test.ts:116:55)
+(fail) lazy runtime routing > dados avançados na receita map antiga exigem o leitor completo antes de carregar o motor [16.00ms]
+(pass) lazy runtime routing > um mundo exige o leitor no runtime exato; projetos anteriores continuam executáveis
+(pass) lazy runtime routing > JavaScript loads no Python module and concurrent requests share only the module
+(pass) lazy runtime routing > registration metadata is captured, so later mutation cannot reroute a project [15.00ms]
+(pass) lazy runtime routing > missing provider, revoked release, absent grant and checking host never import a module
+(pass) lazy runtime routing > a runtime identity mismatch does not fall back to JavaScript
+(pass) lazy runtime routing > failed imports and wrong module identities are retryable, with a structured failure
+(pass) lazy runtime routing > aborting one editor cancels its wait while another editor receives the module
+(pass) lazy runtime routing > an already canceled request cannot start an import
+(pass) lazy runtime routing > duplicate routes and IDs are rejected at host registration
+
+4 tests failed:
+(fail) a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga
+(fail) o produtor identifica dados avançados e conserva o envelope do mapa legado [16.00ms]
+(fail) o mundo Python carrega o destino e o ciclo sem aninhar mundos ou incluir desenhos alheios [15.00ms]
+(fail) lazy runtime routing > dados avançados na receita map antiga exigem o leitor completo antes de carregar o motor [16.00ms]
+
+ 38 pass
+ 4 fail
+ 228 expect() calls
+Ran 42 tests across 3 files. [727.00ms]

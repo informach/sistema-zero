@@ -1,3 +1,7 @@
+import {
+  createStudioRuntimeCatalog,
+  createStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { setStudioStorageNamespace } from '@sistemazero/studio'
 import { StudioEditor } from '@sistemazero/studio/editor'
 import { createLocalPersistenceAdapter } from '@sistemazero/studio/local-persistence'
@@ -7,6 +11,8 @@ import { PintaClient } from '../../../member-shell/src/components/creator/pinta-
 import { useStudioCreationLibraries } from '../../../member-shell/src/components/creator/use-studio-creation-libraries'
 import type { EditableStudioProject } from '../../src/core/editableProject'
 import { createEmptyProject } from '../../src/core/project'
+import type { StudioRuntimeEnvironment } from '../../src/runtime/environment'
+import { createStudioRuntimeRegistry } from '../../src/runtime/registry'
 import { documentFixture } from '../../src/state/fixtures/projectDocuments'
 import { refinePythonClassicProjectDocument } from '../../src/state/pythonProjectValidation'
 import '@fontsource/baloo-2/latin-700.css'
@@ -22,6 +28,7 @@ function Studio() {
   const adapter = useMemo(() => createLocalPersistenceAdapter({ namespace: profile }), [])
   const [initial, setInitial] = useState<EditableStudioProject | null>(null)
   const [observed, setObserved] = useState<EditableStudioProject | null>(null)
+  const [runtimeEnvironment, setRuntimeEnvironment] = useState<StudioRuntimeEnvironment>()
   const { pintaLibrary } = useStudioCreationLibraries(profile, true, false)
   useEffect(() => {
     let active = true
@@ -40,12 +47,67 @@ function Studio() {
           'requirements.txt': '',
         }
         raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
-        void refinePythonClassicProjectDocument(raw).then((project) => {
+        void (async () => {
+          if (new URLSearchParams(window.location.search).get('leitor') === 'antigo') {
+            // Authoring-only catalog: declares no new Pinta reader and cannot execute code.
+            const release = await createStudioRuntimeRelease({
+              manifestVersion: 1,
+              profileId: 'python-test',
+              releaseId: 'old-pinta-reader',
+              programmingLanguage: 'python',
+              kinds: ['classic'],
+              modes: ['blocks', 'bridge'],
+              capabilities: ['edit', 'export-source'],
+              extensions: [{ id: 'python-pygame', versions: ['1.0.0'] }],
+              sourceTargets: ['desktop'],
+              requiredBrowserFeatures: [],
+              artifacts: [{ path: 'authoring-only.txt', sha256: 'b'.repeat(64) }],
+              python: { version: '3.14.2', packages: [], providedModules: [], features: [] },
+            })
+            const catalog = await createStudioRuntimeCatalog({
+              releases: [release],
+              profiles: [
+                {
+                  id: release.profileId,
+                  languages: ['python'],
+                  kinds: ['classic'],
+                  modes: ['blocks', 'bridge'],
+                  levels: [],
+                  releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }],
+                },
+              ],
+            })
+            raw.runtime = {
+              profileId: release.profileId,
+              releaseId: release.releaseId,
+              manifestSha256: release.manifestSha256,
+            }
+            raw.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
+            if (active)
+              setRuntimeEnvironment({
+                catalog,
+                registry: createStudioRuntimeRegistry([]),
+                access: () => ({
+                  releaseStatus: 'active',
+                  hostOperations: [
+                    { capability: 'edit', state: 'available' },
+                    { capability: 'export-source', state: 'available' },
+                  ],
+                  grantedCapabilities: ['edit', 'export-source'],
+                  grantedExtensionIds: ['python-pygame'],
+                  curation: null,
+                }),
+                resolvePythonAnalysis: async () => {
+                  throw new Error('This authoring fixture has no execution provider.')
+                },
+              })
+          }
+          const project = await refinePythonClassicProjectDocument(raw)
           if (active) {
             setInitial(project)
             setObserved(project)
           }
-        })
+        })()
         return () => {
           active = false
         }
@@ -76,6 +138,7 @@ function Studio() {
       <StudioEditor
         initialProject={initial}
         persistence={adapter}
+        runtimeEnvironment={runtimeEnvironment}
         pintaLibrary={pintaLibrary}
         onExit={() => window.location.assign('/pinta')}
         onEditDrawing={(id, tab) => {

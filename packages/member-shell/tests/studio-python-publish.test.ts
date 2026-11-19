@@ -1,6 +1,8 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { initialKidsJourneyPolicy, projectAdultJourney } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
+import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioFreeRuntimeRequest,
   StudioLessonRuntimeRequest,
@@ -50,8 +52,14 @@ async function fixture(
   identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
   runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
   releaseCapabilities?: readonly StudioProjectCapability[],
+  completePintaReader = false,
 ) {
-  const f = await authoringFixture(language, kind, releaseCapabilities)
+  const f = await authoringFixture(
+    language,
+    kind,
+    releaseCapabilities,
+    completePintaReader ? [PYTHON_PINTA_WORLD_FEATURE] : undefined,
+  )
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
   if (language === 'python') {
     f.configuration.releases[0]!.blockIds = ['sz_py_pass']
@@ -472,6 +480,109 @@ async function fixture(
     requestId,
   }
 }
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  for (const supported of [false, true])
+    for (const version of [2, 3] as const)
+      for (const revision of context === 'free' ? [false, true] : [false])
+        test(`${context}: ${revision ? 'revisão' : 'publicação'} de dados Pinta ${version} ${supported ? 'preserva a privacidade' : 'recusa o leitor anterior'}`, async () => {
+          const { pngWithPintaData } = await import('../../pinta/src/export/pngText')
+          const f = await fixture(
+            'classic',
+            context,
+            'kids',
+            'python',
+            undefined,
+            'active',
+            undefined,
+            supported,
+          )
+          const initial = revision ? await (await f.publish()).json() : null
+          const oldSource = initial
+            ? await currentPublishedSource(f.bucket, initial.publicationId)
+            : null
+          // A byte/policy fixture; rendering is qualified independently in the real browser runtime.
+          const raw = await pngWithPintaData(
+            Buffer.from(
+              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
+              'base64',
+            ),
+            { format: 'pinta', kind: 'map', version },
+          )
+          const dataUrl = `data:image/png;base64,${Buffer.from(raw).toString('base64')}`
+          f.project.assets = [
+            {
+              id: 'mapa',
+              name: 'mapa',
+              kind: 'image',
+              source: 'library',
+              libOrigin: 'pinta',
+              libId: 'personal:desenho-privado',
+              width: 1,
+              height: 1,
+              proPath: 'assets/mapa.png',
+              dataUrl,
+              pintaImage: {
+                recipe: {
+                  version: version === 3 ? 2 : 1,
+                  algorithm: 'pinta-image-1',
+                  drawingId: 'desenho-privado',
+                  selection: { kind: version === 3 ? 'map-world' : 'map' },
+                  scale: 1,
+                },
+                provenance: {
+                  sourceSha256: 'a'.repeat(64),
+                  dependencies:
+                    version === 2 ? [{ drawingId: 'tiles', sha256: 'b'.repeat(64) }] : [],
+                },
+                output: {
+                  mime: 'image/png',
+                  width: 1,
+                  height: 1,
+                  bytes: raw.length,
+                  sha256: createHash('sha256').update(raw).digest('hex'),
+                  dataVersion: version,
+                },
+              },
+            },
+          ]
+          const before = JSON.stringify(f.project)
+          const response = revision
+            ? await f.routes.studioPublication.POST(
+                new Request('https://kids.test/api/studio/publication', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({
+                    operation: 'update',
+                    playId: initial.publicationId,
+                    requestId: crypto.randomUUID(),
+                    expectedVersion: 1,
+                    project: f.project,
+                  }),
+                }),
+              )
+            : await f.publish(f.project)
+          expect(response.status).toBe(supported ? 200 : 409)
+          if (supported) {
+            const body = await response.json()
+            const retained = await currentPublishedSource(
+              f.bucket,
+              initial?.publicationId ?? body.publicationId,
+            )
+            expect(retained?.source).not.toContain('desenho-privado')
+            expect(JSON.parse(retained!.source).assets[0].dataUrl).toBe(dataUrl)
+          } else {
+            expect(await response.json()).toMatchObject({
+              error: { code: 'RUNTIME_PINTA_READER_OUTDATED' },
+            })
+            expect(f.state.posts).toBe(revision ? 1 : 0)
+            if (initial)
+              expect((await currentPublishedSource(f.bucket, initial.publicationId))?.source).toBe(
+                oldSource?.source,
+              )
+          }
+          expect(JSON.stringify(f.project)).toBe(before)
+        })
 
 for (const context of ['free', 'lesson', 'live'] as const)
   for (const kind of ['classic', 'pro'] as const)

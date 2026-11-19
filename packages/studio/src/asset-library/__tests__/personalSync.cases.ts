@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } fr
 import { createHash } from 'node:crypto'
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
 import { PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
+import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
 import type { UseStore } from 'idb-keyval'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { beginProjectOpening, isProjectOpening } from '../../state/projectOpening'
@@ -1183,6 +1184,117 @@ async function seedPythonProject(assets: ProjectAsset[], kind: 'classic' | 'pro'
 }
 
 describe('C3 recipe sync', () => {
+  it('um leitor antigo conserva material e programa nos projetos aberto e fechado; a edição offline pode atualizar depois', async () => {
+    const { pngWithPintaData } = await import('../../../../pinta/src/export/pngText')
+    async function mapAsset(version: 1 | 2) {
+      const asset = derivedPintaAsset()
+      const raw = await pngWithPintaData(Buffer.from(asset.dataUrl.split(',')[1]!, 'base64'), {
+        format: 'pinta',
+        kind: 'map',
+        version,
+        name: 'fase',
+        layers: [],
+      })
+      asset.dataUrl = `data:image/png;base64,${Buffer.from(raw).toString('base64')}`
+      asset.pintaImage!.recipe.selection = { kind: 'map' }
+      asset.pintaImage!.provenance = {
+        sourceSha256: (version === 1 ? 'a' : 'b').repeat(64),
+        dependencies: [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }],
+      }
+      asset.pintaImage!.output = {
+        ...asset.pintaImage!.output,
+        bytes: raw.length,
+        sha256: createHash('sha256').update(raw).digest('hex'),
+        ...(version === 2 ? { dataVersion: 2 as const } : {}),
+      }
+      return asset
+    }
+    const before = await mapAsset(1),
+      after = await mapAsset(2)
+    const closed = await seedPythonProject([before], 'pro')
+    await persistProject(closed)
+    const open = await seedPythonProject([before])
+    const resolver = imageResolver()
+    resolver.setProvenance(after.pintaImage!.provenance)
+    resolver.adapter.previewImage = async () => ({
+      dataUrl: after.dataUrl,
+      derivation: after.pintaImage!,
+    })
+    const refused = await syncDrawingsIntoProjects(useProjectStore, {
+      pintaLibrary: resolver.adapter,
+      runtimeCatalog: () => ({ profiles: [], releases: [] }),
+    })
+    expect(refused.updatedInOpenProject).toBe(0)
+    expect(refused.updatedInOtherProjects).toBe(0)
+    expect(refused.failures).toHaveLength(1) // Same material name: the existing notice queue deduplicates it.
+    expect(useProjectStore.getState().project?.assets).toEqual(open.assets)
+    expect((await loadProjectById(closed.id))?.assets).toEqual(closed.assets)
+    const allowed = await syncDrawingsIntoProjects(useProjectStore, {
+      pintaLibrary: resolver.adapter,
+      runtimeCatalog: () => null,
+    })
+    expect(allowed).toMatchObject({
+      updatedInOpenProject: 1,
+      updatedInOtherProjects: 1,
+      failures: [],
+    })
+    expect(useProjectStore.getState().project?.assets?.[0]?.pintaImage?.output.dataVersion).toBe(2)
+    const persisted = await refinePythonProjectDocument(await loadProjectById(closed.id))
+    expect(persisted.assets?.[0]?.pintaImage?.output.dataVersion).toBe(2)
+    const live = useProjectStore.getState().project
+    expect(live?.kind === 'classic' && live.files).toEqual(open.kind === 'classic' && open.files)
+    expect(persisted?.kind === 'pro' && persisted.tree).toEqual(
+      closed.kind === 'pro' && closed.tree,
+    )
+  })
+
+  it('a alteração do catálogo durante a rasterização não substitui o material anterior', async () => {
+    const { pngWithPintaData } = await import('../../../../pinta/src/export/pngText')
+    const previous = derivedPintaAsset()
+    previous.pintaImage!.recipe.selection = { kind: 'map' }
+    previous.pintaImage!.provenance.dependencies = [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }]
+    const raw = await pngWithPintaData(Buffer.from(previous.dataUrl.split(',')[1]!, 'base64'), {
+      kind: 'map',
+      version: 1,
+    })
+    previous.dataUrl = `data:image/png;base64,${Buffer.from(raw).toString('base64')}`
+    previous.pintaImage!.output = {
+      ...previous.pintaImage!.output,
+      bytes: raw.length,
+      sha256: createHash('sha256').update(raw).digest('hex'),
+    }
+    await seedPythonProject([previous])
+    let catalog: StudioRuntimeCatalog | null = null
+    const resolver = imageResolver()
+    resolver.setProvenance({ ...previous.pintaImage!.provenance, sourceSha256: 'b'.repeat(64) })
+    const updatedBytes = await pngWithPintaData(
+      Buffer.from(derivedPintaAsset().dataUrl.split(',')[1]!, 'base64'),
+      { kind: 'map', version: 2 },
+    )
+    resolver.adapter.previewImage = async () => {
+      catalog = { profiles: [], releases: [] }
+      return {
+        dataUrl: `data:image/png;base64,${Buffer.from(updatedBytes).toString('base64')}`,
+        derivation: {
+          ...previous.pintaImage!,
+          provenance: { ...previous.pintaImage!.provenance, sourceSha256: 'b'.repeat(64) },
+          output: {
+            ...previous.pintaImage!.output,
+            dataVersion: 2,
+            bytes: updatedBytes.length,
+            sha256: createHash('sha256').update(updatedBytes).digest('hex'),
+          },
+        },
+      }
+    }
+    const result = await syncDrawingsIntoProjects(useProjectStore, {
+      pintaLibrary: resolver.adapter,
+      runtimeCatalog: () => catalog,
+    })
+    expect(result.updatedInOpenProject).toBe(0)
+    expect(result.failures).toHaveLength(1)
+    expect(useProjectStore.getState().project?.assets?.[0]).toEqual(previous)
+  })
   for (const kind of ['classic', 'pro'] as const) {
     it(`${kind}: synchronized recipes survive storage, execution materialization and offline source export`, async () => {
       const { loadProjectById } = await import('../../state/persistence')

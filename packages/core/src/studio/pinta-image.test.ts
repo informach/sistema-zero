@@ -11,6 +11,7 @@ import {
   pintaImageDependencyRule,
   pintaImageOutputMime,
   pintaImageRecipeKey,
+  pintaImageRequiredRuntimeFeature,
 } from './pinta-image'
 
 const recipe = {
@@ -25,6 +26,39 @@ const metadata = {
   provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
   output: { mime: 'image/png', width: 16, height: 16, bytes: 72, sha256: 'b'.repeat(64) },
 }
+
+test('a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga', () => {
+  const map = {
+    ...metadata,
+    recipe: { ...recipe, selection: { kind: 'map' } },
+    provenance: {
+      ...metadata.provenance,
+      dependencies: [{ drawingId: 'tiles', sha256: 'c'.repeat(64) }],
+    },
+  }
+  const marked = PintaImageDerivationSchema.parse({
+    ...map,
+    output: { ...map.output, dataVersion: 2 },
+  })
+  expect(marked.output.dataVersion).toBe(2)
+  expect(pintaImageRequiredRuntimeFeature(marked)).toBe('pinta-map-world-v1')
+  expect(pintaImageRequiredRuntimeFeature(PintaImageDerivationSchema.parse(map))).toBeUndefined()
+  expect(pintaImageRecipeKey(marked.recipe)).toBe(
+    pintaImageRecipeKey(PintaImageDerivationSchema.parse(map).recipe),
+  )
+  expect(PintaImageDerivationSchema.parse(map).output).toEqual(metadata.output)
+  for (const dataVersion of [1, 3, 4])
+    expect(
+      PintaImageDerivationSchema.safeParse({ ...map, output: { ...map.output, dataVersion } })
+        .success,
+    ).toBe(false)
+  expect(
+    PintaImageDerivationSchema.safeParse({
+      ...metadata,
+      output: { ...metadata.output, dataVersion: 2 },
+    }).success,
+  ).toBe(false)
+})
 
 test('um mundo é uma seleção explícita, com identidade própria e PNG com dados', () => {
   const input = { ...recipe, version: 2, selection: { kind: 'map-world' } }

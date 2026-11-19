@@ -61,7 +61,7 @@ import {
   scopedProjectIdentity,
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
-import { type ProjectSummary, toProjectSummary } from './projectSummary'
+import { type ProjectSummary, projectEnvironmentSummary, toProjectSummary } from './projectSummary'
 
 export type { ProjectSummary } from './projectSummary'
 /** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
@@ -469,19 +469,33 @@ export async function loadProjectAssetsById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectAsset[]> {
+  return (await loadProjectAssetsSnapshotById(id, storageScope)).assets
+}
+
+/** Assets and the pinned runtime share one IndexedDB snapshot and conditional-write token. */
+export async function loadProjectAssetsSnapshotById(
+  id: string,
+  storageScope?: ProjectStorageScope,
+): Promise<{
+  assets: ProjectAsset[]
+  environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
+}> {
   const [record, head, meta] = await readValues(getStore(storageScope), [
     projectAssetsKey(id),
     projectHeadKey(id),
     projectMetaKey(id),
   ])
-  if (!isRecord(record)) return []
+  const environment = isRecord(meta)
+    ? projectEnvironmentSummary(meta)
+    : { programmingLanguage: 'unknown' as const }
+  if (!isRecord(record)) return { assets: [], environment }
   const assets =
     isRecord(meta) && meta.programmingLanguage === 'python'
       ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
       : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
   if (isLocalHead(head)) assetReadHeads.set(assets, head.token)
   else if (head == null) assetReadHeads.set(assets, null)
-  return assets
+  return { assets, environment }
 }
 
 /**

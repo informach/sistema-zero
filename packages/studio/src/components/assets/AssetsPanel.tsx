@@ -1,5 +1,5 @@
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
-import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { type JSX, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
@@ -41,6 +41,7 @@ import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
+import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { useStudioTeamLibrary } from '../../studio/team-library'
 import { uniqueAssetName } from './assetNames'
 import {
@@ -143,6 +144,8 @@ export function AssetsPanel({
   captureThumb,
 }: AssetsPanelProps): JSX.Element {
   const runtimeCapture = useStudioRuntimeCapture()
+  const environment = useStudioRuntimeEnvironment()
+  const runtimeCatalog = useCallback(() => environment?.catalog ?? null, [environment])
   const t = useT()
   const isPro = useProjectStore((s) => s.project?.kind === 'pro')
   const isPython = useProjectStore((s) => !!s.project && isPythonProject(s.project))
@@ -299,6 +302,7 @@ export function AssetsPanel({
       void syncDrawingsIntoProjects(storeApi, {
         pintaLibrary,
         signal: syncLifetime.signal,
+        runtimeCatalog,
       })
         .then(() => listPersonalAssets({ namespace: personalNamespace }))
         .then((assets) => {
@@ -331,7 +335,7 @@ export function AssetsPanel({
       syncLifetime.abort()
       window.removeEventListener('focus', refresh)
     }
-  }, [open, personalNamespace, storeApi, personalTick, pintaLibrary])
+  }, [open, personalNamespace, storeApi, personalTick, pintaLibrary, runtimeCatalog])
 
   // Só as IMAGENS do PINTA na biblioteca pessoal são "desenhos" (a lista e o "editar no
   // Pinta"): um .glb/.hdr trazido do Molda vive lá com o `kind` dele e cairia no

@@ -43,6 +43,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   qualificado e executar o ciclo autenticado após rollout. O envio,
   jogo pronto e importação integral estão verificados em `mapas-ligados-no-estudio.md`;
   as provas da sincronia estão em `qa/atualizacao-de-mundos/README.md`.
+  As derivações de dados 2/3 agora declaram o leitor exigido sem mudar a receita antiga;
+  importação, atualização, execução, pacote web e publicação conferem esse leitor, com
+  proteção da revisão pública anterior e da proveniência privada. Provas locais em
+  `qa/leitores-de-cenarios/README.md`; implantação e ciclo autenticado continuam na etapa 0b.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,

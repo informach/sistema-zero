@@ -1269,6 +1269,104 @@ describe('Python image selection through the real modal and project store', () =
       ).toBe(supported)
     })
 
+  for (const phase of ['preview', 'commit'] as const)
+    it(`o mapa avançado confere o leitor antigo durante ${phase}, sem substituir o programa`, async () => {
+      const original = await seedPythonProject()
+      useProjectStore.setState({
+        project: {
+          ...original,
+          installedExtensions: [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }],
+        },
+      })
+      let imports = 0
+      const advanced = (recipe: PintaImageRecipe) => {
+        const image = portableImage(recipe)
+        return {
+          ...image,
+          derivation: {
+            ...image.derivation,
+            output: {
+              ...image.derivation.output,
+              ...(recipe.selection.kind === 'map' ? { dataVersion: 2 as const } : {}),
+            },
+          },
+        }
+      }
+      const adapter = pythonAdapter({
+        list: async () => [
+          {
+            ...DRAWINGS[0]!,
+            role: 'tilemap',
+            imageSelection: {
+              kind: 'tilemap',
+              width: 32,
+              height: 32,
+              sheet: { width: 16, height: 16 },
+            },
+          },
+        ],
+        previewImage: async (recipe) =>
+          phase === 'preview' ? advanced(recipe) : portableImage(recipe),
+        import: async (id, options) => {
+          imports++
+          const image = advanced(options!.image!.recipe)
+          return {
+            ok: true,
+            asset: {
+              id,
+              name: 'mapa',
+              dataUrl: image.dataUrl,
+              width: 1,
+              height: 1,
+              pintaImage: image.derivation,
+            },
+          }
+        },
+      })
+      render(
+        <StudioRuntimeEnvironmentProvider
+          value={{
+            catalog: { profiles: [], releases: [] },
+            registry: createStudioRuntimeRegistry([]),
+            access: () => ({
+              releaseStatus: 'active',
+              hostOperations: [],
+              grantedCapabilities: [],
+              grantedExtensionIds: [],
+              curation: null,
+            }),
+            resolvePythonAnalysis: async () => {
+              throw new Error('This authoring test has no execution runtime.')
+            },
+          }}
+        >
+          <StudioPintaLibraryProvider value={adapter}>
+            <PintaImportDialog onClose={() => {}} />
+          </StudioPintaLibraryProvider>
+        </StudioRuntimeEnvironmentProvider>,
+      )
+      fireEvent.click((await screen.findAllByRole('button', { name: 'Escolher imagem' }))[0]!)
+      if (phase === 'commit') {
+        await screen.findByAltText('Prévia da imagem escolhida')
+        fireEvent.click(screen.getByRole('button', { name: 'Adicionar imagem' }))
+      }
+      await screen.findByText(
+        'Atualize o ambiente deste projeto para receber este cenário. Você também pode escolher a imagem simples.',
+      )
+      expect(useProjectStore.getState().project?.assets).toEqual([])
+      const live = useProjectStore.getState().project
+      expect(live?.kind === 'classic' && live.files).toEqual(
+        original.kind === 'classic' && original.files,
+      )
+      expect(imports).toBe(phase === 'preview' ? 0 : 1)
+      if (phase === 'preview') {
+        expect(buttonDisabled('Adicionar imagem')).toBe(true)
+        fireEvent.change(screen.getByLabelText('O que trazer'), { target: { value: 'tilemap' } })
+        await screen.findByAltText('Prévia da imagem escolhida')
+        expect(buttonDisabled('Adicionar imagem')).toBe(false)
+      }
+    })
+
   it('a changed frame revokes its pending preview; the late image never replaces the current choice', async () => {
     await seedPythonProject()
     const first = Promise.withResolvers<ReturnType<typeof portableImage>>()

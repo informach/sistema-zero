@@ -1,0 +1,17 @@
+bun test v1.3.11 (af24e281)
+
+packages\core\src\studio\pinta-image.test.ts:
+(pass) a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga
+(pass) um mundo é uma seleção explícita, com identidade própria e PNG com dados
+(pass) o envelope do mundo recusa versões, ciclos binários, IDs duplicados e excesso acumulado [15.00ms]
+(pass) Pinta derived image identity > revision and output changes keep identity; distinct positions/scale do not
+(pass) Pinta derived image identity > rejects unknown metadata, missing selections and invented frame identities
+(pass) Pinta derived image identity > an SVG recipe is explicit: legacy recipes keep their key, svg gets its own
+(pass) Pinta derived image identity > checks the destination quotas independently before allocation
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > the new kinds parse, keep their own identity and never request SVG
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > dependency rule per kind: none, the default tileset, or every tileset (1..8)
+
+ 9 pass
+ 0 fail
+ 91 expect() calls
+Ran 9 tests across 1 file. [393.00ms]
