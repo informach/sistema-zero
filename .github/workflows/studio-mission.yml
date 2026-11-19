@@ -169,7 +169,7 @@ jobs:
           set -o pipefail
           mkdir -p .cache/mission
           if [ '${{ runner.os }}' = 'Windows' ]; then
-            bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
+            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           else
             bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           fi
