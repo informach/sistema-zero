@@ -97,3 +97,39 @@ test('compilação separa layouts de textura e fundo por vértice sem duplicar o
     b.descartar()
   }
 })
+
+test('consulta portátil lê páginas Float32, diagonal, atualização e cobertura do mesmo mapa GPU', () => {
+  const b: BaseDeTerreno = {
+      tipo: 'terreno',
+      origem: { x: 10, z: 20 },
+      colunas: 128,
+      linhas: 64,
+      passo: 1,
+      min: -10,
+      max: 100,
+      fundo: -2,
+      pecas: [],
+    },
+    campo = criarCampoDeAlturas(b),
+    mapa = new AlturasDaAgua(b, campo, 32, (x) => x === 0)
+  try {
+    campo.alturas[0] = 0
+    campo.alturas[1] = 10
+    campo.alturas[129] = 20
+    campo.alturas[130] = 100
+    mapa.atualizar(campo)
+    expect(mapa.paginas.length).toBeGreaterThan(1)
+    expect(mapa.alturaEm(10.25, 20.25)).toBe(7.5)
+    expect(mapa.alturaEm(10.75, 20.75)).toBe(57.5)
+    expect(mapa.alturaEm(74, 20)).toBe(-2)
+    expect(mapa.alturaEm(-1, -1)).toBe(-2)
+    campo.alturas[64 * 129] = 12.123456789
+    mapa.atualizar(campo)
+    expect(mapa.alturaEm(10, 84)).toBe(Math.fround(12.123456789))
+    mapa.definirPecas(() => false)
+    expect(mapa.alturaEm(10.25, 20.25)).toBe(-2)
+  } finally {
+    mapa.descartar()
+  }
+  expect(() => mapa.alturaEm(10, 20)).toThrow(/descartado/)
+})

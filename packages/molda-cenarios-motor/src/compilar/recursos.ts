@@ -120,7 +120,7 @@ export async function carregarRecursosDaCompilacao(
         await conferirConteudoDoModelo(bytes.buffer, ref.digest)
         sinal.throwIfAborted()
         const medidas = inspecionarGlbDaCompilacao(bytes, { fonte: true })
-        reservar(medidas.bytesNumericos + medidas.bytesDePixels)
+        reservar(medidas.bytesDeMaterializacao + medidas.bytesDePixels)
         modelo = await lerGlb(bytes.buffer)
         // Guarda imediatamente: um cancelamento após o decoder ainda descarta esta cópia.
         modelos.set(ref.id, modelo)

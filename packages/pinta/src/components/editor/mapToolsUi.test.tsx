@@ -13,10 +13,12 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createRef } from 'react'
 import { COPY } from '../../core/copy'
 import {
+  createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
   isObjectLayer,
   isTileLayer,
+  PINTA_LIMITS,
   type TilemapAsset,
 } from '../../core/project'
 import { clearIdbMock } from '../../testing/idbMock'
@@ -224,14 +226,16 @@ describe('camadas do mapa', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Descer camada/ }))
     await espera()
     expect(desfazer().disabled).toBe(true)
-    // Enche o mapa de camadas até o teto (8) e pede mais um grupo.
-    for (let i = 0; i < 7; i++)
+    // Enche o mapa até o orçamento da autoria e pede mais um grupo.
+    for (let i = 1; i < PINTA_LIMITS.maxTilemapLayers; i++)
       fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addGroup }))
-    await noDisco(async () => expect((await mapaDoDisco()).layers).toHaveLength(8))
+    await noDisco(async () =>
+      expect((await mapaDoDisco()).layers).toHaveLength(PINTA_LIMITS.maxTilemapLayers),
+    )
     fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addGroup }))
     await espera()
-    // Sete desfazer voltam ao começo: o oitavo pedido não deixou passo nenhum.
-    for (let i = 0; i < 7; i++) fireEvent.click(desfazer())
+    // Cada criação deixou um passo; o pedido recusado não deixou nenhum.
+    for (let i = 1; i < PINTA_LIMITS.maxTilemapLayers; i++) fireEvent.click(desfazer())
     await waitFor(() => expect(desfazer().disabled).toBe(true))
   })
   it('camada trancada: marcar colisão avisa e não muda nada', async () => {
@@ -354,6 +358,61 @@ describe('terreno, espalhar e animação da peça', () => {
 })
 
 describe('objetos do mapa', () => {
+  it('arte: guardar versão, desfazer/refazer, reconectar e limpar sem perder a animação escolhida', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'arvore', frameSize: 16 })
+    sprite.animations.push({
+      ...structuredClone(sprite.animations[0]!),
+      id: 'vento',
+      name: 'vento',
+    })
+    await abrirMapa({
+      level: 'advanced',
+      prepare: comObjetos,
+      extra: async (seed) => {
+        await seed.getState().createPrepared(sprite)
+      },
+    })
+    await ativarObjetos()
+    fireEvent.click(
+      await screen.findByRole('button', { name: COPY.scene.dynamicPorNoMapa('arvore') }),
+    )
+    await noDisco(async () => expect(objetos(await mapaDoDisco())).toHaveLength(1))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.pickObject('arvore') }))
+    fireEvent.change(screen.getByLabelText(COPY.scene.objectAnimation), {
+      target: { value: 'vento' },
+    })
+    await noDisco(async () =>
+      expect(objetos(await mapaDoDisco())[0]!.art?.animationId).toBe('vento'),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.keepResourceVersion }))
+    let frozenId = ''
+    await noDisco(async () => {
+      const saved = await mapaDoDisco()
+      expect(saved.resources).toHaveLength(1)
+      frozenId = saved.resources![0]!.asset.id
+      expect(frozenId).not.toBe(sprite.id)
+      expect(objetos(saved)[0]!.art).toMatchObject({ assetId: frozenId, animationId: 'vento' })
+    })
+    fireEvent.click(desfazer())
+    await noDisco(async () => expect((await mapaDoDisco()).resources).toBeUndefined())
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await noDisco(async () => expect((await mapaDoDisco()).resources![0]!.asset.id).toBe(frozenId))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.followResource }))
+    await noDisco(async () =>
+      expect(objetos(await mapaDoDisco())[0]!.art).toMatchObject({
+        assetId: sprite.id,
+        animationId: 'vento',
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.clearUnusedVersions }))
+    await noDisco(async () => expect((await mapaDoDisco()).resources).toBeUndefined())
+    fireEvent.change(screen.getByLabelText(COPY.scene.objectAnimation), { target: { value: '' } })
+    await noDisco(async () => {
+      const saved = await mapaDoDisco()
+      expect(objetos(saved)[0]!.art?.animationId).toBeUndefined()
+      expect(saved.schema).toBe(4)
+    })
+  }, 15000)
   it('Delete sem nada escolhido não cria desfazer', async () => {
     await abrirMapa({ level: 'advanced', prepare: comObjetos })
     await ativarObjetos()

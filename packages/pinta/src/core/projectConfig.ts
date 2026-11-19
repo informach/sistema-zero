@@ -1,3 +1,4 @@
+import { PINTA_RESOURCE_NATIVE_SCHEMA } from '@sistemazero/core/creations'
 import { COPY } from './copy'
 import { newId } from './id'
 import { DEFAULT_PALETTE_ID, type PaletteId } from './palette'
@@ -19,11 +20,10 @@ import type {
  * (`MAX_BACKUP_FILE_BYTES`, com recado próprio) e, na nuvem, os tetos do members. A galeria tem
  * BUSCA por nome/tipo/jogo para continuar navegável com centenas de desenhos.
  *
- * São DOIS níveis (18/11/2026). Este é o que o editor deixa CRIAR: mapa de até 128 × 128
- * células, 8 camadas e 64 peças por conjunto. O que o documento aceita ao ser LIDO é maior e
- * mora em `PINTA_MAP_FORMAT_LIMITS`. Um mapa grande que chega por importação abre e pode ser
- * pintado, mas crescer, ganhar camada ou ganhar peça além destes tetos é recusado (a operação
- * devolve o mesmo desenho). Estes números só sobem depois de medir o autosave no aparelho.
+ * Autoria e leitura permitem 256 × 256 células, 32 camadas e 256 peças. O orçamento total
+ * continua em 2.097.152 células (4 MiB de índices); o cache RGBA retém no máximo 32 MiB.
+ * Medições reais de renderização, gravação e reabertura estão em `scripts/map-budget-probe.ts`.
+ * A entrega de aulas mantém seu orçamento HTTP próprio, definido no consumidor Members.
  */
 export const PINTA_LIMITS = {
   maxAnimations: 12,
@@ -31,11 +31,11 @@ export const PINTA_LIMITS = {
   minFrameSize: 8,
   maxFrameSize: 128,
   maxBitmapSize: 512,
-  maxTiles: 64,
-  maxTilemapCols: 128,
-  maxTilemapRows: 128,
+  maxTiles: 256,
+  maxTilemapCols: 256,
+  maxTilemapRows: 256,
   /** Camadas de peças E de objetos, somadas. */
-  maxTilemapLayers: 8,
+  maxTilemapLayers: 32,
   /** Objetos por camada de objetos. */
   maxTilemapObjects: 512,
   maxObjectProperties: 16,
@@ -54,6 +54,14 @@ export const PINTA_LIMITS = {
   maxNameChars: 48,
   maxAnimationNameChars: 30,
   maxExtraColors: 48,
+} as const
+
+/** Orçamento da entrega HTTP de aulas; independente da galeria pessoal. */
+export const PINTA_LESSON_MAP_LIMITS = {
+  maxCols: 128,
+  maxRows: 128,
+  maxLayers: 8,
+  maxTiles: 64,
 } as const
 
 /**
@@ -99,8 +107,12 @@ export const PINTA_SCENE_SCHEMA = 4
 /** Offsets fracionários: o leitor completo de schema 4 arredondava esses valores. */
 export const PINTA_PRECISE_SCHEMA = 5
 
+/** Versões de recursos autocontidas e animação específica de objeto. */
+export const PINTA_RESOURCE_SCHEMA = PINTA_RESOURCE_NATIVE_SCHEMA
+export const PINTA_RESOURCE_LIMITS = { maxVersions: 32, maxSnapshotBytes: 8 * 1024 * 1024 } as const
+
 /** O maior carimbo que este código sabe ler. */
-export const PINTA_MAX_SCHEMA = PINTA_PRECISE_SCHEMA
+export const PINTA_MAX_SCHEMA = PINTA_RESOURCE_SCHEMA
 
 export function uniqueAnimationName(desired: string, takenNames: Iterable<string>): string {
   const taken = new Set(takenNames)

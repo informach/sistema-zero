@@ -1,7 +1,9 @@
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import { frameDurationsMs } from '../../animation/timing'
 import {
   createBitmap,
   createPixelBackgroundAsset,
+  createPixelSpriteAsset,
   createTilesetAsset,
   normalizeAssetName,
   type PintaAsset,
@@ -104,6 +106,65 @@ export async function sceneToNative(
   }
   for (const art of scene.art ?? []) {
     const image = await decode(art.image)
+    if (image.width !== art.width || image.height !== art.height)
+      throw new TiledImportError('A imagem de um objeto tem dimensões diferentes do mapa.')
+    if (art.sprite) {
+      const sprite = art.sprite
+      const { indices, ...palette } = quantize(image, 'objeto')
+      const base = createPixelSpriteAsset({ name: 'objeto', frameSize: 16 })
+      const asset = sanitizePintaAsset({
+        ...base,
+        ...palette,
+        id: art.id,
+        frameWidth: sprite.frameWidth,
+        frameHeight: sprite.frameHeight,
+        animations: sprite.animations.map((a) => {
+          const total = a.frames.reduce((n, f) => n + f.duration, 0)
+          const fps = (a.frames.length * 1000) / total
+          const eased = frameDurationsMs(a.frames.length, fps, 'ease')
+          const easing = a.frames.every((f, i) => Math.abs(f.duration - eased[i]!) < 1e-6)
+            ? 'ease'
+            : 'linear'
+          const expected = frameDurationsMs(a.frames.length, fps, easing)
+          if (a.frames.some((f, i) => Math.abs(f.duration - expected[i]!) > 1e-6))
+            throw new TiledImportError(
+              'A animação usa tempos de quadro que o Pinta ainda não edita. O arquivo original foi preservado.',
+            )
+          return {
+            id: a.id,
+            name: a.name,
+            fps,
+            loop: a.loop,
+            easing,
+            frames: a.frames.map((f) => {
+              const data = new Uint8Array(sprite.frameWidth * sprite.frameHeight)
+              const x = (f.tile % sprite.columns) * sprite.frameWidth,
+                y = Math.floor(f.tile / sprite.columns) * sprite.frameHeight
+              for (let row = 0; row < sprite.frameHeight; row++)
+                data.set(
+                  indices.subarray(
+                    (y + row) * image.width + x,
+                    (y + row) * image.width + x + sprite.frameWidth,
+                  ),
+                  row * sprite.frameWidth,
+                )
+              return [{ width: sprite.frameWidth, height: sprite.frameHeight, data }]
+            }),
+          }
+        }),
+      })
+      if (
+        asset?.kind !== 'pixel-sprite' ||
+        asset.animations.some(
+          (a, i) =>
+            a.frames.length !== sprite.animations[i]?.frames.length ||
+            a.id !== sprite.animations[i]?.id,
+        )
+      )
+        throw new TiledImportError('A animação dos objetos não cabe nos limites do Pinta.')
+      assets.push(asset)
+      continue
+    }
     if (image.width > 512 || image.height > 512)
       throw new TiledImportError('Um desenho dos objetos ultrapassa 512 × 512 pixels.')
     const { indices, ...palette } = quantize(image, 'objeto')
@@ -117,6 +178,12 @@ export async function sceneToNative(
     if (!asset) throw new TiledImportError('Um desenho dos objetos não pôde ser convertido.')
     assets.push(asset)
   }
+  const resources = (scene.resources ?? []).map((version) => {
+    const asset = assets.find((a) => a.id === version.id)
+    if (!asset || asset.kind === 'tilemap' || asset.kind === 'map-set')
+      throw new TiledImportError('Uma versão de recurso não pôde ser recuperada.')
+    return { sourceId: version.sourceId, capturedAt: version.capturedAt, asset }
+  })
   const mapOf = (
     id: string,
     name: string,
@@ -132,6 +199,7 @@ export async function sceneToNative(
     cols,
     rows,
     tilesetId: scene.tilesets[0]!.id,
+    ...(resources.length ? { resources } : {}),
     layers: layers.map((l) =>
       l.kind === 'tiles' ? { ...l, cells: Int16Array.from(l.cells) } : { ...l },
     ) as TilemapLayer[],
@@ -154,5 +222,5 @@ export async function sceneToNative(
   if (!map)
     throw new TiledImportError('O mapa convertido não cabe nos limites do documento do Pinta.')
   assets.push(map)
-  return { assets, warnings }
+  return { assets: assets.filter((a) => !resources.some((r) => r.asset.id === a.id)), warnings }
 }

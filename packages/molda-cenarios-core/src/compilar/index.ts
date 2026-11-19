@@ -1,5 +1,7 @@
+export * from './alturas'
 export * from './caminhos'
 export * from './dividir-malha'
+export * from './faixas'
 export * from './fonte'
 export * from './licencas'
 export * from './limites'

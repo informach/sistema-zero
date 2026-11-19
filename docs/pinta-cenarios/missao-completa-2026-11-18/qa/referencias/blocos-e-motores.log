@@ -1,0 +1,172 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\map-2d\runtime.test.ts:
+(pass) scene references resolve inside their map without changing legacy property values [16.00ms]
+(pass) object references inside two instances resolve to the corresponding set child
+(pass) scene 2 animates the selected sequence in both JavaScript game engines
+(pass) tile objects animate in scene 2 while published scene 1 keeps its static behavior
+(pass) a collision set scaled 2 by 2 fills every covered root cell
+(pass) set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds [31.00ms]
+(pass) monta a grade de colisão, os objetos e os eventos sem perder dados
+(pass) confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício
+(pass) caminhos e pontos usam seu contorno, inclusive após rotação
+(pass) compõe camadas, espelho e opacidade nos pixels
+(pass) sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto [31.00ms]
+
+src\official-extensions\scene-2d\codec.test.ts:
+(pass) g2d.addSceneBackdrop: code → IR → saved blocks → code is stable [125.00ms]
+(pass) g2d.sceneBackdropMotion: code → IR → saved blocks → code is stable [15.00ms]
+(pass) g2d.sceneBackdropFit: code → IR → saved blocks → code is stable
+(pass) g2d.createSpriteTrack: code → IR → saved blocks → code is stable
+(pass) g2d.trackPlayer: code → IR → saved blocks → code is stable [16.00ms]
+(pass) g2d.trackControls: code → IR → saved blocks → code is stable
+(pass) g2d.trackTravel: code → IR → saved blocks → code is stable [15.00ms]
+(pass) g2d.putTrackSpriteAt: code → IR → saved blocks → code is stable
+(pass) g2d.putTrackSprite: code → IR → saved blocks → code is stable
+(pass) g2d.repeatTrackSprite: code → IR → saved blocks → code is stable [16.00ms]
+(pass) g2d.trackSpriteVelocity: code → IR → saved blocks → code is stable
+(pass) g2d.trackCameraView: code → IR → saved blocks → code is stable
+(pass) g2d.onTrackEncounter: code → IR → saved blocks → code is stable [16.00ms]
+(pass) g2d.onTrackFinish: code → IR → saved blocks → code is stable
+(pass) g2d.collectTrackItem: code → IR → saved blocks → code is stable
+(pass) g2d.trackScore: code → IR → saved blocks → code is stable
+(pass) g2d.trackHurt: code → IR → saved blocks → code is stable [15.00ms]
+(pass) g2d.trackHud: code → IR → saved blocks → code is stable
+(pass) g2d.sceneGameScreens: code → IR → saved blocks → code is stable
+(pass) g2d.sceneAnimation: code → IR → saved blocks → code is stable
+(pass) g2d.sceneResult: code → IR → saved blocks → code is stable [16.00ms]
+(pass) g2d.spriteTrackValue: code → IR → saved blocks → code is stable
+(pass) g2d.createMapScene: code → IR → saved blocks → code is stable
+(pass) g2d.drawMapScene: code → IR → saved blocks → code is stable
+(pass) g2d.collideMapScene: code → IR → saved blocks → code is stable [16.00ms]
+(pass) g2d.mapObjects: code → IR → saved blocks → code is stable
+(pass) g2d.mapObjectNamed: code → IR → saved blocks → code is stable
+(pass) g2d.mapObjectById: code → IR → saved blocks → code is stable
+(pass) g2d.mapResourceImage: code → IR → saved blocks → code is stable
+(pass) g2d.mapLayerProperty: code → IR → saved blocks → code is stable
+(pass) g2d.mapTileProperty: code → IR → saved blocks → code is stable [15.00ms]
+(pass) g2d.mapObjectProperty: code → IR → saved blocks → code is stable
+(pass) g2d.mapObjectField: code → IR → saved blocks → code is stable
+(pass) g2d.mapInArea: code → IR → saved blocks → code is stable
+(pass) g2d.mapArea: code → IR → saved blocks → code is stable
+(pass) g2d.useMapDoor: code → IR → saved blocks → code is stable [16.00ms]
+(pass) g2d.mapSpawn: code → IR → saved blocks → code is stable
+(pass) g2d.mapSize: code → IR → saved blocks → code is stable
+(pass) g2d: expressions accept nested variables and preserve invalid calls [15.00ms]
+(pass) gk.addSceneBackdrop: code → IR → saved blocks → code is stable
+(pass) gk.sceneBackdropMotion: code → IR → saved blocks → code is stable
+(pass) gk.sceneBackdropFit: code → IR → saved blocks → code is stable
+(pass) gk.createSpriteTrack: code → IR → saved blocks → code is stable
+(pass) gk.trackFollow: code → IR → saved blocks → code is stable
+(pass) gk.trackSpeed: code → IR → saved blocks → code is stable [16.00ms]
+(pass) gk.trackFinishLine: code → IR → saved blocks → code is stable
+(pass) gk.trackInput: code → IR → saved blocks → code is stable
+(pass) gk.trackLimit: code → IR → saved blocks → code is stable
+(pass) gk.trackPosition: code → IR → saved blocks → code is stable
+(pass) gk.onTrackSpriteEncounter: code → IR → saved blocks → code is stable
+(pass) gk.forEachTrackSprite: code → IR → saved blocks → code is stable [16.00ms]
+(pass) gk.onTrackMoldEncounter: code → IR → saved blocks → code is stable
+(pass) gk.putTrackSprite: code → IR → saved blocks → code is stable
+(pass) gk.repeatTrackSprite: code → IR → saved blocks → code is stable
+(pass) gk.trackSpriteVelocity: code → IR → saved blocks → code is stable
+(pass) gk.trackCameraView: code → IR → saved blocks → code is stable [15.00ms]
+(pass) gk.onTrackFinish: code → IR → saved blocks → code is stable
+(pass) gk.collectTrackItem: code → IR → saved blocks → code is stable
+(pass) gk.sceneAnimation: code → IR → saved blocks → code is stable
+(pass) gk.createMapScene: code → IR → saved blocks → code is stable
+(pass) gk.drawMapScene: code → IR → saved blocks → code is stable
+(pass) gk.collideMapScene: code → IR → saved blocks → code is stable [16.00ms]
+(pass) gk.mapObjects: code → IR → saved blocks → code is stable
+(pass) gk.mapObjectNamed: code → IR → saved blocks → code is stable
+(pass) gk.mapObjectById: code → IR → saved blocks → code is stable
+(pass) gk.mapResourceImage: code → IR → saved blocks → code is stable
+(pass) gk.mapLayerProperty: code → IR → saved blocks → code is stable
+(pass) gk.mapTileProperty: code → IR → saved blocks → code is stable
+(pass) gk.mapObjectProperty: code → IR → saved blocks → code is stable
+(pass) gk.mapObjectField: code → IR → saved blocks → code is stable [16.00ms]
+(pass) gk.mapInArea: code → IR → saved blocks → code is stable
+(pass) gk.mapArea: code → IR → saved blocks → code is stable
+(pass) gk.useMapDoor: code → IR → saved blocks → code is stable
+(pass) gk.mapSpawn: code → IR → saved blocks → code is stable
+(pass) gk.mapSize: code → IR → saved blocks → code is stable
+(pass) gk: expressions accept nested variables and preserve invalid calls
+(pass) advanced waves and per-copy actions stay in blocks and keep callback names scoped [46.00ms]
+(pass) beginner shortcuts cannot enter the advanced scene schema
+(pass) callback declarations and references share identifier normalization: class
+(pass) callback declarations and references share identifier normalization: cópia azul
+
+src\official-extensions\scene-2d\docs.test.ts:
+(pass) o manual da cena cita blocos que existem > SZGame2D: todo nome em negrito é a cara de um bloco real
+(pass) o manual da cena cita blocos que existem > SZGameKit: todo nome em negrito é a cara de um bloco real [16.00ms]
+(pass) o manual da cena cita blocos que existem > a régua morde um nome inventado
+
+src\official-extensions\scene-2d\names.test.ts:
+(pass) g2d: simple scene names and palette > names in use come from creators, while sprites use the ordinary sprite picker
+(pass) g2d: simple scene names and palette > saved lists, computed names and event bodies survive reopening [16.00ms]
+(pass) g2d: simple scene names and palette > the name list contains only scenes created by the corresponding engine
+(pass) gk: simple scene names and palette > names in use come from creators, while sprites use the ordinary sprite picker
+(pass) gk: simple scene names and palette > saved lists, computed names and event bodies survive reopening
+(pass) gk: simple scene names and palette > the name list contains only scenes created by the corresponding engine
+(pass) lesson checks and block counts treat the embedded name list as part of the scene block
+
+src\official-extensions\scene-2d\runtime.test.ts:
+(pass) shared perspective and layers > layers keep their order, transparency and smoothing across replacements and reset
+(pass) shared perspective and layers > tiling a tiny image has a finite draw budget and reports the problem once
+(pass) shared perspective and layers > parallax overflow never sends non-finite positions to the canvas
+(pass) shared perspective and layers > projects in logical pixels with clipping, near/far and an anchored ground point
+(pass) shared perspective and layers > a name with spaces around it is the same name
+(pass) shared perspective and layers > a strip repeats sideways without stacking, and an aligned copy is painted once
+(pass) shared perspective and layers > the modules a server package reaches carry no browser types
+
+src\official-extensions\scene-2d\spriteRuntime.test.ts:
+(pass) ending a game stops every remaining track in the same simulation step
+(pass) encounter: native paused stops other tracks without ready screens
+(pass) finish: native paused stops other tracks without ready screens
+(pass) encounter: native won stops other tracks without ready screens
+(pass) finish: native won stops other tracks without ready screens
+(pass) encounter: native lost stops other tracks without ready screens
+(pass) finish: native lost stops other tracks without ready screens
+(pass) sprite decorations use the current camera, depth order and visibility in world and HUD passes
+(pass) repositioning a followed sprite or a copy preserves its role, family and velocity
+(pass) g2d: the new blocks reconstruct all 108 placements of the original snow course
+(pass) gk: the new blocks reconstruct all 108 placements of the original snow course
+(pass) sprites in an automatic perspective scene > projects the same sprite without overwriting its geometry; paints far to near
+(pass) sprites in an automatic perspective scene > collects only the encountered copy and does not call the event twice
+(pass) sprites in an automatic perspective scene > detects an independently approaching sprite with a stationary player
+(pass) sprites in an automatic perspective scene > interpolates lateral position at the moment of a swept encounter
+(pass) sprites in an automatic perspective scene > reset inside an encounter prevents the old track from dispatching more events
+(pass) sprites in an automatic perspective scene > uses the engine state for start, pause and finish; finishes once
+(pass) sprites in an automatic perspective scene > repeating includes the original, replaces previous copies and retains the selected pattern
+(pass) a long step dispatches encounters in travel order, and defeat stops later collections
+(pass) invalid movement leaves a usable track and replacing it lets go of its old sprites
+(pass) the same view asked every frame does not rebuild the track nor blame the track block [16.00ms]
+(pass) surviving copies remain addressable after the original was collected
+(pass) surviving copies can change velocity after original collection
+(pass) automatic cover accepts a small pixel-art image
+(pass) reset inside a per-copy action does not visit sprites from the old game
+(pass) moving sprites are independent of selecting a player
+
+src\official-extensions\map-2d\__tests__\engines.test.ts:
+(pass) cenário do Pinta nos dois motores > g2d: o personagem para no chão sólido do cenário [15.00ms]
+(pass) cenário do Pinta nos dois motores > g2d: o início e o tamanho vêm da cena, e seguem o mapa quando ele muda
+(pass) cenário do Pinta nos dois motores > g2d: "Quando entrar em área" vale sem desenhar a camada de trás [16.00ms]
+(pass) cenário do Pinta nos dois motores > g2d: mapa com nome diferente do desenho não avisa imagem que falta
+(pass) cenário do Pinta nos dois motores > gk: o personagem para no chão sólido do cenário [15.00ms]
+(pass) cenário do Pinta nos dois motores > gk: o início e o tamanho vêm da cena, e seguem o mapa quando ele muda
+(pass) cenário do Pinta nos dois motores > gk: "Quando entrar em área" vale sem desenhar a camada de trás
+(pass) cenário do Pinta nos dois motores > gk: mapa com nome diferente do desenho não avisa imagem que falta [16.00ms]
+(pass) cenário do Pinta nos dois motores > os blocos antigos dizem que o desenho é um cenário e apontam o bloco novo [31.00ms]
+
+src\official-extensions\map-2d\__tests__\hostVariant.test.ts:
+(pass) variante do cenário pelo caminho do host > Jogo 2D: jogo sem cenário recebe o motor de sempre, sem um byte do cenário
+(pass) variante do cenário pelo caminho do host > Jogo 2D: jogo com bloco de cenário recebe o motor completo, dentro do teto [15.00ms]
+(pass) variante do cenário pelo caminho do host > Jogo 2D: a chave da prévia muda quando o primeiro bloco de cenário entra
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: jogo sem cenário recebe o motor de sempre, sem um byte do cenário
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: jogo com bloco de cenário recebe o motor completo, dentro do teto
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: a chave da prévia muda quando o primeiro bloco de cenário entra
+(pass) variante do cenário pelo caminho do host > os números medidos em 18/11/2026
+
+ 150 pass
+ 0 fail
+ 6896 expect() calls
+Ran 150 tests across 8 files. [2.11s]

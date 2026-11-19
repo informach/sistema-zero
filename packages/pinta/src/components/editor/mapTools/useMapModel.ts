@@ -32,11 +32,18 @@ export function useMapModel(): MapModel {
   const asset = useEditor((state) => state.asset)
   const savedGalleryAssets = usePintaGallery((state) => state.assets)
   const linkedAssets = useEditor((state) => state.linkedAssets)
+  const resources =
+    asset.kind === 'tilemap'
+      ? asset.resources
+      : asset.kind === 'map-set'
+        ? asset.map.resources
+        : undefined
   const galleryAssets = useMemo(() => {
     const byId = new Map(savedGalleryAssets.map((a) => [a.id, a]))
     for (const a of linkedAssets ?? []) byId.set(a.id, a)
+    for (const version of resources ?? []) byId.set(version.asset.id, version.asset)
     return [...byId.values()]
-  }, [savedGalleryAssets, linkedAssets])
+  }, [savedGalleryAssets, linkedAssets, resources])
   const tilemap = asset.kind === 'tilemap' ? asset : null
   // Memoizadas pela LISTA de ids: o mapa muda a cada pincelada, as peças que ele usa quase nunca.
   const tilesetKey = tilemap ? tilemapTilesetIds(tilemap).join('\n') : ''

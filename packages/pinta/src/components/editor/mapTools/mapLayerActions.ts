@@ -55,6 +55,7 @@ export function createMapLayerActions(deps: {
         return
       }
       state.commit(next)
+      if (editor.getState().asset === state.asset) return
       setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
     },
     addObjects(): void {
@@ -72,6 +73,7 @@ export function createMapLayerActions(deps: {
         return
       }
       state.commit(next)
+      if (editor.getState().asset === state.asset) return
       setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
     },
     setTileset(id: string, tilesetId: string): void {

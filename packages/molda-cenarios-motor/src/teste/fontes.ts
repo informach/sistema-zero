@@ -52,7 +52,7 @@ export function prepararColisoesDoTeste(
       geometria.translate(centro.x, centro.y, centro.z)
       geometrias.set(chave, geometria)
     }
-    fontes.push({ geometria, matriz: corpo.matriz })
+    fontes.push({ objeto: o.id, geometria, matriz: corpo.matriz })
   }
   return {
     fontes,

@@ -17,6 +17,25 @@ import math
 from pathlib import Path
 import pygame
 
+def quadro_arte(arte, animation_id, tempo):
+    sprite = arte.get('sprite')
+    if not sprite:
+        return (0, 0, arte['width'], arte['height'])
+    animation = next((a for a in sprite['animations'] if a['id'] == animation_id), None)
+    tile = sprite['animations'][0]['frames'][0]['tile']
+    if animation:
+        frames = animation['frames']
+        total = sum(f['duration'] for f in frames)
+        at = max(0, tempo) % total if animation['loop'] else min(max(0, tempo), total)
+        tile = frames[-1]['tile']
+        for frame in frames:
+            at -= frame['duration']
+            if at < 0:
+                tile = frame['tile']
+                break
+    w, h = sprite['frameWidth'], sprite['frameHeight']
+    return (tile % sprite['columns'] * w, tile // sprite['columns'] * h, w, h)
+
 def transformar_objeto_conjunto(parent, child, largura, altura, ids):
     """A mesma base afim de transformSceneSetObject; a geometria não usa flips da arte."""
     sx, sy = parent['width'] / largura, parent['height'] / altura
@@ -63,6 +82,7 @@ class Mundo:
 
     def carregar(self, nome):
         self.nome, self.dados = nome, self.mapas[nome]
+        self.inicio_animacao = pygame.time.get_ticks()
         self.tamanho = self.dados['tileSize']
         self.objetos = []
         self.solidos, self.plataformas = [], []
@@ -175,7 +195,7 @@ class Mundo:
         cols = self.dados['cols'] if cols is None else cols
         if camera is None:
             camera = (max(0, self.jogador.centerx - tela.get_width() / 2), max(0, self.jogador.centery - tela.get_height() / 2)) if not profundidade else (0, 0)
-        tempo = pygame.time.get_ticks()
+        tempo = pygame.time.get_ticks() - self.inicio_animacao if self.dados.get('version') == 2 else pygame.time.get_ticks()
         for camada in camadas:
             e = self.efetiva(camadas, camada)
             if not e['visible'] or not e['opacity']:
@@ -210,7 +230,7 @@ class Mundo:
                     elif o.get('art') and not frente:
                         arte = next((a for a in self.dados.get('art', []) if a['id'] == o['art']['assetId']), None)
                         ts = next((t for t in self.dados['tilesets'] if t['id'] == o['art']['assetId']), None)
-                        imagem = self.imagem(arte['image']) if arte else self.peca(ts, o['art'].get('tile', 0), tempo) if ts else None
+                        imagem = self.imagem(arte['image']).subsurface(quadro_arte(arte, o['art'].get('animationId'), tempo)) if arte else self.peca(ts, o['art'].get('tile', 0), tempo) if ts else None
                         if imagem and o['width'] > 0 and o['height'] > 0:
                             imagem = pygame.transform.scale(imagem, (round(o['width']), round(o['height'])))
                             imagem = pygame.transform.flip(imagem, bool(o.get('flipX')), bool(o.get('flipY')))
@@ -224,8 +244,24 @@ class Mundo:
 
     @staticmethod
     def propriedade(objeto, chave):
-        valor = objeto.get('properties', {}).get(chave)
+        valor = (objeto or {}).get('properties', {}).get(chave)
         return valor.get('value') if isinstance(valor, dict) else valor
+
+    def objeto_por_id(self, referencia):
+        return next((o for o in self.objetos if o['id'] == referencia), None)
+
+    def recurso_imagem(self, referencia):
+        recurso = next((a for a in self.dados.get('art', []) + self.dados['tilesets'] if a['id'] == referencia), None)
+        return recurso['image'] if recurso else None
+
+    def propriedade_camada(self, referencia, chave):
+        return self.propriedade(next((l for l in self.dados['layers'] if l['id'] == referencia), None), chave)
+
+    def propriedade_peca(self, referencia, peca, chave):
+        ts = next((t for t in self.dados['tilesets'] if t['id'] == referencia), None)
+        if not ts or isinstance(peca, bool) or not isinstance(peca, (int, float)) or not math.isfinite(peca) or peca != int(peca) or not 0 <= peca < ts['count']:
+            return None
+        return self.propriedade({'properties': ts.get('tileProperties', {}).get(str(int(peca)), {})}, chave)
 
     @staticmethod
     def contem(objeto, x, y):

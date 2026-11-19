@@ -2,6 +2,7 @@ import { normalizeGlbImagePadding } from '@sistemazero/molda/gltf'
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import type { AnimationClip, Mesh, Object3D } from 'three'
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js'
+import { prepararAcabamentoDoGlb } from './acabamento-glb'
 import type { ArquivosDaCompilacao } from './arquivos'
 import { inspecionarGlbDaCompilacao } from './inspecao-glb'
 
@@ -32,6 +33,14 @@ export async function gravarGlbCompilado(
     const g = m.geometry,
       posicao = g.getAttribute('position'),
       quantidade = g.index?.count ?? posicao?.count ?? 0
+    if (
+      Object.entries(g.morphAttributes).some(
+        ([nome, canais]) => canais?.length && !['position', 'normal'].includes(nome),
+      )
+    )
+      throw Error(
+        'O exportador glTF instalado preserva morphs de posição e normal; outro canal não pode ser omitido silenciosamente.',
+      )
     if (!posicao || posicao.count > 65_000 || quantidade > 390_000)
       throw Error('A geometria precisa ser dividida antes de gravar o GLB compilado.')
     if (
@@ -48,19 +57,25 @@ export async function gravarGlbCompilado(
     )
       throw Error('O GLB excede o orçamento de memória ou de partes da compilação.')
   })
-  const resultado = await new GLTFExporter().parseAsync(raiz, {
-    binary: true,
-    onlyVisible: true,
-    maxTextureSize: 4096,
-    animations: [...animacoes],
-    includeCustomExtensions: false,
-  })
+  const acabamento = prepararAcabamentoDoGlb(raiz)
+  let resultado: ArrayBuffer | { [key: string]: unknown }
+  try {
+    resultado = await new GLTFExporter().parseAsync(raiz, {
+      binary: true,
+      onlyVisible: true,
+      maxTextureSize: 4096,
+      animations: [...animacoes],
+      includeCustomExtensions: false,
+    })
+  } finally {
+    acabamento.descartar()
+  }
   sinal.throwIfAborted()
   if (!(resultado instanceof ArrayBuffer)) throw Error('O exportador não produziu um arquivo GLB.')
   const bytes = normalizeGlbImagePadding(new Uint8Array(resultado)),
     medidas = inspecionarGlbDaCompilacao(bytes)
   sinal.throwIfAborted()
-  return arquivos.adicionar(caminho, bytes, {
+  return arquivos.adicionarDeduplicado(caminho, bytes, {
     mime: 'model/gltf-binary',
     papel,
     malhas: medidas.malhas,

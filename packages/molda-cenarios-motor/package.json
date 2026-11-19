@@ -5,7 +5,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./compilar": "./src/compilar/index.ts"
   },
   "scripts": {
     "test": "bun test",

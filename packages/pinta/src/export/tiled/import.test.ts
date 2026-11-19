@@ -1,6 +1,7 @@
 /** O importador do Tiled: conversão de propriedades, relatório de perdas, recusas e limites. */
 import { describe, expect, it } from 'bun:test'
 import { zstdCompressSync } from 'node:zlib'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
 import { gzipSync, zlibSync } from 'fflate'
 import { vilaEFloresta } from '../../../scripts/homologacao/fixture'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
@@ -718,14 +719,20 @@ describe('conversão para os desenhos do Pinta', () => {
       )
     expect(scene.art?.length).toBeGreaterThan(0)
     expect(scene.sets?.length).toBeGreaterThan(0)
-    const converted = await sceneToNative(scene, async () => ({
-      width: 128,
-      height: 128,
-      data: new Uint8ClampedArray(128 * 128 * 4).fill(255),
-    }))
+    const converted = await sceneToNative(scene, async (url) => {
+      const image = await loadImage(url),
+        canvas = createCanvas(image.width, image.height),
+        ctx = canvas.getContext('2d')
+      ctx.drawImage(image, 0, 0)
+      return {
+        width: image.width,
+        height: image.height,
+        data: ctx.getImageData(0, 0, image.width, image.height).data,
+      }
+    })
     expect(converted.assets.map((a): string => a.kind).sort()).toEqual([
       'map-set',
-      'pixel-background',
+      'pixel-sprite',
       'tilemap',
       'tileset',
       'tileset',

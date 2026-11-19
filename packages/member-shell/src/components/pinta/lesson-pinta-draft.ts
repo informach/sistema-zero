@@ -7,10 +7,16 @@
  */
 import {
   pintaCanReadFormatVersion,
+  pintaCanWriteNativeSchema,
   pintaContentFingerprint,
   pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
-import { type PintaAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import {
+  type PintaAsset,
+  pintaAssetFromWire,
+  pintaAssetSchema,
+  pintaAssetToWire,
+} from '@sistemazero/pinta/assets'
 import {
   type LessonDraftChannel,
   LessonDraftOutdatedError,
@@ -184,6 +190,8 @@ export function pintaDraftProducer(
     const assets = await deps.store.listAllAssets()
     const asset = [...assets].sort((a, b) => b.updatedAt - a.updatedAt)[0]
     if (!asset) throw new Error('Não foi possível ler o desenho salvo')
+    if (!pintaCanWriteNativeSchema(pintaAssetSchema(asset), pintaWriteFormatVersion(asset.kind)))
+      throw new LessonDraftOutdatedError()
     const document = pintaAssetToWire(asset)
     const fingerprint = await pintaContentFingerprint(document)
     onFingerprint?.(fingerprint)

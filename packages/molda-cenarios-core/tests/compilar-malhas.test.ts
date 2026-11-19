@@ -2,6 +2,21 @@ import { expect, test } from 'bun:test'
 import { dividirMalhaParaExportacao, MAX_INDICES_POR_MALHA } from '../src/compilar/dividir-malha'
 import type { MalhaParaRecorte } from '../src/geometria'
 
+test('partição por região usa a mesma divisão e não mistura triângulos entre setores', () => {
+  const malha = {
+      atributos: {
+        position: { itemSize: 3, valores: Float32Array.from({ length: 27 }, (_, i) => i) },
+      },
+      indices: new Uint32Array([0, 1, 2, 3, 4, 5, 6, 7, 8]),
+    },
+    r = dividirMalhaParaExportacao(malha, 65000, 1024, new Uint16Array([2, 2, 7]))
+  expect(r.map((p) => p.regiao)).toEqual([2, 7])
+  expect(r.map((p) => p.indices.length)).toEqual([6, 3])
+  expect(r[1]!.atributos.position!.valores[0]).toBe(18)
+  for (const regioes of [[0], [0, -1, 2], [0, 0.5, 2], [0, NaN, 2]])
+    expect(() => dividirMalhaParaExportacao(malha, 65000, 1024, regioes)).toThrow(/regi/)
+})
+
 test('divisão conserva triângulos, winding e todos os atributos sem alterar a origem', () => {
   const malha: MalhaParaRecorte = {
       atributos: {

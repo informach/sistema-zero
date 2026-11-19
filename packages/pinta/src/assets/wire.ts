@@ -38,6 +38,14 @@ export function pintaAssetToWire(input: PintaAsset): unknown {
     case 'tilemap':
       return {
         ...asset,
+        ...(asset.resources
+          ? {
+              resources: asset.resources.map((version) => ({
+                ...version,
+                asset: pintaAssetToWire(version.asset),
+              })),
+            }
+          : {}),
         // Camada de objetos já é JSON puro (números, textos, sim/não).
         layers: asset.layers.map((layer) =>
           isTileLayer(layer) ? tileLayerToWire(layer, asset) : { ...layer },

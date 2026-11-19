@@ -1,10 +1,12 @@
 import { isPintaVersionedKind } from '@sistemazero/core/creations'
+import { pintaValuesEqual as localValuesEqual } from '../core/assetEquality'
 import { pintaLocalOriginOf } from '../core/localAssetOrigin'
 import { PintaLocalStorageError, PintaStorageBudgetError } from '../core/localStorageErrors'
 import {
   PINTA_MAX_SCHEMA,
   type PintaAsset,
   pintaAssetDependencyIds,
+  pintaAssetSchema,
   sanitizePintaAsset,
   withPintaSchemaStamp,
 } from '../core/project'
@@ -28,25 +30,8 @@ export interface LocalDocument {
 }
 export type LocalReadIssue = { id: string; name: string; status: 'unsupported'; version: number }
 
-/** Structured-clone values; timestamps and schema alone are not content identity. */
-export function localValuesEqual(a: unknown, b: unknown): boolean {
-  if (Object.is(a, b)) return true
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
-  if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-    if (a.constructor !== b.constructor || a.byteLength !== b.byteLength) return false
-    const x = new Uint8Array(a.buffer, a.byteOffset, a.byteLength),
-      y = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
-    for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false
-    return true
-  }
-  if (Array.isArray(a) !== Array.isArray(b)) return false
-  const x = Object.entries(a),
-    y = Object.entries(b)
-  return (
-    x.length === y.length &&
-    x.every(([key, value]) => Object.hasOwn(b, key) && localValuesEqual(value, Reflect.get(b, key)))
-  )
-}
+export { pintaValuesEqual as localValuesEqual } from '../core/assetEquality'
+
 function validAsset(raw: unknown, id: string): PintaAsset | null {
   const asset = sanitizePintaAsset(raw)
   return asset?.id === id ? asset : null
@@ -93,7 +78,9 @@ function unsupported(raw: unknown): number | null {
 }
 const checkpoint = (asset: PintaAsset | null): LocalDocument => ({
   version: 1,
-  capability: PINTA_MAX_SCHEMA,
+  // O protocolo transacional v1 exige o leitor 5. Só conteúdo novo exige uma capacidade maior.
+  // Publicar um leitor 6 não precisa bloquear abas 5 que ainda editam documentos compatíveis.
+  capability: Math.max(5, asset ? pintaAssetSchema(asset) : 0),
   revision: crypto.randomUUID(),
   asset,
 })

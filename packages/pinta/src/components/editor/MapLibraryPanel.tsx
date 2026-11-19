@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { useState } from 'react'
 import { COPY } from '../../core/copy'
+import { embeddedTilesetOf } from '../../core/mapResourceVersions'
 import {
   effectiveLayer,
   isObjectLayer,
@@ -16,6 +17,7 @@ import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
+import { MapResourceControls } from './MapResourceControls'
 import { commitIfChanged } from './mapTools/commitGuard'
 export function MapLibraryPanel({
   layerId,
@@ -49,7 +51,7 @@ export function MapLibraryPanel({
     const s = editor.getState(),
       m = s.asset
     if (m.kind !== 'tilemap') return
-    const ts = find(m.tilesetId),
+    const ts = embeddedTilesetOf(m) ?? find(m.tilesetId),
       tileSize = ts && isTilesetKind(ts) ? ts.tileSize : 16
     const layer = m.layers.find((l) => l.id === layerId)
     if (!layer || !isObjectLayer(layer)) return
@@ -113,12 +115,15 @@ export function MapLibraryPanel({
   }
   return (
     <Panel title={COPY.scene.desenhosDaBiblioteca}>
+      {selected?.art && chosen.kind === 'tilemap' ? (
+        <MapResourceControls map={chosen} object={selected} layerId={layerId} find={find} />
+      ) : null}
       {selected && !selected.setId && chosen.kind === 'tilemap' ? (
         <Button
           variant="barOutline"
           className="mb-2 w-full"
           onClick={() => {
-            const ts = find(chosen.tilesetId),
+            const ts = embeddedTilesetOf(chosen) ?? find(chosen.tilesetId),
               size = ts && isTilesetKind(ts) ? ts.tileSize : 16
             const owner = chosen.layers.find(
               (l) => isObjectLayer(l) && l.objects.some((o) => o.id === selected.id),
@@ -173,7 +178,10 @@ export function MapLibraryPanel({
           className="mb-2 w-full"
           onClick={() => {
             const s = editor.getState(),
-              ts = chosen.kind === 'tilemap' ? find(chosen.tilesetId) : null
+              ts =
+                chosen.kind === 'tilemap'
+                  ? (embeddedTilesetOf(chosen) ?? find(chosen.tilesetId))
+                  : null
             if (s.asset.kind === 'tilemap' && selectedId) {
               const next = detachMapSet(
                 s.asset,

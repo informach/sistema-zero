@@ -48,6 +48,7 @@ test('tipos de colisão, peças pendentes e partes duplicadas conservam sua inte
   const pacote = prepararColisoesDoTeste(documento, superficies, corpos, [])
   expect(pacote.fontes).toHaveLength(4)
   expect(pacote.fontes.filter((f) => f.geometria === g)).toHaveLength(2)
+  expect(pacote.fontes.map((f) => f.objeto)).toEqual(['1', '2', '3', '3'])
   pacote.descartar()
   const pendente = prepararColisoesDoTeste(
     documento,

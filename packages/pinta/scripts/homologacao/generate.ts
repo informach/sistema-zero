@@ -4,15 +4,46 @@ import { createCanvas, ImageData, loadImage } from '@napi-rs/canvas'
 import { thumbnailBitmap } from '../../src/core/assetThumb'
 import { isTilesetKind, type PintaAsset, resolveAssetPalette } from '../../src/core/project'
 import { deriveLoadedPintaImage } from '../../src/export/portableImage'
+import type { PintaImageRaster } from '../../src/export/portableImageRender'
 import { galleryToPintaJson } from '../../src/export/projectJson'
 import {
   buildScenePackage,
   type ScenePackageTarget,
   scenePackageBlob,
 } from '../../src/export/scenePackage'
+import { packSpritesheet } from '../../src/export/spritesheet'
 import { bitmapToRGBA } from '../../src/pixel/render'
 import { vilaEFloresta } from './fixture'
+export function nativeImageRaster(): PintaImageRaster {
+  return {
+    createCanvas: (w, h) => createCanvas(w, h) as unknown as HTMLCanvasElement,
+    releaseCanvas: (c) => {
+      c.width = 1
+      c.height = 1
+    },
+    drawSvg: async (svg, c) => {
+      const im = await loadImage(Buffer.from(svg))
+      c.getContext('2d')!.drawImage(im as unknown as CanvasImageSource, 0, 0, c.width, c.height)
+    },
+  }
+}
 export async function nativeImageOf(asset: PintaAsset): Promise<string | null> {
+  if (asset.kind === 'pixel-sprite') {
+    const pack = packSpritesheet(asset),
+      canvas = createCanvas(pack.columns * pack.frameWidth, pack.rows * pack.frameHeight),
+      ctx = canvas.getContext('2d')
+    for (const cell of pack.cells)
+      ctx.putImageData(
+        new ImageData(
+          bitmapToRGBA(cell.bitmap, resolveAssetPalette(asset)),
+          cell.bitmap.width,
+          cell.bitmap.height,
+        ),
+        cell.col * pack.frameWidth,
+        cell.row * pack.frameHeight,
+      )
+    return canvas.toDataURL('image/png')
+  }
   if (asset.kind === 'tileset') {
     const cols = Math.min(8, asset.tiles.length),
       rows = Math.ceil(asset.tiles.length / cols),
@@ -66,17 +97,7 @@ export async function generateHomologation(
     {
       tilesets: assets.filter(isTilesetKind),
       assets: assets.filter((a) => a.id !== map.id && a.kind !== 'tilemap'),
-      raster: {
-        createCanvas: (w, h) => createCanvas(w, h) as unknown as HTMLCanvasElement,
-        releaseCanvas: (c) => {
-          c.width = 1
-          c.height = 1
-        },
-        drawSvg: async (svg, c) => {
-          const im = await loadImage(Buffer.from(svg))
-          c.getContext('2d')!.drawImage(im as unknown as CanvasImageSource, 0, 0, c.width, c.height)
-        },
-      },
+      raster: nativeImageRaster(),
     },
   )
   await writeFile(

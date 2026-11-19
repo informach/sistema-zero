@@ -1,0 +1,35 @@
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 6 tests using 1 worker
+
+(node:41300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-resources-scenes.flow.ts:32:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (6.8s)
+  ✓  2 [desktop] › e2e\pinta-resources-scenes.flow.ts:114:1 › mapa autocontido de 48 px abre sem originais e cola objetos na grade correta (1.3s)
+  ✓  3 [desktop] › e2e\pinta-resources-scenes.flow.ts:165:1 › copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos (2.7s)
+(node:32480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  4 [touch] › e2e\pinta-resources-scenes.flow.ts:32:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (4.0s)
+  ✓  5 [touch] › e2e\pinta-resources-scenes.flow.ts:114:1 › mapa autocontido de 48 px abre sem originais e cola objetos na grade correta (1.4s)
+  ✓  6 [touch] › e2e\pinta-resources-scenes.flow.ts:165:1 › copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos (2.9s)
+
+  6 passed (24.9s)

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { VistaDeCameraSchema } from '../v2/camera'
 import { IdentificadorDeCenarioSchema, PropriedadesSchema } from '../v2/entidades-schema'
 import { ConfiguracaoDeMarcadorSchema } from '../v2/marcadores-schema'
-import { poligonoSimples } from '../validacao'
+import { BaseDeTerrenoSchema } from '../v2/terreno'
 import {
   CaminhoCompiladoSchema,
   MatrizCompiladaSchema,
@@ -135,12 +135,22 @@ export const TerrenoCompiladoSchema = z
   })
   .strict()
   .superRefine((t, ctx) => {
-    if (t.min >= t.max)
-      ctx.addIssue({
-        code: 'custom',
-        message: 'O terreno compilado tem intervalo de alturas inválido.',
-      })
-    if (t.recortes.some((p) => !poligonoSimples(p)))
-      ctx.addIssue({ code: 'custom', message: 'Um recorte do terreno compilado é inválido.' })
+    // Os mesmos limites/domínio da autoria, sem uma segunda definição de terreno.
+    const base = BaseDeTerrenoSchema.safeParse({
+      tipo: 'terreno',
+      origem: t.origem,
+      passo: t.passo,
+      colunas: t.colunas,
+      linhas: t.linhas,
+      min: t.min,
+      max: t.max,
+      fundo: t.fundo,
+      ...(t.cobertura === 'grade' ? { cobertura: 'grade' } : {}),
+      pecas: t.pecas.map((p) => ({ ...p, digest: '0'.repeat(64) })),
+      recortes: t.recortes,
+    })
+    if (!base.success)
+      for (const i of base.error.issues)
+        ctx.addIssue({ code: 'custom', message: i.message, path: i.path })
   })
 export type TerrenoCompilado = z.infer<typeof TerrenoCompiladoSchema>

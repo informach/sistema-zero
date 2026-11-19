@@ -1,11 +1,13 @@
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
+import { mergeMapResourceVersions } from '../core/mapResourceVersions'
 import {
   effectiveLayer,
   isObjectLayer,
   isTileLayer,
   type MapSetAsset,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
   PINTA_SCENE_SCHEMA,
   type TilemapAsset,
   type TilemapLayer,
@@ -219,6 +221,8 @@ export function detachMapSet(
 ): TilemapAsset {
   const owner = map.layers.find((l) => l.id === layerId)
   if (!owner || !isObjectLayer(owner) || effectiveLayer(map, owner).locked) return map
+  const resources = mergeMapResourceVersions(map.resources ?? [], set.map.resources ?? [])
+  if (!resources) return map
   const instance = owner.objects.find((o) => o.id === objectId && o.setId === set.id)
   if (
     !instance ||
@@ -227,6 +231,13 @@ export function detachMapSet(
     instance.height !== set.map.rows * tileSize ||
     map.layers.length + set.map.layers.filter((l) => l.kind !== 'group').length >
       PINTA_LIMITS.maxTilemapLayers
+  )
+    return map
+  if (
+    map.cols *
+      map.rows *
+      (map.layers.filter(isTileLayer).length + set.map.layers.filter(isTileLayer).length) >
+    PINTA_MAP_FORMAT_LIMITS.maxCells
   )
     return map
   const turns = ((((instance.rotation ?? 0) / 90) % 4) + 4) % 4,
@@ -336,6 +347,7 @@ export function detachMapSet(
   const updated = { ...owner, objects: owner.objects.filter((o) => o.id !== instance.id) }
   return {
     ...map,
+    ...(resources.length ? { resources } : {}),
     layers: [...map.layers.slice(0, at), ...layers, updated, ...map.layers.slice(at + 1)],
   }
 }

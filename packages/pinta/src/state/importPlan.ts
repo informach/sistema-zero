@@ -44,22 +44,42 @@ export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   } else if (copy.kind === 'vector-sprite') {
     copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
   } else if (copy.kind === 'tilemap') {
-    copy.layers = cloneMapIds(copy).layers
+    return cloneMapIds(copy, copy.id)
   } else if (copy.kind === 'map-set') {
     copy.map = cloneMapIds(copy.map)
   }
   return copy
 }
 
-function cloneMapIds(map: TilemapAsset): TilemapAsset {
+function cloneMapIds(map: TilemapAsset, mapId = newId()): TilemapAsset {
   const ids = new Map<string, string>()
   for (const l of map.layers) {
     ids.set(l.id, newId())
     if (isObjectLayer(l)) for (const o of l.objects) ids.set(o.id, newId())
   }
-  return {
+  const versions = new Map((map.resources ?? []).map((version) => [version.asset.id, newId()]))
+  const cloned: TilemapAsset = {
     ...map,
-    id: newId(),
+    id: mapId,
+    ...(map.resources?.length
+      ? {
+          resources: map.resources.map((version) => ({
+            ...version,
+            asset:
+              isTilesetKind(version.asset) && version.asset.tileProperties
+                ? {
+                    ...version.asset,
+                    tileProperties: Object.fromEntries(
+                      Object.entries(version.asset.tileProperties).map(([tile, properties]) => [
+                        tile,
+                        mapPropertyRefs(properties, ids, 'object'),
+                      ]),
+                    ),
+                  }
+                : version.asset,
+          })),
+        }
+      : {}),
     layers: map.layers.map((l) => ({
       ...l,
       id: ids.get(l.id) ?? l.id,
@@ -83,16 +103,40 @@ function cloneMapIds(map: TilemapAsset): TilemapAsset {
         : {}),
     })) as TilemapAsset['layers'],
   }
+  return versions.size ? remapMapAssets(cloned, versions) : cloned
 }
 
 function remapMapAssets(
   map: TilemapAsset,
   idMap: ReadonlyMap<string, string>,
   names: ReadonlyMap<string, string> = new Map(),
+  animations: ReadonlyMap<string, ReadonlyMap<string, string>> = new Map(),
 ): TilemapAsset {
   const result = remapTilemapTilesetIds(map, (id) => idMap.get(id) ?? id)
   return {
     ...result,
+    ...(result.resources
+      ? {
+          resources: result.resources.map((version) => ({
+            ...version,
+            sourceId: idMap.get(version.sourceId) ?? version.sourceId,
+            asset: {
+              ...version.asset,
+              id: idMap.get(version.asset.id) ?? version.asset.id,
+              ...(isTilesetKind(version.asset) && version.asset.tileProperties
+                ? {
+                    tileProperties: Object.fromEntries(
+                      Object.entries(version.asset.tileProperties).map(([tile, properties]) => [
+                        tile,
+                        mapPropertyRefs(properties, idMap, 'asset'),
+                      ]),
+                    ),
+                  }
+                : {}),
+            },
+          })),
+        }
+      : {}),
     layers: result.layers.map((l) =>
       !isObjectLayer(l)
         ? {
@@ -105,7 +149,19 @@ function remapMapAssets(
             objects: l.objects.map((o) => ({
               ...o,
               ...(o.art
-                ? { art: { ...o.art, assetId: idMap.get(o.art.assetId) ?? o.art.assetId } }
+                ? {
+                    art: {
+                      ...o.art,
+                      assetId: idMap.get(o.art.assetId) ?? o.art.assetId,
+                      ...(o.art.animationId
+                        ? {
+                            animationId:
+                              animations.get(o.art.assetId)?.get(o.art.animationId) ??
+                              o.art.animationId,
+                          }
+                        : {}),
+                    },
+                  }
                 : {}),
               ...(o.setId ? { setId: idMap.get(o.setId) ?? o.setId } : {}),
               properties: Object.fromEntries(
@@ -148,6 +204,7 @@ export function planImport(
 ): ImportPlan {
   const idMap = new Map<string, string>()
   const names = new Map<string, string>()
+  const animations = new Map<string, ReadonlyMap<string, string>>()
   const prepared: PintaAsset[] = []
   const preparedTilesetIds = new Set<string>()
   let skipped = 0
@@ -169,6 +226,19 @@ export function planImport(
       continue
     }
     const clone = cloneWithNewIds(asset, name)
+    if (
+      (asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite') &&
+      (clone.kind === 'pixel-sprite' || clone.kind === 'vector-sprite')
+    )
+      animations.set(
+        asset.id,
+        new Map(
+          asset.animations.flatMap((animation, index) => {
+            const next = clone.animations[index]
+            return next ? [[animation.id, next.id] as const] : []
+          }),
+        ),
+      )
     idMap.set(asset.id, clone.id)
     if (asset.kind === 'tilemap') names.set(asset.name, clone.name)
     if (isTilesetKind(asset)) preparedTilesetIds.add(asset.id)
@@ -179,9 +249,9 @@ export function planImport(
     source,
     restored:
       source.kind === 'tilemap'
-        ? remapMapAssets(source, idMap, names)
+        ? remapMapAssets(source, idMap, names, animations)
         : source.kind === 'map-set'
-          ? { ...source, map: remapMapAssets(source.map, idMap, names) }
+          ? { ...source, map: remapMapAssets(source.map, idMap, names, animations) }
           : isTilesetKind(source) && source.tileProperties
             ? {
                 ...source,

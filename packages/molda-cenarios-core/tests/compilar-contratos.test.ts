@@ -1,9 +1,31 @@
 import { expect, test } from 'bun:test'
+import { criarConsultaDeEntidadesDoNo } from '../src/compilar/faixas'
 import { lerCenaCompilada } from '../src/compilar/schema'
-import { RotaCompiladaSchema } from '../src/compilar/schema-metadados'
+import { RotaCompiladaSchema, TerrenoCompiladoSchema } from '../src/compilar/schema-metadados'
+import { AguaSchema } from '../src/v2'
 
 const matriz = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 const volume = { min: { x: 0, y: 0, z: 0 }, max: { x: 1, y: 1, z: 1 } }
+
+test('terreno compilado conserva limites e domínio da autoria', () => {
+  const t = {
+    origem: { x: 0, z: 0 },
+    passo: 1,
+    colunas: 64,
+    linhas: 64,
+    min: -1,
+    max: 1,
+    fundo: 0,
+    cobertura: 'grade',
+    pecas: [],
+    recortes: [],
+    alturas: 'terreno/alturas.bin',
+    pngAlturas: 'terreno/alturas.png',
+  }
+  expect(TerrenoCompiladoSchema.safeParse(t).success).toBe(true)
+  for (const patch of [{ fundo: 2 }, { origem: { x: 100001, z: 0 } }, { colunas: 4096, passo: 32 }])
+    expect(TerrenoCompiladoSchema.safeParse({ ...t, ...patch }).success).toBe(false)
+})
 function cena() {
   return {
     formato: 'molda-cena-compilada',
@@ -38,6 +60,98 @@ function cena() {
     ambiente: { hora: 12 },
   }
 }
+
+test('piso plano declara a colisão finita e não pode coexistir com relevo', () => {
+  const d = cena(),
+    plano = { largura: 16, comprimento: 32, colisao: 'piso' },
+    colisao = {
+      id: 'piso',
+      entidade: null,
+      tipo: 'terreno',
+      arquivo: 'colisoes/piso.glb',
+      matriz: [...matriz],
+      volume: { min: { x: -8, y: 0, z: -16 }, max: { x: 8, y: 0, z: 16 } },
+    },
+    comPiso = {
+      ...d,
+      plano,
+      colisoes: [colisao],
+      arquivos: [
+        ...d.arquivos,
+        { ...d.arquivos[0], caminho: 'colisoes/piso.glb', papel: 'colisao' },
+      ],
+    }
+  expect(lerCenaCompilada(comPiso).plano).toEqual(plano)
+  for (const alteracao of [{ colisao: 'ausente' }, { largura: 20 }])
+    expect(() => lerCenaCompilada({ ...comPiso, plano: { ...plano, ...alteracao } })).toThrow(
+      /piso plano/,
+    )
+  expect(() =>
+    lerCenaCompilada({ ...comPiso, colisoes: [{ ...colisao, entidade: 'casa' }] }),
+  ).toThrow(/piso plano/)
+  expect(() => lerCenaCompilada({ ...comPiso, colisoes: [{ ...colisao, tipo: 'malha' }] })).toThrow(
+    /piso plano/,
+  )
+})
+
+test('faixas mantêm picking por entidade e recusam lacunas, sobreposição e entidade ausente', () => {
+  const d = cena(),
+    faixas = [
+      { malha: 'lote', entidade: 'casa', primeiroTriangulo: 0, triangulos: 1 },
+      { malha: 'lote', entidade: null, primeiroTriangulo: 1, triangulos: 2 },
+    ],
+    lote = {
+      ...d,
+      nos: [{ ...d.nos[0], entidade: null, faixas }],
+      arquivos: d.arquivos.map((a) => ({ ...a, triangulos: 3 })),
+    },
+    no = lerCenaCompilada(lote).nos[0]!,
+    buscar = criarConsultaDeEntidadesDoNo(no)
+  expect(buscar('lote', 0)).toBe('casa')
+  expect(buscar('lote', 1)).toBeNull()
+  expect(buscar('lote', 3)).toBeNull()
+  expect(buscar('outra', 0)).toBeNull()
+  expect(buscar('lote', 0.5)).toBeNull()
+  for (const patch of [{ primeiroTriangulo: 0 }, { primeiroTriangulo: 2 }, { entidade: 'ausente' }])
+    expect(() =>
+      lerCenaCompilada({
+        ...lote,
+        nos: [{ ...lote.nos[0], faixas: [faixas[0], { ...faixas[1], ...patch }] }],
+      }),
+    ).toThrow()
+  expect(() =>
+    lerCenaCompilada({ ...lote, nos: [{ ...lote.nos[0], preservarHierarquia: true }] }),
+  ).toThrow(/estático/)
+  expect(() =>
+    lerCenaCompilada({ ...lote, entidades: d.entidades.map((e) => ({ ...e, oculto: true })) }),
+  ).toThrow(/oculta/)
+})
+
+test('restauração de efeito só pode apontar para água com parâmetros e arquivo correspondentes', () => {
+  const d = cena()
+  expect(() =>
+    lerCenaCompilada({ ...d, nos: d.nos.map((n) => ({ ...n, efeito: 'agua' })) }),
+  ).toThrow(/efeito de água/)
+  const agua = {
+    ...d,
+    entidades: d.entidades.map((e) => ({ ...e, tipo: 'agua' })),
+    arquivos: d.arquivos.map((a) => ({ ...a, papel: 'agua' })),
+    nos: d.nos.map((n) => ({ ...n, efeito: 'agua' })),
+    aguas: [
+      AguaSchema.parse({
+        id: 'casa',
+        nome: 'Mar',
+        grupo: null,
+        oculto: false,
+        bloqueado: false,
+        tipo: 'mar',
+        nivel: 0,
+      }),
+    ],
+  }
+  expect(lerCenaCompilada(agua).nos[0]!.efeito).toBe('agua')
+  expect(() => lerCenaCompilada({ ...agua, aguas: [] })).toThrow(/efeito de água/)
+})
 
 test('leitor portátil conserva revisão, matrizes e propriedades sem interpretar código', () => {
   const d = cena(),

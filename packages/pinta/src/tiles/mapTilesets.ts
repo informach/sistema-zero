@@ -9,6 +9,7 @@
  * `null`, e as camadas dele simplesmente não aparecem — nunca são desenhadas com
  * as peças erradas.
  */
+import { withMapResourceVersions } from '../core/mapResourceVersions'
 import {
   type AnyTilesetAsset,
   isCompatibleMapTileset,
@@ -25,6 +26,15 @@ function listOf(source: MapTilesets): readonly AnyTilesetAsset[] {
   return Array.isArray(source) ? source : [source as AnyTilesetAsset]
 }
 
+function withVersionedTilesets(map: TilemapAsset, source: MapTilesets): readonly AnyTilesetAsset[] {
+  const list = listOf(source)
+  if (!map.resources?.length) return list
+  const byId = new Map(list.map((tileset) => [tileset.id, tileset]))
+  for (const version of map.resources)
+    if (isTilesetKind(version.asset)) byId.set(version.asset.id, version.asset)
+  return [...byId.values()]
+}
+
 /**
  * O tileset PADRÃO do mapa dentro da fonte: o de mesmo id; sem ele, o primeiro
  * (compatibilidade com quem sempre passou "o tileset do mapa" sem conferir id).
@@ -33,7 +43,7 @@ export function primaryMapTileset(
   tilemap: TilemapAsset,
   source: MapTilesets,
 ): AnyTilesetAsset | null {
-  const list = listOf(source)
+  const list = withVersionedTilesets(tilemap, source)
   return list.find((tileset) => tileset.id === tilemap.tilesetId) ?? list[0] ?? null
 }
 
@@ -45,7 +55,7 @@ export function resolveMapTilesets(
   tilemap: TilemapAsset,
   source: MapTilesets,
 ): Array<AnyTilesetAsset | null> {
-  const list = listOf(source)
+  const list = withVersionedTilesets(tilemap, source)
   const primary = primaryMapTileset(tilemap, list)
   return tilemapTilesetIds(tilemap).map((id, index) => {
     if (index === 0) return primary
@@ -88,7 +98,8 @@ export function collectMapTilesets(
   tilemap: TilemapAsset,
   findAsset: (id: string) => PintaAsset | null | undefined,
 ): AnyTilesetAsset[] {
-  return collectTilesetsByIds(tilemapTilesetIds(tilemap), findAsset)
+  const find = withMapResourceVersions(tilemap, (id) => findAsset(id) ?? null)
+  return collectTilesetsByIds(tilemapTilesetIds(tilemap), find)
 }
 
 /**

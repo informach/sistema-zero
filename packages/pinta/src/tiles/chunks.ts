@@ -87,7 +87,6 @@ interface ChunkEntry {
   source: CanvasImageSource
   animation: string
   bytes: number
-  frame: number
 }
 /** Bytes de um bloco pintado (RGBA) para peças deste tamanho. */
 export function chunkBytes(tileSize: number): number {
@@ -101,15 +100,17 @@ export function chunkBytes(tileSize: number): number {
  * - Bloco VAZIO não gasta canvas nem conta no teto.
  * - O bloco só é refeito quando uma casa dele muda, quando a folha das peças muda ou quando
  *   uma peça animada QUE ESTÁ NELE troca de quadro.
- * - `beginFrame` diz quantos bytes a tela de agora precisa: o teto cresce até lá, e um bloco
- *   usado nesta pintura nunca é jogado fora por outro da mesma pintura (senão cada repintura
- *   refaria tudo).
+ * - O teto não cresce com a tela. Canvas de blocos descartados são reciclados antes de alocar.
+ * - `get` empresta o canvas até a próxima chamada: o consumidor deve desenhá-lo imediatamente.
+ * - Se nem um bloco cabe no teto, usa um único canvas de trabalho, sem guardar entradas.
+ *   A memória RGBA é limitada a max(teto, bytes de um bloco), inclusive nesse caso.
  */
 export class TileChunkCache {
   private entries = new Map<string, ChunkEntry>()
   private bytes = 0
-  private frame = 0
-  private frameBudget = 0
+  private scratch: HTMLCanvasElement | null = null
+  /** Estimativa do conjunto visível, sem ampliar o orçamento de retenção. */
+  workingSetBytes = 0
   /** Quantos blocos foram pintados de novo desde o começo (para medir e testar). */
   rebuilds = 0
   constructor(
@@ -120,20 +121,29 @@ export class TileChunkCache {
     return this.entries.size
   }
   get usedBytes(): number {
-    return this.bytes
+    return this.bytes + (this.scratch ? this.scratch.width * this.scratch.height * 4 : 0)
   }
   clear(): void {
+    for (const entry of this.entries.values()) this.release(entry.canvas)
     this.entries.clear()
     this.bytes = 0
+    if (this.scratch) this.release(this.scratch)
+    this.scratch = null
+    this.workingSetBytes = 0
   }
   /** Começa uma pintura da tela que vai precisar de `neededBytes` em blocos. */
   beginFrame(neededBytes = 0): void {
-    this.frame += 1
-    this.frameBudget = neededBytes
+    this.workingSetBytes = neededBytes
   }
-  private drop(key: string, entry: ChunkEntry): void {
+  private release(canvas: HTMLCanvasElement): void {
+    // Canvas não DOM (inclusive o motor de testes) podem restaurar o tamanho padrão com zero.
+    canvas.width = 1
+    canvas.height = 1
+  }
+  private drop(key: string, entry: ChunkEntry, recycle = false): void {
     this.entries.delete(key)
     this.bytes -= entry.bytes
+    if (!recycle) this.release(entry.canvas)
   }
   get(
     map: TilemapAsset,
@@ -174,22 +184,43 @@ export class TileChunkCache {
     if (
       hit &&
       hit.source === sheet &&
+      hit.bytes === chunkBytes(ts.tileSize) &&
       hit.animation === animation &&
       hit.values.every((v, i) => v === values[i])
     ) {
       this.entries.delete(key)
-      hit.frame = this.frame
       this.entries.set(key, hit)
       return hit.canvas
     }
     if (hit) this.drop(key, hit)
-    const canvas = this.createCanvas(),
+    const bytes = chunkBytes(ts.tileSize),
       size = MAP_CHUNK_SIDE * ts.tileSize
-    canvas.width = size
-    canvas.height = size
+    let recycled: HTMLCanvasElement | null = null
+    while (this.bytes + bytes > this.budget && this.entries.size) {
+      const first = this.entries.entries().next().value
+      if (!first) break
+      if (!recycled && first[1].bytes === bytes) {
+        recycled = first[1].canvas
+        this.drop(first[0], first[1], true)
+      } else this.drop(first[0], first[1])
+    }
+    if (bytes <= this.budget && this.scratch) {
+      this.release(this.scratch)
+      this.scratch = null
+    }
+    const canvas = recycled ?? this.scratch ?? this.createCanvas()
+    if (bytes > this.budget) this.scratch = canvas
+    if (canvas.width !== size || canvas.height !== size) {
+      canvas.width = size
+      canvas.height = size
+    }
     const ctx = canvas.getContext('2d')
-    if (!ctx) return null
+    if (!ctx) {
+      this.release(canvas)
+      return null
+    }
     this.rebuilds += 1
+    ctx.clearRect(0, 0, size, size)
     ctx.imageSmoothingEnabled = false
     for (let r = 0; r < MAP_CHUNK_SIDE; r++)
       for (let c = 0; c < MAP_CHUNK_SIDE; c++) {
@@ -208,22 +239,13 @@ export class TileChunkCache {
           animated.get(tile) ?? tile,
         )
       }
-    const bytes = chunkBytes(ts.tileSize),
-      budget = Math.max(this.budget, this.frameBudget)
-    while (this.bytes + bytes > budget && this.entries.size) {
-      const first = this.entries.entries().next().value
-      // Os usados nesta pintura ficam no fim da fila: chegando neles, não há mais o que tirar.
-      if (!first || first[1].frame === this.frame) break
-      this.drop(first[0], first[1])
-    }
-    if (this.bytes + bytes <= budget) {
+    if (this.bytes + bytes <= this.budget) {
       this.entries.set(key, {
         canvas,
         source: sheet,
         values,
         animation,
         bytes,
-        frame: this.frame,
       })
       this.bytes += bytes
     }
@@ -281,7 +303,7 @@ export function paintTilemapLayers(
   includeCollision = false,
 ): void {
   const layers = visibleLayerChunks(map, tilesets, view, includeCollision)
-  // O teto desta pintura: todos os blocos à vista, de todas as camadas, cabem juntos.
+  // Mede a pressão da tela; o cache mantém o teto mesmo quando ela é maior.
   cache.beginFrame(
     layers.reduce((sum, l) => sum + l.chunks.length * chunkBytes(l.tileset.tileSize), 0),
   )

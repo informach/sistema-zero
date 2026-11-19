@@ -51,7 +51,9 @@ import {
   PINTA_PALETTE_LIBRARY_ITEM_ID,
   PINTA_PALETTE_LIBRARY_KIND,
   PINTA_PALETTE_LIBRARY_TOOL,
+  PintaClientOutdatedError,
   pintaCanReadFormatVersion,
+  pintaCanWriteNativeSchema,
   pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
 import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
@@ -608,6 +610,12 @@ export function createCloudMirroredPintaPersistence(options: {
         if (!hasLocalChanges(current)) {
           sendingAt.delete(asset.id)
           return null
+        }
+        if (
+          !pintaCanWriteNativeSchema(schemaStampOf(current), pintaWriteFormatVersion(current.kind))
+        ) {
+          sendingAt.delete(asset.id)
+          throw new PintaClientOutdatedError()
         }
         // A conta guarda este desenho num formato que este código não lê: a cópia daqui é mais
         // velha por definição e não sobe por cima.

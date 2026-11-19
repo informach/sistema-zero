@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BasePlanaSchema } from '../v2/documento'
 import {
   AguaSchema,
   CaminhoSchema,
@@ -38,6 +39,7 @@ export const CenaCompiladaSchema = z
     nos: z.array(NoCompiladoSchema).max(32768),
     colisoes: z.array(ColisaoCompiladaSchema).max(32768),
     terreno: TerrenoCompiladoSchema.optional(),
+    plano: BasePlanaSchema.omit({ tipo: true }).extend({ colisao: id }).optional(),
     aguas: z.array(AguaSchema).max(4096),
     caminhos: z.array(CaminhoSchema).max(4096),
     marcadores: z.array(MarcadorCompiladoSchema).max(4096),
@@ -75,7 +77,8 @@ export const CenaCompiladaSchema = z
       licencas = new Map(d.licencas.map((l) => [l.id, l])),
       texturas = new Map(d.texturas.map((t) => [t.id, t])),
       modelosFonte = new Set(d.fontes.modelos.map((m) => m.id)),
-      texturasFonte = new Set(d.fontes.texturas.map((t) => t.id))
+      texturasFonte = new Set(d.fontes.texturas.map((t) => t.id)),
+      aguasPresentes = new Set(d.aguas.map((a) => a.id))
     unicos(
       d.arquivos.map((a) => a.caminho.toLowerCase()),
       'arquivos',
@@ -131,8 +134,43 @@ export const CenaCompiladaSchema = z
       if (n.entidade !== null && entidades.get(n.entidade)?.oculto)
         falhar('Uma entidade oculta não pode produzir um nó visual no pacote.')
       const a = arquivos.get(n.arquivo)
+      if (
+        n.efeito === 'agua' &&
+        (n.entidade === null ||
+          entidades.get(n.entidade)?.tipo !== 'agua' ||
+          !aguasPresentes.has(n.entidade) ||
+          a?.papel !== 'agua')
+      )
+        falhar(
+          'O efeito de água precisa da entidade, parâmetros e arquivo de água correspondentes.',
+        )
       if (a?.mime !== 'model/gltf-binary' || a.papel === 'colisao')
         falhar(`O arquivo visual “${n.arquivo}” está ausente ou é incompatível.`)
+      if (n.faixas) {
+        if (n.entidade !== null || n.efeito || n.preservarHierarquia)
+          falhar('As faixas pertencem somente a um lote estático sem entidade única.')
+        const porMalha = new Map<string, typeof n.faixas>()
+        for (const f of n.faixas) {
+          conferirEntidade(f.entidade)
+          if (f.entidade !== null && entidades.get(f.entidade)?.oculto)
+            falhar('Uma entidade oculta não pode aparecer nas faixas do lote.')
+          const fs = porMalha.get(f.malha) ?? []
+          fs.push(f)
+          porMalha.set(f.malha, fs)
+        }
+        let total = 0
+        for (const fs of porMalha.values()) {
+          let fim = 0
+          for (const f of fs.sort((a, b) => a.primeiroTriangulo - b.primeiroTriangulo)) {
+            if (f.primeiroTriangulo !== fim)
+              falhar('As faixas precisam cobrir cada malha sem lacunas ou sobreposição.')
+            fim = f.primeiroTriangulo + f.triangulos
+          }
+          total += fim
+        }
+        if (total !== a?.triangulos)
+          falhar('As faixas não correspondem aos triângulos declarados do lote.')
+      }
       malhas += a?.malhas ?? 0
     }
     if (malhas > 32768) falhar('A cena compilada tem malhas demais para ser carregada.')
@@ -204,6 +242,28 @@ export const CenaCompiladaSchema = z
       if (c.acabamento) conferirModelo(c.acabamento)
       if (c.aparencia?.textura) conferirTexturaDeOrigem(c.aparencia.textura.id)
       pontos += c.pontos.length
+    }
+    if (d.plano) {
+      if (d.terreno) falhar('A cena não pode declarar terreno e piso plano ao mesmo tempo.')
+      const piso = d.colisoes.find((c) => c.id === d.plano!.colisao),
+        p = d.plano,
+        esperado = [-p.largura / 2, 0, -p.comprimento / 2, p.largura / 2, 0, p.comprimento / 2],
+        real = piso
+          ? [
+              piso.volume.min.x,
+              piso.volume.min.y,
+              piso.volume.min.z,
+              piso.volume.max.x,
+              piso.volume.max.y,
+              piso.volume.max.z,
+            ]
+          : []
+      if (
+        piso?.tipo !== 'terreno' ||
+        piso.entidade !== null ||
+        real.some((v, i) => Math.abs(v - esperado[i]!) > 1e-5)
+      )
+        falhar('O piso plano precisa da colisão finita correspondente às suas dimensões.')
     }
     if (d.terreno) {
       const t = d.terreno,

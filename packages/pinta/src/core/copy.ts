@@ -8,6 +8,30 @@ import type { PintaAssetKind } from './project'
 
 export const COPY = {
   scene: {
+    keepResourceVersion: 'Guardar esta versão',
+    keepTilesetVersions: 'Guardar as peças deste mapa',
+    savedResourceName: (name: string, position: number) => `${name} (cópia guardada ${position})`,
+    followTilesets: 'Acompanhar as peças da biblioteca',
+    resourceLayoutChanged:
+      'O tamanho ou o estilo das peças originais mudou. Escolha peças compatíveis antes de reconectar.',
+    updateResourceVersion: 'Guardar a versão mais recente',
+    followResource: 'Acompanhar o desenho da biblioteca',
+    resourceLinked: 'Este objeto acompanha as mudanças do desenho na biblioteca.',
+    resourceFrozen: 'Este objeto usa uma versão guardada. Mudar a biblioteca não muda esta versão.',
+    resourceVersionLimit:
+      'Este mapa já tem muitas versões guardadas. Tire as que não usa para guardar outra.',
+    resourceMemoryLimit:
+      'Estas versões ocupam muita memória. Use uma arte menor ou tire versões que não usa.',
+    resourceMissing: 'Não encontrei o desenho original na biblioteca.',
+    resourceAnimationMissing:
+      'O original não tem esta animação. Escolha "Sem animação" para voltar a acompanhar a biblioteca.',
+    resourceUnsupported: 'Você pode guardar versões de personagens, desenhos e peças.',
+    resourcePasteFailed:
+      'Não consegui juntar as versões copiadas neste mapa. Tire versões sem uso e tente novamente.',
+    clearUnusedVersions: 'Tirar versões que não uso',
+    objectAnimation: 'Animação deste objeto',
+    noObjectAnimation: 'Sem animação',
+    missingObjectAnimation: 'Esta animação não foi encontrada',
     localImagesOnly: 'O mapa deve usar imagens locais dentro do pacote.',
     pathOutsideMap: 'O caminho saiu da pasta do mapa.',
     unpackedTooLarge: 'O pacote aberto passou de 128 MiB.',
@@ -489,6 +513,8 @@ export const COPY = {
     saved: 'Salvo',
     saving: 'Salvando…',
     saveError: 'Não consegui salvar',
+    lessonMapLimit:
+      'Este desenho chegou ao limite da aula. Você pode criar um cenário maior na sua galeria.',
     taskLinkError: 'Não consegui vincular o desenho à tarefa. Confira a internet e tente de novo.',
     taskStudioProgressError:
       'O desenho chegou ao Estúdio, mas não consegui atualizar a tarefa. Confira a internet e tente usar no Estúdio de novo.',

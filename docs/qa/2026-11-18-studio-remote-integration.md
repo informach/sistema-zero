@@ -62,3 +62,23 @@ snapshot. Esses testes foram incluídos no CI da missão. Não são evidência d
 que o Estúdio já executa o novo pacote compilado em um jogo real: a etapa 8 e
 sua homologação integrada continuam abertas. Nenhum formato foi modificado
 unilateralmente por esta sessão.
+
+
+## Snapshot adicional 2ab6ff947
+
+Integrados 13 commits remotos adicionais, mantendo as frentes de Pinta/Molda sem
+edições autorais desta sessão. Há recursos e referências versionadas de cenário,
+consultas nos motores e atualização de artes vinculadas no Estúdio. O conflito
+no fingerprint gerado foi resolvido pelo gerador canônico sobre os fontes
+integrados; check:validation-profile passou. Não foi escolhido um hash antigo.
+
+Qualificação local: 31 testes de mapas/orçamento, 6292 asserções; dez contratos
+Pinta no core, 155 asserções; 43 contratos pedagógicos, 192 asserções; 14 fluxos
+de cenas e dois fluxos do Estúdio real com Pinta; módulo Pygame-ce real e gerador
+Python de cenas aprovados. Typecheck aprovado; bundle inicial 368.465 bytes crus,
+119.712 gzip e as mesmas guardas (31 asserções). Não houve aumento de orçamento
+da lista ou do motor sem cenário. O teto absoluto do motor completo permaneceu
+437.900/426.000; o fragmento de mapas foi ampliado pela frente produtora para
+15.500, com medição de 15.138 e consultas/recursos adicionais, sem entrar no
+caminho de jogos sem cena. A CI do novo snapshot e demais aceites continuam
+necessários; não se declara homologação de mundos grandes a partir desses casos.

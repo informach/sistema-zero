@@ -62,6 +62,46 @@ export const MAP_TWO_D_METHODS: readonly SceneMethod[] = [
     tooltip: 'Encontra o objeto pelo nome. Retorna vazio se ele não existe.',
   },
   {
+    method: 'mapObjectById',
+    block: 'map_object_by_id',
+    family: 'more',
+    value: true,
+    message: 'objeto do cenário %1 com referência %2',
+    args: [map, text('ID', '')],
+    tooltip:
+      'Encontra o objeto indicado por uma propriedade de referência. Também encontra objetos dentro de conjuntos.',
+  },
+  {
+    method: 'mapResourceImage',
+    block: 'map_resource_image',
+    family: 'more',
+    value: true,
+    message: 'imagem do recurso %2 do cenário %1',
+    args: [map, text('ID', '')],
+    tooltip:
+      'Use a referência de arte de uma propriedade do Pinta. Devolve a imagem deste cenário, inclusive uma cópia guardada, para carregar ou desenhar no jogo.',
+  },
+  {
+    method: 'mapLayerProperty',
+    block: 'map_layer_property',
+    family: 'more',
+    value: true,
+    message: 'propriedade %3 da camada %2 do cenário %1',
+    args: [map, text('LAYER', ''), text('KEY', 'vida')],
+    tooltip:
+      'Lê uma propriedade da camada pela referência dela. Conserva números, sim/não e referências.',
+  },
+  {
+    method: 'mapTileProperty',
+    block: 'map_tile_property',
+    family: 'more',
+    value: true,
+    message: 'propriedade %4 da peça %3 do conjunto de peças %2 do cenário %1',
+    args: [map, text('TILESET', ''), { name: 'TILE', value: 0 }, text('KEY', 'vida')],
+    tooltip:
+      'Lê uma propriedade da peça pela referência do conjunto. A primeira peça tem número zero.',
+  },
+  {
     method: 'mapObjectProperty',
     block: 'map_object_property',
     family: 'more',

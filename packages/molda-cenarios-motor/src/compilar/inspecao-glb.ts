@@ -62,6 +62,14 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
               throw Error('O MIME da imagem do GLB é incompatível.')
             return { largura: r.width, altura: r.height }
           })()
+    if (
+      medidas.largura > 4096 ||
+      medidas.altura > 4096 ||
+      medidas.largura * medidas.altura > 8_388_608
+    )
+      throw Error(
+        'Uma imagem do GLB excede o limite portátil de pixels; redimensione a fonte antes de exportar.',
+      )
     bytesDePixels += medidas.largura * medidas.altura * 4
     if (bytesDePixels > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
       throw Error('As imagens do GLB excedem o orçamento de memória da compilação.')
@@ -73,12 +81,26 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
   for (const a of d.accessors) bytesNumericos += a.values.byteLength
   const estatisticas = d.meshes.map((m) => {
     let partes = 0,
-      tris = 0
+      tris = 0,
+      bytesGeometria = 0
     for (const p of m.primitives) {
+      if (
+        p.targets.some((t) =>
+          [...t.keys()].some((canal) => !['POSITION', 'NORMAL'].includes(canal)),
+        )
+      )
+        throw Error(
+          'Um canal de morph não pode ser preservado pelo leitor/exportador glTF instalado.',
+        )
       if (p.topology.kind !== 'triangles') throw Error('A compilação exige malhas de triângulos.')
       const indice = p.attributes.get('POSITION')
       if (indice === undefined) throw Error('Uma malha não possui posições.')
       const vertices = d.accessors[indice]!.count
+      bytesGeometria += p.topology.indices.length * 4
+      for (const a of p.attributes.values()) bytesGeometria += d.accessors[a]!.values.length * 4
+      for (const alvo of p.targets)
+        for (const a of alvo.values()) bytesGeometria += d.accessors[a]!.values.length * 4
+      if (!p.attributes.has('NORMAL')) bytesGeometria += vertices * 12
       verticesMaximos = Math.max(verticesMaximos, vertices)
       if (!opcoes.fonte && vertices > LIMITES_DA_EXPORTACAO.malha.verticesPorParte)
         throw Error(
@@ -90,14 +112,18 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
       tris += p.topology.indices.length / 3
       bytesNumericos += p.topology.indices.byteLength
     }
-    return { partes, tris }
+    return { partes, tris, bytesGeometria }
   })
   if (bytesNumericos > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
     throw Error('Os dados numéricos do GLB excedem o orçamento de memória.')
   const raizes = d.graph.scenes.length
     ? d.graph.scenes[d.graph.defaultScene ?? 0]!.roots
     : d.graph.roots
-  const selecionados = [...raizes]
+  const selecionados = [...raizes],
+    partesNomeadas: { nome: string; triangulos: number; primitivas: number }[] = []
+  // Reserva conservadora para as representações estáticas/poses e buffers de
+  // transformação que o motor materializa por nó, mesmo com accessors compartilhados.
+  let bytesDeMaterializacao = bytesNumericos
   for (let cursor = 0; cursor < selecionados.length; cursor++) {
     const no = d.graph.nodes[selecionados[cursor]!]!
     selecionados.push(...no.children)
@@ -105,9 +131,14 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
       const e = estatisticas[no.mesh]!
       malhas += e.partes
       triangulos += e.tris
+      bytesDeMaterializacao += e.bytesGeometria * 2
+      if (no.name !== null)
+        partesNomeadas.push({ nome: no.name, triangulos: e.tris, primitivas: e.partes })
     }
     if (malhas > LIMITES_DA_EXPORTACAO.malha.partes || triangulos > 16_000_000)
       throw Error('As instâncias do GLB excedem o orçamento de malhas ou triângulos.')
+    if (bytesDeMaterializacao > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
+      throw Error('A materialização dos nós do GLB excede o orçamento de memória.')
   }
   if (!malhas) throw Error('O GLB não possui malhas na cena selecionada.')
   return {
@@ -115,7 +146,9 @@ export function inspecionarGlbDaCompilacao(bytes: Uint8Array, opcoes: { fonte?: 
     triangulos,
     verticesMaximos,
     bytesNumericos,
+    bytesDeMaterializacao,
     bytesDePixels,
+    partesNomeadas,
     animavel:
       d.animations.length > 0 ||
       d.skins.length > 0 ||

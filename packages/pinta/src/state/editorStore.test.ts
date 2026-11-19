@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'bun:test'
+import { withinLessonMapLimits } from '../core/lessonLimits'
 import {
   createPixelBackgroundAsset,
   createTilemapAsset,
   createTilesetAsset,
   type PintaAsset,
 } from '../core/project'
+import { addLayer } from '../tiles/tilemapOps'
 import { assetBytes, createEditorStore as createEditorStoreBase } from './editorStore'
 
 const waitForAutosave = () => Bun.sleep(60)
@@ -26,6 +28,32 @@ function edited(asset: PintaAsset): PintaAsset {
 }
 
 describe('editorStore — commit/undo/redo', () => {
+  it('o orçamento da aula recusa a transação inteira antes de histórico e autosave', async () => {
+    let map = createTilemapAsset({ name: 'aula', tilesetId: 't', cols: 128, rows: 128 })
+    for (let i = 1; i < 8; i++) map = addLayer(map, `Camada ${i}`)
+    let writes = 0
+    const store = createEditorStore({
+      asset: map,
+      acceptEdit: withinLessonMapLimits,
+      persist: async () => {
+        writes++
+      },
+    })
+    store.getState().commit(addLayer(map, 'Não cabe'))
+    store.getState().replace({ ...map, cols: 129 })
+    store
+      .getState()
+      .commitLinked({ ...map, name: 'mudou' }, { before: [], after: [addLayer(map, 'Não cabe')] })
+    expect(store.getState().asset).toBe(map)
+    expect(store.getState().canUndo).toBe(false)
+    expect(store.getState().dirty).toBe(false)
+    expect(store.getState().linkedAssets).toBeNull()
+    await waitForAutosave()
+    expect(writes).toBe(0)
+    store.getState().commit({ ...map, name: 'Cabe na aula' })
+    await waitForAutosave()
+    expect(writes).toBe(1)
+  })
   it('commit grava história e bumpa updatedAt', () => {
     const asset = makeAsset()
     const store = createEditorStore({ asset, persist: async () => {} })

@@ -38,3 +38,24 @@ v5 completo; não migrar de volta para v4, apagar a edição ou esperar arbitrar
 Repetir o mesmo fluxo Linux desktop/toque sem esperar autosave, comprovar campos
 e camadas no backup e no armazenamento reaberto, então repetir o contrato do
 Estúdio. Não declarar integração completa enquanto o caso continuar vermelho.
+
+
+## Esclarecimento após inspeção e integração de 2ab6ff947
+
+A frente produtora já publicou a espera pela galeria visível antes do reload.
+EditorScreen.onBack coloca o botão em closing/aria-busy, aguarda flush() e só
+então fecha o editor. Portanto o clique do Playwright não significava que a
+operação assíncrona de Voltar havia concluído. O teste antigo podia recarregar
+ainda durante o flush. A hipótese de perda depois de Voltar CONFIRMADO não é
+sustentada por esse trace; o teste não esperava essa confirmação de UI.
+
+Foi integrado o teste remoto que observa Criar novo (galeria), sem esperas fixas,
+sem esperar um autosave e sem remover as verificações de versão/camadas. Os 14
+fluxos de cenas passaram localmente (53,6 s), incluindo a Vila em desktop/toque,
+recursos versionados, reabertura e 32 camadas. Dois fluxos do Estúdio real
+consumindo Pinta também passaram (48,6 s). Falta revisar a nova CI. Não editaram-se
+os fontes da frente produtora nesta sessão.
+
+Recarregar DURANTE uma gravação interrompida é um caso diferente, ainda depende
+das provas específicas de recuperação. A correção da sincronização do teste não
+aprova esse caso nem apaga a evidência histórica de formato 4 no teste antigo.

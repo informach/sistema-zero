@@ -1,5 +1,9 @@
 import { expect, test } from 'bun:test'
-import { pintaContentFingerprint, studioContentFingerprint } from '@sistemazero/core/creations'
+import {
+  pintaContentFingerprint,
+  pintaWriteFormatVersion,
+  studioContentFingerprint,
+} from '@sistemazero/core/creations'
 import { createAsset, type PintaAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { EditableStudioProject, Project } from '@sistemazero/studio'
 import { createEmptyProject } from '@sistemazero/studio/project'
@@ -44,8 +48,55 @@ test('rascunho Pinta com frações usa documento 5 e capacidade de nuvem 4', asy
     persistAssets: async () => {},
   }
   const result = await pintaDraftProducer({ store })()
-  expect(result.formatVersion).toBe(4)
+  expect(result.formatVersion).toBe(pintaWriteFormatVersion('tilemap'))
+  expect(result.formatVersion).toBeGreaterThanOrEqual(4)
   expect(result.document).toMatchObject({ schema: 5, layers: [{ offsetX: 0.25 }] })
+})
+
+test('rascunho nativo 6 nunca declara a capacidade antiga de nuvem', async () => {
+  const asset = createAsset({
+    kind: 'tilemap',
+    name: 'animado',
+    tilesetId: 'pecas',
+    cols: 2,
+    rows: 2,
+  })
+  if (asset.kind !== 'tilemap') throw new Error('Mapa esperado')
+  asset.layers.push({
+    id: 'objects',
+    kind: 'objects',
+    name: 'Objetos',
+    visible: true,
+    objects: [
+      {
+        id: 'tree',
+        name: 'Árvore',
+        type: '',
+        x: 0,
+        y: 0,
+        width: 16,
+        height: 16,
+        properties: {},
+        art: { assetId: 'sprite', animationId: 'vento' },
+      },
+    ],
+  })
+  const producer = pintaDraftProducer({
+    store: {
+      listAllAssets: async () => [asset],
+      loadAssetById: async () => asset,
+      deleteAsset: async () => {},
+      persistAsset: async () => {},
+      persistAssets: async () => {},
+    },
+  })
+  if (pintaWriteFormatVersion('tilemap') < 5)
+    await expect(producer()).rejects.toBeInstanceOf(LessonDraftOutdatedError)
+  else {
+    const result = await producer()
+    expect(result.formatVersion).toBeGreaterThanOrEqual(5)
+    expect(result.document).toMatchObject({ schema: 6 })
+  }
 })
 
 test.each([

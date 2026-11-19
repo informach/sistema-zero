@@ -82,6 +82,7 @@ import {
   transformacaoDaMatriz,
 } from './matematica'
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
+import { criarPlanoDoCenario } from './plano'
 import { PontosDeAutoria } from './pontos-de-autoria'
 import { prepararPreviaDosApoios } from './previa-dos-apoios'
 import { limitesDaBase, recorteDaCamera } from './recorte-da-camera'
@@ -112,7 +113,6 @@ import type {
 } from './tipos'
 
 const COR_DA_SELECAO = 0x2f7df6
-const COR_DO_CHAO = 0xa4d48c
 const COR_DE_FORA = 0x8fc27a
 const CAIXA_DO_FANTASMA = new Box3(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 1, 0.5))
 const TOQUE_MAXIMO_PX = 5
@@ -1482,18 +1482,7 @@ class PalcoThree implements Palco {
     fora.receiveShadow = true
     this.fundoDecorativo = fora
 
-    const lote = new Mesh(
-      new PlaneGeometry(largura, comprimento),
-      new MeshStandardMaterial({
-        color: COR_DO_CHAO,
-        roughness: 1,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1,
-      }),
-    )
-    lote.rotation.x = -Math.PI / 2
-    lote.receiveShadow = true
+    const lote = criarPlanoDoCenario(largura, comprimento)
     this.planoFisico = lote
 
     this.chao.add(fora, lote)

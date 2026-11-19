@@ -18,6 +18,8 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 - Atores, skins, morphs e modelos com clipes seguem `normalizarRaizAnimavel`, nunca a geometria da pose inicial. Clonar o esqueleto, dividir por material e manter binds/clipes; isso já foi provado com fixture acima de 65.000 vértices e Cute real. Ainda integrar aparência/reflexo e projeção portátil de UV de atores, sem perder canais ou expressão.
 - Para UV de ator, usar a pose inicial apenas como referencial de projeção: a geometria exportada continua com posições-base, juntas, pesos e morphs. Preservar triângulos inclusive se uma pose temporariamente os colapsar. O remapeamento precisa distribuir canais de morph às partes e conservar a hierarquia dos ossos.
 
+**Recortes conferidos:** [objetos/metadados](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-objetos-metadados.md) e [acabamento de atores](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-acabamento-atores.md) implementam os itens acima. A integração final permanece pendente; o estado de 8.2 não muda para concluído.
+
 ## Terreno, caminhos e colisões
 
 - Extrair todas as superfícies dos geradores próprios da execução, sem câmera/LOD. O piso de reserva do terreno pode conter várias peças em um mesh: separar por setores a partir dos triângulos existentes antes de assar texturas. Não regerar terreno por um segundo algoritmo.
@@ -40,3 +42,28 @@ Complemento executável do [plano do lote 8](2026-11-18-cenarios-lote8-exportaca
 - API de progresso/cancelamento não altera autoria. Entre partes de trabalho, permitir que o navegador processe cancelamento; não prometer interrupção no meio de uma operação síncrona indivisível.
 - Ensaiar terreno com relevo/buracos/recortes/pintura, encontros, piso conformado, ponte/apoios, lago de catálogo, água procedural, conjunto e atores/reflexos. Reabrir o pacote sem o palco autoral. Comparar superfícies, física e metadados e fazer três ciclos de compilação/cancelamento/descarte.
 - Só fechar 8.2 depois da integração e dessas provas; seguir então para 8.3. O subpath público `motor/compilar` ainda não existe porque o compilador completo não está entregue. Não antecipar lotes 9–10 ou implantação.
+
+**Conferência já implementada e testada em recorte:** [conteúdo/alturas](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-conteudo-alturas.md). A montagem final ainda precisa chamar essa conferência; não tratar a existência do leitor como entrega do pacote completo.
+
+**Superfícies de solo já conferidas em recorte:** [setores, pintura portátil e encontros](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-solo-caminhos.md). Partição do piso/detalhes e solução portátil dos decals foram comparadas com o palco e o GLB reaberto; água e montagem continuam pendentes.
+
+**Água em recorte:** [acabamento e leitura exata na GPU](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-agua-portatil.md). A comparação encontrou/corrigiu um erro de endereçamento do shader existente. Gradiente, alpha e espuma estáticos passaram no GLB reaberto; oceano, restauração dos efeitos e integração final continuam pendentes.
+
+## Atualização — compilador integrado
+
+[Primeiro pacote integrado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-integracao.md): `compilarCenario` e o subpath público `motor/compilar` existem, e o oceano está integrado. Piso próprio e terreno/catálogo passaram em três ciclos completos/cancelados, reabertura independente, consultas físicas, mesmas câmeras e validação Khronos. Foram corrigidos o recorte de piso com rotação no nó e a recompressão WebP. As afirmações acima sobre montagem/subpath inexistentes descrevem o ponto inicial deste plano.
+
+8.2 permanece ativo até a junção estática com identidade e as provas restantes. Não iniciar outro lote ou implantação. A restauração das ondas e os consumidores pertencem à sequência planejada do próprio lote 8.
+
+## Próximo recorte — junção estática sem perder entidades
+
+1. Consumir o pacote compilado, sem consultar o Palco. Manter colisões, entidades/âncoras, marcadores, terreno/água e licenças. Atores identificados pelo perfil precisam de sinal explícito no nó portátil; animações/skins/morphs e lâminas com efeito não entram na junção.
+2. Juntar instâncias compatíveis por região, material carregado e layout de atributos, usando as transformações já compiladas e os utilitários existentes de geometria. Não criar outro assentamento. Conservar materiais distintos/transparência; não prometer redução de materiais diferentes nem atlas automático.
+3. Registrar faixas de triângulos por malha e entidade no manifesto. Âncoras isoladas não bastam para picking/interação depois de uma junção. O conferidor deve verificar referência, intervalos, ausência de sobreposição e correspondência com as malhas reais do GLB. Chão sem entidade usa faixa nula; atores continuam nós próprios.
+4. Usar marca transitória de origem na geometria somente durante remapeamento/divisão em até 65.000 vértices; removê-la do GLB final. Reutilizar o divisor e a transformação estática. Limitar memória/trabalho antes de concatenar.
+5. Emitir somente os arquivos ainda referenciados. Não alterar entrada nem produzir pacote parcial em cancelamento/erro. A junção fica opcional: a escolha por região/material não elimina excedentes de bytes/texturas de um destino.
+6. Provar redução efetiva de malhas em instâncias repetidas, matrizes/reflexos/UVs e mesma imagem/física; picking por triângulo conserva cada ID; atores e água continuam independentes. Testar limites, referências hostis, cancelamento e descarte, incluindo reabertura e Khronos. Só então fechar os itens restantes de 8.2.
+
+## Fechamento local de 8.2
+
+[Compilador e junção revisados](../../plans/2026-11-16-cenarios-reforma/revisao-lote8-2-compilador.md). Os seis itens acima foram implementados e verificados. Quatro combinações completas, identidade por faixa, apoios físicos, limites de decoder e acabamento facetado conferidos. **8.2 fechado; lote 8 aberto, próximo 8.3.** As pendências de montagem/subpath/junção registradas nas seções anteriores são o histórico das decisões, não o estado atual. Sem antecipar lotes 9–10 ou implantação.

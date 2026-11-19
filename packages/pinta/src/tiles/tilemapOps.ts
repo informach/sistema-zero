@@ -15,6 +15,7 @@ import {
   isObjectLayer,
   isTileLayer,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
   type TilemapAsset,
   type TilemapLayer,
   type TilemapObjectLayer,
@@ -123,6 +124,8 @@ export function growTilemap(
   if (!horizontal && tilemap.rows >= PINTA_LIMITS.maxTilemapRows) return tilemap
   const cols = tilemap.cols + (horizontal ? 1 : 0)
   const rows = tilemap.rows + (horizontal ? 0 : 1)
+  if (cols * rows * tilemap.layers.filter(isTileLayer).length > PINTA_MAP_FORMAT_LIMITS.maxCells)
+    return tilemap
   const dCol = side === 'left' ? 1 : 0
   const dRow = side === 'top' ? 1 : 0
   const layers = tilemap.layers.map((layer): TilemapLayer => {
@@ -198,6 +201,11 @@ export function addLayer(
   tilesetId?: string,
 ): TilemapAsset {
   if (tilemap.layers.length >= PINTA_LIMITS.maxTilemapLayers) return tilemap
+  if (
+    tilemap.cols * tilemap.rows * (tilemap.layers.filter(isTileLayer).length + 1) >
+    PINTA_MAP_FORMAT_LIMITS.maxCells
+  )
+    return tilemap
   const layer: TilemapTileLayer = {
     id: newId(),
     name: name.trim().slice(0, 30) || `${COPY.tiles.layerNamePrefix} ${tilemap.layers.length + 1}`,

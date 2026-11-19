@@ -4,7 +4,12 @@ import { resolve } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, 'output/cenarios-reforma/lote8-ator-real'),
+  espelhar = process.env.CENARIOS_QA_ATOR_REFLEXO === '1',
+  acabamento = process.env.CENARIOS_QA_ATOR_TEXTURA === '1',
+  saida = resolve(
+    raiz,
+    `output/cenarios-reforma/lote8-ator-real${espelhar ? '-espelho' : ''}${acabamento ? '-textura' : ''}`,
+  ),
   modulo = (p) => `/@fs/${resolve(raiz, p).replaceAll('\\', '/')}`
 mkdirSync(saida, { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome', headless: true }),
@@ -22,10 +27,31 @@ try {
         { gravarGlbCompilado } = await import(urls.glb),
         { lerGlb } = await import(urls.modelos),
         { inspecionarGlbDaCompilacao } = await import(urls.inspecao),
+        { matrizDoEspelho } = await import(urls.representacoes),
         bytesFonte = new Uint8Array(await (await fetch(urls.fonte)).arrayBuffer())
       inspecionarGlbDaCompilacao(bytesFonte, { fonte: true })
       const original = await lerGlb(bytesFonte.buffer),
-        normal = normalizarRaizAnimavel(original.raiz, original.animacoes),
+        espelho = { x: urls.espelhar, y: false, z: false },
+        reflexo = matrizDoEspelho(original.caixa, espelho),
+        canvas = document.createElement('canvas')
+      canvas.width = 2
+      canvas.height = 2
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = '#ffe080'
+      ctx.fillRect(0, 0, 2, 2)
+      ctx.fillStyle = '#2060a0'
+      ctx.fillRect(0, 0, 1, 1)
+      const textura = new T.CanvasTexture(canvas),
+        normal = normalizarRaizAnimavel(original.raiz, original.animacoes, {
+          caixa: original.caixa,
+          espelho,
+          ...(urls.acabamento
+            ? {
+                cor: '#ffd0a0',
+                textura: { mapa: textura, escala: new T.Vector3(2, 1, 3), repeticaoMetros: 0.5 },
+              }
+            : {}),
+        }),
         sinal = new AbortController().signal,
         arquivos = new ArquivosDaCompilacao(sinal)
       let compilado
@@ -76,11 +102,15 @@ try {
                 if (n !== nd)
                   throw Error('O número de cantos desenhados de uma peça do avatar mudou.')
                 for (const canto of [0, Math.floor(n / 6) * 3, n - 1]) {
-                  const i = fonte.geometry.index ? fonte.geometry.index.getX(canto) : canto,
-                    j = destino.geometry.index ? destino.geometry.index.getX(canto) : canto,
+                  const reverso = urls.espelhar
+                      ? Math.floor(canto / 3) * 3 + (canto % 3 === 0 ? 0 : 3 - (canto % 3))
+                      : canto,
+                    i = fonte.geometry.index ? fonte.geometry.index.getX(canto) : canto,
+                    j = destino.geometry.index ? destino.geometry.index.getX(reverso) : reverso,
                     esperado = fonte
                       .getVertexPosition(i, new T.Vector3())
-                      .applyMatrix4(fonte.matrixWorld),
+                      .applyMatrix4(fonte.matrixWorld)
+                      .applyMatrix4(reflexo),
                     obtido = destino
                       .getVertexPosition(j, new T.Vector3())
                       .applyMatrix4(destino.matrixWorld)
@@ -101,6 +131,8 @@ try {
           blocos.push(String.fromCharCode(...bytes.subarray(i, i + 16384)))
         return {
           ref,
+          espelho,
+          acabamento: urls.acabamento,
           alturaOriginal: original.caixa.getSize(new T.Vector3()).y,
           alturaCompilada: compilado.caixa.getSize(new T.Vector3()).y,
           pecasOriginais: fontes.length,
@@ -114,6 +146,7 @@ try {
         normal.descartar()
         arquivos.descartar()
         original.descartar()
+        textura.dispose()
       }
     },
     {
@@ -123,6 +156,9 @@ try {
       glb: modulo('packages/molda-cenarios-motor/src/compilar/arquivos-glb.ts'),
       modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),
       inspecao: modulo('packages/molda-cenarios-motor/src/compilar/inspecao-glb.ts'),
+      representacoes: modulo('packages/molda-cenarios-motor/src/representacoes.ts'),
+      espelhar,
+      acabamento,
       fonte: modulo('output/cenarios-reforma/lote3-testar-avatar/avatar-cute-ensaio.glb'),
     },
   )

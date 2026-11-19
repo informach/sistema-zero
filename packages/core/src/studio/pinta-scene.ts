@@ -52,7 +52,11 @@ export const PintaSceneObjectSchema = z.strictObject({
   flipX: z.literal(true).optional(),
   flipY: z.literal(true).optional(),
   art: z
-    .strictObject({ assetId: id, tile: z.number().int().min(0).max(255).optional() })
+    .strictObject({
+      assetId: id,
+      tile: z.number().int().min(0).max(255).optional(),
+      animationId: id.optional(),
+    })
     .optional(),
   setId: id.optional(),
   role: z.enum(['start', 'danger', 'door', 'path', 'trigger', 'enemy', 'region']).optional(),
@@ -124,9 +128,33 @@ const piece = {
   rows: z.number().int().min(1).max(256),
   layers: z.array(PintaSceneLayerSchema).max(32),
 }
+export const PintaSceneSpriteSchema = z.strictObject({
+  frameWidth: z.number().int().min(1).max(512),
+  frameHeight: z.number().int().min(1).max(512),
+  columns: z.number().int().min(1).max(64),
+  animations: z
+    .array(
+      z.strictObject({
+        id,
+        name: z.string().max(48),
+        loop: z.boolean(),
+        frames: z
+          .array(
+            z.strictObject({
+              tile: z.number().int().min(0).max(4095),
+              duration: finite.positive().max(60000),
+            }),
+          )
+          .min(1)
+          .max(64),
+      }),
+    )
+    .min(1)
+    .max(64),
+})
 export const PintaSceneSchema = z
   .strictObject({
-    version: z.literal(1),
+    version: z.union([z.literal(1), z.literal(2)]),
     id,
     name: z.string().max(48),
     tileSize: z.number().int().min(1).max(128),
@@ -142,12 +170,52 @@ export const PintaSceneSchema = z
           image: z.string().min(1).max(800000),
           width: z.number().positive(),
           height: z.number().positive(),
+          sprite: PintaSceneSpriteSchema.optional(),
         }),
       )
       .max(128)
       .optional(),
+    resources: z
+      .array(z.strictObject({ id, sourceId: id, capturedAt: z.number().int().nonnegative() }))
+      .max(32)
+      .optional(),
   })
   .superRefine((s, ctx) => {
+    const allLayers = [s.layers, ...(s.sets ?? []).map((v) => v.layers)].flat()
+    if (
+      s.version === 1 &&
+      (s.resources?.length ||
+        s.art?.some((a) => a.sprite) ||
+        allLayers.some((l) => l.kind === 'objects' && l.objects.some((o) => o.art?.animationId)))
+    )
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Animações de objetos e versões de recursos exigem cena 2.',
+      })
+    for (const a of s.art ?? []) {
+      if (!a.sprite) continue
+      const sprite = a.sprite
+      const animationIds = sprite.animations.map((v) => v.id)
+      if (
+        new Set(animationIds).size !== animationIds.length ||
+        a.width % sprite.frameWidth ||
+        a.height % sprite.frameHeight ||
+        a.width !== sprite.columns * sprite.frameWidth ||
+        sprite.animations.some((v) =>
+          v.frames.some((f) => f.tile >= (sprite.columns * a.height) / sprite.frameHeight),
+        )
+      )
+        ctx.addIssue({ code: 'custom', message: 'A folha de animação do objeto é inválida.' })
+    }
+    if (
+      s.resources &&
+      (new Set(s.resources.map((r) => r.id)).size !== s.resources.length ||
+        s.resources.some(
+          (r) =>
+            r.id === r.sourceId || ![...s.tilesets, ...(s.art ?? [])].some((a) => a.id === r.id),
+        ))
+    )
+      ctx.addIssue({ code: 'custom', message: 'Versões de recursos inválidas.' })
     const sets = new Set(s.tilesets.map((t) => t.id))
     const unique = (values: string[]) => new Set(values).size === values.length
     if (
@@ -192,6 +260,15 @@ export const PintaSceneSchema = z
           if (!unique(l.objects.map((o) => o.id)))
             ctx.addIssue({ code: 'custom', message: 'Objetos duplicados.' })
           for (const o of l.objects) {
+            if (
+              o.art?.animationId &&
+              !(s.art ?? []).some(
+                (a) =>
+                  a.id === o.art!.assetId &&
+                  a.sprite?.animations.some((v) => v.id === o.art!.animationId),
+              )
+            )
+              ctx.addIssue({ code: 'custom', message: 'A animação do objeto não foi encontrada.' })
             if (
               (o.setId && !(s.sets ?? []).some((v) => v.id === o.setId)) ||
               (o.art &&

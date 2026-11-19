@@ -3,8 +3,10 @@ import {
   type PintaSceneLayer,
   type PintaSceneObject,
   PintaSceneSchema,
+  PintaSceneSpriteSchema,
 } from '@sistemazero/core/studio/pinta-scene'
 import { Gunzip, Unzlib } from 'fflate'
+import { pintaValuesEqual } from '../../core/assetEquality'
 import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS } from '../../core/projectConfig'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, makeCell } from '../../tiles/cell'
 import { TiledImportError } from './errors'
@@ -339,7 +341,7 @@ export async function importTiledScene(
     refuse(`O mapa usa folhas de peças demais. O Pinta aceita até ${LIMITS.tilesets}.`)
   const art: NonNullable<PintaScene['art']> = [],
     tilesets: RecordValue[] = [],
-    gids: { first: number; id: string; count: number; art?: string }[] = []
+    gids: { first: number; id: string; count: number; art?: string; animationId?: string }[] = []
   for (const [i, raw] of array(map.tilesets).entries()) {
     let ts = rec(raw)
     const first = number(ts.firstgid)
@@ -367,15 +369,33 @@ export async function importTiledScene(
       columns = number(ts.columns)
     if (properties['pinta:art']) {
       const artId = string(properties['pinta:art'])
-      if (art.length >= LIMITS.art)
+      const previous = art.find((a) => a.id === artId)
+      if (!previous && art.length >= LIMITS.art)
         refuse(`O mapa usa desenhos de objeto demais. O Pinta aceita até ${LIMITS.art}.`)
-      art.push({
+      const rawSprite = json(properties['pinta:sprite'])
+      const sprite = rawSprite == null ? undefined : PintaSceneSpriteSchema.safeParse(rawSprite)
+      if (sprite && !sprite.success) refuse(`A animação de ${label} tem metadados inválidos.`)
+      const validSprite = sprite?.success ? sprite.data : undefined
+      const candidate = {
         id: artId,
         image: await resolver.image(string(ts.image)),
-        width: number(ts.tilewidth),
-        height: number(ts.tileheight),
+        width: validSprite ? number(ts.imagewidth) : number(ts.tilewidth),
+        height: validSprite ? number(ts.imageheight) : number(ts.tileheight),
+        ...(validSprite ? { sprite: validSprite } : {}),
+      }
+      if (previous && !pintaValuesEqual(previous, candidate))
+        refuse(`Duas versões diferentes do desenho ${label} usam a mesma referência.`)
+      if (!previous) art.push(candidate)
+      const animationId = string(properties['pinta:animation']) || undefined
+      if (animationId && !validSprite?.animations.some((v) => v.id === animationId))
+        refuse(`A folha ${label} aponta para uma animação inexistente.`)
+      gids.push({
+        first,
+        id: artId,
+        count: validSprite ? count : 1,
+        art: artId,
+        ...(animationId ? { animationId } : {}),
       })
-      gids.push({ first, id: artId, count: 1, art: artId })
       continue
     }
     if (
@@ -721,6 +741,17 @@ export async function importTiledScene(
             )
           const tile = g ? (gid & GID_MASK) - g.first : 0,
             original = e.art && typeof e.art === 'object' ? rec(e.art) : null
+          const selectedAnimation = g?.animationId
+            ? art
+                .find((a) => a.id === g.id)
+                ?.sprite?.animations.find(
+                  (v) => v.id === g.animationId && v.frames[0]?.tile === tile,
+                )
+            : undefined
+          if (g?.art && !selectedAnimation && tile > 255)
+            refuse(
+              `O quadro escolhido em ${label} está além dos 256 quadros que um objeto estático do Pinta pode referenciar.`,
+            )
           const shape = o.ellipse
             ? 'ellipse'
             : o.polygon
@@ -760,10 +791,20 @@ export async function importTiledScene(
                 ? {
                     // O desenho original do Pinta volta igual quando ainda aponta para a mesma peça.
                     art:
-                      original?.assetId === g.id && number(original.tile) === tile
+                      original?.assetId === g.id &&
+                      (original.animationId
+                        ? original.animationId === selectedAnimation?.id
+                        : !selectedAnimation && number(original.tile) === tile)
                         ? original
                         : g.art
-                          ? { assetId: g.id }
+                          ? {
+                              assetId: g.id,
+                              ...(selectedAnimation
+                                ? { animationId: selectedAnimation.id }
+                                : tile
+                                  ? { tile }
+                                  : {}),
+                            }
                           : { assetId: g.id, tile },
                   }
                 : {}),
@@ -797,14 +838,18 @@ export async function importTiledScene(
     if (ts.tileProperties)
       for (const properties of Object.values(rec(ts.tileProperties))) remapReferences(properties)
   const p = props(map.properties, 'o mapa', warnings),
-    sets = json(p['pinta:sets'])
+    sets = json(p['pinta:sets']),
+    resources = json(p['pinta:resources'])
   const lost = Object.keys(p).filter((key) => !key.startsWith('pinta:'))
   if (lost.length)
     warnings.push(
       `As propriedades do mapa (${lost.join(', ')}) não foram trazidas: o Pinta guarda propriedades nas camadas, nas peças e nos objetos.`,
     )
+  const sceneVersion = p['pinta:sceneVersion']
   const candidate = {
-    version: 1,
+    version:
+      (sceneVersion && typeof sceneVersion === 'object' ? rec(sceneVersion).value : sceneVersion) ??
+      (resources || art.some((a) => a.sprite) ? 2 : 1),
     id: string(p['pinta:id'], 'tiled-map'),
     name: cut(string(p['pinta:name'], name), 'o mapa'),
     cols,
@@ -814,6 +859,7 @@ export async function importTiledScene(
     layers,
     ...(art.length ? { art } : {}),
     ...(sets ? { sets } : {}),
+    ...(resources ? { resources } : {}),
   }
   const parsed = PintaSceneSchema.safeParse(candidate)
   if (!parsed.success) {

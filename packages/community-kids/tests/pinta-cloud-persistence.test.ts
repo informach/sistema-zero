@@ -13,6 +13,7 @@ import {
   assetToJson,
   createAsset,
   PINTA_LIMITS,
+  PINTA_MAX_SCHEMA,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import type {
@@ -176,6 +177,59 @@ async function loadSettled(
 }
 
 describe('createCloudMirroredPintaPersistence', () => {
+  test('documento 6 fica recuperável no local e só sobe com a barreira de nuvem 5', async () => {
+    const asset = createAsset({
+      kind: 'tilemap',
+      name: 'versoes',
+      tilesetId: 'pecas',
+      cols: 2,
+      rows: 2,
+    })
+    if (asset.kind !== 'tilemap') throw new Error('Mapa esperado')
+    asset.layers.push({
+      kind: 'objects',
+      id: 'objetos',
+      name: 'Árvores',
+      visible: true,
+      objects: [
+        {
+          id: 'arvore',
+          name: 'arvore',
+          type: '',
+          x: 0,
+          y: 0,
+          width: 16,
+          height: 16,
+          properties: {},
+          shape: 'art',
+          art: { assetId: 'desenho', animationId: 'vento' },
+        },
+      ],
+    })
+    const local = fakeLocal(),
+      { cloud, uploads, lists } = fakeCloud(new Map()),
+      marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-versoes',
+      marks,
+    })
+    await mirrored.persistAsset(asset)
+    const job = uploads.get(asset.id)
+    expect(job).toBeDefined()
+    if (!job) throw new Error('Não enfileirou')
+    if (pintaWriteFormatVersion(asset.kind) < 5) {
+      await expect(job.produce()).rejects.toMatchObject({ code: 'CREATION_CLIENT_OUTDATED' })
+      expect(lists.count).toBe(0)
+    } else {
+      const prepared = await job.produce()
+      expect(prepared?.meta?.formatVersion).toBeGreaterThanOrEqual(5)
+      expect(assetFromJson(prepared?.json ?? '').asset).toMatchObject({ schema: 6 })
+    }
+    expect(local.rows.get(asset.id)).toEqual(asset)
+    expect(marks.get(asset.id)).toBeUndefined()
+  })
   test('gravar local enfileira a subida com o .pinta.json do desenho (id e nome preservados); a marca só avança no commit', async () => {
     const local = fakeLocal()
     const { cloud, uploads } = fakeCloud(new Map())
@@ -2303,7 +2357,13 @@ describe('registro local cortado por código mais antigo não sobe por cima da c
       schema: 4,
       revision: 2,
       writtenAt: 1000,
-      signature: { at: 1000, schema: 4, revision: 2, maxSchema: 5, writerId: expect.any(String) },
+      signature: {
+        at: 1000,
+        schema: 4,
+        revision: 2,
+        maxSchema: PINTA_MAX_SCHEMA,
+        writerId: expect.any(String),
+      },
     })
 
     local.rows.set(completo.id, cortado(completo, 2000))

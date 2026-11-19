@@ -1,0 +1,6 @@
+pygame-ce 2.5.8 (SDL 2.32.10, Python 3.13.17)
+Traceback (most recent call last):
+  File "C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\pinta\scripts\homologacao\test-resource-studio.py", line 37, in <module>
+    assert screen.get_at((int(24*scale),int(24*scale))) == color
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,41 @@
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 10 tests using 1 worker
+
+(node:28648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › e2e\phaser-scenes.flow.ts:14:1 › Phaser portátil anima a versão fixada e conserva o último quadro (613ms)
+  ✓   2 [desktop] › e2e\phaser-scenes.flow.ts:46:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (3.1s)
+
+  ✓   3 [desktop] › e2e\pinta-resources-scenes.flow.ts:26:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (6.6s)
+
+  ✓   4 [desktop] › e2e\pinta-scenes.flow.ts:40:1 › autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir (4.2s)
+  ✓   5 [desktop] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.6s)
+(node:32564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   6 [touch] › e2e\phaser-scenes.flow.ts:14:1 › Phaser portátil anima a versão fixada e conserva o último quadro (556ms)
+  ✓   7 [touch] › e2e\phaser-scenes.flow.ts:46:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (3.2s)
+
+  ✓   8 [touch] › e2e\pinta-resources-scenes.flow.ts:26:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (4.0s)
+
+  ✓   9 [touch] › e2e\pinta-scenes.flow.ts:40:1 › autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir (4.3s)
+  ✓  10 [touch] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.1s)
+
+  10 passed (40.3s)

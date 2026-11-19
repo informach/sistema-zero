@@ -21,9 +21,11 @@ import {
   tilemapNeedsV3,
   tilemapNeedsV4,
   tilemapNeedsV5,
+  tilemapNeedsV6,
   tilesetNeedsV4,
   withPintaSchemaStamp,
 } from '../core/project'
+import { PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
 
 const FORMAT = 'pinta-gallery'
 /** A versão que um arquivo SEM nada novo leva (e a única que versões antigas leem). */
@@ -43,12 +45,14 @@ const SCENE_VERSION = 3
 const COMPLETE_SCENE_VERSION = 4
 /** O leitor completo de 4 arredondava offsets; o envelope 5 recusa o arquivo inteiro nele. */
 const PRECISE_SCENE_VERSION = 5
+const RESOURCE_SCENE_VERSION = 6
 const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
   BASE_VERSION,
   OBJECTS_VERSION,
   SCENE_VERSION,
   COMPLETE_SCENE_VERSION,
   PRECISE_SCENE_VERSION,
+  RESOURCE_SCENE_VERSION,
 ])
 const UTF8 = new TextEncoder()
 
@@ -104,6 +108,14 @@ function encodeAsset(input: PintaAsset): EncodedAsset {
     case 'tilemap':
       return {
         ...asset,
+        ...(asset.resources
+          ? {
+              resources: asset.resources.map((version) => ({
+                ...version,
+                asset: encodeAsset(version.asset),
+              })),
+            }
+          : {}),
         // Camada de objetos já é JSON puro; só as células viram array.
         layers: asset.layers.map((l) => (isTileLayer(l) ? tileLayerToWire(l, asset) : { ...l })),
       }
@@ -309,6 +321,14 @@ function decodeAsset(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object') return raw
   const a = raw as Record<string, unknown>
   switch (a.kind) {
+    case 'map-set':
+      return {
+        ...a,
+        map:
+          a.map && typeof a.map === 'object' && 'kind' in a.map && a.map.kind === 'tilemap'
+            ? decodeAsset(a.map)
+            : a.map,
+      }
     case 'pixel-sprite': {
       if (!Array.isArray(a.animations)) return a
       return {
@@ -333,6 +353,26 @@ function decodeAsset(raw: unknown): unknown {
       if (!Array.isArray(a.layers)) return a
       return {
         ...a,
+        ...(Array.isArray(a.resources) && a.resources.length <= PINTA_RESOURCE_LIMITS.maxVersions
+          ? {
+              resources: a.resources.map((entry) => {
+                if (!entry || typeof entry !== 'object') return entry
+                const version = entry as Record<string, unknown>
+                const resource = version.asset
+                return {
+                  ...version,
+                  asset:
+                    resource &&
+                    typeof resource === 'object' &&
+                    'kind' in resource &&
+                    resource.kind !== 'tilemap' &&
+                    resource.kind !== 'map-set'
+                      ? decodeAsset(resource)
+                      : resource,
+                }
+              }),
+            }
+          : {}),
         layers: a.layers.map((layer) => {
           if (!layer || typeof layer !== 'object') return layer
           const l = layer as Record<string, unknown>
@@ -388,6 +428,14 @@ export function assetNeedsV5(asset: PintaAsset): boolean {
  * o arquivo inteiro com recado, em vez de importar os mapas cortados.
  */
 export function envelopeVersionFor(assets: readonly PintaAsset[]): number {
+  if (
+    assets.some((asset) =>
+      asset.kind === 'tilemap'
+        ? tilemapNeedsV6(asset)
+        : asset.kind === 'map-set' && tilemapNeedsV6(asset.map),
+    )
+  )
+    return RESOURCE_SCENE_VERSION
   if (assets.some(assetNeedsV5)) return PRECISE_SCENE_VERSION
   if (assets.some(assetNeedsV4)) return COMPLETE_SCENE_VERSION
   if (assets.some(assetNeedsV3)) return SCENE_VERSION

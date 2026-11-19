@@ -123,6 +123,29 @@ export const NoCompiladoSchema = z
     arquivo: CaminhoCompiladoSchema,
     matriz: MatrizCompiladaSchema,
     volume: VolumeCompiladoSchema,
+    /** O runtime pode restaurar o material dinâmico pelos parâmetros da entidade. */
+    efeito: z.literal('agua').optional(),
+    /** Atores declarados pelo perfil podem não ter clipes, mas conservam sua raiz. */
+    preservarHierarquia: z.literal(true).optional(),
+    /** Relação de picking após junção. Nomes são os nós de malha explícitos do GLB. */
+    faixas: z
+      .array(
+        z
+          .object({
+            malha: z
+              .string()
+              .min(1)
+              .max(80)
+              .regex(/^[A-Za-z0-9_-]+$/),
+            entidade: IdentificadorDeCenarioSchema.nullable(),
+            primeiroTriangulo: z.number().int().nonnegative().max(16_000_000),
+            triangulos: z.number().int().positive().max(16_000_000),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(32768)
+      .optional(),
   })
   .strict()
 export const ColisaoCompiladaSchema = z

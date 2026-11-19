@@ -1,0 +1,31 @@
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 4 tests using 1 worker
+
+(node:9824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › e2e\phaser-scenes.flow.ts:18:1 › Phaser portátil anima a versão fixada e conserva o último quadro (631ms)
+  ✓  2 [desktop] › e2e\phaser-scenes.flow.ts:96:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (1.2s)
+(node:29216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [touch] › e2e\phaser-scenes.flow.ts:18:1 › Phaser portátil anima a versão fixada e conserva o último quadro (675ms)
+  ✓  4 [touch] › e2e\phaser-scenes.flow.ts:96:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (3.1s)
+
+  4 passed (10.6s)

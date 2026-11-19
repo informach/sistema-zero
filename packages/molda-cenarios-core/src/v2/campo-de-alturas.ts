@@ -1,3 +1,4 @@
+import { interpolarAlturasDaCelula } from './interpolacao-de-alturas'
 import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
@@ -179,7 +180,13 @@ export function regiaoDoRetangulo(
 }
 
 /** Mesma interpolação triangular de `criarFonteDeAlturas` e da malha desenhada. */
-export function alturaDoCampo(campo: CampoDeAlturas, x: number, z: number): number {
+export function alturaDoCampo(
+  campo: Pick<CampoDeAlturas, 'origem' | 'passo' | 'colunas' | 'linhas'> & {
+    alturas: ArrayLike<number>
+  },
+  x: number,
+  z: number,
+): number {
   const gx = Math.min(campo.colunas, Math.max(0, (x - campo.origem.x) / campo.passo)),
     gz = Math.min(campo.linhas, Math.max(0, (z - campo.origem.z) / campo.passo))
   if (!Number.isFinite(gx) || !Number.isFinite(gz)) return invalidar('O ponto é inválido')
@@ -193,7 +200,7 @@ export function alturaDoCampo(campo: CampoDeAlturas, x: number, z: number): numb
     b = campo.alturas[i + 1]!,
     c = campo.alturas[i + largura]!,
     d = campo.alturas[i + largura + 1]!
-  return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v)
+  return interpolarAlturasDaCelula(a, b, c, d, u, v)
 }
 
 /** Declive numa amostra, em metros de subida por metro andado (1 = 45°). */

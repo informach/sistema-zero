@@ -55,11 +55,55 @@ func _ready() -> void:
 func _texture(path: String) -> Texture2D:
     return load("res://" + path)
 
+func propriedade(object: Variant, key: String) -> Variant:
+    if not object is Dictionary:
+        return null
+    var value: Variant = object.get("properties",{}).get(key)
+    return value.get("value") if value is Dictionary else value
+
+func objeto_por_id(reference: String) -> Variant:
+    for entry in map_objects:
+        if entry.data.id == reference:
+            return entry.data
+    return null
+
+func recurso_imagem(reference: String) -> Variant:
+    for resource in scene_data.get("art",[]) + scene_data.tilesets:
+        if resource.id == reference:
+            return resource.image
+    return null
+
+func propriedade_camada(reference: String, key: String) -> Variant:
+    for layer in scene_data.layers:
+        if layer.id == reference:
+            return propriedade(layer,key)
+    return null
+
+func propriedade_peca(reference: String, tile: float, key: String) -> Variant:
+    if not is_finite(tile) or floorf(tile) != tile or tile < 0:
+        return null
+    for tileset in scene_data.tilesets:
+        if tileset.id == reference and tile < tileset.count:
+            return propriedade({"properties":tileset.get("tileProperties",{}).get(str(int(tile)),{})},key)
+    return null
+
+func _art_tile(animation: Dictionary, time_ms: float) -> int:
+    var total: float = 0
+    for frame in animation.frames:
+        total += frame.duration
+    var at: float = fmod(maxf(0,time_ms),total) if animation.get("loop",true) else minf(maxf(0,time_ms),total)
+    for frame in animation.frames:
+        at -= frame.duration
+        if at < 0:
+            return int(frame.tile)
+    return int(animation.frames[-1].tile)
+
 func _load_map(key: String) -> void:
     if world:
         world.queue_free()
     animated_cells.clear()
     animated_art.clear()
+    elapsed = 0.0
     map_objects.clear()
     scene_data = maps[key]
     world = Node2D.new()
@@ -216,13 +260,24 @@ func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dic
                             art = candidate
                     if not art.is_empty():
                         picture.texture = _texture(art.image)
-                        if art.has("columns"):
+                        if art.has("sprite"):
+                            var sprite: Dictionary = art.sprite
+                            var selected: Dictionary = sprite.animations[0]
+                            var tile: int = int(selected.frames[0].tile)
+                            for animation in sprite.animations:
+                                if animation.id == object.art.get("animationId", ""):
+                                    selected = animation
+                                    tile = _art_tile(selected,0)
+                                    animated_art.append({"sprite":picture,"frames":selected.frames,"loop":selected.loop,"columns":int(sprite.columns),"width":int(sprite.frameWidth),"height":int(sprite.frameHeight)})
+                            picture.region_enabled = true
+                            picture.region_rect = Rect2((tile % int(sprite.columns))*sprite.frameWidth,(tile / int(sprite.columns))*sprite.frameHeight,sprite.frameWidth,sprite.frameHeight)
+                        elif art.has("columns"):
                             picture.region_enabled = true
                             var tile: int = int(object.art.get("tile",0))
                             var size: int = int(scene_data.tileSize)
                             picture.region_rect = Rect2((tile % int(art.columns))*size,(tile / int(art.columns))*size,size,size)
                             if art.get("animations",{}).has(str(tile)):
-                                animated_art.append({"sprite":picture,"frames":art.animations[str(tile)],"columns":int(art.columns),"size":size})
+                                animated_art.append({"sprite":picture,"frames":art.animations[str(tile)],"columns":int(art.columns),"width":size,"height":size})
                         picture.scale = Vector2(object.width / picture.get_rect().size.x,object.height / picture.get_rect().size.y)
                         picture.flip_h = object.get("flipX",false)
                         picture.flip_v = object.get("flipY",false)
@@ -267,15 +322,6 @@ func _physics_process(delta: float) -> void:
                 animation.layer.set_cell(animation.position,0,Vector2i(tile % animation.columns,tile / animation.columns),animation.flags)
                 break
     for animation in animated_art:
-        var total: float = 0
-        for frame in animation.frames:
-            total += frame.duration
-        var time: float = fmod(elapsed,total)
-        for frame in animation.frames:
-            time -= frame.duration
-            if time < 0:
-                var tile: int = int(frame.tile)
-                var size: int = int(animation.size)
-                animation.sprite.region_rect = Rect2((tile % animation.columns)*size,(tile / animation.columns)*size,size,size)
-                break
+        var tile: int = _art_tile(animation,elapsed)
+        animation.sprite.region_rect = Rect2((tile % animation.columns)*animation.width,(tile / animation.columns)*animation.height,animation.width,animation.height)
 `

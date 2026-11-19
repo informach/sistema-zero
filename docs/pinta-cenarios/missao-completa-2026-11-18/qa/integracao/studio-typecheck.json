@@ -1,0 +1,7 @@
+{
+  "command": "bunx tsc --noEmit --incremental --tsBuildInfoFile .cache/pinta-mission.tsbuildinfo",
+  "exitCode": 0,
+  "finishedAt": "2026-11-18T20:45:19.5338328-03:00",
+  "package": "packages/studio",
+  "scope": "complete Studio tsconfig, including real host and integration fixtures"
+}

@@ -3,6 +3,7 @@ import {
   createTilemapAsset,
   createTilesetAsset,
   createVectorBackgroundAsset,
+  PINTA_MAX_SCHEMA,
   withPintaSchemaStamp,
 } from '../core/project'
 import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
@@ -48,6 +49,26 @@ const precise = () => {
 }
 const client = () => createPintaPersistence({ namespace: 'cases026' })
 const db = () => idbMockDb('sistema-zero-pinta-cases026')
+
+test('a capacidade mínima conserva clientes 5 em documentos compatíveis e protege conteúdo 6', async () => {
+  const local = client(),
+    base = map()
+  await local.persistAsset(base)
+  expect(db().get(LOCAL_ASSET_PREFIX + base.id)).toMatchObject({ capability: 5 })
+  const current = await local.loadAssetById(base.id)
+  if (current?.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const version = createTilesetAsset({ name: 'pecas-guardadas', tileSize: 16 })
+  await local.persistAsset({
+    ...current,
+    resources: [{ sourceId: 'original', capturedAt: 1, asset: version }],
+  })
+  expect(db().get(LOCAL_ASSET_PREFIX + base.id)).toMatchObject({
+    capability: 6,
+    asset: { schema: 6 },
+  })
+  await local.deleteAsset(base.id)
+  expect(db().get(LOCAL_ASSET_PREFIX + base.id)).toMatchObject({ capability: 5, asset: null })
+})
 
 test('rebaixamento deliberado na instância que observou5 continua permitido', async () => {
   const a = client(),
@@ -158,7 +179,7 @@ test('falha durante recuperação mantém tanto o checkpoint5 como o espelho ant
   expect(await client().loadAssetById(m.id)).toEqual(m)
 })
 
-for (const future of [{ version: 2 }, { capability: 6 }])
+for (const future of [{ version: 2 }, { capability: PINTA_MAX_SCHEMA + 1 }])
   test(`envelope futuro ${JSON.stringify(future)} permanece intocado`, async () => {
     const a = client(),
       m = precise()
@@ -233,7 +254,7 @@ test('releitura parcial conserva avisos de outros documentos futuros', async () 
   await a.persistAsset(m)
   db().set(`${LOCAL_ASSET_PREFIX}futuro`, {
     version: 2,
-    capability: 6,
+    capability: PINTA_MAX_SCHEMA + 1,
     revision: 'future',
     asset: null,
   })
@@ -307,7 +328,7 @@ test('lote com formato futuro aborta todos os outros membros', async () => {
     second = map()
   await a.persistAssets([m, second])
   const raw = db().get(LOCAL_ASSET_PREFIX + second.id) as Record<string, unknown>
-  db().set(LOCAL_ASSET_PREFIX + second.id, { ...raw, capability: 6 })
+  db().set(LOCAL_ASSET_PREFIX + second.id, { ...raw, capability: PINTA_MAX_SCHEMA + 1 })
   const before = structuredClone(db())
   await expect(a.persistAssets([{ ...m, name: 'nao-confirma' }, second])).rejects.toThrow(
     'Atualize',

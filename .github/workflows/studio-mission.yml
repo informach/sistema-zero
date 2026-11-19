@@ -177,6 +177,10 @@ jobs:
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
         run: bun run test:e2e:pinta-scenes
+      - name: Actual Studio consumes Pinta scenes and versioned art updates
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.pinta-integration.config.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -188,6 +192,7 @@ jobs:
             packages/studio/.cache/playwright-results
             packages/studio/.cache/protected-lessons
             packages/studio/.cache/pinta-scenes-results
+            packages/studio/.cache/pinta-integration-results
             .audits/studio-pro-evolution/browser-current.json
           retention-days: 14
 

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { poligonoSimples } from '../validacao'
+import { interpolarAlturasDaCelula } from './interpolacao-de-alturas'
 
 export const CELULAS_DA_PECA = 64
 export const LADO_DAS_AMOSTRAS = CELULAS_DA_PECA + 1
@@ -265,7 +266,7 @@ export function criarFonteDeAlturas(
       b = ler(peca, ix + 1, iz),
       c = ler(peca, ix, iz + 1),
       d = ler(peca, ix + 1, iz + 1)
-    return u + v <= 1 ? a + (b - a) * u + (c - a) * v : d + (c - d) * (1 - u) + (b - d) * (1 - v)
+    return interpolarAlturasDaCelula(a, b, c, d, u, v)
   }
 }
 
