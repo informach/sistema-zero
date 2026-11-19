@@ -61,3 +61,32 @@ a homologação autenticada do código novo.
 
 Os [hashes e resultados](verificacao.json) correspondem à base anterior ao merge
 do novo contrato 3D de staging; a integração e seus gates são registrados à parte.
+
+## Integração posterior com `33e90f06f`
+
+O merge `2e5850018` incorporou o contrato scene3d enviado pela outra sessão. Os nove
+fontes/configurações conferidos neste lote conservaram seus hashes. Nova compilação
+Python reproduziu a mesma distribuição de 126 arquivos, sem transferir por suposição
+a qualificação de um artefato para outro.
+
+Depois do merge, [55 testes do Estúdio](integracao/estudio.log), 326 asserções em dez
+arquivos, passaram. Incluem leitura/escrita, validação, dependências scene3d, pacote
+web, importação e sincronia de mapas Pinta. Os wrappers contêm 86 casos de sincronia
+e 55 de importação, sem somá-los novamente ao total externo. Os [oito fluxos reais](integracao/interface.json)
+Pinta–Estúdio também passaram novamente: JavaScript, Python, portas, atualização de
+mapas/peças, versões privadas de recursos e falha transacional.
+
+Os tipos completos de Pinta e Core passaram novamente. O typecheck completo do
+Estúdio **falhou**, com três diagnósticos em `molda-cenarios-motor/src/compilar/imagens.ts`,
+linhas 56, 61 e 86. A importação do preflight 3D passa a incluir esse módulo. O tipo
+inferido de `canvas.getContext('2d')`, em uma união HTMLCanvas/OffscreenCanvas, inclui
+`ImageBitmapRenderingContext`, que não possui `drawImage`, `getImageData` e
+`putImageData`. [Saída exata](integracao/tipos-estudio.log).
+
+Não existe outro subpath público de preflight nesse pacote. Não se contornou a falha
+com `any`, exclusões de TypeScript, shim global ou cópia da validação. O usuário
+proibiu alterações no trabalho de Molda; seus arquivos foram preservados. Esta falha
+da dependência compartilhada precisa ser corrigida para aprovar o gate do Estúdio.
+Os testes funcionais acima não substituem esse gate nem significam CI verde.
+
+[Registro de integração e limites](integracao/verificacao.json).

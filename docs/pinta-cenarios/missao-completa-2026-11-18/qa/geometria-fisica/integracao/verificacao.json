@@ -1,0 +1,34 @@
+{
+  "head": "2e5850018",
+  "upstream": "33e90f06f15633d8d51fe13a4a8608dbf1280831",
+  "sourceFilesUnchanged": 9,
+  "distributionSha256": "3d5d7d4ec2df4d03f374c9a5a70c264ff7bfc662ac9ee39823cff45d2cf6fdd2",
+  "gates": {
+    "studioFocused": {
+      "exitCode": 0,
+      "tests": 55,
+      "assertions": 326,
+      "files": 10
+    },
+    "interface": {
+      "exitCode": 0,
+      "tests": 8
+    },
+    "types": {
+      "pinta": 0,
+      "core": 0,
+      "studio": 1
+    },
+    "validationProfile": 0
+  },
+  "failure": {
+    "gate": "studioTypes",
+    "files": [
+      "packages/molda-cenarios-motor/src/compilar/imagens.ts:56",
+      "packages/molda-cenarios-motor/src/compilar/imagens.ts:61",
+      "packages/molda-cenarios-motor/src/compilar/imagens.ts:86"
+    ],
+    "reason": "O contexto inferido de HTMLCanvasElement | OffscreenCanvas inclui ImageBitmapRenderingContext. A fronteira de importação agora inclui esse módulo no typecheck do Estúdio.",
+    "preserved": "Nenhum arquivo de Molda foi alterado para esconder a falha."
+  }
+}
