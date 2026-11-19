@@ -1,3 +1,5 @@
+import type { SceneBox } from '@sistemazero/core/studio/pinta-scene-geometry'
+
 /**
  * O "testar com personagem" do mapa, só a CONTA (sem tela): andar segurando a tecla, bater
  * nas paredes e escorregar ao longo delas, cair e pular na vista de lado, entrar em portas e
@@ -24,6 +26,8 @@ export interface PlaytestArea {
 export interface PlaytestWorld {
   tileSize: number
   solidAt: (x: number, y: number) => boolean
+  /** Full-body query for authored scenes; legacy/custom worlds may keep point sampling. */
+  intersectsSolid?: (body: SceneBox) => boolean
   spawn: PlaytestPoint
   doors: readonly PlaytestArea[]
   hazards: readonly PlaytestArea[]
@@ -90,12 +94,21 @@ export function playtestFree(
   y: number,
 ): boolean {
   const { hw, hh } = playtestBody(world.tileSize, view)
+  // Touching a wall is free. Test the whole inset body so small, transformed
+  // tiles cannot fall between the former point samples.
+  const inset = 0.001
+  if (world.intersectsSolid)
+    return !world.intersectsSolid({
+      x: x - hw + inset,
+      y: y - hh + inset,
+      width: 2 * (hw - inset),
+      height: 2 * (hh - inset),
+    })
   const spread = (half: number): number[] => {
     const parts = Math.max(1, Math.ceil((2 * half) / (world.tileSize / 2)))
     return Array.from({ length: parts + 1 }, (_, i) => -half + (2 * half * i) / parts)
   }
   // Uma lasquinha para dentro: encostar na parede não conta como estar dentro dela.
-  const inset = 0.001
   for (const ox of spread(hw - inset))
     for (const oy of spread(hh - inset)) if (world.solidAt(x + ox, y + oy)) return false
   return true

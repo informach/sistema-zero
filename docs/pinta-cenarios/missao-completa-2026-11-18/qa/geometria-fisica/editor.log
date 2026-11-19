@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\playtest.test.ts:
+(pass) teste com personagem: a conta > anda enquanto a tecla está segurada e para encostado na parede
+(pass) teste com personagem: a conta > na diagonal contra a parede, escorrega ao longo dela
+(pass) teste com personagem: a conta > na diagonal livre não anda mais rápido que em linha reta
+(pass) teste com personagem: a conta > vista de lado: cai, pousa no chão e só então pode pular
+(pass) teste com personagem: a conta > vista de lado: bater a cabeça no teto para a subida
+(pass) teste com personagem: a conta > entrar na porta avisa qual é o destino
+(pass) teste com personagem: a conta > lugar perigoso devolve o personagem ao começo
+(pass) teste com personagem: a conta > um quadro muito longo não atravessa a parede
+(pass) câmera e teclas > a câmera segue o personagem e para na borda do mapa
+(pass) câmera e teclas > setas e W, A, S, D andam; espaço pula só na vista de lado
+
+src\components\editor\mapTools\playtestGeometry.test.ts:
+(pass) teste com personagem usa a geometria completa do documento > corpo sobre uma peça fina de conjunto não é considerado livre entre as amostras [31.00ms]
+(pass) teste com personagem usa a geometria completa do documento > andar para a direita para no contorno real, sem atravessar a parede fina [16.00ms]
+
+ 12 pass
+ 0 fail
+ 53 expect() calls
+Ran 12 tests across 2 files. [675.00ms]

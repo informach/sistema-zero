@@ -24,7 +24,7 @@ const recipe = {
 const metadata = {
   recipe,
   provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
-  output: { mime: 'image/png', width: 16, height: 16, bytes: 72, sha256: 'b'.repeat(64) },
+  output: { mime: 'image/png' as const, width: 16, height: 16, bytes: 72, sha256: 'b'.repeat(64) },
 }
 
 test('a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga', () => {

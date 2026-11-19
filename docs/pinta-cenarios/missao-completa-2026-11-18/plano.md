@@ -49,6 +49,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   `qa/leitores-de-cenarios/README.md`; implantação e ciclo autenticado continuam na etapa 0b.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
+  O primeiro lote corrige peças reduzidas que caíam entre as amostras do corpo no
+  teste com personagem do editor. Geometria analítica e consulta local sem grade
+  achatada em `geometria-fisica.md`; marca autoral de colisão por objeto, contrato
+  novo e integração dos motores ainda precisam ser concluídos.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
   transição, prévia, determinismo, vizinhos, undo/redo e cancelamento em navegador.
 - [ ] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.
