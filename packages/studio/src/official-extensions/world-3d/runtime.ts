@@ -9827,7 +9827,7 @@ export const world3DRuntime = compactOfficialRuntimeSource(
     withThreePostProcessingRuntime(
       withThreeModelsRuntime(
         withGameRules3DRuntime(
-          world3DRuntimeSource.replace('__SZ_WORLD_SCENE_RUNTIME__', world3DSceneRuntime),
+          world3DRuntimeSource.replace('__SZ_WORLD_SCENE_RUNTIME__', () => world3DSceneRuntime),
         ),
       ),
     ),

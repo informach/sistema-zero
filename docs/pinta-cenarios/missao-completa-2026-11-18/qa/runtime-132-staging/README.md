@@ -52,3 +52,11 @@ O [plano](plano.json) preserva as releases anteriores. O
 [artefato canônico](artefato-canonico.txt) mantém seus bytes originais, com SHA-256
 `08aa35c3d5931ce1ab674c60355d930ee42088564ecceebc8b406b3fc8c7486d`.
 Não houve teste em outro aparelho físico nem participação de crianças nesta etapa.
+
+## Integração posterior
+
+Após integrar `7b65efe75` no commit `595b7b22a`, a recompilação gerou exatamente
+o mesmo SHA-256 `132db1b…`. Os 16 testes selecionados de criação/importação de
+mapas e orçamento passaram, com 67 asserções. O CI de estilo conferiu 16.140
+arquivos sem erros. Isso conserva a qualificação dos bytes; não substitui o
+rollout hospedado nem os gates de implantação.

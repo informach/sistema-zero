@@ -59,3 +59,22 @@ mesmo com a API compatível; o serviço não pôde ser iniciado nesta sessão.
 Não houve reinício forçado nem interrupção de containers alheios.
 O smoke da imagem e os objetivos 3D no Linux ainda precisam passar no próximo
 CI remoto. Nenhuma conclusão da missão ou ativação de runtime é deduzida deste lote.
+
+## Retorno remoto e correção autorizada
+
+No run `44537017924`, os quatro bloqueios iniciais passaram: módulo Pygame,
+imagem Members, fronteira do Arquipélago e objetivos Three no sandbox sem rede.
+A instalação de Chromium do Kids também passou na segunda tentativa; esse run
+foi cancelado pela chegada de commits novos, antes de concluir os ensaios Kids.
+
+O CI encontrou duas falhas adicionais nos testes do Studio: o teto de payload do
+Mundo 3D estava anterior ao fragmento de cenas acrescentado pelo commit `cef2ebd8a`,
+e a inserção desse fragmento usava substituição textual. O ajuste de orçamento
+conserva a catraca, com medida atual de 357.521 caracteres e 106.864 bytes gzip
+no Windows. O teto Linux ainda precisa de confirmação pelo CI remoto.
+
+O usuário autorizou uma exceção de uma única linha em `world-3d/runtime.ts`:
+usar callback no `replace`. O SHA-256 do runtime gerado antes e depois permaneceu
+`1df990a64efea4d5b4b7503a4dfe6c774f45cd14c38c9a50501eeb2d7bd7f7a9`.
+O guard existente conserva a proteção contra `$&`; os dez testes de fonte e
+orçamento passaram, com vinte asserções. Nenhuma outra linha do motor foi editada.
