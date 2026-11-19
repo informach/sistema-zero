@@ -1,0 +1,81 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T19:27:42.316Z",
+    "duration": 138834.841,
+    "expected": 5,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "testSourceSha256": "5ab3148d6c372fdc92d13506e32fbe15ed8bf6d86746d3a035ad852094fa409c",
+  "cases": [
+    {
+      "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+      "project": "chromium",
+      "status": "passed",
+      "retry": 0,
+      "duration": 8140,
+      "metrics": []
+    },
+    {
+      "title": "trabalho síncrono longo do jogo não trava o editor",
+      "project": "chromium",
+      "status": "passed",
+      "retry": 0,
+      "duration": 11944,
+      "metrics": [
+        {
+          "browserName": "chromium",
+          "startMs": 3790,
+          "observationWallMs": 3016,
+          "latencyMs": 63,
+          "workMs": 30000,
+          "observationMs": 3000,
+          "limitMs": 500
+        }
+      ]
+    },
+    {
+      "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+      "project": "firefox",
+      "status": "passed",
+      "retry": 0,
+      "duration": 47819,
+      "metrics": []
+    },
+    {
+      "title": "trabalho síncrono longo do jogo não trava o editor",
+      "project": "firefox",
+      "status": "passed",
+      "retry": 0,
+      "duration": 12774,
+      "metrics": [
+        {
+          "browserName": "firefox",
+          "startMs": 4615,
+          "observationWallMs": 3019,
+          "latencyMs": 56,
+          "workMs": 30000,
+          "observationMs": 3000,
+          "limitMs": 500
+        }
+      ]
+    },
+    {
+      "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+      "project": "webkit",
+      "status": "passed",
+      "retry": 0,
+      "duration": 9821,
+      "metrics": []
+    },
+    {
+      "title": "trabalho síncrono longo do jogo não trava o editor",
+      "project": "webkit",
+      "status": "skipped",
+      "retry": 0,
+      "duration": 241,
+      "metrics": []
+    }
+  ]
+}

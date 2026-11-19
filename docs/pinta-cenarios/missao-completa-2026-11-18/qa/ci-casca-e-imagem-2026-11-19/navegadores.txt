@@ -1,0 +1,69 @@
+[WebServer] .cache/e2e-dist-5386/assets/monsterBattle.generated-BEgwxOpu.js                                                          604.64 kB │ gzip:   430.26 kB
+[WebServer] .cache/e2e-dist-5386/assets/desafio-dia-3.manifesto-DWaNN2YW.js                                                          665.01 kB │ gzip:   128.36 kB
+[WebServer] .cache/e2e-dist-5386/assets/superPirateWorld.generated-B1R1CY8R.js                                                       682.89 kB │ gzip:   427.06 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a.generated-BBHKP24Z.js     740.18 kB │ gzip:   298.20 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77.generated-DYH1wRAb.js     749.09 kB │ gzip:   302.62 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b.generated-BE9B4NIQ.js     753.61 kB │ gzip:   292.13 kB
+[WebServer] .cache/e2e-dist-5386/assets/pirateMaker.generated-D3157-1d.js                                                            755.34 kB │ gzip:   515.67 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9.generated-DLO5lhnb.js     757.09 kB │ gzip:   306.77 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d.generated-Dg0a-JYq.js     769.55 kB │ gzip:   304.63 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6.generated-CO-V8Euk.js     769.59 kB │ gzip:   308.02 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93.generated-_bueiSzM.js     780.51 kB │ gzip:   314.68 kB
+[WebServer] .cache/e2e-dist-5386/assets/blockly-Dt_Hz4td.js                                                                          780.61 kB │ gzip:   171.06 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0.generated-n8-iVx4F.js     780.63 kB │ gzip:   310.44 kB
+[WebServer] .cache/e2e-dist-5386/assets/desafio-dia-1.manifesto-1paf2zlP.js                                                          807.55 kB │ gzip:   156.83 kB
+[WebServer] .cache/e2e-dist-5386/assets/desafio-dia-2.manifesto-CHe4vbfY.js                                                          808.15 kB │ gzip:   155.94 kB
+[WebServer] .cache/e2e-dist-5386/assets/project-migrations-NoQC_EbI.js                                                               816.38 kB │ gzip:    92.79 kB
+[WebServer] .cache/e2e-dist-5386/assets/superPirateWorld.drawings.generated-Csprxt_Y.js                                              884.02 kB │ gzip:    70.85 kB
+[WebServer] .cache/e2e-dist-5386/assets/core-BuVcvfBN.js                                                                             962.19 kB │ gzip:    83.00 kB
+[WebServer] .cache/e2e-dist-5386/assets/pythonMonsters.generated-XjQEjkdO.js                                                         968.51 kB │ gzip:   624.74 kB
+[WebServer] .cache/e2e-dist-5386/assets/pygameDesktop-BnsufRm7.js                                                                    974.50 kB │ gzip:   428.51 kB
+[WebServer] .cache/e2e-dist-5386/assets/m-29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72.generated-BK45F4LQ.js   1,040.60 kB │ gzip:   530.86 kB
+[WebServer] .cache/e2e-dist-5386/assets/App-Dws3UtrI.js                                                                            1,535.50 kB │ gzip:   552.46 kB
+[WebServer] .cache/e2e-dist-5386/assets/editor.api-ChhF3YxB.js                                                                     2,306.98 kB │ gzip:   599.55 kB
+[WebServer] .cache/e2e-dist-5386/assets/studio-editor-shared-pthfMWF7.js                                                           2,362.86 kB │ gzip:   622.52 kB
+[WebServer] .cache/e2e-dist-5386/assets/pythonMonsters.drawings.generated-DiYcM95z.js                                              2,705.55 kB │ gzip:   233.75 kB
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/export/download.ts is dynamically imported by src/components/projects/ProjectCard.tsx but also statically imported by src/blockly/screenshot.ts, src/components/layout/ExportDialog.tsx, src/components/layout/Topbar.tsx, src/components/projects/ProjectCard.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ../core/src/studio/python-activity.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectIndexedRecovery.ts, src/state/projectValidation.ts but also statically imported by src/project-migrations/localV3.ts, src/project-migrations/localV3Recovery.ts, src/state/editableCloudProject.ts, src/state/projectRecoverySources.ts, src/state/projectStore.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/scene3d/referencias.ts is dynamically imported by src/state/proWorkspaceOperations.ts, src/state/projectStore.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/Scene3DAssetRow.tsx, src/core/projectAssets.ts, src/core/raylibMediaPaths.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+[WebServer]   - rolldown:vite-resolve (26%)
+[WebServer]   - vite:css (23%)
+[WebServer]   - vite:css-post (14%)
+[WebServer]   - vite:asset (10%)
+[WebServer]   - vite:build-import-analysis (10%)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] ✓ built in 34.76s
+[WebServer] [E2E] Build concluído em 35220 ms; iniciando preview
+[WebServer]   ➜  Local:   http://127.0.0.1:5386/
+Running 6 tests using 1 worker
+
+(node:46068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e\preview-shell.spec.ts:164:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (8.1s)
+  ✓  2 [chromium] › e2e\preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor (11.9s)
+(node:50540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [firefox] › e2e\preview-shell.spec.ts:164:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (47.8s)
+  ✓  4 [firefox] › e2e\preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor (12.8s)
+(node:27712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [webkit] › e2e\preview-shell.spec.ts:164:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (9.8s)
+  -  6 [webkit] › e2e\preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor
+
+  1 skipped
+  5 passed (2.3m)

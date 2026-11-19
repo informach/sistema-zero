@@ -1,4 +1,63 @@
+import { mkdir, writeFile } from 'node:fs/promises'
 import { expect, type Page, test } from '@playwright/test'
+
+// A capacidade de isolamento é homologada no Chromium completo, como a suíte
+// preview-hostile-programs. Firefox/WebKit continuam nos respectivos engines.
+test.use({
+  channel: async ({ browserName }, use) => {
+    await use(browserName === 'chromium' ? 'chromium' : undefined)
+  },
+})
+
+const browserErrors = new WeakMap<Page, string[]>()
+test.beforeEach(({ page }) => {
+  const errors: string[] = []
+  browserErrors.set(page, errors)
+  page.on('pageerror', (error) => {
+    if (errors.length < 20) errors.push(error.message)
+  })
+  page.on('console', (message) => {
+    if (message.type() === 'error' && errors.length < 60) errors.push(message.text())
+  })
+  page.on('requestfailed', (request) => {
+    if (errors.length < 60)
+      errors.push(JSON.stringify({ requestFailed: request.url(), reason: request.failure() }))
+  })
+})
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return
+  const frames = await Promise.all(
+    page.frames().map(async (frame) => {
+      const url = frame.url()
+      let timer: ReturnType<typeof setTimeout> | undefined
+      try {
+        const state = await Promise.race([
+          frame
+            .evaluate(() => ({
+              ready: document.readyState,
+              bytes: document.documentElement.outerHTML.length,
+              userCode: document.documentElement.outerHTML.includes('dataset.voltou'),
+              body: document.body?.innerHTML.slice(0, 1200),
+              csp: document
+                .querySelector('meta[http-equiv="Content-Security-Policy"]')
+                ?.getAttribute('content'),
+            }))
+            .catch(() => null),
+          new Promise<null>((resolve) => {
+            timer = setTimeout(() => resolve(null), 2000)
+          }),
+        ])
+        return { url, document: state }
+      } finally {
+        clearTimeout(timer)
+      }
+    }),
+  )
+  await mkdir(info.outputDir, { recursive: true })
+  const file = info.outputPath('diagnostico-da-casca.json')
+  await writeFile(file, JSON.stringify({ errors: browserErrors.get(page), frames }, null, 2))
+  await info.attach('diagnostico-da-casca', { path: file, contentType: 'application/json' })
+})
 
 /**
  * A prévia do Clássico dentro da casca em outro site (lote 3.2, 19/11/2026).
@@ -17,6 +76,7 @@ async function createProject(page: Page): Promise<void> {
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
+  await page.getByRole('tab', { name: /^Mensagens do jogo/ }).click()
 }
 
 async function replaceBridgeScript(page: Page, code: string): Promise<void> {
@@ -26,10 +86,22 @@ async function replaceBridgeScript(page: Page, code: string): Promise<void> {
   await editor.waitFor({ state: 'visible', timeout: 15_000 })
   const input = editor.getByRole('textbox', { name: 'Editor content' })
   await editor.locator('.view-line').first().click()
-  await page.keyboard.press('ControlOrMeta+A')
+  // Monaco escolhe o SO pelo user-agent, inclusive no perfil Safari emulado.
+  const modifier = await page.evaluate(() =>
+    navigator.userAgent.includes('Macintosh') ? 'Meta' : 'Control',
+  )
+  await page.keyboard.press(`${modifier}+A`)
   await page.keyboard.press('Backspace')
   await expect(input).toHaveValue('')
-  await page.keyboard.insertText(code)
+  // A inserção artificial multilinha altera o texto no Monaco/Firefox; use a
+  // mesma colagem nativa dos ensaios de segurança, conferindo o programa inteiro.
+  if (page.context().browser()?.browserType().name() === 'webkit') {
+    // WebKit Windows aceita a inserção direta original; Meta+V não cola nele.
+    await page.keyboard.insertText(code)
+  } else {
+    await page.evaluate((text) => navigator.clipboard.writeText(text), code)
+    await page.keyboard.press(`${modifier}+V`)
+  }
   await expect(input).toHaveValue(code)
 }
 
@@ -62,13 +134,36 @@ const corpoDoJogo = (page: Page) =>
     .frameLocator('iframe[title="Jogo"]')
     .locator('body')
 
-const CONSERTADO = 'document.body.dataset.voltou = "sim";'
+const CONSERTADO =
+  'document.body.dataset.voltou = "sim"; document.body.style.background = "rgb(0, 128, 0)"; document.body.style.minHeight = "100vh";'
+
+async function previewPixel(page: Page): Promise<number[]> {
+  const box = await casca(page).boundingBox()
+  if (!box) return []
+  const png = await page.screenshot({
+    clip: { x: box.x + box.width * 0.75, y: box.y + box.height * 0.75, width: 1, height: 1 },
+  })
+  return page.evaluate(
+    async (data) => {
+      const image = new Image()
+      image.src = data
+      await image.decode()
+      const canvas = document.createElement('canvas')
+      canvas.width = canvas.height = 1
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(image, 0, 0)
+      return Array.from(ctx.getImageData(0, 0, 1, 1).data).slice(0, 3)
+    },
+    `data:image/png;base64,${png.toString('base64')}`,
+  )
+}
 
 test.describe('prévia dentro da casca em outro site', () => {
   test.setTimeout(90_000)
 
   test('o jogo roda na casca, fala com o console e volta a rodar depois do Parar', async ({
     page,
+    browserName,
   }) => {
     await createProject(page)
     await expect(casca(page)).toHaveAttribute('src', /\/v1\/classic-shell\/1\.html$/)
@@ -76,38 +171,91 @@ test.describe('prévia dentro da casca em outro site', () => {
     const src = await casca(page).getAttribute('src')
     expect(new URL(src ?? '').host).not.toBe(new URL(page.url()).host)
     await replaceBridgeScript(page, `${CONSERTADO}\nconsole.log("oi da casca");`)
-    await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
-    await expect(page.getByText('oi da casca').first()).toBeAttached({ timeout: 15_000 })
-    const sandbox = await page
-      .frameLocator('iframe[title="Pré-visualização"]')
-      .locator('iframe[title="Jogo"]')
-      .getAttribute('sandbox')
-    expect(sandbox).toBe('allow-scripts allow-modals allow-pointer-lock')
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
+    await expect(
+      page
+        .getByRole('region', { name: 'Problemas e saída do jogo' })
+        .getByText('oi da casca', { exact: true }),
+    ).toBeAttached({ timeout: 15_000 })
+    // O Juggler/Firefox deste ensaio devolve frames vazios mesmo com os pixels
+    // do jogo na tela. O render e a comunicação acima não dependem dessa inspeção.
+    const response = await page.request.get(src!)
+    expect(response.status()).toBe(200)
+    expect(await response.text()).toContain(
+      `frame.setAttribute('sandbox', "allow-scripts allow-modals allow-pointer-lock")`,
+    )
+    if (browserName !== 'firefox') {
+      await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim')
+      const sandbox = await page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .locator('iframe[title="Jogo"]')
+        .getAttribute('sandbox')
+      expect(sandbox).toBe('allow-scripts allow-modals allow-pointer-lock')
+    }
 
     await parar(page).click()
     await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 5_000 })
+    await expect.poll(() => previewPixel(page)).toEqual([255, 255, 255])
     await rodar(page).click()
-    await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
   })
 
-  test('trabalho síncrono longo do jogo não trava o editor', async ({ page, browserName }) => {
+  test('trabalho síncrono longo do jogo não trava o editor', async ({
+    page,
+    browserName,
+  }, info) => {
     test.skip(browserName === 'webkit', 'no WebKit nenhum arranjo de iframe isolou (medido)')
     await createProject(page)
+    const submittedAt = Date.now()
     await replaceBridgeScript(
       page,
       [
+        'document.body.style.background = "rgb(128, 0, 0)"; document.body.style.minHeight = "100vh";',
+        'console.log("carga-casca-iniciou");',
         'const dados = Array.from({ length: 300000 }, (_, i) => (i * 7919) % 10007);',
         'const fim = Date.now() + 30000;',
         'function gastar() { if (Date.now() < fim) { dados.slice().sort((a, b) => a - b); gastar(); } }',
-        'gastar();',
+        'setTimeout(() => { gastar(); console.log("carga-casca-terminou"); }, 150);',
       ].join('\n'),
     )
+    await expect(
+      page
+        .getByRole('region', { name: 'Problemas e saída do jogo' })
+        .getByText('carga-casca-iniciou', { exact: true }),
+    ).toBeAttached({ timeout: 15_000 })
     await page.waitForTimeout(1500)
-    expect(await maiorAtrasoDaPagina(page, 3000), 'atraso do relógio do editor').toBeLessThan(500)
+    // A medição precisa ocorrer DURANTE a carga de 30 s, não depois dela.
+    const startMs = Date.now() - submittedAt
+    expect(startMs).toBeLessThan(10_000)
+    const observationStartedAt = Date.now()
+    const latencyMs = await maiorAtrasoDaPagina(page, 3000)
+    const observationWallMs = Date.now() - observationStartedAt
+    await info.attach('latencia-do-editor', {
+      contentType: 'application/json',
+      body: JSON.stringify({
+        browserName,
+        startMs,
+        observationWallMs,
+        latencyMs,
+        workMs: 30000,
+        observationMs: 3000,
+        limitMs: 500,
+      }),
+    })
+    expect(latencyMs, 'atraso do relógio do editor').toBeLessThan(500)
+    expect(
+      observationWallMs,
+      'a chamada de medição não pode ficar presa atrás da carga',
+    ).toBeLessThan(5000)
+    await expect(
+      page
+        .getByRole('region', { name: 'Problemas e saída do jogo' })
+        .getByText('carga-casca-terminou', { exact: true }),
+    ).toHaveCount(0)
     await parar(page).click()
     await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 5_000 })
     await replaceBridgeScript(page, CONSERTADO)
     await rodar(page).click()
-    await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
   })
 })

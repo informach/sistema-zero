@@ -1,0 +1,70 @@
+[WebServer] .cache/e2e-dist-5386/assets/App-Dws3UtrI.js                                                                            1,535.50 kB │ gzip:   552.46 kB
+[WebServer] .cache/e2e-dist-5386/assets/editor.api-ChhF3YxB.js                                                                     2,306.98 kB │ gzip:   599.55 kB
+[WebServer] .cache/e2e-dist-5386/assets/studio-editor-shared-pthfMWF7.js                                                           2,362.86 kB │ gzip:   622.52 kB
+[WebServer] .cache/e2e-dist-5386/assets/pythonMonsters.drawings.generated-DiYcM95z.js                                              2,705.55 kB │ gzip:   233.75 kB
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/export/download.ts is dynamically imported by src/components/projects/ProjectCard.tsx but also statically imported by src/blockly/screenshot.ts, src/components/layout/ExportDialog.tsx, src/components/layout/Topbar.tsx, src/components/projects/ProjectCard.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ../core/src/studio/python-activity.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectIndexedRecovery.ts, src/state/projectValidation.ts but also statically imported by src/project-migrations/localV3.ts, src/project-migrations/localV3Recovery.ts, src/state/editableCloudProject.ts, src/state/projectRecoverySources.ts, src/state/projectStore.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/scene3d/referencias.ts is dynamically imported by src/state/proWorkspaceOperations.ts, src/state/projectStore.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/Scene3DAssetRow.tsx, src/core/projectAssets.ts, src/core/raylibMediaPaths.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+[WebServer]   - rolldown:vite-resolve (20%)
+[WebServer]   - vite:css (19%)
+[WebServer]   - vite:css-post (16%)
+[WebServer]   - vite:build-import-analysis (13%)
+[WebServer]   - vite:asset (12%)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] ✓ built in 28.64s
+[WebServer] [E2E] Build concluído em 28972 ms; iniciando preview
+[WebServer]   ➜  Local:   http://127.0.0.1:5386/
+
+Running 1 test using 1 worker
+
+(node:48160) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [firefox] › e2e\preview-shell.spec.ts:125:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (31.6s)
+
+
+  1) [firefox] › e2e\preview-shell.spec.ts:125:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('iframe[title="Pré-visualização"]').contentFrame().locator('iframe[title="Jogo"]').contentFrame().locator('body')
+    Expected: "sim"
+    Received: ""
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveAttribute" locator('iframe[title="Pré-visualização"]').contentFrame().locator('iframe[title="Jogo"]').contentFrame().locator('body') with timeout 15000ms
+      - waiting for locator('iframe[title="Pré-visualização"]').contentFrame().locator('iframe[title="Jogo"]').contentFrame().locator('body')
+
+
+      134 |     await expect(page.getByText('oi da casca').first()).toBeAttached({ timeout: 15_000 })
+      135 |     await expect.poll(() => previewPixel(page)).toEqual([0,128,0])
+    > 136 |     await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 15_000 })
+          |                                     ^
+      137 |     await expect(page.getByText('oi da casca').first()).toBeAttached({ timeout: 15_000 })
+      138 |     const sandbox = await page
+      139 |       .frameLocator('iframe[title="Pré-visualização"]')
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\preview-shell.spec.ts:136:37
+
+    attachment #1: diagnostico-da-casca (application/json) ─────────────────────────────────────────
+    .cache\pinta-shell-firefox-driver-proof\preview-shell-prévia-dentr-e33b7-lta-a-rodar-depois-do-Parar-firefox\attachments\diagnostico-da-casca-17fcab5d9e5a96f90353f6ead01e1df2f7adfe85.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-shell-firefox-driver-proof\preview-shell-prévia-dentr-e33b7-lta-a-rodar-depois-do-Parar-firefox\error-context.md
+
+  1 failed
+    [firefox] › e2e\preview-shell.spec.ts:125:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar
