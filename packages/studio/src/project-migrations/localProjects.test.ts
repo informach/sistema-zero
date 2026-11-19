@@ -211,3 +211,117 @@ describe('corte local com IndexedDB transacional', () => {
     expect(await readValue(scope.store, projectMetaKey('old'))).toBeUndefined()
   })
 })
+
+for (const variant of [
+  { label: 'negative zero', before: -0, after: 0 },
+  { label: 'explicit undefined', before: { optional: undefined }, after: {} },
+])
+  it(`legacy migration distinguishes ${variant.label} instead of consuming a different snapshot`, async () => {
+    const scope = database()
+    const original = { ...oldProject(), formatVersion: 2, futureTool: variant.before }
+    await writeInOneTransaction(scope.store, { puts: [['sz:project:old', original]] })
+    await migrateLocalProject('old', scope)
+    expect(await readValue(scope.store, projectMetaKey('old'))).toMatchObject({
+      futureTool: variant.before,
+    })
+    await writeInOneTransaction(scope.store, {
+      puts: [['sz:project:old', { ...original, futureTool: variant.after }]],
+    })
+    const recovered = await migrateLocalProject('old', scope)
+    expect(recovered).toBeDefined()
+    expect(recovered).not.toBe('old')
+    expect(await readValue(scope.store, projectMetaKey(recovered!))).toMatchObject({
+      futureTool: variant.after,
+    })
+    expect(await readValue(scope.store, projectMetaKey('old'))).toMatchObject({
+      futureTool: variant.before,
+    })
+  })
+
+for (const prefix of ['sz:', 'sz:v2:'])
+  it(`migrates ${prefix} to v4 with a deep versioned backup and unchanged game data`, async () => {
+    const scope = database()
+    let deep: Record<string, unknown> = { leaf: 'preserved' }
+    for (let depth = 0; depth < 128; depth++) deep = { child: deep }
+    const original = {
+      ...oldProject(),
+      formatVersion: 2,
+      futureTool: { deep, zero: -0, optional: undefined },
+    }
+    const sourceKey = `${prefix}project:old`
+    const oldArchive = { unknown: 'legacy backup must stay intact' }
+    const game = {
+      format: 'sz-project-json-graph',
+      version: 999,
+      payload: 'learner-owned game value',
+    }
+    await writeInOneTransaction(scope.store, {
+      puts: [
+        [sourceKey, original],
+        ['sz:project-backup:old:historical', oldArchive],
+        ['sz:game-storage:old', game],
+      ],
+    })
+    expect(await migrateLocalProject('old', scope, 4)).toBe('old')
+    expect(await readValue(scope.store, projectMetaKey('old', 4))).toMatchObject({
+      storageVersion: 4,
+      futureTool: original.futureTool,
+    })
+    expect(await readValue(scope.store, projectMetaKey('old', 3))).toBeUndefined()
+    expect(await readValue(scope.store, sourceKey)).toBeUndefined()
+    expect(await readValue(scope.store, 'sz:project-backup:old:historical')).toEqual(oldArchive)
+    expect(await readValue(scope.store, 'sz:game-storage:old')).toEqual(game)
+    const backups = (await readAllKeys(scope.store)).filter((key) =>
+      String(key).startsWith('sz:v4:project-backup:old:'),
+    )
+    expect(backups).toHaveLength(1)
+    const archive = (await readValue(scope.store, backups[0]!)) as {
+      version: number
+      records: Record<string, unknown>
+    }
+    expect(archive.version).toBe(2)
+    expect(archive.records[sourceKey]).toEqual(original)
+    expect(Object.hasOwn(archive.records, `${prefix}project-meta:old`)).toBe(true)
+    expect(archive.records[`${prefix}project-meta:old`]).toBeUndefined()
+  })
+
+it('a future hash contract preserves its marker and original source', async () => {
+  const scope = database()
+  const original = oldProject()
+  const marker = { sourceHashAlgorithm: 'future-v999', retained: 'do not rewrite' }
+  await writeInOneTransaction(scope.store, {
+    puts: [
+      ['sz:project:old', original],
+      [projectMigrationKey('old', 4), marker],
+    ],
+  })
+  await expect(migrateLocalProject('old', scope, 4)).rejects.toMatchObject({
+    code: 'migration-pending',
+  })
+  expect(await readValue(scope.store, 'sz:project:old')).toEqual(original)
+  expect(await readValue(scope.store, projectMigrationKey('old', 4))).toEqual(marker)
+  expect(await readValue(scope.store, projectMetaKey('old', 4))).toBeUndefined()
+})
+
+for (const version of [3, 4] as const)
+  it(`does not consume a legacy source through a future v${version} backup receipt`, async () => {
+    const scope = database()
+    const original = oldProject()
+    await writeInOneTransaction(scope.store, { puts: [['sz:project:old', original]] })
+    await migrateLocalProject('old', scope, version)
+    const prefix = version === 4 ? 'sz:v4:project-backup:old:' : 'sz:project-backup:old:'
+    const key = (await readAllKeys(scope.store)).find((key) => String(key).startsWith(prefix))!
+    const archive = (await readValue(scope.store, key)) as Record<string, unknown>
+    const future = { ...archive, version: 999 }
+    await writeInOneTransaction(scope.store, {
+      puts: [
+        [key, future],
+        ['sz:project:old', original],
+      ],
+    })
+    await expect(migrateLocalProject('old', scope, version)).rejects.toMatchObject({
+      code: 'migration-pending',
+    })
+    expect(await readValue(scope.store, key)).toEqual(future)
+    expect(await readValue(scope.store, 'sz:project:old')).toEqual(original)
+  })

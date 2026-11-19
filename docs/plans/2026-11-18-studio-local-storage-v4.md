@@ -307,3 +307,10 @@ Sequência restante antes de ativar:
 5. Ativar apenas no laboratório, repetir suítes/curso/navegadores/limites e homologar antes de levar a branch da missão.
 
 O padrão permanece v3; esta etapa não fecha renderização/virtualização do Blockly (R2), depuração/profiler/testes autorais nem a missão global.
+
+
+## Continuação — identidade v1/v2 e destino v4
+
+O migrador existente agora aceita destino versionado e usa o codec comum para identificar conteúdo sem perda de -0/undefined. Os recibos v4 preservam a fonte por mapa de chaves, conferido por contrato e CAS; v3 conserva o array/namespace anterior. Origem, versão e snapshot de recibos futuros bloqueiam consumo da fonte. Relatório: `docs/qa/2026-11-19-studio-legacy-layout-identity.md`.
+
+O driver nativo conferiu ambas as origens em Chromium/WebKit, inclusive metadados profundos e dados do jogo intactos. Suíte ampliada: 517 testes / 2.744 asserções. Typecheck, lint e bundle aprovados. Falhas de reprodução e de empacotamento da fixture foram preservadas nos logs. A integração com carregadores/lista e ativação continua sendo a próxima etapa; a escrita padrão ainda é v3.

@@ -37,6 +37,9 @@ test('actual pagehide: large pending CAS + latest draft survive reload; two tabs
         fileURLToPath(new URL('./fixtures/projectStorageBrowser.ts', import.meta.url)),
         '--target=browser',
         '--format=esm',
+        // Match Vite's browser definePlugin: no host environment or process shim.
+        '--define=process.env={}',
+        '--define=process.env.NODE_ENV="production"',
         '--minify',
         `--outfile=${output}`,
       ],

@@ -1,22 +1,24 @@
-import { recoverLocalV3ProjectWrites } from '../../project-migrations/localV3RecoveryReplay'
-import { readValues, writeInOneTransaction } from '../idbTransaction'
-import { encodeProjectJsonGraph } from '../projectJsonGraph'
-import type { ProjectStorageScope } from '../projectStorageRuntime'
 import { createEmptyProject } from '../../core/project'
-import { migrateLocalV3Project } from '../../project-migrations/localV3'
-import { projectStorageEntries } from '../projectStorageRecords'
-import {
-  projectBlocksKey,
-  projectHeadKey,
-  projectMetaKey,
-  projectRecoveryKey,
-} from '../projectStorageKeys'
 import { gameTwoDManifest } from '../../official-extensions/game-2d/manifest'
+import { migrateLocalProject } from '../../project-migrations/localProjects'
+import { migrateLocalV3Project } from '../../project-migrations/localV3'
 import {
   prepareLocalV3Recovery,
   stageLocalV3Recovery,
 } from '../../project-migrations/localV3Recovery'
+import { recoverLocalV3ProjectWrites } from '../../project-migrations/localV3RecoveryReplay'
+import { readAllKeys, readValues, writeInOneTransaction } from '../idbTransaction'
+import { encodeProjectJsonGraph } from '../projectJsonGraph'
 import type { RecoveryWrite } from '../projectStorageCoordinator'
+import {
+  projectBlocksKey,
+  projectFilesKey,
+  projectHeadKey,
+  projectMetaKey,
+  projectRecoveryKey,
+} from '../projectStorageKeys'
+import { projectStorageEntries } from '../projectStorageRecords'
+import type { ProjectStorageScope } from '../projectStorageRuntime'
 import { stageSynchronousExitJournal } from '../synchronousExitJournal'
 import { readSynchronousExitJournal } from '../synchronousExitJournalRead'
 
@@ -125,6 +127,79 @@ async function qualifyLegacyDeepStaging(scope: ProjectStorageScope, blocks: unkn
     // acknowledged it through production code before this teardown runs.
     localStorage.removeItem(sourceKey)
   }
+}
+
+async function qualifyHistoricalLayouts(scope: ProjectStorageScope) {
+  const qualified = []
+  for (const [index, prefix] of ['sz:', 'sz:v2:'].entries()) {
+    const id = `native-historical-layout-${index}`
+    let deep: Record<string, unknown> = { leaf: 'preserved' }
+    for (let depth = 0; depth < 128; depth++) deep = { child: deep }
+    const project = {
+      ...createEmptyProject(id, 'Projeto histórico'),
+      formatVersion: index === 0 ? 1 : 2,
+      futureTool: { deep, zero: -0, optional: undefined },
+    }
+    const key = `${prefix}project:${id}`
+    const gameKey = `sz:game-storage:${id}`
+    const game = { format: 'sz-project-json-graph', version: 999, payload: 'game-owned-value' }
+    await writeInOneTransaction(scope.store, {
+      puts: [
+        [key, project],
+        [gameKey, game],
+      ],
+    })
+    if ((await migrateLocalProject(id, scope, 4)) !== id)
+      throw new Error('Historical layout was not promoted')
+    const [meta, files, source, gameAfter] = await readValues(scope.store, [
+      projectMetaKey(id, 4),
+      projectFilesKey(id, 4),
+      key,
+      gameKey,
+    ])
+    if (
+      encodeProjectJsonGraph((meta as typeof project).futureTool) !==
+        encodeProjectJsonGraph(project.futureTool) ||
+      encodeProjectJsonGraph((files as typeof project).files) !==
+        encodeProjectJsonGraph(project.files) ||
+      source !== undefined ||
+      encodeProjectJsonGraph(gameAfter) !== encodeProjectJsonGraph(game)
+    )
+      throw new Error('Historical layout lost content or interpreted game storage')
+    const backups = (await readAllKeys(scope.store)).filter((candidate) =>
+      String(candidate).startsWith(`sz:v4:project-backup:${id}:`),
+    )
+    if (backups.length !== 1) throw new Error('Historical archive missing')
+    const [archive] = await readValues(scope.store, [backups[0]!])
+    const receipt = archive as { version: number; records: Record<string, unknown> }
+    if (
+      receipt.version !== 2 ||
+      encodeProjectJsonGraph(receipt.records[key]) !== encodeProjectJsonGraph(project)
+    )
+      throw new Error('Historical archive changed the source')
+    const changed = { ...project, futureTool: { ...project.futureTool, zero: 0 } }
+    await writeInOneTransaction(scope.store, { puts: [[key, changed]] })
+    const copyId = await migrateLocalProject(id, scope, 4)
+    if (!copyId || copyId === id) throw new Error('A lossy legacy hash consumed a different source')
+    const [originalMeta, copyMeta] = await readValues(scope.store, [
+      projectMetaKey(id, 4),
+      projectMetaKey(copyId, 4),
+    ])
+    if (
+      !Object.is((originalMeta as typeof project).futureTool.zero, -0) ||
+      !Object.is((copyMeta as typeof project).futureTool.zero, 0)
+    )
+      throw new Error('Historical signed-zero variants were not preserved separately')
+    qualified.push({
+      prefix,
+      portableVersion: project.formatVersion,
+      migrated: true,
+      archiveVersion: 2,
+      signedZeroCopy: true,
+      gameStorageUnchanged: true,
+    })
+  }
+  return qualified
 }
 
 async function qualifyLegacyMigration(scope: ProjectStorageScope) {
@@ -256,9 +331,11 @@ export async function qualifyDeepStorage(scope: ProjectStorageScope) {
   )
     throw new Error('Incompatible storage write was not atomic')
   const migration = await qualifyLegacyMigration(scope)
+  const historicalLayouts = await qualifyHistoricalLayouts(scope)
   const legacyRecovery = await qualifyLegacyDeepStaging(scope, blocks)
   return {
     migration,
+    historicalLayouts,
     legacyRecovery,
     ...shape,
     nativeCloneError,
