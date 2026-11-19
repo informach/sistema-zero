@@ -1,0 +1,155 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T06:07:15.075Z",
+    "duration": 35198.835,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "Pinta world 1x renders and crosses doors in real browser Python",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2404,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pinta world 2x renders and crosses doors in real browser Python",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2237,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce keeps a playable frame rate with a full tile map, alpha sprites and text",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 10412,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce update(None) keeps the displayed pixels until a real refresh",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1728,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game pong runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1666,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game space-shooter runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1798,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game platformer runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1712,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game monster-battle runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1859,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game pirate-maker runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1780,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game vampire-survivor runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1811,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game pydew-valley runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1858,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game python-monsters runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2582,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game super-pirate-world runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1962,
+          "errors": []
+        }
+      ]
+    }
+  ]
+}

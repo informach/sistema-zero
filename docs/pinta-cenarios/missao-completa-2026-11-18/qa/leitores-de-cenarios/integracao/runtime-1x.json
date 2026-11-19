@@ -1,0 +1,18 @@
+{
+  "runtime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "a212cccdabde41ee734ad87f2ecddd7ce45652a76fc6d6a4478150fa474302bc"
+  },
+  "facts": {
+    "python": "3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8",
+    "pygame": "2.5.7",
+    "platform": "emscripten",
+    "scale": 1,
+    "layers": 18,
+    "solids": 57,
+    "animation": true,
+    "returnDoor": true
+  },
+  "stdout": "pygame-ce 2.5.7 (SDL 2.32.10, Python 3.14.2)\nworld-runtime {\"python\": \"3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8\", \"pygame\": \"2.5.7\", \"platform\": \"emscripten\", \"scale\": 1, \"layers\": 18, \"solids\": 57, \"animation\": true, \"returnDoor\": true}\nworld-ready 1\nworld-place cabana 2\nworld-place vila-e-floresta 18\n"
+}

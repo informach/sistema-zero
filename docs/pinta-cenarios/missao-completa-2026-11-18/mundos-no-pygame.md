@@ -115,7 +115,7 @@ aprovação de runtime a partir do projeto ou do manifesto fornecido pelo própr
 - [x] Ler assets, runtime e cabeça de revisão de um projeto fechado na mesma transação;
   a gravação condicional recusa mudanças concorrentes. Conferir novamente o catálogo
   antes da gravação, inclusive após rasterização em andamento ou acerto de cache.
-- [ ] Ensaiar o fluxo no navegador, regressões, tipos e a recusa do leitor congelado;
+- [x] Ensaiar o fluxo no navegador, regressões, tipos e a recusa do leitor congelado;
   registrar provas e integrar somente o lote verificado em staging.
 
 A revisão encontrou e corrigiu também o empacotamento web com leitor incompatível e a

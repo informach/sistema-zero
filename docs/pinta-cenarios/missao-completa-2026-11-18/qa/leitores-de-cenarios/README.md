@@ -101,3 +101,36 @@ reconstruir sua imagem. Nada neste relatório comprova essa implantação.
 
 A integração de staging é registrada à parte após o commit do lote, sem incorporar
 alterações em andamento da outra sessão.
+
+## Integração com o staging de 19/11
+
+O merge `f367afc68` incorpora `b2d77d8d3`, enviado pela sessão de Cenários 3D,
+sem alterações manuais nos seus arquivos. Os 26 fontes do lote de leitores continuam
+com os mesmos hashes; o perfil de validação foi regenerado para os contratos Core
+resultantes. O fingerprint passa a
+`e049128566613ce447fd7580dae5873701aa3a6d70b0eb95f40729230c543493`.
+
+O empacotamento compartilhado agora inclui `raylib/cenario.py`, exigindo qualificar
+uma distribuição diferente: `3d5d7d4ec2df4d03f374c9a5a70c264ff7bfc662ac9ee39823cff45d2cf6fdd2`,
+126 arquivos. A [comparação dos manifestos](integracao/diferenca-distribuicao.json)
+confere 123 arquivos iguais; mudaram o worker, sua representação gzip e o módulo
+Raylib acrescentado. Os arquivos do Pygame continuam iguais.
+
+Verificação posterior ao merge: tipos completos do Estúdio, 35 testes focados/223
+asserções, 61 de publicação/448 asserções, dois fluxos de interface e geradores
+aprovados. A suíte completa do Pinta e os leitores congelados documentados acima
+correspondem aos mesmos fontes preservados, não foram contados como novas execuções.
+
+No Python/Wasm, a [primeira execução](integracao/python-inicial.json) passou nos 12
+casos funcionais e falhou no benchmark: 44,66 fps, mínimo 45. A [repetição completa](integracao/python-final.json)
+passou nos 13 casos, com 45,9 fps. Foram mantidos teste, carga e limite. A oscilação e
+a margem pequena ficam explícitas; esta máquina não comprova desempenho de outros
+aparelhos nem dispensa a otimização da etapa 8. Vila, Cabana e PyDew foram renderizados
+novamente, com pixels, portas, colisões, animação e propriedades no interpretador real.
+
+Os [hashes e gates de integração](integracao/verificacao.json) distinguem as duas
+execuções. Nenhum destes resultados ativa o catálogo remoto ou valida autenticação.
+O CI remoto `44467116666` ainda recusou a fronteira de Arquipélago, um programa
+JavaScript hostil que bloqueia o editor por 30 segundos e o perfil de validação
+desatualizado do commit upstream. A regeneração neste lote corrige a última causa;
+as demais não foram ocultadas, enfraquecidas ou tratadas como verificadas.
