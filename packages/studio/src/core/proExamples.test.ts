@@ -38,7 +38,7 @@ describe('exemplos determinísticos', () => {
   it('does not infer a 3D engine or insert code into non-code files', () => {
     expect(proAssetExample({ ...asset, kind: 'model3d' }, 'main.ts', {})).toBeNull()
     const tree = {
-      'package.json': { kind: 'file' as const, content: '{"dependencies":{"three":"0.180.0"}}' },
+      'package.json': { kind: 'file' as const, content: '{"dependencies":{"three":"0.184.0"}}' },
     }
     expect(proAssetExample({ ...asset, kind: 'model3d' }, 'main.ts', tree)?.code).toContain(
       'GLTFLoader',

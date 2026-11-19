@@ -20,6 +20,7 @@ import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
 import { GAME_3D_PLATFORM_KIT_METHODS } from './platformCodec'
 import { gameThreeDModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameThreeDPlatformRuntimeSource } from './runtimePlatform'
+import { gameThreeDSceneRuntimeSource } from './runtimeScene'
 
 const gameThreeDRuntimeBase = `import * as THREE from 'three';
 (function () {
@@ -29,6 +30,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   // velho é forçado a perder o contexto e a cena fica preta. Mantemos a lista
   // para descartar tudo no fechamento/refresh da página.
   var worlds = [];
+  // Only synchronous restart may hand an HTML canvas renderer to its next world.
+  var _restartRenderers = null;
   // Orçamento de desenho compartilhado (createSzRenderBudget): resolução, sombra e nível.
   /*__SZ_THREE_RENDER_BUDGET_RUNTIME__*/
 
@@ -497,17 +500,22 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function _setupWorld(canvas, w, h, options) {
     options = options || {};
     prepareCanvasAccessibility(canvas);
-    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!options.alpha, canvas: canvas });
+    var renderer = _restartRenderers && _restartRenderers.get(canvas);
+    if (renderer) _restartRenderers.delete(canvas);
+    else renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!options.alpha, canvas: canvas });
     // Sombras suaves dão profundidade ao 3D (o chão recebe a sombra do jogador). O filtro
     // (PCFSoft no nível alta, PCF no leve) e o mapa vêm do orçamento de desenho.
     if (renderer.shadowMap) renderer.shadowMap.enabled = true;
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(options.background || '#0b1020');
     var camera = options.camera || new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
+    var sceneBaseLights = [];
     if (!options.camera) camera.position.set(0, 0, 5);
     // Luz para o MeshStandardMaterial ser visível sem passo extra.
     if (!options.skipLights) {
-      scene.add(new THREE.AmbientLight(0xffffff, LIGHT_AMBIENT));
+      var ambient = new THREE.AmbientLight(0xffffff, LIGHT_AMBIENT);
+      scene.add(ambient);
+      sceneBaseLights.push(ambient);
       var dir = new THREE.DirectionalLight(0xffffff, LIGHT_SUN);
       dir.position.set(3, 5, 4);
       dir.castShadow = true;
@@ -523,6 +531,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
         dir.shadow.normalBias = 0.05;
       }
       scene.add(dir);
+      sceneBaseLights.push(dir);
     }
     var world = {
       scene: scene, camera: camera, renderer: renderer, _objects: [], _pickSet: [], _canvas: canvas,
@@ -531,7 +540,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       _perspectiveCamera: camera && camera.isPerspectiveCamera ? camera : null,
       _resizeCamera: options.resizeCamera || null,
       _lightCount: options.skipLights ? 0 : 2,
-      _copyCount: 0, _disposed: false
+      _copyCount: 0, _disposed: false, _sceneBaseLights: sceneBaseLights
     };
     // Orçamento de desenho: pixel ratio min(DPR, 2) com teto de pixels, nível alta/leve pela
     // sonda de FPS, mapa e filtro de sombra. A régua lógica é o tamanho CSS do canvas.
@@ -1155,6 +1164,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
 
   function setPosition(obj, x, y, z) {
+    var world = worldOf(obj);
+    if (world && world._sceneArrivals) world._sceneArrivals.delete(obj);
+    if (world && world._sceneHandle) szData(obj).grounded = false;
     if (obj && obj.position) obj.position.set(finite(x, 0), finite(y, 0), finite(z, 0));
   }
   // Giro em GRAUS (a criança pensa em 90, 180…).
@@ -1190,6 +1202,12 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function applyGravity(obj, ground) {
     if (!obj || !obj.position) return;
     if (ground && !shareWorld(obj, ground, 'gravity-world', 'Aplicar gravidade com um chão')) return;
+    var world = worldOf(obj);
+    if (world && world._sceneHandle) {
+      stepBody(obj, world);
+      if (ground && ground !== world._sceneHandle.raiz) resolveAABB(obj, ground);
+      return;
+    }
     var s = szData(obj);
     var scale = frameScale(obj);
     var previousY = obj.position.y;
@@ -1313,6 +1331,11 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (framedWorld && framedWorld._framedView) framedWorld._framedView.focus = obj;
     controlWithKeys(obj, clamp(speed, 0, 100, 3));
     var s = szData(obj), scale = frameScale(obj), startX = obj.position.x, startZ = obj.position.z;
+    if (framedWorld && framedWorld._sceneHandle) {
+      stepBodyOnWorld(obj, framedWorld, s.walkAreas, true);
+      finishTopDown(obj, s, startX, startZ);
+      return;
+    }
     var dx = s.vx * scale, dz = s.vz * scale;
     // "Marcar … como sólido": quem anda com as setas não atravessa, e desliza junto da parede.
     // Quem já começou dentro de um sólido pode sair dele.
@@ -1330,6 +1353,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       }
       obj.position.x = x; obj.position.z = z;
     }
+    finishTopDown(obj, s, startX, startZ);
+  }
+  function finishTopDown(obj, s, startX, startZ) {
     var moving = obj.position.x !== startX || obj.position.z !== startZ;
     if (moving) faceVelocity(obj);
     else { s.vx = 0; s.vz = 0; }
@@ -2464,15 +2490,18 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     _syncMatrices(world);
     if (obj.getWorldPosition) obj.getWorldPosition(_origin); else _origin.copy(obj.position);
     _ray.set(_origin, _down);
+    var imported = importedGroundHit(world, _origin);
     var hits = castPickables(world);
     for (var i = 0; i < hits.length; i++) {
       var t = topPick(world, hits[i].object);
-      if (!objectContains(obj, hits[i].object) && !objectContains(obj, t)) return hits[i];
+      if (!objectContains(obj, hits[i].object) && !objectContains(obj, t))
+        return imported && imported.distance <= hits[i].distance ? imported : hits[i];
     }
-    return null;
+    return imported;
   }
   var _groundBox = null;
   function onGround(world, obj) {
+    if (world && world._sceneHandle && belongsToWorld(world, obj, 'ground-world', 'Procurar o chão') && szData(obj).grounded) return true;
     var h = groundHit(world, obj);
     if (!h) return false;
     var sy = obj.scale ? obj.scale.y : 1;
@@ -2486,7 +2515,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
   function groundHeight(world, obj) {
     var h = groundHit(world, obj);
-    return h && h.point ? h.point.y : 0;
+    return h && h.point ? h.point.y : world && world._sceneHandle ? null : 0;
   }
 
   // ---- GENÉRICOS: física (corpo, sólidos, presets plataforma/FPS) ----
@@ -2625,6 +2654,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     resolveAABB(a, b);
   }
   function stepBody(obj, world) {
+    stepBodyOnWorld(obj, world, null, false);
+  }
+  function stepBodyOnWorld(obj, world, walkAreas, keepFooting) {
     if (!obj || !obj.position || !world) return;
     if (!belongsToWorld(world, obj, 'body-step-world', 'Atualizar o corpo físico')) return;
     var s = szData(obj);
@@ -2636,19 +2668,32 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     // Solta quem foi batido no passo anterior (o registro volta ao pool sem segurar o objeto).
     for (var hp = 0; hp < s.hits.length; hp++) s.hits[hp].other = null;
     s.hits.length = 0;
+    var snapToGround = keepFooting && s.grounded && s.vy <= 0;
     s.vy += s.gravity * scale;
     s.grounded = false;
     var maxMove = Math.max(Math.abs(s.vx * scale), Math.abs(s.vy * scale), Math.abs(s.vz * scale));
     var minHalf = Math.max(0.05, Math.min(halfX(obj, s), halfY(obj, s), halfZ(obj, s)));
     var steps = Math.min(8, Math.max(1, Math.ceil(maxMove / minHalf)));
+    if (world._sceneHandle) {
+      var radius = importedBodyRadius(obj, s);
+      steps = Math.max(1, Math.ceil(Math.hypot(s.vx, s.vy, s.vz) * scale / (radius * 0.45)));
+      if (steps > 2048) throw new Error('Corpo pequeno ou rápido demais para resolver a colisão do cenário com segurança.');
+    }
     var solids = world._solids || [];
     for (var step = 0; step < steps; step++) {
-      obj.position.x += s.vx * scale / steps;
+      var nextX = obj.position.x + s.vx * scale / steps, nextZ = obj.position.z + s.vz * scale / steps;
+      if (!walkAreas || walkAllowed(walkAreas, nextX, nextZ)) {
+        obj.position.x = nextX;
+        obj.position.z = nextZ;
+      }
       obj.position.y += s.vy * scale / steps;
-      obj.position.z += s.vz * scale / steps;
       for (var i = 0; i < solids.length; i++) {
         var o = solids[i];
         if (o !== obj) resolveAABB(obj, o);
+      }
+      if (world._sceneHandle) {
+        if (snapToGround) supportImportedFeet(world, obj);
+        resolveImportedBody(world, obj);
       }
     }
   }
@@ -2974,10 +3019,11 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
         // As regras de jogo andam com a cena ATUAL; com o jogo pausado (tela de início, fim
         // de jogo, recomeçando) os laços da criança esperam e a cena só é redesenhada.
         var ruled = world === _currentWorld();
+        var waitingForScene = world._scenePending && !world._sceneHandle;
         if (ruled) rules.beforeFrame(world.camera);
         // Carimbo do quadro: as consultas de mira/chão sincronizam as matrizes uma vez só.
         world._frame = (world._frame || 0) + 1;
-        if (!_paused) {
+        if (!_paused && !waitingForScene) {
           // Cópia num array REAPROVEITADO (quem se remove ou se soma no meio não pula ninguém).
           var callbacks = world._callbackScratch || (world._callbackScratch = []);
           var source = world._animationCallbacks;
@@ -2997,9 +3043,12 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
           if (!world._animationLoopInstalled) return;
         }
         _updateCameras(world);
-        if (ruled) rules.afterFrame(world.camera, _paused ? 0 : d);
+        occludeImportedCamera(world);
+        var frameDelta = _paused || waitingForScene ? 0 : d;
+        if (ruled) rules.afterFrame(world.camera, frameDelta);
         // Modelos do Molda: animação de cada objeto e pintura animada (pausado = congela).
-        stepModelAnimations(world, _paused ? 0 : d, now);
+        stepModelAnimations(world, frameDelta, now);
+        updateImportedScene(world, frameDelta);
         world.renderer.render(world.scene, world.camera);
         // Fim do quadro: "apertou agora" vale só para o quadro do aperto.
         clearJustPressed();
@@ -3014,8 +3063,12 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
 
   // Libera GPU: para o loop e descarta geometrias/materiais/renderer.
   function dispose(world) {
+    disposeWorld(world, false);
+  }
+  function disposeWorld(world, keepRenderer) {
     if (!world || world._disposed) return;
     world._disposed = true;
+    disposeImportedScene(world);
     // Tira o mundo do registro mesmo que o descarte abaixo falhe.
     var idx = worlds.indexOf(world);
     if (idx !== -1) worlds.splice(idx, 1);
@@ -3054,11 +3107,13 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       world.renderer.setAnimationLoop(null);
       world._animationCallbacks = [];
       world._animationLoopInstalled = false;
-      try { world.renderer.dispose(); } catch (e) {}
-      // \`dispose()\` sozinho NÃO devolve o contexto WebGL ao navegador — é o
-      // \`forceContextLoss()\` que libera o slot de GPU e evita a cena preta
-      // depois de vários "Atualizar".
-      try { world.renderer.forceContextLoss(); } catch (e) {}
+      if (!keepRenderer) {
+        try { world.renderer.dispose(); } catch (e) {}
+        // \`dispose()\` sozinho NÃO devolve o contexto WebGL ao navegador — é o
+        // \`forceContextLoss()\` que libera o slot de GPU e evita a cena preta
+        // depois de vários "Atualizar".
+        try { world.renderer.forceContextLoss(); } catch (e) {}
+      }
     }
     world._copyCount = 0;
   }
@@ -3068,7 +3123,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     // Copia a lista: dispose() mexe no array original via splice.
     var pending = worlds.slice();
     for (var i = 0; i < pending.length; i++) {
-      try { dispose(pending[i]); } catch (e) {}
+      if (pending[i].renderer) pending[i].renderer.setAnimationLoop(null);
     }
     // Texturas são compartilhadas entre mundos (cache global) — libera aqui.
     if (_texCache) {
@@ -3078,7 +3133,12 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       _texCache = null;
     }
     // Modelos .glb e céus .hdr parseados (cache global, como as texturas).
+    // Liberar o cache enquanto os renderers ainda conservam suas propriedades GL.
+    // Recomeçar a partida continua usando dispose(world), preservando os caches.
     disposeModelAssets();
+    for (var wi = 0; wi < pending.length; wi++) {
+      try { dispose(pending[wi]); } catch (e) {}
+    }
     disposeAudio();
     if (rules) rules.dispose();
   }
@@ -4264,8 +4324,12 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   // modelos, sons carregados) ficam: são do documento, não da partida.
   function _restartNow() {
     var pending = worlds.slice();
+    var renderers = new Map();
+    _restartRenderers = renderers;
     for (var i = 0; i < pending.length; i++) {
-      try { dispose(pending[i]); } catch (e) {}
+      var world = pending[i], keep = !world._ownsCanvas && !!world.renderer;
+      if (keep) renderers.set(world._canvas, world.renderer);
+      try { disposeWorld(world, keep); } catch (e) {}
     }
     clearKeys();
     _secondTimers = Object.create(null);
@@ -4273,8 +4337,16 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     // A pintura animada do Molda volta ao 1º quadro (o cache de modelos fica).
     models.resetFlipbooks();
     rules.reset();
-    if (!_projectFactory) { _paused = false; return; }
-    _runFactory();
+    try {
+      if (_projectFactory) _runFactory();
+      else _paused = false;
+    } finally {
+      _restartRenderers = null;
+      renderers.forEach(function (renderer) {
+        try { renderer.dispose(); } catch (e) {}
+        try { renderer.forceContextLoss(); } catch (e) {}
+      });
+    }
   }
   function restart() { rules.restart(); }
 
@@ -4324,6 +4396,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/
 
   /*__SZ_GAME_3D_MODEL_ASSETS_RUNTIME__*/
+  /*__SZ_GAME_3D_SCENE_RUNTIME__*/
 
   window.SZGame3D = {
     createPlatformScene: createPlatformScene,
@@ -4488,6 +4561,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     setFog: setFog,
     setSky: setSky,
     skyPhoto: skyPhoto,
+    loadScene: loadScene,
+    sceneStart: sceneStart,
     createModelFile: createModelFile,
     playAnimation: playAnimation,
     stopAnimation: stopAnimation,
@@ -4521,6 +4596,7 @@ function composeGameThreeDRuntime(platformSource: string): string {
       withGameRules3DRuntime(
         withThreeModelsRuntime(
           gameThreeDRuntimeBase
+            .replace('  /*__SZ_GAME_3D_SCENE_RUNTIME__*/', () => gameThreeDSceneRuntimeSource)
             // Funções como substituto: um `$&`/`$'` no fragmento seria lido como padrão.
             .replace('  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/', () => platformSource)
             // Modelos .glb e céu .hdr (lote 7 do Molda): mesmo mecanismo, outro fragmento. O

@@ -79,7 +79,7 @@ for (let i = 0; i < totalMonstros; i = i + 1) {
   monstros.setMatrixAt(i, molde.matrix);
 }
 monstros.instanceMatrix.needsUpdate = true;
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let pontos = 0;
 let vida = 3;
 let tempoSpawn = 0.5;
@@ -138,6 +138,7 @@ document.addEventListener("keyup", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (rodando === true) {
     if (esquerda === true) {

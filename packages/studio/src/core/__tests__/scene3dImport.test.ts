@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import { encodeProjectJsonGraph } from '@sistemazero/core/studio/project-json-graph'
 import type { CenaCompilada, PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
 import { encodeGlbContainer, readGltfDocument } from '../../../../molda/src/import/gltf'
 import { exemplo, glb } from '../../../../molda-cenarios-motor/tests/fixtures/glb-compilacao'
@@ -389,7 +390,7 @@ test('uma cópia idêntica adicionada depois não muda os IDs já usados pela re
 test('preparo captura o projeto e o pacote antes de ceder execução', async () => {
   const p = await pacote(),
     projeto = createEmptyProject('p', 'Jogo'),
-    original = canonicalJson(projeto),
+    original = encodeProjectJsonGraph(projeto),
     pending = prepararImportacaoDeCena3D(projeto, p)
   projeto.name = 'Outra edição'
   p.cena.nome = 'Outro cenário'
@@ -425,4 +426,17 @@ test('nome de arquivo compilado longo conserva a procedência sem ultrapassar o 
   expect(plano.assets.every((a) => (a.originalFileName?.length ?? 0) <= 128)).toBe(true)
   expect(lerAssetDeCena3D(cena).cena.arquivos[0]!.caminho).toBe(longo)
   await assertScene3DAssets(plano.assets)
+})
+
+test('preparo de cena aceita metadados profundos dentro do orçamento do documento', async () => {
+  let deep: Record<string, unknown> = { leaf: 'preservado' }
+  for (let depth = 0; depth < 40_000; depth++) deep = { child: deep }
+  const project = Object.assign(createEmptyProject('deep-scene', 'Jogo grande'), {
+    futureMetadata: deep,
+  })
+  const plano = await prepararImportacaoDeCena3D(project, await pacote())
+  expect(plano.projetoId).toBe(project.id)
+  expect(plano.assets.some((asset) => asset.kind === 'scene3d')).toBe(true)
+  expect(project.assets ?? []).toEqual([])
+  expect(project.futureMetadata).toBe(deep)
 })

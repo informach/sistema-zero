@@ -12,13 +12,13 @@ test('dependency preparation uses the installed exact graph and rejects arbitrar
     { devDependencies: { vite: '8.0.16' } },
     { dependencies: { three: 'latest' } },
     { dependencies: { three: 'https://untrusted.test/pkg.tgz' } },
-    { dependencies: { three: '0.180.0' }, workspaces: ['../outside'] },
+    { dependencies: { three: '0.184.0' }, workspaces: ['../outside'] },
   ])
     expect(() => prepareRuntimeDependencyLock(JSON.stringify(manifest))).toThrow()
   const packageJson = JSON.stringify({
     name: 'review-game',
-    dependencies: { three: '^0.180.0' },
-    devDependencies: { vite: '8.1.6', '@types/three': '0.180.0', typescript: '5.9.3' },
+    dependencies: { three: '^0.184.0' },
+    devDependencies: { vite: '8.1.6', '@types/three': '0.184.1', typescript: '5.9.3' },
   })
   const lock = prepareRuntimeDependencyLock(packageJson),
     packages = JSON.parse(lock).packages
@@ -96,7 +96,7 @@ test('generated graph installs independently with npm ci and npm ls without chan
     }
     expect(await readFile(join(root, 'package-lock.json'), 'utf8')).toBe(lock)
     expect(await readFile(join(root, 'node_modules/three/package.json'), 'utf8')).toContain(
-      '0.180.0',
+      '0.184.0',
     )
   } finally {
     await rm(root, { recursive: true, force: true })

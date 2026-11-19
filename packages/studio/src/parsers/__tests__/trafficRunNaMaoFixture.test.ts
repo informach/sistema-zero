@@ -103,7 +103,7 @@ let lane = 0;
 let voltas = 0;
 let vivo = true;
 let venceu = false;
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 document.addEventListener("keydown", (event) => {
   if (event.code === "ArrowUp") {
     acelera = true;
@@ -127,6 +127,7 @@ document.addEventListener("keyup", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (vivo && !venceu) {
     let passoAng = velocidade;

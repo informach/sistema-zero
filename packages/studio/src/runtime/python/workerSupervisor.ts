@@ -102,6 +102,7 @@ export function createPythonWorkerSupervisor(options: {
     if (released) return
     released = true
     clearTimeout(bootTimer)
+    savedFlushed?.()
     // Invalidate authority first, then disconnect listeners and terminate.
     operation = undefined
     inputId = undefined
@@ -529,12 +530,26 @@ export function createPythonWorkerSupervisor(options: {
     flushSaved(ms: number): Promise<void> {
       if (terminal() || phase === 'booting' || phase === 'preparing') return Promise.resolve()
       return new Promise<void>((resolve) => {
+        const duration = Number.isFinite(ms) ? Math.max(0, ms) : 0
+        const deadline = performance.now() + duration
+        let timer: ReturnType<typeof setTimeout>
+        let settled = false
         const done = () => {
+          if (settled) return
+          settled = true
           clearTimeout(timer)
           if (savedFlushed === done) savedFlushed = undefined
           resolve()
         }
-        const timer = setTimeout(done, ms)
+        const checkDeadline = () => {
+          if (settled) return
+          const remaining = deadline - performance.now()
+          // A coarse timer may fire early. Keep the original monotonic deadline;
+          // an acknowledgement or stop still completes immediately.
+          if (remaining > 0) timer = setTimeout(checkDeadline, remaining)
+          else done()
+        }
+        timer = setTimeout(checkDeadline, duration)
         savedFlushed = done
         try {
           send({ type: 'flush-saved' })

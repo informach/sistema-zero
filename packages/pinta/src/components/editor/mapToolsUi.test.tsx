@@ -297,6 +297,32 @@ describe('balde no mapa', () => {
 })
 
 describe('terreno, espalhar e animação da peça', () => {
+  it('terreno pronto no Começar: cores acessíveis, volta ao lápis e não avisa peça vazia', async () => {
+    const { findTemplate } = await import('../../templates/catalog')
+    const sheet = findTemplate('bosque-terrenos')!.build().assets[0]!
+    if (sheet.kind !== 'tileset') throw new Error('Peças esperadas')
+    const terrain = sheet.terrains![0]!
+    await abrirMapa({
+      prepare: (map) => ({ ...map, tilesetId: sheet.id }),
+      extra: async (seed) => {
+        await seed.getState().createPrepared(sheet)
+      },
+    })
+    fireEvent.change(screen.getByLabelText(COPY.scene.terreno), { target: { value: terrain.id } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.eraser }))
+    const color = screen.getByRole('button', {
+      name: COPY.scene.paintTerrainColor(terrain.name, 2),
+    })
+    fireEvent.click(color)
+    expect(color.getAttribute('aria-pressed')).toBe('true')
+    expect(ativa(COPY.tools.pencil)).toBe(true)
+    tocar(grade(), 24, 24)
+    expect(screen.queryByText(COPY.tiles.blankTile) === null).toBe(true)
+    await noDisco(async () => {
+      const map = await mapaDoDisco()
+      expect(map.layers.find(isTileLayer)!.cells.some((cell) => cell >= 0)).toBe(true)
+    })
+  })
   for (const cancel of ['pointercancel', 'Escape'] as const)
     it(`cancelar a prévia com ${cancel} não grava nem ocupa o desfazer`, async () => {
       await abrirMapa({ level: 'create' })

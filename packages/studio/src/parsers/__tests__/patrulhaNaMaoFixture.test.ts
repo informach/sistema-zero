@@ -22,7 +22,7 @@ import { patrulhaEspacialNaMaoExample } from '../../examples/core'
  * AABB×esfera via clamp por eixo; nave×meteoro por esferas com raio da nave
  * reduzido), spawn por FUNÇÃO chamada pelo laço (nunca newInstance em laço —
  * contrato do Canvas 3D), culling além de z>8/z<-40, placar + "Objetos na
- * cena" em DOM (cena.children.length), laço com THREE.Clock e telas de
+ * cena" em DOM (cena.children.length), laço com THREE.Timer e telas de
  * início/fim com Enter ou clique. O contrato: o jogo INTEIRO vira blocos do
  * NÚCLEO (0 rawJS/rawCSS/rawHTML) e o round-trip é um FIXPOINT estável,
  * textual e de blocos.
@@ -253,8 +253,9 @@ window.addEventListener("blur", () => {
   esquerda = false;
   direita = false;
 });
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (tela === "jogando") {
     tempoTotal = tempoTotal + dt;
@@ -441,8 +442,8 @@ describe('Patrulha Espacial (Clear Code raylib 3D) — 100% blocos do núcleo', 
     expect(js).toContain('if (this.mesh.position.z > 8) {')
     expect(js).toContain('if (this.mesh.position.z < -40) {')
     expect(js).toContain('meteoros = meteoros.filter((meteoro) => !meteoro.fora);')
-    // dt REAL com THREE.Clock.
-    expect(js).toContain('const relogio = new THREE.Clock();')
+    // dt REAL com THREE.Timer.
+    expect(js).toContain('const relogio = new THREE.Timer();')
     expect(js).toContain('const dt = relogio.getDelta();')
     // Placar + contagem de objetos da cena no HUD em DOM.
     expect(js).toContain('document.getElementById("pontos").textContent = Math.floor(pontos);')
@@ -463,7 +464,7 @@ describe('Patrulha Espacial (Clear Code raylib 3D) — 100% blocos do núcleo', 
     expect(stateJson).toContain('"sz_t3d_render"')
     expect(stateJson).toContain('"sz_t3d_object_count"')
     expect(stateJson).toContain('"sz_t3d_set_scale"')
-    // O laço de quadro com THREE.Clock vira o bloco amigável de animação.
+    // O laço de quadro com THREE.Timer vira o bloco amigável de animação.
     expect(stateJson).toContain('"sz_canvas_anim_loop"')
 
     // Carrega num workspace HEADLESS e reconstrói a IR pelos BLOCOS: o código

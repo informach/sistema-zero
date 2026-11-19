@@ -1,6 +1,7 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import { encodeProjectJsonGraph } from '@sistemazero/core/studio/project-json-graph'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import { useContext } from 'react'
 import { ulid } from 'ulid'
@@ -104,7 +105,7 @@ import {
 } from './persistence'
 import { preparePintaMapBundle } from './pintaMapBundle'
 import { beginProjectOpening } from './projectOpening'
-import { bindProjectToDurableHead } from './projectStorageCoordinator'
+import { bindProjectToDurableHead, projectExitRecoveryStatus } from './projectStorageCoordinator'
 import {
   advanceLocalRevision,
   copyLocalRevision,
@@ -1323,7 +1324,7 @@ export function createProjectStore(
         try {
           conferirSessao()
           const capturado = copyStudioProjectJson(plano) as PlanoDeImportacaoDeCena3D,
-            conteudoBase = canonicalJson(copyStudioProjectJson(project)),
+            conteudoBase = encodeProjectJsonGraph(project),
             hash = await sha256Hex(conteudoBase)
           conferirSessao()
           if (capturado.baseHash !== hash)
@@ -1346,7 +1347,7 @@ export function createProjectStore(
             { sinal },
           )
           conferirSessao()
-          if (canonicalJson(copyStudioProjectJson(project)) !== conteudoBase)
+          if (encodeProjectJsonGraph(project) !== conteudoBase)
             return 'O projeto mudou durante a importação. Suas edições foram preservadas.'
           if (
             verificado.baseHash !== capturado.baseHash ||
@@ -2153,6 +2154,7 @@ export function createLocalPersistenceAdapter(
     flushOnExit: (project, options) =>
       persistProject(project, { exit: true, incompleteBlocks: options?.incompleteBlocks }, scope),
     localScope: scope,
+    exitRecoveryStatus: projectExitRecoveryStatus,
     // Cada `save` pede a sua transação na hora, e o IndexedDB as executa na ordem em que
     // nascem: o serviço não precisa encadear os saves (ver `appliesSavesInCallOrder`).
     appliesSavesInCallOrder: true,

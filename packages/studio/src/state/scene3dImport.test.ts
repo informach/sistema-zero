@@ -215,3 +215,32 @@ test('plano adulterado é recusado e bytes capturados não mudam após o início
   expect(await pending).toBeNull()
   expect(store.getState().project?.assets).toHaveLength(2)
 })
+
+for (const change of ['signed-zero', 'undefined-field'] as const)
+  test(`importação não reconhece outra revisão com JSON canônico igual: ${change}`, async () => {
+    const { store, project } = await fixture()
+    const metadata: Record<string, unknown> =
+      change === 'signed-zero' ? { zero: -0 } : { retained: undefined }
+    Object.assign(project, { futureMetadata: metadata })
+    const plano = await prepararImportacaoDeCena3D(project, await pacote())
+    if (change === 'signed-zero') metadata.zero = 0
+    else delete metadata.retained
+    expect(await store.getState().importScene3DBundle(plano)).toContain('O projeto mudou')
+    expect(store.getState().project).toBe(project)
+    expect(store.getState().isDirty).toBe(false)
+    expect(project.assets ?? []).toEqual([])
+  })
+
+test('importação completa preserva metadados profundos e mantém o programa do aluno', async () => {
+  const { store, project } = await fixture()
+  let deep: Record<string, unknown> = { leaf: 'preservado', zero: -0, optional: undefined }
+  for (let depth = 0; depth < 40_000; depth++) deep = { child: deep }
+  Object.assign(project, { futureMetadata: deep })
+  const plano = await prepararImportacaoDeCena3D(project, await pacote())
+  expect(await store.getState().importScene3DBundle(plano)).toBeNull()
+  const next = store.getState().project! as typeof project & { futureMetadata: unknown }
+  expect(next.futureMetadata).toBe(deep)
+  expect(next.files).toEqual(project.files)
+  expect(next.assets?.some((asset) => asset.kind === 'scene3d')).toBe(true)
+  expect(store.getState().isDirty).toBe(true)
+})

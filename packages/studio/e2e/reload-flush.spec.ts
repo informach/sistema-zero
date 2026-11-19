@@ -1,5 +1,25 @@
 import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
+import { nativeRecovery } from '../src/state/projectRecoveryGuards'
+import { PROJECT_STORAGE_VERSION } from '../src/state/projectStorageKeys'
+import { decodeProjectStorageValue } from '../src/state/projectStorageTransport'
+import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
+import {
+  disposeNativeInputTrace,
+  startNativeInputTrace,
+  stopNativeInputTrace,
+} from './helpers/nativeInputTrace'
+
+test.afterAll(async ({ browser }, info) => disposeNativeInputTrace(browser, info))
+
+test.beforeEach(async ({ page }) => {
+  await startNativeInputTrace(page)
+  await recordMenuInteractions(page)
+})
+test.afterEach(async ({ page }, info) => {
+  await stopNativeInputTrace(page, info)
+  await attachMenuInteractions(page, info)
+})
 
 /**
  * A gravação de SAÍDA do Estúdio: recarregar logo depois de uma mudança, SEM esperar o "Salvo",
@@ -64,6 +84,7 @@ function saveStatus(page: Page, label: string) {
 async function openMenuItem(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'Mais opções' }).click()
   await page.getByRole('menuitem', { name, exact: true }).click()
+  await expect(page.getByRole('menuitem', { name, exact: true })).toBeHidden()
 }
 
 /**
@@ -138,41 +159,66 @@ async function setVisibility(page: Page, state: 'hidden' | 'visible'): Promise<v
   }, state)
 }
 
-/** Confere o journal no disco antes de voltar à aba ou disparar pagehide. */
-async function hiddenDraftHasAdvanced3D(page: Page): Promise<boolean> {
-  return page.evaluate(async () => {
+/** A edição precisa estar no journal OU já promovida por uma gravação concorrente. */
+async function hiddenDraftHasAdvanced3D(page: Page, expectedName: string): Promise<boolean> {
+  // Observe native records without promoting journals or returning a deep decoded
+  // document through the browser protocol. Decode with the production transport in Node.
+  const snapshot = await page.evaluate(async (version) => {
     const id = decodeURIComponent(location.pathname.split('/').at(-1)!)
-    const prefix = `sz:v3:project-recovery:${id}:`
+    const prefix = `sz:v${version}:project-recovery:${id}:`
+    const metaKey = `sz:v${version}:project-meta:${id}`
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open('sistema-zero-studio')
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
     })
     try {
-      return await new Promise<boolean>((resolve, reject) => {
+      return await new Promise<{
+        id: string
+        metaKey: string
+        meta: unknown
+        drafts: Array<{ key: IDBValidKey; value: unknown }>
+      }>((resolve, reject) => {
         const tx = db.transaction('kv', 'readonly')
-        const request = tx.objectStore('kv').getAll(IDBKeyRange.bound(prefix, `${prefix}\uffff`))
-        tx.oncomplete = () => {
-          const drafts = request.result as Array<{
-            write: { puts: Array<[string, { installedExtensions?: Array<{ id: string }> }]> }
-          }>
-          resolve(
-            drafts.some((draft) =>
-              draft.write.puts.some(
-                ([key, meta]) =>
-                  key === `sz:v3:project-meta:${id}` &&
-                  meta.installedExtensions?.some(
-                    (extension) => extension.id === 'game-3d-advanced',
-                  ),
-              ),
-            ),
-          )
-        }
+        const range = IDBKeyRange.bound(prefix, `${prefix}\uffff`)
+        const keys = tx.objectStore('kv').getAllKeys(range)
+        const request = tx.objectStore('kv').getAll(range)
+        const committed = tx.objectStore('kv').get(metaKey)
+        tx.oncomplete = () =>
+          resolve({
+            id,
+            metaKey,
+            meta: committed.result,
+            drafts: keys.result.map((key, index) => ({ key, value: request.result[index] })),
+          })
         tx.onabort = () => reject(tx.error)
       })
     } finally {
       db.close()
     }
+  }, PROJECT_STORAGE_VERSION)
+  const matches = (value: unknown) => {
+    const meta = value as
+      | { id?: string; name?: string; installedExtensions?: Array<{ id: string }> }
+      | undefined
+    return (
+      meta?.id === snapshot.id &&
+      meta.name === expectedName &&
+      meta.installedExtensions?.some((extension) => extension.id === 'game-3d-advanced') === true
+    )
+  }
+  if (matches(decodeProjectStorageValue(snapshot.metaKey, snapshot.meta))) return true
+  return snapshot.drafts.some(({ key, value }) => {
+    if (typeof key !== 'string') return false
+    const draft = nativeRecovery(
+      decodeProjectStorageValue(key, value),
+      key,
+      PROJECT_STORAGE_VERSION,
+    )
+    return (
+      draft.projectId === snapshot.id &&
+      draft.write.puts?.some(([key, meta]) => key === snapshot.metaKey && matches(meta)) === true
+    )
   })
 }
 
@@ -231,7 +277,7 @@ test('trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta
   expect(errors).toEqual([])
 })
 
-test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) => {
+test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }, testInfo) => {
   // No iPad o Safari pode descartar uma aba em segundo plano sem `pagehide`: o
   // `visibilitychange` para `hidden` é o último evento com que dá para contar.
   test.setTimeout(60_000)
@@ -239,17 +285,57 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) =>
 
   await createProject(page)
   await installAdvanced3D(page)
+  await saveNow(page)
+  // Uma edição de metadados não dispara Rodar. Assim uma prévia que confirma a
+  // instalação da extensão não pode satisfazer a verificação desta edição nova.
+  const name = `Rascunho escondido ${testInfo.repeatEachIndex}`
+  await page.getByRole('button', { name: 'Meu projeto', exact: true }).click()
+  const nameInput = page.getByRole('textbox', { name: 'Nome do projeto' })
+  await nameInput.fill(name)
+  await nameInput.press('Enter')
   await expect(saveStatus(page, 'Alterações não salvas')).toBeVisible()
 
-  expect(await hiddenDraftHasAdvanced3D(page)).toBe(false)
+  expect(await hiddenDraftHasAdvanced3D(page, name)).toBe(false)
   await setVisibility(page, 'hidden')
-  // A saída grava um journal recuperável sem confirmar o CAS como "Salvo".
-  // Com autosave segurado por 10 minutos, o journal prova a gravação ao esconder.
-  await expect.poll(() => hiddenDraftHasAdvanced3D(page), { timeout: 10_000 }).toBe(true)
-  await setVisibility(page, 'visible')
-  await expect(saveStatus(page, 'Salvo')).toBeVisible({ timeout: 10_000 })
-
+  // A saída guarda a edição, ainda que outra gravação já tenha promovido o
+  // journal. O nome novo impede uma confirmação antiga de satisfazer o teste.
+  try {
+    await expect.poll(() => hiddenDraftHasAdvanced3D(page, name), { timeout: 10_000 }).toBe(true)
+  } catch (error) {
+    const storage = await page.evaluate(async () => {
+      const local = Object.fromEntries(
+        Object.entries(localStorage).filter(([key]) => key.startsWith('sz:studio-exit:')),
+      )
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('sistema-zero-studio')
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      })
+      try {
+        return await new Promise((resolve, reject) => {
+          const tx = db.transaction('kv', 'readonly')
+          const keys = tx.objectStore('kv').getAllKeys()
+          const values = tx.objectStore('kv').getAll()
+          tx.oncomplete = () =>
+            resolve({
+              local,
+              records: keys.result.map((key, index) => [key, values.result[index]]),
+            })
+          tx.onabort = () => reject(tx.error)
+        })
+      } finally {
+        db.close()
+      }
+    })
+    await testInfo.attach('exit-storage-diagnostic', {
+      body: JSON.stringify(storage),
+      contentType: 'application/json',
+    })
+    throw error
+  }
+  // Reabrir sem voltar à aba nem pedir um save: a recuperação deve bastar.
   await page.reload()
+  await expect(page.getByRole('button', { name, exact: true })).toBeVisible()
   await openMenuItem(page, 'Mais blocos')
   await expect(advanced3DKit(page).getByText('No meu jogo', { exact: true })).toBeVisible()
   expect(errors).toEqual([])

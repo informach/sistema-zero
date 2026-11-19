@@ -20,7 +20,7 @@ import { cellAt, growTilemap } from '../../../tiles/tilemapOps'
 import { isTileBlank } from '../../../tiles/tilesetOps'
 import type { MapBrushSettings } from '../MapTerrainPanel'
 import { commitIfChanged } from './commitGuard'
-import { applyMapBrush, fillWithBrush, type MapBrushContext } from './mapBrush'
+import { applyMapBrush, brushTerrain, fillWithBrush, type MapBrushContext } from './mapBrush'
 
 export interface TileGesture {
   base: PintaAsset
@@ -243,6 +243,8 @@ export function createTileGestures(deps: TileGestureDeps) {
     if (
       tool === 'pencil' &&
       !deps.stamp &&
+      !brushTerrain(brushContext()) &&
+      !deps.brush.scatter &&
       deps.tileset &&
       isTileBlank(deps.tileset, deps.selectedTile)
     )

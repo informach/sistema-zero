@@ -17,6 +17,7 @@ function fixture() {
   })
   const writes: string[] = []
   const states: boolean[] = []
+  const errors: string[] = []
   const service = createPersistenceService(
     store,
     {
@@ -33,14 +34,16 @@ function fixture() {
     flush: buffers.flush,
     save: service.save,
     pending: (value) => states.push(value),
+    error: (value) => {
+      if (value) errors.push(value)
+    },
     dirty: () => store.getState().isDirty,
-    waitMs: 60,
   })
   const starts: string[] = []
   const start = () => {
     starts.push(store.getState().project?.files?.['script.js'] ?? '')
   }
-  return { store, buffers, gate, writes, states, starts, start, acknowledge, reject }
+  return { store, buffers, gate, writes, states, errors, starts, start, acknowledge, reject }
 }
 
 it('projeto sem mudança roda no mesmo instante e não grava', async () => {
@@ -68,29 +71,30 @@ it('materializa a última edição e espera a gravação antes de rodar', async 
   expect(f.states).toEqual([true, false])
 })
 
-it('falha de gravação não impede rodar: o código fica e o selo guarda o erro', async () => {
+it('falha de gravação impede rodar uma revisão não confirmada e preserva o código', async () => {
   const f = fixture()
   f.store.getState().setFile('script.js', 'código preservado')
   const running = f.gate.run(f.start)
   f.reject(new Error('Sem espaço'))
   await running
-  expect(f.starts).toEqual(['código preservado'])
+  expect(f.starts).toEqual([])
+  expect(f.errors).toEqual(['Sem espaço'])
   expect(f.store.getState().isDirty).toBe(true)
   expect(f.store.getState().saveError).toContain('Sem espaço')
   expect(f.states).toEqual([true, false])
 })
 
-it('gravação que não responde: roda depois do limite e a escrita segue viva', async () => {
+it('gravação lenta nunca autoriza uma execução antes da confirmação', async () => {
   const f = fixture()
   f.store.getState().setFile('script.js', 'gravação lenta')
-  const started = Date.now()
-  await f.gate.run(f.start)
-  expect(Date.now() - started).toBeLessThan(1000)
-  expect(f.starts).toEqual(['gravação lenta'])
-  expect(f.states).toEqual([true, false])
+  const running = f.gate.run(f.start)
+  await Bun.sleep(80)
+  expect(f.starts).toEqual([])
+  expect(f.states).toEqual([true])
   expect(f.store.getState().isDirty).toBe(true)
   f.acknowledge()
-  await Bun.sleep(5)
+  await running
+  expect(f.starts).toEqual(['gravação lenta'])
   expect(f.store.getState().isDirty).toBe(false)
 })
 
@@ -116,7 +120,7 @@ it('outro projeto não é iniciado por uma gravação antiga', async () => {
   expect(f.starts).toEqual([])
 })
 
-it('edição feita durante a gravação entra na execução', async () => {
+it('edição feita durante a gravação é confirmada antes de entrar na execução', async () => {
   const f = fixture()
   f.store.getState().setFile('script.js', 'primeira')
   const running = f.gate.run(f.start)
@@ -127,7 +131,8 @@ it('edição feita durante a gravação entra na execução', async () => {
   f.acknowledge()
   await running
   expect(f.starts).toEqual(['edição durante a gravação'])
-  expect(f.store.getState().isDirty).toBe(true)
+  expect(f.writes).toEqual(['primeira', 'edição durante a gravação'])
+  expect(f.store.getState().isDirty).toBe(false)
 })
 
 it('clique duplo não enfileira outra gravação nem outra execução', async () => {
@@ -151,4 +156,63 @@ it('tentativa cancelada não apaga o estado de espera de uma nova', async () => 
   await Promise.all([first, second])
   expect(f.starts).toHaveLength(1)
   expect(f.states).toEqual([true, false, true, false])
+})
+
+it('uma segunda revisão aguarda sua própria confirmação, não a confirmação da primeira', async () => {
+  const store = createProjectStore()
+  store.getState().hydrateProject(createEmptyProject(crypto.randomUUID(), 'Duas revisões'))
+  const acknowledgements: Array<() => void> = []
+  const writes: string[] = []
+  const starts: string[] = []
+  const service = createPersistenceService(store, {
+    load: async () => null,
+    save: (snapshot) => {
+      writes.push(snapshot.files?.['script.js'] ?? '')
+      return new Promise<void>((resolve) => acknowledgements.push(resolve))
+    },
+  })
+  const gate = createRunPreparation({
+    project: () => store.getState().project,
+    dirty: () => store.getState().isDirty,
+    flush: () => {},
+    save: service.save,
+    pending: () => {},
+    error: (message) => {
+      if (message) throw new Error(message)
+    },
+  })
+  store.getState().setFile('script.js', 'primeira')
+  const running = gate.run((snapshot) => starts.push(snapshot.files?.['script.js'] ?? ''))
+  store.getState().setFile('script.js', 'segunda')
+  acknowledgements[0]?.()
+  await Bun.sleep(5)
+  expect(writes).toEqual(['primeira', 'segunda'])
+  expect(starts).toEqual([])
+  acknowledgements[1]?.()
+  await running
+  expect(starts).toEqual(['segunda'])
+  expect(store.getState().isDirty).toBe(false)
+})
+
+it('uma escrita que não confirma nem altera a revisão produz erro em vez de repetir para sempre', async () => {
+  const project = { id: 'não-confirmado' }
+  const errors: Array<string | null> = []
+  let writes = 0
+  let starts = 0
+  const gate = createRunPreparation({
+    project: () => project,
+    dirty: () => true,
+    flush: () => {},
+    save: async () => {
+      writes++
+    },
+    pending: () => {},
+    error: (message) => errors.push(message),
+  })
+  await gate.run(() => {
+    starts++
+  })
+  expect(writes).toBe(1)
+  expect(starts).toBe(0)
+  expect(errors.at(-1)).toContain('não confirmou')
 })

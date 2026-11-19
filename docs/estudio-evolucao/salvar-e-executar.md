@@ -10,15 +10,17 @@ Os botões continuam nos mesmos lugares e com os mesmos nomes. Ao apertar:
 1. O Estúdio materializa a última edição que ainda está no buffer dos editores.
 2. **Sem mudança a gravar**, roda no mesmo instante do clique e não grava nada
    (era assim antes desta entrega, e é o caso comum do "Rodar de novo").
-3. **Com mudança**, pede a gravação e espera a confirmação por no máximo 1,5 s
-   (`RUN_SAVE_WAIT_MS`). Nesse intervalo o Rodar fica indisponível, o Parar
-   continua disponível e o jogo anterior permanece na tela.
-4. A prévia usa o código atual, sem esperar o atraso da atualização automática.
+3. **Com mudança**, pede a gravação e espera a confirmação. Não há liberação
+   por timeout: demora não prova que a revisão está guardada. Nesse intervalo o
+   Rodar fica indisponível, o Parar continua disponível e o jogo anterior permanece.
+4. Se houver outra edição durante a confirmação, materializa e confirma também essa
+   revisão antes de iniciar. A prévia usa a revisão confirmada, sem o debounce do editor.
 
-A gravação nunca impede rodar (correção de 18/11/2026). Se ela falhar ou passar
-do limite, o jogo roda assim mesmo: a falha aparece no selo de salvar, a edição
-fica guardada como não salva e a gravação automática tenta de novo. Uma edição
-feita durante a espera entra na execução.
+Se a gravação falhar, a execução solicitada não começa. O diagnóstico aparece no
+estado de execução e no selo de salvar; a edição continua no editor como não salva,
+e o jogo anterior é preservado. É possível corrigir o armazenamento e tentar novamente.
+Essa regra corrige o achado R3: esperar 1,5 s ou ignorar uma rejeição não confirmava
+a revisão que efetivamente entrava no jogo.
 
 Parar durante a espera cancela a execução solicitada. A gravação continua: sua
 confirmação tardia não faz o jogo começar sozinho. Fechar o editor, mudar de
@@ -35,9 +37,9 @@ A entrega não promete salvar sincronicamente cada tecla. Durante uma solicitaç
 explícita pendente, essa atualização automática não antecipa a execução da nova
 revisão. A marca de execução interrompida existente continua protegendo a reabertura.
 
-O teste local ainda reproduz uma falha anterior de reinício após trabalho nativo
-pesado no Chromium 148. Não equivale a isolamento integral nos navegadores.
-Veja [o diagnóstico e as evidências](diagnostico-windows.md).
+Na revisão de 18/11, o reinício após trabalho nativo pesado passou no Chromium 148
+completo. Firefox/WebKit ainda têm limitações de isolamento registradas na revisão;
+aprovação de persistência não equivale a isolamento integral de execução.
 
 ## Para quem incorpora o Estúdio
 

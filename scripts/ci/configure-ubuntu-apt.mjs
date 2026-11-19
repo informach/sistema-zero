@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-// GitHub's Ubuntu image uses mirror+file sources with Azure at priority 1:
+// GitHub's Ubuntu images use regional Azure or EC2 archives, sometimes through mirror+file:
 // https://github.com/actions/runner-images/blob/main/images/ubuntu/scripts/build/configure-apt-sources.sh
 // Change only that archive URI, retaining APT's signed sources and all other fields.
 export function useOfficialUbuntuArchive(content) {
@@ -12,7 +12,7 @@ export function useOfficialUbuntuArchive(content) {
       line.trimStart().startsWith('#')
         ? line
         : line.replace(
-            /(^|[\t ])https?:\/\/azure\.archive\.ubuntu\.com\/ubuntu(\/?)(?=[\t \r]|$)/g,
+            /(^|[\t ])https?:\/\/(?:azure|[a-z]{2}(?:-[a-z]+)+-\d+\.ec2)\.archive\.ubuntu\.com\/ubuntu(\/?)(?=[\t \r]|$)/g,
             '$1https://archive.ubuntu.com/ubuntu$2',
           ),
     )

@@ -540,6 +540,10 @@ async function sweepUnmeasured(
   }
   let visited = 0
   for (const summary of summaries) {
+    if (summary.migrationPending) {
+      canonicalWritesCompleted = false
+      continue
+    }
     let pythonProject = summary.programmingLanguage === 'python'
     if (!context.canonicalChanged && !pythonProject) continue
     if (context.callerSignal?.aborted) break

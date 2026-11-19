@@ -141,6 +141,9 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
       listeners[name] ??= []
       listeners[name].push(fn)
     },
+    removeEventListener(name: string, fn: Listener) {
+      listeners[name] = (listeners[name] ?? []).filter((listener) => listener !== fn)
+    },
     SZGame3D: undefined,
   } as unknown as Record<string, unknown>
 

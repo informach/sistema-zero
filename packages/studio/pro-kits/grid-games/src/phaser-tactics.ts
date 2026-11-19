@@ -113,7 +113,8 @@ export function createGame(ui: GameUI, input: GameInput) {
       width,
       height,
       backgroundColor: '#234c66',
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      // The Studio owns the parent layout, including previews initially collapsed.
+      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, expandParent: false },
       audio: { noAudio: true },
       scene: Board,
       fps: { target: 60 },
@@ -126,6 +127,8 @@ export function createGame(ui: GameUI, input: GameInput) {
       draw(model) {
         pending = model
         if (!scene || disposed) return
+        // The controller invalidates on ResizeObserver notifications even while idle.
+        if (game.scale.getParentBounds()) game.scale.refresh()
         scene.draw(model)
         game.loop.wake()
       },

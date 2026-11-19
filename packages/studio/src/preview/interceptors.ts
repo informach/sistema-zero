@@ -9,6 +9,8 @@
  * profundidade — o receptor já valida `event.source` e `data.source`). Quando
  * não informado, usa `'*'` (ex.: ambientes onde a origem não é conhecida).
  */
+import { compactOfficialRuntimeSource } from '../official-extensions/runtimeSource'
+import { PREVIEW_CONSOLE_MESSAGE_BUDGET, PREVIEW_CONSOLE_WINDOW_MS } from './limits'
 import {
   PREVIEW_MAX_ERROR_CHARS,
   PREVIEW_MAX_LOG_PART_CHARS,
@@ -17,7 +19,8 @@ import {
 } from './types'
 
 export function buildInterceptorScript(targetOrigin = '*'): string {
-  return `(function () {
+  return compactOfficialRuntimeSource(
+    `(function () {
   var SRC = ${JSON.stringify(PREVIEW_MESSAGE_SOURCE)};
   var TARGET_ORIGIN = ${JSON.stringify(targetOrigin)};
   var MAX_LOG_PARTS = ${PREVIEW_MAX_LOG_PARTS};
@@ -166,10 +169,41 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
   var origWarn = console.warn;
   var origError = console.error;
   var origInfo = console.info;
-  console.log = function () { send('log', arguments); origLog.apply(console, arguments); };
-  console.warn = function () { send('warn', arguments); origWarn.apply(console, arguments); };
-  console.error = function () { send('error', arguments); origError.apply(console, arguments); };
-  console.info = function () { send('info', arguments); origInfo.apply(console, arguments); };
+  // Admission happens before formatting, IPC and the native DevTools console.
+  // Receiver-only limits cannot prevent a queue of hundreds of thousands of messages.
+  var consoleClock = Date.now;
+  var consoleTimeout = setTimeout;
+  var consoleStart = consoleClock();
+  var consoleCount = 0;
+  var consoleOmitted = 0;
+  var consoleNotice = 0;
+  function reportOmitted() {
+    consoleNotice = 0;
+    var count = consoleOmitted;
+    consoleOmitted = 0;
+    if (!count) return;
+    var text = count + ' mensagens do console omitidas neste intervalo para manter o editor responsivo.';
+    send('warn', [text]);
+    origWarn.call(console, text);
+  }
+  function admitConsole() {
+    var now = consoleClock();
+    if (now - consoleStart >= ${PREVIEW_CONSOLE_WINDOW_MS}) {
+      consoleStart = now;
+      consoleCount = 0;
+    }
+    if (consoleCount < ${PREVIEW_CONSOLE_MESSAGE_BUDGET - 1}) {
+      consoleCount++;
+      return true;
+    }
+    consoleOmitted++;
+    if (!consoleNotice) consoleNotice = consoleTimeout(reportOmitted, Math.max(0, ${PREVIEW_CONSOLE_WINDOW_MS} - (now - consoleStart)));
+    return false;
+  }
+  console.log = function () { if (admitConsole()) { send('log', arguments); origLog.apply(console, arguments); } };
+  console.warn = function () { if (admitConsole()) { send('warn', arguments); origWarn.apply(console, arguments); } };
+  console.error = function () { if (admitConsole()) { send('error', arguments); origError.apply(console, arguments); } };
+  console.info = function () { if (admitConsole()) { send('info', arguments); origInfo.apply(console, arguments); } };
   window.onerror = function (msg, src, line, col, err) {
     if (isLoopGuard(err)) {
       var loopMsg = String((err && err.message) || msg);
@@ -226,7 +260,9 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
   // este intervalo NÃO dispara — é assim que o watchdog detecta travamento.
   sendBare('heartbeat');
   try { setInterval(function () { sendBare('heartbeat'); }, 1000); } catch (e) {}
-})();`
+})();`,
+    { trimIndent: true },
+  )
 }
 
 /**

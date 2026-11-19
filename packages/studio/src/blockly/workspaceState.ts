@@ -3530,6 +3530,15 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g3d:skyPhoto':
         return block('sz_g3d_sky_photo', { PHOTO: stmt.asset, WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:loadScene':
+        return block(
+          'sz_g3d_load_scene',
+          { ASSET: stmt.asset, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:sceneStart':
+        return block('sz_g3d_scene_start', { OBJ: stmt.objVar }, {}, stmt.__id)
       case 'g3d:setColor':
         return block('sz_g3d_set_color', { OBJ: stmt.objVar, COLOR: stmt.color }, {}, stmt.__id)
       case 'g3d:setOpacity': {

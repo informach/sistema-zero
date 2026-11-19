@@ -118,6 +118,18 @@ test('plano exige JSON puro antes de qualquer configuração local', async () =>
   expect(fs.existsSync(join(input.root, '.cache/local-stack'))).toBe(false)
 })
 
+test('distribuição recusa junction na raiz e em um ancestral', async () => {
+  const input = await fixture()
+  const alias = join(input.root, 'linked-runtime')
+  fs.symlinkSync(dirname(input.directory), alias, 'junction')
+  for (const distribution of [alias, join(alias, input.plan.input.distribution.sha256)]) {
+    await expect(readLocalPythonInput({ root: input.root, distribution })).rejects.toThrow(
+      'Distribuição Python local ausente ou inválida',
+    )
+  }
+  expect(fs.existsSync(join(input.root, '.cache/local-stack'))).toBe(false)
+})
+
 test('caminho explícito continua aceito e arquivos corrompidos são recusados antes de efeitos', async () => {
   const input = await fixture()
   const explicit = join(input.root, 'explicit-runtime')

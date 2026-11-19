@@ -28,6 +28,8 @@ export interface StudioPersistenceAdapter {
   localScope?: ProjectStorageScope
   /** Exit-only recovery write. Resolving confirms the draft, not the live document. */
   flushOnExit?(project: Project, options?: { incompleteBlocks?: boolean }): Promise<void>
+  /** Synchronous confirmation of a durable exit copy; never a live-document save ACK. */
+  exitRecoveryStatus?(project: Project): { recoverable: boolean; error?: string }
   /** Optional durable outbox. Called immediately on edits, before remote autosave debounce. */
   stage?(project: Project): Promise<void>
   /**

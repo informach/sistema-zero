@@ -56,9 +56,10 @@ Arquivos: matriz em `docs/aulas-interativas-tecnico/qa/`, testes em
 
 ### 1. Isolamento e integridade antes de executar — em andamento
 
-- [x] B1: materializar buffers e salvar antes de Rodar/Rodar de novo. Corrigido em
-  18/11/2026: sem mudança roda na hora e não grava; com mudança espera no máximo 1,5 s;
-  falha ou demora da gravação NÃO impede rodar (o erro fica no selo de salvar).
+- [x] B1: materializar buffers e salvar antes de Rodar/Rodar de novo. Revisado em
+  `d22be2f75`: sem mudança roda na hora e não grava; com mudança aguarda a revisão
+  efetivamente confirmada. Falha de salvamento impede iniciar essa execução e
+  conserva a edição para nova tentativa. Não usar deadline como confirmação de gravação.
 - [x] Testar edição/troca de projeto/desmontagem enquanto salva, clique duplo,
   erro de cota, observador, geração de escritor e confirmação assíncrona do host.
 - [ ] Homologar troca real de perfil no app conectado durante um salvamento.

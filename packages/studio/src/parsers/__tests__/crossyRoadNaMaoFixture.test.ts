@@ -12,7 +12,7 @@ import { parseProjectFiles } from '../project'
  * OrthographicCamera isométrica (com up custom), o chão e as faixas em
  * InstancedMesh (o instancing profissional, um só desenho pra placa de vídeo),
  * a galinha que pula em grade pelas setas e os carros (também instanciados)
- * movidos por THREE.Clock com colisão AABB na mão. 0 rawJS, fixpoint textual, e
+ * movidos por THREE.Timer com colisão AABB na mão. 0 rawJS, fixpoint textual, e
  * o drift da IR embutida em `examples/core.ts` é guardado contra o parser vivo
  * (mudou o parser → re-embutir). ⚠️ recursos criados UMA vez (fora dos laços):
  * o contrato do Canvas 3D recusa `new` dentro de laço.
@@ -101,7 +101,7 @@ for (let i = 0; i < totalCarros; i = i + 1) {
   carroDir.push(dir);
   carroVel.push(4 + linha * 0.15);
 }
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let linhaAtual = 0;
 let coluna = 0;
 let vivo = true;
@@ -133,6 +133,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (vivo && !venceu) {
     for (let i = 0; i < totalCarros; i = i + 1) {

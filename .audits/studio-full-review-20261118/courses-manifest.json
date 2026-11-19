@@ -1,0 +1,114 @@
+{
+  "capturedAt": "2026-11-18T06:39:24.2162667-03:00",
+  "files": [
+    {
+      "sha256": "ee5f9a1b17bf3aa40b5583567e66026f84697b939f4baf4992ca8f81247ee58f",
+      "path": "courses/cade-todo-mundo-aula-1/primeiro-achado.objetivos.json"
+    },
+    {
+      "sha256": "37e56c69b0787a6184bf77722951c1cc7684b28baf26d9345e9a2692aadf660c",
+      "path": "courses/cade-todo-mundo-aula-1/primeiro-achado.png"
+    },
+    {
+      "sha256": "07fe07e420da31710fc1aabf7e66bcfd39570a529cf466a61b3bcbf39e4492c7",
+      "path": "courses/cade-todo-mundo-aula-2/contar-achados.objetivos.json"
+    },
+    {
+      "sha256": "c9b6df6a1953fa11facff215d2328ade8370d86ebe793eb469d8ad009df9d89c",
+      "path": "courses/cade-todo-mundo-aula-2/contar-achados.png"
+    },
+    {
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "path": "courses/cade-todo-mundo-aula-2/personalizar.objetivos.json"
+    },
+    {
+      "sha256": "fe2fc4509d7f79e03815172c374e0f09cef032db46daa87ac80f421afe5c3d1a",
+      "path": "courses/cade-todo-mundo-aula-2/personalizar.png"
+    },
+    {
+      "sha256": "0687b6b6b12a575997e90e94eb4b3f55ddfd6a8f0757a7e26d078c201236512f",
+      "path": "courses/desafio-dia-1/andar.objetivos.json"
+    },
+    {
+      "sha256": "8d4de2027d0045398b6beb69c674b422b3157da86fa30c3bfd36f1c3c7968fab",
+      "path": "courses/desafio-dia-1/andar.png"
+    },
+    {
+      "sha256": "845263e82e2b2fcd6c8c32717c58e8e93ba85797dcc44ff6403ed0a038aba178",
+      "path": "courses/desafio-dia-1/borda.objetivos.json"
+    },
+    {
+      "sha256": "0f958bddb69333b6b0b6ef38ee10c2009168ef86cccba4f70d0c2ed309368212",
+      "path": "courses/desafio-dia-1/borda.png"
+    },
+    {
+      "sha256": "7c839481b26247f3991896fdb6f55a721a02254a9b6aad866a0888b423a8743f",
+      "path": "courses/desafio-dia-2/guardar.objetivos.json"
+    },
+    {
+      "sha256": "340f596a0ec98c9b6faeb1073bffdb35a588864c34075b94a3a851bfb7db4af2",
+      "path": "courses/desafio-dia-2/guardar.png"
+    },
+    {
+      "sha256": "0f4ab832200acabe3616cd0a6cd1b6ae2faa15d232c3eafb7f2f94bbfea15bb3",
+      "path": "courses/desafio-dia-2/programar-chave.objetivos.json"
+    },
+    {
+      "sha256": "a4b4503e268cc3be04f0009f1be96005d3f079ad85add77c20fcd7320c53cb09",
+      "path": "courses/desafio-dia-2/programar-chave.png"
+    },
+    {
+      "sha256": "15dac6b01f3b9f52801df37d1ac631314f97cb5458ae3f25a0f7ea7427747b75",
+      "path": "courses/desafio-dia-2/recolher.objetivos.json"
+    },
+    {
+      "sha256": "cc84149d50833af3b80074aaeae2a56f35e468fe6cb18eaad8e23670b33f8bc2",
+      "path": "courses/desafio-dia-2/recolher.png"
+    },
+    {
+      "sha256": "2f6315c35aca41b93743eafda6c20c320b2dc5efcc89df942caeabaa9dfd1d1e",
+      "path": "courses/desafio-dia-3/decisao.objetivos.json"
+    },
+    {
+      "sha256": "98a1ec623e33f1a6d3de7b562d6df5ce9e3477030506438e587a10b4b5d14026",
+      "path": "courses/desafio-dia-3/decisao.png"
+    },
+    {
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "path": "courses/desafio-dia-3/farol-mensagens.objetivos.json"
+    },
+    {
+      "sha256": "af04b7773ca8b690819ce12cfb6ab12d3cad03ca01d23207d05a7fdcba696f44",
+      "path": "courses/desafio-dia-3/farol-mensagens.png"
+    },
+    {
+      "sha256": "6b03109d35abf900e492ab080ed00b3269db12b5316fab63d478556fd4331261",
+      "path": "courses/desafio-dia-3/personalizar.objetivos.json"
+    },
+    {
+      "sha256": "e83b4562721fb37a92928cd47e4ac9b731f0b579506ebd3b70f348e0f68d336c",
+      "path": "courses/desafio-dia-3/personalizar.png"
+    },
+    {
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "path": "courses/desafio-dia-3/posicionar-chave.objetivos.json"
+    },
+    {
+      "sha256": "b24576b92d83603eb23f03a50df9ccf93eef62f0cdb278c0ada47b7f09591d66",
+      "path": "courses/desafio-dia-3/posicionar-chave.png"
+    },
+    {
+      "sha256": "15046fd67567bf4d5ee2389282d38e2943bf17e0f1bb8f713bf29e18a06ba554",
+      "path": "courses/desafio-dia-3/sem-chave.objetivos.json"
+    },
+    {
+      "sha256": "8874a0a4497d1f94a695b7fae08d570732216c88ac4220e295dc332932350534",
+      "path": "courses/desafio-dia-3/sem-chave.png"
+    }
+  ],
+  "passed": 66,
+  "execution": 17,
+  "parts": 13,
+  "objectives": 66,
+  "head": "37f4d4e3aa82244688438bbec04034fb9fbd6f63"
+}

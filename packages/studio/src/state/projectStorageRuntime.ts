@@ -1,4 +1,5 @@
 import { createStore } from 'idb-keyval'
+import { captureExitJournalStorage } from './synchronousExitJournal'
 
 export const GAME_STORAGE_KEY_PREFIX = 'sz:game-storage:'
 export const gameStorageKey = (projectId: string): string =>
@@ -8,6 +9,7 @@ export interface ProjectStorageScope {
   readonly namespace: string
   readonly identity: string
   readonly store: ReturnType<typeof createStore>
+  readonly exitJournalStorage?: Storage
   /** Active-profile lifetime; captured storage operations may still finish in their own store. */
   readonly signal?: AbortSignal
 }
@@ -46,6 +48,7 @@ export function createProjectStorageScope(namespace: string): ProjectStorageScop
     namespace: normalized,
     identity,
     store: createStore(identity, 'kv'),
+    exitJournalStorage: captureExitJournalStorage(),
   })
 }
 

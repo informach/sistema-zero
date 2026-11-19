@@ -1,4 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
+import { projectMetaKey } from '../src/state/projectStorageKeys'
+import { readProjectStorageRecord } from './projectStorageInspection'
 
 /**
  * Regressão do "blocos não renderizam ao reabrir": criar um projeto de blocos,
@@ -74,26 +76,10 @@ async function expectBlocksVisibleInPanel(page: Page): Promise<void> {
 
 /** O `updatedAt` gravado no meta do projeto (é ele que o card mostra em "Atualizado em"). */
 async function storedUpdatedAt(page: Page, projectId: string): Promise<number> {
-  return page.evaluate(async (id) => {
-    const db: IDBDatabase = await new Promise((resolve, reject) => {
-      const request = indexedDB.open('sistema-zero-studio')
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
-    try {
-      const meta: { updatedAt?: unknown } | undefined = await new Promise((resolve, reject) => {
-        const request = db
-          .transaction('kv', 'readonly')
-          .objectStore('kv')
-          .get(`sz:v3:project-meta:${id}`)
-        request.onsuccess = () => resolve(request.result)
-        request.onerror = () => reject(request.error)
-      })
-      return typeof meta?.updatedAt === 'number' ? meta.updatedAt : Number.NaN
-    } finally {
-      db.close()
-    }
-  }, projectId)
+  const meta = (await readProjectStorageRecord(page, projectMetaKey(projectId))) as
+    | { updatedAt?: unknown }
+    | undefined
+  return typeof meta?.updatedAt === 'number' ? meta.updatedAt : Number.NaN
 }
 
 /** Volta à lista pelo logo da Topbar (sair grava o que estiver pendente). */

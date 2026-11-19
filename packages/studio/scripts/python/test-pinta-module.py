@@ -9,8 +9,8 @@ mentira, que só anota as chamadas:
     python3 -I packages/studio/scripts/python/test-pinta-module.py --sem-pygame
 Os casos com pygame de verdade (pixels, fontes, janela) continuam só no modo normal.
 """
-import json
 import base64
+import json
 import os
 import struct
 import sys

@@ -8,7 +8,10 @@ import {
   Color,
   DirectionalLight,
   type Fog,
+  Group,
   HemisphereLight,
+  Mesh,
+  OrthographicCamera,
   PerspectiveCamera,
   PointLight,
   Scene,
@@ -46,6 +49,32 @@ const luz = (id: string, foco = false) =>
       },
     },
   })
+
+test('o céu e o alcance da sombra usam a posição global de câmeras filhas, inclusive ortográficas', () => {
+  const cena = new Scene(),
+    ambiente = new AmbienteDoPalco(cena),
+    grupo = new Group(),
+    ceu = ambiente.grupo.children.find((o) => o instanceof Mesh),
+    sol = ambiente.grupo.children.find((o) => o instanceof DirectionalLight),
+    alvo = new Vector3(100, 11, -200)
+  if (!ceu || !sol) throw Error('O ambiente precisa ter céu e sol para este ensaio.')
+  grupo.position.set(100, 10, -200)
+  cena.add(grupo)
+  try {
+    for (const camera of [
+      new PerspectiveCamera(60, 1, 0.1, 1000),
+      new OrthographicCamera(-5, 5, 5, -5, 0.1, 1000),
+    ]) {
+      grupo.add(camera)
+      camera.position.set(0, 1.5, 0)
+      ambiente.quadro(camera, alvo)
+      expect(ceu.position.distanceTo(camera.getWorldPosition(new Vector3()))).toBeLessThan(1e-9)
+      expect(sol.shadow.camera.right).toBe(24)
+    }
+  } finally {
+    ambiente.descartar()
+  }
+})
 
 test('hora mantém o padrão existente e overrides de luz/névoa sobrevivem ao recorte da câmera', () => {
   const cena = new Scene(),

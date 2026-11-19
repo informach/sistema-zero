@@ -8,12 +8,12 @@ import {
 } from '@sistemazero/molda-cenarios-core/compilar'
 import type { FonteDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import {
+  type Camera,
   Group,
   type Intersection,
   Matrix4,
   type Mesh,
   type Object3D,
-  type PerspectiveCamera,
   Scene,
   type Vector3,
 } from 'three'
@@ -49,7 +49,7 @@ export interface CenaNoThree {
   entidade(contato: Pick<Intersection, 'object' | 'faceIndex'>): string | null
   /** Delta em segundos para clipes; os efeitos recebem tempo acumulado desde o carregamento. */
   atualizar(delta: number, movimentoReduzido?: boolean): void
-  quadro(camera: PerspectiveCamera, alvo: Vector3): void
+  quadro(camera: Camera, alvo: Vector3): void
   descartar(): void
 }
 

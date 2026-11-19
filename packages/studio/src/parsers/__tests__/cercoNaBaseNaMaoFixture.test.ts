@@ -71,7 +71,7 @@ for (let i = 0; i < totalAliens; i = i + 1) {
 aliens.instanceMatrix.needsUpdate = true;
 const mira = new THREE.Raycaster();
 const centro = new THREE.Vector2(0, 0);
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let pontos = 0;
 let vida = 3;
 let municao = 6;
@@ -153,6 +153,7 @@ document.addEventListener("keyup", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (rodando === true) {
     camera.rotation.set(anguloX, anguloY, 0);

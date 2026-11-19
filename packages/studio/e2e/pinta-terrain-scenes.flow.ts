@@ -35,8 +35,8 @@ async function backup(page: Page): Promise<Asset[]> {
   await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).last().click()
   return content.assets
 }
-function map(assets: Asset[]): Asset {
-  const found = assets.find((a) => a.name === 'terrenos-em-duas-folhas' && a.kind === 'tilemap')
+function map(assets: Asset[], name = 'terrenos-em-duas-folhas'): Asset {
+  const found = assets.find((a) => a.name === name && a.kind === 'tilemap')
   if (!found) throw new Error('Mapa esperado')
   return found
 }
@@ -199,6 +199,7 @@ test('terrenos: duas folhas, materiais, gestos, prévia, cancelamento, históric
   expect(map(lake).layers[1]!.cells.some((cell) => cell >= 0)).toBe(true)
   assertSeams(lake, 1)
   await tool('Voltar')
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
   await page.reload()
   await open.click()
   expect(map(await backup(page)).layers).toEqual(map(lake).layers)
@@ -211,5 +212,102 @@ test('terrenos: duas folhas, materiais, gestos, prévia, cancelamento, históric
     body: JSON.stringify({ cpuSlowdown, isMobile, simulated: isMobile || cpuSlowdown > 1 }),
     contentType: 'application/json',
   })
+  await cdp.detach()
+})
+
+test('Começar: criar o bosque pronto e pintar materiais sem preparar regras', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.setTimeout(120_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', {
+    rate: Number(info.project.metadata.cpuSlowdown ?? 1),
+  })
+  await page.goto(`/?namespace=prepared-terrain-${info.project.name}-${Date.now()}`)
+  await page.getByRole('button', { name: 'Criar novo', exact: true }).click()
+  await page.getByRole('button', { name: /Modelos prontos/ }).click()
+  await page.getByRole('button', { name: /Bosque com terrenos/ }).click()
+  await page.getByRole('textbox', { name: 'Qual o nome?', exact: true }).fill('bosque-iniciante')
+  await page.getByRole('button', { name: 'Começar a desenhar', exact: true }).click()
+  const canvas = page.getByRole('img', { name: 'Grade do mapa', exact: true })
+  await expect(canvas).toBeVisible()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await expect(page.getByLabel('Nível das ferramentas', { exact: true })).toHaveValue('start')
+  const initial = map(await backup(page), 'bosque-iniciante')
+  const land = initial.layers[0]!
+  const prepared = page.getByText('Preparar as peças do terreno', { exact: true })
+  const paint = async () => {
+    await canvas.scrollIntoViewIfNeeded()
+    if (isMobile) await canvas.tap({ position: { x: 48, y: 48 } })
+    else await canvas.click({ position: { x: 48, y: 48 } })
+  }
+  await page.getByLabel('Terreno', { exact: true }).selectOption({ label: 'Grama e terra' })
+  expect(await prepared.evaluate((el) => el.closest('details')!.open)).toBe(false)
+  const grass = page.getByRole('button', { name: 'Pintar Grama e terra, cor 1', exact: true })
+  await grass.focus()
+  await expect(grass).toBeFocused()
+  await grass.press('Enter')
+  await expect(grass).toHaveAttribute('aria-pressed', 'true')
+  await paint()
+  const painted = map(await backup(page), 'bosque-iniciante')
+  expect(painted.layers[0]).not.toEqual(land)
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect(map(await backup(page), 'bosque-iniciante').layers).toEqual(initial.layers)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  await page.getByRole('button', { name: 'Borracha', exact: true }).click()
+  await page.getByRole('button', { name: 'Pintar Grama e terra, cor 2', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Lápis', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await paint()
+  const ground = map(await backup(page), 'bosque-iniciante').layers[0]
+  for (const [layer, terrain, material] of [
+    ['Água', 'Água e areia', 1],
+    ['Pedras', 'Pedra e terra', 1],
+  ] as const) {
+    await page.getByRole('button', { name: layer, exact: true }).click()
+    await page.getByLabel('Terreno', { exact: true }).selectOption({ label: terrain })
+    await page
+      .getByRole('button', { name: `Pintar ${terrain}, cor ${material}`, exact: true })
+      .click()
+    expect(await prepared.evaluate((el) => el.closest('details')!.open)).toBe(false)
+    await paint()
+  }
+  const final = await backup(page)
+  const document = map(final, 'bosque-iniciante')
+  await info.attach('antes-de-fechar', {
+    body: JSON.stringify(final),
+    contentType: 'application/json',
+  })
+  expect(document.layers[0]).toEqual(ground)
+  const sheets = final.filter((a) => a.kind === 'tileset')
+  expect(sheets).toHaveLength(3)
+  expect(sheets.every((s) => s.terrains?.length === 1)).toBe(true)
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  const gallery = page.getByRole('button', { name: 'Criar novo', exact: true })
+  const closeConfirmedImmediately = await gallery.isVisible()
+  // Voltar só fecha depois do flush; aguardar essa confirmação antes de recarregar.
+  await expect(gallery).toBeVisible()
+  await info.attach('confirmacao-de-salvamento', {
+    body: JSON.stringify({ closeConfirmedImmediately }),
+    contentType: 'application/json',
+  })
+  await info.attach('galeria-apos-flush', {
+    body: JSON.stringify(await page.getByRole('status').allTextContents()),
+    contentType: 'application/json',
+  })
+  await page.reload()
+  await page.getByRole('button', { name: 'Abrir bosque-iniciante (Mapa)', exact: true }).click()
+  const reopened = await backup(page)
+  await info.attach('apos-reabrir', {
+    body: JSON.stringify(reopened),
+    contentType: 'application/json',
+  })
+  expect(map(reopened, 'bosque-iniciante').layers).toEqual(document.layers)
+  await info.attach('modelo-bosque-ui', { body: await page.screenshot(), contentType: 'image/png' })
   await cdp.detach()
 })

@@ -25,6 +25,7 @@ import {
   type ProgrammingReferenceField,
 } from './programmingReferenceContract'
 import type { JSStatement } from './schema'
+import { SymbolNames } from './symbolNames'
 
 export { PROGRAMMING_REFERENCE_FIELDS } from './programmingReferenceContract'
 
@@ -173,42 +174,42 @@ interface ClassDefinition {
 }
 
 interface ProgrammingSymbols {
-  variables: Set<string>
-  canvasContexts: Set<string>
-  canvasIds: Set<string>
-  canvas3d: Record<Canvas3DSymbolKind, Set<string>>
-  canvas3dPhysicsBodies: Map<string, Set<string>>
-  canvas3dPhysicsCharacters: Map<string, Set<string>>
-  canvas3dPhysicsResources: Map<string, Set<string>>
-  canvas3dImportedClasses: Set<string>
-  game3d: Record<Game3DSymbolKind, Set<string>>
-  classes: Set<string>
-  functions: Set<string>
+  variables: SymbolNames<string>
+  canvasContexts: SymbolNames<string>
+  canvasIds: SymbolNames<string>
+  canvas3d: Record<Canvas3DSymbolKind, SymbolNames<string>>
+  canvas3dPhysicsBodies: Map<string, SymbolNames<string>>
+  canvas3dPhysicsCharacters: Map<string, SymbolNames<string>>
+  canvas3dPhysicsResources: Map<string, SymbolNames<string>>
+  canvas3dImportedClasses: SymbolNames<string>
+  game3d: Record<Game3DSymbolKind, SymbolNames<string>>
+  classes: SymbolNames<string>
+  functions: SymbolNames<string>
   functionDefinitions: Map<string, FunctionDefinition>
-  checkingFunctions: Set<string>
+  checkingFunctions: SymbolNames<string>
   classDefinitions: Map<string, ClassDefinition>
   instances: Map<string, string>
-  checkingClassBodies: Set<string>
+  checkingClassBodies: SymbolNames<string>
 }
 
 function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
   return {
-    variables: new Set(symbols.variables),
-    canvasContexts: new Set(symbols.canvasContexts),
-    canvasIds: new Set(symbols.canvasIds),
+    variables: symbols.variables.fork(),
+    canvasContexts: symbols.canvasContexts.fork(),
+    canvasIds: symbols.canvasIds.fork(),
     canvas3d: cloneCanvas3DSymbols(symbols.canvas3d),
     canvas3dPhysicsBodies: cloneOwnedNames(symbols.canvas3dPhysicsBodies),
     canvas3dPhysicsCharacters: cloneOwnedNames(symbols.canvas3dPhysicsCharacters),
     canvas3dPhysicsResources: cloneOwnedNames(symbols.canvas3dPhysicsResources),
-    canvas3dImportedClasses: new Set(symbols.canvas3dImportedClasses),
+    canvas3dImportedClasses: symbols.canvas3dImportedClasses.fork(),
     game3d: cloneGame3DSymbols(symbols.game3d),
-    classes: new Set(symbols.classes),
-    functions: new Set(symbols.functions),
+    classes: symbols.classes.fork(),
+    functions: symbols.functions.fork(),
     functionDefinitions: new Map(symbols.functionDefinitions),
-    checkingFunctions: new Set(symbols.checkingFunctions),
+    checkingFunctions: symbols.checkingFunctions.fork(),
     classDefinitions: new Map(symbols.classDefinitions),
     instances: new Map(symbols.instances),
-    checkingClassBodies: new Set(symbols.checkingClassBodies),
+    checkingClassBodies: symbols.checkingClassBodies.fork(),
   }
 }
 
@@ -250,35 +251,34 @@ function mergeFutureSymbols(
   return merged
 }
 
-function addName(target: Set<string>, value: unknown): void {
+function addName(target: SymbolNames<string>, value: unknown): void {
   if (typeof value !== 'string') return
   const name = value.trim()
   if (name) target.add(name)
 }
 
 function cloneOwnedNames(
-  source: ReadonlyMap<string, ReadonlySet<string>>,
-): Map<string, Set<string>> {
-  // Laços diretos nas três cópias abaixo: são chamadas uma vez por corpo de bloco, e as listas
-  // intermediárias (`map` + `fromEntries`) pesavam no perfil de 17/11/2026.
-  const copy = new Map<string, Set<string>>()
-  for (const [owner, names] of source) copy.set(owner, new Set(names))
+  source: ReadonlyMap<string, SymbolNames<string>>,
+): Map<string, SymbolNames<string>> {
+  // The owner map is independent, while its name snapshots detach only on mutation.
+  const copy = new Map<string, SymbolNames<string>>()
+  for (const [owner, names] of source) copy.set(owner, names.fork())
   return copy
 }
 
 function mergeOwnedNames(
-  target: Map<string, Set<string>>,
-  source: ReadonlyMap<string, ReadonlySet<string>>,
+  target: Map<string, SymbolNames<string>>,
+  source: ReadonlyMap<string, SymbolNames<string>>,
 ): void {
   source.forEach((names, owner) => {
-    const owned = target.get(owner) ?? new Set<string>()
+    const owned = target.get(owner) ?? new SymbolNames<string>()
     for (const name of names) owned.add(name)
     target.set(owner, owned)
   })
 }
 
 function addOwnedName(
-  target: Map<string, Set<string>>,
+  target: Map<string, SymbolNames<string>>,
   ownerValue: unknown,
   nameValue: unknown,
 ): void {
@@ -286,25 +286,24 @@ function addOwnedName(
   const owner = ownerValue.trim()
   const name = nameValue.trim()
   if (!owner || !name) return
-  const owned = target.get(owner) ?? new Set<string>()
+  const owned = target.get(owner) ?? new SymbolNames<string>()
   owned.add(name)
   target.set(owner, owned)
 }
 
 const GAME3D_SYMBOL_KINDS: readonly Game3DSymbolKind[] = ['world', 'object', 'group']
 
-function emptyGame3DSymbols(): Record<Game3DSymbolKind, Set<string>> {
-  return Object.fromEntries(GAME3D_SYMBOL_KINDS.map((kind) => [kind, new Set<string>()])) as Record<
-    Game3DSymbolKind,
-    Set<string>
-  >
+function emptyGame3DSymbols(): Record<Game3DSymbolKind, SymbolNames<string>> {
+  return Object.fromEntries(
+    GAME3D_SYMBOL_KINDS.map((kind) => [kind, new SymbolNames<string>()]),
+  ) as Record<Game3DSymbolKind, SymbolNames<string>>
 }
 
 function cloneGame3DSymbols(
-  symbols: Readonly<Record<Game3DSymbolKind, ReadonlySet<string>>>,
-): Record<Game3DSymbolKind, Set<string>> {
-  const copy = {} as Record<Game3DSymbolKind, Set<string>>
-  for (const kind of GAME3D_SYMBOL_KINDS) copy[kind] = new Set(symbols[kind])
+  symbols: Readonly<Record<Game3DSymbolKind, SymbolNames<string>>>,
+): Record<Game3DSymbolKind, SymbolNames<string>> {
+  const copy = {} as Record<Game3DSymbolKind, SymbolNames<string>>
+  for (const kind of GAME3D_SYMBOL_KINDS) copy[kind] = symbols[kind].fork()
   return copy
 }
 
@@ -330,17 +329,17 @@ const CANVAS3D_SYMBOL_KINDS: readonly Canvas3DSymbolKind[] = [
   'physics-world',
 ]
 
-function emptyCanvas3DSymbols(): Record<Canvas3DSymbolKind, Set<string>> {
+function emptyCanvas3DSymbols(): Record<Canvas3DSymbolKind, SymbolNames<string>> {
   return Object.fromEntries(
-    CANVAS3D_SYMBOL_KINDS.map((kind) => [kind, new Set<string>()]),
-  ) as Record<Canvas3DSymbolKind, Set<string>>
+    CANVAS3D_SYMBOL_KINDS.map((kind) => [kind, new SymbolNames<string>()]),
+  ) as Record<Canvas3DSymbolKind, SymbolNames<string>>
 }
 
 function cloneCanvas3DSymbols(
-  symbols: Readonly<Record<Canvas3DSymbolKind, ReadonlySet<string>>>,
-): Record<Canvas3DSymbolKind, Set<string>> {
-  const copy = {} as Record<Canvas3DSymbolKind, Set<string>>
-  for (const kind of CANVAS3D_SYMBOL_KINDS) copy[kind] = new Set(symbols[kind])
+  symbols: Readonly<Record<Canvas3DSymbolKind, SymbolNames<string>>>,
+): Record<Canvas3DSymbolKind, SymbolNames<string>> {
+  const copy = {} as Record<Canvas3DSymbolKind, SymbolNames<string>>
+  for (const kind of CANVAS3D_SYMBOL_KINDS) copy[kind] = symbols[kind].fork()
   return copy
 }
 
@@ -1027,7 +1026,7 @@ export type Canvas3DStatementContextIndex = WeakMap<JSStatement, Canvas3DStateme
 function snapshotCanvas3DContext(symbols: ProgrammingSymbols): Canvas3DStatementContext {
   return {
     symbols: cloneCanvas3DSymbols(symbols.canvas3d),
-    importedClasses: new Set(symbols.canvas3dImportedClasses),
+    importedClasses: symbols.canvas3dImportedClasses.fork(),
   }
 }
 
@@ -1300,24 +1299,24 @@ export interface ProgrammingReferenceOptions {
 function createInitialProgrammingSymbols(
   options: ProgrammingReferenceOptions = {},
 ): ProgrammingSymbols {
-  const canvasContexts = new Set(options.providedCanvasContexts ?? [])
+  const canvasContexts = new SymbolNames(options.providedCanvasContexts ?? [])
   return {
-    variables: new Set([...IMPLICIT_VARIABLES, ...canvasContexts]),
+    variables: new SymbolNames([...IMPLICIT_VARIABLES, ...canvasContexts]),
     canvasContexts,
-    canvasIds: new Set(options.canvasIds ?? []),
+    canvasIds: new SymbolNames(options.canvasIds ?? []),
     canvas3d: emptyCanvas3DSymbols(),
     canvas3dPhysicsBodies: new Map(),
     canvas3dPhysicsCharacters: new Map(),
     canvas3dPhysicsResources: new Map(),
-    canvas3dImportedClasses: new Set(),
+    canvas3dImportedClasses: new SymbolNames(),
     game3d: emptyGame3DSymbols(),
-    classes: new Set(IMPLICIT_CLASSES),
-    functions: new Set(IMPLICIT_FUNCTIONS),
+    classes: new SymbolNames(IMPLICIT_CLASSES),
+    functions: new SymbolNames(IMPLICIT_FUNCTIONS),
     functionDefinitions: new Map(),
-    checkingFunctions: new Set(),
+    checkingFunctions: new SymbolNames(),
     classDefinitions: new Map(),
     instances: new Map(),
-    checkingClassBodies: new Set(),
+    checkingClassBodies: new SymbolNames(),
   }
 }
 

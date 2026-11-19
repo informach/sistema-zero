@@ -581,6 +581,19 @@ export function createPersistenceService(
       schedule(state.project)
     })
     const flushOnPageExit = () => flushPending(true)
+    const flushBeforeUnload = (event: BeforeUnloadEvent) => {
+      flushPending(true)
+      const current = store.getState()
+      if (!adapter?.localScope || !current.project || !current.isDirty) return
+      const status = adapter.exitRecoveryStatus?.(current.project)
+      if (status?.recoverable) return
+      const message = status?.error ?? 'Salve ou exporte as alterações antes de fechar esta aba.'
+      current.markSaveFailed(message)
+      // Native confirmation protects edits when quota/permissions prevent the
+      // synchronous journal. Browsers require a real prior user activation.
+      event.preventDefault()
+      event.returnValue = ''
+    }
     // Aba ESCONDIDA (trocar de app ou bloquear a tela no iPad, trocar de aba): o
     // navegador pode descartar uma página em segundo plano sem `pagehide` nenhum (o
     // Safari do iPad faz isso), e o `visibilitychange` para `hidden` é o último evento
@@ -603,7 +616,7 @@ export function createPersistenceService(
     const hasDocument = typeof document !== 'undefined'
     if (hasWindow) {
       window.addEventListener('pagehide', flushOnPageExit)
-      window.addEventListener('beforeunload', flushOnPageExit)
+      window.addEventListener('beforeunload', flushBeforeUnload)
     }
     if (hasDocument) document.addEventListener('visibilitychange', flushWhenHidden)
     liveServices.add(internals)
@@ -616,7 +629,7 @@ export function createPersistenceService(
       unsub()
       if (hasWindow) {
         window.removeEventListener('pagehide', flushOnPageExit)
-        window.removeEventListener('beforeunload', flushOnPageExit)
+        window.removeEventListener('beforeunload', flushBeforeUnload)
       }
       if (hasDocument) document.removeEventListener('visibilitychange', flushWhenHidden)
       liveServices.delete(internals)

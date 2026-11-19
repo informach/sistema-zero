@@ -1,0 +1,382 @@
+{
+  "baseline": "bf6e895fc",
+  "files": [
+    {
+      "path": "packages/core/src/studio/index.ts",
+      "sha256": "180593cda33427d06572207908f4e61cf6f2b7729851afb2516d88ae7746a2e9"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-image.ts",
+      "sha256": "364c0773b83cf04faa994884e04e3bfdf8e024577518f7733dbe5e7d932a3d9d"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-limits.test.ts",
+      "sha256": "42507c4d5405132648d0a526131d4674cea003e5510da961d6bab398ea61f6c3"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-limits.ts",
+      "sha256": "6a3ac9b8a2cbcedd6396ed2919679a3d8d8fd7964c70fbc75d8113a5a0df139b"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-player.ts",
+      "sha256": "9cc0b49db672532c2e0be187465e4f7d9b9ad65c6fde838682639c120891bf86"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-runtime.ts",
+      "sha256": "439ed11bbe2b3021430f7585495b4d063f9c21e5f1719a10483460558306d83f"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene.ts",
+      "sha256": "33b424f6d75f3cb2ef8e8367feedeaee145f8ba47ca8f4abea5209899d4540da"
+    },
+    {
+      "path": "packages/studio/src/asset-library/__tests__/personalSync.cases.ts",
+      "sha256": "d4208a7bc9f5a31ec0a708f2c82bcc7e9dd25f87129d2d4dae9578a51d5d755d"
+    },
+    {
+      "path": "packages/studio/src/asset-library/personal.ts",
+      "sha256": "914c367dd5e70c7be5abf9ebabd7be0ba819e009376c57be94d4c9754f5d3442"
+    },
+    {
+      "path": "packages/studio/src/asset-library/personalSync.ts",
+      "sha256": "5f662bdda7a5769219302204e86bc74a5484c582abe0109af16e21fb8633c127"
+    },
+    {
+      "path": "packages/studio/src/blockly/__tests__/protectedCourses.test.ts",
+      "sha256": "05c2363dfeb0313735d8c4807b5c70e88f0b4c4414af130994d65f8746396652"
+    },
+    {
+      "path": "packages/studio/src/blockly/media.test.ts",
+      "sha256": "6a5c8f2673778f0da168ef345aeaa2d0cf12c62551b09e087cc73575b4666194"
+    },
+    {
+      "path": "packages/studio/src/blockly/media.ts",
+      "sha256": "f5d1e1f0b50c5b5e9e274060a50ea5e98366e673969cdfee3917b1b06863a4eb"
+    },
+    {
+      "path": "packages/studio/src/blockly/offscreenBodies.ts",
+      "sha256": "ce3063424e122bbe48a38229ca8bf52734dba80140b0ee520c5d359dd7258261"
+    },
+    {
+      "path": "packages/studio/src/capture/index.ts",
+      "sha256": "6dbafc0df20681b5f2bb511d6387c0e109858e276eab7c2b32f9ad704c3b1ccc"
+    },
+    {
+      "path": "packages/studio/src/components/assets/AssetsPanel.tsx",
+      "sha256": "fd74170644ec1ff87073ff7b86fdf98c77d49df6607cf8f928110e7375e0ea46"
+    },
+    {
+      "path": "packages/studio/src/components/assets/addCreationToProject.ts",
+      "sha256": "7504cc05185a19d5e04187a84dd894716947370a725a1ec7d7ca19ad6ac5748f"
+    },
+    {
+      "path": "packages/studio/src/components/blocks/BlocklyPanel.tsx",
+      "sha256": "a0972bb36b9468c3186cfec19b9a59d189e1d1deeefe6ce2b066e35559925c25"
+    },
+    {
+      "path": "packages/studio/src/components/blocks/PythonBlocklyEditor.tsx",
+      "sha256": "89b68d7e334eafaf431700557f614582187df716eea600ccb574ae7e0b0bef2f"
+    },
+    {
+      "path": "packages/studio/src/components/preview/PreviewIframe.save.test.tsx",
+      "sha256": "1812129bbe2298ad9a8a4321c225a3e1481308834b88d71d419eb4bcb7aba476"
+    },
+    {
+      "path": "packages/studio/src/components/preview/PreviewIframe.test.tsx",
+      "sha256": "13a2d5893ec9335b1991cf7095a0518e06dbd16a315d05a7dc5e47f4518ea701"
+    },
+    {
+      "path": "packages/studio/src/components/preview/PreviewIframe.tsx",
+      "sha256": "bb5c831a23683a144c7ffde0efff5532feeb85d41459f1caf5d1ad2e6732a8a6"
+    },
+    {
+      "path": "packages/studio/src/components/preview/prepareRun.test.ts",
+      "sha256": "53bebb5a43898cec00f48017bea4cb2c2ed1b2afde1edb4531e48ac41c379801"
+    },
+    {
+      "path": "packages/studio/src/components/preview/prepareRun.ts",
+      "sha256": "21f35103c7fe56b25bdf3b194e658ad6a50d5125122bbb391788336ab3851658"
+    },
+    {
+      "path": "packages/studio/src/components/preview/runTripwire.ts",
+      "sha256": "c004711f405b636752facb26cdc61cf5fd643723c5ee78482d9a40317c8c2eec"
+    },
+    {
+      "path": "packages/studio/src/core/__tests__/projectAssetsScene.test.ts",
+      "sha256": "1577f3e1377ceaa0f5b038cd68c957e769c2c4e9b3b8f2e11b769f857b416560"
+    },
+    {
+      "path": "packages/studio/src/core/pintaImageAsset.ts",
+      "sha256": "dee35785b23e1c30ee5a703c043c231935170d4f7c49817ccb7b304bdf4704dc"
+    },
+    {
+      "path": "packages/studio/src/core/projectAssets.ts",
+      "sha256": "11ac5fdf2a09d0042f4f5926b837a831be7d0bc8be4198497dc7e990205b8cfb"
+    },
+    {
+      "path": "packages/studio/src/cover/coverCapture.ts",
+      "sha256": "b7997bf69391978e72fc7908b6ba69d52c47aeccbeeae06d69263c00936ffcfd"
+    },
+    {
+      "path": "packages/studio/src/examples/__gen_serverExamplesIndex.ts",
+      "sha256": "f6f33f40e2cc8ca5421c387ec20ead446f11bef1928dfa9122dd41a71967ae9c"
+    },
+    {
+      "path": "packages/studio/src/examples/pintaScenes.generated.ts",
+      "sha256": "eb78d9dea33a296f6c723f60f6f4d7853783898c4c17caef319c7eb8051f2494"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygame/pydew-valley/README.md",
+      "sha256": "8d2a5d238822e7a86567642da4e97f7984364b9087d9e788407f4b02ed26e4a5"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygame/pydew-valley/assets/casa-e-objetos.png",
+      "deleted": true
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygame/pydew-valley/assets/fazenda.png",
+      "sha256": "87bcc350c0fa8d8b59cc199f8ac21cd1b6d7ba1ee7a77447b7a3d129b9335aa6"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygame/pydew-valley/desenhos.pinta.json",
+      "sha256": "391471efb11687190adcf8d52ed6269257a84f8448dd1ed7cb200e980c8fd07d"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygame/pydew-valley/farm.py",
+      "sha256": "3758bf87ad787fbfd51b93605401e067b226bdf5a2c12e7eae95678e05be5f76"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygameGames.blocks.generated.ts",
+      "sha256": "dc70ca4d2d1a86fc4877b68eef7c7ce4b17444ed099a66d75840dbf167e153fa"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygameGames.test.ts",
+      "sha256": "01090eb2ba88442557abfbfb00138dbc9640651107c7e8e0d63a952fb26cdd65"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygameGames/pydewValley.drawings.generated.ts",
+      "sha256": "5b86cab1d704a0ae589d05f43f2f25085599199af4eff20b5ffba1201152af50"
+    },
+    {
+      "path": "packages/studio/src/examples/python/pygameGames/pydewValley.generated.ts",
+      "sha256": "b8c7407f847fe1a41b7895329488ef62c939925a60f05fa6e18241d6cf6cb9bf"
+    },
+    {
+      "path": "packages/studio/src/examples/qaContracts.test.ts",
+      "sha256": "a7770c204c46880a6f270154bc38b1a7b9d5157ad522d11e79f1e370558783f8"
+    },
+    {
+      "path": "packages/studio/src/examples/qaContracts.ts",
+      "sha256": "980145a3daa42eeaaec9e3009b1662d958d960fffb4cdc7436ae2bb873540470"
+    },
+    {
+      "path": "packages/studio/src/examples/serverExamples.test.ts",
+      "sha256": "c611b4c5924233e35cecfdb41b1909ddf548c010f90f57526053401f8e5ec861"
+    },
+    {
+      "path": "packages/studio/src/export/fileMap.ts",
+      "sha256": "82aa165918c7939834c98d2201e06e46a830582b309d1ad5602107ddc7449c83"
+    },
+    {
+      "path": "packages/studio/src/generators/js.ts",
+      "sha256": "a0f6869aa616c15fe079e604cea80be7e9e67ea48f8993db480c2bc2f0dd926f"
+    },
+    {
+      "path": "packages/studio/src/hooks/useDebounced.test.tsx",
+      "sha256": "104f5a9342f23dd6ce7929f3be1611b654d8c561ed2ec5843de098d23d087a0b"
+    },
+    {
+      "path": "packages/studio/src/hooks/useDebounced.ts",
+      "sha256": "f01847202be335ceaa7fb922d2be3034e909bb0a67892001d52828c43b48a40a"
+    },
+    {
+      "path": "packages/studio/src/ir/__tests__/canvas3dIndexShortcut.test.ts",
+      "sha256": "a5226b344dbd8cc147150209c232c68a2d70e5f837044ef578965611e56b5124"
+    },
+    {
+      "path": "packages/studio/src/ir/programmingExecution.ts",
+      "sha256": "af9816c93b4b2f5491c967d26631b77d475b94e52092fe02f63954018d3735a0"
+    },
+    {
+      "path": "packages/studio/src/ir/programmingReferences.ts",
+      "sha256": "61d52cda4cf5e1af3e649be6176de77215b1c63d6b29dd0e2254d816c6368bf2"
+    },
+    {
+      "path": "packages/studio/src/ir/schema.ts",
+      "sha256": "a1a51edc6ad34700f2070866fc2e43259a7587ae32f8990a5123d3b9c4ffd4bf"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/examplesLoading.test.ts",
+      "sha256": "49b8e710b29bc8a3acc59836796812ab4ec76ada7467bb025b60f36c8916ad77"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/__tests__/blockAudit.test.ts",
+      "sha256": "0728e434a9426894c9fb5928334c57b4a1334d51408b0b5a6432fc259234d9a3"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/__tests__/examples.test.ts",
+      "sha256": "9fec724d55717368a9186f6a13085b573eca06119034c5449134e4a50a780713"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/__tests__/runtimeTypecheck.test.ts",
+      "sha256": "9fb92ca28edbdbefb1f2c032a31461eca48e440dbfa840bdc684d2db05633c34"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/docs.ts",
+      "sha256": "f463a80619e85f950479961594726b7cf32c4919d5322183ac8c56d57ad3ced7"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/exampleCatalog.ts",
+      "sha256": "938d99baf5aba7a76a8e0cf17541f2fce509237dcf82b56c909ebcc173f177e2"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/index.ts",
+      "sha256": "5682e98cbed879ddf361b1086bb0201f36d4fad4839515828e3313cd3461b212"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+      "sha256": "610e75f1dc2236779d6b8e5fdb8befdee290336a07fe8cb442339dae75720d97"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/__tests__/blockAudit.test.ts",
+      "sha256": "e0d70c38ff7d4c37078aa32d9efc0bb43f426166852cf3b6b81f101d01d1f6c3"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/__tests__/docDrift.test.ts",
+      "sha256": "30b547f17f9ff7056cefce392f8468dd36824e807cd2c6db6bbbac69885eff5e"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/__tests__/exampleProgression.test.ts",
+      "sha256": "abc0b9823e9cff97306d8c4754634c068a78570d792c4acee439e9ada7d13cd6"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/__tests__/examples.test.ts",
+      "sha256": "c78b6af00581935fe58301348fc9e659346baf3ac3d530d87812074eb5b4b330"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/__tests__/runtimeTypecheck.test.ts",
+      "sha256": "2efd96ed34c786011bb64d0024d3095d094a2a1f2184ff4b01e0139a0261fcba"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/exampleCatalog.ts",
+      "sha256": "feeb963eee1e2a431a9fef57f502711ece4ea51dfd592b94bb302d89d691d3cb"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/index.ts",
+      "sha256": "746269a39308e5b3081b9abd3d87416e984423d7d9614cf41ff92507326befac"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/runtime/worldTiles.ts",
+      "sha256": "29e73f5512112a989371284631b4153681956a581dc4bb2555d4fdb54a3fdc7e"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d/runtimeContract.ts",
+      "sha256": "88430a121d83ba99a5f333c912d667831d97c4bcc142b86c806863c3bbe07564"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/__tests__/engines.test.ts",
+      "sha256": "306a0b7631c4c0548e68bba48694f960ec1a9eb1346640db09d54a79da770482"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/__tests__/hostVariant.test.ts",
+      "sha256": "be8bf4338203dbd63ec8c6815e5f60f54b04e03483d78317ad7ce6d4bf02fbc2"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/bootstrap.ts",
+      "sha256": "af75b71f5bd617662ee84564c75eaf9096307eb47e3c2104318102ef303fd48a"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/catalog.ts",
+      "sha256": "f17facad188293ca63a9a17ea30faefa4bc8504235feab00c932ddfcee1e02e6"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/contract.ts",
+      "sha256": "8378d9743cd9308db3b28fe3fc4ed5a7073362f85879cdf002d0720d43efbc80"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/examples.ts",
+      "sha256": "ae2111a1aafbfabb8b849a8ec6c8eac7a2321eb055c2a425f6b3490000cdd3d0"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/runtime.test.ts",
+      "sha256": "8312e267caa38ba5b746fb6fc8de9a05e12afc5667f26d444b474bb49df43ff3"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/map-2d/runtime.ts",
+      "sha256": "9d4f01239e98d6ab78d0b835c4c2a8e23bafa50f8d7e94978c0c367f5250eb1e"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/scene-2d/catalog.ts",
+      "sha256": "bba4d73d5259601a89b4f9196b53b8fe0f6aef87b9e38997e289e5897f187c7f"
+    },
+    {
+      "path": "packages/studio/src/official-extensions/scene-2d/docs.ts",
+      "sha256": "545b0b034e12bde8aa63af9e6971036e3997aee956ff84d8fb538077de162cb1"
+    },
+    {
+      "path": "packages/studio/src/preview/__tests__/sceneDocumentBytes.test.ts",
+      "sha256": "6eff57cf7284831588d0fe248319220c8985300aa78616a0cc3620cec6a51a0a"
+    },
+    {
+      "path": "packages/studio/src/preview/assetsBridge.ts",
+      "sha256": "2c252af005feb56797bfbc482f2847f7db446ce078dab639862317748897381a"
+    },
+    {
+      "path": "packages/studio/src/preview/renderProject.ts",
+      "sha256": "f0257533979c716738db794e7e33ff6f9bceb1f3d2ade6be8564553f49486dbd"
+    },
+    {
+      "path": "packages/studio/src/projects/KitGallery.discovery.test.ts",
+      "sha256": "84d37b9f6f72d9836e38e61e24e692755b5c9009271eaf3de603afbe4b13bad5"
+    },
+    {
+      "path": "packages/studio/src/projects/tilemapGame.test.ts",
+      "sha256": "6edad0532806f38c30fbeb49e5c09cfea279aefaadc073fe75bbcc448caae3b6"
+    },
+    {
+      "path": "packages/studio/src/projects/tilemapGame.ts",
+      "sha256": "4bf8f6eefcccfc9595727547e331b2265a6871ea08b62c767c24818bdd1e0b79"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/pygame/desktopSources.generated.ts",
+      "sha256": "40340ab433c832dce977e0b32224f2d2aadc13b7332fcd5507c96830c29dc10a"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/pygame/py/pinta.py",
+      "sha256": "7a125a3e6c72ee434685e1c4575e89491c0f9d03e3a956dedbe7769c34f61a49"
+    },
+    {
+      "path": "packages/studio/src/state/projectAssetSceneBudget.test.ts",
+      "sha256": "bf3c5b61524c2b3c00d3a5ecfe37fbe4e1aef2a7aafd6e94fc2f9fd3557adffc"
+    },
+    {
+      "path": "packages/studio/src/state/projectStore.ts",
+      "sha256": "ce1e671748c288b3421b9f66536e3aba29facaefa9e4b800ff87aabe875fce1a"
+    },
+    {
+      "path": "packages/studio/src/state/studioStores.persistence.test.tsx",
+      "sha256": "dd8e73a6148ddcad379a79c8edbdae8866abc51e9d57cb5a63015ca19366788a"
+    },
+    {
+      "path": "packages/studio/src/state/studioStores.ts",
+      "sha256": "bc6c6c7202c2902b0da68388531e7da93884e87dd2b23b582546d8c445f77b82"
+    },
+    {
+      "path": "packages/studio/src/studio/StudioLesson.tsx",
+      "sha256": "b86fb58f12c4b17917096c9698aac1fa6ed69e4977ae947d5fe7d4dc49557721"
+    },
+    {
+      "path": "packages/studio/src/studio/lessonFeatures.ts",
+      "sha256": "26a973cb6d445e03698111c1ea8a3f0ee880063d369f51b62ccc6e0585ee9221"
+    },
+    {
+      "path": "packages/studio/src/studio/pinta-library.ts",
+      "sha256": "c29e5ce986a3455085ea12328bcafe96eeff7062dd04cd041b668edf8998320f"
+    },
+    {
+      "path": "packages/studio/src/styles/studio.css",
+      "sha256": "9cf53849d841658d9208a3c5ff3d309da07a7bdfa031f695c874085fb6fe6a94"
+    }
+  ],
+  "reviewedHead": "37f4d4e3aa82244688438bbec04034fb9fbd6f63"
+}

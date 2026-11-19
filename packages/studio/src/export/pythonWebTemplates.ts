@@ -16,6 +16,7 @@ export function pythonWebTemplates(runtimeHash: string): ExportFileMap {
     'serve.py': `"""Serve only this exported package. Never import or execute the learner program."""
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from socketserver import TCPServer
 import mimetypes
 import os
 from pathlib import Path
@@ -31,6 +32,12 @@ RUNTIME = ${JSON.stringify(`runtime/${runtimeHash}/`)}
 FRAME_POLICY = ${JSON.stringify(framePolicy)}
 PAGE_POLICY = ${JSON.stringify(pagePolicy)}
 ROOT_FILES = {"index.html", "player.css", "payload.json", "runtime-deployment.json", "asset-attributions.json"}
+
+class StaticServer(ThreadingHTTPServer):
+    def server_bind(self):
+        # This launcher binds a numeric loopback address, never a DNS hostname.
+        TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
 
 class Handler(BaseHTTPRequestHandler):
     def do_HEAD(self):
@@ -84,7 +91,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    server = StaticServer(("127.0.0.1", args.port), Handler)
     print(f"Abra http://127.0.0.1:{server.server_port}/ — Ctrl+C para parar", flush=True)
     try:
         server.serve_forever()
