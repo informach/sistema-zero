@@ -1,4 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
+import { projectFilesKey } from '../src/state/projectStorageKeys'
+import { readProjectStorageRecord } from './projectStorageInspection'
 
 // Modelo D2 (src/core/modes.ts): projeto BÁSICO expõe só Blocos + Ponte — o
 // editor de código do clássico vive na PONTE; projeto PROFISSIONAL (radio
@@ -385,29 +387,12 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
     const projectId = decodeURIComponent(new URL(page.url()).pathname.split('/editor/')[1] ?? '')
     expect(projectId).not.toBe('')
-    const savedScript = () =>
-      page.evaluate(async (id) => {
-        const db: IDBDatabase = await new Promise((resolve, reject) => {
-          const request = indexedDB.open('sistema-zero-studio')
-          request.onsuccess = () => resolve(request.result)
-          request.onerror = () => reject(request.error)
-        })
-        try {
-          const stored = await new Promise<{ files?: Record<string, string> } | undefined>(
-            (resolve, reject) => {
-              const request = db
-                .transaction('kv', 'readonly')
-                .objectStore('kv')
-                .get(`sz:v3:project-files:${id}`)
-              request.onsuccess = () => resolve(request.result)
-              request.onerror = () => reject(request.error)
-            },
-          )
-          return stored?.files?.['script.js']?.replace(/\r\n/g, '\n') ?? null
-        } finally {
-          db.close()
-        }
-      }, projectId)
+    const savedScript = async () => {
+      const stored = (await readProjectStorageRecord(page, projectFilesKey(projectId))) as
+        | { files?: Record<string, string> }
+        | undefined
+      return stored?.files?.['script.js']?.replace(/\r\n/g, '\n') ?? null
+    }
     await page.getByRole('button', { name: 'Mais opções' }).click()
     await page.getByRole('menuitem', { name: 'Salvar', exact: true }).click()
     await expect.poll(savedScript).toBe(source + marker)

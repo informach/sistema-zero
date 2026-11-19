@@ -6,7 +6,7 @@ import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-cata
 import type { UseStore } from 'idb-keyval'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { beginProjectOpening, isProjectOpening } from '../../state/projectOpening'
-import { projectHeadKey } from '../../state/projectStorageKeys'
+import { projectHeadKey, projectThumbKey } from '../../state/projectStorageKeys'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
 import type { StudioPintaLibraryAdapter } from '../../studio/pinta-library'
 import { failNextFakeIdbWrite, fakeUseStore } from '../../testing/fakeIdbStore'
@@ -924,7 +924,7 @@ describe('syncDrawingsIntoProjects', () => {
     askedKeys.length = 0
     const result = await syncDrawingsIntoProjects(useProjectStore)
     expect(result.updatedInOtherProjects).toBe(6)
-    expect(askedKeys.some((key) => key.startsWith('sz:v3:project-thumb:'))).toBe(false)
+    expect(askedKeys.some((key) => key.startsWith(projectThumbKey('')))).toBe(false)
   })
 
   it('alcança TAMBÉM os jogos fechados (a decisão dela)', async () => {

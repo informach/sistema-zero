@@ -5,6 +5,7 @@ import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
 import type { EditableStudioProject } from '../src/core/editableProject'
 
 type Proof = typeof import('../src/state/persistence') &
+  typeof import('../src/state/projectStorageKeys') &
   typeof import('../src/state/editableProjectValidation') &
   typeof import('../src/state/projectStorageRevision') &
   typeof import('../src/state/fixtures/projectDocuments') &
@@ -85,7 +86,14 @@ for (const kind of ['world', 'scene'] as const)
   }, testInfo) => {
     const namespace = `pygame-world-${Date.now()}`
     await open(page, 'current', namespace)
-    const id = await page.evaluate(async () => {
+    const currentStorageVersion = await page.evaluate(
+      () => window.worldProof.PROJECT_STORAGE_VERSION,
+    )
+    const old = await context.newPage()
+    await open(old, 'old', namespace)
+    // An actual old client creates the old representation. A v3 client cannot open a
+    // project first created in v4; the current client must migrate this genuine source.
+    const id = await old.evaluate(async () => {
       const api = window.worldProof
       const raw = api.documentFixture('python', 'classic')
       raw.assets = []
@@ -95,8 +103,6 @@ for (const kind of ['world', 'scene'] as const)
       await api.persistProject(project)
       return project.id
     })
-    const old = await context.newPage()
-    await open(old, 'old', namespace)
     await old.evaluate(async (id) => {
       const api = window.worldProof
       const project = await api.prepareEditableStudioProject(await api.loadProjectById(id))
@@ -138,7 +144,7 @@ for (const kind of ['world', 'scene'] as const)
       { id, fixture },
     )
     await context.setOffline(true)
-    const conflict = await old.evaluate(async () => {
+    const oldWriteResult = await old.evaluate(async () => {
       const api = window.worldProof,
         previous = window.worldRam
       const next = api.advanceLocalRevision(previous, { ...previous, name: 'edição da aba antiga' })
@@ -149,18 +155,37 @@ for (const kind of ['world', 'scene'] as const)
         return (error as Error).name
       }
     })
-    expect(conflict).toBe('ProjectWriteConflict')
-    const refused = await old.evaluate(async (id) => {
+    expect(oldWriteResult).toBe(currentStorageVersion === 4 ? 'saved' : 'ProjectWriteConflict')
+    // Test the historical data reader independently of the storage namespace fence.
+    const currentDocument = await page.evaluate(
+      async (id) => window.worldProof.loadProjectById(id),
+      id,
+    )
+    const refused = await old.evaluate(async (document) => {
       try {
-        await window.worldProof.prepareEditableStudioProject(
-          await window.worldProof.loadProjectById(id),
-        )
+        await window.worldProof.prepareEditableStudioProject(document)
         return false
       } catch {
         return true
       }
-    }, id)
+    }, currentDocument)
     expect(refused).toBe(true)
+    if (currentStorageVersion === 4) {
+      // The old tab can save in its own namespace. The current reader preserves that
+      // edit as a recovery copy, never overwriting the already migrated world.
+      const preserved = await page.evaluate(async (id) => {
+        const api = window.worldProof
+        const projects = await api.listAllProjects()
+        const summary = projects.find(
+          (project) => project.id !== id && project.name.startsWith('edição da aba antiga'),
+        )
+        return summary ? api.loadProjectById(summary.id) : null
+      }, id)
+      expect(preserved).toMatchObject({
+        name: 'edição da aba antiga (edição recuperada)',
+        assets: [],
+      })
+    }
     const read = await page.evaluate(async (id) => {
       const project = await window.worldProof.prepareEditableStudioProject(
         await window.worldProof.loadProjectById(id),

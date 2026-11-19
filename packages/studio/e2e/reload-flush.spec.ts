@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
+import { nativeRecovery } from '../src/state/projectRecoveryGuards'
+import { PROJECT_STORAGE_VERSION } from '../src/state/projectStorageKeys'
+import { decodeProjectStorageValue } from '../src/state/projectStorageTransport'
 
 /**
  * A gravação de SAÍDA do Estúdio: recarregar logo depois de uma mudança, SEM esperar o "Salvo",
@@ -140,46 +143,65 @@ async function setVisibility(page: Page, state: 'hidden' | 'visible'): Promise<v
 
 /** A edição precisa estar no journal OU já promovida por uma gravação concorrente. */
 async function hiddenDraftHasAdvanced3D(page: Page, expectedName: string): Promise<boolean> {
-  return page.evaluate(async (name) => {
+  // Observe native records without promoting journals or returning a deep decoded
+  // document through the browser protocol. Decode with the production transport in Node.
+  const snapshot = await page.evaluate(async (version) => {
     const id = decodeURIComponent(location.pathname.split('/').at(-1)!)
-    const prefix = `sz:v3:project-recovery:${id}:`
+    const prefix = `sz:v${version}:project-recovery:${id}:`
+    const metaKey = `sz:v${version}:project-meta:${id}`
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open('sistema-zero-studio')
       request.onsuccess = () => resolve(request.result)
       request.onerror = () => reject(request.error)
     })
     try {
-      return await new Promise<boolean>((resolve, reject) => {
+      return await new Promise<{
+        id: string
+        metaKey: string
+        meta: unknown
+        drafts: Array<{ key: IDBValidKey; value: unknown }>
+      }>((resolve, reject) => {
         const tx = db.transaction('kv', 'readonly')
-        const request = tx.objectStore('kv').getAll(IDBKeyRange.bound(prefix, `${prefix}\uffff`))
-        const committed = tx.objectStore('kv').get(`sz:v3:project-meta:${id}`)
-        tx.oncomplete = () => {
-          const drafts = request.result as Array<{
-            write: {
-              puts: Array<[string, { name?: string; installedExtensions?: Array<{ id: string }> }]>
-            }
-          }>
-          const matches = (
-            meta: { name?: string; installedExtensions?: Array<{ id: string }> } | undefined,
-          ) =>
-            meta?.name === name &&
-            meta.installedExtensions?.some((extension) => extension.id === 'game-3d-advanced') ===
-              true
-          resolve(
-            matches(committed.result) ||
-              drafts.some((draft) =>
-                draft.write.puts.some(
-                  ([key, meta]) => key === `sz:v3:project-meta:${id}` && matches(meta),
-                ),
-              ),
-          )
-        }
+        const range = IDBKeyRange.bound(prefix, `${prefix}\uffff`)
+        const keys = tx.objectStore('kv').getAllKeys(range)
+        const request = tx.objectStore('kv').getAll(range)
+        const committed = tx.objectStore('kv').get(metaKey)
+        tx.oncomplete = () =>
+          resolve({
+            id,
+            metaKey,
+            meta: committed.result,
+            drafts: keys.result.map((key, index) => ({ key, value: request.result[index] })),
+          })
         tx.onabort = () => reject(tx.error)
       })
     } finally {
       db.close()
     }
-  }, expectedName)
+  }, PROJECT_STORAGE_VERSION)
+  const matches = (value: unknown) => {
+    const meta = value as
+      | { id?: string; name?: string; installedExtensions?: Array<{ id: string }> }
+      | undefined
+    return (
+      meta?.id === snapshot.id &&
+      meta.name === expectedName &&
+      meta.installedExtensions?.some((extension) => extension.id === 'game-3d-advanced') === true
+    )
+  }
+  if (matches(decodeProjectStorageValue(snapshot.metaKey, snapshot.meta))) return true
+  return snapshot.drafts.some(({ key, value }) => {
+    if (typeof key !== 'string') return false
+    const draft = nativeRecovery(
+      decodeProjectStorageValue(key, value),
+      key,
+      PROJECT_STORAGE_VERSION,
+    )
+    return (
+      draft.projectId === snapshot.id &&
+      draft.write.puts?.some(([key, meta]) => key === snapshot.metaKey && matches(meta)) === true
+    )
+  })
 }
 
 function collectPageErrors(page: Page): string[] {
