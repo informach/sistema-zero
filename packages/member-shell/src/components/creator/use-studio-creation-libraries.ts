@@ -2,21 +2,23 @@
 
 import type { StudioMoldaLibraryAdapter, StudioPintaLibraryAdapter } from '@sistemazero/studio'
 import { useLayoutEffect, useMemo } from 'react'
+import { sessionFetch } from '../../lib/session-fetch'
 import { savePintaStudioBundle } from './save-pinta-studio-bundle'
 
 /** Same ownership, validation and namespace rules for classic and Pro hosts. */
 export function useStudioCreationLibraries(
-  viewerId: string | null,
+  localNamespace: string | null,
   pintaOwned: boolean,
   moldaOwned: boolean,
+  pessoaId?: string | null,
 ) {
   const pintaOwner = useMemo(
     () => ({
-      namespace: (viewerId ?? '').trim(),
+      namespace: (localNamespace ?? '').trim(),
       owned: pintaOwned,
       controller: new AbortController(),
     }),
-    [viewerId, pintaOwned],
+    [localNamespace, pintaOwned],
   )
   useLayoutEffect(() => {
     // StrictMode can start another lifetime on the same memoized owner. An old
@@ -24,6 +26,19 @@ export function useStudioCreationLibraries(
     if (pintaOwner.controller.signal.aborted) pintaOwner.controller = new AbortController()
     return () => pintaOwner.controller.abort()
   }, [pintaOwner])
+  const moldaOwner = useMemo(
+    () => ({
+      namespace: (localNamespace ?? '').trim(),
+      pessoaId: pessoaId ?? null,
+      owned: moldaOwned,
+      controller: new AbortController(),
+    }),
+    [localNamespace, pessoaId, moldaOwned],
+  )
+  useLayoutEffect(() => {
+    if (moldaOwner.controller.signal.aborted) moldaOwner.controller = new AbortController()
+    return () => moldaOwner.controller.abort()
+  }, [moldaOwner])
   // "Trazer do Pinta" (fluxo pull): o Estúdio lista a galeria do Pinta e importa
   // um desenho por id. O import GRAVA em personal-assets antes de devolver — é o
   // que liga o auto-update dos jogos (guard `getPersonalAsset` do resyncToStudio
@@ -192,12 +207,86 @@ export function useStudioCreationLibraries(
   // Import dinâmico do SUBPATH `studio-library` (⚠️ NUNCA a raiz `@sistemazero/molda`,
   // que puxaria o app inteiro, com three.js, pro bundle do /estudio).
   const moldaLibrary = useMemo<StudioMoldaLibraryAdapter | undefined>(() => {
-    if (!moldaOwned) return undefined
+    if (!moldaOwner.owned) return undefined
+    const namespace = moldaOwner.namespace,
+      pessoa = moldaOwner.pessoaId,
+      signalFor = (signal?: AbortSignal) =>
+        signal
+          ? AbortSignal.any([moldaOwner.controller.signal, signal])
+          : moldaOwner.controller.signal
+    const abrirFonte = async (signal: AbortSignal) => {
+      signal.throwIfAborted()
+      const lib = await import('@sistemazero/molda-cenarios/studio-library')
+      signal.throwIfAborted()
+      const host = lib.criarHostHttp({
+        ...(moldaOwner.pessoaId ? { pessoaId: moldaOwner.pessoaId } : {}),
+        buscar: (endereco, init) =>
+          sessionFetch(endereco, {
+            ...init,
+            signal: init?.signal ? AbortSignal.any([signal, init.signal]) : signal,
+          }),
+        enviar: (endereco, init) =>
+          fetch(endereco, {
+            ...init,
+            signal: init?.signal ? AbortSignal.any([signal, init.signal]) : signal,
+          }),
+      })
+      return { lib, host }
+    }
+    const cenarios: StudioMoldaLibraryAdapter['cenarios'] = moldaOwner.pessoaId
+      ? {
+          async disponivel(options) {
+            const signal = signalFor(options.signal)
+            signal.throwIfAborted()
+            if (!pessoa) return false
+            const resposta = await sessionFetch('/api/cenarios/acesso', {
+              signal,
+              headers: { accept: 'application/json', 'x-sz-viewer': pessoa },
+            })
+            signal.throwIfAborted()
+            if (!resposta.ok) throw Error('Não consegui conferir o acesso aos cenários agora.')
+            const dados: unknown = await resposta.json()
+            signal.throwIfAborted()
+            if (
+              !dados ||
+              typeof dados !== 'object' ||
+              !('aberto' in dados) ||
+              typeof dados.aberto !== 'boolean'
+            )
+              throw Error('O servidor não confirmou o acesso aos cenários.')
+            return dados.aberto
+          },
+          async listar(options: { signal: AbortSignal }) {
+            const signal = signalFor(options.signal),
+              { lib, host } = await abrirFonte(signal)
+            const resultado = await lib.listarCenariosParaStudio(host, signal)
+            signal.throwIfAborted()
+            return resultado
+          },
+          async preparar(id, revisao, options) {
+            const signal = signalFor(options.signal),
+              juntar = options.juntar,
+              progresso = options.progresso,
+              { lib, host } = await abrirFonte(signal)
+            const resultado = await lib.prepararCenarioParaStudio(host, id, revisao, {
+              sinal: signal,
+              juntar,
+              progresso,
+            })
+            signal.throwIfAborted()
+            return resultado
+          },
+        }
+      : undefined
     return {
-      async list() {
+      ...(cenarios ? { cenarios } : {}),
+      async list(options) {
+        const signal = signalFor(options?.signal)
+        signal.throwIfAborted()
         const lib = await import('@sistemazero/molda/studio-library')
-        lib.setMoldaStorageNamespace(viewerId ?? '')
-        const items = await lib.listGalleryForStudio()
+        signal.throwIfAborted()
+        const items = await lib.listGalleryForStudio({ namespace, signal })
+        signal.throwIfAborted()
         return items.map((item) => ({
           id: item.id,
           name: item.name,
@@ -207,12 +296,17 @@ export function useStudioCreationLibraries(
         }))
       },
       async import(creationId, options) {
+        const signal = signalFor(options?.signal),
+          acceptedReview = options?.acceptedReview
+        signal.throwIfAborted()
         const lib = await import('@sistemazero/molda/studio-library')
-        lib.setMoldaStorageNamespace(viewerId ?? '')
+        signal.throwIfAborted()
         const result = await lib.exportAssetForStudio(creationId, {
-          namespace: viewerId ?? '',
-          ...options,
+          namespace,
+          signal,
+          ...(acceptedReview ? { acceptedReview } : {}),
         })
+        signal.throwIfAborted()
         if (!result.ok) {
           if (result.reason === 'needs-review') {
             return {
@@ -243,6 +337,7 @@ export function useStudioCreationLibraries(
           }
         }
         const bridge = await import('@sistemazero/studio/personal-assets')
+        signal.throwIfAborted()
         const saved = await bridge.savePersonalAsset(
           {
             id: result.asset.id,
@@ -256,8 +351,9 @@ export function useStudioCreationLibraries(
             ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
             ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
           },
-          { namespace: viewerId ?? '' },
+          { namespace },
         )
+        signal.throwIfAborted()
         if (!saved.ok) {
           return {
             ok: false,
@@ -281,7 +377,7 @@ export function useStudioCreationLibraries(
         }
       },
     }
-  }, [moldaOwned, viewerId])
+  }, [moldaOwner])
 
   return { pintaLibrary, moldaLibrary }
 }

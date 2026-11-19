@@ -178,6 +178,78 @@ it('scene references resolve inside their map without changing legacy property v
 })
 
 for (const target of ['g2d', 'gk'] as const) {
+  it(`${target}: cena 3 não atravessa contornos finos e preserva a curva livre`, async () => {
+    const precise = PintaSceneSchema.parse({
+      ...scene,
+      version: 3,
+      cols: 16,
+      rows: 12,
+      layers: [
+        {
+          id: 'walls',
+          kind: 'objects',
+          name: 'Paredes',
+          visible: true,
+          objects: [
+            {
+              id: 'line',
+              name: '',
+              type: '',
+              shape: 'polyline',
+              x: 40,
+              y: 0,
+              width: 0,
+              height: 100,
+              points: [
+                { x: 0, y: 0 },
+                { x: 0, y: 100 },
+              ],
+              collision: true,
+              properties: {},
+            },
+            {
+              id: 'ellipse',
+              name: '',
+              type: '',
+              shape: 'ellipse',
+              x: 64,
+              y: 16,
+              width: 32,
+              height: 16,
+              collision: true,
+              properties: {},
+            },
+          ],
+        },
+      ],
+    })
+    const win: Record<string, unknown> = {
+      addEventListener() {},
+      performance: { now: () => 0 },
+      devicePixelRatio: 1,
+      __SZGAME_ASSETS: {},
+      __SZGAME_ASSET_META: { precise: { scene: precise } },
+    }
+    new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+    const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+    api.createMapScene('map', 'precise')
+    const sprite = { x: 100, y: 20, w: 10, h: 10, vx: 90, vy: 0, _prevX: 10, _prevY: 20 }
+    api.collideMapScene(sprite, 'map')
+    expect(sprite.x).toBeCloseTo(30, 6)
+    expect(sprite.vx).toBe(0)
+    const free = { x: 64, y: 16, w: 1, h: 1, vx: 0, vy: 0, _prevX: 64, _prevY: 16 }
+    api.collideMapScene(free, 'map')
+    expect(free.x).toBe(64)
+    expect(free.y).toBe(16)
+    // Removing the explicit opt-in keeps the published scene 2 interpretation.
+    precise.version = 2
+    for (const layer of precise.layers)
+      if (layer.kind === 'objects') for (const object of layer.objects) delete object.collision
+    api.createMapScene('old', 'precise')
+    const legacy = { x: 100, y: 20, w: 10, h: 10, vx: 90, vy: 0, _prevX: 10, _prevY: 20 }
+    api.collideMapScene(legacy, 'old')
+    expect(legacy.x).toBe(100)
+  })
   it(`${target}: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs`, async () => {
     const named = { ...scene, name: 'cabana' }
     const byId = { ...scene, id: 'cabana', name: 'outra-cena', cols: 1, rows: 1, layers: [] }

@@ -98,6 +98,11 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     ).toEqual([])
     expect(
       Object.keys(chunk.modules).filter((moduleId) =>
+        moduleId.replace(/\\/g, '/').includes('/src/core/i18n/editor/'),
+      ),
+    ).toEqual([])
+    expect(
+      Object.keys(chunk.modules).filter((moduleId) =>
         moduleId.replace(/\\/g, '/').endsWith('/state/projectSynchronousExitRecovery.ts'),
       ),
     ).toEqual([])

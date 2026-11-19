@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import type { PintaScene, PintaSceneObject } from './pinta-scene'
-import { sceneIntersectsBox, sceneObjectIntersectsBox } from './pinta-scene-geometry'
+import { PintaSceneSchema } from './pinta-scene'
+import { sceneIntersectsBox, sceneMoveBox, sceneObjectIntersectsBox } from './pinta-scene-geometry'
 import { transformSceneSetObject } from './pinta-scene-runtime'
+import { sceneObjectTransformSource } from './pinta-scene-transform.generated'
 
 const object = (changes: Partial<PintaSceneObject> = {}): PintaSceneObject => ({
   id: 'shape',
@@ -239,6 +241,124 @@ function map(): PintaScene {
   }
 }
 describe('consulta do corpo na cena canônica', () => {
+  test('varredura contínua barra linhas finas, desliza por eixo e limita velocidades extremas', () => {
+    const scene = map()
+    scene.version = 3
+    scene.sets = []
+    scene.layers = [
+      {
+        id: 'walls',
+        kind: 'objects',
+        name: 'walls',
+        visible: true,
+        objects: [
+          object({
+            x: 40,
+            y: 0,
+            width: 0,
+            height: 100,
+            shape: 'polyline',
+            points: [
+              { x: 0, y: 0 },
+              { x: 0, y: 100 },
+            ],
+            collision: true,
+          }),
+        ],
+      },
+    ]
+    const portable = new Function(
+      `${sceneObjectTransformSource};return {move:sceneMoveBox,query:sceneIntersectsBox};`,
+    )() as { move: typeof sceneMoveBox; query: typeof sceneIntersectsBox }
+    for (const move of [sceneMoveBox, portable.move]) {
+      const result = move(scene, box(10, 20, 10, 10), 80, 5)
+      expect(result.x).toBeCloseTo(30, 6)
+      expect(result.y).toBe(25)
+      expect(move(scene, box(10, 20, 10, 10), 1e300, 0).x).toBeCloseTo(30, 6)
+      expect(move(scene, box(50, 20, 10, 10), -1e300, 0).x).toBeCloseTo(40, 6)
+      expect(move(scene, box(10, 20, 10, 10), NaN, 0)).toEqual(box(10, 20, 10, 10))
+    }
+    for (let y = 0; y < 50; y += 2)
+      for (let x = 0; x < 60; x += 2)
+        expect(portable.query(scene, box(x, y))).toBe(sceneIntersectsBox(scene, box(x, y)))
+  })
+  test('colisão de objeto exige contrato 3, nunca é aceita silenciosamente em cena 1/2', () => {
+    const scene = map()
+    const layer = scene.layers[0]!
+    if (layer.kind !== 'objects') throw new Error('Expected objects')
+    layer.objects[0]!.collision = true
+    expect(PintaSceneSchema.safeParse(scene).success).toBe(false)
+    expect(PintaSceneSchema.safeParse({ ...scene, version: 1 }).success).toBe(false)
+    expect(PintaSceneSchema.safeParse({ ...scene, version: 3 }).success).toBe(true)
+  })
+  test('objeto elíptico autoral: centro sólido e cantos livres', () => {
+    const scene = map()
+    scene.version = 3
+    scene.sets = []
+    scene.layers = [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'objects',
+        visible: true,
+        objects: [
+          object({ x: 16, y: 16, width: 32, height: 16, shape: 'ellipse', collision: true }),
+        ],
+      },
+    ]
+    expect(sceneIntersectsBox(scene, box(31, 23))).toBe(true)
+    expect(sceneIntersectsBox(scene, box(16, 16))).toBe(false)
+    expect(sceneIntersectsBox(scene, box(48, 20))).toBe(false)
+  })
+  test('polilinha de colisão não cria uma diagonal de fechamento', () => {
+    const scene = map()
+    scene.version = 3
+    scene.sets = []
+    scene.layers = [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'objects',
+        visible: true,
+        objects: [
+          object({
+            x: 16,
+            y: 16,
+            shape: 'polyline',
+            collision: true,
+            points: [
+              { x: 0, y: 0 },
+              { x: 16, y: 0 },
+              { x: 16, y: 16 },
+            ],
+          }),
+        ],
+      },
+    ]
+    expect(sceneIntersectsBox(scene, box(31.5, 23))).toBe(true)
+    expect(sceneIntersectsBox(scene, box(23, 23))).toBe(false)
+  })
+  test('parede de objeto em conjunto conserva o offset do filho fora do retângulo nominal', () => {
+    const scene = map()
+    scene.version = 3
+    const layer = scene.layers[0]!
+    if (layer.kind !== 'objects') throw new Error('Expected objects')
+    layer.objects = [{ ...layer.objects[0]!, x: 16, y: 16, width: 16, height: 16, rotation: 0 }]
+    scene.sets![0]!.layers = [
+      {
+        id: 'child',
+        kind: 'objects',
+        name: 'child',
+        visible: true,
+        offsetX: 0.5,
+        objects: [object({ x: 40, y: 0, width: 4, height: 8, collision: true })],
+      },
+    ]
+    expect(sceneIntersectsBox(scene, box(57, 17))).toBe(true)
+    expect(sceneIntersectsBox(scene, box(17, 17))).toBe(false)
+    layer.visible = false
+    expect(sceneIntersectsBox(scene, box(57, 17))).toBe(false)
+  })
   test('conjunto girado: interior, canto livre e contato sem penetração', () => {
     const scene = map()
     expect(sceneIntersectsBox(scene, box(50, 31))).toBe(true)

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { en as editorVocabulary } from './editor/en'
 import { createTranslator, en, type Locale, ptBR, t, translate } from './index'
 import { createSharedTranslator } from './shared'
 
@@ -28,7 +29,7 @@ describe('i18n t()', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ptBR).sort())
   })
 
-  it('preserva os textos compartilhados e reserva o vocabulário Pro para o tradutor completo', () => {
+  it('preserva textos compartilhados e reserva o vocabulário do editor para o tradutor completo', () => {
     for (const [locale, dictionary] of [
       ['pt-BR', ptBR],
       ['en', en],
@@ -37,7 +38,9 @@ describe('i18n t()', () => {
       const full = createTranslator(locale)
       for (const [key, text] of Object.entries(dictionary)) {
         expect(full(key)).toBe(text)
-        expect(shared(key)).toBe(key.startsWith('pro.') ? key : text)
+        expect(shared(key)).toBe(
+          key.startsWith('pro.') || Object.hasOwn(editorVocabulary, key) ? key : text,
+        )
       }
       expect(shared('projects.confirmDelete', { name: 'Meu jogo' })).toBe(
         full('projects.confirmDelete', { name: 'Meu jogo' }),
@@ -58,4 +61,15 @@ describe('i18n t()', () => {
     expect(Object.keys(ptBR).length).toBeGreaterThan(100)
     expect(comTravessao(ptBR)).toEqual([])
   })
+})
+
+it('scene-gallery vocabulary enters with the editor while both full translators remain complete', () => {
+  expect(createTranslator('pt-BR')('moldaScenes.title')).toBe('Cenários')
+  expect(createTranslator('en')('moldaScenes.title')).toBe('Scenes')
+  for (const locale of ['pt-BR', 'en'] as const) {
+    expect(createSharedTranslator(locale)('moldaScenes.title')).toBe('moldaScenes.title')
+    expect(createSharedTranslator(locale)('projects.rename')).toBe(
+      createTranslator(locale)('projects.rename'),
+    )
+  }
 })

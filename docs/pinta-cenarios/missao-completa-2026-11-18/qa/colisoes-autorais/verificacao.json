@@ -1,0 +1,181 @@
+{
+  "recordedAt": "2026-11-19T09:27:58.372Z",
+  "scope": "Lote de colisões autorais da etapa 2b; missão em andamento",
+  "knownFailures": [
+    "Benchmark Python/Wasm: 44.4 fps; repetições 47.5, 43.6 e 46.3 fps com mínimo 45. Causa não comprovada."
+  ],
+  "files": {
+    "core.log": {
+      "bytes": 4549,
+      "sha256": "07228ee5fd4bed035d437e9b8fb2e2226c2c974d3a8a8551d83410a00d6b6dd5"
+    },
+    "desempenho-repeticoes.json": {
+      "bytes": 10074,
+      "sha256": "f3ec451cf0af0958087b7b5106ea5e0ab24b478d7551a454ab28a26a852604d2"
+    },
+    "desempenho-repeticoes.log": {
+      "bytes": 3775,
+      "sha256": "aab7001f48e4f99563b3275f1cc2b8de81b909dfa2e17373f9df4aaaee84e4e2"
+    },
+    "desktop-contornos-autoria.png": {
+      "bytes": 86612,
+      "sha256": "2620eb273bd625f458bf3189d01718c8b0b6865b75dcb04968fe62b9b6e62b81"
+    },
+    "desktop-contornos-phaser-imagem.png": {
+      "bytes": 6005,
+      "sha256": "b80b529eefc6b14375c83695291b04424f56c1914be10e88ea769619bcf36c95"
+    },
+    "desktop-parede-fina.png": {
+      "bytes": 81859,
+      "sha256": "595f2c6de65cf719f691274fe4a575204a5d63344bf684e327407a968fd4af46"
+    },
+    "distribuicao-python.json": {
+      "bytes": 28610,
+      "sha256": "2ba2af97910eea412694f04664aaba7e48326fa8245a47bdeff6ef12c5c41a41"
+    },
+    "estilo.log": {
+      "bytes": 45,
+      "sha256": "17ed31c53b6d3854a8bc17cce067d4bb54345de0622ffd34a674236145e5071d"
+    },
+    "estudio.log": {
+      "bytes": 10185,
+      "sha256": "97fcd245edf079204b4276ed35351c0b3b5f79de6e26be70a43e2236f94a2bf4"
+    },
+    "geradores.log": {
+      "bytes": 3804,
+      "sha256": "b3994ccf860190b0adc2a7c9693cc649da8f71a59990ec5739791b98c151c040"
+    },
+    "godot.log": {
+      "bytes": 177,
+      "sha256": "40bc05d9b4784eac6fcdccfda01bcdddfd02e9e6a02e72d489e07fa84c56931c"
+    },
+    "integracao.json": {
+      "bytes": 1220956,
+      "sha256": "dc4d99e70a719ffe5037df58b13ee1758a26b2680b4762954a10fe4c15520fda"
+    },
+    "integracao.log": {
+      "bytes": 7897,
+      "sha256": "71f4b3d2591d35ab89b566df3793d7aaa9723e2cbaf92462f08dc7170ade721f"
+    },
+    "leitor-anterior.json": {
+      "bytes": 726,
+      "sha256": "a6b4ee88d3460a82f5eca65f6c5fa1c7f43422b1436c87e4c220fbc1b1ed6136"
+    },
+    "navegador.json": {
+      "bytes": 6421,
+      "sha256": "408f9dfdd2785020ed92a7bd9380b95de588546303fce552026f71314cc1bcd8"
+    },
+    "navegador.log": {
+      "bytes": 2474,
+      "sha256": "516d64aff2abce98d0945ce3ce1a1867aa346df9a223a611d2a1976f7e37e8eb"
+    },
+    "offline.log": {
+      "bytes": 2897,
+      "sha256": "347405de95e82e6f16428b10d389845681a2c89ed5078da5e94e39b6785d7b4e"
+    },
+    "orcamento-inicial.log": {
+      "bytes": 241,
+      "sha256": "f7c5c00501361a59a286613000ffb3c2c4c7564222ec136d303b07e891f24dd4"
+    },
+    "peso-runtime.json": {
+      "bytes": 1106,
+      "sha256": "3becec85c17fc4ca9bc8f6089ebcee54b707e2fc8e19031ee01c2738d1f995d8"
+    },
+    "pinta-completo.log": {
+      "bytes": 239188,
+      "sha256": "243a932b86bcf53f4111a9941302d3acae55f8c9286b0305c744c30262691e74"
+    },
+    "publicacao.log": {
+      "bytes": 7569,
+      "sha256": "5a090675384e6fc25cfed766871cc9f2a21a77baef924b181cfd8d0386ae9790"
+    },
+    "pygame-258.log": {
+      "bytes": 202,
+      "sha256": "f6a12ab6b402a63562572340b9762bf7447f40e9219b2cf6f7d9787bd46c9700"
+    },
+    "pygame-nativo.log": {
+      "bytes": 202,
+      "sha256": "72ddfb0a3647d815a883ac63aa68be44ab669fa0156be7409777f849a9255911"
+    },
+    "python-1x.json": {
+      "bytes": 911,
+      "sha256": "2a82989cbd17e2b18f189d44aa1585e9517ae1f1be0268be4d02ea856c9cd59e"
+    },
+    "python-1x.png": {
+      "bytes": 1993,
+      "sha256": "468fea5eab936e7b1cf12bfccffed22a5a94e6ef2038250aac2e357b7c6ebbf8"
+    },
+    "python-2x.json": {
+      "bytes": 911,
+      "sha256": "ef3458d273baac977dbc029763047a52ad13cdf247932c0accae7f60537f7d08"
+    },
+    "python-2x.png": {
+      "bytes": 1990,
+      "sha256": "e2430aa41451a41fa7abd40902ea344b32ce1a8dbb77bab1bee383c0098f8043"
+    },
+    "python-mundo-1x.json": {
+      "bytes": 1005,
+      "sha256": "fdd0f4f171ad2c7dac5ba206f3511c5a48aab6e8949beb369ce0e41ce5bbfabb"
+    },
+    "python-mundo-1x.png": {
+      "bytes": 1993,
+      "sha256": "468fea5eab936e7b1cf12bfccffed22a5a94e6ef2038250aac2e357b7c6ebbf8"
+    },
+    "python-mundo-2x.json": {
+      "bytes": 1005,
+      "sha256": "2a2a01778ca2211a10eb03980643266336c7e97d039aba2d477a6fffe75ddd0a"
+    },
+    "python-mundo-2x.png": {
+      "bytes": 1990,
+      "sha256": "e2430aa41451a41fa7abd40902ea344b32ce1a8dbb77bab1bee383c0098f8043"
+    },
+    "python-mundo.json": {
+      "bytes": 931679,
+      "sha256": "99e98c7ebe68b09cb262fa4bbc449e586585c7b4c2fc70aa904ec1756908beff"
+    },
+    "python-mundo.log": {
+      "bytes": 4897,
+      "sha256": "390ec7e0ca9e09609b30a7721d90d8f022e082522955add75cfe49f4740e8e9d"
+    },
+    "python-navegador.json": {
+      "bytes": 912899,
+      "sha256": "dd0addd2bb909670410bfcc2c2c26207c01fc7cb219fdc005c07e9a62f061c19"
+    },
+    "python-navegador.log": {
+      "bytes": 2550,
+      "sha256": "60139cf3bed6750adef388475fb73f828b9d67497604470f28195c14d70e4f50"
+    },
+    "README.md": {
+      "bytes": 7297,
+      "sha256": "5d0e3a2bfef04fbda335680e03be4598b692eadd606bebbe9eac4f8f856cd6b8"
+    },
+    "tiled-arte.json": {
+      "bytes": 1673,
+      "sha256": "72fb9b1c5d8068acd5447ad500bb282ef273fe8e7dfcdb16ee761ecb67fe5c54"
+    },
+    "tiled.json": {
+      "bytes": 1673,
+      "sha256": "72fb9b1c5d8068acd5447ad500bb282ef273fe8e7dfcdb16ee761ecb67fe5c54"
+    },
+    "tipos-estudio.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tipos-host.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "touch-contornos-autoria.png": {
+      "bytes": 180921,
+      "sha256": "8c61aa858e77d9f2920dd1e0c735388fa1cc4b32d962892285734954fe4c9274"
+    },
+    "touch-contornos-phaser-imagem.png": {
+      "bytes": 19343,
+      "sha256": "6332ba29e05015bb74b2d2042ca2e7adcc53b78127f56cac13af2473b9583d69"
+    },
+    "touch-parede-fina.png": {
+      "bytes": 168791,
+      "sha256": "cc498046c11a2b8ad27720d099c5a5a7377a4490efdbc6928fd5986a628b552a"
+    }
+  }
+}

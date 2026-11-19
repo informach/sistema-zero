@@ -24,6 +24,7 @@ import {
   isTilesetKind,
   type PintaAsset,
   resolveAssetPalette,
+  tilemapNeedsV3,
 } from '../core/project'
 import { flattenCelsOrBlank } from '../pixel/layers'
 import { capturePintaAssetForImage, getPintaStorageNamespace } from '../state/persistence'
@@ -346,7 +347,7 @@ async function prepareCapturedDrawing(
       budget.pixels += pintaImageSceneTemporaryPixels(selected.data.scene, recipe.scale, limits)
       if (budget.pixels > limits.totalImagePixels) throw new Error(WORLD_BUDGET_MESSAGE)
     }
-    selected.data.version = 2
+    selected.data.version = selected.data.scene.version === 3 ? 4 : 2
   }
   // The destination asked for the real vector: never fall back to PNG in silence.
   if (recipe.output === 'svg' && !pintaImageSceneIsVector(selected.scene))
@@ -384,7 +385,10 @@ async function prepare(
       : null
   if (recipe.selection.kind === 'map-world' && !world)
     throw new Error('Escolha um cenário para trazer outros lugares.')
-  if (world) {
+  const boundedScene =
+    !!world ||
+    (source.kind === 'tilemap' && recipe.selection.kind === 'map' && tilemapNeedsV3(source))
+  if (boundedScene) {
     limits.dimension = Math.min(limits.dimension, PINTA_IMAGE_WORLD_LIMITS.dimension)
     limits.imagePixels = Math.min(limits.imagePixels, PINTA_IMAGE_WORLD_LIMITS.imagePixels)
     limits.totalImagePixels = Math.min(
@@ -393,7 +397,7 @@ async function prepare(
     )
   }
   let budget: WorldRasterBudget | undefined
-  if (world) {
+  if (boundedScene) {
     budget = {
       cells: 0,
       pixels: 0,
@@ -402,10 +406,15 @@ async function prepare(
       images: new WeakMap(),
       queue: Promise.resolve(),
     }
-    for (const map of world.maps) {
-      const size = mapAtlasSelection(map, collectMapTilesetsFrom(map, world.assets), recipe.scale, {
-        complete: true,
-      })
+    for (const map of world?.maps ?? (source.kind === 'tilemap' ? [source] : [])) {
+      const size = mapAtlasSelection(
+        map,
+        collectMapTilesetsFrom(map, world?.assets ?? assets ?? given),
+        recipe.scale,
+        {
+          complete: true,
+        },
+      )
       assertPintaImageDimensions(size.width, size.height, limits)
       budget.pixels += size.width * size.height
       if (budget.pixels > limits.totalImagePixels) throw new Error(WORLD_BUDGET_MESSAGE)
@@ -424,6 +433,7 @@ async function prepare(
   if (world && drawing.data?.kind === 'map') {
     const maps: PintaImageWorld['maps'] = []
     let chars = 0
+    let precisePhysics = drawing.data.version === 4
     for (const map of world.maps.slice(1)) {
       signal?.throwIfAborted()
       const tilesets = collectMapTilesetsFrom(map, world.assets)
@@ -442,13 +452,14 @@ async function prepare(
       if (budget && budget.metadataBytes > PINTA_IMAGE_WORLD_LIMITS.metadataBytes)
         throw new Error(WORLD_BUDGET_MESSAGE)
       const png = pngDataUrl(await renderPreparedPng(child, signal, raster), limits)
+      precisePhysics ||= child.data?.kind === 'map' && child.data.version === 4
       chars += png.length
       if (chars > PINTA_IMAGE_WORLD_LIMITS.encodedChars) throw new Error(WORLD_BUDGET_MESSAGE)
       maps.push({ id: map.id, name: map.name, png })
     }
     drawing.data = {
       ...drawing.data,
-      version: 3,
+      version: precisePhysics ? 4 : 3,
       world: PintaImageWorldSchema.parse({ version: 1, rootId: source.id, maps }),
     }
     if (
@@ -478,7 +489,8 @@ async function renderPreparedPng(
   raster?: PintaImageRaster,
 ): Promise<Uint8Array<ArrayBuffer>> {
   if (
-    prepared.data?.version === 3 &&
+    prepared.data?.kind === 'map' &&
+    'world' in prepared.data &&
     new TextEncoder().encode(JSON.stringify(prepared.data)).byteLength >
       PINTA_IMAGE_WORLD_LIMITS.metadataBytes
   )

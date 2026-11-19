@@ -5,8 +5,52 @@ import { expect, test } from '@playwright/test'
 const root = resolve(import.meta.dirname, '../../..')
 const directory = resolve(root, '.tmp/pinta-physics-e2e')
 test.beforeAll(() => {
-  execFileSync('bun', [resolve(root, 'packages/pinta/scripts/homologacao/physics.ts'), directory], {
-    cwd: root,
+  execFileSync(
+    'bun',
+    [resolve(root, 'packages/pinta/scripts/homologacao/physics.ts'), directory, '--objects'],
+    {
+      cwd: root,
+    },
+  )
+})
+
+test('contornos autorais: editar colisão, desfazer, refazer e reabrir', async ({
+  page,
+  isMobile,
+}, info) => {
+  await page.goto(`/?namespace=object-physics-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(directory, 'contornos-do-cenario.pinta.json'))
+  const open = page.getByRole('button', { name: 'Abrir contornos-do-cenario (Mapa)', exact: true })
+  await open.click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByRole('button', { name: 'Objetos', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher o objeto Elipse', exact: true }).click()
+  const collision = page.getByRole('checkbox', {
+    name: 'Impede o personagem de passar',
+    exact: true,
+  })
+  await expect(collision).toBeChecked()
+  await collision.uncheck()
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  await expect(collision).toBeChecked()
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  await expect(collision).not.toBeChecked()
+  await collision.check()
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await page.reload()
+  await open.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByRole('button', { name: 'Objetos', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher o objeto Elipse', exact: true }).click()
+  await expect(collision).toBeChecked()
+  await info.attach('contornos-autoria', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
   })
 })
 

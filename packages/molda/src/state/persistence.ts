@@ -438,8 +438,7 @@ export function createMoldaPersistence(
  * UMA instância por namespace: quem lê a galeria (app, `studio-library`) e
  * quem grava (editor) compartilham o mesmo banco e os avisos de recuperação.
  */
-export function getDefaultMoldaPersistence(): MoldaPersistence {
-  const namespace = currentNamespace
+export function getDefaultMoldaPersistence(namespace = currentNamespace): MoldaPersistence {
   let instance = defaults.get(namespace)
   if (!instance) {
     instance = createMoldaPersistence({ namespace })

@@ -139,6 +139,7 @@ export function mapFeaturesInUse(
         if (object.setId) used.sets = true
         if (
           object.type ||
+          object.collision ||
           object.rotation ||
           object.shape === 'ellipse' ||
           object.shape === 'polygon' ||

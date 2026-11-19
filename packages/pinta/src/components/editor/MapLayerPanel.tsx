@@ -117,6 +117,7 @@ export function MapLayerPanel({
                 <button
                   type="button"
                   aria-pressed={active}
+                  aria-label={layer.name}
                   onClick={() => onSelectLayer(layer.id)}
                   // A linha de camada da tela-modelo: a escolhida com a borda azul, as outras lisas.
                   // `flex-wrap`: no painel estreito o selo (frente, objetos) desce para a linha de

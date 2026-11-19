@@ -6,11 +6,13 @@ import { personalIdOf } from '../../asset-library/personalSync'
 import { isPythonProject } from '../../core/editableProject'
 import { projectUsesRaylib } from '../../core/raylibMediaPaths'
 import { normalizeSearchText } from '../../core/searchText'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioMoldaCreationSummary, useStudioMoldaLibrary } from '../../studio/molda-library'
 import { addMoldaCreationToProject, raylibReadyCreation } from './addCreationToProject'
 import { creation3DNoteKey, creationBlockedFor3D, projectHas3DConsumer } from './has3DConsumer'
+import { MoldaScenesPanel } from './MoldaScenesPanel'
 
 /**
  * Modal "Trazer do Molda" — o fluxo PULL das criações 3D: lista TODAS as criações da
@@ -88,29 +90,62 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
     token: string
     losses: string[]
   } | null>(null)
+  const [modo, setModo] = useState<'criacoes' | 'cenarios'>('criacoes')
+  const [cenariosDisponiveis, setCenariosDisponiveis] = useState(false)
+  const [erroDeAcesso, setErroDeAcesso] = useState<string | null>(null)
+  const [tentativaDeAcesso, setTentativaDeAcesso] = useState(0)
   const owner = useMemo(
-    () => ({ adapter, projectId, storeApi, active: true, busy: false }),
+    () => ({
+      adapter,
+      projectId,
+      storeApi,
+      active: true,
+      busy: false,
+      controller: new AbortController(),
+    }),
     [adapter, projectId, storeApi],
   )
   useEffect(() => {
     owner.active = true
+    if (owner.controller.signal.aborted) owner.controller = new AbortController()
+    owner.busy = false
     setBusyId(null)
     setReview(null)
     setError(null)
     return () => {
       owner.active = false
+      owner.controller.abort()
     }
   }, [owner])
+  useEffect(() => {
+    void tentativaDeAcesso
+    const controller = new AbortController()
+    setCenariosDisponiveis(false)
+    setErroDeAcesso(null)
+    setModo('criacoes')
+    adapter?.cenarios?.disponivel({ signal: controller.signal }).then(
+      (aberto) => {
+        if (!controller.signal.aborted) setCenariosDisponiveis(aberto)
+      },
+      (e: unknown) => {
+        if (!controller.signal.aborted)
+          setErroDeAcesso(e instanceof Error ? e.message : t('moldaScenes.accessError'))
+      },
+    )
+    return () => controller.abort()
+  }, [adapter, tentativaDeAcesso, t])
 
   useEffect(() => {
-    if (!adapter) return
+    if (!adapter || modo !== 'criacoes') return
     // `reloadKey` re-dispara a listagem no "Tentar de novo".
     void reloadKey
     // StrictMode monta→limpa→monta: a flag descarta a resposta da montagem morta.
     let cancelled = false
+    const controller = new AbortController(),
+      signal = AbortSignal.any([controller.signal, owner.controller.signal])
     setLoad({ phase: 'loading' })
     adapter
-      .list()
+      .list({ signal })
       .then((creations) => {
         if (!cancelled) setLoad({ phase: 'ready', creations })
       })
@@ -119,8 +154,9 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
       })
     return () => {
       cancelled = true
+      controller.abort()
     }
-  }, [adapter, reloadKey])
+  }, [adapter, reloadKey, modo, owner])
 
   // Quais criações já estão NESTE projeto (o elo é o libId `personal:<id>`).
   const inProject = new Set(assets.map((a) => personalIdOf(a)).filter(Boolean))
@@ -131,15 +167,22 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
   ): Promise<void> => {
     if (!adapter || owner.busy || !owner.active) return
     owner.busy = true
-    const current = () => owner.active && owner.storeApi.getState().project?.id === owner.projectId
+    const lifetime = owner.controller.signal,
+      scope = captureProjectStorageScope(),
+      signal = AbortSignal.any([lifetime, ...(scope.signal ? [scope.signal] : [])])
+    const current = () =>
+      owner.active &&
+      !signal.aborted &&
+      scope === captureProjectStorageScope() &&
+      owner.storeApi.getState().project?.id === owner.projectId
     setBusyId(creation.id)
     setError(null)
     setReview(null)
     try {
-      const result = await adapter.import(
-        creation.id,
-        acceptedReview ? { acceptedReview } : undefined,
-      )
+      const result = await adapter.import(creation.id, {
+        signal,
+        ...(acceptedReview ? { acceptedReview } : {}),
+      })
       if (!current()) return
       if (!result.ok) {
         if (result.code === 'needs-review' && result.review) {
@@ -169,8 +212,10 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
     } catch {
       if (current()) setError(t('moldaImport.importError'))
     } finally {
-      owner.busy = false
-      if (current()) setBusyId(null)
+      if (owner.controller.signal === lifetime) {
+        owner.busy = false
+        if (owner.active) setBusyId(null)
+      }
     }
   }
 
@@ -190,149 +235,191 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
       }
     >
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-sz-fg-soft">{t('moldaImport.subtitle')}</p>
-
-        <input
-          type="search"
-          name="molda-creation-search"
-          autoComplete="off"
-          value={query}
-          onChange={(e) => setQuery(e.currentTarget.value)}
-          aria-label={t('moldaImport.search.label')}
-          placeholder={t('moldaImport.search.placeholder')}
-          className="h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent"
-        />
-
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400"
-          >
-            {error}
-          </p>
-        ) : null}
-
-        {review && (
-          <section
-            aria-label={t('moldaImport.review.title')}
-            className="rounded-md border border-sz-border p-3"
-          >
-            <p className="text-sm font-semibold">
-              {t('moldaImport.review.title')}: {review.creation.name}
-            </p>
-            <p className="text-sm">{t('moldaImport.review.hint')}</p>
-            <ul className="list-disc pl-5 text-sm">
-              {review.losses.map((loss) => (
-                <li key={loss}>{loss}</li>
-              ))}
-            </ul>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                disabled={busyId !== null}
-                onClick={() => void handleAdd(review.creation, review.token)}
-              >
-                {t('moldaImport.review.accept')}
-              </Button>
-              <Button variant="ghost" onClick={() => setReview(null)}>
-                {t('moldaImport.review.cancel')}
-              </Button>
-            </div>
-          </section>
-        )}
-
-        {someoneNeeds3D ? (
-          <p role="note" className="text-xs text-sz-fg-soft">
-            {t(creation3DNoteKey(gate))}
-          </p>
-        ) : null}
-
-        {load.phase === 'loading' ? (
-          <p role="status" className="text-sm text-sz-fg-soft">
-            {t('moldaImport.loading')}
-          </p>
-        ) : null}
-
-        {load.phase === 'error' ? (
-          <div role="alert" className="flex flex-wrap items-center gap-2">
-            <p className="text-sm text-sz-fg-soft">{t('moldaImport.loadError')}</p>
-            <Button variant="subtle" size="sm" onClick={() => setReloadKey((k) => k + 1)}>
+        {erroDeAcesso && (
+          <div role="alert" className="text-sm text-sz-fg-soft">
+            <p>{erroDeAcesso}</p>
+            <Button size="sm" variant="ghost" onClick={() => setTentativaDeAcesso((v) => v + 1)}>
               {t('moldaImport.retry')}
             </Button>
           </div>
-        ) : null}
+        )}
+        {cenariosDisponiveis && adapter?.cenarios && (
+          <fieldset
+            aria-label={t('moldaScenes.source')}
+            className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0"
+          >
+            <Button
+              variant={modo === 'criacoes' ? 'primary' : 'subtle'}
+              aria-pressed={modo === 'criacoes'}
+              onClick={() => setModo('criacoes')}
+            >
+              {t('moldaScenes.creations')}
+            </Button>
+            <Button
+              variant={modo === 'cenarios' ? 'primary' : 'subtle'}
+              aria-pressed={modo === 'cenarios'}
+              onClick={() => setModo('cenarios')}
+            >
+              {t('moldaScenes.title')}
+            </Button>
+          </fieldset>
+        )}
+        {modo === 'cenarios' && adapter?.cenarios ? (
+          <MoldaScenesPanel fonte={adapter.cenarios} has3D={has3D} onImported={onImported} />
+        ) : (
+          <>
+            <p className="text-sm text-sz-fg-soft">{t('moldaImport.subtitle')}</p>
 
-        {load.phase === 'ready' && load.creations.length === 0 ? (
-          <p className="text-sm text-sz-fg-soft">{t('moldaImport.empty')}</p>
-        ) : null}
+            <input
+              type="search"
+              name="molda-creation-search"
+              autoComplete="off"
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+              aria-label={t('moldaImport.search.label')}
+              placeholder={t('moldaImport.search.placeholder')}
+              className="h-9 min-w-0 rounded-md border border-sz-border bg-sz-bg px-3 text-sm font-normal text-sz-fg outline-none focus:border-sz-accent"
+            />
 
-        {load.phase === 'ready' && load.creations.length > 0 && visible.length === 0 ? (
-          <p className="text-sm text-sz-fg-soft">{t('moldaImport.noResults')}</p>
-        ) : null}
+            {error ? (
+              <p
+                role="alert"
+                className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-400"
+              >
+                {error}
+              </p>
+            ) : null}
 
-        {visible.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {visible.map((creation) => {
-              const added = inProject.has(creation.id)
-              const blocked = creationBlockedFor3D(creation.kind, gate)
-              return (
-                <li
-                  key={creation.id}
-                  className="flex flex-col gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
-                >
-                  <div className="flex items-center gap-2">
-                    {creation.thumbDataUrl ? (
-                      <img
-                        src={creation.thumbDataUrl}
-                        alt=""
-                        width={48}
-                        height={48}
-                        loading="lazy"
-                        className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
-                        style={
-                          creation.kind === 'texture' ? { imageRendering: 'pixelated' } : undefined
-                        }
-                      />
-                    ) : (
-                      <span
-                        aria-hidden="true"
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-sz-bg text-2xl"
-                      >
-                        {KIND_EMOJI[creation.kind]}
-                      </span>
-                    )}
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span className="truncate font-mono text-xs text-sz-fg" title={creation.name}>
-                        {creation.name}
-                      </span>
-                      <span className="text-[10px] text-sz-fg-soft">
-                        {t(KIND_LABEL_KEY[creation.kind])}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex min-h-8 items-center justify-end gap-2">
-                    {/* Já no projeto → SÓ o selinho (mesma decisão do Pinta: sem
+            {review && (
+              <section
+                aria-label={t('moldaImport.review.title')}
+                className="rounded-md border border-sz-border p-3"
+              >
+                <p className="text-sm font-semibold">
+                  {t('moldaImport.review.title')}: {review.creation.name}
+                </p>
+                <p className="text-sm">{t('moldaImport.review.hint')}</p>
+                <ul className="list-disc pl-5 text-sm">
+                  {review.losses.map((loss) => (
+                    <li key={loss}>{loss}</li>
+                  ))}
+                </ul>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    disabled={busyId !== null}
+                    onClick={() => void handleAdd(review.creation, review.token)}
+                  >
+                    {t('moldaImport.review.accept')}
+                  </Button>
+                  <Button variant="ghost" onClick={() => setReview(null)}>
+                    {t('moldaImport.review.cancel')}
+                  </Button>
+                </div>
+              </section>
+            )}
+
+            {someoneNeeds3D ? (
+              <p role="note" className="text-xs text-sz-fg-soft">
+                {t(creation3DNoteKey(gate))}
+              </p>
+            ) : null}
+
+            {load.phase === 'loading' ? (
+              <p role="status" className="text-sm text-sz-fg-soft">
+                {t('moldaImport.loading')}
+              </p>
+            ) : null}
+
+            {load.phase === 'error' ? (
+              <div role="alert" className="flex flex-wrap items-center gap-2">
+                <p className="text-sm text-sz-fg-soft">{t('moldaImport.loadError')}</p>
+                <Button variant="subtle" size="sm" onClick={() => setReloadKey((k) => k + 1)}>
+                  {t('moldaImport.retry')}
+                </Button>
+              </div>
+            ) : null}
+
+            {load.phase === 'ready' && load.creations.length === 0 ? (
+              <p className="text-sm text-sz-fg-soft">{t('moldaImport.empty')}</p>
+            ) : null}
+
+            {load.phase === 'ready' && load.creations.length > 0 && visible.length === 0 ? (
+              <p className="text-sm text-sz-fg-soft">{t('moldaImport.noResults')}</p>
+            ) : null}
+
+            {visible.length > 0 ? (
+              <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {visible.map((creation) => {
+                  const added = inProject.has(creation.id)
+                  const blocked = creationBlockedFor3D(creation.kind, gate)
+                  return (
+                    <li
+                      key={creation.id}
+                      className="flex flex-col gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        {creation.thumbDataUrl ? (
+                          <img
+                            src={creation.thumbDataUrl}
+                            alt=""
+                            width={48}
+                            height={48}
+                            loading="lazy"
+                            className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
+                            style={
+                              creation.kind === 'texture'
+                                ? { imageRendering: 'pixelated' }
+                                : undefined
+                            }
+                          />
+                        ) : (
+                          <span
+                            aria-hidden="true"
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-sz-bg text-2xl"
+                          >
+                            {KIND_EMOJI[creation.kind]}
+                          </span>
+                        )}
+                        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                          <span
+                            className="truncate font-mono text-xs text-sz-fg"
+                            title={creation.name}
+                          >
+                            {creation.name}
+                          </span>
+                          <span className="text-[10px] text-sz-fg-soft">
+                            {t(KIND_LABEL_KEY[creation.kind])}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex min-h-8 items-center justify-end gap-2">
+                        {/* Já no projeto → SÓ o selinho (mesma decisão do Pinta: sem
                         "Adicionar de novo"). */}
-                    {added ? (
-                      <span className="inline-flex items-center text-xs font-semibold text-emerald-500">
-                        {t('moldaImport.inProject')}
-                      </span>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={busyId !== null || blocked}
-                        title={blocked ? t(creation3DNoteKey(gate)) : undefined}
-                        onClick={() => void handleAdd(creation)}
-                      >
-                        {busyId === creation.id ? t('moldaImport.adding') : t('moldaImport.add')}
-                      </Button>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        ) : null}
+                        {added ? (
+                          <span className="inline-flex items-center text-xs font-semibold text-emerald-500">
+                            {t('moldaImport.inProject')}
+                          </span>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={busyId !== null || blocked}
+                            title={blocked ? t(creation3DNoteKey(gate)) : undefined}
+                            onClick={() => void handleAdd(creation)}
+                          >
+                            {busyId === creation.id
+                              ? t('moldaImport.adding')
+                              : t('moldaImport.add')}
+                          </Button>
+                        )}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : null}
+          </>
+        )}
       </div>
     </Modal>
   )

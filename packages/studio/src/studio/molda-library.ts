@@ -1,4 +1,8 @@
+import type { PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
+import type { CenaDisponivelParaStudio } from '@sistemazero/molda-cenarios-core/studio'
+import type { ProgressoDaCompilacao } from '@sistemazero/molda-cenarios-motor/compilar'
 import { createContext, useContext } from 'react'
+import { projectUsesRaylib3D } from '../core/raylibMediaPaths'
 import { useProjectStore } from '../state/projectStore'
 
 /**
@@ -70,21 +74,38 @@ export type StudioMoldaImportResult =
 
 export interface StudioMoldaLibraryAdapter {
   /** Todas as criações do perfil, mais recente primeiro. Rejeição → erro na modal. */
-  list(): Promise<StudioMoldaCreationSummary[]>
+  list(options?: { signal?: AbortSignal }): Promise<StudioMoldaCreationSummary[]>
   /** Exporta + grava na biblioteca pessoal; o Studio faz o `addAsset` com o retorno. */
   import(
     creationId: string,
-    options?: { acceptedReview?: string },
+    options?: { acceptedReview?: string; signal?: AbortSignal },
   ): Promise<StudioMoldaImportResult>
+  /** Saved world scenes use the same project assets/store, never personal-assets copies. */
+  cenarios?: {
+    disponivel(options: { signal: AbortSignal }): Promise<boolean>
+    listar(options: { signal: AbortSignal }): Promise<CenaDisponivelParaStudio[]>
+    preparar(
+      id: string,
+      revisao: number,
+      options: {
+        signal: AbortSignal
+        juntar: boolean
+        progresso?: (p: ProgressoDaCompilacao) => void
+      },
+    ): Promise<{ pacote: PacoteCompilado; avisos: string[] }>
+  }
 }
 
 const StudioMoldaLibraryContext = createContext<StudioMoldaLibraryAdapter | null>(null)
 
 export const StudioMoldaLibraryProvider = StudioMoldaLibraryContext.Provider
 
-/** Molda is a JavaScript capability until the Python 3D runtime is supported. */
+/** Python uses the existing Raylib 3D media path; scene features are checked against its release. */
 export function useStudioMoldaLibrary(): StudioMoldaLibraryAdapter | null {
   const adapter = useContext(StudioMoldaLibraryContext)
-  const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
-  return python ? null : adapter
+  const disponivel = useProjectStore(
+    (state) =>
+      state.project?.programmingLanguage !== 'python' || projectUsesRaylib3D(state.project),
+  )
+  return disponivel ? adapter : null
 }

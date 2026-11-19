@@ -154,6 +154,17 @@ function ObjectDetails({
             />
           )}
         </LabeledField>
+        {detailed || object.collision ? (
+          <label className="flex min-h-11 items-center gap-2 text-sm text-pin-text">
+            <input
+              type="checkbox"
+              className="size-5 accent-pin-accent"
+              checked={object.collision === true}
+              onChange={(event) => onUpdate({ collision: event.target.checked ? true : undefined })}
+            />
+            {COPY.tiles.objectCollision}
+          </label>
+        ) : null}
         {detailed ? (
           <>
             <LabeledField label={COPY.tiles.objectType}>

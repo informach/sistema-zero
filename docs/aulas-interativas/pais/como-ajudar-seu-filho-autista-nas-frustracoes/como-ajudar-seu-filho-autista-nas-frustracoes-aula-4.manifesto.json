@@ -1,0 +1,53 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-4",
+  "title": "Durante a crise: a intervenção inteligente",
+  "blocks": [
+    {
+      "key": "video-a4-ambiente",
+      "plannedVideo": "Título: O ambiente e o seu tom\n\nEnsinar a reduzir os estímulos e a regular a criança pelo próprio modelo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a4-auge",
+      "plannedVideo": "Título: O que não fazer no auge\n\nExplicar por que não se negocia nem se explica no auge da crise. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 2."
+    },
+    {
+      "key": "resumo-a4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- **Ambiente:** afaste o que aumenta a sobrecarga (som, luz, gente em volta).\n- **O seu tom:** respire fundo, fale baixo e com frases curtas. Você é o espelho da criança.\n- **Não negocie no auge:** nessa hora ela não acessa o raciocínio lógico. Explicação, sermão e combinado ficam para depois.\n- Fique perto, com poucas palavras, e espere a onda passar."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "ambiente",
+      "title": "O ambiente e o seu tom",
+      "objective": "Ensinar a reduzir os estímulos e a regular a criança pelo próprio modelo.",
+      "intent": "explanation",
+      "blockKeys": ["video-a4-ambiente"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a4-ambiente"]
+      }
+    },
+    {
+      "key": "auge",
+      "title": "O que não fazer no auge",
+      "objective": "Explicar por que não se negocia nem se explica no auge da crise.",
+      "intent": "explanation",
+      "blockKeys": ["video-a4-auge", "resumo-a4"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a4-auge"]
+      }
+    }
+  ]
+}

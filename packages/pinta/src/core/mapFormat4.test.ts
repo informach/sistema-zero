@@ -120,7 +120,7 @@ const lerPecas = (cru: unknown): TilesetAsset => {
 describe('frota mista: o que faz o código intermediário recusar em vez de cortar', () => {
   it('o carimbo e o envelope da cena completa são maiores que os que ele conhecia', () => {
     expect(PINTA_SCENE_SCHEMA).toBeGreaterThan(CONHECIDO_PELO_INTERMEDIARIO.schema)
-    expect(PINTA_MAX_SCHEMA).toBe(6)
+    expect(PINTA_MAX_SCHEMA).toBe(7)
     // O formato só de camadas continua no número que ele lê inteiro.
     expect(PINTA_MAP_SCHEMA).toBe(CONHECIDO_PELO_INTERMEDIARIO.schema)
     const completo = lerMapa(mapa([objeto({ shape: 'ellipse' })]))

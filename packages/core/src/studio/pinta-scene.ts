@@ -60,6 +60,7 @@ export const PintaSceneObjectSchema = z.strictObject({
     .optional(),
   setId: id.optional(),
   role: z.enum(['start', 'danger', 'door', 'path', 'trigger', 'enemy', 'region']).optional(),
+  collision: z.literal(true).optional(),
 })
 const common = {
   id,
@@ -154,7 +155,7 @@ export const PintaSceneSpriteSchema = z.strictObject({
 })
 export const PintaSceneSchema = z
   .strictObject({
-    version: z.union([z.literal(1), z.literal(2)]),
+    version: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     id,
     name: z.string().max(48),
     tileSize: z.number().int().min(1).max(128),
@@ -182,6 +183,13 @@ export const PintaSceneSchema = z
   })
   .superRefine((s, ctx) => {
     const allLayers = [s.layers, ...(s.sets ?? []).map((v) => v.layers)].flat()
+    if (
+      s.version < 3 &&
+      allLayers.some(
+        (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
+      )
+    )
+      ctx.addIssue({ code: 'custom', message: 'Colisão de objeto exige cena 3.' })
     if (
       s.version === 1 &&
       (s.resources?.length ||

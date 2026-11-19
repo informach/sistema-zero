@@ -49,14 +49,20 @@ export class StudioPublicationError extends Error {
 }
 
 /** Capture this requirement before stripping private recipe/provenance for publication. */
+type PintaRuntimeFeature = NonNullable<ReturnType<typeof pintaImageRequiredRuntimeFeature>>
+export function studioRequiredPintaRuntimeFeatures(
+  project: EditableStudioProject,
+): PintaRuntimeFeature[] {
+  if (project.programmingLanguage !== 'python') return []
+  const required = new Set<PintaRuntimeFeature>()
+  for (const asset of project.assets ?? []) {
+    const feature = asset.pintaImage && pintaImageRequiredRuntimeFeature(asset.pintaImage)
+    if (feature) required.add(feature)
+  }
+  return [...required]
+}
 export function studioRequiresPintaSceneReader(project: EditableStudioProject): boolean {
-  return (
-    project.programmingLanguage === 'python' &&
-    project.assets?.some(
-      (asset) =>
-        asset.pintaImage && pintaImageRequiredRuntimeFeature(asset.pintaImage) !== undefined,
-    ) === true
-  )
+  return studioRequiredPintaRuntimeFeatures(project).length > 0
 }
 
 /** Publish game content, never private tutoring notes or links to the author's workspace. */
@@ -266,6 +272,7 @@ export async function publishStudioPythonRevision(options: {
   project: PythonProjectDocument
   /** Server-only requirement captured from the private validated project, never a request flag. */
   requiresPintaSceneReader?: boolean
+  requiredPintaRuntimeFeatures?: readonly PintaRuntimeFeature[]
   playId: string
   owner: string
   requestId: string
@@ -275,6 +282,10 @@ export async function publishStudioPythonRevision(options: {
   signal?: AbortSignal
 }): Promise<StudioPythonPublication> {
   options.signal?.throwIfAborted()
+  const capturedPintaFeatures: PintaRuntimeFeature[] = [
+    ...(options.requiredPintaRuntimeFeatures ?? []),
+    ...(options.requiresPintaSceneReader ? [PYTHON_PINTA_WORLD_FEATURE] : []),
+  ]
   // Validate private metadata and byte hashes before the deliberate privacy projection.
   const original = await prepareEditableStudioProject(options.project)
   if (original?.programmingLanguage !== 'python')
@@ -316,13 +327,13 @@ export async function publishStudioPythonRevision(options: {
       'O ambiente Python deste projeto ainda não permite publicar no Mural.',
       STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
     )
-  if (
-    (options.requiresPintaSceneReader || studioRequiresPintaSceneReader(original)) &&
-    !selectStudioRuntimeRelease(
-      decision.catalog,
-      project.runtime,
-    )?.manifest.python?.features.includes(PYTHON_PINTA_WORLD_FEATURE)
-  )
+  const requiredPintaFeatures = new Set<PintaRuntimeFeature>([
+    ...studioRequiredPintaRuntimeFeatures(original),
+    ...capturedPintaFeatures,
+  ])
+  const availablePintaFeatures =
+    selectStudioRuntimeRelease(decision.catalog, project.runtime)?.manifest.python?.features ?? []
+  if ([...requiredPintaFeatures].some((feature) => !availablePintaFeatures.includes(feature)))
     throw new StudioPublicationError(
       409,
       'O ambiente deste projeto precisa ser atualizado para publicar este cenário. O mapa e o programa foram preservados.',

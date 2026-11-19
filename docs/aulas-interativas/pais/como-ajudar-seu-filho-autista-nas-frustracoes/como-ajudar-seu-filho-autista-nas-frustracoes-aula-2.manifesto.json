@@ -1,0 +1,53 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+  "title": "De onde vem a frustração",
+  "blocks": [
+    {
+      "key": "video-a2-raizes",
+      "plannedVideo": "Título: As quatro raízes da frustração\n\nExplicar os quatro motivos mais comuns por trás das crises. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a2-funcao",
+      "plannedVideo": "Título: Função ou julgamento?\n\nMostrar que a crise vem da interação entre a criança e o contexto, e ensinar a perguntar pela função do comportamento. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.roteiro.md, Parte 2."
+    },
+    {
+      "key": "resumo-a2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- **Quatro raízes da frustração:** poucas estratégias para se acalmar; dificuldade de comunicar o que precisa e o que sente; quebra da previsibilidade; sensibilidade sensorial.\n- Toda crise nasce do encontro entre a criança (habilidades e limitações) e o contexto (o ambiente e o jeito como o adulto conduz).\n- Troque o julgamento pela pergunta: é birra e manha, ou é fuga, busca de atenção, um jeito de se regular?\n- Antes de julgar, observe a função."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "raizes",
+      "title": "As quatro raízes da frustração",
+      "objective": "Explicar os quatro motivos mais comuns por trás das crises.",
+      "intent": "explanation",
+      "blockKeys": ["video-a2-raizes"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-raizes"]
+      }
+    },
+    {
+      "key": "funcao",
+      "title": "Função ou julgamento?",
+      "objective": "Mostrar que a crise vem da interação entre a criança e o contexto, e ensinar a perguntar pela função do comportamento.",
+      "intent": "explanation",
+      "blockKeys": ["video-a2-funcao", "resumo-a2"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-funcao"]
+      }
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import {
   resolveAssetPalette,
   type TilemapAsset,
   tileLayerTilesetId,
+  tilemapNeedsV7,
   tilemapTilesetIds,
 } from '../core/project'
 import { tilesetGridGeometry } from '../tiles/packGeometry'
@@ -200,7 +201,11 @@ export async function exportPintaScene(
     ),
   )
   return PintaSceneSchema.parse({
-    version: versions.length || art.some((a) => a.sprite) || animatedTileObjects ? 2 : 1,
+    version: documents.some(tilemapNeedsV7)
+      ? 3
+      : versions.length || art.some((a) => a.sprite) || animatedTileObjects
+        ? 2
+        : 1,
     id: map.id,
     name: map.name,
     tileSize: base.tileSize,

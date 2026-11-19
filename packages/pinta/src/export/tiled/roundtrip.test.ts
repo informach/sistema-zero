@@ -4,6 +4,7 @@ import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import { gzipSync, zlibSync } from 'fflate'
 import { vilaEFloresta } from '../../../scripts/homologacao/fixture'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
+import { objectPhysicsScenario } from '../../../scripts/homologacao/physics'
 import { createMapObject } from '../../tiles/mapObjects'
 import { galleryToPintaJson, importPintaJson } from '../projectJson'
 import { exportPintaScene } from '../scene'
@@ -11,6 +12,80 @@ import { buildScenePackage } from '../scenePackage'
 import { cellToGid, tiledMap, tiledMapXml, tiledTilesetXml } from './export'
 import { gidCell, importTiledScene, tiledXmlToJson } from './import'
 import { sceneToNative } from './native'
+
+it('Tiled usa objetos separados para imagem e contorno elíptico, sem perder a arte ao voltar', async () => {
+  const { map, assets } = objectPhysicsScenario()
+  const scene = await exportPintaScene(
+    map,
+    (id) => assets.find((a) => a.id === id) ?? null,
+    nativeImageOf,
+  )
+  const layer = scene.layers.find((l) => l.kind === 'objects')
+  if (layer?.kind !== 'objects') throw new Error('Objetos ausentes')
+  const ellipse = layer.objects.find((o) => o.id === 'ellipse')!
+  ellipse.art = { assetId: scene.tilesets[0]!.id, tile: 0 }
+  const exported = tiledMap(scene)
+  const all = (layers: Record<string, unknown>[]): Record<string, unknown>[] =>
+    layers.flatMap((l) =>
+      l.type === 'group'
+        ? all(l.layers as Record<string, unknown>[])
+        : ((l.objects as Record<string, unknown>[]) ?? []),
+    )
+  const objects = all(exported.layers as Record<string, unknown>[])
+  expect(objects.filter((o) => o.gid && (o.ellipse || o.polygon || o.polyline || o.point))).toEqual(
+    [],
+  )
+  const drawing = objects.find((o) => o.name === 'Elipse' && o.gid)
+  const outline = objects.find((o) => o.name === 'Elipse' && o.ellipse)
+  expect(drawing).toBeDefined()
+  expect(outline).toBeDefined()
+  expect(
+    (drawing!.properties as { name: string }[]).some((p) => p.name === 'pinta:collision'),
+  ).toBe(false)
+  const imported = await importTiledScene(
+    tiledXmlToJson(tiledMapXml(exported, true)),
+    resolverOf(scene),
+  )
+  expect(imported.warnings).toEqual([])
+  expect(imported.scene).toEqual(scene)
+})
+
+it('cena 3 conserva contornos, conjuntos e opção física em JSON e TMX/TSX reais', async () => {
+  const { map, assets } = objectPhysicsScenario()
+  const scene = await exportPintaScene(
+    map,
+    (id) => assets.find((a) => a.id === id) ?? null,
+    nativeImageOf,
+  )
+  const exported = tiledMap(scene),
+    resolver = resolverOf(scene)
+  for (const document of [exported, tiledXmlToJson(tiledMapXml(exported, true))]) {
+    const imported = await importTiledScene(document, resolver)
+    expect(imported.warnings).toEqual([])
+    expect(imported.scene).toEqual(scene)
+    const native = await sceneToNative(imported.scene, async (url) => {
+      const image = await loadImage(url),
+        canvas = createCanvas(image.width, image.height),
+        context = canvas.getContext('2d')
+      context.drawImage(image, 0, 0)
+      return {
+        width: image.width,
+        height: image.height,
+        data: context.getImageData(0, 0, image.width, image.height).data,
+      }
+    })
+    const reopened = importPintaJson(galleryToPintaJson(native.assets))
+    const result = reopened.assets.find((a) => a.id === map.id)
+    if (result?.kind !== 'tilemap') throw new Error('Mapa perdido')
+    expect(result.physics).toBe('precise')
+    const again = await exportPintaScene(
+      result,
+      (id) => reopened.assets.find((a) => a.id === id) ?? null,
+      nativeImageOf,
+    )
+    expect(again).toEqual(scene)
+  }
+})
 
 it('o pacote inclui o destino de uma porta que pertence a um conjunto vinculado', async () => {
   const { map, assets } = vilaEFloresta(),

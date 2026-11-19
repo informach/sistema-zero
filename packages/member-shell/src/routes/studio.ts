@@ -67,7 +67,7 @@ import {
   StudioPublicationError,
   studioPublicationOwner,
   studioPublicProject,
-  studioRequiresPintaSceneReader,
+  studioRequiredPintaRuntimeFeatures,
 } from '../server/studio-publication'
 import {
   drainStudioPublicationCleanup,
@@ -103,6 +103,11 @@ function publicationError(error: unknown): NextResponse {
       { status: 413 },
     )
   if (error instanceof InvalidJsonBodyError) return invalid()
+  if (error instanceof ProjectDocumentError && error.code === 'invalid-document')
+    return NextResponse.json(
+      { error: { code: 'INVALID_INPUT', message: error.message } },
+      { status: 400 },
+    )
   if (error instanceof StudioPublicationError || error instanceof StudioProRuntimeInputError)
     return NextResponse.json(
       {
@@ -346,7 +351,7 @@ export function createStudioRoutes(deps: {
   }
   async function publishRevision(options: {
     project: EditableStudioProject
-    requiresPintaSceneReader?: boolean
+    requiredPintaRuntimeFeatures?: ReturnType<typeof studioRequiredPintaRuntimeFeatures>
     source: string
     playId: string
     owner: string
@@ -503,7 +508,7 @@ export function createStudioRoutes(deps: {
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
-      let requiresPintaSceneReader = false
+      let requiredPintaRuntimeFeatures: ReturnType<typeof studioRequiredPintaRuntimeFeatures> = []
       // Metadado do projeto p/ o selo de nível do remix no card do Mural (derivado
       // do projeto JÁ saneado — cosmético; o gate real do remix é no clique).
       let studioMeta: StudioPublicProjectMetadata | null = null
@@ -541,7 +546,7 @@ export function createStudioRoutes(deps: {
         const project = await prepareEditableStudioProject(submitted.body.project)
         if (!project) return invalid()
         publicationProject = studioPublicProject(project)
-        requiresPintaSceneReader = studioRequiresPintaSceneReader(project)
+        requiredPintaRuntimeFeatures = studioRequiredPintaRuntimeFeatures(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf8')
         if (projectBytes.length > PROJECT_MAX_BYTES) return projectTooLarge()
@@ -611,7 +616,7 @@ export function createStudioRoutes(deps: {
         try {
           await publishRevision({
             project: publicationProject,
-            requiresPintaSceneReader,
+            requiredPintaRuntimeFeatures,
             source: projectBytes.toString('utf8'),
             playId,
             owner,
@@ -849,7 +854,7 @@ export function createStudioRoutes(deps: {
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
-      let requiresPintaSceneReader = false
+      let requiredPintaRuntimeFeatures: ReturnType<typeof studioRequiredPintaRuntimeFeatures> = []
       // Metadado do projeto p/ o selo de nível do remix (cosmético; gate real no clique).
       let studioMeta: StudioPublicProjectMetadata | null = null
       try {
@@ -861,7 +866,7 @@ export function createStudioRoutes(deps: {
         const project = await prepareEditableStudioProject(rawProject)
         if (!project) return invalid()
         publicationProject = studioPublicProject(project)
-        requiresPintaSceneReader = studioRequiresPintaSceneReader(project)
+        requiredPintaRuntimeFeatures = studioRequiredPintaRuntimeFeatures(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
@@ -941,7 +946,7 @@ export function createStudioRoutes(deps: {
         try {
           await publishRevision({
             project: publicationProject,
-            requiresPintaSceneReader,
+            requiredPintaRuntimeFeatures,
             source: projectBytes.toString('utf8'),
             playId,
             owner,
@@ -1451,7 +1456,7 @@ export function createStudioRoutes(deps: {
           return NextResponse.json(
             await publishRevision({
               project: studioPublicProject(project),
-              requiresPintaSceneReader: studioRequiresPintaSceneReader(project),
+              requiredPintaRuntimeFeatures: studioRequiredPintaRuntimeFeatures(project),
               source: JSON.stringify(studioPublicProject(project)),
               playId: input.playId,
               owner,

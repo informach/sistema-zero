@@ -883,6 +883,12 @@ export const COPY = {
     pickObject: (name: string) => `Escolher o objeto ${name}`,
     objectDetails: 'Objeto escolhido',
     objectName: 'Nome',
+    objectCollision: 'Impede o personagem de passar',
+    precisePhysics: 'Usar os contornos exatos do cenário',
+    precisePhysicsRequired:
+      'Os objetos ou conjuntos deste cenário já usam esses contornos. Para voltar à colisão antiga, retire suas marcas de barreira e desative esta opção.',
+    precisePhysicsHelp:
+      'Respeita curvas, caminhos e conjuntos girados. Desative para manter a colisão dos jogos antigos.',
     objectType: 'Tipo (o jogo lê este)',
     objectX: 'X',
     objectY: 'Y',

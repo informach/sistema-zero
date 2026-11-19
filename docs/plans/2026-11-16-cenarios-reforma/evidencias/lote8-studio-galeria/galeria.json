@@ -1,0 +1,954 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "tema": "light",
+    "python": false,
+    "pro": false,
+    "nome": "js-classic-1440-900-light",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 6439,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "tema": "dark",
+    "python": false,
+    "pro": true,
+    "nome": "js-pro-1440-900-dark",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 6740,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "tema": "light",
+    "python": true,
+    "pro": false,
+    "nome": "python-classic-1366-768-light",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 7074,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "tema": "dark",
+    "python": true,
+    "pro": true,
+    "nome": "python-pro-1366-768-dark",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 6916,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "tema": "light",
+    "python": false,
+    "pro": false,
+    "nome": "js-classic-1024-768-light",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 6437,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "tema": "dark",
+    "python": false,
+    "pro": true,
+    "nome": "js-pro-1024-768-dark",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 6292,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tema": "light",
+    "python": true,
+    "pro": false,
+    "nome": "python-classic-390-844-light",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 7769,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tema": "dark",
+    "python": true,
+    "pro": true,
+    "nome": "python-pro-390-844-dark",
+    "assets": 28,
+    "nos": 20,
+    "fonte": {
+      "cenario": "cen-000b",
+      "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60",
+      "revisao": 1
+    },
+    "bytesDoEnvelope": 23304,
+    "tempoLocalMs": 7892,
+    "arquivosPreservados": true,
+    "reabertura": true,
+    "pedidos": [
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/acesso",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/mundos/mundo-000a/cenarios",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/equipe/mundos",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/c64411d6ef5411e3cd0bd48fbc3c17b19d0edec16b670f04fcc93fc8a4bf774f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/055fdb94bc4df6a8cc0d66f6340c0d994f1623b0b9728ea30cd7b76e41cd627f",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/bc967b723c6b011a3a03a3136a03ad4c94bd955f0e4d0af42d216bbe4b9d45e1",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/10c5873afba8671275e3b8daa99014d8958ee07adcff83548f7b23f6a3cbdc73",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/cenarios/espacos/conta/arquivos/39ad600f309c86a2ede8633bc9b40abcfcc462b0a9345bd094cce1dc587e1d67",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/cenarios/cenarios/cen-000b/exportacao",
+        "pessoa": "11111111-1111-4111-8111-111111111111",
+        "sessaoCorreta": true
+      }
+    ],
+    "erros": [],
+    "nota": "Hook e cliente HTTP reais; servidor de dados em memória com identidade fixa de ensaio. Não é conta real ou validação de implantação. Tempo inclui gravação/reabertura, não é benchmark de dispositivo."
+  }
+]

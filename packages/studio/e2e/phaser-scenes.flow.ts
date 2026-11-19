@@ -16,6 +16,70 @@ type Game = {
   }
 }
 
+test('Phaser: cena 3 consulta os contornos e barra movimento através de parede fina', async ({
+  page,
+  request,
+}, info) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('http://127.0.0.1:5293/physics/')
+  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
+  const fixture = await (await request.get('http://127.0.0.1:5293/physics-probes.json')).json()
+  const result = await page.evaluate(({ scene, probes }) => {
+    const query = (
+      window as unknown as { sceneIntersectsBox: (scene: unknown, box: unknown) => boolean }
+    ).sceneIntersectsBox
+    return probes.map((p: { name: string; box: unknown; blocked: boolean }) => ({
+      name: p.name,
+      expected: p.blocked,
+      actual: query(scene, p.box),
+    }))
+  }, fixture)
+  for (const probe of result) expect(probe.actual, probe.name).toBe(probe.expected)
+  // CPU throttling is a simulation on this machine, not a physical phone result.
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  const performanceResult = await page.evaluate(({ scene, probes }) => {
+    const query = (
+      window as unknown as { sceneIntersectsBox: (scene: unknown, box: unknown) => boolean }
+    ).sceneIntersectsBox
+    const times: number[] = []
+    for (let iteration = 0; iteration < 101; iteration++) {
+      const start = performance.now()
+      for (const probe of probes) query(scene, probe.box)
+      if (iteration) times.push(performance.now() - start)
+    }
+    times.sort((a, b) => a - b)
+    return {
+      cpuRate: 4,
+      bodies: probes.length,
+      batches: times.length,
+      medianMs: times[50]!,
+      p95Ms: times[94]!,
+      maxMs: times[99]!,
+    }
+  }, fixture)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
+  await cdp.detach()
+  expect(performanceResult.p95Ms).toBeLessThan(16.7)
+  await page.evaluate(() => window.pintaGame.hero.body.reset(10, 28))
+  await page.keyboard.down('ArrowRight')
+  await page.waitForTimeout(800)
+  await page.keyboard.up('ArrowRight')
+  const x = await page.evaluate(() => window.pintaGame.hero.x)
+  expect(x).toBeGreaterThan(27.9)
+  expect(x).toBeLessThanOrEqual(28.01)
+  expect(errors).toEqual([])
+  await info.attach('contornos-phaser', {
+    body: JSON.stringify({ probes: result, x, performance: performanceResult }),
+    contentType: 'application/json',
+  })
+  await info.attach('contornos-phaser-imagem', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+})
+
 test('Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa', async ({
   page,
   request,
