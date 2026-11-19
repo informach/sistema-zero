@@ -144,7 +144,8 @@ describe('Auditoria Mundo 3D — inventário', () => {
     // "Tremer a câmera" passaram a ser os da fábrica `game3dRules`), +19 regras de jogo
     // (pontos, vida do jogador, telas, recomeçar, cronômetro, sorteio, tremer) e +8 novos
     // (coletáveis, "Quando pegar", tirar do mundo, esvaziar a mochila e quatro do Molda).
-    expect(world3DBlocks.length).toBe(161)
+    // +1: seleção por ID da cena importada do Molda Cenários.
+    expect(world3DBlocks.length).toBe(162)
     const types = new Set(world3DBlocks.map((block) => block.type))
     expect(types.has('sz_w3d_hud')).toBe(false)
     expect(types.has('sz_w3d_hud_text')).toBe(true)

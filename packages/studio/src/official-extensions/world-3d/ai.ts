@@ -11,6 +11,10 @@ passeia nele a pé, de carrinho ou de barco. "Jogador" = quem ela controla AGORA
 (personagem, carro ou barco): pontos, áreas, moedas, clima, tornado, corrida,
 boliche, empurráveis e explosivos valem para o jogador. Unidades em METROS.
 
+loadScene(id) escolhe por ID um asset scene3d trazido do Molda, em ⚙️ Ao iniciar.
+Usa seu terreno, água e colisões, preservando quem joga e os controles. Não invente IDs nem
+troque o ID pelo nome do cenário. Com loadScene não sobreponha o chão procedural de terrain/water.
+
 ### Receita canônica por Área do projeto
 
 \`\`\`js

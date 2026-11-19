@@ -1,7 +1,8 @@
-import { Box3, PCFShadowMap, PerspectiveCamera, Vector3, WebGLRenderer } from 'three'
+import { PCFShadowMap, PerspectiveCamera, Vector3, WebGLRenderer } from 'three'
 import { PersonagemDoTeste } from '../teste/personagem'
 import { SessaoDoTeste } from '../teste/sessao'
 import type { ComandoDoTeste, EntradaDoTeste, EstadoDoTeste } from '../teste/tipos'
+import { resolverInicioDaCena } from './inicio'
 import { carregarCenaDoEndereco } from './runtime-http'
 import type { CenaNoThree } from './runtime-three'
 
@@ -50,29 +51,8 @@ export async function iniciarExploracaoDoCenario(opcoes: OpcoesDaExploracao) {
     })
     sinal.throwIfAborted()
     const pronto = cena,
-      inicio =
-        pronto.dados.marcadores.find(
-          (m) => m.configuracao?.tipo === 'inicio' && m.configuracao.principal,
-        ) ?? pronto.dados.marcadores.find((m) => m.configuracao?.tipo === 'inicio'),
-      posicao = inicio
-        ? new Vector3(inicio.posicao.x, inicio.posicao.y, inicio.posicao.z)
-        : new Vector3()
-    if (!inicio) {
-      const volume = new Box3()
-      for (const n of pronto.dados.nos) {
-        volume.expandByPoint(new Vector3(n.volume.min.x, n.volume.min.y, n.volume.min.z))
-        volume.expandByPoint(new Vector3(n.volume.max.x, n.volume.max.y, n.volume.max.z))
-      }
-      if (!volume.isEmpty()) {
-        volume.getCenter(posicao)
-        posicao.y =
-          pronto.colisoes.rastrear(
-            new Vector3(posicao.x, volume.max.y + 2, posicao.z),
-            new Vector3(posicao.x, volume.min.y - 2, posicao.z),
-          )?.ponto.y ?? posicao.y
-      }
-    }
-    const config = { modo: 'terceira' as const, altura: 1.16, giroInicial: inicio?.giro ?? 0 }
+      { posicao, giro } = resolverInicioDaCena(pronto)
+    const config = { modo: 'terceira' as const, altura: 1.16, giroInicial: giro }
     personagem = new PersonagemDoTeste(null, config)
     sessao = new SessaoDoTeste(
       canvas,

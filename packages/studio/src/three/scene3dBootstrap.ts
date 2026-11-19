@@ -1,4 +1,5 @@
 import type { OpcoesDoRuntimeCompilado } from '@sistemazero/molda-cenarios-motor/runtime'
+import { resolverInicioDaCena } from '@sistemazero/molda-cenarios-motor/runtime'
 import type { Asset3DManifestEntry } from '../core/projectAssets'
 import { resolverAssetsDoTransporte3D, type TransporteDeCenas3D } from '../core/scene3d/transporte'
 import { carregarCena3DDoProjeto } from './scene3d'
@@ -10,6 +11,7 @@ declare global {
     __SZGAME_ASSETS_3D?: Record<string, Asset3DManifestEntry>
     SZScene3D?: {
       carregar: typeof carregarDoDocumento
+      inicio: typeof resolverInicioDaCena
     }
   }
 }
@@ -36,7 +38,7 @@ function carregarDoDocumento(
 }
 
 Object.defineProperty(window, 'SZScene3D', {
-  value: Object.freeze({ carregar: carregarDoDocumento }),
+  value: Object.freeze({ carregar: carregarDoDocumento, inicio: resolverInicioDaCena }),
   configurable: true,
   writable: false,
 })

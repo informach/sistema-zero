@@ -3,6 +3,7 @@ import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
+import { world3DSceneRuntime } from './runtimeScene'
 
 /**
  * Runtime do "Mundo 3D" — injetado no <head> do iframe quando a extensão
@@ -85,6 +86,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var keys = {};
   var justPressed = {};
   var pending = [];             // promessas de carregamento (sons/modelos, futuro)
+  __SZ_WORLD_SCENE_RUNTIME__
   // Todo listener do mundo passa pelo listen(): o disposeAll solta TODOS (antes eram 25
   // addEventListener e nenhum remove; remontar no mesmo documento empilhava teclados).
   var _listeners = [];
@@ -649,6 +651,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   }
 
   function heightAt(x, z) {
+    if (importedScene) return importedTerrain(num(x, 0), num(z, 0));
     return sampledTerrainHeight(num(x, 0), num(z, 0));
   }
 
@@ -656,8 +659,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // segue PURO (água/scatter/grama/espuma leem o terreno de verdade); a ponte
   // só conta quando o jogador está à altura dela (yRef > deck − 0.8) — assim o
   // barco passa POR BAIXO e o carro sobe POR CIMA pela rampa.
-  function heightAtDrive(x, z, yRef) {
-    var h = heightAt(x, z);
+  function heightAtDrive(x, z, yRef, radius) {
+    var imported = importedScene ? importedGround(x, z, yRef, radius) : null;
+    var h = importedScene ? (imported == null ? sceneFloorLimit() : imported) : heightAt(x, z);
     for (var i = 0; i < bridges.length; i++) {
       var b = bridges[i];
       var s = segDist(x, z, b.x1, b.z1, b.x2, b.z2);
@@ -1453,6 +1457,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   var GRASS_COUNTS = { pouca: 8000, media: 16000, muita: 24000 };
 
   function buildGrass() {
+    if (importedScene) return;
     if (!scene || !grassCfg) return;
     if (grassMesh) {
       try {
@@ -1655,6 +1660,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // Aplica a atmosfera da hora atual (céu/sol/ambiente/névoa/estrelas).
   function applyAtmosphere() {
+    if (importedScene) return;
     if (!worldReady) return;
     var a = atmosphereAt(timeOfDay);
     // O degradê só redesenha quando a hora andou o bastante (barato mesmo assim).
@@ -1883,6 +1889,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   }
 
   function buildWater() {
+    if (importedScene) return;
     if (!scene || !waterCfg) return;
     if (waterMesh) {
       try {
@@ -3302,6 +3309,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       applyHdrLights();
 
       _proj = new THREE.Vector3();
+      if (importedScene) attachImportedScene();
       buildTerrain();
       if (waterCfg) buildWater();
       if (carCfg) buildCar();
@@ -3349,6 +3357,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // Céu = degradê vertical do estilo (canvas 2D → textura de fundo).
   function applySky() {
+    if (importedScene) return;
     if (!scene) return;
     var st = styleOf();
     try {
@@ -3440,6 +3449,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   }
 
   function buildTerrain() {
+    if (importedScene) return;
     if (!scene) return;
     terrainDirty = false;
     if (terrainMesh) {
@@ -5139,21 +5149,25 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       var nx = s.x + Math.sin(s.yaw) * s.speed * dt;
       var nz = s.z + Math.cos(s.yaw) * s.speed * dt;
       // Barco SÓ anda na água: encalha na praia (empurra de volta e freia).
-      if (waterCfg && heightAt(nx, nz) < waterCfg.y - 0.35) {
+      var nextWaterLevel = importedWaterLevel(nx, nz);
+      if (nextWaterLevel != null && heightAt(nx, nz) < nextWaterLevel - 0.35) {
         s.x = nx;
         s.z = nz;
       } else {
         s.speed *= 0.6;
       }
-      var lim = config.world / 2 - 2;
-      s.x = clamp(s.x, -lim, lim);
-      s.z = clamp(s.z, -lim, lim);
+      if (!importedScene) {
+        var lim = config.world / 2 - 2;
+        s.x = clamp(s.x, -lim, lim);
+        s.z = clamp(s.z, -lim, lim);
+      }
       s.roll += (turn * spdK * 0.14 - s.roll) * Math.min(1, 5 * dt);
     } else {
       s.speed *= 1 - Math.min(1, 1.2 * dt);
       s.roll *= 1 - Math.min(1, 2 * dt);
     }
-    var wy = waterCfg ? waterCfg.y : heightAt(s.x, s.z);
+    var localWaterLevel = importedWaterLevel(s.x, s.z);
+    var wy = localWaterLevel == null ? heightAt(s.x, s.z) : localWaterLevel;
     s.y = wy + 0.05 + Math.sin(playTime * 1.7 + s.x * 0.2) * 0.1;
     boatGroup.position.set(s.x, s.y, s.z);
     boatGroup.rotation.set(Math.sin(playTime * 1.3) * 0.02, s.yaw, s.roll);
@@ -5373,7 +5387,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!personState) {
       var sx = carState ? carState.x + 3 : 2;
       var sz2 = carState ? carState.z : 2;
-      personState = { x: sx, y: heightAt(sx, sz2), z: sz2, yaw: 0, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
+      var arrival = importedArrival(sx, sz2, Math.min(0.45, (pm ? pm.size : 1.7) * 0.25));
+      personState = { x: arrival.x, y: arrival.y, z: arrival.z, yaw: arrival.yaw, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
     }
     personGroup.position.set(personState.x, personState.y, personState.z);
     personGroup.visible = !driving;
@@ -5445,6 +5460,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function stepPerson(dt) {
     if (!personCfg || !personState) return;
     var s = personState;
+    var beforeX = s.x, beforeZ = s.z;
     // Interagível "entrar no carrinho" segue o carro (prio alta perto dele).
     if (carState) {
       if (!_enterInteract) {
@@ -5507,11 +5523,21 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       s.x += (ddx / dc) * (rr - dc);
       s.z += (ddz / dc) * (rr - dc);
     }
-    var lim = config.world / 2 - 1.5;
-    s.x = clamp(s.x, -lim, lim);
-    s.z = clamp(s.z, -lim, lim);
+    if (!importedScene) {
+      var lim = config.world / 2 - 1.5;
+      s.x = clamp(s.x, -lim, lim);
+      s.z = clamp(s.z, -lim, lim);
+    }
+    var importedBodyHeight = modelCfg.person ? modelCfg.person.size : 1.7;
+    var importedContact = resolveImportedMove(s, beforeX, beforeZ, importedBodyHeight, Math.min(0.45, importedBodyHeight * 0.25));
+    var beforeVertical = s.y;
     // Chão/pulo/jetpack (com o DECK das pontes).
-    var gy = heightAtDrive(s.x, s.z, s.y);
+    var gy = heightAtDrive(s.x, s.z, s.y, Math.min(0.45, importedBodyHeight * 0.25));
+    if (importedContact && importedContact.support != null) gy = Math.max(gy, importedContact.support);
+    if (importedScene && gy <= sceneFloorLimit() && !s.airborne) {
+      s.airborne = true;
+      s.vy = 0;
+    }
     if (s.airborne) {
       if (acc === 'jetpack' && isDown(' ')) {
         s.vy = Math.min(7, s.vy + 26 * dt);
@@ -5523,7 +5549,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
       s.vy -= GRAV * gravityScale * dt;
       s.y += s.vy * dt;
-      if (s.y <= gy) {
+      if (s.y <= gy && (!importedScene || gy > sceneFloorLimit())) {
         s.y = gy;
         s.vy = 0;
         s.airborne = false;
@@ -5536,8 +5562,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         if (acc === 'jetpack') ensureParty();
       }
     }
+    resolveImportedVertical(s, beforeVertical, importedBodyHeight, Math.min(0.45, importedBodyHeight * 0.25));
     // Água: a pé afundar dá o mesmo resgate do carrinho.
-    if (waterCfg && waterCfg.y - s.y > 1.1) {
+    var waterLevel = importedWaterLevel(s.x, s.z);
+    if (!importedScene && waterLevel != null && waterLevel - s.y > 1.1) {
       var back = _campRespawn || lastSafe;
       s.x = back.x + 1.5;
       s.z = back.z + 1.5;
@@ -5545,6 +5573,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       s.vy = 0;
       camSnap = true;
     }
+    importedSafety(s, dt);
     // ---- Anim procedural ----
     s.vis += (Math.abs(spd) - s.vis) * Math.min(1, 8 * dt);
     s.phase += (2.2 + s.vis * 1.4) * dt * (s.vis > 0.15 ? 1 : 0);
@@ -7995,7 +8024,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
     if (!carState) {
       carState = newCarState();
-      carState.y = heightAt(0, 0);
+      var arrival = importedArrival(0, 0, 1.1);
+      carState.x = arrival.x; carState.y = arrival.y; carState.z = arrival.z; carState.yaw = arrival.yaw;
     }
     camSnap = true;
     scene.add(carGroup);
@@ -8004,6 +8034,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function stepCar(dt) {
     if (!carState || !carCfg) return;
     var s = carState;
+    var beforeX = s.x, beforeZ = s.z;
     var cs = carStyleOf();
     var top = num(carCfg.speed, cs.speed);
     var turnDeg = num(carCfg.turn, cs.turn);
@@ -8068,19 +8099,33 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
 
     // Bordas do mundo: para com um empurrãozinho de volta (queda vem depois).
-    var lim = config.world / 2 - 2;
-    if (s.x > lim) { s.x = lim; s.speed *= 0.35; }
-    if (s.x < -lim) { s.x = -lim; s.speed *= 0.35; }
-    if (s.z > lim) { s.z = lim; s.speed *= 0.35; }
-    if (s.z < -lim) { s.z = -lim; s.speed *= 0.35; }
+    if (!importedScene) {
+      var lim = config.world / 2 - 2;
+      if (s.x > lim) { s.x = lim; s.speed *= 0.35; }
+      if (s.x < -lim) { s.x = -lim; s.speed *= 0.35; }
+      if (s.z > lim) { s.z = lim; s.speed *= 0.35; }
+      if (s.z < -lim) { s.z = -lim; s.speed *= 0.35; }
+    }
+    var importedContact = resolveImportedMove(s, beforeX, beforeZ, 2.4, 1.1);
+    if (importedContact && importedContact.blocked) {
+      var impactImported = Math.abs(s.speed);
+      s.speed *= 0.3;
+      if (impactImported > Math.max(4, top * 0.35)) fireCrash();
+    }
 
     // Chão + pulo: no chão a altura SEGUE o terreno (com o DECK das pontes).
-    var gy = heightAtDrive(s.x, s.z, s.y);
+    var gy = heightAtDrive(s.x, s.z, s.y, 1.1);
+    if (importedContact && importedContact.support != null) gy = Math.max(gy, importedContact.support);
+    var beforeVertical = s.y;
     var landed = false;
+    if (importedScene && gy <= sceneFloorLimit() && !s.airborne) {
+      s.airborne = true;
+      s.vy = 0;
+    }
     if (s.airborne) {
       s.vy -= GRAV * gravityScale * dt;
       s.y += s.vy * dt;
-      if (s.y <= gy) {
+      if (s.y <= gy && (!importedScene || gy > sceneFloorLimit())) {
         s.y = gy;
         s.airborne = false;
         landed = true;
@@ -8103,10 +8148,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
     }
 
+    resolveImportedVertical(s, beforeVertical, 2.4, 1.1);
     // Água: rasa = arrasta e respinga; funda (> 1.2 m abaixo do nível) = respawn
     // no último ponto seco. Sem água, guarda o ponto atual como seguro.
-    if (waterCfg && !s.airborne) {
-      var prof = waterCfg.y - s.y;
+    var waterLevel = importedWaterLevel(s.x, s.z);
+    if (!importedScene && waterLevel != null && !s.airborne) {
+      var prof = waterLevel - s.y;
       if (prof > 1.2) {
         // Resgate: a última FOGUEIRA tocada vence o último ponto seco (R14).
         if (_campRespawn) {
@@ -8132,11 +8179,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         lastSafe.z = s.z;
         lastSafe.yaw = s.yaw;
       }
-    } else if (!s.airborne) {
+    } else if (!importedScene && !s.airborne) {
       lastSafe.x = s.x;
       lastSafe.z = s.z;
       lastSafe.yaw = s.yaw;
     }
+    importedSafety(s, dt);
 
     // ---- Molejo COSMÉTICO (mola-amortecedor de pitch/roll na carroceria) ----
     var n = s.airborne ? null : groundNormalAt(s.x, s.z);
@@ -8327,6 +8375,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }
     rules.beforeFrame(camera);
     updateCamera(dt);
+    occludeImportedCamera();
     rules.afterFrame(camera, _paused ? 0 : dt);
     updateSun();
     if (!_paused) {
@@ -8356,14 +8405,23 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     _eSpent = false;
     // Chão mexido neste quadro (eventos/laços): UMA reconstrução, antes de desenhar.
     rebuildDirtyTerrain();
+    if (importedScene) {
+      importedScene.atualizar(_paused ? 0 : dt);
+      importedScene.quadro(camera, _look);
+    }
     if (renderer && scene && camera) renderFrame();
   }
 
   // ---- Começar (shell -> mundo -> input -> resize -> loop) ----
 
   function start() {
+    if (disposed) return;
     if (started) {
       warn('o passeio já começou automaticamente — o bloco antigo de início não é mais necessário');
+      return;
+    }
+    if (sceneLoading) {
+      sceneLoading.then(function () { if (!disposed && !started) start(); });
       return;
     }
     if (!ensureShell()) {
@@ -8393,14 +8451,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function disposeAll() {
     if (disposed) return;
     disposed = true;
+    disposeImportedScene();
     try { renderBudget.dispose(); } catch (e) {}
     try {
       if (renderer) {
         renderer.setAnimationLoop(null);
-        try { renderer.dispose(); } catch (e) {}
-        // dispose() sozinho NÃO devolve o contexto WebGL ao navegador — é o
-        // forceContextLoss() que libera o slot.
-        try { renderer.forceContextLoss(); } catch (e) {}
       }
       if (scene && scene.traverse) {
         scene.traverse(function (o) {
@@ -8457,6 +8512,12 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
     } catch (e) {}
+    // Texturas e render targets saem antes do renderer: dispose() apaga o registro
+    // que o Three precisa para desalocar seus recursos. O contexto é liberado por último.
+    if (renderer) {
+      try { renderer.dispose(); } catch (e) {}
+      try { renderer.forceContextLoss(); } catch (e) {}
+    }
     renderer = null;
     scene = null;
     camera = null;
@@ -8628,6 +8689,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   var api = {
     // 🌍 Mundo
+    loadScene: guard('loadScene', loadScene),
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
@@ -8745,10 +8807,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       // buildCar o reaproveita no lugar pedido (era ignorado em silêncio).
       if (!carState) carState = newCarState();
       var lim = config.world / 2 - 2;
-      carState.x = clamp(num(x, 0), -lim, lim);
-      carState.z = clamp(num(z, 0), -lim, lim);
+      carState.x = importedScene || sceneLoading ? num(x, 0) : clamp(num(x, 0), -lim, lim);
+      carState.z = importedScene || sceneLoading ? num(z, 0) : clamp(num(z, 0), -lim, lim);
       carState.yaw = num(deg, 0) * Math.PI / 180;
-      carState.y = heightAt(carState.x, carState.z);
+      carState.y = importedScene ? heightAtDrive(carState.x, carState.z, null, 1.1) : heightAt(carState.x, carState.z);
       carState.speed = 0;
       carState.vy = 0;
       carState.airborne = false;
@@ -9156,7 +9218,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       }
       personState.x = num(x, 0);
       personState.z = num(z, 0);
-      personState.y = heightAt(personState.x, personState.z);
+      personState.y = importedScene ? heightAtDrive(personState.x, personState.z, null, Math.min(0.45, (modelCfg.person ? modelCfg.person.size : 1.7) * 0.25)) : heightAt(personState.x, personState.z);
       personState.yaw = (num(deg, 0) * Math.PI) / 180;
       personState.vy = 0;
       personState.airborne = false;
@@ -9763,7 +9825,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 export const world3DRuntime = compactOfficialRuntimeSource(
   withThreeRenderBudgetRuntime(
     withThreePostProcessingRuntime(
-      withThreeModelsRuntime(withGameRules3DRuntime(world3DRuntimeSource)),
+      withThreeModelsRuntime(
+        withGameRules3DRuntime(
+          world3DRuntimeSource.replace('__SZ_WORLD_SCENE_RUNTIME__', world3DSceneRuntime),
+        ),
+      ),
     ),
   ),
   // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.

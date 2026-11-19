@@ -15,6 +15,17 @@ const C = '#059669'
 const world3DBlockDefinitions: BlockDefinition[] = [
   // ---- 🌍 Mundo ----
   {
+    type: 'sz_w3d_use_scene',
+    placement: 'start-only-command',
+    message0: 'Usar o cenário %1',
+    args0: [{ type: 'field_asset_picker', name: 'SCENE', text: '', kind: 'scene3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escolha um cenário que você trouxe do Molda. O mundo usa seu chão, água e objetos, mantendo o personagem e os controles.',
+  },
+  {
     type: 'sz_w3d_setup',
     placement: 'start-only-command',
     message0: 'Criar o mundo 3D: %1 de %2 metros de lado',
