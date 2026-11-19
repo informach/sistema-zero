@@ -23,4 +23,6 @@ dependência, identidade visual ou lógica de jogo.
   revisão externa durante o gesto, histórico e disco.
 - [x] Executar fluxo no Chromium com mouse e toque, reabrir, revisar UI e código,
   rodar gates apropriados e registrar evidências. Só então marcar 4a concluída.
-- [ ] Commitar e integrar staging conforme autorização; não interferir no Molda.
+- [x] Commitar e integrar staging conforme autorização; não interferir no Molda.
+  Commit `89948a3a8`; integração e push em `386eb685b`, preservando 162 arquivos
+  de trabalho preexistentes por status e hash. O CI desse head está em execução.
