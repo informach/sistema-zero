@@ -245,7 +245,7 @@ export function refreshSpriteThumbs(ws: Blockly.Workspace): void {
     for (const block of ws.getAllBlocks(false)) {
       for (const input of block.inputList) {
         for (const field of input.fieldRow) {
-          if (field instanceof FieldSpritePicker) field.forceRerender()
+          if (field instanceof FieldSpritePicker) field.refreshThumbnail()
         }
       }
     }
@@ -292,6 +292,18 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
   private thumbImage_: SVGImageElement | null = null
   /** Visual resolvido no render_ corrente (lido pelo updateSize_). */
   private thumbVisual_: SpriteVisual | null = null
+
+  /** An unrelated art update must not resize blocks or bump neighbouring stacks. */
+  refreshThumbnail(): void {
+    const block = this.getSourceBlock()
+    const visual =
+      block?.rendered && !block.RTL && !this.isFullBlockField()
+        ? resolveSpriteVisual(this.getValue(), block.workspace)
+        : null
+    if (visual?.image === this.thumbVisual_?.image && visual?.color === this.thumbVisual_?.color)
+      return
+    this.forceRerender()
+  }
 
   static override fromJson(options: Blockly.FieldTextInputFromJsonConfig): FieldSpritePicker {
     return new FieldSpritePicker(`${options.text ?? ''}`)

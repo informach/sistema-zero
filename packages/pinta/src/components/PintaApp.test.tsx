@@ -527,7 +527,7 @@ describe('PintaApp: tela com molde (Arquipélago)', () => {
     const salvos = await persistence.listAllAssets()
     expect(salvos.map((a) => a.name)).toEqual(['molde-geladeira'])
     const criado = salvos[0]
-    if (!criado || criado.kind !== 'pixel-background') throw new Error('cenário esperado')
+    if (criado?.kind !== 'pixel-background') throw new Error('cenário esperado')
     expect(criado.layers.map((l) => l.name)).toEqual(['Molde', 'Pintura'])
     expect(criado.cels[0]?.width).toBe(12)
     first.unmount()

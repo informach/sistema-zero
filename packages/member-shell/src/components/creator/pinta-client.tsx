@@ -25,6 +25,7 @@ import {
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
+import { savePintaStudioBundle } from './save-pinta-studio-bundle'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
@@ -252,8 +253,7 @@ export function PintaClient({
         ? {
             sendToStudio: async (asset) => {
               const namespace = localNamespace
-              const bridge = await import('@sistemazero/studio/personal-assets')
-              return bridge.savePersonalAsset(asset, { namespace })
+              return savePintaStudioBundle(asset, namespace)
             },
           }
         : {}),
@@ -268,7 +268,7 @@ export function PintaClient({
         if (!(await bridge.getPersonalAsset(asset.id, { namespace }))) {
           return { updated: false, reason: 'not-linked' }
         }
-        const result = await bridge.savePersonalAsset(asset, { namespace })
+        const result = await savePintaStudioBundle(asset, namespace)
         if (!result.ok) {
           // O motivo VIAJA (o pacote mostra o recado): antes a recusa da biblioteca morria num
           // `updated: false` mudo, igual ao "nunca foi levado", e a criança não sabia por quê.
@@ -287,34 +287,21 @@ export function PintaClient({
         ? {
             sendGameToStudio: async (asset) => {
               if (!asset.tilemap && !asset.scene) return { ok: false }
-              const library = await import('@sistemazero/studio/personal-assets')
-              const saved = await library.savePersonalAsset(asset, { namespace: localNamespace })
+              const saved = await savePintaStudioBundle(asset, localNamespace)
               if (!saved.ok) return { ok: false, error: saved.error }
-              const maps = []
-              for (const map of asset.maps ?? []) {
-                const companion = await library.savePersonalAsset(map, {
-                  namespace: localNamespace,
-                })
-                if (!companion.ok) return { ok: false, error: companion.error }
-                maps.push({
-                  ...map,
-                  name: companion.name ?? map.name,
-                  libRevision: companion.updatedAt,
-                })
-              }
               const studio = await import('@sistemazero/studio')
               studio.setStudioStorageNamespace(localNamespace)
               const project = await studio.buildTilemapGameProject({
                 id: asset.id,
-                libRevision: saved.updatedAt,
-                name: saved.name ?? asset.name,
+                libRevision: saved.asset.libRevision,
+                name: saved.asset.name,
                 dataUrl: asset.dataUrl,
                 width: asset.width,
                 height: asset.height,
                 tilemap: asset.tilemap,
                 tilemapFront: asset.tilemapFront,
                 scene: asset.scene,
-                maps,
+                maps: saved.asset.maps,
               })
               if (!project) return { ok: false }
               router.push('/estudio')

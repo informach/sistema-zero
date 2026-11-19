@@ -26,6 +26,7 @@ import {
   tilemapTilesetIds,
   withPintaSchemaStamp,
 } from '../core/project'
+import { sceneMapClosure } from '../core/sceneMapClosure'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 import { withAssetTransaction } from './assetAuthorityDb'
 import {
@@ -655,7 +656,7 @@ export function loadAssetById(id: string): Promise<PintaAsset | null> {
  */
 export async function capturePintaAssetForImage(
   id: string,
-  options: { namespace?: string; signal?: AbortSignal } = {},
+  options: { namespace?: string; signal?: AbortSignal; includeSceneMaps?: boolean } = {},
 ): Promise<
   | {
       ok: true
@@ -671,7 +672,7 @@ export async function capturePintaAssetForImage(
   const snapshot = await withAssetTransaction(
     store,
     resolveLocalRecords,
-    selectLocalAssetRecords([id], options.signal),
+    selectLocalAssetRecords([id], options.signal, options.includeSceneMaps),
   )
   options.signal?.throwIfAborted()
   reportLocalRecovery(store, snapshot)
@@ -707,6 +708,11 @@ export async function capturePintaAssetForImage(
       pending.push(linked)
     }
   }
+  const world =
+    options.includeSceneMaps && source.kind === 'tilemap'
+      ? sceneMapClosure(source, [...snapshot.assets.values()])
+      : null
+  if (world) for (const asset of world.assets) discovered.set(asset.id, asset)
   const assets = [...discovered.values()].filter((a) => a.id !== id)
   const map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
   const find = map
@@ -730,7 +736,7 @@ export async function capturePintaAssetForImage(
   return {
     ok: true,
     source,
-    ...(hasExtraDependencies ? { assets } : {}),
+    ...(world || hasExtraDependencies ? { assets } : {}),
     tileset: tilesets[0] ?? null,
     tilesets,
   }

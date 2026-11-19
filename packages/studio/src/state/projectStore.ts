@@ -84,6 +84,7 @@ import {
 } from '../python/blocks/workspaceDraft'
 import { hasPygameExtension } from '../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../runtime/python/turtle/contract'
+import type { StudioPintaImportedAsset } from '../studio/pinta-library'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
@@ -99,6 +100,7 @@ import {
   persistProject,
   renameProjectMeta,
 } from './persistence'
+import { preparePintaMapBundle } from './pintaMapBundle'
 import { beginProjectOpening } from './projectOpening'
 import { bindProjectToDurableHead } from './projectStorageCoordinator'
 import {
@@ -271,6 +273,7 @@ interface ProjectStore {
   // --- Assets embutidos (imagens/sprites) ---
   /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
   addAsset: (input: NewAssetInput) => string | null
+  importPintaMapBundle: (input: StudioPintaImportedAsset) => string | null
   removeAsset: (id: string) => void
   /** Renomeia um asset. Devolve erro ou null. */
   renameAsset: (id: string, newName: string) => string | null
@@ -1294,6 +1297,19 @@ export function createProjectStore(
           isDirty: true,
           saveError: null,
         })
+      },
+      importPintaMapBundle: (input) => {
+        const project = get().project
+        if (!project) return 'Nenhum projeto carregado.'
+        if (isPythonProject(project)) return 'Traga uma seleção de imagem para este projeto Python.'
+        if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
+        try {
+          const assets = preparePintaMapBundle(project.assets ?? [], input)
+          set({ project: bump({ ...project, assets }), isDirty: true, saveError: null })
+          return null
+        } catch (error) {
+          return error instanceof Error ? error.message : 'Não consegui trazer os mapas agora.'
+        }
       },
       addAsset: (input) => {
         const p = get().project

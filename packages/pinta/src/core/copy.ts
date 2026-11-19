@@ -8,6 +8,12 @@ import type { PintaAssetKind } from './project'
 
 export const COPY = {
   scene: {
+    linkedMapMissing:
+      'Uma porta aponta para um mapa que não está na galeria. Confira o destino dela.',
+    linkedMapAmbiguous: 'Há mapas com o mesmo nome. Escolha uma referência de mapa para a porta.',
+    linkedResourceMissing:
+      'Falta um desenho usado por este cenário. Traga os desenhos que ele usa antes de enviar.',
+    linkedResourceLimit: 'Este cenário usa muitos desenhos. Separe o mundo em pacotes menores.',
     keepResourceVersion: 'Guardar esta versão',
     keepTilesetVersions: 'Guardar as peças deste mapa',
     savedResourceName: (name: string, position: number) => `${name} (cópia guardada ${position})`,

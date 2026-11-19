@@ -7,13 +7,22 @@ import type { Project } from '../src/core/project'
 
 const root = resolve(import.meta.dirname, '../../..')
 const fixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-e-floresta.pinta.json')
-test.beforeAll(() =>
+const closedFixture = resolve(root, '.tmp/pinta-resources-e2e/resources-frozen.pinta.json')
+test.beforeAll(() => {
   execFileSync(
     'bun',
     [resolve(root, 'packages/pinta/scripts/homologacao/generate.ts'), resolve(fixture, '..')],
     { cwd: root },
-  ),
-)
+  )
+  execFileSync(
+    'bun',
+    [
+      resolve(root, 'packages/pinta/scripts/homologacao/resources.ts'),
+      resolve(closedFixture, '..'),
+    ],
+    { cwd: root },
+  )
+})
 const snapshot = async (page: Page): Promise<Project> =>
   JSON.parse((await page.getByTestId('qa-project').textContent()) ?? 'null')
 
@@ -53,8 +62,8 @@ test('Pinta real cria jogo estruturado; atualização do cenário conserva a pro
     .poll(async () => JSON.stringify((await snapshot(page)).ir), { timeout: 15000 })
     .toContain('marcoPinta')
   await expect.poll(async () => Boolean((await snapshot(page)).bridgeCodeAhead)).toBe(false)
-  const before = await snapshot(page)
-  const map = before.assets!.find((a) => a.scene?.layers.length === 18)!
+  const initial = await snapshot(page)
+  const map = initial.assets!.find((a) => a.scene?.layers.length === 18)!
   const drawing = map.libId!.replace(/^personal:/, '')
   const edit = await context.newPage()
   await edit.goto(`/pinta?desenho=${encodeURIComponent(drawing)}`)
@@ -65,6 +74,8 @@ test('Pinta real cria jogo estruturado; atualização do cenário conserva a pro
   await edit.getByRole('button', { name: 'Borracha', exact: true }).click()
   const canvas = edit.getByRole('img', { name: 'Grade do mapa', exact: true })
   await canvas.evaluate((el) => el.scrollIntoView({ block: 'start', inline: 'start' }))
+  // Compare immediately around the art mutation, after opening both real editors.
+  const before = await snapshot(page)
   await canvas.click({ position: { x: 8, y: 8 } })
   await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
     timeout: 15000,
@@ -168,4 +179,155 @@ test('editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa',
     body: await page.screenshot(),
     contentType: 'image/png',
   })
+})
+
+test('Trazer do Pinta importa a Vila e o destino da porta juntos, sem mudar o programa', async ({
+  page,
+}, info) => {
+  test.setTimeout(90000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(fixture)
+  await expect(
+    page.getByRole('button', { name: 'Abrir vila-e-floresta (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.goto('/estudio?novo=1')
+  await expect(page.locator('.blocklySvg').first()).toBeVisible()
+  await page.getByRole('button', { name: 'Ponte', exact: true }).click()
+  await page.getByRole('button', { name: 'Programa · script.js', exact: true }).click()
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await input.focus()
+  await page.keyboard.press('ControlOrMeta+End')
+  await page.keyboard.insertText('\nconst programaAntesDosMapas = 41;\n')
+  await expect
+    .poll(async () => JSON.stringify((await snapshot(page)).ir))
+    .toContain('programaAntesDosMapas')
+  await expect.poll(async () => Boolean((await snapshot(page)).bridgeCodeAhead)).toBe(false)
+  await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+  await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+  const card = dialog
+    .getByRole('listitem')
+    .filter({ has: page.getByText('vila-e-floresta', { exact: true }) })
+  await expect(
+    card.getByRole('button', { name: 'Adicionar ao projeto', exact: true }),
+  ).toBeVisible()
+  const before = await snapshot(page)
+  await card.getByRole('button', { name: 'Adicionar ao projeto', exact: true }).click()
+  await expect.poll(async () => (await snapshot(page))?.assets?.length).toBe(2)
+  const after = await snapshot(page)
+  expect(after.assets?.map((asset) => asset.scene?.name).sort()).toEqual([
+    'cabana',
+    'vila-e-floresta',
+  ])
+  expect(
+    after.assets?.find((asset) => asset.scene?.name === 'vila-e-floresta')?.scene?.layers,
+  ).toHaveLength(18)
+  expect(after.files).toEqual(before.files)
+  expect(after.ir).toEqual(before.ir)
+  expect(after.blocksState).toEqual(before.blocksState)
+  await expect(card.getByText('✓ no projeto', { exact: true })).toBeVisible()
+  expect(errors).toEqual([])
+  await info.attach('pull-world', { body: await page.screenshot(), contentType: 'image/png' })
+})
+
+test('Trazer do Pinta conserva o mapa nativo 6 autocontido e sua animação sem os originais', async ({
+  page,
+}, info) => {
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(closedFixture)
+  await expect(
+    page.getByRole('button', { name: 'Abrir recursos-qa (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.goto('/estudio?novo=1')
+  await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+  await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+  await expect(dialog.getByRole('listitem')).toHaveCount(1)
+  await dialog.getByRole('button', { name: 'Adicionar ao projeto', exact: true }).click()
+  await expect.poll(async () => (await snapshot(page))?.assets?.length).toBe(1)
+  const scene = (await snapshot(page)).assets?.[0]?.scene
+  expect(scene?.version).toBe(2)
+  expect(scene?.tileSize).toBe(48)
+  expect(scene?.resources).toHaveLength(2)
+  expect(
+    scene?.art?.find((a) => a.sprite)?.sprite?.animations.find((a) => a.id === 'qa-wind')?.frames,
+  ).toHaveLength(3)
+  await info.attach('pull-closed-native6', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+})
+
+test('falha síncrona no segundo put não deixa metade da Vila na biblioteca nem no projeto', async ({
+  page,
+}) => {
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(fixture)
+  await expect(
+    page.getByRole('button', { name: 'Abrir vila-e-floresta (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.goto('/estudio?novo=1')
+  await page.evaluate((profile) => {
+    const original = IDBObjectStore.prototype.put
+    let puts = 0
+    IDBObjectStore.prototype.put = function (value, key) {
+      if (
+        this.transaction.db.name === `sistema-zero-personal-assets-${profile}` &&
+        typeof key === 'string' &&
+        key.startsWith('asset:')
+      ) {
+        document.documentElement.dataset.qaBundlePuts = String(++puts)
+        if (puts === 2) throw new DOMException('Falha de quota simulada', 'QuotaExceededError')
+      }
+      return original.call(this, value, key)
+    }
+  }, QA_PROFILE)
+  await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+  await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+  await dialog
+    .getByRole('listitem')
+    .filter({ has: page.getByText('vila-e-floresta', { exact: true }) })
+    .getByRole('button', { name: 'Adicionar ao projeto', exact: true })
+    .click()
+  await expect(
+    dialog.getByText('Não consegui salvar os mapas agora. Tente de novo daqui a pouco.', {
+      exact: true,
+    }),
+  ).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.dataset.qaBundlePuts)).toBe('2')
+  expect((await snapshot(page)).assets ?? []).toEqual([])
+  const keys = await page.evaluate(
+    (profile) =>
+      new Promise<IDBValidKey[]>((resolve, reject) => {
+        const request = indexedDB.open(`sistema-zero-personal-assets-${profile}`)
+        request.onerror = () => reject(request.error)
+        request.onsuccess = () => {
+          const db = request.result,
+            tx = db.transaction('kv', 'readonly'),
+            read = tx.objectStore('kv').getAllKeys()
+          tx.oncomplete = () => {
+            db.close()
+            resolve(read.result)
+          }
+          tx.onabort = () => {
+            db.close()
+            reject(tx.error)
+          }
+        }
+      }),
+    QA_PROFILE,
+  )
+  expect(keys.filter((key) => typeof key === 'string' && key.startsWith('asset:'))).toEqual([])
+  expect(
+    await page.evaluate(
+      (profile) => localStorage.getItem(`sz:desenhos-alterados:${profile}`),
+      QA_PROFILE,
+    ),
+  ).toBeNull()
 })

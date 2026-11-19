@@ -664,14 +664,22 @@ function wall(p: Px, top: boolean) {
 /** The thick white frame around the room, on the side(s) given. */
 function frame(p: Px, sides: string) {
   const f = (x: number, y: number, w: number, h: number) => p.rect(x, y, w, h, ROOM.frame)
-  if (sides.includes('L'))
-    f(20, 0, 8, TILE), p.rect(20, 0, 1, TILE, ROOM.frameDark).rect(27, 0, 1, TILE, ROOM.frameShade)
-  if (sides.includes('R'))
-    f(4, 0, 8, TILE), p.rect(4, 0, 1, TILE, ROOM.frameShade).rect(11, 0, 1, TILE, ROOM.frameDark)
-  if (sides.includes('T'))
-    f(0, 20, TILE, 8), p.rect(0, 20, TILE, 1, ROOM.frameDark).rect(0, 27, TILE, 1, ROOM.frameShade)
-  if (sides.includes('B'))
-    f(0, 4, TILE, 8), p.rect(0, 4, TILE, 1, ROOM.frameShade).rect(0, 11, TILE, 1, ROOM.frameDark)
+  if (sides.includes('L')) {
+    f(20, 0, 8, TILE)
+    p.rect(20, 0, 1, TILE, ROOM.frameDark).rect(27, 0, 1, TILE, ROOM.frameShade)
+  }
+  if (sides.includes('R')) {
+    f(4, 0, 8, TILE)
+    p.rect(4, 0, 1, TILE, ROOM.frameShade).rect(11, 0, 1, TILE, ROOM.frameDark)
+  }
+  if (sides.includes('T')) {
+    f(0, 20, TILE, 8)
+    p.rect(0, 20, TILE, 1, ROOM.frameDark).rect(0, 27, TILE, 1, ROOM.frameShade)
+  }
+  if (sides.includes('B')) {
+    f(0, 4, TILE, 8)
+    p.rect(0, 4, TILE, 1, ROOM.frameShade).rect(0, 11, TILE, 1, ROOM.frameDark)
+  }
 }
 
 function indoorTile(id: number): Px {

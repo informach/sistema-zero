@@ -34,7 +34,9 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   render/animação/ordem/propriedades em Jogo2D, Avançado, Python e atualização sem apagar programa.
   Consultas de recursos e propriedades verificadas em `consumo-de-referencias.md`; ciclo local
   e atualização de mapas dependentes em `atualizacao-no-estudio.md`. Completar mapas de destino
-  das portas em todos os caminhos de importação e executar o ciclo autenticado após rollout.
+  das portas nos projetos já vinculados e executar o ciclo autenticado após rollout. O envio,
+  jogo pronto e importação integral estão verificados em `mapas-ligados-no-estudio.md`;
+  a continuação da sincronia está detalhada em `atualizacao-de-mundos.md`.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
 - [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,

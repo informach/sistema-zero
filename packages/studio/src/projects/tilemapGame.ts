@@ -159,7 +159,20 @@ function buildIR(
     },
   ]
   return {
-    html: [{ type: 'canvas', id: 'tela', width: VIEWPORT_W, height: VIEWPORT_H }],
+    html: [
+      {
+        type: 'canvas',
+        id: 'tela',
+        width: VIEWPORT_W,
+        height: VIEWPORT_H,
+        children: [
+          {
+            type: 'text',
+            text: 'Explore o cenário usando as setas.',
+          },
+        ],
+      },
+    ],
     css: [
       {
         selector: 'body',
