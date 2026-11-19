@@ -3,6 +3,7 @@ import { IDBFactory } from 'fake-indexeddb'
 import { buildProProject } from '../core/proProject'
 import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
 import {
+  bindProjectToDurableHead,
   coordinatedProjectWrite,
   projectExitRecoveryStatus,
   recoverProjectWrites,
@@ -65,6 +66,7 @@ async function fixture() {
       tree: { 'main.ts': { kind: 'file' as const, content } },
     })
   return {
+    database,
     scope,
     failed,
     project,
@@ -214,6 +216,85 @@ test('quota failure does not claim an exit copy and still requests the native jo
     await recoverProjectWrites(f.scope, draft.id)
     expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
       tree: { 'main.ts': { content: 'native copy survives' } },
+    })
+  } finally {
+    f.close()
+  }
+})
+
+test('a native revision replaced before the conditional write stays pending without a stale overwrite', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('older pending')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const original = structuredClone(entry.value) as {
+      head: { token: string; sequence: number }
+      write: { puts: [string, unknown][] }
+    }
+    const replacement = structuredClone(original)
+    replacement.head.token = 'newer-native-token'
+    replacement.head.sequence++
+    const files = replacement.write.puts.find(([key]) => key === projectFilesKey(draft.id))!
+    files[1] = {
+      ...(files[1] as object),
+      tree: { 'main.ts': { kind: 'file', content: 'newer pending' } },
+    }
+    const key = projectRecoveryKey(draft.id, entry.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, original]] })
+    const transaction = f.database.transaction.bind(f.database)
+    let injected = false
+    f.database.transaction = ((...args: Parameters<IDBDatabase['transaction']>) => {
+      if (!injected && args[1] === 'readwrite') {
+        injected = true
+        transaction('kv', 'readwrite').objectStore('kv').put(replacement, key)
+      }
+      return transaction(...args)
+    }) as IDBDatabase['transaction']
+    await recoverProjectWrites({ ...f.scope, exitJournalStorage: undefined }, draft.id)
+    expect(injected).toBe(true)
+    expect(await readValue(f.scope.store, key)).toEqual(replacement)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    await recoverProjectWrites({ ...f.scope, exitJournalStorage: undefined }, draft.id)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'newer pending' } },
+    })
+    expect(await readValue(f.scope.store, key)).toBeUndefined()
+  } finally {
+    f.close()
+  }
+})
+
+test('a reused native token cannot acknowledge different content through an existing recovered copy', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('copied original')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const source = structuredClone(entry.value) as { write: { puts: [string, unknown][] } }
+    const winner = { ...f.project, name: 'Another writer' }
+    await bindProjectToDurableHead(winner, f.scope)
+    await coordinatedProjectWrite(winner, { puts: projectStorageEntries(winner) }, f.scope)
+    const key = projectRecoveryKey(draft.id, entry.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, source]] })
+    const scope = { ...f.scope, exitJournalStorage: undefined }
+    const copies = await recoverProjectWrites(scope, draft.id)
+    expect(copies).toHaveLength(1)
+    const copyId = copies[0]!
+    expect(copyId).not.toBe(draft.id)
+    const changed = structuredClone(source)
+    const files = changed.write.puts.find(([key]) => key === projectFilesKey(draft.id))!
+    files[1] = {
+      ...(files[1] as object),
+      tree: { 'main.ts': { kind: 'file', content: 'reused token, new content' } },
+    }
+    await writeInOneTransaction(f.scope.store, { puts: [[key, changed]] })
+    expect(await recoverProjectWrites(scope, draft.id)).toEqual([])
+    expect(await readValue(f.scope.store, key)).toEqual(changed)
+    expect(await readValue(f.scope.store, projectFilesKey(copyId))).toMatchObject({
+      tree: { 'main.ts': { content: 'copied original' } },
     })
   } finally {
     f.close()
