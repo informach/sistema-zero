@@ -1,3 +1,4 @@
+import { isDocumentRecord } from '../core/projectDocumentGuards'
 import {
   journal,
   latestRecoveries,
@@ -6,6 +7,7 @@ import {
 } from './projectStorageCoordinator'
 import {
   PROJECT_RECOVERY_PREFIX,
+  PROJECT_STORAGE_VERSION,
   projectMetaKey,
   projectFilesKey,
   projectStateKey,
@@ -77,7 +79,11 @@ export function synchronousRecovery(entry: ExitJournalEntry): RecoveryWrite {
         !Array.isArray(pair) ||
         pair.length !== 2 ||
         typeof pair[0] !== 'string' ||
-        !keys.has(pair[0]),
+        !keys.has(pair[0]) ||
+        (pair[0] !== projectThumbKey(entry.projectId) &&
+          (!isDocumentRecord(pair[1]) || pair[1].id !== entry.projectId)) ||
+        (pair[0] === projectMetaKey(entry.projectId) &&
+          (!isDocumentRecord(pair[1]) || pair[1].storageVersion !== PROJECT_STORAGE_VERSION)),
     ) ||
     (recovery.write.deletes !== undefined &&
       (!Array.isArray(recovery.write.deletes) ||
@@ -85,7 +91,7 @@ export function synchronousRecovery(entry: ExitJournalEntry): RecoveryWrite {
     !projectFromRecovery(recovery)
   )
     throw new ExitJournalError(
-      'A cópia de recuperação contém partições incompatíveis. Ela foi preservada.',
+      'A cópia de recuperação contém partições incompatíveis ou de outro projeto. Ela foi preservada.',
     )
   const putKeys = recovery.write.puts.map(([key]) => key)
   const deleteKeys = recovery.write.deletes ?? []

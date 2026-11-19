@@ -438,6 +438,35 @@ test('a future document in a native journal cannot replace a readable committed 
   }
 })
 
+for (const invalid of ['foreign-record-id', 'future-storage-layout'] as const)
+  test(`a native journal preserves a valid save when its partition identity is incompatible: ${invalid}`, async () => {
+    const f = await fixture()
+    try {
+      const draft = f.edit('incompatible partition')
+      await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+      const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+      const native = structuredClone(entry.value) as { write: { puts: [string, unknown][] } }
+      const partition = native.write.puts.find(
+        ([key]) =>
+          key ===
+          (invalid === 'foreign-record-id' ? projectFilesKey(draft.id) : projectMetaKey(draft.id)),
+      )!
+      partition[1] = {
+        ...(partition[1] as object),
+        ...(invalid === 'foreign-record-id' ? { id: 'foreign-project' } : { storageVersion: 9999 }),
+      }
+      const key = projectRecoveryKey(draft.id, entry.writer)
+      await writeInOneTransaction(f.scope.store, { puts: [[key, native]] })
+      await recoverProjectWrites({ ...f.scope, exitJournalStorage: undefined }, draft.id)
+      expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+        tree: { 'main.ts': { content: 'initial' } },
+      })
+      expect(await readValue(f.scope.store, key)).toEqual(native)
+    } finally {
+      f.close()
+    }
+  })
+
 test('foreign partitions in a native journal cannot overwrite another project', async () => {
   const f = await fixture()
   try {
