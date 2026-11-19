@@ -85,13 +85,15 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: account.id,
-      name: 'André',
+      name: 'André da Silva',
+      publicNickname: 'André',
     })
     debora = ProfileAggregate.create({
       birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: account.id,
-      name: 'Débora',
+      name: 'Débora da Silva',
+      publicNickname: 'Débora',
     })
     await conn.db.insert(profileRows).values({ ...andre.toSnapshot(), admissionState: 'ready' })
     await conn.db.insert(profileRows).values({ ...debora.toSnapshot(), admissionState: 'ready' })
@@ -456,7 +458,8 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: other.id,
-      name: 'Primo',
+      name: 'Nome completo do primo',
+      publicNickname: 'Primo',
     })
     await conn.db.insert(profileRows).values({ ...primo.toSnapshot(), admissionState: 'ready' })
     const codeHash = sha256Hex(randomUUID())
@@ -604,6 +607,7 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
     for (const field of ['email', 'firstName', 'lastName', 'phone', 'signupSource'])
       expect(payload[field]).toBeUndefined()
     expect(payload.pfl).toMatchObject({ accountId: account.id, name: 'André' })
+    expect(JSON.stringify(payload)).not.toContain('da Silva')
     expect((await issuer.verifyAccessToken(entered.tokens.accessToken))?.sub).toBe(andre.id)
   })
 
