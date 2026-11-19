@@ -42,7 +42,15 @@ const privateCapability = await capabilityApp.handle(
 )
 assert.equal(privateCapability.status, 401)
 await privateCapability.arrayBuffer()
-const workspaces = ['arquipelago-contracts', 'core', 'members', 'pinta', 'studio', 'ui']
+const workspaces = [
+  'arquipelago-contracts',
+  'core',
+  'members',
+  'molda-cenarios-core',
+  'pinta',
+  'studio',
+  'ui',
+]
 assert.deepEqual(readdirSync('/app/packages').sort(), workspaces)
 for (const path of [
   '/root/.bun/install/cache',
