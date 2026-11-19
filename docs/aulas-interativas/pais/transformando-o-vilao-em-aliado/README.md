@@ -65,7 +65,7 @@ As chaves de clipe mudaram em relação à versão de 17/11, porque as partes s�
 2. Atualizar títulos e descrições conforme [Módulos](modulos.md) e importar os sete manifestos.
 3. Os vídeos estão como `plannedVideo`. Vincular as gravações novas.
 4. O bloco `apostila` continua na Aula 1.
-5. Na Aula 7, o bloco `presente` mantém o link `https://sistemazero.com.br/bolsa/vilao-em-aliado-cade`. Conferir no ambiente de destino a campanha `vilao-em-aliado-cade`, a oferta `cade-todo-mundo-7-dias` e as condições que a fala afirma: gratuito, sem cartão, sete dias a partir do cadastro, um perfil de criança.
+5. Na Aula 7, o bloco `presente` usa o tipo `gift` com a campanha `vilao-em-aliado-cade`, resolvida no próprio ambiente. Importar somente depois do rollout dos blocos comerciais e das migrações. Conferir a oferta `cade-todo-mundo-7-dias`: gratuito, sem cartão, sete dias a partir da ativação e um perfil de criança. O resgate utiliza a conta autenticada, sem formulário externo. O roteiro e o texto do ElevenLabs da Aula 7 foram revisados em 19/11: ativação na conta logada, criação ou uso de perfil, nome completo privado, apelido público e autorização do aparelho.
 6. O bloco `certificado` passou para a Aula 7 e registra a conclusão. O presente não depende do certificado.
 
 ## Página de divulgação
@@ -86,8 +86,8 @@ não ocupa a vaga do presente Kids no serviço de presentes.
 
 ## Estado desta entrega
 
-Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 23 vídeos precisam ser gravados e editados. Importação no Admin, vinculação dos vídeos e publicação são etapas posteriores.
+Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Os 23 vídeos precisam ser gravados e editados. Curso e sete aulas preparados como rascunho em staging e produção, com capa e apostila vinculadas. Os vídeos continuam planejados: vincular as gravações reais antes de validar e publicar cada aula. Em 19/11, o responsável confirmou que ainda vai gerar os três vídeos da Aula 7 a partir dos textos revisados.
 
 **Tema visual (18/11/2026):** a ilustração da capa (a menina com o tablet e a sombra que aponta para os blocos e o jogo) define as cores do curso: roxo, lilás, rosa e amarelo, com o painel azul-marinho. A arte fica em `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-transformando-o-vilao-em-aliado.jpg`, recortada da capa enviada pela dona (1049 px de largura; se houver o original maior, basta trocar o arquivo e gerar de novo).
 
-**Apostila:** refeita em 18/11/2026 para espelhar as sete aulas. São 17 páginas, sem campos para preencher. Como fica disponível desde a Aula 1, ela não revela o presente: a última folha só diz que ele está na última aula. O texto mora em `docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/gerar-caderno.ts` (usa Chrome ou Edge no Windows, ou o Chromium do ambiente no Linux).
+**Apostila:** refeita em 18/11/2026 para espelhar as sete aulas. São 18 páginas, sem campos para preencher. Como fica disponível desde a Aula 1, ela não revela o presente: a última folha só diz que ele está na última aula. O texto mora em `docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/transformando-o-vilao-em-aliado/gerar-caderno.ts` (usa Chrome ou Edge no Windows, ou o Chromium do ambiente no Linux).

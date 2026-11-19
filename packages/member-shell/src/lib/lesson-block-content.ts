@@ -1,3 +1,4 @@
+import { type CommerceBlock, CommerceBlockSchema } from '@sistemazero/core/commerce'
 import type { Project } from '@sistemazero/studio'
 import type {
   AudioBlock,
@@ -20,6 +21,7 @@ import type {
 export type ParsedLessonBlock = {
   block: LessonBlockView
   content:
+    | CommerceBlock
     | AudioBlock
     | CertificateBlock
     | ComingSoonBlock
@@ -332,6 +334,13 @@ function isDialogueBlock(value: unknown): value is DialogueBlock {
 export function parseLessonBlock(block: LessonBlockView): ParsedLessonBlock | null {
   const value = block.content
   switch (block.kind) {
+    case 'gift':
+    case 'purchase': {
+      const parsed = CommerceBlockSchema.safeParse(value)
+      return parsed.success && parsed.data.kind === block.kind
+        ? { block, content: parsed.data }
+        : null
+    }
     case 'rich_text':
       return isRichTextBlock(value) ? { block, content: value } : null
     case 'dialogue':

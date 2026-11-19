@@ -121,6 +121,7 @@ export function createServer(deps: HttpDeps) {
     .use(healthRoutes(deps.readiness))
     .use(
       catalogRoutes({
+        listOffers: deps.listOffers,
         logger: deps.logger,
         getOffer: deps.getOffer,
         getProduct: deps.getProduct,

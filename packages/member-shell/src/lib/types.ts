@@ -84,6 +84,9 @@ export interface ProfileView {
    */
   admissionState?: 'pending' | 'ready'
   name: string
+  fullName?: string
+  publicNickname?: string | null
+  identityConfirmed?: boolean
   avatarUrl: string | null
   whatsapp: string | null
   /** Data de nascimento (`YYYY-MM-DD`) — só os pais editam (controle de idade). */
@@ -651,6 +654,10 @@ export interface MaterialsBlock {
   bookPreview?: boolean
   items: MaterialItem[]
 }
+export type { GiftBlock, PurchaseBlock } from '@sistemazero/core/commerce'
+
+import type { GiftBlock, PurchaseBlock } from '@sistemazero/core/commerce'
+
 export type LessonBlockContent =
   | RichTextBlock
   | DialogueBlock
@@ -665,6 +672,8 @@ export type LessonBlockContent =
   | CertificateBlock
   | ComingSoonBlock
   | MaterialsBlock
+  | GiftBlock
+  | PurchaseBlock
 
 /** Estado das tentativas do aluno num bloco de quiz (vem no GET da aula). */
 export interface QuizStateView {

@@ -63,6 +63,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { PintaArtSlotFields, StudioArtSlotsFields } from '@/components/editor/art-slot-fields'
+import { CommerceBlockFields } from '@/components/editor/commerce-block-fields'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
 import { LearningBuilder } from '@/components/editor/learning-builder'
 import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
@@ -598,6 +599,10 @@ function LessonEditorSession({
       certSig2Url: c.kind === 'certificate' ? (c.signatures?.[1]?.imageUrl ?? '') : '',
       certSig2Name: c.kind === 'certificate' ? (c.signatures?.[1]?.name ?? '') : '',
       comingSoonMessage: c.kind === 'coming_soon' ? (c.message ?? '') : '',
+      commerceOfferRef: c.kind === 'purchase' ? c.offerRef : '',
+      commerceCampaignCode: c.kind === 'gift' ? c.campaignCode : '',
+      commerceDescription: c.kind === 'gift' || c.kind === 'purchase' ? (c.description ?? '') : '',
+      commerceButtonLabel: c.kind === 'gift' || c.kind === 'purchase' ? (c.buttonLabel ?? '') : '',
       materials: c.kind === 'materials' ? materialsFromContent(c) : EMPTY_MATERIALS,
       materialsBookPreview: c.kind === 'materials' && c.bookPreview === true,
       // Tipo/tamanho não são re-hidratados: na EDIÇÃO quem manda é o desenho salvo (o editor
@@ -1978,6 +1983,14 @@ function LessonEditorSession({
                   </Field>
                 ) : null}
 
+                {blockForm.kind === 'gift' || blockForm.kind === 'purchase' ? (
+                  <CommerceBlockFields
+                    form={blockForm}
+                    audience={courseInfo?.audience ?? 'kids'}
+                    courseSlug={courseInfo?.slug}
+                    onChange={(patch) => setBlockForm((f) => ({ ...f, ...patch }))}
+                  />
+                ) : null}
                 {blockForm.kind === 'coming_soon' ? (
                   <>
                     <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">

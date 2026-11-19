@@ -2,21 +2,25 @@
 
 [engaging, energetic, conversational voice] Só que, antes de te entregar, eu quero te mostrar como ele funciona, para ficar tudo bem claro para você.
 
-[pleased, lively voice] E a primeira coisa boa é que você não precisa ir para nenhum outro lugar. O presente fica aqui mesmo, nesta plataforma onde você está assistindo a este curso. [reassuring, encouraging voice] E eu faço questão de te dizer que ela leva muito a sério as leis e a proteção das crianças e dos adolescentes. Tudo aqui foi feito com muito cuidado e muita segurança.
+[pleased, lively voice] E a primeira coisa boa é que o presente fica aqui mesmo, nesta plataforma onde você está assistindo a este curso. [reassuring, encouraging voice] E eu faço questão de te mostrar os controles que você tem, como responsável, para acompanhar o seu filho e cuidar do acesso dele.
 
 [curious] E como é que funciona? [confident, clear, unhurried voice] A plataforma tem dois lados. Um é este em que você está agora, a área dos pais, que é a sua, de responsável. O outro é a área da criança, que é onde o seu filho vai criar.
 
-[engaging, energetic, conversational voice] A sua conta você já tem, tanto que está aqui me assistindo. Então só falta uma coisa: criar, dentro da sua conta, o perfil do seu filho, para ele poder entrar. [upbeat, encouraging voice] Daqui a pouquinho eu te mostro onde.
+[engaging, energetic, conversational voice] A sua conta você já tem, tanto que está aqui me assistindo. O próximo passo é criar, dentro da sua conta, o perfil do seu filho, ou usar o perfil dele se você já tiver criado. [upbeat, encouraging voice] Daqui a pouquinho eu te mostro onde.
 
 [confident, clear, unhurried voice] E é daqui, da área dos pais, que você acompanha o seu filho: o progresso dele nos cursos e o que ele anda criando. E tem coisas que só acontecem se você autorizar.
 
-[engaging, energetic, conversational voice] Vou te dar um exemplo. Existe um perfil que mostra o nome da criança, o avatar e as conquistas dela. [reassuring, encouraging voice] Só que, por padrão, esse perfil não é público. Ele é privado. E, mesmo quando é público, não é para o mundo inteiro, é só para quem está dentro da plataforma. [confident, clear, unhurried voice] E, ainda assim, ele só fica público se você marcar essa opção, lá no perfil do seu filho.
+[engaging, energetic, conversational voice] Vou te dar um exemplo. No cadastro do seu filho, você informa o nome completo e escolhe um apelido público. [confident, clear, unhurried voice] O nome completo fica no cadastro privado da família e é o que vai aparecer no certificado da criança. Na plataforma, ela aparece pelo apelido que você escolheu. A data de nascimento também fica no cadastro privado, sem aparecer para as outras crianças. [reassuring, encouraging voice] Se você já tinha colocado um apelido no campo do nome, abra Família, edite o perfil e confira os dois campos antes de emitir um certificado novo.
 
-[engaging, energetic, conversational voice] Outro exemplo: a criança pode pedir ajuda escrevendo uma mensagem, e existe a opção de ela falar em vez de escrever. [thoughtful] Só que, para isso, a fala dela passa por um serviço que transforma a voz em texto. A gravação não fica guardada, e o que chega para a nossa equipe é só o texto. [confident, clear, unhurried voice] Mesmo assim, isso só funciona se você autorizar, também lá no perfil dela.
+[engaging, energetic, conversational voice] Existe também um perfil que mostra o apelido, o avatar e as conquistas da criança. [reassuring, encouraging voice] Por padrão, esse perfil é privado. Ele só fica visível para outras pessoas dentro da plataforma se você marcar essa opção no cadastro do seu filho.
+
+[confident, clear, unhurried voice] As criações podem ser publicadas no Mural, e o link de um jogo publicado pode ser enviado para outras pessoas jogarem, mesmo que elas não tenham conta aqui. A identificação da criança nessa publicação é o apelido público. A plataforma não acrescenta o nome completo nem a data de nascimento do cadastro a essa publicação. [engaging, energetic, conversational voice] A opção de perfil público controla a página do perfil; ela não pede uma aprovação sua para cada criação publicada no Mural. Por isso, combine com o seu filho para usar o apelido e deixar as informações pessoais fora dos títulos, dos textos e das próprias criações.
+
+[engaging, energetic, conversational voice] Outro exemplo: a criança pode pedir ajuda escrevendo uma mensagem, e existe a opção de ela falar em vez de escrever. [thoughtful] Só que, para isso, a fala dela passa por um serviço que transforma a voz em texto. A gente não guarda a gravação na plataforma, e o que chega para a nossa equipe é só o texto. [confident, clear, unhurried voice] Mesmo assim, isso só funciona se você autorizar, também lá no perfil dela.
 
 [confident, clear, unhurried voice] E é você também que decide em qual aparelho a criança vai entrar, qual computador, e por quanto tempo aquele acesso vale. A plataforma gera um código, e a criança entra naquele aparelho com esse código. [reassuring, encouraging voice] E, a qualquer momento, se precisar, você pode encerrar aquele acesso.
 
-[reassuring, encouraging voice] Ou seja: é tudo bem protegido e moderado, dentro da lei de proteção das crianças e dos adolescentes, e organizado para que você acompanhe e decida o que o seu filho faz aqui. [upbeat, encouraging voice] Clique em Próxima parte.
+[reassuring, encouraging voice] Assim, você acompanha o progresso e as criações, escolhe as permissões do perfil e controla os aparelhos em que o seu filho entra. [upbeat, encouraging voice] Clique em Próxima parte.
 
 [long pause]
 
@@ -24,7 +28,7 @@
 
 [engaging, energetic, conversational voice] Você vai ver que tem várias coisas lá, e o que fica liberado depende do nível de acesso de cada criança, porque existem vários planos.
 
-[engaging, energetic, conversational voice] Só para você ter uma ideia de como é: existem os cursos, que ensinam o passo a passo, com alguns jogos já pensados. [upbeat, encouraging voice] E os assinantes têm acesso a todas estas ferramentas, que servem para a criança criar o jogo que ela quiser, o que ela imaginar, usando o que aprendeu no curso.
+[engaging, energetic, conversational voice] Só para você ter uma ideia de como é: existem os cursos, que ensinam o passo a passo, com alguns jogos já pensados. [upbeat, encouraging voice] Conforme o plano e a etapa da criança, ela também tem as ferramentas para criar os próprios jogos e usar o que aprendeu no curso.
 
 [confident, clear, unhurried voice] Tem o Pensa, que é onde ela planeja o jogo e organiza as ideias. [confident, clear, unhurried voice] Tem o Pinta, que é uma ferramenta de desenho, toda ligada à plataforma, então depois ela leva os desenhos para o jogo com facilidade. [engaging, energetic, conversational voice] Ela pode fazer as artes do jogo do jeito que quiser, do que imaginar. [confident, clear, unhurried voice] Tem o Molda, que é em 3D, para fazer personagens e outras coisas em três dimensões. [confident, clear, unhurried voice] E tem o Estúdio de Criação, que é onde ela monta os jogos.
 
@@ -38,7 +42,7 @@
 
 [excited] E agora, sim, o presente que eu te prometi lá na primeira aula.
 
-[pleased, lively voice] A gente tem um projeto chamado Cadê Todo Mundo, e é ele que eu vou te dar de presente. [engaging, energetic, conversational voice] Normalmente, ele só está disponível no plano pago. Não existe, em nenhum outro lugar, um acesso gratuito ao Cadê Todo Mundo. [warmly] Este presente é para você, que acompanhou o curso até aqui.
+[pleased, lively voice] A gente tem um projeto chamado Cadê Todo Mundo, e é ele que eu vou te dar de presente. [engaging, energetic, conversational voice] Normalmente, o acesso é pago. [warmly] Este presente é para você, que acompanhou o curso até aqui.
 
 [upbeat, encouraging voice] Você vai ter sete dias para experimentar a plataforma e esse novo jeito de usar a tela: para criar, e não só para consumir. [pleased, lively voice] Sete dias para o seu filho fazer o primeiro jogo dele.
 
@@ -46,9 +50,9 @@
 
 [reassuring, encouraging voice] E ele é totalmente gratuito. Não precisa colocar cartão, nem nada. [confident, clear, unhurried voice] Os sete dias começam a contar no momento em que você pega o presente, e continuam correndo mesmo nos dias em que vocês não entrarem. [engaging, energetic, conversational voice] Então a minha dica é pegar o presente num dia em que vocês já vão poder começar.
 
-[confident, clear, unhurried voice] Ele é para crianças e adolescentes de 5 a 17 anos. [reassuring, encouraging voice] Abaixo de nove, precisa de um acompanhante: algum responsável tem que estar ali do ladinho, para fazer junto. [engaging, energetic, conversational voice] Acima de nove, depende de cada criança. Algumas precisam de um pouco mais de ajuda, outras já são mais independentes e vão conseguir fazer tudo sozinhas. Depende do nível de suporte e do desenvolvimento de cada uma.
+[confident, clear, unhurried voice] A idade recomendada é de 5 a 17 anos. [reassuring, encouraging voice] Abaixo de nove, a nossa orientação é ter um adulto ao lado, para fazer junto. [engaging, energetic, conversational voice] Essa é uma recomendação de acompanhamento, porque cada criança tem o seu ritmo. Acima de nove, algumas ainda precisam de um pouco mais de ajuda, e outras já são mais independentes e conseguem fazer sozinhas. Depende do nível de suporte e do desenvolvimento de cada uma.
 
-[confident, clear, unhurried voice] No presente, você cria o perfil de uma criança. [engaging, energetic, conversational voice] E, se depois fizer sentido para vocês continuarem na plataforma, cada conta pode ter duas crianças, então dá para cadastrar os irmãos.
+[confident, clear, unhurried voice] O presente libera o curso para um perfil de criança. Se o seu filho já tem perfil na sua conta, você pode usar esse mesmo perfil. [engaging, energetic, conversational voice] Se depois fizer sentido para vocês continuarem, a oferta do plano escolhido informa quantos perfis a conta pode ter.
 
 [thoughtful] E agora pensa comigo. Hoje, o que muita escola tem é aula de robótica. Algumas têm aula de Lego. Mas é aquilo, né? Uma vez por semana. [upbeat, encouraging voice] Imagina levar isso para dentro de casa. [thoughtful] No fim de semana os meninos já estão ali, na tela, não tem jeito. [pleased, lively voice] E, a partir do momento em que eles começam a criar, eles querem sempre mais. E aí se desenvolvem muito mais.
 
@@ -62,14 +66,14 @@
 
 [upbeat, encouraging voice] E para pegar o presente é bem fácil. São três passos, e eu vou te falar um por um.
 
-[confident, clear, unhurried voice] Primeiro: clique no botão do presente, aqui embaixo do vídeo. Vai abrir uma página em outra aba, e nela você coloca o seu nome e o seu e-mail. [thoughtful] E aqui vai um cuidado importante: use o mesmo e-mail da sua conta, esse com que você entrou aqui. [reassuring, encouraging voice] É assim que o presente cai na conta que você já tem, e não em uma conta nova.
+[confident, clear, unhurried voice] Primeiro: clique em Ativar meu presente, no bloco do presente desta aula. Confira as informações e confirme a ativação. [pleased, lively voice] O presente fica na conta com que você já está logado, aproveitando o seu cadastro. [confident, clear, unhurried voice] Se ele já estiver ativado, acompanhe o prazo que aparece no próprio bloco.
 
-[confident, clear, unhurried voice] Segundo: volte aqui para a área dos pais, vá em Família e clique em Adicionar filho ou filha. Aí é só colocar o nome do perfil e a data de nascimento, e salvar. [reassuring, encouraging voice] Não pede mais nada.
+[confident, clear, unhurried voice] Segundo: na área dos pais, vá em Família. Se o seu filho já tem perfil, abra o perfil dele, clique em Editar perfil e confira o nome completo e o apelido público. Se ainda não tem, clique em Adicionar filho ou filha, informe o nome completo, escolha o apelido público, coloque a data de nascimento e salve. [reassuring, encouraging voice] O nome completo é para o certificado; o apelido é como ele aparece na plataforma. Nesse cadastro, você também escolhe se libera o perfil público e se autoriza falar em vez de escrever.
 
-[confident, clear, unhurried voice] Terceiro: autorize o aparelho em que o seu filho vai criar. Assim que você salva o perfil, a plataforma já te leva para essa parte. Você clica em Autorizar aparelho, escolhe por quanto tempo aquele acesso vale, e ela gera um código. [engaging, energetic, conversational voice] Aí, no computador da criança, é só abrir a plataforma, clicar em Eu sou criador e digitar o código. [warmly] E precisa ser um computador mesmo, com mouse e teclado, que é onde o curso funciona.
+[confident, clear, unhurried voice] Terceiro: autorize o aparelho em que o seu filho vai criar. Depois de criar o perfil, a plataforma abre a parte dos aparelhos. Se você usou um perfil que já existia, abra a página dele e vá em Aparelhos. Clique em Autorizar aparelho, escolha por quanto tempo aquele acesso vale e clique em Gerar código. [engaging, energetic, conversational voice] Aí, no computador da criança, é só abrir a plataforma, clicar em Eu sou criador e digitar o código. [warmly] E precisa ser um computador mesmo, com mouse e teclado, que é onde o curso funciona.
 
 [pleased, lively voice] Pronto! Agora é só ela entrar em Cursos, abrir o Cadê Todo Mundo e começar a primeira criação.
 
 [reassuring, encouraging voice] E pode ficar tranquilo, que ninguém vai ficar te mandando spam. Você recebe o e-mail do presente, um aviso quando os sete dias estiverem acabando, e o resumo da semana, contando o que a criança fez. E esse resumo você pode desligar quando quiser, aqui na área dos pais.
 
-[warmly] Muito obrigada por ter ficado comigo até aqui. [excited] O presente está logo aí embaixo. [upbeat, encouraging voice] E, para registrar que você concluiu o curso, é só baixar o seu certificado.
+[warmly] Muito obrigada por ter ficado comigo até aqui. [excited] O presente está no bloco desta aula. [engaging, energetic, conversational voice] E o certificado deste curso é seu, de responsável, para registrar que você concluiu. O presente pode ser ativado independentemente dele. [upbeat, encouraging voice] Clique em Baixar meu certificado e, quando o certificado baixar, clique em Concluir aula.

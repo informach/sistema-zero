@@ -28,6 +28,9 @@ export interface ProfileSnapshot {
   id: string
   accountUserId: string
   name: string
+  /** Nome público escolhido pelo responsável; legado nunca deriva do nome completo. */
+  publicNickname?: string | null
+  identityConfirmedAt?: Date | null
   avatarUrl: string | null
   whatsapp: string | null
   /** Data de nascimento (`YYYY-MM-DD`) — controle de idade; só os pais editam. */
@@ -56,6 +59,7 @@ export interface CreateProfileInput {
   id: string
   accountUserId: string
   name: string
+  publicNickname?: string
   avatarUrl?: string | null
   whatsapp?: string | null
   /**
@@ -89,6 +93,8 @@ export class ProfileAggregate {
   static create(input: CreateProfileInput): ProfileAggregate {
     const now = input.now ?? new Date()
     const name = assertProfileName(input.name)
+    const publicNickname =
+      input.publicNickname === undefined ? null : assertPublicNickname(input.publicNickname)
     const avatarUrl = normalizeOptional(input.avatarUrl)
     assertAvatarUrl(avatarUrl)
     const birthDate = normalizeOptional(input.birthDate)
@@ -100,6 +106,8 @@ export class ProfileAggregate {
       id: input.id,
       accountUserId: input.accountUserId,
       name,
+      publicNickname,
+      identityConfirmedAt: publicNickname ? now : null,
       avatarUrl,
       whatsapp: normalizeOptional(input.whatsapp),
       birthDate,
@@ -132,6 +140,15 @@ export class ProfileAggregate {
   }
   get name(): string {
     return this.props.name
+  }
+  get publicNickname(): string | null {
+    return this.props.publicNickname ?? null
+  }
+  get displayName(): string {
+    return this.publicNickname ?? 'Criador(a)'
+  }
+  get identityConfirmedAt(): Date | null {
+    return this.props.identityConfirmedAt ?? null
   }
   get avatarUrl(): string | null {
     return this.props.avatarUrl
@@ -175,13 +192,26 @@ export class ProfileAggregate {
    * é ignorado (não apaga o nome). `null` em foto/WhatsApp remove o valor.
    */
   updateDetails(
-    changes: { name?: string; avatarUrl?: string | null; whatsapp?: string | null },
+    changes: {
+      name?: string
+      publicNickname?: string
+      avatarUrl?: string | null
+      whatsapp?: string | null
+    },
     now: Date = new Date(),
   ): void {
+    const nickname =
+      changes.publicNickname === undefined
+        ? this.publicNickname
+        : assertPublicNickname(changes.publicNickname)
     if (changes.name !== undefined) {
       // Nome informado precisa ser válido (≥ 3) — não silencia mais um valor curto.
       this.props.name = assertProfileName(changes.name)
+      if (changes.publicNickname === undefined) this.props.identityConfirmedAt = null
     }
+    if (changes.publicNickname !== undefined) this.props.publicNickname = nickname
+    if (changes.name !== undefined && changes.publicNickname !== undefined)
+      this.props.identityConfirmedAt = now
     if (changes.avatarUrl !== undefined) {
       const next = normalizeOptional(changes.avatarUrl)
       assertAvatarUrl(next)
@@ -265,6 +295,13 @@ export class ProfileAggregate {
     this.props.status = 'archived'
     this.props.updatedAt = now
   }
+}
+
+export function assertPublicNickname(value: string): string {
+  const nickname = value.trim().replace(/\s+/g, ' ')
+  if (nickname.length < 2 || nickname.length > 40 || /\p{Cc}/u.test(value))
+    throw new ValidationError('Informe um apelido público de 2 a 40 caracteres.')
+  return nickname
 }
 
 /** Nome do perfil: trim + mínimo de 3 caracteres (espelha o DTO `PROFILE_NAME`). */

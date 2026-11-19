@@ -48,6 +48,27 @@ describe('RedeemScholarshipService', () => {
 
   const input = { code: 'cida-x7k2', name: 'Paula Prado', email: 'Paula@Example.com ' }
 
+  test('resgate autenticado concede para a conta confirmada sem registrar comprador', async () => {
+    const result = await service.execute(input, {
+      userId: '00000000-0000-4000-8000-000000000123',
+      audience: 'kids',
+    })
+    expect(result.kind).toBe('completed')
+    expect(repo.redemptions[0]?.userId).toBe('00000000-0000-4000-8000-000000000123')
+    expect(gateway.calls.some((c) => c.kind === 'ensureBuyer')).toBe(false)
+    const again = await service.execute(input, {
+      userId: '00000000-0000-4000-8000-000000000123',
+      audience: 'kids',
+    })
+    expect(again.kind).toBe('already_redeemed')
+    const changedEmail = await service.execute(
+      { ...input, email: 'novo@example.com' },
+      { userId: '00000000-0000-4000-8000-000000000123', audience: 'kids' },
+    )
+    expect(changedEmail.kind).toBe('already_redeemed')
+    expect(repo.redemptions).toHaveLength(1)
+  })
+
   /** Resgate ANTIGO em andamento (política `trial` de sete dias, antes do presente por oferta). */
   async function seedLegacyTrial() {
     const { redemption } = await repo.insertRedemption({

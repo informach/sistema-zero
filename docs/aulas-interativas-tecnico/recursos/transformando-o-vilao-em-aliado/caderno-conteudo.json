@@ -41,7 +41,7 @@
           },
           {
             "title": "Aula 7. Um presente para vocês experimentarem",
-            "text": "O ambiente onde a criança cria. Página {{pagina:a7}}.",
+            "text": "O ambiente, os controles do responsável e as ferramentas. Páginas {{pagina:a7}} a {{pagina:a7-ferramentas}}.",
             "pageId": "a7"
           }
         ]
@@ -145,9 +145,18 @@
             "Planejamento e organização",
             "Decidir o que fazer, em que ordem, e manter tudo arrumado até o final."
           ],
-          ["Controle inibitório", "Conseguir segurar o impulso."],
-          ["Controle emocional", "Lidar com o que se sente quando algo não sai como o esperado."],
-          ["Flexibilidade cognitiva", "Mudar a estratégia quando o plano não funciona."]
+          [
+            "Controle inibitório",
+            "Conseguir segurar o impulso."
+          ],
+          [
+            "Controle emocional",
+            "Lidar com o que se sente quando algo não sai como o esperado."
+          ],
+          [
+            "Flexibilidade cognitiva",
+            "Mudar a estratégia quando o plano não funciona."
+          ]
         ]
       },
       {
@@ -271,7 +280,10 @@
             "Ele gosta de organizar tudo em sequência",
             "A sequência é a base de todo jogo e de todo programa."
           ],
-          ["Ele não larga a tela", "O tempo é o mesmo. O papel da tela é que muda."],
+          [
+            "Ele não larga a tela",
+            "O tempo é o mesmo. O papel da tela é que muda."
+          ],
           [
             "Ele mostra mais do que fala",
             "No jogo, ele coloca as ideias e o que sente de forma concreta."
@@ -421,11 +433,26 @@
       {
         "kind": "pairs",
         "pairs": [
-          ["Matemática", "Contar, somar, medir distâncias e pontos."],
-          ["Português", "Escrever diálogos e criar escolhas."],
-          ["Ciências", "Movimento e gravidade."],
-          ["Artes", "Criar personagens, cenários e o próprio mundo."],
-          ["Planejamento", "Organizar o começo, o desafio e o final, com coerência."]
+          [
+            "Matemática",
+            "Contar, somar, medir distâncias e pontos."
+          ],
+          [
+            "Português",
+            "Escrever diálogos e criar escolhas."
+          ],
+          [
+            "Ciências",
+            "Movimento e gravidade."
+          ],
+          [
+            "Artes",
+            "Criar personagens, cenários e o próprio mundo."
+          ],
+          [
+            "Planejamento",
+            "Organizar o começo, o desafio e o final, com coerência."
+          ]
         ]
       },
       {
@@ -447,12 +474,30 @@
       {
         "kind": "cycle",
         "steps": [
-          ["Imaginar", "Personagens, mundo e objetivo do jogo."],
-          ["Planejar", "Organizar as ideias com começo, meio e fim."],
-          ["Programar", "Montar as regras com blocos coloridos."],
-          ["Testar", "Ver se funcionou."],
-          ["Melhorar", "Ajustar o que ficou para mais ou para menos."],
-          ["Compartilhar", "Mostrar aos outros o que criou."]
+          [
+            "Imaginar",
+            "Personagens, mundo e objetivo do jogo."
+          ],
+          [
+            "Planejar",
+            "Organizar as ideias com começo, meio e fim."
+          ],
+          [
+            "Programar",
+            "Montar as regras com blocos coloridos."
+          ],
+          [
+            "Testar",
+            "Ver se funcionou."
+          ],
+          [
+            "Melhorar",
+            "Ajustar o que ficou para mais ou para menos."
+          ],
+          [
+            "Compartilhar",
+            "Mostrar aos outros o que criou."
+          ]
         ]
       },
       {
@@ -462,7 +507,10 @@
             "Na redação",
             "Imaginar a situação, planejar personagens e contexto, escrever com início, meio e fim."
           ],
-          ["No trabalho", "Montar um plano, testar, enxugar e adaptar a cada pessoa."],
+          [
+            "No trabalho",
+            "Montar um plano, testar, enxugar e adaptar a cada pessoa."
+          ],
           [
             "Entre as crianças",
             "Quem vê o jogo do outro quer fazer algo a mais ou diferente: amplia o repertório."
@@ -488,12 +536,18 @@
       {
         "kind": "pairs",
         "pairs": [
-          ["Sem regra", "Clicar no esconderijo não faz nada."],
+          [
+            "Sem regra",
+            "Clicar no esconderijo não faz nada."
+          ],
           [
             "Com a primeira regra",
             "Ao clicar, o esconderijo some e mostra quem estava atrás. O contador continua parado."
           ],
-          ["Com a segunda regra", "Ao clicar, o esconderijo some e o contador soma um."]
+          [
+            "Com a segunda regra",
+            "Ao clicar, o esconderijo some e o contador soma um."
+          ]
         ]
       },
       {
@@ -527,7 +581,10 @@
       {
         "kind": "pairs",
         "pairs": [
-          ["Troca de turno", "Ora ele fala do jogo, ora escuta o que o outro tem para contar."],
+          [
+            "Troca de turno",
+            "Ora ele fala do jogo, ora escuta o que o outro tem para contar."
+          ],
           [
             "Leitura de ambiente",
             "Perceber, pelos sinais do outro, se ele ainda está interessado e a hora de parar."
@@ -549,22 +606,30 @@
     "id": "a7",
     "kicker": "Aula 7 · O ambiente",
     "title": "Um lugar seguro para criar",
-    "subtitle": "O responsável tem o controle do que a criança faz na plataforma.",
+    "subtitle": "Nome completo privado, apelido público e escolhas do responsável.",
     "items": [
       {
         "kind": "pairs",
         "pairs": [
           [
             "A sua conta",
-            "A conta de responsável você já tem. Dentro dela, na área dos pais, você cria o perfil do seu filho."
+            "A conta de responsável você já tem. Em Família, você cria o perfil do seu filho ou usa o perfil que ele já tem."
+          ],
+          [
+            "Nome completo e apelido público",
+            "O nome completo fica no cadastro privado da família e serve para o certificado da criança. Na plataforma e nas criações compartilhadas aparece o apelido público escolhido pelo responsável."
           ],
           [
             "Perfil privado",
-            "O perfil da criança é privado por padrão. Só fica visível dentro da plataforma, e só se você autorizar."
+            "A página com apelido, avatar e conquistas é privada por padrão. Só fica visível dentro da plataforma se você autorizar."
+          ],
+          [
+            "Criações no Mural",
+            "A criança pode publicar suas criações e compartilhar o link de jogar, inclusive fora da plataforma. A identificação é pelo apelido. A opção de perfil público não pede aprovação de cada publicação."
           ],
           [
             "Falar em vez de escrever",
-            "A criança só pode falar em vez de escrever se você autorizar. A fala vira texto, e a gravação não fica guardada."
+            "A criança só pode falar em vez de escrever se você autorizar. A fala vira texto, e a plataforma não guarda a gravação."
           ],
           [
             "Aparelho e tempo",
@@ -573,12 +638,37 @@
         ]
       },
       {
+        "kind": "note",
+        "text": "Se o cadastro antigo tem um apelido no campo do nome, confirme o nome completo e o apelido em Família antes dos próximos certificados. Combine com a criança para deixar informações pessoais fora de títulos, textos e criações."
+      }
+    ],
+    "theme": "ambar"
+  },
+  {
+    "id": "a7-ferramentas",
+    "kicker": "Aula 7 · Criação e ajuda",
+    "title": "As ferramentas e o atendimento",
+    "subtitle": "O plano e a etapa da criança definem o que fica liberado.",
+    "items": [
+      {
         "kind": "pairs",
         "pairs": [
-          ["Pensa", "Planejar o jogo e organizar as ideias."],
-          ["Pinta", "Desenhar as artes e levar para o jogo."],
-          ["Molda", "Fazer personagens e objetos em 3D."],
-          ["Estúdio de Criação", "Montar o jogo com blocos."]
+          [
+            "Pensa",
+            "Planejar o jogo e organizar as ideias."
+          ],
+          [
+            "Pinta",
+            "Desenhar as artes e levar para o jogo."
+          ],
+          [
+            "Molda",
+            "Fazer personagens e objetos em 3D."
+          ],
+          [
+            "Estúdio de Criação",
+            "Montar o jogo com blocos."
+          ]
         ]
       },
       {

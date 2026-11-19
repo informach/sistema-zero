@@ -38,7 +38,7 @@ export function createClaimsUserResolver(): UserResolver {
       const pfl = claims.pfl
       const pflObj = pfl && typeof pfl === 'object' ? (pfl as Record<string, unknown>) : undefined
       const accountId = pflObj ? str(pflObj.accountId) : undefined
-      const profileName = pflObj ? str(pflObj.name) : undefined
+      const profileName = pflObj ? (str(pflObj.nickname) ?? 'Criador(a)') : undefined
       // Perfil PÚBLICO (opt-in dos pais — claim `pfl.pub`): vira x-auth-profile-public.
       // Definido (true/false) só em sessão de perfil; o hub o usa p/ decidir o link do autor.
       const profilePublic = pflObj ? pflObj.pub === true : undefined

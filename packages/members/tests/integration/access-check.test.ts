@@ -1,8 +1,79 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { EntitlementAggregate } from '../../src/domain/entitlement/entitlement.aggregate'
 import { buildApp, grantAllCourses, grantCommunity, grantLifetime } from '../helpers'
 
 const TOKEN = 'internal-token-16-chars!!'
+
+test('consulta interna de comércio exige token e consumidor Funnel, e usa a conta solicitada', async () => {
+  const { app, entitlements } = buildApp({ internalToken: TOKEN })
+  const userId = randomUUID()
+  grantLifetime(entitlements, { userId, courseRef: 'meu-curso' })
+  const request = (headers: Record<string, string>) =>
+    app.handle(
+      new Request(`http://local/members/internal/commerce/access?userId=${userId}`, { headers }),
+    )
+  expect((await request({ 'x-consumer-id': 'funnel' })).status).toBe(401)
+  expect(
+    (await request({ 'x-internal-token': TOKEN, 'x-consumer-id': 'member-shell' })).status,
+  ).toBe(403)
+  const response = await request({ 'x-internal-token': TOKEN, 'x-consumer-id': 'funnel' })
+  expect(response.status).toBe(200)
+  expect((await response.json()).items).toHaveLength(1)
+})
+
+test('consulta comercial usa direitos ativos da conta, sem bypass de equipe e sem dados pessoais', async () => {
+  const { app, entitlements } = buildApp({ internalToken: TOKEN })
+  const userId = randomUUID()
+  const manual = grantLifetime(entitlements, { userId, courseRef: 'curso-manual' })
+  const gift = grantLifetime(entitlements, { userId, courseRef: 'curso-presente' })
+  entitlements.seed(
+    EntitlementAggregate.restore({ ...gift.toSnapshot(), sourceId: 'scholarship:qa' }),
+  )
+  grantLifetime(entitlements, {
+    userId,
+    courseRef: 'expirado',
+    now: new Date('2025-01-01'),
+    expiresAt: new Date('2025-02-01'),
+  })
+  grantLifetime(entitlements, { userId: randomUUID(), courseRef: 'outra-conta' })
+  const response = await app.handle(
+    new Request('http://local/members/commerce/access', {
+      headers: {
+        'x-internal-token': TOKEN,
+        'x-auth-user-id': userId,
+        'x-auth-user-role': 'superadmin',
+        'x-auth-user-status': 'active',
+      },
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect((await response.json()).items).toEqual([
+    {
+      productId: manual.toSnapshot().productId,
+      offerId: manual.toSnapshot().offerId,
+      subscriptionId: null,
+      expiresAt: null,
+      kind: 'manual',
+    },
+    {
+      productId: gift.toSnapshot().productId,
+      offerId: gift.toSnapshot().offerId,
+      subscriptionId: null,
+      expiresAt: null,
+      kind: 'gift',
+    },
+  ])
+  expect(
+    (
+      await app.handle(
+        new Request('http://local/members/commerce/access', {
+          headers: { 'x-auth-user-id': userId },
+        }),
+      )
+    ).status,
+  ).toBe(401)
+})
 
 function post(body: unknown, headers: Record<string, string> = {}): Request {
   return new Request('http://local/members/internal/access-check', {

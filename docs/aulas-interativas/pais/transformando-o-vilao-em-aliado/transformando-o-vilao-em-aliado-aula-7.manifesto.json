@@ -14,26 +14,16 @@
     },
     {
       "key": "video-a7-presente",
-      "plannedVideo": "Título: O presente: sete dias de Cadê Todo Mundo\n\nEntregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+      "plannedVideo": "Título: O presente: sete dias de Cadê Todo Mundo\n\nEntregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar ou usar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
       "key": "presente",
       "content": {
-        "kind": "materials",
+        "kind": "gift",
+        "campaignCode": "vilao-em-aliado-cade",
         "title": "O presente: Cadê Todo Mundo por 7 dias",
-        "items": [
-          {
-            "id": "presente-cade",
-            "kind": "text",
-            "markdown": "**O primeiro jogo do seu filho, de presente.** O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Para crianças e adolescentes de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado."
-          },
-          {
-            "id": "presente-cade-link",
-            "kind": "link",
-            "label": "Pegar o presente do Cadê Todo Mundo",
-            "url": "https://sistemazero.com.br/bolsa/vilao-em-aliado-cade"
-          }
-        ]
+        "description": "O primeiro jogo do seu filho, de presente. O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Acesso para 1 perfil de criança. Idade recomendada: de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado.",
+        "buttonLabel": "Ativar meu presente"
       }
     },
     {
@@ -79,7 +69,7 @@
     {
       "key": "presente",
       "title": "O presente: sete dias de Cadê Todo Mundo",
-      "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final.",
+      "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar ou usar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final.",
       "intent": "delivery",
       "blockKeys": ["video-a7-presente", "presente", "certificado"],
       "workspaceKey": null,

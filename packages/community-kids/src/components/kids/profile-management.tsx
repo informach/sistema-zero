@@ -76,6 +76,7 @@ export function ProfileTile({
 /** O que o formulário do perfil devolve ao salvar. */
 export interface ProfileFormValues {
   name: string
+  publicNickname: string
   /** Obrigatória desde 23/10/2026: o formulário não salva sem ela (e o auth também recusa). */
   birthDate: string
   publicProfileEnabled: boolean
@@ -115,7 +116,10 @@ export function ProfileForm({
 }) {
   const isEdit = editing.mode === 'edit'
   const profile = isEdit ? editing.profile : null
-  const [name, setName] = useState(profile?.name ?? '')
+  const [name, setName] = useState(
+    profile?.fullName ?? (profile?.identityConfirmed === undefined ? (profile?.name ?? '') : ''),
+  )
+  const [publicNickname, setPublicNickname] = useState(profile?.publicNickname ?? '')
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '')
   const [publicProfileEnabled, setPublicProfileEnabled] = useState(
     profile?.publicProfileEnabled ?? false,
@@ -141,17 +145,17 @@ export function ProfileForm({
         <GuideBalloon arrow="none">
           {voiceAvailable ? (
             <>
-              Coloque o nome e a data de nascimento da criança. Aqui você também faz duas escolhas:
-              se o perfil aparece para as outras crianças (só dentro da plataforma) e se ela pode
-              falar em vez de escrever quando pedir ajuda. Ligar a fala facilita muito para quem
-              ainda escreve devagar. Depois de salvar, a página dela abre para você autorizar o
-              aparelho.
+              Informe o nome completo, escolha o apelido público e coloque a data de nascimento da
+              criança. Aqui você também faz duas escolhas: se o perfil aparece para as outras
+              crianças (só dentro da plataforma) e se ela pode falar em vez de escrever quando pedir
+              ajuda. Ligar a fala facilita muito para quem ainda escreve devagar. Depois de salvar,
+              a página dela abre para você autorizar o aparelho.
             </>
           ) : (
             <>
-              Coloque o nome e a data de nascimento da criança. É aqui também que você decide se o
-              perfil aparece para outras crianças da plataforma. Depois de salvar, a página dela
-              abre para você autorizar o aparelho.
+              Informe o nome completo, escolha o apelido público e coloque a data de nascimento da
+              criança. É aqui também que você decide se o perfil aparece para outras crianças da
+              plataforma. Depois de salvar, a página dela abre para você autorizar o aparelho.
             </>
           )}
         </GuideBalloon>
@@ -169,10 +173,18 @@ export function ProfileForm({
           onSubmit={(event) => {
             event.preventDefault()
             setTriedSave(true)
-            if (busy || trimmedName.length < 3 || birthDateMissing || ageRestricted) return
+            if (
+              busy ||
+              trimmedName.length < 3 ||
+              publicNickname.trim().length < 2 ||
+              birthDateMissing ||
+              ageRestricted
+            )
+              return
             onSave(
               {
                 name: trimmedName,
+                publicNickname: publicNickname.trim().replace(/\s+/g, ' '),
                 birthDate,
                 publicProfileEnabled,
                 ...(voiceAvailable ? { voiceInputEnabled } : {}),
@@ -182,19 +194,56 @@ export function ProfileForm({
           }}
         >
           <Field
-            label="Nome do perfil"
+            label="Nome completo da criança"
             htmlFor="profileName"
-            error={nameTooShort ? 'O nome precisa de pelo menos 3 letras.' : undefined}
+            error={
+              triedSave && !trimmedName
+                ? 'Informe o nome completo da criança.'
+                : nameTooShort
+                  ? 'O nome precisa de pelo menos 3 letras.'
+                  : undefined
+            }
           >
             <Input
               id="profileName"
+              required
+              aria-invalid={nameTooShort || (triedSave && !trimmedName) ? true : undefined}
               name="profileName"
               autoComplete="off"
               value={name}
               maxLength={60}
-              placeholder="Ex.: Sofia"
+              placeholder="Ex.: Sofia Silva Santos"
               onChange={(e) => setName(e.target.value)}
             />
+            <p className="mt-1 text-muted-foreground text-xs">
+              Escreva o nome como deve aparecer no certificado. Ele fica no cadastro privado da
+              família.
+            </p>
+          </Field>
+
+          <Field
+            label="Apelido público"
+            htmlFor="profilePublicNickname"
+            error={
+              triedSave && publicNickname.trim().length < 2
+                ? 'Informe um apelido com pelo menos 2 caracteres.'
+                : undefined
+            }
+          >
+            <Input
+              id="profilePublicNickname"
+              name="publicNickname"
+              autoComplete="off"
+              value={publicNickname}
+              maxLength={40}
+              placeholder="Ex.: Fada Azul"
+              onChange={(event) => setPublicNickname(event.target.value)}
+              required
+            />
+            <p className="mt-1 text-muted-foreground text-xs">
+              É assim que a criança aparece na plataforma e nas criações compartilhadas. Escolha um
+              apelido e evite o nome completo.
+            </p>
           </Field>
 
           <Field

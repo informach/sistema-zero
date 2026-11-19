@@ -12,7 +12,7 @@ RUN bun install --frozen-lockfile
 ENV NODE_ENV=production
 # O verificador TypeScript do monorepo ultrapassa o heap automático de 2 GB
 # em builders de 8 GB. Reservar até 4 GB só no build; o runtime mantém seu padrão.
-ENV NODE_OPTIONS=--max-old-space-size=4096
+ENV NODE_OPTIONS=--max-old-space-size=8192
 # Origens públicas usadas na CSP que o Next grava no routes-manifest durante o build.
 # Railway só encaminha essas variáveis ao Docker quando o estágio declara ARG.
 ARG RAILWAY_GIT_COMMIT_SHA

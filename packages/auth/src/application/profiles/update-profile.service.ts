@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@sistemazero/core/http'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import { ProfileNotFoundError } from '../../domain/profile/profile.errors'
 import { ParentReauthenticationRequiredError } from '../../domain/study-access/errors'
@@ -10,6 +11,7 @@ export interface UpdateProfileDetailsCommand {
   accountUserId: string
   profileId: string
   name?: string
+  publicNickname?: string
   avatarUrl?: string | null
   whatsapp?: string | null
   /**
@@ -52,6 +54,10 @@ export class UpdateProfileDetailsService {
   async execute(cmd: UpdateProfileDetailsCommand): Promise<ProfileView> {
     // Capture caller-owned values before any asynchronous lock acquisition.
     const input = { ...cmd }
+    if (input.profileSession && (input.name !== undefined || input.publicNickname !== undefined))
+      throw new ForbiddenError(
+        'O nome completo e o apelido público só podem ser alterados pelo responsável',
+      )
     const now = new Date(this.clock().getTime())
     const profile = await this.profiles.editDetails(
       { profileId: input.profileId, accountUserId: input.accountUserId },
@@ -74,6 +80,7 @@ export class UpdateProfileDetailsService {
         return {
           changes: {
             name: input.name,
+            publicNickname: input.publicNickname,
             avatarUrl: input.avatarUrl,
             whatsapp: input.whatsapp,
             birthDate: input.birthDate,
@@ -86,6 +93,6 @@ export class UpdateProfileDetailsService {
       },
     )
     if (!profile) throw new ProfileNotFoundError()
-    return toProfileView(profile)
+    return toProfileView(profile, !input.profileSession)
   }
 }

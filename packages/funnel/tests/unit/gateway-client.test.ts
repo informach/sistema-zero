@@ -39,6 +39,40 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
       }).valid,
     ).toBe(true)
   })
+  test('consulta interna de acesso assina o pathname e transmite a conta na query', async () => {
+    let captured: Request | undefined
+    const fetchImpl: typeof fetch = Object.assign(
+      async (input: string | URL | Request, init?: RequestInit) => {
+        captured = new Request(input, init)
+        return Response.json({ items: [] })
+      },
+      { preconnect: () => {} },
+    )
+    const gateway = createGatewayClient({
+      baseUrl: 'https://gateway.example',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+    })
+    await gateway.getCommerceAccess('10000000-0000-4000-8000-000000000001')
+    if (!captured) throw new Error('Faltou a requisição')
+    expect(new URL(captured.url).searchParams.get('userId')).toBe(
+      '10000000-0000-4000-8000-000000000001',
+    )
+    expect(
+      verifyHmacSignature({
+        secret: SECRET,
+        body: canonicalHmacMessage({
+          method: 'GET',
+          path: '/members/internal/commerce/access',
+          body: '',
+        }),
+        signatureHeader: captured.headers.get('x-signature') ?? '',
+        nowSeconds: Math.floor(Date.now() / 1000),
+        toleranceSeconds: 300,
+      }).valid,
+    ).toBe(true)
+  })
   test('POST assina o canônico "<ts>.POST.<path>.<idempotencyKey>.<corpo>" que o gateway verifica', async () => {
     let captured: { url: string; init: RequestInit } | undefined
     const fetchImpl = (async (url: string, init: RequestInit) => {

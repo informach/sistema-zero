@@ -1,7 +1,7 @@
 /** Gera somente derivados locais de voz/edição. Não chama APIs nem publica mídia. */
-import { existsSync, readFileSync, unlinkSync } from 'node:fs'
-import { basename } from 'node:path'
-import { caminhoAula, listarArquivosAulas } from './caminhos'
+import { existsSync, readdirSync, readFileSync, unlinkSync } from 'node:fs'
+import { basename, resolve } from 'node:path'
+import { caminhoAula, listarArquivosAulas, PASTA_CURSOS } from './caminhos'
 import { formatarJson } from './formatar-json'
 import { gravarArquivo } from './gravar-arquivo'
 import {
@@ -9,6 +9,23 @@ import {
   montarTextoElevenLabs,
   type ParteFalado,
 } from './roteiro-elevenlabs'
+
+/** Parents use the same voice contract without joining the children's pedagogical inventory. */
+function roteirosDosPais(): string[] {
+  const root = resolve(PASTA_CURSOS, 'pais')
+  return readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) =>
+      readdirSync(resolve(root, entry.name))
+        .filter((name) => name.endsWith('.roteiro.md'))
+        .map((name) => resolve(root, entry.name, name)),
+    )
+}
+function baseDaAula(nome: string): string {
+  if (basename(nome) !== nome) throw new Error('Nome de aula inválido')
+  const parents = roteirosDosPais().find((path) => basename(path, '.roteiro.md') === nome)
+  return parents ? parents.slice(0, -'.roteiro.md'.length) : caminhoAula(nome)
+}
 
 function clipesDoManifesto(valor: unknown): string[] {
   if (
@@ -78,7 +95,7 @@ export function derivadosDeVoz(partes: ParteFalado[]): Map<string, string> {
 }
 
 export function gerarFalas(nome: string, check: boolean): number {
-  const base = caminhoAula(nome)
+  const base = baseDaAula(nome)
   const partes = extrairPartesElevenLabs(readFileSync(`${base}.roteiro.md`, 'utf8'))
   const esperado = clipesDoManifesto(JSON.parse(readFileSync(`${base}.manifesto.json`, 'utf8')))
   if (JSON.stringify(partes.map((p) => p.clipe)) !== JSON.stringify(esperado))
@@ -108,12 +125,12 @@ if (import.meta.main) {
   const aula = posAula >= 0 ? args[posAula + 1] : undefined
   if (posAula >= 0 && (!aula || aula.startsWith('--'))) throw new Error('--aula exige nome-base')
   const curso = args.find((a, i) => !a.startsWith('--') && !(posAula >= 0 && i === posAula + 1))
-  const selecionados = listarArquivosAulas()
+  const selecionados = [...listarArquivosAulas(), ...roteirosDosPais()]
     .filter((f) => f.endsWith('.roteiro.md'))
     .map((f) => basename(f, '.roteiro.md'))
     .filter(
       (f) =>
-        (!curso || caminhoAula(f).replaceAll('\\', '/').includes(`/${curso}/`)) &&
+        (!curso || baseDaAula(f).replaceAll('\\', '/').includes(`/${curso}/`)) &&
         (!aula || f === aula),
     )
   if (!selecionados.length) throw new Error('Nenhuma aula corresponde ao filtro')

@@ -93,8 +93,14 @@ export const MAIN_GIFT_SLOT = 'main'
  */
 export function giftSlotOf(
   course: { slug: string; learner: 'child' | 'parents' | null } | null | undefined,
+  offerId?: string,
 ): string {
-  return course?.learner === 'parents' ? `parents:${course.slug}` : MAIN_GIFT_SLOT
+  if (course?.learner === 'parents') return `parents:${course.slug}`
+  // O Cadê conserva a vaga histórica, inclusive nos links de embaixadores.
+  if (course && ['cade-todo-mundo', 'cade-todo-mundo-adulto'].includes(course.slug))
+    return MAIN_GIFT_SLOT
+  if (course) return `course:${course.slug}`
+  return offerId ? `offer:${offerId}` : MAIN_GIFT_SLOT
 }
 
 /** O que um resgate NOVO grava sobre o presente (resolvido no catálogo antes do claim). */
@@ -329,6 +335,7 @@ export interface ReferralRepository {
   ): Promise<RedemptionRecord | null>
   /** Todos os resgates do e-mail no público (todas as vagas), do mais antigo ao mais novo. */
   listRedemptionsByEmail(email: string, audience: GiftAudience): Promise<RedemptionRecord[]>
+  listRedemptionsByAccount(userId: string, audience: GiftAudience): Promise<RedemptionRecord[]>
   listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]>
 
   // ── Convites ──────────────────────────────────────────────────────────────

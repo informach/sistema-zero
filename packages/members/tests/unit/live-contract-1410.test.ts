@@ -45,6 +45,10 @@ async function setup() {
     { assertOwnership: async (_account, learnerId) => ({ name: names[learnerId ?? ''] ?? 'X' }) },
     {
       mediaReady: true,
+      publicIdentities: {
+        getProfileNames: async (ids) =>
+          new Map(ids.flatMap((id) => (names[id] ? [[id, names[id]]] : []))),
+      },
       onPermissionsChanged: async (id) => {
         changed.push(id)
       },
@@ -224,8 +228,8 @@ describe('contrato das oficinas (14/10)', () => {
     const biaView = await f.live.room(bia, f.session.id)
     expect(biaView.occurrence?.messages.map((item) => [item.authorName, item.authorId])).toEqual([
       ['Ana', ana.id],
-      ['Bia', bia.id],
-      ['Caio', null],
+      ['Bia Lima', bia.id],
+      ['Caio Reis', null],
     ])
     const teacherView = await f.live.room(ana, f.session.id)
     expect(teacherView.occurrence?.messages.map((item) => item.authorId)).toEqual([
@@ -321,7 +325,7 @@ describe('contrato das oficinas (14/10)', () => {
     expect(loads).toBe(1)
     expect(f.repository.reads.cohort).toBe(cohortLoads)
     expect(results.map((item) => (item.ok ? item.access.displayName : 'negado'))).toEqual([
-      'Bia',
+      'Bia Lima',
       'Ana',
       'Bruna',
       'negado',

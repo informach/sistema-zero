@@ -780,6 +780,8 @@ export async function createApplication(env: Env): Promise<Application> {
     }),
     {
       mediaReady: env.LIVE_MEDIA_READY,
+      publicIdentities: authGateway ?? undefined,
+      onIdentityError: () => logger.warn('live.public_identity_unavailable'),
       async onPermissionsChanged(occurrenceId) {
         // Media revocation must be prompt and is awaited. The recorder is NOT: a slow or
         // unreachable recorder must not hold a teacher's command or a child's join (the
@@ -1140,6 +1142,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
     learningRepository,
     sectionProgression,
+    authGateway ?? undefined,
   )
   const validateCertificate = new ValidateCertificateService(certificates)
   const revokeCertificate = new RevokeCertificateService(certificates, clock)
@@ -1560,6 +1563,7 @@ export async function createApplication(env: Env): Promise<Application> {
       zappyHistory: zappy,
     },
     internal: {
+      authGateway: authGateway ?? undefined,
       purgeUserData,
       accessCheck,
       profileAllowance,

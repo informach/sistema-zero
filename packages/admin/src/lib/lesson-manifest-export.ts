@@ -137,6 +137,8 @@ export function buildLessonManifest(
       case 'studio':
       case 'pinta':
       case 'certificate':
+      case 'gift':
+      case 'purchase':
         return { tipo: 'conteudo' }
       case 'materials': {
         const files = block.content.items.filter((item) => item.kind === 'file')

@@ -83,7 +83,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           if (body.profileId === null) return { valid: true, name: account.firstName }
           const [profile] = await deps.profiles.listActiveByIds([body.profileId])
           if (!profile || profile.accountUserId !== account.id) return { valid: false }
-          return { valid: true, name: profile.name }
+          return { valid: true, name: profile.displayName }
         },
         {
           body: t.Object({
@@ -101,6 +101,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
             offset: query.offset ?? 0,
             limit: query.limit ?? 200,
           })
+          const identities = new Map(
+            (await deps.profiles.listByIds(page.items.map((p) => p.id))).map((p) => [
+              p.id,
+              p.displayName,
+            ]),
+          )
           const accounts = await deps.users.listByIds([
             ...new Set(page.items.map((p) => p.accountUserId)),
           ])
@@ -113,7 +119,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
                     {
                       profileId: p.id,
                       accountId: p.accountUserId,
-                      name: p.name,
+                      name: identities.get(p.id) ?? 'Criador(a)',
                       accountName: `${p.account.firstName} ${p.account.lastName}`.trim(),
                       accountEmail: p.account.email,
                     },
@@ -213,6 +219,33 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       // foto/telefone/nascimento/conta. O `publicProfileEnabled` deixa o consumidor
       // decidir o que é clicável (link p/ o perfil público) sem um 2º round-trip.
       .post(
+        '/profiles/certificate-identity',
+        async ({ body, headers, set }) => {
+          requireInternalToken(headers, deps.internalToken)
+          set.headers['cache-control'] = 'private, no-store'
+          const [account] = await deps.users.listByIds([body.accountId])
+          const profile = await deps.profiles.findById(body.profileId)
+          if (
+            account?.status !== 'active' ||
+            !profile?.isSelectable ||
+            !profile.belongsTo(body.accountId)
+          ) {
+            set.status = 404
+            return { error: { code: 'PROFILE_NOT_FOUND', message: 'Perfil não encontrado.' } }
+          }
+          return {
+            fullName: profile.name,
+            confirmed: Boolean(profile.identityConfirmedAt && profile.publicNickname),
+          }
+        },
+        {
+          body: t.Object({
+            accountId: t.String({ format: 'uuid' }),
+            profileId: t.String({ format: 'uuid' }),
+          }),
+        },
+      )
+      .post(
         '/profiles/batch',
         async ({ body, headers }) => {
           requireInternalToken(headers, deps.internalToken)
@@ -220,7 +253,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           return {
             profiles: found.map((p) => ({
               id: p.id,
-              name: p.name,
+              name: p.displayName,
+              publicNickname: p.publicNickname,
               publicProfileEnabled: p.publicProfileEnabled,
             })),
           }

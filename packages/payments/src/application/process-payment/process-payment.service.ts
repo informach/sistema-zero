@@ -16,6 +16,7 @@ import { Money } from '../../domain/value-objects/money'
 import { PaymentMethod } from '../../domain/value-objects/payment-method'
 import type { Logger } from '../../infrastructure/logging/logger'
 import { type PaymentView, toPaymentView } from '../mappers/payment-view'
+import { markPaymentNotCreated } from '../payment-creation-outcome'
 import { buildBoletoChargeInput } from './boleto-charge-input'
 import type { ProcessPaymentCommand } from './process-payment.command'
 
@@ -129,6 +130,7 @@ export class ProcessPaymentService {
         // Falha ANTES de qualquer efeito colateral (validação, método não suportado,
         // conflito): seguro liberar para permitir nova tentativa.
         await this.idempotency.release(command.consumerId, command.idempotencyKey, reservationId)
+        markPaymentNotCreated(error)
       }
       throw error
     }

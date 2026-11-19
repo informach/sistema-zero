@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: 'Arquipélago Vagalume' }
 export default async function ArquipelagoPage() {
   const session = await getSession()
   if (!session?.activeProfile) redirect('/perfis')
-  const primeiroNome = (session.activeProfile.name ?? '').trim().split(/\s+/)[0] || 'Criador'
+  const primeiroNome = session.activeProfile.name?.trim() || 'Criador'
   return (
     <>
       {session.kids ? (

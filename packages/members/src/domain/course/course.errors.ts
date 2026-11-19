@@ -291,3 +291,18 @@ export class CertificateRevokedError extends DomainError {
     super(message)
   }
 }
+
+export class ProfileIdentityRequiredError extends DomainError {
+  readonly code = 'PROFILE_IDENTITY_REQUIRED'
+  constructor() {
+    super(
+      'Peça ao responsável para confirmar seu nome completo e apelido público em Família antes de emitir o certificado.',
+    )
+  }
+}
+export class ProfileIdentityUnavailableError extends DomainError {
+  readonly code = 'PROFILE_IDENTITY_UNAVAILABLE'
+  constructor() {
+    super('Não foi possível conferir o nome do certificado. Tente novamente.')
+  }
+}
