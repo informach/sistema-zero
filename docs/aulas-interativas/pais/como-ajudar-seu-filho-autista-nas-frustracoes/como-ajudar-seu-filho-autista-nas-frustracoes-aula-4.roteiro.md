@@ -6,7 +6,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 **Clipe:** `video-a4-ambiente`
 
-**Na tela:** No "controle do ambiente", mostrar o primeiro ponto [na edição: Controle do ambiente: afaste o que aumenta a sobrecarga sensorial]. No "regulação pelo modelo", mostrar o segundo ponto [na edição: Regulação pelo modelo: respire fundo, fale baixo, use frases curtas]. No "um espelho para a criança", destacar a ideia [na edição: o tom emocional do adulto é um espelho]. No "regular junto", destacar a frase [na edição: Escutar é, também, regular junto].
+**Na tela:** No "controle do ambiente", mostrar o primeiro ponto [na edição: Controle do ambiente: afaste o que aumenta a sobrecarga sensorial]. No "a segurança vem primeiro", destacar o cuidado [na edição: Segurança primeiro: afaste o que pode machucar e proteja a criança e quem está perto]. No "regulação pelo modelo", mostrar o segundo ponto [na edição: Regulação pelo modelo: respire fundo, fale baixo, use frases curtas]. No "um espelho para a criança", destacar a ideia [na edição: o tom emocional do adulto é um espelho]. No "regular junto", destacar a frase [na edição: Escutar é, também, regular junto].
 
 **Fala para ElevenLabs:**
 
@@ -18,6 +18,10 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 [confident, clear, unhurried voice] O primeiro ponto é o controle do ambiente. [engaging, energetic, conversational voice] Lembra da sobrecarga sensorial? Então: afaste os elementos que aumentam essa sobrecarga.
 
 [curious] E o que seria isso na prática? [engaging, energetic, conversational voice] É desligar a televisão. É abaixar a luz, se der. É pedir para as outras pessoas darem um espaço. É tirar a criança do meio do barulho, ou tirar o barulho de perto dela. [thoughtful] Porque, se o ambiente já estava doendo, cada estímulo a mais é lenha na fogueira.
+
+[confident, clear, unhurried voice] E, dentro desse cuidado com o ambiente, a segurança vem primeiro. [engaging, energetic, conversational voice] Se na crise a criança se joga, se bate ou arremessa as coisas, o que eu faço? Eu tiro de perto o que pode machucar: o que é de vidro, o que é pesado, o que tem ponta. Se ela bate a cabeça, eu coloco uma almofada, alguma coisa macia, entre ela e o chão ou a parede. E eu afasto os irmãos e quem mais estiver por perto.
+
+[reassuring, encouraging voice] E eu fico ali, por perto, com calma. Sem segurar com força e sem brigar. Eu só uso o meu corpo para proteger, se for para evitar que ela se machuque. [warmly] E, se na sua casa as crises costumam ter esse risco de alguém se machucar, leva isso para a equipe que acompanha o seu filho, tá? Porque aí vale montar um plano pensado para ele.
 
 [confident, clear, unhurried voice] O segundo ponto é a regulação pelo modelo. [curious] E quem é o modelo? [warmly] É você.
 
@@ -53,7 +57,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [warmly] Porque a empatia muda a rota da crise.
 
-[engaging, energetic, conversational voice] Então, na hora da crise, são três coisas: acalmar o ambiente, acalmar o seu tom e não negociar no auge.
+[engaging, energetic, conversational voice] Então, na hora da crise, são três coisas: deixar o ambiente seguro e calmo, acalmar o seu tom e não negociar no auge.
 
 [upbeat, encouraging voice] E quando a criança se acalma, aí sim chega a hora de conversar e de ensinar. É na próxima aula, que é a nossa última. Clique em Concluir aula para continuar.
 ```
