@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./compilar": "./src/compilar/index.ts",
-    "./conteudo": "./src/compilar/conteudo.ts"
+    "./conteudo": "./src/compilar/conteudo.ts",
+    "./raylib": "./src/compilar/raylib.ts"
   },
   "scripts": {
     "test": "bun test",

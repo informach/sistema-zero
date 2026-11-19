@@ -1323,14 +1323,17 @@ export function createProjectStore(
         try {
           conferirSessao()
           const capturado = copyStudioProjectJson(plano) as PlanoDeImportacaoDeCena3D,
-            hash = await sha256Hex(canonicalJson(copyStudioProjectJson(project)))
+            conteudoBase = canonicalJson(copyStudioProjectJson(project)),
+            hash = await sha256Hex(conteudoBase)
           conferirSessao()
           if (capturado.baseHash !== hash)
             return 'O projeto mudou depois do preparo. Traga o cenário novamente; suas edições foram preservadas.'
-          const [{ prepararImportacaoDeCena3D }, { pacoteDeCena3D }] = await Promise.all([
-            import('../core/scene3d/importar'),
-            import('../core/scene3d/referencias'),
-          ])
+          const [{ prepararImportacaoDeCena3D }, { pacoteDeCena3D }, fontesPython] =
+            await Promise.all([
+              import('../core/scene3d/importar'),
+              import('../core/scene3d/referencias'),
+              isPythonProject(project) ? import('../core/scene3d/python') : Promise.resolve(null),
+            ])
           conferirSessao()
           const asset = capturado.assets.find(
             (a) => a.id === capturado.assetId && a.kind === 'scene3d',
@@ -1343,15 +1346,36 @@ export function createProjectStore(
             { sinal },
           )
           conferirSessao()
+          if (canonicalJson(copyStudioProjectJson(project)) !== conteudoBase)
+            return 'O projeto mudou durante a importação. Suas edições foram preservadas.'
           if (
             verificado.baseHash !== capturado.baseHash ||
             verificado.assetId !== capturado.assetId ||
-            canonicalJson(verificado.assets) !== canonicalJson(capturado.assets)
+            canonicalJson(verificado.assets) !== canonicalJson(capturado.assets) ||
+            canonicalJson(verificado.fontesPython ?? []) !==
+              canonicalJson(capturado.fontesPython ?? [])
           )
             return 'O preparo do cenário mudou. Traga o cenário novamente; o projeto foi mantido.'
-          if (canonicalJson(project.assets ?? []) === canonicalJson(verificado.assets)) return null
+          if (
+            canonicalJson(project.assets ?? []) === canonicalJson(verificado.assets) &&
+            !verificado.fontesPython?.length
+          )
+            return null
+          let proximo: Project = { ...project, assets: verificado.assets }
+          if (isPythonProject(project)) {
+            if (!fontesPython) throw Error('O preparo das fontes Python está indisponível.')
+            const python = fontesPython.aplicarFontesPythonDoCenario(
+              project,
+              verificado.assets,
+              verificado.fontesPython ?? [],
+            )
+            const erro = pythonProjectLayoutError(python, pythonEditLimits)
+            if (erro) return erro
+            proximo = python
+          }
+          conferirSessao()
           set({
-            project: bump({ ...project, assets: verificado.assets }),
+            project: bump(proximo),
             isDirty: true,
             saveError: null,
           })

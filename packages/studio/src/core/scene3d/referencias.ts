@@ -117,7 +117,23 @@ export function scene3DResourceChangeIssue(
   const anteriores = idsDosRecursosDeCena3D(before),
     atuais = idsDosRecursosDeCena3D(after),
     porId = new Map(after.map((a) => [a.id, a]))
+  const fixosPython = new Set<string>()
+  for (const cena of before) {
+    if (cena.kind !== 'scene3d' || !cena.cena3dPython || porId.get(cena.id)?.kind !== 'scene3d')
+      continue
+    fixosPython.add(cena.id)
+    for (const recurso of lerAssetDeCena3D(cena).recursos) fixosPython.add(recurso.asset)
+  }
   for (const asset of before) {
+    if (fixosPython.has(asset.id)) {
+      const novo = porId.get(asset.id)
+      if (
+        novo?.proPath !== asset.proPath ||
+        novo?.kind !== asset.kind ||
+        novo?.dataUrl !== asset.dataUrl
+      )
+        return `O caminho e o conteúdo de “${asset.name}” são usados pelo módulo Python de um cenário. Traga uma nova revisão para preservar os arquivos existentes.`
+    }
     if (!anteriores.has(asset.id) || !atuais.has(asset.id)) continue
     const novo = porId.get(asset.id)
     if (!novo || novo.kind !== asset.kind || novo.dataUrl !== asset.dataUrl)

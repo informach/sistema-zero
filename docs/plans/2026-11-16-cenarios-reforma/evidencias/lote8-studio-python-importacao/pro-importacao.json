@@ -1,0 +1,25 @@
+{
+  "kind": "pro",
+  "fonte": {
+    "cenario": "cen-000b",
+    "revisao": 1,
+    "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+  },
+  "atualizacoes": 1,
+  "nos": 20,
+  "modulo": "src/cenario_fbfbbbe87fdbcfc4f8e3.py",
+  "entrypoint": "src/main.py",
+  "assets": 28,
+  "fontesPreservadas": true,
+  "reabertura": true,
+  "orcamento": {
+    "destino": "studio",
+    "permitido": true,
+    "bytes": 8715621,
+    "malhas": 25,
+    "excessos": [],
+    "sugerirJuncao": false
+  },
+  "avisos": [],
+  "nota": "Preparo/store/reabertura/export reais. Adapter e botão Trazer do Molda ainda não participam desta prova."
+}

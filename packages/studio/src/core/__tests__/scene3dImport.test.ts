@@ -1,14 +1,20 @@
 import { expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import type { CenaCompilada, PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
+import { encodeGlbContainer, readGltfDocument } from '../../../../molda/src/import/gltf'
 import { exemplo, glb } from '../../../../molda-cenarios-motor/tests/fixtures/glb-compilacao'
-import { digestAssetBytes, encodeAssetBase64 } from '../assetBinary'
+import { RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
+import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
+import { decodeProjectAsset, digestAssetBytes, encodeAssetBase64 } from '../assetBinary'
 import { createEmptyProject } from '../project'
 import type { ProjectAsset } from '../projectAssets'
+import { buildPythonAssetBundle } from '../pythonAssets'
 import {
   OrcamentoDeImportacaoDeCenaExcedido,
   prepararImportacaoDeCena3D,
 } from '../scene3d/importar'
+import { aplicarFontesPythonDoCenario } from '../scene3d/python'
 import { lerAssetDeCena3D } from '../scene3d/referencias'
 import { assertScene3DAssets } from '../scene3d/validacao'
 
@@ -68,6 +74,176 @@ async function pacote(
     }
   return { cena, arquivos: new Map([[arquivo.caminho, bytes]]) }
 }
+
+test('Python Classic/Pro prepara recursos e módulo ao lado do entrypoint sem alterar as fontes', async () => {
+  for (const kind of ['classic', 'pro'] as const) {
+    const { project } = await pythonEnvironmentFixture(kind)
+    project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+    if (project.kind === 'pro') {
+      const main = project.tree[project.python.entrypoint]
+      if (main?.kind !== 'file') throw Error('fixture')
+      project.tree.src = { kind: 'dir' }
+      project.tree['src/main.py'] = main
+      project.python.entrypoint = 'src/main.py'
+    }
+    const antes = canonicalJson(project),
+      p = await pacote(),
+      origem = canonicalJson(p.cena),
+      plano = await prepararImportacaoDeCena3D(project, p)
+    expect(canonicalJson(project)).toBe(antes)
+    expect(canonicalJson(p.cena)).toBe(origem)
+    expect(plano.fontesPython).toHaveLength(1)
+    const fonte = plano.fontesPython![0]!,
+      primario = plano.assets.find((a) => a.id === plano.assetId)!
+    expect(primario.cena3dPython?.modulo).toBe(fonte.caminho)
+    expect(fonte.texto).toContain('arquivos=_ARQUIVOS')
+    expect(fonte.texto).toContain(`.parents[${project.python.entrypoint.split('/').length - 1}]`)
+    expect(plano.assets.find((a) => a.kind === 'model3d')?.proPath).toStartWith('cenarios/modelos/')
+    const aplicado = aplicarFontesPythonDoCenario(project, plano.assets, plano.fontesPython ?? []),
+      layout =
+        aplicado.kind === 'pro'
+          ? Object.entries(aplicado.tree).flatMap(([p, n]) => (n.kind === 'file' ? [p] : []))
+          : Object.keys(aplicado.files),
+      bundle = await buildPythonAssetBundle(aplicado.assets, { files: layout })
+    expect(bundle.files.has(primario.proPath!)).toBe(true)
+    const repetido = await prepararImportacaoDeCena3D(aplicado, p)
+    expect(repetido.assets).toEqual(plano.assets)
+    expect(repetido.fontesPython).toEqual([])
+    expect(repetido.adicionados).toBe(0)
+  }
+})
+
+test('Python conserva módulos autorais e fontes geradas editadas, com nomes livres e aviso de precedência', async () => {
+  const { project } = await pythonEnvironmentFixture('classic')
+  if (project.kind !== 'classic') throw Error('fixture')
+  project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+  project.files['cenario.py'] = 'IDENTIDADE = "autoral"\n'
+  const p = await pacote(),
+    primeiro = await prepararImportacaoDeCena3D(project, p),
+    caminho = primeiro.fontesPython![0]!.caminho
+  project.files[caminho] = '# arquivo autoral com nome coincidente\n'
+  const plano = await prepararImportacaoDeCena3D(project, p)
+  expect(plano.fontesPython![0]!.caminho).not.toBe(caminho)
+  expect(plano.avisos?.join(' ')).toContain('prioridade')
+  const aplicado = aplicarFontesPythonDoCenario(project, plano.assets, plano.fontesPython ?? [])
+  if (aplicado.kind !== 'classic') throw Error('fixture')
+  const gerado = plano.fontesPython![0]!.caminho
+  aplicado.files[gerado] = '# minha edição do módulo gerado\n'
+  const repetido = await prepararImportacaoDeCena3D(aplicado, p)
+  expect(repetido.fontesPython).toEqual([])
+  expect(aplicado.files['cenario.py']).toBe(project.files['cenario.py'])
+  expect(aplicado.files[caminho]).toBe(project.files[caminho])
+  expect(aplicado.files[gerado]).toBe('# minha edição do módulo gerado\n')
+})
+
+test('Python sem Raylib 3D recusa a importação e conserva o documento', async () => {
+  const { project } = await pythonEnvironmentFixture('classic'),
+    antes = canonicalJson(project)
+  await expect(prepararImportacaoDeCena3D(project, await pacote())).rejects.toThrow('Raylib 3D')
+  expect(canonicalJson(project)).toBe(antes)
+})
+
+test('Python reaproveita o arquivo existente e resolve dois caminhos lógicos sem duplicar bytes', async () => {
+  const { project } = await pythonEnvironmentFixture('classic'),
+    p = await pacote(),
+    original = p.cena.arquivos[0]!,
+    outro = { ...original, caminho: 'outros/arvore.glb' }
+  project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+  project.assets = [
+    {
+      id: 'modelo-da-crianca',
+      name: 'meu-bosque',
+      kind: 'model3d',
+      source: 'upload',
+      originalFileName: 'arvore.glb',
+      proPath: 'models/minha-arvore.glb',
+      dataUrl: `data:${original.mime};base64,${encodeAssetBase64(p.arquivos.get(original.caminho)!)}`,
+    },
+  ]
+  p.cena.arquivos.push(outro)
+  p.arquivos = new Map([...p.arquivos, [outro.caminho, p.arquivos.get(original.caminho)!]])
+  p.cena.nos.push({ ...p.cena.nos[0]!, id: 'segunda', arquivo: outro.caminho })
+  const antes = canonicalJson(project),
+    plano = await prepararImportacaoDeCena3D(project, p),
+    primario = plano.assets.find((a) => a.id === plano.assetId)!,
+    cena = lerAssetDeCena3D(primario)
+  expect(plano.assets.filter((a) => a.kind === 'model3d')).toEqual(project.assets)
+  expect(cena.recursos.map((r) => r.asset)).toEqual(['modelo-da-crianca', 'modelo-da-crianca'])
+  expect(cena.cena.arquivos.map((a) => a.caminho)).toEqual([original.caminho, outro.caminho])
+  expect(plano.fontesPython![0]!.texto).toContain('models/minha-arvore.glb')
+  const bundle = await buildPythonAssetBundle(plano.assets)
+  expect([...bundle.files.keys()].sort()).toEqual(
+    ['models/minha-arvore.glb', primario.proPath!].sort(),
+  )
+  expect(canonicalJson(project)).toBe(antes)
+})
+
+test('Python recusa colisão de pasta/material e nunca sobrescreve fonte pelo aplicador', async () => {
+  const { project } = await pythonEnvironmentFixture('classic')
+  if (project.kind !== 'classic') throw Error('fixture')
+  project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+  const antes = canonicalJson(project)
+  expect(() =>
+    aplicarFontesPythonDoCenario(
+      project,
+      [],
+      [{ caminho: project.python.entrypoint, texto: 'outra fonte' }],
+    ),
+  ).toThrow('colide')
+  expect(canonicalJson(project)).toBe(antes)
+  project.files.cenarios = '# arquivo autoral que impede a pasta de assets\n'
+  const bloqueado = canonicalJson(project)
+  await expect(prepararImportacaoDeCena3D(project, await pacote())).rejects.toThrow(/conflit|colid/)
+  expect(canonicalJson(project)).toBe(bloqueado)
+})
+
+test('Python adapta vínculos equivalentes pela conversão Raylib compartilhada, sem alterar o pacote de origem', async () => {
+  const { inspecionarGlbDaCompilacao } = await import('@sistemazero/molda-cenarios-motor/conteudo'),
+    leitura = readGltfDocument(
+      new Uint8Array(
+        readFileSync(
+          new URL('../../../scripts/raylib/scenes/assets/models/molda-pesos.glb', import.meta.url),
+        ),
+      ),
+    )
+  if (leitura.status !== 'ready') throw Error('fixture')
+  // Two equivalent bindings in an encoded GLB, using the real fixture's geometry/BIN/clips.
+  const json = structuredClone(leitura.document.source.json),
+    skins = json.skins as Record<string, unknown>[]
+  json.skins = [skins[0], structuredClone(skins[0])]
+  let indice = 0
+  for (const node of json.nodes as Record<string, unknown>[])
+    if (node.skin !== undefined) node.skin = indice++ % 2
+  const bytes = encodeGlbContainer(json, leitura.document.resources.buffers),
+    medidas = inspecionarGlbDaCompilacao(bytes),
+    p = await pacote(),
+    arquivo = p.cena.arquivos[0]!,
+    antes = bytes.slice(),
+    { project } = await pythonEnvironmentFixture('classic')
+  Object.assign(arquivo, {
+    digest: await digestAssetBytes(bytes),
+    bytes: bytes.length,
+    malhas: medidas.malhas,
+    triangulos: medidas.triangulos,
+    verticesMaximos: medidas.verticesMaximos,
+  })
+  p.arquivos = new Map([[arquivo.caminho, bytes]])
+  p.cena.nos[0]!.preservarHierarquia = true
+  project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+  const original = canonicalJson(p.cena),
+    plano = await prepararImportacaoDeCena3D(project, p),
+    convertido = plano.assets.find((a) => a.kind === 'model3d')!,
+    a = readGltfDocument(bytes),
+    b = readGltfDocument(decodeProjectAsset(convertido.dataUrl).bytes)
+  if (a.status !== 'ready' || b.status !== 'ready') throw Error('fixture')
+  expect(a.document.skins.length).toBeGreaterThan(1)
+  expect(b.document.skins).toHaveLength(1)
+  expect(b.document.source.json.animations).toEqual(a.document.source.json.animations)
+  expect(b.document.resources.buffers).toEqual(a.document.resources.buffers)
+  expect(plano.avisos?.join(' ')).toContain('equivalentes')
+  expect(canonicalJson(p.cena)).toBe(original)
+  expect(bytes).toEqual(antes)
+})
 
 test('preparo conta instâncias/partes reais: 48 cabe, 49 é excesso nominal e não altera o projeto', async () => {
   const projeto = createEmptyProject('p', 'Jogo'),

@@ -15,6 +15,7 @@ import {
   isScene3DAssetKind,
   isValidScene3DDataUrl,
   readScene3DDataMetadata,
+  readScene3DPythonMetadata,
 } from './scene3d/assets'
 import { assertScene3DReferences } from './scene3d/referencias'
 
@@ -131,6 +132,8 @@ export interface ProjectAsset {
   kind: 'image' | 'audio' | 'model3d' | 'environment3d' | 'font' | 'scene3d' | 'scene3d-data'
   /** Compiler-owned physical terrain data; no generic binary uploads. */
   dado3d?: { papel: 'alturas' | 'buracos' }
+  /** Generated source module; user edits are preserved on identical reimport. */
+  cena3dPython?: { modulo: string }
   /**
    * `data:image/...;base64,...` (imagem), `data:audio/...;base64,...` (áudio) ou
    * `data:model|image/...;base64,...` (3D) — validado: o prefixo precisa casar
@@ -624,6 +627,11 @@ export function sanitizeProjectAssets(
       const meta = readScene3DDataMetadata(a.dado3d)
       if (!meta) continue
       asset.dado3d = meta
+    }
+    if (a.cena3dPython !== undefined) {
+      const meta = readScene3DPythonMetadata(a.cena3dPython)
+      if (kind !== 'scene3d' || !meta) continue
+      asset.cena3dPython = meta
     }
     const license = sanitizeProjectAssetLicense(a.license)
     if (license) asset.license = license

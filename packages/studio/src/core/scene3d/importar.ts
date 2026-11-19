@@ -29,6 +29,9 @@ import {
   sanitizeProjectAssets,
 } from '../projectAssets'
 import { assertProjectContentPreserved } from '../projectDocumentGuards'
+import { sanitizePythonProjectAssets } from '../pythonAssets'
+import { projectUsesRaylib3D } from '../raylibMediaPaths'
+import type { FontePythonDoCenario } from './python'
 import { idsDosRecursosDeCena3D, lerAssetDeCena3D } from './referencias'
 import { assertScene3DAssets } from './validacao'
 
@@ -39,6 +42,8 @@ export interface PlanoDeImportacaoDeCena3D {
   assetId: string
   adicionados: number
   orcamento: OrcamentoDaCena
+  fontesPython?: FontePythonDoCenario[]
+  avisos?: string[]
 }
 
 export class OrcamentoDeImportacaoDeCenaExcedido extends Error {
@@ -50,10 +55,10 @@ export class OrcamentoDeImportacaoDeCenaExcedido extends Error {
   }
 }
 
-function copiarPacote(entrada: PacoteCompilado, sinal: AbortSignal): PacoteCompilado {
+function copiarPacote(entrada: PacoteCompilado, sinal: AbortSignal) {
   sinal.throwIfAborted()
   const cena = lerCenaCompilada(entrada.cena),
-    arquivos = new Map<string, Uint8Array>()
+    arquivos = new Map<string, Uint8Array<ArrayBuffer>>()
   if (entrada.arquivos.size !== cena.arquivos.length)
     throw Error('O inventário da cena está incompleto ou contém arquivos extras.')
   for (const a of cena.arquivos) {
@@ -94,22 +99,55 @@ export async function prepararImportacaoDeCena3D(
   // Capture before hashing/dynamic imports yield. Neither editor buffers nor packet bytes are borrowed.
   const capturado = copyStudioProjectJson(projeto) as EditableStudioProject,
     pacote = copiarPacote(entrada, sinal)
-  if (isPythonProject(capturado))
-    throw Error('O preparo de fontes e caminhos Python precisa acompanhar esta importação.')
+  const python = isPythonProject(capturado)
+  if (python && !projectUsesRaylib3D(capturado))
+    throw Error('Cenários 3D precisam da extensão Raylib 3D neste projeto Python.')
   const baseHash = await sha256Hex(canonicalJson(capturado)),
     { conferirConteudoCompilado, inspecionarGlbDaCompilacao } = await import(
       '@sistemazero/molda-cenarios-motor/conteudo'
     )
   sinal.throwIfAborted()
   await conferirConteudoCompilado(pacote.cena, pacote.arquivos, sinal)
+  const avisos: string[] = []
+  if (python) {
+    const { normalizarPelesParaRaylib } = await import('@sistemazero/molda-cenarios-motor/raylib')
+    sinal.throwIfAborted()
+    for (const a of pacote.cena.arquivos) {
+      if (a.mime !== 'model/gltf-binary') continue
+      const original = pacote.arquivos.get(a.caminho)!,
+        adaptado = normalizarPelesParaRaylib(original)
+      if (adaptado.bytes !== original) {
+        const bytes = adaptado.bytes.slice()
+        pacote.arquivos.set(a.caminho, bytes)
+        a.bytes = bytes.byteLength
+        a.digest = await digestAssetBytes(bytes)
+        avisos.push(
+          `${a.caminho}: vínculos equivalentes do mesmo esqueleto foram compartilhados na cópia Raylib.`,
+        )
+      }
+      sinal.throwIfAborted()
+    }
+    await conferirConteudoCompilado(pacote.cena, pacote.arquivos, sinal)
+  }
   await assertScene3DAssets(capturado.assets ?? [], sinal)
   const atuais = capturado.assets ?? [],
     next = [...atuais],
     nomes = new Set(next.map((a) => a.name)),
-    porConteudo = new Map<string, ProjectAsset>()
+    porConteudo = new Map<string, ProjectAsset>(),
+    kindsNecessarios = new Set<ProjectAsset['kind']>(pacote.cena.arquivos.map(kindDoArquivo)),
+    decodificados = new Map<string, ReturnType<typeof decodeProjectAsset>>()
+  const decodificar = (dataUrl: string) => {
+    let resultado = decodificados.get(dataUrl)
+    if (!resultado) {
+      resultado = decodeProjectAsset(dataUrl)
+      decodificados.set(dataUrl, resultado)
+    }
+    return resultado
+  }
   for (const a of atuais) {
     sinal.throwIfAborted()
-    const { mime, bytes } = decodeProjectAsset(a.dataUrl)
+    if (!kindsNecessarios.has(a.kind)) continue
+    const { mime, bytes } = decodificar(a.dataUrl)
     porConteudo.set(
       chaveDoConteudo(a.kind, mime, await digestAssetBytes(bytes), a.dado3d?.papel),
       a,
@@ -157,6 +195,11 @@ export async function prepararImportacaoDeCena3D(
         dataUrl: `data:${a.mime};base64,${encodeAssetBase64(pacote.arquivos.get(a.caminho)!)}`,
         // The complete compiled path remains in the envelope; this is a bounded storage filename.
         originalFileName: `${id}.${projectAssetFileExtension(a.mime, kind)}`,
+        ...(python
+          ? {
+              proPath: `cenarios/${kind === 'model3d' ? 'modelos' : kind === 'image' ? 'imagens' : 'dados'}/${id}.${projectAssetFileExtension(a.mime, kind)}`,
+            }
+          : {}),
         ...(a.largura ? { width: a.largura, height: a.altura } : {}),
         ...(kind === 'scene3d-data'
           ? {
@@ -198,6 +241,7 @@ export async function prepararImportacaoDeCena3D(
       license,
       originalFileName: `${slug}.scene3d.json`,
       dataUrl: url,
+      ...(python ? { proPath: `cenarios/${assetId}.json` } : {}),
     })
   sinal.throwIfAborted()
   await preloadCourseModels(next)
@@ -207,7 +251,7 @@ export async function prepararImportacaoDeCena3D(
   const arquivos = []
   for (const [i, a] of next.entries()) {
     sinal.throwIfAborted()
-    const { mime, bytes } = decodeProjectAsset(courseModelDataUrl(a) ?? a.dataUrl)
+    const { mime, bytes } = decodificar(courseModelDataUrl(a) ?? a.dataUrl)
     arquivos.push({
       caminho: `recursos/a${i}.${projectAssetFileExtension(mime, a.kind)}`,
       bytes:
@@ -230,9 +274,17 @@ export async function prepararImportacaoDeCena3D(
       PROJECT_ASSET_LIMITS.maxAssetsTotalChars
   )
     throw Error('O cenário ultrapassa a quantidade ou o espaço de materiais deste projeto.')
-  const assets = sanitizeProjectAssets(next)
+  let assets = python ? sanitizePythonProjectAssets(next) : sanitizeProjectAssets(next)
   assertProjectContentPreserved({ assets: next }, { assets })
   await assertScene3DAssets(assets, sinal)
+  let fontesPython: FontePythonDoCenario[] | undefined
+  if (isPythonProject(capturado)) {
+    const { prepararFontesPythonDoCenario } = await import('./python'),
+      resultado = await prepararFontesPythonDoCenario(capturado, assets, assetId, sinal)
+    assets = resultado.assets
+    fontesPython = resultado.fontesPython
+    avisos.push(...resultado.avisos)
+  }
   sinal.throwIfAborted()
   return {
     projetoId: capturado.id,
@@ -241,5 +293,6 @@ export async function prepararImportacaoDeCena3D(
     assetId,
     adicionados: assets.length - atuais.length,
     orcamento,
+    ...(fontesPython ? { fontesPython, avisos } : {}),
   }
 }
