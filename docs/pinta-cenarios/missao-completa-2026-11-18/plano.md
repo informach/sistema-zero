@@ -71,13 +71,19 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   as imagens e fecha os inventários e manuais. Runner oficial: 11.543 aprovados,
   mais os quatro casos condicionados ao Chromium reexecutados sem omissão;
   `qa/fechamento-integracao/README.md`. Isso não encerra o ciclo autenticado.
-- [ ] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
+- [x] 3. Ensaiar pintura inteligente com várias folhas: pincel, balde, linha, retângulo,
   transição, prévia, determinismo, vizinhos, undo/redo e cancelamento em navegador.
   Gestos verificados em desktop, toque e CPU 4×; corrigido cancelamento por Esc e
   `pointercancel`, incluindo crescimento e recuperação de conflito. Provas em
-  `qa/terrenos-e-cancelamento-2026-11-19/README.md`. Modelos de terrenos prontos para
-  o iniciante ainda precisam de entrega e homologação antes de fechar esta etapa.
-- [ ] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.
+  `qa/terrenos-e-cancelamento-2026-11-19/README.md`. O modelo Bosque com terrenos e
+  as cores no modo Começar foram implementados e homologados localmente; provas em
+  `qa/terrenos-prontos-2026-11-19/README.md`. A suíte de cenários passou no CI
+  `44572834661`; a regressão local após a correção da coluna passou novamente.
+- [x] 4a. Arrasto da biblioteca com prévia, drop válido e cancelamento; encaixe e bloqueio.
+  Pixel, vetor e conjunto vinculado com uma gravação por soltura, cancelamento e
+  proteção da cópia recuperada. Corrigida a altura real da coluna desktop, mantendo
+  o recolhimento móvel e a identidade visual. Suíte Pinta com 2.129 aprovados e
+  cenários/Phaser com 32 aprovados. Provas em `qa/biblioteca-arrasto-2026-11-19/README.md`.
 - [ ] 4b. Pincel de objetos/conjuntos: densidade, afastamento, semente, prévia e um histórico
   por gesto; manter diferença entre conjunto vinculado e cópia independente.
 - [ ] 5. Completar ferramentas profissionais autorais e seus consumidores: caminhos, zonas,

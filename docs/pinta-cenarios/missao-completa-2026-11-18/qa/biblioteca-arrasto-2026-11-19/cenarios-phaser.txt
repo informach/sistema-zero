@@ -1,0 +1,58 @@
+[WebServer] (node:31812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 32 tests using 1 worker
+
+(node:8316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › e2e\phaser-scenes.flow.ts:21:1 › Phaser: plataforma precisa permite salto, pouso e vista de cima sem grade arredondada (3.0s)
+  ✓   2 [desktop] › e2e\phaser-scenes.flow.ts:140:1 › Phaser: cena 3 consulta os contornos e barra movimento através de parede fina (1.3s)
+  ✓   3 [desktop] › e2e\phaser-scenes.flow.ts:204:1 › Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa (395ms)
+  ✓   4 [desktop] › e2e\phaser-scenes.flow.ts:247:1 › Phaser portátil anima a versão fixada e conserva o último quadro (487ms)
+  ✓   5 [desktop] › e2e\phaser-scenes.flow.ts:325:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (3.1s)
+
+  ✓   6 [desktop] › e2e\pinta-library-scenes.flow.ts:38:1 › biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir (3.6s)
+
+  ✓   7 [desktop] › e2e\pinta-physics-scenes.flow.ts:25:1 › plataforma precisa: salvar, reabrir, pousar e pular no teste lateral (2.8s)
+  ✓   8 [desktop] › e2e\pinta-physics-scenes.flow.ts:77:1 › contornos autorais: editar colisão, desfazer, refazer e reabrir (1.6s)
+  ✓   9 [desktop] › e2e\pinta-physics-scenes.flow.ts:117:1 › o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato (2.3s)
+
+  ✓  10 [desktop] › e2e\pinta-resources-scenes.flow.ts:32:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (3.6s)
+  ✓  11 [desktop] › e2e\pinta-resources-scenes.flow.ts:114:1 › mapa autocontido de 48 px abre sem originais e cola objetos na grade correta (1.3s)
+  ✓  12 [desktop] › e2e\pinta-resources-scenes.flow.ts:165:1 › copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos (2.8s)
+
+  ✓  13 [desktop] › e2e\pinta-scenes.flow.ts:40:1 › autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir (4.6s)
+  ✓  14 [desktop] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.3s)
+
+  ✓  15 [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (8.1s)
+  ✓  16 [desktop] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (3.6s)
+(node:30580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  17 [touch] › e2e\phaser-scenes.flow.ts:21:1 › Phaser: plataforma precisa permite salto, pouso e vista de cima sem grade arredondada (3.0s)
+  ✓  18 [touch] › e2e\phaser-scenes.flow.ts:140:1 › Phaser: cena 3 consulta os contornos e barra movimento através de parede fina (1.4s)
+  ✓  19 [touch] › e2e\phaser-scenes.flow.ts:204:1 › Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa (530ms)
+  ✓  20 [touch] › e2e\phaser-scenes.flow.ts:247:1 › Phaser portátil anima a versão fixada e conserva o último quadro (628ms)
+  ✓  21 [touch] › e2e\phaser-scenes.flow.ts:325:1 › Phaser portátil renderiza o mapa real, anda, colide e atravessa portas (1.4s)
+
+  ✓  22 [touch] › e2e\pinta-library-scenes.flow.ts:38:1 › biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir (3.5s)
+
+  ✓  23 [touch] › e2e\pinta-physics-scenes.flow.ts:25:1 › plataforma precisa: salvar, reabrir, pousar e pular no teste lateral (3.0s)
+  ✓  24 [touch] › e2e\pinta-physics-scenes.flow.ts:77:1 › contornos autorais: editar colisão, desfazer, refazer e reabrir (1.7s)
+  ✓  25 [touch] › e2e\pinta-physics-scenes.flow.ts:117:1 › o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato (2.5s)
+
+  ✓  26 [touch] › e2e\pinta-resources-scenes.flow.ts:32:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (4.1s)
+  ✓  27 [touch] › e2e\pinta-resources-scenes.flow.ts:114:1 › mapa autocontido de 48 px abre sem originais e cola objetos na grade correta (1.3s)
+  ✓  28 [touch] › e2e\pinta-resources-scenes.flow.ts:165:1 › copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos (2.8s)
+
+  ✓  29 [touch] › e2e\pinta-scenes.flow.ts:40:1 › autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir (4.6s)
+  ✓  30 [touch] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.5s)
+
+  ✓  31 [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (7.1s)
+  ✓  32 [touch] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (3.9s)
+
+  32 passed (1.7m)

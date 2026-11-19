@@ -7,6 +7,7 @@ import { COPY } from '../../core/copy'
 import type { TilemapAsset } from '../../core/project'
 import { isMapObjectTool } from '../../state/sessionStore'
 import { Button } from '../ui/Button'
+import { MapObjectArtwork } from './MapObjectArtwork'
 import { MapObjectsOverlay } from './MapObjectsOverlay'
 import type { TilemapController } from './mapTools/useTilemapController'
 import { stageCursor } from './stageCursor'
@@ -86,6 +87,35 @@ export function MapStage({
             onSelectObjects={c.chooseObjects}
             deleteVertexRef={c.deleteVertexRef}
           />
+          {c.libraryPlacement.preview ? (
+            <svg
+              data-pin-library-preview
+              aria-label={COPY.scene.libraryPreview}
+              role="img"
+              className="pointer-events-none absolute inset-0 h-full w-full"
+              viewBox={`0 0 ${(tilemap.cols + 2 * c.pad) * c.tileSize} ${(tilemap.rows + 2 * c.pad) * c.tileSize}`}
+            >
+              <title>{COPY.scene.libraryPreview}</title>
+              <g
+                transform={`translate(${c.libraryPlacement.preview.offsetX + c.pad * c.tileSize} ${c.libraryPlacement.preview.offsetY + c.pad * c.tileSize})`}
+                opacity={0.65}
+              >
+                <MapObjectArtwork
+                  object={c.libraryPlacement.preview.object}
+                  source={c.libraryPlacement.preview.source}
+                />
+                <rect
+                  x={c.libraryPlacement.preview.object.x}
+                  y={c.libraryPlacement.preview.object.y}
+                  width={c.libraryPlacement.preview.object.width}
+                  height={c.libraryPlacement.preview.object.height}
+                  fill="none"
+                  stroke="var(--color-pin-accent)"
+                  strokeWidth={(2 * c.tileSize) / c.cellPx}
+                />
+              </g>
+            </svg>
+          ) : null}
         </div>
       </div>
     </div>

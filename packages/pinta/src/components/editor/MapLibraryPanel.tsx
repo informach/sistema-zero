@@ -9,8 +9,7 @@ import {
   isTilesetKind,
   type PintaAsset,
 } from '../../core/project'
-import { addMapObject, createMapObject } from '../../tiles/mapObjects'
-import { createMapSet, detachMapSet, placeMapSet } from '../../tiles/sets'
+import { createMapSet, detachMapSet } from '../../tiles/sets'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { AssetThumb } from '../gallery/AssetCard'
 import { Button } from '../ui/Button'
@@ -18,20 +17,17 @@ import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
 import { MapResourceControls } from './MapResourceControls'
-import { commitIfChanged } from './mapTools/commitGuard'
+import type { LibraryPlacementController } from './mapTools/useLibraryPlacement'
 export function MapLibraryPanel({
   layerId,
   selectedId,
   allowSets = true,
-  position,
-  snapObjects = true,
+  placement,
 }: {
   layerId: string
   selectedId: string | null
   allowSets?: boolean
-  snapObjects?: boolean
-  /** Onde o ponteiro esteve por último no palco, em pixels do mapa (ou o meio do que se vê). */
-  position?: () => { x: number; y: number } | null
+  placement: LibraryPlacementController
 }): JSX.Element {
   const assets = usePintaGallery((s) => s.assets),
     { editor } = useEditorStores()
@@ -47,72 +43,6 @@ export function MapLibraryPanel({
           .find((o) => o.id === selectedId)
       : null
   const set = selected?.setId ? find(selected.setId) : null
-  function place(a: PintaAsset): void {
-    const s = editor.getState(),
-      m = s.asset
-    if (m.kind !== 'tilemap') return
-    const ts = embeddedTilesetOf(m) ?? find(m.tilesetId),
-      tileSize = ts && isTilesetKind(ts) ? ts.tileSize : 16
-    const layer = m.layers.find((l) => l.id === layerId)
-    if (!layer || !isObjectLayer(layer)) return
-    const offset = effectiveLayer(m, layer)
-    if (offset.locked) {
-      showToast(COPY.layers.lockedWarning)
-      return
-    }
-    const width =
-      a.kind === 'map-set'
-        ? a.map.cols * tileSize
-        : 'frameWidth' in a
-          ? a.frameWidth
-          : 'width' in a
-            ? a.width
-            : isTilesetKind(a)
-              ? a.tileSize
-              : tileSize
-    const height =
-      a.kind === 'map-set'
-        ? a.map.rows * tileSize
-        : 'frameHeight' in a
-          ? a.frameHeight
-          : 'height' in a
-            ? a.height
-            : isTilesetKind(a)
-              ? a.tileSize
-              : tileSize
-    // O desenho nasce onde o ponteiro esteve por último (na casa da grade), dentro do mapa.
-    const target = position?.() ?? { x: (m.cols * tileSize) / 2, y: (m.rows * tileSize) / 2 }
-    const cell = (value: number, size: number, cells: number, shift: number): number => {
-      const local = value - shift - size / 2
-      return Math.max(
-        0,
-        Math.min(
-          Math.max(0, cells * tileSize - size - shift),
-          snapObjects ? Math.round(local / tileSize) * tileSize : Math.round(local),
-        ),
-      )
-    }
-    const x = cell(target.x, width, m.cols, offset.offsetX),
-      y = cell(target.y, height, m.rows, offset.offsetY)
-    commitIfChanged(
-      s,
-      a.kind === 'map-set'
-        ? placeMapSet(m, layerId, a, x, y, tileSize)
-        : addMapObject(
-            m,
-            layerId,
-            createMapObject({
-              name: a.name,
-              shape: 'art',
-              art: { assetId: a.id, ...(isTilesetKind(a) ? { tile: 0 } : {}) },
-              x,
-              y,
-              width,
-              height,
-            }),
-          ),
-    )
-  }
   return (
     <Panel title={COPY.scene.desenhosDaBiblioteca}>
       {selected?.art && chosen.kind === 'tilemap' ? (
@@ -205,6 +135,10 @@ export function MapLibraryPanel({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+      <p className="mt-2 text-xs text-pin-muted">{COPY.scene.libraryHelp}</p>
+      <p className="sr-only" role="status">
+        {placement.message}
+      </p>
       <div className="mt-2 grid max-h-52 grid-cols-3 gap-1 overflow-auto">
         {assets
           .filter(
@@ -219,8 +153,13 @@ export function MapLibraryPanel({
               type="button"
               title={a.name}
               aria-label={COPY.scene.dynamicPorNoMapa(a.name)}
-              onClick={() => place(a)}
-              className="overflow-hidden rounded-xl border-2 border-pin-border bg-pin-surface p-1 text-xs hover:border-pin-accent"
+              onPointerDown={(event) => placement.down(a, event)}
+              onLostPointerCapture={placement.lost}
+              onClick={(event) => placement.click(a, event)}
+              onDragStart={(event) => event.preventDefault()}
+              draggable={false}
+              style={{ touchAction: 'none' }}
+              className="select-none overflow-hidden rounded-xl border-2 border-pin-border bg-pin-surface p-1 text-xs hover:border-pin-accent"
             >
               <AssetThumb asset={a} findAsset={find} />
               <span className="block truncate">{a.name}</span>

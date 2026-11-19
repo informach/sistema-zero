@@ -1,0 +1,45 @@
+[WebServer] (node:34048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 1 test using 1 worker
+
+(node:46372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [desktop] › e2e\pinta-library-scenes.flow.ts:38:1 › biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir (899ms)
+
+
+  1) [desktop] › e2e\pinta-library-scenes.flow.ts:38:1 › biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0
+    Received:    -278.5
+
+      68 |     for (const point of [from,to]) {
+      69 |       expect(point.x).toBeGreaterThanOrEqual(0)
+    > 70 |       expect(point.y).toBeGreaterThanOrEqual(0)
+         |                       ^
+      71 |       expect(point.x).toBeLessThan(viewport.width)
+      72 |       expect(point.y).toBeLessThan(viewport.height)
+      73 |     }
+        at start (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\pinta-library-scenes.flow.ts:70:23)
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\pinta-library-scenes.flow.ts:90:3
+
+    Error Context: .cache\pinta-library-viewport-red\pinta-library-scenes.flow.-c9f6f-cancelar-desfazer-e-reabrir-desktop\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-library-viewport-red\pinta-library-scenes.flow.-c9f6f-cancelar-desfazer-e-reabrir-desktop\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-library-viewport-red\pinta-library-scenes.flow.-c9f6f-cancelar-desfazer-e-reabrir-desktop\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › e2e\pinta-library-scenes.flow.ts:38:1 › biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir

@@ -8,7 +8,7 @@
  * - `mapTools/useMapKeyboard` (atalhos), `useMapAnimation` (peças animadas), `mapCanvas`
  *   (a pintura) e `MapStage` (o palco).
  */
-import type { JSX } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { COPY } from '../../core/copy'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
@@ -132,8 +132,7 @@ function TilemapWorkspace({
           layerId={activeObjectLayer.id}
           selectedId={c.selectedObjectId}
           allowSets={!setEditor && features.sets}
-          position={c.placementPoint}
-          snapObjects={c.snapObjects}
+          placement={c.libraryPlacement}
         />
       ) : null}
     </>
@@ -175,13 +174,7 @@ function TilemapWorkspace({
           onToggleSnapObjects={c.toggleSnapObjects}
         />
         <MapStage tilemap={tilemap} controller={c} />
-        <details
-          open={wide}
-          className="shrink-0 border-t border-pin-border bg-pin-surface md:contents"
-        >
-          <summary className="flex min-h-11 cursor-pointer items-center px-3 py-2 text-sm font-bold md:hidden">
-            {COPY.scene.mapPanels}
-          </summary>
+        <MapPanels wide={wide}>
           <TilemapSidebar
             compact={!wide}
             tilemap={tilemap}
@@ -217,7 +210,7 @@ function TilemapWorkspace({
             onAddObjectLayer={c.layers.addObjects}
             onSetLayerTileset={c.layers.setTileset}
           />
-        </details>
+        </MapPanels>
       </div>
       {c.playtest ? (
         <MapPlaytestDialog
@@ -231,5 +224,18 @@ function TilemapWorkspace({
         <ZoomControls />
       </div>
     </div>
+  )
+}
+
+/** No desktop a coluna precisa ser filha direta do flex, sem a caixa nativa de details. */
+function MapPanels({ wide, children }: { wide: boolean; children: ReactNode }): JSX.Element {
+  if (wide) return <>{children}</>
+  return (
+    <details className="shrink-0 border-t border-pin-border bg-pin-surface">
+      <summary className="flex min-h-11 cursor-pointer items-center px-3 py-2 text-sm font-bold">
+        {COPY.scene.mapPanels}
+      </summary>
+      {children}
+    </details>
   )
 }

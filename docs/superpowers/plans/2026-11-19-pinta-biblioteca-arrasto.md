@@ -14,13 +14,13 @@ dependência, identidade visual ou lógica de jogo.
 
 ## Tarefas verificáveis
 
-- [ ] Extrair `tiles/libraryPlacement.ts` do clique atual em `MapLibraryPanel`.
+- [x] Extrair `tiles/libraryPlacement.ts` do clique atual em `MapLibraryPanel`.
   Testar tamanho, offsets herdados, grade, orçamento e conjunto vinculado.
-- [ ] Criar o hook `mapTools/useLibraryPlacement.ts`; ligar biblioteca,
+- [x] Criar o hook `mapTools/useLibraryPlacement.ts`; ligar biblioteca,
   controlador e `MapStage`. Confirmar prévia sem escrita, alvo visível, soltura
   transacional e cancelamentos; preservar clique/teclado.
-- [ ] Acrescentar regressões integradas no editor, incluindo adoção de uma
+- [x] Acrescentar regressões integradas no editor, incluindo adoção de uma
   revisão externa durante o gesto, histórico e disco.
-- [ ] Executar fluxo no Chromium com mouse e toque, reabrir, revisar UI e código,
+- [x] Executar fluxo no Chromium com mouse e toque, reabrir, revisar UI e código,
   rodar gates apropriados e registrar evidências. Só então marcar 4a concluída.
 - [ ] Commitar e integrar staging conforme autorização; não interferir no Molda.

@@ -1,0 +1,899 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T17:38:41.656Z",
+    "duration": 19586.881999999998,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "profile": "desktop",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 3655
+    },
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "profile": "touch",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 3596
+    },
+    {
+      "title": "biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir",
+      "profile": "cpu-4x",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 7752
+    }
+  ],
+  "geometry": [
+    {
+      "profile": "desktop",
+      "from": {
+        "x": 1238.828125,
+        "y": 361.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 1573,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "desktop",
+      "from": {
+        "x": 1238.828125,
+        "y": 361.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 1573,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "desktop",
+      "from": {
+        "x": 1098.1640625,
+        "y": 589.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 2502,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "desktop",
+      "from": {
+        "x": 1168.4921875,
+        "y": 417.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 2378,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "touch",
+      "from": {
+        "x": 339.5,
+        "y": 630.859375
+      },
+      "to": {
+        "x": 206,
+        "y": 332.171875
+      },
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 412,
+        "innerHeight": 839,
+        "bodyHeight": 839,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 165,
+              "width": 412,
+              "height": 674,
+              "top": 165,
+              "right": 412,
+              "bottom": 839,
+              "left": 0
+            },
+            "scrollHeight": 674,
+            "clientHeight": 674,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 225,
+              "width": 412,
+              "height": 214.359375,
+              "top": 225,
+              "right": 412,
+              "bottom": 439.359375,
+              "left": 0
+            },
+            "scrollHeight": 214,
+            "clientHeight": 214,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 484.359375,
+              "width": 412,
+              "height": 293.640625,
+              "top": 484.359375,
+              "right": 412,
+              "bottom": 778,
+              "left": 0
+            },
+            "scrollHeight": 1538,
+            "clientHeight": 294,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "touch",
+      "from": {
+        "x": 339.5,
+        "y": 630.859375
+      },
+      "to": {
+        "x": 206,
+        "y": 332.171875
+      },
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 412,
+        "innerHeight": 839,
+        "bodyHeight": 839,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 165,
+              "width": 412,
+              "height": 674,
+              "top": 165,
+              "right": 412,
+              "bottom": 839,
+              "left": 0
+            },
+            "scrollHeight": 674,
+            "clientHeight": 674,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 225,
+              "width": 412,
+              "height": 214.359375,
+              "top": 225,
+              "right": 412,
+              "bottom": 439.359375,
+              "left": 0
+            },
+            "scrollHeight": 214,
+            "clientHeight": 214,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 484.359375,
+              "width": 412,
+              "height": 293.640625,
+              "top": 484.359375,
+              "right": 412,
+              "bottom": 778,
+              "left": 0
+            },
+            "scrollHeight": 1538,
+            "clientHeight": 294,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "touch",
+      "from": {
+        "x": 73.5,
+        "y": 630.859375
+      },
+      "to": {
+        "x": 206,
+        "y": 332.171875
+      },
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 412,
+        "innerHeight": 839,
+        "bodyHeight": 839,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 165,
+              "width": 412,
+              "height": 674,
+              "top": 165,
+              "right": 412,
+              "bottom": 839,
+              "left": 0
+            },
+            "scrollHeight": 674,
+            "clientHeight": 674,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 225,
+              "width": 412,
+              "height": 214.359375,
+              "top": 225,
+              "right": 412,
+              "bottom": 439.359375,
+              "left": 0
+            },
+            "scrollHeight": 214,
+            "clientHeight": 214,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 484.359375,
+              "width": 412,
+              "height": 293.640625,
+              "top": 484.359375,
+              "right": 412,
+              "bottom": 778,
+              "left": 0
+            },
+            "scrollHeight": 2487,
+            "clientHeight": 294,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "touch",
+      "from": {
+        "x": 206.5,
+        "y": 630.859375
+      },
+      "to": {
+        "x": 206,
+        "y": 332.171875
+      },
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 412,
+        "innerHeight": 839,
+        "bodyHeight": 839,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 165,
+              "width": 412,
+              "height": 674,
+              "top": 165,
+              "right": 412,
+              "bottom": 839,
+              "left": 0
+            },
+            "scrollHeight": 674,
+            "clientHeight": 674,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 225,
+              "width": 412,
+              "height": 214.359375,
+              "top": 225,
+              "right": 412,
+              "bottom": 439.359375,
+              "left": 0
+            },
+            "scrollHeight": 214,
+            "clientHeight": 214,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 484.359375,
+              "width": 412,
+              "height": 293.640625,
+              "top": 484.359375,
+              "right": 412,
+              "bottom": 778,
+              "left": 0
+            },
+            "scrollHeight": 2375,
+            "clientHeight": 294,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "from": {
+        "x": 1238.828125,
+        "y": 361.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 1573,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "from": {
+        "x": 1238.828125,
+        "y": 361.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 1573,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "from": {
+        "x": 1098.1640625,
+        "y": 589.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 2502,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "from": {
+        "x": 1168.4921875,
+        "y": 417.171875
+      },
+      "to": {
+        "x": 556.5,
+        "y": 361.5
+      },
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "layout": {
+        "scrollX": 0,
+        "scrollY": 0,
+        "innerWidth": 1280,
+        "innerHeight": 720,
+        "bodyHeight": 720,
+        "panels": [
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 0,
+              "y": 60,
+              "width": 1280,
+              "height": 660,
+              "top": 60,
+              "right": 1280,
+              "bottom": 720,
+              "left": 0
+            },
+            "scrollHeight": 660,
+            "clientHeight": 660,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 57,
+              "y": 60,
+              "width": 999,
+              "height": 603,
+              "top": 60,
+              "right": 1056,
+              "bottom": 663,
+              "left": 57
+            },
+            "scrollHeight": 603,
+            "clientHeight": 603,
+            "overflow": "visible"
+          },
+          {
+            "tag": "DIV",
+            "rect": {
+              "x": 1056,
+              "y": 60,
+              "width": 224,
+              "height": 603,
+              "top": 60,
+              "right": 1280,
+              "bottom": 663,
+              "left": 1056
+            },
+            "scrollHeight": 2378,
+            "clientHeight": 603,
+            "overflow": "auto"
+          }
+        ]
+      }
+    }
+  ]
+}

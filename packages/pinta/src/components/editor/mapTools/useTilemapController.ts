@@ -41,6 +41,7 @@ import {
 import { createMapObjectActions } from './mapObjectActions'
 import { createMapSelectionController, type MapSelection } from './selectionController'
 import { createTileGestures, type PanGesture, type TileGesture } from './tileGestures'
+import { useLibraryPlacement } from './useLibraryPlacement'
 import { useMapAnimation } from './useMapAnimation'
 import { useMapKeyboard } from './useMapKeyboard'
 import type { MapModel } from './useMapModel'
@@ -462,6 +463,22 @@ export function useTilemapController(model: ReadyMapModel) {
     return { x: mapW / 2, y: mapH / 2 }
   }
 
+  const libraryPlacement = useLibraryPlacement({
+    editor,
+    map: tilemap,
+    layerId,
+    assets: model.galleryAssets,
+    tileSize,
+    cellPx,
+    pad,
+    snap: snapObjects,
+    paperRef,
+    stageRef,
+    position: placementPoint,
+    showToast,
+    onSelect: chooseObject,
+  })
+
   /** Copia o pedaço selecionado para o carimbo. */
   function copySelection(): void {
     if (!selRect) return
@@ -545,6 +562,7 @@ export function useTilemapController(model: ReadyMapModel) {
     selectStamp,
     trackPointer,
     placementPoint,
+    libraryPlacement,
     copySelection,
     saveSelectionAsSet,
     deleteSelection: () => deleteSelectionRef.current(),
