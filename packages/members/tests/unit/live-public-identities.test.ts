@@ -122,6 +122,10 @@ test('workshop participants, historic messages and media use complete current ni
   await f.service.chat(f.peer, f.session.id, f.device, 'Oi!')
   await f.service.chat(f.teacher, f.session.id, randomUUID(), 'Bem-vindos!')
   f.names.set(f.child.id, 'Estrela do Mar')
+  const roster = await f.service.catalog(f.teacher, 'admin')
+  expect(
+    roster.enrollments.find((enrollment) => enrollment.learnerId === f.child.id)?.learnerName,
+  ).toBe('Estrela do Mar')
   const room = await f.service.room(f.teacher, f.session.id)
   expect(room.occurrence?.participants.map((p) => p.displayName)).toEqual([
     'Estrela do Mar',
