@@ -119,6 +119,13 @@ python -I scripts/python/test-pinta-module.py --sem-pygame
 
 ## Limites de comprovação
 
+O lote `81ed37054` foi integrado ao staging `531756c8f` no merge `a4e337f6f`.
+Os arquivos de código do Pinta conservaram os hashes registrados. A checagem completa de
+tipos do Estúdio passou novamente, e o fluxo de interface Python foi repetido na versão
+combinada: um ensaio aprovado, em 33,8 s, sem alterações aos arquivos 3D recebidos.
+[Registro da integração](integracao-staging.json), [tipos](integracao-tipos.log) e
+[interface Python](integracao-python.log).
+
 O CI de staging `44447868641`, no commit-base, falhou em `ci`, `arquipelago` e
 `studio-e2e-chromium-2`. Não foi contornado nem usado como prova de rollout. O novo perfil
 de validação e o novo `pinta.py` exigem rebuild/qualificação dos artefatos correspondentes;
