@@ -1,3 +1,4 @@
+import type { MarcadorCompilado } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   type DocumentoDeCenario,
   type FonteDeAlturas,
@@ -9,6 +10,17 @@ import {
 import { Group, MathUtils, PointLight, SpotLight } from 'three'
 import { configurarSombra } from './sombras'
 
+function conferirLuzes(
+  marcadores: readonly { configuracao?: MarcadorCompilado['configuracao'] }[],
+) {
+  const sombras = marcadores.filter(
+    (m) => m.configuracao?.tipo === 'luz' && m.configuracao.luz.sombra,
+  ).length
+  if (marcadores.length > 32 || sombras > 4)
+    throw Error('Use no máximo 32 luzes locais, com até quatro sombras locais.')
+  return sombras
+}
+
 export class LuzesLocaisDoPalco {
   readonly grupo = new Group()
   private readonly luzes = new Map<string, PointLight | SpotLight>()
@@ -19,20 +31,65 @@ export class LuzesLocaisDoPalco {
       marcadores = doc.marcadores.filter(
         (m) => m.configuracao?.tipo === 'luz' && !flags.get(m.id)?.oculto,
       ),
-      sombras = marcadores.filter(
-        (m) => m.configuracao?.tipo === 'luz' && m.configuracao.luz.sombra,
-      ).length
-    if (marcadores.length > 32 || sombras > 4)
-      throw Error('Use no máximo 32 luzes locais, com até quatro sombras locais.')
+      resolvidos = () =>
+        marcadores.map((m) => ({
+          id: m.id,
+          posicao: transformacaoDoMarcador(doc, m, fonte).posicao,
+          configuracao: m.configuracao!,
+          alvo:
+            m.configuracao?.tipo === 'luz' && m.configuracao.luz.tipo === 'foco'
+              ? pontoDoMarcador(doc, m, m.configuracao.luz.alvo, fonte)
+              : undefined,
+        }))
+    conferirLuzes(marcadores)
     if (doc.base.tipo === 'terreno' && !fonte) {
       this.limpar()
       return { luzes: 0, sombras: 0, carregando: marcadores.length }
     }
+    return this.aplicar(resolvidos(), resolucao)
+  }
+  /** O compilador já resolveu os apoios; somente o alvo local precisa do giro do marcador. */
+  definirCompiladas(marcadores: readonly MarcadorCompilado[], resolucao = 512) {
+    return this.aplicar(
+      marcadores
+        .filter((m) => m.configuracao?.tipo === 'luz')
+        .map((m) => {
+          const luz = m.configuracao?.tipo === 'luz' ? m.configuracao.luz : undefined,
+            a = luz?.tipo === 'foco' ? luz.alvo : undefined,
+            c = Math.cos(m.giro),
+            s = Math.sin(m.giro)
+          return {
+            id: m.id,
+            posicao: m.posicao,
+            configuracao: m.configuracao!,
+            alvo: a
+              ? {
+                  x: m.posicao.x + a.x * c + a.z * s,
+                  y: m.posicao.y + a.y,
+                  z: m.posicao.z - a.x * s + a.z * c,
+                }
+              : undefined,
+          }
+        }),
+      resolucao,
+    )
+  }
+  private aplicar(
+    marcadores: readonly {
+      id: string
+      posicao: { x: number; y: number; z: number }
+      configuracao: NonNullable<MarcadorCompilado['configuracao']>
+      alvo?: { x: number; y: number; z: number }
+    }[],
+    resolucao: number,
+  ) {
+    if (this.destruido) return { luzes: 0, sombras: 0, carregando: 0 }
+    const sombras = conferirLuzes(marcadores)
     const vivos = new Set<string>()
     for (const m of marcadores) {
       if (m.configuracao?.tipo !== 'luz') continue
       const c = LuzLocalSchema.parse(m.configuracao.luz),
-        posicao = transformacaoDoMarcador(doc, m, fonte).posicao
+        posicao = m.posicao
       let luz = this.luzes.get(m.id)
       if (luz && luz instanceof SpotLight !== (c.tipo === 'foco')) {
         this.remover(m.id)
@@ -58,7 +115,7 @@ export class LuzesLocaisDoPalco {
       luz.shadow.bias = -0.0002
       luz.shadow.normalBias = 0.02
       if (luz instanceof SpotLight && c.tipo === 'foco') {
-        const alvo = pontoDoMarcador(doc, m, c.alvo, fonte)
+        const alvo = m.alvo!
         luz.target.position.set(alvo.x, alvo.y, alvo.z)
         luz.angle = MathUtils.degToRad(c.angulo)
         luz.penumbra = c.penumbra

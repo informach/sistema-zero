@@ -1,0 +1,288 @@
+[
+  {
+    "caso": "plano",
+    "base": {
+      "geometries": 1,
+      "textures": 1
+    },
+    "ciclos": [
+      {
+        "durante": {
+          "geometries": 5,
+          "textures": 3
+        },
+        "draws": 7,
+        "triangulos": 1019,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 6,
+          "textures": 3
+        },
+        "draws": 7,
+        "triangulos": 1019,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 6,
+          "textures": 3
+        },
+        "draws": 7,
+        "triangulos": 1019,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      }
+    ],
+    "provas": [
+      {
+        "agua": "mar",
+        "x": 30,
+        "z": 30,
+        "nivel": {
+          "nivel": -1,
+          "profundidade": 100000
+        }
+      }
+    ],
+    "autoriaIntacta": true
+  },
+  {
+    "caso": "plano-juncao",
+    "base": {
+      "geometries": 1,
+      "textures": 1
+    },
+    "ciclos": [
+      {
+        "durante": {
+          "geometries": 6,
+          "textures": 3
+        },
+        "draws": 6,
+        "triangulos": 1019,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 6,
+          "textures": 3
+        },
+        "draws": 6,
+        "triangulos": 1019,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 6,
+          "textures": 3
+        },
+        "draws": 6,
+        "triangulos": 1019,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      }
+    ],
+    "provas": [
+      {
+        "agua": "mar",
+        "x": 30,
+        "z": 30,
+        "nivel": {
+          "nivel": -1,
+          "profundidade": 100000
+        }
+      }
+    ],
+    "autoriaIntacta": true
+  },
+  {
+    "caso": "catalogo",
+    "base": {
+      "geometries": 1,
+      "textures": 1
+    },
+    "ciclos": [
+      {
+        "durante": {
+          "geometries": 23,
+          "textures": 22
+        },
+        "draws": 34,
+        "triangulos": 35174,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 23,
+          "textures": 22
+        },
+        "draws": 34,
+        "triangulos": 35174,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 23,
+          "textures": 22
+        },
+        "draws": 34,
+        "triangulos": 35174,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      }
+    ],
+    "provas": [
+      {
+        "agua": "mar",
+        "x": 30,
+        "z": 30,
+        "nivel": {
+          "nivel": -1,
+          "profundidade": 1
+        }
+      },
+      {
+        "agua": "lago",
+        "x": 8,
+        "z": 10,
+        "nivel": {
+          "nivel": 0,
+          "profundidade": 1.3999999761581416
+        }
+      },
+      {
+        "animacao": "parado_relaxado",
+        "quadros": 12,
+        "erroMaximo": 1.0745380186624839e-7
+      },
+      {
+        "animacao": "andar_frente",
+        "quadros": 12,
+        "erroMaximo": 1.0745380198941658e-7
+      },
+      {
+        "animacao": "correr_frente",
+        "quadros": 12,
+        "erroMaximo": 1.0745380161991202e-7
+      },
+      {
+        "animacao": "pulo_no_ar",
+        "quadros": 12,
+        "erroMaximo": 1.0745380211258476e-7
+      }
+    ],
+    "autoriaIntacta": true
+  },
+  {
+    "caso": "catalogo-juncao",
+    "base": {
+      "geometries": 1,
+      "textures": 1
+    },
+    "ciclos": [
+      {
+        "durante": {
+          "geometries": 24,
+          "textures": 22
+        },
+        "draws": 32,
+        "triangulos": 35174,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 24,
+          "textures": 22
+        },
+        "draws": 32,
+        "triangulos": 35174,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      },
+      {
+        "durante": {
+          "geometries": 24,
+          "textures": 22
+        },
+        "draws": 32,
+        "triangulos": 35174,
+        "depois": {
+          "geometries": 1,
+          "textures": 1
+        }
+      }
+    ],
+    "provas": [
+      {
+        "agua": "mar",
+        "x": 30,
+        "z": 30,
+        "nivel": {
+          "nivel": -1,
+          "profundidade": 1
+        }
+      },
+      {
+        "agua": "lago",
+        "x": 8,
+        "z": 10,
+        "nivel": {
+          "nivel": 0,
+          "profundidade": 1.3999999761581416
+        }
+      },
+      {
+        "animacao": "parado_relaxado",
+        "quadros": 12,
+        "erroMaximo": 1.0745380186624839e-7
+      },
+      {
+        "animacao": "andar_frente",
+        "quadros": 12,
+        "erroMaximo": 1.0745380198941658e-7
+      },
+      {
+        "animacao": "correr_frente",
+        "quadros": 12,
+        "erroMaximo": 1.0745380161991202e-7
+      },
+      {
+        "animacao": "pulo_no_ar",
+        "quadros": 12,
+        "erroMaximo": 1.0745380211258476e-7
+      }
+    ],
+    "autoriaIntacta": true
+  }
+]
