@@ -38,6 +38,7 @@
     "scripts/serve-pinta-world-proof.ts",
     "scripts/serve-scene3d-public-proof.ts",
     "scripts/generate-visual-reference-games.ts",
+    "scripts/measure-pro-modular.ts",
     "scripts/python",
     "scripts/gen-pro-kit-*.ts",
     "scripts/generate-scene3d-runtime.ts",

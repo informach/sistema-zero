@@ -134,6 +134,9 @@ jobs:
         run: |
           bun scripts/reference-diagnostics-golden.ts > .cache/mission/reference-diagnostics.json
           bun scripts/profile-reference-scopes.ts > .cache/mission/reference-scopes.json
+      - name: Modular Pro language-service baseline
+        working-directory: packages/studio
+        run: bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
