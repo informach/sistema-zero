@@ -275,7 +275,12 @@ export function buildProjectRunContextRuntime(): string {
     return currentRun;
   }
 
-  window.addEventListener('pagehide', disposeCurrentRun, { once: true });
+  function pageHide(event) {
+    if (event.persisted) return;
+    window.removeEventListener('pagehide', pageHide);
+    disposeCurrentRun();
+  }
+  window.addEventListener('pagehide', pageHide);
   window[${JSON.stringify(PROJECT_RUN_LIFECYCLE_GLOBAL)}] = Object.freeze({
     begin: begin,
     dispose: disposeCurrentRun,

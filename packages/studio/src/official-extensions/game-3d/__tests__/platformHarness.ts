@@ -1,4 +1,6 @@
+import type { resolverInicioDaCena } from '@sistemazero/molda-cenarios-motor/runtime'
 import * as RealThree from 'three'
+import type { criarInstaladorDeCenas3D } from '../../../three/scene3dCanvas'
 import { gameThreeDRuntime } from '../runtime'
 
 /**
@@ -24,7 +26,18 @@ export interface V3Like {
   z: number
 }
 
-export function loadRuntime({ realGeometry = false, realDom = false } = {}) {
+export function loadRuntime({
+  realGeometry = false,
+  realDom = false,
+  sceneSDK,
+}: {
+  realGeometry?: boolean
+  realDom?: boolean
+  sceneSDK?: {
+    instalar: ReturnType<typeof criarInstaladorDeCenas3D>['instalar']
+    inicio: typeof resolverInicioDaCena
+  }
+} = {}) {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
 
@@ -197,6 +210,7 @@ export function loadRuntime({ realGeometry = false, realDom = false } = {}) {
     },
     removeEventListener() {},
     SZGame3D: undefined,
+    SZScene3D: sceneSDK,
   } as unknown as Any
 
   // Canvas 2D falso: o padrão procedural desenha com fillRect num contexto.

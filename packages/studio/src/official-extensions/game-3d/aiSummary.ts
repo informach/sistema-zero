@@ -7,6 +7,11 @@ canvas sozinho. Crie cena, objetos, luzes, modelos e grupos uma única vez, fora
 “A cada quadro da cena”. Dentro do quadro, mova, anime, aplique física e teste se
 encostou. Vários blocos “A cada quadro” da mesma cena rodam em ordem.
 
+CENÁRIO DO MOLDA: loadScene(cena, "id-estavel") prepara a base completa em Ao iniciar;
+sceneStart(personagem) usa o início salvo, inclusive quando chamado durante o preparo.
+Conservar controles/câmeras/objetos existentes. O piso e os recortes vêm da cena;
+não sobrepor um chão plano substituto. A carga não acrescenta um sistema de nado.
+
 FAÍSCA: use topDown(personagem, velocidade) no quadro: ele já anda, sem grupo.
 walkArea(personagem,minX,maxX,minZ,maxZ) define caminhos em Ao iniciar; walkAnimations
 escolhe parado/andando. onTouch(personagem,chave,()=>{...}) registra o encontro direto.

@@ -16,7 +16,13 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
     sections: [
       {
         name: 'Começar',
-        types: ['sz_g3d_create_fullscreen_scene', 'sz_g3d_animate', 'sz_g3d_create_scene'],
+        types: [
+          'sz_g3d_create_fullscreen_scene',
+          'sz_g3d_load_scene',
+          'sz_g3d_scene_start',
+          'sz_g3d_animate',
+          'sz_g3d_create_scene',
+        ],
       },
       {
         name: 'Céu e luz',

@@ -8,6 +8,7 @@ import {
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   BackSide,
+  type Camera,
   Color,
   DirectionalLight,
   EquirectangularReflectionMapping,
@@ -16,7 +17,6 @@ import {
   HemisphereLight,
   MathUtils,
   Mesh,
-  type PerspectiveCamera,
   type Scene,
   ShaderMaterial,
   SphereGeometry,
@@ -240,12 +240,12 @@ export class AmbienteDoPalco {
       this.nevoa.far = Math.max(this.nevoaBase.longe, fim, this.nevoa.near + 1)
     }
   }
-  quadro(camera: PerspectiveCamera, alvo: Vector3) {
+  quadro(camera: Camera, alvo: Vector3) {
     if (this.destruido) return
-    this.ceu.position.copy(camera.position)
+    camera.getWorldPosition(this.ceu.position)
     const alcance =
         this.parametros.sombras?.alcance ??
-        Math.min(260, Math.max(24, camera.position.distanceTo(alvo) * 1.4)),
+        Math.min(260, Math.max(24, this.ceu.position.distanceTo(alvo) * 1.4)),
       sombra = this.sol.shadow.camera
     if (
       this.parametros.sombras

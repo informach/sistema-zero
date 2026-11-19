@@ -25,6 +25,29 @@ const AUDIO_ACTION_PLACEMENT = {
 
 const gameThreeDBlockDefinitions = [
   {
+    type: 'sz_g3d_load_scene',
+    placement: 'start-only-command',
+    message0: 'Usar o cenário %1 na cena %2',
+    args0: [
+      { type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Carrega o cenário completo trazido do Molda, com terreno, água e colisões. Os objetos e controles que você criou continuam na mesma cena.',
+  },
+  {
+    type: 'sz_g3d_scene_start',
+    placement: 'command',
+    message0: 'Colocar %1 no início do cenário',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'personagem', kind: 'g3d-object' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Coloca o personagem no ponto inicial do cenário, apoiado no chão. Se o cenário ainda estiver carregando, espera ficar pronto.',
+  },
+  {
     type: 'sz_g3d_top_down',
     placement: 'loop-command',
     message0: 'Fazer %1 andar com as setas (ou WASD), velocidade %2',

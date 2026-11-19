@@ -62,8 +62,10 @@
 
 ## 5. Jogo 3D
 
-- [ ] Bloco/seletor e codec/IR do motor existente; integração pelo carregador comum, conservando avatar, câmera, controles e regras.
-- [ ] Regressão, percurso real, chão/colisão/água e três ciclos de recursos, reabertura/export, evidências/revisão/commit.
+- [x] Bloco/seletor e codec/IR do motor existente; integração pelo carregador comum, conservando avatar, câmera, controles e regras.
+- [x] Regressão, percurso real, chão/colisão/água e três ciclos de recursos, reabertura/export, evidências/revisão/commit.
+
+19/11: [Jogo 3D qualificado](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-studio-jogo3d.md). Os quatro modos passaram com movimento, pausa, recomeço e descarte definitivo. O relatório distingue a prova técnica da composição artística e da implantação real. Avançado e Pro autoral continuam abertos; 8.4 permanece incompleto.
 
 ## 6. Jogo 3D Avançado
 

@@ -203,6 +203,8 @@ const G3K_LEVEL: BlockLevel = 'avancado-3d'
  * ⚠️ Mexer aqui muda o degrau do bloco nas aulas curadas por nível e no Zappy/Pensa.
  */
 const INICIANTE_3D_G3D: ReadonlySet<string> = new Set<string>([
+  'sz_g3d_load_scene',
+  'sz_g3d_scene_start',
   'sz_g3d_top_down',
   'sz_g3d_walk_area',
   // A pedra e os coqueiros da Ilha (29/10/2026): o "Fazer andar com as setas" não os atravessa.

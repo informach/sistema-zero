@@ -178,6 +178,15 @@ describe('ProjectRunContext', () => {
     expect(second.signal.aborted).toBe(false)
     expect(disposed).toEqual(['primeira'])
 
+    let frames = 0
+    second.scheduler.onFrame(() => {
+      frames++
+    })
+    runtimeWindow.dispatchEvent(Object.assign(new Event('pagehide'), { persisted: true }))
+    expect(second.signal.aborted).toBe(false)
+    time.tick(16)
+    expect(frames).toBe(1)
+
     runtimeWindow.dispatchEvent(new Event('pagehide'))
     expect(second.signal.aborted).toBe(true)
   })

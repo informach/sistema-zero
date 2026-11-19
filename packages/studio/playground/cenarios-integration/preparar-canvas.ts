@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import * as Blockly from 'blockly/core'
@@ -7,15 +7,12 @@ import { buildIRFromWorkspace } from '../../src/blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../src/blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../src/blockly/workspaceState'
 import { createEmptyProject, type Project } from '../../src/core/project'
-import { buildClassicFileMap } from '../../src/export/fileMap'
-import { identityMinifiers } from '../../src/export/minify'
 import { generateJS } from '../../src/generators/js'
 import { behaviorStatements } from '../../src/ir/behavior'
 import { type JSStatement, SZIRSchema } from '../../src/ir/schema'
 import { parseJS } from '../../src/parsers/js'
-import { renderProjectToPreviewDocAsync } from '../../src/preview/renderProject'
-import { prepareEditableStudioProject } from '../../src/state/editableProjectValidation'
 import { criarTransporteDeEnsaio } from '../../src/testing/scene3dTransportFixture'
+import { gravarDocumentosDoMotor } from './documentos-do-motor'
 import { prepararVendors } from './preparar-vendors'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
@@ -143,25 +140,7 @@ for (const [nome, assets] of [
       'script.js': `${codigo}\n${autor.replace('__ENTRADA_DE_ENSAIO__', JSON.stringify({ id: primario.id, x: nome === 'buraco' ? 10 : 8, z: nome === 'buraco' ? 0 : 5 }))}`,
     },
   }
-  const reaberto = await prepareEditableStudioProject(JSON.parse(JSON.stringify(execucao)))
-  assert.ok(reaberto && reaberto.programmingLanguage !== 'python')
-  assert.deepEqual(reaberto.assets, execucao.assets)
-  await writeFile(resolve(pasta, `${nome}.project.json`), JSON.stringify(reaberto))
-  await writeFile(
-    resolve(pasta, `${nome}.html`),
-    await renderProjectToPreviewDocAsync(reaberto, {
-      securityProfile: 'strict',
-      loopBudgetMs: 1000,
-    }),
-  )
-  if (nome === 'completo') {
-    const exportado = await buildClassicFileMap(reaberto, identityMinifiers)
-    for (const [path, bytes] of Object.entries(exportado.files)) {
-      const destino = resolve(pasta, 'export', path)
-      await mkdir(resolve(destino, '..'), { recursive: true })
-      await writeFile(destino, bytes)
-    }
-  }
+  await gravarDocumentosDoMotor(pasta, nome, execucao)
 }
 await prepararVendors(pasta)
 console.log(
