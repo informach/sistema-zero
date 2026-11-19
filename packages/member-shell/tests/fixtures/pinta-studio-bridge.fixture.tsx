@@ -79,9 +79,12 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
     await lookupGate.promise
     return linked ? { ...canonical, kind: 'image', updatedAt: 1 } : null
   },
-  savePersonalAsset: async (asset: PintaExportedAsset, options: { namespace: string }) => {
-    saves.push({ asset: structuredClone(asset), namespace: options.namespace })
-    return saveOk ? { ok: true, name: asset.name } : { ok: false, error: 'quota' }
+  savePersonalAssetBundle: async (assets: PintaExportedAsset[], options: { namespace: string }) => {
+    for (const asset of assets)
+      saves.push({ asset: structuredClone(asset), namespace: options.namespace })
+    return saveOk
+      ? { ok: true, assets: assets.map((asset) => ({ ...asset, updatedAt: 1 })) }
+      : { ok: false, error: 'quota' }
   },
 }))
 const { PintaClient } = await import('../../src/components/creator/pinta-client')

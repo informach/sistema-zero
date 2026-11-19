@@ -96,11 +96,17 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
     personalNamespaces.push(options?.namespace)
     return personalRecords.get(id) ?? null
   },
-  savePersonalAsset: async (input: Record<string, unknown>, options?: { namespace?: string }) => {
+  savePersonalAssetBundle: async (
+    inputs: Array<Record<string, unknown>>,
+    options?: { namespace?: string },
+  ) => {
     personalNamespaces.push(options?.namespace)
-    savedToStudio.push(input)
+    savedToStudio.push(...inputs)
     if (personalSaveFailure) return { ok: false, error: personalSaveFailure }
-    return { ok: true, name: String(input.name), updatedAt: 1 }
+    return {
+      ok: true,
+      assets: inputs.map((input) => ({ ...input, name: String(input.name), updatedAt: 1 })),
+    }
   },
 }))
 

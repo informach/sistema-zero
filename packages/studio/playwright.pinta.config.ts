@@ -20,7 +20,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'bun scripts/serve-e2e.ts',
+      command: 'node scripts/serve-e2e.ts',
       cwd: '../pinta',
       env: { PINTA_E2E_PORT: String(port) },
       url: `http://127.0.0.1:${port}`,

@@ -33,7 +33,7 @@ function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `
   var _map2d=createMap2D({
-    meta:function(name){if(Object.prototype.hasOwnProperty.call(ASSET_META,name))return ASSET_META[name];return Object.values(ASSET_META).find(function(m){return m.scene&&(m.scene.id===name||m.scene.name===name);})||null;},
+    meta:function(name,byId){var all=Object.values(ASSET_META);if(byId){var id=all.find(function(m){return m.scene&&m.scene.id===name;});if(id)return id;}if(Object.prototype.hasOwnProperty.call(ASSET_META,name)&&ASSET_META[name].scene)return ASSET_META[name];return all.find(function(m){return m.scene&&(m.scene.id===name||m.scene.name===name);})||null;},
     context:${basic ? 'ensureStage' : 'function(){return ctx2d;}'},
     width:${basic ? 'stageWidth' : 'function(){return config.w;}'},height:${basic ? 'stageHeight' : 'function(){return config.h;}'},
     camera:function(){return ${basic ? 'camera' : '{x:camera.on?camera.x:0,y:camera.on?camera.y:0}'};},

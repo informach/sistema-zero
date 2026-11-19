@@ -30,6 +30,7 @@ import {
   tilemapTilesetIds,
   type VectorFrame,
 } from '../core/project'
+import { SceneMapClosureError } from '../core/sceneMapClosure'
 import type { PintaExportedAsset } from '../core/types'
 import { flattenCels } from '../pixel/layers'
 import { planImport } from '../state/importPlan'
@@ -48,7 +49,7 @@ import { svgToPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
 import { mapAtlasSourceSize, spritesheetSourceSize, tilesetSourceSize } from './portableImageData'
 import { importPintaJson } from './projectJson'
-import { buildStudioPayload, validateStudioPayloadSize } from './studioBridge'
+import { buildStudioMapBundle, StudioMapBundleError } from './studioMapBundle'
 
 export { capturePintaAssetForImage, setPintaStorageNamespace } from '../state/persistence'
 export type { PintaPortableImage } from './portableImage'
@@ -139,6 +140,7 @@ export async function exportImageAndSourceForStudio(
   const canonical = await exportResolvedForStudio(
     captured.source,
     captured.assets ?? captured.tilesets,
+    { includeSceneMaps: false },
   )
   signal?.throwIfAborted()
   return canonical.ok ? { ...canonical, image } : canonical
@@ -410,6 +412,7 @@ export type ExportForStudioResult =
   | { ok: false; reason: 'not-found' | 'raster-failed' | 'asset-too-big' | 'sheet-too-big' }
   /** Só do `exportLoadedAssetForStudio`: o mapa chegou SEM o conjunto de peças dele. */
   | { ok: false; reason: 'needs-tileset'; message: string }
+  | { ok: false; reason: 'map-links-invalid'; message: string }
 
 /**
  * A frase do mapa que chegou sozinho (o "Trazer da equipe" baixa UM desenho por vez, e o
@@ -638,10 +641,9 @@ function imageSelectionSummary(
 }
 
 /**
- * Exporta UM desenho no formato da ponte (PNG achatado + metadados), já
- * validado pelos tetos do Estúdio — o mesmo payload do foguete "Usar no
- * Estúdio". `tilemapFront` fica de fora de propósito: a biblioteca pessoal do
- * Estúdio não o guarda (só o "Jogar meu mapa" o usa, e aquele caminho é outro).
+ * Exporta o desenho e os mapas ligados pelas portas. O PNG é a miniatura;
+ * cena, camadas e mapas de destino são a representação estruturada.
+ * Usa os mesmos exportadores e tetos do envio manual e do jogo pronto.
  */
 export async function exportAssetForStudio(
   id: string,
@@ -650,7 +652,15 @@ export async function exportAssetForStudio(
   const namespace = options.namespace?.trim() ?? getPintaStorageNamespace()
   const signal = options.signal
   signal?.throwIfAborted()
-  const captured = await capturePintaAssetForImage(id, { namespace, signal })
+  let captured: Awaited<ReturnType<typeof capturePintaAssetForImage>>
+  try {
+    captured = await capturePintaAssetForImage(id, { namespace, signal, includeSceneMaps: true })
+  } catch (error) {
+    signal?.throwIfAborted()
+    if (error instanceof SceneMapClosureError)
+      return { ok: false, reason: 'map-links-invalid', message: error.message }
+    throw error
+  }
   signal?.throwIfAborted()
   if (!captured.ok)
     return captured.reason === 'needs-tileset'
@@ -685,28 +695,15 @@ export async function exportLoadedAssetForStudio(
 async function exportResolvedForStudio(
   asset: PintaAsset,
   linked: readonly PintaAsset[],
+  options: { includeSceneMaps?: boolean } = {},
 ): Promise<ExportForStudioResult> {
-  const payload = await buildStudioPayload(
-    asset,
-    (assetId) => linked.find((candidate) => candidate.id === assetId) ?? null,
-    { animationId: null, frameIndex: 0 },
-  ).catch(() => null)
-  if (!payload) return { ok: false, reason: 'raster-failed' }
-  const size = validateStudioPayloadSize(payload)
-  if (size !== 'ok') return { ok: false, reason: size }
-  return {
-    ok: true,
-    asset: {
-      id: asset.id,
-      name: asset.name,
-      dataUrl: payload.dataUrl,
-      width: payload.width,
-      height: payload.height,
-      ...(payload.sprite ? { sprite: payload.sprite } : {}),
-      ...(payload.tileset ? { tileset: payload.tileset } : {}),
-      ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
-      ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
-      ...(payload.scene ? { scene: payload.scene } : {}),
-    },
+  try {
+    const payload = await buildStudioMapBundle(asset, [asset, ...linked], undefined, options)
+    return payload ? { ok: true, asset: payload } : { ok: false, reason: 'raster-failed' }
+  } catch (error) {
+    if (error instanceof SceneMapClosureError)
+      return { ok: false, reason: 'map-links-invalid', message: error.message }
+    if (error instanceof StudioMapBundleError) return { ok: false, reason: error.reason }
+    return { ok: false, reason: 'raster-failed' }
   }
 }

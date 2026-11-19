@@ -26,6 +26,7 @@ import {
   sanitizeTilesetMeta,
 } from '#core'
 import { sanitizeSceneMeta } from '../core/projectAssets'
+import { writeInOneTransaction } from '../state/idbTransaction'
 
 const ASSET_KEY_PREFIX = 'asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
@@ -248,22 +249,36 @@ function personalAssetKindOf(value: unknown): PersonalAssetKind {
 export async function listPersonalAssets(options?: {
   namespace?: string
 }): Promise<PersonalAsset[]> {
+  const result = await readPersonalAssetInventory(options)
+  return result.ok ? result.assets : []
+}
+
+/** Reconciliation cannot mistake a failed catalog read for an empty world. */
+export async function readPersonalAssetInventory(options?: {
+  namespace?: string
+}): Promise<{ ok: true; assets: PersonalAsset[] } | { ok: false; error: string }> {
   try {
-    const kvStore = getStoreHandle(options?.namespace)
-    const allKeys = await keys(kvStore)
-    const assetKeys = allKeys.filter(
-      (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
-    )
-    if (assetKeys.length === 0) return []
-    const values = await getMany<unknown>(assetKeys, kvStore)
-    const assets = values
-      .map((value) => sanitizePersonalAsset(value))
-      .filter((asset): asset is PersonalAsset => asset !== null)
-    assets.sort((a, b) => b.updatedAt - a.updatedAt)
-    return assets
+    return { ok: true, assets: await readPersonalAssets(getStoreHandle(options?.namespace)) }
   } catch {
-    return []
+    return { ok: false, error: 'Não consegui conferir os mapas guardados. O jogo foi mantido.' }
   }
+}
+
+/** Writers must distinguish an unreadable inventory from an empty library. */
+async function readPersonalAssets(
+  kvStore: ReturnType<typeof createStore>,
+): Promise<PersonalAsset[]> {
+  const allKeys = await keys(kvStore)
+  const assetKeys = allKeys.filter(
+    (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
+  )
+  if (assetKeys.length === 0) return []
+  const values = await getMany<unknown>(assetKeys, kvStore)
+  const assets = values
+    .map((value) => sanitizePersonalAsset(value))
+    .filter((asset): asset is PersonalAsset => asset !== null)
+  assets.sort((a, b) => b.updatedAt - a.updatedAt)
+  return assets
 }
 
 /**
@@ -271,130 +286,185 @@ export async function listPersonalAssets(options?: {
  * dedup de nome por sufixo (`heroi` → `heroi-2`) contra OUTROS ids e respeita
  * os tetos de contagem/orçamento. Nunca lança.
  */
-export async function savePersonalAsset(
-  input: {
-    id: string
-    name: string
+export interface PersonalAssetInput {
+  id: string
+  name: string
+  dataUrl: string
+  /** `'image'` (padrão, o Pinta), `'model3d'` (.glb) ou `'environment3d'` (.hdr) — o Molda. */
+  kind?: PersonalAssetKind
+  /** `'molda'` marca a criação do Molda (a textura não vira "desenho para editar no Pinta"). */
+  origin?: 'pinta' | 'molda'
+  /** OBRIGATÓRIO nos 3D (a validação cruza a extensão com o MIME e a assinatura). */
+  originalFileName?: string
+  width?: number
+  height?: number
+  /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
+  sprite?: unknown
+  tileset?: unknown
+  tilemapFront?: unknown
+  scene?: unknown
+  tilemap?: unknown
+  /** Usado por restauros da nuvem para preservar a revisão autoritativa da origem. */
+  updatedAt?: number
+}
+
+type PreparedPersonalAsset = { ok: true; record: PersonalAsset } | { ok: false; error: string }
+
+function preparePersonalAsset(
+  input: PersonalAssetInput,
+  existing: readonly PersonalAsset[],
+  now: number,
+): PreparedPersonalAsset {
+  if (!input.id || input.id.includes(':')) {
+    return { ok: false, error: 'Esse desenho veio com uma identificação inválida.' }
+  }
+  const kind = personalAssetKindOf(input.kind)
+  if (kind === 'image') {
+    if (!isValidAssetDataUrl(input.dataUrl)) {
+      return { ok: false, error: 'Essa imagem é grande demais para a biblioteca.' }
+    }
+  } else if (!isValidAssetDataUrl(input.dataUrl, kind, input.originalFileName)) {
+    return {
+      ok: false,
+      error: 'Esse arquivo 3D não é válido ou é grande demais para a biblioteca.',
+    }
+  }
+  const baseName = normalizeAssetName(input.name)
+  if (!baseName) {
+    return { ok: false, error: 'Esse nome não vai funcionar aqui.' }
+  }
+
+  const previous = existing.find((a) => a.id === input.id)
+  const others = existing.filter((a) => a.id !== input.id)
+
+  if (!previous && others.length >= PERSONAL_ASSET_LIMITS.maxCount) {
+    return { ok: false, error: 'A sua biblioteca está cheia! Apague um desenho antigo.' }
+  }
+  const chars = (a: {
     dataUrl: string
-    /** `'image'` (padrão, o Pinta), `'model3d'` (.glb) ou `'environment3d'` (.hdr) — o Molda. */
-    kind?: PersonalAssetKind
-    /** `'molda'` marca a criação do Molda (a textura não vira "desenho para editar no Pinta"). */
-    origin?: 'pinta' | 'molda'
-    /** OBRIGATÓRIO nos 3D (a validação cruza a extensão com o MIME e a assinatura). */
-    originalFileName?: string
-    width?: number
-    height?: number
-    /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
-    sprite?: unknown
-    tileset?: unknown
-    tilemapFront?: unknown
     scene?: unknown
     tilemap?: unknown
-    /** Usado por restauros da nuvem para preservar a revisão autoritativa da origem. */
-    updatedAt?: number
-  },
+    tilemapFront?: unknown
+  }) =>
+    a.dataUrl.length +
+    JSON.stringify([a.scene ?? null, a.tilemap ?? null, a.tilemapFront ?? null]).length
+  const othersChars = others.reduce((sum, a) => sum + chars(a), 0)
+  if (othersChars + chars(input) > PERSONAL_ASSET_LIMITS.maxTotalChars) {
+    return { ok: false, error: 'A sua biblioteca está sem espaço! Apague um desenho antigo.' }
+  }
+
+  // Dedup de nome contra OUTROS desenhos (reenviar o mesmo id mantém o nome).
+  const taken = new Set(others.map((a) => a.name))
+  let name = baseName
+  for (let n = 2; taken.has(name); n += 1) {
+    name = `${baseName}-${n}`
+    if (name.length > PERSONAL_ASSET_LIMITS.maxNameChars) {
+      return { ok: false, error: 'Esse nome ficou comprido demais.' }
+    }
+  }
+
+  // Metadado do Pinta é saneado pelo MESMO portão do projeto (o Studio é dono do
+  // formato); inválido é descartado sem derrubar o salvamento (fail-soft).
+  const sprite = sanitizeSpriteMeta(input.sprite)
+  const tileset = sanitizeTilesetMeta(input.tileset)
+  const tilemap = sanitizeTilemapMeta(input.tilemap)
+  const tilemapFront = sanitizeTilemapMeta(input.tilemapFront),
+    scene = sanitizeSceneMeta(input.scene)
+  if (input.scene && !scene)
+    return {
+      ok: false,
+      error: 'Este cenário passou do limite do Estúdio ou tem dados inválidos.',
+    }
+  const requestedRevision =
+    typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt) && input.updatedAt > 0
+      ? Math.round(input.updatedAt)
+      : now
+  const updatedAt = Math.max(requestedRevision, (previous?.updatedAt ?? 0) + 1)
+  const origin = input.origin === 'molda' ? { origin: 'molda' as const } : {}
+  const record: PersonalAsset =
+    kind === 'image'
+      ? {
+          id: input.id,
+          name,
+          kind: 'image',
+          ...origin,
+          dataUrl: input.dataUrl,
+          width: input.width,
+          height: input.height,
+          ...(sprite ? { sprite } : {}),
+          ...(tileset ? { tileset } : {}),
+          ...(tilemap ? { tilemap } : {}),
+          ...(tilemapFront ? { tilemapFront } : {}),
+          ...(scene ? { scene } : {}),
+          updatedAt,
+        }
+      : {
+          id: input.id,
+          name,
+          kind,
+          ...origin,
+          dataUrl: input.dataUrl,
+          // O nome já passou na validação acima (só chega aqui com extensão certa).
+          originalFileName: (input.originalFileName ?? '').slice(0, 128),
+          updatedAt,
+        }
+  return { ok: true, record }
+}
+
+export async function savePersonalAsset(
+  input: PersonalAssetInput,
   options?: { namespace?: string },
 ): Promise<SavePersonalAssetResult> {
+  // Capture the account before the first asynchronous read.
+  const namespace = options?.namespace ?? storageNamespace
   try {
-    if (!input.id || input.id.includes(':')) {
-      return { ok: false, error: 'Esse desenho veio com uma identificação inválida.' }
-    }
-    const kind = personalAssetKindOf(input.kind)
-    if (kind === 'image') {
-      if (!isValidAssetDataUrl(input.dataUrl)) {
-        return { ok: false, error: 'Essa imagem é grande demais para a biblioteca.' }
-      }
-    } else if (!isValidAssetDataUrl(input.dataUrl, kind, input.originalFileName)) {
-      return {
-        ok: false,
-        error: 'Esse arquivo 3D não é válido ou é grande demais para a biblioteca.',
-      }
-    }
-    const baseName = normalizeAssetName(input.name)
-    if (!baseName) {
-      return { ok: false, error: 'Esse nome não vai funcionar aqui.' }
-    }
-
-    const existing = await listPersonalAssets(options)
-    const previous = existing.find((a) => a.id === input.id)
-    const others = existing.filter((a) => a.id !== input.id)
-
-    if (!previous && others.length >= PERSONAL_ASSET_LIMITS.maxCount) {
-      return { ok: false, error: 'A sua biblioteca está cheia! Apague um desenho antigo.' }
-    }
-    const chars = (a: {
-      dataUrl: string
-      scene?: unknown
-      tilemap?: unknown
-      tilemapFront?: unknown
-    }) =>
-      a.dataUrl.length +
-      JSON.stringify([a.scene ?? null, a.tilemap ?? null, a.tilemapFront ?? null]).length
-    const othersChars = others.reduce((sum, a) => sum + chars(a), 0)
-    if (othersChars + chars(input) > PERSONAL_ASSET_LIMITS.maxTotalChars) {
-      return { ok: false, error: 'A sua biblioteca está sem espaço! Apague um desenho antigo.' }
-    }
-
-    // Dedup de nome contra OUTROS desenhos (reenviar o mesmo id mantém o nome).
-    const taken = new Set(others.map((a) => a.name))
-    let name = baseName
-    for (let n = 2; taken.has(name); n += 1) {
-      name = `${baseName}-${n}`
-      if (name.length > PERSONAL_ASSET_LIMITS.maxNameChars) {
-        return { ok: false, error: 'Esse nome ficou comprido demais.' }
-      }
-    }
-
-    // Metadado do Pinta é saneado pelo MESMO portão do projeto (o Studio é dono do
-    // formato); inválido é descartado sem derrubar o salvamento (fail-soft).
-    const sprite = sanitizeSpriteMeta(input.sprite)
-    const tileset = sanitizeTilesetMeta(input.tileset)
-    const tilemap = sanitizeTilemapMeta(input.tilemap)
-    const tilemapFront = sanitizeTilemapMeta(input.tilemapFront),
-      scene = sanitizeSceneMeta(input.scene)
-    if (input.scene && !scene)
-      return {
-        ok: false,
-        error: 'Este cenário passou do limite do Estúdio ou tem dados inválidos.',
-      }
-    const requestedRevision =
-      typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt) && input.updatedAt > 0
-        ? Math.round(input.updatedAt)
-        : Date.now()
-    const updatedAt = Math.max(requestedRevision, (previous?.updatedAt ?? 0) + 1)
-    const origin = input.origin === 'molda' ? { origin: 'molda' as const } : {}
-    const record: PersonalAsset =
-      kind === 'image'
-        ? {
-            id: input.id,
-            name,
-            kind: 'image',
-            ...origin,
-            dataUrl: input.dataUrl,
-            width: input.width,
-            height: input.height,
-            ...(sprite ? { sprite } : {}),
-            ...(tileset ? { tileset } : {}),
-            ...(tilemap ? { tilemap } : {}),
-            ...(tilemapFront ? { tilemapFront } : {}),
-            ...(scene ? { scene } : {}),
-            updatedAt,
-          }
-        : {
-            id: input.id,
-            name,
-            kind,
-            ...origin,
-            dataUrl: input.dataUrl,
-            // O nome já passou na validação acima (só chega aqui com extensão certa).
-            originalFileName: (input.originalFileName ?? '').slice(0, 128),
-            updatedAt,
-          }
-    await set(assetKey(input.id), record, getStoreHandle(options?.namespace))
-    markPersonalAssetsChanged(options?.namespace)
-    return { ok: true, name, updatedAt }
+    const kvStore = getStoreHandle(namespace)
+    const prepared = preparePersonalAsset(input, await readPersonalAssets(kvStore), Date.now())
+    if (!prepared.ok) return prepared
+    const { record } = prepared
+    await set(assetKey(record.id), record, kvStore)
+    markPersonalAssetsChanged(namespace)
+    return { ok: true, name: record.name, updatedAt: record.updatedAt }
   } catch {
     return { ok: false, error: 'Não consegui salvar agora. Tente de novo daqui a pouco.' }
+  }
+}
+
+export type SavePersonalAssetBundleResult =
+  | { ok: true; assets: PersonalAsset[] }
+  | { ok: false; error: string }
+
+/** Preflight the entire world, then commit all records in one IDB transaction. */
+export async function savePersonalAssetBundle(
+  inputs: readonly PersonalAssetInput[],
+  options?: { namespace?: string },
+): Promise<SavePersonalAssetBundleResult> {
+  const namespace = options?.namespace ?? storageNamespace
+  if (
+    inputs.length < 1 ||
+    inputs.length > 16 ||
+    new Set(inputs.map((a) => a.id)).size !== inputs.length
+  )
+    return { ok: false, error: 'Este conjunto de mapas é inválido ou grande demais.' }
+  try {
+    const kvStore = getStoreHandle(namespace)
+    const previous = await readPersonalAssets(kvStore)
+    const replaced = new Set(inputs.map((a) => a.id))
+    let inventory = previous.filter((a) => !replaced.has(a.id))
+    const assets: PersonalAsset[] = []
+    const now = Date.now()
+    for (const input of inputs) {
+      const old = previous.find((a) => a.id === input.id)
+      const prepared = preparePersonalAsset(input, old ? [...inventory, old] : inventory, now)
+      if (!prepared.ok) return prepared
+      assets.push(prepared.record)
+      inventory = [...inventory.filter((a) => a.id !== input.id), prepared.record]
+    }
+    await writeInOneTransaction(kvStore, { puts: assets.map((a) => [assetKey(a.id), a]) })
+    markPersonalAssetsChanged(namespace)
+    return { ok: true, assets }
+  } catch {
+    return { ok: false, error: 'Não consegui salvar os mapas agora. Tente de novo daqui a pouco.' }
   }
 }
 

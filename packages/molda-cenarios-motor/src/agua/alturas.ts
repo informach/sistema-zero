@@ -12,6 +12,14 @@ interface Pagina {
   largura: number
   altura: number
 }
+/** O mapa GPU lê alturas, sem precisar dos digests editoriais ou de amostras Float64. */
+export type BaseDoFundoDaAgua = Pick<
+  BaseDeTerreno,
+  'origem' | 'passo' | 'colunas' | 'linhas' | 'fundo'
+>
+export type CampoDoFundoDaAgua = Pick<CampoDeAlturas, 'colunas' | 'linhas'> & {
+  alturas: Float32Array | Float64Array
+}
 
 /** Quatro alturas por pixel RGBA; índices de vértices continuam inteiros no shader. */
 export function paginarAlturasDaAgua(amostras: number, maxTextura: number): Pagina[] {
@@ -49,8 +57,8 @@ export class AlturasDaAgua {
   private descartado = false
   private readonly integraisPendentes = new Set<DataTexture>()
   constructor(
-    readonly base: BaseDeTerreno,
-    campo: CampoDeAlturas,
+    readonly base: BaseDoFundoDaAgua,
+    campo: CampoDoFundoDaAgua,
     maxTextura: number,
     temAlturas: (coluna: number, linha: number) => boolean,
   ) {
@@ -124,7 +132,7 @@ float mcnAlturaDoFundo(vec2 mundo) {
     this.definirPecas(temAlturas)
   }
 
-  atualizar(campo: CampoDeAlturas, regiao?: RegiaoDoCampo | null) {
+  atualizar(campo: CampoDoFundoDaAgua, regiao?: RegiaoDoCampo | null) {
     if (this.descartado) return
     if (
       campo.colunas !== this.base.colunas ||

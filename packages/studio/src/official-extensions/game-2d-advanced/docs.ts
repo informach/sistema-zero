@@ -8,9 +8,9 @@ const paletteGuide = GAME_KIT_PALETTE.map(
 const sceneReference = sceneDocumentation('SZGameKit', true)
 export const gameKitDocs = `## Jogo 2D Avançado
 
-O motor cuida de telas, estados, tempo, entrada, carregamento e canvas; você cria
+O motor cuida de telas, estados, tempo, entrada, carregamento e canvas. Você cria
 as regras. Movimento usa velocidade × \`dt\`. Menu, pausa, carregamento, fim e
-vitória são prontos. **Usar a fonte** escolhe a letra da UI (padrão Baloo 2, offline).
+vitória são prontos. **Usar a fonte** escolhe a letra (padrão Baloo 2, offline).
 
 ### Onde encontrar as ferramentas
 
@@ -22,25 +22,25 @@ Use os blocos da extensão; HTML, CSS e Canvas diretos pertencem à etapa sem ex
 
 ### Unidades do movimento
 
-Aqui, velocidades são em pixels por segundo; \`dt\` é o tempo do quadro em segundos.
-O básico usa pixels por quadro a 60 passos/s, exceto a pista, indicada por segundo.
-Ao trocar de extensão, adapte as unidades: jogos salvos não são convertidos.
+Velocidade: pixels por segundo; \`dt\`: segundos do quadro. No básico, são pixels
+por quadro a 60 passos/s, exceto a pista (por segundo). Ao trocar de extensão,
+adapte as unidades: jogos salvos não são convertidos.
 
 ### Começando (a receita)
 
-1. Use **Preparar o jogo profissional** (tamanho fixo) ou **Preparar o jogo para
-   ocupar a tela toda**; neste, calcule posições pela largura/altura do jogo.
+1. **Preparar o jogo profissional** fixa o tamanho. **Preparar o jogo para
+   ocupar a tela toda** usa largura/altura do jogo nas posições. Complete com
    **Mostrar a borda**, **Pôr o cenário atrás de tudo** e **Descrever o jogo para
-   leitor de tela** completam palco, fundo e acessibilidade.
+   leitor de tela**.
 2. Escolha artes no próprio bloco; **Carregar a imagem** pré-carrega ou cria apelido.
 3. Em **🧩 Meus moldes**, defina receitas de objetos, visuais, efeitos e sons.
 4. Em **⚙️ Ao iniciar**, crie dados, personagens e mapas; a área repete em cada partida.
 5. Em **⚡ Quando acontecer**, registre as reações da partida.
 6. Em **🔁 Enquanto estiver rodando**, atualize, desenhe e use ritmos periódicos.
 
-Ações contínuas ficam nos laços. Animações autônomas, como mover suavemente,
-sumir, rastro e tween, são ligadas uma vez fora deles. O Estúdio carrega assets e
-inicia o motor; blocos antigos de início só aparecem em projetos migrados.
+Laços recebem ações contínuas. Ligue mover suavemente, sumir, rastro e tween
+uma vez fora deles. O Estúdio carrega assets e inicia o motor; blocos antigos
+de início aparecem só em projetos migrados.
 
 > ⭐ O jogo abre no \`menu\`. **A cada quadro** roda em \`jogando\`; **Desenhar o
 > jogo** também roda em pausa, fim e estados inventados. Para pular o menu, mude
@@ -54,30 +54,27 @@ Em **⚙️ Ao iniciar**, combine **Preparar jogo suave com código do sorteio**
 aventura** (inclui quantas gemas são obrigatórias para concluir), uma **Definir
 fase** por mapa e **Começar aventura**.
 
-Cada objeto exige identificador único. Projetos antigos sem ID são migrados;
-novos IDs vazios ou repetidos são recusados. A identidade fase + objeto faz só a
-gema coletada naquela fase desaparecer.
+Cada objeto exige ID único. Projetos antigos sem ID são migrados; IDs novos
+vazios ou repetidos são recusados. Fase + objeto identifica a gema coletada,
+sem apagar gemas de outras fases.
 
 **Quando acontecer … na aventura** recebe regiões e avisos de fase, coleta,
 checkpoint, bloco, guardião, saída e fim. **O … do acontecimento da aventura** lê
 seus dados. O valor só existe enquanto o acontecimento está sendo tratado.
 
-As peças da fase têm cada uma o seu jeito. O **andarilho** e o **casco** andam no
-chão, caem de beiradas e viram quando encontram parede; o **voador** sobe e desce
-sozinho. Pisar no andarilho e no voador derrota; **pisar no casco RECOLHE**, e aí
-encostar nele o CHUTA para o lado — quem chutou tem um instante de folga antes de
-ele voltar a machucar. No **espinho não se pisa**: encostar por cima ou por baixo
-custa vida do mesmo jeito, e a única forma de derrubá-lo é com o poder
-invencível, que também derruba o guardião e avisa "guardião" igual à pisada.
+**Andarilho** e **casco** andam, caem das beiradas e viram na parede; **voador**
+sobe e desce. Pisar no andarilho ou voador derrota. **Pisar no casco recolhe**;
+encostar depois o chuta, dando breve proteção a quem chutou. **Espinho** tira
+vida por cima ou por baixo: só o poder invencível o derrota. Esse poder também
+derruba o guardião e avisa "guardião", como a pisada.
 
-Guardar, continuar e apagar usam três slots validados. Replays guardam ações,
-não teclas. Teclado, controle e toque compartilham ações; no toque, todos os dez
-botões ficam ancorados na área visível do palco.
+Guardar, continuar e apagar usam três slots validados. Replays registram ações,
+compartilhadas por teclado, controle e toque. Os dez botões touch ficam na área
+visível do palco.
 
 ### Qual kit para qual jogo? 🎮
 
-Você monta QUALQUER jogo com os blocos gerais, mas cada **kit** é um atalho pronto
-para um gênero. Escolha pelo jogo que você quer:
+Os blocos gerais servem a qualquer jogo. Cada **kit** facilita um gênero:
 
 - 🏃 **Kit Plataforma**. Jogo de pular (fases, plataformas, pulo bom).
 - ⚔️ **Kit RPG**. Explorar um mundo + **batalha por TURNOS** com espada e time.
@@ -88,10 +85,9 @@ para um gênero. Escolha pelo jogo que você quer:
 - 🏰 **Kit Defesa de Torre**. Torres contra ondas de inimigos num caminho.
 - 🏁 **Jogo de tabuleiro**. Dado + ordem de turno + andar casas numa trilha.
 
-⭐ Escolha UM gênero de batalha por jogo: ⚔️ turnos, 👾 bichinhos e 🃏 cartas são
-três batalhas DIFERENTES. Não misture.
+⭐ Escolha um sistema de batalha: ⚔️ turnos, 👾 bichinhos ou 🃏 cartas. Não misture.
 
-### Onde faço um inimigo? (são coisas diferentes!) 👾
+### Onde faço um inimigo? 👾
 
 Cada gênero tem seu próprio tipo de oponente:
 
@@ -102,17 +98,15 @@ Cada gênero tem seu próprio tipo de oponente:
 
 ### Estados
 
-- **Começar uma nova partida**. Limpa personagens, grupos, missão, itens,
-  flags e mapas transitórios; depois entra em \`jogando\`. Os botões prontos
-  jogar/Jogar de novo já usam esta operação.
-- **⚙️ Ao iniciar**. Lugar para criar/recolocar objetos e zerar variáveis da
-  partida. O Estúdio executa essa área novamente em cada Jogar/Jogar de novo.
-- **Mudar o estado do jogo para…**. Troca somente o estado, sem apagar a
-  partida. O "A cada quadro" só roda em \`jogando\`;
-  \`menu\`/\`pausado\`/\`fim\` mostram as telas deles; um estado inventado (ex.:
-  \`loja\`) esconde as telas e congela o jogo. Mostre a SUA tela nele.
-- **Quando o jogo entrar no estado…**. Roda uma vez por entrada, sem reset.
-  Use para montar/desmontar uma loja ou reagir a uma transição de tela.
+- **Começar uma nova partida**. Limpa personagens, grupos, missão, itens, flags
+  e mapas transitórios e entra em \`jogando\`. Jogar/Jogar de novo usam essa ação.
+- **⚙️ Ao iniciar**. Crie/recoloque objetos e zere variáveis. Repete em cada
+  Jogar/Jogar de novo.
+- **Mudar o estado do jogo para…**. Não apaga a partida. "A cada quadro" roda
+  só em \`jogando\`. \`menu\`, \`pausado\` e \`fim\` mostram suas telas.
+  Estados novos, como \`loja\`, escondem as telas e congelam o jogo: desenhe a sua.
+- **Quando o jogo entrar no estado…**. Uma vez por entrada, sem reset.
+  Use para montar/desmontar lojas ou reagir à troca de tela.
 - **Pausar / Continuar / Voltar ao menu / Terminar o jogo**. Atalhos dos estados
   prontos. A tecla de pausa (Esc) já alterna jogando↔pausado sozinha.
 - **o estado do jogo / o estado é…?**. Perguntas para usar num "se".
@@ -128,22 +122,19 @@ Cada gênero tem seu próprio tipo de oponente:
   novas (loja, instruções) no mesmo estilo, com botões que rodam os seus blocos.
   Criar com o nome de uma tela pronta faz você ASSUMIR a tela: os botões dela
   saem e os textos passam a ser os seus.
-- **Usar a fonte** (em **🧰 O jogo**). Baloo 2, Nunito, Press Start 2P (de
-  pixel), Bungee ou Fredoka, valendo para **todo** texto do jogo. Vai em
-  **⚙️ Ao iniciar**, uma vez: a fonte é decidida **antes** de o jogo começar,
-  então dentro de um "se" ela não muda nada (o jogo avisa).
-- **Na tela…, pôr fundo cor… e imagem…**. Dá a SUA cara à tela (pronta ou sua):
-  uma cor de fundo e, se quiser, uma imagem do Pinta cobrindo o painel. (Para uma
-  tela toda DESENHADA no canvas, use um ESTADO inventado. Ele esconde os painéis
-  prontos e deixa você desenhar à vontade.)
+- **Usar a fonte** (em **🧰 O jogo**). Baloo 2, Nunito, Press Start 2P (pixel),
+  Bungee ou Fredoka para todo texto. Use uma vez em **⚙️ Ao iniciar**, antes da
+  partida. Dentro de um "se" não altera a fonte; o jogo avisa.
+- **Na tela…, pôr fundo cor… e imagem…**. Personaliza telas prontas ou novas
+  com cor e imagem do Pinta cobrindo o painel. Para desenhar a tela no canvas,
+  use um estado inventado: ele esconde os painéis prontos.
 
 ### Personagens
 
 - **Criar o personagem…**. Posição, tamanho, velocidade (px por segundo), turbo
   e imagem ou cor.
-- **Marcar o ponto de renascer** + **Fazer … renascer**. A bandeirinha e o
-  buraco. São GERAIS (valem em RPG, corrida, bullet hell), por isso moram aqui e
-  não no Kit Plataforma.
+- **Marcar o ponto de renascer** + **Fazer … renascer**. Bandeirinha e buraco,
+  disponíveis para qualquer gênero, não apenas plataforma.
 - **Mover pelas teclas usando o tempo…**. O movimento de topo pronto: WASD +
   setas, diagonal na mesma velocidade, tudo × dt. (Plataforma? Use o "Herói de
   plataforma" do 🏃 Kit.) Quer outra mecânica? Troque pelas suas contas.

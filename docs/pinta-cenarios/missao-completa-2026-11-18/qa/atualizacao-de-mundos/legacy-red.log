@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\map-2d\runtime.test.ts:
+(pass) scene references resolve inside their map without changing legacy property values [15.00ms]
+(pass) g2d: uma imagem comum não encobre o ID do mapa de destino [16.00ms]
+207 |     expect(api.mapSize('mapa', 'width')).toBe(32)
+208 |     api.useMapDoor('mapa', { x: 0, y: 0, w: 1, h: 1 }, {
+209 |       id: 'legacy', name: 'Porta antiga', type: '', role: 'door', x: 0, y: 0, width: 16, height: 16,
+210 |       properties: { destino: 'cabana' },
+211 |     })
+212 |     expect(api.mapSize('mapa', 'width')).toBe(32)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 32
+Received: 16
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:212:42)
+(fail) g2d: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+(pass) gk: uma imagem comum não encobre o ID do mapa de destino [16.00ms]
+207 |     expect(api.mapSize('mapa', 'width')).toBe(32)
+208 |     api.useMapDoor('mapa', { x: 0, y: 0, w: 1, h: 1 }, {
+209 |       id: 'legacy', name: 'Porta antiga', type: '', role: 'door', x: 0, y: 0, width: 16, height: 16,
+210 |       properties: { destino: 'cabana' },
+211 |     })
+212 |     expect(api.mapSize('mapa', 'width')).toBe(32)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 32
+Received: 16
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:212:42)
+(fail) gk: portas preferem IDs sem mudar a escolha por nome dos blocos antigos [15.00ms]
+(pass) object references inside two instances resolve to the corresponding set child [16.00ms]
+(pass) scene 2 animates the selected sequence in both JavaScript game engines
+(pass) tile objects animate in scene 2 while published scene 1 keeps its static behavior
+(pass) a collision set scaled 2 by 2 fills every covered root cell
+(pass) set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds [47.00ms]
+(pass) monta a grade de colisão, os objetos e os eventos sem perder dados
+(pass) confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício
+(pass) caminhos e pontos usam seu contorno, inclusive após rotação
+(pass) compõe camadas, espelho e opacidade nos pixels
+(pass) sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto [47.00ms]
+
+ 13 pass
+ 2 fail
+ 6212 expect() calls
+Ran 15 tests across 1 file. [986.00ms]

@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+src\state\idbTransaction.test.ts:
+Isolated ./src/state/__tests__/idbTransaction.cases.ts: 17 pass, 0 fail, 49 expect() calls
+(pass) idbTransaction.test.ts mock cases own an isolated module realm [625.00ms]
+
+src\state\projectAssetSceneBudget.test.ts:
+(pass) cena 2 atualiza arte e animação sem reescrever o programa; um leitor que corte a cena é recusado [15.00ms]
+(pass) entrada: cenário que não cabe é recusado na hora, e o que entra continua lá ao reabrir
+(pass) atualização: o cenário que cresceu é recusado e o material de antes fica inteiro
+O cenário do desenho "vila" não coube neste projeto e ficou de fora. A imagem foi mantida.
+(pass) leitura de projeto gravado antes da correção: sai só a cena, a imagem fica
+
+src\state\projectDocumentRefinement.test.ts:
+(pass) version 3 JavaScript semantic adapter > preserves classic source, payload and environment without historical conversion [78.00ms]
+(pass) version 3 JavaScript semantic adapter > preserves pro source, payload and environment without historical conversion [16.00ms]
+(pass) version 3 JavaScript semantic adapter > authoritative bridge text invalidates stale derived IR and blocks only
+(pass) version 3 JavaScript semantic adapter > refuses lossy IR, blocks, extensions and assets, preserving the input
+(pass) version 3 JavaScript semantic adapter > refuses a Pro tree that would lose a file, instead of opening it as Classic
+(pass) version 3 JavaScript semantic adapter > rejects Python, legacy, future and unknown-root documents explicitly
+(pass) version 3 JavaScript semantic adapter > an internal requested id never inherits another document lineage [15.00ms]
+(pass) version 3 JavaScript semantic adapter > every valid v3 id survives reading without minting a new creation
+(pass) version 3 JavaScript semantic adapter > legacy readers cannot silently discard new environment configuration
+(pass) version 3 JavaScript semantic adapter > the preservation guard covers configuration in every document variant
+
+ 15 pass
+ 0 fail
+ 78 expect() calls
+Ran 15 tests across 3 files. [1348.00ms]

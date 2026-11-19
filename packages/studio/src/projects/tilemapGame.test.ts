@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { behaviorStatements, type JSStatement, type SZIRInput, SZIRInputSchema } from '#ir'
+import { collectHTMLAccessibilityIssues } from '../html/accessibility'
 import { mapTwoDBootstrap } from '../official-extensions/map-2d/bootstrap'
 import { assembleTilemapGameProject, type TilemapGamePayload } from './tilemapGame'
 
@@ -116,6 +117,7 @@ describe('assembleTilemapGameProject', () => {
     expect(script).not.toMatch(/\b48\b/)
     expect(nodes.some((s) => s.type === 'g2d:sceneEvent' && s.method === 'mapArea')).toBe(true)
     expect(project?.blocksState).toBeTruthy()
+    expect(collectHTMLAccessibilityIssues(project!.ir!.html)).toEqual([])
     expect(SZIRInputSchema.safeParse(project?.ir).success).toBe(true)
     expect(project?.files['script.js']).toContain('drawMapScene')
   })

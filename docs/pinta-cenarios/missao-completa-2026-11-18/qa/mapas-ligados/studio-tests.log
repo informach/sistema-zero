@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personal.test.ts:
+Isolated ./src/asset-library/__tests__/personal.cases.ts: 22 pass, 0 fail, 70 expect() calls
+(pass) personal.test.ts mock cases own an isolated module realm [735.00ms]
+
+src\projects\tilemapGame.test.ts:
+(pass) assembleTilemapGameProject > cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição [188.00ms]
+(pass) assembleTilemapGameProject > mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo [62.00ms]
+(pass) assembleTilemapGameProject > monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos
+(pass) assembleTilemapGameProject > mapa SEM plataforma → mecânica TOP-DOWN [16.00ms]
+(pass) assembleTilemapGameProject > mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo)
+(pass) assembleTilemapGameProject > tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN
+(pass) assembleTilemapGameProject > com camada da frente: 2º tilemap desenhado DEPOIS do jogador
+(pass) assembleTilemapGameProject > mapa inválido (sem grade/folha) → null
+
+src\state\pintaMapBundle.test.ts:
+(pass) importação atômica de mapas ligados > traz as portas com o mapa, mantém programação e atualiza sem mudar ids e nomes
+(pass) importação atômica de mapas ligados > um mapa inválido recusa o lote inteiro e mantém a referência do projeto
+(pass) importação atômica de mapas ligados > limite total, ids repetidos e modo de observação não deixam uma importação parcial
+
+src\components\assets\PintaImportDialog.test.tsx:
+Isolated ./src/components/assets/__tests__/PintaImportDialog.cases.tsx: 50 pass, 0 fail, 330 expect() calls
+(pass) PintaImportDialog.test.tsx mock cases own an isolated module realm [7594.00ms]
+
+src\blockly\fields\__tests__\spriteVisual.test.ts:
+(pass) resolveSpriteVisual — visual da miniatura no bloco > sprite de COR → swatch da cor escolhida [31.00ms]
+(pass) resolveSpriteVisual — visual da miniatura no bloco > sprite de IMAGEM → dataUrl do asset resolvida via __szAssets
+(pass) resolveSpriteVisual — visual da miniatura no bloco > asset apagado/renomeado sem cor → null (campo volta a ser só texto)
+(pass) resolveSpriteVisual — visual da miniatura no bloco > sprite de KIT (nave) → cor do corpo BODY
+(pass) resolveSpriteVisual — visual da miniatura no bloco > nome desconhecido (local de laço / digitado livre) → null
+(pass) resolveSpriteVisual — visual da miniatura no bloco > o cache invalida via refreshSpriteThumbs (mudança de cor re-resolve) [15.00ms]
+(pass) isSpriteDeclEvent — filtro dos eventos que mexem nas miniaturas > FINISHED_LOADING sempre refresca (consumidores renderizam antes dos declaradores)
+(pass) isSpriteDeclEvent — filtro dos eventos que mexem nas miniaturas > BLOCK_CHANGE de campo visual (COLOR/IMAGE/NAME/BODY) num DECLARADOR → true
+(pass) isSpriteDeclEvent — filtro dos eventos que mexem nas miniaturas > BLOCK_CHANGE num CONSUMIDOR, noutro campo, ou sem element field → false
+(pass) isSpriteDeclEvent — filtro dos eventos que mexem nas miniaturas > BLOCK_CREATE/DELETE com declarador no JSON (inclusive ANINHADO) → true
+
+ 23 pass
+ 0 fail
+ 72 expect() calls
+Ran 23 tests across 5 files. [10.41s]

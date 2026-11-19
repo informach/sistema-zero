@@ -34,7 +34,8 @@ export type PintaCreationAsset = Extract<StudioPintaImportResult, { ok: true }>[
 export type MoldaCreationAsset = Extract<StudioMoldaImportResult, { ok: true }>['asset']
 
 type ProjectStoreState = ReturnType<ProjectStoreApi['getState']>
-type ProjectStoreActions = Pick<ProjectStoreState, 'project' | 'addAsset' | 'updateAssetImage'>
+type ProjectStoreActions = Pick<ProjectStoreState, 'project' | 'addAsset' | 'updateAssetImage'> &
+  Partial<Pick<ProjectStoreState, 'importPintaMapBundle'>>
 
 /** A criação do projeto que veio deste id da biblioteca pessoal (ou `undefined`). */
 export function projectAssetFromCreation(
@@ -87,6 +88,11 @@ export function addPintaCreationToProject(
   expectedTarget?: ProjectAsset | null,
 ): string | null {
   const python = state.project && isPythonProject(state.project)
+  if (!python && asset.maps?.length) {
+    return state.importPintaMapBundle
+      ? state.importPintaMapBundle(asset)
+      : 'Este Estúdio precisa ser atualizado para trazer todos os mapas ligados.'
+  }
   const parsed =
     asset.pintaImage === undefined
       ? undefined

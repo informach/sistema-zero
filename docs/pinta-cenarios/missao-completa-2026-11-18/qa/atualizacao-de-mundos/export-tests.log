@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+src\export\scene.test.ts:
+(pass) converte grupos, bits, peças de várias bibliotecas e objetos sem achatar nem trocar ids [16.00ms]
+
+src\export\scenePackage.test.ts:
+(pass) Pygame and Godot retain affine art and explicitly report omitted incompatible Tiled supplements [32.00ms]
+(skip) the portable Pygame package actually renders the sheared child footprint
+(pass) pacote Tiled > traz mapas, folhas, imagens, o backup editável e mais nada [109.00ms]
+(pass) pacote Phaser > o ZIP tem a página, o jogo, o Phaser fixado e a licença [156.00ms]
+(pass) pacote Phaser > a página e o jogo não pedem nada da internet [110.00ms]
+(pass) pacote Phaser > as cenas embutidas no main.js são as do maps.json e apontam para imagens do pacote [93.00ms]
+(pass) projeto Pygame portátil > o ZIP tem o módulo, o exemplo e os requisitos [63.00ms]
+(pass) projeto Pygame portátil > todo .py do projeto compila no Python (py_compile) [125.00ms]
+(pass) projeto Pygame portátil > o Python só lê arquivos que estão no pacote [31.00ms]
+(pass) projeto Godot > o ZIP tem o projeto, a cena e o script; os textos passam na conferência [47.00ms]
+(pass) projeto Godot > toda peça que o script pede ao atlas existe na folha e cabe na imagem [31.00ms]
+(pass) projeto Godot > a conferência dos textos pega recurso não declarado, arquivo ausente e seção malformada
+
+ 12 pass
+ 1 skip
+ 0 fail
+ 146 expect() calls
+Ran 13 tests across 2 files. [1.66s]

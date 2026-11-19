@@ -7,7 +7,13 @@ GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act, StrictMode } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const asset = { id: 'drawing', name: 'desenho', dataUrl: 'data:image/png;base64,AAAA' }
+const asset = {
+  id: 'drawing',
+  name: 'desenho',
+  dataUrl: 'data:image/png;base64,AAAA',
+  width: 16,
+  height: 16,
+}
 const derivation: PintaImageDerivation = {
   recipe: {
     version: 1,
@@ -134,12 +140,17 @@ mock.module('@sistemazero/pinta/studio-library', () => ({
   },
 }))
 mock.module('@sistemazero/studio/personal-assets', () => ({
-  savePersonalAsset: async (value: typeof asset, options: { namespace: string }) => {
-    saves.push({ namespace: options.namespace, name: value.name })
-    savedValues.push(structuredClone(value))
+  savePersonalAssetBundle: async (values: (typeof asset)[], options: { namespace: string }) => {
+    for (const value of values) {
+      saves.push({ namespace: options.namespace, name: value.name })
+      savedValues.push(structuredClone(value))
+    }
     saving.resolve()
     await saveGate
-    return { ok: true, name: 'desenho-2', updatedAt: 7 }
+    return {
+      ok: true,
+      assets: values.map((value) => ({ ...value, name: 'desenho-2', updatedAt: 7 })),
+    }
   },
 }))
 const { useStudioCreationLibraries } = await import(

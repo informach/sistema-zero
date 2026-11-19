@@ -1,0 +1,30 @@
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 7 tests using 1 worker
+
+(node:43220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › e2e\pinta-authority.flow.ts:55:1 › espelho 2 do clipboard conserva arte privada e é recusado pelos leitores antigos (397ms)
+  ✓  2 [desktop] › e2e\pinta-authority.flow.ts:96:1 › leitor nativo 5 recusa leitura e gravação sobre a versão 6 offline (358ms)
+  ✓  3 [desktop] › e2e\pinta-authority.flow.ts:158:1 › 026: RAM4 real, promoção5, páginas fechadas e recuperação offline na galeria (3.8s)
+  ✓  4 [desktop] › e2e\pinta-authority.flow.ts:238:1 › duas abas atuais conservam revisão concorrente; downgrade e lápide após reinício (401ms)
+  ✓  5 [desktop] › e2e\pinta-authority.flow.ts:323:1 › falha no segundo put aborta IndexedDB real e permite tentar novamente (170ms)
+  ✓  6 [desktop] › e2e\pinta-authority.flow.ts:390:1 › editor adota a cópia confirmada e permite continuar, voltar e reabrir (2.7s)
+  ✓  7 [desktop] › e2e\pinta-authority.flow.ts:451:1 › orçamento da transação com 500 sprites; captura e revisões preservadas (441ms)
+
+  7 passed (14.3s)

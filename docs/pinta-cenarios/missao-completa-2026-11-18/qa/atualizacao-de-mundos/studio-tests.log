@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personal.test.ts:
+Isolated ./src/asset-library/__tests__/personal.cases.ts: 23 pass, 0 fail, 74 expect() calls
+(pass) personal.test.ts mock cases own an isolated module realm [844.00ms]
+
+src\asset-library\personalSync.test.ts:
+Isolated ./src/asset-library/__tests__/personalSync.cases.ts: 83 pass, 0 fail, 389 expect() calls
+(pass) personalSync.test.ts mock cases own an isolated module realm [4421.00ms]
+
+src\asset-library\pintaMapWorld.test.ts:
+(pass) o catálogo só é necessário para vínculos externos, incluindo nomes e IDs próprios [16.00ms]
+(pass) IDs precedem nomes; ciclos e referências repetidas incluem cada mapa uma vez
+(pass) portas ocultas e portas dentro de conjuntos continuam fazendo parte do mundo
+(pass) propriedades tipadas de camada, objeto e peça incluem mapas, sem extrair imagens embutidas
+(pass) nomes legados precisam identificar um único mapa e imagens comuns não são destinos
+(pass) uma porta sem configuração fica editável; configuração numérica é recusada
+(pass) 16 mapas cabem; o décimo sétimo recusa todo o fechamento
+
+src\state\pintaMapBundle.test.ts:
+(pass) importação atômica de mapas ligados > traz as portas com o mapa, mantém programação e atualiza sem mudar ids e nomes
+(pass) importação atômica de mapas ligados > um mapa inválido recusa o lote inteiro e mantém a referência do projeto
+(pass) importação atômica de mapas ligados > limite total, ids repetidos e modo de observação não deixam uma importação parcial
+
+src\official-extensions\map-2d\runtime.test.ts:
+(pass) scene references resolve inside their map without changing legacy property values [16.00ms]
+(pass) g2d: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs [16.00ms]
+(pass) g2d: uma imagem comum não encobre o ID do mapa de destino [15.00ms]
+(pass) g2d: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+(pass) gk: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs [16.00ms]
+(pass) gk: uma imagem comum não encobre o ID do mapa de destino [15.00ms]
+(pass) gk: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+(pass) object references inside two instances resolve to the corresponding set child
+(pass) scene 2 animates the selected sequence in both JavaScript game engines
+(pass) tile objects animate in scene 2 while published scene 1 keeps its static behavior
+(pass) a collision set scaled 2 by 2 fills every covered root cell
+(pass) set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds [47.00ms]
+(pass) monta a grade de colisão, os objetos e os eventos sem perder dados [16.00ms]
+(pass) confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício
+(pass) caminhos e pontos usam seu contorno, inclusive após rotação
+(pass) compõe camadas, espelho e opacidade nos pixels
+(pass) sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto [31.00ms]
+
+ 29 pass
+ 0 fail
+ 6251 expect() calls
+Ran 29 tests across 5 files. [6.51s]

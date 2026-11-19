@@ -1,0 +1,326 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\packages\\studio\\playwright.pinta-authority.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/.cache/pinta-authority-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["pinta-authority.flow.ts"],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "./.cache/pinta-authority-results/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "bun scripts/serve-authority-e2e.ts",
+      "cwd": "../pinta",
+      "env": {
+        "PINTA_AUTHORITY_PORT": "5401"
+      },
+      "url": "http://127.0.0.1:5401/proof/current.html",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "pinta-authority.flow.ts",
+      "file": "pinta-authority.flow.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "espelho 2 do clipboard conserva arte privada e é recusado pelos leitores antigos",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 397,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:45.443Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-8496d39c9996d47d4109",
+          "file": "pinta-authority.flow.ts",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "leitor nativo 5 recusa leitura e gravação sobre a versão 6 offline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 358,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:45.949Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-499328bc1ea8f024b2ac",
+          "file": "pinta-authority.flow.ts",
+          "line": 96,
+          "column": 1
+        },
+        {
+          "title": "026: RAM4 real, promoção5, páginas fechadas e recuperação offline na galeria",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3772,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:46.317Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-3538daf7e4e102a7f8a8",
+          "file": "pinta-authority.flow.ts",
+          "line": 158,
+          "column": 1
+        },
+        {
+          "title": "duas abas atuais conservam revisão concorrente; downgrade e lápide após reinício",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 401,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:50.099Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-f1c5f693211257ba96b3",
+          "file": "pinta-authority.flow.ts",
+          "line": 238,
+          "column": 1
+        },
+        {
+          "title": "falha no segundo put aborta IndexedDB real e permite tentar novamente",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 170,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:50.513Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-15dbad3fe7f51c7771f7",
+          "file": "pinta-authority.flow.ts",
+          "line": 323,
+          "column": 1
+        },
+        {
+          "title": "editor adota a cópia confirmada e permite continuar, voltar e reabrir",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2692,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:50.695Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-4d95ecc37747a5ab4a5f",
+          "file": "pinta-authority.flow.ts",
+          "line": 390,
+          "column": 1
+        },
+        {
+          "title": "orçamento da transação com 500 sprites; captura e revisões preservadas",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 441,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:03:53.400Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "indexeddb-budget.json",
+                      "contentType": "application/json",
+                      "body": "ewogICJlbGFwc2VkIjogWwogICAgMjQuNSwKICAgIDIxLjcwMDAwMDAwMjk4MDIzMiwKICAgIDIyLjc5OTk5OTk5NzAxOTc2OCwKICAgIDIwLjMwMDAwMDAwMDc0NTA1OCwKICAgIDIyLjEwMDAwMDAwMTQ5MDExNiwKICAgIDIyLjU5OTk5OTk5Nzc2NDgyNiwKICAgIDIwLjIwMDAwMDAwMjk4MDIzMiwKICAgIDE5Ljc5OTk5OTk5NzAxOTc2OCwKICAgIDIwLjIwMDAwMDAwMjk4MDIzMiwKICAgIDIzLjY5OTk5OTk5OTI1NDk0MgogIF0sCiAgImNvdW50IjogNTAyLAogICJjYXB0dXJlZCI6IHsKICAgICJuYW1lIjogIm1hcGEtOSIsCiAgICAidGlsZXMiOiAiMTljYTFjNzktNzA4YS00NzI0LTljZjMtMjk0YmZiOTNmMDFhIgogIH0sCiAgInRpbGVzSWQiOiAiMTljYTFjNzktNzA4YS00NzI0LTljZjMtMjk0YmZiOTNmMDFhIgp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bffe8af62815d32b235-a40a4504ddccf7139342",
+          "file": "pinta-authority.flow.ts",
+          "line": 451,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T01:03:39.950Z",
+    "duration": 14305.202000000001,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

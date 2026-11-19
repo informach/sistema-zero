@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { fakeUseStore } from '../../testing/fakeIdbStore'
+import { failNextFakeIdbWrite, fakeUseStore, resetFakeIdb } from '../../testing/fakeIdbStore'
 
 // Mock FUNCIONAL (Map por DB) do idb-keyval — o IndexedDB não existe no
 // happy-dom. Como nos demais arquivos da suíte, o mock NÃO é restaurado (o
@@ -8,6 +8,7 @@ import { fakeUseStore } from '../../testing/fakeIdbStore'
 type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
 let failDeletes = false
+let failReads = false
 const kvOf = (store?: { name?: string }): KV => {
   const key = store?.name ?? ''
   let kv = dbs.get(key)
@@ -36,7 +37,10 @@ mock.module('idb-keyval', () => ({
   delMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     for (const key of keys) kvOf(store).delete(key)
   },
-  keys: async (store?: { name?: string }) => [...kvOf(store).keys()],
+  keys: async (store?: { name?: string }) => {
+    if (failReads) throw new Error('IndexedDB indisponível')
+    return [...kvOf(store).keys()]
+  },
   update: async (
     key: IDBValidKey,
     updater: (old: unknown) => unknown,
@@ -49,10 +53,12 @@ mock.module('idb-keyval', () => ({
 
 const {
   listPersonalAssets,
+  readPersonalAssetInventory,
   PERSONAL_ASSET_LIMITS,
   personalAssetsChangedAt,
   removePersonalAsset,
   savePersonalAsset,
+  savePersonalAssetBundle,
   setPersonalAssetsNamespace,
 } = await import('../personal')
 
@@ -61,6 +67,8 @@ const PNG = 'data:image/png;base64,AAAA'
 beforeEach(() => {
   dbs.clear()
   failDeletes = false
+  failReads = false
+  resetFakeIdb()
   setPersonalAssetsNamespace('')
 })
 
@@ -69,6 +77,94 @@ afterEach(() => {
 })
 
 describe('savePersonalAsset / listPersonalAssets', () => {
+  it('a leitura estrita distingue vazio de falha, preservando a leitura tolerante da galeria', async () => {
+    expect(await readPersonalAssetInventory()).toEqual({ ok: true, assets: [] })
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    failReads = true
+    expect(await readPersonalAssetInventory()).toMatchObject({
+      ok: false,
+      error: expect.any(String),
+    })
+    expect(await listPersonalAssets()).toEqual([])
+    failReads = false
+    expect(await readPersonalAssetInventory()).toMatchObject({ ok: true, assets: [{ id: 'root' }] })
+  })
+  it('a falha de commit no banco conserva a raiz e não grava só um destino', async () => {
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    const before = await listPersonalAssets()
+    const marker = personalAssetsChangedAt()
+    failNextFakeIdbWrite(new DOMException('Sem espaço', 'QuotaExceededError'))
+    expect(
+      (
+        await savePersonalAssetBundle([
+          { id: 'root', name: 'vila', dataUrl: `${PNG}AA` },
+          { id: 'child', name: 'cabana', dataUrl: PNG },
+        ])
+      ).ok,
+    ).toBe(false)
+    expect(await listPersonalAssets()).toEqual(before)
+    expect(personalAssetsChangedAt()).toBe(marker)
+  })
+  it('grava um conjunto completo com nomes únicos e revisões por desenho', async () => {
+    await savePersonalAsset({ id: 'old', name: 'vila', dataUrl: PNG })
+    const first = await savePersonalAsset({ id: 'root', name: 'raiz', dataUrl: PNG })
+    const saved = await savePersonalAssetBundle([
+      { id: 'root', name: 'vila', dataUrl: `${PNG}AA` },
+      { id: 'child', name: 'vila', dataUrl: PNG },
+    ])
+    expect(saved.ok).toBe(true)
+    if (!saved.ok) throw new Error(saved.error)
+    expect(saved.assets.map((a) => a.name)).toEqual(['vila-2', 'vila-3'])
+    expect(saved.assets[0]!.updatedAt).toBeGreaterThan(first.updatedAt!)
+    expect(await listPersonalAssets()).toHaveLength(3)
+  })
+
+  it('uma recusa no último mapa conserva todos os registros e o marcador', async () => {
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    const before = await listPersonalAssets()
+    const marker = personalAssetsChangedAt()
+    const result = await savePersonalAssetBundle([
+      { id: 'root', name: 'vila', dataUrl: `${PNG}AA` },
+      { id: 'child', name: 'cabana', dataUrl: 'inválida' },
+    ])
+    expect(result.ok).toBe(false)
+    expect(await listPersonalAssets()).toEqual(before)
+    expect(personalAssetsChangedAt()).toBe(marker)
+  })
+
+  it('inventário indisponível não vira biblioteca vazia para um escritor', async () => {
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    failReads = true
+    expect((await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: `${PNG}AA` })).ok).toBe(
+      false,
+    )
+    expect(
+      (await savePersonalAssetBundle([{ id: 'child', name: 'cabana', dataUrl: PNG }])).ok,
+    ).toBe(false)
+    failReads = false
+    expect((await listPersonalAssets()).map((a) => [a.id, a.dataUrl])).toEqual([['root', PNG]])
+  })
+
+  it('o teto de contagem recusa o mundo inteiro, inclusive a atualização da raiz', async () => {
+    for (let i = 0; i < PERSONAL_ASSET_LIMITS.maxCount; i++)
+      await savePersonalAsset({
+        id: `old-${i}`,
+        name: `old-${i}`,
+        kind: 'image',
+        dataUrl: PNG,
+        updatedAt: i,
+      })
+    const before = await listPersonalAssets()
+    expect(
+      (
+        await savePersonalAssetBundle([
+          { id: 'old-0', name: 'old-0', dataUrl: `${PNG}AA` },
+          { id: 'new', name: 'nova-area', dataUrl: PNG },
+        ])
+      ).ok,
+    ).toBe(false)
+    expect(await listPersonalAssets()).toEqual(before)
+  })
   it('salva, normaliza o nome e lista', async () => {
     const result = await savePersonalAsset({ id: 'a1', name: 'Meu Herói', dataUrl: PNG, width: 8 })
     expect(result).toEqual({ ok: true, name: 'meu-heroi', updatedAt: expect.any(Number) })

@@ -1,0 +1,12 @@
+bun test v1.3.11 (af24e281)
+
+tests\pinta-studio-bridge.test.ts:
+(pass) Pinta host bridge owns its DOM and mocked external modules in an isolated realm [609.00ms]
+
+tests\studio-creation-libraries.test.ts:
+(pass) creation-library hook owns its browser and mocked modules in an isolated realm [688.00ms]
+
+ 2 pass
+ 0 fail
+ 4 expect() calls
+Ran 2 tests across 2 files. [1374.00ms]

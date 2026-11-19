@@ -54,7 +54,7 @@ function dataView(bytes: Uint8Array): DataView {
   return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
 }
 
-async function readRange(file: File, start: number, end: number): Promise<Uint8Array | null> {
+async function readRange(file: Blob, start: number, end: number): Promise<Uint8Array | null> {
   if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start) {
     return null
   }
@@ -175,16 +175,15 @@ async function locateEntries(
 }
 
 async function* blobChunks(blob: Blob): AsyncIterable<Uint8Array> {
-  const reader = blob.stream().getReader()
-  try {
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) return
-      for (let offset = 0; offset < value.byteLength; offset += 4096)
-        yield value.subarray(offset, offset + 4096)
-    }
-  } finally {
-    reader.releaseLock()
+  // Mantém o payload sob o mesmo contrato de faixas usado para cabeçalhos e
+  // diretório. Blob.stream() de uma fatia no Bun 1.3.11 lê além de seu tamanho;
+  // alimentar essa cauda ao Inflate multiplica leituras/cópias para cada entrada.
+  // Lê no máximo 64 KiB por vez e conserva o passo de 4 KiB do decoder limitado.
+  for (let inicio = 0; inicio < blob.size; inicio += 65536) {
+    const bytes = await readRange(blob, inicio, Math.min(blob.size, inicio + 65536))
+    if (!bytes) throw Error('Não consegui ler o trecho declarado do arquivo ZIP.')
+    for (let offset = 0; offset < bytes.byteLength; offset += 4096)
+      yield bytes.subarray(offset, offset + 4096)
   }
 }
 
