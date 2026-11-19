@@ -10,6 +10,10 @@ import {
   type StudioProTemplateId,
   studioProTemplate,
 } from '@sistemazero/core/studio'
+import {
+  STUDIO_THREE_TYPES_VERSION,
+  STUDIO_THREE_VERSION,
+} from '@sistemazero/core/studio/three-version'
 import runtimeLock from '../runtime/package-lock.json' with { type: 'json' }
 import { prepareRuntimeDependencyLock } from './dependency-lock'
 
@@ -170,10 +174,10 @@ export function trustedPackageJson(
     devDependencies['@types/react-dom'] = '19.2.3'
   }
   if (template?.engine === 'three') {
-    dependencies.three = '0.180.0'
+    dependencies.three = STUDIO_THREE_VERSION
   }
   if (templateId === 'three-ts' || (template?.engine === 'three' && template.kitVersion)) {
-    devDependencies['@types/three'] = '0.180.0'
+    devDependencies['@types/three'] = STUDIO_THREE_TYPES_VERSION
     devDependencies.typescript = '5.9.3'
   }
   return `${JSON.stringify(

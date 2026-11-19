@@ -2,6 +2,10 @@ import {
   type StudioProTemplateMetadata,
   studioProTemplate,
 } from '@sistemazero/core/studio/pro-templates'
+import {
+  STUDIO_THREE_TYPES_VERSION,
+  STUDIO_THREE_VERSION,
+} from '@sistemazero/core/studio/three-version'
 import type { ProjectTree } from '#core'
 import { PRO_ASSET_MANIFEST } from '../../../core/proAssetPaths'
 import { GAMEDEV_NOTICES } from './games/licenses'
@@ -47,10 +51,10 @@ export async function createGameTree(template: StudioProTemplateMetadata): Promi
     template.engine === 'phaser'
       ? { phaser: '3.90.0' }
       : template.engine === 'three'
-        ? { three: '0.180.0' }
+        ? { three: STUDIO_THREE_VERSION }
         : {}
   const devDependencies: Record<string, string> = { vite: '8.1.6', typescript: '5.9.3' }
-  if (template.engine === 'three') devDependencies['@types/three'] = '0.180.0'
+  if (template.engine === 'three') devDependencies['@types/three'] = STUDIO_THREE_TYPES_VERSION
   const sources: Record<string, string> = {
     'THIRD_PARTY_NOTICES.md': GAMEDEV_NOTICES,
     ...SHARED_SOURCES,

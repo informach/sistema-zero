@@ -3,11 +3,8 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 
 /** Only immutable official package bytes enter this virtual, network-free route. */
-export async function createPinnedThreeModuleResolver(
-  packageRoot,
-  version,
-  budget = { files: 0, bytes: 0 },
-) {
+export async function createPinnedThreeModuleResolver(packageRoot, version) {
+  const budget = { files: 0, bytes: 0 }
   if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid pinned Three version')
   const root = await fs.realpath(packageRoot)
   const metadata = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'))
@@ -66,27 +63,16 @@ export async function createPinnedThreeModuleResolver(
 export async function createImageThreeModuleResolver() {
   const require = createRequire(import.meta.url)
   const image = JSON.parse(await fs.readFile(new URL('./package.json', import.meta.url), 'utf8'))
-  const current = /^npm:three@(\d+\.\d+\.\d+)$/.exec(image.dependencies['three-studio'] ?? '')?.[1]
-  const historical = image.dependencies.three
-  if (!current || !/^\d+\.\d+\.\d+$/.test(historical) || current === historical)
-    throw new Error('Invalid trusted Three image pins')
-  const packages = new Map([
-    [historical, 'three'],
-    [current, 'three-studio'],
-  ])
-  const resolvers = new Map()
-  // Both immutable versions share the original retention limits for one check.
-  const budget = { files: 0, bytes: 0 }
+  const version = image.dependencies.three
+  if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid trusted Three image pin')
+  let resolver
   return async (url) => {
     if (url.origin !== 'https://esm.sh' || url.username || url.password || url.hash) return
-    const version = /^\/three@(\d+\.\d+\.\d+)(?:\/|$)/.exec(url.pathname)?.[1]
-    const packageName = packages.get(version)
-    if (!packageName) return
-    let resolver = resolvers.get(version)
+    if (url.pathname !== `/three@${version}` && !url.pathname.startsWith(`/three@${version}/`))
+      return
     if (!resolver) {
-      const entry = require.resolve(packageName)
-      resolver = createPinnedThreeModuleResolver(path.dirname(path.dirname(entry)), version, budget)
-      resolvers.set(version, resolver)
+      const entry = require.resolve('three')
+      resolver = createPinnedThreeModuleResolver(path.dirname(path.dirname(entry)), version)
     }
     return (await resolver)(url)
   }

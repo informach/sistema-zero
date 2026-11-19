@@ -29,7 +29,7 @@ async function verify(files: Record<string, string>) {
 const files = {
   'package.json': JSON.stringify({
     devDependencies: { vite: '8.1.6' },
-    dependencies: { three: '0.180.0' },
+    dependencies: { three: '0.184.0' },
   }),
   'src/main.ts':
     "import { Vector3 } from 'three'; const vector: Vector3 = new Vector3(); console.log(vector)",

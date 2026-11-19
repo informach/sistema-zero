@@ -1,3 +1,5 @@
+import { STUDIO_THREE_TYPES_VERSION, STUDIO_THREE_VERSION } from './three-version'
+
 /** Packages installed in the isolated, network-free build image. Versions are exact. */
 export const STUDIO_PRO_REMOTE_PACKAGES = {
   vite: '8.1.6',
@@ -7,8 +9,8 @@ export const STUDIO_PRO_REMOTE_PACKAGES = {
   'react-dom': '19.2.0',
   '@types/react': '19.2.15',
   '@types/react-dom': '19.2.3',
-  three: '0.180.0',
-  '@types/three': '0.180.0',
+  three: STUDIO_THREE_VERSION,
+  '@types/three': STUDIO_THREE_TYPES_VERSION,
   phaser: '3.90.0',
 } as const
 
