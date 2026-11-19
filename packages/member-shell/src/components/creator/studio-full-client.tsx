@@ -578,6 +578,7 @@ export function StudioFullClient({
     localNamespace,
     pintaOwned,
     moldaOwned,
+    viewerId,
   )
 
   // "Trazer da equipe": só no jogo de um plano do Pensa em equipe, para quem programa, e só

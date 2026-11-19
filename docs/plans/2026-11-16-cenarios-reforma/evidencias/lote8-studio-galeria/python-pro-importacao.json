@@ -1,0 +1,25 @@
+{
+  "kind": "pro",
+  "fonte": {
+    "cenario": "cen-000b",
+    "revisao": 1,
+    "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+  },
+  "atualizacoes": 0,
+  "nos": 20,
+  "modulo": "cenario_4cb14758e46c560c2e79.py",
+  "entrypoint": "main.py",
+  "assets": 28,
+  "fontesPreservadas": true,
+  "reabertura": true,
+  "orcamento": {
+    "destino": "studio",
+    "permitido": true,
+    "bytes": 8714621,
+    "malhas": 25,
+    "excessos": [],
+    "sugerirJuncao": false
+  },
+  "avisos": [],
+  "nota": "Projeto importado pelo botão Trazer do Molda no ensaio HTTP, reaberto e exportado. A reimportação é idempotente. Somente a cópia de execução recebe o programa de prova; a fonte original foi preservada."
+}

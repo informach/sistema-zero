@@ -5,6 +5,8 @@ import {
 import { RAYLIB_3D_EXTENSION, RAYLIB_EXTENSION_IDS } from '../runtime/python/raylib/contract'
 import { normalizeAssetName, type ProjectAsset } from './projectAssets'
 import type { PythonProjectDocument } from './pythonProject'
+import { isScene3DAssetKind } from './scene3d/assets'
+import { idsDosRecursosDeCena3D } from './scene3d/referencias'
 
 /**
  * Where a Raylib project keeps its media. Unlike Pygame Zero, raylib opens a file by its PATH,
@@ -233,9 +235,16 @@ export function raylibRelocatedAssets(
   project: PythonProjectDocument,
 ): { assets: ProjectAsset[]; coverAssetName?: string } | { error: string } {
   const assets = [...(project.assets ?? [])]
+  if (assets.some((a) => a.kind === 'scene3d') && !projectUsesRaylib3D(project))
+    return {
+      error:
+        'Este projeto tem cenários 3D. Mantenha o Raylib 3D ou remova os cenários antes de trocar para Raylib 2D.',
+    }
+  const fixos = idsDosRecursosDeCena3D(assets)
   const unreadable: string[] = []
   let cover = project.coverAssetName
   for (const [index, asset] of assets.entries()) {
+    if (isScene3DAssetKind(asset.kind) || fixos.has(asset.id)) continue
     const path = asset.proPath
     const ext = path ? extensionOf(path) : ''
     const folder = path ? raylibFolderOf(path) : undefined

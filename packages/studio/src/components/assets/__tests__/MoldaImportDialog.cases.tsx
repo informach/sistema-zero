@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { raylibRelocatedAssets } from '../../../core/raylibMediaPaths'
+import { pythonProAssetExample } from '../../../python/proExamples'
+import { RAYLIB_3D_EXTENSION } from '../../../runtime/python/raylib/contract'
+import { pythonEnvironmentFixture } from '../../../state/fixtures/pythonEnvironment'
+import { StudioRuntimeEnvironmentProvider } from '../../../studio/runtime-environment'
 import { fakeUseStore } from '../../../testing/fakeIdbStore'
+import { criarFonteDeCenarioDeEnsaio } from '../../../testing/moldaSceneFixture'
+import { editorAssetEntries } from '../editorAssetEntries'
 
 /**
  * Modal "Trazer do Molda" (fluxo pull das criações 3D) + o botão no AssetsPanel.
@@ -427,4 +434,203 @@ describe('régua pura', () => {
     expect(projectHas3DConsumer(canvas3d)).toBe(true)
     expect(projectHas3DConsumer(null)).toBe(false)
   })
+})
+
+describe('Cenários na mesma galeria do Molda', () => {
+  const abrir = async (fonte: NonNullable<MoldaLibraryAdapter['cenarios']>) => {
+    await openDialog(fakeAdapter({ cenarios: fonte }))
+    await click(await screen.findByRole('button', { name: 'Cenários' }))
+    await screen.findByText('Praça da Faísca')
+  }
+  it('traz a cena real pela interface, conserva o programa e mostra a revisão no projeto', async () => {
+    seedProject({ with3D: true })
+    const { fonte } = await criarFonteDeCenarioDeEnsaio(),
+      antes = { ...useProjectStore.getState().project!.files }
+    await abrir(fonte)
+    await click(screen.getByRole('button', { name: 'Adicionar ao projeto' }))
+    await screen.findByText('Cenário “Praça da Faísca” adicionado ao projeto.')
+    const projeto = useProjectStore.getState().project!
+    expect(projeto.files).toEqual(antes)
+    expect(projeto.assets?.filter((a) => a.kind === 'scene3d')).toHaveLength(1)
+    expect(projeto.assets?.some((a) => a.libId?.startsWith('personal:'))).toBe(false)
+    expect(
+      (screen.getByRole('button', { name: '✓ no projeto' }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+  it('permissão ausente mantém a galeria antiga sem oferecer cenários', async () => {
+    const { fonte } = await criarFonteDeCenarioDeEnsaio()
+    fonte.disponivel = async () => false
+    await openDialog(fakeAdapter({ cenarios: fonte }))
+    await screen.findByText('nave-cristal')
+    expect(screen.queryByRole('button', { name: 'Cenários' })).toBeNull()
+  })
+  it('uma revisão alterada pode ser atualizada na mesma janela, sem importar a revisão antiga', async () => {
+    seedProject({ with3D: true })
+    const { fonte, host, resumo } = await criarFonteDeCenarioDeEnsaio()
+    await abrir(fonte)
+    const aberto = await host.abrirCenario(resumo.id)
+    await host.editarCenario(
+      resumo.id,
+      resumo.revisao,
+      [{ tipo: 'cenario.restaurar', documento: { ...aberto.documento, nome: 'Praça revisada' } }],
+      'outra-janela',
+    )
+    await click(screen.getByRole('button', { name: 'Adicionar ao projeto' }))
+    await screen.findByRole('alert')
+    expect(useProjectStore.getState().project?.assets).toEqual([])
+    await click(screen.getByRole('button', { name: 'Atualizar cenários' }))
+    await screen.findByText(/Revisão 1/)
+    await click(screen.getByRole('button', { name: 'Adicionar ao projeto' }))
+    await screen.findByText(/adicionado ao projeto\./)
+    const cena = useProjectStore.getState().project?.assets?.find((a) => a.kind === 'scene3d')
+    expect(cena).toBeDefined()
+  })
+  it('erro de acesso fica visível e pode ser repetido, sem ser confundido com falta de permissão', async () => {
+    const { fonte } = await criarFonteDeCenarioDeEnsaio()
+    let pedidos = 0
+    fonte.disponivel = async () => {
+      if (++pedidos === 1) throw Error('Falha de conexão do ensaio')
+      return true
+    }
+    await openDialog(fakeAdapter({ cenarios: fonte }))
+    await screen.findByText('Falha de conexão do ensaio')
+    await click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    await screen.findByRole('button', { name: 'Cenários' })
+    expect(pedidos).toBe(2)
+  })
+  it('Python com release anterior informa a incompatibilidade antes de preparar recursos', async () => {
+    const { project, environment } = await pythonEnvironmentFixture('classic'),
+      { fonte } = await criarFonteDeCenarioDeEnsaio()
+    project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+    useProjectStore.setState({ project, isDirty: false })
+    let preparos = 0
+    const real = fonte.preparar
+    fonte.preparar = (...args) => {
+      preparos++
+      return real(...args)
+    }
+    render(
+      <StudioRuntimeEnvironmentProvider value={environment}>
+        <StudioMoldaLibraryProvider value={fakeAdapter({ cenarios: fonte })}>
+          <AssetsPanel open onClose={() => {}} />
+        </StudioMoldaLibraryProvider>
+      </StudioRuntimeEnvironmentProvider>,
+    )
+    await goTo3DTab()
+    await click(await screen.findByRole('button', { name: /Trazer do Molda/ }))
+    await click(await screen.findByRole('button', { name: 'Cenários' }))
+    await screen.findByText(/ambiente deste projeto precisa ser atualizado para receber cenários/)
+    await screen.findByText('Praça da Faísca')
+    expect(
+      (screen.getByRole('button', { name: 'Adicionar ao projeto' }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    expect(preparos).toBe(0)
+    expect(useProjectStore.getState().project?.assets).toEqual([])
+  })
+  for (const kind of ['classic', 'pro'] as const) {
+    it(`Python ${kind} traz pela janela offline, preserva a fonte e oferece o módulo para usar`, async () => {
+      const { project } = await pythonEnvironmentFixture(kind),
+        { fonte } = await criarFonteDeCenarioDeEnsaio()
+      project.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: 1 }]
+      const principal =
+        project.kind === 'pro'
+          ? project.tree[project.python.entrypoint]
+          : project.files[project.python.entrypoint]
+      useProjectStore.setState({ project, isDirty: false })
+      await abrir(fonte)
+      await click(screen.getByRole('button', { name: 'Adicionar ao projeto' }))
+      await screen.findByText('Cenário “Praça da Faísca” adicionado ao projeto.')
+      const atual = useProjectStore.getState().project!
+      if (atual.programmingLanguage !== 'python') throw Error('fixture')
+      expect(
+        atual.kind === 'pro'
+          ? atual.tree[atual.python.entrypoint]
+          : atual.files[atual.python.entrypoint],
+      ).toEqual(principal)
+      const cenario = atual.assets!.find((a) => a.kind === 'scene3d')!
+      expect(cenario.cena3dPython?.modulo).toMatch(/\.py$/)
+      const reinstalado = raylibRelocatedAssets(atual)
+      expect('error' in reinstalado).toBe(false)
+      if ('assets' in reinstalado) expect(reinstalado.assets).toEqual(atual.assets ?? [])
+      const entradas = await editorAssetEntries(atual.assets!, 'python', {
+          files: [],
+          directories: [],
+        }),
+        entrada = entradas.find((a) => a.id === cenario.id)!,
+        exemplo = pythonProAssetExample(entrada, 'main.py', atual)
+      expect(exemplo?.code).toContain(
+        `from ${cenario.cena3dPython!.modulo.slice(0, -3)} import carregar`,
+      )
+      expect(exemplo?.explanation).toContain('depois de init_window')
+    })
+  }
+  for (const mudanca of ['edicao', 'projeto', 'perfil-aba', 'fechar'] as const) {
+    it(`não entrega a cena preparada depois de ${mudanca}`, async () => {
+      seedProject({ with3D: true })
+      const { fonte } = await criarFonteDeCenarioDeEnsaio(),
+        real = fonte.preparar,
+        liberar = Promise.withResolvers<void>(),
+        iniciou = Promise.withResolvers<AbortSignal>()
+      fonte.preparar = async (...args) => {
+        const resultado = await real(...args)
+        iniciou.resolve(args[2].signal)
+        await liberar.promise
+        return resultado
+      }
+      await abrir(fonte)
+      await click(screen.getByRole('button', { name: 'Adicionar ao projeto' }))
+      const signal = await iniciou.promise,
+        projeto = useProjectStore.getState().project!
+      await act(async () => {
+        if (mudanca === 'fechar') cleanup()
+        else if (mudanca === 'perfil-aba') {
+          setStorageNamespace('perfil-2')
+          setStorageNamespace('perfil-1')
+        } else
+          useProjectStore.setState({
+            project: {
+              ...projeto,
+              ...(mudanca === 'edicao' ? { name: 'Meu nome editado' } : { id: 'p2' }),
+            },
+          })
+        liberar.resolve()
+        await liberar.promise
+      })
+      if (mudanca === 'edicao') await screen.findByText(/O projeto mudou durante o preparo/)
+      else await waitFor(() => expect(signal.aborted).toBe(true))
+      expect(useProjectStore.getState().project?.assets?.some((a) => a.kind === 'scene3d')).toBe(
+        false,
+      )
+      expect(useProjectStore.getState().project?.files).toEqual(projeto.files)
+    })
+  }
+  it('mostra o excesso real e só usa junção quando a pessoa escolhe a alternativa', async () => {
+    seedProject({ with3D: true })
+    const { fonte, host, resumo } = await criarFonteDeCenarioDeEnsaio(49),
+      real = fonte.preparar,
+      escolhas: boolean[] = [],
+      antes = JSON.stringify(await host.abrirCenario(resumo.id))
+    fonte.preparar = (...args) => {
+      escolhas.push(args[2].juntar)
+      return real(...args)
+    }
+    await abrir(fonte)
+    await click(screen.getByRole('button', { name: 'Adicionar ao projeto' }))
+    const juntar = await screen.findByRole(
+      'button',
+      { name: 'Juntar peças estáticas e tentar novamente' },
+      { timeout: 10000 },
+    )
+    expect(useProjectStore.getState().project?.assets).toEqual([])
+    expect(escolhas).toEqual([false])
+    await click(juntar)
+    await screen.findByText(
+      'Cenário “Praça da Faísca” adicionado ao projeto.',
+      {},
+      { timeout: 10000 },
+    )
+    expect(escolhas).toEqual([false, true])
+    expect(screen.getByText('Aventura · licença restrita')).not.toBeNull()
+    expect(JSON.stringify(await host.abrirCenario(resumo.id))).toBe(antes)
+  }, 20000)
 })

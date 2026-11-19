@@ -119,6 +119,7 @@ function StudioProClientSession({
     localNamespace,
     pintaOwned,
     moldaOwned,
+    viewerId,
   )
   // Carga COMPLETA (não soft-nav): sair da rota PRO larga o cross-origin isolation
   // (COEP) limpo, evitando que o /estudio clássico herde o COEP do documento isolado.
