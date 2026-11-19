@@ -9,7 +9,7 @@ Referência: plano normativo de Claude e `2026-11-18-cenarios-lote8-exportacao.m
 - [x] Provar o runtime com os pacotes do ensaio integrado: três ciclos, cancelamento, física, imagens, animações e descarte. Registrar as limitações reais de cada formato.
 - [x] Gerar um único módulo JavaScript portátil a partir da fonte TypeScript canônica, com Bun instalado, sem variáveis de ambiente, imports externos ou URLs de sessão. Verificação reproduzível e licenças dos componentes distribuídos. O runtime direto e o arquivo gerado têm a mesma implementação.
 - [x] Empacotar Three com ZIP existente do Molda, manifesto, recursos usados, licenças, LEIA-ME e exploração independente. Reabrir sem login em servidor estático.
-- [ ] Corrigir a leitura ZIP compartilhada: perfil real encontrou 47,6 s na reabertura. Preservar CRC, limites, nomes e conteúdo com baseline e prova de comportamento. Não fechar fluxo enquanto a leitura for lenta.
+- [x] Corrigir a leitura ZIP compartilhada: perfil real encontrou 47,6 s na reabertura. [Correção e prova](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-zip-faixas.md): leitura por faixas limitadas, pacote real reaberto em 262,5 ms, conteúdo/CRC/cotas preservados. Não alterou o módulo portátil.
 - [ ] GLB único conserva composição e animações suportadas, com validação independente.
 - [ ] Preparação autorizada da revisão real no Members, contrato equivalente nos hosts memória/HTTP/BFF. Nenhuma permissão confiada ao cliente; salvar pendente bloqueia revisão errada.
 - [ ] Fluxo visual nos componentes existentes do Molda: revisão, destino, recursos/limites, licenças nominais, junção, progresso, cancelamento, repetir e baixar. Testar quatro layouts e temas, erros e autoria intacta.

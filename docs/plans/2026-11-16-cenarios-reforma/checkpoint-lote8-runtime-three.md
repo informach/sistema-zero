@@ -47,3 +47,5 @@ O perfil da geração real separou preparação e reabertura:
 O perfil atribui aproximadamente 95,9% do tempo à alimentação incremental do `Inflate` do fflate, principalmente cópias `slc`, concatenação e `set`. A demora não está no terreno ou na criação do ZIP. **Próximo passo imediato: corrigir essa leitura com prova de conteúdo/CRC/limites preservados**, antes de avançar ao GLB único e à interface. Não afirmar fluidez desse fluxo só porque o exemplo já caminha.
 
 Depois permanecem GLB único, preparação de revisão/licenças no servidor, hosts equivalentes e interface Molda nos quatro layouts/temas. Raylib/Estúdio e publicação/perfil continuam em 8.4/8.5; lote 9 somente depois de fechar o lote 8 integralmente. Composição final, full review, CI e validação de implantação em staging permanecem no encerramento global.
+
+**Atualização posterior deste recorte:** [leitura ZIP corrigida e perfil comparativo](checkpoint-lote8-zip-faixas.md). O gargalo acima está resolvido; a reabertura do pacote real caiu para 262,5 ms no ensaio com perfil CPU. Continuar no GLB único e nas pendências de 8.3.

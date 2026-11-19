@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
-import { zipSync } from 'fflate'
+import { File as NativeFile } from 'node:buffer'
+import { Inflate, zipSync } from 'fflate'
 import { readZipFiles } from './backupFile'
 import { zipFilesBlob } from './zip'
 
@@ -81,4 +82,47 @@ test('escritor compartilhado recusa colisões/caminhos hostis, orçamentos e can
   ).rejects.toThrow(/cancelada/)
   await expect(zipFilesBlob([f('a')], { maxEntries: NaN })).rejects.toThrow(/limites/)
   await expect(zipFilesBlob([f('a')], { maxReadyBytes: Infinity })).rejects.toThrow(/limites/)
+})
+
+test('leitura de várias entradas conserva bytes/ordem sem reler a cauda do arquivo a cada recurso', async () => {
+  const original = new Uint8Array(256 * 1024)
+  let seed = 0x12345678,
+    bytesLidos = 0
+  for (let i = 0; i < original.length; i++) {
+    seed ^= seed << 13
+    seed ^= seed >>> 17
+    seed ^= seed << 5
+    original[i] = seed & 255
+  }
+  const entradas = Object.fromEntries(
+      Array.from({ length: 32 }, (_, i) => [
+        `partes/${i}.glb`,
+        original.subarray(i * 8192, (i + 1) * 8192),
+      ]),
+    ),
+    arquivo = new NativeFile(
+      [new Uint8Array(zipSync(entradas)).buffer],
+      'partes.zip',
+    ) as unknown as File,
+    alimentar = Inflate.prototype.push
+  // Instrumenta o codec real sem alterar seus resultados. Mede a quantidade de
+  // bytes comprimidos efetivamente recebida, não uma expectativa de chamadas.
+  Inflate.prototype.push = function (chunk, final) {
+    bytesLidos += chunk.byteLength
+    return alimentar.call(this, chunk, final)
+  }
+  let r: Awaited<ReturnType<typeof readZipFiles>>
+  try {
+    r = await readZipFiles(arquivo, { maxBytes: original.length, maxEntries: 32 })
+  } finally {
+    Inflate.prototype.push = alimentar
+  }
+  expect(r.ok).toBe(true)
+  if (r.ok) {
+    expect(r.files.map((f) => f.path)).toEqual(Object.keys(entradas))
+    for (const f of r.files) expect(f.bytes).toEqual(entradas[f.path]!)
+  }
+  // O descompactador não deve receber diretório/cabeçalhos ou bytes de outras entradas.
+  // Bun 1.3.11 stream() de Blob fatiado entrega a cauda inteira, excedendo esse orçamento.
+  expect(bytesLidos).toBeLessThan(arquivo.size)
 })
