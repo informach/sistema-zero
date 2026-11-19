@@ -4,10 +4,20 @@ import { readZipFiles } from '@sistemazero/molda/arquivos'
 import { conferirConteudoCompilado } from '@sistemazero/molda-cenarios-motor/compilar'
 
 const raiz = resolve(import.meta.dir, '../../../..'),
-  pasta = resolve(raiz, 'output/cenarios-reforma/lote8-interface'),
-  destino = resolve(pasta, 'portatil'),
+  raylib = process.env.CENARIOS_QA_RAYLIB === '1',
+  pasta = resolve(
+    raiz,
+    raylib
+      ? 'output/cenarios-reforma/lote8-raylib/interface'
+      : 'output/cenarios-reforma/lote8-interface',
+  ),
+  destino = raylib
+    ? resolve(raiz, 'output/cenarios-reforma/lote8-raylib/pacote')
+    : resolve(pasta, 'portatil'),
   extraidos = resolve(destino, 'extraido'),
-  bytes = new Uint8Array(readFileSync(resolve(pasta, '1440-900-light.zip'))),
+  bytes = new Uint8Array(
+    readFileSync(resolve(pasta, raylib ? '1440-900-light-raylib.zip' : '1440-900-light.zip')),
+  ),
   zip = await readZipFiles(new File([bytes], 'cenario.zip'), {
     maxBytes: 300 * 1024 ** 2,
     maxEntries: 9000,

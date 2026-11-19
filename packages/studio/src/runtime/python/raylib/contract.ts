@@ -9,6 +9,7 @@ export const RAYLIB_3D_EXTENSION = Object.freeze({ id: 'python-raylib-3d', versi
 export const RAYLIB_UPSTREAM = Object.freeze({ package: 'raylib', version: '6.0.1.0' })
 /** Distribution files, relative to the raylib/ folder next to the worker. */
 export const RAYLIB_MODULE_FILES = [
+  'cenario.py',
   '_szraylib/__init__.py',
   '_szraylib/_api.py',
   '_szraylib/_args.py',

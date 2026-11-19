@@ -6,6 +6,7 @@ import {
 } from '@sistemazero/molda-cenarios-core/compilar'
 import { conferirConteudoCompilado } from '@sistemazero/molda-cenarios-motor/compilar'
 import { CSS_DO_EXEMPLO, HTML_DO_EXEMPLO, JS_DO_EXEMPLO } from './exemplo'
+import { textoDasLicencas } from './licencas'
 
 export const LIMITES_DO_PACOTE_THREE = {
   arquivos: LIMITES_DA_EXPORTACAO.arquivos + 16,
@@ -27,15 +28,7 @@ export async function arquivosDoPacoteThree(pacote: PacoteCompilado, sinal: Abor
   texto('index.html', HTML_DO_EXEMPLO)
   texto('explorar.css', CSS_DO_EXEMPLO)
   texto('explorar.js', JS_DO_EXEMPLO)
-  texto(
-    'licencas-modelos.txt',
-    [
-      'Bibliotecas usadas nesta revisão do cenário:',
-      ...cena.licencas.map((l) => `${l.nome} (${l.id}): ${l.licenca}.`),
-      '',
-      'As bibliotecas restritas conservam os termos e limites da licença original. A exportação não concede direitos adicionais de redistribuição dos modelos.',
-    ].join('\n'),
-  )
+  texto('licencas-modelos.txt', textoDasLicencas(cena.licencas))
   texto(
     'licencas-runtime.txt',
     runtime.RUNTIME_THREE_DEPENDENCIAS.map(

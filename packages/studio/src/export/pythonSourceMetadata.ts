@@ -30,7 +30,7 @@ export async function buildPythonSourceMetadata(input: {
     warnings: readonly string[]
   } | null
   /** Raylib projects: the requirements file with the desktop raylib-python-cffi. */
-  raylib?: { requirementsPath: string } | null
+  raylib?: { requirementsPath: string; generated: readonly string[] } | null
   /** Pygame-ce projects: the learner module pinta.py and the fonts copied beside the game. */
   pygameFiles?: readonly string[]
 }): Promise<{ files: ExportFileMap; warnings: string[] }> {
@@ -219,7 +219,7 @@ dependencies = ${pygame ? `["pygame-ce==${PYGAME_CE_VERSION}"]` : '[]'}
       manifestPath,
       ...Object.keys(files),
       ...(input.pgzero ? [input.pgzero.requirementsPath, ...input.pgzero.converted] : []),
-      ...(input.raylib ? [input.raylib.requirementsPath] : []),
+      ...(input.raylib?.generated ?? []),
       ...(pygameRequirementsPath ? [pygameRequirementsPath] : []),
       ...(input.pygameFiles ?? []),
     ].sort(),

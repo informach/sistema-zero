@@ -1,0 +1,16 @@
+{
+  "resultados": [
+    {
+      "autoral": false,
+      "status": "completed",
+      "stdout": "mcn-oficial /studio/extensions/python-raylib-1.0.0/cenario.py\nmcn-carregado 966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60 20 False\nmcn-clipes 4\nmcn-descartado\n"
+    },
+    {
+      "autoral": true,
+      "status": "completed",
+      "stdout": "mcn-autoral-preservado\n"
+    }
+  ],
+  "erros": [],
+  "nota": "Fixture com os bytes do pacote real e fonte oficial do runtime. Escrita de dois binários pequenos pela fixture prepara o filesystem; não substitui o fluxo Trazer do Molda, ainda pendente no recorte de importação."
+}
