@@ -511,7 +511,7 @@ const extra: Record<string, Record<string, string[]>> = {
     'evolution-api': [],
     community: [],
     funnel: [],
-    members: ['COURSE_PUBLICATION_PRODUCTION_ADMIN_URL'],
+    members: ['CENARIOS_MODO', 'COURSE_PUBLICATION_PRODUCTION_ADMIN_URL'],
     'helpdesk-app': [],
     admin: ['COURSE_PUBLICATION_SOURCE_TOKEN'],
     'community-kids': [],
