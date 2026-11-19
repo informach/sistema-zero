@@ -8,8 +8,9 @@ import {
   PlaneGeometry,
   Vector3,
 } from 'three'
-import { RecortesVisuaisDosCaminhos } from '../src/compilar/recortes-caminhos'
+import { RecortesDoSoloCompilado } from '../src/compilar/recortes-caminhos'
 import { CaminhosDoPalco } from '../src/curvas/caminhos'
+import { criarPlanoDoCenario } from '../src/plano'
 import { MundoDoTeste } from '../src/teste/colisoes'
 
 function area(g: BufferGeometry, m = new Matrix4()) {
@@ -75,7 +76,7 @@ test('decals viram recortes visuais contínuos sem abrir buracos no chão físic
       ).falhas,
     ).toEqual([])
     const fontes = caminhos.superficies(),
-      recortes = new RecortesVisuaisDosCaminhos(fontes, () => 0),
+      recortes = new RecortesDoSoloCompilado(fontes, () => 0),
       antes = chao.getAttribute('position').array.slice()
     expect(recortes.quantidade).toBeGreaterThan(0)
     recortada = recortes.recortar({ geometria: chao, matriz })
@@ -113,7 +114,7 @@ test('peça elevada e material estrutural não removem terreno sob uma ponte', (
     matriz = new Matrix4(),
     elevada = new Matrix4().makeTranslation(0, 2, 0)
   try {
-    const recortes = new RecortesVisuaisDosCaminhos(
+    const recortes = new RecortesDoSoloCompilado(
       [{ id: 'ponte', geometria: g, material, matriz: elevada }],
       () => 0,
     )
@@ -128,12 +129,78 @@ test('peça elevada e material estrutural não removem terreno sob uma ponte', (
     material.polygonOffset = false
     material.depthWrite = true
     expect(
-      new RecortesVisuaisDosCaminhos([{ id: 'ponte', geometria: g, material, matriz }], () => 0)
+      new RecortesDoSoloCompilado([{ id: 'ponte', geometria: g, material, matriz }], () => 0)
         .quantidade,
     ).toBe(0)
   } finally {
     g.dispose()
     chao.dispose()
+    material.dispose()
+  }
+})
+
+test('piso plano só cede a faces sólidas opacas visíveis; transparência conserva o chão', () => {
+  const g = new PlaneGeometry(4, 4).rotateX(-Math.PI / 2),
+    chao = new PlaneGeometry(16, 16).rotateX(-Math.PI / 2),
+    material = new MeshStandardMaterial(),
+    matriz = new Matrix4(),
+    fontes = [{ id: 'objeto', geometria: g, material, matriz }],
+    recortes = () => new RecortesDoSoloCompilado(fontes, () => 0, { incluirSolidos: true })
+  try {
+    expect(recortes().quantidade).toBe(2)
+    const r = recortes().recortar({ geometria: chao, matriz })
+    try {
+      expect(area(r)).toBeCloseTo(240, 5)
+    } finally {
+      r.dispose()
+    }
+    for (const propriedade of ['transparent', 'alphaHash', 'alphaToCoverage'] as const) {
+      material[propriedade] = true
+      expect(recortes().quantidade).toBe(0)
+      material[propriedade] = false
+    }
+    material.alphaTest = 0.5
+    expect(recortes().quantidade).toBe(0)
+    material.alphaTest = 0
+    material.depthWrite = false
+    expect(recortes().quantidade).toBe(0)
+    material.depthWrite = true
+    g.rotateX(Math.PI)
+    expect(recortes().quantidade).toBe(0)
+  } finally {
+    g.dispose()
+    chao.dispose()
+    material.dispose()
+  }
+})
+
+test('piso XY rotacionado no nó é recortado no mundo sem perder origem distante ou colisão', () => {
+  const piso = criarPlanoDoCenario(32, 32),
+    trilha = new PlaneGeometry(4, 16).rotateX(-Math.PI / 2),
+    material = new MeshStandardMaterial({ polygonOffset: true, depthWrite: false })
+  piso.position.set(-90000, 0, 60000)
+  piso.updateWorldMatrix(true, false)
+  const matriz = new Matrix4().makeTranslation(-90000, 0, 60000),
+    recortes = new RecortesDoSoloCompilado(
+      [{ id: 'trilha', geometria: trilha, material, matriz }],
+      () => 0,
+    ),
+    g = recortes.recortar({ geometria: piso.geometry, matriz: piso.matrixWorld }),
+    visual = new MundoDoTeste([{ geometria: g, matriz: piso.matrixWorld }])
+  try {
+    expect(area(g, piso.matrixWorld)).toBeCloseTo(32 * 32 - 4 * 16, 4)
+    expect(
+      visual.rastrear(new Vector3(-90000, 5, 60000), new Vector3(-90000, -5, 60000)),
+    ).toBeNull()
+    expect(
+      visual.rastrear(new Vector3(-89990, 5, 60000), new Vector3(-89990, -5, 60000))?.ponto.y,
+    ).toBeCloseTo(0, 6)
+  } finally {
+    visual.descartar()
+    g.dispose()
+    piso.geometry.dispose()
+    piso.material.dispose()
+    trilha.dispose()
     material.dispose()
   }
 })

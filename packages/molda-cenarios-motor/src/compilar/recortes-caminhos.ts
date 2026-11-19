@@ -1,8 +1,17 @@
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import { recortarAtributos } from '@sistemazero/molda-cenarios-core/geometria'
 import type { FonteDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
-import { Box3, BufferGeometry, Float32BufferAttribute, Matrix4, Vector3 } from 'three'
+import {
+  BackSide,
+  Box3,
+  BufferGeometry,
+  Float32BufferAttribute,
+  FrontSide,
+  Matrix4,
+  Vector3,
+} from 'three'
 import { lerParteEstatica } from '../curvas/parte-estatica'
+import { transformarGeometriaEstatica } from '../geometria-instanciada'
 import { IndiceDeCaixas } from '../indice-de-caixas'
 import type { ParteDoModelo } from '../modelos'
 import type { SuperficieDoObjeto } from '../superficies'
@@ -12,17 +21,36 @@ const TOLERANCIA_COPLANAR = 0.0001 // metros: apenas classifica, nunca desloca u
 
 /** glTF não conserva polygonOffset/depthWrite de decals. Remove somente o solo
  * visual sob os triângulos realmente coplanares; o terreno físico não muda. */
-export class RecortesVisuaisDosCaminhos {
+export class RecortesDoSoloCompilado {
   private readonly triangulos: Vector3[][] = []
   private readonly indice = new IndiceDeCaixas()
   get quantidade() {
     return this.triangulos.length
   }
-  constructor(fontes: readonly SuperficieDoObjeto[], altura: FonteDeAlturas) {
-    const caixas: Box3[] = []
+  constructor(
+    fontes: Iterable<SuperficieDoObjeto>,
+    altura: FonteDeAlturas,
+    opcoes: { incluirSolidos?: boolean } = {},
+  ) {
+    const caixas: Box3[] = [],
+      pontos = [new Vector3(), new Vector3(), new Vector3()],
+      normal = new Vector3(),
+      ab = new Vector3(),
+      ac = new Vector3(),
+      niveis = new Float64Array(3)
+    let visitas = 0
     for (const f of fontes) {
       const materiais = Array.isArray(f.material) ? f.material : [f.material],
-        decal = materiais.map((m) => m.polygonOffset && !m.depthWrite)
+        decal = materiais.map(
+          (m) =>
+            (m.polygonOffset && !m.depthWrite) ||
+            (opcoes.incluirSolidos &&
+              m.depthWrite &&
+              !m.transparent &&
+              !m.alphaTest &&
+              !m.alphaHash &&
+              !m.alphaToCoverage),
+        )
       if (!decal.some(Boolean)) continue
       if (!decal.every(Boolean))
         throw Error('Separe os materiais de decal antes de compilar o caminho.')
@@ -40,26 +68,31 @@ export class RecortesVisuaisDosCaminhos {
       )
         throw Error('O decal do caminho não contém triângulos completos.')
       for (let i = inicio; i < fim; i += 3) {
-        const pontos = [0, 1, 2].map((j) =>
-          new Vector3()
-            .fromBufferAttribute(p, indices?.getX(i + j) ?? i + j)
-            .applyMatrix4(f.matriz),
-        )
+        if (++visitas > LIMITES_DA_EXPORTACAO.malha.verticesDaFonte)
+          throw Error(
+            'As superfícies coplanares excedem o orçamento de leitura. Divida a região de exportação.',
+          )
+        for (let j = 0; j < 3; j++)
+          pontos[j]!.fromBufferAttribute(p, indices?.getX(i + j) ?? i + j).applyMatrix4(f.matriz)
         if (pontos.some((p) => ![p.x, p.y, p.z].every(Number.isFinite)))
           throw Error('O decal do caminho contém posições inválidas.')
-        const niveis = pontos.map((p) => altura(p.x, p.z))
+        for (let j = 0; j < 3; j++) niveis[j] = altura(pontos[j]!.x, pontos[j]!.z)
         if (niveis.some((h) => !Number.isFinite(h)))
           throw Error('A altura de referência do decal é inválida.')
         if (pontos.some((p, j) => Math.abs(p.y - niveis[j]!) > TOLERANCIA_COPLANAR)) continue
+        normal.crossVectors(
+          ab.subVectors(pontos[1]!, pontos[0]!),
+          ac.subVectors(pontos[2]!, pontos[0]!),
+        )
+        if (normal.lengthSq() < 1e-20) continue
         if (
-          new Vector3()
-            .crossVectors(pontos[1]!.clone().sub(pontos[0]!), pontos[2]!.clone().sub(pontos[0]!))
-            .lengthSq() < 1e-20
+          (materiais[0]!.side === FrontSide && normal.y <= 0) ||
+          (materiais[0]!.side === BackSide && normal.y >= 0)
         )
           continue
         if (this.triangulos.length >= 65_536)
           throw Error('Os decals excedem o orçamento de triângulos para recortar o solo visual.')
-        this.triangulos.push(pontos)
+        this.triangulos.push(pontos.map((p) => p.clone()))
         caixas.push(new Box3().setFromPoints(pontos).expandByScalar(TOLERANCIA_COPLANAR))
       }
     }
@@ -76,10 +109,11 @@ export class RecortesVisuaisDosCaminhos {
       volume.expandByPoint(ponto.fromBufferAttribute(posicao, i))
     volume.applyMatrix4(parte.matriz).expandByScalar(TOLERANCIA_COPLANAR)
     if (!this.indice.sobrepor(volume).length) return parte.geometria.clone()
-    const fonte = lerParteEstatica(
-      { geometria: parte.geometria, matriz: new Matrix4() },
-      new Matrix4(),
-    )
+    // O plano do palco é XY com rotação no nó; o relevo já é XZ. Recortar sempre
+    // nos eixos horizontais do mundo, conservando origem local para precisão.
+    const origem = new Vector3().setFromMatrixPosition(parte.matriz),
+      orientacao = parte.matriz.clone().setPosition(0, 0, 0),
+      fonte = lerParteEstatica({ geometria: parte.geometria, matriz: orientacao }, new Matrix4())
     let g: BufferGeometry | undefined
     try {
       const malha = fonte.malha,
@@ -88,7 +122,6 @@ export class RecortesVisuaisDosCaminhos {
         nomes = Object.keys(malha.atributos),
         componentes = nomes.reduce((s, n) => s + malha.atributos[n]!.itemSize, 0),
         saidas = new Map(nomes.map((n) => [n, [] as number[]])),
-        inversa = parte.matriz.clone().invert(),
         locais = new Map<number, { x: number; z: number }[]>(),
         pontos = [new Vector3(), new Vector3(), new Vector3()],
         caixa = new Box3()
@@ -97,9 +130,7 @@ export class RecortesVisuaisDosCaminhos {
       for (let i = 0; i < indices.length; i += 3) {
         const ids = [indices[i]!, indices[i + 1]!, indices[i + 2]!]
         for (let j = 0; j < 3; j++)
-          pontos[j]!.set(p[ids[j]! * 3]!, p[ids[j]! * 3 + 1]!, p[ids[j]! * 3 + 2]!).applyMatrix4(
-            parte.matriz,
-          )
+          pontos[j]!.set(p[ids[j]! * 3]!, p[ids[j]! * 3 + 1]!, p[ids[j]! * 3 + 2]!).add(origem)
         const candidatos = this.indice.sobrepor(
           caixa.setFromPoints(pontos).expandByScalar(TOLERANCIA_COPLANAR),
         )
@@ -128,7 +159,7 @@ export class RecortesVisuaisDosCaminhos {
                 let contorno = locais.get(id)
                 if (!contorno) {
                   contorno = this.triangulos[id]!.map((p) => {
-                    const v = p.clone().applyMatrix4(inversa)
+                    const v = p.clone().sub(origem)
                     return { x: v.x, z: v.z }
                   })
                   locais.set(id, contorno)
@@ -154,6 +185,11 @@ export class RecortesVisuaisDosCaminhos {
         )
       g.computeBoundingBox()
       g.computeBoundingSphere()
+      if (!orientacao.equals(new Matrix4()) && g.getAttribute('position').count) {
+        const local = transformarGeometriaEstatica(g, orientacao.invert())
+        g.dispose()
+        g = local
+      }
       return g
     } catch (erro) {
       g?.dispose()

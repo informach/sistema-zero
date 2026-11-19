@@ -3,6 +3,7 @@ import { ExtendedTriangle, MeshBVH } from 'three-mesh-bvh'
 import { IndiceDeCaixas } from '../indice-de-caixas'
 
 export interface FonteDeColisao {
+  objeto?: string
   geometria: BufferGeometry
   matriz: Matrix4
 }

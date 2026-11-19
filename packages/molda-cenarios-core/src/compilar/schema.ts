@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BasePlanaSchema } from '../v2/documento'
 import {
   AguaSchema,
   CaminhoSchema,
@@ -38,6 +39,7 @@ export const CenaCompiladaSchema = z
     nos: z.array(NoCompiladoSchema).max(32768),
     colisoes: z.array(ColisaoCompiladaSchema).max(32768),
     terreno: TerrenoCompiladoSchema.optional(),
+    plano: BasePlanaSchema.omit({ tipo: true }).extend({ colisao: id }).optional(),
     aguas: z.array(AguaSchema).max(4096),
     caminhos: z.array(CaminhoSchema).max(4096),
     marcadores: z.array(MarcadorCompiladoSchema).max(4096),
@@ -215,6 +217,28 @@ export const CenaCompiladaSchema = z
       if (c.acabamento) conferirModelo(c.acabamento)
       if (c.aparencia?.textura) conferirTexturaDeOrigem(c.aparencia.textura.id)
       pontos += c.pontos.length
+    }
+    if (d.plano) {
+      if (d.terreno) falhar('A cena não pode declarar terreno e piso plano ao mesmo tempo.')
+      const piso = d.colisoes.find((c) => c.id === d.plano!.colisao),
+        p = d.plano,
+        esperado = [-p.largura / 2, 0, -p.comprimento / 2, p.largura / 2, 0, p.comprimento / 2],
+        real = piso
+          ? [
+              piso.volume.min.x,
+              piso.volume.min.y,
+              piso.volume.min.z,
+              piso.volume.max.x,
+              piso.volume.max.y,
+              piso.volume.max.z,
+            ]
+          : []
+      if (
+        piso?.tipo !== 'terreno' ||
+        piso.entidade !== null ||
+        real.some((v, i) => Math.abs(v - esperado[i]!) > 1e-5)
+      )
+        falhar('O piso plano precisa da colisão finita correspondente às suas dimensões.')
     }
     if (d.terreno) {
       const t = d.terreno,

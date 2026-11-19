@@ -237,8 +237,8 @@ export class AguasDoPalco {
   }
   fontesDoTeste(): FonteDeColisao[] {
     this.grupo.updateWorldMatrix(true, true)
-    return [...this.entradas.values()].flatMap((e) =>
-      e.solidos.map((s) => ({ geometria: s.geometry, matriz: s.matrixWorld })),
+    return [...this.entradas].flatMap(([id, e]) =>
+      e.solidos.map((s) => ({ objeto: id, geometria: s.geometry, matriz: s.matrixWorld })),
     )
   }
   consultasDoTeste(): ReadonlyMap<string, ConsultaDeAgua> {

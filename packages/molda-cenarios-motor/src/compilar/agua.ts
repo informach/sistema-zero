@@ -160,3 +160,45 @@ export async function prepararAguaCompilada(
     throw erro
   }
 }
+
+/** Faixas de fundo constante dispensam mapa de pixels; continuam com geometria
+ * e parâmetros originais disponíveis para o efeito dinâmico do runtime. */
+export function prepararAguaUniforme(fonte: FonteDeAguaCompilada, sinal: AbortSignal) {
+  sinal.throwIfAborted()
+  conferirGeometriaEstatica(fonte.geometria)
+  if (
+    fonte.geometria.getAttribute('position').count > 65000 ||
+    (fonte.geometria.index?.count ?? fonte.geometria.getAttribute('position').count) > 390000
+  )
+    throw Error('Divida a faixa uniforme de água antes de preparar o acabamento.')
+  const geometria = fonte.geometria.clone(),
+    amostra = new Float64Array(4),
+    original = fonte.acabamento.material,
+    material = new MeshStandardMaterial({
+      transparent: true,
+      depthWrite: false,
+      roughness: original.roughness,
+      metalness: original.metalness,
+      side: original.side,
+    })
+  let descartado = false
+  const descartar = () => {
+    if (descartado) return
+    descartado = true
+    geometria.dispose()
+    material.dispose()
+  }
+  try {
+    geometria.computeBoundingBox()
+    const p = geometria.boundingBox!.getCenter(new Vector3()).applyMatrix4(fonte.matriz)
+    fonte.acabamento.amostrarEstatico(p, 0, undefined, amostra)
+    material.color.setRGB(amostra[0]!, amostra[1]!, amostra[2]!)
+    material.opacity = amostra[3]!
+    material.name = 'mcn_agua_estatica'
+    geometria.deleteAttribute('color')
+    return { geometria, material, pintura: undefined, descartar }
+  } catch (erro) {
+    descartar()
+    throw erro
+  }
+}

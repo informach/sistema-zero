@@ -60,6 +60,39 @@ function cena() {
   }
 }
 
+test('piso plano declara a colisão finita e não pode coexistir com relevo', () => {
+  const d = cena(),
+    plano = { largura: 16, comprimento: 32, colisao: 'piso' },
+    colisao = {
+      id: 'piso',
+      entidade: null,
+      tipo: 'terreno',
+      arquivo: 'colisoes/piso.glb',
+      matriz: [...matriz],
+      volume: { min: { x: -8, y: 0, z: -16 }, max: { x: 8, y: 0, z: 16 } },
+    },
+    comPiso = {
+      ...d,
+      plano,
+      colisoes: [colisao],
+      arquivos: [
+        ...d.arquivos,
+        { ...d.arquivos[0], caminho: 'colisoes/piso.glb', papel: 'colisao' },
+      ],
+    }
+  expect(lerCenaCompilada(comPiso).plano).toEqual(plano)
+  for (const alteracao of [{ colisao: 'ausente' }, { largura: 20 }])
+    expect(() => lerCenaCompilada({ ...comPiso, plano: { ...plano, ...alteracao } })).toThrow(
+      /piso plano/,
+    )
+  expect(() =>
+    lerCenaCompilada({ ...comPiso, colisoes: [{ ...colisao, entidade: 'casa' }] }),
+  ).toThrow(/piso plano/)
+  expect(() => lerCenaCompilada({ ...comPiso, colisoes: [{ ...colisao, tipo: 'malha' }] })).toThrow(
+    /piso plano/,
+  )
+})
+
 test('restauração de efeito só pode apontar para água com parâmetros e arquivo correspondentes', () => {
   const d = cena()
   expect(() =>
