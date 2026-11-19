@@ -190,12 +190,12 @@ describe('threeRenderBudgetRuntime — níveis', () => {
     expect(fixed.budget.tier).toBe('alta')
   })
 
-  it('sombra 2048/PCFSoft no alta e 1024/PCF no leve; efeitos e MSAA só no alta', () => {
+  it('sombra 2048/PCF no alta e 1024/PCF no leve; efeitos e MSAA só no alta', () => {
     const { budget, renderer } = makeBudget({ dpr: 1, css: [640, 360] })
     const sun = new RealTHREE.DirectionalLight()
     budget.applyShadow(sun)
     expect(sun.shadow.mapSize.x).toBe(2048)
-    expect(renderer.shadowMap.type).toBe(RealTHREE.PCFSoftShadowMap)
+    expect(renderer.shadowMap.type).toBe(RealTHREE.PCFShadowMap)
     expect(budget.postFx()).toBe(true)
     expect(budget.msaa()).toBe(4)
     budget.setTier('leve')
