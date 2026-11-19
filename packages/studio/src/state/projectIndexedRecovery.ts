@@ -72,15 +72,18 @@ export async function recoverIndexedProjectWrites(
   const recovered: string[] = []
   const consumed = new Set<string>()
   const sourceOf = (recovery: RecoveryWrite) =>
-    recoverySourceIdentity({
-      key: projectRecoveryKey(recovery.projectId, recovery.head.writer, version),
-      token: recovery.head.token,
-    })
+    recoverySourceIdentity(
+      {
+        key: projectRecoveryKey(recovery.projectId, recovery.head.writer, version),
+        token: recovery.head.token,
+      },
+      recovery.projectId,
+    )
   const confirmed = (recovery: RecoveryWrite) => {
     consumed.add(sourceOf(recovery))
     if (!recovery.incompleteBlocks)
       for (const source of recovery.replacesRecovery ?? [])
-        consumed.add(recoverySourceIdentity(source))
+        consumed.add(recoverySourceIdentity(source, recovery.projectId))
   }
   for (const recovery of latestRecoveries(valid)) {
     if (deferRecovery?.(recovery)) continue
@@ -206,11 +209,19 @@ async function copyConflictingRecovery(
   const id = `recuperado-${source.slice(0, 28)}-${recovery.head.token.replaceAll('-', '').slice(0, 24)}`
   const copy = { ...project, id, name: `${project.name.slice(0, 176)} (edição recuperada)` }
   const stagedKey = projectRecoveryKey(source, recovery.head.writer, version)
-  const sources = (recovery.replacesRecovery ?? []).filter(
-    (entry) =>
-      entry.key.startsWith(`${projectRecoveryPrefix(version)}${source}:`) &&
-      entry.key !== stagedKey,
+  const allSources = (recovery.replacesRecovery ?? []).filter((entry) =>
+    entry.key.startsWith(`${projectRecoveryPrefix(version)}${source}:`),
   )
+  const sources = allSources.filter((entry) => entry.key !== stagedKey)
+  const prepared = allSources.length
+    ? await (await import('./projectRecoverySources')).prepareRecoverySources(
+        scope,
+        recovery,
+        allSources,
+        stagedKey,
+        version,
+      )
+    : undefined
   const copyWrite: IdbWrite = {
     puts: [
       ...projectStorageEntries(copy, version),
@@ -237,9 +248,10 @@ async function copyConflictingRecovery(
       projectMetaKey(id, version),
       projectHeadKey(id, version),
       projectMigrationKey(id, version),
-      ...sources.map((entry) => entry.key),
+      ...(prepared?.keys ?? []),
     ],
     ([latest, existing, targetHead, provenance, ...ancestors]) => {
+      prepared?.assertUnchanged(latest, ancestors)
       const draft = latest as RecoveryWrite | undefined
       if (draft?.head.token !== recovery.head.token || !localSnapshotsEqual(draft, recovery))
         return { write: {}, result: undefined }
@@ -261,15 +273,14 @@ async function copyConflictingRecovery(
         return { write: {}, result: undefined }
       const deletes = [
         stagedKey,
-        ...sources.flatMap((entry, index) =>
-          (ancestors[index] as RecoveryWrite | undefined)?.head.token === entry.token
-            ? [entry.key]
-            : [],
-        ),
+        ...sources.flatMap((entry) => (prepared?.canRetire(entry) ? [entry.key] : [])),
       ]
       return {
         write: {
-          puts: existing || targetHead ? [] : physicalCopy.puts,
+          puts: [
+            ...(existing || targetHead ? [] : (physicalCopy.puts ?? [])),
+            ...(prepared?.puts ?? []),
+          ],
           deletes,
         },
         result: isLocalHead(targetHead) && targetHead.deleted ? undefined : id,

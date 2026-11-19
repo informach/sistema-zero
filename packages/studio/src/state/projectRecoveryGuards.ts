@@ -8,15 +8,15 @@ import {
 import {
   PROJECT_STORAGE_VERSION,
   type ProjectStorageVersion,
-  projectMetaKey,
-  projectFilesKey,
-  projectStateKey,
-  projectBlocksKey,
   projectAssetsKey,
-  projectThumbKey,
+  projectBlocksKey,
+  projectFilesKey,
+  projectMetaKey,
   projectRecoveryKey,
+  projectStateKey,
+  projectThumbKey,
 } from './projectStorageKeys'
-import { ExitJournalError, type ExitJournalEntry } from './synchronousExitJournal'
+import { type ExitJournalEntry, ExitJournalError } from './synchronousExitJournal'
 
 export function synchronousRecovery(
   entry: ExitJournalEntry,
@@ -136,6 +136,9 @@ export function nativeRecovery(
 }
 
 /** Identity of the exact staged revision, including its writer and project. */
-export function recoverySourceIdentity(source: { key: string; token: string }): string {
-  return JSON.stringify([source.key, source.token])
+export function recoverySourceIdentity(
+  source: { key: string; token: string },
+  projectId: string,
+): string {
+  return JSON.stringify([projectId, source.key, source.token])
 }

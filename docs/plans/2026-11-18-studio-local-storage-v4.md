@@ -314,3 +314,23 @@ O padrão permanece v3; esta etapa não fecha renderização/virtualização do 
 O migrador existente agora aceita destino versionado e usa o codec comum para identificar conteúdo sem perda de -0/undefined. Os recibos v4 preservam a fonte por mapa de chaves, conferido por contrato e CAS; v3 conserva o array/namespace anterior. Origem, versão e snapshot de recibos futuros bloqueiam consumo da fonte. Relatório: `docs/qa/2026-11-19-studio-legacy-layout-identity.md`.
 
 O driver nativo conferiu ambas as origens em Chromium/WebKit, inclusive metadados profundos e dados do jogo intactos. Suíte ampliada: 517 testes / 2.744 asserções. Typecheck, lint e bundle aprovados. Falhas de reprodução e de empacotamento da fixture foram preservadas nos logs. A integração com carregadores/lista e ativação continua sendo a próxima etapa; a escrita padrão ainda é v3.
+
+
+## Continuação — origens completas e namespace de arquivos
+
+Integração da branch principal até `74105f9e7` (inclui correção do servidor Python exportado). A validação rara de ancestrais é reaproveitada com destino v3/v4 explícito. Snapshots completos e arquivos existentes participam da comparação CAS; origens futuras bloqueiam consumo e promoção. Arquivos v3 conservam o namespace anterior e arquivos v4 usam `sz:v4:project-backup:`. O transporte físico é preparado antes da transação.
+
+O laboratório mantém os codecs compartilhados e a separação de decodificação/leitura fria: não reincorpora um segundo codec de grafo. Espelhos brutos v3 continuam pertencendo ao adaptador de migração e não ganham autoridade para apagar fontes v4 por coincidência de token. Os testes específicos cobrem ambos os namespaces e documentos futuros. A prova nativa anterior de 10.000 registros e layouts v1/v2 permanece, junto da nova prova de ancestral profundo.
+
+A escrita padrão continua v3. Próximo avanço: integração de base/listagem/carregadores e preparação de saída fria; depois ativação exclusivamente no laboratório e homologação integrada. R1 (isolamento dos runtimes) e R2 (montagem visual de projetos grandes) continuam abertos.
+
+
+### Contrato de integração dos carregadores (próxima implementação)
+
+Usar um orquestrador raro no módulo existente de migrações, chamado pelo coordenador ao executar em v4; não criar fila ou banco paralelo. Ele reúne IDs de bases v3 ainda presentes e fontes de recuperação v3, migra cada projeto pelo CAS já implementado e executa o replay existente. As bases sem journal também precisam ser migradas. A lista isola falha de um projeto, mantém as fontes e retorna resumo pendente; a abertura de um ID deve propagar erro explícito sem recorrer a uma cópia histórica mais velha.
+
+Partições v3 de dados reaparecidas significam edição de aba antiga mesmo com v4 existente; promover para cópia recuperada. Cabeça/histórico/marcador v3 preservados após migração válida não significam, sozinhos, nova edição. Head vivo sem dados e sem destino v4 é pendência, conforme o teste já existente. Não derivar proprietário de journal cortando chave no último dois-pontos: escritores podem conter dois-pontos; conferir o payload e o contrato nativo.
+
+O documento, shell, metadados, blocos, materiais, resumos e vínculo com cabeça durável devem observar o mesmo corte antes de permitir gravação. Capturar o scope antes de qualquer await. Preparar o transporte v4 por leitura normal antes de permitir edição/saída de projeto novo. Dados do jogo conservam as chaves e valores brutos existentes. A listagem sem origens antigas deve continuar sem carregar decodificadores, motores ou editor.
+
+A lacuna independente de `sz:v2:project:<id>` na sondagem de abertura direta está sendo corrigida na branch principal com seis testes transacionais; incorporar essa correção após sua qualificação.

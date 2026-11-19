@@ -5,7 +5,9 @@ import {
   setAutosaveDelayForTests,
   setAutosaveMaxWaitForTests,
 } from '../../persistence/service'
-import { readValues } from '../idbTransaction'
+import { localSnapshotsEqual } from '../../project-migrations/localTransaction'
+import { readAllKeys, readValue, readValues } from '../idbTransaction'
+import { decodeProjectJsonGraph as decodeRecoverySnapshot } from '../projectJsonGraphDecode'
 import {
   coordinatedProjectWrite,
   projectExitRecoveryStatus,
@@ -18,13 +20,20 @@ import {
   projectFilesKey,
   projectHeadKey,
   projectMetaKey,
+  projectRecoveryKey,
   projectStateKey,
 } from '../projectStorageKeys'
 import { assembleProjectRecord, projectStorageEntries } from '../projectStorageRecords'
-import { advanceLocalRevision, installLocalRevision, isLocalHead } from '../projectStorageRevision'
-import { createProjectStorageScope } from '../projectStorageRuntime'
+import {
+  advanceLocalRevision,
+  installLocalRevision,
+  isLocalHead,
+  readLocalRevision,
+} from '../projectStorageRevision'
+import { createProjectStorageScope, type ProjectStorageScope } from '../projectStorageRuntime'
 import type { ProjectStoreApi } from '../projectStore'
 import { prepareProjectForHost } from '../projectValidation'
+import { readSynchronousExitJournal } from '../synchronousExitJournalRead'
 import { qualifyDeepStorage } from './projectDeepStorageBrowser'
 
 // Observe real browser transactions. window.name survives the same-origin reload
@@ -188,6 +197,52 @@ createPersistenceService(store, {
 Object.assign(window, {
   storageHarness: {
     qualifyDeepStorage: () => qualifyDeepStorage(scope),
+    async qualifyDeepAncestorArchive() {
+      const base: Project = { ...project, id: `${id}-deep-archive`, assets: [] }
+      installLocalRevision(base, scope.identity)
+      await save(base)
+      let deep: Record<string, unknown> = { leaf: 'preserved', missing: undefined, zero: -0 }
+      for (let depth = 0; depth < 10_000; depth++) deep = { child: deep }
+      const parent = Object.assign(advanceLocalRevision(base, { ...base, name: 'Deep ancestor' }), {
+        futureMetadata: deep,
+      })
+      // Force the synchronous recovery path, regardless of native clone depth support.
+      const denied: ProjectStorageScope = {
+        ...scope,
+        store: (mode, callback) =>
+          scope.store(mode, (store) => {
+            store.transaction.abort()
+            return callback(store)
+          }),
+      }
+      await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, denied)
+      const entry = readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, base.id)[0]
+      if (!entry) throw new Error('Missing deep ancestor source')
+      const child = advanceLocalRevision<Project>(base, { ...base, name: 'Small descendant' })
+      readLocalRevision(child)!.lineage.recoverySources = [
+        { key: projectRecoveryKey(base.id, entry.writer), token: entry.token },
+      ]
+      await stageProjectExit(child, { puts: projectStorageEntries(child) }, scope)
+      await save(child)
+      const keys = (await readAllKeys(scope.store)).filter((key) =>
+        String(key).startsWith(`sz:project-backup:${base.id}:recovery-`),
+      )
+      if (keys.length !== 1) throw new Error('Missing unique ancestor archive')
+      const archive = (await readValue(scope.store, keys[0]!)) as { encoded: string }
+      const exact = localSnapshotsEqual(decodeRecoverySnapshot(archive.encoded), entry.value)
+      const acknowledged = scope.exitJournalStorage!.getItem(entry.key) === null
+      const [meta, journal] = await readValues(scope.store, [
+        projectMetaKey(base.id),
+        projectRecoveryKey(base.id, entry.writer),
+      ])
+      return {
+        exact,
+        acknowledged,
+        archived: keys.length,
+        meta,
+        journalAbsent: journal === undefined,
+      }
+    },
     previousLifecycle,
     recoveredProjectIds,
     recoveredHead: isLocalHead(head) ? head : null,

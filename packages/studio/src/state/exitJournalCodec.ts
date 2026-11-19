@@ -6,3 +6,5 @@ export const DOCUMENT_LIMITS = { nodes: 500_000, textChars: EXIT_JOURNAL_MAX_CHA
 
 export const encodeExitJournal = (value: unknown): string =>
   encodeProjectJsonGraph(value, DOCUMENT_LIMITS)
+
+export const encodeRecoverySnapshot = encodeProjectJsonGraph

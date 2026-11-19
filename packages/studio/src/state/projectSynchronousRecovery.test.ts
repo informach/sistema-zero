@@ -1,10 +1,15 @@
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
+import type { Project } from '../core/project'
 import { buildProProject } from '../core/proProject'
+import { localSnapshotsEqual } from '../project-migrations/localTransaction'
 import { migrateLocalV3Project } from '../project-migrations/localV3'
 import { prepareLocalV3Recovery, stageLocalV3Recovery } from '../project-migrations/localV3Recovery'
 import { recoverLocalV3ProjectWrites } from '../project-migrations/localV3RecoveryReplay'
+import { EXIT_JOURNAL_MAX_CHARS, encodeExitJournal } from './exitJournalCodec'
+import { decodeExitJournal } from './exitJournalDecode'
 import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
+import { decodeProjectJsonGraph as decodeRecoverySnapshot } from './projectJsonGraphDecode'
 import {
   bindProjectToDurableHead,
   coordinatedProjectWrite,
@@ -148,6 +153,10 @@ for (const mode of ['native', 'synchronous-only', 'confirmed-save'] as const)
         futureMetadata: { retained: 'source revision', disabled: false },
       })
       await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.scope)
+      const parentEntry = readSynchronousExitJournal(
+        f.scope.exitJournalStorage,
+        f.scope.identity,
+      )[0]!
       // The editor fallback is available when promotion was interrupted but its journal survived.
       const recovered = await loadRecoverableProjectDraft(f.scope, parent.id)
       if (!recovered) throw new Error('Missing preserved draft')
@@ -173,6 +182,16 @@ for (const mode of ['native', 'synchronous-only', 'confirmed-save'] as const)
         (key) => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
       )
       expect(metas).toEqual([projectMetaKey(child.id)])
+      const archives = (await readAllKeys(f.scope.store)).filter((key) =>
+        String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+      )
+      expect(archives).toHaveLength(1)
+      const archive = (await readValue(f.scope.store, archives[0]!)) as {
+        encoding: string
+        encoded: string
+      }
+      expect(archive.encoding).toBe('project-json-graph-v1')
+      expect(decodeRecoverySnapshot(archive.encoded)).toEqual(parentEntry.value)
       expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
     } finally {
       f.close()
@@ -1001,6 +1020,433 @@ test('overlapping project prefixes cannot recover a different owner through a co
       tree: { 'main.ts': { content: 'initial' } },
     })
     expect(await readValue(f.scope.store, key)).toEqual(incoming)
+  } finally {
+    f.close()
+  }
+})
+
+for (const source of ['synchronous', 'native', 'same-writer-synchronous'] as const)
+  for (const finish of ['save', 'recover'] as const)
+    test(`a supported descendant preserves its future-format ancestor: ${source}/${finish}`, async () => {
+      const f = await fixture()
+      try {
+        const parent = f.edit('future parent source')
+        const future: RecoveryWrite = {
+          version: 1,
+          projectId: parent.id,
+          head: {
+            version: 1,
+            writer:
+              source === 'same-writer-synchronous'
+                ? readLocalRevision(parent)!.lineage.writer
+                : 'future-parent-writer',
+            token: 'future-parent-token',
+            base: null,
+            sequence: 1,
+          },
+          applications: [],
+          write: {
+            puts: projectStorageEntries(parent).map(([key, value]) => [
+              key,
+              key === projectMetaKey(parent.id)
+                ? { ...(value as object), formatVersion: 9999 }
+                : value,
+            ]),
+          },
+        }
+        const parentKey = projectRecoveryKey(parent.id, future.head.writer)
+        let exitKey: string | undefined
+        if (source === 'native')
+          await writeInOneTransaction(f.scope.store, { puts: [[parentKey, future]] })
+        else
+          exitKey = stageSynchronousExitJournal(
+            f.scope.exitJournalStorage,
+            f.scope.identity,
+            {
+              projectId: parent.id,
+              writer: future.head.writer,
+              token: future.head.token,
+            },
+            future,
+          )
+        const child = f.edit('supported child source')
+        readLocalRevision(child)!.lineage.recoverySources = [
+          { key: parentKey, token: future.head.token },
+        ]
+        await stageProjectExit(
+          child,
+          { puts: projectStorageEntries(child) },
+          finish === 'save' ? f.failed : f.scope,
+        )
+        if (finish === 'save')
+          await expect(
+            coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope),
+          ).rejects.toThrow()
+        else await expect(recoverProjectWrites(f.scope, child.id)).rejects.toThrow()
+        if (source === 'native') expect(await readValue(f.scope.store, parentKey)).toEqual(future)
+        else expect(f.scope.exitJournalStorage!.getItem(exitKey!)).toBe(encodeExitJournal(future))
+        expect(await readValue(f.scope.store, projectFilesKey(child.id))).toMatchObject({
+          tree: { 'main.ts': { content: 'initial' } },
+        })
+        expect(
+          readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity).some(
+            (entry) => entry.token !== future.head.token,
+          ),
+        ).toBe(true)
+      } finally {
+        f.close()
+      }
+    })
+
+test('an archive write failure rolls back promotion and retains both ancestor and descendant sources', async () => {
+  const f = await fixture()
+  try {
+    const parent = f.edit('ancestor source')
+    await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.failed)
+    const parentEntry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const child = advanceLocalRevision<Project>(parent, {
+      ...parent,
+      tree: { 'main.ts': { kind: 'file', content: 'descendant source' } },
+    })
+    readLocalRevision(child)!.lineage.recoverySources = [
+      { key: projectRecoveryKey(parent.id, parentEntry.writer), token: parentEntry.token },
+    ]
+    await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.scope)
+    let injected = false
+    const transaction = f.database.transaction.bind(f.database)
+    f.database.transaction = (names, mode, options) => {
+      const tx = transaction(names, mode, options)
+      if (mode === 'readwrite') {
+        const objectStore = tx.objectStore.bind(tx)
+        tx.objectStore = (name) => {
+          const store = objectStore(name)
+          const put = store.put.bind(store)
+          store.put = (value, key) => {
+            if (
+              typeof key === 'string' &&
+              key.startsWith(`sz:project-backup:${parent.id}:recovery-`)
+            ) {
+              injected = true
+              throw new DOMException('Archive quota', 'QuotaExceededError')
+            }
+            return put(value, key)
+          }
+          return store
+        }
+      }
+      return tx
+    }
+    await expect(recoverProjectWrites(f.scope, child.id)).rejects.toThrow()
+    expect(injected).toBe(true)
+    expect(await readValue(f.scope.store, projectFilesKey(child.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(2)
+    expect(
+      (await readAllKeys(f.scope.store)).filter((key) =>
+        String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+      ),
+    ).toEqual([])
+  } finally {
+    f.close()
+  }
+})
+
+test('a previously archived identity cannot consume a later source with the same token and different content', async () => {
+  const f = await fixture()
+  try {
+    const parent = f.edit('ancestor archived once')
+    await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.failed)
+    const parentEntry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const key = projectRecoveryKey(parent.id, parentEntry.writer)
+    const child = advanceLocalRevision<Project>(parent, {
+      ...parent,
+      tree: { 'main.ts': { kind: 'file', content: 'first descendant' } },
+    })
+    readLocalRevision(child)!.lineage.recoverySources = [{ key, token: parentEntry.token }]
+    await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.scope)
+    await recoverProjectWrites(f.scope, child.id)
+    const archiveKey = (await readAllKeys(f.scope.store)).find((key) =>
+      String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+    )!
+    const archive = await readValue(f.scope.store, archiveKey)
+    const captured = parentEntry.value as RecoveryWrite
+    const changed: RecoveryWrite = {
+      ...captured,
+      write: {
+        ...captured.write,
+        puts: captured.write.puts!.map(([key, value]) => [
+          key,
+          key === projectFilesKey(parent.id)
+            ? {
+                ...(value as object),
+                tree: {
+                  'main.ts': { kind: 'file', content: 'different content under the old token' },
+                },
+              }
+            : value,
+        ]),
+      },
+    }
+    stageSynchronousExitJournal(
+      f.scope.exitJournalStorage,
+      f.scope.identity,
+      { projectId: parent.id, writer: parentEntry.writer, token: parentEntry.token },
+      changed,
+    )
+    const next = f.edit('next descendant')
+    readLocalRevision(next)!.lineage.recoverySources = [{ key, token: parentEntry.token }]
+    await stageProjectExit(next, { puts: projectStorageEntries(next) }, f.failed)
+    await expect(recoverProjectWrites(f.scope, next.id)).rejects.toThrow('arquivo desta origem')
+    expect(await readValue(f.scope.store, archiveKey)).toEqual(archive)
+    expect(
+      readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity).some(
+        (entry) =>
+          entry.token === parentEntry.token &&
+          encodeExitJournal(entry.value) === encodeExitJournal(changed),
+      ),
+    ).toBe(true)
+    expect(await readValue(f.scope.store, projectFilesKey(child.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'first descendant' } },
+    })
+  } finally {
+    f.close()
+  }
+})
+
+for (const source of ['synchronous', 'native'] as const)
+  test(`a foreign-prefix ancestor remains intact without granting retirement authority: ${source}`, async () => {
+    const f = await fixture()
+    try {
+      const foreignId = `${f.project.id}:foreign`
+      const foreign: Project = {
+        ...f.project,
+        id: foreignId,
+        tree: { 'main.ts': { kind: 'file', content: 'future foreign source' } },
+      }
+      const original: RecoveryWrite = {
+        version: 1,
+        projectId: foreignId,
+        head: {
+          version: 1,
+          writer: 'foreign-writer',
+          token: 'foreign-token',
+          base: null,
+          sequence: 1,
+        },
+        applications: [],
+        write: {
+          puts: projectStorageEntries(foreign).map(([key, value]) => [
+            key,
+            key === projectMetaKey(foreignId)
+              ? { ...(value as object), formatVersion: 9999 }
+              : value,
+          ]),
+        },
+      }
+      const key = projectRecoveryKey(foreignId, original.head.writer)
+      let exitKey: string | undefined
+      if (source === 'native')
+        await writeInOneTransaction(f.scope.store, { puts: [[key, original]] })
+      else
+        exitKey = stageSynchronousExitJournal(
+          f.scope.exitJournalStorage,
+          f.scope.identity,
+          { projectId: foreignId, writer: original.head.writer, token: original.head.token },
+          original,
+        )
+      const child = f.edit('valid child project')
+      readLocalRevision(child)!.lineage.recoverySources = [{ key, token: original.head.token }]
+      await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.scope)
+      expect(await recoverProjectWrites(f.scope)).toContain(child.id)
+      expect(await readValue(f.scope.store, projectFilesKey(child.id))).toMatchObject({
+        tree: { 'main.ts': { content: 'valid child project' } },
+      })
+      if (source === 'native') expect(await readValue(f.scope.store, key)).toEqual(original)
+      else expect(f.scope.exitJournalStorage!.getItem(exitKey!)).toBe(encodeExitJournal(original))
+    } finally {
+      f.close()
+    }
+  })
+
+test('a live save cannot retire a parent whose native snapshot differs from its immutable mirror', async () => {
+  const f = await fixture()
+  try {
+    const parent = f.edit('original parent source')
+    await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.scope)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const recovered = await loadRecoverableProjectDraft(f.scope, parent.id)
+    if (!recovered || recovered.programmingLanguage === 'python') {
+      throw new Error('Missing editable JavaScript parent')
+    }
+    const captured = entry.value as RecoveryWrite
+    const changed: RecoveryWrite = {
+      ...captured,
+      write: {
+        ...captured.write,
+        puts: captured.write.puts!.map(([key, value]) => [
+          key,
+          key === projectFilesKey(parent.id)
+            ? {
+                ...(value as object),
+                tree: { 'main.ts': { kind: 'file', content: 'different native parent content' } },
+              }
+            : value,
+        ]),
+      },
+    }
+    const key = projectRecoveryKey(parent.id, entry.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, changed]] })
+    const child = advanceLocalRevision<Project>(recovered, {
+      ...recovered,
+      tree: { 'main.ts': { kind: 'file', content: 'descendant from original mirror' } },
+    })
+    await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.failed)
+    await expect(
+      coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope),
+    ).rejects.toThrow('mesma origem')
+    expect(await readValue(f.scope.store, key)).toEqual(changed)
+    expect(f.scope.exitJournalStorage!.getItem(entry.key)).toBe(entry.encoded)
+    expect(await readValue(f.scope.store, projectFilesKey(parent.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+  } finally {
+    f.close()
+  }
+})
+
+test('a parent replaced after preparation is not discarded using the old snapshot', async () => {
+  const f = await fixture()
+  try {
+    const parent = f.edit('parent before the race')
+    const original: RecoveryWrite = {
+      version: 1,
+      projectId: parent.id,
+      head: {
+        version: 1,
+        writer: 'ancestor-writer',
+        token: 'immutable-parent-token',
+        base: null,
+        sequence: 1,
+      },
+      applications: [],
+      write: { puts: projectStorageEntries(parent) },
+    }
+    const key = projectRecoveryKey(parent.id, original.head.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, original]] })
+    const changed: RecoveryWrite = {
+      ...original,
+      write: {
+        ...original.write,
+        puts: original.write.puts!.map(([path, value]) => [
+          path,
+          path === projectFilesKey(parent.id)
+            ? {
+                ...(value as object),
+                tree: { 'main.ts': { kind: 'file', content: 'new parent content racing the CAS' } },
+              }
+            : value,
+        ]),
+      },
+    }
+    const child = f.edit('child from the prepared source')
+    readLocalRevision(child)!.lineage.recoverySources = [{ key, token: original.head.token }]
+    await stageProjectExit(child, { puts: projectStorageEntries(child) }, f.scope)
+    let observedParent = false
+    let injected = false
+    const transaction = f.database.transaction.bind(f.database)
+    f.database.transaction = (names, mode, options) => {
+      if (mode === 'readwrite' && observedParent && !injected) {
+        injected = true
+        const update = transaction(names, mode, options)
+        update.objectStore('kv').put(changed, key)
+        update.commit()
+      }
+      const tx = transaction(names, mode, options)
+      if (mode === 'readonly') {
+        const objectStore = tx.objectStore.bind(tx)
+        tx.objectStore = (name) => {
+          const store = objectStore(name)
+          const get = store.get.bind(store)
+          store.get = (path) => {
+            const request = get(path)
+            if (path === key)
+              request.addEventListener('success', () => {
+                observedParent = true
+              })
+            return request
+          }
+          return store
+        }
+      }
+      return tx
+    }
+    await recoverProjectWrites(f.scope, child.id)
+    expect(injected).toBe(true)
+    const archives = (await readAllKeys(f.scope.store)).filter((path) =>
+      String(path).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+    )
+    expect(archives).toHaveLength(1)
+    const archive = (await readValue(f.scope.store, archives[0]!)) as { encoded: string }
+    expect(decodeRecoverySnapshot(archive.encoded)).toEqual(changed)
+    expect(await readValue(f.scope.store, projectFilesKey(child.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'child from the prepared source' } },
+    })
+  } finally {
+    f.close()
+  }
+})
+
+test('a deep ancestor is archived without requiring a deep native structured clone', async () => {
+  const f = await fixture()
+  try {
+    let deep: Record<string, unknown> = { leaf: 'kept', missing: undefined, zero: -0 }
+    for (let depth = 0; depth < 10_000; depth++) deep = { child: deep }
+    const parent = Object.assign(f.edit('deep parent'), { futureMetadata: deep })
+    await stageProjectExit(parent, { puts: projectStorageEntries(parent) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const child = f.edit('small supported descendant')
+    readLocalRevision(child)!.lineage.recoverySources = [
+      { key: projectRecoveryKey(parent.id, entry.writer), token: entry.token },
+    ]
+    await coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope)
+    const archiveKey = (await readAllKeys(f.scope.store)).find((key) =>
+      String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+    )!
+    const archive = (await readValue(f.scope.store, archiveKey)) as { encoded: string }
+    expect(localSnapshotsEqual(decodeRecoverySnapshot(archive.encoded), entry.value)).toBe(true)
+    expect(await readValue(f.scope.store, projectFilesKey(child.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'small supported descendant' } },
+    })
+  } finally {
+    f.close()
+  }
+})
+
+test('a native-only ancestor above the exit quota remains complete in its durable archive', async () => {
+  const f = await fixture()
+  try {
+    const parent = Object.assign(f.edit('large native parent'), {
+      futureMetadata: { text: 'x'.repeat(2_100_000) },
+    })
+    await stageProjectExit(
+      parent,
+      { puts: projectStorageEntries(parent) },
+      { ...f.scope, exitJournalStorage: undefined },
+    )
+    const key = projectRecoveryKey(parent.id, readLocalRevision(parent)!.lineage.writer)
+    const original = (await readValue(f.scope.store, key)) as RecoveryWrite
+    const child = f.edit('small native descendant')
+    readLocalRevision(child)!.lineage.recoverySources = [{ key, token: original.head.token }]
+    await coordinatedProjectWrite(child, { puts: projectStorageEntries(child) }, f.scope)
+    const archiveKey = (await readAllKeys(f.scope.store)).find((key) =>
+      String(key).startsWith(`sz:project-backup:${parent.id}:recovery-`),
+    )!
+    const archive = (await readValue(f.scope.store, archiveKey)) as { encoded: string }
+    expect(archive.encoded.length).toBeGreaterThan(EXIT_JOURNAL_MAX_CHARS)
+    expect(() => decodeExitJournal(archive.encoded)).toThrow()
+    expect(localSnapshotsEqual(decodeRecoverySnapshot(archive.encoded), original)).toBe(true)
+    expect(await readValue(f.scope.store, key)).toBeUndefined()
   } finally {
     f.close()
   }

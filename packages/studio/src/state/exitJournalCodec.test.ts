@@ -1,6 +1,11 @@
-import { decodeExitJournal } from './exitJournalDecode'
 import { expect, test } from 'bun:test'
-import { encodeExitJournal } from './exitJournalCodec'
+import {
+  EXIT_JOURNAL_MAX_CHARS,
+  encodeExitJournal,
+  encodeRecoverySnapshot,
+} from './exitJournalCodec'
+import { decodeExitJournal } from './exitJournalDecode'
+import { decodeProjectJsonGraph as decodeRecoverySnapshot } from './projectJsonGraphDecode'
 
 test('journal codec preserves unknown fields, undefined, arrays, tags and negative zero', () => {
   const value = {
@@ -90,3 +95,22 @@ for (const wire of [
   test('journal codec rejects malformed or future wire values', () => {
     expect(() => decodeExitJournal(JSON.stringify(wire))).toThrow()
   })
+
+test('both archive and exit contexts preserve the existing v1 wire bytes', () => {
+  const value = { negative: -0, missing: undefined, array: [-0, { x: 'x' }] }
+  const wire =
+    '{"version":1,"root":[0],"nodes":[{"object":[["negative",[-1]],["missing",[]],["array",[1]]]},{"array":[[-1],[2]]},{"object":[["x","x"]]}]}'
+  expect(encodeExitJournal(value)).toBe(wire)
+  expect(encodeRecoverySnapshot(value)).toBe(wire)
+  expect(decodeExitJournal(wire)).toEqual(value)
+  expect(decodeRecoverySnapshot(wire)).toEqual(value)
+})
+
+test('durable archives support accepted document sizes while the synchronous exit budget stays fixed', () => {
+  const value = { text: 'x'.repeat(EXIT_JOURNAL_MAX_CHARS + 1) }
+  expect(() => encodeExitJournal(value)).toThrow()
+  const encoded = encodeRecoverySnapshot(value)
+  expect(encoded.length).toBeGreaterThan(EXIT_JOURNAL_MAX_CHARS)
+  expect(() => decodeExitJournal(encoded)).toThrow()
+  expect(decodeRecoverySnapshot(encoded)).toEqual(value)
+})

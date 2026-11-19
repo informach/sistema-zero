@@ -114,6 +114,7 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
           'synchronousExitJournalRead.ts',
           'projectIndexedRecovery.ts',
           'projectRecoveryGuards.ts',
+          'projectRecoverySources.ts',
         ].some((file) => moduleId.replace(/\\/g, '/').endsWith(`/state/${file}`)),
       ),
     ).toEqual([])
