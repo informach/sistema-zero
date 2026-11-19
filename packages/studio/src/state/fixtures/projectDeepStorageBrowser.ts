@@ -4,7 +4,103 @@ import type { ProjectStorageScope } from '../projectStorageRuntime'
 import { createEmptyProject } from '../../core/project'
 import { migrateLocalV3Project } from '../../project-migrations/localV3'
 import { projectStorageEntries } from '../projectStorageRecords'
-import { projectHeadKey, projectMetaKey } from '../projectStorageKeys'
+import {
+  projectBlocksKey,
+  projectHeadKey,
+  projectMetaKey,
+  projectRecoveryKey,
+} from '../projectStorageKeys'
+import { gameTwoDManifest } from '../../official-extensions/game-2d/manifest'
+import {
+  prepareLocalV3Recovery,
+  stageLocalV3Recovery,
+} from '../../project-migrations/localV3Recovery'
+import type { RecoveryWrite } from '../projectStorageCoordinator'
+import { stageSynchronousExitJournal } from '../synchronousExitJournal'
+import { readSynchronousExitJournal } from '../synchronousExitJournalRead'
+
+async function qualifyLegacyDeepStaging(scope: ProjectStorageScope, blocks: unknown) {
+  const sourceScope = { ...scope, identity: `${scope.identity}-legacy-deep-stage` }
+  const project = {
+    ...createEmptyProject('native-deep-recovery', 'Rascunho profundo'),
+    blocksState: blocks,
+    installedExtensions: [
+      { id: gameTwoDManifest.id, version: gameTwoDManifest.version, installedAt: 1 },
+    ],
+  }
+  const recovery: RecoveryWrite = {
+    version: 1,
+    projectId: project.id,
+    head: {
+      version: 1,
+      writer: 'legacy-deep-writer',
+      token: 'legacy-deep-token',
+      base: null,
+      sequence: 1,
+    },
+    applications: [],
+    write: { puts: projectStorageEntries(project, 3) },
+  }
+  const start = performance.now()
+  const sourceKey = stageSynchronousExitJournal(
+    localStorage,
+    sourceScope.identity,
+    {
+      projectId: project.id,
+      writer: recovery.head.writer,
+      token: recovery.head.token,
+    },
+    recovery,
+  )
+  const sourceStored = performance.now()
+  try {
+    const entry = readSynchronousExitJournal(localStorage, sourceScope.identity, project.id)[0]
+    if (!entry) throw new Error('Native legacy exit source missing')
+    const sourceRead = performance.now()
+    const prepared = await prepareLocalV3Recovery(entry, sourceScope)
+    const preparedAt = performance.now()
+    await stageLocalV3Recovery(sourceScope, prepared)
+    const stagedAt = performance.now()
+    const [draft, archive, committed] = await readValues(scope.store, [
+      projectRecoveryKey(project.id, recovery.head.writer, 4),
+      prepared.backupKey,
+      projectMetaKey(project.id, 4),
+    ])
+    if (
+      encodeProjectJsonGraph(draft) !== encodeProjectJsonGraph(prepared.projected) ||
+      encodeProjectJsonGraph(archive) !== encodeProjectJsonGraph(prepared.archive)
+    )
+      throw new Error('Native legacy staging changed the snapshot or archive')
+    const blockRecord = (draft as RecoveryWrite).write.puts!.find(
+      ([key]) => key === projectBlocksKey(project.id, 4),
+    )![1] as { blocksState: unknown }
+    if (
+      encodeProjectJsonGraph(blockRecord.blocksState) !== encodeProjectJsonGraph(blocks) ||
+      committed !== undefined
+    )
+      throw new Error('Native legacy staging changed blocks or bypassed recovery promotion')
+    if (localStorage.getItem(sourceKey) !== entry.encoded)
+      throw new Error('Native legacy staging acknowledged an unconfirmed source')
+    const verifiedAt = performance.now()
+    return {
+      pendingOnly: true,
+      sourceRetained: true,
+      wireChars: entry.encoded.length,
+      timingsMs: {
+        sourceWrite: Math.round(sourceStored - start),
+        sourceRead: Math.round(sourceRead - sourceStored),
+        prepare: Math.round(preparedAt - sourceRead),
+        stage: Math.round(stagedAt - preparedAt),
+        verification: Math.round(verifiedAt - stagedAt),
+        total: Math.round(verifiedAt - start),
+      },
+    }
+  } finally {
+    // Fixture teardown releases its own localStorage quota after checking retention.
+    // The production helper does not acknowledge this source; v4 archive/journal remain.
+    localStorage.removeItem(sourceKey)
+  }
+}
 
 async function qualifyLegacyMigration(scope: ProjectStorageScope) {
   const original = Object.assign(createEmptyProject('native-v3-migration', 'Antes da migração'), {
@@ -135,8 +231,10 @@ export async function qualifyDeepStorage(scope: ProjectStorageScope) {
   )
     throw new Error('Incompatible storage write was not atomic')
   const migration = await qualifyLegacyMigration(scope)
+  const legacyRecovery = await qualifyLegacyDeepStaging(scope, blocks)
   return {
     migration,
+    legacyRecovery,
     ...shape,
     nativeCloneError,
     graphChars: encoded.length,

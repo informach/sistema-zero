@@ -250,3 +250,41 @@ O caminho de recuperação completo já foi qualificado no editor real na branch
 missão; ver docs/qa/2026-11-19-studio-recovery-ancestors-metadata.md no commit
 2f1ba1330 e a guarda adicional no commit 34322fa34. Esta branch continua com v3
 padrão e projeções v4 somente nos contratos experimentais.
+
+## Enfileiramento atômico experimental — 19/11/2026
+
+`stageLocalV3Recovery` grava o recibo original e o journal v4 na mesma promoção
+CAS existente. Conserva a fonte v3. Uma revisão v4 diferente, fonte trocada ou
+falha na segunda escrita não substitui dados nem deixa recibo parcial. Repetir a
+preparação a partir da mesma fonte é idempotente. Ainda não promove o documento
+final nem reconhece a fonte; a conexão com replay/carregadores continua pendente.
+
+O preparo captura o perfil/namespace/backend antes do primeiro await e produz
+snapshot imutável, com registro privado fraco de procedência. Arquivo e estágio
+recusam perfil/backend diferente ou objeto que não passou pelo preparo. O dado
+original do chamador continua editável. Envelopes profundos são preparados antes
+da transação, sem async novo na captura de saída.
+
+Verificação: 13 testes específicos/52 asserções, incluindo troca de perfil,
+idempotência, conflito e quota real na segunda escrita. Regressão: 494 testes,
+2.620 asserções, 76 arquivos, zero falhas, 54,86 s. Typecheck completo aprovado.
+Bundle inicial: 365.532 bytes brutos, 119.218 gzip, dois arquivos; 35 asserções
+aprovadas em 24,57 s, com tetos inalterados.
+
+A prova nativa agora lê um espelho v3 real de 1.769.020 caracteres com o modelo
+completo de 10.000 registros/9.920 IDs, prepara e enfileira o v4, verifica todos os
+campos do journal e arquivo, e comprova que o espelho v3 segue intacto. O meta
+final v4 permanece ausente: o teste não simula confirmação do replay. A limpeza
+posterior do próprio fixture libera sua quota local; não é reconhecimento de
+produto. O arquivo e journal v4 persistem no banco de teste.
+
+Os tempos por fase e hashes do código estão em
+`docs/qa/2026-11-19-studio-legacy-recovery-stage-native.json`. Uma observação por
+motor, com typecheck concorrente e carga externa não controlada. Leitura/preparo/
+estágio não são p95 de digitação. A primeira coleta tinha um rótulo que agrupava
+preparo, escrita da fonte e verificação; esse rótulo foi substituído por fases
+explícitas, sem usar o total agrupado como custo de preparo. Nenhum FPS foi medido.
+
+A ativação padrão permanece v3. Faltam reconhecimento condicional dos originais,
+coleta conjunta de espelhos/journals, integração de base/listagem/abertura,
+compatibilidade v1/v2 e homologação da abertura efetiva em v4.
