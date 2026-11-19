@@ -73,9 +73,11 @@ export function MapStage({
           {/* Os objetos por cima da grade (desenhados sempre; tocáveis só na camada de
               objetos, com uma ferramenta de objeto). */}
           <MapObjectsOverlay
-            tilemap={tilemap}
+            tilemap={c.objectScatter.preview?.map ?? tilemap}
             activeLayerId={c.activeObjectLayer?.id ?? null}
-            interactive={c.activeObjectLayer !== null && objectTool !== null}
+            interactive={
+              c.activeObjectLayer !== null && objectTool !== null && c.tool !== 'object-scatter'
+            }
             tool={objectTool}
             tileSize={c.tileSize}
             pad={c.pad}
@@ -86,6 +88,7 @@ export function MapStage({
             onSelectObject={c.chooseObject}
             onSelectObjects={c.chooseObjects}
             deleteVertexRef={c.deleteVertexRef}
+            previewIds={c.objectScatter.preview?.addedIds}
           />
           {c.libraryPlacement.preview ? (
             <svg

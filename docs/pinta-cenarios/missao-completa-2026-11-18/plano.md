@@ -84,8 +84,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   proteção da cópia recuperada. Corrigida a altura real da coluna desktop, mantendo
   o recolhimento móvel e a identidade visual. Suíte Pinta com 2.129 aprovados e
   cenários/Phaser com 32 aprovados. Provas em `qa/biblioteca-arrasto-2026-11-19/README.md`.
-- [ ] 4b. Pincel de objetos/conjuntos: densidade, afastamento, semente, prévia e um histórico
+- [x] 4b. Pincel de objetos/conjuntos: densidade, afastamento, semente, prévia e um histórico
   por gesto; manter diferença entre conjunto vinculado e cópia independente.
+  Núcleo puro, inserção em lote, ferramenta própria, cancelamento/recuperação e
+  prévia real verificados. Suíte completa com 2.155 aprovados; revisão final com
+  77 aprovados e três perfis de navegador, mais regressão dos três de biblioteca.
+  Provas e limites em `qa/espalhar-objetos-2026-11-19/README.md`.
 - [ ] 5. Completar ferramentas profissionais autorais e seus consumidores: caminhos, zonas,
   portas, marcadores, colisões, animações, propriedades, regiões, profundidade e parallax.
 - [ ] 6. Auditoria funcional de teclado/foco/cancelamento e mouse/toque, componentes atuais;

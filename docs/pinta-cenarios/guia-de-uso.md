@@ -26,7 +26,10 @@ limitada a 128×128 células, oito camadas e 64 peças por folha, com aviso ante
    borracha atualizam também os vizinhos. Uma combinação ausente é informada antes de gravar.
 5. Para distribuir detalhes, ative **Espalhar com o pincel**, escolha densidade e semente. A
    mesma semente reproduz a distribuição da prévia.
-   Esse pincel espalha **peças em células**. Espalhar objetos com afastamento ainda está pendente.
+   Esse pincel espalha **peças em células**. Para artes da biblioteca, escolha um objeto
+   e use **Espalhar desenhos** em Criar mais: ajuste densidade, distância entre centros,
+   variação e giro/espelho. Arraste para conferir e solte para colocar; Esc cancela.
+   Veja [espalhar objetos e conjuntos](missao-completa-2026-11-18/espalhar-objetos.md).
 6. Crie uma camada de objetos. Escolha ponto, retângulo, elipse, polígono ou caminho. Edite os
    pontos, posição, tamanho, giro e espelhos. O papel indica início, perigo, porta, caminho,
    inimigo ou região. Propriedades podem ser texto, número, booleano, inteiro, decimal, cor ou
@@ -38,8 +41,9 @@ limitada a 128×128 células, oito camadas e 64 peças por folha, com aviso ante
    acompanham o conjunto original. **Soltar o conjunto** cria conteúdo independente; restaure
    o tamanho original e use giro de 90° para materializar as peças na grade. Conjuntos dentro
    de conjuntos precisam ser soltos antes de outro recorte.
-   A inserção da biblioteca é por clique e respeita o encaixe escolhido; arrasto com prévia
-   ainda não está disponível. Para guardar peças deslocadas como conjunto, alinhe à grade
+   A inserção da biblioteca funciona por clique ou arrasto com prévia e respeita o encaixe
+   escolhido. Soltar fora do palco ou pressionar Esc cancela o arrasto.
+   Para guardar peças deslocadas como conjunto, alinhe à grade
    as camadas que atravessam o recorte. O Pinta recusa recortes de meias peças explicitamente.
 9. Selecione uma peça para configurar os quadros e a duração da animação, terrenos e
    propriedades. Os quadros apontam para peças da mesma folha.

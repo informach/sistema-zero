@@ -21,6 +21,7 @@ import { getPintaStorageNamespace } from '../../../state/persistence'
 import type { CellPos, CellRect } from '../../../tiles/cellGeometry'
 import { TileChunkCache } from '../../../tiles/chunks'
 import { copyRegion, stampRegionAt } from '../../../tiles/mapSelection'
+import { DEFAULT_OBJECT_SCATTER } from '../../../tiles/objectScatter'
 import { createMapSet } from '../../../tiles/sets'
 import type { TileStamp } from '../../../tiles/stamp'
 import { usePintaApp } from '../../appContext'
@@ -46,6 +47,7 @@ import { useMapAnimation } from './useMapAnimation'
 import { useMapKeyboard } from './useMapKeyboard'
 import type { MapModel } from './useMapModel'
 import { useMapSheets } from './useMapSheets'
+import { useObjectScatter } from './useObjectScatter'
 
 export type ReadyMapModel = MapModel & { tilemap: TilemapAsset; baseTileset: AnyTilesetAsset }
 
@@ -71,6 +73,7 @@ export function useTilemapController(model: ReadyMapModel) {
   )
 
   const [mapBrush, setMapBrush] = useState(DEFAULT_MAP_BRUSH)
+  const [objectScatterSettings, setObjectScatterSettings] = useState(DEFAULT_OBJECT_SCATTER)
   const [level, setLevelState] = useState<MapLevel>(() => readMapLevel(getPintaStorageNamespace()))
   const setLevel = useCallback((next: MapLevel): void => {
     setLevelState(next)
@@ -383,23 +386,42 @@ export function useTilemapController(model: ReadyMapModel) {
   })
   cancelGestureRef.current = () => tiles.cancel()
 
+  const objectScatterSource =
+    activeObjectLayer?.objects.find((object) => object.id === selectedObjectId) ?? null
+  const objectScatter = useObjectScatter({
+    editor,
+    map: tilemap,
+    layerId,
+    source: objectScatterSource,
+    active: tool === 'object-scatter',
+    settings: objectScatterSettings,
+    tileSize,
+    cellPx,
+    pad,
+    paperRef,
+    stageRef,
+    showToast,
+  })
+
   // A ferramenta de agora decide quem recebe o ponteiro do palco de peças.
   const canvasHandlers =
-    tool === 'select'
-      ? {
-          onPointerDown: selection.selectDown,
-          onPointerMove: selection.selectMove,
-          onPointerUp: selection.selectUp,
-          onPointerCancel: selection.selectUp,
-          onPointerLeave: tiles.leave,
-        }
-      : {
-          onPointerDown: tiles.down,
-          onPointerMove: tiles.move,
-          onPointerUp: tiles.up,
-          onPointerCancel: tiles.cancel,
-          onPointerLeave: tiles.leave,
-        }
+    tool === 'object-scatter'
+      ? { onPointerDown: objectScatter.down, onLostPointerCapture: objectScatter.lost }
+      : tool === 'select'
+        ? {
+            onPointerDown: selection.selectDown,
+            onPointerMove: selection.selectMove,
+            onPointerUp: selection.selectUp,
+            onPointerCancel: selection.selectUp,
+            onPointerLeave: tiles.leave,
+          }
+        : {
+            onPointerDown: tiles.down,
+            onPointerMove: tiles.move,
+            onPointerUp: tiles.up,
+            onPointerCancel: tiles.cancel,
+            onPointerLeave: tiles.leave,
+          }
 
   const layers = createMapLayerActions({
     editor,
@@ -527,6 +549,10 @@ export function useTilemapController(model: ReadyMapModel) {
     tileSize,
     cellPx,
     mapBrush,
+    objectScatter,
+    objectScatterSource,
+    objectScatterSettings,
+    setObjectScatterSettings,
     playtest,
     physicsRequiredByObjects,
     snapObjects,

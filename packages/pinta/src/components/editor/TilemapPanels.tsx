@@ -9,6 +9,7 @@ import { ToolButton } from '../ui/Button'
 import {
   BoxSelect,
   BrickWall,
+  Brush,
   Circle,
   Eraser,
   Hand,
@@ -109,6 +110,13 @@ export const MAP_TOOLS: Array<{
     modes: ['objects'],
   },
   { id: 'pan', icon: Hand, label: COPY.vector.pan, shortcut: 'H', modes: ['tiles', 'objects'] },
+  {
+    id: 'object-scatter',
+    icon: Brush,
+    label: COPY.scene.scatterObjects,
+    shortcut: 'S',
+    modes: ['objects'],
+  },
 ]
 
 /** As ferramentas de um tipo de camada (na ordem da caixa). */

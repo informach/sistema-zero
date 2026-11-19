@@ -1,0 +1,95 @@
+bun test v1.3.11 (af24e281)
+
+src\tiles\bulkObjectOps.test.ts:
+(pass) a clonagem aceita identidades estáveis e remapeia relações internas sem mudar a origem
+(pass) inserção em lote conserva a normalização da inserção única e não altera a origem
+(pass) lote com identidade repetida, camada ausente ou bloqueio herdado é recusado inteiro
+(pass) o teto de 512 recusa o lote completo, sem consumir parcialmente os lugares restantes
+
+src\tiles\objectScatter.test.ts:
+(pass) região, semente e modelo geram a mesma composição com amostras repetidas ou invertidas [16.00ms]
+(pass) afastamento vale entre centros novos e também em relação às artes existentes [16.00ms]
+(pass) densidade zero, posições inválidas, camada ausente e trava herdada não geram edição
+(pass) variação é determinística e conserva arte, animação, propriedades e referências internas [15.00ms]
+(pass) conjuntos continuam vinculados e recebem IDs distintos entre gestos [16.00ms]
+(pass) a caixa transformada fica no mapa e offsets herdados são descontados uma vez
+(pass) um lote que ultrapassa os lugares restantes é recusado inteiro
+
+src\components\editor\mapObjectsUi.test.tsx:
+(pass) camada de objetos no editor de mapa > cria a camada, marca um ponto e edita nome, tipo e propriedades [2625.00ms]
+(pass) camada de objetos no editor de mapa > desenha uma área arrastando, encaixa na grade e o Delete apaga o objeto [469.00ms]
+(pass) camada de objetos no editor de mapa > o nome digitado não se perde quando o toque no mapa troca de objeto antes do blur [1734.00ms]
+(pass) camada de objetos no editor de mapa > trocar de objeto sem ter mudado o texto não cria um desfazer vazio [531.00ms]
+(pass) camada de objetos no editor de mapa > com uma janela do Pinta aberta, o Delete não apaga o objeto escolhido [391.00ms]
+(pass) camada de objetos no editor de mapa > a chave recusada (repetida) volta ao nome gravado em vez de mostrar o que não foi salvo [515.00ms]
+(pass) camada de objetos no editor de mapa > a última camada de PEÇAS não tem lixeira; a de objetos tem [360.00ms]
+(pass) peças por camada no editor de mapa > a camada escolhe outras peças do MESMO tamanho; as de outro tamanho não aparecem [1406.00ms]
+
+src\components\editor\mapToolsUi.test.tsx:
+(pass) níveis do editor de mapa > colisão de camada em Criar mais não abre controles técnicos e permanece ao voltar para Começar [187.00ms]
+(pass) níveis do editor de mapa > perfil novo abre em "Começar": poucas ferramentas, poucos painéis e o teste [110.00ms]
+(pass) níveis do editor de mapa > "Criar mais" e "Avançado" mostram mais, e a escolha fica guardada [328.00ms]
+(pass) níveis do editor de mapa > a letra do atalho respeita o nível [343.00ms]
+(pass) níveis do editor de mapa > o que o mapa já usa aparece mesmo em "Começar" [204.00ms]
+(pass) camadas do mapa > subir a camada que já está em cima e pedir grupo no teto não criam desfazer [4093.00ms]
+(pass) camadas do mapa > camada trancada: marcar colisão avisa e não muda nada [610.00ms]
+(pass) camadas do mapa > nomes vêm do texto central e os alvos de toque têm 44 px [187.00ms]
+(pass) balde no mapa > área que já está igual não cria desfazer; a pintada cria um [250.00ms]
+(pass) balde no mapa > a peça virada enche a área virada [1250.00ms]
+(pass) terreno, espalhar e animação da peça > terreno pronto no Começar: cores acessíveis, volta ao lápis e não avisa peça vazia [1641.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com pointercancel não grava nem ocupa o desfazer [344.00ms]
+(pass) terreno, espalhar e animação da peça > cancelar a prévia com Escape não grava nem ocupa o desfazer [328.00ms]
+(pass) terreno, espalhar e animação da peça > "Peças (separe por vírgula)" aceita a vírgula digitada [93.00ms]
+(pass) terreno, espalhar e animação da peça > o nome do terreno grava ao sair do campo: um desfazer por nome [188.00ms]
+(pass) terreno, espalhar e animação da peça > a duração do quadro só vale ao sair do campo: "500" grava 500, uma vez [266.00ms]
+(pass) objetos do mapa > arte: guardar versão, desfazer/refazer, reconectar e limpar sem perder a animação escolhida [8671.00ms]
+(pass) objetos do mapa > Delete sem nada escolhido não cria desfazer [141.00ms]
+(pass) objetos do mapa > distribuir com dois objetos não cria desfazer; alinhar cria um [2844.00ms]
+(pass) objetos do mapa > colar põe a cópia onde o ponteiro esteve por último sem encaixe [3453.00ms]
+(pass) objetos do mapa > biblioteca: o desenho nasce no ponteiro, e a camada trancada avisa [2203.00ms]
+(pass) formas ponto a ponto > cada toque põe um ponto; Enter fecha o polígono; Esc cancela [2375.00ms]
+(pass) formas ponto a ponto > tocar no primeiro ponto e o toque duplo também fecham [3547.00ms]
+(pass) formas ponto a ponto > arrastar um ponto muda a forma com um desfazer; Delete tira o ponto [4531.00ms]
+(pass) formas ponto a ponto > tocar num trecho põe um ponto novo, e o Delete tira o ponto escolhido [5172.00ms]
+(pass) formas ponto a ponto > objeto girado tem alças: puxar o canto muda o tamanho [2516.00ms]
+(pass) guardar conjunto > diz que guardou e o conjunto aparece na galeria [2437.00ms]
+(pass) editor de conjunto > ação que não muda nada não cria desfazer; apagar uma casa cria um [1985.00ms]
+(pass) minimapa > tocar no minimapa leva o palco para aquele lugar [15.00ms]
+(pass) minimapa > mostra o retângulo da parte que aparece na tela e segue a rolagem [141.00ms]
+(pass) testar com personagem > abre com o boneco do Pinta, os personagens da galeria e as duas vistas [1297.00ms]
+(pass) inserção e colagem no espaço da camada > arrastar mostra prévia sem salvar e só a soltura cria um objeto e um desfazer [4906.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por escape não grava nem insere pelo clique posterior [2297.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por pointercancel não grava nem insere pelo clique posterior [1453.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por capture não grava nem insere pelo clique posterior [1437.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por blur não grava nem insere pelo clique posterior [1344.00ms]
+(pass) inserção e colagem no espaço da camada > cancelar arrasto por outside não grava nem insere pelo clique posterior [1297.00ms]
+(pass) inserção e colagem no espaço da camada > biblioteca desconta offset herdado e respeita encaixe false [1281.00ms]
+(pass) inserção e colagem no espaço da camada > biblioteca desconta offset herdado e respeita encaixe true [1407.00ms]
+(pass) inserção e colagem no espaço da camada > colar desconta offset herdado e respeita encaixe false [2312.00ms]
+(pass) inserção e colagem no espaço da camada > colar desconta offset herdado e respeita encaixe true [2297.00ms]
+(pass) inserção e colagem no espaço da camada > Começar mostra a biblioteca de desenhos [94.00ms]
+(pass) pincel de espalhar objetos > só aparece em Criar mais e o teclado entra e sai pela ferramenta normal [172.00ms]
+(pass) pincel de espalhar objetos > prévia não grava; o gesto interpolado grava exatamente os objetos mostrados e um desfazer [3453.00ms]
+(pass) pincel de espalhar objetos > cancelar por escape não confirma a prévia [234.00ms]
+(pass) pincel de espalhar objetos > cancelar por pointercancel não confirma a prévia [219.00ms]
+(pass) pincel de espalhar objetos > cancelar por capture não confirma a prévia [328.00ms]
+(pass) pincel de espalhar objetos > cancelar por blur não confirma a prévia [234.00ms]
+(pass) pincel de espalhar objetos > cancelar por outside não confirma a prévia [219.00ms]
+(pass) pincel de espalhar objetos > cancelar por settings não confirma a prévia [250.00ms]
+(pass) pincel de espalhar objetos > cancelar por tool não confirma a prévia [219.00ms]
+(pass) pincel de espalhar objetos > cancelar por source não confirma a prévia [203.00ms]
+(pass) biblioteca usa o tamanho inteiro do conjunto para posicioná-lo dentro do mapa [1141.00ms]
+
+src\components\editor\mapTools\mapViewport.test.ts:
+(pass) usa o papel e desconta o anel uma vez, com zoom e rolagem
+(pass) recusa o papel fora da janela mesmo quando ainda tem caixa de layout
+
+src\components\editor\mapTools\useObjectScatter.test.tsx:
+(pass) cópia recuperada durante a prévia não é substituída por eventos atrasados do pincel [16.00ms]
+(pass) recusa do orçamento do host não cria histórico nem anuncia espalhamento confirmado [15.00ms]
+(pass) biblioteca também respeita a recusa do host sem selecionar um objeto inexistente
+
+ 77 pass
+ 0 fail
+ 3442 expect() calls
+Ran 77 tests across 6 files. [87.69s]

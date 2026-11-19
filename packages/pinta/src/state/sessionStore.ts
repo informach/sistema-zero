@@ -29,6 +29,7 @@ export type MapObjectToolId =
   | 'object-ellipse'
   | 'object-polygon'
   | 'object-polyline'
+  | 'object-scatter'
 
 export type PintaSessionTool = PixelToolId | 'pan' | 'select' | MapObjectToolId
 
@@ -39,7 +40,8 @@ export function isMapObjectTool(tool: PintaSessionTool): tool is MapObjectToolId
     tool === 'object-rect' ||
     tool === 'object-ellipse' ||
     tool === 'object-polygon' ||
-    tool === 'object-polyline'
+    tool === 'object-polyline' ||
+    tool === 'object-scatter'
   )
 }
 
