@@ -1,3 +1,4 @@
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 import { encodeExitJournal } from './exitJournalCodec'
 import { conditionalGeneration, conditionalWrite, readValues } from './idbTransaction'
 import {
@@ -25,7 +26,6 @@ import {
   acknowledgeSynchronousExitJournal,
   type ExitJournalEntry,
   ExitJournalError,
-  readSynchronousExitJournal,
 } from './synchronousExitJournal'
 
 /** Called only after a confirmed write, when a mirror actually exists. */

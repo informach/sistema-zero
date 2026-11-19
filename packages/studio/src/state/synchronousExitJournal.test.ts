@@ -1,9 +1,9 @@
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 import { expect, test } from 'bun:test'
 import {
   acknowledgeSynchronousExitJournal,
   captureExitJournalStorage,
   hasSynchronousExitJournal,
-  readSynchronousExitJournal,
   stageSynchronousExitJournal,
 } from './synchronousExitJournal'
 

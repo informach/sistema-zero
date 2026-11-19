@@ -1,3 +1,4 @@
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
 import { buildProProject } from '../core/proProject'
@@ -23,7 +24,7 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
-import { readSynchronousExitJournal, stageSynchronousExitJournal } from './synchronousExitJournal'
+import { stageSynchronousExitJournal } from './synchronousExitJournal'
 
 async function fixture() {
   const identity = `sync-recovery-${crypto.randomUUID()}`

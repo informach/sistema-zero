@@ -1,6 +1,7 @@
+import { decodeProjectJsonGraph } from './projectJsonGraphDecode'
 import { STUDIO_PROJECT_JSON_LIMITS } from '@sistemazero/core/studio/project-json'
 import { ProjectDocumentError } from '../core/projectDocumentGuards'
-import { decodeProjectJsonGraph, encodeProjectJsonGraph } from './projectJsonGraph'
+import { encodeProjectJsonGraph } from './projectJsonGraph'
 
 const FORMAT = 'sz-project-json-graph'
 // Other stores, especially learner game-storage values, never interpret this envelope.

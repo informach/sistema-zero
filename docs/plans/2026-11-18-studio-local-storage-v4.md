@@ -84,3 +84,24 @@ pesada fora do CAS continuam pendentes.
 Reprodução: `STUDIO_STORAGE_DEEP=1 bun test src/state/projectStorageBrowser.test.ts`.
 O teste gera a fixture pelo modo `--blocks-fixture` do profiler existente. Esse
 modo exporta o estado completo sem montar workspace nem gerar código opaco.
+
+## Divisão das fronteiras de leitura e captura
+
+Na branch `estudio-deep-storage-boundary-20261118`, o decodificador plano e a
+leitura dos journals foram separados da captura de saída. Há uma implementação
+de cada operação, com os mesmos validadores, wire e limites. A captura continua
+síncrona; a leitura rara só entra quando a recuperação existente a solicita.
+O transporte v4 é preparado antes de abrir a transação viva. Nenhuma importação
+é introduzida no pedido síncrono de saída.
+
+Resultado: 366.875 bytes brutos, **119.426 gzip**, dois arquivos; 35 asserções
+de orçamento/grafo aprovadas. A guarda também exige ausência dos leitores raros
+e do transporte no grafo inicial. Os tetos continuam os mesmos. Testes de estado
+e persistência: **385 casos, 2.156 asserções, zero falhas**, 36,88 s. Typecheck
+aprovado. A prova nativa com dez mil blocos e aborto de saída passou nos dois
+motores em 22,30 s, reutilizando o driver e os testes de conflito/quota.
+
+O bloqueio de tamanho inicial foi resolvido neste ensaio, mas não se concluiu
+a etapa: ainda faltam preparo de payload pesado fora do CAS, migração completa,
+cliente antigo, histórico/budgets/tombstones/rascunhos e homologação do fluxo de
+edição real. A ativação e integração na PR continuam bloqueadas por esses itens.

@@ -1,5 +1,6 @@
+import { decodeExitJournal } from './exitJournalDecode'
 import { expect, test } from 'bun:test'
-import { decodeExitJournal, encodeExitJournal } from './exitJournalCodec'
+import { encodeExitJournal } from './exitJournalCodec'
 
 test('journal codec preserves unknown fields, undefined, arrays, tags and negative zero', () => {
   const value = {
