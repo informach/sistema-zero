@@ -16,3 +16,7 @@ packages/studio/scripts/turtle/vendor/xcolors.c whitespace=-space-before-tab
 
 # A licença upstream é conferida por hash; preservar os bytes originais também no checkout.
 packages/studio/src/examples/python/maze-lights/LICENSE -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Evidências nativas conferidas por SHA-256: conservar exatamente os bytes emitidos.
+packages/pinta/src/export/tiled/__fixtures__/tiled-normalized/*.tm* -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+docs/pinta-cenarios/missao-completa-2026-11-18/qa/motores-externos-2026-11-19/*.log -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol

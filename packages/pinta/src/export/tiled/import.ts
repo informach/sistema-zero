@@ -1,3 +1,4 @@
+import { sha256Hex } from '@sistemazero/core/creations'
 import {
   type PintaScene,
   type PintaSceneLayer,
@@ -8,8 +9,14 @@ import {
 import { Gunzip, Unzlib } from 'fflate'
 import { pintaValuesEqual } from '../../core/assetEquality'
 import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS } from '../../core/projectConfig'
-import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, makeCell } from '../../tiles/cell'
+import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellTile, makeCell } from '../../tiles/cell'
 import { TiledImportError } from './errors'
+import {
+  atlasCapacity,
+  readAtlasSnapshot,
+  readEmptyTerrainTiles,
+  type TiledAtlasSnapshot,
+} from './metadata'
 
 export { TiledImportError }
 
@@ -298,6 +305,58 @@ function explain(scene: RecordValue, path: PropertyKey[], message: string): stri
   return 'O mapa tem um dado que o Pinta não consegue ler.'
 }
 
+/** Restaura só o preenchimento comprovadamente intacto e sem referências novas. */
+async function restoreAtlasCounts(
+  scene: PintaScene,
+  snapshots: ReadonlyMap<string, TiledAtlasSnapshot>,
+): Promise<void> {
+  const eligible = new Map<string, TiledAtlasSnapshot>()
+  for (const tileset of scene.tilesets) {
+    const snapshot = snapshots.get(tileset.id)
+    if (
+      snapshot &&
+      snapshot.count < tileset.count &&
+      snapshot.columns === tileset.columns &&
+      snapshot.tileSize === scene.tileSize &&
+      atlasCapacity(snapshot.count, snapshot.columns) === tileset.count &&
+      (await sha256Hex(tileset.image)) === snapshot.imageDataUrlSha256
+    )
+      eligible.set(tileset.id, snapshot)
+  }
+  if (!eligible.size) return
+
+  const highest = new Map<string, number>()
+  const mark = (id: string, tile: number): void => {
+    if (eligible.has(id)) highest.set(id, Math.max(highest.get(id) ?? -1, tile))
+  }
+  for (const owner of [scene, ...(scene.sets ?? [])])
+    for (const layer of owner.layers) {
+      if (layer.kind === 'tiles' && eligible.has(layer.tilesetId)) {
+        let maximum = -1
+        for (const cell of layer.cells) if (cell >= 0) maximum = Math.max(maximum, cellTile(cell))
+        mark(layer.tilesetId, maximum)
+      } else if (layer.kind === 'objects')
+        for (const object of layer.objects)
+          if (object.art) mark(object.art.assetId, object.art.tile ?? 0)
+    }
+  for (const tileset of scene.tilesets) {
+    if (!eligible.has(tileset.id)) continue
+    for (const indices of [tileset.solid, tileset.platform])
+      for (const tile of indices) mark(tileset.id, tile)
+    for (const [tile, frames] of Object.entries(tileset.animations ?? {})) {
+      mark(tileset.id, Number(tile))
+      for (const frame of frames) mark(tileset.id, frame.tile)
+    }
+    for (const tile of Object.keys(tileset.tileProperties ?? {})) mark(tileset.id, Number(tile))
+    for (const terrain of tileset.terrains ?? [])
+      for (const tile of Object.keys(terrain.tiles)) mark(tileset.id, Number(tile))
+  }
+  for (const tileset of scene.tilesets) {
+    const snapshot = eligible.get(tileset.id)
+    if (snapshot && (highest.get(tileset.id) ?? -1) < snapshot.count) tileset.count = snapshot.count
+  }
+}
+
 export async function importTiledScene(
   input: unknown,
   resolver: TiledResolver,
@@ -339,6 +398,7 @@ export async function importTiledScene(
     warnings.push('A origem do parallax do mapa não foi trazida.')
   if (array(map.tilesets).length > LIMITS.tilesets + LIMITS.art)
     refuse(`O mapa usa folhas de peças demais. O Pinta aceita até ${LIMITS.tilesets}.`)
+  const atlasSnapshots = new Map<string, TiledAtlasSnapshot>()
   const art: NonNullable<PintaScene['art']> = [],
     tilesets: RecordValue[] = [],
     gids: { first: number; id: string; count: number; art?: string; animationId?: string }[] = []
@@ -415,6 +475,8 @@ export async function importTiledScene(
       )
     if (tilesets.length >= LIMITS.tilesets)
       refuse(`O mapa usa folhas de peças demais. O Pinta aceita até ${LIMITS.tilesets}.`)
+    const atlas = readAtlasSnapshot(properties['pinta:atlas'])
+    if (atlas) atlasSnapshots.set(id, atlas)
     const alignment = string(ts.objectalignment, 'unspecified')
     if (alignment !== 'unspecified' && alignment !== 'bottomleft')
       warnings.push(
@@ -495,15 +557,13 @@ export async function importTiledScene(
       warnings.push(`Os nomes das cores dos terrenos de ${label} não foram trazidos.`)
     const terrains = wang.map((t, n) => {
       const terrain = string(t.name, `Terreno ${n + 1}`)
+      const terrainProperties = props(t.properties, `o terreno ${terrain}`, warnings)
       if (array(t.colors).length > LIMITS.terrainColors)
         refuse(
           `O terreno ${terrain} de ${label} tem cores demais. O Pinta aceita até ${LIMITS.terrainColors}.`,
         )
-      return {
-        id: string(
-          props(t.properties, `o terreno ${terrain}`, warnings)['pinta:id'],
-          `${id}-terrain-${n}`,
-        ),
+      const result = {
+        id: string(terrainProperties['pinta:id'], `${id}-terrain-${n}`),
         name: cut(terrain, `um terreno de ${label}`),
         mode:
           t.type === 'edge'
@@ -540,6 +600,9 @@ export async function importTiledScene(
             }),
         ),
       }
+      for (const tile of readEmptyTerrainTiles(terrainProperties['pinta:emptyTiles'], count))
+        if (!Object.hasOwn(result.tiles, String(tile))) result.tiles[tile] = Array(8).fill(0)
+      return result
     })
     tilesets.push({
       id,
@@ -868,6 +931,7 @@ export async function importTiledScene(
     const issue = parsed.error.issues[0]
     return refuse(explain(candidate, issue?.path ?? [], issue?.message ?? ''))
   }
+  await restoreAtlasCounts(parsed.data, atlasSnapshots)
   return { scene: parsed.data, warnings }
 }
 // Tipos usados só para conferir, em compilação, que o importador monta as formas da cena.

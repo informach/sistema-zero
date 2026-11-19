@@ -7,8 +7,10 @@ import {
   sceneLayerState,
   transformSceneSetObject,
 } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { PINTA_MAP_FORMAT_LIMITS } from '../../core/projectConfig'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile } from '../../tiles/cell'
 import { cellMatrix } from '../../tiles/chunks'
+import { atlasCapacity, atlasSnapshot } from './metadata'
 
 type Property = { name: string; type: string; value: unknown }
 export function tiledSceneWarnings(scene: PintaScene): string[] {
@@ -59,7 +61,7 @@ export function tiledProperties(properties: Record<string, unknown> | undefined)
   })
 }
 /** Arquivos usam índices estáveis; os nomes livres do usuário nunca viram caminhos. */
-export function tiledMap(scene: PintaScene): Record<string, unknown> {
+export async function tiledMap(scene: PintaScene): Promise<Record<string, unknown>> {
   let first = 1,
     layerId = 0,
     objectId = 0
@@ -84,17 +86,28 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
         target = localIds.includes(stable) ? [prefix, stable].join('/') : stable
       return p.type === 'object' ? { ...p, value: ids.get(target) ?? 0 } : p
     })
-  const tilesets = scene.tilesets.map((ts, i) => {
+  const tilesets: Record<string, unknown>[] = []
+  for (const [i, ts] of scene.tilesets.entries()) {
     const start = first
     firstgid.set(ts.id, start)
-    first += ts.count
+    const capacity = atlasCapacity(ts.count, ts.columns)
+    if (
+      !Number.isSafeInteger(capacity) ||
+      capacity < 1 ||
+      capacity > PINTA_MAP_FORMAT_LIMITS.maxTiles
+    )
+      throw new TiledSceneCompatibilityError(
+        `A imagem de ${ts.name} ocupa mais de ${PINTA_MAP_FORMAT_LIMITS.maxTiles} espaços de peças. Reorganize a folha antes de exportar para o Tiled.`,
+      )
+    first += capacity
+    const snapshot = await atlasSnapshot(ts, scene.tileSize)
     const tileIds = new Set([
       ...ts.solid,
       ...ts.platform,
       ...Object.keys(ts.animations ?? {}).map(Number),
       ...Object.keys(ts.tileProperties ?? {}).map(Number),
     ])
-    return {
+    tilesets.push({
       firstgid: start,
       name: ts.name,
       tilewidth: scene.tileSize,
@@ -106,7 +119,12 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
       image: `images/tiles-${i}.png`,
       imagewidth: ts.columns * scene.tileSize,
       imageheight: Math.ceil(ts.count / ts.columns) * scene.tileSize,
-      properties: [{ name: 'pinta:id', type: 'string', value: ts.id }],
+      properties: [
+        { name: 'pinta:id', type: 'string', value: ts.id },
+        ...(snapshot
+          ? [{ name: 'pinta:atlas', type: 'string', value: JSON.stringify(snapshot) }]
+          : []),
+      ],
       tiles: [...tileIds]
         .sort((a, b) => a - b)
         .map((id) => ({
@@ -125,7 +143,22 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
       wangsets:
         ts.terrains?.map((t) => ({
           name: t.name,
-          properties: [{ name: 'pinta:id', type: 'string', value: t.id }],
+          properties: [
+            { name: 'pinta:id', type: 'string', value: t.id },
+            ...(Object.values(t.tiles).some((values) => values.every((value) => value === 0))
+              ? [
+                  {
+                    name: 'pinta:emptyTiles',
+                    type: 'string',
+                    value: JSON.stringify(
+                      Object.entries(t.tiles)
+                        .filter(([, values]) => values.every((value) => value === 0))
+                        .map(([tile]) => Number(tile)),
+                    ),
+                  },
+                ]
+              : []),
+          ],
           type: t.mode === 'corner' ? 'corner' : t.mode === 'edge' ? 'edge' : 'mixed',
           tile: -1,
           colors: t.colors.map((color, n) => ({
@@ -139,8 +172,8 @@ export function tiledMap(scene: PintaScene): Record<string, unknown> {
             wangid,
           })),
         })) ?? [],
-    }
-  })
+    })
+  }
   const artFirst = new Map<string, Map<string | undefined, number>>()
   const allObjects = [scene.layers, ...(scene.sets ?? []).map((s) => s.layers)]
     .flat()

@@ -113,7 +113,7 @@ it('o compositor desenha pixels de quadros diferentes e prende o último quando 
 
 it('JSON e TMX Tiled conservam animações específicas e versões no round-trip editável', async () => {
   const { scene } = await fixture()
-  const tiled = tiledMap(scene)
+  const tiled = await tiledMap(scene)
   const sheets = tiled.tilesets as Record<string, unknown>[]
   const resolver = {
     image: async (path: string) => path,
@@ -151,7 +151,7 @@ it('Tiled não anima a cópia estática de um sprite usado também por uma inst�
   if (layer.kind !== 'objects') throw new Error('Objects expected')
   const animated = layer.objects[0]!
   layer.objects.push({ ...animated, id: 'static', art: { assetId: animated.art!.assetId } })
-  const document = tiledMap(scene)
+  const document = await tiledMap(scene)
   const sheets = document.tilesets as Array<{
     firstgid: number
     tilecount: number

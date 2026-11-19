@@ -96,19 +96,19 @@ it('Tiled ARGB colors canonicalize opaque alpha and retain nonopaque RGBA throug
     ['#0020a0ff', '#20a0ff00'],
     ['#20a0ff', '#20a0ff'],
   ] as const) {
-    const map: any = tiledMap(transformedScene())
+    const map: any = await tiledMap(transformedScene())
     map.layers[0].properties.push({ name: 'color', type: 'color', value: external })
     for (const document of [map, tiledXmlToJson(tiledMapXml(map))]) {
       const first = await importTiledScene(document, resolver)
       expect(first.scene.layers[0]!.properties?.color).toEqual({ type: 'color', value: canonical })
-      const second = await importTiledScene(tiledMap(first.scene), resolver)
+      const second = await importTiledScene(await tiledMap(first.scene), resolver)
       expect(second.scene).toEqual(first.scene)
     }
   }
 })
 
 it('Tiled references in every property container use numeric IDs and import back to stable IDs', async () => {
-  const map: any = tiledMap(transformedScene()),
+  const map: any = await tiledMap(transformedScene()),
     all = layers(map),
     objects = all.flatMap((l) => l.objects ?? []),
     outside = objects.find((o) => o.name === 'outside')
@@ -181,7 +181,7 @@ it('expanded layer properties resolve locally and references to expanded childre
   const scene = transformedScene()
   scene.sets![0]!.layers[0]!.properties = { target: { type: 'object', value: 'b' } }
   scene.layers[0]!.properties!.child = { type: 'object', value: 'copy/b' }
-  const map: any = tiledMap(scene),
+  const map: any = await tiledMap(scene),
     all = layers(map),
     childLayer = all.find((l) => l.name === 'copy: Children'),
     target = childLayer.objects.find((o: any) => o.name === 'b')
@@ -192,7 +192,7 @@ it('expanded layer properties resolve locally and references to expanded childre
   }
 })
 
-it('nonuniformly scaled rotated geometry uses an exact affine footprint; Tiled refuses sheared art', () => {
+it('nonuniformly scaled rotated geometry uses an exact affine footprint; Tiled refuses sheared art', async () => {
   const scene = transformedScene(),
     main = scene.layers[1]!,
     child = scene.sets![0]!.layers[0]!
@@ -203,8 +203,8 @@ it('nonuniformly scaled rotated geometry uses an exact affine footprint; Tiled r
   expect(transformed.shape).toBe('polygon')
   expect(transformed.points?.[1]?.x).toBeCloseTo(-4 * Math.SQRT2)
   expect(transformed.points?.[1]?.y).toBeCloseTo(2 * Math.SQRT2)
-  expect(() => tiledMap(scene)).not.toThrow()
+  expect(await tiledMap(scene)).toBeDefined()
   child.objects[0]!.shape = 'art'
   child.objects[0]!.art = { assetId: 'ts', tile: 0 }
-  expect(() => tiledMap(scene)).toThrow(TiledSceneCompatibilityError)
+  await expect(tiledMap(scene)).rejects.toThrow(TiledSceneCompatibilityError)
 })

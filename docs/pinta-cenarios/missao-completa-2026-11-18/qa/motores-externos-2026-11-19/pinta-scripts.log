@@ -1,0 +1,39 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\scripts\pygame-gallery\derivation.test.ts:
+(pass) the gallery PNG is the Pinta derivation of its document > every game is checked
+(pass) the gallery PNG is the Pinta derivation of its document > monster-battle [15704.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > pirate-maker [2843.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > platformer [1641.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > pydew-valley [5734.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > python-monsters [33657.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > space-shooter [265.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > super-pirate-world [8016.00ms]
+(pass) the gallery PNG is the Pinta derivation of its document > vampire-survivor [2062.00ms]
+
+packages\pinta\scripts\pygame-gallery\drawing.test.ts:
+(pass) a map becomes Pinta documents: its tilesets, per-layer tilesets and object layers
+(pass) the map PNG carries an atlas of every tileset and the layers in output pixels
+(pass) a sprite PNG lists its animations, one row each, and the painted box
+(pass) Pinta limits are enforced while drawing (colours per drawing)
+(pass) a drawing that fills its frame has no hitbox (null = the whole frame, as in the Pinta) [16.00ms]
+(pass) a frame of another size is an error, not an animation the Pinta drops in silence
+(pass) one document per drawing in desenhos.pinta.json > a sprite and a map tileset with the same name stop the generator
+(pass) one document per drawing in desenhos.pinta.json > two drawings with one name (one PNG) stop the generator
+(pass) one document per drawing in desenhos.pinta.json > the same tileset brought by two maps is one document
+(pass) one document per drawing in desenhos.pinta.json > an equal copy of a tileset is fine, a different one with that name is not
+
+packages\pinta\scripts\pygame-gallery\png.test.ts:
+(pass) the gallery PNG encoder > a drawing with transparency is a palette with tRNS, the transparent colour first
+(pass) the gallery PNG encoder > an opaque drawing is a palette without tRNS
+(pass) the gallery PNG encoder > more than 256 colours fall back to RGBA, with the same pixels [15.00ms]
+(pass) the gallery PNG encoder > exactly 256 colours still fit a palette
+(pass) the gallery PNG encoder > alpha 0 with any RGB is the one transparent colour
+(pass) the gallery PNG encoder > a pixel-art image scaled ×2 decodes exactly (the Up filter path)
+(pass) the gallery PNG encoder > the Pinta data block goes right after IHDR, before PLTE
+(pass) the gallery PNG encoder > the same image always gives the same bytes
+
+ 27 pass
+ 0 fail
+ 1279 expect() calls
+Ran 27 tests across 3 files. [70.64s]

@@ -56,7 +56,7 @@ export async function buildScenePackage(
     }
     try {
       tiledWarnings.push(...tiledSceneWarnings(scene).map((text) => `Mapa ${map.name}: ${text}`))
-      const tiled = tiledMap(scene)
+      const tiled = await tiledMap(scene)
       files[`${folder}/mapa.json`] = JSON.stringify(tiled, null, 2)
       files[`${folder}/mapa.tmx`] = tiledMapXml(tiled, true)
       for (const [i, ts] of (tiled.tilesets as Record<string, unknown>[]).entries())

@@ -1,0 +1,10 @@
+tests\execution-observation-browser.test.ts:
+(pass) the native observer never grades a truncated response or incomplete script context [7422.00ms]
+tests\nuvens-browser.test.ts:
+(pass) Ilha das Nuvens: o executor real aprova os gabaritos e reprova os projetos iniciais [193875.00ms]
+tests\recife-browser.test.ts:
+(pass) Recife Coral: o executor real aprova os gabaritos e reprova os projetos iniciais [182032.00ms]
+ 3 pass
+ 0 fail
+ 283 expect() calls
+Ran 3 tests across 3 files. [384.00s]

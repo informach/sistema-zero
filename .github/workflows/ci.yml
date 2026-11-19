@@ -655,6 +655,11 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:smoke
 
+      - name: Instalar Chromium do Pensa pela CLI do próprio pacote
+        # O Pensa usa outra revisão do Chromium; a instalação do Kids não a fornece.
+        working-directory: packages/pensa
+        run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+
       - name: Planejamento funcional do Pensa em navegador
         working-directory: packages/pensa
         run: bun run e2e

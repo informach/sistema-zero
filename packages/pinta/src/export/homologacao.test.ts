@@ -201,7 +201,7 @@ describe('ciclo da Vila e a Floresta, sem navegador', () => {
   })
   it('passo 10, levar para fora: Tiled em JSON e em TMX volta igual, e o pacote leva os dois mapas', async () => {
     for (const scene of [cena, cenaDaCabana]) {
-      const json = tiledMap(scene),
+      const json = await tiledMap(scene),
         folhas = json.tilesets as Record<string, unknown>[]
       const resolver = {
         image: async (path: string) => {

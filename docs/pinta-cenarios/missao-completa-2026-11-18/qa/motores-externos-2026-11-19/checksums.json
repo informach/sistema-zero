@@ -1,0 +1,107 @@
+[
+  {
+    "file": "tiled-red.log",
+    "bytes": 7557,
+    "sha256": "c585953b6f8dc8974840b2c267171a85459b51b845abab94c19d464a2c4f8b8a"
+  },
+  {
+    "file": "tiled-first-green.log",
+    "bytes": 516,
+    "sha256": "f16a7ef5a54feaf8f04dda85ea8a4dd4c25621acf951aee260ee68d0a8a1791f"
+  },
+  {
+    "file": "tiled-focused.log",
+    "bytes": 10119,
+    "sha256": "51ee87f1a5395285c02c1d70c2ae0dead1e0ab60d8c12b0b75bdc71d41535551"
+  },
+  {
+    "file": "pinta-full.log",
+    "bytes": 253308,
+    "sha256": "7be0a3d190ca1d10a4d4edb7efb63207dca5bb07c22c532be9d24fb61655b46a"
+  },
+  {
+    "file": "pinta-types.log",
+    "bytes": 16,
+    "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+  },
+  {
+    "file": "tiled-native.json",
+    "bytes": 3115,
+    "sha256": "2b89cb5784a71e0539562551a8f5ca8ac3668c137e0bdfdd66be5007dba72c95"
+  },
+  {
+    "file": "godot-native.json",
+    "bytes": 563,
+    "sha256": "1d5e99bcd582260df538f24dd772f19f31f6aceab73b3b1cee81ae76f30acfa4"
+  },
+  {
+    "file": "godot-vila.log",
+    "bytes": 781,
+    "sha256": "31450209931000ee303c97c4917ff9b19ab99fd29775bf7c45a92d166a92c7a0"
+  },
+  {
+    "file": "godot-resources.log",
+    "bytes": 324,
+    "sha256": "dddfb688c340dc2fdc576f2a0879e426c2ccfe6cf8f7b1303be17cc9ce96acdd"
+  },
+  {
+    "file": "godot-physics.log",
+    "bytes": 182,
+    "sha256": "2fd19ad277267e91475f2de700f82c18d7d4c570aa4d0692fee938b17f6fd280"
+  },
+  {
+    "file": "godot-platforms.log",
+    "bytes": 900,
+    "sha256": "d40f5016ed0f3797d47cd8ef6993820b64e109363f2511c309aa2b226d5f4c4d"
+  },
+  {
+    "file": "pygame-vila.log",
+    "bytes": 149,
+    "sha256": "92b730bed044e7f5c37ca81ce927f8d69c2ef6e2471f9eca51e1b7df8dd91756"
+  },
+  {
+    "file": "pygame-resources.log",
+    "bytes": 174,
+    "sha256": "df3ba517c257e54d25ae909ec1d5ce9e4743bd885f812bef76f182de78a75d45"
+  },
+  {
+    "file": "phaser.log",
+    "bytes": 2447,
+    "sha256": "8d2deb20931887303ef96f932f4097f5899803e27df8d7c0730c853714cb0c67"
+  },
+  {
+    "file": "homologacao.log",
+    "bytes": 1249,
+    "sha256": "db169d989417b03c637a6e5e17e022572babbfa3b1e571de00bd2f6010c0e6cc"
+  },
+  {
+    "file": "godot-vila.png",
+    "bytes": 14254,
+    "sha256": "f90059d297fdd897db01415cba798d5def7f0606d9017d28b11099afe876e6f8"
+  },
+  {
+    "file": "godot-resources.png",
+    "bytes": 2374,
+    "sha256": "27e04c006992ea87161c1b14b8f33fafdfb1a9bd0ed67d5a6d6d6167e9f87a99"
+  },
+  {
+    "file": "pygame-vila.png",
+    "bytes": 11207,
+    "sha256": "2457f6c38938bdce9e4231e6227b2171677f6033dac5bc065fecf9cc19096687"
+  },
+  {
+    "file": "pinta-scripts.log",
+    "bytes": 2837,
+    "sha256": "b650282f822391e4b1570481a71da38f94157552d032206981d367afc21d360a"
+  },
+  {
+    "file": "biome-repo.log",
+    "bytes": 589012,
+    "sha256": "b966948504f024b3955218430954d34b5f059b123c352754eb9bacbd089b579f"
+  },
+  {
+    "file": "biome-provas.log",
+    "bytes": 44,
+    "sha256": "e3ed560505d46e9132695063d6771e7baa4bb21de6ead2181184dcfe85c2296b"
+  }
+]

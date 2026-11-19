@@ -106,7 +106,20 @@ recodifica os sons `.ogg` com o ffmpeg da máquina; os bytes mudam de uma versã
 outra, então confira o `git status` antes de guardar o resultado. Depois de alterar PyDew, regenere também a cobertura dos blocos com
 `packages/studio/scripts/python/pygame-block-coverage.ts`, usando Python com pygame-ce.
 
-Mapas ortogonais finitos são o domínio comum. Colisão no JavaScript usa a grade física existente;
-transformações de instâncias são amostradas nessa grade. Um orçamento recusado gera mensagem,
+Para executar também os programas instalados, configure `TILED`, `PYTHON` (com
+pygame-ce) e `GODOT` com os caminhos dos executáveis e rode:
+
+```powershell
+bun packages/pinta/scripts/homologacao/check.ts --exigir-tiled --exigir-pygame --exigir-godot
+```
+
+Esse comando cria uma pasta temporária, compara as cenas inteiras após as
+conversões nativas JSON/TMX e executa Pygame e Godot. O ensaio de navegador é
+separado. [Versões, comandos e evidências](missao-completa-2026-11-18/qa/motores-externos-2026-11-19/README.md).
+
+Mapas ortogonais finitos são o domínio comum. A física legada conserva a grade
+existente. A opção autoral `physics: 'precise'` usa contornos e plataformas
+transformados nos consumidores compatíveis; não promove jogos antigos ao abrir.
+Um orçamento recusado gera mensagem,
 sem exportar uma versão truncada. A [compatibilidade Tiled](compatibilidade-tiled.md) detalha
 o que pode ser convertido e os metadados adicionais.

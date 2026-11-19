@@ -97,7 +97,7 @@ nativeTest(
             )
               s.value.right = { type: 'num', value: para }
           })
-        if (d.tipo === 'quadro-das-cores') {
+        if (d.slug === 'nuvens-jardim-que-floresce') {
           wrong('tempo-parado', ['tempo', 'sem-agua'], (behavior) => {
             const s = simulacao(behavior)
             s.body = s.body.filter((x) => !(x.type === 'assign' && x.name === 'tempo'))

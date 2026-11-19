@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="5" height="1" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="1">
+ <properties>
+  <property name="pinta:id" value="atlas-normalized"/>
+  <property name="pinta:name" value="atlas-normalized"/>
+ </properties>
+ <tileset firstgid="1" name="Partial" tilewidth="16" tileheight="16" tilecount="6" columns="3">
+  <properties>
+   <property name="pinta:atlas" value="{&quot;version&quot;:1,&quot;count&quot;:5,&quot;columns&quot;:3,&quot;tileSize&quot;:16,&quot;imageDataUrlSha256&quot;:&quot;c6365d2d9e36cb7378aad4cbe81fc234d1d24fa3e7e0ac4dc57d352bb69007e1&quot;}"/>
+   <property name="pinta:id" value="partial"/>
+  </properties>
+  <image source="images/tiles-0.png" width="48" height="32"/>
+  <wangsets>
+   <wangset name="Grass" type="corner" tile="-1">
+    <wangcolor name="Terreno 1" color="#ff0000" tile="-1" probability="1"/>
+    <wangtile tileid="1" wangid="0,1,0,1,0,1,0,1"/>
+    <properties>
+     <property name="pinta:emptyTiles" value="[0]"/>
+     <property name="pinta:id" value="grass"/>
+    </properties>
+   </wangset>
+  </wangsets>
+ </tileset>
+ <tileset firstgid="7" name="Stone" tilewidth="16" tileheight="16" tilecount="1" columns="1">
+  <properties>
+   <property name="pinta:id" value="stone"/>
+  </properties>
+  <image source="images/tiles-1.png" width="16" height="16"/>
+ </tileset>
+ <layer id="1" name="Ground" width="5" height="1">
+  <properties>
+   <property name="pinta:id" value="ground"/>
+  </properties>
+  <data encoding="csv">
+1,2,3,4,5
+</data>
+ </layer>
+ <layer id="2" name="Decoration" width="5" height="1">
+  <properties>
+   <property name="pinta:id" value="decoration"/>
+  </properties>
+  <data encoding="csv">
+7,0,0,0,0
+</data>
+ </layer>
+</map>

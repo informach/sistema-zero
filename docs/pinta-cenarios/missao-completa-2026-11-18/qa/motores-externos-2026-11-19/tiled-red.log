@@ -1,0 +1,247 @@
+bun test v1.3.11 (af24e281)
+
+src\export\tiled\normalizedTiled.test.ts:
+23 |   it(`conserva a cena inteira após a normalização real do Tiled em ${file}`, async () => {
+24 |     const text = await readFile(resolve(directory, file), 'utf8')
+25 |     const document = file.endsWith('.tmx') ? tiledXmlToJson(text) : JSON.parse(text)
+26 |     const imported = await importTiledScene(document, resolver)
+27 |     expect(imported.warnings).toEqual([])
+28 |     expect(imported.scene).toEqual(expected)
+                                ^
+error: expect(received).toEqual(expected)
+
+  {
+    "cols": 5,
+    "id": "atlas-normalized",
+    "layers": [
+      {
+        "cells": [
+          0,
+          1,
+          2,
+          3,
+          4,
+        ],
+        "id": "ground",
+        "kind": "tiles",
+        "name": "Ground",
+        "tilesetId": "partial",
+        "visible": true,
+      },
+      {
+        "cells": [
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+        ],
+        "id": "decoration",
+        "kind": "tiles",
+        "name": "Decoration",
+        "tilesetId": "stone",
+        "visible": true,
+      },
+    ],
+    "name": "atlas-normalized",
+    "rows": 1,
+    "tileSize": 16,
+    "tilesets": [
+      {
+        "columns": 3,
+-       "count": 5,
++       "count": 6,
+        "id": "partial",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAgCAYAAABU1PscAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAABVSURBVFiF7dexCcAwAANBKWRwb+4MoeIJ/PWyeVy5N7kZdFrvBzzj9TgDaAbQDKAZQDOAZgDNANq7/QaS07Pt0y7737+AATQDaAbQDKAZQDOAZgDtA3vgBsI6Tyq7AAAAAElFTkSuQmCC",
+        "name": "Partial",
+        "platform": [],
+        "solid": [],
+        "terrains": [
+          {
+            "colors": [
+              "#ff0000",
+            ],
+            "id": "grass",
+            "mode": "corner",
+            "name": "Grass",
+            "tiles": {
+-             "0": [
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-             ],
+              "1": [
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+              ],
+            },
+          },
+        ],
+      },
+      {
+        "columns": 1,
+        "count": 1,
+        "id": "stone",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAAdSURBVDiNY2xoaPjPQAFgokTzqAGjBowaMJgMAABimgKflZEXlAAAAABJRU5ErkJggg==",
+        "name": "Stone",
+        "platform": [],
+        "solid": [],
+      },
+    ],
+    "version": 1,
+  }
+
+- Expected  - 11
++ Received  + 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\export\tiled\normalizedTiled.test.ts:28:28)
+(fail) conserva a cena inteira após a normalização real do Tiled em normalized.tmj [16.00ms]
+23 |   it(`conserva a cena inteira após a normalização real do Tiled em ${file}`, async () => {
+24 |     const text = await readFile(resolve(directory, file), 'utf8')
+25 |     const document = file.endsWith('.tmx') ? tiledXmlToJson(text) : JSON.parse(text)
+26 |     const imported = await importTiledScene(document, resolver)
+27 |     expect(imported.warnings).toEqual([])
+28 |     expect(imported.scene).toEqual(expected)
+                                ^
+error: expect(received).toEqual(expected)
+
+  {
+    "cols": 5,
+    "id": "atlas-normalized",
+    "layers": [
+      {
+        "cells": [
+          0,
+          1,
+          2,
+          3,
+          4,
+        ],
+        "id": "ground",
+        "kind": "tiles",
+        "name": "Ground",
+        "tilesetId": "partial",
+        "visible": true,
+      },
+      {
+        "cells": [
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+        ],
+        "id": "decoration",
+        "kind": "tiles",
+        "name": "Decoration",
+        "tilesetId": "stone",
+        "visible": true,
+      },
+    ],
+    "name": "atlas-normalized",
+    "rows": 1,
+    "tileSize": 16,
+    "tilesets": [
+      {
+        "columns": 3,
+-       "count": 5,
++       "count": 6,
+        "id": "partial",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAgCAYAAABU1PscAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAABVSURBVFiF7dexCcAwAANBKWRwb+4MoeIJ/PWyeVy5N7kZdFrvBzzj9TgDaAbQDKAZQDOAZgDNANq7/QaS07Pt0y7737+AATQDaAbQDKAZQDOAZgDtA3vgBsI6Tyq7AAAAAElFTkSuQmCC",
+        "name": "Partial",
+        "platform": [],
+        "solid": [],
+        "terrains": [
+          {
+            "colors": [
+              "#ff0000",
+            ],
+            "id": "grass",
+            "mode": "corner",
+            "name": "Grass",
+            "tiles": {
+-             "0": [
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-               0,
+-             ],
+              "1": [
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+              ],
+            },
+          },
+        ],
+      },
+      {
+        "columns": 1,
+        "count": 1,
+        "id": "stone",
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAAdSURBVDiNY2xoaPjPQAFgokTzqAGjBowaMJgMAABimgKflZEXlAAAAABJRU5ErkJggg==",
+        "name": "Stone",
+        "platform": [],
+        "solid": [],
+      },
+    ],
+    "version": 1,
+  }
+
+- Expected  - 11
++ Received  + 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\export\tiled\normalizedTiled.test.ts:28:28)
+(fail) conserva a cena inteira após a normalização real do Tiled em normalized.tmx [15.00ms]
+32 |   tilesets: { firstgid: number; properties: { name: string; value: unknown }[]; wangsets: { properties: { name: string; value: unknown }[] }[] }[]
+33 |   layers: { data: number[] }[]
+34 | }
+35 | it('reserva o preenchimento físico do atlas no GID da próxima folha', async () => {
+36 |   const exported = (await tiledMap(expected)) as unknown as ExportedFixture
+37 |   expect(exported.tilesets[1]!.firstgid).toBe(7)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: 7
+Received: 6
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\export\tiled\normalizedTiled.test.ts:37:42)
+(fail) reserva o preenchimento físico do atlas no GID da próxima folha
+39 | })
+40 | 
+41 | it('exporta o snapshot do atlas parcial e as regras de terreno que o Tiled omite', async () => {
+42 |   const exported = (await tiledMap(expected)) as unknown as ExportedFixture
+43 |   const atlas = exported.tilesets[0]!.properties.find((p) => p.name === 'pinta:atlas')
+44 |   expect(atlas).toBeDefined()
+                     ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\export\tiled\normalizedTiled.test.ts:44:17)
+(fail) exporta o snapshot do atlas parcial e as regras de terreno que o Tiled omite
+
+ 0 pass
+ 4 fail
+ 6 expect() calls
+Ran 4 tests across 1 file. [565.00ms]
