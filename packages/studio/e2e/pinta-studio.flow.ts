@@ -8,7 +8,16 @@ import type { Project } from '../src/core/project'
 const root = resolve(import.meta.dirname, '../../..')
 const fixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-e-floresta.pinta.json')
 const closedFixture = resolve(root, '.tmp/pinta-resources-e2e/resources-frozen.pinta.json')
+const worldFixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-porta-sem-destino.pinta.json')
 test.beforeAll(() => {
+  execFileSync(
+    'bun',
+    [
+      resolve(root, 'packages/pinta/scripts/homologacao/worldUpdate.ts'),
+      resolve(worldFixture, '..'),
+    ],
+    { cwd: root },
+  )
   execFileSync(
     'bun',
     [resolve(root, 'packages/pinta/scripts/homologacao/generate.ts'), resolve(fixture, '..')],
@@ -28,6 +37,73 @@ const snapshot = async (page: Page): Promise<Project> =>
 
 test.beforeEach(async ({ context }) => {
   await context.route('**/api/**', (route) => route.abort('internetdisconnected'))
+})
+
+test('uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa', async ({
+  page,
+  context,
+}, info) => {
+  test.setTimeout(120000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(worldFixture)
+  await page.getByRole('button', { name: 'Abrir vila-e-floresta (Mapa)', exact: true }).click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  await page.getByRole('button', { name: 'Jogar meu mapa', exact: true }).click()
+  await expect(page).toHaveURL(/\/estudio/)
+  await expect
+    .poll(async () => (await snapshot(page))?.assets?.filter((asset) => asset.scene).length)
+    .toBe(1)
+  await page.getByRole('button', { name: 'Ponte', exact: true }).click()
+  await page.getByRole('button', { name: 'Programa · script.js', exact: true }).click()
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await input.focus()
+  await page.keyboard.press('ControlOrMeta+End')
+  await page.keyboard.insertText('\nconst minhaNovaPorta = 47;\n')
+  await expect
+    .poll(async () => JSON.stringify((await snapshot(page)).ir))
+    .toContain('minhaNovaPorta')
+  await expect.poll(async () => Boolean((await snapshot(page)).bridgeCodeAhead)).toBe(false)
+  const initial = await snapshot(page)
+  const map = initial.assets!.find((asset) => asset.scene)!
+  const edit = await context.newPage()
+  edit.on('pageerror', (error) => errors.push(error.message))
+  await edit.goto(`/pinta?desenho=${encodeURIComponent(map.libId!.slice('personal:'.length))}`)
+  const editTip = edit.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await editTip.isVisible()) await editTip.click()
+  await edit.getByLabel('Nível das ferramentas', { exact: true }).selectOption('advanced')
+  await edit
+    .getByRole('button')
+    .filter({ has: edit.getByText('Lugares', { exact: true }) })
+    .click()
+  await edit.getByRole('button', { name: 'Escolher o objeto Porta da cabana', exact: true }).click()
+  const before = await snapshot(page)
+  const destination = edit.getByLabel('Valor: destino', { exact: true })
+  await destination.fill('cabana')
+  await destination.press('Enter')
+  await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
+    timeout: 15000,
+  })
+  await page.bringToFront()
+  await page.evaluate(() => window.dispatchEvent(new FocusEvent('focus')))
+  await expect
+    .poll(async () => (await snapshot(page)).assets?.filter((asset) => asset.scene).length, {
+      timeout: 15000,
+    })
+    .toBe(2)
+  const after = await snapshot(page)
+  expect(after.assets!.find((asset) => asset.id === map.id)?.name).toBe(map.name)
+  expect(after.assets!.some((asset) => asset.scene?.name === 'cabana')).toBe(true)
+  expect(after.files).toEqual(before.files)
+  expect(after.ir).toEqual(before.ir)
+  expect(after.blocksState).toEqual(before.blocksState)
+  expect(errors).toEqual([])
+  await info.attach('porta-adicionada-ao-jogo', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
 })
 
 test('Pinta real cria jogo estruturado; atualização do cenário conserva a programação', async ({

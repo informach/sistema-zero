@@ -53,6 +53,7 @@ mock.module('idb-keyval', () => ({
 
 const {
   listPersonalAssets,
+  readPersonalAssetInventory,
   PERSONAL_ASSET_LIMITS,
   personalAssetsChangedAt,
   removePersonalAsset,
@@ -76,6 +77,18 @@ afterEach(() => {
 })
 
 describe('savePersonalAsset / listPersonalAssets', () => {
+  it('a leitura estrita distingue vazio de falha, preservando a leitura tolerante da galeria', async () => {
+    expect(await readPersonalAssetInventory()).toEqual({ ok: true, assets: [] })
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    failReads = true
+    expect(await readPersonalAssetInventory()).toMatchObject({
+      ok: false,
+      error: expect.any(String),
+    })
+    expect(await listPersonalAssets()).toEqual([])
+    failReads = false
+    expect(await readPersonalAssetInventory()).toMatchObject({ ok: true, assets: [{ id: 'root' }] })
+  })
   it('a falha de commit no banco conserva a raiz e não grava só um destino', async () => {
     await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
     const before = await listPersonalAssets()

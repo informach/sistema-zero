@@ -1,0 +1,328 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\packages\\studio\\playwright.pinta-integration.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/.cache/pinta-integration-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["pinta-studio.flow.ts"],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": ".cache/pinta-integration-results/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "bun scripts/serve-pinta-integration-e2e.ts",
+      "url": "http://127.0.0.1:5403",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "pinta-studio.flow.ts",
+      "file": "pinta-studio.flow.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15185,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    },
+                    {
+                      "buffer": ""
+                    },
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:49:47.941Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "porta-adicionada-ao-jogo",
+                      "contentType": "image/png",
+                      "path": "porta-adicionada-ao-jogo.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a05422ff4448e529e150-c13aed025630b1668055",
+          "file": "pinta-studio.flow.ts",
+          "line": 42,
+          "column": 1
+        },
+        {
+          "title": "Pinta real cria jogo estruturado; atualização do cenário conserva a programação",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16150,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:50:05.11Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "bridge-checkpoint",
+                      "contentType": "application/json",
+                      "path": "bridge-checkpoint.json"
+                    },
+                    {
+                      "name": "studio-updated",
+                      "contentType": "image/png",
+                      "path": "studio-updated.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a05422ff4448e529e150-1715f269bf6592dae72d",
+          "file": "pinta-studio.flow.ts",
+          "line": 109,
+          "column": 1
+        },
+        {
+          "title": "editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12962,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:50:21.287Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "linked-resource-updated",
+                      "contentType": "image/png",
+                      "path": "linked-resource-updated.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a05422ff4448e529e150-3794922792411441615b",
+          "file": "pinta-studio.flow.ts",
+          "line": 215,
+          "column": 1
+        },
+        {
+          "title": "Trazer do Pinta importa a Vila e o destino da porta juntos, sem mudar o programa",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10604,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:50:34.268Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "pull-world",
+                      "contentType": "image/png",
+                      "path": "pull-world.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a05422ff4448e529e150-5c7de848953f329f4faf",
+          "file": "pinta-studio.flow.ts",
+          "line": 260,
+          "column": 1
+        },
+        {
+          "title": "Trazer do Pinta conserva o mapa nativo 6 autocontido e sua animação sem os originais",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4993,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:50:44.895Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "pull-closed-native6",
+                      "contentType": "image/png",
+                      "path": "pull-closed-native6.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a05422ff4448e529e150-b5f66492bef54cef47dd",
+          "file": "pinta-studio.flow.ts",
+          "line": 312,
+          "column": 1
+        },
+        {
+          "title": "falha síncrona no segundo put não deixa metade da Vila na biblioteca nem no projeto",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2639,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T01:50:49.903Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a05422ff4448e529e150-d312daab0b2ff3c4a656",
+          "file": "pinta-studio.flow.ts",
+          "line": 341,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T01:49:19.349Z",
+    "duration": 94261.861,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

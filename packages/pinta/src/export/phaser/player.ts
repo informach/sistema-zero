@@ -15,7 +15,7 @@ class PintaGame extends Phaser.Scene {
     this.keys=this.input.keyboard.createCursorKeys();
     let collision=null;
     this.maps=createMap2D({
-      meta:name=>{const scene=PINTA_MAPS[name]||Object.values(PINTA_MAPS).find(s=>s.id===name||s.name===name);return scene?{scene}:null;},
+      meta:(name,byId)=>{const all=Object.values(PINTA_MAPS),scene=(byId&&all.find(s=>s.id===name))||(Object.prototype.hasOwnProperty.call(PINTA_MAPS,name)&&PINTA_MAPS[name])||all.find(s=>s.id===name||s.name===name);return scene?{scene}:null;},
       context:()=>this.surface.context,width:()=>640,height:()=>480,
       camera:()=>({x:Math.max(0,hero.x-320),y:Math.max(0,hero.y-240)}),screen:ctx=>ctx.setTransform(1,0,0,1,0,0),
       image:url=>this.textures.get(url).getSourceImage(),warn:message=>console.warn(message),

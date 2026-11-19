@@ -162,6 +162,100 @@ it('scene references resolve inside their map without changing legacy property v
   expect(withArt.art[0]!.image).toBe('first.png')
 })
 
+for (const target of ['g2d', 'gk'] as const) {
+  it(`${target}: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs`, async () => {
+    const named = { ...scene, name: 'cabana' }
+    const byId = { ...scene, id: 'cabana', name: 'outra-cena', cols: 1, rows: 1, layers: [] }
+    const win: Record<string, unknown> = {
+      addEventListener() {},
+      performance: { now: () => 0 },
+      devicePixelRatio: 1,
+      __SZGAME_ASSETS: {},
+      __SZGAME_ASSET_META: { primeiro: { scene: named }, segundo: { scene: byId } },
+    }
+    new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+    const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+    api.createMapScene('mapa', 'cabana')
+    expect(api.mapSize('mapa', 'width')).toBe(32)
+  })
+
+  it(`${target}: uma imagem comum não encobre o ID do mapa de destino`, async () => {
+    const destination = {
+      ...scene,
+      id: 'cabana',
+      name: 'cabana-nativa',
+      cols: 1,
+      rows: 1,
+      layers: [],
+    }
+    const win: Record<string, unknown> = {
+      addEventListener() {},
+      performance: { now: () => 0 },
+      devicePixelRatio: 1,
+      __SZGAME_ASSETS: {},
+      __SZGAME_ASSET_META: { cabana: {}, 'cabana-2': { scene: destination } },
+    }
+    new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+    const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+    api.createMapScene('mapa', 'cabana')
+    expect(api.mapSize('mapa', 'width')).toBe(16)
+  })
+
+  it(`${target}: portas preferem IDs sem mudar a escolha por nome dos blocos antigos`, async () => {
+    const destination = {
+      ...scene,
+      id: 'cabana',
+      name: 'cabana-nativa',
+      cols: 1,
+      rows: 1,
+      layers: [],
+    }
+    const win: Record<string, unknown> = {
+      addEventListener() {},
+      performance: { now: () => 0 },
+      devicePixelRatio: 1,
+      __SZGAME_ASSETS: {},
+      __SZGAME_ASSET_META: { cabana: { scene }, 'cabana-2': { scene: destination } },
+    }
+    new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+    const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+    api.createMapScene('mapa', 'cabana')
+    expect(api.mapSize('mapa', 'width')).toBe(32)
+    api.useMapDoor(
+      'mapa',
+      { x: 0, y: 0, w: 1, h: 1 },
+      {
+        id: 'legacy',
+        name: 'Porta antiga',
+        type: '',
+        role: 'door',
+        x: 0,
+        y: 0,
+        width: 16,
+        height: 16,
+        properties: { destino: 'cabana' },
+      },
+    )
+    expect(api.mapSize('mapa', 'width')).toBe(32)
+    api.useMapDoor(
+      'mapa',
+      { x: 0, y: 0, w: 1, h: 1 },
+      {
+        id: 'door',
+        name: 'Porta',
+        type: '',
+        role: 'door',
+        x: 0,
+        y: 0,
+        width: 16,
+        height: 16,
+        properties: { destino: { type: 'asset', value: 'cabana' } },
+      },
+    )
+    expect(api.mapSize('mapa', 'width')).toBe(16)
+  })
+}
+
 it('object references inside two instances resolve to the corresponding set child', () => {
   const sample = PintaSceneSchema.parse(scene)
   const local = {

@@ -249,10 +249,18 @@ function personalAssetKindOf(value: unknown): PersonalAssetKind {
 export async function listPersonalAssets(options?: {
   namespace?: string
 }): Promise<PersonalAsset[]> {
+  const result = await readPersonalAssetInventory(options)
+  return result.ok ? result.assets : []
+}
+
+/** Reconciliation cannot mistake a failed catalog read for an empty world. */
+export async function readPersonalAssetInventory(options?: {
+  namespace?: string
+}): Promise<{ ok: true; assets: PersonalAsset[] } | { ok: false; error: string }> {
   try {
-    return await readPersonalAssets(getStoreHandle(options?.namespace))
+    return { ok: true, assets: await readPersonalAssets(getStoreHandle(options?.namespace)) }
   } catch {
-    return []
+    return { ok: false, error: 'Não consegui conferir os mapas guardados. O jogo foi mantido.' }
   }
 }
 

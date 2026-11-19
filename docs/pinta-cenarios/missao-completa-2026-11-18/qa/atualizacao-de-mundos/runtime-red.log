@@ -1,0 +1,79 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\map-2d\runtime.test.ts:
+(pass) scene references resolve inside their map without changing legacy property values [15.00ms]
+[Pinta] O desenho cabana precisa de uma cena completa do Pinta. Traga o mapa de novo.
+[Pinta] Crie o cenário mapa antes de usar seus blocos.
+170 |       __SZGAME_ASSETS: {}, __SZGAME_ASSET_META: { cabana: {}, 'cabana-2': { scene: destination } },
+171 |     }
+172 |     new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+173 |     const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+174 |     api.createMapScene('mapa', 'cabana')
+175 |     expect(api.mapSize('mapa', 'width')).toBe(16)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 16
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:175:42)
+(fail) g2d: uma imagem comum não encobre o ID do mapa de destino [16.00ms]
+187 |     expect(api.mapSize('mapa', 'width')).toBe(32)
+188 |     api.useMapDoor('mapa', { x: 0, y: 0, w: 1, h: 1 }, {
+189 |       id: 'door', name: 'Porta', type: '', role: 'door', x: 0, y: 0, width: 16, height: 16,
+190 |       properties: { destino: { type: 'asset', value: 'cabana' } },
+191 |     })
+192 |     expect(api.mapSize('mapa', 'width')).toBe(16)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 16
+Received: 32
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:192:42)
+(fail) g2d: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+[Pinta] O desenho cabana precisa de uma cena completa do Pinta. Traga o mapa de novo.
+[Pinta] Crie o cenário mapa antes de usar seus blocos.
+170 |       __SZGAME_ASSETS: {}, __SZGAME_ASSET_META: { cabana: {}, 'cabana-2': { scene: destination } },
+171 |     }
+172 |     new Function('window', 'requestAnimationFrame', await mapTwoDBootstrap(target))(win, () => 0)
+173 |     const api = win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi
+174 |     api.createMapScene('mapa', 'cabana')
+175 |     expect(api.mapSize('mapa', 'width')).toBe(16)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 16
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:175:42)
+(fail) gk: uma imagem comum não encobre o ID do mapa de destino [16.00ms]
+187 |     expect(api.mapSize('mapa', 'width')).toBe(32)
+188 |     api.useMapDoor('mapa', { x: 0, y: 0, w: 1, h: 1 }, {
+189 |       id: 'door', name: 'Porta', type: '', role: 'door', x: 0, y: 0, width: 16, height: 16,
+190 |       properties: { destino: { type: 'asset', value: 'cabana' } },
+191 |     })
+192 |     expect(api.mapSize('mapa', 'width')).toBe(16)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 16
+Received: 32
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:192:42)
+(fail) gk: portas preferem IDs sem mudar a escolha por nome dos blocos antigos [15.00ms]
+(pass) object references inside two instances resolve to the corresponding set child
+(pass) scene 2 animates the selected sequence in both JavaScript game engines
+(pass) tile objects animate in scene 2 while published scene 1 keeps its static behavior
+(pass) a collision set scaled 2 by 2 fills every covered root cell
+(pass) set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds [31.00ms]
+(pass) monta a grade de colisão, os objetos e os eventos sem perder dados
+(pass) confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício
+(pass) caminhos e pontos usam seu contorno, inclusive após rotação
+(pass) compõe camadas, espelho e opacidade nos pixels
+(pass) sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto [32.00ms]
+
+ 11 pass
+ 4 fail
+ 6212 expect() calls
+Ran 15 tests across 1 file. [735.00ms]

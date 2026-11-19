@@ -1,5 +1,5 @@
 import { ulid } from 'ulid'
-import { mergeDrawingIntoAsset, personalIdOf } from '../asset-library/personalSync'
+import { mergeDrawingIntoAsset, personalIdOf } from '../asset-library/personalAssetMerge'
 import { uniqueAssetName } from '../core/assetNames'
 import {
   PROJECT_ASSET_LIMITS,
