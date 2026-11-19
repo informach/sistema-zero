@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test'
 import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
+import type { ArquivoCompilado } from '@sistemazero/molda-cenarios-core/compilar'
 import {
-  type ArquivoCompilado,
   type CenaParaStudio,
   MIME_DA_CENA_PARA_STUDIO,
-} from '@sistemazero/molda-cenarios-core/compilar'
+} from '@sistemazero/molda-cenarios-core/studio'
 import { codificarPngDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import { RAYLIB_3D_EXTENSION } from '../../runtime/python/raylib/contract'
 import { prepareEditableStudioProject } from '../../state/editableProjectValidation'

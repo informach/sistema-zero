@@ -1,8 +1,5 @@
-import {
-  type CenaParaStudio,
-  lerCenaParaStudio,
-  type PacoteCompilado,
-} from '@sistemazero/molda-cenarios-core/compilar'
+import type { PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
+import { type CenaParaStudio, lerCenaParaStudio } from '@sistemazero/molda-cenarios-core/studio'
 import { decodeProjectAsset } from '../assetBinary'
 import type { ProjectAsset } from '../projectAssets'
 import { assertScene3DDataBytes, isValidScene3DDataUrl, readScene3DDataMetadata } from './assets'

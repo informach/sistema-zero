@@ -1,0 +1,250 @@
+import { expect, test } from 'bun:test'
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import type { CenaCompilada, PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
+import { exemplo, glb } from '../../../../molda-cenarios-motor/tests/fixtures/glb-compilacao'
+import { digestAssetBytes, encodeAssetBase64 } from '../assetBinary'
+import { createEmptyProject } from '../project'
+import type { ProjectAsset } from '../projectAssets'
+import {
+  OrcamentoDeImportacaoDeCenaExcedido,
+  prepararImportacaoDeCena3D,
+} from '../scene3d/importar'
+import { lerAssetDeCena3D } from '../scene3d/referencias'
+import { assertScene3DAssets } from '../scene3d/validacao'
+
+async function pacote(
+  instancias = 1,
+  malhasPorArquivo = 1,
+  tamanho?: number,
+): Promise<PacoteCompilado> {
+  const m = exemplo()
+  m.j.nodes = Array.from({ length: malhasPorArquivo }, () => ({ mesh: 0 }))
+  m.j.scenes = [{ nodes: m.j.nodes.map((_, i) => i) }]
+  let bin = m.bin,
+    bytes = glb(m.j, bin)
+  if (tamanho) {
+    // A real GLB with unused BIN capacity, not a fake MIME/header or a forged mesh count.
+    for (let i = 0; i < 8 && bytes.byteLength !== tamanho; i++) {
+      bin = new Uint8Array(bin.byteLength + tamanho - bytes.byteLength)
+      m.j.buffers[0]!.byteLength = bin.byteLength
+      bytes = glb(m.j, bin)
+    }
+    if (bytes.byteLength !== tamanho) throw Error('fixture size')
+  }
+  const arquivo = {
+      caminho: 'modelos/arvore.glb',
+      digest: await digestAssetBytes(bytes),
+      bytes: bytes.byteLength,
+      mime: 'model/gltf-binary' as const,
+      papel: 'modelo' as const,
+      malhas: malhasPorArquivo,
+      triangulos: malhasPorArquivo,
+      verticesMaximos: 3,
+    },
+    cena: CenaCompilada = {
+      formato: 'molda-cena-compilada',
+      versao: 1,
+      nome: 'Faísca',
+      unidade: 'metro',
+      eixoVertical: 'y',
+      fonte: { cenario: 'faisca', revisao: 3, digest: 'a'.repeat(64) },
+      arquivos: [arquivo],
+      entidades: [],
+      nos: Array.from({ length: instancias }, (_, i) => ({
+        id: `no-${i}`,
+        entidade: null,
+        arquivo: arquivo.caminho,
+        matriz: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, i, 0, 0, 1],
+        volume: { min: { x: i, y: 0, z: 0 }, max: { x: i, y: 0, z: 0 } },
+      })),
+      colisoes: [],
+      aguas: [],
+      caminhos: [],
+      marcadores: [],
+      texturas: [],
+      fontes: { modelos: [], texturas: [], conjuntos: [] },
+      licencas: [],
+      ambiente: { hora: 12 },
+    }
+  return { cena, arquivos: new Map([[arquivo.caminho, bytes]]) }
+}
+
+test('preparo conta instâncias/partes reais: 48 cabe, 49 é excesso nominal e não altera o projeto', async () => {
+  const projeto = createEmptyProject('p', 'Jogo'),
+    antes = JSON.stringify(projeto),
+    plano = await prepararImportacaoDeCena3D(projeto, await pacote(24, 2))
+  expect(plano.orcamento.malhas).toBe(48)
+  expect(plano.orcamento.permitido).toBe(true)
+  expect(plano.assets.filter((a) => a.kind === 'model3d')).toHaveLength(1)
+  let erro: unknown
+  try {
+    await prepararImportacaoDeCena3D(projeto, await pacote(49))
+  } catch (e) {
+    erro = e
+  }
+  expect(erro).toBeInstanceOf(OrcamentoDeImportacaoDeCenaExcedido)
+  if (!(erro instanceof OrcamentoDeImportacaoDeCenaExcedido)) throw Error('missing typed budget')
+  expect(erro.orcamento.excessos).toContainEqual({ tipo: 'malhas', atual: 49, limite: 48 })
+  expect(erro.orcamento.sugerirJuncao).toBe(true)
+  expect(JSON.stringify(projeto)).toBe(antes)
+})
+
+test('5 MiB por modelo é medido nos bytes reais, sem aceitar arredondamento', async () => {
+  const projeto = createEmptyProject('p', 'Jogo'),
+    limite = 5 * 1024 * 1024
+  expect(
+    (await prepararImportacaoDeCena3D(projeto, await pacote(1, 1, limite))).orcamento.permitido,
+  ).toBe(true)
+  await expect(
+    prepararImportacaoDeCena3D(projeto, await pacote(1, 1, limite + 4)),
+  ).rejects.toBeInstanceOf(OrcamentoDeImportacaoDeCenaExcedido)
+})
+
+test('reimportação conserva IDs e nomes; revisão nova compartilha bytes sem reescrever a anterior', async () => {
+  const projeto = createEmptyProject('p', 'Jogo'),
+    p = await pacote(),
+    antes = JSON.stringify(p.cena),
+    primeiro = await prepararImportacaoDeCena3D(projeto, p),
+    renomeados = primeiro.assets.map((a) => ({ ...a, name: `meu-${a.name}` })),
+    existente = { ...projeto, assets: renomeados },
+    repetido = await prepararImportacaoDeCena3D(existente, p)
+  expect(repetido.assets).toEqual(renomeados)
+  expect(repetido.assetId).toBe(primeiro.assetId)
+  expect(repetido.adicionados).toBe(0)
+  const outraRevisao = {
+      ...p,
+      cena: { ...p.cena, fonte: { ...p.cena.fonte, revisao: 4, digest: 'b'.repeat(64) } },
+    },
+    novo = await prepararImportacaoDeCena3D(existente, outraRevisao)
+  expect(novo.assets.filter((a) => a.kind === 'model3d')).toHaveLength(1)
+  expect(novo.assets.filter((a) => a.kind === 'scene3d')).toHaveLength(2)
+  expect(novo.assets.find((a) => a.id === primeiro.assetId)).toEqual(
+    renomeados.find((a) => a.id === primeiro.assetId),
+  )
+  await assertScene3DAssets(novo.assets)
+  expect(JSON.stringify(p.cena)).toBe(antes)
+})
+
+test('recursos idênticos em dois caminhos usam um asset e conservam os dois nós', async () => {
+  const p = await pacote(),
+    arquivo = { ...p.cena.arquivos[0]!, caminho: 'modelos/segunda.glb' }
+  p.cena.arquivos.push(arquivo)
+  p.arquivos = new Map([...p.arquivos, [arquivo.caminho, p.arquivos.get('modelos/arvore.glb')!]])
+  p.cena.nos.push({ ...p.cena.nos[0]!, id: 'segundo', arquivo: arquivo.caminho })
+  const plano = await prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), p),
+    cena = plano.assets.find((a) => a.id === plano.assetId)!,
+    envelope = lerAssetDeCena3D(cena)
+  expect(plano.assets.filter((a) => a.kind === 'model3d')).toHaveLength(1)
+  expect(new Set(envelope.recursos.map((r) => r.asset)).size).toBe(1)
+  expect(envelope.cena.nos).toHaveLength(2)
+  expect(plano.orcamento.malhas).toBe(2)
+})
+
+test('o orçamento inclui modelos comuns e bytes já presentes no projeto', async () => {
+  const p = await pacote(47),
+    outro = await pacote(1, 2),
+    modelo: ProjectAsset = {
+      id: 'existente',
+      name: 'casa',
+      kind: 'model3d',
+      source: 'upload',
+      originalFileName: 'casa.glb',
+      dataUrl: `data:model/gltf-binary;base64,${encodeAssetBase64(outro.arquivos.get('modelos/arvore.glb')!)}`,
+    },
+    projeto = { ...createEmptyProject('p', 'Jogo'), assets: [modelo] }
+  await expect(prepararImportacaoDeCena3D(projeto, p)).rejects.toBeInstanceOf(
+    OrcamentoDeImportacaoDeCenaExcedido,
+  )
+  const audio = new Uint8Array(5 * 1024 * 1024),
+    cheia = {
+      ...projeto,
+      assets: Array.from(
+        { length: 5 },
+        (_, i): ProjectAsset => ({
+          id: `a${i}`,
+          name: `som-${i}`,
+          kind: 'audio',
+          source: 'upload',
+          dataUrl: `data:audio/wav;base64,${encodeAssetBase64(audio)}`,
+        }),
+      ),
+    }
+  let erro: unknown
+  try {
+    await prepararImportacaoDeCena3D(cheia, await pacote())
+  } catch (e) {
+    erro = e
+  }
+  expect(erro).toBeInstanceOf(OrcamentoDeImportacaoDeCenaExcedido)
+  if (!(erro instanceof OrcamentoDeImportacaoDeCenaExcedido)) throw Error('missing typed budget')
+  expect(
+    erro.orcamento.excessos.some((e) => e.tipo === 'projeto' && e.atual > 24 * 1024 * 1024),
+  ).toBe(true)
+  expect(projeto.assets[0]).toBe(modelo)
+})
+
+test('falha e cancelamento não alteram o projeto ou escondem dependências', async () => {
+  const p = await pacote(),
+    projeto = createEmptyProject('p', 'Jogo'),
+    controller = new AbortController()
+  controller.abort()
+  await expect(
+    prepararImportacaoDeCena3D(projeto, p, { sinal: controller.signal }),
+  ).rejects.toHaveProperty('name', 'AbortError')
+  const antes = JSON.stringify(projeto),
+    bytes = p.arquivos.get('modelos/arvore.glb')!
+  bytes[bytes.length - 1] = 1
+  await expect(prepararImportacaoDeCena3D(projeto, p)).rejects.toThrow(/hash/)
+  expect(JSON.stringify(projeto)).toBe(antes)
+})
+
+test('uma cópia idêntica adicionada depois não muda os IDs já usados pela revisão', async () => {
+  const p = await pacote(),
+    projeto = createEmptyProject('p', 'Jogo'),
+    primeiro = await prepararImportacaoDeCena3D(projeto, p),
+    modelo = primeiro.assets.find((a) => a.kind === 'model3d')!,
+    assets = [...primeiro.assets, { ...modelo, id: 'copia-com-outro-id', name: 'copia' }],
+    repetido = await prepararImportacaoDeCena3D({ ...projeto, assets }, p)
+  expect(repetido.assets).toEqual(assets)
+  expect(repetido.assetId).toBe(primeiro.assetId)
+  expect(repetido.adicionados).toBe(0)
+})
+
+test('preparo captura o projeto e o pacote antes de ceder execução', async () => {
+  const p = await pacote(),
+    projeto = createEmptyProject('p', 'Jogo'),
+    original = canonicalJson(projeto),
+    pending = prepararImportacaoDeCena3D(projeto, p)
+  projeto.name = 'Outra edição'
+  p.cena.nome = 'Outro cenário'
+  const bytes = p.arquivos.get('modelos/arvore.glb')!
+  bytes[bytes.length - 1] = 1
+  const plano = await pending,
+    cena = plano.assets.find((a) => a.id === plano.assetId)!
+  expect(plano.baseHash).toBe(await sha256Hex(original))
+  expect(lerAssetDeCena3D(cena).cena.nome).toBe('Faísca')
+  await assertScene3DAssets(plano.assets)
+})
+
+test('a alternativa de junção usa o agrupador real e conserva a autoria original', async () => {
+  const p = await pacote(49),
+    antes = JSON.stringify(p.cena),
+    plano = await prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), p, { agrupar: true })
+  expect(plano.orcamento.malhas).toBeLessThan(49)
+  expect(plano.orcamento.permitido).toBe(true)
+  expect(JSON.stringify(p.cena)).toBe(antes)
+})
+
+test('nome de arquivo compilado longo conserva a procedência sem ultrapassar o nome do asset', async () => {
+  const p = await pacote(),
+    original = p.cena.arquivos[0]!.caminho,
+    longo = `modelos/${'a'.repeat(170)}.glb`
+  p.cena.arquivos[0]!.caminho = longo
+  p.cena.nos[0]!.arquivo = longo
+  p.arquivos = new Map([[longo, p.arquivos.get(original)!]])
+  const plano = await prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), p),
+    cena = plano.assets.find((a) => a.id === plano.assetId)!
+  expect(plano.assets.every((a) => (a.originalFileName?.length ?? 0) <= 128)).toBe(true)
+  expect(lerAssetDeCena3D(cena).cena.arquivos[0]!.caminho).toBe(longo)
+  await assertScene3DAssets(plano.assets)
+})

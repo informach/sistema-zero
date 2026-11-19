@@ -8,7 +8,7 @@ import {
   MIME_DA_CENA_PARA_STUDIO,
   type PapelDoDado3D,
   PapelDoDado3DSchema,
-} from '@sistemazero/molda-cenarios-core/compilar'
+} from '@sistemazero/molda-cenarios-core/studio'
 import { decodeProjectAsset } from '../assetBinary'
 
 export const MAX_BYTES_DO_DADO_3D = 5 * 1024 * 1024
