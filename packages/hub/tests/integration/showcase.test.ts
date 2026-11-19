@@ -66,27 +66,55 @@ describe('vitrine (Mural dos Criadores)', () => {
   }
 
   test('Mural, comentários e jogo público usam apelido atual mesmo com nome privado no snapshot', async () => {
-    const authorId=randomUUID(), parentId=randomUUID()
-    const headers={...child(authorId),'x-auth-account-id':parentId,'x-auth-profile-name':'Maria Silva Santos'}
-    ctx.members.publicIdentities.set(authorId,{publicNickname:'Fada Azul',publicProfileEnabled:false})
-    const published=await publishStudioRequest(ctx.app,jsonRequest('POST','/hub/internal/showcase-thread-studio',{headers,body:studioBody()}))
+    const authorId = randomUUID(),
+      parentId = randomUUID()
+    const headers = {
+      ...child(authorId),
+      'x-auth-account-id': parentId,
+      'x-auth-profile-name': 'Maria Silva Santos',
+    }
+    ctx.members.publicIdentities.set(authorId, {
+      publicNickname: 'Fada Azul',
+      publicProfileEnabled: false,
+    })
+    const published = await publishStudioRequest(
+      ctx.app,
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', { headers, body: studioBody() }),
+    )
     expect(published.status).toBe(200)
-    const {thread}=await readStudioPublication(published)
+    const { thread } = await readStudioPublication(published)
     expect(thread.authorDisplayName).toBe('Fada Azul')
-    const comment=await ctx.app.handle(jsonRequest('POST',`/hub/threads/${thread.id}/comments`,{headers,body:{body:'Meu jogo ficou pronto!'}}))
+    const comment = await ctx.app.handle(
+      jsonRequest('POST', `/hub/threads/${thread.id}/comments`, {
+        headers,
+        body: { body: 'Meu jogo ficou pronto!' },
+      }),
+    )
     expect(comment.status).toBe(201)
-    expect(await comment.json()).toMatchObject({authorDisplayName:'Fada Azul',authorPublic:false})
-    ctx.members.publicIdentities.set(authorId,{publicNickname:'Inventora Azul',publicProfileEnabled:false})
-    for(const path of [`/hub/threads/${thread.id}`,`/hub/threads/${thread.id}/comments`,`/hub/internal/studio-play/${thread.playId}`]) {
-      const result=await ctx.app.handle(jsonRequest('GET',path,{headers}))
+    expect(await comment.json()).toMatchObject({
+      authorDisplayName: 'Fada Azul',
+      authorPublic: false,
+    })
+    ctx.members.publicIdentities.set(authorId, {
+      publicNickname: 'Inventora Azul',
+      publicProfileEnabled: false,
+    })
+    for (const path of [
+      `/hub/threads/${thread.id}`,
+      `/hub/threads/${thread.id}/comments`,
+      `/hub/internal/studio-play/${thread.playId}`,
+    ]) {
+      const result = await ctx.app.handle(jsonRequest('GET', path, { headers }))
       expect(result.status).toBe(200)
-      const text=await result.text()
+      const text = await result.text()
       expect(text).toContain('Inventora Azul')
       expect(text).not.toContain('Maria Silva Santos')
     }
     ctx.members.publicIdentities.delete(authorId)
-    const unavailable=await ctx.app.handle(jsonRequest('GET',`/hub/internal/studio-play/${thread.playId}`,{headers}))
-    expect(await unavailable.json()).toMatchObject({authorDisplayName:'Criador(a)'})
+    const unavailable = await ctx.app.handle(
+      jsonRequest('GET', `/hub/internal/studio-play/${thread.playId}`, { headers }),
+    )
+    expect(await unavailable.json()).toMatchObject({ authorDisplayName: 'Criador(a)' })
   })
 
   test('auto-publica o projeto: visível, autor do header de perfil, conteúdo do members', async () => {

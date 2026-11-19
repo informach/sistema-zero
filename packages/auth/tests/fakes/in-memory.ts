@@ -634,7 +634,9 @@ export class InMemoryProfileRepository implements ProfileRepository, ProfileAdmi
         const accountSearch = row.account
           ? `${row.account.firstName} ${row.account.lastName} ${row.account.email}`
           : null
-        return [row.name, row.publicNickname, accountSearch].some((h) => h?.toLowerCase().includes(q))
+        return [row.name, row.publicNickname, accountSearch].some((h) =>
+          h?.toLowerCase().includes(q),
+        )
       })
       // Ordenação estável do adapter: name asc, desempate por id asc.
       .sort(

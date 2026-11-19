@@ -667,7 +667,7 @@ export class LiveService {
     }
     const summaries = (aggregate: LiveCohortAggregate) => sessionSummaries(aggregate, titles)
     if (mode === 'admin')
-      return {
+      return this.publicIdentities.catalog({
         nextCursor,
         courses: courses.map(courseSummary),
         programs: [],
@@ -677,8 +677,8 @@ export class LiveService {
         enrollments: all.flatMap((item) =>
           this.seesRoster(actor, item.cohort) ? item.enrollments : [],
         ),
-      } satisfies LiveCatalogView
-    return {
+      } satisfies LiveCatalogView)
+    return this.publicIdentities.catalog({
       nextCursor,
       courses: courses.map(courseSummary),
       programs: [],
@@ -696,7 +696,7 @@ export class LiveService {
         )
         .flatMap(summaries),
       enrollments: visible.flatMap((item) => item.enrollments.filter(own)),
-    } satisfies LiveCatalogView
+    } satisfies LiveCatalogView)
   }
 
   /** Pure authorization over a loaded aggregate (no I/O): who is this actor in this lesson? */

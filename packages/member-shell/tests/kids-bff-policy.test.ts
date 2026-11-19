@@ -51,11 +51,19 @@ describe('permissões Kids na borda local', () => {
   })
 })
 
-
 describe('blocos comerciais na área dos pais', () => {
   const parent = { kind: 'parent', sessionId: 'session', authenticatedAt: 1 } as const
-  const child = { kind: 'student', sessionId: 'session', deviceId: 'device', grantId: 'grant' } as const
-  test.each(['/api/commerce', '/api/commerce/promotions', '/api/commerce/pending'])('%s exige sessão do responsável', (path) => {
+  const child = {
+    kind: 'student',
+    sessionId: 'session',
+    deviceId: 'device',
+    grantId: 'grant',
+  } as const
+  test.each([
+    '/api/commerce',
+    '/api/commerce/promotions',
+    '/api/commerce/pending',
+  ])('%s exige sessão do responsável', (path) => {
     for (const method of ['GET', 'POST']) {
       expect(kidsMayUseBff(parent, path, method, 'parent')).toBe(true)
       expect(kidsMayUseBff(child, path, method, 'child')).toBe(false)
