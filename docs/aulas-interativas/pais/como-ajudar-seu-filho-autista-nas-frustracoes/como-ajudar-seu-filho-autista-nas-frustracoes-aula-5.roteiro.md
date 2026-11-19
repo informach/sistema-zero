@@ -13,7 +13,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 ```text
 [upbeat, welcoming voice] Oi! Chegamos na última aula. [pleased, lively voice] E eu costumo dizer que é aqui, depois da crise, que a magia acontece.
 
-[curious] E por quê? [engaging, energetic, conversational voice] Porque agora a criança se acalmou. Aquela parte que pensa voltou a funcionar. Então agora, sim, ela consegue me ouvir e consegue aprender.
+[curious] E por que justo depois? [engaging, energetic, conversational voice] Porque agora a criança se acalmou. Aquela parte que pensa voltou a funcionar. Então agora, sim, ela consegue me ouvir e consegue aprender.
 
 [confident, clear, unhurried voice] A primeira coisa que a gente faz é o que eu chamo de reforço pós-crise. [engaging, energetic, conversational voice] E ele tem dois passos: quando a criança se acalmar, valide o sentimento, e ensine a resposta desejada para a próxima vez.
 
@@ -23,7 +23,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [engaging, energetic, conversational voice] Olha como as coisas se ligam: é aqui que entram aquelas frases que a gente treinou lá na prevenção. Eu acolho, e eu mostro uma saída melhor do que a crise.
 
-[thoughtful] E tem uma troca muito bonita que eu queria te propor. [confident, clear, unhurried voice] É trocar o "obedeça" por "o que está difícil pra você agora?". [warmly] Parece pequeno, mas muda tudo. Porque, com a primeira frase, eu estou cobrando. Com a segunda, eu estou escutando.
+[thoughtful] E tem uma troca muito bonita que eu queria te propor. [confident, clear, unhurried voice] É trocar o "obedeça" por "o que está difícil pra você agora?". [warmly] Parece pequeno, mas muda tudo. Porque, com a primeira frase, eu estou cobrando. Com a segunda, eu estou escutando. [upbeat, encouraging voice] E a escuta atenta transforma comportamentos em diálogos, e intervenções em vínculos.
 
 [pleased, lively voice] E aí acontece uma coisa linda: quando você muda o que faz, o comportamento muda o que diz.
 
@@ -51,6 +51,8 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [confident, clear, unhurried voice] E aí vem o segundo ponto, que são os ajustes estratégicos. [upbeat, encouraging voice] Descobriu o padrão? Então muda a abordagem, para prevenir crises parecidas. [engaging, energetic, conversational voice] Se é sempre na hora de sair de casa, eu aviso antes, eu uso o quadro visual, eu dou os cinco minutos. A gente volta lá para as estratégias de prevenção.
 
+[thoughtful] E se eu percebi que a crise virou o jeito que ele encontrou de conseguir alguma coisa, de ganhar o que queria ou de sair de uma tarefa difícil? [confident, clear, unhurried voice] Aí o ajuste é ensinar o pedido. [engaging, energetic, conversational voice] Eu treino com ele o "preciso de ajuda", com a fala, com o cartão ou com o sinal, e passo a atender o pedido, e não a crise. [pleased, lively voice] Assim ele descobre que pedir funciona melhor do que explodir.
+
 [confident, clear, unhurried voice] E o terceiro ponto é o treino sistemático. [warmly] Eu sei que ninguém gosta de crise. [upbeat, encouraging voice] Mas cada crise é também uma oportunidade de treino, para ampliar a tolerância e o repertório dessa criança. [engaging, energetic, conversational voice] Cada uma me mostra o que ela ainda não sabe fazer, e portanto o que eu preciso ensinar.
 
 [upbeat, encouraging voice] E, para a gente fechar, eu quero te deixar uma mensagem. Clique em Próxima parte.
@@ -67,13 +69,15 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 ```text
 [warmly] A gente chegou ao final, e eu queria juntar tudo com você.
 
-[engaging, energetic, conversational voice] A gente viu que crise não é desobediência, é comunicação. Viu de onde vem a frustração. E viu o que fazer antes, durante e depois.
+[engaging, energetic, conversational voice] A gente viu que crise não é desobediência, é comunicação. Viu de onde vem a frustração. E viu o que fazer antes, durante e depois. [pleased, lively voice] E quem sabe o que fazer nesses três momentos já deixou de só reagir. Está virando estrategista.
 
 [warmly] E isso não é só dentro de casa, tá? Vale na clínica, na escola, na família, na rua. [confident, clear, unhurried voice] Porque todos somos parte da comunicação. [thoughtful] Cada ambiente pode ser um espaço de escuta, ou pode ser um espaço de silêncio imposto. [upbeat, encouraging voice] Educar o nosso olhar é uma responsabilidade de todo mundo.
 
-[thoughtful] Então, no fim das contas, a pergunta que fica não é "o que eu faço com esse comportamento?". [confident, clear, unhurried voice] A pergunta que fica é: "o que o comportamento está tentando me mostrar?"
+[curious] Lembra da pergunta que eu te fiz lá no comecinho? Quando o comportamento fala, quem está escutando? [warmly] Eu espero que, a partir de hoje, a resposta seja: você.
 
-[warmly] Porque entender o comportamento é uma forma de amor.
+[thoughtful] Porque, no fim das contas, a pergunta que fica não é "o que eu faço com esse comportamento?". [confident, clear, unhurried voice] A pergunta que fica é: "o que o comportamento está tentando me mostrar?"
+
+[warmly] Entender o comportamento é uma forma de amor. E entender é o primeiro passo para incluir.
 
 [upbeat, encouraging voice] E eu queria te fazer um convite. Fala comigo, em voz alta, aí da sua casa: [short pause] [warmly] "Eu escolho ouvir o que o comportamento tenta me contar."
 

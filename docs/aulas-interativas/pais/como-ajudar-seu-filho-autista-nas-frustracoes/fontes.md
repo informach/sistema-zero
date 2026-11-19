@@ -43,13 +43,13 @@ O reforço pós-crise está no slide "Durante a crise", mas acontece quando a cr
 
 | Aula | Do PDF |
 | --- | --- |
-| 1 | "Nem toda fala é verbal"; o grito, o silêncio, o olhar e a fuga como tentativas de comunicação; escutar antes de rotular, corrigir ou julgar; o mundo que bombardeia de estímulos e o ambiente que dói; "Quando bati a cabeça, era porque o barulho me rasgava por dentro"; "Eu tentei dizer, mas vocês chamaram de birra"; "Essas frases não pedem pena. Pedem escuta"; a dor ignorada muda de forma |
-| 2 | "Função ou julgamento? Cada comportamento tem uma razão"; birra, desobediência e manha, ou fuga, busca de atenção e autorregulação; "você está ouvindo ou apenas esperando sua vez de falar?"; "escutar exige presença, não pressa"; "antes de julgar, observe a função" |
+| 1 | A pergunta "quando o comportamento fala, quem está escutando?", que abre o curso e volta no fechamento; "a ABA não ensina a controlar, ensina a compreender"; "Nem toda fala é verbal"; o grito, o silêncio, o olhar e a fuga como tentativas de comunicação; escutar antes de rotular, corrigir ou julgar; o mundo que bombardeia de estímulos, com as perguntas "frustrado? confuso? com vontade de sair?", e o ambiente que dói; "Quando bati a cabeça, era porque o barulho me rasgava por dentro"; "Quando fugi da sala, era porque me esqueceram lá"; "Eu tentei dizer, mas vocês chamaram de birra"; "Essas frases não pedem pena. Pedem escuta"; a dor ignorada muda de forma |
+| 2 | "Função ou julgamento? Cada comportamento tem uma razão"; birra, desobediência e manha, ou fuga, busca de atenção e autorregulação; "você está ouvindo ou apenas esperando sua vez de falar?"; "escutar exige presença, não pressa"; "uma intervenção baseada em função não só reduz crises, ela fortalece relações"; "antes de julgar, observe a função" |
 | 3 | "O comportamento é a voz de quem ainda não tem palavras" |
 | 4 | "Escutar é, também, regular junto"; "a diferença entre controle e conexão é a escuta"; "a empatia muda a rota da crise" |
-| 5 | Trocar o "obedeça" por "o que está difícil pra você agora?"; "quando você muda o que faz, o comportamento muda o que diz"; escuta clínica, escolar, familiar e social; "o que o comportamento está tentando me mostrar?"; "entender o comportamento é uma forma de amor"; "Eu escolho ouvir o que o comportamento tenta me contar" |
+| 5 | Trocar o "obedeça" por "o que está difícil pra você agora?"; "quando você muda o que faz, o comportamento muda o que diz"; "a escuta atenta transforma comportamentos em diálogos e intervenções em vínculos"; "entender é o primeiro passo para incluir"; escuta clínica, escolar, familiar e social; "o que o comportamento está tentando me mostrar?"; "entender o comportamento é uma forma de amor"; "Eu escolho ouvir o que o comportamento tenta me contar" |
 
-Não entraram: a dinâmica com a plateia do material de origem e as referências ao evento em que ele foi apresentado.
+Não entraram: a dinâmica com a plateia do material de origem, as referências ao evento em que ele foi apresentado e a frase "se você chama de birra, talvez ainda não aprendeu a escutar", que dita para quem está assistindo soaria como bronca.
 
 ## Para a Vivianne conferir
 
@@ -65,7 +65,24 @@ Os slides são tópicos. Para virar fala, cada tópico ganhou explicação e exe
 8. **Aula 4, Parte 2.** A lista do que não fazer no auge (explicar, perguntar o porquê, sermão, combinar castigo, prometer prêmio) e a orientação de ficar perto, com poucas palavras, esperando passar.
 9. **Aula 5, Parte 1.** O exemplo de validação ("Eu vi que ficou muito difícil quando a gente teve que desligar o desenho") e os exemplos de resposta ensinada.
 10. **Aula 5, Parte 2.** Os exemplos de gatilho (mudança de última hora, um "não", lugar barulhento, fome, sono, cansaço) e de consequência (sair de uma tarefa, ganhar o que queria, receber atenção); a sugestão de anotar num caderno para enxergar o padrão.
-11. **Aula 5, Parte 3.** A frase "cada criança é única [...] a equipe que acompanha o seu filho pode te ajudar a adaptar cada estratégia". É um cuidado que acrescentei; se ela preferir outra formulação, é só trocar.
+11. **Aula 5, Parte 2, a ligação entre consequência e pedido.** "Se a crise virou o jeito de conseguir alguma coisa, o ajuste é ensinar o pedido e passar a atender o pedido, e não a crise." Junta dois tópicos dos slides (comunicação alternativa e ajustes estratégicos), mas a formulação é minha. É o ponto que mais precisa do olhar dela.
+12. **Aula 5, Parte 3.** A frase "cada criança é única [...] a equipe que acompanha o seu filho pode te ajudar a adaptar cada estratégia". É um cuidado que acrescentei; se ela preferir outra formulação, é só trocar.
+
+### Uma pergunta para ela
+
+Os slides não falam de **segurança física durante a crise** (afastar objetos, proteger a criança e quem está perto quando há risco de se machucar). Não acrescentei por conta própria. Se ela quiser incluir, o lugar é a Aula 4, Parte 1, junto do controle do ambiente.
+
+## Revisão de 19/11/2026
+
+Segunda passada em todas as aulas, sem mudar estrutura, clipes ou ordem:
+
+- **Arco do curso:** a pergunta "quando o comportamento fala, quem está escutando?" abre a Aula 1 e é respondida no fechamento; "de pais reativos a pais estrategistas", da Aula 3, volta na última parte.
+- **Promessas fechadas:** na Aula 2, o "vai vendo se reconhece o seu filho" ganhou a volta ("reconheceu algum?"); as Aulas 2 e 4 passaram a terminar com uma recapitulação curta, como a Aula 3.
+- **Do PDF:** entraram seis trechos que tinham ficado de fora (tabela acima).
+- **Aula 5:** os exemplos de consequência ganharam saída prática (ensinar o pedido).
+- **Fala:** menos fórmulas repetidas ("tem uma frase que", "e por quê?"); "o pai reativo" virou "quando a gente é reativo", para não deixar as mães de fora; "o menino" no singular virou "a criança".
+- **Tags:** a abertura da Aula 4 saiu do tom animado para `[warmly]`.
+- **Para consultar:** o texto de cada aula virou lista.
 
 ## A voz
 

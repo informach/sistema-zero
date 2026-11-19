@@ -11,7 +11,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, welcoming voice] Oi! Vamos para um momento difícil, mas muito importante. [thoughtful] A crise começou. E agora, o que eu faço?
+[warmly] Oi! Hoje a gente vai para o momento mais difícil, e por isso mesmo muito importante. [thoughtful] A crise começou. E agora, o que eu faço?
 
 [reassuring, encouraging voice] A primeira coisa que eu quero te dizer é: respira. [engaging, energetic, conversational voice] Porque aqui a gente vai falar de uma intervenção inteligente. E inteligente, nessa hora, quer dizer fazer menos, e fazer do jeito certo.
 
@@ -25,7 +25,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [warmly] E eu sei que não é fácil, tá, gente? Na hora da crise o nosso coração dispara também. [reassuring, encouraging voice] Mas é justamente por isso que a gente respira primeiro. A gente se regula para poder ajudar o outro a se regular.
 
-[warmly] Tem uma frase que resume isso muito bem: escutar é, também, regular junto.
+[warmly] No fundo, é isso: escutar é, também, regular junto.
 
 [upbeat, encouraging voice] E tem uma coisa que a gente precisa parar de fazer nessa hora. É o que eu te conto na próxima parte. Clique em Próxima parte.
 ```
@@ -41,7 +41,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 ```text
 [confident, clear, unhurried voice] O terceiro ponto é este: não negocie no auge da crise.
 
-[curious] E por quê? [confident, clear, unhurried voice] Porque, durante a explosão, a criança não acessa o raciocínio lógico. [thoughtful] É como se aquela parte que pensa, que pondera, que entende uma explicação, ficasse fora do ar por um tempo.
+[curious] Sabe por quê? [confident, clear, unhurried voice] Porque, durante a explosão, a criança não acessa o raciocínio lógico. [thoughtful] É como se aquela parte que pensa, que pondera, que entende uma explicação, ficasse fora do ar por um tempo.
 
 [engaging, energetic, conversational voice] Então, assim, sabe aquela hora em que a gente começa a explicar? [thoughtful] "Mas eu já te falei que não pode, porque isso, porque aquilo, e se você continuar assim eu vou tirar tal coisa." [confident, clear, unhurried voice] Nessa hora, intervenções verbais complexas só aumentam o caos. É mais estímulo em cima de quem já está transbordando.
 
@@ -52,6 +52,8 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 [warmly] E eu gosto de lembrar que a diferença entre controle e conexão é a escuta. [thoughtful] Quando eu quero controlar, eu falo mais alto, eu exijo, eu mando obedecer. [upbeat, encouraging voice] Quando eu quero conectar, eu observo, eu acolho, eu espero.
 
 [warmly] Porque a empatia muda a rota da crise.
+
+[engaging, energetic, conversational voice] Então, na hora da crise, são três coisas: acalmar o ambiente, acalmar o seu tom e não negociar no auge.
 
 [upbeat, encouraging voice] E quando a criança se acalma, aí sim chega a hora de conversar e de ensinar. É na próxima aula, que é a nossa última. Clique em Concluir aula para continuar.
 ```

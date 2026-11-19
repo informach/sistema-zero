@@ -13,7 +13,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 ```text
 [upbeat, welcoming voice] Oi! Que bom te ver aqui de novo. [engaging, energetic, conversational voice] Hoje a gente chega num ponto que eu adoro, porque é ele que transforma pais reativos em pais estrategistas.
 
-[curious] E qual é a diferença? [thoughtful] O pai reativo é aquele que só entra em ação quando a crise já começou. [upbeat, encouraging voice] O pai estrategista age antes. Ele prepara o terreno para a frustração não virar crise. [engaging, energetic, conversational voice] E eu vou te mostrar três estratégias para isso.
+[curious] E qual é a diferença? [thoughtful] Quando a gente é reativo, a gente só entra em ação depois que a crise já começou. [upbeat, encouraging voice] Quando a gente é estrategista, a gente age antes, e prepara o terreno para a frustração não virar crise. [engaging, energetic, conversational voice] E eu vou te mostrar três estratégias para isso.
 
 [confident, clear, unhurried voice] A primeira é rotina visual e clareza de expectativas.
 
@@ -47,7 +47,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [confident, clear, unhurried voice] E aí vem a parte mais importante: reforce positivamente cada vez que ela tolerar. [engaging, energetic, conversational voice] Reforçar é reconhecer na hora, para aquele comportamento ter mais chance de acontecer de novo. [pleased, lively voice] "Olha que legal, você esperou! Muito bem!" [warmly] Pode ser um elogio, um abraço, um sorriso, aquilo que faz sentido para o seu filho.
 
-[engaging, energetic, conversational voice] E por que começar tão pequeno? [reassuring, encouraging voice] Porque a criança precisa conseguir. Se eu começo com uma espera grande demais, ela não dá conta, vem a crise, e ela aprende que esperar é horrível. [upbeat, encouraging voice] Se eu começo com dez segundos e ela consegue, ela aprende que dá conta. Aí, devagarzinho, eu vou aumentando.
+[curious] E por que começar tão pequeno? [reassuring, encouraging voice] Porque a criança precisa conseguir. Se eu começo com uma espera grande demais, ela não dá conta, vem a crise, e ela aprende que esperar é horrível. [upbeat, encouraging voice] Se eu começo com dez segundos e ela consegue, ela aprende que dá conta. Aí, devagarzinho, eu vou aumentando.
 
 [confident, clear, unhurried voice] Esse treino constrói o que a gente chama de limiar de frustração, que é o quanto a criança aguenta antes de explodir. [pleased, lively voice] E, com o limiar maior, as explosões diminuem.
 
@@ -67,7 +67,7 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [engaging, energetic, conversational voice] Lembra da segunda raiz da frustração? A criança que não consegue expressar o que precisa e o que sente. [thoughtful] Então, se ela não tem outro jeito de dizer, o jeito que sobra é a crise.
 
-[warmly] Tem uma frase de que eu gosto muito: o comportamento é a voz de quem ainda não tem palavras. [upbeat, encouraging voice] Então o nosso trabalho é dar palavras para essa criança. Ou dar um outro caminho, quando a palavra ainda não vem.
+[warmly] Sabe o que eu aprendi nesses anos todos? Que o comportamento é a voz de quem ainda não tem palavras. [upbeat, encouraging voice] Então o nosso trabalho é dar palavras para essa criança. Ou dar um outro caminho, quando a palavra ainda não vem.
 
 [confident, clear, unhurried voice] Na prática, é treinar a criança a dizer ou a mostrar três coisas: "preciso de ajuda", [short pause] "estou nervoso" [short pause] e "posso esperar".
 
