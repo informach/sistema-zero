@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [e193c8f8f7ea6fbe1afca37141bcdd6f8dcb7f39, 386eb685b5db0e449a88c6ad123b8c8bdbdd95df]
+        source: [81dfb3d8d114ab9de60a9e9b8e9389c46b8dfba0, 2932075e49907e0fac07eb1ca2471f219b84dee5]
     steps:
       - uses: actions/checkout@v5
         with:
@@ -35,13 +35,13 @@ jobs:
           import { createHash } from 'node:crypto'
           import ts from '../packages/studio/node_modules/typescript'
           import { gameThreeDExtension } from '../packages/studio/src/official-extensions/game-3d'
+          import { gameKit3DExtension } from '../packages/studio/src/official-extensions/game-3d-advanced'
+          import { worldThreeDExtension } from '../packages/studio/src/official-extensions/world-3d'
           import { gameTwoDRuntime } from '../packages/studio/src/official-extensions/game-2d/runtime'
           import { gameKitRuntime } from '../packages/studio/src/official-extensions/game-2d-advanced/runtime'
           function count(source:string){const file=ts.createSourceFile('runtime.js',source,ts.ScriptTarget.ES2022,true,ts.ScriptKind.JS);let parameters=0;const visit=(node:ts.Node)=>{if(ts.isFunctionLike(node))parameters+=node.parameters.length;ts.forEachChild(node,visit)};visit(file);return parameters}
-          const runtime=gameThreeDExtension.runtime
-          if(!runtime||!('loadBootstrapScript' in runtime)||!runtime.loadBootstrapScript)throw new Error('Runtime esperado')
           const variants=[]
-          for(const [name,context]of[['complete',undefined],['without-platform',{code:'const cena = SZGame3D.createScene("tela");'}]]as const){const source=await runtime.loadBootstrapScript(context);variants.push({name,characters:source.length,bytes:Buffer.byteLength(source),gzipBytes:Bun.gzipSync(source).byteLength,sha256:createHash('sha256').update(source).digest('hex')})}
+          for(const [name,extension,context]of[['complete',gameThreeDExtension,undefined],['without-platform',gameThreeDExtension,{code:'const cena = SZGame3D.createScene("tela");'}],['advanced-3d',gameKit3DExtension,undefined],['world-3d',worldThreeDExtension,undefined]]as const){const runtime=extension.runtime;if(!runtime||!('loadBootstrapScript' in runtime)||!runtime.loadBootstrapScript)throw new Error('Runtime esperado');const source=await runtime.loadBootstrapScript(context);variants.push({name,characters:source.length,bytes:Buffer.byteLength(source),gzipBytes:Bun.gzipSync(source).byteLength,sha256:createHash('sha256').update(source).digest('hex'),parameters:count(source)})}
           console.log(JSON.stringify({sourceSha:process.env.PINTA_SOURCE_SHA,platform:process.platform,bun:Bun.version,variants,parameters:{basic:count(gameTwoDRuntime),advanced:count(gameKitRuntime)}},null,2))
           SOURCE
           bun .cache/pinta-payload-measure.ts | tee .cache/pinta-payload/medidas.json
