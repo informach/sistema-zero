@@ -2,9 +2,11 @@ import { z } from 'zod'
 
 /** Implemented APIs, distinct from per-user permissions and browser requirements. */
 export const PYTHON_PROJECT_MISSION_FEATURE = 'project-missions-v1' as const
+export const PYTHON_PINTA_WORLD_FEATURE = 'pinta-map-world-v1' as const
 export const STUDIO_PYTHON_RUNTIME_FEATURES = [
   'turtle-compound-shapes',
   PYTHON_PROJECT_MISSION_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
 ] as const
 export const StudioPythonRuntimeFeatureSchema = z.enum(STUDIO_PYTHON_RUNTIME_FEATURES)
 export type StudioPythonRuntimeFeature = z.infer<typeof StudioPythonRuntimeFeatureSchema>

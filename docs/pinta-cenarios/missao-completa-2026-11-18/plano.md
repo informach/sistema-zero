@@ -35,7 +35,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   Consultas de recursos e propriedades verificadas em `consumo-de-referencias.md`; ciclo local
   e atualização de mapas dependentes em `atualizacao-no-estudio.md`. Mapas de destino das portas
   são acrescentados aos jogos já vinculados, abertos e fechados, em `atualizacao-de-mundos.md`.
-  Completar o fechamento estruturado no caminho Python e executar o ciclo autenticado após rollout. O envio,
+  O fechamento Python está implementado em `mundos-no-pygame.md`, com prova offline de
+  leitor antigo, importação/atualização pela interface e módulo exportado no Pygame real.
+  A execução exige a capacidade do runtime fixado; qualificar/publicar esse artefato e
+  executar o ciclo autenticado após rollout. O envio,
   jogo pronto e importação integral estão verificados em `mapas-ligados-no-estudio.md`;
   as provas da sincronia estão em `qa/atualizacao-de-mundos/README.md`.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;

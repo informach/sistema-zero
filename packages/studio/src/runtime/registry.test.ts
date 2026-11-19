@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { sha256Hex } from '@sistemazero/core/creations'
+import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeCatalog,
   createStudioRuntimeRelease,
@@ -12,7 +13,7 @@ import {
 } from './registry'
 import type { StudioRuntimeProvider } from './types'
 
-async function scenario(language: 'javascript' | 'python') {
+async function scenario(language: 'javascript' | 'python', worlds = false) {
   const release = await createStudioRuntimeRelease({
     manifestVersion: 1,
     profileId: `${language}-test`,
@@ -31,7 +32,14 @@ async function scenario(language: 'javascript' | 'python') {
       },
     ],
     ...(language === 'python'
-      ? { python: { version: '3.14.2', packages: [], providedModules: [], features: [] } }
+      ? {
+          python: {
+            version: '3.14.2',
+            packages: [],
+            providedModules: [],
+            features: worlds ? [PYTHON_PINTA_WORLD_FEATURE] : [],
+          },
+        }
       : {}),
   })
   const catalog = await createStudioRuntimeCatalog({
@@ -94,6 +102,35 @@ async function scenario(language: 'javascript' | 'python') {
 }
 
 describe('lazy runtime routing', () => {
+  test('um mundo exige o leitor no runtime exato; projetos anteriores continuam executáveis', async () => {
+    for (const supported of [false, true]) {
+      const py = await scenario('python', supported)
+      const registry = createStudioRuntimeRegistry([py.registration])
+      expect(await registry.load(py.input)).toBe(py.provider)
+      py.input.project.assets = [
+        {
+          pintaImage: {
+            recipe: {
+              version: 2,
+              algorithm: 'pinta-image-1',
+              drawingId: 'vila',
+              selection: { kind: 'map-world' },
+              scale: 1,
+            },
+            provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
+            output: { mime: 'image/png', width: 1, height: 1, bytes: 1, sha256: 'b'.repeat(64) },
+          },
+        },
+      ]
+      const before = structuredClone(py.input.project)
+      if (supported) expect(await registry.load(py.input)).toBe(py.provider)
+      else
+        await expect(registry.load(py.input)).rejects.toMatchObject({
+          reasonCode: 'pinta-world-unavailable',
+        })
+      expect(py.input.project).toEqual(before)
+    }
+  })
   test('JavaScript loads no Python module and concurrent requests share only the module', async () => {
     const js = await scenario('javascript')
     const py = await scenario('python')

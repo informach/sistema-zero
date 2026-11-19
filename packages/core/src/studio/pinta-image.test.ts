@@ -3,9 +3,11 @@ import {
   assertPintaImageDimensions,
   isPintaImageDataKind,
   PINTA_IMAGE_MAX_MAP_TILESETS,
+  PINTA_IMAGE_WORLD_LIMITS,
   PintaImageDerivationSchema,
   type PintaImageRecipe,
   PintaImageRecipeSchema,
+  PintaImageWorldSchema,
   pintaImageDependencyRule,
   pintaImageOutputMime,
   pintaImageRecipeKey,
@@ -23,6 +25,54 @@ const metadata = {
   provenance: { sourceSha256: 'a'.repeat(64), dependencies: [] },
   output: { mime: 'image/png', width: 16, height: 16, bytes: 72, sha256: 'b'.repeat(64) },
 }
+
+test('um mundo é uma seleção explícita, com identidade própria e PNG com dados', () => {
+  const input = { ...recipe, version: 2, selection: { kind: 'map-world' } }
+  expect(PintaImageRecipeSchema.safeParse(input).success).toBe(true)
+  expect(PintaImageRecipeSchema.safeParse({ ...input, version: 1 }).success).toBe(false)
+  expect(PintaImageRecipeSchema.safeParse({ ...recipe, version: 2 }).success).toBe(false)
+  const parsed = PintaImageRecipeSchema.parse(input)
+  expect(isPintaImageDataKind(parsed.selection.kind)).toBe(true)
+  expect(pintaImageDependencyRule(parsed.selection.kind)).toBe('linked-maps')
+  expect(pintaImageRecipeKey(parsed)).not.toBe(
+    pintaImageRecipeKey({ ...recipe, selection: { kind: 'map' } }),
+  )
+  expect(PintaImageRecipeSchema.safeParse({ ...input, output: 'svg' }).success).toBe(false)
+  // A private, self-contained map may have no external documents to fingerprint.
+  expect(PintaImageDerivationSchema.safeParse({ ...metadata, recipe: input }).success).toBe(true)
+  expect(
+    PintaImageDerivationSchema.safeParse({
+      ...metadata,
+      recipe: input,
+      provenance: {
+        ...metadata.provenance,
+        dependencies: [{ drawingId: 'destination', sha256: 'c'.repeat(64) }],
+      },
+    }).success,
+  ).toBe(true)
+})
+
+test('o envelope do mundo recusa versões, ciclos binários, IDs duplicados e excesso acumulado', () => {
+  const map = { id: 'cabana', name: 'Cabana', png: 'data:image/png;base64,YQ==' }
+  const world = { version: 1, rootId: 'vila', maps: [map] }
+  expect(PintaImageWorldSchema.safeParse(world).success).toBe(true)
+  for (const invalid of [
+    { ...world, version: 2 },
+    { ...world, maps: [map, map] },
+    { ...world, rootId: map.id },
+    { ...world, maps: [{ ...map, png: 'data:image/svg+xml;base64,YQ==' }] },
+    { ...world, maps: Array.from({ length: 16 }, (_, index) => ({ ...map, id: `m${index}` })) },
+    {
+      ...world,
+      maps: [0, 1].map((index) => ({
+        ...map,
+        id: `m${index}`,
+        png: `data:image/png;base64,${'A'.repeat(PINTA_IMAGE_WORLD_LIMITS.encodedChars / 2)}`,
+      })),
+    },
+  ])
+    expect(PintaImageWorldSchema.safeParse(invalid).success).toBe(false)
+})
 
 describe('Pinta derived image identity', () => {
   test('revision and output changes keep identity; distinct positions/scale do not', () => {

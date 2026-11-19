@@ -14,9 +14,7 @@
       "name": "edicao-aba-antiga",
       "offsetX": null
     },
-    "physicalKeys": [
-      "pinta:asset:same-authorial-map"
-    ],
+    "physicalKeys": ["pinta:asset:same-authorial-map"],
     "hasSchema5Checkpoint": false,
     "cloudImported": false
   }

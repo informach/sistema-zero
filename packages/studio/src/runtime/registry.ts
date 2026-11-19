@@ -1,3 +1,4 @@
+import { PintaImageDerivationSchema } from '@sistemazero/core/studio/pinta-image'
 import {
   resolveStudioProjectCapabilities,
   type StudioCapabilityResolutionInput,
@@ -10,6 +11,7 @@ import {
   type StudioProjectLanguage,
   StudioProjectLanguageSchema,
 } from '@sistemazero/core/studio/project-environment'
+import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   type StudioProjectCapability,
   type StudioRuntimeCatalog,
@@ -62,6 +64,23 @@ export function assertStudioRuntimeOperationAccess(
       capability === 'python-repl'
         ? 'O console Python não está disponível neste ambiente.'
         : 'A execução não está disponível neste ambiente.',
+    )
+  if (
+    (capability === 'execute' || capability === 'python-repl') &&
+    project.programmingLanguage === 'python' &&
+    project.assets?.some(
+      (asset) =>
+        asset &&
+        typeof asset === 'object' &&
+        'pintaImage' in asset &&
+        PintaImageDerivationSchema.safeParse(asset.pintaImage).data?.recipe.selection.kind ===
+          'map-world',
+    ) &&
+    !release.manifest.python?.features.includes(PYTHON_PINTA_WORLD_FEATURE)
+  )
+    throw new StudioRuntimeUnavailableError(
+      'pinta-world-unavailable',
+      'O ambiente deste projeto precisa ser atualizado para jogar cenários com outros lugares. O mapa e o programa foram preservados.',
     )
 }
 

@@ -34,3 +34,21 @@ A escrita de nuvem continua em 4 e o leitor suporta 5. A ativação da escrita 5
 condicionada à prova de publicação do leitor, seguida dos ensaios autenticados de clientes
 antigos/novos, recusa `CREATION_CLIENT_OUTDATED` e recuperação offline. Não houve bypass
 do CI, mudança de produção ou afirmação de homologação autenticada do código novo.
+
+## Continuação de 19/11: mundos no Python
+
+O lote [mundos no Pygame](mundos-no-pygame/README.md) acrescenta a receita 2 e o PNG de mundo
+3. O código antigo congelado em `0218a11a3` recusa a receita nova; uma aba antiga já aberta
+recebe conflito ao gravar offline, sem apagar o mundo. Isso é prova local de IndexedDB,
+não de publicação autenticada.
+
+O runtime Python precisa declarar `pinta-map-world-v1`. A aplicação mantém a seleção antiga
+quando o runtime fixado não declara essa capacidade, e a execução também verifica o
+manifesto. O builder declara a capacidade para os artefatos novos; construção, qualificação
+e ativação continuam gates separados. O perfil de validação agora é
+`a1ba1495632786553704fd7ba2f1e5d5c9f542b2c866ba7f8d08256ef6f65d3e`, exigindo reconstrução
+da imagem de validação correspondente.
+
+O CI `44447868641`, no staging `d25ab3981`, terminou com falhas em `ci`, `arquipelago` e
+`studio-e2e-chromium-2`. Não há comprovação nova de deployment neste lote; a escrita de
+nuvem continua em 4, com leitura 5. Não foram contornados os gates de publicação.

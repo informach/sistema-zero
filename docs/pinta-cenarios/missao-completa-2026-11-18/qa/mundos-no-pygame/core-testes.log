@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+src\studio\pinta-image.test.ts:
+(pass) um mundo é uma seleção explícita, com identidade própria e PNG com dados
+(pass) o envelope do mundo recusa versões, ciclos binários, IDs duplicados e excesso acumulado [16.00ms]
+(pass) Pinta derived image identity > revision and output changes keep identity; distinct positions/scale do not
+(pass) Pinta derived image identity > rejects unknown metadata, missing selections and invented frame identities
+(pass) Pinta derived image identity > an SVG recipe is explicit: legacy recipes keep their key, svg gets its own
+(pass) Pinta derived image identity > checks the destination quotas independently before allocation
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > the new kinds parse, keep their own identity and never request SVG
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > dependency rule per kind: none, the default tileset, or every tileset (1..8)
+
+src\studio\runtime-identity.test.ts:
+(pass) lightweight identity has the same JSON acceptance as the full schema and detaches metadata
+(pass) metadata identity never evaluates accessors
+
+ 10 pass
+ 0 fail
+ 118 expect() calls
+Ran 10 tests across 2 files. [121.00ms]

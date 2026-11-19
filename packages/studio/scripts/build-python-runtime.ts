@@ -4,7 +4,10 @@ import { resolve } from 'node:path'
 import { canonicalJson } from '@sistemazero/core/creations'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
-import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_PINTA_WORLD_FEATURE,
+  PYTHON_PROJECT_MISSION_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import { PGZERO_MODULE_FILES } from '../src/runtime/python/pgzero/contract'
 import { PYGAME_MODULE_FILES } from '../src/runtime/python/pygame/contract'
 import { RAYLIB_MODULE_FILES } from '../src/runtime/python/raylib/contract'
@@ -228,7 +231,11 @@ export async function buildPythonRuntimeDistribution(
     pyodideVersion: vendor.pyodideVersion,
     pythonVersion: vendor.pythonVersion,
     providedModules: provided.modules,
-    features: [...TURTLE_RUNTIME_FEATURES, PYTHON_PROJECT_MISSION_FEATURE],
+    features: [
+      ...TURTLE_RUNTIME_FEATURES,
+      PYTHON_PROJECT_MISSION_FEATURE,
+      PYTHON_PINTA_WORLD_FEATURE,
+    ],
     previewHostAudioVersion: 1,
     ...(http.representations.length ? { httpRepresentations: http.representations } : {}),
     files: [...contents]

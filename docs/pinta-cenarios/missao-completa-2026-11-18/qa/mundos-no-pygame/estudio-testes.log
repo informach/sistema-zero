@@ -1,0 +1,68 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\pintaImageSync.test.ts:
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material [16.00ms]
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > a sheet or map without its data chunk is refused; with it, accepted
+(pass) sync re-derives the data kinds, a map on ANY tileset change > a changed layer tileset re-derives the map (inspected with selection "map")
+(pass) sync re-derives the data kinds, a map on ANY tileset change > unchanged provenance keeps the material; one inspection per dependency rule
+(pass) one shared tileset copy: painting a piece updates every use > a tileset-only change re-derives the tileset material AND the map that uses it [15.00ms]
+
+src\runtime\registry.test.ts:
+(pass) lazy runtime routing > um mundo exige o leitor no runtime exato; projetos anteriores continuam executáveis [16.00ms]
+(pass) lazy runtime routing > JavaScript loads no Python module and concurrent requests share only the module [15.00ms]
+(pass) lazy runtime routing > registration metadata is captured, so later mutation cannot reroute a project
+(pass) lazy runtime routing > missing provider, revoked release, absent grant and checking host never import a module
+(pass) lazy runtime routing > a runtime identity mismatch does not fall back to JavaScript
+(pass) lazy runtime routing > failed imports and wrong module identities are retryable, with a structured failure
+(pass) lazy runtime routing > aborting one editor cancels its wait while another editor receives the module
+(pass) lazy runtime routing > an already canceled request cannot start an import
+(pass) lazy runtime routing > duplicate routes and IDs are rejected at host registration [16.00ms]
+
+src\state\pintaImageStore.test.ts:
+(pass) captured Pinta images in the real Python project store > classic: frame identity/path/PNG survive updates, local reopen, duplicate and portable import [47.00ms]
+(pass) captured Pinta images in the real Python project store > pro: frame identity/path/PNG survive updates, local reopen, duplicate and portable import
+
+src\components\assets\pintaImageImport.test.ts:
+(pass) classic: two selected frames coexist and only the matching recipe updates
+(pass) pro: two selected frames coexist and only the matching recipe updates [15.00ms]
+(pass) review keeps the material identity; edits/removal and a concurrent addition win over late imports
+(pass) classic Pygame Zero: vector arrives as SVG and pixel art as PNG, both in images/
+(pass) classic Turtle: a vector drawing arrives as SVG (a turtle shape), pixel art as PNG
+(pass) classic Pygame-ce: Pinta drawings become PNG assets usable by pygame.image.load
+(pass) pro Pygame Zero: vector arrives as SVG and pixel art as PNG, both in images/ [16.00ms]
+(pass) pro Turtle: a vector drawing arrives as SVG (a turtle shape), pixel art as PNG
+(pass) pro Pygame-ce: Pinta drawings become PNG assets usable by pygame.image.load
+(pass) the destination decides the format: Pygame Zero or Turtle + a vector drawing asks for SVG
+
+src\components\assets\pintaImageModes.test.ts:
+(pass) what a Python project brings from a Pinta drawing > pygame: the whole drawing with its data is the default, the single image an option
+(pass) what a Python project brings from a Pinta drawing > Turtle / Pygame Zero, or a host without sheet facts, keep exactly the single image
+(pass) what a Python project brings from a Pinta drawing > a reviewed material keeps its kind when still offered
+(pass) what a Python project brings from a Pinta drawing > pygame pixel art starts at scale 2 (draw at 32, play at 64); the rest at 1
+(pass) what a Python project brings from a Pinta drawing > size and selection follow the mode
+
+src\components\assets\PintaImportDialog.test.tsx:
+Isolated ./src/components/assets/__tests__/PintaImportDialog.cases.tsx: 53 pass, 0 fail, 344 expect() calls
+(pass) PintaImportDialog.test.tsx mock cases own an isolated module realm [7125.00ms]
+
+src\core\__tests__\pintaImageAssets.test.ts:
+(pass) Pinta recipe is durable project content, never a request to regenerate > read and materialization copy the supplied recipe before their first asynchronous digest
+(pass) Pinta recipe is durable project content, never a request to regenerate > sanitizer retains a strict recipe and legacy assets keep their exact shape
+(pass) Pinta recipe is durable project content, never a request to regenerate > malformed recipe or incompatible asset is rejected instead of losing the recipe [16.00ms]
+(pass) Pinta recipe is durable project content, never a request to regenerate > classic read/snapshot/source export retain the same PNG and explicit path offline
+(pass) Pinta recipe is durable project content, never a request to regenerate > pro read/snapshot/source export retain the same PNG and explicit path offline [15.00ms]
+(pass) Pinta recipe is durable project content, never a request to regenerate > binary/output tampering refuses read and materialization, while provenance-only changes alter metadata hash
+(pass) an SVG recipe (Pygame Zero) is durable content too > reads back unchanged and materializes its exact bytes at images/<name>.svg
+(pass) an SVG recipe (Pygame Zero) is durable content too > format, file extension, root size and bytes must all agree with the recipe
+
+src\runtime\python\extensionFiles.test.ts:
+(pass) Turtle: withdrawal cancels the entire file batch with its original reason
+(pass) Pygame Zero: withdrawal cancels the entire file batch with its original reason
+(pass) Pygame-ce: withdrawal cancels the entire file batch with its original reason
+(pass) Raylib 2D/3D: withdrawal cancels the entire file batch with its original reason
+(pass) Pygame-ce applies per-file limits and returns the pinned wheel with unprefixed module paths [16.00ms]
+
+ 45 pass
+ 0 fail
+ 331 expect() calls
+Ran 45 tests across 8 files. [8.14s]

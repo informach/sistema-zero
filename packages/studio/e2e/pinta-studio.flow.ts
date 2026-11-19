@@ -4,6 +4,7 @@ import { expect, type Page, test } from '@playwright/test'
 import { QA_PROFILE } from '../playground/pinta-integration/profile'
 import type { PersonalAsset } from '../src/asset-library/personal'
 import type { Project } from '../src/core/project'
+import type { PythonClassicProjectDocument } from '../src/core/pythonProject'
 
 const root = resolve(import.meta.dirname, '../../..')
 const fixture = resolve(root, '.tmp/pinta-scenes-e2e/vila-e-floresta.pinta.json')
@@ -37,6 +38,78 @@ const snapshot = async (page: Page): Promise<Project> =>
 
 test.beforeEach(async ({ context }) => {
   await context.route('**/api/**', (route) => route.abort('internetdisconnected'))
+})
+
+test('Python traz o mundo pela interface e atualiza só o destino conservando o programa', async ({
+  page,
+  context,
+}, info) => {
+  test.setTimeout(120000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const pythonSnapshot = async (): Promise<PythonClassicProjectDocument> =>
+    JSON.parse((await page.getByTestId('qa-project').textContent()) ?? 'null')
+  await page.goto('/pinta')
+  await page.locator('input[type=file]').first().setInputFiles(fixture)
+  await expect(
+    page.getByRole('button', { name: 'Abrir vila-e-floresta (Mapa)', exact: true }),
+  ).toBeVisible()
+  await page.goto('/estudio?novo=1&python=1')
+  await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Imagens', exact: true }).click()
+  await page.getByRole('button', { name: '🎨 Trazer do Pinta', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Trazer do Pinta', exact: true })
+  const card = dialog
+    .getByRole('listitem')
+    .filter({ has: page.getByText('vila-e-floresta', { exact: true }) })
+  await card.getByRole('button', { name: 'Escolher imagem', exact: true }).click()
+  await expect(dialog.getByLabel('O que trazer', { exact: true })).toHaveValue('map-world')
+  await expect(dialog.getByRole('button', { name: 'Adicionar imagem', exact: true })).toBeEnabled()
+  const before = await pythonSnapshot()
+  await info.attach('python-world-selection', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+  await dialog.getByRole('button', { name: 'Adicionar imagem', exact: true }).click()
+  await expect.poll(async () => (await pythonSnapshot()).assets?.length).toBe(1)
+  const first = await pythonSnapshot(),
+    asset = first.assets![0]!
+  expect(asset.pintaImage?.recipe).toMatchObject({
+    version: 2,
+    selection: { kind: 'map-world' },
+    scale: 2,
+  })
+  expect(first.files).toEqual(before.files)
+  const edit = await context.newPage()
+  await edit.goto('/pinta')
+  await edit.getByRole('button', { name: 'Abrir cabana (Mapa)', exact: true }).click()
+  await expect(edit.getByRole('button', { name: 'Chão', exact: true })).toBeVisible()
+  const tip = edit.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  await edit.getByRole('button', { name: 'Chão', exact: true }).click()
+  await edit.getByRole('button', { name: 'Borracha', exact: true }).click()
+  const canvas = edit.getByRole('img', { name: 'Grade do mapa', exact: true })
+  await canvas.evaluate((el) => el.scrollIntoView({ block: 'start', inline: 'start' }))
+  await canvas.click({ position: { x: 8, y: 8 } })
+  await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
+    timeout: 15000,
+  })
+  await page.bringToFront()
+  await page.evaluate(() => window.dispatchEvent(new FocusEvent('focus')))
+  await expect
+    .poll(async () => (await pythonSnapshot()).assets?.[0]?.pintaImage?.output.sha256, {
+      timeout: 15000,
+    })
+    .not.toBe(asset.pintaImage!.output.sha256)
+  const after = await pythonSnapshot()
+  expect(after.assets![0]!.id).toBe(asset.id)
+  expect(after.assets![0]!.proPath).toBe(asset.proPath)
+  expect(after.assets![0]!.pintaImage!.provenance.sourceSha256).toBe(
+    asset.pintaImage!.provenance.sourceSha256,
+  )
+  expect(after.files).toEqual(before.files)
+  expect(after.blocksState).toEqual(first.blocksState)
+  expect(errors).toEqual([])
 })
 
 test('uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa', async ({

@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\scripts\python\test-pinta-world.py", line 65, in refusals
+    pinta.carregar_mapa(target)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\runtime\python\pygame\py\pinta.py", line 859, in carregar_mapa
+    return Mapa(nome)
+  File "C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\runtime\python\pygame\py\pinta.py", line 679, in __init__
+    atlas = _imagem_em_memoria(png)
+  File "C:\Users\tocha\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py", line 1169, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\tocha\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py", line 1173, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\tocha\AppData\Local\Programs\Python\Python313\Lib\unittest\mock.py", line 1234, in _execute_mock_call
+    raise effect
+AssertionError: decoded an invalid world
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\scripts\python\test-pinta-world.py", line 159, in <module>
+    rejected = refusals(folder / 'vila-mundo.png')
+  File "C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\scripts\python\test-pinta-world.py", line 69, in refusals
+    raise AssertionError(f'Invalid world {index} reached the decoder') from error
+AssertionError: Invalid world 8 reached the decoder
