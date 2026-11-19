@@ -420,9 +420,23 @@ export async function recoverIndexedProjectWrites(
       ),
   )
   const values = await readValues(scope.store, keys)
+  if (!keys.length) return { recovered: [], consumed: new Set() }
+  const { nativeRecovery } = await import('./projectRecoveryGuards')
+  const { prepareEditableStudioProject } = await import('./editableProjectValidation')
+  const valid: RecoveryWrite[] = []
+  for (const [index, value] of values.entries()) {
+    try {
+      const recovery = nativeRecovery(value, keys[index]!)
+      // Validate the whole document before promoting raw partitions over a
+      // readable save. Preparation runs outside the conditional transaction.
+      if (await prepareEditableStudioProject(projectFromRecovery(recovery))) valid.push(recovery)
+    } catch {
+      // Keep incompatible originals pending; never execute their writes.
+    }
+  }
   const recovered: string[] = []
   const consumed = new Set<string>()
-  for (const recovery of latestRecoveries(values)) {
+  for (const recovery of latestRecoveries(valid)) {
     try {
       if (mustCopy?.(recovery)) throw new ProjectWriteConflict()
       await commit(
@@ -490,7 +504,16 @@ export async function loadRecoverableProjectDraft(
   if (!keys.length) return null
   const [rawHead, ...records] = await readValues(scope.store, [projectHeadKey(id), ...keys])
   const head = isLocalHead(rawHead) ? rawHead : undefined
-  const eligible = latestRecoveries(records).filter(
+  const { nativeRecovery } = await import('./projectRecoveryGuards')
+  const valid = records.filter((value, index) => {
+    try {
+      nativeRecovery(value, keys[index]!)
+      return true
+    } catch {
+      return false
+    }
+  })
+  const eligible = latestRecoveries(valid).filter(
     (draft) =>
       !draft.incompleteBlocks &&
       (head?.token === draft.head.token || acceptsLocalHead(head, draft.head)),

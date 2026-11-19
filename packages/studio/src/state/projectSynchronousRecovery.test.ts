@@ -13,6 +13,7 @@ import {
   projectApplicationsKey,
   projectFilesKey,
   projectMigrationKey,
+  projectMetaKey,
   projectRecoveryKey,
 } from './projectStorageKeys'
 import { projectStorageEntries } from './projectStorageRecords'
@@ -93,6 +94,33 @@ test('a synchronous journal restores the latest full revision when the native ex
       tree: { 'main.ts': { content: 'latest' } },
     })
     expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
+  } finally {
+    f.close()
+  }
+})
+
+test('a reused token with different native and synchronous payloads preserves both pending copies', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('synchronous original')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const native = structuredClone(entry.value) as { write: { puts: [string, unknown][] } }
+    const file = native.write.puts.find(([key]) => key === projectFilesKey(draft.id))!
+    file[1] = {
+      ...(file[1] as object),
+      tree: { 'main.ts': { kind: 'file', content: 'native replacement' } },
+    }
+    const key = projectRecoveryKey(draft.id, entry.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, native]] })
+    await expect(recoverProjectWrites(f.scope, draft.id)).rejects.toThrow('mesma revisão')
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(await readValue(f.scope.store, key)).toEqual(native)
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([
+      entry,
+    ])
   } finally {
     f.close()
   }
@@ -187,6 +215,84 @@ test('quota failure does not claim an exit copy and still requests the native jo
     expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
       tree: { 'main.ts': { content: 'native copy survives' } },
     })
+  } finally {
+    f.close()
+  }
+})
+
+test('a future document in a native journal cannot replace a readable committed project', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('future document')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const native = structuredClone(entry.value) as { write: { puts: [string, unknown][] } }
+    const meta = native.write.puts.find(([key]) => key === projectMetaKey(draft.id))!
+    meta[1] = { ...(meta[1] as object), formatVersion: 9999 }
+    const key = projectRecoveryKey(draft.id, entry.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, native]] })
+    await recoverProjectWrites({ ...f.scope, exitJournalStorage: undefined }, draft.id)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(await readValue(f.scope.store, key)).toEqual(native)
+  } finally {
+    f.close()
+  }
+})
+
+test('foreign partitions in a native journal cannot overwrite another project', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('native draft')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const native = structuredClone(entry.value) as { write: { puts: [string, unknown][] } }
+    native.write.puts.push([projectFilesKey('other-project'), { files: { 'main.ts': 'foreign' } }])
+    const key = projectRecoveryKey(draft.id, entry.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, native]] })
+    await recoverProjectWrites({ ...f.scope, exitJournalStorage: undefined }, draft.id)
+    expect(await readValue(f.scope.store, projectFilesKey('other-project'))).toBeUndefined()
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(await readValue(f.scope.store, key)).toEqual(native)
+  } finally {
+    f.close()
+  }
+})
+
+test('an incompatible native descendant cannot suppress a valid pending revision', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('valid pending revision')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const key = projectRecoveryKey(draft.id, entry.writer)
+    const source = structuredClone(entry.value) as {
+      head: { writer: string; token: string }
+      write: { puts: [string, unknown][] }
+    }
+    const invalid = {
+      ...source,
+      head: { ...source.head, writer: 'incompatible', token: 'incompatible' },
+      replacesRecovery: [{ key, token: entry.token }],
+      write: { puts: [...source.write.puts, [projectFilesKey('foreign'), {}]] },
+    }
+    const invalidKey = projectRecoveryKey(draft.id, invalid.head.writer)
+    await writeInOneTransaction(f.scope.store, {
+      puts: [
+        [key, source],
+        [invalidKey, invalid],
+      ],
+    })
+    await recoverProjectWrites({ ...f.scope, exitJournalStorage: undefined }, draft.id)
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'valid pending revision' } },
+    })
+    expect(await readValue(f.scope.store, key)).toBeUndefined()
+    expect(await readValue(f.scope.store, invalidKey)).toEqual(invalid)
+    expect(await readValue(f.scope.store, projectFilesKey('foreign'))).toBeUndefined()
   } finally {
     f.close()
   }

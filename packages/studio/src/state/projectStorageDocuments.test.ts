@@ -188,6 +188,12 @@ describe('language-independent project partitions and transaction coordinator', 
   test('recovery commits Python source and environment together after exit', async () => {
     const scope = database()
     const project = documentFixture('python', 'pro')
+    // The structural fixture deliberately contains a noncanonical material name.
+    // This execution-independent recovery case needs an editor-valid document.
+    project.assets = [
+      { id: 'hero', name: 'hero', kind: 'image', dataUrl: 'data:image/png;base64,aGVybw==' },
+    ]
+    project.coverAssetName = 'hero'
     await coordinatedProjectWrite(project, { puts: projectStorageEntries(project) }, scope)
     if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
       throw new Error('fixture')
@@ -196,6 +202,7 @@ describe('language-independent project partitions and transaction coordinator', 
       python: { ...project.python, entrypoint: 'src/helper.py' },
       tree: { ...project.tree, 'src/helper.py': { kind: 'file' as const, content: 'n = 100' } },
     })
+    await prepareEditableStudioProject(edited)
     await stageProjectExit(edited, { puts: projectStorageEntries(edited) }, scope)
     expect(await recoverProjectWrites(scope, project.id)).toEqual([project.id])
     expect(StudioProjectDocumentSchema.parse(await loadProjectById(project.id, scope))).toEqual(

@@ -33,3 +33,64 @@ sem elevar os limites. A execução Windows de base iniciou o servidor e passou
 novo está em reprodução separada; não considerar a suíte Windows aprovada.
 
 O timeout anterior de inicialização Windows ainda precisa de confirmação no novo run. Não se aumentou o prazo de 120 s. O laboratório de transporte de árvores profundas está preservado no stash `studio-v4-transport-lab-preserved`, originado na branch `estudio-deep-storage-v4-20261118`; nenhuma ativação de namespace v4 entrou nesta entrega. Isolamento completo dos motores DOM, escalabilidade visual de 10 mil blocos, depuração, profiling, testes autorais e homologação física permanecem sujeitos aos critérios integrais da missão.
+
+## Regressões confirmadas em 19/11/2026
+
+O run `44448102981` passou Python, isolamento, runtime hospedado, Firefox,
+WebKit, Windows/Chromium e dois shards Linux/Chromium. Falhou nos contratos
+Linux/Windows e em dois kits no terceiro shard Linux. Não é uma execução verde.
+
+Os contratos falharam no mesmo cálculo de documento: 75.690 bytes de diferença,
+contra uma estimativa antiga de 74.000. O fragmento do mapa já tinha contrato
+medido de 15.138 caracteres e teto de 15.500 desde a integração anterior. O teste
+de documento passa a usar esse teto existente mais os 60.000 da folha e 1.000
+bytes para o manifesto pequeno e ligação ao host. Tetos do runtime e bundle não
+mudam. Dez testes/60 asserções verificam documento e variantes completas/legadas;
+jogo legado continua sem o motor do cenário e sem duplicação de folha.
+
+Os kits Phaser Arcade/Plataforma reproduziram a falha localmente ao iniciar com
+o palco recolhido: dois testes vermelhos. O ScaleManager consulta o tamanho do
+pai no passo do loop; a tela inicial dorme o loop após desenhar. O ResizeObserver
+agora atualiza os limites do pai e a escala pelas APIs públicas antes de redesenhar,
+ignorando dimensões nulas. Não se mantém um loop ativo só para aguardar layout.
+O observador continua desconectado no descarte; não muda arte nem controles.
+
+Os três kits Phaser passaram no Chromium local, sem retries (42,6 s com build),
+incluindo início recolhido, abertura, persistência/reload, movimento, pausa,
+reinício e resize. O cenário de início recolhido agora cobre todos os kits Phaser.
+Contratos dos templates: 81 testes/1.077 asserções aprovados. A confirmação Linux
+continua exigindo novo run; a passagem local não substitui esse resultado.
+
+## Identidade e fronteiras dos journals de recuperação
+
+Três testes vermelhos reproduziram perdas reais: um payload IndexedDB com token
+igual ao espelho síncrono, porém conteúdo diferente, era aplicado e o espelho
+original reconhecido; um journal nativo com partição estrangeira conseguia gravar
+em outro projeto; um documento de formato futuro substituía a revisão legível. O espelho síncrono já tinha validação de controle estrita, mas o nativo não.
+
+A recuperação verifica a igualdade dos espelhos com identidade/token iguais antes
+de consumir qualquer um. Divergência conserva ambos e apresenta erro. A validação
+de contrato foi extraída para um módulo raro compartilhado, carregado quando há
+journal, e passa a proteger replay e abertura de rascunhos nativos. A filtragem
+e a validação integral do documento ocorrem antes de resolver ancestrais, para um descendente incompatível não ocultar
+um rascunho válido. Não muda namespace, formato de blocos, cotas ou documentos.
+
+Treze testes específicos passaram, incluindo as três reproduções, preservação dos
+originais e um descendente inválido que não suprime o rascunho válido. A validação
+Python expôs um nome de material não canônico na fixture estrutural; o teste de
+recuperação agora parte de material válido e exige validação antes do staging.
+Não se alterou o leitor para aceitar ou descartar esse conteúdo. Regressão final:
+439 testes, 2.347 asserções, 69 arquivos, zero falhas (43,88 s), incluindo
+Chromium/WebKit nativos com aborto de saída. Typecheck de produto aprovado.
+O orçamento inicial passou antes da validação integral; sua repetição simultânea
+a uma compilação excedeu 60 s e é registrada como falha, sem aumentar o prazo.
+A confirmação final isolada é registrada abaixo.
+A migração experimental v4 continua fora desta entrega.
+
+
+Confirmação final do bundle, sem outra compilação desta sessão concorrendo:
+1 teste, 31 asserções, zero falhas, 17,33 s (build 16,66 s). Mesmos limites e
+mesmo prazo de 60 s. As duas execuções anteriores com timeout ficam registradas;
+a primeira repetição também coincidiu parcialmente com o typecheck do laboratório,
+que foi interrompido apenas pelo PID específico desta sessão. Não houve mudança
+no teste ou no produto para obter esta passagem.

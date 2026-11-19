@@ -83,7 +83,7 @@ for (const template of STUDIO_PRO_TEMPLATES.filter((value) => value.kitVersion))
         manifest,
         read: async (path) => new Uint8Array(await readFile(join(root, 'dist', path))),
       })
-      let collapseOnFirstBoot = template.id === 'phaser-tactics'
+      let collapseOnFirstBoot = template.engine === 'phaser'
       await page.route('https://runtime.test/**', async (route) => {
         const response = await serveArtifact(new Request(route.request().url()), bucket)
         let body = Buffer.from(await response.arrayBuffer())
@@ -141,7 +141,7 @@ for (const template of STUDIO_PRO_TEMPLATES.filter((value) => value.kitVersion))
           if (hidden) iframe.style.display = 'none'
           document.body.append(iframe)
         },
-        { url: artifact.url, hidden: template.id === 'phaser-tactics' },
+        { url: artifact.url, hidden: template.engine === 'phaser' },
       )
       const frame = page.frameLocator('#game')
       await expect(frame.locator('#start')).toBeEnabled()
