@@ -42,7 +42,6 @@ export default defineConfig({
         `${site}/pro/desafio-primeiro-jogo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
-        `${site}/kids/comunidade-dos-criadores/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
         // Minicurso gratuito para pais (página avulsa, SSR).
         `${site}/kids/vilao-em-aliado`,

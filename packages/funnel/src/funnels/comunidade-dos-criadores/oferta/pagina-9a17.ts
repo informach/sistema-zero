@@ -1,4 +1,5 @@
-// Copy aprovada em 06/11/2026: habilidades para a vida, prática orientada e continuidade.
+// Oferta Kids unificada em 19/11/2026: 5 a 17 anos, habilidades cognitivas para a vida.
+// Abaixo de 9, com acompanhante. O identificador 9A17 permanece interno; a URL pública é /oferta.
 // Preços são marcadores preenchidos pelo catálogo. Falas vêm de relatos.ts.
 
 import type { ComunidadePraticaSection } from './pratica-types'
@@ -12,9 +13,9 @@ export function legendaDoRelato(id: RelatoId): string {
 export const RELATOS_9A17: readonly RelatoId[] = ['AV02', 'AV03', 'AV04']
 
 export const PAGINA_9A17 = {
-  seoTitle: 'Comunidade dos Criadores para 9 a 17 anos | Sistema Zero',
+  seoTitle: 'Comunidade dos Criadores Kids: habilidades cognitivas para a vida | Sistema Zero',
   description:
-    'Na Comunidade dos Criadores, seu filho exercita planejamento, raciocínio e persistência criando jogos com orientação. O interesse pela criação dá um motivo para começar; novos projetos trazem outras oportunidades de escolher, testar e explicar suas ideias.',
+    'Habilidades cognitivas para a vida com criação de jogos e projetos orientados. De 5 a 17 anos; abaixo de 9, com acompanhante. Assinatura mensal ou anual.',
   capa: 'checkout-capa.webp',
   topo: {
     pular: 'Ir para o conteúdo',
@@ -42,18 +43,18 @@ export const PAGINA_9A17 = {
     },
   },
   hero: {
-    eyebrow: 'Comunidade dos Criadores · 9 a 17 anos',
+    eyebrow: 'Comunidade dos Criadores · 5 a 17 anos',
     title: 'Ajude seu filho a resolver problemas e fazer escolhas com mais autonomia, ',
     destaque: 'na escola e na vida.',
     description:
-      'Na Comunidade dos Criadores, seu filho exercita planejamento, raciocínio e persistência criando jogos com orientação. O interesse pela criação dá um motivo para começar; novos projetos trazem outras oportunidades de escolher, testar e explicar suas ideias.',
+      'Na Comunidade dos Criadores, seu filho pratica habilidades cognitivas para a vida: planejar, investigar uma dificuldade, rever uma tentativa e explicar suas ideias. A criação de jogos dá um motivo para começar; novos projetos trazem outras oportunidades de fazer escolhas, testar e continuar com orientação.',
     benefits: [
-      'Dividir uma tarefa em passos que consegue experimentar',
-      'Mostrar uma dúvida e investigar o que precisa mudar',
-      'Voltar a usar essas habilidades em novos projetos',
+      'Planejar um passo e conferir o resultado',
+      'Fazer escolhas, observar consequências e rever tentativas',
+      'Explicar uma ideia e pedir ajuda quando precisar',
     ],
     requirements:
-      '9 a 17 anos, com apoio conforme a necessidade · Computador, internet, mouse e teclado · Até 2 perfis Kids',
+      '5 a 17 anos; abaixo de 9, com acompanhante · Computador, internet, mouse e teclado · Até 2 perfis Kids',
     tela: {
       src: '/img/desafio-primeiro-jogo/farol-estudio-real.webp',
       alt: 'A Chave do Farol no Estúdio real: blocos e resultado lado a lado.',
@@ -73,17 +74,17 @@ export const PAGINA_9A17 = {
       label: 'Ver como a prática acontece',
     },
   },
-  cta: 'Ver planos e acesso',
+  cta: 'Quero ajudar meu filho',
   garantiaCurta: 'Assinatura mensal ou anual · 7 dias para pedir reembolso integral',
   sections: [
     {
       tag: 'O que você deseja para ele',
-      title: 'Começar uma tarefa, fazer uma escolha e saber o que tentar quando algo não funciona.',
+      title: 'Habilidades cognitivas para a vida, praticadas uma parte de cada vez.',
       intro:
-        'Essas situações aparecem na tarefa da escola, numa brincadeira e nas pequenas responsabilidades de casa. Você quer ajudar seu filho a participar delas com mais recursos, respeitando o jeito e o ritmo dele.',
+        'Começar uma tarefa, conferir uma resposta e explicar uma dúvida são situações da escola e de casa. Seu filho encontra oportunidades de praticar essas ações com orientação, respeitando seu ritmo e o apoio de que precisa.',
       cards: [],
       paras: [
-        'Uma atividade com objetivo, escolhas e resultado visível oferece uma oportunidade de prática. Na Comunidade, a programação de jogos reúne essas partes em projetos orientados. O interesse pode começar pela história, pelos personagens ou pela vontade de criar algo próprio.',
+        'Planejar, testar uma hipótese e rever uma tentativa oferecem oportunidades de exercitar funções executivas usadas nos contextos da vida diária. A criação de jogos reúne um objetivo, escolhas e resultados que ele consegue observar. O interesse pode começar pela história, pelos personagens ou pela vontade de criar algo próprio.',
       ],
       kind: 'cards',
       id: 'pratica-0',
@@ -119,6 +120,7 @@ export const PAGINA_9A17 = {
       ],
       paras: [
         'O ciclo de criação é imaginar, planejar, construir, testar, melhorar e compartilhar. O jogo dá uma tarefa concreta para exercitar essas ações. As aulas oferecem orientação; a criança participa das escolhas e das tentativas.',
+        'Ao escolher um personagem, mudar a posição de um objeto ou escrever um aviso, seu filho pode observar o efeito da própria decisão. Ao escolher uma coisa, ele abre mão de outra e vê o que essa escolha provocou: aprende causa e consequência e exercita a tolerância à frustração.',
       ],
       kind: 'cards',
       id: 'metodo',
@@ -300,7 +302,7 @@ export const PAGINA_9A17 = {
         ],
       ],
       paras: [
-        'Compare seu filho com o próprio percurso. O apoio pode variar entre atividades; reconhecer que precisa de ajuda também faz parte da autonomia. Para crianças menores de 9 anos, o responsável acompanha durante as atividades.',
+        'Compare seu filho com o próprio percurso. O apoio pode variar entre atividades; reconhecer que precisa de ajuda também faz parte da autonomia. Abaixo de 9 anos, fique ao lado durante as atividades: ajude na leitura e nos controles e deixe que ele escolha e teste com você.',
       ],
       kind: 'cards',
       id: 'responsavel',
@@ -440,12 +442,12 @@ export const PAGINA_9A17 = {
     {
       question: 'Para qual idade a Comunidade foi pensada?',
       answer:
-        'Para que crianças e adolescentes de 9 a 17 anos possam participar com mais autonomia, conforme sua leitura e sua familiaridade com o computador. Crianças menores também podem fazer, acompanhadas por um responsável durante as atividades. A idade orienta o ponto de partida; a ajuda depende de cada criança.',
+        'Para crianças e adolescentes de 5 a 17 anos. Abaixo de 9 anos, um responsável acompanha durante as atividades: ajuda na leitura e nos controles, enquanto a criança escolhe e testa junto. A partir dos 9, a autonomia varia conforme o momento e a familiaridade com o computador. A idade orienta a proposta; o apoio considera o jeito e as necessidades de cada criança.',
     },
     {
       question: 'Meu filho é autista. Como saber se a proposta combina com ele?',
       answer:
-        'Observe seu interesse pela atividade, como compreende as orientações e de que apoio precisa. É possível pausar, rever e participar falando, apontando ou mostrando na tela. Comecem juntos e ajustem a duração e a ajuda. A Comunidade é uma proposta educacional; não oferece avaliação ou tratamento clínico nem promete um resultado igual para todas as crianças.',
+        'Observe seu interesse pela atividade, como compreende as orientações e de que apoio precisa, em qualquer idade. É possível pausar, rever e participar falando, apontando ou mostrando na tela. Comecem juntos e ajustem a duração e a ajuda. A Comunidade é uma proposta educacional; não oferece avaliação ou tratamento clínico nem promete um resultado igual para todas as crianças.',
     },
     {
       question: 'Ele precisa gostar de videogame ou saber programar?',
@@ -466,6 +468,11 @@ export const PAGINA_9A17 = {
       question: 'Como funciona a ajuda quando ele trava?',
       answer:
         'Vocês podem enviar uma dúvida por escrito nos Recados, mostrando o que tentaram e onde pararam. A equipe responde por mensagens, sem aula individual ao vivo. O responsável continua ajudando conforme a necessidade da criança; para os menores de 9 anos, acompanha durante as atividades.',
+    },
+    {
+      question: 'E se ele se frustrar ou quiser parar?',
+      answer:
+        'Acolha o desconforto e ajude a localizar a parte que ficou difícil. Vocês podem pausar, rever uma orientação ou escolher uma tentativa menor. O objetivo é oferecer oportunidades de aprender com o desafio, respeitando o ritmo da criança. As aulas gravadas permitem retomar depois, durante o acesso.',
     },
     {
       question: 'Todas as ferramentas ficam liberadas no primeiro dia?',

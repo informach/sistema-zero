@@ -1,7 +1,7 @@
 import type { ComunidadeOfertaId } from './types'
 
-/** As subpáginas de `/oferta/<id>` (a 9 a 17 é a própria `/oferta`). */
-export const COMUNIDADE_SUBPAGINAS = ['criar-junto', 'continuar'] as const
+/** A oferta principal cobre 5 a 17 anos; a continuidade mantém endereço próprio. */
+export const COMUNIDADE_SUBPAGINAS = ['continuar'] as const
 export type ComunidadeSubpagina = (typeof COMUNIDADE_SUBPAGINAS)[number]
 
 export function isComunidadeSubpagina(value: unknown): value is ComunidadeSubpagina {
@@ -9,10 +9,11 @@ export function isComunidadeSubpagina(value: unknown): value is ComunidadeSubpag
 }
 
 /**
- * As cinco páginas de perfil que existiram até 20/10/2026. Os links antigos (resultado do quiz v5,
- * anúncios, mensagens) chegam à página de 9 a 17 por redirecionamento permanente, com a query.
+ * Os cinco perfis antigos e, desde 19/11/2026, criar-junto chegam à oferta unificada
+ * de 5 a 17 anos por redirecionamento permanente, com a query e os cupons preservados.
  */
 export const COMUNIDADE_OFERTAS_ANTIGAS = [
+  'criar-junto',
   'tempo-de-tela',
   'criacao-de-jogos',
   'expressao-visual',
@@ -28,5 +29,5 @@ export function isComunidadeOfertaAntiga(value: unknown): boolean {
 
 export function comunidadeOfferPath(id: ComunidadeOfertaId): string {
   const base = '/kids/comunidade-dos-criadores/oferta'
-  return id === '9a17' ? base : `${base}/${id}`
+  return id === 'continuar' ? `${base}/continuar` : base
 }
