@@ -14,12 +14,15 @@ import {
 import { MEU_HEROI_MOLDA_SOURCE } from '../src/official-extensions/game-3d/__gen_primeirosJogos'
 import { HEROI_DO_MOLDA_GLB } from '../src/official-extensions/game-3d/exampleAssets'
 import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
+import { configurePreviewInputDiagnostics } from './helpers/previewInputDiagnostics'
 
 const EXPERIENCE_LABEL = {
   game: 'Jogo',
   demo: 'Demonstração',
   exploration: 'Exploração',
 } as const
+
+configurePreviewInputDiagnostics()
 
 function kitCard(page: Page, contract: ExampleQAContract) {
   return page
