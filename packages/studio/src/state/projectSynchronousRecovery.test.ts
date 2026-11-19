@@ -979,3 +979,29 @@ test('mismatched legacy mirrors cannot migrate the base or acknowledge either so
     f.close()
   }
 })
+
+test('overlapping project prefixes cannot recover a different owner through a colon in its writer', async () => {
+  const f = await fixture()
+  try {
+    const draft = f.edit('must remain pending for its actual owner')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, f.failed)
+    const entry = readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)[0]!
+    const captured = entry.value as RecoveryWrite
+    const incoming: RecoveryWrite = {
+      ...captured,
+      head: { ...captured.head, base: null, writer: 'section:writer' },
+    }
+    const key = projectRecoveryKey(draft.id, incoming.head.writer)
+    await writeInOneTransaction(f.scope.store, { puts: [[key, incoming]] })
+    expect(await recoverLocalV3ProjectWrites(f.scope, `${draft.id}:section`)).toEqual([])
+    expect(await readValue(f.scope.store, projectMetaKey(draft.id, 4))).toBeUndefined()
+    expect(await loadRecoverableProjectDraft(f.scope, `${draft.id}:section`)).toBeNull()
+    expect(await recoverProjectWrites(f.scope, `${draft.id}:section`)).toEqual([])
+    expect(await readValue(f.scope.store, projectFilesKey(draft.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'initial' } },
+    })
+    expect(await readValue(f.scope.store, key)).toEqual(incoming)
+  } finally {
+    f.close()
+  }
+})

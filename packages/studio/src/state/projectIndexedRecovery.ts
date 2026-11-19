@@ -60,6 +60,7 @@ export async function recoverIndexedProjectWrites(
   for (const [index, value] of values.entries()) {
     try {
       const recovery = nativeRecovery(value, keys[index]!, version)
+      if (projectId !== undefined && recovery.projectId !== projectId) continue
       // Validate the whole document before promoting raw partitions over a
       // readable save. Preparation runs outside the conditional transaction.
       if (await prepareEditableStudioProject(projectFromRecovery(recovery, version)))
@@ -131,8 +132,7 @@ export async function loadRecoverableProjectDraft(
   const { nativeRecovery } = await import('./projectRecoveryGuards')
   const valid = records.filter((value, index) => {
     try {
-      nativeRecovery(value, keys[index]!)
-      return true
+      return nativeRecovery(value, keys[index]!).projectId === id
     } catch {
       return false
     }

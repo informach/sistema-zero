@@ -68,6 +68,7 @@ export async function recoverLocalV3ProjectWrites(
   const values = await readValues(scope.store, keys)
   for (const [index, value] of values.entries()) {
     const recovery = nativeRecovery(value, keys[index]!, 3)
+    if (projectId !== undefined && recovery.projectId !== projectId) continue
     const entry: ExitJournalEntry = {
       key: keys[index]!,
       value,
