@@ -26,18 +26,13 @@
         "name": "cpu4x",
         "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
         "testIgnore": [],
-        "testMatch": [
-          "pinta-resources-scenes.flow.ts"
-        ],
+        "testMatch": ["pinta-resources-scenes.flow.ts"],
         "timeout": 30000
       }
     ],
     "quiet": false,
     "reporter": [
-      [
-        "list",
-        null
-      ],
+      ["list", null],
       [
         "json",
         {

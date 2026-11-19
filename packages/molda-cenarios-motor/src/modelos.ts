@@ -3,6 +3,7 @@ import {
   type AnimationClip,
   Box3,
   type BufferGeometry,
+  LoadingManager,
   type Material,
   Matrix4,
   type Mesh,
@@ -47,11 +48,21 @@ export interface ModeloCarregado {
 }
 
 function novoLeitor(falhas: unknown[]): GLTFLoader {
-  const leitor = new GLTFLoader()
+  const externas = new Set<string>(),
+    gerenciador = new LoadingManager(),
+    leitor = new GLTFLoader(gerenciador)
+  // O parser revoga seus Blob URLs no sucesso, mas a via de erro não o faz.
+  // URLs que já vieram declaradas no GLB pertencem ao chamador, não a este loader.
+  gerenciador.onError = (url) => {
+    if (url.startsWith('blob:') && !externas.has(url)) URL.revokeObjectURL(url)
+  }
   // No Chrome o GLTFLoader lê as imagens de dentro do .glb com fetch(blob:), que a política de
   // segurança dos apps recusa (connect-src não libera blob:), e o modelo sairia sem textura,
   // em silêncio. Pela <img>, que o img-src blob: deixa, funciona em qualquer host.
   leitor.register((parser: GLTFParser) => {
+    if (Array.isArray(parser.json.images))
+      for (const imagem of parser.json.images)
+        if (imagem && typeof imagem.uri === 'string') externas.add(imagem.uri)
     // O GLTFLoader converte falha de imagem em textura null. A cena inteira deve
     // falhar, em vez de parecer válida com parte da arte perdida silenciosamente.
     const carregarImagem = parser.loadImageSource.bind(parser)

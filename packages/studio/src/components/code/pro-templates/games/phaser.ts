@@ -91,7 +91,11 @@ export function createGame(ui: GameUI, input: GameInput): GameController {
       this.unsubscribe = ui.onPhase(phase => { input.clear(); if (phase === 'playing') { this.physics.world.resume(); this.game.loop.resetDelta(); this.game.loop.wake() } else { this.physics.world.pause(); this.game.loop.sleep() } })
       const redraw = () => { if (ui.phase !== 'playing') { this.game.loop.wake(); this.game.events.once('postrender', idle) } }
       const stopQuality = ui.onQuality(() => { for (const shape of scenery) shape.setVisible(!ui.reducedQuality); redraw() })
-      const observer = new ResizeObserver(redraw); observer.observe(ui.stage)
+      // A paused loop cannot poll the parent's new bounds after a collapsed preview opens.
+      const observer = new ResizeObserver(() => {
+        if (ui.stage.clientWidth <= 0 || ui.stage.clientHeight <= 0) return
+        this.scale.getParentBounds(); this.scale.refresh(); redraw()
+      }); observer.observe(ui.stage)
       const cleanup = () => { this.unsubscribe?.(); this.unsubscribe = undefined; stopQuality(); observer.disconnect(); this.game.events.off('postrender', idle); this.events.off('shutdown',cleanup); this.events.off('destroy',cleanup) }
       this.events.once('shutdown',cleanup); this.events.once('destroy',cleanup)
       ui.onReset(() => this.resetGame())

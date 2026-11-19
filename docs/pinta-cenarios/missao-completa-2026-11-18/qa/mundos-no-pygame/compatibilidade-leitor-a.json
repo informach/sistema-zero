@@ -1,0 +1,43 @@
+{
+  "baseline": "0218a11a330e8da93e70786afb3b0fe48370a562",
+  "stats": {
+    "startTime": "2026-11-19T03:43:46.877Z",
+    "duration": 6722.882,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "results": [
+    {
+      "title": "o envio captura o PNG Python e a biblioteca canônica com todos os destinos no mesmo perfil",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1205,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "um leitor congelado recusa a receita nova; sua aba antiga não sobrescreve o mundo offline",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2059,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

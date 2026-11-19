@@ -25,6 +25,9 @@ import zlib
 import base64
 import io
 import copy
+import math
+import sys
+import tempfile
 
 import pygame
 
@@ -33,6 +36,18 @@ __all__ = ['carregar_imagem', 'fonte', 'FONTES', 'carregar_sprite', 'carregar_pe
 
 PASTA = 'assets'
 _PNG = b'\x89PNG\r\n\x1a\n'
+
+# BEGIN GENERATED PINTA WORLD LIMITS — scripts/gen-pinta-scene-python.ts
+MUNDO_MAX_MAPAS = 16
+MUNDO_MAX_CELULAS = 2097152
+MUNDO_MAX_CARACTERES = 4194304
+MUNDO_MAX_DADOS = 16777216
+MUNDO_MAX_DIMENSAO = 4096
+MUNDO_MAX_PIXELS_IMAGEM = 4194304
+MUNDO_MAX_PIXELS_TOTAL = 16777216
+# END GENERATED PINTA WORLD LIMITS
+
+MAXIMO_DE_DADOS = MUNDO_MAX_DADOS
 
 
 def _caminho(nome):
@@ -47,11 +62,17 @@ def ler_dados(nome):
     """Os dados do Pinta guardados no PNG (um dicionário), ou ``None`` numa imagem comum."""
     with open(_caminho(nome), 'rb') as arquivo:
         bytes_ = arquivo.read()
+    return _ler_dados_png(bytes_, _caminho(nome))
+
+
+def _ler_dados_png(bytes_, caminho, limite=MAXIMO_DE_DADOS, orcamento=None):
     if bytes_[:8] != _PNG:
-        raise ValueError(f'{_caminho(nome)} não é um PNG.')
+        raise ValueError(f'{caminho} não é um PNG.')
     posicao = 8
     while posicao + 8 <= len(bytes_):
         tamanho, tipo = struct.unpack_from('>I4s', bytes_, posicao)
+        if tamanho > len(bytes_) - posicao - 12:
+            raise ValueError(f'Os dados do Pinta em {caminho} estão estragados.')
         conteudo = bytes_[posicao + 8:posicao + 8 + tamanho]
         posicao += 12 + tamanho
         if tipo == b'IEND':
@@ -64,31 +85,32 @@ def ler_dados(nome):
         comprimido, resto = resto[0], resto[2:]
         _idioma, _, resto = resto.partition(b'\0')
         _traduzida, _, texto = resto.partition(b'\0')
-        dados = _ler_json(texto, comprimido, _caminho(nome))
-        if dados.get('format') != 'pinta' or dados.get('version') not in (1, 2):
-            raise ValueError(f'{_caminho(nome)} foi feito por um Pinta mais novo.')
+        dados = _ler_json(texto, comprimido, caminho, limite, orcamento)
+        if (dados.get('format') != 'pinta' or dados.get('version') not in (1, 2, 3)
+                or (dados.get('version') == 3 and dados.get('kind') != 'map')):
+            raise ValueError(f'{caminho} foi feito por um Pinta mais novo.')
         return dados
     return None
 
 
-#: Os dados de um desenho do Pinta cabem com folga nisto; um PNG que diz ter mais está estragado.
-MAXIMO_DE_DADOS = 16 * 1024 * 1024
-
-
-def _ler_json(texto, comprimido, caminho):
+def _ler_json(texto, comprimido, caminho, limite=MAXIMO_DE_DADOS, orcamento=None):
     """O JSON do bloco ``pinta``: o arquivo pode ter sido trocado, então tudo é conferido."""
     estragado = f'Os dados do Pinta em {caminho} estão estragados. Traga o desenho do Pinta de novo.'
     try:
         if comprimido:
             descompressor = zlib.decompressobj()
             # Com teto: um bloco pequeno pode se abrir em gigabytes.
-            texto = descompressor.decompress(texto, MAXIMO_DE_DADOS)
-            if descompressor.unconsumed_tail:
+            texto = descompressor.decompress(texto, limite + 1)
+            if descompressor.unconsumed_tail or len(texto) > limite:
                 raise ValueError(f'Os dados do Pinta em {caminho} são grandes demais.')
-            if not descompressor.eof:
+            if not descompressor.eof or descompressor.unused_data:
                 raise ValueError(estragado)
-        elif len(texto) > MAXIMO_DE_DADOS:
+        elif len(texto) > limite:
             raise ValueError(f'Os dados do Pinta em {caminho} são grandes demais.')
+        if orcamento is not None:
+            orcamento[0] -= len(texto)
+            if orcamento[0] < 0:
+                raise ValueError(f'Os dados do Pinta em {caminho} são grandes demais.')
         dados = json.loads(texto.decode('utf-8'))
     except (zlib.error, UnicodeDecodeError, json.JSONDecodeError, RecursionError):
         raise ValueError(estragado) from None
@@ -98,7 +120,23 @@ def _ler_json(texto, comprimido, caminho):
 
 
 def _carregar(nome):
-    imagem = pygame.image.load(_caminho(nome))
+    return _adequar_imagem(pygame.image.load(_caminho(nome)))
+
+
+def _imagem_em_memoria(bytes_):
+    # pygame-ce's Emscripten RWops accepts paths, not Python file-like callbacks.
+    # The bytes remain the captured authority: use a private MEMFS file, never a
+    # name from the map or project. Remove it even when SDL rejects the image.
+    if sys.platform == 'emscripten':
+        with tempfile.TemporaryDirectory(prefix='pinta-image-') as directory:
+            caminho = os.path.join(directory, 'image.png')
+            with open(caminho, 'wb') as arquivo:
+                arquivo.write(bytes_)
+            return _adequar_imagem(pygame.image.load(caminho))
+    return _adequar_imagem(pygame.image.load(io.BytesIO(bytes_)))
+
+
+def _adequar_imagem(imagem):
     if pygame.display.get_init() and pygame.display.get_surface() is not None:
         return imagem.convert_alpha()
     if imagem.get_bitsize() == 8:
@@ -485,12 +523,204 @@ class GrupoDeCamadas:
         self.propriedades = dict(dados.get('properties', {}))
 
 
+def _dimensoes_png(bytes_, escala=1):
+    if (len(bytes_) < 33 or bytes_[:8] != _PNG
+            or bytes_[8:16] != b'\x00\x00\x00\rIHDR'):
+        raise ValueError('Uma imagem deste cenário está estragada.')
+    largura, altura = struct.unpack_from('>II', bytes_, 16)
+    if (not largura or not altura or max(largura, altura) > MUNDO_MAX_DIMENSAO
+            or largura * altura > MUNDO_MAX_PIXELS_IMAGEM):
+        raise ValueError('Uma imagem deste cenário é grande demais.')
+    w, h = round(largura * escala), round(altura * escala)
+    if not w or not h or max(w, h) > MUNDO_MAX_DIMENSAO or w * h > MUNDO_MAX_PIXELS_IMAGEM:
+        raise ValueError('Uma imagem deste cenário é grande demais nesta escala.')
+    return w, h
+
+
+class _MundoPNG:
+    """Bounded immutable source records and encoded images; no retained map surfaces."""
+
+    def __init__(self, dados, png, orcamento):
+        mundo = dados.get('world')
+        if not isinstance(mundo, dict) or mundo.get('version') != 1:
+            raise ValueError('Este cenário não contém seus outros lugares. Traga o cenário de novo.')
+        raiz, destinos = mundo.get('rootId'), mundo.get('maps')
+        if (not isinstance(raiz, str) or not raiz or len(raiz) > 200
+                or not isinstance(destinos, list) or len(destinos) >= MUNDO_MAX_MAPAS):
+            raise ValueError('A lista de lugares deste cenário está estragada.')
+        self.escala = dados.get('scale', 1)
+        if (not isinstance(self.escala, (int, float)) or isinstance(self.escala, bool)
+                or not math.isfinite(self.escala) or self.escala <= 0
+                or self.escala > MUNDO_MAX_DIMENSAO):
+            raise ValueError('A escala deste cenário está estragada.')
+        self.imagens, self.entradas = {}, {}
+        self.pixels, self.celulas = 0, 0
+        self._adicionar(raiz, dados.get('name'), {k: v for k, v in dados.items() if k != 'world'}, png)
+        caracteres = 0
+        for destino in destinos:
+            if not isinstance(destino, dict):
+                raise ValueError('Um dos lugares deste cenário está estragado.')
+            identificador, nome, imagem = destino.get('id'), destino.get('name'), destino.get('png')
+            if not isinstance(imagem, str) or not imagem.startswith('data:image/png;base64,'):
+                raise ValueError('Falta a imagem de um dos lugares deste cenário.')
+            caracteres += len(imagem)
+            if caracteres > MUNDO_MAX_CARACTERES or orcamento[0] <= 0:
+                raise ValueError('Os outros lugares deste cenário são grandes demais.')
+            try:
+                bytes_ = base64.b64decode(imagem.split(',', 1)[1], validate=True)
+            except (ValueError, TypeError):
+                raise ValueError('A imagem de um dos lugares está estragada.') from None
+            info = _ler_dados_png(bytes_, str(nome), orcamento[0], orcamento)
+            if (not info or info.get('version') != 2 or info.get('kind') != 'map'
+                    or 'world' in info or info.get('scale') != self.escala):
+                raise ValueError('Um dos lugares deste cenário está incompleto.')
+            self._adicionar(identificador, nome, info, bytes_)
+
+    @staticmethod
+    def _inteiro(valor, teto):
+        return isinstance(valor, int) and not isinstance(valor, bool) and 1 <= valor <= teto
+
+    def _adicionar(self, identificador, nome, dados, png):
+        if (not isinstance(identificador, str) or not identificador or len(identificador) > 200
+                or identificador in self.entradas or not isinstance(nome, str) or not nome or len(nome) > 48):
+            raise ValueError('Os nomes ou IDs dos lugares estão estragados.')
+        cena = dados.get('scene')
+        if (not isinstance(cena, dict) or cena.get('version') not in (1, 2)
+                or cena.get('id') != identificador or dados.get('name') != nome):
+            raise ValueError('Os dados não correspondem ao lugar deste cenário.')
+        w, h = _dimensoes_png(png)
+        self.pixels += w * h
+        tamanho, folhas, camadas = dados.get('tileSize'), dados.get('tilesets'), dados.get('layers')
+        if (not self._inteiro(tamanho, MUNDO_MAX_DIMENSAO) or not isinstance(folhas, list)
+                or not 1 <= len(folhas) <= 32 or not isinstance(camadas, list) or len(camadas) > 32
+                or not self._inteiro(dados.get('cols'), 256) or not self._inteiro(dados.get('rows'), 256)):
+            raise ValueError('As camadas deste cenário estão estragadas.')
+        faixas = []
+        for folha in folhas:
+            cols, quantidade, y = folha.get('columns'), folha.get('count'), folha.get('y')
+            if (not self._inteiro(cols, 256) or not self._inteiro(quantidade, 256)
+                    or not isinstance(y, int) or isinstance(y, bool) or y < 0):
+                raise ValueError('As peças deste cenário estão estragadas.')
+            fim = y + math.ceil(quantidade / cols) * tamanho
+            if (min(cols, quantidade) * tamanho > w or fim > h
+                    or any(y < outro_fim and fim > inicio for inicio, outro_fim in faixas)):
+                raise ValueError('As peças não cabem na imagem deste cenário.')
+            faixas.append((y, fim))
+        self._conferir_cena(cena)
+        if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
+            raise ValueError('As imagens deste cenário são grandes demais juntas.')
+        self.entradas[identificador] = (nome, dados, png)
+
+    def _conferir_cena(self, cena):
+        conjuntos = cena.get('sets', [])
+        if not isinstance(conjuntos, list) or len(conjuntos) > 64:
+            raise ValueError('Os conjuntos deste cenário estão estragados.')
+        objetos = 0
+        for parte in [cena] + conjuntos:
+            cols, rows, camadas = parte.get('cols'), parte.get('rows'), parte.get('layers')
+            if (not self._inteiro(cols, 256) or not self._inteiro(rows, 256)
+                    or not isinstance(camadas, list) or len(camadas) > 32):
+                raise ValueError('As regiões deste cenário estão estragadas.')
+            for camada in camadas:
+                if camada.get('kind') == 'tiles':
+                    cells = camada.get('cells')
+                    if not isinstance(cells, list) or len(cells) != cols * rows:
+                        raise ValueError('Faltam peças em uma camada deste cenário.')
+                    self.celulas += len(cells)
+                elif camada.get('kind') == 'objects':
+                    items = camada.get('objects')
+                    if not isinstance(items, list):
+                        raise ValueError('Os objetos deste cenário estão estragados.')
+                    objetos += len(items)
+                    for objeto in items:
+                        self._superficies_temporarias(objeto, cena, conjuntos)
+        if self.celulas > MUNDO_MAX_CELULAS or objetos > 512:
+            raise ValueError('Este cenário tem peças ou objetos demais.')
+        for chave, teto in [('tilesets', 32), ('art', 128)]:
+            recursos = cena.get(chave, [])
+            if not isinstance(recursos, list) or len(recursos) > teto:
+                raise ValueError('Os desenhos deste cenário estão estragados.')
+            for recurso in recursos:
+                imagem = recurso.get('image')
+                if not isinstance(imagem, str) or not imagem.startswith('data:image/png;base64,'):
+                    raise ValueError('Falta um desenho deste cenário.')
+                if imagem in self.imagens:
+                    continue
+                try:
+                    bytes_ = base64.b64decode(imagem.split(',', 1)[1], validate=True)
+                except (ValueError, TypeError):
+                    raise ValueError('Um desenho deste cenário está estragado.') from None
+                w, h = _dimensoes_png(bytes_, self.escala)
+                self.pixels += w * h
+                if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
+                    raise ValueError('Os desenhos deste cenário são grandes demais juntos.')
+                self.imagens[imagem] = bytes_
+
+    def _superficies_temporarias(self, objeto, cena, conjuntos):
+        if not objeto.get('setId') and not objeto.get('art'):
+            return
+        w, h = objeto.get('width'), objeto.get('height')
+        rotation = objeto.get('rotation', 0)
+        if any(not isinstance(n, (int, float)) or isinstance(n, bool) or not math.isfinite(n)
+               for n in (w, h, rotation)) or min(w, h) < 0:
+            raise ValueError('O tamanho ou giro de um desenho está estragado.')
+        if not objeto.get('setId') and (not w or not h):
+            return
+        def area(width, height):
+            width, height = max(1, math.ceil(width)), max(1, math.ceil(height))
+            if max(width, height) > MUNDO_MAX_DIMENSAO or width * height > MUNDO_MAX_PIXELS_IMAGEM:
+                raise ValueError('Um desenho ampliado deste cenário é grande demais.')
+            return width * height
+        conjunto = next((s for s in conjuntos if s.get('id') == objeto.get('setId')), None)
+        if conjunto:
+            self.pixels += area(conjunto['cols'] * cena['tileSize'] * self.escala,
+                                conjunto['rows'] * cena['tileSize'] * self.escala)
+        w, h = max(1, math.ceil(w * self.escala)), max(1, math.ceil(h * self.escala))
+        self.pixels += 2 * area(w, h)
+        if rotation % 360:
+            a = math.radians(rotation)
+            c, s = abs(math.cos(a)), abs(math.sin(a))
+            c, s = 0 if c < 1e-12 else c, 0 if s < 1e-12 else s
+            padding = 2 if rotation % 90 else 0
+            self.pixels += area(w * c + h * s + padding, w * s + h * c + padding)
+        if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
+            raise ValueError('Os desenhos ampliados deste cenário são grandes demais juntos.')
+
+    def lugar(self, referencia, por_id=False):
+        if not isinstance(referencia, str):
+            raise ValueError('Esta porta não tem um destino válido.')
+        if por_id and referencia in self.entradas:
+            return self.entradas[referencia]
+        nomes = [entrada for entrada in self.entradas.values() if entrada[0] == referencia]
+        if len(nomes) > 1:
+            raise ValueError('Há mais de um lugar com esse nome. Use o ID do lugar.')
+        if nomes:
+            return nomes[0]
+        if referencia in self.entradas:
+            return self.entradas[referencia]
+        raise KeyError(f'O lugar {referencia!r} não está neste cenário.')
+
+
 class Mapa:
     """Um mapa do Pinta: camadas de peças e de objetos, com as peças de cada camada."""
 
-    def __init__(self, nome):
-        dados = _dados(nome, 'map')
-        atlas = _carregar(nome)
+    def __init__(self, nome, *, _fonte=None, _mundo=None):
+        if _fonte is None:
+            with open(_caminho(nome), 'rb') as arquivo:
+                png = arquivo.read()
+            orcamento = [MUNDO_MAX_DADOS]
+            dados = _ler_dados_png(png, _caminho(nome), orcamento=orcamento)
+            if not dados or dados.get('kind') != 'map':
+                raise ValueError(f'{_caminho(nome)} não é um mapa trazido do Pinta como "Mapa com camadas e objetos".')
+            if dados.get('version') == 3:
+                try:
+                    _mundo = _MundoPNG(dados, png, orcamento)
+                except (AttributeError, TypeError, IndexError, KeyError, OverflowError) as error:
+                    raise ValueError('Os dados dos lugares deste cenário estão estragados.') from error
+        else:
+            dados, png = _fonte
+        atlas = _imagem_em_memoria(png)
+        self._mundo = _mundo
         self.nome = dados['name']
         #: 1 para os mapas de antes; 2 para os que trazem grupos, opacidade, giros e a cena.
         self.versao = int(dados.get('version', 1))
@@ -534,8 +764,9 @@ class Mapa:
             cena.imagens, cena.pecas = {}, {}
             def imagem(caminho):
                 if caminho not in cena.imagens:
-                    raw = base64.b64decode(caminho.split(',', 1)[1])
-                    source = pygame.image.load(io.BytesIO(raw)).convert_alpha()
+                    raw = (self._mundo.imagens[caminho] if self._mundo
+                           else base64.b64decode(caminho.split(',', 1)[1]))
+                    source = _imagem_em_memoria(raw).convert_alpha()
                     cena.imagens[caminho] = pygame.transform.scale(source, (round(source.get_width() * escala), round(source.get_height() * escala)))
                 return cena.imagens[caminho]
             cena.imagem = imagem
@@ -625,6 +856,32 @@ class Mapa:
     def propriedade_peca(self, referencia, peca, chave):
         """Lê uma propriedade pela referência do conjunto e pelo índice da peça."""
         return self._cena.propriedade_peca(referencia, peca, chave) if self._cena else None
+
+    def ponto_inicial(self):
+        """A posição marcada como início do jogador, em pixels do jogo."""
+        inicio = next((objeto for objeto in self.objetos()
+                       if objeto.papel == 'start' or objeto.tipo == 'inicio'), None)
+        return (inicio.x, inicio.y) if inicio else (self.tamanho_peca / 2, self.tamanho_peca / 2)
+
+    def abrir_lugar(self, referencia):
+        """Abre um ID de mapa deste cenário. Não procura arquivos pelo nome da porta."""
+        if not self._mundo:
+            raise ValueError('Traga este mapa como Cenário com outros lugares para abrir suas portas.')
+        nome, dados, png = self._mundo.lugar(referencia, por_id=True)
+        return Mapa(nome, _fonte=(dados, png), _mundo=self._mundo)
+
+    def abrir_destino(self, porta):
+        """Abre o lugar de uma porta; o programa decide quando e onde mover o jogador."""
+        if not isinstance(porta, Objeto):
+            raise TypeError('Escolha um objeto porta deste cenário.')
+        chave = 'destino' if porta.propriedades.get('destino') else 'destination'
+        referencia = porta.propriedades.get(chave)
+        if not referencia:
+            return None
+        if not self._mundo:
+            raise ValueError('Traga este mapa como Cenário com outros lugares para abrir suas portas.')
+        nome, dados, png = self._mundo.lugar(referencia, porta.tipos_das_propriedades.get(chave) == 'asset')
+        return Mapa(nome, _fonte=(dados, png), _mundo=self._mundo)
 
     def desenhar(self, superficie, deslocamento=(0, 0), frente=False):
         """Desenha as camadas de peças visíveis (as de trás, ou só as da frente)."""

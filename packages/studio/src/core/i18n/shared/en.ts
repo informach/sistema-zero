@@ -363,6 +363,7 @@ export const en: Record<string, string> = {
   'pintaImport.image.mode.tileset': 'Every tile',
   'pintaImport.image.mode.tile': 'One tile',
   'pintaImport.image.mode.map': 'Map with layers and objects',
+  'pintaImport.image.mode.map-world': 'Scene with other places',
   'pintaImport.image.mode.tilemap': 'Map image',
   'pintaImport.image.spritesheetData':
     'The sheet carries its animations and collision box. In code, use pinta.carregar_sprite with the image name.',
@@ -371,6 +372,8 @@ export const en: Record<string, string> = {
   'pintaImport.image.mapData':
     'The image carries every tile of the map, its layers and objects. In code, use pinta.carregar_mapa with the image name.',
   'pintaImport.image.preparing': 'Preparing the image…',
+  'pintaImport.image.map-worldData':
+    'Doors bring the other places along. Use pinta.carregar_mapa to open the scene and mapa.abrir_destino to open the place linked to a door.',
   'pintaImport.image.preview': 'Selected image preview',
   'pintaImport.image.add': 'Add image',
   'pintaImport.image.update': 'Update this image',

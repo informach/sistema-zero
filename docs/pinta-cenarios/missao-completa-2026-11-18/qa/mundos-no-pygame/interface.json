@@ -1,0 +1,117 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T04:04:07.319Z",
+    "duration": 97041.276,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "results": [
+    {
+      "title": "Python traz o mundo pela interface e atualiza só o destino conservando o programa",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 11762,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 13610,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Pinta real cria jogo estruturado; atualização do cenário conserva a programação",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 14458,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 11542,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Trazer do Pinta importa a Vila e o destino da porta juntos, sem mudar o programa",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 10954,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Trazer do Pinta conserva o mapa nativo 6 autocontido e sua animação sem os originais",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5684,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "falha síncrona no segundo put não deixa metade da Vila na biblioteca nem no projeto",
+      "tests": [
+        {
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3902,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

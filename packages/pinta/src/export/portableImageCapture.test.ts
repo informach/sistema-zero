@@ -16,6 +16,7 @@ import {
   resetIdbMockStats,
   setIdbReadGuard,
 } from '../testing/idbMock'
+import { createMapObject } from '../tiles/mapObjects'
 
 const {
   capturePintaAssetForImage,
@@ -187,6 +188,58 @@ describe('completed-image cache requires a fresh native capture (real PNG canvas
       browserPintaImageRaster.releaseCanvas = previousRelease
     }
   }
+
+  test('o PNG Python e sua inspeção usam a mesma captura do mundo, isolada por perfil', async () => {
+    const { source, tileset } = mapFixture()
+    const child = { ...structuredClone(source), id: 'cabana', name: 'cabana' }
+    source.layers.push({
+      id: 'doors',
+      name: 'Lugares',
+      kind: 'objects',
+      visible: true,
+      objects: [
+        createMapObject({
+          id: 'door',
+          name: 'Porta',
+          role: 'door',
+          properties: { destino: { type: 'asset', value: child.id } },
+        }),
+      ],
+    })
+    seed('a', source, tileset, child)
+    seed('b', { ...child, name: 'outro perfil' })
+    const recipe: PintaImageRecipe = {
+      version: 2,
+      algorithm: 'pinta-image-1',
+      drawingId: source.id,
+      selection: { kind: 'map-world' },
+      scale: 1,
+    }
+    await withCanvas(async () => {
+      const first = await inspectImageForStudio(source.id, {
+        namespace: 'a',
+        selection: 'map-world',
+      })
+      const exported = await exportImageForStudio(recipe, limits, { namespace: 'a' })
+      expect(exported.derivation.provenance).toEqual(first)
+      const client = createPintaPersistence({ namespace: 'a' })
+      const current = await client.loadAssetById(child.id)
+      if (current?.kind !== 'tilemap') throw new Error('destino ausente')
+      await client.persistAsset({
+        ...current,
+        layers: current.layers.map((layer) => ({ ...layer, name: 'Cabana editada' })),
+      })
+      const next = await inspectImageForStudio(source.id, {
+        namespace: 'a',
+        selection: 'map-world',
+      })
+      expect(next.sourceSha256).toBe(first.sourceSha256)
+      expect(next.dependencies.find((item) => item.drawingId === child.id)?.sha256).not.toBe(
+        first.dependencies.find((item) => item.drawingId === child.id)?.sha256,
+      )
+      await expect(exportImageForStudio(recipe, limits, { namespace: 'b' })).rejects.toThrow()
+    })
+  })
 
   test('sync inspection fingerprints source and tileset without raster or writes, even with unchanged timestamps', async () => {
     const { source, tileset } = mapFixture()

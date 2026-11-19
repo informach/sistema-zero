@@ -235,7 +235,7 @@ try {
           provas: anterior.provas,
           terreno: i >= 2,
           pasta: modulo(`output/cenarios-reforma/${pastas[i]}`),
-          three: modulo('node_modules/three/build/three.module.js'),
+          three: modulo('packages/molda-cenarios/playground/oficina/qa-three.ts'),
           runtime: modulo('packages/molda-cenarios-motor/src/compilar/runtime-three.ts'),
           modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),
         },

@@ -99,12 +99,12 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 **Files:** criar `molda-cenarios/src/exportar/{pacote,three,glb,licencas,nomes}.ts`, `oficina/useExportacao.ts`, `oficina/telas/Exportar.tsx`; integrar em `telas/Mundo.tsx` e oficina. Reutilizar ZIP validado do Molda. Criar runtime portátil em `motor/src/compilar/runtime-three.ts` e exemplo correspondente, com dependências/licenças distribuídas explicitamente.
 
-- [ ] Testar arquivos finais por descompactação e recarregamento: somente referências usadas, nomes portáteis, licenças e LEIA-ME, sem URLs assinadas expiradas nem dependência da sessão local.
-- [ ] Emitir `cenario.json`, modelos, setores de terreno/derivados, alturas/pintura e licenças. Gerar `carregar-cenario.js` ES module e `index.html` de exploração com câmera, entrada e colisão, usando a cena compilada. Distribuir dependências necessárias de forma versionada e documentada.
-- [ ] Emitir GLB único de toda a composição, sem guias editoriais. Conferir no GLTFLoader independente, materiais, iluminação suportada e transformações; documentar no pacote a representação estática dos efeitos que não pertencem ao formato GLB.
-- [ ] Interface Molda: cenário/revisão, destino, orçamento, licenças restritas nominais, junção estática por região, progresso, cancelar, erro/repetir e baixar resultado válido. Guarda pendente impede compilar outra revisão por engano. Nenhum novo desenho de UI.
-- [ ] Preparação de exportação pelo servidor verifica a revisão e as bibliotecas reais. Ampliar `CenariosHost`, hosts memória/HTTP e Members/BFF/gateway com o mesmo contrato, sem confiar nas permissões declaradas pelo cliente.
-- [ ] Ensaios de download e exemplo andando: Chrome em quatro layouts, claro/escuro, arquivo GLB reaberto, ZIP sem sessão, erro/cancelamento e regressão de autoria. Revisar, documentar e commitar o recorte.
+- [x] Testar arquivos finais por descompactação e recarregamento: somente referências usadas, nomes portáteis, licenças e LEIA-ME, sem URLs assinadas expiradas nem dependência da sessão local.
+- [x] Emitir `cenario.json`, modelos, setores de terreno/derivados, alturas/pintura e licenças. Gerar `carregar-cenario.js` ES module e `index.html` de exploração com câmera, entrada e colisão, usando a cena compilada. Distribuir dependências necessárias de forma versionada e documentada.
+- [x] Emitir GLB único de toda a composição, sem guias editoriais. Conferir no GLTFLoader independente, materiais, iluminação suportada e transformações; documentar no pacote a representação estática dos efeitos que não pertencem ao formato GLB.
+- [x] Interface Molda: cenário/revisão, destino, orçamento, licenças restritas nominais, junção estática por região, progresso, cancelar, erro/repetir e baixar resultado válido. Guarda pendente impede compilar outra revisão por engano. Nenhum novo desenho de UI.
+- [x] Preparação de exportação pelo servidor verifica a revisão e as bibliotecas reais. Ampliar `CenariosHost`, hosts memória/HTTP e Members/BFF/gateway com o mesmo contrato, sem confiar nas permissões declaradas pelo cliente.
+- [x] Ensaios de download e exemplo andando: Chrome em quatro layouts, claro/escuro, arquivo GLB reaberto, ZIP sem sessão, erro/cancelamento e regressão de autoria. Revisar, documentar e commitar o recorte.
 
 ## 8.4 — Python/Raylib e Estúdio nos quatro destinos
 
@@ -139,4 +139,4 @@ for (const parte of dividirMalhaParaExportacao(malha))
 
 ## Estado atual
 
-**Lote 8 aberto; 8.1 e 8.2 fechados localmente. Recorte exclusivo ativo: 8.3.** [Runtime/pacote Three](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-runtime-three.md) conferidos; [gargalo ZIP corrigido](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-zip-faixas.md) com conteúdo/CRC/limites preservados. Próximo passo exclusivo: GLB único, depois preparo autorizado e interface; não fechar 8.3. [Plano do recorte](2026-11-18-cenarios-lote8-runtime.md). 8.4/8.5, lotes 9–10, composição e encerramento global permanecem pendentes.
+**Lote 8 aberto; 8.1, 8.2 e 8.3 fechados localmente. Recorte exclusivo ativo: 8.4.** [Interface, download e revisão de 8.3](../../plans/2026-11-16-cenarios-reforma/checkpoint-lote8-interface-exportacao.md), apoiados nos checkpoints anteriores de runtime Three, leitura ZIP, GLB único e preparo autorizado. Python/Raylib e Estúdio são a próxima entrega; publicação em 8.5, lotes 9–10, composição e encerramento global permanecem pendentes.

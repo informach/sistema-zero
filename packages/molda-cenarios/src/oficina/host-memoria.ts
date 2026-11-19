@@ -1,4 +1,9 @@
 import {
+  conferirLicencasDaCompilacao,
+  digestDoDocumentoDeCenario,
+  referenciasDaCenaParaCompilacao,
+} from '@sistemazero/molda-cenarios-core/compilar'
+import {
   arquivosDoDocumento,
   arquivosDosComandos,
   ConflitoDeCenario,
@@ -14,6 +19,7 @@ import {
   MAX_RECURSOS_TERRENO,
   metadadosDoTerrenoCorrespondem,
   referenciasDoTerreno,
+  validarDocumento,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { criarConjuntosEmMemoria, type PrepararLoteDoEnsaio } from './conjuntos-em-memoria'
 import { criarImagensEmMemoria } from './imagens-em-memoria'
@@ -82,6 +88,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
   const texturas = new Map<string, TexturaDeBiblioteca>()
   const espacoDasBibliotecas = new Map<string, string>()
   const conteudos = new Map<string, Uint8Array>()
+  const papeisDoConteudo = new Map<string, 'modelo' | 'textura'>()
   const recursosDeTerreno = new Map<string, Uint8Array>()
   const mundos = new Map<string, Mundo>()
   const cenarios = new Map<string, CenarioGuardado>()
@@ -127,6 +134,7 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
           bytes = conteudos.get(chave)
         if (bytes) {
           conteudos.delete(chave)
+          papeisDoConteudo.delete(chave)
           espacoDe(espacoId).usadoBytes -= bytes.byteLength
         }
       }
@@ -278,7 +286,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     apagarFonte,
     conferirArquivos: (f, espacoId) => {
       for (const m of f.modelos)
-        if (espacoDasBibliotecas.get(m.biblioteca) !== espacoId || !conteudos.has(m.digest))
+        if (
+          espacoDasBibliotecas.get(m.biblioteca) !== espacoId ||
+          !conteudos.has(`${espacoId}:${m.digest}`)
+        )
           throw new Error('O modelo não pertence ao espaço do conjunto')
       for (const t of f.texturas)
         if (
@@ -419,8 +430,12 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
           (x) => x.bibliotecaId === bibliotecaId && x.digest === m.digest,
         )
         if (!repetido) {
-          if (!conteudos.has(m.digest)) {
-            conteudos.set(m.digest, m.conteudo)
+          const chave = `${espaco.id}:${m.digest}`
+          if (papeisDoConteudo.has(chave) && papeisDoConteudo.get(chave) !== 'modelo')
+            throw Error('O arquivo guardado não é um modelo')
+          if (!conteudos.has(chave)) {
+            conteudos.set(chave, m.conteudo.slice())
+            papeisDoConteudo.set(chave, 'modelo')
             espaco.usadoBytes += m.conteudo.length
           }
           const modelo: ModeloDeBiblioteca = {
@@ -462,7 +477,9 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
       sinal?.throwIfAborted()
       await esperar()
       sinal?.throwIfAborted()
-      const conteudo = conteudos.get(ref.digest)
+      const espacoId = ref.espacoId ?? espacoDasBibliotecas.get(ref.biblioteca)
+      if (!espacoId) throw new Error('O espaço do modelo não existe')
+      const conteudo = conteudos.get(`${espacoId}:${ref.digest}`)
       if (!conteudo) throw new Error('O arquivo do modelo não foi encontrado')
       return conteudo.slice().buffer
     },
@@ -513,10 +530,13 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         )
         if (!existente) {
           const chave = `${espaco.id}:${t.digest}`
+          if (papeisDoConteudo.has(chave) && papeisDoConteudo.get(chave) !== 'textura')
+            throw Error('O arquivo guardado não é uma textura')
           if (!conteudos.has(chave) && espaco.usadoBytes + t.conteudo.size > espaco.limiteBytes)
             throw Error('O espaço está cheio')
           if (!conteudos.has(chave)) {
             conteudos.set(chave, new Uint8Array(await t.conteudo.arrayBuffer()))
+            papeisDoConteudo.set(chave, 'textura')
             espaco.usadoBytes += t.conteudo.size
           }
           const { conteudo, ...metadados } = t
@@ -655,6 +675,58 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
           refazer: c.futuro.length,
         },
       })
+    },
+    async prepararExportacao(id, revisaoEsperada, sinal) {
+      sinal?.throwIfAborted()
+      await esperar()
+      sinal?.throwIfAborted()
+      const c = exigir(cenarios, id, 'O cenário'),
+        mundo = exigir(mundos, c.resumo.mundoId, 'O mundo')
+      if (
+        !Number.isSafeInteger(revisaoEsperada) ||
+        revisaoEsperada < 0 ||
+        revisaoEsperada > 2147483647
+      )
+        throw Error('A revisão da exportação é inválida')
+      if (c.resumo.revisao !== revisaoEsperada) throw new CenarioDesatualizado(c.resumo.revisao)
+      const documento = validarDocumento(c.documento),
+        refs = referenciasDaCenaParaCompilacao(documento),
+        contexto = {
+          equipe: opcoes.equipe === true,
+          bibliotecas: refs.bibliotecas.map((id) => {
+            const b = exigir(bibliotecas, id, 'A biblioteca usada pelo cenário')
+            if (b.espacoId !== mundo.espacoId)
+              throw Error('A biblioteca usada pelo cenário não existe')
+            return { id: b.id, nome: b.nome, licenca: b.licenca }
+          }),
+        }
+      conferirLicencasDaCompilacao(refs.bibliotecas, contexto)
+      if (refs.conjuntos.some((d) => d.conteudo.origem.espaco !== mundo.espacoId))
+        throw Error('O conjunto usado pelo cenário não existe')
+      for (const [lista, papel] of [
+        [refs.modelos, 'modelo'],
+        [refs.texturas, 'textura'],
+      ] as const)
+        for (const r of lista) {
+          const chave = `${mundo.espacoId}:${r.digest}`
+          exigir(conteudos, chave, 'O arquivo usado pelo cenário')
+          if (papeisDoConteudo.get(chave) !== papel)
+            throw Error('O arquivo guardado não corresponde ao recurso usado pelo cenário')
+        }
+      for (const r of refs.terreno)
+        exigir(recursosDeTerreno, `${mundo.espacoId}:${r.digest}`, 'O arquivo de terreno')
+      const digest = await digestDoDocumentoDeCenario(documento)
+      sinal?.throwIfAborted()
+      const atual = exigir(cenarios, id, 'O cenário')
+      if (atual.resumo.revisao !== revisaoEsperada)
+        throw new CenarioDesatualizado(atual.resumo.revisao)
+      return {
+        espacoId: mundo.espacoId,
+        fonte: { cenario: id, revisao: revisaoEsperada },
+        digest,
+        documento,
+        contexto,
+      }
     },
     async conteudoDoTerreno(cenarioId, digest, sinal) {
       sinal?.throwIfAborted()

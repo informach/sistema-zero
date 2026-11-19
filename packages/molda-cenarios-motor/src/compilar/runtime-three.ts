@@ -41,6 +41,8 @@ export interface CenaNoThree {
   readonly alturas: FonteDeAlturas | undefined
   readonly entidades: ReadonlyMap<string, EntidadeCompilada>
   readonly atores: ReadonlyMap<string, readonly AtorDaCenaCompilada[]>
+  /** Instâncias visuais por nó, inclusive peças sem identidade de entidade. */
+  readonly instancias: ReadonlyMap<string, AtorDaCenaCompilada>
   /** O faceIndex continua identificando a entidade mesmo após a junção estática. */
   entidade(contato: Pick<Intersection, 'object' | 'faceIndex'>): string | null
   /** Delta em segundos para clipes; os efeitos recebem tempo acumulado desde o carregamento. */
@@ -67,7 +69,9 @@ export async function carregarCenaNoThree(
     modelos = new Map<string, ModeloCarregado>(),
     texturas = new Map<string, TexturaCarregada>(),
     copias: AtorDaCenaCompilada[] = [],
+    atualizaveis: AtorDaCenaCompilada[] = [],
     atores = new Map<string, AtorDaCenaCompilada[]>(),
+    instancias = new Map<string, AtorDaCenaCompilada>(),
     entidades = new Map(dados.entidades.map((e) => [e.id, e])),
     identificadores = new WeakMap<Object3D, (triangulo: number) => string | null>()
   let descartado = false,
@@ -85,9 +89,11 @@ export async function carregarCenaNoThree(
     for (const t of texturas.values()) t.descartar()
     for (const m of modelos.values()) m.descartar()
     copias.length = 0
+    atualizaveis.length = 0
     modelos.clear()
     texturas.clear()
     atores.clear()
+    instancias.clear()
     raiz.clear()
     cena.clear()
   }
@@ -173,6 +179,8 @@ export async function carregarCenaNoThree(
         grupo = new Group(),
         consulta = criarConsultaDeEntidadesDoNo(n)
       copias.push(instancia)
+      if (n.preservarHierarquia || instancia.animavel) atualizaveis.push(instancia)
+      instancias.set(n.id, instancia)
       grupo.name = n.id
       grupo.matrixAutoUpdate = false
       grupo.matrix.fromArray(n.matriz)
@@ -223,6 +231,7 @@ export async function carregarCenaNoThree(
       alturas,
       entidades,
       atores,
+      instancias,
       entidade(hit) {
         if (descartado || !Number.isSafeInteger(hit.faceIndex) || hit.faceIndex! < 0) return null
         return identificadores.get(hit.object)?.(hit.faceIndex!) ?? null
@@ -232,11 +241,10 @@ export async function carregarCenaNoThree(
         if (!Number.isFinite(delta) || delta < 0 || delta > 1)
           throw Error('O passo da cena deve ficar entre zero e um segundo.')
         tempo += delta
-        for (const lista of atores.values())
-          for (const c of lista) {
-            if (!movimentoReduzido && c.animacoes.length) c.mixer.update(delta)
-            c.raiz.updateWorldMatrix(true, true)
-          }
+        for (const c of atualizaveis) {
+          if (!movimentoReduzido && c.animacoes.length) c.mixer.update(delta)
+          c.raiz.updateWorldMatrix(true, true)
+        }
         agua.atualizar(tempo, movimentoReduzido)
       },
       quadro(camera, alvo) {

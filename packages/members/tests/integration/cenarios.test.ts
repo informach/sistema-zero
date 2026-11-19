@@ -59,6 +59,44 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
 }
 const atorDaEquipe = { usuarioId: EQUIPE, contaId: EQUIPE, equipe: true, suporte: false }
 
+test('preparo HTTP usa ator autenticado e revisão real, sem aceitar autoria/permissões do pedido', async () => {
+  const { ctx, espaco } = await comBiblioteca(),
+    mundo = await json(
+      await pedir(ctx.app, 'POST', `/members/cenarios/espacos/${espaco.id}/mundos`, {
+        nome: 'Mundo',
+      }),
+    ),
+    c = await json(
+      await pedir(ctx.app, 'POST', `/members/cenarios/mundos/${mundo.id}/cenarios`, {
+        nome: 'Vila',
+      }),
+    ),
+    caminho = `/members/cenarios/cenarios/${c.id}/exportacao`,
+    r = await pedir(ctx.app, 'POST', caminho, { revisaoEsperada: 0 })
+  expect(r.status).toBe(200)
+  const p = await json(r)
+  expect(p.fonte).toEqual({ cenario: c.id, revisao: 0 })
+  expect(p.documento.nome).toBe('Vila')
+  expect(p.contexto).toEqual({ equipe: true, bibliotecas: [] })
+  expect(p.digest).toMatch(/^[a-f0-9]{64}$/)
+  expect((await pedir(ctx.app, 'POST', caminho, { revisaoEsperada: 1 })).status).toBe(409)
+  expect((await pedir(ctx.app, 'POST', caminho, { revisaoEsperada: -1 })).status).toBe(400)
+  expect((await pedir(ctx.app, 'POST', caminho, { revisaoEsperada: 0 }, doCliente)).status).toBe(
+    403,
+  )
+  const falsificado = await pedir(ctx.app, 'POST', caminho, {
+    revisaoEsperada: 0,
+    documento: { nome: 'Falso' },
+    contexto: { equipe: false },
+  })
+  // O validador pode recusar ou eliminar campos extras; nenhum é usado pelo serviço.
+  if (falsificado.status === 200) {
+    const f = await json(falsificado)
+    expect(f.documento.nome).toBe('Vila')
+    expect(f.contexto.equipe).toBe(true)
+  } else expect(falsificado.status).toBe(400)
+})
+
 test('fonte do conjunto abre seu mundo por ID autorizado, sem aparecer na lista de jogos', async () => {
   const base = await comConjunto()
   const fonte = await json(

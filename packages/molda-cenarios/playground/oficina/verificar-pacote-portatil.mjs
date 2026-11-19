@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { extname, resolve } from 'node:path'
+import { extname, resolve, sep } from 'node:path'
 import { chromium } from 'playwright-core'
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  saida = resolve(raiz, 'output/cenarios-reforma/lote8-portatil'),
+  saida = resolve(raiz, process.env.CENARIOS_QA_PACOTE ?? 'output/cenarios-reforma/lote8-portatil'),
   pasta = resolve(saida, 'extraido'),
   consultas = [],
   tipos = {
@@ -45,6 +45,8 @@ const raiz = resolve(import.meta.dirname, '../../../..'),
       s.end('ausente')
     }
   })
+if (!saida.startsWith(`${resolve(raiz, 'output/cenarios-reforma')}${sep}`))
+  throw Error('O ensaio portátil só escreve dentro de output/cenarios-reforma.')
 await new Promise((r) => servidor.listen(0, '127.0.0.1', r))
 const origem = `http://127.0.0.1:${servidor.address().port}`,
   browser = await chromium.launch({ channel: 'chrome', headless: true }),

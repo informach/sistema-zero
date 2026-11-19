@@ -121,7 +121,19 @@ export async function exportImageAndSourceForStudio(
   const namespace = options.namespace?.trim() ?? getPintaStorageNamespace()
   const signal = options.signal
   signal?.throwIfAborted()
-  const captured = await capturePintaAssetForImage(recipe.drawingId, { namespace, signal })
+  let captured: Awaited<ReturnType<typeof capturePintaAssetForImage>>
+  try {
+    captured = await capturePintaAssetForImage(recipe.drawingId, {
+      namespace,
+      signal,
+      includeSceneMaps: recipe.selection.kind === 'map-world',
+    })
+  } catch (error) {
+    signal?.throwIfAborted()
+    if (error instanceof SceneMapClosureError)
+      return { ok: false, reason: 'map-links-invalid', message: error.message }
+    throw error
+  }
   signal?.throwIfAborted()
   if (!captured.ok)
     return captured.reason === 'needs-tileset'
@@ -140,7 +152,7 @@ export async function exportImageAndSourceForStudio(
   const canonical = await exportResolvedForStudio(
     captured.source,
     captured.assets ?? captured.tilesets,
-    { includeSceneMaps: false },
+    { includeSceneMaps: recipe.selection.kind === 'map-world' },
   )
   signal?.throwIfAborted()
   return canonical.ok ? { ...canonical, image } : canonical

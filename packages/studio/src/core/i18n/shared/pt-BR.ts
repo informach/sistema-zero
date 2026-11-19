@@ -397,6 +397,7 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.mode.tileset': 'Todas as peças',
   'pintaImport.image.mode.tile': 'Uma peça',
   'pintaImport.image.mode.map': 'Mapa com camadas e objetos',
+  'pintaImport.image.mode.map-world': 'Cenário com outros lugares',
   'pintaImport.image.mode.tilemap': 'Imagem do mapa',
   'pintaImport.image.spritesheetData':
     'A folha leva junto as animações e a caixa de colisão. No código, use pinta.carregar_sprite com o nome da imagem.',
@@ -405,6 +406,8 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.mapData':
     'A imagem leva todas as peças do mapa, as camadas e os objetos. No código, use pinta.carregar_mapa com o nome da imagem.',
   'pintaImport.image.preparing': 'Preparando a imagem…',
+  'pintaImport.image.map-worldData':
+    'As portas levam os outros lugares junto. Use pinta.carregar_mapa para abrir o cenário e mapa.abrir_destino para abrir o lugar de uma porta.',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',
   'pintaImport.image.update': 'Atualizar esta imagem',

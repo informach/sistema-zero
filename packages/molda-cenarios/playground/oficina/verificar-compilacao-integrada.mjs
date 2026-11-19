@@ -363,6 +363,18 @@ try {
           ...(a.aparencia ?? {}),
           ondas: { altura: 0, comprimento: 3, velocidade: 0 },
         }
+      // Fixture privada de autoria para percorrer o download pela oficina real.
+      // Guarda os bytes originais, não as geometrias derivadas do compilador.
+      const recursosDeAutoria = new Map()
+      for (const tipo of ['modelo', 'textura', 'terreno']) {
+        const carregar = portas[tipo]
+        portas[tipo] = async (ref, sinal) => {
+          const bytes = await carregar(ref, sinal),
+            digest = typeof ref === 'string' ? ref : ref.digest
+          recursosDeAutoria.set(`${tipo}:${digest}`, new Uint8Array(bytes).slice())
+          return bytes
+        }
+      }
       const original = JSON.stringify(d),
         ciclos = [],
         provas = [],
@@ -725,7 +737,16 @@ try {
                 blocos.push(String.fromCharCode(...b.subarray(i, i + 16384)))
               return { caminho, base64: btoa(blocos.join('')) }
             })
+          const fontes = [...recursosDeAutoria].map(([chave, b]) => {
+            const [tipo, digest] = chave.split(':'),
+              blocos = []
+            for (let i = 0; i < b.length; i += 16384)
+              blocos.push(String.fromCharCode(...b.subarray(i, i + 16384)))
+            return { tipo, digest, base64: btoa(blocos.join('')) }
+          })
           return {
+            autoria: JSON.parse(original),
+            recursosDeAutoria: fontes,
             ciclos,
             provas,
             comparativos,
@@ -759,7 +780,7 @@ try {
       avatar: modulo('output/cenarios-reforma/lote3-testar-avatar/avatar-cute-ensaio.glb'),
       ponte: modulo('output/molda-cenarios/acervo/ponte_04_pacote.8d256d9aefcc.glb'),
       caminho: modulo('output/molda-cenarios/acervo/caminho_terra_reto.804d14830d95.glb'),
-      three: modulo('node_modules/three/build/three.module.js'),
+      three: modulo('packages/molda-cenarios/playground/oficina/qa-three.ts'),
       core: modulo('packages/molda-cenarios-core/src/v2/index.ts'),
       compilar: modulo('packages/molda-cenarios-motor/src/compilar/compilar.ts'),
       modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),

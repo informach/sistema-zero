@@ -15,6 +15,7 @@
  * nome de campo aqui quebra os jogos. Campo novo é acréscimo; o resto pede `version: 2`.
  */
 
+import type { PintaImageWorld } from '@sistemazero/core/studio/pinta-image'
 import {
   type AnyTilesetAsset,
   isLayerShown,
@@ -127,7 +128,16 @@ export interface PintaImageMapData extends DataHeader {
   >
 }
 
-export type PintaImageData = PintaImageSpriteData | PintaImageTilesetData | PintaImageMapData
+export interface PintaImageMapWorldData extends Omit<PintaImageMapData, 'version'> {
+  version: 3
+  world: PintaImageWorld
+}
+
+export type PintaImageData =
+  | PintaImageSpriteData
+  | PintaImageTilesetData
+  | PintaImageMapData
+  | PintaImageMapWorldData
 
 export interface PintaImageDataSelection {
   scene: PintaImageScene
@@ -333,6 +343,7 @@ export function mapAtlasSelection(
   map: TilemapAsset,
   available: readonly AnyTilesetAsset[],
   scale: number,
+  options: { complete?: boolean } = {},
 ): PintaImageDataSelection {
   const primary = available[0]
   if (!primary || primary.id !== map.tilesetId)
@@ -354,6 +365,7 @@ export function mapAtlasSelection(
   const index = new Map(tilesets.map((tileset, position) => [tileset.id, position]))
   const layers: PintaImageMapData['layers'] = []
   const v2 =
+    options.complete ||
     tilemapNeedsV3({
       ...map,
       layers: map.layers.map((l) => {

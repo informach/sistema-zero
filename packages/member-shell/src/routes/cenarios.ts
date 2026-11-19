@@ -84,6 +84,7 @@ const REPASSES: readonly Repasse[] = [
   { metodo: 'GET', caminho: exato(`mundos/${U}/cenarios`) },
   { metodo: 'POST', caminho: exato(`mundos/${U}/cenarios`) },
   { metodo: 'GET', caminho: exato(`cenarios/${U}`) },
+  { metodo: 'POST', caminho: exato(`cenarios/${U}/exportacao`), corpo: 1024 },
   { metodo: 'GET', caminho: exato(`cenarios/${U}/historico`) },
   { metodo: 'GET', caminho: exato(`cenarios/${U}/revisoes`), consulta: ['antes'] },
   { metodo: 'POST', caminho: exato(`cenarios/${U}/historico`) },

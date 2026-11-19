@@ -402,6 +402,18 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
         .get('/cenarios/:id', ({ headers, params }) => s.abrirCenario(atorDe(headers), params.id), {
           params: Id,
         })
+        .post(
+          '/cenarios/:id/exportacao',
+          ({ headers, params, body }) =>
+            s.exportacao.preparar(atorDe(headers), params.id, body.revisaoEsperada),
+          {
+            params: Id,
+            body: t.Object(
+              { revisaoEsperada: t.Integer({ minimum: 0, maximum: 2147483647 }) },
+              { additionalProperties: false },
+            ),
+          },
+        )
         .get(
           '/cenarios/:id/historico',
           ({ headers, params }) => s.historico(atorDe(headers), params.id),

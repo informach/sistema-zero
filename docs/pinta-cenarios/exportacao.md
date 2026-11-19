@@ -41,6 +41,37 @@ No Studio, use os blocos **Criar cenário do meu desenho**, **Desenhar cenário*
 início e tamanho. São 12 blocos compartilhados por Jogo 2D e Jogo 2D Avançado. O exemplo
 **A Vila e a Floresta** existe nos dois catálogos. Os blocos antigos continuam achatados.
 
+No Estúdio Python/Pygame, a seleção **Cenário com outros lugares** produz um PNG derivado
+com metadados `pinta` versão 3 e receita versão 2 (`map-world`). A raiz contém uma cena
+estruturada e até 15 PNGs de destinos com metadados versão 2, sem mundos aninhados. O leitor
+`pinta.py` acompanha **Baixar fonte**; o arquivo de arte é o mesmo usado na execução.
+O backup `.pinta.json` continua sendo o documento autoral editável.
+
+A distribuição Python declara a capacidade `pinta-map-world-v1`. Um host só oferece a nova
+seleção quando o runtime fixado no projeto declara esse leitor; um editor sem host de execução
+pode prepará-la para o computador. A execução recusa mundos vinculados em runtimes anteriores,
+com mensagem de atualização e preservação do projeto. O marcador não publica nem qualifica
+automaticamente uma distribuição. Backup e exportação de fonte continuam independentes disso.
+
+```python
+mapa = pinta.carregar_mapa('vila')
+x, y = mapa.ponto_inicial()
+porta = next(obj for obj in mapa.objetos() if obj.papel == 'door')
+destino = mapa.abrir_destino(porta)
+if destino is not None:
+    mapa = destino
+    x, y = mapa.ponto_inicial()
+```
+
+O jogo decide quando acionar essa troca. `abrir_lugar(id)` também permite escolher um mapa
+do pacote por ID. As portas com referência tipada usam o ID; portas antigas com texto
+conservam a resolução por nome. Um destino ausente ou ambíguo é recusado, sem ler um caminho
+arbitrário do sistema de arquivos. O carregamento original de um único lugar permanece
+disponível em **Mapa com camadas e objetos**, com a receita anterior.
+
+Os mundos têm orçamento acumulado de células, pixels e JSON; as cotas de material do
+projeto também continuam valendo. Veja [contrato e ensaios](missao-completa-2026-11-18/mundos-no-pygame.md).
+
 Para regenerar a referência e os arquivos derivados:
 
 ```powershell

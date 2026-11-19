@@ -1,4 +1,5 @@
 import type { EntradaDeImportacao } from '@sistemazero/molda-cenarios-motor'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   type CenariosHost,
@@ -158,7 +159,11 @@ async function abrir() {
     else if (tela === 'bibliotecas') rota = { tela: 'inicio', aba: 'bibliotecas' }
   }
   Object.assign(globalThis, { __cenarios: { host } })
-  raiz.render(<CenariosOficina host={host} tema={tema} rotaInicial={rota} />)
+  raiz.render(
+    <StrictMode>
+      <CenariosOficina host={host} tema={tema} rotaInicial={rota} />
+    </StrictMode>,
+  )
 }
 
 void abrir()

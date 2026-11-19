@@ -1,0 +1,18 @@
+{
+  "merge": "a4e337f6f3f3921bfa5295be94ef41298604c443",
+  "parents": [
+    "81ed37054ed006dcbe919dd67b14e6f22df11c6e",
+    "531756c8fbd49cfce13523a313019ea0e13d6070"
+  ],
+  "typecheck": {
+    "command": "tsc --noEmit --incremental",
+    "exitCode": 0,
+    "commit": "a4e337f6f3f3921bfa5295be94ef41298604c443",
+    "outputBytes": 0
+  },
+  "pintaCodeHashesPreserved": true,
+  "pythonInterface": {
+    "pass": 1,
+    "fail": 0
+  }
+}

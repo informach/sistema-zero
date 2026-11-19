@@ -7,6 +7,8 @@ import { PintaClient } from '../../../member-shell/src/components/creator/pinta-
 import { useStudioCreationLibraries } from '../../../member-shell/src/components/creator/use-studio-creation-libraries'
 import type { EditableStudioProject } from '../../src/core/editableProject'
 import { createEmptyProject } from '../../src/core/project'
+import { documentFixture } from '../../src/state/fixtures/projectDocuments'
+import { refinePythonClassicProjectDocument } from '../../src/state/pythonProjectValidation'
 import '@fontsource/baloo-2/latin-700.css'
 import '@fontsource/nunito/latin-400.css'
 import '@fontsource/nunito/latin-700.css'
@@ -24,6 +26,30 @@ function Studio() {
   useEffect(() => {
     let active = true
     if (new URLSearchParams(window.location.search).get('novo') === '1') {
+      const python = new URLSearchParams(window.location.search).get('python') === '1'
+      if (python) {
+        const raw = documentFixture('python', 'classic')
+        if (raw.programmingLanguage !== 'python' || raw.kind !== 'classic')
+          throw new Error('fixture inválida')
+        raw.id = crypto.randomUUID()
+        raw.assets = []
+        raw.ir = null
+        raw.blocksState = null
+        raw.files = {
+          'main.py': '# Meu programa continua aqui\nvalor_da_vila = 41\n',
+          'requirements.txt': '',
+        }
+        raw.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
+        void refinePythonClassicProjectDocument(raw).then((project) => {
+          if (active) {
+            setInitial(project)
+            setObserved(project)
+          }
+        })
+        return () => {
+          active = false
+        }
+      }
       const project = createEmptyProject(crypto.randomUUID(), 'Meu jogo com mapas')
       setInitial(project)
       setObserved(project)

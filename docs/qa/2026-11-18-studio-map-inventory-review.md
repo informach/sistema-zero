@@ -23,3 +23,18 @@ Verificação local: `bun test` sobre `docDrift.test.ts`, `blockAudit.test.ts` e
 `manifest.test.ts`: **461 testes, 4.364 asserções, zero falhas**. Este lote altera
 documentação e os inventários esperados; não altera definições, cores, conexões,
 paleta ou runtime. A suíte global continua sendo um gate separado no GitHub.
+
+## Revisão após a suíte completa no GitHub
+
+O run `44443712486`, SHA `82be89bcf`, aprovou todos os jobs de navegador,
+Python, runtime hospedado, auditoria e medições. Os contratos Linux/Windows
+identificaram uma falha em `game-2d-advanced/__tests__/docDrift.test.ts`, ausente
+da seleção local anterior: a revisão do texto retirou três expressões exigidas
+sobre identificador único, identidade fase + objeto e ancoragem dos controles.
+O grupo final de cada job teve 5.345 aprovações e essa única falha.
+
+As expressões foram restauradas no manual, mantendo as instruções e o limite.
+O texto passou a **59.902 caracteres**, ainda abaixo de 60.000. Os quatro
+arquivos de contratos, incluindo agora o drift do Avançado, aprovaram
+**472 testes e 4.417 asserções**, sem falhas. Nenhuma asserção foi removida ou
+flexibilizada. A CI integral do novo SHA continua obrigatória.

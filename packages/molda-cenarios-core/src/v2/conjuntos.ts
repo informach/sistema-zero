@@ -39,7 +39,7 @@ export function quantidadeDeObjetosDoCenario(doc: DocumentoDeCenario): number {
   )
 }
 
-function documentoDaDefinicao(f: DefinicaoDeConjunto['conteudo']): DocumentoDeCenario {
+export function documentoDaDefinicao(f: DefinicaoDeConjunto['conteudo']): DocumentoDeCenario {
   return {
     ...criarDocumentoVazio('fonte', 'Conjunto'),
     modelos: f.modelos,
