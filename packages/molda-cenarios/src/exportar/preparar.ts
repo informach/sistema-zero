@@ -7,6 +7,7 @@ import {
   type ProgressoDaCompilacao,
 } from '@sistemazero/molda-cenarios-motor/compilar'
 import type { CenariosHost } from '../oficina/portas'
+import { naFilaDeCompilacao } from './fila'
 import { nomeDoArquivoExportado } from './nomes'
 
 export type DestinoDeArquivo = 'three' | 'glb' | 'raylib'
@@ -22,8 +23,6 @@ export interface ArquivoDaExportacao {
   avisos: string[]
 }
 
-let anterior = Promise.resolve()
-
 /** Uma execução isolada. Somente o Blob/medidas escapam; o pacote intermediário
  * deixa de ser retido ao retornar. O compilador possui e descarta seus recursos 3D. */
 export async function prepararArquivoDaExportacao(
@@ -33,21 +32,7 @@ export async function prepararArquivoDaExportacao(
   sinal: AbortSignal,
   progresso: (p: ProgressoDaCompilacao) => void,
 ): Promise<ArquivoDaExportacao> {
-  sinal.throwIfAborted()
-  const esperar = anterior
-  let concluir!: () => void
-  anterior = new Promise<void>((resolve) => {
-    concluir = resolve
-  })
-  try {
-    // Fechar/reabrir um diálogo não empilha encoders e cópias 3D enquanto
-    // o anterior termina seu descarte cooperativo após um cancelamento.
-    await esperar
-    sinal.throwIfAborted()
-    return await gerarArquivo(host, preparo, opcoes, sinal, progresso)
-  } finally {
-    concluir()
-  }
+  return naFilaDeCompilacao(sinal, () => gerarArquivo(host, preparo, opcoes, sinal, progresso))
 }
 
 async function gerarArquivo(

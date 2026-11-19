@@ -235,13 +235,13 @@ export function AssetsPanel({
   // Imagens (desenhos/sprites), sons (áudio importado) e binários 3D (modelo
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
-  const images = assets.filter(
-    (a) =>
-      a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d' && a.kind !== 'font',
-  )
+  const images = assets.filter((a) => a.kind === 'image')
   const fonts = assets.filter((a) => a.kind === 'font')
   const sounds = assets.filter((a) => a.kind === 'audio')
-  const models3d = assets.filter((a) => a.kind === 'model3d' || a.kind === 'environment3d')
+  const models3d = assets.filter(
+    (a) => a.kind === 'model3d' || a.kind === 'environment3d' || a.kind === 'scene3d',
+  )
+  const dadosDeCenario = assets.filter((a) => a.kind === 'scene3d-data')
   // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
   const [tileConfig, setTileConfig] = useState<Pick<
     TileConfigDialogProps,
@@ -1111,6 +1111,7 @@ export function AssetsPanel({
             ) : null}
             {activeTab === 'models3d' ? (
               <Models3DTab
+                dadosDeCenario={dadosDeCenario}
                 models3d={models3d}
                 allowUpload={allowUpload}
                 busy={busy}

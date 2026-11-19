@@ -132,15 +132,21 @@ function materializeExport(
 }
 
 /** Do namespace corrente, ordenada da mais recente para a mais antiga, nas DUAS gerações. */
-export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
-  const persistence = getDefaultMoldaPersistence()
-  const generation = createMoldaSceneCloudSource(getMoldaGenerationStore())
+export async function listGalleryForStudio(
+  context: Pick<MoldaStudioExportContext, 'namespace' | 'persistence' | 'signal'> = {},
+): Promise<MoldaLibraryItem[]> {
+  context.signal?.throwIfAborted()
+  const namespace = context.namespace ?? getMoldaStorageNamespace(),
+    persistence = context.persistence ?? getDefaultMoldaPersistence(namespace)
+  const generation = createMoldaSceneCloudSource(getMoldaGenerationStore(namespace))
   const v1 = persistence.listSummaries
     ? await persistence.listSummaries()
     : (await persistence.loadAll()).map(summarizeAsset)
   // A criação promovida continua sendo a mesma criação para o Estúdio: some daqui e o
   // "Trazer do Molda" deixaria de enxergar o que a criança acabou de modelar.
+  context.signal?.throwIfAborted()
   const scene = await generation.listSummaries()
+  context.signal?.throwIfAborted()
   return [...v1, ...scene].sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
@@ -151,7 +157,7 @@ export async function exportLoadedSceneForStudio(
 ): Promise<ExportForStudioResult> {
   context.signal?.throwIfAborted()
   const namespace = context.namespace ?? getMoldaStorageNamespace()
-  const cache = cacheFor(context.persistence ?? getDefaultMoldaPersistence())
+  const cache = cacheFor(context.persistence ?? getDefaultMoldaPersistence(namespace))
   let snapshotId = sceneSnapshotIds.get(document)
   if (snapshotId === undefined) {
     snapshotId = ++nextSceneSnapshotId
@@ -247,7 +253,7 @@ export async function exportLoadedAssetForStudio(
 ): Promise<ExportForStudioResult> {
   options.signal?.throwIfAborted()
   const namespace = options.namespace ?? getMoldaStorageNamespace()
-  const persistence = options.persistence ?? getDefaultMoldaPersistence()
+  const persistence = options.persistence ?? getDefaultMoldaPersistence(namespace)
   const cache = cacheFor(persistence)
   const cacheKey = [
     options.destino ?? 'estudio',
@@ -310,11 +316,13 @@ export async function exportAssetForStudio(
    */
   context?: MoldaStudioExportContext,
 ): Promise<ExportForStudioResult> {
+  context?.signal?.throwIfAborted()
   const namespace = context?.namespace ?? getMoldaStorageNamespace()
-  const persistence = context?.persistence ?? getDefaultMoldaPersistence()
+  const persistence = context?.persistence ?? getDefaultMoldaPersistence(namespace)
   // Falhar ao ler o inventário v1 não pode impedir a geração seguinte de responder:
   // uma criação promovida não está mais lá, e é justamente ela que precisa sair daqui.
   const asset = await persistence.load(id).catch(() => null)
+  context?.signal?.throwIfAborted()
   if (!asset) return exportSceneForStudio(id, { ...context, namespace, persistence })
   return exportLoadedAssetForStudio(asset, { ...context, persistence, namespace })
 }
