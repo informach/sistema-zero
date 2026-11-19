@@ -16,9 +16,12 @@ de produção nesta sessão.
 `contracts.test.ts` passaram, com 51 asserções. O recorte combinado também
 detectou uma instalação local antiga do runtime (Three 0.180.0, diante do
 pin 0.184.0): o teste de confiança bloqueou corretamente esses bytes.
-Essa instalação precisa ser reconciliada com `npm ci --prefix runtime`
-antes de usar o resultado local do resolvedor como evidência positiva.
-Não foi removida nem afrouxada a verificação do pacote instalado.
+Depois de encerrar a suíte geral do Estúdio, a instalação foi reconciliada
+com o lockfile usando `npm ci --ignore-scripts --no-audit --no-fund --prefix runtime`.
+O recorte combinado passou: **19 testes, 343 asserções, nenhuma falha**
+(912 ms, Windows/Bun 1.3.11). Não foi removida nem afrouxada a verificação
+do pacote instalado. Isso valida os contratos locais; não equivale a
+construir ou homologar uma imagem implantada.
 
 ```powershell
 cd packages/studio-runtime
