@@ -54,9 +54,9 @@ Em **⚙️ Ao iniciar**, combine **Preparar jogo suave com código do sorteio**
 aventura** (inclui quantas gemas são obrigatórias para concluir), uma **Definir
 fase** por mapa e **Começar aventura**.
 
-Cada objeto exige ID único. Projetos antigos sem ID são migrados; IDs novos
-vazios ou repetidos são recusados. Fase + objeto identifica a gema coletada,
-sem apagar gemas de outras fases.
+Cada objeto exige identificador único. Projetos antigos sem ID são migrados;
+novos IDs vazios ou repetidos são recusados. A identidade fase + objeto faz só a
+gema coletada naquela fase desaparecer.
 
 **Quando acontecer … na aventura** recebe regiões e avisos de fase, coleta,
 checkpoint, bloco, guardião, saída e fim. **O … do acontecimento da aventura** lê
@@ -69,8 +69,8 @@ vida por cima ou por baixo: só o poder invencível o derrota. Esse poder també
 derruba o guardião e avisa "guardião", como a pisada.
 
 Guardar, continuar e apagar usam três slots validados. Replays registram ações,
-compartilhadas por teclado, controle e toque. Os dez botões touch ficam na área
-visível do palco.
+compartilhadas por teclado, controle e toque. Os dez botões touch
+ficam ancorados na área visível do palco.
 
 ### Qual kit para qual jogo? 🎮
 
