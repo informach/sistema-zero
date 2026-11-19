@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterEach, expect, spyOn, test } from 'bun:test'
 import {
   type StudioPythonActivityFeedback,
   StudioPythonActivitySchema,
@@ -701,4 +701,54 @@ test('before a stop, the worker is asked for the saves still in its queue, for a
   live.supervisor.stop()
   await live.supervisor.flushSaved(1000)
   expect(live.transport.commands.filter((value) => value.type === 'flush-saved')).toHaveLength(2)
+})
+
+test('an early timer cannot finish saved-file flushing before its deadline or rearm after acknowledgement', async () => {
+  const live = await session()
+  live.boot()
+  live.supervisor.run()
+  const timers = spyOn(globalThis, 'setTimeout')
+  try {
+    let settled = false
+    const waiting = live.supervisor.flushSaved(30).then(() => {
+      settled = true
+    })
+    const early = timers.mock.calls.at(-1)?.[0]
+    if (typeof early !== 'function') throw new Error('Missing flush deadline callback')
+    early()
+    await Promise.resolve()
+    expect(settled).toBe(false)
+    live.transport.emit({ type: 'saved-flushed' })
+    await waiting
+    expect(settled).toBe(true)
+    const count = timers.mock.calls.length
+    early()
+    expect(timers.mock.calls.length).toBe(count)
+  } finally {
+    timers.mockRestore()
+  }
+})
+
+test('stopping the worker settles an outstanding saved-file flush and cancels its deadline', async () => {
+  const live = await session()
+  live.boot()
+  live.supervisor.run()
+  const timers = spyOn(globalThis, 'setTimeout')
+  try {
+    let settled = false
+    const waiting = live.supervisor.flushSaved(1000).then(() => {
+      settled = true
+    })
+    const deadline = timers.mock.calls.at(-1)?.[0]
+    live.supervisor.stop()
+    await Promise.resolve()
+    expect(settled).toBe(true)
+    await waiting
+    const count = timers.mock.calls.length
+    if (typeof deadline !== 'function') throw new Error('Missing flush deadline callback')
+    deadline()
+    expect(timers.mock.calls.length).toBe(count)
+  } finally {
+    timers.mockRestore()
+  }
 })
