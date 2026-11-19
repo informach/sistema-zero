@@ -100,6 +100,13 @@ for (const [name, engine] of [
       'first-wins',
     )
     phase('two-tabs-verified')
+    const archive = await first.evaluate(() => window.storageHarness.qualifyDeepAncestorArchive())
+    assert.equal(archive.exact, true)
+    assert.equal(archive.acknowledged, true)
+    assert.equal(archive.archived, 1)
+    assert.equal(archive.meta.name, 'Small descendant')
+    assert.equal(archive.journalAbsent, true)
+    phase('deep-ancestor-archive-verified')
     // Chromium exposes the native beforeunload dialog in headless automation.
     // Exercise a real trusted click: synthetic evaluation alone has no sticky activation.
     if (name === 'chromium') {

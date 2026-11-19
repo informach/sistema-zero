@@ -1,4 +1,7 @@
-import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import {
+  copyStudioProjectJson,
+  STUDIO_PROJECT_JSON_LIMITS,
+} from '@sistemazero/core/studio/project-json'
 
 /** Recovery-copy budget, not the editor/project budget. Failure must remain explicit. */
 export const EXIT_JOURNAL_MAX_CHARS = 2_000_000
@@ -11,7 +14,16 @@ type Container = { object: Array<[string, Ref]> } | { array: Ref[] }
 // [] is undefined; [-1] is negative zero; [n] refers to container n. Learner
 // arrays are containers, so these tags cannot collide with project contents.
 export function encodeExitJournal(value: unknown): string {
-  const source = copyStudioProjectJson(value, DOCUMENT_LIMITS)
+  return encodeGraph(value, DOCUMENT_LIMITS)
+}
+
+/** Durable archives use the existing document budget, never the synchronous-exit quota. */
+export function encodeRecoverySnapshot(value: unknown): string {
+  return encodeGraph(value, STUDIO_PROJECT_JSON_LIMITS)
+}
+
+function encodeGraph(value: unknown, limits = DOCUMENT_LIMITS): string {
+  const source = copyStudioProjectJson(value, limits)
   const nodes: Container[] = []
   const pending: Array<{ source: object; target: Container }> = []
   const ref = (item: unknown): Ref => {
@@ -43,7 +55,7 @@ export function encodeExitJournal(value: unknown): string {
     }
   }
   const encoded = JSON.stringify({ version: 1, root, nodes })
-  if (encoded.length > EXIT_JOURNAL_MAX_CHARS)
+  if (encoded.length > limits.textChars)
     throw new Error('A cópia de recuperação excede seu orçamento local.')
   return encoded
 }
@@ -53,13 +65,21 @@ function record(value: unknown): value is Record<string, unknown> {
 }
 
 export function decodeExitJournal(text: string): unknown {
-  if (text.length > EXIT_JOURNAL_MAX_CHARS)
+  return decodeGraph(text, DOCUMENT_LIMITS)
+}
+
+export function decodeRecoverySnapshot(text: string): unknown {
+  return decodeGraph(text, STUDIO_PROJECT_JSON_LIMITS)
+}
+
+function decodeGraph(text: string, limits = DOCUMENT_LIMITS): unknown {
+  if (text.length > limits.textChars)
     throw new Error('A cópia de recuperação excede seu orçamento local.')
   // The wire format has constant depth. Validate its budget before following
   // references, then validate the reconstructed document using the shared guard.
   const wire = copyStudioProjectJson(JSON.parse(text), {
-    nodes: 2_000_000,
-    textChars: EXIT_JOURNAL_MAX_CHARS,
+    nodes: limits.nodes * 4,
+    textChars: limits.textChars,
     depth: 12,
   })
   if (
@@ -68,7 +88,7 @@ export function decodeExitJournal(text: string): unknown {
     Object.keys(wire).some((key) => !['version', 'root', 'nodes'].includes(key)) ||
     !('root' in wire) ||
     !Array.isArray(wire.nodes) ||
-    wire.nodes.length > 500_000
+    wire.nodes.length > limits.nodes
   )
     throw new Error('Formato de recuperação desconhecido ou inválido.')
   const nodes: unknown[] = wire.nodes
@@ -135,5 +155,5 @@ export function decodeExitJournal(text: string): unknown {
   }
   if (reachable.size !== copies.length)
     throw new Error('A recuperação contém containers sem referência.')
-  return copyStudioProjectJson(root, DOCUMENT_LIMITS)
+  return copyStudioProjectJson(root, limits)
 }

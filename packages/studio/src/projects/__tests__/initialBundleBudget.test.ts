@@ -101,7 +101,11 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
         moduleId.replace(/\\/g, '/').endsWith('/state/projectSynchronousExitRecovery.ts'),
       ),
     ).toEqual([])
-    for (const module of ['projectIndexedRecovery', 'projectRecoveryGuards'])
+    for (const module of [
+      'projectIndexedRecovery',
+      'projectRecoveryGuards',
+      'projectRecoverySources',
+    ])
       expect(
         Object.keys(chunk.modules).filter((moduleId) =>
           moduleId.replace(/\\/g, '/').endsWith(`/state/${module}.ts`),

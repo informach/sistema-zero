@@ -230,10 +230,18 @@ export async function commitProjectRecovery(
 ): Promise<void> {
   const { projectId: id, head, write, applications } = incoming
   const recoveryKey = projectRecoveryKey(id, head.writer)
-  const sources = (incoming.incompleteBlocks ? [] : (incoming.replacesRecovery ?? [])).filter(
-    (source) =>
-      source.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${id}:`) && source.key !== recoveryKey,
+  const allSources = (incoming.incompleteBlocks ? [] : (incoming.replacesRecovery ?? [])).filter(
+    (source) => source.key.startsWith(`${PROJECT_RECOVERY_PREFIX}${id}:`),
   )
+  const sources = allSources.filter((source) => source.key !== recoveryKey)
+  const prepared = allSources.length
+    ? await (await import('./projectRecoverySources')).prepareRecoverySources(
+        scope,
+        incoming,
+        allSources,
+        recoveryKey,
+      )
+    : undefined
   await conditionalWrite(
     scope.store,
     scope.identity,
@@ -244,9 +252,10 @@ export async function commitProjectRecovery(
       projectApplicationsKey(id),
       APPLICATION_BUDGET_KEY,
       recoveryKey,
-      ...sources.map((source) => source.key),
+      ...(prepared?.keys ?? []),
     ],
     ([rawHead, meta, oldJournal, oldBudget, recovery, ...sourceValues]) => {
+      prepared?.assertUnchanged(recovery, sourceValues)
       if (unchangedRecovery && !unchangedRecovery(recovery))
         throw new Error('A recuperação mudou antes da gravação. A revisão atual foi preservada.')
       const current = isLocalHead(rawHead) ? rawHead : undefined
@@ -291,18 +300,19 @@ export async function commitProjectRecovery(
       const staged = recovery as RecoveryWrite | undefined
       return {
         write: {
-          puts: [...(write.puts ?? []), [projectHeadKey(id), head], ...(history.puts ?? [])],
+          puts: [
+            ...(write.puts ?? []),
+            [projectHeadKey(id), head],
+            ...(history.puts ?? []),
+            ...(prepared?.puts ?? []),
+          ],
           deletes: [
             ...(write.deletes ?? []),
             ...(history.deletes ?? []),
             ...(staged?.version === 1 && staged.head.sequence <= head.sequence
               ? [recoveryKey]
               : []),
-            ...sources.flatMap((source, index) =>
-              (sourceValues[index] as RecoveryWrite | undefined)?.head.token === source.token
-                ? [source.key]
-                : [],
-            ),
+            ...sources.flatMap((source) => (prepared?.canRetire(source) ? [source.key] : [])),
           ],
         },
         result: undefined,
