@@ -1,0 +1,53 @@
+name: Medir payload antes e depois da integração de cenas
+
+on:
+  push:
+    branches: [pinta-runtime-image-20261119]
+    paths: [.github/workflows/pinta-runtime-measures-20261119.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [e193c8f8f7ea6fbe1afca37141bcdd6f8dcb7f39, 386eb685b5db0e449a88c6ad123b8c8bdbdd95df]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ matrix.source }}
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - name: Instalar os contratos do commit fixo
+        run: bun install --frozen-lockfile
+      - name: Medir sem alterar motores, limites ou arquivos de dados
+        env:
+          PINTA_SOURCE_SHA: ${{ matrix.source }}
+        run: |
+          mkdir -p .cache/pinta-payload
+          cat > .cache/pinta-payload-measure.ts <<'SOURCE'
+          import { createHash } from 'node:crypto'
+          import ts from '../packages/studio/node_modules/typescript'
+          import { gameThreeDExtension } from '../packages/studio/src/official-extensions/game-3d'
+          import { gameTwoDRuntime } from '../packages/studio/src/official-extensions/game-2d/runtime'
+          import { gameKitRuntime } from '../packages/studio/src/official-extensions/game-2d-advanced/runtime'
+          function count(source:string){const file=ts.createSourceFile('runtime.js',source,ts.ScriptTarget.ES2022,true,ts.ScriptKind.JS);let parameters=0;const visit=(node:ts.Node)=>{if(ts.isFunctionLike(node))parameters+=node.parameters.length;ts.forEachChild(node,visit)};visit(file);return parameters}
+          const runtime=gameThreeDExtension.runtime
+          if(!runtime||!('loadBootstrapScript' in runtime)||!runtime.loadBootstrapScript)throw new Error('Runtime esperado')
+          const variants=[]
+          for(const [name,context]of[['complete',undefined],['without-platform',{code:'const cena = SZGame3D.createScene("tela");'}]]as const){const source=await runtime.loadBootstrapScript(context);variants.push({name,characters:source.length,bytes:Buffer.byteLength(source),gzipBytes:Bun.gzipSync(source).byteLength,sha256:createHash('sha256').update(source).digest('hex')})}
+          console.log(JSON.stringify({sourceSha:process.env.PINTA_SOURCE_SHA,platform:process.platform,bun:Bun.version,variants,parameters:{basic:count(gameTwoDRuntime),advanced:count(gameKitRuntime)}},null,2))
+          SOURCE
+          bun .cache/pinta-payload-measure.ts | tee .cache/pinta-payload/medidas.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pinta-payload-${{ matrix.source }}
+          path: .cache/pinta-payload/medidas.json
+          retention-days: 7
+          if-no-files-found: error
