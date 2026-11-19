@@ -6,6 +6,8 @@ paralelas e sem novas worktrees. A revisão atual e a correção do ciclo de
 vida da montagem sob demanda estão em
 [`studio-retomada-staging.md`](../qa/2026-11-19-studio-retomada-staging.md).
 O histórico abaixo não representa homologação integral da revisão atual.
+O [inventário dos runtimes](capacidades-dos-runtimes.md) registra a
+arquitetura existente e distingue as capacidades disponíveis das pendentes.
 
 Registro vivo da missão. Branch `estudio-evolucao`, criada da `staging` em `bf6e895f` (17/11/2026).
 Os incrementos até `37f4d4e3a` foram integrados à `staging`. Isso não concluiu a missão.

@@ -43,6 +43,8 @@ estivesse homologada. Dependências externas devem ser discriminadas.
 - [x] Aprovar 49 objetivos de estrutura e 17 de execução pelo executor real do servidor.
 - [ ] Completar A4 na página real de homologação: verificar, enviar e concluir.
 - [ ] Inventariar capacidades reais dos dez runtimes, executores, IDE e armazenamento.
+  Inventário estático dos dez runtimes em `capacidades-dos-runtimes.md`;
+  custos medidos por runtime e inventário completo da IDE ainda pendentes.
 - [ ] Medir baseline local. Feito em Linux (18/11/2026, `linha-de-base-linux.md`): blocos
   70/2.000/5.000/10.000 no navegador e o projeto de laboratório do Pro. Faltam Pro modular,
   runtimes, abertura fria/quente, linguagem, jogo, Zappy, memória e descarte.
