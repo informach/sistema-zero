@@ -15,7 +15,6 @@ import {
 import type { MapTwoDApi } from './contract'
 import { pintaSceneExample } from './examples'
 import { mapTwoDSource } from './runtime'
-import { pintaSceneExample } from './examples'
 
 const scene = {
   version: 1,
