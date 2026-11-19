@@ -41,6 +41,80 @@ addEventListener('message', (ev) => {
 parent.postMessage('pronto', '*')
 </script>`
 
+// Positive control for thread isolation, not an implementation of the game engines.
+// Transfer a real canvas and stop native synchronous work using Worker.terminate().
+const CANVAS_WORKER = `
+addEventListener('message', (event) => {
+  if (event.data && (event.data.canvas || event.data.cpuOnly)) {
+    let offscreen2D = false;
+    try { offscreen2D = !!new OffscreenCanvas(8, 8).getContext('2d'); } catch {}
+    postMessage({ capabilities: {
+      offscreen2D, sharedArrayBufferAvailable: typeof SharedArrayBuffer === 'function',
+      rafFunctionAvailable: typeof requestAnimationFrame === 'function',
+    } });
+  }
+  if (event.data && event.data.canvas) {
+    const context = event.data.canvas.getContext('2d');
+    if (!context) { postMessage({ error: 'Canvas 2D indisponível' }); return; }
+    context.fillStyle = '#159447'; context.fillRect(0, 0, 256, 128);
+    postMessage('pronto');
+  } else if (event.data && event.data.cpuOnly) {
+    postMessage('pronto');
+  } else if (event.data === 'travar') {
+    postMessage('bloqueando');
+    const end = performance.now() + ${BLOQUEIO_MS};
+    const data = Array.from({ length: 200000 }, (_, i) => (i * 7919) % 10007);
+    while (performance.now() < end) data.slice().sort((a, b) => a - b);
+    postMessage('destravou');
+  }
+});`
+const CANVAS_HOST = `<!doctype html><meta charset="utf-8"><body>
+<button id="botao">clicar</button><canvas width="256" height="128"></canvas>
+<script>
+const estado = window.estado = { pronto: false, bloqueando: false, destravou: false,
+  maior: 0, cliques: [], terminated: false, supported: true };
+let previous = performance.now(), measuring = false;
+const timer = setInterval(() => {
+  const now = performance.now();
+  if (measuring) estado.maior = Math.max(estado.maior, now - previous);
+  previous = now;
+}, 50);
+let worker;
+const cpuOnly = new URLSearchParams(location.search).has('cpu-only');
+try {
+  const canvas = document.querySelector('canvas');
+  estado.hostCapabilities = {
+    canvasTransferAvailable: typeof canvas.transferControlToOffscreen === 'function',
+    crossOriginIsolated: globalThis.crossOriginIsolated,
+    sharedArrayBufferAvailable: typeof SharedArrayBuffer === 'function',
+  };
+  if (!cpuOnly && !canvas.transferControlToOffscreen) throw Error('transferControlToOffscreen indisponível');
+  worker = new Worker('/canvas-worker.js');
+  worker.addEventListener('message', (event) => {
+    if (event.data && event.data.capabilities) estado.workerCapabilities = event.data.capabilities;
+    else if (event.data === 'pronto') estado.pronto = true;
+    else if (event.data === 'bloqueando') estado.bloqueando = true;
+    else if (event.data === 'destravou') estado.destravou = true;
+    else if (event.data && event.data.error) estado.error = event.data.error;
+  });
+  worker.addEventListener('error', (event) => { estado.error = event.message; });
+  if (cpuOnly) worker.postMessage({ cpuOnly: true });
+  else {
+    const surface = canvas.transferControlToOffscreen();
+    worker.postMessage({ canvas: surface }, [surface]);
+  }
+} catch (error) { estado.supported = false; estado.error = error.message; }
+document.getElementById('botao').addEventListener('click', () => {
+  estado.cliques.push(performance.now());
+  const before = performance.now(); worker.terminate();
+  estado.stopMs = performance.now() - before;
+  estado.terminated = true; estado.finishedBeforeStop = estado.destravou;
+  estado.maior = Math.max(estado.maior, performance.now() - previous);
+  measuring = false; clearInterval(timer);
+});
+window.travar = () => { measuring = true; previous = performance.now(); worker.postMessage('travar'); };
+</script>`
+
 /** A casca: recebe o documento por mensagem e o põe num srcdoc interno, repassando as mensagens. */
 const CASCA = `<!doctype html><meta charset="utf-8"><body style="margin:0">
 <iframe id="dentro" sandbox="${SANDBOX}" style="border:0;width:100%;height:100%"></iframe>
@@ -90,14 +164,21 @@ function servidor(comCabecalhos) {
   return new Promise((resolve) => {
     const server = createServer((req, res) => {
       const url = new URL(req.url, 'http://x')
-      const headers = { 'content-type': 'text/html; charset=utf-8' }
+      const headers = {
+        'content-type':
+          url.pathname === '/canvas-worker.js'
+            ? 'text/javascript; charset=utf-8'
+            : 'text/html; charset=utf-8',
+      }
       if (comCabecalhos) {
         headers['Cross-Origin-Opener-Policy'] = 'same-origin'
         headers['Cross-Origin-Embedder-Policy'] = 'credentialless'
         headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
       }
       res.writeHead(200, headers)
-      if (url.pathname === '/filho') res.end(FILHO)
+      if (url.pathname === '/canvas-worker.js') res.end(CANVAS_WORKER)
+      else if (url.pathname === '/canvas-host') res.end(CANVAS_HOST)
+      else if (url.pathname === '/filho') res.end(FILHO)
       else if (url.pathname === '/casca') res.end(CASCA)
       else
         res.end(
@@ -106,6 +187,18 @@ function servidor(comCabecalhos) {
     })
     server.listen(0, '127.0.0.1', () => resolve(server))
   })
+}
+
+/** Identical native input path for iframe and Worker controls (no locator.click waits). */
+async function medirClique(page) {
+  const before = Date.now()
+  const box = await page.locator('#botao').boundingBox()
+  if (!box) throw new Error('O botão da medição não está visível')
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+  await page.waitForFunction(() => window.estado.cliques.length > 0, undefined, {
+    timeout: BLOQUEIO_MS + 10_000,
+  })
+  return Date.now() - before
 }
 
 async function medir(browser, base, arranjo) {
@@ -121,13 +214,7 @@ async function medir(browser, base, arranjo) {
     await page.evaluate(() => window.travar())
     // Um clique de verdade 500 ms depois de o bloqueio começar: quanto tempo até ser atendido?
     await page.waitForTimeout(500).catch(() => {})
-    const antes = Date.now()
-    const caixa = await page.locator('#botao').boundingBox()
-    await page.mouse.click(caixa.x + caixa.width / 2, caixa.y + caixa.height / 2).catch(() => {})
-    await page.waitForFunction(() => window.estado.cliques.length > 0, undefined, {
-      timeout: BLOQUEIO_MS + 10_000,
-    })
-    const cliqueMs = Date.now() - antes
+    const cliqueMs = await medirClique(page)
     await page.waitForFunction(() => window.estado.destravou, undefined, {
       timeout: BLOQUEIO_MS + 10_000,
     })
@@ -145,6 +232,45 @@ async function medir(browser, base, arranjo) {
     await page.close()
   }
 }
+
+async function medirWorker(browser, base, canvas = true) {
+  const page = await browser.newPage({ viewport: { width: 800, height: 500 } })
+  try {
+    await page.goto(`${base}/canvas-host${canvas ? '' : '?cpu-only=1'}`)
+    await page.waitForFunction(() => window.estado.pronto || window.estado.error)
+    const ready = await page.evaluate(() => ({ ...window.estado }))
+    if (ready.error) return { arranjo: canvas ? 'worker-canvas' : 'worker-cpu', ...ready }
+    await page.waitForTimeout(300) // Same explicit warmup as the iframe controls.
+    await page.evaluate(() => window.travar())
+    await page.waitForFunction(() => window.estado.bloqueando)
+    await page.waitForTimeout(500)
+    const clickMs = await medirClique(page)
+    const value = await page.evaluate(() => ({ ...window.estado }))
+    return {
+      arranjo: canvas ? 'worker-canvas' : 'worker-cpu',
+      supported: value.supported,
+      maiorAtrasoDoRelogioMs: Math.round(value.maior),
+      cliqueAtendidoEmMs: clickMs,
+      hostCapabilities: value.hostCapabilities,
+      workerCapabilities: value.workerCapabilities,
+      terminated: value.terminated,
+      stopCallMs: value.stopMs,
+      workerFinishedBeforeStop: value.finishedBeforeStop,
+      isolado: value.terminated && !value.finishedBeforeStop && value.maior < 500 && clickMs < 500,
+      scope: canvas
+        ? 'synthetic-native-sort-and-canvas; not-game-engine-qualification'
+        : 'cpu-only-control; not-rendering-or-game-engine-qualification',
+    }
+  } finally {
+    await page.close()
+  }
+}
+const allowedArrangements = ['mesma-origem', 'srcdoc', 'outro-site', 'worker-canvas', 'worker-cpu']
+const arrangements = (process.env.SZ_MEASURE_ARRANGEMENTS ?? allowedArrangements.join(','))
+  .split(',')
+  .map((value) => value.trim())
+if (!arrangements.length || arrangements.some((value) => !allowedArrangements.includes(value)))
+  throw new Error('Arranjo de medição desconhecido')
 
 const nomes = (process.env.SZ_MEASURE_BROWSERS ?? 'chromium').split(',').map((n) => n.trim())
 // Headless shell has different process isolation from the full Chromium browser. Measuring
@@ -173,13 +299,15 @@ for (const nome of nomes) {
     for (const comCabecalhos of [false, true]) {
       const server = await servidor(comCabecalhos)
       const base = `http://127.0.0.1:${server.address().port}`
-      for (const arranjo of ['mesma-origem', 'srcdoc', 'outro-site']) {
+      for (const arranjo of arrangements) {
         try {
           saida.push({
             navegador: `${nome} ${browser.version()}`,
             ...(nome === 'chromium' ? { chromiumMode } : {}),
             cabecalhosDoHost: comCabecalhos,
-            ...(await medir(browser, base, arranjo)),
+            ...(['worker-canvas', 'worker-cpu'].includes(arranjo)
+              ? await medirWorker(browser, base, arranjo === 'worker-canvas')
+              : await medir(browser, base, arranjo)),
           })
         } catch (erro) {
           saida.push({
