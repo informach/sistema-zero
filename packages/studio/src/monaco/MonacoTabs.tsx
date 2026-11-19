@@ -800,7 +800,10 @@ export function MonacoTabs({
       // por ser intrusivo enquanto o aluno digita.
       formatOnPaste: true,
       // Autocomplete responsivo.
-      quickSuggestions: true,
+      // A delayed word suggestion inside a comment can reopen after Escape
+      // and consume Enter. Keep automatic suggestions in code/strings; comments
+      // retain explicit Ctrl+Space without competing with ordinary line breaks.
+      quickSuggestions: { other: true, comments: false, strings: true },
       suggestOnTriggerCharacters: true,
       tabCompletion: 'on',
       parameterHints: { enabled: true },

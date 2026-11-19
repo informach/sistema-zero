@@ -216,6 +216,36 @@ describe('PreviewIframe', () => {
     })
   })
 
+  for (const command of ['Parar', 'Rodar de novo'] as const) {
+    it(`${command} libera uma primeira execução sem load e conserva a fonte`, async () => {
+      const project = createPreviewProject()
+      useProjectStore.setState({ project, isDirty: command === 'Parar', saveError: null })
+      render(<PreviewIframe />)
+      const frame = screen.getByTitle('Pré-visualização')
+      // Model a program that never completes its first document load. The real
+      // document and its preparation still run; only its load acknowledgment is withheld.
+      frame.addEventListener(
+        'load',
+        (event) => {
+          if (frame.getAttribute('srcdoc') !== PAUSED_PREVIEW_DOC) event.stopImmediatePropagation()
+        },
+        true,
+      )
+      fireEvent.load(frame)
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      fireEvent.load(frame)
+      await act(async () => {
+        if (command === 'Parar') useProRun.getState().actions?.stop()
+        else useProRun.getState().actions?.reload?.()
+      })
+      expect(document.querySelector('[data-sz-preview-gap]')).not.toBeNull()
+      expect(useProjectStore.getState().project?.files?.['script.js']).toBe(
+        project.files['script.js'],
+      )
+      if (command === 'Parar') expect(useProjectStore.getState().isDirty).toBe(true)
+    })
+  }
+
   // Lote 3.1 (19/11/2026): com a prévia em outra origem o iframe usa `src`, e o `srcdoc` lido do
   // DOM era nulo. Resultado: o Parar nunca reconhecia o jogo preso e não abria o intervalo sem
   // iframe que libera o processo travado.

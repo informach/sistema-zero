@@ -118,6 +118,12 @@ export function ProCodeTools({
     referenceResult?.tree === tree && referenceResult.session === language
       ? referenceResult.items
       : []
+  const [referenceWindow, setReferenceWindow] = useState<{
+    result: typeof referenceResult
+    count: number
+  } | null>(null)
+  const referenceCount = referenceWindow?.result === referenceResult ? referenceWindow.count : 100
+  const visibleReferences = references.slice(0, referenceCount)
   const referenceRequest = useRef(0)
   // Requests cannot outlive this panel. The scope below also rejects A → B → A.
   useEffect(
@@ -218,14 +224,12 @@ export function ProCodeTools({
     try {
       const items = await language.request('references', path, selected.offset)
       if (!isCurrent()) return
-      const results = items
-        .flatMap((item) => {
-          const node = tree[item.path]
-          return node?.kind === 'file'
-            ? [{ path: item.path, ...proSourcePosition(node.content, item.span.start) }]
-            : []
-        })
-        .slice(0, 100)
+      const results = items.flatMap((item) => {
+        const node = tree[item.path]
+        return node?.kind === 'file'
+          ? [{ path: item.path, ...proSourcePosition(node.content, item.span.start) }]
+          : []
+      })
       setReferences({ session: language, tree, items: results })
       if (!results.length) setError('Nenhuma referência encontrada para esse nome no projeto.')
     } catch (cause) {
@@ -537,16 +541,36 @@ export function ProCodeTools({
           >
             {t('pro.references.close')}
           </button>
-          {references.map((item) => (
+          <span className="ml-2 text-xs text-sz-fg-soft" aria-live="polite">
+            {t('pro.references.count', {
+              shown: visibleReferences.length,
+              total: references.length,
+            })}
+          </span>
+          {visibleReferences.map((item) => (
             <button
               key={`${item.path}:${item.line}:${item.column}`}
               type="button"
               className={`${button} block w-full text-left`}
-              onClick={() => navigate(item.path, item.line, item.column)}
+              onClick={() => {
+                navigate(item.path, item.line, item.column)
+                editor.current?.focus()
+              }}
             >
               {item.path}:{item.line}
             </button>
           ))}
+          {visibleReferences.length < references.length && (
+            <button
+              type="button"
+              className={button}
+              onClick={() =>
+                setReferenceWindow({ result: referenceResult, count: referenceCount + 100 })
+              }
+            >
+              {t('pro.references.more')}
+            </button>
+          )}
         </section>
       )}
       <Modal open={Boolean(rename)} onClose={() => setRename(null)} title={t('pro.renameSymbol')}>

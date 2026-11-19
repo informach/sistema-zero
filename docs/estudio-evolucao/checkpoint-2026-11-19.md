@@ -46,6 +46,36 @@ a revisão posterior. Consultar a CI e os recortes novos de cada alteração.
 
 ## Limites que continuam bloqueando a conclusão
 
+Incremento mais recente: interromper a primeira tentativa antes de `load`,
+quebras de linha em comentários sem sugestão tardia consumir Enter e
+referências completas no Pro. Recortes finais: 63 testes/311 asserções para
+preview/Monaco/bundle, 54 testes/220 asserções para linguagem/workspace,
+cinco fluxos de navegador para interrupção/mapa/digitação e um fluxo real
+de 252 referências. TypeScript local passou; Biome passou. Os dois controles
+do observador opt-in passaram. O diagnóstico `ad492302a` foi enviado à
+staging e o run `44638854435` foi iniciado, ainda sem resultado integral.
+
+Atualização da verificação: o run `44625198436` aprovou onze dos doze jobs;
+o job completo de contratos Windows registrou 11.864 testes, zero falhas,
+363.883 asserções, 900 arquivos e 164 grupos isolados. A falha restante
+foi entrada nativa em Patrulha Espacial. O run posterior `44625941669`
+aprovou ambos os jobs de contratos e falhou em dois shards Chromium;
+isso não é aprovação integral. A barreira pública `FinishedLoading`
+substituiu as esperas fixas do teste de undo Python em `c18869103`.
+
+O diagnóstico ampliado `44633216192` reproduziu duas falhas em cem casos
+Linux: ocorreu navegação durante a tecla, mas editor e jogo responderam
+à leitura CDP cinco segundos depois. O controle de filho ocupado passou;
+Windows foi cancelado. A causa do comando pendente permanece aberta.
+Detalhes e o incremento de interrupção da primeira execução estão no
+[relatório específico](../qa/2026-11-19-studio-startup-interruption.md).
+
+O ensaio `1cb326f16` separou COOP e COEP do host: no Firefox medido,
+nenhum cabeçalho sozinho isolou o cálculo; ambos juntos responderam.
+Além de domínio/cabeçalhos, falta passar `previewShellUrl` nos consumidores
+do MemberShell. Não ativar COEP globalmente sem qualificar vídeos e
+integrações das aulas. Não houve alteração em ambiente publicado.
+
 1. O Clássico ainda cria os SVGs na abertura; meta de cinco mil blocos
    abaixo de oito segundos não atingida. O descarte visual posterior
    não equivale a montagem inicial incremental.
@@ -64,8 +94,10 @@ a revisão posterior. Consultar a CI e os recortes novos de cada alteração.
    laboratório. Não mede digitação nem uso simultâneo de Monaco, jogo,
    WebContainer e Zappy. O projeto completo de homologação F falta.
 6. O mapa preserva o índice, mas recebe o índice inteiro do arquivo ativo.
-   A lista de referências do painel ainda corta em cem resultados:
-   precisa de navegação progressiva e contagem explícita próprias.
+   A lista de referências deixou de descartar resultados após cem: tem
+   paginação e contagem, com 252 destinos conferidos no navegador real.
+   [Evidências e limites](../qa/2026-11-19-studio-pro-complete-references.md).
+   Isso não elimina o transporte integral nem homologa todo o projeto F.
 7. Depuração profissional, profiler opt-in, testes autorais, streaming
    completo de jogos extensos e homologação integral continuam no
    [plano de execução](plano-execucao.md), com dependências e lacunas reais.
