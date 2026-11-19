@@ -7,6 +7,7 @@ import {
   ProjectDocumentError,
   projectFormatVersion,
 } from '../core/projectDocument'
+import { assertScene3DAssets } from '../core/scene3d/validacao'
 import { copyLocalRevision } from './projectStorageRevision'
 import { prepareProjectForHost } from './projectValidation'
 
@@ -37,5 +38,7 @@ export async function prepareEditableStudioProject(
     return refinePythonProjectDocument(snapshot)
   }
   const { refineJavaScriptProjectDocument } = await import('./javaScriptProjectValidation')
-  return refineJavaScriptProjectDocument(snapshot, policy)
+  const project = refineJavaScriptProjectDocument(snapshot, policy)
+  await assertScene3DAssets(project.assets ?? [])
+  return project
 }

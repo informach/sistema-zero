@@ -8,7 +8,7 @@ Cursos feitos para os responsáveis, na área dos pais do Kids (**Cursos para pa
 
 Diferenças em relação aos cursos das crianças:
 
-- **Quem grava:** a própria Helena, sem ElevenLabs. O roteiro traz **Fala da Helena** em vez de **Fala para ElevenLabs**, e não há `.elevenlabs.txt`. O `validar-roteiros.py` confere os dois formatos.
+- **Voz e imagem (desde 19/11/2026):** a voz é gerada no ElevenLabs e a apresentadora é o avatar da Helena (HeyGen). O roteiro traz **Fala para ElevenLabs**, com as tags de direção de [DIRETRIZES-VOZ-ELEVENLABS](../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md), e cada aula tem o `.elevenlabs.txt` para copiar e colar. O `validar-roteiros.py` aplica a mesma régua dos cursos das crianças. Não há falas de personagens nem `.edicao.json`.
 - **Texto na página:** curso para pais pode usar texto (`rich_text`), porque o público é adulto.
 - **Material:** a apostila do curso segue a [Receita do Passo a passo do projeto](../../aulas-interativas-tecnico/recursos/caderno-visual/README.md), com o nome "Apostila do curso".
 - **Transformando o vilão em aliado, refação de 18/11/2026:** o conteúdo integral do encontro de 13/11/2026 na voz da Helena, em sete aulas, sem tarefas ou quizzes. Os depoimentos exibidos no encontro entram fixos na edição. Convite único, na última aula: o Cadê Todo Mundo por sete dias. O presente é independente da emissão do certificado.

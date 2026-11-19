@@ -6,8 +6,8 @@ import {
   setAutosaveMaxWaitForTests,
 } from '../../persistence/service'
 import { localSnapshotsEqual } from '../../project-migrations/localTransaction'
+import { decodeRecoverySnapshot } from '../exitJournalDecode'
 import { readAllKeys, readValue, readValues } from '../idbTransaction'
-import { decodeProjectJsonGraph as decodeRecoverySnapshot } from '../projectJsonGraphDecode'
 import {
   coordinatedProjectWrite,
   projectExitRecoveryStatus,

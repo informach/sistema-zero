@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { canonicalJson } from '../creations/content-fingerprint'
+import { PYTHON_PINTA_WORLD_FEATURE } from './python-runtime-features'
 
 const id = z
   .string()
@@ -215,6 +216,8 @@ export const PintaImageDerivationSchema = z
     }),
     output: z.strictObject({
       mime: z.enum(['image/png', 'image/svg+xml']),
+      // Legacy outputs keep their exact shape. New structured maps declare their reader.
+      dataVersion: z.union([z.literal(2), z.literal(3)]).optional(),
       width: positiveInteger,
       height: positiveInteger,
       bytes: positiveInteger,
@@ -222,6 +225,19 @@ export const PintaImageDerivationSchema = z
     }),
   })
   .superRefine((value, context) => {
+    if (
+      value.output.dataVersion !== undefined &&
+      !(
+        (value.recipe.selection.kind === 'map' && value.output.dataVersion === 2) ||
+        (value.recipe.selection.kind === 'map-world' && value.output.dataVersion === 3)
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['output', 'dataVersion'],
+        message: 'The structured data version must match the map selection.',
+      })
+    }
     if (value.output.mime !== pintaImageOutputMime(value.recipe)) {
       context.addIssue({
         code: 'custom',
@@ -270,6 +286,15 @@ export const PintaImageDerivationSchema = z
     }
   })
 export type PintaImageDerivation = z.infer<typeof PintaImageDerivationSchema>
+
+/** A derivative's declared reader requirement; no permission is granted by this metadata. */
+export function pintaImageRequiredRuntimeFeature(
+  image: PintaImageDerivation,
+): typeof PYTHON_PINTA_WORLD_FEATURE | undefined {
+  return image.output.dataVersion !== undefined || image.recipe.selection.kind === 'map-world'
+    ? PYTHON_PINTA_WORLD_FEATURE
+    : undefined
+}
 
 /** Identity excludes source revision/fingerprint and all output properties. */
 export function pintaImageRecipeKey(input: PintaImageRecipe): string {

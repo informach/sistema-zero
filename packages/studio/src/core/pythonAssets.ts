@@ -1,7 +1,6 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import {
   isStudioPortablePath,
-  isStudioPythonAssetPath,
   studioPortableFileConflict,
 } from '@sistemazero/core/studio/project-environment'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
@@ -13,6 +12,8 @@ import { decodeProjectAsset, digestAssetBytes, pythonAssetFileExtension } from '
 import { assertPintaImageAssetBytes } from './pintaImageAsset'
 import { type ProjectAsset, sanitizeProjectAssets } from './projectAssets'
 import { assertProjectContentPreserved } from './projectDocumentGuards'
+import { isPythonMaterialPath } from './scene3d/assets'
+import { assertScene3DAssets } from './scene3d/validacao'
 
 export interface PythonAssetManifestEntry {
   id: string
@@ -32,6 +33,8 @@ export interface PythonAssetManifestEntry {
   license?: ProjectAsset['license']
   width?: number
   height?: number
+  dado3d?: ProjectAsset['dado3d']
+  cena3dPython?: ProjectAsset['cena3dPython']
 }
 
 export interface PythonAssetBundle {
@@ -43,7 +46,7 @@ export interface PythonAssetBundle {
 /** Callers still compare input/output to reject any lossy normalization. */
 export function sanitizePythonProjectAssets(assets: unknown) {
   return sanitizeProjectAssets(assets, {
-    materialPath: isStudioPythonAssetPath,
+    materialPath: isPythonMaterialPath,
     dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
   })
 }
@@ -63,6 +66,7 @@ export async function buildPythonAssetBundle(
   }
   const validated = sanitizePythonProjectAssets(input.assets)
   assertProjectContentPreserved({ assets: input.assets }, { assets: validated })
+  await assertScene3DAssets(validated)
   const directories = input.layout.directories ?? []
   if ([...input.layout.files, ...directories].some((path) => !isStudioPortablePath(path)))
     throw new Error('A estrutura Python contém um caminho inválido.')
@@ -85,7 +89,7 @@ export async function buildPythonAssetBundle(
     // JS materializer's fallback names for these MIME types.
     const extension = pythonAssetFileExtension(mime, asset.kind)
     const path = asset.proPath ?? `assets/${await sha256Hex(asset.id)}.${extension}`
-    if (!isStudioPythonAssetPath(path))
+    if (!isPythonMaterialPath(path, asset.kind))
       throw new Error(`O material ${asset.name} precisa de um formato de mídia portátil.`)
     if (files.has(path)) throw new Error(`Dois materiais usam o caminho ${path}.`)
     const { dataUrl: _dataUrl, ...metadata } = asset
@@ -96,6 +100,8 @@ export async function buildPythonAssetBundle(
       id: asset.id,
       name: asset.name,
       kind: asset.kind,
+      ...(asset.dado3d ? { dado3d: asset.dado3d } : {}),
+      ...(asset.cena3dPython ? { cena3dPython: asset.cena3dPython } : {}),
       path,
       mime,
       bytes: bytes.byteLength,

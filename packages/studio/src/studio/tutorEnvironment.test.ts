@@ -41,6 +41,12 @@ for (const kind of ['classic', 'pro'] as const)
     if (shadowed.programmingLanguage !== 'python') throw new Error('Expected Python context')
     expect(shadowed.shadowedModules).toEqual(['turtle', 'sz_audio'])
     expect(StudioTutorEnvironmentSchema.parse(shadowed)).toEqual(shadowed)
+    if (project.kind === 'classic') project.files['cenario.py'] = 'author = True\n'
+    else project.tree['src/cenario.py'] = { kind: 'file', content: 'author = True\n' }
+    const comCenario = buildStudioTutorEnvironment(project)
+    if (comCenario.programmingLanguage !== 'python') throw new Error('Expected Python context')
+    expect(comCenario.shadowedModules).toContain('cenario')
+    expect(StudioTutorEnvironmentSchema.parse(comCenario)).toEqual(comCenario)
     project.installedExtensions[0]!.version = '2.0.0'
     expect(context.extensions[0]?.version).toBe('1.0.0')
   })

@@ -1,4 +1,3 @@
-import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 import { expect, test } from 'bun:test'
 import {
   acknowledgeSynchronousExitJournal,
@@ -6,6 +5,7 @@ import {
   hasSynchronousExitJournal,
   stageSynchronousExitJournal,
 } from './synchronousExitJournal'
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 function localStorageFixture() {
   const storage = globalThis.localStorage

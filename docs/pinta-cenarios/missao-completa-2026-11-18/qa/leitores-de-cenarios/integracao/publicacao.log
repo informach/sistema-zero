@@ -1,0 +1,69 @@
+bun test v1.3.11 (af24e281)
+
+tests\studio-python-publish.test.ts:
+(pass) free: publicação de dados Pinta 2 recusa o leitor anterior [63.00ms]
+(pass) free: revisão de dados Pinta 2 recusa o leitor anterior [47.00ms]
+(pass) free: publicação de dados Pinta 3 recusa o leitor anterior
+(pass) free: revisão de dados Pinta 3 recusa o leitor anterior [15.00ms]
+(pass) free: publicação de dados Pinta 2 preserva a privacidade [16.00ms]
+(pass) free: revisão de dados Pinta 2 preserva a privacidade [16.00ms]
+(pass) free: publicação de dados Pinta 3 preserva a privacidade [15.00ms]
+(pass) free: revisão de dados Pinta 3 preserva a privacidade [16.00ms]
+(pass) lesson: publicação de dados Pinta 2 recusa o leitor anterior [15.00ms]
+(pass) lesson: publicação de dados Pinta 3 recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 2 preserva a privacidade [16.00ms]
+(pass) lesson: publicação de dados Pinta 3 preserva a privacidade
+(pass) live: publicação de dados Pinta 2 recusa o leitor anterior [16.00ms]
+(pass) live: publicação de dados Pinta 3 recusa o leitor anterior
+(pass) live: publicação de dados Pinta 2 preserva a privacidade [15.00ms]
+(pass) live: publicação de dados Pinta 3 preserva a privacidade
+(pass) free Python classic publishes retained source with its own scope and opens an anonymous public game [32.00ms]
+(pass) free Python pro publishes retained source with its own scope and opens an anonymous public game [15.00ms]
+(pass) lesson Python classic publishes retained source with its own scope and opens an anonymous public game
+(pass) lesson Python pro publishes retained source with its own scope and opens an anonymous public game [16.00ms]
+(pass) live Python classic publishes retained source with its own scope and opens an anonymous public game [15.00ms]
+(pass) live Python pro publishes retained source with its own scope and opens an anonymous public game [16.00ms]
+(pass) adult free Python classic publication authorizes the adult audience
+(pass) adult free Python pro publication authorizes the adult audience [16.00ms]
+(pass) free Python classic deduplication preserves the canonical published bytes
+(pass) free Python pro deduplication preserves the canonical published bytes [15.00ms]
+(pass) lesson Python classic deduplication preserves the canonical published bytes
+(pass) lesson Python pro deduplication preserves the canonical published bytes [16.00ms]
+(pass) live Python classic deduplication preserves the canonical published bytes
+(pass) live Python pro deduplication preserves the canonical published bytes [16.00ms]
+(pass) free a finalized legacy post is returned without claiming or rewriting its artifact
+(pass) lesson a finalized legacy post is returned without claiming or rewriting its artifact [15.00ms]
+(pass) live a finalized legacy post is returned without claiming or rewriting its artifact
+(pass) free JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot [16.00ms]
+(pass) lesson JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot
+(pass) live JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot
+(pass) a missing private snapshot is 404, while a temporary storage failure is retryable [15.00ms]
+(pass) revoked Python release cannot publish; retired existing release stays playable [16.00ms]
+(pass) free Python publication requires the exact release to declare publish
+(pass) lesson Python publication requires the exact release to declare publish [16.00ms]
+(pass) live Python publication requires the exact release to declare publish
+(pass) free JavaScript Classic publication is unchanged by release publish declarations
+(pass) lesson JavaScript Classic publication is unchanged by release publish declarations [15.00ms]
+(pass) live JavaScript Classic publication is unchanged by release publish declarations
+(pass) a Python project cannot publish a Turtle extension absent from its approved release
+(pass) free rejects a reservation with snapshot mismatch before any artifact write
+(pass) free rejects a reservation with missing-id mismatch before any artifact write
+(pass) lesson rejects a reservation with snapshot mismatch before any artifact write
+(pass) lesson rejects a reservation with missing-id mismatch before any artifact write [16.00ms]
+(pass) live rejects a reservation with snapshot mismatch before any artifact write
+(pass) live rejects a reservation with missing-id mismatch before any artifact write
+(pass) live rejects a reservation for a different signed workspace publication
+(pass) a lost reservation response writes no artifact and retries the same reserved ID
+(pass) a lost Hub response retries the exact Python publication without adding a second retained revision [16.00ms]
+(pass) replaying a finalized publication preserves its cover without uploading another candidate [15.00ms]
+(pass) replay after moderation cannot restore the original public cover or retained source [16.00ms]
+(pass) JavaScript Classic replay after deleted leaves no candidate snapshot or cover
+(pass) JavaScript Classic replay after rejected leaves no candidate snapshot or cover [15.00ms]
+(pass) same author and request in two publication contexts never share a cover object [16.00ms]
+(pass) free Python publication separates the edited draft from public update, restore and disable [16.00ms]
+(pass) a large PNG publishes at the 6 MiB project cap and fails clearly one encoded block above it [343.00ms]
+
+ 61 pass
+ 0 fail
+ 448 expect() calls
+Ran 61 tests across 1 file. [2.93s]

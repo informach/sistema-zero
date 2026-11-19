@@ -42,6 +42,28 @@ const limits: PintaImageTargetLimits = {
 }
 const colors = ['', '#ff0000', '#0000ff', '#00ff00', ...Array<string>(12).fill('')]
 
+test('o produtor identifica dados avançados e conserva o envelope do mapa legado', async () => {
+  const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
+  const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 2, now: 1 })
+  const selection = PintaImageRecipeSchema.parse({
+    version: 1,
+    algorithm: 'pinta-image-1',
+    drawingId: map.id,
+    selection: { kind: 'map' },
+    scale: 1,
+  })
+  const render = () =>
+    deriveLoadedPintaImage(map, selection, limits, { tilesets: [tileset], raster: nativeRaster() })
+  const before = await render()
+  expect((await pintaData(before)).version).toBe(1)
+  expect(Object.hasOwn(before.derivation.output, 'dataVersion')).toBe(false)
+  map.layers[0]!.opacity = 0.5
+  const after = await render()
+  expect((await pintaData(after)).version).toBe(2)
+  expect(after.derivation.output.dataVersion).toBe(2)
+  expect(after.derivation.recipe).toEqual(before.derivation.recipe)
+})
+
 test('o mundo Python carrega o destino e o ciclo sem aninhar mundos ou incluir desenhos alheios', async () => {
   const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
   const root = createTilemapAsset({ name: 'vila', tilesetId: tileset.id, cols: 2, rows: 2, now: 1 })
@@ -97,6 +119,7 @@ test('o mundo Python carrega o destino e o ciclo sem aninhar mundos ou incluir d
   })
   const data = await pintaData(before)
   expect(data.version).toBe(3)
+  expect(before.derivation.output.dataVersion).toBe(3)
   expect(data.scene.id).toBe(root.id)
   expect(data.world.rootId).toBe(root.id)
   expect(data.world.maps.map((map: { id: string }) => map.id)).toEqual([child.id])

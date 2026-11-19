@@ -1,0 +1,84 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personalSync.test.ts:
+Isolated ./src/asset-library/__tests__/personalSync.cases.ts: 86 pass, 0 fail, 407 expect() calls
+(pass) personalSync.test.ts mock cases own an isolated module realm [4453.00ms]
+
+src\asset-library\pintaImageSync.test.ts:
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material [16.00ms]
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > a sheet or map without its data chunk is refused; with it, accepted
+(pass) sync re-derives the data kinds, a map on ANY tileset change > a changed layer tileset re-derives the map (inspected with selection "map")
+(pass) sync re-derives the data kinds, a map on ANY tileset change > unchanged provenance keeps the material; one inspection per dependency rule
+(pass) one shared tileset copy: painting a piece updates every use > a tileset-only change re-derives the tileset material AND the map that uses it
+
+src\runtime\registry.test.ts:
+(pass) lazy runtime routing > dados avançados na receita map antiga exigem o leitor completo antes de carregar o motor [16.00ms]
+(pass) lazy runtime routing > um mundo exige o leitor no runtime exato; projetos anteriores continuam executáveis [15.00ms]
+(pass) lazy runtime routing > JavaScript loads no Python module and concurrent requests share only the module
+(pass) lazy runtime routing > registration metadata is captured, so later mutation cannot reroute a project
+(pass) lazy runtime routing > missing provider, revoked release, absent grant and checking host never import a module
+(pass) lazy runtime routing > a runtime identity mismatch does not fall back to JavaScript
+(pass) lazy runtime routing > failed imports and wrong module identities are retryable, with a structured failure
+(pass) lazy runtime routing > aborting one editor cancels its wait while another editor receives the module
+(pass) lazy runtime routing > an already canceled request cannot start an import
+(pass) lazy runtime routing > duplicate routes and IDs are rejected at host registration
+
+src\state\persistence.test.ts:
+Persistence cases in a separate process: 70 pass, 0 fail
+(pass) transaction fault cases run without replacing IndexedDB in other test files [6875.00ms]
+
+src\state\pintaMapBundle.test.ts:
+(pass) importação atômica de mapas ligados > traz as portas com o mapa, mantém programação e atualiza sem mudar ids e nomes
+(pass) importação atômica de mapas ligados > um mapa inválido recusa o lote inteiro e mantém a referência do projeto
+(pass) importação atômica de mapas ligados > limite total, ids repetidos e modo de observação não deixam uma importação parcial
+
+src\state\projectValidation.test.ts:
+(pass) fronteira compartilhada de projetos > preserva código manual, arquivos extras, áudio e referências da biblioteca [235.00ms]
+(pass) fronteira compartilhada de projetos > valida o formato do programa dentro do manifesto e a identidade da criação
+(pass) fronteira compartilhada de projetos > valida o programa Python v3 da nuvem sem converter a fonte em JavaScript
+(pass) fronteira compartilhada de projetos > confere JavaScript v3 pela mesma fronteira e recusa Python v3 inválido
+(pass) fronteira compartilhada de projetos > retém as ferramentas usadas depois de apagar sua última instância
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > sanitizeCoverAssetName aceita um nome de asset válido e recusa o resto
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > sanitizeStoredProject preserva a escolha (e OMITE a chave quando não há)
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > o programa do manifesto da nuvem (assets: []) PRESERVA a escolha: é por isso que a régua é por forma
+
+src\state\pythonProjectValidation.test.ts:
+(pass) Classic preserves source, syntax errors, opaque caches and local revision without trusting visual data [16.00ms]
+(pass) Classic checks paths, media collisions, source quotas and dependency lock before runtime preparation [15.00ms]
+(pass) opaque Python visual caches never enter the JavaScript block validator or override source
+(pass) promotion preserves a separate original and produces identical execution files and revision
+
+src\components\assets\PintaImportDialog.test.tsx:
+Isolated ./src/components/assets/__tests__/PintaImportDialog.cases.tsx: 55 pass, 0 fail, 352 expect() calls
+(pass) PintaImportDialog.test.tsx mock cases own an isolated module realm [6734.00ms]
+
+src\core\__tests__\scene3dAssets.test.ts:
+(pass) scene3d e campos físicos sobrevivem ao mesmo saneador com IDs, nomes e bytes exatos [203.00ms]
+(pass) dependência ausente, tipo/MIME errado e IDs repetidos recusam o conjunto [15.00ms]
+(pass) hash e resolução física não são aceitos somente porque o data URL é válido [16.00ms]
+(pass) Float32 não finito, campo truncado e máscara inválida falham antes do runtime [47.00ms]
+(pass) MIME, extensão, UTF-8 e orçamento dos campos são fechados [734.00ms]
+(pass) Pro e Python materializam envelope e campos sem alterar seus bytes ou metadados [32.00ms]
+(pass) exceções de caminho são tipadas; JSON/bin não viram imagem, som ou arquivo executável [31.00ms]
+(pass) reabertura de documentos Classic/Pro em ambas as linguagens confere a cena inteira [78.00ms]
+(pass) cancelamento e versão não suportada não retornam uma cena parcial
+(pass) edição protege dependências e permite renomear sem alterar seus IDs ou caminhos [16.00ms]
+(pass) exclusão pelo workspace Pro também protege uma dependência do cenário [15.00ms]
+(pass) renomear recursos Raylib usados pela cena conserva os caminhos físicos e o programa
+(pass) trazer um mapa do Pinta não sobrescreve uma textura fixada por uma revisão 3D [16.00ms]
+
+src\export\__tests__\pythonWeb.test.ts:
+(pass) o pacote web exige o leitor dos dados 2/3; a fonte desktop continua disponível [266.00ms]
+(pass) Python classic: ZIP preserves author paths and material attribution, with verified runtime and fresh delivery permission [31.00ms]
+(pass) Python pro: ZIP preserves author paths and material attribution, with verified runtime and fresh delivery permission
+(pass) corrupt runtime bytes or a mismatched release cannot produce a web package [16.00ms]
+(pass) an explicit runtime missing a web launcher cannot claim support for this export format
+(pass) private path and known secret are refused before authorization or fetching, without modifying source
+(pass) access revoked after collecting and zipping still prevents delivery [15.00ms]
+(pass) a valid 200-character project name survives the real ZIP payload without truncation
+(pass) context cancellation during distribution fetch prevents any further file collection
+
+ 55 pass
+ 0 fail
+ 326 expect() calls
+Ran 55 tests across 10 files. [20.80s]

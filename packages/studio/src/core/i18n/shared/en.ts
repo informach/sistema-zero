@@ -380,6 +380,8 @@ export const en: Record<string, string> = {
   'pintaImport.image.review': 'Review selected image',
   'pintaImport.image.back': 'Back',
   'pintaImport.image.unavailable': 'Pinta images cannot be prepared in this environment right now.',
+  'pintaImport.image.sceneRuntimeUnavailable':
+    'Update this project’s environment to bring this scene. You can also choose the plain image.',
   'pintaImport.image.needsTileset': 'This map needs its tile set. Recover the set in Pinta.',
   'pintaImport.image.selectionMissing':
     'This animation, frame or tile is unavailable. Choose again.',

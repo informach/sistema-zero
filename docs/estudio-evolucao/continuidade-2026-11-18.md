@@ -316,3 +316,40 @@ orçamento inicial e não entrou na PR. A branch de laboratório seguinte,
 estudio-deep-storage-boundary-20261118, separa decodificação rara de captura de
 saída; os resultados finais e a migração ainda precisam ser fechados. Nenhuma
 chave v4 foi ativada. O stash anterior continua preservado como histórico.
+
+
+## Continuação de 19/11 — recuperação, abertura direta e cenas 3D
+
+A branch da missão em `53ce8709b` já inclui os arquivos integrais/validação de
+ancestrais (`74105f9e7`) e a abertura direta do documento único v2. O run
+44490067334 aprovou os 12 grupos de `74105f9e7`; a revisão posterior tem sua
+qualificação própria. Relatórios específicos estão em `docs/qa/2026-11-19-*`.
+
+O laboratório `estudio-deep-storage-boundary-20261118` chegou a `d8b3fdd4b`, com
+replay v3→v4, layouts v1/v2, arquivos integrais, dono exato e adaptação de bases
+sem journal. Último gate local: 550 testes / 2.874 asserções, typecheck e bundle
+119.686 gzip. Continua fora da PR; padrão v3, integração de lista/carregadores e
+ativação v4 pendentes. Antes de avançar, integrar o novo merge da missão e trocar
+os codecs locais de grafo por reexports dos módulos Core compartilhados; não
+manter duas implementações.
+
+O snapshot remoto `deb6a3e36fbeef4e378293589e73c5012552c1ac` foi incorporado à
+árvore isolada da missão para revisão dos contratos de cenas 3D/Raylib e Pinta.
+A revisão encontrou colisões de identidade (-0/0 e undefined/ausente) e estouro
+de pilha no hash recursivo de um projeto com 40.000 níveis. O preparo efêmero 3D
+agora usa o codec de grafo existente centralizado em Core; os hashes publicados
+não mudaram. A leitura rara saiu do carregamento inicial sem adicionar await à
+captura de saída. O limite gzip foi mantido: 119.300 bytes após correção.
+
+Gate local dessa integração: 550 testes / 2.865 asserções de estado/cenas/runtime,
+43 testes específicos / 173 asserções, Core grafo 8/18, matriz dos cursos 43/192,
+Blockly real das aulas 15/43, exportação/biblioteca 149/1.107, oito fluxos reais
+Pinta–Estúdio e 18 fluxos desktop/toque. Typecheck Estúdio aprovado. O perfil do
+executor foi regenerado e --check passou. Relatório com limites e sequência:
+`docs/qa/2026-11-19-studio-integration-deb6a3e36.md`.
+
+Não considerar isso conclusão global. Isolamento JS efetivo, escala visual do
+Blockly, integração/ativação v4, depuração/profiling/testes autorais, entrada e
+consumo completos de mundos 3D, homologação de host, sessões prolongadas e
+hardware físico continuam abertos. Preservar a identidade visual e os percursos
+dos dois cursos; não fazer merge em staging/main nem deploy.

@@ -69,6 +69,18 @@ conservam a resolução por nome. Um destino ausente ou ambíguo é recusado, se
 arbitrário do sistema de arquivos. O carregamento original de um único lugar permanece
 disponível em **Mapa com camadas e objetos**, com a receita anterior.
 
+O produtor registra também `output.dataVersion` na derivação: 2 para mapas avançados de
+um lugar e 3 para mundos. A receita antiga `map` continua versão 1 e conserva sua identidade;
+mapas de dados 1 mantêm os metadados anteriores, sem o campo novo. Cópias históricas não
+são regravadas só por abrir. O leitor completo é exigido ao importar/atualizar essas novas
+derivações, executar, gerar pacote web ou publicar. Uma recusa conserva o material e o
+programa; o exportador desktop leva o `pinta.py` atual e continua disponível.
+
+Antes de publicar, o servidor captura a exigência de leitor sem divulgar a receita ou a
+proveniência privadas. A autorização precisa corresponder ao runtime exato. Dados 2/3 não
+são publicados com um runtime que não declara suporte; numa atualização recusada, a revisão
+pública anterior permanece ativa. [Contrato e provas](missao-completa-2026-11-18/qa/leitores-de-cenarios/README.md).
+
 Os mundos têm orçamento acumulado de células, pixels e JSON; as cotas de material do
 projeto também continuam valendo. Veja [contrato e ensaios](missao-completa-2026-11-18/mundos-no-pygame.md).
 

@@ -7,6 +7,8 @@ import {
 import { conferirImagemDeCenario, lerPngDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import { inspecionarGlbDaCompilacao } from './inspecao-glb'
 
+export { inspecionarGlbDaCompilacao }
+
 export interface ConteudoConferidoDaCena {
   cena: CenaCompilada
   terreno?: { alturas: Float32Array; buracos?: Uint8Array }

@@ -127,6 +127,15 @@ Frases que não estavam no encontro e foram escritas para o formato de curso. N�
 - Segurança da plataforma dita em segunda pessoa ("você autoriza"), em vez de "o responsável" e "o pai" (Aula 7, Parte 1).
 - Parágrafo que fecha a reflexão sobre o futuro dos filhos (Aula 7, Parte 3).
 
+## Fala conversada e tags de voz (19/11/2026)
+
+A dona aprovou conteúdo e estrutura e pediu dois ajustes, sem mexer no que é dito:
+
+- **Jeito de falar.** A fala foi reescrita para soar como conversa, e não como texto lido: anúncios secos viraram perguntas ou ganchos ("O caminho é este." virou "E o que a gente vai ver nesse caminho?"), cada parágrafo começa ligado ao anterior e nenhum fica solto. Exemplos, argumentos e ordem são os mesmos; a matriz de cobertura acima continua valendo.
+- **Voz e apresentadora.** A voz é gerada no ElevenLabs e a apresentadora é o avatar da Helena no HeyGen. Os roteiros seguem as regras de `DIRETRIZES-VOZ-ELEVENLABS.md`, só com as tags de `qa/direcoes-voz.json`. Direção usada: abertura acolhedora, explicação em conversa animada, perguntas com curiosidade, problemas e objeções em tom pensativo, histórias da família com calor, definições e passos com clareza e sem pressa, e o presente com entusiasmo. Há um `[short pause]` antes de cada depoimento, para dar margem de corte.
+
+Trocas de palavra feitas para a fala: "sai saciada" virou "sai satisfeita"; "irritabilidade" virou "irritação"; "interação social" virou "convivência"; "senso crítico" no lugar de "crítica" (trecho do ChatGPT).
+
 ## Pontos de interpretação da transcrição
 
 A transcrição automática tem falhas. Estes trechos foram interpretados e merecem conferência da dona na leitura dos roteiros:
@@ -166,4 +175,4 @@ A fala afirma, como no encontro, que existem inúmeros estudos sobre programaç�
 ## Pendências
 
 - Apostila refeita em 18/11/2026 a partir dos roteiros. A frase da Isabela aparece sem o nome dela, e a apostila não revela o presente.
-- Gravação e edição dos 23 clipes; importação no Admin e publicação.
+- Geração da voz, avatar e edição dos 23 clipes; importação no Admin e publicação.

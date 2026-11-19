@@ -7,9 +7,8 @@ import { migrateLocalV3Project } from '../project-migrations/localV3'
 import { prepareLocalV3Recovery, stageLocalV3Recovery } from '../project-migrations/localV3Recovery'
 import { recoverLocalV3ProjectWrites } from '../project-migrations/localV3RecoveryReplay'
 import { EXIT_JOURNAL_MAX_CHARS, encodeExitJournal } from './exitJournalCodec'
-import { decodeExitJournal } from './exitJournalDecode'
+import { decodeExitJournal, decodeRecoverySnapshot } from './exitJournalDecode'
 import { readAllKeys, readValue, writeInOneTransaction } from './idbTransaction'
-import { decodeProjectJsonGraph as decodeRecoverySnapshot } from './projectJsonGraphDecode'
 import {
   bindProjectToDurableHead,
   coordinatedProjectWrite,

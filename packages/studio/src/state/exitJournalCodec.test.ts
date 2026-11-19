@@ -4,8 +4,7 @@ import {
   encodeExitJournal,
   encodeRecoverySnapshot,
 } from './exitJournalCodec'
-import { decodeExitJournal } from './exitJournalDecode'
-import { decodeProjectJsonGraph as decodeRecoverySnapshot } from './projectJsonGraphDecode'
+import { decodeExitJournal, decodeRecoverySnapshot } from './exitJournalDecode'
 
 test('journal codec preserves unknown fields, undefined, arrays, tags and negative zero', () => {
   const value = {

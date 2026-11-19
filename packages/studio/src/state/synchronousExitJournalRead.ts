@@ -1,8 +1,8 @@
 import { decodeExitJournal } from './exitJournalDecode'
 import {
   EXIT_JOURNAL_PREFIX,
-  ExitJournalError,
   type ExitJournalEntry,
+  ExitJournalError,
   exitJournalUnavailable,
 } from './synchronousExitJournal'
 

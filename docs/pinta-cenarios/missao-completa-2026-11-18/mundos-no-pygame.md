@@ -82,7 +82,7 @@ O controle de portas pertence somente ao programa Python da fixture.
   colisores, ponto inicial, porta de ida/volta por teclado e recusa de caminho externo.
 - [x] Executar regressões pygame e PyDew Valley no mesmo artefato; guardar identificação
   de Python, pygame-ce, distribuição e imagens sem credenciais.
-- [ ] Rever compatibilidade com runtimes antigos, tipos e testes; registrar o que falta
+- [x] Rever compatibilidade com runtimes antigos, tipos e testes; registrar o que falta
   para ativar o artefato em staging. Qualificação local não concede aprovação de publicação.
 
 O ensaio real encontrou e corrigiu uma diferença do RWops Emscripten: `BytesIO` não era
@@ -91,3 +91,34 @@ ao terminar. Provas, versões, limites e reprodução:
 [Python no navegador](qa/python-no-navegador/README.md).
 
 Provas e reprodução: [QA do mundo Python](qa/mundos-no-pygame/README.md).
+
+## Compatibilidade do mapa avançado com a receita anterior
+
+A receita `map` versão 1 pode produzir PNG de dados 1 ou 2. O leitor Python da fonte
+publicada em `f44648d9` aceita apenas dados 1; isso não identifica, por si só, o artefato
+Python atualmente ativo, cuja publicação é independente. Um mapa novo não pode ser
+oferecido ou substituir automaticamente um material anterior sem conferir o leitor fixado.
+
+Decisão: conservar identidade e bytes das receitas/mapas antigos. Acrescentar
+`output.dataVersion` somente aos PNGs de dados 2/3. Os metadados antigos sem esse campo
+continuam legíveis; o mundo também é identificado pela receita explícita versão 2.
+A capacidade já qualificada `pinta-map-world-v1` confirma o leitor completo dos dados 2/3.
+Sem catálogo do host, a edição/exportação offline continua disponível. Não inferir uma
+aprovação de runtime a partir do projeto ou do manifesto fornecido pelo próprio mapa.
+
+- [x] Testar contrato, marcador no produtor e bloqueio de execução antes de carregar runtime.
+- [x] Conferir a prévia e novamente o resultado final da importação; oferecer a imagem
+  simples existente quando o leitor não suporta os dados, sem trocar o estilo da interface.
+- [x] Conferir atualizações abertas/fechadas com catálogo fresco, conservando o material e
+  a programação quando o leitor não suporta o novo PNG. Nunca converter automaticamente
+  um mapa estruturado em imagem achatada para fazê-lo caber no leitor antigo.
+- [x] Ler assets, runtime e cabeça de revisão de um projeto fechado na mesma transação;
+  a gravação condicional recusa mudanças concorrentes. Conferir novamente o catálogo
+  antes da gravação, inclusive após rasterização em andamento ou acerto de cache.
+- [x] Ensaiar o fluxo no navegador, regressões, tipos e a recusa do leitor congelado;
+  registrar provas e integrar somente o lote verificado em staging.
+
+A revisão encontrou e corrigiu também o empacotamento web com leitor incompatível e a
+perda da exigência durante a projeção de privacidade na publicação. Casos livre, aula,
+oficina ao vivo e atualização de publicação conservam os originais e retiram a proveniência
+privada. Fonte desktop continua disponível. [Contrato e provas](qa/leitores-de-cenarios/README.md).

@@ -1,0 +1,78 @@
+{
+  "sourceBase": "88ede2b8d20c99890661a9dbb88ada9fb6c9c314",
+  "gates": {
+    "pinta": {
+      "tests": 2093,
+      "assertions": 23426,
+      "files": 177,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    "core": {
+      "tests": 28,
+      "assertions": 194,
+      "exitCode": 0
+    },
+    "editor": {
+      "tests": 12,
+      "assertions": 53,
+      "exitCode": 0,
+      "containedInFullPinta": true
+    },
+    "types": {
+      "pinta": 0,
+      "core": 0
+    },
+    "browser": {
+      "tests": 4,
+      "exitCode": 0,
+      "devices": ["desktop", "touch-emulated"]
+    },
+    "validationProfile": 0,
+    "globalBiome": {
+      "exitCode": 1,
+      "errors": 158,
+      "pintaDiagnostics": 0
+    }
+  },
+  "distributionSha256": "3d5d7d4ec2df4d03f374c9a5a70c264ff7bfc662ac9ee39823cff45d2cf6fdd2",
+  "distributionUnchanged": true,
+  "files": [
+    {
+      "path": "packages/core/src/studio/pinta-scene-geometry.ts",
+      "sha256": "120d0091630f730122ac79a6bb7f21665648ee3f5f9c980ef40e8d6931640d96"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-scene-geometry.test.ts",
+      "sha256": "94da7970990e7bd0f928a8ba6593fa247b37e8f91fa83ea1228ff6d23deda085"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-image.test.ts",
+      "sha256": "a9e2d26331531aff9a9963e50b266e666b87b44ea44b62143d3aa0d897b37c18"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/MapPlaytestDialog.tsx",
+      "sha256": "25ea036e6cfdf4497e2e9a699624d5a7e1652012c0bb22fe605da5a9490d40e1"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/playtest.ts",
+      "sha256": "93d9ab26789dc1a3cc4fac2498af9369207bb2121278616fad44de3036eabd5d"
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/playtestGeometry.test.ts",
+      "sha256": "768e2e9c8e79f0bf345341fc99485dd25b133e9020ea4dfa2517dd73ae8b00c4"
+    },
+    {
+      "path": "packages/pinta/scripts/homologacao/physics.ts",
+      "sha256": "986ff7fb1fbfac35cd77913725ac79aa6fbe4d7e9a88756fac1b6e19d56ce24d"
+    },
+    {
+      "path": "packages/studio/e2e/pinta-physics-scenes.flow.ts",
+      "sha256": "38e02661173679d7cc62fc26c9cf738a617d54590553b9845ddadfd2936cf339"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "b8f1359b111f8c6f7397689c71ff1e01ca2744a00069b04eb22011adc0a43484"
+    }
+  ]
+}

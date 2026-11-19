@@ -26,6 +26,12 @@
  */
 
 import { canonicalJson } from '@sistemazero/core/creations'
+import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  PINTA_SCENE_RUNTIME_MESSAGE,
+  pintaImageRuntimeCompatible,
+} from '../runtime/pintaImageCompatibility'
 import { mergeDrawingIntoAsset, PERSONAL_LIB_PREFIX, personalIdOf } from './personalAssetMerge'
 import { pintaMapWorld, pintaWorldNeedsInventory } from './pintaMapWorld'
 
@@ -66,9 +72,10 @@ function sameDrawingContent(asset: DrawingContent, drawing: DrawingContent): boo
 import { ulid } from 'ulid'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset, projectAssetBudgetChars } from '#core'
 import { perfSpanAsync } from '../core/perf'
+import { idsDosRecursosDeCena3D } from '../core/scene3d/referencias'
 import {
   listProjectSummariesLight,
-  loadProjectAssetsById,
+  loadProjectAssetsSnapshotById,
   persistProjectAssets,
 } from '../state/persistence'
 import { preparePintaMapBundle } from '../state/pintaMapBundle'
@@ -94,6 +101,7 @@ interface DrawingSyncState {
   inFlight: Promise<DrawingSyncResult> | null
   inFlightAdapter?: StudioPintaLibraryAdapter | null
   inFlightSignal?: AbortSignal
+  inFlightRuntimeCatalog?: () => StudioRuntimeCatalog | null
   inFlightStore?: ProjectStoreApi
   token?: object
   controller?: AbortController
@@ -106,6 +114,7 @@ interface DrawingSyncContext {
   state: DrawingSyncState
   canonicalChanged?: boolean
   callerSignal?: AbortSignal
+  runtimeCatalog?: () => StudioRuntimeCatalog | null
   mapInventory?: Promise<PersonalAsset[]>
   attemptedWorlds?: Map<string, Set<string>>
   canonicalWriteRefused?: boolean
@@ -260,7 +269,14 @@ export async function reconcileDrawingsFromRestoredProject(
     const id = personalIdOf(asset)
     // A captured frame is deliberately different from the canonical spritesheet.
     // It must retain the editable drawing identity, never become a personal copy.
-    if (!id || asset.kind === 'audio' || asset.kind === 'font' || asset.pintaImage !== undefined)
+    if (
+      !id ||
+      asset.kind === 'audio' ||
+      asset.kind === 'font' ||
+      asset.kind === 'scene3d' ||
+      asset.kind === 'scene3d-data' ||
+      asset.pintaImage !== undefined
+    )
       continue
     try {
       const drawing = drawings.get(id) ?? null
@@ -400,7 +416,11 @@ function worldFailure(
  */
 export function syncDrawingsIntoProjects(
   storeApi: ProjectStoreApi,
-  options: { pintaLibrary?: StudioPintaLibraryAdapter | null; signal?: AbortSignal } = {},
+  options: {
+    pintaLibrary?: StudioPintaLibraryAdapter | null
+    signal?: AbortSignal
+    runtimeCatalog?: () => StudioRuntimeCatalog | null
+  } = {},
 ): Promise<DrawingSyncResult> {
   const context = captureSyncContext()
   const adapter = options.pintaLibrary
@@ -409,6 +429,7 @@ export function syncDrawingsIntoProjects(
     context.state.inFlightStore === storeApi &&
     context.state.inFlightAdapter === adapter &&
     context.state.inFlightSignal === options.signal &&
+    context.state.inFlightRuntimeCatalog === options.runtimeCatalog &&
     !options.signal?.aborted &&
     !context.state.controller?.signal.aborted &&
     !context.storageScope.signal?.aborted
@@ -423,6 +444,7 @@ export function syncDrawingsIntoProjects(
   const token = {}
   context.state.token = token
   context.callerSignal = options.signal
+  context.runtimeCatalog = options.runtimeCatalog
   context.state.controller?.abort()
   const lifetime = new AbortController()
   context.state.controller = lifetime
@@ -460,6 +482,7 @@ export function syncDrawingsIntoProjects(
   const run = sweep(storeApi, changedAt, context)
   context.state.inFlightAdapter = adapter
   context.state.inFlightSignal = options.signal
+  context.state.inFlightRuntimeCatalog = options.runtimeCatalog
   context.state.inFlightStore = storeApi
   context.state.inFlight = run
   return run.finally(() => {
@@ -517,7 +540,7 @@ async function sweepUnmeasured(
   }
   let visited = 0
   for (const summary of summaries) {
-    const pythonProject = summary.programmingLanguage === 'python'
+    let pythonProject = summary.programmingLanguage === 'python'
     if (!context.canonicalChanged && !pythonProject) continue
     if (context.callerSignal?.aborted) break
     if (pythonProject && !context.python?.current()) continue
@@ -534,7 +557,10 @@ async function sweepUnmeasured(
     if (storeApi.getState().project?.id === summary.id) continue
     let worldPrepared = false
     try {
-      const assets = await loadProjectAssetsById(summary.id, context.storageScope)
+      const snapshot = await loadProjectAssetsSnapshotById(summary.id, context.storageScope)
+      const { assets, environment } = snapshot
+      if (environment.programmingLanguage === 'unknown') continue
+      pythonProject = environment.programmingLanguage === 'python'
       if (assets.length === 0) continue
       if (context.canonicalChanged)
         await resolveDrawings(
@@ -549,10 +575,13 @@ async function sweepUnmeasured(
       // A cena do Pinta conta junto (`projectAssetBudgetChars`), igual ao load.
       let total = assets.reduce((sum, a) => sum + projectAssetBudgetChars(a), 0)
       let changed = false
+      const updatedPythonImages: PintaImageDerivation[] = []
       let next = [...assets]
+      const recursosDeCenas = idsDosRecursosDeCena3D(assets)
       for (let index = 0; index < next.length; index++) {
         const asset = next[index]
         if (!asset) continue
+        if (recursosDeCenas.has(asset.id)) continue
         if (pythonProject && asset.pintaImage !== undefined) {
           if (!context.python?.current()) break
           try {
@@ -560,6 +589,17 @@ async function sweepUnmeasured(
             const replacement = await resolver.reconcile(asset, next)
             if (!context.python.current()) break
             if (replacement) {
+              if (replacement.pintaImage) {
+                if (
+                  !pintaImageRuntimeCompatible(
+                    replacement.pintaImage,
+                    environment.runtime,
+                    context.runtimeCatalog?.(),
+                  )
+                )
+                  throw new Error(PINTA_SCENE_RUNTIME_MESSAGE)
+                updatedPythonImages.push(replacement.pintaImage)
+              }
               next[index] = replacement
               total += projectAssetBudgetChars(replacement) - projectAssetBudgetChars(asset)
               changed = true
@@ -641,10 +681,22 @@ async function sweepUnmeasured(
         () =>
           !context.callerSignal?.aborted &&
           storeApi.getState().project?.id !== summary.id &&
+          updatedPythonImages.every((image) =>
+            pintaImageRuntimeCompatible(image, environment.runtime, context.runtimeCatalog?.()),
+          ) &&
           (!pythonProject || context.python?.current() === true),
       )
       if (written) result.updatedInOtherProjects += 1
-      else if (context.canonicalChanged) canonicalWritesCompleted = false
+      else {
+        if (context.canonicalChanged) canonicalWritesCompleted = false
+        if (
+          updatedPythonImages.some(
+            (image) =>
+              !pintaImageRuntimeCompatible(image, environment.runtime, context.runtimeCatalog?.()),
+          )
+        )
+          pushFailure(result, context.state, PINTA_SCENE_RUNTIME_MESSAGE)
+      }
     } catch {
       // Um projeto ilegível não pode derrubar a varredura dos outros.
       if (context.canonicalChanged) canonicalWritesCompleted = false
@@ -704,8 +756,10 @@ async function syncOpenProject(
         context.namespace,
       )
     if (!isContextActive(context)) return
+    const recursosDeCenas = idsDosRecursosDeCena3D(openProject.assets)
     for (const asset of openProject.assets) {
       if (!active || context.callerSignal?.aborted) return
+      if (recursosDeCenas.has(asset.id)) continue
       if (pythonProject && asset.pintaImage !== undefined) {
         if (!context.python?.current()) return
         const attempt = `${openProject.id}\u0000${asset.id}`
@@ -731,6 +785,15 @@ async function syncOpenProject(
           )
             continue
           resolver.assertFits(replacement, current.assets ?? [])
+          if (
+            replacement.pintaImage &&
+            !pintaImageRuntimeCompatible(
+              replacement.pintaImage,
+              current.runtime,
+              context.runtimeCatalog?.(),
+            )
+          )
+            throw new Error(PINTA_SCENE_RUNTIME_MESSAGE)
           const error = storeApi.getState().updateAssetImage(asset.id, {
             dataUrl: replacement.dataUrl,
             width: replacement.width,

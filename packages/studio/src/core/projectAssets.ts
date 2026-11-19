@@ -10,7 +10,14 @@ import {
 } from '@sistemazero/core/studio/pinta-scene'
 import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
-import { validProAssetPath } from './proAssetPaths'
+import { validProMaterialPath } from './proAssetPaths'
+import {
+  isScene3DAssetKind,
+  isValidScene3DDataUrl,
+  readScene3DDataMetadata,
+  readScene3DPythonMetadata,
+} from './scene3d/assets'
+import { assertScene3DReferences } from './scene3d/referencias'
 
 /** Uma animação nomeada de uma spritesheet (vinda do Pinta). */
 export interface ProjectSpriteAnim {
@@ -122,7 +129,11 @@ export interface ProjectAsset {
    * é bloqueada no preview). `font` (TTF/OTF) é só dos projetos Python: o
    * Raylib e o Pygame Zero abrem a fonte pelo caminho do arquivo.
    */
-  kind: 'image' | 'audio' | 'model3d' | 'environment3d' | 'font'
+  kind: 'image' | 'audio' | 'model3d' | 'environment3d' | 'font' | 'scene3d' | 'scene3d-data'
+  /** Compiler-owned physical terrain data; no generic binary uploads. */
+  dado3d?: { papel: 'alturas' | 'buracos' }
+  /** Generated source module; user edits are preserved on identical reimport. */
+  cena3dPython?: { modulo: string }
   /**
    * `data:image/...;base64,...` (imagem), `data:audio/...;base64,...` (áudio) ou
    * `data:model|image/...;base64,...` (3D) — validado: o prefixo precisa casar
@@ -506,6 +517,7 @@ export function isValidAssetDataUrl(
   dataLimits: ProjectAssetDataLimits = PROJECT_ASSET_LIMITS,
 ): value is string {
   if (typeof value !== 'string') return false
+  if (isScene3DAssetKind(kind)) return isValidScene3DDataUrl(value, kind, fileName)
   if (kind === 'font') {
     if (value.length > MAX_FONT_DATA_URL_CHARS || typeof fileName !== 'string') return false
     const mime = fontMimeFor(fileName)
@@ -567,14 +579,14 @@ export function sanitizeProjectAssetLicense(value: unknown): ProjectAsset['licen
 export function sanitizeProjectAssets(
   raw: unknown,
   options: {
-    materialPath?: (path: unknown) => path is string
+    materialPath?: (path: unknown, kind?: ProjectAsset['kind']) => path is string
     dataLimits?: ProjectAssetDataLimits
     /** Recebe os avisos do que foi deixado de fora sem derrubar o material (hoje, a cena). */
     warnings?: string[]
   } = {},
 ): ProjectAsset[] {
   if (!Array.isArray(raw)) return []
-  const materialPath = options.materialPath ?? validProAssetPath
+  const materialPath = options.materialPath ?? validProMaterialPath
   const dataLimits = options.dataLimits ?? PROJECT_ASSET_LIMITS
   const out: ProjectAsset[] = []
   const seenNames = new Set<string>()
@@ -584,7 +596,13 @@ export function sanitizeProjectAssets(
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
     const pintaImage = readPintaImageAssetMetadata(a)
-    if (a.kind !== 'image' && a.kind !== 'audio' && a.kind !== 'font' && !isAsset3DKind(a.kind))
+    if (
+      a.kind !== 'image' &&
+      a.kind !== 'audio' &&
+      a.kind !== 'font' &&
+      !isAsset3DKind(a.kind) &&
+      !isScene3DAssetKind(a.kind)
+    )
       continue
     const kind: ProjectAsset['kind'] = a.kind
     // 3D: a validação cruza extensão × MIME × assinatura, então o nome do
@@ -604,10 +622,20 @@ export function sanitizeProjectAssets(
       source,
       ...(pintaImage ? { pintaImage } : {}),
     }
-    if (materialPath(a.proPath)) asset.proPath = a.proPath
+    if (materialPath(a.proPath, kind)) asset.proPath = a.proPath
+    if (kind === 'scene3d-data') {
+      const meta = readScene3DDataMetadata(a.dado3d)
+      if (!meta) continue
+      asset.dado3d = meta
+    }
+    if (a.cena3dPython !== undefined) {
+      const meta = readScene3DPythonMetadata(a.cena3dPython)
+      if (kind !== 'scene3d' || !meta) continue
+      asset.cena3dPython = meta
+    }
     const license = sanitizeProjectAssetLicense(a.license)
     if (license) asset.license = license
-    if (fileName && (isAsset3DKind(kind) || kind === 'font'))
+    if (fileName && (isAsset3DKind(kind) || kind === 'font' || isScene3DAssetKind(kind)))
       asset.originalFileName = fileName.slice(0, 128)
     if (typeof a.width === 'number' && Number.isFinite(a.width) && a.width > 0) {
       asset.width = Math.floor(a.width)
@@ -654,6 +682,7 @@ export function sanitizeProjectAssets(
     totalChars += a.dataUrl.length
     out.push(asset)
   }
+  assertScene3DReferences(out)
   return out
 }
 

@@ -1,0 +1,29 @@
+{
+  "from": "80825161b028772f53d1e132b25d8982028fd1b54fae02fe3492668f9a7ad999",
+  "to": "3d5d7d4ec2df4d03f374c9a5a70c264ff7bfc662ac9ee39823cff45d2cf6fdd2",
+  "changed": [
+    {
+      "path": "_http/gzip/9428a45a09cd787f524c7ed3dc0ccdc9c70f61027264e9bb8060650f0717a3e7.gz",
+      "sha256": "9428a45a09cd787f524c7ed3dc0ccdc9c70f61027264e9bb8060650f0717a3e7",
+      "bytes": 55436
+    },
+    {
+      "path": "raylib/cenario.py",
+      "sha256": "f437b62d976bc4755aa7bdbf3e098058eba83f5cc84804f3be6ca99d3e28b8f1",
+      "bytes": 17888
+    },
+    {
+      "path": "worker.mjs",
+      "sha256": "11990ece1d9bf2cfd941df57f6e5a44317ed6cbc94aab50a431c4bac389fee0b",
+      "bytes": 191651
+    }
+  ],
+  "removed": [
+    {
+      "path": "_http/gzip/fc97e3a49ed8cb31c06d8f9f6e88ca8783532cd18f00fcbddd8598b1f14f9c88.gz",
+      "sha256": "fc97e3a49ed8cb31c06d8f9f6e88ca8783532cd18f00fcbddd8598b1f14f9c88",
+      "bytes": 55429
+    }
+  ],
+  "unchanged": 123
+}

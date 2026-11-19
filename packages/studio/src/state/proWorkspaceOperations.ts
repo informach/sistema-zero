@@ -143,6 +143,12 @@ export async function prepareProWorkspaceOperation(
     const index = project.assets?.findIndex((asset) => asset.id === intent.id) ?? -1
     const asset = project.assets?.[index]
     if (!asset) throw new Error('Material não encontrado.')
+    const { cenasQueUsamAsset } = await import('../core/scene3d/referencias')
+    const usadas = cenasQueUsamAsset(project.assets ?? [], asset.id)
+    if (usadas.length)
+      throw new Error(
+        `Este material é usado pelos cenários: ${usadas.join(', ')}. Remova primeiro os cenários que dependem dele.`,
+      )
     const manifest = await materialReferences(project)
     const url = manifest.find((entry) => entry.id === asset.id)?.url
     const references = Object.entries(tree).flatMap(([path, node]) =>

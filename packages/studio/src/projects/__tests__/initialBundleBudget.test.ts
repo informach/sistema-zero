@@ -101,23 +101,20 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
         moduleId.replace(/\\/g, '/').endsWith('/state/projectSynchronousExitRecovery.ts'),
       ),
     ).toEqual([])
-    expect(
-      Object.keys(chunk.modules).filter((moduleId) =>
-        moduleId.replace(/\\/g, '/').endsWith('/state/projectStorageTransport.ts'),
-      ),
-    ).toEqual([])
-    expect(
-      Object.keys(chunk.modules).filter((moduleId) =>
-        [
-          'projectJsonGraphDecode.ts',
-          'exitJournalDecode.ts',
-          'synchronousExitJournalRead.ts',
-          'projectIndexedRecovery.ts',
-          'projectRecoveryGuards.ts',
-          'projectRecoverySources.ts',
-        ].some((file) => moduleId.replace(/\\/g, '/').endsWith(`/state/${file}`)),
-      ),
-    ).toEqual([])
+    for (const module of [
+      'projectStorageTransport',
+      'projectJsonGraphDecode',
+      'projectIndexedRecovery',
+      'projectRecoveryGuards',
+      'projectRecoverySources',
+      'exitJournalDecode',
+      'synchronousExitJournalRead',
+    ])
+      expect(
+        Object.keys(chunk.modules).filter((moduleId) =>
+          moduleId.replace(/\\/g, '/').endsWith(`/state/${module}.ts`),
+        ),
+      ).toEqual([])
   }
   const initialBytes = initialChunks.reduce(
     (total, entry) => total + (entry?.type === 'chunk' ? Buffer.byteLength(entry.code) : 0),

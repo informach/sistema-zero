@@ -334,3 +334,10 @@ Partições v3 de dados reaparecidas significam edição de aba antiga mesmo com
 O documento, shell, metadados, blocos, materiais, resumos e vínculo com cabeça durável devem observar o mesmo corte antes de permitir gravação. Capturar o scope antes de qualquer await. Preparar o transporte v4 por leitura normal antes de permitir edição/saída de projeto novo. Dados do jogo conservam as chaves e valores brutos existentes. A listagem sem origens antigas deve continuar sem carregar decodificadores, motores ou editor.
 
 A lacuna independente de `sz:v2:project:<id>` na sondagem de abertura direta está sendo corrigida na branch principal com seis testes transacionais; incorporar essa correção após sua qualificação.
+
+
+## Continuação — contratos 3D e codec único em Core
+
+A integração de `e46f579f0` conserva todo o laboratório e elimina as cópias de implementação do grafo: os módulos locais são fachadas de Core. O padrão segue v3. Foram aprovados 620 testes / 3.210 asserções, typecheck, lint dos 56 arquivos alterados e bundle inicial 119.820 gzip. Evidências e limites: `docs/qa/2026-11-19-studio-v4-shared-graph-integration.md`.
+
+A preparação de bases sem journal está implementada; ainda falta conectá-la à listagem e aos carregadores. Uma pendência deve ser isolada por ID na lista, e propagada numa abertura direta, sem fallback para uma cópia histórica mais velha. Chaves de journal só servem como candidatos para roteamento; autoridade para consumo vem da identidade completa validada do payload. Escritores com dois-pontos e formatos futuros permanecem casos obrigatórios.
