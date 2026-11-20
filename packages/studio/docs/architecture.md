@@ -218,6 +218,12 @@ cache de source map. Assim, a simples abertura não acrescenta um banner ou
 substitui chaves provisórias de eventos/cooldowns no meio da entrada nativa.
 Isso não dispensa verificar outras diferenças de geração ou as migrações.
 
+Na carga leve sem IR, `blockGenerationInput` recupera a casca HTML dos arquivos
+salvos antes de gerar. `extractInlineAssetMetadata` compartilha a extração de
+assets/placements do parser, sem percorrer o corpo para formar IR. A ausência
+de IR não autoriza substituir título, viewport, idioma ou head pelo padrão.
+Falha de recuperação preserva os arquivos e é exibida em Problemas.
+
 
 ## Identidade integral e recuperação local (19/11/2026)
 
