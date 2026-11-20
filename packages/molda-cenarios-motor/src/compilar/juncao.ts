@@ -3,11 +3,22 @@ import {
   LIMITES_DA_EXPORTACAO,
   type PacoteCompilado,
 } from '@sistemazero/molda-cenarios-core/compilar'
-import { Box3, type Material, Matrix4, Mesh } from 'three'
+import {
+  Box3,
+  type BufferGeometry,
+  DataTexture,
+  type Material,
+  Matrix4,
+  Mesh,
+  type MeshStandardMaterial,
+  RGBAFormat,
+  SRGBColorSpace,
+} from 'three'
 import { type CacheDeImagens, lerGlb, type ModeloCarregado } from '../modelos'
 import { ArquivosDaCompilacao } from './arquivos'
 import { gravarGlbCompilado } from './arquivos-glb'
 import { conferirConteudoCompilado } from './conteudo'
+import { pixelsDaTexturaCompilada } from './imagens'
 import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from './inspecao-glb'
 import {
   bytesDaParteParaJuncao,
@@ -16,6 +27,66 @@ import {
 } from './lote-estatico'
 import { cederDuranteCompilacao, volumeDaCaixa } from './montagem'
 import type { ProgressoDaCompilacao } from './recursos'
+import {
+  comporAtlasDoRelevo,
+  levarUvAoAtlas,
+  planejarAtlasDoRelevo,
+  uvSegueOChao,
+} from './relevo-atlas'
+
+interface PecaDoRelevo {
+  geometria: BufferGeometry
+  matriz: Matrix4
+  material: MeshStandardMaterial
+  entidade: string | null
+  chao: { minX: number; minZ: number; largura: number; profundidade: number }
+}
+const MAPAS_QUE_USAM_UV = [
+  'normalMap',
+  'roughnessMap',
+  'metalnessMap',
+  'aoMap',
+  'emissiveMap',
+  'alphaMap',
+  'bumpMap',
+  'displacementMap',
+  'lightMap',
+] as const
+function ladoDoMapa(m: MeshStandardMaterial) {
+  const img = m.map?.image as { width?: number; height?: number; naturalWidth?: number } | null
+  return img?.naturalWidth ?? img?.width ?? 0
+}
+/** Só o chão assado entra no atlas: textura quadrada sRGB sem inverter nem repetir, e nenhum
+ * outro mapa que dependa do UV (ele muda de lugar no atlas). */
+function materialDoAtlas(m: Material): m is MeshStandardMaterial {
+  const s = m as MeshStandardMaterial,
+    mapa = s.map
+  if (!s.isMeshStandardMaterial || s.transparent || s.alphaTest || !mapa) return false
+  const img = mapa.image as { width?: number; height?: number; naturalHeight?: number } | null,
+    lado = ladoDoMapa(s)
+  if (!lado || lado !== (img?.naturalHeight ?? img?.height)) return false
+  if (mapa.flipY || mapa.colorSpace !== SRGBColorSpace || mapa.channel !== 0) return false
+  if (mapa.repeat.x !== 1 || mapa.repeat.y !== 1 || mapa.offset.x || mapa.offset.y || mapa.rotation)
+    return false
+  return MAPAS_QUE_USAM_UV.every((k) => !s[k])
+}
+const assinaturaDoAtlas = (m: MeshStandardMaterial) =>
+  JSON.stringify([
+    m.color.getHex(),
+    m.emissive.getHex(),
+    m.emissiveIntensity,
+    m.roughness,
+    m.metalness,
+    m.side,
+    m.opacity,
+    m.vertexColors,
+    m.flatShading,
+    ladoDoMapa(m),
+    m.map?.magFilter,
+    m.map?.minFilter,
+    m.map?.wrapS,
+    m.map?.wrapT,
+  ])
 
 export interface OpcoesDaJuncaoEstatica {
   tamanhoDaRegiao?: number
@@ -54,11 +125,40 @@ export async function juntarEstaticosDoPacote(
     // A geometria vai copiada para os lotes: o arquivo sai da memória depois do último nó que o
     // usa (os caminhos, um arquivo por caminho, ficavam todos juntos até o fim).
     usosRestantes = new Map<string, number>(),
-    materializacao = new Map<string, number>()
+    materializacao = new Map<string, number>(),
+    // As peças do relevo esperam a região inteira para virar uma malha com atlas.
+    relevos = new Map<string, { matriz: Matrix4; pecas: PecaDoRelevo[] }>()
   for (const n of cena.nos) usosRestantes.set(n.arquivo, (usosRestantes.get(n.arquivo) ?? 0) + 1)
   let memoriaDosModelos = 0,
     memoriaDosLotes = 0,
     numero = 0
+  const conferirMemoria = (extra = 0) => {
+    if (
+      memoriaDosModelos + (memoriaDosLotes + extra) * 3 >
+      LIMITES_DA_EXPORTACAO.malha.bytesDaFonte
+    )
+      throw Error('A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.')
+  }
+  const adicionarAoGrupo = (
+    chave: string,
+    material: Material,
+    matriz: Matrix4,
+    fonte: { geometria: BufferGeometry; matriz: Matrix4 },
+    entidade: string | null,
+  ) => {
+    conferirMemoria(bytesDaParteParaJuncao(fonte.geometria))
+    let grupo = grupos.get(chave)
+    if (!grupo) {
+      if (grupos.size >= 8192)
+        throw Error('A junção exige lotes demais. Divida a região de exportação.')
+      grupo = { lote: new LoteEstaticoCompilado(), material, matriz }
+      grupos.set(chave, grupo)
+    }
+    const anterior = grupo.lote.bytesDeEntrada
+    grupo.lote.adicionar(fonte, entidade)
+    memoriaDosLotes += grupo.lote.bytesDeEntrada - anterior
+    conferirMemoria()
+  }
   try {
     for (const [i, no] of cena.nos.entries()) {
       const restam = usosRestantes.get(no.arquivo)! - 1
@@ -111,33 +211,42 @@ export async function juntarEstaticosDoPacote(
             (linha + 0.5) * tamanho,
           ),
           relativa = matriz.clone().invert().multiply(new Matrix4().fromArray(no.matriz))
-        for (const p of modelo.partes) {
-          if (
-            memoriaDosModelos + (memoriaDosLotes + bytesDaParteParaJuncao(p.geometria)) * 3 >
-            LIMITES_DA_EXPORTACAO.malha.bytesDaFonte
-          )
-            throw Error(
-              'A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.',
-            )
-          const chave = `${coluna}/${linha}/${p.material.uuid}/${layoutDaParteEstatica(p.geometria)}`
-          let grupo = grupos.get(chave)
-          if (!grupo) {
-            if (grupos.size >= 8192)
-              throw Error('A junção exige lotes demais. Divida a região de exportação.')
-            grupo = { lote: new LoteEstaticoCompilado(), material: p.material, matriz }
-            grupos.set(chave, grupo)
+        const [unica] = modelo.partes
+        if (metadados.get(no.arquivo)?.papel === 'terreno' && modelo.partes.length === 1 && unica) {
+          // Peça do relevo com o chão assado: guarda até a região completar (atlas depois do laço).
+          const matrizDaPeca = relativa.clone().multiply(unica.matriz),
+            chao = materialDoAtlas(unica.material)
+              ? uvSegueOChao(unica.geometria, matrizDaPeca)
+              : null
+          if (chao && materialDoAtlas(unica.material)) {
+            const chaveDaRegiao = `${coluna}/${linha}`,
+              geometria = unica.geometria.clone()
+            let regiao = relevos.get(chaveDaRegiao)
+            if (!regiao) {
+              regiao = { matriz, pecas: [] }
+              relevos.set(chaveDaRegiao, regiao)
+            }
+            regiao.pecas.push({
+              geometria,
+              matriz: matrizDaPeca,
+              material: unica.material,
+              entidade: no.entidade,
+              chao,
+            })
+            memoriaDosLotes += bytesDaParteParaJuncao(geometria)
+            conferirMemoria()
+            await cederDuranteCompilacao(sinal)
+            continue
           }
-          const anterior = grupo.lote.bytesDeEntrada
-          grupo.lote.adicionar(
+        }
+        for (const p of modelo.partes)
+          adicionarAoGrupo(
+            `${coluna}/${linha}/${p.material.uuid}/${layoutDaParteEstatica(p.geometria)}`,
+            p.material,
+            matriz,
             { geometria: p.geometria, matriz: relativa.clone().multiply(p.matriz) },
             no.entidade,
           )
-          memoriaDosLotes += grupo.lote.bytesDeEntrada - anterior
-          if (memoriaDosModelos + memoriaDosLotes * 3 > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
-            throw Error(
-              'A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.',
-            )
-        }
         await cederDuranteCompilacao(sinal)
       } finally {
         const modelo = restam === 0 ? modelos.get(no.arquivo) : undefined
@@ -149,6 +258,66 @@ export async function juntarEstaticosDoPacote(
         }
       }
     }
+    for (const [chave, regiao] of relevos) {
+      sinal.throwIfAborted()
+      const [primeira] = regiao.pecas
+      if (!primeira) continue
+      const assinatura = assinaturaDoAtlas(primeira.material),
+        layout = layoutDaParteEstatica(primeira.geometria),
+        plano = regiao.pecas.every(
+          (p) =>
+            assinaturaDoAtlas(p.material) === assinatura &&
+            layoutDaParteEstatica(p.geometria) === layout,
+        )
+          ? planejarAtlasDoRelevo(
+              regiao.pecas.map((p) => ({ ...p.chao, lado: ladoDoMapa(p.material) })),
+            )
+          : null
+      let material: MeshStandardMaterial | undefined
+      if (plano) {
+        const lado = ladoDoMapa(primeira.material),
+          pixels = regiao.pecas.map((p) => {
+            const r = pixelsDaTexturaCompilada(p.material.map!, sinal)
+            if (r.largura !== lado || r.altura !== lado || r.flipY)
+              throw Error('A textura de uma peça do relevo mudou durante a junção.')
+            return r.pixels
+          }),
+          atlas = comporAtlasDoRelevo(plano, pixels, lado),
+          base = primeira.material.map!,
+          mapa = new DataTexture(atlas, plano.largura, plano.altura, RGBAFormat)
+        memoriaDosLotes += atlas.byteLength
+        conferirMemoria()
+        mapa.colorSpace = SRGBColorSpace
+        mapa.flipY = false
+        mapa.wrapS = base.wrapS
+        mapa.wrapT = base.wrapT
+        mapa.magFilter = base.magFilter
+        mapa.minFilter = base.minFilter
+        mapa.generateMipmaps = base.generateMipmaps
+        mapa.needsUpdate = true
+        material = primeira.material.clone()
+        material.map = mapa
+        for (const [i, p] of regiao.pecas.entries())
+          levarUvAoAtlas(p.geometria, plano.celulas[i]!, plano)
+      }
+      for (const p of regiao.pecas) {
+        memoriaDosLotes -= bytesDaParteParaJuncao(p.geometria)
+        // Sem atlas (peça sozinha na região, ou fora da grade), cada uma segue como antes.
+        adicionarAoGrupo(
+          material
+            ? `${chave}/relevo/${layout}`
+            : `${chave}/${p.material.uuid}/${layoutDaParteEstatica(p.geometria)}`,
+          material ?? p.material,
+          regiao.matriz,
+          { geometria: p.geometria, matriz: p.matriz },
+          p.entidade,
+        )
+        p.geometria.dispose()
+      }
+      regiao.pecas.length = 0
+      await cederDuranteCompilacao(sinal)
+    }
+    relevos.clear()
     for (const g of grupos.values()) {
       sinal.throwIfAborted()
       const partes = g.lote.finalizar()
@@ -224,6 +393,7 @@ export async function juntarEstaticosDoPacote(
     sinal.throwIfAborted()
     return { cena: resultado.cena, arquivos: new Map(arquivos.arquivos) }
   } finally {
+    for (const r of relevos.values()) for (const p of r.pecas) p.geometria.dispose()
     for (const g of grupos.values()) g.lote.descartar()
     for (const m of modelos.values()) m.descartar()
     imagens.clear()
