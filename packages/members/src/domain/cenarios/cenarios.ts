@@ -276,6 +276,11 @@ export interface AberturaDosCenarios {
    * esta conferência, a ferramenta fica só para a equipe.
    */
   produto?: (ator: Ator) => Promise<boolean>
+  /**
+   * As faixas de ferramentas da oficina (`FAIXAS_DA_OFICINA`) de quem não é da equipe: a mesma
+   * régua das faixas do Molda. Sem esta conferência, só o básico. A equipe tem todas.
+   */
+  faixas?: (ator: Ator) => Promise<readonly string[]>
   /** A cota de cada conta em bytes (padrão: `LIMITES_DOS_CENARIOS.bytesDaConta`). Vale também
    * para os espaços que já existem: a cota guardada é trocada no próximo uso. */
   cotaDaContaBytes?: number

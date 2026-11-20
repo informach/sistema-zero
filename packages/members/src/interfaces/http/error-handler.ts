@@ -14,6 +14,7 @@ import {
   CenarioArquivoAusenteError,
   CenarioArquivoSaindoError,
   CenarioDesatualizadoError,
+  CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
 } from '../../domain/cenarios/cenarios.errors'
 import { CourseJourneyLockedError, QuizCooldownError } from '../../domain/course/course.errors'
@@ -177,6 +178,7 @@ export function buildErrorResponse(input: {
       | { revisaoAtual: number }
       | { problemas: string[] }
       | { digests: string[] }
+      | { familias: string[] }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -282,6 +284,15 @@ export function buildErrorResponse(input: {
       body: {
         ...envelope(error.code, error.message),
         details: { problemas: [...error.problemas].slice(0, 20) },
+      },
+    }
+  }
+  if (error instanceof CenarioFerramentaTrancadaError) {
+    return {
+      status: 403,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { familias: error.familias.map((f) => f.id) },
       },
     }
   }

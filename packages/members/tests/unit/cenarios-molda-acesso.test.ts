@@ -25,11 +25,17 @@ const adulto: Ator = {
 }
 
 function montar(
-  o: { produto?: string[]; kids?: string[]; adulto?: string[]; falha?: boolean } = {},
+  o: {
+    produto?: string[]
+    kids?: string[]
+    adulto?: string[]
+    curriculo?: boolean
+    falha?: boolean
+  } = {},
 ) {
   const chamadas = { produto: [] as string[][], kids: 0, adulto: 0 }
   let agora = 1_000_000
-  const conferir = criarConferenciaDoMolda({
+  const conferencia = criarConferenciaDoMolda({
     agora: () => agora,
     accessCheck: {
       execute: async (_conta, refs) => {
@@ -42,17 +48,26 @@ function montar(
     kidsJourney: {
       get: async () => {
         chamadas.kids += 1
+        if (o.falha) throw Error('fora do ar')
         return { earned: { capabilities: o.kids ?? [] } } as never
       },
     },
     adultJourney: {
       get: async () => {
         chamadas.adulto += 1
-        return { capabilities: o.adulto ?? [] } as never
+        return {
+          capabilities: o.adulto ?? [],
+          ...(o.curriculo ? { curriculum: {} } : {}),
+        } as never
       },
     },
   })
-  return { conferir, chamadas, passar: (ms: number) => (agora += ms) }
+  return {
+    conferir: conferencia.produto,
+    faixas: conferencia.faixas,
+    chamadas,
+    passar: (ms: number) => (agora += ms),
+  }
 }
 
 afterEach(() => resetToolOwnershipCacheForTests())
@@ -108,5 +123,24 @@ describe('o Molda de quem abre os cenários', () => {
     expect(await conferir(crianca)).toBe(false)
     expect(chamadas.kids).toBe(2)
     expect(await montar({ falha: true }).conferir(crianca)).toBe(false)
+  })
+
+  test('as faixas seguem a jornada: uma capacidade por faixa, e o adulto antigo tem todas', async () => {
+    expect(await montar({ kids: ['molda', 'molda-intermediate'] }).faixas(crianca)).toEqual([
+      'basic',
+      'intermediate',
+    ])
+    resetToolOwnershipCacheForTests()
+    expect(await montar({ kids: ['molda-professional'] }).faixas(crianca)).toEqual(['professional'])
+    resetToolOwnershipCacheForTests()
+    expect(await montar({ adulto: ['molda'] }).faixas(adulto)).toEqual([
+      'basic',
+      'intermediate',
+      'professional',
+    ])
+    resetToolOwnershipCacheForTests()
+    expect(await montar({ adulto: ['molda'], curriculo: true }).faixas(adulto)).toEqual(['basic'])
+    resetToolOwnershipCacheForTests()
+    expect(await montar({ falha: true, kids: ['molda'] }).faixas(crianca)).toEqual([])
   })
 })

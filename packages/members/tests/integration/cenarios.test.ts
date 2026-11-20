@@ -501,6 +501,61 @@ describe('Molda Cenários: quem entra', () => {
       aberto: true,
     })
   })
+  test('ferramenta fora da faixa do posto: 403 com as famílias trancadas', async () => {
+    const { app } = buildApp({ cenariosModo: 'aberto', cenariosFaixas: async () => ['basic'] })
+    const [espaco] = await json(
+      await pedir(app, 'GET', '/members/cenarios/espacos', undefined, doCliente),
+    )
+    const mundo = await json(
+      await pedir(
+        app,
+        'POST',
+        `/members/cenarios/espacos/${espaco.id}/mundos`,
+        { nome: 'Ilha' },
+        doCliente,
+      ),
+    )
+    const cenario = await json(
+      await pedir(
+        app,
+        'POST',
+        `/members/cenarios/mundos/${mundo.id}/cenarios`,
+        { nome: 'Praia' },
+        doCliente,
+      ),
+    )
+    const resposta = await pedir(
+      app,
+      'POST',
+      `/members/cenarios/cenarios/${cenario.id}/lotes`,
+      {
+        revisaoEsperada: 0,
+        operacaoId: 'camera-0001',
+        comandos: [
+          {
+            tipo: 'marcador.definir',
+            marcador: {
+              id: 'cam',
+              nome: 'Câmera',
+              grupo: null,
+              bloqueado: false,
+              oculto: false,
+              posicao: { x: 0, y: 2, z: 0 },
+              giro: 0,
+              noChao: false,
+              objeto: null,
+              configuracao: { tipo: 'camera', alvo: { x: 0, y: 0, z: -1 }, campoDeVisao: 60 },
+            },
+          },
+        ],
+      },
+      doCliente,
+    )
+    expect(resposta.status).toBe(403)
+    const corpo = await json(resposta)
+    expect(corpo.error.code).toBe('CENARIO_FERRAMENTA_TRANCADA')
+    expect(corpo.details).toEqual({ familias: ['jogo.cameras'] })
+  })
   test('aberto para todos: o cliente tem o espaço dele e não enxerga o de outra conta', async () => {
     const ctx = buildApp({ cenariosModo: 'aberto' })
     const { biblioteca } = await comBiblioteca(ctx)

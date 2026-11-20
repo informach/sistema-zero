@@ -469,7 +469,7 @@ export async function createApplication(env: Env): Promise<Application> {
         .map((id) => id.trim().toLowerCase())
         .filter(Boolean),
     ),
-    produto: criarConferenciaDoMolda({ accessCheck, kidsJourney: kidsJourneyQuery, adultJourney }),
+    ...criarConferenciaDoMolda({ accessCheck, kidsJourney: kidsJourneyQuery, adultJourney }),
     ...(env.CENARIOS_COTA_DA_CONTA_MB
       ? { cotaDaContaBytes: env.CENARIOS_COTA_DA_CONTA_MB * 1024 ** 2 }
       : {}),

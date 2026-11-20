@@ -1,4 +1,6 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
+import { KIDS_MOLDA_BAND_CAPABILITIES } from '@sistemazero/core/journey'
+import { FAIXAS_DA_OFICINA, type FaixaDaOficina } from '@sistemazero/molda-cenarios-core/v2'
 import type { Ator } from '../../domain/cenarios/cenarios'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
@@ -30,9 +32,14 @@ export function criarConferenciaDoMolda(deps: {
   kidsJourney: Pick<KidsJourneyQueryService, 'get'>
   adultJourney: Pick<AdultJourneyService, 'get'>
   agora?: () => number
-}): (ator: Ator) => Promise<boolean> {
+}): {
+  /** O Molda de quem pede: o produto e a ferramenta liberada na jornada (o básico). */
+  produto(ator: Ator): Promise<boolean>
+  /** As faixas de ferramentas que a jornada de quem pede liberou. */
+  faixas(ator: Ator): Promise<readonly FaixaDaOficina[]>
+} {
   const agora = deps.agora ?? Date.now
-  const jornada = new Map<string, number>()
+  const jornada = new Map<string, { ate: number; faixas: readonly FaixaDaOficina[] }>()
   onToolOwnershipInvalidated((contas) => {
     const fora = new Set(contas)
     for (const chave of jornada.keys()) if (fora.has(chave.split(':')[0]!)) jornada.delete(chave)
@@ -48,34 +55,66 @@ export function criarConferenciaDoMolda(deps: {
     return true
   }
 
-  async function liberadoNaJornada(ator: Ator, audiencia: 'kids' | 'adult'): Promise<boolean> {
+  /**
+   * As faixas pela jornada, a mesma régua do Molda: no Kids, uma capacidade por faixa; no adulto,
+   * a política antiga (sem currículo) dava todas com o `molda`, e a de currículo é por faixa
+   * (`adultMoldaOpenBands` do member-shell).
+   */
+  async function faixasDaJornada(
+    ator: Ator,
+    audiencia: 'kids' | 'adult',
+  ): Promise<readonly FaixaDaOficina[]> {
     const chave = `${ator.contaId}:${ator.usuarioId}:${audiencia}`
-    const ate = jornada.get(chave)
-    if (ate !== undefined && ate > agora()) return true
+    const guardada = jornada.get(chave)
+    if (guardada && guardada.ate > agora()) return guardada.faixas
     const desde = toolOwnershipGeneration()
-    const capacidades =
-      audiencia === 'kids'
-        ? (await deps.kidsJourney.get({ userId: ator.usuarioId, accountId: ator.contaId })).earned
-            .capabilities
-        : (await deps.adultJourney.get(ator.usuarioId)).capabilities
-    if (!(capacidades as readonly string[]).includes('molda')) return false
-    if (desde === toolOwnershipGeneration()) {
-      jornada.set(chave, agora() + JORNADA_TTL_MS)
-      if (jornada.size > 5_000)
-        for (const [k, vence] of jornada) if (vence <= agora()) jornada.delete(k)
+    let faixas: FaixaDaOficina[]
+    if (audiencia === 'kids') {
+      const capacidades: readonly string[] = (
+        await deps.kidsJourney.get({ userId: ator.usuarioId, accountId: ator.contaId })
+      ).earned.capabilities
+      faixas = FAIXAS_DA_OFICINA.filter((f) =>
+        capacidades.includes(KIDS_MOLDA_BAND_CAPABILITIES[f]),
+      )
+    } else {
+      const visao = await deps.adultJourney.get(ator.usuarioId)
+      const capacidades: readonly string[] = visao.capabilities
+      faixas =
+        !visao.curriculum && capacidades.includes('molda')
+          ? [...FAIXAS_DA_OFICINA]
+          : FAIXAS_DA_OFICINA.filter((f) => capacidades.includes(KIDS_MOLDA_BAND_CAPABILITIES[f]))
     }
-    return true
+    // Só o "pode" fica guardado: sem o básico, a próxima pergunta consulta de novo.
+    if (faixas.includes('basic') && desde === toolOwnershipGeneration()) {
+      jornada.set(chave, { ate: agora() + JORNADA_TTL_MS, faixas })
+      if (jornada.size > 5_000)
+        for (const [k, v] of jornada) if (v.ate <= agora()) jornada.delete(k)
+    }
+    return faixas
   }
 
-  return async (ator) => {
-    // O gateway só injeta a conta numa sessão de perfil, e o Molda do Kids mora no perfil.
-    const audiencia = (ator.perfil ?? ator.usuarioId !== ator.contaId) ? 'kids' : 'adult'
-    try {
-      return (
-        (await temProduto(ator.contaId, audiencia)) && (await liberadoNaJornada(ator, audiencia))
-      )
-    } catch {
-      return false
-    }
+  // O gateway só injeta a conta numa sessão de perfil, e o Molda do Kids mora no perfil.
+  const audienciaDe = (ator: Ator) =>
+    (ator.perfil ?? ator.usuarioId !== ator.contaId) ? 'kids' : 'adult'
+
+  return {
+    async produto(ator) {
+      const audiencia = audienciaDe(ator)
+      try {
+        return (
+          (await temProduto(ator.contaId, audiencia)) &&
+          (await faixasDaJornada(ator, audiencia)).includes('basic')
+        )
+      } catch {
+        return false
+      }
+    },
+    async faixas(ator) {
+      try {
+        return await faixasDaJornada(ator, audienciaDe(ator))
+      } catch {
+        return []
+      }
+    },
   }
 }

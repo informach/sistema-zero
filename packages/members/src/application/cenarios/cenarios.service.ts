@@ -7,6 +7,10 @@ import {
   criarDocumentoVazio,
   espacosDosComandos,
   executarLote,
+  FAIXAS_DA_OFICINA,
+  type FamiliaDaOficinaId,
+  familiaDaOficina,
+  familiasTrancadas,
   inverterLote,
   LIMITES_CENARIO_V2,
   LoteDeCenarioSchema,
@@ -42,6 +46,7 @@ import {
 import {
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
+  CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
   CenarioNaoEncontradoError,
   CenariosFechadosError,
@@ -159,6 +164,7 @@ export class CenariosService {
     this.exportacao = new ExportacaoDeCenariosService(repo, (ator, id) => this.cenarioDe(ator, id))
     this.conjuntos = new ConjuntosService(repo, {
       exigirAberto: (ator) => this.exigirAberto(ator),
+      exigirFamilia: (ator, familia) => this.exigirFamilia(ator, familia),
       bibliotecaDe: (ator, id) => this.bibliotecaDe(ator, id),
       abrirCenario: (ator, id) => this.abrirCenario(ator, id),
       abrirMundo: async (ator, id) => mundoView((await this.mundoDe(ator, id)).mundo),
@@ -914,10 +920,18 @@ export class CenariosService {
       throw new CenarioDesatualizadoError(cenario.revisao)
     const documento = await this.documentoNaRevisao(ator, id, pedido.revisao)
     const comandos = inverterLote(documento, cenario.documento)
-    await this.editarCenario(ator, id, {
-      ...pedido,
-      comandos: comandos.length ? comandos : [{ tipo: 'cenario.restaurar', documento }],
-    })
+    // Voltar a uma versão do próprio histórico não é autoria: não passa pelas faixas.
+    await this.aplicarMudanca(
+      ator,
+      id,
+      {
+        ...pedido,
+        comandos: comandos.length ? comandos : [{ tipo: 'cenario.restaurar', documento }],
+      },
+      undefined,
+      undefined,
+      false,
+    )
     return this.abrirCenario(ator, id)
   }
 
@@ -934,12 +948,26 @@ export class CenariosService {
     return this.aplicarMudanca(ator, id, lote, undefined, recursos)
   }
 
+  private async exigirFamilia(ator: Ator, id: FamiliaDaOficinaId): Promise<void> {
+    const familia = familiaDaOficina(id)!
+    if (!(await this.faixasDe(ator)).includes(familia.faixa))
+      throw new CenarioFerramentaTrancadaError([familia])
+  }
+
+  /** As faixas de ferramentas de quem pede: todas para a equipe, só o básico sem a conferência. */
+  async faixasDe(ator: Ator): Promise<readonly string[]> {
+    if (ator.equipe && !ator.suporte) return FAIXAS_DA_OFICINA
+    return (await this.abertura.faixas?.(ator)) ?? ['basic']
+  }
+
   private async aplicarMudanca(
     ator: Ator,
     id: string,
     lote: { revisaoEsperada: number; comandos: ComandoDeCenario[]; operacaoId: string },
     movimento?: MovimentoDoHistorico,
     recursos?: { espacoId: string; conferidos: readonly ConferenciaDeBlob[] },
+    /** Desfazer, refazer e voltar a uma versão repõem o que já foi aceito: não são autoria. */
+    autoria = movimento === undefined,
   ): Promise<{ revisao: number }> {
     const { cenario, espaco } = await this.cenarioDe(ator, id)
     if (recursos && recursos.espacoId !== espaco.id) throw new CenarioNaoEncontradoError('O espaço')
@@ -988,6 +1016,15 @@ export class CenariosService {
       if (erro instanceof Error && erro.name === 'ZodError')
         throw new CenarioInvalidoError(['O lote tem um comando fora do formato'])
       throw erro
+    }
+    // A faixa do posto: o lote não cria nem muda uma ferramenta trancada (o agente também não).
+    if (autoria && !(ator.equipe && !ator.suporte)) {
+      const trancadas = familiasTrancadas(
+        cenario.documento,
+        depois.documento,
+        await this.faixasDe(ator),
+      )
+      if (trancadas.length) throw new CenarioFerramentaTrancadaError(trancadas)
     }
     const gravado = await this.repo.gravarLote(
       {

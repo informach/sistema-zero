@@ -57,6 +57,17 @@ export class CenarioArquivoSaindoError extends DomainError {
   }
 }
 
+/** O lote cria ou muda uma ferramenta que o posto de quem pede ainda não liberou. → 403, com as
+ * famílias trancadas. Desfazer, refazer e voltar a uma versão nunca caem aqui. */
+export class CenarioFerramentaTrancadaError extends DomainError {
+  readonly code = 'CENARIO_FERRAMENTA_TRANCADA'
+  constructor(readonly familias: readonly { id: string; rotulo: string }[]) {
+    super(
+      `Esta ferramenta ainda não está liberada para você: ${familias.map((f) => f.rotulo).join(', ')}`,
+    )
+  }
+}
+
 /** A biblioteca é restrita e a ação a levaria para fora da conta. → 403. */
 export class BibliotecaRestritaError extends DomainError {
   readonly code = 'BIBLIOTECA_RESTRITA'

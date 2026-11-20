@@ -24,6 +24,7 @@ import {
   BibliotecaRestritaError,
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
+  CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
   CenarioNaoEncontradoError,
   CenariosFechadosError,
@@ -42,9 +43,10 @@ function montar(
   modo: ModoDosCenarios = 'equipe',
   lista: string[] = [],
   produto: AberturaDosCenarios['produto'] = async () => true,
+  faixas: AberturaDosCenarios['faixas'] = async () => ['basic', 'intermediate', 'professional'],
 ) {
   const repo = new CenariosEmMemoria()
-  const abertura: AberturaDosCenarios = { modo, lista: new Set(lista), produto }
+  const abertura: AberturaDosCenarios = { modo, lista: new Set(lista), produto, faixas }
   let n = 0
   const servico = new CenariosService(
     repo,
@@ -398,6 +400,136 @@ describe('trazer modelos', () => {
       apagar: [chaveDoBlob(base.espaco.id, digest('b'))],
     })
     expect((await base.servico.espacos(ana))[0]!.usadoBytes).toBe(1000)
+  })
+})
+
+describe('faixas do posto', () => {
+  const zona = (id: string): ComandoDeCenario => ({
+    tipo: 'marcador.definir',
+    marcador: {
+      id,
+      nome: 'Chegada',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      posicao: { x: 0, y: 0, z: 0 },
+      giro: 0,
+      noChao: true,
+      objeto: null,
+      configuracao: { tipo: 'zona', forma: { tipo: 'esfera', raio: 2 } },
+    },
+  })
+  const inicio: ComandoDeCenario = {
+    tipo: 'marcador.definir',
+    marcador: {
+      id: 'inicio',
+      nome: 'Início',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      posicao: { x: 1, y: 0, z: 1 },
+      giro: 0,
+      noChao: true,
+      objeto: null,
+      configuracao: { tipo: 'inicio', principal: true },
+    },
+  }
+
+  test('no básico o lote não cria zona; desfazer, refazer e voltar versão seguem livres', async () => {
+    let faixas: string[] = ['basic', 'intermediate']
+    const { servico } = montar(
+      'aberto',
+      [],
+      async () => true,
+      async () => faixas,
+    )
+    const [espaco] = await servico.espacos(cliente)
+    const mundo = await servico.criarMundo(cliente, espaco!.id, 'Ilha')
+    const c = await servico.criarCenario(cliente, mundo.id, 'Praia')
+    // Com o intermediário, a zona entra (revisão 1); depois, só o básico.
+    await servico.editarCenario(cliente, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'zona-0001',
+      comandos: [zona('z1')],
+    })
+    faixas = ['basic']
+    const recusa = await servico
+      .editarCenario(cliente, c.id, {
+        revisaoEsperada: 1,
+        operacaoId: 'zona-0002',
+        comandos: [zona('z2')],
+      })
+      .catch((e) => e)
+    expect(recusa).toBeInstanceOf(CenarioFerramentaTrancadaError)
+    expect(recusa.familias.map((f: { id: string }) => f.id)).toEqual(['jogo.zonas-e-rotas'])
+    // O básico mexe no resto do cenário que já tem a zona.
+    expect(
+      await servico.editarCenario(cliente, c.id, {
+        revisaoEsperada: 1,
+        operacaoId: 'inicio-001',
+        comandos: [inicio],
+      }),
+    ).toEqual({ revisao: 2 })
+    // Desfazer e refazer repõem o que já foi aceito.
+    await servico.moverHistorico(cliente, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 2,
+      operacaoId: 'desfazer-01',
+    })
+    await servico.moverHistorico(cliente, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 3,
+      operacaoId: 'desfazer-02',
+    })
+    expect((await servico.abrirCenario(cliente, c.id)).documento.marcadores).toEqual([])
+    await servico.moverHistorico(cliente, c.id, {
+      acao: 'refazer',
+      revisaoEsperada: 4,
+      operacaoId: 'refazer-001',
+    })
+    expect(
+      (await servico.abrirCenario(cliente, c.id)).documento.marcadores.map((m) => m.id),
+    ).toEqual(['z1'])
+    // Voltar a uma versão do histórico também.
+    await servico.restaurarRevisao(cliente, c.id, {
+      revisao: 0,
+      revisaoEsperada: 5,
+      operacaoId: 'restaurar-1',
+    })
+    await servico.restaurarRevisao(cliente, c.id, {
+      revisao: 2,
+      revisaoEsperada: 6,
+      operacaoId: 'restaurar-2',
+    })
+    expect(
+      (await servico.abrirCenario(cliente, c.id)).documento.marcadores.map((m) => m.id).sort(),
+    ).toEqual(['inicio', 'z1'])
+  })
+
+  test('a equipe tem todas as faixas; sem a conferência, só o básico; conjuntos são do intermediário', async () => {
+    const { servico } = montar(
+      'aberto',
+      [],
+      async () => true,
+      async () => ['basic'],
+    )
+    expect(await servico.faixasDe(ana)).toEqual(['basic', 'intermediate', 'professional'])
+    expect(await servico.faixasDe(cliente)).toEqual(['basic'])
+    const sem = new CenariosService(new CenariosEmMemoria(), () => AGORA, {
+      modo: 'aberto',
+      lista: new Set(),
+      produto: async () => true,
+    })
+    expect(await sem.faixasDe(cliente)).toEqual(['basic'])
+    const [espaco] = await servico.espacos(cliente)
+    const biblioteca = await servico.criarBiblioteca(cliente, espaco!.id, {
+      nome: 'Kits',
+      licenca: 'propria',
+    })
+    const recusa = await servico.conjuntos
+      .criar(cliente, biblioteca.id, { nome: 'Casa', conteudo: {}, operacaoId: 'conjunto-01' })
+      .catch((e) => e)
+    expect(recusa).toBeInstanceOf(CenarioFerramentaTrancadaError)
   })
 })
 
