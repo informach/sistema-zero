@@ -1,4 +1,5 @@
 /** As águas rasas das ilhas (o lago do Bosque): uma elipse no chão, onde se nada. */
+export type ConsultaNivelDaAgua = (x: number, z: number, raio?: number) => number | null
 
 /** A elipse de uma água rasa contém (x, z)? (`giro` é o da elipse no mundo.) */
 export function dentroDaAgua(
@@ -9,10 +10,13 @@ export function dentroDaAgua(
     raioZ: number
     giro: number
     contorno?: readonly { x: number; z: number }[]
+    /** Cobertura compilada: rios, ilhas secas e fundos próprios usam a consulta canônica. */
+    consultaNivel?: ConsultaNivelDaAgua
   },
   x: number,
   z: number,
 ): boolean {
+  if (a.consultaNivel) return a.consultaNivel(x, z) !== null
   const dx = x - a.x
   const dz = z - a.z
   const c = Math.cos(a.giro)
@@ -41,6 +45,7 @@ export function discoTocaAgua(
   z: number,
   raio: number,
 ): boolean {
+  if (a.consultaNivel) return a.consultaNivel(x, z, raio) !== null
   if (dentroDaAgua(a, x, z)) return true
   const dx = x - a.x,
     dz = z - a.z,

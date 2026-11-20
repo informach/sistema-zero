@@ -3163,6 +3163,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       o._szResourcesDisposed = true;
       // Ossos são do OBJETO (cada cópia tem os seus): a textura de ossos sai com ele.
       if (o.isSkinnedMesh && o.skeleton && o.skeleton.dispose) try { o.skeleton.dispose(); } catch (e0) {}
+      // O mapa de sombra é da LUZ: com o renderer mantido no recomeçar, ficaria na GPU.
+      if (o.isLight && o.shadow && o.shadow.dispose) try { o.shadow.dispose(); } catch (e1) {}
       if (o.geometry && o.geometry.dispose && !visited.geometries.has(o.geometry)) {
         visited.geometries.add(o.geometry);
         // Geometria de modelo .glb é do CACHE (compartilhada por todo objeto do mesmo

@@ -9,7 +9,8 @@ import { gameKit3DGameplayRuntimeSource } from './runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from './runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from './runtimeProject'
-import { gameKit3DSceneRuntimeSource } from './runtimeScene'
+import { gameKit3DSceneAbsentRuntimeSource, gameKit3DSceneRuntimeSource } from './runtimeScene'
+import { GAME_KIT_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
@@ -3957,26 +3958,37 @@ const gameKit3DRuntimeAfterModelSource = `
 })();
 `
 
-const gameKit3DRuntimeSource = withGameRules3DRuntime(
-  gameKit3DRuntimeBeforeModelSource +
-    gameKit3DModelAssetsRuntimeSource +
-    gameKit3DRuntimeAfterModelSource,
-)
-  .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/', () => gameKit3DSceneRuntimeSource)
+function composeGameKit3DRuntime(sceneSource: string): string {
+  const source = withGameRules3DRuntime(
+    gameKit3DRuntimeBeforeModelSource +
+      gameKit3DModelAssetsRuntimeSource +
+      gameKit3DRuntimeAfterModelSource,
+  )
+    .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/', () => sceneSource)
+  // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
+  // contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
+  // pacote, e no build minificado o esbuild escreve template literals ali.
+  return compactOfficialRuntimeSource(
+    withThreeRenderBudgetRuntime(withThreePostProcessingRuntime(withThreeModelsRuntime(source))),
+    { trimIndent: true },
+  ).replace(
+    "import * as THREE from 'three';\n",
+    (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
+  )
+}
 
-// Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
-// contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
-// pacote, e no build minificado o esbuild escreve template literals ali.
-export const gameKit3DRuntime = compactOfficialRuntimeSource(
-  withThreeRenderBudgetRuntime(
-    withThreePostProcessingRuntime(withThreeModelsRuntime(gameKit3DRuntimeSource)),
-  ),
-  { trimIndent: true },
-).replace(
-  "import * as THREE from 'three';\n",
-  (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
-)
+/** O runtime COMPLETO, com o cenário do Molda: o que `loadBootstrapScript()` sem contexto injeta. */
+export const gameKit3DRuntime = composeGameKit3DRuntime(gameKit3DSceneRuntimeSource)
+
+let withoutScene: string | undefined
+
+/** O runtime de uma variante de `gameKit3DRuntimeVariant` (`sceneVariant.ts`), composto uma vez. */
+export function gameKit3DRuntimeForVariant(variant: string): string {
+  if (variant !== GAME_KIT_3D_WITHOUT_SCENE_VARIANT) return gameKit3DRuntime
+  withoutScene ??= composeGameKit3DRuntime(gameKit3DSceneAbsentRuntimeSource)
+  return withoutScene
+}

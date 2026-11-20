@@ -1,4 +1,4 @@
-import type { CenaNoThree } from '@sistemazero/molda-cenarios-motor/runtime'
+import type { CenaNoThree, TrianguloDaConsulta } from '@sistemazero/molda-cenarios-motor/runtime'
 import { Box3, Vector3 } from 'three'
 import { LADO_DO_SETOR, RAIO_DE_SETORES } from './setores-do-arquipelago'
 
@@ -10,6 +10,7 @@ const MAX_TRIANGULOS_ATIVOS = 100_000
 export function prepararColisaoDoCenario(
   fonte: Pick<CenaNoThree['colisoes'], 'triangulosNaCaixa'>,
   foco: { x: number; z: number },
+  selecionar?: (triangulo: TrianguloDaConsulta) => boolean,
 ) {
   if (
     !Number.isFinite(foco.x) ||
@@ -23,7 +24,8 @@ export function prepararColisaoDoCenario(
   const vistos = new Map<number, Set<number>>()
   let triangulos = 0,
     coordenadas = 0
-  const incluir = (instancia: number, triangulo: number) => {
+  const incluir = (instancia: number, triangulo: number, contexto: TrianguloDaConsulta) => {
+    if (selecionar && !selecionar(contexto)) return false
     let indices = vistos.get(instancia)
     if (indices?.has(triangulo)) return false
     if (++triangulos > MAX_TRIANGULOS_ATIVOS)

@@ -89,7 +89,11 @@ export function criarInstaladorDeCenasThree<Extra extends object>(
     sinal.throwIfAborted()
     if (encerrado) throw Error('A sessão de cenários foi encerrada.')
     if (!alvo?.isScene) throw Error('Escolha uma cena Three.js para receber o cenário.')
-    const capturadas = { ...opcoes }
+    const capturadas = {
+      ...opcoes,
+      animacaoExterna: new Set(opcoes.animacaoExterna),
+      colisoresExternos: new Set(opcoes.colisoresExternos),
+    }
     let estado = estados.get(alvo)
     if (!estado) {
       estado = { alvo, original: ambiente(alvo) }

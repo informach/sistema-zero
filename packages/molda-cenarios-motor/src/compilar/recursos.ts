@@ -16,10 +16,15 @@ import {
   validarDocumento,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { criarModeloDaForma } from '../formas'
-import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from '../modelos'
+import {
+  type CacheDeImagens,
+  conferirConteudoDoModelo,
+  lerGlb,
+  type ModeloCarregado,
+} from '../modelos'
 import { carregarPecasDeTerreno } from '../recursos-terreno'
 import { lerTextura, type TexturaCarregada } from '../texturas'
-import { inspecionarGlbDaCompilacao } from './inspecao-glb'
+import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from './inspecao-glb'
 
 export interface ConteudoDaCompilacao {
   modelo(referencia: ModeloDoCenario, sinal: AbortSignal): Promise<ArrayBuffer>
@@ -51,7 +56,10 @@ export async function carregarRecursosDaCompilacao(
     texturas = new Map<string, TexturaCarregada>(),
     imagensPorHash = new Map<string, TexturaCarregada>(),
     bytesDasTexturas = new Map<string, Uint8Array>(),
-    terreno = new Map<string, RecursoDeTerreno>()
+    terreno = new Map<string, RecursoDeTerreno>(),
+    // A mesma imagem em vários modelos (o atlas de um kit) é decodificada e contada uma vez.
+    imagensDosModelos: CacheDeImagens = new Map(),
+    imagensContadas = new Set<string>()
   let descartado = false,
     bytesLidos = 0,
     memoriaDecodificada = 0
@@ -66,6 +74,8 @@ export async function carregarRecursosDaCompilacao(
     imagensPorHash.clear()
     bytesDasTexturas.clear()
     terreno.clear()
+    imagensDosModelos.clear()
+    imagensContadas.clear()
   }
   const contar = (bytes: ArrayBuffer) => {
     sinal.throwIfAborted()
@@ -120,8 +130,10 @@ export async function carregarRecursosDaCompilacao(
         await conferirConteudoDoModelo(bytes.buffer, ref.digest)
         sinal.throwIfAborted()
         const medidas = inspecionarGlbDaCompilacao(bytes, { fonte: true })
-        reservar(medidas.bytesDeMaterializacao + medidas.bytesDePixels)
-        modelo = await lerGlb(bytes.buffer)
+        const pixelsNovos = await pixelsDasImagensNovas(medidas.imagens, imagensContadas)
+        sinal.throwIfAborted()
+        reservar(medidas.bytesDeMaterializacao + pixelsNovos)
+        modelo = await lerGlb(bytes.buffer, { imagens: imagensDosModelos })
         // Guarda imediatamente: um cancelamento após o decoder ainda descarta esta cópia.
         modelos.set(ref.id, modelo)
         porHash.set(ref.digest, modelo)

@@ -10,6 +10,7 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKit3DPromptSummary } from './aiSummary'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
 import { gameKit3DManifest } from './manifest'
+import { gameKit3DRuntimeVariant } from './sceneVariant'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(gameKit3DManifest)
@@ -57,7 +58,11 @@ export const gameKit3DExtension: ExtensionDefinition = {
     toolboxCategory: gameKit3DToolboxCategory,
   },
   runtime: {
-    loadBootstrapScript: async () => (await import('./runtime')).gameKit3DRuntime,
+    // O cenário do Molda só entra quando o código usa um método dele (`sceneVariant.ts`);
+    // sem contexto, o runtime completo.
+    loadBootstrapScript: async (context) =>
+      (await import('./runtime')).gameKit3DRuntimeForVariant(gameKit3DRuntimeVariant(context)),
+    bootstrapVariant: gameKit3DRuntimeVariant,
     lifecycle: GAME_3D_ADVANCED_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,

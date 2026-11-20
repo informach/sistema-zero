@@ -178,8 +178,11 @@ for (const { curso, arquivo } of AULAS) {
         writeFileSync(projetoEm, JSON.stringify(projeto))
         const gerado = semChaveDeEvento(projeto.files['script.js'] ?? '')
         const referencia = resolve(REFERENCIAS, arquivo, `${parte.key}.script.txt`)
+        // Referência que falta é falha em qualquer máquina (revisão da missão, achado T8): gravar
+        // em silêncio fazia uma rodada local aprovar o que ela mesma acabou de escrever.
+        // Regravar só com PROTECTED_LESSONS_UPDATE=1, e isso é decisão da dona.
         if (REGRAVAR || !existsSync(referencia)) {
-          if (!REGRAVAR && process.env.CI) throw new Error(`Falta a referência ${referencia}`)
+          if (!REGRAVAR) throw new Error(`Falta a referência ${referencia}`)
           mkdirSync(dirname(referencia), { recursive: true })
           writeFileSync(referencia, gerado)
         }

@@ -3,7 +3,8 @@ import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
-import { world3DSceneRuntime } from './runtimeScene'
+import { world3DSceneAbsentRuntime, world3DSceneRuntime } from './runtimeScene'
+import { WORLD_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 /**
  * Runtime do "Mundo 3D" — injetado no <head> do iframe quando a extensão
@@ -9822,16 +9823,30 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 })();
 `
 
-export const world3DRuntime = compactOfficialRuntimeSource(
-  withThreeRenderBudgetRuntime(
-    withThreePostProcessingRuntime(
-      withThreeModelsRuntime(
-        withGameRules3DRuntime(
-          world3DRuntimeSource.replace('__SZ_WORLD_SCENE_RUNTIME__', () => world3DSceneRuntime),
+function composeWorld3DRuntime(sceneSource: string): string {
+  return compactOfficialRuntimeSource(
+    withThreeRenderBudgetRuntime(
+      withThreePostProcessingRuntime(
+        withThreeModelsRuntime(
+          withGameRules3DRuntime(
+            world3DRuntimeSource.replace('__SZ_WORLD_SCENE_RUNTIME__', () => sceneSource),
+          ),
         ),
       ),
     ),
-  ),
-  // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.
-  { trimIndent: true },
-)
+    // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.
+    { trimIndent: true },
+  )
+}
+
+/** O runtime COMPLETO, com o cenário do Molda: o que `loadBootstrapScript()` sem contexto injeta. */
+export const world3DRuntime = composeWorld3DRuntime(world3DSceneRuntime)
+
+let withoutScene: string | undefined
+
+/** O runtime de uma variante de `world3DRuntimeVariant` (`sceneVariant.ts`), composto uma vez. */
+export function world3DRuntimeForVariant(variant: string): string {
+  if (variant !== WORLD_3D_WITHOUT_SCENE_VARIANT) return world3DRuntime
+  withoutScene ??= composeWorld3DRuntime(world3DSceneAbsentRuntime)
+  return withoutScene
+}

@@ -43,7 +43,8 @@ import {
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
-import { createOffscreenBodies } from '../../blockly/offscreenBodies'
+import type { OffscreenBodies } from '../../blockly/offscreenBodies'
+import { OFFSCREEN_BODIES_MIN_BLOCKS } from '../../blockly/offscreenThreshold'
 import { blockFontSpec, waitForOpeningFonts } from '../../blockly/openingRender'
 import {
   revealBlockInWorkspace,
@@ -1266,12 +1267,33 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     })
     appliedToolboxRef.current = initialToolbox
     // Projeto muito grande: o corpo dos blocos longe da vista sai da página (`offscreenBodies.ts`).
-    const offscreenBodies = createOffscreenBodies(injected, {
-      // À vista dos testes de navegador e de quem depura: quantos corpos estão fora da página.
-      onChange: (count) => {
-        container.dataset.szOffscreenBodies = String(count)
-      },
-    })
+    // O módulo só carrega quando o projeto passa do limiar (fora do pacote de abertura): até lá
+    // um vigia barato olha só a carga terminada e os blocos criados.
+    let offscreenBodies: OffscreenBodies | null = null
+    let offscreenDisposed = false
+    let offscreenLoading = false
+    const offscreenGate = (event: Blockly.Events.Abstract) => {
+      if (offscreenLoading || offscreenBodies) return
+      if (
+        event.type !== Blockly.Events.FINISHED_LOADING &&
+        event.type !== Blockly.Events.BLOCK_CREATE
+      )
+        return
+      if (injected.getAllBlocks(false).length < OFFSCREEN_BODIES_MIN_BLOCKS) return
+      offscreenLoading = true
+      injected.removeChangeListener(offscreenGate)
+      void import('../../blockly/offscreenBodies').then(({ createOffscreenBodies }) => {
+        if (offscreenDisposed) return
+        offscreenBodies = createOffscreenBodies(injected, {
+          // À vista dos testes de navegador e de quem depura: quantos corpos estão fora da página.
+          onChange: (count) => {
+            container.dataset.szOffscreenBodies = String(count)
+          },
+        })
+        offscreenBodies.sync()
+      })
+    }
+    injected.addChangeListener(offscreenGate)
     // Acessor POR INSTÂNCIA dos assets do projeto, lido pelo FieldAssetPicker ao
     // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
     // é estável (store desta instância), então o efeito segue rodando uma vez.
@@ -1369,7 +1391,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
       onWorkspaceReadyRef.current?.(null)
-      offscreenBodies.dispose()
+      offscreenDisposed = true
+      injected.removeChangeListener(offscreenGate)
+      offscreenBodies?.dispose()
       injected.dispose()
       appliedToolboxRef.current = null
     }

@@ -24,6 +24,7 @@ export class AguaDaCenaCompilada {
     fonte: FonteDeAlturas | undefined,
     maxTextura: number,
     dinamica = true,
+    marExterno = false,
   ) {
     const cena = dados.cena,
       consultas = new Map<string, ConsultaDeAgua>()
@@ -39,7 +40,8 @@ export class AguaDaCenaCompilada {
           (x, z) => pecas.has(z * largura + x),
         )
       }
-      for (const a of cena.aguas) {
+      const aguas = marExterno ? cena.aguas.filter((a) => a.tipo !== 'mar') : cena.aguas
+      for (const a of aguas) {
         const modelo = (a.tipo === 'lago' || a.tipo === 'represa') && a.modelo
         let fundoDoModelo: ((x: number, z: number) => number) | undefined
         if (modelo && (a.tipo === 'lago' || a.tipo === 'represa')) {
@@ -74,7 +76,7 @@ export class AguaDaCenaCompilada {
             }),
           )
       }
-      this.consulta = new AguasDoTeste(cena.aguas, fonte, consultas)
+      this.consulta = new AguasDoTeste(aguas, fonte, consultas)
     } catch (erro) {
       this.descartar()
       throw erro

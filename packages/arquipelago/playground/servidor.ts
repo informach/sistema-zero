@@ -3,6 +3,7 @@ import { isMoradaFile } from '@sistemazero/avatar-quarto/morada/catalog'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
 import { ARTE_DA_FAISCA } from '../src/mundo/faisca/arte.generated'
 import { pedidoAoEditorLocal } from './cenario-editor-local'
+import { publicacoesDoEnsaio } from './publicacoes-do-ensaio'
 
 await conferirPortosDaArte()
 
@@ -67,6 +68,8 @@ Bun.serve({
   hostname: '127.0.0.1',
   port: PORTA,
   async fetch(req) {
+    const publicada = await publicacoesDoEnsaio(process.env.CENARIOS_PUBLICADOS_QA_DIR ?? null, req)
+    if (publicada) return publicada
     const { pathname } = new URL(req.url)
     if (pathname === '/api/cenario-aplicado') {
       const aplicado = await pedidoAoEditorLocal('/aplicado/faisca-v2')

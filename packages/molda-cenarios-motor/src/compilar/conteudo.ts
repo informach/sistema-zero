@@ -5,7 +5,7 @@ import {
   lerCenaCompilada,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import { conferirImagemDeCenario, lerPngDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
-import { inspecionarGlbDaCompilacao } from './inspecao-glb'
+import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from './inspecao-glb'
 
 export { inspecionarGlbDaCompilacao }
 
@@ -32,6 +32,7 @@ export async function conferirConteudoCompilado(
       faixasPorArquivo.set(n.arquivo, nos)
     }
   let memoria = 0
+  const imagensContadas = new Set<string>()
   for (const a of cena.arquivos) {
     sinal?.throwIfAborted()
     const bytes = arquivos.get(a.caminho)!
@@ -65,7 +66,7 @@ export async function conferirConteudoCompilado(
             throw Error('As faixas não correspondem às malhas reais do GLB.')
         }
       }
-      memoria += r.bytesDeMaterializacao + r.bytesDePixels
+      memoria += r.bytesDeMaterializacao + (await pixelsDasImagensNovas(r.imagens, imagensContadas))
     } else if (a.mime === 'image/png' || a.mime === 'image/webp') {
       if (a.papel === 'alturas') {
         if (a.caminho !== cena.terreno?.pngAlturas)

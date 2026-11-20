@@ -195,6 +195,8 @@ export async function loadStartedWorld(
 export async function loadExampleWorld(
   exampleJs: string,
   wrapThree?: ThreeWrapper,
+  /** Outro corpo do runtime (uma variante, como a sem cenário); sem ele, o completo. */
+  body: string = runtimeBody,
 ): Promise<{
   api: WorldApi
   renderers: FakeRenderer[]
@@ -203,7 +205,7 @@ export async function loadExampleWorld(
 }> {
   const { THREE, renderers } = makeFakeThree({}, wrapThree)
   const win = globalThis.window as unknown as Record<string, unknown>
-  new Function('THREE', 'window', runtimeBody)(THREE, win)
+  new Function('THREE', 'window', body)(THREE, win)
   const api = win.SZWorld3D as WorldApi
   new Function('SZWorld3D', 'window', exampleJs)(api, win)
   api.start()

@@ -39,7 +39,6 @@ import { registerMoreBlocksItem } from './moreBlocksItem'
 import { organizeBlocks } from './organize'
 import { registerProjectAreaSafeDeleteExtension } from './projectAreaSafeDelete'
 import { PROJECT_AREA_FRAME_TYPES } from './projectAreas'
-import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
 
@@ -206,14 +205,17 @@ function registerScreenshotContextMenu(): void {
     callback: (scope) => {
       const workspace = scope.workspace
       if (!workspace) return
-      void exportWorkspaceImage(workspace).then((result) => {
-        if (!result.downloaded) {
-          const message =
-            'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.'
-          // O aviso no canto do editor; o alerta do navegador só onde não há editor do Estúdio.
-          if (!notifyWorkspace(workspace, message)) window.alert(message)
-        }
-      })
+      // Sob demanda: a foto dos blocos (~7 KB) não entra no pacote de abertura do modo Blocos.
+      void import('./screenshot').then(({ exportWorkspaceImage }) =>
+        exportWorkspaceImage(workspace).then((result) => {
+          if (!result.downloaded) {
+            const message =
+              'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.'
+            // O aviso no canto do editor; o alerta do navegador só onde não há editor do Estúdio.
+            if (!notifyWorkspace(workspace, message)) window.alert(message)
+          }
+        }),
+      )
     },
   })
 }

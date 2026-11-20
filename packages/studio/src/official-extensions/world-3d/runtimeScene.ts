@@ -226,3 +226,28 @@ export const world3DSceneRuntime = `
     importedBounds = null;
   }
 `
+
+/**
+ * O que entra no lugar do cenário quando o código do mundo não usa `loadScene` (variante
+ * `sem-cenario-molda`, `sceneVariant.ts`). Sem cenário nenhum `importedScene` existe: cada gancho
+ * que o motor chama sem guarda devolve exatamente o que o fragmento devolve nesse caso (a água
+ * padrão do mundo, a chegada na altura do terreno, nenhum contato) ou não faz nada. Os outros
+ * nomes do fragmento param com recado se a detecção errar.
+ */
+export const world3DSceneAbsentRuntime = `
+  var importedScene = null, importedBounds = null, sceneLoading = null, sceneController = null,
+    sceneGeneration = 0;
+  function sceneAbsent() {
+    throw new Error('SZWorld3D: o cenário do Molda não foi carregado neste mundo.');
+  }
+  var loadScene = sceneAbsent, sceneFloorLimit = sceneAbsent, importedGround = sceneAbsent,
+    importedTerrain = sceneAbsent, removeProceduralSceneBase = sceneAbsent,
+    attachImportedScene = sceneAbsent;
+  function importedWaterLevel() { return waterCfg ? waterCfg.y : null; }
+  function importedArrival(x, z) { return { x: x, y: heightAt(x, z), z: z, yaw: 0 }; }
+  function resolveImportedMove() { return null; }
+  function importedSafety() {}
+  function resolveImportedVertical() {}
+  function occludeImportedCamera() {}
+  function disposeImportedScene() {}
+`

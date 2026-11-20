@@ -174,7 +174,11 @@ export function malhaDoSetor(
 }
 
 /** Leque simplificado com bordas na mesma grade de 4 m do detalhe: não abre emendas de LOD. */
-export function malhaDistante(ilha: IlhaDoArquipelago, excluir: ReadonlySet<string>) {
+export function malhaDistante(
+  ilha: IlhaDoArquipelago,
+  excluir: ReadonlySet<string>,
+  altura: (x: number, z: number) => number = (x, z) => alturaDoTerritorio(ilha, x, z),
+) {
   const vertices: number[] = []
   const indices: number[] = []
   const limite = Math.ceil((ilha.raio + 16) / LADO_DO_SETOR)
@@ -192,8 +196,7 @@ export function malhaDistante(ilha: IlhaDoArquipelago, excluir: ReadonlySet<stri
       )
         continue
       const centro = vertices.length / 3
-      const adicionar = (px: number, pz: number) =>
-        vertices.push(px, alturaDoTerritorio(ilha, px, pz), pz)
+      const adicionar = (px: number, pz: number) => vertices.push(px, altura(px, pz), pz)
       adicionar(x0 + LADO_DO_SETOR / 2, z0 + LADO_DO_SETOR / 2)
       for (let d = 0; d < LADO_DO_SETOR; d += PASSO_DO_TERRENO) adicionar(x0, z0 + d)
       for (let d = 0; d < LADO_DO_SETOR; d += PASSO_DO_TERRENO)

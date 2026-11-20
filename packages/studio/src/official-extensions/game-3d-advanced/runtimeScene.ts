@@ -219,3 +219,29 @@ export const gameKit3DSceneRuntimeSource = `
     importedScene.quadro(camera, focus);
   }
 `
+
+/**
+ * O que entra no lugar do cenário quando o código do projeto não usa `loadScene` nem
+ * `sceneStart` (variante `sem-cenario-molda`, `sceneVariant.ts`). Sem cenário pedido nenhum
+ * `importedScene`/`sceneRequest` existe: os ganchos que o motor chama sem guarda (preparar,
+ * fábrica do projeto, câmera, quadro e descarte) são "nada", como no runtime completo. O motor
+ * base nunca tira o chão nem as luzes padrão, então o descarte não tem o que devolver. Os
+ * outros nomes do fragmento param com recado se a detecção errar.
+ */
+export const gameKit3DSceneAbsentRuntimeSource = `
+  var importedScene = null, sceneRequest = null, importedArrivals = new Set(), importedRayEnd = null;
+  function sceneAbsent() {
+    throw new Error('SZGameKit3D: o cenário do Molda não foi carregado neste jogo.');
+  }
+  var loadScene = sceneAbsent, sceneStart = sceneAbsent, cancelImportedRequest = sceneAbsent,
+    setDefaultSceneBase = sceneAbsent, flushImportedArrivals = sceneAbsent,
+    placeAtImportedStart = sceneAbsent, importedBodyRadius = sceneAbsent,
+    importedBodySteps = sceneAbsent, resolveImportedBody = sceneAbsent,
+    supportImportedGround = sceneAbsent;
+  function prepareImportedScene() {}
+  function disposeImportedScene() {}
+  function beginImportedSceneFactory() {}
+  function finishImportedSceneFactory() {}
+  function occludeImportedCamera() {}
+  function updateImportedScene() {}
+`
