@@ -452,10 +452,11 @@ describe('PreviewIframe', () => {
       // O happy-dom não dá janela a um iframe com `src` de outro site: uma janela falsa no próprio
       // elemento (é o que o componente consulta para mandar e para autenticar a origem do aviso).
       const enviados: { type?: string; seq?: number; document?: string }[] = []
-      const casca = {
-        postMessage: (data: { type?: string; seq?: number; document?: string }) => {
-          enviados.push(data)
-        },
+      // Uma porta de mensagens de verdade faz o papel da janela da casca (é uma origem de
+      // mensagem válida), com o envio anotado no lugar de entregue.
+      const casca = new MessageChannel().port1
+      casca.postMessage = (data: { type?: string; seq?: number; document?: string }) => {
+        enviados.push(data)
       }
       Object.defineProperty(frame, 'contentWindow', { configurable: true, get: () => casca })
       const daCasca = (data: unknown) =>

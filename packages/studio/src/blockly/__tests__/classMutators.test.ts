@@ -479,10 +479,10 @@ describe('argsMutator — ajustar os espaços não refaz o que já está neles (
     )
     withWorkspaceLoad(() => Blockly.serialization.workspaces.load(state, ws))
     await flush()
-    const saved = Blockly.serialization.blocks.save(ws.getBlockById('c') as Blockly.Block) as {
-      inputs: { ARG0: { shadow: { id: string; fields: { NUM: number } } } }
-    }
-    expect(saved.inputs.ARG0.shadow).toMatchObject({ id: 's', fields: { NUM: 7 } })
+    const block = ws.getBlockById('c')
+    if (!block) throw new Error('a chamada não carregou')
+    const saved = Blockly.serialization.blocks.save(block)
+    expect(saved?.inputs?.ARG0?.shadow).toMatchObject({ id: 's', fields: { NUM: 7 } })
   })
 
   it('o ajuste depois da carga não desencaixa o valor de verdade do argumento', async () => {
