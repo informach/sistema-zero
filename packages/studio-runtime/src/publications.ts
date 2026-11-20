@@ -919,6 +919,15 @@ export async function currentPublishedSource(bucket: PublicationBucket, playId: 
   return { source: await readSource(bucket, playId, revision), publication: view(saved.state) }
 }
 
+/**
+ * Whether a link has a publication record and whether its author disabled it. Lets the
+ * player tell "no history yet" (serve the first snapshot) from "link turned off" (404).
+ */
+export async function publishedStatus(bucket: PublicationBucket, playId: string) {
+  const saved = await readState(bucket, playId)
+  return { exists: Boolean(saved), disabled: saved?.state.disabled ?? false }
+}
+
 /** Private lightweight fence after authorization: no second copy of the source/media bundle. */
 export async function currentPublishedPublication(bucket: PublicationBucket, playId: string) {
   const saved = await readState(bucket, playId)

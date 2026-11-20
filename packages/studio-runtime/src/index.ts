@@ -59,6 +59,7 @@ import {
   type PublicationBucket,
   PublicationError,
   publicationCommand,
+  publishedStatus,
   purgePublication,
   retirePublicationReservation,
   servePublishedArtifact,
@@ -530,6 +531,17 @@ export function createStudioRuntimeHandler(
                 429,
               )
           }
+          if (
+            body &&
+            typeof body === 'object' &&
+            'operation' in body &&
+            body.operation === 'resolve-status' &&
+            'playId' in body &&
+            isStudioPublicationId(body.playId)
+          )
+            return Response.json(await publishedStatus(env.PRO_ARTIFACTS, body.playId), {
+              headers: { 'Cache-Control': 'no-store' },
+            })
           if (
             body &&
             typeof body === 'object' &&

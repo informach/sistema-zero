@@ -3,11 +3,14 @@ import { createHash } from 'node:crypto'
 import { canonicalJson } from '@sistemazero/core/creations'
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import {
+  isStudioClassicPublication,
+  isStudioProjectId,
   isStudioProPublication,
   isStudioPublication,
   isStudioPublicationId,
   isStudioPythonPublication,
   STUDIO_PRO_PUBLICATION_LIMITS,
+  type StudioClassicPublication,
   type StudioProPublication,
   type StudioPublication,
   type StudioPythonPublication,
@@ -111,6 +114,7 @@ type PublicationResponse =
   | { source: string; publication: StudioPublication }
   | { png: string }
   | { deleted: true }
+  | { exists: boolean; disabled: boolean }
   | null
 export async function callStudioPublication(
   body: Record<string, unknown>,
@@ -166,6 +170,16 @@ export async function callStudioPublication(
     value.deleted === true
   )
     return { deleted: true }
+  if (
+    body.operation === 'resolve-status' &&
+    value &&
+    typeof value === 'object' &&
+    'exists' in value &&
+    typeof value.exists === 'boolean' &&
+    'disabled' in value &&
+    typeof value.disabled === 'boolean'
+  )
+    return { exists: value.exists, disabled: value.disabled }
   if (
     value &&
     typeof value === 'object' &&
@@ -372,5 +386,88 @@ export async function publishStudioPythonRevision(options: {
   )
   if (!isStudioPythonPublication(result))
     throw new StudioPublicationError(502, 'Não foi possível confirmar a revisão Python publicada.')
+  return result
+}
+
+/**
+ * O jogo clássico (JavaScript, sem Pro) guarda versões no mesmo serviço do Pro e do
+ * Python. Sem o serviço configurado (desenvolvimento), a publicação clássica segue como
+ * sempre: um retrato só, sem histórico.
+ */
+export function studioClassicHistoryAvailable(): boolean {
+  const env = getEnv()
+  return Boolean(env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN)
+}
+
+/** Projeto JavaScript clássico que pode ter histórico (id no formato que o serviço aceita). */
+export function isStudioClassicHistoryProject(project: EditableStudioProject | null): boolean {
+  return Boolean(
+    project &&
+      project.programmingLanguage !== 'python' &&
+      project.kind !== 'pro' &&
+      isStudioProjectId(project.id) &&
+      studioClassicHistoryAvailable(),
+  )
+}
+
+/**
+ * Impressão do JOGO publicado: o projeto público sem o que muda sem mudar o jogo (nome,
+ * datas e a capa escolhida do card). Republicar com a mesma impressão não atualiza nada.
+ */
+export function studioGameFingerprint(project: unknown): string {
+  if (!project || typeof project !== 'object' || Array.isArray(project))
+    throw new StudioPublicationError(400, 'Projeto inválido.')
+  // Mesmo formato do que foi gravado: o objeto em memória pode ter chaves `undefined`.
+  const plain: unknown = JSON.parse(JSON.stringify(project))
+  const {
+    name: _name,
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    coverAssetName: _cover,
+    ...game
+  } = plain as Record<string, unknown>
+  return createHash('sha256').update(canonicalJson(game)).digest('hex')
+}
+
+/** Revisão source-only do jogo clássico: o player público roda a própria fonte. */
+export async function publishStudioClassicRevision(options: {
+  project: Project
+  source: string
+  playId: string
+  owner: string
+  requestId: string
+  expectedVersion: number
+  parentOrigin: string
+  signal?: AbortSignal
+}): Promise<StudioClassicPublication> {
+  if (!isStudioPublicationId(options.playId))
+    throw new StudioPublicationError(400, 'Publicação inválida.')
+  const sourceHash = createHash('sha256').update(options.source).digest('hex')
+  const replay = await callStudioPublication(
+    {
+      operation: 'lookup',
+      playId: options.playId,
+      owner: options.owner,
+      requestId: options.requestId,
+      sourceHash,
+    },
+    options.signal,
+  )
+  if (isStudioClassicPublication(replay)) return replay
+  const result = await callStudioPublication(
+    {
+      operation: 'promote-classic',
+      playId: options.playId,
+      owner: options.owner,
+      requestId: options.requestId,
+      expectedVersion: options.expectedVersion,
+      projectId: options.project.id,
+      parentOrigin: options.parentOrigin,
+      source: options.source,
+    },
+    options.signal,
+  )
+  if (!isStudioClassicPublication(result))
+    throw new StudioPublicationError(502, 'Não foi possível confirmar a versão publicada.')
   return result
 }

@@ -7,6 +7,8 @@ import {
   readJsonBodyWithLimit,
 } from '@sistemazero/core/http'
 import {
+  isStudioClassicPublication,
+  isStudioProjectId,
   isStudioProPublication,
   isStudioPublication,
   isStudioPythonPublication,
@@ -38,7 +40,13 @@ import { hasKidsCapability, kidsJourneyAccess } from '../lib/kids-journey-access
 import { showcaseFailureBody } from '../lib/showcase-failure'
 import { verifyCleanupSignature, verifyReservationCleanupSignature } from '../lib/studio-cleanup'
 import { isPrivilegedRole } from '../lib/studio-tier'
-import type { HubClient, MembersClient } from '../server/clients'
+import type {
+  HubClient,
+  MembersClient,
+  StudioPublicationPreparation,
+  StudioPublicationUpdate,
+} from '../server/clients'
+import type { GatewayResponse } from '../server/gateway'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
 import { generateProjectDescription } from '../server/openrouter'
@@ -54,6 +62,7 @@ import {
   commitStudioCoverCandidate,
   drainStudioCoverCandidates,
   enqueueStudioCoverCandidate,
+  readStudioCoverReceipt,
 } from '../server/studio-cover-candidates'
 import {
   StudioProRuntimeInputError,
@@ -62,9 +71,13 @@ import {
 } from '../server/studio-pro-runtime'
 import {
   callStudioPublication,
+  isStudioClassicHistoryProject,
+  publishStudioClassicRevision,
   publishStudioProRevision,
   publishStudioPythonRevision,
   StudioPublicationError,
+  studioClassicHistoryAvailable,
+  studioGameFingerprint,
   studioPublicationOwner,
   studioPublicProject,
   studioRequiredPintaRuntimeFeatures,
@@ -300,8 +313,12 @@ export function createStudioRoutes(deps: {
     | { kind: 'free' }
     | { kind: 'lesson'; lessonId: string; blockId: string; baselineId: string }
     | { kind: 'live'; workspaceId: string; revision: number }
+  // Projetos com histórico de versões no serviço de publicação: Pro, Python e, quando o
+  // serviço está configurado, o jogo clássico (mesmo link, versões, restaurar).
   const retained = (project: EditableStudioProject | null) =>
-    project?.kind === 'pro' || project?.programmingLanguage === 'python'
+    project?.kind === 'pro' ||
+    project?.programmingLanguage === 'python' ||
+    isStudioClassicHistoryProject(project)
   const publicMetadata = (project: EditableStudioProject) =>
     StudioPublicProjectMetadataSchema.parse({
       programmingLanguage: project.programmingLanguage ?? 'javascript',
@@ -320,15 +337,22 @@ export function createStudioRoutes(deps: {
         status: result.status === 200 ? 502 : result.status,
       })
     const prepared = result.body
+    if (prepared.state === 'existing') {
+      const thread = prepared.thread
+      if (!thread.playId || !UUID_RE.test(thread.playId) || thread.playId !== prepared.playId)
+        return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
+      return prepared
+    }
     if (prepared.state === 'retired')
       return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
     if (prepared.state === 'finalized') {
       const thread = prepared.thread
       if (thread?.status !== 'visible' || !thread.playId || !UUID_RE.test(thread.playId))
         return NextResponse.json({ error: { code: 'SHOWCASE_NOT_VISIBLE' } }, { status: 409 })
-      const hasHistory = thread.studioMeta
-        ? thread.studioMeta.pro || thread.studioMeta.programmingLanguage === 'python'
-        : retained(project)
+      const hasHistory =
+        retained(project) ||
+        thread.studioMeta?.pro === true ||
+        thread.studioMeta?.programmingLanguage === 'python'
       return NextResponse.json({
         muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(thread.id)}`,
         playUrl: `/jogar/${thread.playId}`,
@@ -362,7 +386,9 @@ export function createStudioRoutes(deps: {
     context: PublicationContext
   }) {
     if (options.project.programmingLanguage !== 'python')
-      return publishStudioProRevision({ ...options, project: options.project })
+      return options.project.kind === 'pro'
+        ? publishStudioProRevision({ ...options, project: options.project })
+        : publishStudioClassicRevision({ ...options, project: options.project })
     return publishStudioPythonRevision({
       ...options,
       project: options.project,
@@ -441,6 +467,173 @@ export function createStudioRoutes(deps: {
         : kids !== null && hasKidsCapability(kids, 'studio') && hasKidsCapability(kids, 'pro')
     if (!pro) return NextResponse.json({ error: { code: 'FORBIDDEN_MODE' } }, { status: 403 })
     return null
+  }
+
+  /**
+   * O jogo que está hoje no link: a revisão ativa do serviço de versões ou, num post
+   * clássico de antes do histórico, o primeiro retrato. `fingerprint` nulo = desconhecido.
+   */
+  async function publishedGame(playId: string, owner: string, signal?: AbortSignal) {
+    let version = 0
+    let source: string | null = null
+    const runtime =
+      Boolean(getEnv().STUDIO_PRO_RUNTIME_URL && getEnv().STUDIO_PRO_RUNTIME_TOKEN) ||
+      studioClassicHistoryAvailable()
+    if (runtime) {
+      const state = await callStudioPublication({ operation: 'get', playId, owner }, signal)
+      if (state && isStudioPublication(state)) {
+        version = state.version
+        const current = await callStudioPublication(
+          { operation: 'source', playId, owner, revision: state.activeRevision },
+          signal,
+        )
+        if (current && 'source' in current) source = current.source
+      }
+    }
+    if (source === null) {
+      try {
+        const object = await r2GetObjectPrivate(PLAY_KEY(playId))
+        source = (await bufferFromStream(object.body, PROJECT_MAX_BYTES)).toString('utf-8')
+      } catch (error) {
+        if (!(error instanceof PrivateObjectNotFoundError)) throw error
+      }
+    }
+    let fingerprint: string | null = null
+    if (source !== null) {
+      try {
+        const raw: unknown = JSON.parse(source)
+        if (!isRetiredStudioPublicationSnapshot(raw)) fingerprint = studioGameFingerprint(raw)
+      } catch {
+        fingerprint = null
+      }
+    }
+    return { version, fingerprint }
+  }
+
+  type ExistingPublication = Extract<StudioPublicationPreparation, { state: 'existing' }>
+  const unchanged = () =>
+    NextResponse.json(
+      {
+        error: {
+          code: 'SHOWCASE_UNCHANGED',
+          message: 'Seu jogo no Mural já está igual a este.',
+        },
+      },
+      { status: 409 },
+    )
+
+  /**
+   * Republicar o MESMO projeto: uma versão nova atrás do mesmo link /jogar e o post do
+   * Mural atualizado (descrição, capa), mantendo comentários, jogadas e a data.
+   */
+  async function updateExistingPublication(options: {
+    req: Request
+    sessionId: string
+    owner: string
+    existing: ExistingPublication
+    project: EditableStudioProject
+    projectBytes: Buffer
+    /** Capturado do projeto privado ANTES da projeção pública (Pinta no Python). */
+    requiredPintaRuntimeFeatures?: ReturnType<typeof studioRequiredPintaRuntimeFeatures>
+    context: PublicationContext
+    clientIdempotencyKey: string
+    form: FormData
+    defaultCoverUrl?: string | null
+    update: (coverImageUrl: string | null) => Promise<GatewayResponse<StudioPublicationUpdate>>
+  }): Promise<NextResponse> {
+    const { req, existing, owner, project, clientIdempotencyKey } = options
+    const playId = existing.playId
+    try {
+      if (!retained(project))
+        throw new StudioPublicationError(
+          503,
+          'Atualizar o jogo publicado ainda não está disponível neste ambiente.',
+        )
+      const published = await publishedGame(playId, owner, req.signal)
+      if (published.fingerprint && published.fingerprint === studioGameFingerprint(project))
+        return unchanged()
+      await publishRevision({
+        project,
+        requiredPintaRuntimeFeatures: options.requiredPintaRuntimeFeatures ?? [],
+        source: options.projectBytes.toString('utf8'),
+        playId,
+        owner,
+        requestId: clientIdempotencyKey,
+        expectedVersion: published.version,
+        parentOrigin: publicationParentOrigin(req),
+        signal: req.signal,
+        context: options.context,
+      })
+    } catch (error) {
+      return publicationError(error)
+    }
+
+    // Capa nova só quando a criança escolheu outra; sem ela o post mantém a atual.
+    let coverImageUrl: string | null = null
+    let uploadedCoverKey: string | null = null
+    const cover = options.form.get('cover')
+    if (
+      cover instanceof File &&
+      cover.size > 0 &&
+      cover.size <= COVER_MAX_BYTES &&
+      UGC_IMAGE_INPUT_MIME.has(cover.type)
+    ) {
+      try {
+        const optimized = await optimizeImage(await cover.arrayBuffer(), 'ugc')
+        const coverKey = publicationCoverKey(
+          options.sessionId,
+          playId,
+          clientIdempotencyKey,
+          optimized.buffer,
+          optimized.extension,
+        )
+        await enqueueStudioCoverCandidate(audience, playId, coverKey)
+        const stored = await createStudioPublicationCover({
+          key: coverKey,
+          body: optimized.buffer,
+          contentType: optimized.contentType,
+          cacheControl: 'no-store',
+        })
+        coverImageUrl = stored.url
+        uploadedCoverKey = stored.key
+      } catch {
+        // best-effort: o post mantém a capa atual.
+      }
+    } else if (options.form.get('useDefaultCover') === '1' && options.defaultCoverUrl) {
+      coverImageUrl = options.defaultCoverUrl
+    }
+
+    const r = await options.update(coverImageUrl)
+    if (r.status !== 200 || !r.body) {
+      if (uploadedCoverKey) {
+        await retireStudioPublicationCover(uploadedCoverKey).catch(() => {})
+        await acknowledgeStudioCoverCandidate(audience, playId, uploadedCoverKey).catch(() => {})
+      }
+      return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
+        status: r.status === 200 ? 502 : r.status,
+      })
+    }
+    const thread = r.body.thread
+    if (uploadedCoverKey && thread.coverImageUrl === coverImageUrl) {
+      try {
+        // O recibo é um por link: a capa antiga sai depois que a nova vira a canônica.
+        const previous = await readStudioCoverReceipt(audience, playId)
+        await commitStudioCoverCandidate(audience, playId, uploadedCoverKey)
+        if (previous && previous.coverUrl === r.body.previousCoverUrl)
+          await retireStudioPublicationCover(previous.coverKey)
+      } catch {
+        // A intenção durável da capa nova reconcilia depois.
+      }
+    }
+    return NextResponse.json(
+      {
+        muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(thread.id)}`,
+        playUrl: `/jogar/${playId}`,
+        publicationId: playId,
+        updated: true,
+      },
+      { status: 200 },
+    )
   }
 
   const studioDescribe = {
@@ -591,6 +784,38 @@ export function createStudioRoutes(deps: {
         snapshotHash,
       )
       if (preparation instanceof NextResponse) return preparation
+      if (preparation.state === 'existing') {
+        if (!publicationProject) return invalid()
+        return updateExistingPublication({
+          req,
+          sessionId: sess.id,
+          owner,
+          existing: preparation,
+          project: publicationProject,
+          projectBytes,
+          requiredPintaRuntimeFeatures,
+          context: publicationContext,
+          clientIdempotencyKey,
+          form,
+          defaultCoverUrl: payload.body.defaultCoverUrl ?? null,
+          update: (coverImageUrl) =>
+            hub.updateShowcaseThreadStudio({
+              publisher: {
+                authorId: sess.id,
+                accountId: sess.activeProfile?.accountId ?? sess.id,
+                audience,
+              },
+              spaceSlug: muralSpaceSlug,
+              lessonId,
+              blockId,
+              coverImageUrl,
+              description,
+              playId: preparation.playId,
+              clientIdempotencyKey,
+              studioMeta,
+            }),
+        })
+      }
       const { playId, reservationId } = preparation
       try {
         await recordStudioPublicationOwner(
@@ -815,6 +1040,11 @@ export function createStudioRoutes(deps: {
       // Clube+Estúdio + mês corrente) é o do hub, com drop silencioso da tag.
       const rawChallenge = String(form.get('challengeKey') ?? '')
       const challengeKey = /^m:\d{4}-\d{2}$/.test(rawChallenge) ? rawChallenge : null
+      // "Publicar como jogo novo" (opção escondida) e o link local de uma publicação
+      // antiga do projeto, para o hub adotar o post de antes.
+      const asNewPost = form.get('asNewPost') === '1'
+      const rawAdopt = String(form.get('adoptPlayId') ?? '')
+      const adoptPlayId = UUID_RE.test(rawAdopt) ? rawAdopt : null
 
       const liveWorkspaceId = String(form.get('liveWorkspaceId') ?? '')
       const liveRevision = Number(form.get('liveRevision') ?? 0)
@@ -877,6 +1107,11 @@ export function createStudioRoutes(deps: {
       }
 
       const owner = studioPublicationOwner(sess.id, sess.activeProfile?.accountId ?? sess.id)
+      // A identidade do projeto do Estúdio livre (a oficina usa o próprio workspace).
+      const sourceProjectId =
+        !liveSnapshot && publicationProject && isStudioProjectId(publicationProject.id)
+          ? publicationProject.id
+          : null
       if (!liveSnapshot && publicationProject?.kind === 'pro') {
         const denied = await proPublicationAccess(sess)
         if (denied) return denied
@@ -912,12 +1147,58 @@ export function createStudioRoutes(deps: {
           challengeKey: liveSnapshot ? null : challengeKey,
           snapshotHash,
           studioMeta,
+          ...(sourceProjectId ? { sourceProjectId } : {}),
+          ...(adoptPlayId && !liveSnapshot ? { adoptPlayId } : {}),
+          ...(asNewPost && !liveSnapshot ? { asNewPost: true } : {}),
         }),
         publicationProject,
         snapshotHash,
         liveSnapshot?.playId,
       )
       if (preparation instanceof NextResponse) return preparation
+      if (preparation.state === 'existing') {
+        if (!publicationProject) return invalid()
+        return updateExistingPublication({
+          req,
+          sessionId: sess.id,
+          owner,
+          existing: preparation,
+          project: publicationProject,
+          projectBytes,
+          requiredPintaRuntimeFeatures,
+          context: liveSnapshot
+            ? { kind: 'live', workspaceId: liveWorkspaceId, revision: liveRevision }
+            : { kind: 'free' },
+          clientIdempotencyKey,
+          form,
+          update: (coverImageUrl) =>
+            hub.updateShowcaseThreadStudioStandalone({
+              publisher: {
+                authorId: sess.id,
+                accountId: sess.activeProfile?.accountId ?? sess.id,
+                audience,
+              },
+              ...(liveSnapshot
+                ? {
+                    liveWorkspace: {
+                      id: liveWorkspaceId,
+                      revision: liveRevision,
+                      playId: liveSnapshot.playId,
+                      publicationToken: liveSnapshot.publicationToken,
+                    },
+                  }
+                : {}),
+              spaceSlug: muralSpaceSlug,
+              title,
+              description,
+              coverImageUrl,
+              playId: preparation.playId,
+              clientIdempotencyKey,
+              ...(sourceProjectId ? { sourceProjectId } : {}),
+              studioMeta,
+            }),
+        })
+      }
       const { playId, reservationId } = preparation
       try {
         const context: StudioReservationContext = liveSnapshot
@@ -1179,6 +1460,41 @@ export function createStudioRoutes(deps: {
             )
           }
         }
+        if (
+          project &&
+          project.programmingLanguage !== 'python' &&
+          project.kind !== 'pro' &&
+          studioClassicHistoryAvailable()
+        ) {
+          // Jogo clássico com histórico: a versão ativa do link. Sem registro de versões
+          // (publicado antes do histórico) vale o primeiro retrato; link desativado = 404.
+          try {
+            const published = await callStudioPublication(
+              { operation: 'resolve', playId: id },
+              req.signal,
+            )
+            if (
+              published &&
+              'source' in published &&
+              isStudioClassicPublication(published.publication)
+            ) {
+              project = await prepareEditableStudioProject(JSON.parse(published.source))
+              if (project?.programmingLanguage === 'python' || project?.kind === 'pro')
+                throw new ProjectDocumentError('invalid-document', 'Publicação clássica inválida.')
+            } else {
+              const status = await callStudioPublication(
+                { operation: 'resolve-status', playId: id },
+                req.signal,
+              )
+              if (status && 'exists' in status && status.exists)
+                return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+            }
+          } catch (error) {
+            if (error instanceof ProjectDocumentError || error instanceof SyntaxError) throw error
+            // Serviço de versões fora do ar: o jogo segue com o primeiro retrato.
+            console.warn('[studio-play] classic revision unavailable', { playId: id })
+          }
+        }
         if (!project) throw new ProjectDocumentError('invalid-document', 'Projeto inválido.')
         const headers: Record<string, string> = {
           'Content-Type': 'application/json; charset=utf-8',
@@ -1391,6 +1707,7 @@ export function createStudioRoutes(deps: {
       }
     },
   }
+  const PROJECT_ID = /^[A-Za-z0-9_-]{1,128}$/
   const studioPublication = {
     POST: async (request: Request) => {
       const user = await media.requireUploadSession(request)
@@ -1418,11 +1735,27 @@ export function createStudioRoutes(deps: {
               .strict(),
             z
               .object({
-                operation: z.literal('update'),
-                playId: z.string().uuid(),
-                requestId: z.string().uuid(),
-                expectedVersion: z.number().int().positive(),
-                project: z.unknown(),
+                operation: z.literal('status'),
+                // `compare` = dizer se o jogo mudou (lê a entrega ou recebe o projeto).
+                compare: z.boolean().optional(),
+                context: z.discriminatedUnion('kind', [
+                  z
+                    .object({
+                      kind: z.literal('lesson'),
+                      lessonId: z.string().uuid(),
+                      blockId: z.string().uuid(),
+                    })
+                    .strict(),
+                  z
+                    .object({
+                      kind: z.literal('free'),
+                      projectId: z.string().regex(PROJECT_ID),
+                      adoptPlayId: z.string().uuid().optional(),
+                      project: z.unknown().optional(),
+                    })
+                    .strict(),
+                  z.object({ kind: z.literal('live'), workspaceId: z.string().uuid() }).strict(),
+                ]),
               })
               .strict(),
           ])
@@ -1430,52 +1763,85 @@ export function createStudioRoutes(deps: {
         if (!parsed.success) return invalid()
         const input = parsed.data
         const owner = studioPublicationOwner(user.id, user.activeProfile?.accountId ?? user.id)
-        if (input.operation === 'update') {
-          const project = await prepareEditableStudioProject(input.project)
-          if (!project || !retained(project)) return invalid()
-          if (project.kind === 'pro') {
-            const denied = await proPublicationAccess(user)
-            if (denied) return denied
-          }
-          const access = await members.checkStudioAccess()
-          if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
-            return NextResponse.json({ error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, { status: 403 })
-          const visible = await hub.resolveStudioPlay(input.playId, false)
-          if (
-            visible.status !== 200 ||
-            visible.body?.visible !== true ||
-            (audience === 'adult' && visible.body.audience !== 'adult')
-          )
-            return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
-          const previous = await callStudioPublication(
-            { operation: 'get', playId: input.playId, owner },
-            request.signal,
-          )
-          if (!isStudioPublication(previous))
-            return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+        if (input.operation === 'status')
           return NextResponse.json(
-            await publishRevision({
-              project: studioPublicProject(project),
-              requiredPintaRuntimeFeatures: studioRequiredPintaRuntimeFeatures(project),
-              source: JSON.stringify(studioPublicProject(project)),
-              playId: input.playId,
-              owner,
-              requestId: input.requestId,
-              expectedVersion: input.expectedVersion,
-              parentOrigin: publicationParentOrigin(request),
-              signal: request.signal,
-              context: { kind: 'free' },
-            }),
+            await publicationStatus(input.context, owner, request.signal, input.compare === true),
             { headers: { 'Cache-Control': 'no-store' } },
           )
-        }
-        return NextResponse.json(await callStudioPublication({ ...input, owner }, request.signal), {
-          headers: { 'Cache-Control': 'no-store' },
-        })
+        const result = await callStudioPublication({ ...input, owner }, request.signal)
+        // Restaurar ou desativar uma versão também é atualizar o jogo publicado.
+        if (input.operation === 'activate' && result && isStudioPublication(result))
+          await hub.touchShowcase(input.playId).catch(() => null)
+        return NextResponse.json(result, { headers: { 'Cache-Control': 'no-store' } })
       } catch (error) {
         return publicationError(error)
       }
     },
+  }
+
+  /**
+   * O que o botão Compartilhar precisa saber: o projeto já tem post? (o link, a descrição
+   * e a capa de agora) e, quando há um projeto para comparar, se o jogo mudou desde então.
+   */
+  async function publicationStatus(
+    context:
+      | { kind: 'lesson'; lessonId: string; blockId: string }
+      | { kind: 'free'; projectId: string; adoptPlayId?: string; project?: unknown }
+      | { kind: 'live'; workspaceId: string },
+    owner: string,
+    signal: AbortSignal,
+    compare: boolean,
+  ) {
+    const source = await hub.showcaseSource(
+      context.kind === 'free'
+        ? {
+            kind: 'free',
+            spaceSlug: muralSpaceSlug,
+            projectId: context.projectId,
+            ...(context.adoptPlayId ? { adoptPlayId: context.adoptPlayId } : {}),
+          }
+        : context,
+    )
+    if (source.status !== 200 || !source.body)
+      throw new StudioPublicationError(
+        source.status >= 500 || source.status === 200 ? 503 : source.status,
+        'Não foi possível consultar a publicação agora.',
+      )
+    const thread = source.body.thread
+    if (!thread?.playId || !UUID_RE.test(thread.playId)) return { published: false as const }
+    let candidate: unknown = null
+    if (compare && context.kind === 'free') candidate = context.project ?? null
+    if (compare && context.kind === 'lesson') {
+      const submitted = await members.getOwnStudioSubmission(context.lessonId, context.blockId)
+      candidate = submitted.status === 200 ? (submitted.body?.project ?? null) : null
+    }
+    let unchangedGame: boolean | undefined
+    let history = false
+    try {
+      const published = await publishedGame(thread.playId, owner, signal)
+      history = published.version > 0
+      if (candidate && published.fingerprint) {
+        const project = await prepareEditableStudioProject(candidate)
+        if (project)
+          unchangedGame =
+            studioGameFingerprint(studioPublicProject(project)) === published.fingerprint
+      }
+    } catch {
+      // Sem a comparação, o botão segue liberado e a publicação confere de novo.
+    }
+    return {
+      published: true as const,
+      playId: thread.playId,
+      muralUrl: `/${muralSpaceSlug}?thread=${encodeURIComponent(thread.id)}`,
+      playUrl: `/jogar/${thread.playId}`,
+      title: thread.title,
+      description: thread.body,
+      coverUrl: thread.coverImageUrl ?? null,
+      hidden: thread.status !== 'visible',
+      gameUpdatedAt: thread.gameUpdatedAt ?? null,
+      history,
+      ...(unchangedGame === undefined ? {} : { unchanged: unchangedGame }),
+    }
   }
   return {
     studioPublicRuntime: createStudioPublicRuntimeRoute({ hub, members }),

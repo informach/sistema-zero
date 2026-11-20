@@ -11,7 +11,7 @@ import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioPersistence, useStudioRuntimeCapture } from '../../state/studioStores'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
-import type { StudioShareAdapter, StudioShareResult } from '../../studio/share'
+import type { StudioShareAdapter, StudioShareResult, StudioShareStatus } from '../../studio/share'
 import { Spinner } from './LoadingViews'
 import { ProPublicationHistory } from './ProPublicationHistory'
 
@@ -32,8 +32,15 @@ const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
  */
 const MAX_AI_GENERATIONS = 3
 
-/** Capa escolhida: imagem (print automático OU upload) ou a padrão do curso. */
-type Cover = { kind: 'image'; dataUrl: string } | { kind: 'preset' } | { kind: 'verified' }
+/**
+ * Capa escolhida: imagem (print automático OU upload), a padrão do curso, a do jogo
+ * verificado (Pro) ou, ao ATUALIZAR, a que o post já tem.
+ */
+type Cover =
+  | { kind: 'image'; dataUrl: string }
+  | { kind: 'preset' }
+  | { kind: 'verified' }
+  | { kind: 'current' }
 
 /**
  * Fluxo de COMPARTILHAR (publicar no Mural) — UX do Studio, I/O do host.
@@ -84,10 +91,17 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   const [copied, setCopied] = useState(false)
   // Desafio do mês: opt-in EXPLÍCITO da criança (checkbox; só com adapter.challenge).
   const [joinChallenge, setJoinChallenge] = useState(false)
+  // O post que o projeto já tem no Mural (republicar ATUALIZA) e a opção escondida
+  // de publicar como jogo novo.
+  const [status, setStatus] = useState<StudioShareStatus | null>(null)
+  const [statusLoading, setStatusLoading] = useState(false)
+  const [asNewPost, setAsNewPost] = useState(false)
 
   const fileRef = useRef<HTMLInputElement | null>(null)
   // Gera o rascunho da descrição UMA vez por abertura (quando não há preset).
   const describeStartedRef = useRef(false)
+  // Síncrono com a abertura: a IA espera saber se o post já tem descrição.
+  const statusPendingRef = useRef(false)
 
   // Reseta tudo a cada abertura (o componente fica montado entre aberturas).
   useEffect(() => {
@@ -123,10 +137,40 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setErrorMsg('')
     setCopied(false)
     setJoinChallenge(false)
+    setStatus(null)
+    setAsNewPost(false)
     pendingPublish.current = null
     describeStartedRef.current = false
     publishingRef.current = false
+    const loadStatus = adapter?.status
+    const opened = store.getState().project
+    const abort = new AbortController()
+    statusPendingRef.current = Boolean(loadStatus && opened)
+    if (loadStatus && opened) {
+      setStatusLoading(true)
+      loadStatus({ project: structuredClone(opened), compare: true }, abort.signal)
+        .then((value) => {
+          if (abort.signal.aborted || !value.published) return
+          setStatus(value)
+          // Atualizar abre com o post de agora: a descrição e a capa que ele já tem.
+          if (value.description?.trim())
+            setDescription(value.description.trim().slice(0, MAX_DESCRIPTION))
+          if (editableTitle && value.title?.trim()) setTitle(value.title.trim().slice(0, MAX_TITLE))
+          if (value.coverUrl) setCover({ kind: 'current' })
+          // Descrição já existe: a IA não precisa rascunhar outra.
+          describeStartedRef.current = true
+        })
+        .catch(() => {
+          // Sem o status, o diálogo segue como uma publicação nova; o servidor decide.
+        })
+        .finally(() => {
+          if (abort.signal.aborted) return
+          statusPendingRef.current = false
+          setStatusLoading(false)
+        })
+    } else setStatusLoading(false)
     return () => {
+      abort.abort()
       lifecycle.current.open = false
       lifecycle.current.generation++
     }
@@ -137,6 +181,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     adapter?.presetTitle,
     adapter?.presetDescription,
     adapter?.titleEditable,
+    adapter?.status,
     store,
   ])
 
@@ -152,7 +197,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   // Rascunho da descrição na abertura (1x) SÓ quando há IA (Estúdio Completo) e o
   // admin não pré-definiu. Na AULA (sem `generateDescription`) NÃO gera nada.
   useEffect(() => {
-    if (!open || describeStartedRef.current) return
+    if (!open || describeStartedRef.current || statusLoading || statusPendingRef.current) return
     if (!adapter || !project) return
     describeStartedRef.current = true
     if (adapter.presetDescription?.trim()) return
@@ -173,10 +218,13 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
       .finally(() => {
         if (current()) setGenerating(false)
       })
-  }, [open, adapter, project, title, currentOperation])
+  }, [open, adapter, project, title, currentOperation, statusLoading])
 
   if (!open || !adapter || !project) return null
   const titleEditable = adapter.titleEditable ?? true
+  /** O projeto já tem post e a criança não pediu um jogo novo: publicar ATUALIZA. */
+  const updating = Boolean(status?.published) && !asNewPost
+  const gameUnchanged = updating && status?.unchanged === true
 
   const regenerate = () => {
     const generate = adapter.generateDescription
@@ -276,7 +324,11 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         description: description.trim().slice(0, MAX_DESCRIPTION),
         coverDataUrl: cover?.kind === 'image' ? cover.dataUrl : null,
         useAdminCover: cover?.kind === 'preset',
-        ...(adapter.challenge && joinChallenge ? { challengeKey: adapter.challenge.key } : {}),
+        ...(updating && cover?.kind === 'current' ? { keepCover: true } : {}),
+        ...(asNewPost ? { asNewPost: true } : {}),
+        ...(adapter.challenge && joinChallenge && !updating
+          ? { challengeKey: adapter.challenge.key }
+          : {}),
       }
       const identity = JSON.stringify(input)
       if (pendingPublish.current?.lifetime !== lifecycle.current) pendingPublish.current = null
@@ -301,7 +353,8 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
       }
       pendingPublish.current = null
       adapter.onPublished?.(res ?? {})
-      if (adapter.onPublished && !adapter.showPublishedScreen) onClose()
+      // Uma atualização mostra sempre a própria tela ("Seu jogo foi atualizado!").
+      if (adapter.onPublished && !adapter.showPublishedScreen && !res?.updated) onClose()
       else setResult(res ?? {})
     } catch (error) {
       if (current()) setErrorMsg(error instanceof Error ? error.message : String(error))
@@ -331,10 +384,20 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
       ? cover.dataUrl
       : cover?.kind === 'preset'
         ? (adapter.presetCoverUrl ?? null)
-        : null
+        : cover?.kind === 'current'
+          ? (status?.coverUrl ?? null)
+          : null
   const titleReady = titleEditable ? title.trim().length > 0 : true
-  const ready = titleReady && description.trim().length > 0 && cover !== null
-  const publicationId = projectPublicationId(project)
+  const ready =
+    titleReady &&
+    description.trim().length > 0 &&
+    cover !== null &&
+    !statusLoading &&
+    !gameUnchanged
+  // O link com versões: o do post (servidor) ou o guardado no projeto (Pro/Python).
+  const publicationId =
+    (status?.history ? status.playId : undefined) ?? projectPublicationId(project)
+  const primaryLabel = updating ? t('share.update.action') : t('share.publish')
 
   // Rodapé: sucesso → Fechar; senão → Cancelar + Publicar (gated).
   const footer = result ? (
@@ -351,15 +414,21 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         size="sm"
         disabled={!ready || publishing}
         onClick={() => void doPublish()}
-        title={!ready ? t('share.needAll') : undefined}
+        title={
+          gameUnchanged
+            ? (adapter.unchangedMessage ?? t('share.unchanged'))
+            : !ready
+              ? t('share.needAll')
+              : undefined
+        }
       >
         {publishing ? (
           <span className="flex items-center gap-1.5">
             <Spinner className="h-3.5 w-3.5" />
-            {t('share.publishing')}
+            {updating ? t('share.update.publishing') : t('share.publishing')}
           </span>
         ) : (
-          t('share.publish')
+          primaryLabel
         )}
       </Button>
     </>
@@ -369,10 +438,10 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     <Modal
       open={open}
       onClose={publishing ? () => {} : onClose}
-      title={t('share.title')}
+      title={updating ? t('share.update.title') : t('share.title')}
       footer={footer}
     >
-      {publicationId && adapter.publication && (
+      {publicationId && adapter.publication && !asNewPost && (
         <ProPublicationHistory
           adapter={adapter.publication}
           playId={publicationId}
@@ -383,9 +452,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         <div className="space-y-3">
           <p className="flex items-center gap-2 font-medium text-sz-fg">
             <IconCheckCircle className="text-sz-success" />
-            {t('share.success.heading')}
+            {result.updated ? t('share.success.updatedHeading') : t('share.success.heading')}
           </p>
-          <p>{t('share.success.body')}</p>
+          <p>{result.updated ? t('share.success.updatedBody') : t('share.success.body')}</p>
           <div className="flex flex-wrap gap-2">
             {result.muralUrl && (
               <a href={result.muralUrl} target="_blank" rel="noopener noreferrer">
@@ -413,7 +482,28 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sz-fg-soft text-sm">{t('share.intro')}</p>
+          <p className="text-sz-fg-soft text-sm">
+            {updating ? t('share.update.intro') : t('share.intro')}
+          </p>
+          {statusLoading ? (
+            <p className="flex items-center gap-1.5 text-sz-fg-mute text-xs" role="status">
+              <Spinner className="h-3.5 w-3.5" />
+              {t('share.status.loading')}
+            </p>
+          ) : null}
+          {updating && status?.hidden ? (
+            <p className="text-sz-fg-soft text-xs" role="status">
+              {t('share.update.hidden')}
+            </p>
+          ) : null}
+          {gameUnchanged ? (
+            <p
+              role="status"
+              className="rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sz-fg text-sm"
+            >
+              {adapter.unchangedMessage ?? t('share.unchanged')}
+            </p>
+          ) : null}
 
           {titleEditable ? (
             <label className="block">
@@ -515,6 +605,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             {cover?.kind === 'preset' && !coverNote ? (
               <p className="text-sz-fg-mute text-xs">{t('share.cover.usingAdmin')}</p>
             ) : null}
+            {cover?.kind === 'current' && !coverNote ? (
+              <p className="text-sz-fg-mute text-xs">{t('share.cover.usingCurrent')}</p>
+            ) : null}
             {coverNote ? (
               <p className="text-sz-fg-soft text-xs" role="status">
                 {coverNote}
@@ -546,6 +639,19 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               >
                 {t('share.cover.upload')}
               </Button>
+              {updating && status?.coverUrl && cover?.kind !== 'current' ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setCover({ kind: 'current' })
+                    setCoverNote(null)
+                  }}
+                  disabled={capturing}
+                >
+                  {t('share.cover.keepCurrent')}
+                </Button>
+              ) : null}
               {adapter.presetCoverUrl && cover?.kind !== 'preset' ? (
                 <Button
                   variant="ghost"
@@ -570,8 +676,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             </div>
           </div>
 
-          {/* Desafio do mês (game jam) — só com adapter.challenge (posse Clube+Estúdio). */}
-          {adapter.challenge ? (
+          {/* Desafio do mês (game jam) — só com adapter.challenge (posse Clube+Estúdio).
+              Atualizar não muda o desafio: ele fica no mês da 1ª publicação. */}
+          {adapter.challenge && !updating ? (
             <label className="flex items-start gap-2 rounded-md border border-sz-border bg-sz-bg px-3 py-2">
               <input
                 type="checkbox"
@@ -597,10 +704,36 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
             role="alert"
             className="rounded-md border border-sz-warn/40 bg-sz-warn/10 px-3 py-2 text-sz-warn text-xs"
           >
-            {(project.kind === 'pro' || isPythonProject(project)) && adapter.publication
-              ? 'O texto e a capa do post ficam como você publicou. Para atualizar o jogo desse link depois, use o histórico de versões.'
-              : t('share.step.confirm.irreversible')}
+            {updating ? t('share.update.keeps') : t('share.step.confirm.irreversible')}
           </p>
+
+          {/* Opção escondida do Estúdio Completo: um post NOVO em vez de atualizar. */}
+          {adapter.allowNewPost && status?.published ? (
+            <details className="text-sm">
+              <summary className="cursor-pointer text-sz-fg-soft text-xs">
+                {t('share.newPost.more')}
+              </summary>
+              <label className="mt-2 flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  name="share-as-new-post"
+                  checked={asNewPost}
+                  onChange={(e) => {
+                    setAsNewPost(e.target.checked)
+                    if (e.target.checked && cover?.kind === 'current') setCover(null)
+                    if (!e.target.checked && status?.coverUrl && cover === null)
+                      setCover({ kind: 'current' })
+                  }}
+                  disabled={publishing}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sz-fg">{t('share.newPost.label')}</span>
+                  <span className="block text-sz-fg-mute text-xs">{t('share.newPost.hint')}</span>
+                </span>
+              </label>
+            </details>
+          ) : null}
 
           {errorMsg ? (
             <p className="text-sz-error text-sm" role="alert">

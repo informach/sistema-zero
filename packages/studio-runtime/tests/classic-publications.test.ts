@@ -147,3 +147,21 @@ test('a disabled classic link resolves to nothing and a first-version reservatio
   })
   expect(result.deleted).toBe(true)
 })
+
+test('the status tells a missing record from a disabled link', async () => {
+  const { publishedStatus } = await import('../src/publications')
+  const f = fixture()
+  expect(await publishedStatus(f.bucket, f.playId)).toEqual({ exists: false, disabled: false })
+  const state = await f.promote(project('a()'), 0)
+  expect(await publishedStatus(f.bucket, f.playId)).toEqual({ exists: true, disabled: false })
+  await publicationCommand(f.bucket, {
+    operation: 'activate',
+    playId: f.playId,
+    owner: f.base.owner,
+    requestId: crypto.randomUUID(),
+    expectedVersion: 1,
+    revision: state.activeRevision,
+    disabled: true,
+  })
+  expect(await publishedStatus(f.bucket, f.playId)).toEqual({ exists: true, disabled: true })
+})
