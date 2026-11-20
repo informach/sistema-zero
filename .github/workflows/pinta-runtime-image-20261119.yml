@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      PINTA_SOURCE_SHA: 5595364428c339faff2e37efca39ad373a8d24ad
+      PINTA_SOURCE_SHA: f64ece1897b4a544c3bfcb7a22637892cfe321c8
       STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: 5595364428c339faff2e37efca39ad373a8d24ad
+          ref: f64ece1897b4a544c3bfcb7a22637892cfe321c8
           persist-credentials: false
       - uses: oven-sh/setup-bun@v2
         with:
@@ -58,7 +58,7 @@ jobs:
           docker image inspect sistemazero-studio-runtime:verify --format '{{.Id}}' > .cache/pinta-runtime-image/image-id.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: pinta-staging-runtime-image-559536442
+          name: pinta-staging-runtime-image-f64ece189
           path: .cache/pinta-runtime-image/
           include-hidden-files: true
           if-no-files-found: error
