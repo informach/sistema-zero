@@ -207,6 +207,17 @@ describe('guarda de atualização do Blockly (o que as adaptações supõem)', (
     )
   })
 
+  it('o redesenho desce por todos os filhos e a conexão nova entra no banco no 1º movimento', () => {
+    // Por isso o adiado não acerta posições (`updateComponentLocations`): o redesenho de quem está
+    // acima moveria as conexões dele, e a criada depois da carga iria para o banco.
+    expect(compressed).toContain(
+      'updateComponentLocations(a){this.dragging||this.updateConnectionLocations(a);this.updateIconLocations(a);this.updateFieldLocations(a);for(const b of this.getChildren(!1))b.updateComponentLocations(',
+    )
+    expect(compressed).toContain(
+      'moveTo(a,b){let c=!1;this.trackedState===RenderedConnection$$module$build$src$core$rendered_connection.TrackedState.WILL_TRACK?(this.db.addConnection(this,b),',
+    )
+  })
+
   it('encaixar o seguinte usa a posição da conexão de cima dele (por isso o pai reencaixa)', () => {
     expect(compressed).toContain(
       'tightenEfficiently(){var a=this.targetConnection;const b=this.targetBlock();a&&b&&(a=Coordinate$$module$build$src$core$utils$coordinate.difference(this.offsetInBlock,a.offsetInBlock),b.translate(a.x,a',

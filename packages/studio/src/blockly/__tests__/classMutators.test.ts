@@ -450,3 +450,89 @@ function argsOf(ws: Blockly.Workspace): Array<Record<string, unknown>> {
     return rest
   })
 }
+
+describe('argsMutator — ajustar os espaços não refaz o que já está neles (20/11/2026)', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+  const call = (inputs: Record<string, unknown>, items: number) => ({
+    blocks: {
+      languageVersion: 0,
+      blocks: [
+        {
+          type: 'sz_js_call_function',
+          id: 'c',
+          fields: { NAME: 'f' },
+          extraState: { items },
+          inputs,
+        },
+      ],
+    },
+  })
+
+  it('o número digitado na sombra do argumento sobrevive à abertura do projeto', async () => {
+    // Até 20/11/2026 o ajuste do FINISHED_LOADING refazia o espaço e a sombra voltava a 0.
+    const ws = new Blockly.Workspace()
+    const state = call(
+      { ARG0: { shadow: { type: 'sz_val_number', id: 's', fields: { NUM: 7 } } } },
+      1,
+    )
+    withWorkspaceLoad(() => Blockly.serialization.workspaces.load(state, ws))
+    await flush()
+    const saved = Blockly.serialization.blocks.save(ws.getBlockById('c') as Blockly.Block) as {
+      inputs: { ARG0: { shadow: { id: string; fields: { NUM: number } } } }
+    }
+    expect(saved.inputs.ARG0.shadow).toMatchObject({ id: 's', fields: { NUM: 7 } })
+  })
+
+  it('o ajuste depois da carga não desencaixa o valor de verdade do argumento', async () => {
+    // Desencaixar um bloco ainda não desenhado obrigava a cauda adiada a se desenhar
+    // (`deferredTail.ts`). Agora o valor nunca sai do lugar.
+    const ws = new Blockly.Workspace()
+    const state = call(
+      { ARG0: { block: { type: 'sz_val_text', id: 'v', fields: { TEXT: 'Ana' } } } },
+      1,
+    )
+    const unplugged: string[] = []
+    const original = Blockly.Block.prototype.setParent
+    Blockly.Block.prototype.setParent = function (
+      this: Blockly.Block,
+      parent: Blockly.Block | null,
+    ) {
+      if (parent === null && this.getParent()) unplugged.push(this.id)
+      return original.call(this, parent)
+    }
+    try {
+      withWorkspaceLoad(() => Blockly.serialization.workspaces.load(state, ws))
+      await flush()
+    } finally {
+      Blockly.Block.prototype.setParent = original
+    }
+    expect(unplugged).toEqual([])
+    expect(ws.getBlockById('c')?.getInput('ARG0')?.connection?.targetBlock()?.id).toBe('v')
+  })
+
+  it('com a função declarada, ganha os rótulos e os espaços que faltam, sem tocar no que existe', async () => {
+    const ws = new Blockly.Workspace()
+    const fn = ws.newBlock('sz_js_function') as ParamsApi
+    fn.setFieldValue('f', 'NAME')
+    fn.addParam_()
+    fn.addParam_()
+    fn.setFieldValue('nome', 'P0')
+    fn.setFieldValue('idade', 'P1')
+    const chamada = ws.newBlock('sz_js_call_function') as ArgsApi
+    chamada.setFieldValue('f', 'NAME')
+    chamada.syncShape_()
+    const primeiro = chamada.getInput('ARG0')?.connection?.targetBlock()
+    expect(primeiro?.isShadow()).toBe(true)
+    // Um terceiro parâmetro: o espaço novo entra no fim; o primeiro continua com a mesma sombra.
+    fn.addParam_()
+    fn.setFieldValue('ativo', 'P2')
+    chamada.syncShape_()
+    expect(chamada.getInput('ARG2')).toBeTruthy()
+    expect(chamada.getInput('ARG0')?.connection?.targetBlock()).toBe(primeiro)
+    const rotulos = [0, 1, 2].map((k) => chamada.getField(`ARG_LABEL${k}`)?.getValue())
+    expect(rotulos).toEqual(['nome:', 'idade:', 'ativo:'])
+    await flush()
+  })
+})

@@ -558,6 +558,7 @@ function installHooks(): void {
     setConnectionTracking,
     setParent,
     startDrag,
+    updateComponentLocations,
   } = proto
 
   proto.initSvg = function (this: Block) {
@@ -568,6 +569,14 @@ function installHooks(): void {
   proto.renderEfficiently = function (this: Block) {
     if (tailOf(this)?.deferred.has(this)) return
     renderEfficiently.call(this)
+  }
+  // O adiado não tem lugar: o redesenho de quem está acima desce por todos os filhos e moveria as
+  // conexões dele. Uma conexão criada depois da carga (um espaço novo do mutador de argumentos)
+  // nasce para entrar no banco no primeiro movimento, e iria para lá na origem da fronteira
+  // (revisão de 20/11/2026). Ao ser desenhado, o adiado acerta tudo pelo caminho de sempre.
+  proto.updateComponentLocations = function (this: Block, blockOrigin: Blockly.utils.Coordinate) {
+    if (tailOf(this)?.deferred.has(this)) return
+    updateComponentLocations.call(this, blockOrigin)
   }
   // `serialization.blocks.appendInternal` liga as conexões da árvore inteira num `setTimeout`:
   // sem isto, as do bloco não desenhado iriam ao banco em (0,0) e um arrasto perto da origem
@@ -627,6 +636,31 @@ export interface DeferredTailLoad {
 }
 
 /**
+ * O plano da carga, que é opcional: se ler a vista ou o estado falhar, o projeto abre como sempre
+ * abriu (como quando o módulo não chega), em vez de a carga inteira cair junto e o projeto não
+ * reabrir (revisão de 20/11/2026). Nada muda antes do plano pronto.
+ */
+function planFor(
+  workspace: Blockly.WorkspaceSvg,
+  state: unknown,
+  opening: boolean,
+): ReturnType<typeof planDeferredTail> {
+  try {
+    const metrics = workspace.getMetricsManager().getViewMetrics(false)
+    const scale = workspace.scale || 1
+    // Painel ainda sem altura (aba escondida): a janela é a melhor estimativa; o desenho corrige.
+    const heightPx = metrics.height > 0 ? metrics.height : window.innerHeight
+    const view = opening
+      ? openingViewFor(state, heightPx, scale)
+      : { top: workspace.getMetricsManager().getViewMetrics(true).top, height: heightPx / scale }
+    return planDeferredTail(state, view)
+  } catch (error) {
+    console.warn('Abrindo sem adiar o desenho:', error)
+    return null
+  }
+}
+
+/**
  * Antes do `serialization.workspaces.load`: decide a cauda adiada. `null` = abre como sempre abriu.
  * A vista é a da primeira abertura (`opening`, os blocos no alto) ou a de agora (a Ponte refazendo
  * os blocos a partir do código).
@@ -636,14 +670,7 @@ export function prepareDeferredTail(
   state: unknown,
   opening: boolean,
 ): DeferredTailLoad | null {
-  const metrics = workspace.getMetricsManager().getViewMetrics(false)
-  const scale = workspace.scale || 1
-  // Painel ainda sem altura (aba escondida): a janela é a melhor estimativa; o desenho corrige.
-  const heightPx = metrics.height > 0 ? metrics.height : window.innerHeight
-  const view = opening
-    ? openingViewFor(state, heightPx, scale)
-    : { top: workspace.getMetricsManager().getViewMetrics(true).top, height: heightPx / scale }
-  const plan = planDeferredTail(state, view)
+  const plan = planFor(workspace, state, opening)
   let tail = tails.get(workspace)
   // A carga substitui todos os blocos: o que estava adiado antes deixa de existir.
   tail?.deferred.clear()

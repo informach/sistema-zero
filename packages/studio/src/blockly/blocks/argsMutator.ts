@@ -90,6 +90,22 @@ function makeScanner(ws: Blockly.Workspace, event?: Blockly.Events.Abstract | nu
   }
 }
 
+/**
+ * O rótulo do espaço `ARG{k}` (o nome do parâmetro, no automático; nenhum, no manual). O campo
+ * tem nome próprio para ser trocado no lugar: refazer o espaço desencaixaria o que está nele. O
+ * rótulo não vai ao estado salvo (rótulo não é serializado).
+ */
+function setArgLabel(input: Blockly.Input, k: number, text: string | null): void {
+  const name = `ARG_LABEL${k}`
+  const current = input.fieldRow.find((field) => field.name === name)
+  if (text === null) {
+    if (current) input.removeField(name, true)
+    return
+  }
+  if (!current) input.insertFieldAt(0, text, name)
+  else if (current.getValue() !== text) current.setValue(text)
+}
+
 /** Cria a sombra padrão (número editável) e conecta no input de valor. */
 function attachNumberShadow(block: Blockly.Block, input: Blockly.Input): void {
   const ws = block.workspace
@@ -164,52 +180,46 @@ const ARGS_MUTATOR_MIXIN = {
     return null
   },
 
-  /** Reconstrói os espaços ARG conforme `sig` (auto, com rótulos) ou contagem manual. */
+  /**
+   * Ajusta os espaços ARG conforme `sig` (auto, com rótulos) ou a contagem manual, SEM refazer os
+   * que já existem: o espaço fica com o que está encaixado nele (o valor de verdade e a sombra com
+   * o número que a criança digitou), muda só o rótulo, e os espaços a mais ou a menos entram ou
+   * saem no fim. Até 20/11/2026 todos os espaços eram removidos e recriados a cada ajuste, com os
+   * valores de verdade desencaixados e encaixados de volta: a sombra voltava a 0 em toda abertura
+   * do projeto (o ajuste roda no `FINISHED_LOADING`), e desencaixar um bloco ainda não desenhado
+   * obrigava a cauda adiada de um projeto grande a se desenhar inteira (`deferredTail.ts`).
+   */
   rebuild_(this: ArgsMutatorBlock, sig: string[] | null, opts?: { shadows?: boolean }): void {
     const auto = sig !== null
     const withShadows = opts?.shadows !== false
-
-    // Captura os filhos reais (não-sombra) por índice, para preservá-los.
-    const saved: Array<Blockly.Block | null> = []
-    for (let i = 0; this.getInput(`ARG${i}`); i += 1) {
-      const target = this.getInput(`ARG${i}`)?.connection?.targetBlock() ?? null
-      saved.push(target && !target.isShadow() ? target : null)
-    }
 
     // Quantos slots o aluno já preencheu com uma expressão de verdade. Se a
     // assinatura encolheu (ex.: o construtor de Pessoa passou de 3 p/ 1 param),
     // NÃO podemos cair em `sig.length` — isso desconectaria os argumentos a mais
     // e o aluno os perderia silenciosamente (buildIR ignora filhos órfãos). Por
     // isso mantemos pelo menos `savedMax` espaços, preservando todos os valores.
+    let existing = 0
     let savedMax = 0
-    for (let i = 0; i < saved.length; i += 1) {
-      if (saved[i]) savedMax = i + 1
+    for (; this.getInput(`ARG${existing}`); existing += 1) {
+      const target = this.getInput(`ARG${existing}`)?.connection?.targetBlock()
+      if (target && !target.isShadow()) savedMax = existing + 1
     }
     const autoCount = auto ? Math.min(sig.length, MAX_ITEMS) : this.itemCount_
     const count = auto ? Math.min(Math.max(autoCount, savedMax), MAX_ITEMS) : this.itemCount_
 
     if (this.getInput(CONTROLS_INPUT)) this.removeInput(CONTROLS_INPUT)
-    for (let i = 0; this.getInput(`ARG${i}`); i += 1) {
-      const conn = this.getInput(`ARG${i}`)?.connection
-      const child = conn?.targetBlock()
-      if (child && !child.isShadow()) conn?.disconnect()
-      this.removeInput(`ARG${i}`)
-    }
+    // Os espaços que sobram saem do fim. No automático nenhum deles tem valor de verdade
+    // (`count` ≥ `savedMax`); no manual, o "−" tira o último, e o valor dele fica solto no
+    // espaço de trabalho (o Blockly desencaixa ao remover o espaço), como sempre foi.
+    for (let i = existing - 1; i >= count; i -= 1) this.removeInput(`ARG${i}`)
 
     for (let k = 0; k < count; k += 1) {
-      const input = this.appendValueInput(`ARG${k}`).setCheck('JSValue')
-      if (auto) {
-        // Slots dentro da assinatura ganham o rótulo do parâmetro; os
-        // excedentes (preservados de uma assinatura que encolheu) caem num
-        // rótulo neutro `argN:` — NUNCA renderizamos `undefined:`.
-        input.appendField(k < sig.length ? `${sig[k]}:` : `arg${k + 1}:`)
-      }
-      const child = saved[k]
-      if (child && !child.disposed && child.outputConnection) {
-        input.connection?.connect(child.outputConnection)
-      } else if (withShadows) {
+      const input = this.getInput(`ARG${k}`) ?? this.appendValueInput(`ARG${k}`).setCheck('JSValue')
+      // Slots dentro da assinatura ganham o rótulo do parâmetro; os excedentes (preservados de
+      // uma assinatura que encolheu) caem num rótulo neutro `argN:` — NUNCA `undefined:`.
+      setArgLabel(input, k, auto ? (k < sig.length ? `${sig[k]}:` : `arg${k + 1}:`) : null)
+      if (withShadows && input.connection && !input.connection.targetBlock())
         attachNumberShadow(this, input)
-      }
     }
 
     if (!auto) {
