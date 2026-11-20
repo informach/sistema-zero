@@ -2402,6 +2402,10 @@
   /* biome-ignore lint/complexity/noImportantStyles: o Blockly anima a opacidade da lixeira inline (0,4 parada). */
   opacity: 0.85 !important;
 }
+/* Scroll shadow is decorative: text underneath must remain clickable. */
+[data-sz-theme] .monaco-editor .scroll-decoration {
+  pointer-events: none;
+}
 /* O Monaco no escuro com o fundo do Estúdio (era o cinza #1e1e1e do vs-dark): as variáveis que
    o tema do Monaco publica, trocadas pelas cores do host (cada comunidade com as suas). */
 [data-sz-theme="dark"] .monaco-editor {
