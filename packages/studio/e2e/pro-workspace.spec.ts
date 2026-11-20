@@ -544,3 +544,38 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
   await expect(page.getByRole('button', { name: /^continuousEdit\b/ })).toBeVisible()
   expect(errors).toEqual([])
 })
+
+test('Enter breaks the line in a comment instead of accepting a document word', async ({
+  page,
+}) => {
+  // Homologação 44729611073: uma sessão de sugestão aberta antes de a linha virar comentário
+  // seguia oferecendo palavras do documento, e o Enter aceitava uma delas, engolindo a quebra de
+  // linha. Aqui a mesma oferta é montada de propósito: `sc` é o começo de `score`, que existe
+  // no arquivo, e a sugestão é aberta à mão dentro de um comentário.
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+End')
+  await input.press('Enter')
+  await page.keyboard.type('// sc')
+  await input.press('Control+Space')
+  // A lista assentou: uma oferta em foco (o defeito) ou "nenhuma sugestão".
+  await page.waitForFunction(() => {
+    const widget = document.querySelector('.monaco-editor .suggest-widget.visible')
+    if (!widget) return false
+    const message = widget.querySelector('.message')?.textContent ?? ''
+    return (
+      Boolean(widget.querySelector('.monaco-list-row.focused')) || /No suggestions/.test(message)
+    )
+  })
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('x')
+  await inspectWorkspaceBuffers(page)
+  const models = JSON.parse((await page.getByLabel('Buffers da sessão').textContent())!) as Array<{
+    content: string
+  }>
+  expect(models.some((model) => model.content.endsWith('// sc\nx'))).toBe(true)
+})

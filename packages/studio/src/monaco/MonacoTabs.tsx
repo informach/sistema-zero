@@ -804,6 +804,12 @@ export function MonacoTabs({
       // and consume Enter. Keep automatic suggestions in code/strings; comments
       // retain explicit Ctrl+Space without competing with ordinary line breaks.
       quickSuggestions: { other: true, comments: false, strings: true },
+      // Sem sugestão por PALAVRAS do documento, o recurso de reserva para onde o serviço de
+      // linguagem não oferece nada (comentários, textos). Com o realce ainda atrasado numa
+      // máquina lenta, a linha não era comentário nas primeiras letras, a sessão abria e
+      // seguia oferecendo um "ssss…" antigo; o Enter aceitava e a quebra de linha sumia
+      // (homologação 44729611073). As sugestões da linguagem continuam.
+      wordBasedSuggestions: 'off',
       suggestOnTriggerCharacters: true,
       tabCompletion: 'on',
       parameterHints: { enabled: true },
