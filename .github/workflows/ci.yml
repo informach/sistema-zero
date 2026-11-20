@@ -1065,7 +1065,7 @@ jobs:
                   # nos dois apps de aluno e no Admin. Sem esta linha, um contrato novo ficava só no
                   # repositório e os serviços seguiam servindo o antigo.
                   packages/molda-cenarios-core/*) add api-gateway; add arquipelago-api; add admin; add members; add community-kids; add_palco; add community ;;
-                  packages/molda-cenarios-motor/*) add community-kids; add_palco; add community ;;
+                  packages/molda-cenarios-motor/*) add arquipelago-api; add community-kids; add_palco; add community ;;
                   packages/molda-cenarios/*) add admin; add community-kids; add_palco; add community ;;
                 esac
               done <<< "$CHANGED"
