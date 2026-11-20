@@ -78,6 +78,14 @@ function readBounds(raw: unknown): PintaRegionBounds | null {
   return { col, row, cols, rows }
 }
 
+export function parsePintaRegionBounds(raw: unknown): PintaRegionBounds | null {
+  try {
+    return readBounds(raw)
+  } catch {
+    return null
+  }
+}
+
 /** Check every layer's budget before inspecting any cell buffer/base64 payload. */
 function readHeaders(
   raw: unknown,

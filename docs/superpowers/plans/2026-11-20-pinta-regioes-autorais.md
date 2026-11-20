@@ -37,6 +37,14 @@ precisa conferir os consumidores um a um. Esta primeira tarefa não conclui 8a.
   físico 3; transações, IDs legados, coleta, falhas e cópias independentes.
 - [ ] Repetir regressões da issue 026 e formatos antigos em navegador real.
 
+Primeiro lote de operações implementado em `tiles/regionCells.ts`: leitura
+indexada e visita por regiões ocupadas, gesto atômico com limite de trabalho,
+compartilhamento dos chunks intactos e conversões densas com admissão explícita.
+Comparação determinística com as operações densas existentes e testes de
+recusa/histórico passaram. Tipos Pinta/Core e suíte Core passaram. Evidências
+em `qa/regioes-autorais-operacoes-2026-11-20/`. A união no documento, schema 8,
+consumidores e protocolo físico 3 ainda não foram ativados nem declarados prontos.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles

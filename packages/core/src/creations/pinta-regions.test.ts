@@ -4,6 +4,7 @@ import {
   PINTA_REGION_CELL_COUNT,
   PINTA_REGION_LIMITS,
   type PintaRegionCells,
+  parsePintaRegionBounds,
   parsePintaRegionLayers,
 } from './pinta-regions'
 
@@ -261,4 +262,18 @@ test('payload não-JSON ou futuro falha fechado e nunca lança ao chamador', () 
   ).toBeNull()
   expect(parsePintaRegionLayers([{ ...source, [Symbol('future')]: true }], bounds)).toBeNull()
   expect(encodePintaRegionLayers(parsePintaRegionLayers([source], bounds)!, bounds)).not.toBeNull()
+})
+
+test('validador de extensão compartilhado é estrito e protege também acessores defeituosos', () => {
+  expect(parsePintaRegionBounds(bounds)).toEqual(bounds)
+  expect(parsePintaRegionBounds({ ...bounds, cols: 0 })).toBeNull()
+  expect(parsePintaRegionBounds({ ...bounds, extra: true })).toBeNull()
+  expect(
+    parsePintaRegionBounds({
+      ...bounds,
+      get col() {
+        throw Error('indisponível')
+      },
+    }),
+  ).toBeNull()
 })

@@ -17,6 +17,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'tiles/regionCells.ts':
+    'acessa e copia células inteiras em chunks autorais, preserva flags e valida edições por isValidCell; não decodifica índices',
   'state/localChunkStorage.ts':
     'move e compara células inteiras entre buffers densos e chunks físicos, preserva flags e valida valores por isValidCell',
   'export/godot/physics.ts':
