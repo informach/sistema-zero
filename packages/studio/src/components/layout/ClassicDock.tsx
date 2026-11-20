@@ -79,14 +79,14 @@ export function ClassicDock({
     })),
   )
   const subject = python ? 'program' : 'game'
-  // Investigar, Desempenho e Meus testes (proposta aprovada em 20/11/2026). No Python, por
-  // enquanto, Investigar e Desempenho.
+  // Investigar, Desempenho e Meus testes (proposta aprovada em 20/11/2026), no JavaScript e no
+  // Python clássicos.
   const tabs: OpenTab[] = [
     ...(config.console ? (['console'] as const) : []),
     'problems',
-    ...(python
-      ? (['investigate', 'performance'] as const)
-      : (['investigate', 'performance', 'tests'] as const)),
+    'investigate',
+    'performance',
+    'tests',
   ]
   const tabMode = variant === 'tab'
   // No estreito a aba "Mensagens" está sempre aberta: a escolhida, ou a primeira.

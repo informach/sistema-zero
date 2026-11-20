@@ -273,6 +273,61 @@ test('mission reads use the authenticated generation and are rejected after disp
   await expect(session.observePythonMission({ type: 'value', path: 'pontos' })).rejects.toThrow()
 })
 
+test('a tecla de Meus testes vai pelo canal da execução, e o quadro antigo só recusa o comando', async () => {
+  const value = await fixture()
+  value.complete()
+  value.hello()
+  await value.admitted()
+  const initialization = value.transfers[0]!.data as PythonFrameInitialization
+  const remote = value.transfers[0]!.ports[0] as MessagePort
+  let sequence = 2
+  const emit = (body: Record<string, unknown>) =>
+    remote.postMessage({
+      ...body,
+      protocol: 1,
+      challenge: initialization.challenge,
+      identity: initialization.identity,
+      sequence: ++sequence,
+    })
+  const keys: { key: string; down: boolean }[] = []
+  // O quadro novo conhece a tecla; o de antes dela responde como a qualquer comando desconhecido.
+  let knowsKeys = true
+  remote.onmessage = (event: MessageEvent<PythonFrameCommand>) => {
+    const command = event.data
+    if (command.type === 'run') emit({ type: 'event', event: { type: 'state', state: 'running' } })
+    if (command.type === 'key') {
+      if (!knowsKeys) {
+        emit({
+          type: 'ack',
+          commandId: command.commandId,
+          ok: false,
+          error: 'Comando de execução inválido.',
+        })
+        return
+      }
+      keys.push({ key: command.key, down: command.down })
+    }
+    emit({ type: 'ack', commandId: command.commandId, ok: true })
+  }
+  remote.start()
+  const session = await value.prepared()
+  if (!session.pressKey) throw new Error('Missing key capability')
+  await session.run()
+  await session.pressKey('Enter', true)
+  await session.pressKey('Enter', false)
+  expect(keys).toEqual([
+    { key: 'Enter', down: true },
+    { key: 'Enter', down: false },
+  ])
+  knowsKeys = false
+  await expect(session.pressKey('a', true)).rejects.toThrow('Comando de execução inválido.')
+  // A recusa não derruba a execução: o programa segue respondendo.
+  knowsKeys = true
+  await session.pressKey('a', true)
+  expect(keys.at(-1)).toEqual({ key: 'a', down: true })
+  await session.dispose()
+})
+
 test('routes audio over the authenticated session channel and correlates its response', async () => {
   const value = await fixture()
   value.complete()

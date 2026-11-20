@@ -494,6 +494,12 @@ export function preparePythonFrameSession(options: {
         perfListener = listener
         await send({ type: 'perf', on: listener !== null })
       },
+      async pressKey(key, down) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        if (typeof key !== 'string' || key.length > 20 || typeof down !== 'boolean')
+          throw new Error('Tecla de teste inválida.')
+        await send({ type: 'key', key, down })
+      },
       repl: {
         kind: 'python',
         async evaluate({ requestId, source }) {

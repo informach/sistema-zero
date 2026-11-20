@@ -2,12 +2,15 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createEmptyProject } from '#core'
+import type { PythonClassicProjectDocument } from '../../core/pythonProject'
+import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
 import {
   investigationWindowFor,
   perfWindowFor,
   programTimeFor,
   setDevtoolsSender,
 } from '../../state/devtools'
+import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
@@ -130,7 +133,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     canvas: true,
   }
 
-  it('no Python, por enquanto, Investigar e Desempenho (Meus testes vem no lote dele)', () => {
+  it('no Python, as três abas: Investigar, Desempenho e Meus testes', () => {
     const { stores, wrap } = setup()
     act(() =>
       stores.project.setState({
@@ -144,7 +147,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
     expect(abas).toContain('Desempenho')
     expect(abas).toContain('Investigar')
-    expect(abas).not.toContain('Meus testes')
+    expect(abas).toContain('Meus testes')
   })
 
   it('liga a medida pelo botão e mostra os números do jogo, cada um com a sua marca', async () => {
@@ -562,5 +565,100 @@ describe('ClassicStage × o erro do jogo', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'Ver em Problemas' }))
     expect(onOpenProblems).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('Meus testes no Python (proposta aprovada em 20/11/2026)', () => {
+  const pythonProject = (files: Record<string, string>, game = false) =>
+    ({
+      ...documentFixture('python', 'classic'),
+      files: { ...files, 'requirements.txt': '' },
+      ...(game ? { installedExtensions: [{ ...PGZERO_EXTENSION, installedAt: 1 }] } : {}),
+    }) as PythonClassicProjectDocument
+
+  it('sem biblioteca de jogo, o teste novo testa uma função: escolhe, escreve os casos e guarda', async () => {
+    const { stores, wrap } = setup()
+    act(() =>
+      stores.project.setState({
+        project: pythonProject({ 'main.py': 'def dobro(n):\n    return n * 2\n' }),
+      }),
+    )
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Meus testes' }))
+    expect(
+      await screen.findByText(
+        'Nenhum teste ainda. Um teste chama uma função sua e confere se ela responde o que você queria.',
+      ),
+    ).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo teste' }))
+    // Sem biblioteca de jogo não há o que escolher: só testar uma função.
+    expect(screen.queryByRole('button', { name: 'Testar o programa' })).toBeNull()
+    fireEvent.change(screen.getByLabelText('Nome do teste'), { target: { value: 'O dobro' } })
+    fireEvent.change(screen.getByLabelText('A função'), { target: { value: 'dobro' } })
+    const casos = screen.getByLabelText('Casos, um por linha')
+    fireEvent.change(casos, { target: { value: '2 4' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar teste' }))
+    expect((await screen.findByRole('alert')).textContent).toContain('Um caso não deu para ler')
+    fireEvent.change(casos, { target: { value: '2 -> 4\n0 -> 0' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar teste' }))
+    expect(await screen.findByText('dobro(2) responde 4; dobro(0) responde 0.')).toBeTruthy()
+    const project = stores.project.getState().project as PythonClassicProjectDocument
+    expect(project.studentTests).toEqual([
+      {
+        id: expect.any(String),
+        name: 'O dobro',
+        rule: {
+          type: 'functionReturns',
+          name: 'dobro',
+          cases: [
+            { args: [2], expected: 4 },
+            { args: [0], expected: 0 },
+          ],
+        },
+      },
+    ])
+  })
+
+  it('sem função no projeto, a prancha explica como criar uma', async () => {
+    const { stores, wrap } = setup()
+    act(() => stores.project.setState({ project: pythonProject({ 'main.py': 'print(1)\n' }) }))
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Meus testes' }))
+    fireEvent.click(await screen.findByRole('button', { name: '+ Novo teste' }))
+    expect(screen.getByText(/Ainda não tem nenhuma função para testar/)).toBeTruthy()
+    expect(screen.getByText(/def somar_pontos\(pontos, bonus\):/)).toBeTruthy()
+  })
+
+  it('com Pygame Zero, testar o programa: os passos sem o clique e a conferência sem texto da tela', async () => {
+    const { stores, wrap } = setup()
+    act(() =>
+      stores.project.setState({
+        project: pythonProject({ 'main.py': 'pontos = 0\n\ndef draw():\n    pass\n' }, true),
+      }),
+    )
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Meus testes' }))
+    fireEvent.click(await screen.findByRole('button', { name: '+ Novo teste' }))
+    const programa = screen.getByRole('button', { name: 'Testar o programa' })
+    expect(programa.getAttribute('aria-pressed')).toBe('true')
+    const passo = screen.getByLabelText('Passo 1') as HTMLSelectElement
+    expect([...passo.options].map((option) => option.value)).toEqual(['press', 'hold', 'wait'])
+    const alvo = screen.getByLabelText('O que conferir') as HTMLSelectElement
+    expect([...alvo.options].map((option) => option.textContent)).toEqual([
+      'a variável',
+      'a posição x de',
+      'a posição y de',
+      'as mensagens do programa',
+    ])
+    fireEvent.change(screen.getByLabelText('Nome do teste'), { target: { value: 'Ponto' } })
+    fireEvent.change(screen.getByLabelText('Qual variável'), { target: { value: 'pontos' } })
+    fireEvent.change(screen.getByLabelText('Como comparar'), { target: { value: 'increased' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar teste' }))
+    expect(
+      await screen.findByText('Quando eu apertar Enter. No fim, pontos aumentou.'),
+    ).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Testar uma função' }))
+    expect(screen.getByLabelText('A função')).toBeTruthy()
   })
 })

@@ -385,6 +385,17 @@ export function createPythonExecutionController(options: {
       requireOwner(current)
     },
     /**
+     * A aba Meus testes: aperta (`down`) ou solta uma tecla no programa da execução da vez, como
+     * o teclado faria. Recusa quando o quadro do Python não conhece o comando.
+     */
+    async pressKey(key: string, down: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pressKey) throw new Error('Este ambiente não aperta teclas no programa.')
+      await session.pressKey(key, down)
+      requireOwner(current)
+    },
+    /**
      * A aba Investigar: lê um valor do programa (uma variável, `a.b.c` no máximo quatro nomes)
      * no próximo quadro, ou no fim quando o programa já terminou. Só numa execução que começou no
      * modo de observação; nunca muda o programa.

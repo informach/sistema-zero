@@ -11,6 +11,7 @@ import { useProRunApi } from '../../state/proRun'
 import {
   usePendingEditorEdits,
   usePythonEditorConsole,
+  usePythonTestHostSource,
   useStudioRuntimeCapture,
 } from '../../state/studioStores'
 import { useUIStore, useUIStoreApi } from '../../state/uiStore'
@@ -58,6 +59,26 @@ export function PythonEditorPreview() {
   const environment = useStudioRuntimeEnvironment()
   const execution = useStudioExecution()
   const proRun = useProRunApi()
+  // A aba Meus testes roda cada teste numa execução escondida, só dela: pede aqui o ambiente e o
+  // projeto como o Rodar o rodaria (o editor descarrega o que segura antes). O programa desta
+  // prévia não muda.
+  const testHost = usePythonTestHostSource()
+  const latestRun = useRef({ environment, execution })
+  latestRun.current = { environment, execution }
+  useEffect(() => {
+    if (!testHost) return
+    return testHost.register({
+      environment: () => latestRun.current.environment,
+      project: () => {
+        if (latestRun.current.execution.editingAccess !== 'author') return null
+        pending?.flush()
+        const current = store.getState().project
+        return current && isPythonProject(current) && current.kind === 'classic' ? current : null
+      },
+      writerEpoch: () => latestRun.current.execution.writerEpoch ?? null,
+      canExecute: () => store.getState().editingAccess === 'author',
+    })
+  }, [testHost, pending, store])
   const [commands, setCommands] = useState<PythonRunCommands | null>(null)
   const view = useSyncExternalStore(
     consoleBridge?.subscribe ?? emptySubscribe,

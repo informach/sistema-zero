@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import { createEmptyProject } from '#core'
-import { javaScriptProject } from '../core/editableProject'
+import { isPythonProject, javaScriptProject } from '../core/editableProject'
+import type { PythonClassicProjectDocument } from '../core/pythonProject'
+import { documentFixture } from './fixtures/projectDocuments'
 import { useProjectStore } from './projectStore'
 
 /** Os testes guardados no projeto da store (só o projeto em JavaScript os tem). */
@@ -45,6 +47,25 @@ describe('setStudentTests', () => {
     expect(useProjectStore.getState().setStudentTests([{ ...teste('a'), name: '' }])).not.toBeNull()
     expect(useProjectStore.getState().project).not.toHaveProperty('studentTests')
     expect(useProjectStore.getState().isDirty).toBe(false)
+  })
+
+  it('o Python clássico guarda os testes no documento dele, também o teste de função', () => {
+    const python = documentFixture('python', 'classic') as PythonClassicProjectDocument
+    useProjectStore.setState({ project: python, isDirty: false })
+    const dobro: StudioStudentTest = {
+      id: 'dobro',
+      name: 'O dobro',
+      rule: { type: 'functionReturns', name: 'dobro', cases: [{ args: [2], expected: 4 }] },
+    }
+    expect(useProjectStore.getState().setStudentTests([dobro, teste('a')])).toBeNull()
+    const project = useProjectStore.getState().project
+    expect(project && isPythonProject(project) ? project.studentTests : null).toEqual([
+      dobro,
+      teste('a'),
+    ])
+    expect(useProjectStore.getState().isDirty).toBe(true)
+    expect(useProjectStore.getState().setStudentTests([])).toBeNull()
+    expect(useProjectStore.getState().project).not.toHaveProperty('studentTests')
   })
 
   it('fica fora do Pro', () => {

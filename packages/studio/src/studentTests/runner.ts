@@ -5,11 +5,17 @@ import {
   judgeExecutionObservation,
 } from '@sistemazero/core/learning'
 import { isRunnableStudentTestRule } from '@sistemazero/core/studio/student-test-runnable'
-import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
+import type {
+  StudentTestBehaviorRule,
+  StudioStudentTest,
+} from '@sistemazero/core/studio/student-tests'
 import { createCheckScope, instrumentCheckScript } from '../check/instrumentCheckScript'
 import { isPreviewSnapshotMessage, PREVIEW_SNAPSHOT_REQUEST } from '../preview/snapshotBridge'
 import type { PreviewDocumentFactory } from '../state/previewDocumentFactory'
 import { buildStudentTestDriver, STUDENT_TEST_MESSAGE } from './driver'
+import { STUDENT_TEST_VIEWPORT, type StudentTestOutcome } from './outcome'
+
+export { STUDENT_TEST_VIEWPORT, type StudentTestOutcome } from './outcome'
 
 /**
  * O executor de um teste da aba "Meus testes" (proposta aprovada em 20/11/2026). Pede à prévia o
@@ -21,9 +27,6 @@ import { buildStudentTestDriver, STUDENT_TEST_MESSAGE } from './driver'
  * o validador dos objetivos, que não cabem no pacote de abertura do Estúdio).
  */
 
-/** O tamanho do palco do teste: o mesmo do executor do servidor (`CHECK_VIEWPORT`). */
-export const STUDENT_TEST_VIEWPORT = { width: 1024, height: 640 } as const
-
 /**
  * Quanto o teste pode levar além das esperas dele: abrir o jogo, os modelos 3D (até 10 s, como o
  * piloto espera) e as duas folgas de 250 ms.
@@ -33,27 +36,6 @@ const MODELS_WAIT_MS = 10_000
 const SETTLE_MS = 500
 /** Quanto o executor espera a foto do fim de um teste que não passou. */
 const ENDING_WAIT_MS = 1500
-
-export type StudentTestOutcome =
-  | { status: 'passed'; observation: ExecutionObservation }
-  | {
-      status: 'failed'
-      detail: string
-      observation: ExecutionObservation
-      /** "Ver como o jogo terminou": a foto do palco escondido no fim (ou `null` sem foto). */
-      ending: string | null
-    }
-  /** O jogo não respondeu a tempo (abriu travado, ou um passo nunca terminou). */
-  | { status: 'timeout' }
-  /** O teste não segue o contrato inteiro (um passo ou uma conferência fora dos limites). */
-  | { status: 'invalid' }
-  /** Um passo que este executor ainda não sabe fazer. */
-  | { status: 'unsupported' }
-  /** A prévia não tem como montar o jogo agora (os materiais ou os motores chegando). */
-  | { status: 'unavailable' }
-  /** O projeto não pôde ser gravado antes (o teste, como o Rodar, só roda o que está gravado). */
-  | { status: 'unsaved' }
-  | { status: 'cancelled' }
 
 /** O quadro do teste: o documento montado e um jeito de tirá-lo da página. */
 export interface StudentTestFrame {
@@ -76,8 +58,8 @@ export interface RunStudentTestOptions {
 }
 
 /** Os passos que o piloto sabe fazer: teclas, esperas e o clique no sprite de um grupo. */
-function pilotCanRun(test: StudioStudentTest): boolean {
-  return test.rule.steps.every(
+function pilotCanRun(rule: StudentTestBehaviorRule): boolean {
+  return rule.steps.every(
     (step) => step.action === 'press' || step.action === 'wait' || step.action === 'clickTarget',
   )
 }
@@ -144,8 +126,10 @@ function toObservation(id: string, raw: unknown): ExecutionObservation {
 
 export async function runStudentTest(options: RunStudentTestOptions): Promise<StudentTestOutcome> {
   const { test, signal } = options
-  if (!isRunnableStudentTestRule(test.rule)) return { status: 'invalid' }
-  if (!pilotCanRun(test)) return { status: 'unsupported' }
+  const rule = test.rule
+  if (!isRunnableStudentTestRule(rule)) return { status: 'invalid' }
+  // O teste de função é do Python (o JavaScript clássico testa o jogo, tabela da proposta).
+  if (rule.type !== 'behavior' || !pilotCanRun(rule)) return { status: 'unsupported' }
   if (signal?.aborted) return { status: 'cancelled' }
   if (!options.documentFactory) return { status: 'unavailable' }
   const scope = createCheckScope()
@@ -157,12 +141,12 @@ export async function runStudentTest(options: RunStudentTestOptions): Promise<St
         parentOrigin: options.parentOrigin,
         scope,
         token,
-        steps: test.rule.steps,
-        target: test.rule.expect.target,
+        steps: rule.steps,
+        target: rule.expect.target,
       }),
     ],
     parentOrigin: options.parentOrigin,
-    runtimeInspection: test.rule.steps.some((step) => step.action === 'clickTarget'),
+    runtimeInspection: rule.steps.some((step) => step.action === 'clickTarget'),
   })
   if ('unavailable' in built)
     return { status: built.unavailable === 'unsaved' ? 'unsaved' : 'unavailable' }
@@ -172,7 +156,7 @@ export async function runStudentTest(options: RunStudentTestOptions): Promise<St
   return new Promise((resolve) => {
     const frame = (options.createFrame ?? createHiddenStudentTestFrame)(document)
     const timeoutMs =
-      options.timeoutMs ?? executionRuleBudgetMs(test.rule) + MODELS_WAIT_MS + SETTLE_MS + LOAD_MS
+      options.timeoutMs ?? executionRuleBudgetMs(rule) + MODELS_WAIT_MS + SETTLE_MS + LOAD_MS
     let settled = false
     const finish = (outcome: StudentTestOutcome) => {
       if (settled) return
@@ -195,7 +179,7 @@ export async function runStudentTest(options: RunStudentTestOptions): Promise<St
       }
       if (!isRecord(data) || data.type !== STUDENT_TEST_MESSAGE || data.token !== token) return
       const observation = toObservation(test.id, data.observation)
-      const judged = judgeExecutionObservation(test.rule, observation)
+      const judged = judgeExecutionObservation(rule, observation)
       if (judged.passed) {
         finish({ status: 'passed', observation })
         return

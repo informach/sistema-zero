@@ -9,6 +9,7 @@ import {
   readStudioPythonMissionProbe,
   type StudioPythonMissionFrameObservation,
 } from '@sistemazero/core/studio/python-mission-observation'
+import { executionKeyEvent, readExecutionKey } from '../../studentTests/keyEvent'
 import type { StudioRuntimeImage } from '../types'
 import { pythonCanvasExtension } from './canvasExtension'
 import {
@@ -282,6 +283,19 @@ async function initialize(event: MessageEvent<unknown>) {
       else if (command.type === 'perf' && 'on' in command && typeof command.on === 'boolean') {
         if (command.on) startPerf()
         else stopPerf()
+      } else if (command.type === 'key' && 'down' in command && typeof command.down === 'boolean') {
+        // A tecla do teste chega como a do teclado: no desenho (o Turtle escuta nele) e, subindo,
+        // na janela (Pygame Zero, pygame-ce e Raylib). Sem desenho, na janela.
+        const key = readExecutionKey('key' in command ? command.key : undefined)
+        if (!key) throw new Error('Tecla de teste inválida.')
+        const target: EventTarget = document.body.querySelector('canvas') ?? window
+        target.dispatchEvent(
+          new KeyboardEvent(command.down ? 'keydown' : 'keyup', {
+            ...executionKeyEvent(key),
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
       } else if (
         command.type === 'audio-response' &&
         'requestId' in command &&

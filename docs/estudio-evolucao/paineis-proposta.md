@@ -159,4 +159,36 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   funções puras (nomes, traceback, valores), a aba no Python (valores, linha, erro) e, na suíte
   Python do navegador (homologação), o controlador no modo de observação lendo `WIDTH` e o
   contador de quadros subindo num jogo de Pygame Zero.
-- Próximos: Pausar no Python e Meus testes no Python; os três no Pro.
+- **Lote 8 (20/11, noite): Meus testes no Python.** A aba entra na gaveta do Python clássico, com
+  a tabela: no programa com Turtle, Pygame Zero, pygame-ce ou Raylib, o teste novo escolhe
+  "Testar o programa" ou "Testar uma função"; sem biblioteca de jogo, só "Testar uma função".
+  - **Testar o programa:** os passos Apertar a tecla, Segurar a tecla e Esperar (o clique no
+    sprite de um grupo é do Jogo 2D) e, no fim, a variável, a posição x ou y (`ator.x`) ou as
+    mensagens do programa (a tela do Python é um desenho, sem texto para ler).
+  - **Testar uma função** (a prancha do Pro, em Python): escolhe uma função `def` de um arquivo
+    `.py` do projeto e escreve os casos, um por linha, como no Python (`2, 3 -> 5`,
+    `"Ana" -> "Olá, Ana"`); até 8 casos. Sem função no projeto, a aba explica como criar uma, com
+    o exemplo `somar_pontos`.
+  - **Executor** (`studentTests/pythonRunner.ts`): uma execução escondida do Python, só do teste,
+    no modo de observação das missões, com o ambiente e o projeto que a prévia entrega
+    (`state/pythonTestHost.ts`; o editor descarrega o que segura antes, como no Rodar). A tecla
+    vai pelo comando novo `key` do quadro do Python, que despacha o KeyboardEvent no desenho
+    (+582 bytes no `frame.mjs`; as teclas do contrato vêm de `@sistemazero/core/studio/execution-keys`,
+    porque o índice de `core/learning` levava +302 KB ao quadro). A função é chamada pela sonda
+    `functionReturns` das missões: no quadro, ou no fim do programa sem desenho. O julgamento é o
+    dos objetivos; "Ver como o programa terminou" é a foto do quadro do Python.
+  - **No documento:** o teste de função (`functionReturns`, até 8 casos) e o campo `studentTests`
+    no projeto Python clássico (`core/studio/student-tests.ts` e `project-document.ts`).
+  - ⚠️ O teste de função já roda com o quadro publicado (a sonda das missões é de antes). O
+    teste com tecla precisa do quadro novo: até uma versão nova da distribuição do runtime, o
+    quadro publicado recusa a tecla e o teste diz "Este teste tem um passo que o Python ainda não
+    roda aqui." (o teste só com esperas roda).
+  - ⚠️ **Ordem do deploy:** o Members confere o envio pelo esquema do documento; ele sai com o
+    esquema novo (o commit do core deste lote) ANTES do Kids, da comunidade e do member-shell.
+  - Provas: o contrato no core, os casos (ler e escrever como no Python), o executor com um
+    controlador falso (função certa, errada, ausente, erro, prazo, tecla recusada, mensagens), a
+    aba na gaveta (o formulário de função, o exemplo sem função, os passos e conferências do
+    Python) e, na suíte Python do navegador (homologação; o servidor de provas não roda no Windows
+    com o Bun 1.3), o quadro apertando Espaço e a seta num jogo de Pygame Zero e o executor
+    inteiro testando uma função do Python clássico.
+- Próximos: Pausar no Python; os três no Pro.
