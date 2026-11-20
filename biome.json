@@ -23,6 +23,7 @@
       "!packages/studio-runtime/runtime/portable-path.generated.mjs",
       "!packages/studio-runtime/runtime/python-playtest.generated.mjs",
       "!packages/studio-runtime/runtime/execution-observation.generated.mjs",
+      "!packages/studio-runtime/runtime/click-target.generated.mjs",
       "!packages/edisvg/vendor",
       "!packages/edisvg/assets",
       "!packages/edisvg/src/builtins.generated.ts",

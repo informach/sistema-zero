@@ -3,6 +3,8 @@
 export * from './art-slots'
 export * from './authoring'
 export * from './authoring-manifest-projection'
+// O codificador do que o executor viu: o piloto do Estúdio ("Meus testes") o injeta pela fonte.
+export { createExecutionObservationCodec } from './execution-observation'
 export * from './gallery-delivery'
 export * from './gallery-studio-source'
 export * from './game-causality'
@@ -13,8 +15,6 @@ export * from './manifest-quiz'
 export * from './objective-entry-report'
 export * from './prediction-context'
 export * from './project-execution'
-// O codificador do que o executor viu: o piloto do Estúdio ("Meus testes") o injeta pela fonte.
-export { createExecutionObservationCodec } from './execution-observation'
 export * from './project-structure'
 export * from './python-project-checks'
 export * from './python-project-execution'
