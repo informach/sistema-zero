@@ -519,6 +519,35 @@ describe('BFF do Molda Cenários: trazer modelos', () => {
     })
   })
 
+  test('o retrato que a versão já tem volta na reserva da capa, sem nada a enviar', async () => {
+    // Conferência em staging (20/11): sem o campo, a oficina tentava confirmar uma imagem que
+    // nunca enviou e recebia 409 "Envie o retrato de novo" ao reabrir o cenário.
+    const t = montar({
+      responder: () => ({
+        status: 200,
+        body: { espacoId: ESPACO, enviar: [], retrato: digest('c') },
+      }),
+    })
+    const pedido = { revisao: 3, digest: digest('d'), bytes: 7840, tipoDoConteudo: 'image/webp' }
+    const r = await t.pedir('POST', `cenarios/${CENARIO}/capa/reservar`, pedido)
+    expect(r.status).toBe(200)
+    expect(await r.json()).toEqual({ espacoId: ESPACO, enviar: [], retrato: digest('c') })
+    expect(t.assinados).toEqual([])
+    // Sem retrato guardado, a resposta segue como antes (e o retrato vem nulo).
+    const sem = montar({
+      responder: () => ({ status: 200, body: { espacoId: ESPACO, enviar: [], retrato: null } }),
+    })
+    const r2 = await sem.pedir('POST', `cenarios/${CENARIO}/capa/reservar`, pedido)
+    expect(await r2.json()).toEqual({ espacoId: ESPACO, enviar: [], retrato: null })
+    // Retrato fora do formato não passa adiante.
+    const torto = montar({
+      responder: () => ({ status: 200, body: { espacoId: ESPACO, enviar: [], retrato: 'x' } }),
+    })
+    expect((await torto.pedir('POST', `cenarios/${CENARIO}/capa/reservar`, pedido)).status).toBe(
+      502,
+    )
+  })
+
   test('chave que não é deste espaço não é assinada', async () => {
     const t = montar({ responder: () => ({ status: 200, body: reserva(OUTRO_ESPACO) }) })
     const r = await t.pedir('POST', `bibliotecas/${BIBLIOTECA}/modelos/reservar`, { modelos: [] })

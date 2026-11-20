@@ -191,6 +191,8 @@ const Reserva = z.object({
       tipoDoConteudo: z.string(),
     }),
   ),
+  /** Só na reserva da capa: o retrato que a versão já tem (então não há nada a enviar). */
+  retrato: Digest.nullable().optional(),
 })
 const Apagados = z.object({ apagar: z.array(z.string()) })
 const CHAVE_DE_ARQUIVO = /^cenarios\/([0-9a-f-]{36})\/blobs\/([a-f0-9]{64})$/
@@ -367,7 +369,7 @@ export function createCenariosRoutes(deps: {
     const reserva = Reserva.safeParse(r.body)
     if (!reserva.success)
       return erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
-    const { espacoId, enviar } = reserva.data
+    const { espacoId, enviar, retrato } = reserva.data
     const arquivos = await Promise.all(
       enviar.map(async (a) => {
         // A chave vem do members, mas só assino a que é mesmo deste espaço e deste conteúdo.
@@ -390,7 +392,15 @@ export function createCenariosRoutes(deps: {
     )
     if (arquivos.some((a) => a === null))
       return erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
-    return privado(NextResponse.json({ espacoId, enviar: arquivos }))
+    // O retrato que a versão já tem volta junto: sem ele, a oficina tentava confirmar uma
+    // imagem que não enviou (a reserva não pede envio) e recebia 409.
+    return privado(
+      NextResponse.json({
+        espacoId,
+        enviar: arquivos,
+        ...(retrato !== undefined ? { retrato } : {}),
+      }),
+    )
   }
 
   /** Só confirma bytes recebidos, por hash e formato. Nunca basta a existência da chave. */

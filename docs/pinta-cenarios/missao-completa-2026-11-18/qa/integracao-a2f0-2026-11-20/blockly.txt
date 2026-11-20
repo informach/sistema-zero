@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+src\blockly\deferredTail.test.ts:
+(pass) o plano da cauda adiada > abaixo do limiar nada é adiado [15.00ms]
+(pass) o plano da cauda adiada > a cauda começa na primeira unidade estimada a mais de uma tela abaixo da vista [16.00ms]
+(pass) o plano da cauda adiada > uma fronteira por área; área que cabe perto da vista abre inteira
+(pass) o plano da cauda adiada > unidade sem id (exemplo recém-criado) ganha um id sorteado numa cópia do estado
+(pass) o plano da cauda adiada > conta como o Blockly: a sombra só vira bloco quando não há bloco encaixado
+(pass) o plano da cauda adiada > a vista da primeira abertura é a do "blocos no alto"
+(pass) o portão: nada muda nas aulas nem nos exemplos abaixo do limiar > os jogos dos cursos nem baixam o módulo [31.00ms]
+(pass) o portão: nada muda nas aulas nem nos exemplos abaixo do limiar > exemplo oficial abaixo do limiar abre como sempre; os de cima ficam listados aqui [1360.00ms]
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > o desenho de um bloco passa sempre por renderEfficiently, e os filhos antes dele
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > a carga cria a árvore inteira antes do initSvg de cada bloco e liga as conexões depois
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > a carga de sempre mede o texto com a memória de larguras ligada (o lote adiado faz igual)
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > a altura de uma pilha desconta NOTCH_HEIGHT por bloco seguinte
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > trocar de pai mede a posição pelo DOM e põe o SVG dentro do novo pai
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > o redesenho desce por todos os filhos e a conexão nova entra no banco no 1º movimento
+(pass) guarda de atualização do Blockly (o que as adaptações supõem) > encaixar o seguinte usa a posição da conexão de cima dele (por isso o pai reencaixa)
+
+src\blockly\__tests__\classMutators.test.ts:
+(pass) mutators de classe — + adiciona herança e parâmetros > addExtends_ + campo SUPER → classDecl.superClass no IR [15.00ms]
+(pass) mutators de classe — + adiciona herança e parâmetros > addParam_ no construtor → ctorParams no IR
+(pass) mutators de classe — + adiciona herança e parâmetros > rejeita renomear um parâmetro para um nome já usado por outro (evita constructor(x, x))
+(pass) mutators de classe — + adiciona herança e parâmetros > ignora insertion markers ao montar a IR
+(pass) mutators de classe — + adiciona herança e parâmetros > sincroniza argumentos de new Classe com parâmetros do construtor
+(pass) mutators de classe — + adiciona herança e parâmetros > encolher a assinatura do construtor NÃO descarta argumentos já preenchidos [16.00ms]
+(pass) mutators de classe — + adiciona herança e parâmetros > sincroniza argumentos de chamada de método usando o input MEMBERS da classe
+(pass) paramsMutator.renameReporters respeita o escopo (sombra de parâmetro) > NÃO renomeia um parâmetro sombreado numa definição aninhada
+(pass) objectMutator — minus preserva o texto da CHAVE no undo > minus dispara um BlockChange de campo com o texto da CHAVE removida [31.00ms]
+(pass) objectMutator — minus preserva o texto da CHAVE no undo > desfazer a remoção do último campo restaura a CHAVE digitada [47.00ms]
+(pass) argsMutator.onchange — atalho barato evita o scan O(workspace) > pula resolveSignature_ quando os campos do próprio bloco não mudaram
+(pass) argsMutator — varredura O(N·M) coalescida e cercada na carga > M blocos respondendo ao MESMO evento compartilham UMA varredura por tipo
+(pass) argsMutator — varredura O(N·M) coalescida e cercada na carga > ignora os eventos intermediários enquanto uma carga está em voo
+(pass) argsMutator — ajustar os espaços não refaz o que já está neles (20/11/2026) > o número digitado na sombra do argumento sobrevive à abertura do projeto [31.00ms]
+(pass) argsMutator — ajustar os espaços não refaz o que já está neles (20/11/2026) > o ajuste depois da carga não desencaixa o valor de verdade do argumento [16.00ms]
+(pass) argsMutator — ajustar os espaços não refaz o que já está neles (20/11/2026) > com a função declarada, ganha os rótulos e os espaços que faltam, sem tocar no que existe [16.00ms]
+(pass) argsMutator — abrir o projeto não muda o programa (20/11/2026) > a chamada com menos argumentos que a função continua com os mesmos argumentos [31.00ms]
+(pass) argsMutator — abrir o projeto não muda o programa (20/11/2026) > a chamada sem argumentos continua sem argumentos [16.00ms]
+(pass) argsMutator — abrir o projeto não muda o programa (20/11/2026) > o + completa o parâmetro que falta, com o rótulo dele, e a contagem fica [31.00ms]
+(pass) argsMutator — abrir o projeto não muda o programa (20/11/2026) > a chamada nova, tirada da paleta, ainda ganha os espaços da função [15.00ms]
+
+ 35 pass
+ 0 fail
+ 268 expect() calls
+Ran 35 tests across 2 files. [3.16s]

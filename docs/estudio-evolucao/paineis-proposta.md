@@ -92,4 +92,20 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   Blocos segue no teto: a ponte só usa de `#extensions` o que a prévia já usava, porque um nome
   novo exportado do pedaço principal muda os apelidos curtos do build e cresce os pedaços de
   abertura (medido: +23 bytes).
-- Próximos: Meus testes, Python e Pro.
+- **Lote 5 (em andamento): Meus testes no Estúdio clássico em JavaScript.** Decisões de desenho,
+  dentro do contrato dos objetivos (`core/learning/project-execution.ts`):
+  - **No projeto:** `studentTests` (até 20 testes; cada um `{ id, name, rule }`, com `rule` uma regra
+    `behavior` válida por `isSectionExecutionRule`). Opcional e omitido sem testes: os projetos de
+    hoje ficam byte a byte iguais. O esquema do documento (`core/studio/project-document.ts`) é
+    estrito e o Members confere o envio por ele: o Members sai com o esquema novo ANTES de a
+    interface deixar criar testes.
+  - **Passos:** Apertar a tecla → `press` (80 ms); Segurar a tecla por N segundos → `press` com
+    `holdMs` (até 5 s); Esperar → `wait` (até 10 s); Clicar no sprite → `clickTarget` sprite. Soma
+    das esperas até 15 s.
+  - **No fim, confira:** a variável → `value`; a posição x ou y do sprite → `value` com
+    `<sprite>.x`/`.y` (o alvo `spritePosition` do contrato só vale no padrão parado-e-anda); o
+    texto na tela → `text`; as mensagens do jogo → `console`; as doze comparações do contrato.
+  - **Executor:** um quadro escondido com o documento da prévia, o leitor das variáveis e um
+    piloto (tecla e clique sintéticos, como os controles da página de jogar); a observação no
+    formato `ExecutionObservation`, julgada por `judgeExecutionObservation`.
+- Próximos: Python e Pro.

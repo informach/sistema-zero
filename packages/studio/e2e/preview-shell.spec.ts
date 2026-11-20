@@ -76,7 +76,8 @@ test.describe('prévia dentro da casca em outro site', () => {
     await replaceBridgeScript(
       page,
       `${CONSERTADO}
-document.addEventListener("keydown", (e) => console.log("tecla " + e.key));`,
+document.addEventListener("keydown", (e) => console.log("tecla " + e.key));
+addEventListener("focus", () => console.log("jogo com foco"));`,
     )
     await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
     await parar(page).click()
@@ -87,11 +88,17 @@ document.addEventListener("keydown", (e) => console.log("tecla " + e.key));`,
     await expect
       .poll(() => page.evaluate(() => document.activeElement?.getAttribute('title')))
       .toBe('Pré-visualização')
+    const saida = page.getByRole('region', { name: 'Problemas e saída do jogo' })
+    // O jogo novo recebeu o foco (as mensagens recomeçam a cada Rodar: é o jogo deste Rodar). O
+    // WebKit avisa o foco mais de uma vez (a casca solta e foca o quadro): basta ter chegado.
+    await expect(saida.getByText('jogo com foco', { exact: true }).first()).toBeAttached({
+      timeout: 10_000,
+    })
+    // O Firefox já passou pelo ramo WebDriver acima, que exige foco e teclas
+    // confiáveis em três ciclos. Aqui Chromium/WebKit usam suas ações nativas.
     await page.keyboard.press('ArrowUp')
-    await expect(
-      page
-        .getByRole('region', { name: 'Problemas e saída do jogo' })
-        .getByText('tecla ArrowUp', { exact: true }),
-    ).toBeAttached({ timeout: 10_000 })
+    await expect(saida.getByText('tecla ArrowUp', { exact: true })).toBeAttached({
+      timeout: 10_000,
+    })
   })
 })

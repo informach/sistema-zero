@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+tests\cenarios-routes.test.ts:
+(pass) preparo de exportação repassa só a rota prevista, limita corpo e mantém prova de perfil/sessão
+(pass) catálogo de conjuntos repassa somente as rotas e consultas declaradas, com corpos limitados [31.00ms]
+(pass) miniatura do conjunto autoriza conjunto e revisão antes de ler, e envia prova por HMAC [16.00ms]
+(pass) lote com relevo autoriza o cenário antes de ler e leva só prova real pela rota HMAC
+(pass) BFF do Molda Cenários: repasse > caminho ou método fora da lista não chega ao members
+(pass) BFF do Molda Cenários: repasse > a busca de modelos leva só a consulta combinada, e a resposta nunca fica em cache
+(pass) BFF do Molda Cenários: repasse > a busca no espaço leva tamanho, etiqueta e a lista inteira de ids, e nada mais
+(pass) BFF do Molda Cenários: repasse > o lote do editor segue com o corpo; recusa do members volta inteira
+(pass) BFF do Molda Cenários: repasse > histórico e versões passam pelos caminhos explícitos e filtram a consulta
+(pass) BFF do Molda Cenários: repasse > resposta sem corpo do members vira um ok que o cliente consegue ler
+(pass) BFF do Molda Cenários: sessão > suporte que só olha não escreve, mas lê
+(pass) BFF do Molda Cenários: sessão > pedido de outro perfil (o irmão entrou no meio) é recusado
+(pass) BFF do Molda Cenários: trazer modelos > a reserva volta com um endereço de envio por arquivo, com tamanho e tipo presos
+(pass) BFF do Molda Cenários: trazer modelos > o retrato que a versão já tem volta na reserva da capa, sem nada a enviar
+(pass) BFF do Molda Cenários: trazer modelos > chave que não é deste espaço não é assinada [15.00ms]
+(pass) BFF do Molda Cenários: trazer modelos > sem espaço na conta, a recusa do members chega à tela
+(pass) BFF do Molda Cenários: trazer modelos > registrar: o servidor olha o armazenamento e afirma ao members só o que achou
+(pass) BFF do Molda Cenários: trazer modelos > quem não é da equipe nunca vai como equipe, e o suporte vai marcado
+(pass) BFF do Molda Cenários: trazer modelos > armazenamento fora do ar: nada é afirmado e a tela pode tentar de novo
+(pass) BFF do Molda Cenários: trazer modelos > conteúdo adulterado não recebe confirmação, mesmo com a chave esperada
+(pass) BFF do Molda Cenários: trazer modelos > um espaço alheio é recusado antes de ler qualquer arquivo
+(pass) BFF do Molda Cenários: trazer modelos > registro malformado ou sem sessão não chega ao members
+(pass) BFF do Molda Cenários: trazer modelos > retrato exige revisão antes de ler o bucket e recusa confirmação de outra revisão
+(pass) BFF do Molda Cenários: trazer modelos > a capa do cenário passa pela mesma conferência
+(pass) BFF do Molda Cenários: chãos > confirma as dimensões da imagem e só então usa a rota HMAC
+(pass) BFF do Molda Cenários: chãos > não lê imagens de outro espaço nem confirma um arquivo GLB como textura
+(pass) BFF do Molda Cenários: apagar e ler arquivos > o MIME confirmado prevalece sobre a consulta e nunca permite servir HTML
+(pass) BFF do Molda Cenários: apagar e ler arquivos > o que o members soltou sai do armazenamento depois da resposta, e as chaves não vão à tela
+(pass) BFF do Molda Cenários: apagar e ler arquivos > ler um arquivo: confere o espaço uma vez e redireciona para o mesmo endereço na janela
+(pass) BFF do Molda Cenários: apagar e ler arquivos > arquivo de um espaço que não é da pessoa não existe para ela [16.00ms]
+(pass) BFF do Molda Cenários: agente com token no cabeçalho > o token vai em toda chamada ao gateway daquele pedido
+(pass) BFF do Molda Cenários: agente com token no cabeçalho > token vencido, inválido ou malformado responde sem chegar ao gateway
+(pass) BFF do Molda Cenários: agente com token no cabeçalho > sessão de suporte só de leitura também não escreve pelo token
+
+ 33 pass
+ 0 fail
+ 178 expect() calls
+Ran 33 tests across 1 file. [663.00ms]

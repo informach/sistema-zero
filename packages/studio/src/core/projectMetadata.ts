@@ -25,6 +25,7 @@ const KNOWN_METADATA = new Set([
   'formatVersion',
   'projectTools',
   'coverAssetName',
+  'studentTests',
   'storageVersion',
 ])
 

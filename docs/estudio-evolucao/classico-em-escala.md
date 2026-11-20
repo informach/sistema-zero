@@ -424,3 +424,55 @@ rodadas é a máquina; dentro de cada uma, o candidato abre 2,2 a 2,5 vezes mais
 - A abertura segue dominada por CRIAR os blocos (o `initSvg` e os campos, ~1,6 s com 5 mil no perfil
   de CPU) e pelo `setConnectionTracking(false)` do próprio Blockly, que anda a cadeia inteira para
   cada bloco criado (quadrático na cadeia). Não foi mexido.
+
+### Revisão da etapa 3 (20/11/2026, à noite)
+
+Uma revisão só de leitura dos três commits achou dois defeitos, os dois vindos do mutador de
+argumentos (chamar função, `new`, método), que nenhuma fixture da etapa usava. Conferidos no código
+e reproduzidos no navegador antes do conserto:
+
+- **A abertura desenhava a cauda inteira em projeto com chamadas de função.** No `FINISHED_LOADING`
+  cada bloco com o mutador refazia os espaços e desencaixava o valor de verdade de cada argumento;
+  desencaixar um bloco adiado desenha a cauda até ele. Na fixture de 1.651 blocos com uma chamada por
+  unidade, nenhum bloco ficava adiado (0 contra mais de 1.400). Conserto na causa: o
+  `rebuild_` do mutador passou a ajustar os espaços no lugar (rótulo trocado, espaço novo ou de sobra
+  no fim), sem desencaixar nada. De quebra, saiu um defeito antigo, de fora da etapa: a sombra com o
+  número que a criança digitou no argumento voltava a 0 em toda abertura do projeto.
+- **Um espaço novo num bloco adiado ia para o banco de conexões.** A conexão criada depois da carga
+  nasce para entrar no banco no primeiro movimento, e o redesenho da área passava pelos adiados
+  (`updateComponentLocations`), pondo-a na origem da fronteira. O adiado agora não acerta posições;
+  ao ser desenhado, o caminho de sempre faz isso. A guarda de versão do Blockly prende as duas
+  suposições.
+- Também: uma falha ao ler a vista ou o estado no plano da cauda (opcional) abre o projeto como
+  sempre, em vez de derrubar a carga.
+
+Provas: `e2e/offscreen-lifecycle.spec.ts` ganhou a fixture com o mutador e dois testes (os dois
+reprovavam antes; o segundo reprova sem o gancho novo); `classMutators.test.ts` ganhou três (os três
+reprovam com o `rebuild_` antigo); as cinco aulas protegidas passam. O pacote de abertura do modo
+Blocos foi a 4.749.761 bytes (teto 4.750.000). Com o editor de mundo 3D baixado sob demanda
+(`4265fd976`), o pacote foi a 4.221.401 bytes. (A mensagem daquele commit dá um "antes" maior, que
+somava trabalho ainda sem commit; a base commitada era 4.749.761.)
+
+### Abrir o projeto reescrevia o programa (20/11/2026, à noite)
+
+Depois do conserto acima, o e2e do Reino Zero Ultra (`reino-zero-ultra.spec.ts`) passou a reprovar:
+o jogo voltava à tela de título no meio da partida. O documento da prévia era o mesmo nas duas
+versões; o que mudou foi QUANDO ele era trocado. Abrir o projeto mudava o código: o ajuste do
+mutador depois da carga completava as chamadas com menos argumentos que a função
+(`loadStage(stage.id)` virava `loadStage(stage.id, 0)`), a geração saía diferente e a prévia
+recarregava. Com o `rebuild_` antigo isso acontecia logo na abertura, antes de a partida começar
+(e a cauda se desenhava quase inteira: sobravam 32 blocos adiados); com o novo, a cauda fica
+adiada (7.205 blocos) e a troca chegava segundos depois, no meio do jogo.
+
+O defeito é antigo e é de conteúdo: a quantidade de argumentos é parte do programa. Desde esta data
+o mutador só a muda quando a criança mexe (escolhe a função, a classe ou o método, muda os
+parâmetros dela, aperta + ou −). Um bloco que vem de um estado guardado (abrir o projeto, a Ponte
+refazendo os blocos do código, colar, desfazer) adota a contagem dele e só ganha os rótulos
+(`adoptCount_`); a chamada sem argumentos criada por uma carga também (ela não passa pelo
+`loadExtraState`). No automático, um parâmetro que ficou sem espaço ganha o +, com o rótulo dele.
+
+Provas: quatro testes novos em `classMutators.test.ts` (menos argumentos, nenhum argumento, o + e a
+chamada nova da paleta, que continua ganhando os espaços), e o teste de ida e volta do Ultra
+(`reinoZeroUltraExample.test.ts`) agora abre como o editor abre, com a cerca de carga e os eventos
+processados (antes ele nunca rodava o ajuste); os dois primeiros e o do Ultra reprovam com o
+mutador anterior. `e2e/reino-zero-ultra.spec.ts` e `e2e/offscreen-lifecycle.spec.ts` passam.

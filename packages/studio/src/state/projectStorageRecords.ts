@@ -43,6 +43,10 @@ export function projectToMetaRecord(
     projectTools: project.projectTools,
     // A capa escolhida mora no meta (é uma string): a lista e a nuvem a leem sem os assets.
     coverAssetName: project.coverAssetName,
+    // Os testes da criança (só o clássico em JavaScript os tem; sem testes, a chave fica de fora).
+    ...('studentTests' in project && project.studentTests
+      ? { studentTests: project.studentTests }
+      : {}),
     ...('programmingLanguage' in project
       ? { programmingLanguage: project.programmingLanguage, runtime: project.runtime }
       : {}),

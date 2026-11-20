@@ -674,6 +674,7 @@
   }
   .mcn-andamento {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;
     min-height: 44px;
@@ -688,12 +689,21 @@
     height: 10px;
     accent-color: var(--color-mld-accent);
   }
+  .mcn-andamento > span {
+    min-width: 0;
+  }
+  /* Os botões dos avisos são de TEXTO ("Parar importação", "Tentar retrato da versão"): com
+     32 px fixos o texto vazava por cima da frase. */
   .mcn-andamento > button {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .mcn-andamento > button:not([class*="sz-tool"]) {
     display: inline-flex;
-    width: 32px;
-    height: 32px;
+    min-height: 32px;
     align-items: center;
     justify-content: center;
+    padding-inline: 12px;
     border-radius: 9999px;
     color: var(--color-mld-muted);
   }

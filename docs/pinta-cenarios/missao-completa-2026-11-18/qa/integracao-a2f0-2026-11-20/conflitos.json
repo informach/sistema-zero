@@ -1,0 +1,16 @@
+{
+  "parents": [
+    "5a7c15c0e2b509c81dbbe4c36259df731634aa01",
+    "a2f0b0ab6a3b7b28a7af15f84597792dccc8a4e8"
+  ],
+  "decisions": {
+    "keyboard": "preserved W3C trusted keys in Firefox and merged upstream explicit focus confirmation for Chromium/WebKit; no new skip",
+    "profile": "official generation from complete merged Core and runtime sources"
+  },
+  "generatedPythonPlaytestIdenticalToRemote": true,
+  "generatedSha256": "4b67228f4a8343710cd7285e4a21f61b3b31509033240d4ca30ae144d091fcb1",
+  "profile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "18aedaded74dfd6feb7cd37e91493f59939f216831c4c11e0e34765c18790976"
+  }
+}

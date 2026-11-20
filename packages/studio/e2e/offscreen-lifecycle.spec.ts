@@ -141,26 +141,45 @@ const tailBundle = buildSync({
       import * as En from 'blockly/msg/en';
       import { showBlocksFromTop } from './src/blockly/cornerSpacer';
       import { isDeferredBlock, prepareDeferredTail } from './src/blockly/deferredTail';
+      import { registerArgsMutator } from './src/blockly/blocks/argsMutator';
+      import { withWorkspaceLoad } from './src/blockly/loadFence';
       Blockly.setLocale(En);
+      // O mutador de argumentos do Estúdio (chamar função, new, método), com uma sombra de
+      // número e um valor de verdade nas mesmas checagens dos blocos do Estúdio.
+      registerArgsMutator();
       Blockly.common.defineBlocksWithJsonArray([{
         type: 'sz_frame_test', message0: 'area %1 %2',
         args0: [{ type: 'input_dummy' }, { type: 'input_statement', name: 'CHILDREN' }],
         colour: 200,
+      }, {
+        type: 'sz_val_number', message0: '%1', args0: [{ type: 'field_number', name: 'NUM', value: 0 }],
+        output: 'JSValue', colour: 230,
+      }, {
+        type: 'sz_val_test', message0: 'valor %1', args0: [{ type: 'field_input', name: 'V', text: 'x' }],
+        output: 'JSValue', colour: 230,
+      }, {
+        type: 'sz_call_test', message0: 'chamar %1', args0: [{ type: 'field_input', name: 'NAME', text: 'f' }],
+        previousStatement: null, nextStatement: null, colour: 290, mutator: 'sz_args_mutator',
       }]);
       // Cada unidade: um "repetir" com 30 comandos no corpo (31 blocos). A cadeia fica curta (50
       // unidades para 1 551 blocos): o caminho normal do Firefox leva 80 s com 300 unidades
       // aninhadas de 2 blocos (6 s com estas 50), e o workspace normal é a régua de cada teste.
       const BODY = 30;
-      const unit = (i) => {
+      const unit = (i, calls) => {
         let body;
         for (let k = BODY - 1; k >= 0; k--)
           body = { type: 'controls_if', id: k ? 'c' + i + '_' + k : 'c' + i, ...(body ? { next: { block: body } } : {}) };
+        // Com chamadas: um "chamar" com um valor de verdade no primeiro espaço abre o corpo.
+        if (calls)
+          body = { type: 'sz_call_test', id: 'f' + i, extraState: { items: 1 },
+            inputs: { ARG0: { block: { type: 'sz_val_test', id: 'v' + i, fields: { V: 'x' } } } },
+            next: { block: body } };
         return { type: 'controls_repeat', id: 'u' + i, fields: { TIMES: 10 }, inputs: { DO: { block: body } } };
       };
-      function project(count) {
+      function project(count, calls) {
         let chain;
         for (let i = count - 1; i >= 0; i--) {
-          const item = unit(i);
+          const item = unit(i, calls);
           if (chain) item.next = { block: chain };
           chain = item;
         }
@@ -183,15 +202,16 @@ const tailBundle = buildSync({
       };
       window.__tail = {
         settle,
-        async open(name, count, deferred) {
+        async open(name, count, deferred, calls = false) {
           const ws = Blockly.inject(document.getElementById(name), {
             sounds: false, renderer: 'zelos', move: { scrollbars: true, drag: true, wheel: true },
           });
           spaces[name] = ws;
-          const json = project(count);
+          const json = project(count, calls);
           const load = deferred ? prepareDeferredTail(ws, json, true) : null;
           try {
-            Blockly.serialization.workspaces.load(load ? load.state : json, ws);
+            // A mesma cerca de carga do editor: os mutadores esperam o FINISHED_LOADING.
+            withWorkspaceLoad(() => Blockly.serialization.workspaces.load(load ? load.state : json, ws));
           } finally {
             if (load) load.finish();
           }
@@ -299,6 +319,13 @@ const tailBundle = buildSync({
           return last.nextConnection.y;
         },
         areaUnits: (name) => units(name).length,
+        /** O "+" do mutador de argumentos: mais um espaço no "chamar" de id dado. */
+        plusArg: (name, id) => block(name, id).plus(),
+        /** A área se redesenha (como depois de qualquer mudança perto da vista). */
+        redrawArea(name) {
+          block(name, 'area').queueRender();
+          Blockly.renderManagement.triggerQueuedRenders(spaces[name]);
+        },
       };
     `,
   },
@@ -324,7 +351,7 @@ declare global {
   interface Window {
     __tail: {
       settle(): Promise<void>
-      open(name: string, count: number, deferred: boolean): Promise<boolean>
+      open(name: string, count: number, deferred: boolean, calls?: boolean): Promise<boolean>
       snapshot(name: string): TailSnapshot
       isDeferred(name: string, id: string): boolean
       inPage(name: string, id: string): boolean
@@ -345,12 +372,18 @@ declare global {
       ): { root: boolean; length: number; misplaced: number; untracked: number; drawn: boolean[] }
       bottomY(name: string, id: string): number
       areaUnits(name: string): number
+      plusArg(name: string, id: string): void
+      redrawArea(name: string): void
     }
   }
 }
 
 /** Abre o mesmo projeto nos dois workspaces e devolve se o adiado de fato adiou. */
-async function openPair(page: Page, units = 50): Promise<{ deferred: boolean; errors: string[] }> {
+async function openPair(
+  page: Page,
+  units = 50,
+  calls = false,
+): Promise<{ deferred: boolean; errors: string[] }> {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   if (!tailBundle) throw new Error('The deferred tail fixture was not compiled')
@@ -360,10 +393,13 @@ async function openPair(page: Page, units = 50): Promise<{ deferred: boolean; er
       '<div id="adiado" style="width:820px;height:600px"></div></div>',
   )
   await page.addScriptTag({ content: tailBundle })
-  const deferred = await page.evaluate(async (count) => {
-    await window.__tail.open('normal', count, false)
-    return window.__tail.open('adiado', count, true)
-  }, units)
+  const deferred = await page.evaluate(
+    async ({ count, calls }) => {
+      await window.__tail.open('normal', count, false, calls)
+      return window.__tail.open('adiado', count, true, calls)
+    },
+    { count: units, calls },
+  )
   return { deferred, errors }
 }
 
@@ -393,6 +429,42 @@ test('cauda adiada: o que está longe fica fora da página, o modelo inteiro e a
   expect(adiado.units.indexOf(false)).toBeGreaterThan(0)
   expect(topDown(adiado.units)).toBe(true)
   expect(errors).toEqual([])
+})
+
+test('cauda adiada com chamadas de função: abrir não desenha a cauda, e nada adiado vai ao banco', async ({
+  page,
+}) => {
+  // Revisão de 20/11/2026: no FINISHED_LOADING cada bloco com o mutador de argumentos refazia os
+  // espaços e DESENCAIXAVA o valor de verdade de cada argumento; desencaixar um bloco adiado
+  // desenha a cauda até ele. Num projeto com chamadas de função, a abertura desenhava tudo.
+  const { deferred, errors } = await openPair(page, 50, true)
+  expect(deferred).toBe(true)
+  const normal = await page.evaluate(() => window.__tail.snapshot('normal'))
+  const adiado = await page.evaluate(() => window.__tail.snapshot('adiado'))
+  expect(adiado.deferred).toBeGreaterThan(1400)
+  expect(adiado.state).toBe(normal.state)
+  expect(adiado.geometry).toEqual([])
+  expect(adiado.trackedDeferred).toBe(0)
+  expect(adiado.deferredInPage).toBe(0)
+  expect(errors).toEqual([])
+})
+
+test('cauda adiada: um espaço novo num "chamar" adiado não vai ao banco quando a área se redesenha', async ({
+  page,
+}) => {
+  // A conexão que o mutador cria depois da carga nasce para entrar no banco na próxima mudança de
+  // posição; o redesenho da área passa pelos adiados e a punha lá, na origem da fronteira.
+  const { deferred } = await openPair(page, 50, true)
+  expect(deferred).toBe(true)
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'f49'))).toBe(true)
+  await page.evaluate(async () => {
+    window.__tail.plusArg('adiado', 'f49')
+    window.__tail.redrawArea('adiado')
+    await window.__tail.settle()
+  })
+  const depois = await page.evaluate(() => window.__tail.snapshot('adiado'))
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'f49'))).toBe(true)
+  expect(depois.trackedDeferred).toBe(0)
 })
 
 test('cauda adiada: rolar desenha as próximas unidades, com a geometria do caminho normal', async ({

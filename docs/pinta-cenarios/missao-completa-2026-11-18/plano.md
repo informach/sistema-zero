@@ -98,6 +98,16 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   O perfil 4de439a6… exige outra imagem qualificada: a imagem db27 armazenada
   não corresponde à casca nova. CI geral, novos lotes publicados do remoto,
   rollout e ciclo autenticado continuam pendentes; esta prova não conclui 0b.
+  O remoto publicado até a2f0b0ab6 foi integrado depois, incluindo correções de
+  argumentos/cauda, carregamento do editor 3D e contratos de testes do aluno.
+  Os dois conflitos preservam a prova de teclado Firefox e regeneram o perfil
+  pelo script oficial. O módulo Python gerado é idêntico ao publicado no remoto.
+  Passaram os 16 gates do lote: Core completo (3.170 casos), componentes (641),
+  regressões dos contratos, 18 Chromium, dois Firefox, dois WebKit, 12 de
+  integração e tipos completos. Ver `qa/integracao-a2f0-2026-11-20/`.
+  O perfil combinado agora é 18aedad…; precisa de CI geral e imagem Linux
+  próprias. Nenhuma ativação de política, distribuição Python ou gravador
+  é demonstrada por essas verificações locais.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
