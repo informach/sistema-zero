@@ -743,6 +743,13 @@ jobs:
         working-directory: packages/studio
         run: bun run test:e2e:pinta-scenes
 
+      - name: Autoridade local do Pinta e chunks com leitores históricos reais
+        if: matrix.shard == 1
+        run: |
+          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6
+          cd packages/studio
+          bunx playwright test --config playwright.pinta-chunks.config.ts
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
@@ -755,6 +762,7 @@ jobs:
           path: |
             packages/studio/.cache/playwright-results
             packages/studio/.cache/pinta-scenes-results
+            packages/studio/.cache/pinta-local-chunks-results
           retention-days: 7
 
   studio-e2e-firefox:
