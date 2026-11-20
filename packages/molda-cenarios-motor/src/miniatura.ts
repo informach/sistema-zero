@@ -53,18 +53,22 @@ function paraBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolver, recusar) => {
     const entregar = (blob: Blob | null) =>
       blob ? resolver(blob) : recusar(new Error('Não foi possível gerar a miniatura'))
-    canvas.toBlob(
-      (webp) =>
-        webp && webp.type === 'image/webp' ? resolver(webp) : canvas.toBlob(entregar, 'image/png'),
-      'image/webp',
-      0.9,
-    )
+    // Navegador sem WebP devolve PNG no primeiro pedido: serve. Pedir de novo depois lia o
+    // canvas WebGL já limpo (miniatura em branco no Safari).
+    canvas.toBlob(entregar, 'image/webp', 0.9)
   })
 }
 
 async function fotografar(bytes: ArrayBuffer, lado: number): Promise<FotoDoModelo> {
   const modelo = await lerGlb(bytes)
-  const f = pegarFotografo(lado)
+  let f: ReturnType<typeof pegarFotografo>
+  try {
+    f = pegarFotografo(lado)
+  } catch (erro) {
+    // Sem contexto WebGL (limite do navegador): o modelo lido não fica na memória.
+    modelo.descartar()
+    throw erro
+  }
   try {
     for (const parte of modelo.partes) {
       const malha = new Mesh(parte.geometria, parte.material)

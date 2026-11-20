@@ -21,6 +21,8 @@ export class EdicaoComTerreno {
     visual: DocumentoDeCenario
     tipo: 'agua' | 'caminho' | 'ambiente'
     dono?: DonoDaPreviaDoAmbiente
+    /** Só a prévia que mexeu no relevo precisa devolvê-lo ao cancelar. */
+    mexeuNoTerreno: boolean
   } | null = null
   constructor(
     private readonly terreno: {
@@ -54,7 +56,7 @@ export class EdicaoComTerreno {
     this.finalizar(true)
     try {
       if (operacao.terreno) this.terreno.prever(operacao)
-      this.previa = { origem, visual, tipo }
+      this.previa = { origem, visual, tipo, mexeuNoTerreno: Boolean(operacao.terreno) }
     } catch (erro) {
       this.terreno.restaurar()
       throw erro
@@ -89,7 +91,7 @@ export class EdicaoComTerreno {
         comandos,
       },
     ).documento
-    this.previa = { origem, visual, tipo: 'ambiente', dono }
+    this.previa = { origem, visual, tipo: 'ambiente', dono, mexeuNoTerreno: false }
   }
   finalizar(
     cancelar: boolean,
@@ -99,7 +101,9 @@ export class EdicaoComTerreno {
     if (!this.previa) return
     if (tipo && this.previa.tipo !== tipo) return
     if (dono && this.previa.dono !== dono) return
-    const alterouTerreno = this.previa.tipo !== 'ambiente'
+    // Lago sem escavação ou trilha comum não mexem no relevo: restaurar refazia caminhos,
+    // pontes e a textura de profundidade inteira a cada ajuste da prévia.
+    const alterouTerreno = this.previa.mexeuNoTerreno
     this.previa = null
     if (cancelar && alterouTerreno) this.terreno.restaurar()
   }

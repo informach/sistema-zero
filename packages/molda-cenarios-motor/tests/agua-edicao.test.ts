@@ -25,6 +25,11 @@ test('prévia não altera a cabeça nem deixa água depois de cancelar', () => {
   q.edicao.finalizar(true)
   expect(q.edicao.projetar(q.documento)).toBe(q.documento)
   expect(q.edicao.ativa).toBe(false)
+  // O mar não mexe no relevo: cancelar não reconstrói terreno, caminhos e profundidade.
+  expect(q.restauracoes()).toBe(0)
+  // Prévia que escavou (lago, rio, represa) devolve o relevo ao cancelar.
+  q.edicao.prever(q.documento, q.documento, { ...q.r, terreno: {} as never })
+  q.edicao.finalizar(true)
   expect(q.restauracoes()).toBe(1)
 })
 test('uma cabeça nova invalida a prévia e respostas antigas são recusadas', () => {
@@ -32,7 +37,7 @@ test('uma cabeça nova invalida a prévia e respostas antigas são recusadas', (
     nova = { ...q.documento, nome: 'Nova' }
   q.edicao.prever(q.documento, q.documento, q.r)
   expect(q.edicao.projetar(nova)).toBe(nova)
-  expect(q.restauracoes()).toBe(1)
+  expect(q.restauracoes()).toBe(0)
   expect(() => q.edicao.prever(q.documento, nova, q.r)).toThrow('O cenário mudou')
   expect(q.edicao.ativa).toBe(false)
 })
@@ -41,10 +46,14 @@ test('substituir prévia restaura o relevo e aceitar não reverte o estado assum
   if (q.r.agua.tipo !== 'mar') throw Error('Esperava mar')
   q.edicao.prever(q.documento, q.documento, q.r)
   q.edicao.prever(q.documento, q.documento, { ...q.r, agua: { ...q.r.agua, nivel: 2 } })
-  expect(q.restauracoes()).toBe(1)
+  expect(q.restauracoes()).toBe(0)
   q.edicao.finalizar(false)
-  expect(q.restauracoes()).toBe(1)
+  expect(q.restauracoes()).toBe(0)
   expect(q.edicao.ativa).toBe(false)
+  // Substituir uma prévia que escavou devolve o relevo antes da nova.
+  q.edicao.prever(q.documento, q.documento, { ...q.r, terreno: {} as never })
+  q.edicao.prever(q.documento, q.documento, q.r)
+  expect(q.restauracoes()).toBe(1)
 })
 test('prévia inválida não destrói uma prévia válida nem publica dois mares', () => {
   const q = preparar()

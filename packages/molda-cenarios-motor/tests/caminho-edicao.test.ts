@@ -43,7 +43,8 @@ test('prévia de caminho troca só seu eixo e cancelar preserva a cabeça origin
   expect(edicao.tipo).toBe('caminho')
   edicao.finalizar(true, 'caminho')
   expect(edicao.projetar(doc)).toBe(doc)
-  expect(restauracoes).toBe(1)
+  // Trilha comum não molda o relevo: cancelar não o reconstrói.
+  expect(restauracoes).toBe(0)
 })
 
 test('água e caminho não substituem a prévia ou encerram o preparo do outro dono', () => {

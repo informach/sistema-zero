@@ -2,7 +2,7 @@ import { conferirGlb, digestDosBytes } from '@sistemazero/molda-cenarios-core/v2
 import {
   type AnimationClip,
   Box3,
-  type BufferGeometry,
+  BufferGeometry,
   LoadingManager,
   type Material,
   Matrix4,
@@ -94,19 +94,11 @@ function novoLeitor(falhas: unknown[]): GLTFLoader {
   return leitor
 }
 
-const CHAVES_DE_TEXTURA = [
-  'map',
-  'normalMap',
-  'roughnessMap',
-  'metalnessMap',
-  'emissiveMap',
-  'aoMap',
-  'alphaMap',
-] as const
-
+/** Solta TODA textura do material: as de clearcoat, sheen, transmissão, iridescência e
+ * anisotropia também (a lista fixa de antes deixava essas na GPU a cada modelo descarregado). */
 function descartarMaterial(material: Material) {
-  const comTexturas = material as unknown as Record<string, Texture | null | undefined>
-  for (const chave of CHAVES_DE_TEXTURA) comTexturas[chave]?.dispose()
+  for (const valor of Object.values(material as unknown as Record<string, unknown>))
+    if ((valor as Texture | null)?.isTexture) (valor as Texture).dispose()
   material.dispose()
 }
 
@@ -146,9 +138,17 @@ export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
         for (const grupo of grupos) {
           const material = lista[grupo.materialIndex ?? 0]
           if (!material) continue
-          const recorte = geometria.clone()
-          recorte.clearGroups()
+          // Os atributos e o índice são os MESMOS da malha: cada material só desenha a sua faixa.
+          // Clonar copiava todos os vértices uma vez por material (na memória e na GPU).
+          const recorte = new BufferGeometry()
+          recorte.setIndex(geometria.index)
+          for (const [nome, atributo] of Object.entries(geometria.attributes))
+            recorte.setAttribute(nome, atributo)
+          recorte.morphAttributes = geometria.morphAttributes
+          recorte.morphTargetsRelative = geometria.morphTargetsRelative
           recorte.setDrawRange(grupo.start, grupo.count)
+          if (geometria.boundingBox) recorte.boundingBox = geometria.boundingBox.clone()
+          if (geometria.boundingSphere) recorte.boundingSphere = geometria.boundingSphere.clone()
           geometrias.add(recorte)
           materiais.add(material)
           partes.push({ geometria: recorte, material, matriz: malha.matrixWorld.clone() })

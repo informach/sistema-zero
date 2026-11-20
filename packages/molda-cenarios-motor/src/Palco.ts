@@ -9,6 +9,7 @@ import {
   apoioNaSuperficie,
   chaveDaBase,
   clonarEstadoDoTerreno,
+  comMemoriaDaValidacao,
   type DocumentoDeCenario,
   digestDosBytes,
   dominioDoChao,
@@ -122,11 +123,15 @@ type EstadoDoModelo =
   | { estado: 'pronto'; modelo: ModeloCarregado; representacoes: RepresentacoesDoModelo }
   | { estado: 'falhou' }
 
+const PARA_BAIXO = new Vector3(0, -1, 0)
+
 interface Gesto {
   cancelado?: boolean
   documento: DocumentoDeCenario | null
   pivo: Matrix4
   inicio: Map<string, Matrix4>
+  /** Os ids movidos, montados uma vez por gesto para o encaixe em superfície ignorá-los. */
+  movidos?: Set<string>
   apoios: Map<string, InstanciaDeCenario['apoio']>
   atualizarApoios(): void
   atualizarSuperficies(): void
@@ -172,6 +177,9 @@ class PalcoThree implements Palco {
   private readonly fantasma = criarPartesDoFantasma()
   private readonly loteFantasma: LoteDoModelo
   private readonly raio = new Raycaster()
+  private readonly raioDoEncaixe = new Raycaster()
+  private colisoesNoGesto = Number.NEGATIVE_INFINITY
+  private readonly origemDoEncaixe = new Vector3()
   private readonly ndc = new Vector2()
   private readonly planoDoChao = new Plane(new Vector3(0, 1, 0), 0)
   private readonly planoDosControles = new Plane(new Vector3(0, 1, 0), 0)
@@ -195,7 +203,7 @@ class PalcoThree implements Palco {
     },
     (estado) => {
       this.estadoDasTexturas = estado
-      if (!this.gesto) this.reconstruir()
+      if (!this.gesto) this.reconstruirEmBreve()
       else this.opcoes.aoTexturas?.(estado)
     },
   )
@@ -627,6 +635,9 @@ class PalcoThree implements Palco {
       for (const camada of doc.base.solo?.camadas ?? [])
         if (camada.textura) usadas.add(camada.textura.id)
     if (doc.iluminacao.ceu?.tipo === 'panorama') usadas.add(doc.iluminacao.ceu.textura)
+    // Trilha ou estrada com textura esperava uma imagem que ninguém pedia: não desenhava e o
+    // Testar ficava esperando os caminhos para sempre.
+    for (const c of doc.caminhos) if (c.aparencia?.textura) usadas.add(c.aparencia.textura.id)
     const previas = new Set(
       this.espalhamento.prototipos.flatMap((o) =>
         o.aparencia?.textura ? [o.aparencia.textura.id] : [],
@@ -1206,6 +1217,7 @@ class PalcoThree implements Palco {
       if (
         !estados.some((e) => e.estado === 'carregando') &&
         !this.estadoDasTexturas.carregando &&
+        !this.estadoDosCaminhos.carregando &&
         !this.estadoDoAmbiente?.carregando &&
         (this.documento?.base.tipo !== 'terreno' || this.terreno)
       )
@@ -1261,6 +1273,7 @@ class PalcoThree implements Palco {
     if (this.destruido) return
     this.encerrarTeste()
     this.destruido = true
+    if (this.reconstrucaoAgendada) clearTimeout(this.reconstrucaoAgendada)
     this.laco.dispose()
     this.espalhamento.descartar()
     this.escultura.descartar()
@@ -1561,7 +1574,7 @@ class PalcoThree implements Palco {
           representacoes: new RepresentacoesDoModelo(this.objetos, carregado),
         }
         this.modelos.set(modelo.digest, publicado)
-        if (!this.gesto) this.reconstruir()
+        if (!this.gesto) this.reconstruirEmBreve()
       })
       .catch((erro) => {
         if (
@@ -1576,7 +1589,7 @@ class PalcoThree implements Palco {
         }
         this.modelos.set(modelo.digest, { estado: 'falhou' })
         this.opcoes.aoFalhar?.(modelo, erro)
-        if (!this.gesto) this.reconstruir()
+        if (!this.gesto) this.reconstruirEmBreve()
         this.pedirQuadro()
       })
   }
@@ -1642,7 +1655,39 @@ class PalcoThree implements Palco {
     }
   }
 
+  private ultimaReconstrucao = Number.NEGATIVE_INFINITY
+  private reconstrucaoAgendada: ReturnType<typeof setTimeout> | null = null
+  /**
+   * Para o que chega aos poucos (cada modelo ou textura que termina de carregar): a primeira
+   * chegada reconstrói na hora; as seguintes, dentro de 100 ms, viram uma reconstrução só. Abrir
+   * uma cena com 200 modelos reconstruía 20 mil objetos 200 vezes.
+   */
+  private reconstruirEmBreve() {
+    if (this.destruido || this.reconstrucaoAgendada) return
+    const espera = this.ultimaReconstrucao + 100 - performance.now()
+    if (espera <= 0) {
+      this.reconstruir()
+      return
+    }
+    this.reconstrucaoAgendada = setTimeout(() => {
+      this.reconstrucaoAgendada = null
+      if (this.destruido) return
+      if (this.gesto) return
+      this.reconstruir()
+    }, espera)
+  }
+
   private reconstruir() {
+    if (this.reconstrucaoAgendada) {
+      clearTimeout(this.reconstrucaoAgendada)
+      this.reconstrucaoAgendada = null
+    }
+    this.ultimaReconstrucao = performance.now()
+    // Apoios em objetos e caminhos consultam índices e estruturas uma vez por reconstrução.
+    comMemoriaDaValidacao(() => this.reconstruirAgora())
+  }
+
+  private reconstruirAgora() {
     this.atualizarGuias()
     if (this.documento) {
       const autoral = this.edicaoDoAmbiente.projetar(this.documento),
@@ -1973,6 +2018,11 @@ class PalcoThree implements Palco {
       const s = this.pivo.scale
       this.pivo.scale.setScalar(fatorUniforme(s.x, s.y, s.z))
     }
+    // Arrastar a alça além do centro dá escala negativa: a prévia aparecia espelhada e o que
+    // era gravado não (o espelho tem ferramenta própria). Tamanho fica sempre positivo.
+    if (this.ferramenta === 'tamanho')
+      for (const e of ['x', 'y', 'z'] as const)
+        this.pivo.scale[e] = Math.min(100, Math.max(0.01, this.pivo.scale[e]))
     if (this.ferramenta === 'mover') {
       const eixo = this.alca.axis ?? ''
       for (const e of ['x', 'y', 'z'] as const)
@@ -2010,8 +2060,11 @@ class PalcoThree implements Palco {
       if (!marcador && this.ferramenta === 'mover' && this.encaixe.superficie && this.documento) {
         const caixa = local.caixa.clone().applyMatrix4(local.matriz)
         const p = new Vector3().setFromMatrixPosition(local.matriz)
-        const raio = new Raycaster(new Vector3(p.x, caixa.max.y + 0.01, p.z), new Vector3(0, -1, 0))
-        const acerto = this.superficies.acertar(raio, new Set(gesto.inicio.keys()))
+        // Um raio e um conjunto por gesto, não por objeto a cada movimento do ponteiro.
+        const raio = this.raioDoEncaixe
+        raio.set(this.origemDoEncaixe.set(p.x, caixa.max.y + 0.01, p.z), PARA_BAIXO)
+        gesto.movidos ??= new Set(gesto.inicio.keys())
+        const acerto = this.superficies.acertar(raio, gesto.movidos)
         const chao = alturaDoChao(this.documento.base, p.x, p.z, this.fonteDeAlturas())
         const usarObjeto = acerto && acerto.ponto.y >= chao
         local.matriz.elements[13]! += (usarObjeto ? acerto.ponto.y : chao) - caixa.min.y
@@ -2026,11 +2079,16 @@ class PalcoThree implements Palco {
     }
     gesto.atualizarApoios()
     gesto.atualizarSuperficies()
+    // As colisões visíveis refazem todas as fontes (até 200 mil triângulos): durante o arrasto,
+    // no máximo a cada 150 ms; ao soltar, a reconstrução da cena deixa tudo exato.
     if (
       this.mostrarColisoes &&
+      performance.now() - this.colisoesNoGesto > 150 &&
       [...gesto.inicio.keys()].some((id) => !this.marcadores.marcador(id))
-    )
+    ) {
+      this.colisoesNoGesto = performance.now()
       this.atualizarColisoesVisiveis()
+    }
     this.desenharContornos()
   }
 
