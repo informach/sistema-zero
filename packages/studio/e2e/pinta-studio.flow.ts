@@ -511,6 +511,8 @@ test('Pinta real cria jogo estruturado; atualização do cenário conserva a pro
   await canvas.evaluate((el) => el.scrollIntoView({ block: 'start', inline: 'start' }))
   // Compare immediately around the art mutation, after opening both real editors.
   const before = await snapshot(page)
+  // Return before Pinta's deferred bridge commits. No second focus follows.
+  await page.evaluate(() => window.dispatchEvent(new FocusEvent('focus')))
   await canvas.click({ position: { x: 8, y: 8 } })
   await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
     timeout: 15000,
@@ -549,10 +551,7 @@ test('Pinta real cria jogo estruturado; atualização do cenário conserva a pro
     contentType: 'application/json',
   })
   expect(canonicalFloor?.kind === 'tiles' ? canonicalFloor.cells[0] : null).toBe(-1)
-  await page.bringToFront()
-  // Headless Chromium keeps every page focused/visible. Reproduce the user's return event;
-  // storage, the production watcher, reconciliation and the editor remain real.
-  await page.evaluate(() => window.dispatchEvent(new FocusEvent('focus')))
+  // The real cross-tab storage event must update Studio without a second focus.
   await expect
     .poll(
       async () => {

@@ -1,0 +1,25 @@
+{
+  "encoding": "UTF-8 with LF",
+  "files": [
+    {
+      "file": "packages/studio/src/asset-library/personal.ts",
+      "sha256": "b790b290f75d9460189556f6bbaf03634bf36e4a905154bb1b6f39d80f168ef9"
+    },
+    {
+      "file": "packages/studio/src/components/assets/DrawingSyncWatcher.tsx",
+      "sha256": "155a4c15cb46eeb6f67059561d19e9150707223f7358fa6953c7907205c93276"
+    },
+    {
+      "file": "packages/studio/src/components/assets/DrawingSyncWatcher.test.ts",
+      "sha256": "12d9c782f1e15fe1ecafe8d6a56f2766100dfc1612896b1df378ff66b5d3e92c"
+    },
+    {
+      "file": "packages/studio/src/components/assets/__tests__/DrawingSyncWatcher.cases.tsx",
+      "sha256": "d8c648ca15dd6d12674714106a92e66fe1b48df923b5a50b747acb5253f469d7"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-studio.flow.ts",
+      "sha256": "864ccb311c93673267d94230f66f928f0e14b4d433099bd3b2f78c0316a64a02"
+    }
+  ]
+}

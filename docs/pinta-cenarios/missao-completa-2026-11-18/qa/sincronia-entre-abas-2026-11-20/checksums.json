@@ -1,0 +1,50 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "9f2bab047fb4ca0634b9a3019b7025ab5bcdb1d934cbeddcf0f8cf1648d5b1f0"
+  },
+  {
+    "file": "biblioteca-final.txt",
+    "sha256": "ff00830f0e59496f70ed6713d01d67e6a522f19d96edfe447b10242249bde64d"
+  },
+  {
+    "file": "biome-final.txt",
+    "sha256": "cadaed0715f13121c423aa6d844068623e5334604004fa2242cec8318a57d870"
+  },
+  {
+    "file": "codigo.json",
+    "sha256": "ba22641508401a8deb11f7f6d9187346f4671ac9c75684d27fa1e481a6eb8189"
+  },
+  {
+    "file": "componentes-final.txt",
+    "sha256": "0de03d38609d42147ea84c021240150d0d6a9bd4f913bb955cc728e08a870b38"
+  },
+  {
+    "file": "foco-antes-do-commit-verde.txt",
+    "sha256": "6832e5a1b61db220fc9c0bc38c10adf8afa0971c68f2a8b98add2a22e528ad7a"
+  },
+  {
+    "file": "foco-antes-do-commit-vermelho.txt",
+    "sha256": "e848600b6961a109c7c927a38bd6af3c081afa3b50a30b8225551a0d329e5f8e"
+  },
+  {
+    "file": "gates.json",
+    "sha256": "36d03a33e2500190204e09a8247aebf572b967dddbba6a8294f1e384e8c94390"
+  },
+  {
+    "file": "integracao-final.txt",
+    "sha256": "d0f7839411bf79b4b23e452c54af8e4b28bd81c4c8054439aa3c881e419d8fe1"
+  },
+  {
+    "file": "observador-seis-casos.txt",
+    "sha256": "36089e60ff3c00fe4c3502561a821fa7f0ce627485d289f87c449c24793e2794"
+  },
+  {
+    "file": "perfis-verde.txt",
+    "sha256": "df111f630791eb542d7261df727d995dee105854a526770060b977c85b372651"
+  },
+  {
+    "file": "perfis-vermelho.txt",
+    "sha256": "c6db2307710ba6f6a45c387c3b5bec32eb1e7776942452b5d2cfc5d32aeec143"
+  }
+]

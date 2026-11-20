@@ -98,8 +98,11 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   A própria Vila também percorreu Vila → Cabana → Vila, com colisão, água animada,
   primeiro plano e seis documentos nativos iguais após reabertura. Código, IR e
   blocos foram preservados depois de editar o Chão e reabrir o jogo. A atualização
-  exigiu foco após a biblioteca estar pronta: o intervalo anterior ao commit da
-  ponte ainda precisa ser corrigido. Provas em `qa/vila-autenticada-piloto-2026-11-20/`
+  exigiu foco após a biblioteca estar pronta. Esse intervalo foi depois corrigido
+  localmente, incluindo guardas para troca de perfil e sessão: seis regressões,
+  12 fluxos, 626 componentes, tipos completos de Estúdio/Members e Biome passaram.
+  A fonte final integrada ainda precisa de qualificação e repetição autenticada;
+  ver `sincronia-entre-abas.md`. Provas em `qa/vila-autenticada-piloto-2026-11-20/`
   e `qa/vila-atualizacao-autenticada-2026-11-20/`; isso não encerra publicação/Python/nuvem.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.

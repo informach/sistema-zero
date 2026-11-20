@@ -42,7 +42,7 @@ const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
  * Por que `localStorage` e não `BroadcastChannel`: o valor precisa SOBREVIVER à
  * aba fechada (editar hoje, abrir o Estúdio amanhã) e ser lido de forma
  * SÍNCRONA sob demanda. É a mesma escolha (e o mesmo motivo) do
- * `blockly/blockClipboard.ts`. Sem listener: quem sincroniza lê no foco.
+ * `blockly/blockClipboard.ts`. O Estúdio lê no foco e acompanha commits de outras abas.
  *
  * A chave leva o NAMESPACE porque a biblioteca é por PERFIL: o desenho de um
  * irmão não pode disparar a sincronia dos projetos do outro.
@@ -85,6 +85,21 @@ export function personalAssetsChangedAt(namespace?: string): number {
   } catch {
     return 0
   }
+}
+
+/** Notify only after another tab commits this profile's personal library. */
+export function subscribePersonalAssetsChanged(
+  onChange: () => void,
+  namespace = storageNamespace,
+): () => void {
+  const storage = safeLocalStorage()
+  if (!storage || typeof window === 'undefined') return () => {}
+  const key = changedKey(namespace)
+  const onStorage = (event: StorageEvent): void => {
+    if (event.storageArea === storage && event.key === key) onChange()
+  }
+  window.addEventListener('storage', onStorage)
+  return () => window.removeEventListener('storage', onStorage)
 }
 
 export const PERSONAL_ASSET_LIMITS = {

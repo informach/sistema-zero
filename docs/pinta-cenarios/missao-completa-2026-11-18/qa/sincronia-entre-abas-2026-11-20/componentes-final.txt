@@ -1,0 +1,6 @@
+(pass) remote, traversal, invalid channels/volumes and unbounded definitions are rejected
+
+ 626 pass
+ 0 fail
+ 3474 expect() calls
+Ran 626 tests across 75 files. [89.98s]
