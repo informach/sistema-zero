@@ -472,15 +472,15 @@ describe('PreviewIframe', () => {
       attributes: true,
       attributeFilter: ['srcdoc'],
     })
-    let mounted: ReturnType<typeof render> | undefined
+    let unmount: (() => void) | undefined
     try {
-      mounted = render(<PreviewIframe />, { container })
+      unmount = render(<PreviewIframe />, { container }).unmount
       fireEvent.load(screen.getByTitle('Pré-visualização'))
       await waitFor(() => expect(observed.length).toBeGreaterThan(0))
       expect(observed.every((mark) => mark !== null)).toBe(true)
     } finally {
       observer.disconnect()
-      mounted?.unmount()
+      unmount?.()
       container.remove()
     }
   })
