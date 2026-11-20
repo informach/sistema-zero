@@ -16,7 +16,6 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
-    "@sistemazero/molda-cenarios-core": "workspace:*",
     "@sentry/bun": "^10.56.0",
     "@sistemazero/arquipelago-contracts": "workspace:*",
     "@sistemazero/core": "workspace:*",
