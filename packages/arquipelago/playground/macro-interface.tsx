@@ -44,6 +44,7 @@ function BotaoMacro({ onClick, ...props }: ComponentProps<'button'>) {
   )
 }
 export function InterfaceMacro({
+  publicacao,
   medida,
   ponte,
   erro,
@@ -61,6 +62,7 @@ export function InterfaceMacro({
   medicao,
   aoMedirRota,
 }: {
+  publicacao?: { ilha: string; versao: number }
   medida: MedidaMacro
   ponte: EstadoDaPonte
   erro: string | null
@@ -85,12 +87,17 @@ export function InterfaceMacro({
   const nome = ARQUIPELAGO.find((i) => i.id === medida.ilha)?.nome ?? 'Travessia'
   return (
     <div className="macro-interface" style={{ visibility: conversando ? 'hidden' : undefined }}>
-      <header className="macro-topo" data-arte={arte.estado}>
+      <header
+        className="macro-topo"
+        data-arte={arte.estado}
+        data-publicacao={publicacao ? `${publicacao.ilha}:${publicacao.versao}` : undefined}
+      >
         <div>
           <strong>Faísca V2 · proposta artística em avaliação</strong>
           <span>
             {nome} · escala nativa · arte{' '}
             {arte.estado === 'pronto' ? `${arte.modelos} modelos prontos` : arte.estado}
+            {publicacao && ` · publicação ${publicacao.versao} · ensaio local`}
           </span>
         </div>
         <BotaoMacro type="button" onClick={() => setMapa(!mapa)} aria-expanded={mapa}>

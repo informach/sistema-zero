@@ -41,7 +41,10 @@ export function superficieDaAgua(
 ): number {
   let superficie = nivelDoMar
   for (const a of aguas)
-    if (raio > 0 ? discoTocaAgua(a, x, z, raio) : dentroDaAgua(a, x, z))
+    if (a.consultaNivel) {
+      const nivel = a.consultaNivel(x, z, raio)
+      if (nivel !== null) superficie = Math.max(superficie, nivel)
+    } else if (raio > 0 ? discoTocaAgua(a, x, z, raio) : dentroDaAgua(a, x, z))
       superficie = Math.max(superficie, a.y)
   return superficie
 }

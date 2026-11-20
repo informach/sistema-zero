@@ -38,3 +38,49 @@ export function glb(json: unknown, bin: Uint8Array) {
   dados.set(bin, 28 + n)
   return dados
 }
+
+/** Um clipe GLTF real; conserva a geometria e os metadados do exemplo recebido. */
+export function comAnimacao(json: ReturnType<typeof exemplo>['j'], bin: Uint8Array) {
+  const inicio = Math.ceil(bin.byteLength / 4) * 4,
+    dados = new Uint8Array(inicio + 32)
+  dados.set(bin)
+  dados.set(new Uint8Array(new Float32Array([0, 1]).buffer), inicio)
+  dados.set(new Uint8Array(new Float32Array([0, 0, 0, 1, 0, 0]).buffer), inicio + 8)
+  return {
+    bin: dados,
+    j: {
+      ...structuredClone(json),
+      buffers: [{ byteLength: dados.byteLength }],
+      bufferViews: [
+        ...json.bufferViews,
+        { buffer: 0, byteOffset: inicio, byteLength: 8 },
+        { buffer: 0, byteOffset: inicio + 8, byteLength: 24 },
+      ],
+      accessors: [
+        ...json.accessors,
+        {
+          bufferView: json.bufferViews.length,
+          componentType: 5126,
+          count: 2,
+          type: 'SCALAR',
+          min: [0],
+          max: [1],
+        },
+        { bufferView: json.bufferViews.length + 1, componentType: 5126, count: 2, type: 'VEC3' },
+      ],
+      animations: [
+        {
+          name: 'andar',
+          samplers: [
+            {
+              input: json.accessors.length,
+              output: json.accessors.length + 1,
+              interpolation: 'LINEAR',
+            },
+          ],
+          channels: [{ sampler: 0, target: { node: 0, path: 'translation' } }],
+        },
+      ],
+    },
+  }
+}

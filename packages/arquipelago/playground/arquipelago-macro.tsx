@@ -17,6 +17,7 @@ import {
 import { criarLoja } from '../src/estado/loja'
 import { ESTILOS } from '../src/interface/estilos'
 import { ControlesDeToque } from '../src/interface/toque'
+import { CenarioPublicado } from '../src/mundo/cenario-publicado'
 import { CaminhosDaFaisca, ROTAS_COMPLETAS_DA_FAISCA } from '../src/mundo/faisca/caminhos'
 import { MedirPercurso, type PedidoDeMedicao } from '../src/mundo/faisca/medir-percurso'
 import { PilotoDaFaisca, type SituacaoDoPiloto } from '../src/mundo/faisca/piloto'
@@ -24,8 +25,10 @@ import { PinturaDoSolo } from '../src/mundo/faisca/pintura-do-solo'
 import { criarRegistro } from '../src/mundo/interativos'
 import { OceanoMacro } from '../src/mundo/macro/oceano'
 import { PonteMacro } from '../src/mundo/macro/ponte'
-import { TerrenosMacro } from '../src/mundo/macro/terrenos'
+import { type FonteDoTerreno, TerrenosMacro } from '../src/mundo/macro/terrenos'
 import { GRAVIDADE, PASSO_DA_FISICA } from '../src/mundo/medidas'
+import type { CenarioPublicadoPronto } from '../src/mundo/preparar-cenario-publicado'
+import { useCenarioPublicado } from '../src/mundo/use-cenario-publicado'
 import { Camera } from '../src/personagem/camera'
 import { Personagem } from '../src/personagem/personagem'
 import { Zappy } from '../src/personagem/zappy'
@@ -39,6 +42,7 @@ import {
   alturaDoTerritorio,
   conexaoDaIlha,
   DISTRITOS_DA_FAISCA,
+  FUNDO_DO_ARQUIPELAGO,
   type PontoDoTerritorio,
   paraLocal,
   territorioEm,
@@ -52,11 +56,13 @@ import {
   tipoDaCuradoria,
 } from '../src/sistemas/prova-curadoria-faisca'
 import { LAGO_DE_CATALOGO, pisoDoRefino } from '../src/sistemas/refino-da-faisca'
-import { LADO_DO_SETOR } from '../src/sistemas/setores-do-arquipelago'
+import { chaveDaRetomada } from '../src/sistemas/retomada-do-cenario'
+import { LADO_DO_SETOR, malhaDistante, malhaDoSetor } from '../src/sistemas/setores-do-arquipelago'
 import { ConversaDaIrisDeEstudo } from './faisca-interface'
 import { CameraDaCaptura, vistaDaFaisca } from './faisca-vistas'
 import { CHAVE_DO_ENSAIO, ensaioInicial, lerEnsaio, partidaDoEnsaio } from './macro-estado'
 import { ESTILOS_MACRO, InterfaceMacro, type MedidaMacro } from './macro-interface'
+import { portaPublicadaDoEnsaio } from './porta-publicada'
 
 const VISTA = vistaDaFaisca(new URLSearchParams(location.search).get('vista'))
 const CURADORIA = tipoDaCuradoria(new URLSearchParams(location.search).get('curadoria'))
@@ -128,6 +134,8 @@ function MundoMacro({
   tentativaArte,
   pedidoMedicao,
   aoMedicao,
+  aoPublicacao,
+  aoErro,
 }: {
   partida: PontoDoTerritorio
   instalado: boolean
@@ -141,10 +149,45 @@ function MundoMacro({
   tentativaArte: number
   pedidoMedicao: PedidoDeMedicao | null
   aoMedicao: (m: MedicaoDePercurso | null) => void
+  aoPublicacao: (p: CenarioPublicadoPronto | null) => void
+  aoErro: (erro: string) => void
 }) {
   const { rastro, loja } = useJogo()
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
+  const [ilhaPublicada, setIlhaPublicada] = useState(ARQUIPELAGO[0]!.id)
+  const publicada = useCenarioPublicado(ilhaPublicada, tentativaArte, aoPublicacao, aoErro)
+  const publicadas = useMemo(
+    () => new Set(publicada ? [publicada.perfil.ilha.id] : []),
+    [publicada],
+  )
+  const fonte = useMemo<FonteDoTerreno | undefined>(
+    () =>
+      publicada
+        ? {
+            setor: malhaDoSetor,
+            distante: (ilha, excluir) =>
+              malhaDistante(
+                ilha,
+                excluir,
+                ilha.id === publicada.perfil.ilha.id && publicada.alturas
+                  ? (x, z) => publicada.alturas!(x + ilha.centro.x, z + ilha.centro.z)
+                  : undefined,
+              ),
+          }
+        : undefined,
+    [publicada],
+  )
+  const chaoPublicado = useCallback(
+    (x: number, z: number) => {
+      if (!publicada?.regiao.contem(x, z)) return alturaDoArquipelago(x, z)
+      if (!publicada.alturas) return publicada.piso(x, z) ?? FUNDO_DO_ARQUIPELAGO
+      return publicada.alturas.temChao?.({ x, z }) === false
+        ? FUNDO_DO_ARQUIPELAGO
+        : publicada.alturas(x, z)
+    },
+    [publicada],
+  )
   const sol = useMemo(() => {
     const alvo = new Object3D()
     alvo.position.set(0, 4, 140)
@@ -159,6 +202,13 @@ function MundoMacro({
     setores.current = n
   }, [])
   useFrame((_, dt) => {
+    const proxima = ARQUIPELAGO.reduce((a, b) =>
+      Math.hypot(a.centro.x - rastro.x, a.centro.z - rastro.z) <=
+      Math.hypot(b.centro.x - rastro.x, b.centro.z - rastro.z)
+        ? a
+        : b,
+    )
+    if (proxima.id !== ilhaPublicada) setIlhaPublicada(proxima.id)
     if (!loja.getState().menuAberto) tempoAtual.current += Math.min(dt, 0.1)
     const a = amostra.current
     a.tempo += dt
@@ -234,7 +284,13 @@ function MundoMacro({
         >
           <OceanoMacro />
           <PinturaDoSolo rotas={ROTAS_DO_SOLO}>
-            <TerrenosMacro aoMudar={medirSetores} foco={foco} aoPronto={aoPronto} />
+            <TerrenosMacro
+              aoMudar={medirSetores}
+              foco={foco}
+              aoPronto={aoPronto}
+              fonte={fonte}
+              publicadas={publicadas}
+            />
           </PinturaDoSolo>
           {CONEXOES.map((c) => (
             <PonteMacro
@@ -244,23 +300,33 @@ function MundoMacro({
               progresso={progresso}
             />
           ))}
-          <CaminhosDaFaisca
-            marcos={!VISTA && new URLSearchParams(location.search).get('debug') === 'lugares'}
-          />
+          {publicada?.perfil.ilha.id !== 'sua-ilha' && (
+            <CaminhosDaFaisca
+              marcos={!VISTA && new URLSearchParams(location.search).get('debug') === 'lugares'}
+            />
+          )}
           <MedirPercurso pedido={pedidoMedicao} aoMudar={aoMedicao} />
-          <PilotoDaFaisca
-            key={tentativaArte}
-            aoMudar={aoArte}
-            curadoria={CURADORIA}
-            piso={PISO}
-            aguaAventura={AGUA_AVENTURA}
-            noite={noite}
-          />
+          {publicada?.perfil.ilha.id !== 'sua-ilha' && (
+            <PilotoDaFaisca
+              key={tentativaArte}
+              aoMudar={aoArte}
+              curadoria={CURADORIA}
+              piso={PISO}
+              aguaAventura={AGUA_AVENTURA}
+              noite={noite}
+            />
+          )}
+          {publicada && (
+            <CenarioPublicado key={publicada.publicacao.id} pronto={publicada} aoErro={aoErro} />
+          )}
           <Personagem partida={partida} interior={FORA_DE_CASA} />
           {VISTA ? (
             <CameraDaCaptura vista={VISTA} />
           ) : (
-            <Camera chaoDoCenario={alturaDoArquipelago} baseDoCenario={ALTURA_BASE} />
+            <Camera
+              chaoDoCenario={chaoPublicado}
+              baseDoCenario={publicada ? chaoPublicado : ALTURA_BASE}
+            />
           )}
         </Physics>
         <Zappy />
@@ -298,6 +364,17 @@ function Blockout() {
   const [pedidoMedicao, setPedidoMedicao] = useState<PedidoDeMedicao | null>(null)
   const [medicao, setMedicao] = useState<MedicaoDePercurso | null>(null)
   const [visitados, setVisitados] = useState<string[]>(inicial.ensaio.visitados)
+  // Na ilha publicada, a posição é guardada pela retomada da publicação (por versão); o resto
+  // do ensaio (ponte, lugares visitados, posição nas outras ilhas) continua sendo guardado.
+  const regiaoPublicada = useRef<CenarioPublicadoPronto['regiao'] | null>(null),
+    cenarioPublicado = useRef<CenarioPublicadoPronto | null>(null)
+  const [publicacao, setPublicacao] = useState<CenarioPublicadoPronto['publicacao'] | null>(null)
+  const aoPublicacao = useCallback((p: CenarioPublicadoPronto | null) => {
+    regiaoPublicada.current = p?.regiao ?? null
+    cenarioPublicado.current = p
+    setPublicacao(p?.publicacao ?? null)
+    if (p) setArte({ estado: 'pronto', modelos: p.dados.fontes.modelos.length })
+  }, [])
   const contexto = useMemo<ContextoDoJogo>(() => {
     const partida = partidaDoEnsaio(inicial.ensaio, CORPO.doCentroAoPe)
     const loja = criarLoja({
@@ -309,10 +386,13 @@ function Blockout() {
       aoMudar: () => {},
     })
     loja.setState({ dentroDeCasa: false })
+    const plataforma = criarPlataformaFalsa({ persistir: false })
+    if (new URLSearchParams(location.search).get('referencia') !== '1')
+      plataforma.cenarios = portaPublicadaDoEnsaio
     return {
       loja,
       gerenteTempo: null,
-      plataforma: criarPlataformaFalsa({ persistir: false }),
+      plataforma,
       controle: criarControle(),
       interativos: criarRegistro(),
       rastro: {
@@ -358,6 +438,8 @@ function Blockout() {
             y: 3.65,
           },
     ]
+  }, [contexto])
+  useEffect(() => {
     contexto.ambiente.noite = noite
   }, [contexto, noite])
   useEffect(() => {
@@ -401,7 +483,11 @@ function Blockout() {
         setVisitados([...ensaio.current.visitados])
       }
       const ilha = territorioEm(m.x, m.z)
-      if (ilha && (ilha.id !== 'bosque' || ensaio.current.ponteInstalada)) {
+      if (
+        ilha &&
+        !regiaoPublicada.current?.contem(m.x, m.z) &&
+        (ilha.id !== 'bosque' || ensaio.current.ponteInstalada)
+      ) {
         const local = paraLocal(ilha, m)
         const y = alturaDoTerritorio(ilha, local.x, local.z)
         if (
@@ -443,6 +529,21 @@ function Blockout() {
     else if (id === 'bosque-chegada' && instalado) p = { ...PONTE.destino, z: PONTE.destino.z - 4 }
     else return
     contexto.movimento.ida = null
+    // Na ilha publicada, a altura e o chão são os do cenário compilado: a chegada segura dele
+    // diz onde pisar, e a colisão do destino solta a espera (`CenarioPublicado`).
+    const publicado = cenarioPublicado.current
+    if (publicado?.regiao.contem(p.x, p.z)) {
+      try {
+        const piso = publicado.piso(p.x, p.z)
+        contexto.pedidos.teleporte = publicado.chegada({ x: p.x, y: piso ?? p.y, z: p.z })
+        contexto.pedidos.olharPara = Math.PI
+        contexto.pedidos.chaoChegando.add('cenario-publicado')
+        setFoco(null)
+      } catch (e) {
+        setErro(e instanceof Error ? e.message : 'Não encontrei um lugar seguro para chegar.')
+      }
+      return
+    }
     contexto.pedidos.chaoChegando.add('macro')
     setFoco({ ...p, y: p.y + CORPO.doCentroAoPe + 0.25 })
   }
@@ -462,6 +563,8 @@ function Blockout() {
         camera={{ fov: 55, near: 0.15, far: 3600 }}
       >
         <MundoMacro
+          aoPublicacao={aoPublicacao}
+          aoErro={setErro}
           partida={partida}
           instalado={instalado}
           construindoDesde={construindoDesde}
@@ -480,6 +583,9 @@ function Blockout() {
         <ControlesDeToque />
         <ConversaDaIrisDeEstudo />
         <InterfaceMacro
+          publicacao={
+            publicacao ? { ilha: publicacao.perfil.ilha, versao: publicacao.versao } : undefined
+          }
           medida={medida}
           ponte={instalado ? 'aberta' : construindoDesde !== null ? 'reconstruindo' : 'quebrada'}
           erro={erro}
@@ -488,6 +594,7 @@ function Blockout() {
           aoReconstruir={() => setConstruindoDesde(0)}
           aoIr={ir}
           aoReiniciar={() => {
+            if (publicacao) localStorage.removeItem(chaveDaRetomada(publicacao))
             localStorage.removeItem(CHAVE_ATIVA)
             location.reload()
           }}

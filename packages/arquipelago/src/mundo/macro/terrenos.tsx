@@ -3,7 +3,12 @@ import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { useEffect, useMemo, useState } from 'react'
 import { BufferAttribute, BufferGeometry, Color } from 'three'
 import { useJogo } from '../../estado/contexto'
-import { ARQUIPELAGO, type IlhaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
+import {
+  ARQUIPELAGO,
+  type IlhaDoArquipelago,
+  type TerritorioId,
+} from '../../sistemas/geografia-do-arquipelago'
+import { regiaoDoCenario } from '../../sistemas/regiao-do-cenario'
 import {
   LADO_DO_SETOR,
   malhaDistante,
@@ -76,24 +81,31 @@ function Territorio({
   ilha,
   setores,
   fonte,
+  publicado = false,
+  recortar = false,
 }: {
   ilha: IlhaDoArquipelago
   setores: readonly SetorDoTerritorio[]
   fonte?: FonteDoTerreno
+  publicado?: boolean
+  recortar?: boolean
 }) {
   const dados = useMemo(
     () => (fonte?.distante ?? malhaDistante)(ilha, new Set(setores.map((s) => s.id))),
     [ilha, setores, fonte],
   )
   const geometria = useGeometria(dados, ilha)
+  const planos = useMemo(
+    () => (recortar ? regiaoDoCenario(ilha.id).planos : undefined),
+    [ilha.id, recortar],
+  )
   return (
     <group position={[ilha.centro.x, 0, ilha.centro.z]}>
       <mesh geometry={geometria}>
-        <MaterialDoSolo faisca={ilha.id === 'sua-ilha'} />
+        <MaterialDoSolo faisca={!publicado && ilha.id === 'sua-ilha'} planos={planos} />
       </mesh>
-      {setores.map((setor) => (
-        <Setor key={setor.id} ilha={ilha} setor={setor} fonte={fonte} />
-      ))}
+      {!publicado &&
+        setores.map((setor) => <Setor key={setor.id} ilha={ilha} setor={setor} fonte={fonte} />)}
     </group>
   )
 }
@@ -103,11 +115,14 @@ export function TerrenosMacro({
   foco,
   aoPronto,
   fonte,
+  publicadas,
 }: {
   aoMudar: (quantidade: number) => void
   foco: { x: number; z: number } | null
   aoPronto: (x: number, z: number) => void
   fonte?: FonteDoTerreno
+  /** O detalhe destas ilhas vem da malha compilada e dos seus próprios colisores. */
+  publicadas?: ReadonlySet<TerritorioId>
 }) {
   const { rastro } = useJogo()
   const [celula, setCelula] = useState(() => ({
@@ -135,5 +150,13 @@ export function TerrenosMacro({
     [territorios, aoMudar],
   )
   useEffect(() => aoPronto(celula.x, celula.z), [celula, aoPronto])
-  return territorios.map((t) => <Territorio key={t.ilha.id} {...t} fonte={fonte} />)
+  return territorios.map((t) => (
+    <Territorio
+      key={t.ilha.id}
+      {...t}
+      fonte={fonte}
+      publicado={publicadas?.has(t.ilha.id)}
+      recortar={!!publicadas?.size}
+    />
+  ))
 }

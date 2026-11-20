@@ -26,6 +26,7 @@ import { conferirConteudoCompilado } from './conteudo'
 import { AguaDaCenaCompilada } from './runtime-agua'
 import { custoDaInstanciaCompilada, instanciarModeloCompilado } from './runtime-modelos'
 
+export type { TrianguloDaConsulta } from '../teste/colisoes'
 export { resolverInicioDaCena } from './inicio'
 
 export interface OpcoesDoRuntimeCompilado {
@@ -34,6 +35,12 @@ export interface OpcoesDoRuntimeCompilado {
   /** Capacidade real do renderer; 4096 é o padrão portátil, não uma medição do aparelho. */
   maxTextura?: number
   aguaDinamica?: boolean
+  /** Hospedeiros com oceano compartilhado conservam sua água/fundo mundial. */
+  marExterno?: boolean
+  /** Entidades cujos clipes são conduzidos pelo sistema nativo de personagens. */
+  animacaoExterna?: ReadonlySet<string>
+  /** Entidades cujos colisores são instalados pelo hospedeiro, mantendo a representação visual. */
+  colisoresExternos?: ReadonlySet<string>
   progresso?: (pronto: number, total: number) => void
 }
 export type AtorDaCenaCompilada = ReturnType<typeof instanciarModeloCompilado>
@@ -64,6 +71,12 @@ export async function carregarCenaNoThree(
   opcoes: OpcoesDoRuntimeCompilado = {},
 ): Promise<CenaNoThree> {
   sinal.throwIfAborted()
+  // O chamador pode editar seu estado enquanto os recursos são conferidos.
+  opcoes = {
+    ...opcoes,
+    animacaoExterna: new Set(opcoes.animacaoExterna),
+    colisoresExternos: new Set(opcoes.colisoresExternos),
+  }
   if (opcoes.ambiente !== undefined && !['completo', 'luzes-locais'].includes(opcoes.ambiente))
     throw Error('O modo de ambiente do cenário é inválido.')
   const maxTextura = opcoes.maxTextura ?? 4096
@@ -81,6 +94,7 @@ export async function carregarCenaNoThree(
     instancias = new Map<string, AtorDaCenaCompilada>(),
     entidades = new Map(dados.entidades.map((e) => [e.id, e])),
     identificadores = new WeakMap<Object3D, (triangulo: number) => string | null>()
+  const animacoesExternas = new WeakSet<AtorDaCenaCompilada>()
   let descartado = false,
     colisoes: MundoDoTeste | undefined,
     aguas: AguaDaCenaCompilada | undefined,
@@ -107,6 +121,9 @@ export async function carregarCenaNoThree(
     cena.clear()
   }
   try {
+    for (const conjunto of [opcoes.animacaoExterna!, opcoes.colisoresExternos!])
+      for (const id of conjunto)
+        if (!entidades.has(id)) throw Error(`A entidade externa ${id} não existe na cena.`)
     cena.add(raiz)
     raiz.name = dados.nome
     const usados = [...new Set([...dados.nos, ...dados.colisoes].map((n) => n.arquivo))],
@@ -150,7 +167,10 @@ export async function carregarCenaNoThree(
         throw Error('As instâncias e animações excedem o orçamento de memória do carregador.')
     }
     const fontes: FonteDeColisao[] = [],
-      fundos = new Map<string, FonteDeColisao[]>()
+      fundos = new Map<string, FonteDeColisao[]>(),
+      maresExternos = new Set(
+        opcoes.marExterno ? dados.aguas.filter((a) => a.tipo === 'mar').map((a) => a.id) : [],
+      )
     for (const c of dados.colisoes) {
       sinal.throwIfAborted()
       const matriz = new Matrix4().fromArray(c.matriz)
@@ -160,7 +180,11 @@ export async function carregarCenaNoThree(
           geometria: p.geometria,
           matriz: matriz.clone().multiply(p.matriz),
         }
-        fontes.push(f)
+        if (
+          !c.entidade ||
+          (!opcoes.colisoresExternos!.has(c.entidade) && !maresExternos.has(c.entidade))
+        )
+          fontes.push(f)
         if (c.tipo === 'agua' && c.entidade) {
           const fs = fundos.get(c.entidade) ?? []
           fs.push(f)
@@ -183,6 +207,7 @@ export async function carregarCenaNoThree(
       alturas,
       maxTextura,
       opcoes.aguaDinamica !== false,
+      opcoes.marExterno,
     )
     for (const n of dados.nos) {
       sinal.throwIfAborted()
@@ -191,9 +216,11 @@ export async function carregarCenaNoThree(
         grupo = new Group(),
         consulta = criarConsultaDeEntidadesDoNo(n)
       copias.push(instancia)
+      if (n.entidade && opcoes.animacaoExterna!.has(n.entidade)) animacoesExternas.add(instancia)
       if (n.preservarHierarquia || instancia.animavel) atualizaveis.push(instancia)
       instancias.set(n.id, instancia)
       grupo.name = n.id
+      if (n.entidade && maresExternos.has(n.entidade)) grupo.visible = false
       grupo.matrixAutoUpdate = false
       grupo.matrix.fromArray(n.matriz)
       grupo.add(instancia.raiz)
@@ -263,7 +290,8 @@ export async function carregarCenaNoThree(
           throw Error('O passo da cena deve ficar entre zero e um segundo.')
         tempo += delta
         for (const c of atualizaveis) {
-          if (!movimentoReduzido && c.animacoes.length) c.mixer.update(delta)
+          if (!movimentoReduzido && c.animacoes.length && !animacoesExternas.has(c))
+            c.mixer.update(delta)
           c.raiz.updateWorldMatrix(true, true)
         }
         agua.atualizar(tempo, movimentoReduzido)

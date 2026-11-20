@@ -6,11 +6,23 @@ import { MundoDoTeste } from '../src/teste/colisoes'
 test('consultas de setores vizinhos identificam o mesmo triângulo sem confundir instâncias', () => {
   const g = new PlaneGeometry(160, 160),
     mundo = new MundoDoTeste([
-      { geometria: g, matriz: new Matrix4().makeRotationX(-Math.PI / 2) },
-      { geometria: g, matriz: new Matrix4().makeRotationX(-Math.PI / 2).setPosition(0, 4, 0) },
+      { objeto: 'piso', geometria: g, matriz: new Matrix4().makeRotationX(-Math.PI / 2) },
+      {
+        objeto: 'patamar',
+        geometria: g,
+        matriz: new Matrix4().makeRotationX(-Math.PI / 2).setPosition(0, 4, 0),
+      },
     ])
-  const vistos = new Set<string>()
-  const incluir = (instancia: number, triangulo: number) => {
+  const vistos = new Set<string>(),
+    objetos = new Set<string | undefined>(),
+    alturas = new Set<number>()
+  const incluir = (
+    instancia: number,
+    triangulo: number,
+    contexto: { objeto?: string; a: { y: number } },
+  ) => {
+    objetos.add(contexto.objeto)
+    alturas.add(Math.round(contexto.a.y))
     const chave = `${instancia}:${triangulo}`
     if (vistos.has(chave)) return false
     vistos.add(chave)
@@ -22,6 +34,8 @@ test('consultas de setores vizinhos identificam o mesmo triângulo sem confundir
     expect(mundo.triangulosNaCaixa(a, 20000, incluir).length).toBe(36)
     expect(mundo.triangulosNaCaixa(b, 20000, incluir).length).toBe(0)
     expect(vistos.size).toBe(4)
+    expect([...objetos].sort()).toEqual(['patamar', 'piso'])
+    expect([...alturas].sort()).toEqual([0, 4])
     expect(() => mundo.triangulosNaCaixa(a, 1, () => false)).toThrow('triângulos demais')
   } finally {
     mundo.descartar()
