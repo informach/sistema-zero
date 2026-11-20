@@ -177,7 +177,13 @@ runtime. **COEP não foi ligado, e não precisa:** a medição de 20/11
 ([`2026-11-20-studio-firefox-site-isolation.md`](../qa/2026-11-20-studio-firefox-site-isolation.md))
 mostrou que a necessidade de COOP + COEP no Firefox era do Firefox do Playwright, que desliga os
 iframes em outro processo (`fission.webContentIsolationStrategy = 0`). No Firefox de mesa a casca
-isola com qualquer combinação de cabeçalhos do host, também na página da aula com vídeos. O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
+isola com qualquer combinação de cabeçalhos do host, também na página da aula com vídeos.
+
+**Conferência no app logado (20/11, tarde):** [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md).
+O isolamento, o Parar e o conserto passaram no Chrome de verdade; as setas não chegavam ao jogo depois
+de Rodar (conserto `590c6ff48`, com e2e). A página da casca é servida pelo Worker, que só pode sair
+junto de uma imagem qualificada (o Worker confere o perfil de validação contra o da imagem); até lá
+a casca está desligada no staging (`STUDIO_CLASSIC_SHELL_ENABLED=0`). O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
 mede o `srcdoc` do modo direto; no modo casca o documento é o mesmo, entregue por mensagem.
 
 ### 3.3 WebKit: decisão registrada
