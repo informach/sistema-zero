@@ -89,7 +89,17 @@ export interface InvestigationReading {
   canPause: boolean
   pauseLater: boolean
   values: readonly { name: string; text: string }[]
-  error: { lines: readonly number[] } | null
+  /**
+   * O erro: no JavaScript, as linhas do script na pilha; no Python, os passos do traceback com o
+   * arquivo e a linha (`trace`). Os dois de dentro para fora.
+   */
+  error: { lines: readonly number[]; trace?: readonly TraceStep[] } | null
+}
+
+/** Um passo do caminho até o erro no Python: o arquivo do projeto e a linha. */
+export interface TraceStep {
+  file: string
+  line: number
 }
 
 export interface InvestigationWindow {
@@ -105,6 +115,7 @@ export interface InvestigationWindow {
   stopped: {
     frame: number | null
     lines: readonly number[]
+    trace?: readonly TraceStep[]
     values: readonly InvestigationValue[]
   } | null
   receive(reading: InvestigationReading): void
@@ -142,7 +153,12 @@ export function createInvestigationWindow(): StoreApi<InvestigationWindow> {
         stopped:
           get().stopped ??
           (reading.error
-            ? { frame: reading.frame, lines: [...reading.error.lines], values }
+            ? {
+                frame: reading.frame,
+                lines: [...reading.error.lines],
+                ...(reading.error.trace ? { trace: [...reading.error.trace] } : {}),
+                values,
+              }
             : null),
       })
     },

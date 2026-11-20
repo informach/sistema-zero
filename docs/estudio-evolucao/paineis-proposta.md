@@ -146,4 +146,17 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   servidor), e nenhum CI a publica: a medida só funciona em staging depois de uma versão nova da
   distribuição. Até lá, o quadro publicado recusa o comando e a aba diz "Ainda não dá para medir
   este programa aqui." (o tempo do programa sem tela já funciona, é da página).
-- Próximos: Investigar e Meus testes no Python; os três no Pro.
+- **Lote 7 (20/11, noite): Investigar no Python.** "Investigar o programa" recomeça o programa no
+  modo de observação (o observador das missões, que o runtime publicado já tem: lê as variáveis a
+  cada quadro sem mudar o programa). Os valores agora: as variáveis criadas no topo do arquivo,
+  uma por quadro, refeitas a cada meio segundo; no programa sem tela, os valores do fim (a sonda
+  só é respondida no fim, e perguntar enquanto ele roda prenderia a sonda). "Mostrar o bloco" vai
+  pela linha onde a variável nasce. O caminho até o erro vem do traceback: cada passo do projeto
+  com o arquivo e a linha, o texto da linha e "Mostrar o bloco" (o pedido ganhou o alvo por linha,
+  que o editor de blocos do Python resolve, abrindo o outro arquivo quando precisa). Pausar e
+  Avançar 1 quadro no Python ainda não: a aba diz que o Python ainda não pausa pelo Estúdio (a
+  pausa precisa do quadro do Python, que chega com a próxima versão da distribuição). Provas: as
+  funções puras (nomes, traceback, valores), a aba no Python (valores, linha, erro) e, na suíte
+  Python do navegador (homologação), o controlador no modo de observação lendo `WIDTH` e o
+  contador de quadros subindo num jogo de Pygame Zero.
+- Próximos: Pausar no Python e Meus testes no Python; os três no Pro.

@@ -40,6 +40,22 @@ export const INVESTIGATE_COPY: Record<Locale, Record<string, string>> = {
     'inv.path.line': 'Linha {line} do código',
     'inv.path.none': 'O computador não disse por onde o jogo passou.',
     'inv.stoppedValues': 'Valores no momento do erro: {values}',
+    'inv.start.python': 'Investigar o programa',
+    'inv.off.python':
+      'Veja os valores das variáveis enquanto o programa roda e o caminho até um erro. Ao investigar, o programa começa de novo.',
+    'inv.notRunning.python': 'Rode o programa para investigar.',
+    'inv.waiting.python':
+      'O programa está rodando. Os valores aparecem a cada quadro, ou no fim, se ele não desenha na tela.',
+    'inv.running.python': 'O programa está rodando',
+    'inv.cantPause.python':
+      'O Python ainda não pausa pelo Estúdio. Os valores mudam enquanto o programa roda.',
+    'inv.done.python': 'O programa terminou. Estes são os valores do fim.',
+    'inv.values.none.python': 'O programa ainda não tem variáveis para mostrar.',
+    'inv.stopped.python': 'O programa parou',
+    'inv.path.from.python': 'de onde o programa veio',
+    'inv.path.here.python': 'aqui o programa parou',
+    'inv.path.pyLine': '{file}, linha {line}',
+    'inv.path.none.python': 'O Python não disse por onde o programa passou.',
   },
   en: {
     'inv.start': 'Investigate the game',
@@ -75,5 +91,21 @@ export const INVESTIGATE_COPY: Record<Locale, Record<string, string>> = {
     'inv.path.line': 'Line {line} of the code',
     'inv.path.none': "The computer didn't say where the game went.",
     'inv.stoppedValues': 'Values when the error happened: {values}',
+    'inv.start.python': 'Investigate the program',
+    'inv.off.python':
+      'See the values of the variables while the program runs and the path to an error. Investigating starts the program over.',
+    'inv.notRunning.python': 'Run the program to investigate.',
+    'inv.waiting.python':
+      'The program is running. The values show up each frame, or at the end if it does not draw on the screen.',
+    'inv.running.python': 'The program is running',
+    'inv.cantPause.python':
+      "Python can't be paused by the Studio yet. The values change while the program runs.",
+    'inv.done.python': 'The program finished. These are the values at the end.',
+    'inv.values.none.python': 'The program has no variables to show yet.',
+    'inv.stopped.python': 'The program stopped',
+    'inv.path.from.python': 'where the program came from',
+    'inv.path.here.python': 'the program stopped here',
+    'inv.path.pyLine': '{file}, line {line}',
+    'inv.path.none.python': "Python didn't say where the program went.",
   },
 }

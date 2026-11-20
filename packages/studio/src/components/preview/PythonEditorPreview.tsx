@@ -77,6 +77,8 @@ export function PythonEditorPreview() {
     line: number
     column: number
     message: string
+    /** O traceback inteiro (o caminho até o erro da aba Investigar). */
+    traceback?: string
   } | null>(null)
   const classic = python?.kind !== 'pro'
   const runState = useMemo(() => {
@@ -127,6 +129,7 @@ export function PythonEditorPreview() {
   // pintados e manda uma fatia a cada meio segundo. O módulo das janelas entra sob demanda.
   const ui = useUIStoreApi()
   const measuring = useUIStore((state) => state.measuring)
+  const investigating = useUIStore((state) => state.investigating)
   const runId = current.identity?.runId ?? null
   const runningNow = current.status === 'running' || current.status === 'waiting-input'
   const ended =
@@ -158,6 +161,87 @@ export function PythonEditorPreview() {
         time.setState({ endedAt: Date.now() })
     })
   }, [ui, runId, runningNow, ended])
+  // A aba Investigar (proposta aprovada em 20/11/2026: "Valores agora, caminho até o erro").
+  // Ligada, cada Rodar começa no modo de observação (o observador das missões lê as variáveis a
+  // cada quadro, sem mudar o programa); ligar ou desligar recomeça o programa, como o JavaScript.
+  const statusRef = useRef(current.status)
+  statusRef.current = current.status
+  const investigatingBefore = useRef(investigating)
+  useEffect(() => {
+    if (investigatingBefore.current === investigating) return
+    investigatingBefore.current = investigating
+    if (commands && statusRef.current !== 'idle') commands.run()
+  }, [investigating, commands])
+  const entrySource =
+    python && python.kind !== 'pro' ? (python.files[python.python.entrypoint] ?? '') : ''
+  const investigatedRun =
+    investigating && runId !== null && (runningNow || current.status === 'completed')
+  const completedNow = current.status === 'completed'
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runId` é o GATILHO (uma execução nova lê de novo)
+  useEffect(() => {
+    const controller = controllerRef.current
+    if (!investigatedRun || !controller) return
+    // O programa sem tela só responde no fim: perguntar enquanto ele roda prenderia a sonda.
+    if (drawsOnCanvas === false && !completedNow) return
+    let gone = false
+    void import('../../components/devtools/pythonInvestigation').then(async (help) => {
+      const { investigationWindowFor } = await import('../../state/devtools')
+      const names = help.pythonTopLevelNames(entrySource)
+      const window = investigationWindowFor(ui)
+      const read = async () => {
+        const values: { name: string; text: string }[] = []
+        for (const name of names) {
+          if (gone) return
+          const result = await controller.observe({ type: 'value', path: name })
+          const observed = result.observation.type === 'value' ? result.observation.observed : null
+          if (observed?.found) values.push({ name, text: help.pythonValueText(observed.value) })
+        }
+        if (!gone)
+          window.getState().receive({
+            frame: null,
+            paused: false,
+            canPause: false,
+            pauseLater: false,
+            values,
+            error: null,
+          })
+      }
+      // Rodando, a leitura volta a cada meio segundo; terminado, uma vez (os valores do fim).
+      while (!gone) {
+        try {
+          await read()
+        } catch {
+          // A execução acabou no meio da leitura (Parar, erro): a próxima execução lê de novo.
+          return
+        }
+        if (completedNow) return
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+    })
+    return () => {
+      gone = true
+    }
+  }, [investigatedRun, completedNow, drawsOnCanvas, entrySource, ui, runId])
+  // O erro que parou o programa vira o caminho até o erro (os passos do traceback do projeto).
+  const traceback = investigating ? (diagnostic?.traceback ?? null) : null
+  useEffect(() => {
+    if (!traceback) return
+    void Promise.all([
+      import('../../components/devtools/pythonInvestigation'),
+      import('../../state/devtools'),
+    ]).then(([help, { investigationWindowFor }]) => {
+      const window = investigationWindowFor(ui)
+      const state = window.getState()
+      window.getState().receive({
+        frame: null,
+        paused: false,
+        canPause: false,
+        pauseLater: false,
+        values: state.values.map(({ name, text }) => ({ name, text })),
+        error: { lines: [], trace: help.pythonTraceSteps(traceback) },
+      })
+    })
+  }, [traceback, ui])
   // biome-ignore lint/correctness/useExhaustiveDependencies: `runId` é o GATILHO (uma execução nova religa a medida)
   useEffect(() => {
     const controller = controllerRef.current
@@ -198,6 +282,7 @@ export function PythonEditorPreview() {
       canExecute={execution.editingAccess === 'author'}
       canExecuteNow={() => store.getState().editingAccess === 'author'}
       autoRun={execution.autoRun}
+      observation={investigating}
       muted={execution.muted}
       writerEpoch={execution.writerEpoch}
       capture={capture}
@@ -241,6 +326,7 @@ export function PythonEditorPreview() {
                 line: event.line,
                 column: event.column,
                 message: event.message,
+                ...(event.traceback ? { traceback: event.traceback } : {}),
               },
           )
           pushLog({

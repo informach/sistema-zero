@@ -61,7 +61,7 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
     )
   }
   return {
-    async create(slot: string, fixture: string) {
+    async create(slot: string, fixture: string, options: { observation?: boolean } = {}) {
       const previous = entries.get(slot)
       if (previous) {
         await previous.controller.dispose()
@@ -96,6 +96,8 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
         environment: () => environment,
         canExecute: () => get(slot).allowed,
         writerEpoch: () => get(slot).writerEpoch,
+        // A aba Investigar do editor: cada Rodar no modo de observação.
+        observation: () => options.observation === true,
         onEvent: (event) => {
           if (get(slot).events.length < 2048) get(slot).events.push(event)
         },
@@ -117,6 +119,7 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
     run: (slot: string) => get(slot).controller.run(),
     stop: (slot: string) => get(slot).controller.stop(),
     capture: (slot: string) => get(slot).controller.capture(),
+    observe: (slot: string, path: string) => get(slot).controller.observe({ type: 'value', path }),
     input: (slot: string, requestId: string, response: StudioRuntimeInput) =>
       get(slot).controller.input(requestId, response),
     evaluate: (slot: string, requestId: string, source: string) =>

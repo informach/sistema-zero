@@ -130,7 +130,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     canvas: true,
   }
 
-  it('no Python, por enquanto, só o Desempenho (Investigar e Meus testes vêm nos lotes deles)', () => {
+  it('no Python, por enquanto, Investigar e Desempenho (Meus testes vem no lote dele)', () => {
     const { stores, wrap } = setup()
     act(() =>
       stores.project.setState({
@@ -143,7 +143,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
     expect(abas).toContain('Desempenho')
-    expect(abas).not.toContain('Investigar')
+    expect(abas).toContain('Investigar')
     expect(abas).not.toContain('Meus testes')
   })
 
@@ -229,6 +229,92 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     expect(screen.getByText(/os primeiros números chegam/)).toBeTruthy()
     act(() => perfWindowFor(stores.ui).getState().refuse())
     expect(screen.getByText('Ainda não dá para medir este programa aqui.')).toBeTruthy()
+  })
+
+  it('Investigar no Python: os valores, o "Mostrar o bloco" pela linha e o caminho até o erro', async () => {
+    const { stores, wrap } = setup()
+    const python = {
+      ...createEmptyProject('01J0000000000000000000PYTH', 'Contas'),
+      programmingLanguage: 'python',
+      kind: 'classic',
+      python: { entrypoint: 'main.py' },
+      files: {
+        'main.py': ['pontos = 0', 'vidas = 3', 'print(pontos)', ''].join('\n'),
+        'inimigos.py': ['def mover():', '    velocidade + 1', ''].join('\n'),
+      },
+    }
+    act(() => {
+      stores.project.setState({ project: python as never })
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        )
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Investigar o programa' }))
+    expect(stores.ui.getState().investigating).toBe(true)
+    act(() =>
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive({
+          frame: null,
+          paused: false,
+          canPause: false,
+          pauseLater: false,
+          values: [
+            { name: 'pontos', text: '0' },
+            { name: 'vidas', text: '3' },
+          ],
+          error: null,
+        }),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('O programa está rodando')).toBeTruthy()
+    expect(within(painel).getByText(/O Python ainda não pausa pelo Estúdio/)).toBeTruthy()
+    fireEvent.click(
+      within(painel).getAllByRole('button', { name: 'Mostrar o bloco' })[1] as HTMLElement,
+    )
+    expect(stores.highlight.getState().revealRequest?.target).toEqual({
+      kind: 'line',
+      file: 'main.py',
+      line: 2,
+    })
+    // O programa parou com erro: o caminho vem do traceback, de onde ele veio até onde parou.
+    act(() => {
+      stores.proRun.getState().publish(
+        {
+          phase: 'error',
+          canRun: true,
+          canStop: false,
+          errorKind: 'runtime',
+          errorHint: 'Você usou algo que ainda não existe.',
+        },
+        { run: () => {}, stop: () => {} },
+      )
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive({
+          frame: null,
+          paused: false,
+          canPause: false,
+          pauseLater: false,
+          values: [{ name: 'pontos', text: '0' }],
+          error: {
+            lines: [],
+            trace: [
+              { file: 'inimigos.py', line: 2 },
+              { file: 'main.py', line: 3 },
+            ],
+          },
+        })
+    })
+    expect(within(painel).getByText('O programa parou')).toBeTruthy()
+    expect(within(painel).getByText('print(pontos)')).toBeTruthy()
+    expect(within(painel).getByText('velocidade + 1')).toBeTruthy()
+    expect(within(painel).getByText('aqui o programa parou')).toBeTruthy()
   })
 
   it('no Python que não desenha, o tempo que o programa levou', async () => {

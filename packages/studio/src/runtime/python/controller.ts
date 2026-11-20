@@ -3,6 +3,7 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import type { StudioPythonMissionProbe } from '@sistemazero/core/studio/python-mission-observation'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../environment'
 import { assertStudioRuntimeExecutionAccess, assertStudioRuntimeOperationAccess } from '../registry'
@@ -60,6 +61,11 @@ export function createPythonExecutionController(options: {
   onEvent?(event: StudioRuntimeEvent): void
   /** A dedicated formative generation; absent for ordinary editor/public playback. */
   pythonActivity?: StudioPythonActivity
+  /**
+   * A aba Investigar do editor: a execução começa no modo de observação (o observador das
+   * missões, que lê as variáveis a cada quadro sem mudar o programa). Lido a cada Rodar.
+   */
+  observation?(): boolean
 }) {
   const activity =
     options.pythonActivity === undefined
@@ -229,6 +235,7 @@ export function createPythonExecutionController(options: {
           },
         },
         ...(activity ? { pythonActivity: activity } : {}),
+        ...(!activity && options.observation?.() ? { pythonMission: true as const } : {}),
       })
       current.session = session
       requireOwner(current, true)
@@ -376,6 +383,20 @@ export function createPythonExecutionController(options: {
           : null,
       )
       requireOwner(current)
+    },
+    /**
+     * A aba Investigar: lê um valor do programa (uma variável, `a.b.c` no máximo quatro nomes)
+     * no próximo quadro, ou no fim quando o programa já terminou. Só numa execução que começou no
+     * modo de observação; nunca muda o programa.
+     */
+    async observe(probe: StudioPythonMissionProbe) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.observePythonMission)
+        throw new Error('Esta execução não começou no modo de observação.')
+      const result = await session.observePythonMission(probe)
+      requireOwner(current)
+      return result
     },
     async input(requestId: string, response: StudioRuntimeInput) {
       const { current, session } = await active()
