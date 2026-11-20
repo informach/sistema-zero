@@ -3,8 +3,8 @@ import { extensionBootstrapContext, loadExtensionBootstrapScripts } from '#exten
 import { gameTwoDExtension } from '../../official-extensions/game-2d'
 import { gameThreeDExtension } from '../../official-extensions/game-3d'
 import { gameThreeDRuntimeForVariant } from '../../official-extensions/game-3d/runtime'
-import { worldThreeDExtension } from '../../official-extensions/world-3d'
 import { THREE_INVESTIGATION_VARIANT } from '../../official-extensions/three3dInvestigation'
+import { worldThreeDExtension } from '../../official-extensions/world-3d'
 import { world3DRuntimeForVariant } from '../../official-extensions/world-3d/runtime'
 import { loadDevtoolsExtensionScripts } from '../devtoolsBridge'
 
