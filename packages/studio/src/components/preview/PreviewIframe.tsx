@@ -95,7 +95,7 @@ export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
   // Casca em outro site (lote 3.2): o jogo roda num `srcdoc` dentro de uma página de outra
   // origem. Desligada sem `shellUrl`; nunca junto do adaptador de origem nem da sala isolada.
-  const shell = useMemo(() => {
+  const configuredShell = useMemo(() => {
     if (!execution.shellUrl || execution.originAdapter || execution.requireIsolatedPreview)
       return null
     if (typeof window === 'undefined') return null
@@ -106,6 +106,11 @@ export function PreviewIframe(): JSX.Element {
       return null
     }
   }, [execution.shellUrl, execution.originAdapter, execution.requireIsolatedPreview])
+  // A casca que não avisa que está pronta (rota sem as origens, origem barrada, rede) não pode
+  // deixar o palco mudo com a barra dizendo "rodando" (revisão da missão, achado E5): depois de
+  // `SHELL_READY_TIMEOUT_MS` a prévia volta ao documento direto e avisa no console do jogo.
+  const [shellFailedFor, setShellFailedFor] = useState<string | null>(null)
+  const shell = configuredShell && shellFailedFor !== configuredShell.url ? configuredShell : null
   const projectStore = useProjectStoreApi()
   const persistence = useStudioPersistence()
   const pendingEdits = usePendingEditorEdits()
@@ -848,6 +853,19 @@ export function PreviewIframe(): JSX.Element {
   const frameGenerationRef = useRef(frameGeneration)
   frameGenerationRef.current = frameGeneration
   const shellReady = shell !== null && !frameAbsent && shellReadyGeneration === frameGeneration
+  useEffect(() => {
+    if (!shell || shellReady || frameAbsent) return
+    const timer = setTimeout(() => {
+      setShellFailedFor(shell.url)
+      pushLog({
+        source: 'sz-preview',
+        kind: 'warn',
+        parts: ['A prévia isolada não respondeu; o jogo roda no modo de sempre.'],
+        timestamp: Date.now(),
+      })
+    }, SHELL_READY_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [shell, shellReady, frameAbsent, pushLog])
   useLayoutEffect(() => {
     if (frameAbsent) {
       recordDocumentAttempt(null)
@@ -1362,6 +1380,8 @@ const STORAGE_FLUSH_MS = 500
 const UNRESPONSIVE_AFTER_MS = 2500
 /** Um documento novo que não carregou neste tempo está esperando um jogo preso. */
 const SWAP_STUCK_AFTER_MS = 3000
+/** Quanto a casca em outro site tem para avisar que está pronta antes do recuo ao documento direto. */
+const SHELL_READY_TIMEOUT_MS = 4000
 /** Intervalos sem iframe na troca de um jogo preso; cada nova tentativa espera mais. */
 const FRAME_GAPS_MS = [200, 1200, 3500] as const
 

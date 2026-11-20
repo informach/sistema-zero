@@ -384,6 +384,43 @@ describe('PreviewIframe', () => {
     }
   })
 
+  it('a casca em outro site que nunca fica pronta volta ao documento direto e avisa', async () => {
+    // Revisão da missão (achado E5): sem `sz-shell:ready` o documento nunca era enviado e o palco
+    // ficava vazio com a barra dizendo "rodando".
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    const happyDOM = (window as unknown as { happyDOM?: { setURL(url: string): void } }).happyDOM
+    const previousURL = window.location.href
+    happyDOM?.setURL('http://localhost:5173/estudio')
+    useLogsStore.setState({ entries: [] })
+    try {
+      render(
+        <StudioExecutionProvider
+          value={{
+            editingAccess: 'author',
+            autoRun: true,
+            requireIsolatedPreview: false,
+            muted: false,
+            shellUrl: 'https://casca.exemplo.test/v1/classic-shell/1.html',
+          }}
+        >
+          <PreviewIframe />
+        </StudioExecutionProvider>,
+      )
+      expect(screen.getByTitle('Pré-visualização').getAttribute('src')).toBe(
+        'https://casca.exemplo.test/v1/classic-shell/1.html',
+      )
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'), {
+        timeout: 6000,
+      })
+      expect(screen.getByTitle('Pré-visualização').getAttribute('src')).toBeNull()
+      expect(
+        useLogsStore.getState().entries.some((entry) => entry.text.includes('prévia isolada')),
+      ).toBe(true)
+    } finally {
+      happyDOM?.setURL(previousURL)
+    }
+  }, 10_000)
+
   // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo
   // iframe espera o cálculo, um iframe novo roda na hora (medido no navegador, ver
   // `e2e/preview-hostile-programs.spec.ts`). No caminho normal o iframe NÃO pode ser trocado.
