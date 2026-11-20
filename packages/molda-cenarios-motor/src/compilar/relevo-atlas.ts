@@ -134,7 +134,63 @@ export function comporAtlasDoRelevo(
       atlas.set(fonte.subarray(de, de + lado * 4), ((y0 + y) * plano.largura + x0) * 4)
     }
   }
+  estenderCelulasVazias(atlas, plano)
   return atlas
+}
+
+/**
+ * A célula sem peça repete a borda da vizinha mais próxima, como a textura original fazia ao
+ * prender a borda (clamp). Vazia (transparente), o filtro e os mipmaps misturariam a beira da
+ * peça com o vazio, e de longe a beira do chão ou do mar escureceria.
+ */
+function estenderCelulasVazias(atlas: Uint8Array, plano: PlanoDoAtlas) {
+  const { colunas, linhas, ladrilho: lado, largura } = plano,
+    ocupadas = new Set(plano.celulas.map((c) => `${c.coluna}/${c.linha}`)),
+    tem = (c: number, l: number) =>
+      c >= 0 && l >= 0 && c < colunas && l < linhas && ocupadas.has(`${c}/${l}`),
+    copiar = (x: number, y: number, deX: number, deY: number) => {
+      const de = (deY * largura + deX) * 4
+      atlas.copyWithin((y * largura + x) * 4, de, de + 4)
+    }
+  for (let l = 0; l < linhas; l++)
+    for (let c = 0; c < colunas; c++) {
+      if (tem(c, l)) continue
+      const x0 = c * lado,
+        y0 = l * lado,
+        esquerda = tem(c - 1, l),
+        direita = tem(c + 1, l),
+        acima = tem(c, l - 1),
+        abaixo = tem(c, l + 1)
+      if (esquerda || direita || acima || abaixo) {
+        for (let y = 0; y < lado; y++)
+          for (let x = 0; x < lado; x++) {
+            let melhor = Infinity,
+              deX = 0,
+              deY = 0
+            if (esquerda && x + 1 < melhor) [melhor, deX, deY] = [x + 1, x0 - 1, y0 + y]
+            if (direita && lado - x < melhor) [melhor, deX, deY] = [lado - x, x0 + lado, y0 + y]
+            if (acima && y + 1 < melhor) [melhor, deX, deY] = [y + 1, x0 + x, y0 - 1]
+            if (abaixo && lado - y < melhor) [melhor, deX, deY] = [lado - y, x0 + x, y0 + lado]
+            copiar(x0 + x, y0 + y, deX, deY)
+          }
+        continue
+      }
+      // Só vizinhas na diagonal: cada quarto da célula repete o canto mais perto dele.
+      for (const [dc, dl] of [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1],
+      ] as const) {
+        if (!tem(c + dc, l + dl)) continue
+        const deX = dc < 0 ? x0 - 1 : x0 + lado,
+          deY = dl < 0 ? y0 - 1 : y0 + lado,
+          [xDe, xAte] = dc < 0 ? [0, Math.ceil(lado / 2)] : [Math.floor(lado / 2), lado],
+          [yDe, yAte] = dl < 0 ? [0, Math.ceil(lado / 2)] : [Math.floor(lado / 2), lado]
+        for (let y = yDe; y < yAte; y++)
+          for (let x = xDe; x < xAte; x++) copiar(x0 + x, y0 + y, deX, deY)
+      }
+    }
 }
 
 /**
