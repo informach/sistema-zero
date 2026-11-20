@@ -5,17 +5,22 @@ import {
   Bone,
   BufferAttribute,
   BufferGeometry,
+  Color,
+  DirectionalLight,
+  Fog,
   Group,
   Matrix4,
   MeshStandardMaterial,
   NumberKeyframeTrack,
   PointLight,
   Raycaster,
+  Scene,
   Skeleton,
   SkinnedMesh,
   Vector3,
 } from 'three'
 import { ArquivosDaCompilacao } from '../src/compilar/arquivos'
+import { criarInstaladorDeCenasThree } from '../src/compilar/instalar-three'
 import { carregarCenaDoEndereco } from '../src/compilar/runtime-http'
 import { instanciarModeloCompilado } from '../src/compilar/runtime-modelos'
 import { carregarCenaNoThree } from '../src/compilar/runtime-three'
@@ -107,6 +112,41 @@ async function pacote(comentario = ''): Promise<PacoteCompilado> {
   })
   return { cena, arquivos: new Map(a.arquivos) }
 }
+
+test('perfil de jogo conserva céu e iluminação globais e instala as luzes locais do cenário', async () => {
+  const alvo = new Scene(),
+    fundo = new Color('#123456'),
+    nevoa = new Fog('#234567', 100, 2000)
+  alvo.background = fundo
+  alvo.fog = nevoa
+  const instalador = criarInstaladorDeCenasThree(
+    async (_id, sinal, opcoes) => carregarCenaNoThree(await pacote(), sinal, opcoes),
+    () => ({}),
+  )
+  try {
+    const local = await instalador.instalar('local', alvo, new AbortController().signal, {
+      ambiente: 'luzes-locais',
+    })
+    expect(alvo.background).toBe(fundo)
+    expect(alvo.fog).toBe(nevoa)
+    const luzes: string[] = []
+    local.cena.traverse((n) => {
+      if (n instanceof PointLight || n instanceof DirectionalLight) luzes.push(n.type)
+    })
+    expect(luzes).toEqual(['PointLight'])
+    await instalador.instalar('completo', alvo, new AbortController().signal)
+    expect(alvo.background).not.toBe(fundo)
+    await instalador.instalar('local-2', alvo, new AbortController().signal, {
+      ambiente: 'luzes-locais',
+    })
+    expect(alvo.background).toBe(fundo)
+    expect(alvo.fog).toBe(nevoa)
+  } finally {
+    instalador.descartar()
+  }
+  expect(alvo.children).toHaveLength(0)
+  expect(alvo.background).toBe(fundo)
+})
 
 test('runtime funciona sem Palco/renderer, preserva matrizes, física, dados e descarte', async () => {
   const p = await pacote(),

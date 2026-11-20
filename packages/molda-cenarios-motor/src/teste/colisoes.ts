@@ -143,7 +143,11 @@ export class MundoDoTeste {
   }
 
   /** Triângulos reais em mundo, limitados por região e orçamento, reutilizando as árvores. */
-  triangulosNaCaixa(caixa: Box3, maximo = 20_000): Float64Array {
+  triangulosNaCaixa(
+    caixa: Box3,
+    maximo = 20_000,
+    incluir?: (instancia: number, triangulo: number) => boolean,
+  ): Float64Array {
     if (this.descartado) throw new Error('A consulta de superfícies já foi encerrada')
     if (!Number.isSafeInteger(maximo) || maximo < 1 || maximo > 100_000)
       throw new Error('O orçamento da consulta de triângulos é inválido')
@@ -157,7 +161,7 @@ export class MundoDoTeste {
         local = caixa.clone().applyMatrix4(entrada.inversa)
       entrada.arvore.shapecast({
         intersectsBounds: (b) => b.intersectsBox(local),
-        intersectsTriangle: (t) => {
+        intersectsTriangle: (t, triangulo) => {
           if (++visitas > maximo)
             throw new Error('A região contém triângulos demais para preparar os apoios')
           this.triangulo.copy(t)
@@ -166,6 +170,9 @@ export class MundoDoTeste {
           this.triangulo.c.applyMatrix4(entrada.matriz)
           this.caixa.setFromPoints([this.triangulo.a, this.triangulo.b, this.triangulo.c])
           if (!this.caixa.intersectsBox(caixa)) return false
+          // Identidade estável da instância/BVH: setores vizinhos podem compartilhar
+          // triângulos sem duplicá-los ou comparar coordenadas arredondadas.
+          if (incluir && !incluir(i, triangulo)) return false
           for (const p of [this.triangulo.a, this.triangulo.b, this.triangulo.c])
             posicoes.push(p.x, p.y, p.z)
           return false

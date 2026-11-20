@@ -67,6 +67,19 @@ Preservar a paleta existente: fundo creme/claro `mld-bg`, superfície clara `mld
 
 ## 4. Perfil e carregador nativos no Arquipélago
 
+### Contratos e cuidados observados durante a execução
+
+- A leitura agora tem porta própria opcional em `Plataforma.cenarios`, com respostas no formato existente `RespostaDoServico`. O host usa o BFF publicado e prova de perfil; o jogo não recebe sessão nem chave privada. `lerCenarioPublicado` confere manifesto/fonte/recursos antes do runtime, compartilha aliases por digest e diferencia ausência explícita de falha.
+- `lerPerfilDeCenario` interpreta os nomes `arquipelago.*` que o conversor já preserva. Matrizes e marcos estão em coordenadas globais: não somar novamente o centro da ilha. Íris continua sendo única por ilha/interativo; parâmetros inválidos são recusados antes da ativação. Propriedades desconhecidas permanecem nos dados canônicos.
+- O conversor `converterFaiscaV1` inclui terreno das **sete** ilhas no documento inicial. Não ativar esse pacote sobre os terrenos antigos nem presumir que seu retângulo cubra somente a Faísca. A substituição e o LOD precisam considerar a cobertura real, preservando as ilhas e o oceano compartilhado.
+- Os setores nativos têm lado **80 m** e raio de vizinhança **2**. A preparação da colisão reutiliza o BVH compilado e a identidade instância/triângulo; não corta tabuleiros nas bordas, não duplica triângulos entre consultas e não cria piso sob recortes. Mantém o teto canônico de 20 mil visitas por região, com orçamento agregado explícito.
+- O instalador foi extraído do Estúdio para a entrada restrita `motor/instalar`, com a física dos quatro motores permanecendo no adaptador do Estúdio. O modo `luzes-locais` do runtime permite conservar céu/ciclo do dia do jogo e acrescentar as luminárias da composição. O padrão dos outros consumidores continua completo.
+- O Three 0.184 instalado oferece `compileAsync(objeto, camera, targetScene)` e reúne luzes do objeto e da cena de destino. Usar essa capacidade no preparo GPU para considerar as luzes/fog do jogo antes de inserir a nova cena; não compilar apenas contra um ambiente vazio.
+- A Íris atual clona o GLTF e possui mixer/rotina/interativo próprios. As instâncias compiladas já possuem ossos, clipes remapeados por UUID e mixer. A integração precisa aproveitar a rotina existente com propriedade clara da instância/animação, evitando clonagem adicional com UUIDs inválidos, mixer atualizado duas vezes e descarte duplo de esqueletos.
+- Conferir os papéis físicos recuperados antes de registrar colisores: a cápsula genérica usa o volume do modelo (`motor/teste/fontes.ts`), enquanto o tronco nativo usa raio próprio. Fundações importadas também permanecem como propriedades. Matrizes já estão assentadas; não repetir deslocamentos de implantação. Preservar os grupos nativos do corpo/câmera em vez de transformar todas as colisões em uma única categoria.
+
+Essas notas não significam consumidor ativo: `cenario-publicado.tsx`, a composição nativa, salvamento por versão e a prova no `/macro` continuam pendentes.
+
 **Files:** `arquipelago/src/sistemas/perfil-de-cenario.ts`, `mundo/cenario-publicado.tsx`, portas/plataforma e composição macro existentes. Se a integração exigir instalar ambiente/trocar base, extrair o instalador canônico para `motor/runtime` com reexports compatíveis; não duplicar o algoritmo do Studio.
 
 - [ ] Testes vermelhos do perfil: atores/placas/marcos/parâmetros físicos e propriedades desconhecidas, coordenadas da ilha, chegada e vínculo com os sistemas existentes. Nenhum motor novo de NPC, câmera, inventário ou navegação.
