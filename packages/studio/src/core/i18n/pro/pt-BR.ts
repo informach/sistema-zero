@@ -44,6 +44,7 @@ export const ptBR: Record<string, string> = {
   'pro.dock.messages.game': 'Mensagens do jogo',
   'pro.dock.messages.program': 'Mensagens do programa',
   'pro.dock.problems': 'Problemas',
+  'pro.dock.performance': 'Desempenho',
   'pro.dock.terminal': 'Terminal',
   'pro.dock.advanced': 'avançado',
   'pro.dock.repl': 'Experimentar comandos',

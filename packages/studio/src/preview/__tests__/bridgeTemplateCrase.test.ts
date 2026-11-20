@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { buildAudioRuntime } from '../audioBridge'
+import { buildDevtoolsBridgeRuntime } from '../devtoolsBridge'
 import { buildInputBridgeRuntime, buildInputRuntime } from '../inputBridge'
 import { buildLoopGuardRuntime } from '../loopGuard'
 import { buildModalGuardRuntime } from '../modalGuard'
@@ -36,6 +37,7 @@ const RUNTIMES: Array<[string, () => string]> = [
     () => buildSnapshotBridgeRuntime({ parentOrigin: 'https://x.test' }),
   ],
   ['storageBridge', () => buildStorageBridgeRuntime()],
+  ['devtoolsBridge', () => buildDevtoolsBridgeRuntime('https://x.test')],
   ['audioBridge', () => buildAudioRuntime()],
   ['inputBridge', () => buildInputRuntime()],
   ['inputBridge (bridge)', () => buildInputBridgeRuntime()],

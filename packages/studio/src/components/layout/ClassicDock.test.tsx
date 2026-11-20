@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createEmptyProject } from '#core'
+import { perfWindowFor } from '../../state/devtools'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
@@ -43,11 +44,11 @@ const runtimeError = {
 afterEach(cleanup)
 
 describe('ClassicDock', () => {
-  it('começa fechada: só as abas Mensagens do jogo e Problemas, sem corpo aberto', () => {
+  it('começa fechada: só as abas Mensagens do jogo, Problemas e Desempenho, sem corpo aberto', () => {
     const { wrap } = setup()
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
-    expect(abas).toEqual(['Mensagens do jogo', 'Problemas'])
+    expect(abas).toEqual(['Mensagens do jogo', 'Problemas', 'Desempenho'])
     expect(
       screen.getAllByRole('tab').every((tab) => tab.getAttribute('aria-selected') === 'false'),
     ).toBe(true)
@@ -104,6 +105,76 @@ describe('ClassicDock', () => {
     expect(screen.queryByRole('button', { name: 'Fechar a gaveta' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar o bloco' }))
     expect(onRevealBlock).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
+  const fatia = { fps: 22, frameMsAvg: 45, frameMsMax: 120, sprites: 2, canvas: true }
+
+  it('ainda não existe no Python (o Python ganha a aba no lote dele)', () => {
+    const { stores, wrap } = setup()
+    act(() =>
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Meu programa'),
+          programmingLanguage: 'python',
+        } as never,
+      }),
+    )
+    render(wrap(<ClassicDock />))
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).not.toContain('Desempenho')
+  })
+
+  it('liga a medida pelo botão e mostra os números do jogo, cada um com a sua marca', async () => {
+    const { stores, wrap } = setup()
+    act(() =>
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        ),
+    )
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    const medir = await screen.findByRole('switch', { name: 'Medir o desempenho' })
+    expect(medir.getAttribute('aria-checked')).toBe('false')
+    fireEvent.click(medir)
+    expect(stores.ui.getState().measuring).toBe(true)
+    act(() => perfWindowFor(stores.ui).getState().push(fatia))
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('22')).toBeTruthy()
+    expect(within(painel).getByText('45')).toBeTruthy()
+    // A memória do jogo o navegador não informa: sem leitura, marcada como indisponível.
+    expect(within(painel).getAllByText('Sem leitura')).toHaveLength(1)
+    expect(within(painel).getAllByText('indisponível')).toHaveLength(1)
+    expect(within(painel).getAllByText('medido')).toHaveLength(3)
+    expect(within(painel).getByText(/o jogo ficou lento 1 vez/)).toBeTruthy()
+    expect(within(painel).getByText('O quadro mais lento levou 120 ms.')).toBeTruthy()
+  })
+
+  it('numa página sem canvas, diz que não há quadros de jogo para medir', async () => {
+    const { stores, wrap } = setup()
+    act(() => stores.ui.getState().setClassicDock('performance'))
+    act(() => stores.ui.getState().setMeasuring(true))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('switch', { name: 'Parar de medir' })
+    act(() =>
+      perfWindowFor(stores.ui)
+        .getState()
+        .push({ ...fatia, sprites: null, canvas: false }),
+    )
+    expect(await screen.findByText('Esta página não tem quadros de jogo para medir.')).toBeTruthy()
+  })
+
+  it('fechar a gaveta desliga a medida (o jogo volta ao documento de sempre)', async () => {
+    const { stores, wrap } = setup()
+    act(() => stores.ui.getState().setClassicDock('performance'))
+    render(wrap(<ClassicDock />))
+    fireEvent.click(await screen.findByRole('switch', { name: 'Medir o desempenho' }))
+    expect(stores.ui.getState().measuring).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar a gaveta' }))
+    expect(stores.ui.getState().measuring).toBe(false)
   })
 })
 

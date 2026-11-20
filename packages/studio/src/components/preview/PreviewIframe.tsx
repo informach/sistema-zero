@@ -50,7 +50,7 @@ import { previewErrorLocation, useLogsStore } from '../../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { usePendingEditorEdits, useStudioPersistence } from '../../state/studioStores'
-import { useUIStore } from '../../state/uiStore'
+import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
@@ -97,8 +97,14 @@ export function chosenCoverPausesSnapshots(
   return project ? resolveCoverAsset(project) !== null : false
 }
 
+/** A ponte das abas Investigar e Desempenho, baixada só quando a medida liga. */
+type DevtoolsBridgeModule = typeof import('../../preview/devtoolsBridge')
+
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
+  // A aba Desempenho pediu a medida: o jogo é montado com a ponte (e recomeça ao ligar/desligar).
+  const measuring = useUIStore((s) => s.measuring)
+  const ui = useUIStoreApi()
   // Casca em outro site (lote 3.2): o jogo roda num `srcdoc` dentro de uma página de outra
   // origem. Desligada sem `shellUrl`; nunca junto do adaptador de origem nem da sala isolada.
   const configuredShell = useMemo(() => {
@@ -169,6 +175,23 @@ export function PreviewIframe(): JSX.Element {
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  // A ponte (e quem escuta as fatias dela) só é baixada quando a medida liga: no pacote de
+  // abertura do modo Blocos ela pesaria para todos. As fatias chegam do MESMO iframe.
+  const [devtoolsBridge, setDevtoolsBridge] = useState<DevtoolsBridgeModule | null>(null)
+  useEffect(() => {
+    if (!measuring) return
+    let stop: (() => void) | undefined
+    let alive = true
+    void import('../../preview/devtoolsBridge').then((m) => {
+      if (!alive) return
+      setDevtoolsBridge(m)
+      stop = m.listenToDevtoolsPerf(() => iframeRef.current?.contentWindow, ui)
+    })
+    return () => {
+      alive = false
+      stop?.()
+    }
+  }, [measuring, ui])
   const touchInput = useTouchInput()
   const usesKeyboardControls = useMemo(() => projectUsesKeyboardControls(ir), [ir])
   const sendVirtualGamepadInput = useCallback((input: VirtualGamepadInput) => {
@@ -699,21 +722,28 @@ export function PreviewIframe(): JSX.Element {
     if (previewPaused) return PAUSED_PREVIEW_DOC
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
     if (!documentResourcesReady) return PAUSED_PREVIEW_DOC
+    // Na casca, o `parent` do jogo é a casca: as mensagens do jogo vão a ela, que as repassa.
+    const parentOrigin =
+      shell?.origin ?? (typeof window !== 'undefined' ? window.location.origin : undefined)
+    // A medida da aba Desempenho: a ponte entra como mais um script confiável, depois dos motores,
+    // com o registro dos inspetores ligado (o documento de sempre não muda um byte).
+    const devtoolsRuntime =
+      measuring && devtoolsBridge ? devtoolsBridge.buildDevtoolsBridgeRuntime(parentOrigin) : null
     const base = buildJavaScriptClassicDocument({
       html: debouncedHtml,
       css: debouncedCss,
       js: debouncedJs,
       resources: {
-        extensionScripts,
+        extensionScripts: devtoolsRuntime
+          ? [...extensionScripts, devtoolsRuntime]
+          : extensionScripts,
         extensionImports,
         installedPermissions,
         gameUiFont: gameUiFontState.bundle ?? undefined,
         cenas3d: moduloDeCenas,
       },
       extraFiles: debouncedExtraFiles,
-      // Na casca, o `parent` do jogo é a casca: as mensagens do jogo vão a ela, que as repassa.
-      parentOrigin:
-        shell?.origin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
+      parentOrigin,
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
       loopBudgetMs: previewSecurity.loopBudgetMs,
       // Semeia o estado salvo (lido do ref: deliberadamente FORA das deps do memo
@@ -727,6 +757,7 @@ export function PreviewIframe(): JSX.Element {
       sounds: soundsManifest,
       models3d: models3dManifest,
       cenas3d: transporteDeCenas,
+      runtimeInspection: devtoolsRuntime !== null,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -758,6 +789,8 @@ export function PreviewIframe(): JSX.Element {
     renderNonce,
     execution.editingAccess,
     shell?.origin,
+    measuring,
+    devtoolsBridge,
   ])
 
   // Keep the committed game while the next document's resources are loading.

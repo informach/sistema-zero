@@ -44,6 +44,7 @@ export const en: Record<string, string> = {
   'pro.dock.messages.game': 'Game messages',
   'pro.dock.messages.program': 'Program messages',
   'pro.dock.problems': 'Problems',
+  'pro.dock.performance': 'Performance',
   'pro.dock.terminal': 'Terminal',
   'pro.dock.advanced': 'advanced',
   'pro.dock.repl': 'Try commands',

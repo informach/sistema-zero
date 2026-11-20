@@ -1,6 +1,7 @@
 # Investigar, Desempenho e Meus testes: a proposta (20/11/2026)
 
-Etapa 9 do plano de 20/11, parte 2. Proposta inteira, para aprovação antes de qualquer tela:
+Etapa 9 do plano de 20/11, parte 2. **Aprovada pela dona em 20/11/2026**; a interface segue esta
+proposta à risca. Pranchas:
 https://claude.ai/artifact/LzdVbKYzQ1qzET8GVezNhZ (pranchas com fotos do Estúdio de staging, com as
 abas montadas na gaveta de verdade). A base técnica é a matriz [`depuracao-matriz.md`](depuracao-matriz.md).
 
@@ -45,3 +46,17 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   sprite, texto na tela, mensagens do jogo, com as comparações do contrato. Roda o jogo do zero num palco
   escondido, sem mexer no projeto; os testes ficam guardados no projeto. No Pro, roda no executor do
   servidor (o do Verificar projeto), com limite por pessoa, e testa também funções exportadas de `src`.
+
+## Andamento da interface
+
+- **Lote 1 (20/11): Desempenho no Estúdio clássico em JavaScript.** A aba na gaveta (Blocos e
+  Ponte), "Medir o desempenho" e "Parar de medir", os quatro números com a marca medido ou
+  indisponível, as barras dos últimos 30 segundos e quantas vezes o jogo ficou lento. Página sem
+  `<canvas>` diz que não tem quadros para medir. A medida monta o jogo com a ponte
+  (`preview/devtoolsBridge.ts`, baixada só ao ligar, entra como script confiável depois dos
+  motores, com `runtimeInspection`); fechar a gaveta desliga. O Jogo 2D passou a contar os
+  sprites desenhados entre duas "Limpar a tela" (`drawn` no inspetor `game-2d:observation`).
+  O pacote de abertura do modo Blocos continua no teto de sempre: a ponte, o painel, o resumo e
+  os textos do painel são baixados sob demanda.
+- Próximos: Investigar (pausar, avançar 1 quadro, valores, caminho até o erro), Meus testes,
+  Python e Pro.

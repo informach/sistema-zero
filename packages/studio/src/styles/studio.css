@@ -1105,6 +1105,15 @@
     background: var(--color-sz-panel-soft);
     color: var(--color-sz-fg-soft);
   }
+  /* As barras da aba Desempenho: cada uma é meio segundo; a lenta pinta no tom de aviso. */
+  .sz-devtools-bar {
+    background: var(--color-sz-accent);
+    opacity: 0.55;
+  }
+  .sz-devtools-bar--slow {
+    background: var(--color-sz-warn);
+    opacity: 1;
+  }
   .sz-pro-tag {
     display: inline-flex;
     align-items: center;
