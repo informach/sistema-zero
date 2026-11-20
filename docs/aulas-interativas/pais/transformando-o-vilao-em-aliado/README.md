@@ -29,7 +29,8 @@ Minicurso gratuito **para pais e responsáveis**, com a Helena na câmera, em **
 - O **Na tela** de cada parte cita trechos da fala e indica as imagens a inserir, que correspondem aos slides usados no encontro.
 - Os **depoimentos são fixos**: os mesmos cortes exibidos no encontro entram no ponto marcado em cada roteiro, com a Helena apresentando e comentando. A transcrição de cada corte está no roteiro para localizar o arquivo. Identificar nome e vínculo de quem fala, distinguindo Débora, mãe do Bernardo, da filha da Helena.
 - **Isabela:** a história e o corte estão na Aula 5. A autorização dada pela família foi para a apresentação; confirmar a autorização de nome e imagem para o curso antes de publicar.
-- **Demonstração (Aula 6, Parte 2):** clipe só de captura de tela, com a fala por cima; captura manual do Estúdio em três estados, com a preparação descrita no roteiro.
+- **Demonstração (Aula 6, Parte 2):** clipe só de captura de tela, com a fala por cima. A tela é gravada pelo robô do EdiAula no palco de gravação, no Estúdio da Aula 1 do Cadê (Parte 4: o jardim, Achados em zero e o Quando clicar ou tocar vazio), com os gestos no "Na tela" do roteiro, na mão da professora. Edição automática pelo fluxo `apps/ediaula/scripts/aula-automatica` do informach-apps (curso `vilao`).
+- **Plataforma (Aula 7):** a área dos pais é gravada pelo robô no staging, com uma conta de ensaio por tomada em nome de uma responsável fictícia (Mariana Alves Costa) e crianças fictícias (Bia; Luquinha), numa aula de QA com o presente e o certificado reais. A área da criança (ferramentas, entrada com o código, Cursos, Mural) entra por prints na edição. Os gestos e os trechos de edição estão no "Na tela" de cada parte.
 
 | Aula | Chave do clipe | Título da parte |
 | --- | --- | --- |
