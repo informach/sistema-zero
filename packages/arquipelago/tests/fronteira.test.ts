@@ -6,7 +6,8 @@ import ts from 'typescript'
 /**
  * A regra que mantém o jogo separado da plataforma (decisão da dona, 27/10/2026):
  * - o jogo só importa three, React Three Fiber, Rapier, React, zustand, o contrato e o
- *   avatar-quarto e o núcleo puro de documentos/comandos do editor de cenários;
+ *   avatar-quarto, o núcleo puro de documentos/comandos e as entradas restritas do
+ *   runtime compilado de cenários (lote 8.5); nunca o Palco/editor da ferramenta;
  * - nenhum pacote da plataforma importa o jogo nem o serviço do jogo (a página carrega o jogo
  *   publicado por URL, nunca por import);
  * - o avatar-quarto, dividido com a plataforma, não importa nada da plataforma; e o contrato não
@@ -25,6 +26,12 @@ const PERMITIDOS_NO_JOGO = [
   '@sistemazero/avatar-quarto',
   '@sistemazero/molda-cenarios-core',
 ]
+// Entradas exatas do consumidor compilado, não uma permissão para importar o motor/editor inteiro.
+const RUNTIMES_DE_CENARIO = new Set([
+  '@sistemazero/molda-cenarios-motor/leitura',
+  '@sistemazero/molda-cenarios-motor/runtime',
+  '@sistemazero/molda-cenarios-motor/instalar',
+])
 
 function arquivos(dir: string): string[] {
   let lista: string[] = []
@@ -79,7 +86,7 @@ describe('fronteira do jogo', () => {
     const fora: string[] = []
     for (const f of arquivos(join(import.meta.dir, '..', 'src')))
       for (const alvo of importsDe(readFileSync(f, 'utf8')))
-        if (externo(alvo) && !casa(alvo, PERMITIDOS_NO_JOGO))
+        if (externo(alvo) && !casa(alvo, PERMITIDOS_NO_JOGO) && !RUNTIMES_DE_CENARIO.has(alvo))
           fora.push(`${relative(PACOTES, f)} → ${alvo}`)
     expect(fora).toEqual([])
   })

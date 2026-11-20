@@ -3,6 +3,32 @@ import { Box3, BoxGeometry, Matrix4, PlaneGeometry, Vector3 } from 'three'
 import { TerrenoDoPalco } from '../src/Terreno'
 import { MundoDoTeste } from '../src/teste/colisoes'
 
+test('consultas de setores vizinhos identificam o mesmo triângulo sem confundir instâncias', () => {
+  const g = new PlaneGeometry(160, 160),
+    mundo = new MundoDoTeste([
+      { geometria: g, matriz: new Matrix4().makeRotationX(-Math.PI / 2) },
+      { geometria: g, matriz: new Matrix4().makeRotationX(-Math.PI / 2).setPosition(0, 4, 0) },
+    ])
+  const vistos = new Set<string>()
+  const incluir = (instancia: number, triangulo: number) => {
+    const chave = `${instancia}:${triangulo}`
+    if (vistos.has(chave)) return false
+    vistos.add(chave)
+    return true
+  }
+  const a = new Box3(new Vector3(-80, -1, -80), new Vector3(0, 5, 0))
+  const b = new Box3(new Vector3(0, -1, 0), new Vector3(80, 5, 80))
+  try {
+    expect(mundo.triangulosNaCaixa(a, 20000, incluir).length).toBe(36)
+    expect(mundo.triangulosNaCaixa(b, 20000, incluir).length).toBe(0)
+    expect(vistos.size).toBe(4)
+    expect(() => mundo.triangulosNaCaixa(a, 1, () => false)).toThrow('triângulos demais')
+  } finally {
+    mundo.descartar()
+    g.dispose()
+  }
+})
+
 test('consulta regional de triângulos respeita drawRange, transformação e orçamento sem alterar a fonte', () => {
   const g = new BoxGeometry(2, 2, 2),
     antes = [...g.index!.array]

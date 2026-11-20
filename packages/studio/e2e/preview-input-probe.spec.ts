@@ -100,3 +100,33 @@ test('input observer records a native key waiting on synchronous game work', asy
     'Document did not answer',
   )
 })
+
+test('document observer distinguishes program text from its changed CSP hash', async ({ page }) => {
+  test.skip(process.env.STUDIO_INPUT_DIAGNOSTICS !== '1', 'Opt-in diagnostic control')
+  const program = (value: number) =>
+    Buffer.from(`const value = ${value}; // ação`).toString('base64')
+  const initial = `<meta http-equiv="Content-Security-Policy" content="script-src 'none'"><script src="data:text/javascript;base64,${program(1)}"></script>`
+  const replacement = `<meta http-equiv="Content-Security-Policy" content="script-src 'none'; img-src 'none'"><script src="data:text/javascript;base64,${program(2)}"></script>`
+  await page.route('http://127.0.0.1:19993/', (route) =>
+    route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: `<iframe title="Pré-visualização" srcdoc="${initial.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}"></iframe>`,
+    }),
+  )
+  await page.goto('http://127.0.0.1:19993/')
+  await page.locator('iframe').evaluate((node, source) => {
+    if (!(node instanceof HTMLIFrameElement)) throw new Error('Expected the preview iframe')
+    node.srcdoc = source
+  }, replacement)
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const records = Reflect.get(window, 'sz-e2e-preview-input') as Array<
+          Record<string, unknown>
+        >
+        return records.filter((record) => record.type === 'preview-document').at(-1)?.sourceChange
+      }),
+    )
+    .toMatchObject({ removed: '1', inserted: '2' })
+  await expect(page.locator('iframe')).toHaveAttribute('srcdoc', replacement)
+})

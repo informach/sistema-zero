@@ -9,6 +9,8 @@
     "./compilar": "./src/compilar/index.ts",
     "./conteudo": "./src/compilar/conteudo.ts",
     "./runtime": "./src/compilar/runtime-three.ts",
+    "./leitura": "./src/compilar/leitura-http.ts",
+    "./instalar": "./src/compilar/instalar-three.ts",
     "./raylib": "./src/compilar/raylib.ts"
   },
   "scripts": {

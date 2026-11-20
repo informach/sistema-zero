@@ -1,8 +1,40 @@
 import { describe, expect, it } from 'bun:test'
 import { assignStableIdsToIR } from '../ids'
-import type { SZIR } from '../schema'
+import type { SZIR, SZIRV2 } from '../schema'
 
 describe('assignStableIdsToIR', () => {
+  it('atribui ids aos moldes e seus corpos sem mudar a identidade existente', () => {
+    const ir: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      extensions: [],
+      behavior: {
+        molds: [
+          {
+            type: 'funcDecl',
+            __id: 'molde_existente',
+            name: 'falar',
+            params: [],
+            body: [{ type: 'consoleLog', value: { type: 'str', value: 'olá' } }],
+          },
+        ],
+        start: [],
+        events: [],
+        loops: [],
+      },
+    }
+    const result = assignStableIdsToIR(ir, 'b')
+    const mold = result.behavior.molds?.[0]
+    expect(mold?.__id).toBe('molde_existente')
+    if (mold?.type !== 'funcDecl') throw new Error('Molde perdido')
+    expect(mold.body[0]?.__id).toBe('b_molds_0_body_0')
+    expect(ir.behavior.molds?.[0]).not.toBe(mold)
+    expect(ir.behavior.molds?.[0]?.__id).toBe('molde_existente')
+    const original = ir.behavior.molds?.[0]
+    if (original?.type !== 'funcDecl') throw new Error('Molde original perdido')
+    expect(original.body[0]?.__id).toBeUndefined()
+  })
   it('atribui ids previsíveis sem sobrescrever ids existentes', () => {
     const ir: SZIR = {
       html: [{ type: 'element', tag: 'h1', text: 'Olá' }],

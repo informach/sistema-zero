@@ -18,6 +18,7 @@ import {
   type Vector3,
 } from 'three'
 import { AmbienteDoPalco } from '../ambiente/ambiente'
+import { LuzesLocaisDoPalco } from '../ambiente/luzes-locais'
 import { lerGlb, type ModeloCarregado } from '../modelos'
 import { type FonteDeColisao, MundoDoTeste } from '../teste/colisoes'
 import { lerTextura, type TexturaCarregada } from '../texturas'
@@ -28,6 +29,8 @@ import { custoDaInstanciaCompilada, instanciarModeloCompilado } from './runtime-
 export { resolverInicioDaCena } from './inicio'
 
 export interface OpcoesDoRuntimeCompilado {
+  /** O jogo pode conservar seu céu/ciclo do dia e receber somente as luzes locais autorais. */
+  ambiente?: 'completo' | 'luzes-locais'
   /** Capacidade real do renderer; 4096 é o padrão portátil, não uma medição do aparelho. */
   maxTextura?: number
   aguaDinamica?: boolean
@@ -61,6 +64,8 @@ export async function carregarCenaNoThree(
   opcoes: OpcoesDoRuntimeCompilado = {},
 ): Promise<CenaNoThree> {
   sinal.throwIfAborted()
+  if (opcoes.ambiente !== undefined && !['completo', 'luzes-locais'].includes(opcoes.ambiente))
+    throw Error('O modo de ambiente do cenário é inválido.')
   const maxTextura = opcoes.maxTextura ?? 4096
   if (!Number.isSafeInteger(maxTextura) || maxTextura < 16 || maxTextura > 32768)
     throw Error('O limite de textura do carregador é inválido.')
@@ -80,11 +85,13 @@ export async function carregarCenaNoThree(
     colisoes: MundoDoTeste | undefined,
     aguas: AguaDaCenaCompilada | undefined,
     ambiente: AmbienteDoPalco | undefined,
+    locais: LuzesLocaisDoPalco | undefined,
     tempo = 0
   const descartar = () => {
     if (descartado) return
     descartado = true
     ambiente?.descartar()
+    locais?.descartar()
     aguas?.descartar()
     colisoes?.descartar()
     for (const c of copias) c.descartar()
@@ -104,7 +111,10 @@ export async function carregarCenaNoThree(
     raiz.name = dados.nome
     const usados = [...new Set([...dados.nos, ...dados.colisoes].map((n) => n.arquivo))],
       panoramas = dados.texturas.filter(
-        (t) => dados.ambiente.ceu?.tipo === 'panorama' && t.id === dados.ambiente.ceu.textura,
+        (t) =>
+          opcoes.ambiente !== 'luzes-locais' &&
+          dados.ambiente.ceu?.tipo === 'panorama' &&
+          t.id === dados.ambiente.ceu.textura,
       ),
       total = usados.length + panoramas.length
     let pronto = 0
@@ -214,12 +224,21 @@ export async function carregarCenaNoThree(
       }
     }
     cena.updateMatrixWorld(true)
-    ambiente = new AmbienteDoPalco(cena, false, maxTextura)
-    const estado = ambiente.definirCompilado(dados, (id) => ({
-      textura: texturas.get(id)?.textura,
-    }))
-    if (estado.falhas.length || estado.carregando)
-      throw Error(estado.falhas.join(' ') || 'O ambiente do pacote ficou incompleto.')
+    if (opcoes.ambiente === 'luzes-locais') {
+      locais = new LuzesLocaisDoPalco()
+      locais.definirCompiladas(
+        dados.marcadores,
+        Math.max(16, Math.min(512, 2 ** Math.floor(Math.log2(maxTextura / 4)))),
+      )
+      cena.add(locais.grupo)
+    } else {
+      ambiente = new AmbienteDoPalco(cena, false, maxTextura)
+      const estado = ambiente.definirCompilado(dados, (id) => ({
+        textura: texturas.get(id)?.textura,
+      }))
+      if (estado.falhas.length || estado.carregando)
+        throw Error(estado.falhas.join(' ') || 'O ambiente do pacote ficou incompleto.')
+    }
     sinal.throwIfAborted()
     const mundo = colisoes,
       agua = aguas,
@@ -250,7 +269,7 @@ export async function carregarCenaNoThree(
         agua.atualizar(tempo, movimentoReduzido)
       },
       quadro(camera, alvo) {
-        if (!descartado) luz.quadro(camera, alvo)
+        if (!descartado) luz?.quadro(camera, alvo)
       },
       descartar,
     }

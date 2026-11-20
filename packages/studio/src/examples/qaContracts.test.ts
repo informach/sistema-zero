@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
+import { generateProjectFilesWithMap } from '#generators'
 import { behaviorStatements, SZIRInputSchema } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import 'blockly/blocks'
@@ -74,6 +75,24 @@ beforeAll(() => {
 })
 
 describe('contrato transversal dos 185 exemplos da KitGallery', () => {
+  it('Duelo starts with the same block identities used after its first hydration', () => {
+    const entry = catalogEntries().find((entry) => entry.key === 'game-2d:Duelo de Heróis')!
+    const original = structuredClone(entry.ir)
+    const project = buildProjectFromKitEntry(entry)
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(
+        project.blocksState as Record<string, unknown>,
+        workspace,
+      )
+      const rebuilt = buildIRFromWorkspace(workspace)
+      const generated = generateProjectFilesWithMap({ ir: rebuilt, projectName: project.name })
+      expect(generated.files).toEqual(project.files)
+      expect(entry.ir).toEqual(original)
+    } finally {
+      workspace.dispose()
+    }
+  })
   it('catálogo e contratos têm exatamente as mesmas chaves', () => {
     const catalogKeys = catalogEntries()
       .map((entry) => entry.key)
@@ -156,7 +175,11 @@ describe('contrato transversal dos 185 exemplos da KitGallery', () => {
         // O host precisa aceitar o documento inteiro sem descartar ou reescrever conteúdo.
         expect(sanitizeProjectForHost(project)?.id).toBe(project.id)
         expect(project.name).toBe(entry.name)
-        expect(project.ir).toBe(entry.ir)
+        // Each project owns its IDs; all template content remains intact.
+        const withoutIds = (value: unknown) =>
+          JSON.parse(JSON.stringify(value, (key, item) => (key === '__id' ? undefined : item)))
+        expect(project.ir).not.toBe(entry.ir)
+        expect(withoutIds(project.ir)).toEqual(withoutIds(entry.ir))
         expect(project.blocksState).toBeDefined()
         expect(project.files['index.html'].length).toBeGreaterThan(0)
         expect(typeof project.files['style.css']).toBe('string')

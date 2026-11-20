@@ -146,6 +146,7 @@
         "@sistemazero/arquipelago-contracts": "workspace:*",
         "@sistemazero/avatar-quarto": "workspace:*",
         "@sistemazero/molda-cenarios-core": "workspace:*",
+        "@sistemazero/molda-cenarios-motor": "workspace:*",
         "react": "^19",
         "react-dom": "^19",
         "three": "^0.184.0",

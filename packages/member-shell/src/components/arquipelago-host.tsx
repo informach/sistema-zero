@@ -28,6 +28,7 @@ import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/j
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { lerAparenciaDaConta, listarCriacoesQueCabem } from '../lib/arquipelago-aparencia'
+import { criarPortaDeCenariosPublicados } from '../lib/arquipelago-cenarios'
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
 import { localizarEntrada, origemDoCliente } from '../lib/arquipelago-cliente'
 import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
@@ -349,6 +350,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
       )
       return guardado.success ? guardado.data : quarto
     },
+    cenarios: criarPortaDeCenariosPublicados(opcoes.perfil.id, json),
     servico: {
       async buscar(caminho, pedido) {
         if (

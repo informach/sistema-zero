@@ -9,7 +9,7 @@ import {
   loadExtensionExampleCatalogs,
 } from '#extensions'
 import { generateProjectFiles } from '#generators'
-import type { SZIRV2 } from '#ir'
+import { assignStableIdsToIR, type SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import type { EditableStudioProject } from '../core/editableProject'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
@@ -366,8 +366,12 @@ export async function buildKitGroups(t: Translator = defaultT): Promise<KitGroup
  * apenas deste módulo para a auditoria interna; não integra a API pública.
  */
 export function buildProjectFromKitEntry(entry: KitEntry): Project {
-  const { name, ir, assets } = entry
-  if (!ir) throw new Error(`O exemplo ${name} ainda não foi carregado.`)
+  const { name, ir: templateIR, assets } = entry
+  if (!templateIR) throw new Error(`O exemplo ${name} ainda não foi carregado.`)
+  // The initial executable and saved blocks must use the same identities.
+  // Otherwise first hydration replaces fallback event/cooldown keys and
+  // navigates the running game during input. Keep template metadata and IDs.
+  const ir = { ...templateIR, ...assignStableIdsToIR(templateIR, 'example') }
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,

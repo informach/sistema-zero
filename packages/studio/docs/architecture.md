@@ -211,6 +211,13 @@ destino devolve foco ao editor. Sugestões automáticas do Monaco ficam habilita
 em código e strings; comentários usam solicitação explícita para evitar que uma
 sugestão tardia consuma Enter. Isso não altera diagnósticos nem tipos.
 
+Na galeria, o IR recebe IDs estáveis antes de gerar o primeiro executável e
+os blocos; o helper existente também percorre moldes. Hidratar blocos de um
+script externo conserva seu cabeçalho opcional, usando a mesma escolha no
+cache de source map. Assim, a simples abertura não acrescenta um banner ou
+substitui chaves provisórias de eventos/cooldowns no meio da entrada nativa.
+Isso não dispensa verificar outras diferenças de geração ou as migrações.
+
 
 ## Identidade integral e recuperação local (19/11/2026)
 

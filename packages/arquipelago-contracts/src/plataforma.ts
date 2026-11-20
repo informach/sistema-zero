@@ -1,6 +1,7 @@
 import { MoradaHouseSchema } from '@sistemazero/core/morada/schema'
 import { z } from 'zod'
 import type { AparenciaLida } from './aparencias'
+import type { IlhaId } from './ilhas'
 import type { MoldeDeObjeto } from './objetos'
 import type { ResultadoDaFerramentaRotina } from './rotina-ferramenta'
 
@@ -121,6 +122,12 @@ export interface ServicoDoJogo {
   ): Promise<RespostaDoServico>
 }
 
+/** Leitura de versões publicadas; nenhuma porta de autoria, biblioteca privada ou upload. */
+export interface CenariosPublicadosDoJogo {
+  perfil(ilha: Exclude<IlhaId, 'farol'>, sinal?: AbortSignal): Promise<RespostaDoServico>
+  arquivo(publicacaoId: string, digest: string, sinal?: AbortSignal): Promise<RespostaDoServico>
+}
+
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */
 /** `quarto` (§6.28, A10): o editor do Meu Quarto da plataforma; ao fechar, o jogo recebe o quarto. */
 export type FerramentaDaPlataforma =
@@ -193,6 +200,8 @@ export interface Plataforma {
   salvarCasaMorada?(pedido: PedidoDeCasaMorada): Promise<CasaMoradaGuardada>
   salvarQuarto(quarto: QuartoDoJogo): Promise<QuartoDoJogo>
   servico: ServicoDoJogo
+  /** Sem esta capacidade, o jogo conserva a composição em código. */
+  cenarios?: CenariosPublicadosDoJogo
   abrirFerramenta(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta>
   /** Só criações da pessoa desta montagem. Bytes próprios, sem URL autenticada no jogo. */
   lerAparencia?(criacaoId: string, sinal?: AbortSignal): Promise<AparenciaLida | null>
