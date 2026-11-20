@@ -46,6 +46,9 @@ export function refineJavaScriptProjectDocument(
     installedExtensions: payload.installedExtensions,
     assets: payload.assets,
     coverAssetName: payload.coverAssetName,
+    ...(document.kind === 'classic' && payload.studentTests
+      ? { studentTests: payload.studentTests }
+      : {}),
   }
   let project: JavaScriptProjectDocument
   if (document.kind === 'pro') {

@@ -16,6 +16,7 @@ import { StudioProjectIdSchema } from './project-identity'
 import { copyStudioProjectJson } from './project-json'
 import { parseStudioProAssistanceMeta, type StudioProAssistanceMeta } from './project-pro-metadata'
 import type { StudioRuntimeRelease } from './runtime-catalog'
+import { StudioStudentTestsSchema } from './student-tests'
 
 /** Prepared schema version. Activating the product writer is a separate migration step. */
 export const STUDIO_PROJECT_DOCUMENT_V3 = STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION
@@ -168,6 +169,8 @@ const javascriptClassicSchema = z.strictObject({
   extraFiles: extrasSchema.optional(),
   ir: requiredPayload,
   blocksState: requiredPayload,
+  /** "Meus testes" (`student-tests.ts`): só no projeto que tem testes. */
+  studentTests: StudioStudentTestsSchema.optional(),
 })
 const javascriptProSchema = z.strictObject({
   ...common,
