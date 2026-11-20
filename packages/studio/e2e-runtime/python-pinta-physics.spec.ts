@@ -1,6 +1,9 @@
 import { writeFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
 import type {} from '../../../experiments/studio-python-runtime/providerHost'
+import { requireCleanPythonBrowser } from './pythonBrowserErrors'
+
+requireCleanPythonBrowser()
 
 for (const kind of ['physics', 'platform'] as const)
   for (const scale of [1, 2])

@@ -1,3 +1,4 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import {
   assertStudioPythonActivityScope,
   type StudioPythonActivity,
@@ -667,6 +668,7 @@ export function preparePythonFrameSession(options: {
     // Pro hosts keep COEP; anonymous framing permits this isolated runtime without cookies.
     frame.setAttribute('credentialless', '')
     frame.sandbox.value = 'allow-scripts allow-pointer-lock'
+    frame.allow = GAME_FRAME_FOCUS_ALLOW
     frame.referrerPolicy = 'no-referrer'
     frame.src = url.href
   })

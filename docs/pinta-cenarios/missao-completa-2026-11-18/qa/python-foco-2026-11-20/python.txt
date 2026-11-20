@@ -1,0 +1,421 @@
+bun test v1.3.11 (af24e281)
+
+src\runtime\python\activityConsole.test.ts:
+(pass) stdout matcher handles UTF8/chunk boundaries and remembers matches without retaining the output [16.00ms]
+
+src\runtime\python\bootResourceChannel.test.ts:
+(pass) native ports transfer exactly three verified public resources and complete after ACKs [15.00ms]
+Native Node24 reader-ownership: 2 tests passed, 0 failed/cancelled/skipped
+(pass) native Node24 reader buffer ownership [297.00ms]
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":1,"name":"../private"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":1,"name":"pyodide.asm.wasm","url":"https://private.test/"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":1,"name":"pyodide.asm.wasm","method":"POST"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":2,"name":"pyodide.asm.wasm"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"ack","id":1}
+(pass) reader refuses foreign URLs, options, relative aliases and duplicate reads before sending them
+(pass) owner retirement cancels its read and never transfers bytes that arrive later
+(pass) reader refuses premature completion and malformed or wrong-name bytes
+
+src\runtime\python\bootResources.test.ts:
+(pass) broker rejects a real verified store from another release or different same-pin descriptors [15.00ms]
+(pass) store binding is immutable and equivalent descriptor order is accepted
+(pass) host withdrawal settles before a non-cooperative metadata producer or cancellation ACK [110.00ms]
+(pass) host metadata URLs are derived only from pinned online or exported runtime frames
+(pass) host refuses unsafe or mismatched frame addresses before requesting metadata
+(pass) host verifies deployment before creating a bound store and never requests project or executable bytes
+(pass) host rejects changed deployments, oversized metadata and cancellation without opening the resource cache [15.00ms]
+(pass) boot manifest derives only the three public data resources from a verified release
+(pass) boot store verifies cold and cached bytes, never refetches a corrupt cache
+(pass) streamed byte limits refuse oversized data and cancel without caching it [16.00ms]
+(pass) a retired read cancels a late network response instead of publishing it
+(pass) cache quota errors remain visible and only owned cache generations are pruned
+(pass) store captures trusted configuration and refuses unsafe runtime directories
+(pass) boot resources reject oversized metadata before any download [15.00ms]
+(pass) decoded bodies use logical byte limits and never retain wire encoding in cache
+
+src\runtime\python\consoleBuffer.test.ts:
+(pass) bounded Python console > snapshots do not consume or expose retained chunks and preserve upstream omissions
+(pass) bounded Python console > keeps exact writes and stream order, without adding newlines on flush
+(pass) bounded Python console > bounds a synchronous print flood without timers and counts discarded lines/characters [16.00ms]
+(pass) bounded Python console > bounds output without any newline before decoding or retaining a full line [16.00ms]
+(pass) bounded Python console > decodes UTF-8 split across writes and drains without retaining input memory
+(pass) bounded Python console > clearing a stopped generation releases text, decoder state and omission counters
+
+src\runtime\python\controller.test.ts:
+(pass) host audio preference follows pending prepare without restarting and retired capabilities cannot unmute [15.00ms]
+(pass) context disposal stops an existing run and prevents starting another in the revoked environment
+(pass) revocation and Stop during ready prevent dispatch of the old run
+(pass) a restart during ready runs only the replacement generation [16.00ms]
+(pass) late preparation after Stop or a source change cannot start a stale program
+(pass) writer epochs and fresh grants protect commands after a successful start
+(pass) automatic and explicit cover requests share one capture, and Stop revokes both
+(pass) REPL checks its own grant and current project independently of execute permission [16.00ms]
+(pass) context authorization receives the real snapshot revision before a frame or run exists [15.00ms]
+(pass) late authorization after Stop or editing cannot start the captured project
+
+src\runtime\python\editorConsole.test.ts:
+(pass) keeps same-id editors isolated and refuses stale commands after restart or unregister
+(pass) revokes a late resolve when its execution is replaced
+(pass) revokes a late reject when its execution is replaced
+
+src\runtime\python\errorSummary.test.ts:
+(pass) the line is the last frame in the child files, even when a library raises
+(pass) a helper module of the project is named by its own path
+(pass) a syntax error points at its line
+(pass) without a traceback the text stays as it was
+(pass) the project root is the one the interpreter mounts [16.00ms]
+
+src\runtime\python\extensionFiles.test.ts:
+(pass) Turtle: withdrawal cancels the entire file batch with its original reason
+(pass) Pygame Zero: withdrawal cancels the entire file batch with its original reason
+(pass) Pygame-ce: withdrawal cancels the entire file batch with its original reason
+(pass) Raylib 2D/3D: withdrawal cancels the entire file batch with its original reason
+(pass) Pygame-ce applies per-file limits and returns the pinned wheel with unprefixed module paths
+
+src\runtime\python\frameMessages.test.ts:
+(pass) audio requests preserve the session envelope without accepting media URLs or extra commands
+(pass) capture responses validate the actual PNG header and bounded presentation identity
+(pass) host copies identity and payload instead of accepting authority or executable fields
+(pass) host rejects malformed sequence, unbounded content, invalid identities and unknown capabilities
+(pass) Python CSP is scoped to the immutable directory and opaque sandbox
+(pass) activity feedback keeps execution identity and refuses server authority or unbounded results
+
+src\runtime\python\inspection.test.ts:
+(pass) structure is explicitly requested, preserved for all modules and cannot silently fall back to compile-only
+(pass) inspection captures verified buffers, asks actual compilation for every Python module and owns disposal [16.00ms]
+(pass) inspection refuses an omitted structure mode before opening its compiler
+(pass) a compilation diagnostic fails the aggregate while preserving the complete file report
+(pass) forged content or revision is refused before opening any analysis worker
+(pass) wrong-document analysis cannot become compilation evidence and still disposes its worker
+(pass) cancelled opening cannot return a late report and reclaims the owned session
+(pass) cancelled parsing cannot return a late report and reclaims the owned session
+(pass) inspection requires effective compiler versions even for otherwise valid reports
+(pass) oversized Python modules reject before opening a compiler [15.00ms]
+
+src\runtime\python\missionObserver.test.ts:
+(pass) known Python programs actually run before their observations reach the canonical judge [203.00ms]
+(pass) the native observation adapter covers exceptions, copies, modules, await and bounded JSON [203.00ms]
+
+src\runtime\python\missionPose.test.ts:
+(pass) a mission sees only presented poses and a live renderer turn, never pending model coordinates
+(pass) pose tracking has a hard object bound and a new draw list drops objects not drawn
+
+src\runtime\python\playerBridge.test.ts:
+(pass) Python stage/gamepad bridge accepts only the established parent and origin, preserving exact dimensions and keys
+(pass) Python screenshot is single-flight and does not reply after the frame generation closes
+
+src\runtime\python\playtestCollector.test.ts:
+(pass) mission observations opt in, preserve identity through awaits and skip unused PNG capture
+(pass) a mission observation cannot settle after its session is retired, and program errors remain failed evidence
+(pass) collector waits for actual stop/dispose, captures the same run, and preserves recipe input [16.00ms]
+(pass) explicit program failure and foreign capture cannot skip cleanup or approve execution
+(pass) stale identities and sequence replays do not change bounded observation
+(pass) a rejected stop still disposes and retires the frame and cannot confirm success
+(pass) unexpected disposal, restart and incomplete observation cannot approve a validation
+(pass) input in flight at retirement cannot become a late successful recipe completion
+
+src\runtime\python\previewObserver.test.ts:
+(pass) trusted preview waits for exact parent initial state, updates without replacing preference and rejects learner/stale messages [15.00ms]
+(pass) new launcher mount requests a fresh binding; old init cannot unlock it
+(pass) ordinary export has no host gate, but malformed preview metadata cannot fall back to unmuted export
+(pass) missing initial preference fails closed and removes its listener within the fixed startup budget [5032.00ms]
+
+src\runtime\python\savedFiles.python.test.ts:
+(pass) what a program saves with open() goes to the host, within the limits (CPython) [250.00ms]
+
+src\runtime\python\savedFiles.test.ts:
+(pass) a saved file goes into the game storage record and comes back with the same bytes
+(pass) saving the same file again replaces it, and other keys of the record stay
+(pass) the limits refuse one file too many, a file too big and a total too big [47.00ms]
+(pass) only portable project paths are kept
+(pass) a tampered record is read without the bad entries and within the limits
+(pass) a file the program deleted leaves the record, and the other keys stay
+(pass) a deletion carries only a portable path
+(pass) saved files that cannot come back leave the record: project paths and case twins
+
+src\runtime\python\session.test.ts:
+(pass) mission reads use the authenticated generation and are rejected after disposal
+(pass) routes audio over the authenticated session channel and correlates its response [16.00ms]
+(pass) prepares pinned public metadata in parallel but transfers nothing before a valid frame hello [234.00ms]
+(pass) a hello without the current boot protocol is refused before any channel transfer
+(pass) metadata failure only fails a session after its valid hello negotiates boot resources [31.00ms]
+(pass) completed metadata never authorizes a forged origin, challenge or source [219.00ms]
+(pass) withdrawal before the hello retires late metadata without a channel or cache [47.00ms]
+(pass) withdrawal during the hello retires late metadata without a channel or cache [219.00ms]
+(pass) an occupied iframe rejects another owner before starting another metadata request [15.00ms]
+
+src\runtime\python\snapshot.test.ts:
+(pass) Python execution snapshot > recomputed lock cannot pretend to install external packages in classic [16.00ms]
+(pass) Python execution snapshot > recomputed lock cannot pretend to install external packages in pro
+(pass) Python execution snapshot > materializes exact UTF-8 source and binary paths without injected web files
+(pass) Python execution snapshot > captures source and assets before awaits, independently for each generation
+(pass) Python execution snapshot > hashes execution content, independent of UI metadata or file insertion order
+(pass) Python execution snapshot > refuses unsupported documents and media/source collisions before execution [15.00ms]
+
+src\runtime\python\standalone.test.ts:
+(pass) standalone lifecycle cases use a separate module realm from the real interpreter tests [657.00ms]
+
+src\runtime\python\standaloneRuntime.test.ts:
+(pass) web exports and hosted previews resolve only the frame beside their pinned module
+(pass) a wrong release, module name, credentials, query or unsafe scheme cannot select a runtime
+
+src\runtime\python\webFiles.test.ts:
+Native Node24 web-files: 3 tests passed, 0 failed/cancelled/skipped
+(pass) native Node24 byte-stream contracts [265.00ms]
+(pass) manifest-sized reading preserves bytes across chunk boundaries and ignores wire length
+(pass) manifest-sized reading rejects short and oversized bodies without returning partial bytes
+(pass) manifest-sized reading respects withdrawal while waiting for remaining bytes
+(pass) withdrawal settles even when stream cancellation never acknowledges
+
+src\runtime\python\webPayload.test.ts:
+(pass) standalone restores exactly the verified UTF-8 snapshot without fetching account or runtime URLs [15.00ms]
+(pass) invalid metadata rejects before any project fetch, including traversal and forged revision
+(pass) modified bytes are rejected even when the advertised metadata digest is internally valid
+(pass) stream limits count actual bytes and cancel a body that understates its size
+(pass) cancellation unblocks an in-flight stream without returning partial content
+
+src\runtime\python\wireSnapshot.test.ts:
+(pass) the worker boundary preserves the exact source, identity and ordered extension references
+(pass) the worker boundary rejects malformed or expanded extension references before execution
+(pass) saved files cross the worker boundary apart from the program and within their limits
+
+src\runtime\python\workerEvents.test.ts:
+(pass) audio messages carry only a bounded request and request identity
+(pass) graphics bounds reject shared memory, duplicate images and excessive payloads
+(pass) worker events copy only bounded fields and never forward privileged or unknown data
+(pass) console refuses shape, count and aggregate quotas without traversing excess entries
+(pass) a saved file carries only a portable path and bounded bytes
+
+src\runtime\python\workerSupervisor.test.ts:
+(pass) mission observations are opt-in, correlated, single-flight and do not accept verdicts
+(pass) an authorized idle mission function can request input without an entrypoint or REPL operation [16.00ms]
+(pass) a mission request finishing with the program preserves observation ownership, then retires late results
+(pass) graphics is opt-in, single-flight and cannot deliver a late response after stop
+(pass) audio is serialized, correlated and cannot deliver a late response after stop [16.00ms]
+(pass) pending audio refuses duplicate media, graphics, forged completion and input
+(pass) an input or completion forged while rendering cannot change the active operation
+(pass) state gates and correlation preserve one entrypoint and sequential REPL
+(pass) stop revokes the generation and releases once, before late worker output
+(pass) a forged result cannot select another operation or send persistence commands
+(pass) a game exchanging frames is not counted against the message quota, up to its own ceiling [15.00ms]
+(pass) pixels come back to the worker as a transferred buffer, within bounds
+(pass) an uncooperative message flood or output flood is terminated [16.00ms]
+(pass) an entrypoint error is terminal and its traceback remains a bounded diagnostic
+(pass) synchronous revocation inside callbacks stops the remaining batch and readiness
+(pass) revocation during run, input, or REPL acceptance cannot dispatch more code
+(pass) revocation at REPL completion suppresses its result
+(pass) a callback may start the next REPL without losing the previous result
+(pass) activity has one host-owned request and keeps a running program alive after formative feedback
+(pass) activity correction after normal completion or a completion race returns to idle
+(pass) activity results reject forged check identity, scope, order, server claims and duplicates [15.00ms]
+(pass) revocation while idle activity grading completes suppresses its feedback
+(pass) saved files count while the program runs and right after it ends, never before
+(pass) before a stop, the worker is asked for the saves still in its queue, for a moment only [47.00ms]
+(pass) an early timer cannot finish saved-file flushing before its deadline or rearm after acknowledgement
+(pass) stopping the worker settles an outstanding saved-file flush and cancels its deadline
+
+src\runtime\python\audio\contract.test.ts:
+(pass) Python portable audio wire boundary > accepts bounded data, including root-level corpus paths and stop-all
+(pass) Python portable audio wire boundary > accepts WAV, MP3 and OGG (Pygame Zero music) and the volume command
+(pass) Python portable audio wire boundary > rejects URLs, traversal, unknown audio formats and executable options
+(pass) Python portable audio wire boundary > rejects invalid identifiers, levels, booleans, versions and envelopes
+(pass) Python portable audio wire boundary > music, loops=N, batched voices and pause/resume travel; malformed shapes do not
+
+src\runtime\python\audio\metadata.test.ts:
+(pass) the Python package policy matches the canonical provided-module descriptor
+
+src\runtime\python\audio\nativeExport.test.ts:
+(pass) native audio package declares its build, dependencies and every shipped source byte
+(pass) native audio allocation preserves authored files, case variants and empty namespaces
+
+src\runtime\python\audio\service.test.ts:
+(pass) session-owned Python audio > host mute synchronizes existing and future voices without changing program volume or transport [15.00ms]
+(pass) session-owned Python audio > pause and resume of several voices act on each of them (pygame mixer.pause)
+(pass) session-owned Python audio > voice reserved before resource awaits reads latest host mute before native play
+(pass) session-owned Python audio > learner-shaped window messages cannot undo host mute or the author volume zero
+(pass) session-owned Python audio > mute updates pending native play and cannot revive a voice after cancellation
+(pass) session-owned Python audio > overlaps distinct voices using one immutable asset URL, then releases everything
+(pass) session-owned Python audio > rejects absent/source assets and corrupt bytes before constructing media
+(pass) session-owned Python audio > bounds active voices, forbids replacement and releases an ended voice
+(pass) session-owned Python audio > reports the voices that ended by themselves or could not play, never the stopped ones
+(pass) session-owned Python audio > a play refused at the voice limit is reported as ended; a repeated live id is not
+(pass) session-owned Python audio > the music has its own channel: a crowd of sounds never refuses it
+(pass) session-owned Python audio > a play over the per-second command budget is reported as ended
+(pass) session-owned Python audio > loops=N plays the same element again at once and reports only the last end
+(pass) session-owned Python audio > repeated effects reuse completed media, reset voice options and release the pool on dispose
+(pass) session-owned Python audio > the completed-media pool is bounded across different resources [16.00ms]
+(pass) session-owned Python audio > pause really pauses (the track keeps its place) and resume plays on
+(pass) session-owned Python audio > a voice paused while it still loads starts paused [15.00ms]
+(pass) session-owned Python audio > one stop or volume request reaches every voice it names
+(pass) session-owned Python audio > a poll carries nothing else
+(pass) session-owned Python audio > abort cancels pending native play and prevents a late success from restoring authority
+(pass) session-owned Python audio > reports blocked autoplay and post-start media errors without pretending to play
+(pass) session-owned Python audio > revokes ownership while integrity checking is pending, before any media URL exists [16.00ms]
+(pass) session-owned Python audio > applies a per-session command budget even without opening a sound
+
+src\runtime\python\audio\tone.test.ts:
+(pass) the note A4 has exactly the samples of the desktop Pygame Zero
+(pass) the note C4 has exactly the samples of the desktop Pygame Zero
+(pass) the note F#5 has exactly the samples of the desktop Pygame Zero
+(pass) the note 220 Hz has exactly the samples of the desktop Pygame Zero
+(pass) the note Bb2 has exactly the samples of the desktop Pygame Zero
+(pass) the WAV is mono 16-bit at 22050 Hz with the samples after its 44-byte header
+(pass) notes out of range are refused
+
+src\runtime\python\audio\wav.test.ts:
+(pass) bounded WAV inspection before native playback > inspects PCM16 duration without decoding or changing the payload
+(pass) bounded WAV inspection before native playback > supports corpus sample rates and skips odd metadata chunks with their padding
+(pass) bounded WAV inspection before native playback > rejects truncated containers, forged chunk sizes and duplicate/missing payloads
+(pass) bounded WAV inspection before native playback > rejects unsupported codecs, false byte rates and inconsistent frame sizes
+(pass) bounded WAV inspection before native playback > bounds duration and metadata work independently of file byte limit [16.00ms]
+
+src\runtime\python\pgzero\audioQueue.test.ts:
+(pass) the frame audio queue > a play that waited too long is dropped and reported as ended [16.00ms]
+(pass) the frame audio queue > the backlog of plays is bounded: the oldest waiting play gives way
+(pass) the frame audio queue > the music and repeating sounds are never dropped, however long they wait [78.00ms]
+(pass) the frame audio queue > a crowded backlog drops sound effects only, never the music
+(pass) the frame audio queue > a play that never reaches the host (the channel fails) is reported as ended [15.00ms]
+(pass) the frame audio queue > stop and volume of several voices travel as one request each
+(pass) the frame audio queue > a tone note becomes a play of the note the host builds
+(pass) the frame audio queue > pause and resume of several voices travel as one request each [16.00ms]
+(pass) the frame audio queue > stop and volume are never dropped [47.00ms]
+(pass) the frame audio queue > the voices the host reports as ended reach the game, from any reply [16.00ms]
+(pass) the frame audio queue > while the game waits for sounds to end, the host is polled now and then [31.00ms]
+
+src\runtime\python\pgzero\inputQueue.test.ts:
+(pass) reading a key > Ctrl and the system key are reported, and so are the keys pressed with them
+(pass) reading a key > browser shortcuts keep working: a key with Ctrl or the system key is not held back
+(pass) reading a key > with Ctrl or the system key held, only shortcut keys go to the browser
+(pass) reading a key > letters follow the keyboard layout
+(pass) the input queue > a key is released by the physical key that pressed it, even if the layout changed
+(pass) the input queue > losing focus releases every held key with a key-up, after what was queued
+(pass) the input queue > a full queue never drops a release
+(pass) the input queue > motion is merged and is the first thing dropped when the queue is full
+(pass) the input queue > key repeat and a second physical key with the same code are ignored
+(pass) the input queue > a key pressed with the system key held is a press and a release (macOS sends no key-up)
+(pass) mouse buttons > a second button pressed and the first released while it is held leave nothing down
+(pass) mouse buttons > a cancelled pointer releases every held button
+
+src\runtime\python\pgzero\module.test.ts:
+(pass) the Pygame Zero module keeps its limits, paths, audio and loop (CPython) [1532.00ms]
+
+src\runtime\python\pgzero\pacing.test.ts:
+(pass) Pygame Zero frame pacing > the game runs at 60 frames per second on any fast display
+(pass) Pygame Zero frame pacing > a 60 Hz display runs the game on every display frame
+(pass) Pygame Zero frame pacing > vsync jitter of a couple of milliseconds never skips a frame on a 60 Hz display [16.00ms]
+(pass) Pygame Zero frame pacing > larger jitter skips at most the one frame that measures the display
+(pass) Pygame Zero frame pacing > a display at about 60 Hz never keeps drifting into skipped frames
+(pass) Pygame Zero frame pacing > at 120 Hz the game never runs on two display frames in a row, even with jitter
+(pass) Pygame Zero frame pacing > a slow display is not made up with several game frames at once
+
+src\runtime\python\pgzero\pixelShapes.test.ts:
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > the reference was measured on pygame-ce 2.5.8 and covers every function
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > rect: the same pixels in every case [16.00ms]
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > circle: the same pixels in every case [15.00ms]
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > ellipse: the same pixels in every case
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > arc: the same pixels in every case [16.00ms]
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > line: the same pixels in every case
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > lines: the same pixels in every case
+(pass) pygame.draw pixel by pixel, against pygame-ce 2.5.8 > polygon: the same pixels in every case [15.00ms]
+
+src\runtime\python\pgzero\protocol.test.ts:
+(pass) Pygame Zero shapes and Pygame-ce pixels have distinct wire commands
+
+src\runtime\python\pgzero\renderer.test.ts:
+(pass) Pygame Zero renderer exchange > mission actor poses appear only with a presented frame and disappear when no longer drawn [609.00ms]
+(pass) Pygame Zero renderer exchange > the screen keeps what was drawn: a batch paints on top, only a new size wipes it [31.00ms]
+(pass) Pygame Zero renderer exchange > a screen read paints what was drawn at once and answers the colour there [79.00ms]
+(pass) Pygame Zero renderer exchange > pygame.draw shapes reach the screen as whole pixels, never as smoothed curves [890.00ms]
+(pass) Pygame Zero renderer exchange > a frame the browser cannot show comes back as an error reply for Python
+(pass) Pygame Zero renderer exchange > the pixels of a vector image come back as bytes, with the image they need
+(pass) Pygame Zero renderer exchange > Ctrl reaches the game, and losing focus releases it with a key-up [16.00ms]
+(pass) Pygame Zero renderer exchange > the right Shift has its own bit, like pygame (RSHIFT, not LSHIFT)
+(pass) Pygame Zero renderer exchange > two mouse buttons pressed together never stay held, and a cancelled pointer releases [62.00ms]
+(pass) Pygame Zero renderer exchange > Ctrl+arrow belongs to the game; Ctrl+R and the system key + S still reach the browser
+(pass) Pygame Zero renderer exchange > a line longer than a canvas can be is drawn around its anchor, at its true place [32.00ms]
+(pass) Pygame Zero renderer exchange > a textbox with outline and shadow draws at the size it picks
+(pass) Pygame Zero renderer exchange > ended sounds reach Python with the frame, and the host is asked to watch
+
+src\runtime\python\pgzero\svgSize.test.ts:
+(pass) SVG sizes follow pygame-ce: units, rounding up and a missing side from the viewBox
+(pass) an SVG without a usable size is refused, never guessed
+
+src\runtime\python\pygame\contract.test.ts:
+(pass) Pygame-ce owns the canvas only at its exact pinned version
+(pass) the wheel is the same file, size and sha in the contract, the vendor manifest and the snippets
+
+src\runtime\python\pygame\sdlScreen.test.ts:
+(pass) the SDL canvas keeps a copy of each flip, taken once
+(pass) only the page objects a worker lacks are defined, and they are inert
+(pass) a frame takes the flip of its own size; another size or no flip fails by name
+
+src\runtime\python\raylib\cenario-distribuicao.test.ts:
+(pass) cenário é módulo oficial somente com Raylib; módulo autoral mantém precedência
+(pass) desktop inclui o mesmo auxiliar junto ao entrypoint e registra sua origem gerada
+(pass) auxiliar desktop não sobrescreve módulos/pacotes autorais nem colide em outro case
+
+src\runtime\python\raylib\cenario.test.ts:
+(pass) cenário compilado no módulo Raylib real: desenho, matriz, alturas, limites e descarte [453.00ms]
+
+src\runtime\python\raylib\module.test.ts:
+(pass) the Raylib module keeps the cffi semantics, the loop, input and drawing (CPython) [344.00ms]
+(pass) the Raylib 3D module records raylib shapes, the camera and the rlgl state (CPython) [312.00ms]
+(pass) a lista de funções da Raylib 3D é a dos módulos 3D do motor (gen-3d-functions.py) [204.00ms]
+
+src\runtime\python\raylib\raylibShaders.test.ts:
+(pass) GLSL 330 do raylib do computador → GLSL ES 300 do navegador > troca a versão, põe a precisão e mantém o resto do código
+(pass) GLSL 330 do raylib do computador → GLSL ES 300 do navegador > #version 330 core também vale, e a versão pode vir depois de um comentário
+(pass) GLSL 330 do raylib do computador → GLSL ES 300 do navegador > o valor inicial de um uniform sai do código e vira o valor depois de ligar
+(pass) GLSL 330 do raylib do computador → GLSL ES 300 do navegador > sem #version 330 o shader é recusado em português
+(pass) GLSL 330 do raylib do computador → GLSL ES 300 do navegador > o #extension vem antes da precisão, como o GLSL ES exige
+(pass) GLSL 330 do raylib do computador → GLSL ES 300 do navegador > um valor inicial que não é número é recusado
+
+src\runtime\python\turtle\backend.python.test.ts:
+(pass) the Turtle backend: test_compound.py (CPython) [1359.00ms]
+(pass) the Turtle backend: test_backend_fidelity.py (CPython) [266.00ms]
+(pass) the Turtle backend: test_formas_do_pinta.py (CPython) [1172.00ms]
+
+src\runtime\python\turtle\graphicsProtocol.test.ts:
+(pass) untrusted Turtle graphics boundary > versioned limits bound UTF-8 bytes, viewport and waits independently [15.00ms]
+(pass) untrusted Turtle graphics boundary > copies known fields and preserves scene order without forwarding options
+(pass) untrusted Turtle graphics boundary > rejects commands, coordinates, colors, dimensions and text outside bounds [16.00ms]
+(pass) untrusted Turtle graphics boundary > validates image headers before decoding and freezes GIF at the first frame
+
+src\runtime\python\turtle\moduleSources.test.ts:
+(pass) starts only the four closed sources concurrently and preserves names despite reverse completion [16.00ms]
+(pass) a failed response rejects the whole batch, aborts siblings and cancels a late response
+(pass) owner withdrawal settles non-cooperative requests with the original reason
+(pass) an already withdrawn owner starts no requests
+(pass) source byte limits are streamed and cancel the batch instead of accepting oversized content
+(pass) known http failure aborts siblings without waiting for body cancellation ACK
+(pass) known size failure aborts siblings without waiting for body cancellation ACK
+
+src\runtime\python\turtle\renderer.fillRule.test.ts:
+(pass) a filled polygon (a star from begin_fill) uses the even-odd rule, like Tk [31.00ms]
+
+src\runtime\python\turtle\renderer.layer.test.ts:
+(pass) clearing a Turtle screen retires observed actors even when a drawing ID is reused [63.00ms]
+(pass) unchanged items join the retained layer and later paints redraw only the rest [109.00ms]
+(pass) an identical patch or raising the topmost item keeps the layer [125.00ms]
+(pass) the layer is dropped and rebuilt when a retained item changes [110.00ms]
+(pass) the layer is dropped and rebuilt when a retained item is deleted [109.00ms]
+(pass) the layer is dropped and rebuilt when a retained item is raised [109.00ms]
+(pass) the layer is dropped and rebuilt when an item is lowered [125.00ms]
+(pass) the layer is dropped and rebuilt when the background changes [125.00ms]
+(pass) the layer is dropped and rebuilt when the screen size changes [125.00ms]
+(pass) a transparent background never uses the layer [110.00ms]
+
+src\runtime\python\turtle\renderer.scheduling.test.ts:
+(pass) ordinary rendering remains blocked until its RAF is delivered [47.00ms]
+(pass) after a frame has passed, a new presentation paints at once like Tk update() [47.00ms]
+(pass) a presentation within the same frame still waits for the animation frame [31.00ms]
+(pass) activity presents without RAF and readiness requires an explicit turn [63.00ms]
+(pass) disposing cancels the activity timer and rejects presentation/readiness without a late canvas [47.00ms]
+
+src\runtime\python\turtle\renderer.test.ts:
+(pass) a Turtle screen initialized before host layout uses its logical viewport, then measures the host
+
+ 307 pass
+ 0 fail
+ 79234 expect() calls
+Ran 307 tests across 53 files. [20.16s]

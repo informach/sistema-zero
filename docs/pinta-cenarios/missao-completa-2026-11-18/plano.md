@@ -108,6 +108,14 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   O perfil combinado agora é 18aedad…; precisa de CI geral e imagem Linux
   próprias. Nenhuma ativação de política, distribuição Python ou gravador
   é demonstrada por essas verificações locais.
+  A distribuição reconstruída a partir de 2662 revelou outra fronteira de foco:
+  os seis casos Pinta/Pygame completavam o percurso, mas emitiam erro no console
+  do Chromium 159. O host Python passou a delegar a mesma capacidade nominal,
+  conservando sandbox e identidade visual. Os casos agora verificam também os
+  erros do navegador. Passaram 17 ensaios reais, 307 testes Python e os cinco
+  gates de tipos/perfil/formatação. A distribuição 55471575… tem todos os 126
+  arquivos conferidos; necessita de nova qualificação Linux e ativação própria.
+  Ver `qa/python-foco-2026-11-20/`. Isso não encerra o rollout nem a etapa 0b.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

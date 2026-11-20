@@ -328,6 +328,8 @@ test('routes audio over the authenticated session channel and correlates its res
 test('prepares pinned public metadata in parallel but transfers nothing before a valid frame hello', async () => {
   const f = await fixture()
   await tick()
+  expect(f.frame.allow).toBe('focus-without-user-activation')
+  expect(f.frame.sandbox.value).toBe('allow-scripts allow-pointer-lock')
   expect(f.calls).toHaveLength(1)
   expect(f.calls[0]?.url).toContain('/v1/runtime-deployments/')
   expect(f.transfers).toEqual([])

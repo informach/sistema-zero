@@ -1,0 +1,228 @@
+
+Running 6 tests using 1 worker
+
+(node:3216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta physics 1x checks all outlines in real browser Python (2.6s)
+(node:23656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta physics 2x checks all outlines in real browser Python (2.3s)
+(node:36360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta platform 1x checks all outlines in real browser Python (2.1s)
+(node:28312) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta platform 2x checks all outlines in real browser Python (2.1s)
+(node:26952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [chromium] › .cache\pinta-f7-world.spec.ts:6:3 › Pinta world 1x renders and crosses doors in real browser Python (2.8s)
+(node:18728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [chromium] › .cache\pinta-f7-world.spec.ts:6:3 › Pinta world 2x renders and crosses doors in real browser Python (2.8s)
+
+
+  1) [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta physics 1x checks all outlines in real browser Python
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+      85 | const browserErrors=new WeakMap<object,string[]>();
+      86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });
+    > 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});
+         |                                                                                                                                                                                               ^
+      88 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-f7-physics.spec.ts:87:191
+
+    attachment #1: physics-runtime-proof (application/json) ────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\attachments\physics-runtime-proof-790b7b372bc9ee1b39a2364ae7555206385d9603.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta physics 2x checks all outlines in real browser Python
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+      85 | const browserErrors=new WeakMap<object,string[]>();
+      86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });
+    > 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});
+         |                                                                                                                                                                                               ^
+      88 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-f7-physics.spec.ts:87:191
+
+    attachment #1: physics-runtime-proof (application/json) ────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\attachments\physics-runtime-proof-f714dcd08ffa4936b7e2c31c23ac8f8c1626f229.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta platform 1x checks all outlines in real browser Python
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+      85 | const browserErrors=new WeakMap<object,string[]>();
+      86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });
+    > 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});
+         |                                                                                                                                                                                               ^
+      88 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-f7-physics.spec.ts:87:191
+
+    attachment #1: platform-runtime-proof (application/json) ───────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\attachments\platform-runtime-proof-7ce00a63a984a196260c3787dd4b937c57b8e61d.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta platform 2x checks all outlines in real browser Python
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+      85 | const browserErrors=new WeakMap<object,string[]>();
+      86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });
+    > 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});
+         |                                                                                                                                                                                               ^
+      88 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-f7-physics.spec.ts:87:191
+
+    attachment #1: platform-runtime-proof (application/json) ───────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\attachments\platform-runtime-proof-53d233680fcd9ef4f19e6a5e8b5bd0fda7c82310.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-f7-browser-results\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › .cache\pinta-f7-world.spec.ts:6:3 › Pinta world 1x renders and crosses doors in real browser Python
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+      81 | const browserErrors=new WeakMap<object,string[]>();
+      82 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });
+    > 83 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});
+         |                                                                                                                                                                                               ^
+      84 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-f7-world.spec.ts:83:191
+
+    attachment #1: runtime-proof (application/json) ────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\attachments\runtime-proof-d3c35f92958477ea7cd6523ac98d35dc412967ee.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › .cache\pinta-f7-world.spec.ts:6:3 › Pinta world 2x renders and crosses doors in real browser Python
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+      81 | const browserErrors=new WeakMap<object,string[]>();
+      82 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });
+    > 83 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});
+         |                                                                                                                                                                                               ^
+      84 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-f7-world.spec.ts:83:191
+
+    attachment #1: runtime-proof (application/json) ────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\attachments\runtime-proof-ddfa1145fc61c18859dcabe8254ced30a27858a4.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-f7-browser-results\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta physics 1x checks all outlines in real browser Python
+    [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta physics 2x checks all outlines in real browser Python
+    [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta platform 1x checks all outlines in real browser Python
+    [chromium] › .cache\pinta-f7-physics.spec.ts:7:5 › Pinta platform 2x checks all outlines in real browser Python
+    [chromium] › .cache\pinta-f7-world.spec.ts:6:3 › Pinta world 1x renders and crosses doors in real browser Python
+    [chromium] › .cache\pinta-f7-world.spec.ts:6:3 › Pinta world 2x renders and crosses doors in real browser Python
