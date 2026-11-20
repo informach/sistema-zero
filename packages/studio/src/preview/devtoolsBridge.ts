@@ -35,7 +35,7 @@ import {
   type ExtensionDefinition,
   loadExtensionBootstrapScripts,
 } from '#extensions'
-import { instrumentCheckScript } from '../check/instrumentCheckScript'
+import { createCheckScope, instrumentCheckScript } from '../check/instrumentCheckScript'
 import { investigationWindowFor, perfWindowFor } from '../state/devtools'
 import {
   DEVTOOLS_COMMAND_MESSAGE,
@@ -132,9 +132,7 @@ let lastDocument = 0
 
 /** Um nome de leitor novo (`__sz` + 24 hex), no formato que `instrumentCheckScript` aceita. */
 export function createInvestigationScope(): string {
-  const bytes = new Uint8Array(12)
-  crypto.getRandomValues(bytes)
-  return `__sz${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')}`
+  return createCheckScope()
 }
 
 /**

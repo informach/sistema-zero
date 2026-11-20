@@ -17,6 +17,13 @@ import { parse } from '@babel/parser'
  */
 export const CHECK_SCOPE_PATTERN = /^__sz[a-f0-9]{24}$/
 
+/** Um nome de leitor novo (`__sz` + 24 hex), no formato de `CHECK_SCOPE_PATTERN`. */
+export function createCheckScope(): string {
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return `__sz${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')}`
+}
+
 const RUN_FUNCTION = '__szProjectRun'
 
 type Node = { type: string; start?: number | null; end?: number | null; [key: string]: unknown }
