@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'bun:test'
+import { EXECUTION_LIMITS } from '../src/learning/project-execution'
 import { StudioProjectDocumentSchema } from '../src/studio/project-document'
 import { isRunnableStudentTest } from '../src/studio/student-test-runnable'
 import {
   isStudioStudentTest,
+  STUDENT_TEST_CASES_MAX,
   STUDENT_TESTS_MAX,
   StudioStudentTestsSchema,
   sanitizeStudioStudentTests,
@@ -156,5 +158,135 @@ describe('os testes da criança no documento do projeto', () => {
     expect(comTestes.success).toBe(true)
     if (comTestes.success) expect(comTestes.data).toMatchObject({ studentTests: [moeda] })
     expect(testeRuim.success).toBe(false)
+  })
+})
+
+/** No Python (tabela da proposta): "testar o programa e testar uma função". */
+const dobro = {
+  id: 'dobro',
+  name: 'O dobro dá certo',
+  rule: {
+    type: 'functionReturns',
+    name: 'dobro',
+    cases: [
+      { args: [2], expected: 4 },
+      { args: [0], expected: 0 },
+    ],
+  },
+}
+
+describe('os testes da criança no Python', () => {
+  it('o teste de função tem forma no documento e roda só no Python', () => {
+    expect(isStudioStudentTest(dobro)).toBe(true)
+    expect(isRunnableStudentTest(dobro as never, 'python')).toBe(true)
+    // No JavaScript clássico a aba não testa função (a tabela da proposta).
+    expect(isRunnableStudentTest(dobro as never, 'javascript')).toBe(false)
+  })
+
+  it('o teste de função recusa forma ruim: sem casos, casos demais, chave a mais, nome vazio', () => {
+    const ruins = [
+      { ...dobro, rule: { ...dobro.rule, cases: [] } },
+      {
+        ...dobro,
+        rule: {
+          ...dobro.rule,
+          cases: Array.from({ length: STUDENT_TEST_CASES_MAX + 1 }, () => dobro.rule.cases[0]),
+        },
+      },
+      { ...dobro, rule: { ...dobro.rule, steps: [] } },
+      { ...dobro, rule: { ...dobro.rule, name: '' } },
+      { ...dobro, rule: { ...dobro.rule, cases: [{ expected: 1 }] } },
+    ]
+    for (const ruim of ruins) expect(isStudioStudentTest(ruim)).toBe(false)
+  })
+
+  it('o teto de casos é o dos objetivos', () => {
+    expect(STUDENT_TEST_CASES_MAX).toBe(EXECUTION_LIMITS.maxCases)
+  })
+
+  it('o teste do programa no Python: tecla e espera, a variável ou as mensagens', () => {
+    expect(isRunnableStudentTest(moeda as never, 'python')).toBe(true)
+    const mensagens = {
+      ...moeda,
+      rule: {
+        ...moeda.rule,
+        expect: { target: { kind: 'console' }, compare: 'contains', value: 'Fim' },
+      },
+    }
+    expect(isRunnableStudentTest(mensagens as never, 'python')).toBe(true)
+    const naoRodam = [
+      // A tela do Python é um desenho: não há texto de página para ler.
+      {
+        ...moeda,
+        rule: {
+          ...moeda.rule,
+          expect: { target: { kind: 'text' }, compare: 'contains', value: 'Fim' },
+        },
+      },
+      // O clique no sprite de um grupo é do Jogo 2D.
+      {
+        ...moeda,
+        rule: {
+          ...moeda.rule,
+          steps: [
+            {
+              action: 'clickTarget',
+              target: { kind: 'sprite', path: 'moeda', groupPath: 'moedas' },
+            },
+          ],
+        },
+      },
+    ]
+    for (const teste of naoRodam) {
+      expect(isRunnableStudentTest(teste as never, 'javascript')).toBe(true)
+      expect(isRunnableStudentTest(teste as never, 'python')).toBe(false)
+    }
+  })
+
+  it('o documento do Python clássico guarda os testes; sem testes, nada muda', () => {
+    const hash = 'b'.repeat(64)
+    const documento = {
+      formatVersion: 3,
+      id: 'project-2',
+      name: 'Dobro',
+      createdAt: 1,
+      updatedAt: 2,
+      projectTools: [],
+      installedExtensions: [],
+      assets: [],
+      ir: null,
+      blocksState: null,
+      programmingLanguage: 'python',
+      runtime: { profileId: 'python-browser', releaseId: 'python-1', manifestSha256: hash },
+      kind: 'classic',
+      mode: 'bridge',
+      python: {
+        entrypoint: 'main.py',
+        dependencyLock: {
+          lockVersion: 1,
+          target: 'browser',
+          pythonVersion: '3.14.2',
+          runtimeManifestSha256: hash,
+          requirementsSha256: hash,
+          packages: [],
+        },
+      },
+      files: { 'main.py': 'def dobro(n):\n    return n * 2\n' },
+    }
+    const semTestes = StudioProjectDocumentSchema.safeParse(documento)
+    const comTestes = StudioProjectDocumentSchema.safeParse({
+      ...documento,
+      studentTests: [dobro, moeda],
+    })
+    expect(semTestes.success).toBe(true)
+    if (semTestes.success) expect(Object.hasOwn(semTestes.data, 'studentTests')).toBe(false)
+    expect(comTestes.success).toBe(true)
+    if (comTestes.success) expect(comTestes.data).toMatchObject({ studentTests: [dobro, moeda] })
+    expect(
+      StudioProjectDocumentSchema.safeParse({
+        ...documento,
+        studentTests: [{ ...dobro, rule: { type: 'script', steps: [], code: 'return true' } }],
+      }).success,
+    ).toBe(false)
   })
 })

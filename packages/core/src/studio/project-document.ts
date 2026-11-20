@@ -195,6 +195,8 @@ const pythonClassicSchema = z
     python: StudioPythonProjectConfigSchema,
     ir: requiredPayload,
     blocksState: requiredPayload,
+    /** "Meus testes" (`student-tests.ts`): só no projeto que tem testes. */
+    studentTests: StudioStudentTestsSchema.optional(),
   })
   .superRefine((project, context) => {
     if (project.python.entrypoint !== 'main.py')

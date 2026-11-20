@@ -1,5 +1,9 @@
 import { z } from 'zod'
-import type { ExecutionExpectation, ExecutionStep } from '../learning/project-execution'
+import type {
+  ExecutionExpectation,
+  ExecutionStep,
+  FunctionCase,
+} from '../learning/project-execution'
 
 /**
  * Os testes que a criança escreve no Estúdio, na aba "Meus testes" (proposta aprovada em
@@ -20,6 +24,10 @@ import type { ExecutionExpectation, ExecutionStep } from '../learning/project-ex
  *
  * Diferente de um objetivo de aula, o teste da criança só tem passos e a conferência do fim: sem
  * pontos intermediários nem a observação parado-e-anda (a aba não os oferece).
+ *
+ * No Python (tabela da proposta: "testar o programa e testar uma função"), o teste também pode ser
+ * uma regra `functionReturns`: a função que a criança escreveu, chamada com os casos dela ("o que
+ * ela recebe e o que ela tem de responder, um caso por linha"), no máximo 8 casos.
  */
 
 /** Quantos testes um projeto guarda. */
@@ -36,12 +44,29 @@ export const STUDENT_TEST_MAX_CHARS = 6_000
 
 const STUDENT_TEST_ID = /^[A-Za-z0-9_-]{1,40}$/
 
-/** A regra de um teste da criança: só os passos e a conferência do fim. */
-export interface StudentTestRule {
+/**
+ * Quantos casos um teste de função tem: o mesmo teto dos objetivos (`EXECUTION_LIMITS.maxCases`,
+ * que este módulo não importa; um teste do core confere que os dois andam juntos).
+ */
+export const STUDENT_TEST_CASES_MAX = 8
+
+/** A regra de um teste do programa: só os passos e a conferência do fim. */
+export interface StudentTestBehaviorRule {
   type: 'behavior'
   steps: ExecutionStep[]
   expect: ExecutionExpectation
 }
+
+/** A regra de um teste de função: o nome da função e os casos (o que recebe, o que responde). */
+export interface StudentTestFunctionRule {
+  type: 'functionReturns'
+  name: string
+  /** O arquivo da função, quando não é o arquivo inicial. */
+  module?: string
+  cases: FunctionCase[]
+}
+
+export type StudentTestRule = StudentTestBehaviorRule | StudentTestFunctionRule
 
 export interface StudioStudentTest {
   id: string
@@ -65,17 +90,31 @@ export function isStudioStudentTest(value: unknown): value is StudioStudentTest 
   )
     return false
   const rule = value.rule
-  if (
-    !record(rule) ||
-    !Object.keys(rule).every((key) => key === 'type' || key === 'steps' || key === 'expect') ||
-    rule.type !== 'behavior' ||
-    !Array.isArray(rule.steps) ||
-    rule.steps.length > STUDENT_TEST_STEPS_MAX ||
-    !rule.steps.every(record) ||
-    !record(rule.expect) ||
-    !record(rule.expect.target)
-  )
-    return false
+  if (!record(rule)) return false
+  const shaped =
+    rule.type === 'behavior'
+      ? Object.keys(rule).every((key) => key === 'type' || key === 'steps' || key === 'expect') &&
+        Array.isArray(rule.steps) &&
+        rule.steps.length <= STUDENT_TEST_STEPS_MAX &&
+        rule.steps.every(record) &&
+        record(rule.expect) &&
+        record(rule.expect.target)
+      : rule.type === 'functionReturns' &&
+        Object.keys(rule).every(
+          (key) => key === 'type' || key === 'name' || key === 'module' || key === 'cases',
+        ) &&
+        typeof rule.name === 'string' &&
+        rule.name.length > 0 &&
+        rule.name.length <= 100 &&
+        (rule.module === undefined ||
+          (typeof rule.module === 'string' &&
+            rule.module.length > 0 &&
+            rule.module.length <= 200)) &&
+        Array.isArray(rule.cases) &&
+        rule.cases.length > 0 &&
+        rule.cases.length <= STUDENT_TEST_CASES_MAX &&
+        rule.cases.every((item) => record(item) && Array.isArray(item.args))
+  if (!shaped) return false
   let text: string
   try {
     text = JSON.stringify(value)
