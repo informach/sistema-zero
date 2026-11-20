@@ -72,8 +72,10 @@ export function PerformancePanel(): JSX.Element {
 function PerfReadings({ latest }: { latest: PerfSlice }): JSX.Element {
   const t = usePerfT()
   const measured = t('perf.measured')
+  // Os 3D contam objetos e desenhos (a proposta: "objetos e desenhos por quadro"); os 2D, sprites.
+  const threeD = latest.objects !== null || latest.draws !== null
   return (
-    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+    <div className={`grid grid-cols-2 gap-2 ${threeD ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
       <Reading
         label={t('perf.fps')}
         tag={measured}
@@ -88,7 +90,22 @@ function PerfReadings({ latest }: { latest: PerfSlice }): JSX.Element {
         unit="ms"
         note={t('perf.frame.note')}
       />
-      {latest.sprites === null ? (
+      {threeD ? (
+        <>
+          <CountReading
+            label={t('perf.objects')}
+            value={latest.objects}
+            unit={t('perf.objects.unit')}
+            note={t('perf.objects.note')}
+          />
+          <CountReading
+            label={t('perf.draws')}
+            value={latest.draws}
+            unit={t('perf.draws.unit')}
+            note={t('perf.draws.note')}
+          />
+        </>
+      ) : latest.sprites === null ? (
         <Reading
           label={t('perf.sprites')}
           tag={t('perf.unavailable')}
@@ -113,6 +130,32 @@ function PerfReadings({ latest }: { latest: PerfSlice }): JSX.Element {
         textValue
       />
     </div>
+  )
+}
+
+/** Um número que o motor conta: medido quando veio, "Sem leitura" quando não. */
+function CountReading({
+  label,
+  value,
+  unit,
+  note,
+}: {
+  label: string
+  value: number | null
+  unit: string
+  note: string
+}): JSX.Element {
+  const t = usePerfT()
+  return value === null ? (
+    <Reading
+      label={label}
+      tag={t('perf.unavailable')}
+      value={t('perf.noReading')}
+      note={note}
+      textValue
+    />
+  ) : (
+    <Reading label={label} tag={t('perf.measured')} value={String(value)} unit={unit} note={note} />
   )
 }
 

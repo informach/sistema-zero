@@ -17,6 +17,9 @@ export interface PerfSlice {
   frameMsMax: number
   /** Sprites desenhados no último quadro, quando o motor conta. */
   sprites: number | null
+  /** Os 3D: objetos ligados na cena e desenhos do último quadro. */
+  objects: number | null
+  draws: number | null
   /** A página tem um `<canvas>`; sem ele, não há quadros de jogo para medir. */
   canvas: boolean
 }

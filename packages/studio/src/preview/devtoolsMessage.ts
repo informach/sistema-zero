@@ -18,6 +18,10 @@ export interface DevtoolsPerfMessage {
   frameMsMax: number
   /** Sprites desenhados no último quadro, quando o motor conta; `null` quando não conta. */
   sprites: number | null
+  /** Os 3D: objetos ligados na cena (malhas, sprites, pontos e linhas); `null` nos outros. */
+  objects: number | null
+  /** Os 3D: quantas vezes a placa de vídeo desenhou no último quadro; `null` nos outros. */
+  draws: number | null
   /** A página tem um `<canvas>`: sem ele é uma página de HTML e CSS, sem quadros de jogo. */
   canvas: boolean
   /**
@@ -45,6 +49,8 @@ export function isDevtoolsPerfMessage(value: unknown): value is DevtoolsPerfMess
     finite(m.frameMsAvg, 0, 60_000) &&
     finite(m.frameMsMax, 0, 60_000) &&
     (m.sprites === null || (finite(m.sprites, 0, 1_000_000) && Number.isInteger(m.sprites))) &&
+    (m.objects === null || (finite(m.objects, 0, 1_000_000) && Number.isInteger(m.objects))) &&
+    (m.draws === null || (finite(m.draws, 0, 1_000_000) && Number.isInteger(m.draws))) &&
     typeof m.canvas === 'boolean' &&
     finite(m.doc, 1, Number.MAX_SAFE_INTEGER) &&
     Number.isInteger(m.doc)

@@ -15,6 +15,12 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameRules3DRuntime } from '../game3dRules/runtime'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
+import {
+  PAUSED_FLAG_ENGINE,
+  THREE_INVESTIGATION_VARIANT,
+  type ThreeInvestigationEngine,
+  withThreeInvestigation,
+} from '../three3dInvestigation'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
 import { GAME_3D_PLATFORM_KIT_METHODS } from './platformCodec'
@@ -3022,6 +3028,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
         // de jogo, recomeçando) os laços da criança esperam e a cena só é redesenhada.
         var ruled = world === _currentWorld();
         var waitingForScene = world._scenePending && !world._sceneHandle;
+        /*__SZ_3D_INVESTIGAR_QUADRO__*/
         if (ruled) rules.beforeFrame(world.camera);
         // Carimbo do quadro: as consultas de mira/chão sincronizam as matrizes uma vez só.
         world._frame = (world._frame || 0) + 1;
@@ -4310,6 +4317,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
 
   // ---- Partida: a fábrica do projeto roda de novo a cada "Recomeçar" ----
   var _paused = false;
+  /*__SZ_3D_INVESTIGAR__*/
   var _projectFactory = null;
   function _runFactory() {
     _paused = false;
@@ -4594,15 +4602,30 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
  * compõe os seus subsistemas: o fragmento roda DENTRO da IIFE e enxerga tudo que
  * o runtime principal já definiu, sem criar outro global nem outro import.
  */
+/**
+ * A aba Investigar e a medida no Jogo 3D (`../three3dInvestigation.ts`): a pausa é a `_paused`
+ * das regras; o laço que conta é o da cena atual (`ruled`), fora da espera da cena.
+ */
+const GAME_3D_INVESTIGATION: ThreeInvestigationEngine = {
+  inspector: 'game-3d:investigar',
+  ...PAUSED_FLAG_ENGINE,
+  frameGuard: 'ruled',
+  plays: '!_paused && !waitingForScene',
+  frameRenderer: 'world.renderer',
+  renderer: '(_currentWorld() || {}).renderer',
+  scene: '(_currentWorld() || {}).scene',
+}
+
 function composeGameThreeDRuntime(
   platformSource: string,
   sceneSource: string = gameThreeDSceneRuntimeSource,
+  investigate = false,
 ): string {
   return compactOfficialRuntimeSource(
     withThreeRenderBudgetRuntime(
       withGameRules3DRuntime(
         withThreeModelsRuntime(
-          gameThreeDRuntimeBase
+          withThreeInvestigation(gameThreeDRuntimeBase, investigate ? GAME_3D_INVESTIGATION : null)
             .replace('  /*__SZ_GAME_3D_SCENE_RUNTIME__*/', () => sceneSource)
             // Funções como substituto: um `$&`/`$'` no fragmento seria lido como padrão.
             .replace('  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/', () => platformSource)
@@ -4669,6 +4692,7 @@ export function gameThreeDRuntimeForVariant(variant: string): string {
     parts.has(GAME_3D_WITHOUT_SCENE_VARIANT)
       ? gameThreeDSceneAbsentRuntimeSource
       : gameThreeDSceneRuntimeSource,
+    parts.has(THREE_INVESTIGATION_VARIANT),
   )
   composedByVariant.set(variant, composed)
   return composed

@@ -30,6 +30,11 @@
  * só valem vindos do `parent` (na casca, a casca, que repassa o do editor).
  */
 
+import {
+  type ExtensionBootstrapContext,
+  type ExtensionDefinition,
+  loadExtensionBootstrapScripts,
+} from '#extensions'
 import { instrumentCheckScript } from '../check/instrumentCheckScript'
 import { investigationWindowFor, perfWindowFor } from '../state/devtools'
 import {
@@ -111,6 +116,17 @@ export interface DevtoolsBridgeOptions {
  */
 const STEP_WAIT_FRAMES = 30
 
+/**
+ * As portas da aba nos motores que não têm uma API de pausa pública, na ordem em que a ponte
+ * procura (só um motor de jogo roda por projeto): o 2D Avançado e os três 3D.
+ */
+const ENGINE_PROBES = [
+  'game-2d-advanced:investigar',
+  'game-3d:investigar',
+  'world-3d:investigar',
+  'game-3d-advanced:investigar',
+]
+
 /** Cada documento montado ganha um número maior que o anterior (ver `doc` nas mensagens). */
 let lastDocument = 0
 
@@ -119,6 +135,65 @@ export function createInvestigationScope(): string {
   const bytes = new Uint8Array(12)
   crypto.getRandomValues(bytes)
   return `__sz${[...bytes].map((b) => b.toString(16).padStart(2, '0')).join('')}`
+}
+
+/**
+ * Os motores 3D com a variante `investigar` (`official-extensions/three3dInvestigation.ts`): o
+ * código das abas só entra no motor quando uma delas está ligada, então a escolha mora aqui,
+ * neste módulo baixado sob demanda, e não na definição da extensão (que vai no pacote de
+ * abertura do modo Blocos). Cada um compõe a variante de sempre do projeto mais `investigar`.
+ */
+/**
+ * O nome da variante (`THREE_INVESTIGATION_VARIANT`, conferido em `devtoolsEngines.test.ts`).
+ * Escrito aqui, e não importado: importar o módulo dos motores daria a ele um arquivo próprio no
+ * build, e o nome desse arquivo entraria na lista de pré-carga do pacote de abertura do modo
+ * Blocos, que está no teto. Só os três motores o importam, e ele fica no pedaço que já dividem.
+ */
+const INVESTIGATION_VARIANT = 'investigar'
+
+const INVESTIGATED_ENGINES: Record<string, (variant: string) => Promise<string>> = {
+  'game-3d': async (variant) =>
+    (await import('../official-extensions/game-3d/runtime')).gameThreeDRuntimeForVariant(variant),
+  'world-3d': async (variant) =>
+    (await import('../official-extensions/world-3d/runtime')).world3DRuntimeForVariant(variant),
+  'game-3d-advanced': async (variant) =>
+    (await import('../official-extensions/game-3d-advanced/runtime')).gameKit3DRuntimeForVariant(
+      variant,
+    ),
+}
+
+/**
+ * Os motores do projeto como a prévia os injeta com uma aba ligada: os mesmos de
+ * `loadExtensionBootstrapScripts`, na mesma ordem (o primeiro de cada id), com os 3D na
+ * variante `investigar`.
+ *
+ * ⚠️ Só usa de `#extensions` o que a prévia já usa (`loadExtensionBootstrapScripts`): um nome
+ * novo exportado do pedaço principal muda os apelidos curtos que o build dá aos outros, e os
+ * pedaços do pacote de abertura do modo Blocos, que importam dele, crescem uns bytes (medido:
+ * +23 com `loadExtensionBootstrapScript` e `extensionBootstrapVariant`). A variante de sempre
+ * vem direto da definição do motor, que é o que `extensionBootstrapVariant` faz com os 3D.
+ */
+export async function loadDevtoolsExtensionScripts(
+  extensions: readonly ExtensionDefinition[],
+  context?: ExtensionBootstrapContext,
+): Promise<string[]> {
+  const seen = new Set<string>()
+  const unique = extensions.filter((extension) => {
+    const id = extension.manifest.id
+    if (seen.has(id)) return false
+    seen.add(id)
+    return true
+  })
+  return Promise.all(
+    unique.map(async (extension) => {
+      const engine = INVESTIGATED_ENGINES[extension.manifest.id]
+      const runtime = extension.runtime
+      if (!engine || runtime.bootstrapScript !== undefined)
+        return (await loadExtensionBootstrapScripts([extension], context))[0] ?? ''
+      const base = context && runtime.bootstrapVariant ? runtime.bootstrapVariant(context) : ''
+      return engine([base, INVESTIGATION_VARIANT].filter(Boolean).join('+'))
+    }),
+  )
 }
 
 /** O script da criança com o leitor das variáveis (as linhas não mudam de número). */
@@ -158,15 +233,17 @@ export function buildDevtoolsBridgeRuntime(
     return null;
   }
   function advanced() {
-    var probe = inspectors && inspectors['game-2d-advanced:investigar'];
-    return typeof probe === 'function' ? probe : null;
+    var names = ${JSON.stringify(ENGINE_PROBES)};
+    for (var i = 0; inspectors && i < names.length; i++) {
+      var probe = inspectors[names[i]];
+      if (typeof probe === 'function') return probe;
+    }
+    return null;
   }
   if (${measure} && raf) (function () {
     var started = false, start = 0, last = 0, frames = 0, sum = 0, slowest = 0;
-    function sprites() {
-      var state = lifecycle();
-      var drawn = state && state.drawn;
-      return typeof drawn === 'number' && drawn >= 0 && drawn % 1 === 0 ? drawn : null;
+    function count(value) {
+      return typeof value === 'number' && value >= 0 && value % 1 === 0 ? value : null;
     }
     function frame(now) {
       if (started) {
@@ -180,8 +257,10 @@ export function buildDevtoolsBridgeRuntime(
       }
       last = now;
       if (now - start >= ${DEVTOOLS_PERF_SLICE_MS} && frames > 0) {
+        var state = lifecycle();
         post({ type: '${DEVTOOLS_PERF_MESSAGE}', ms: now - start, frames: frames,
-          frameMsAvg: sum / frames, frameMsMax: slowest, sprites: sprites(),
+          frameMsAvg: sum / frames, frameMsMax: slowest, sprites: count(state && state.drawn),
+          objects: count(state && state.objects), draws: count(state && state.draws),
           canvas: !!document.querySelector('canvas') });
         start = now; frames = 0; sum = 0; slowest = 0;
       }
@@ -330,6 +409,8 @@ export function listenToDevtools(
           frameMsAvg: data.frameMsAvg,
           frameMsMax: data.frameMsMax,
           sprites: data.sprites,
+          objects: data.objects,
+          draws: data.draws,
           canvas: data.canvas,
         })
     } else if (isDevtoolsStateMessage(data)) {

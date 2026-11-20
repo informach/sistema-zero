@@ -71,6 +71,7 @@ isolamento pode acrescentar bytes a ele.
 | C1 | Perfil de CPU e três desperdícios tirados: a edição com 10 mil blocos foi de 444 ms para 199 ms | **feito** |
 | C5 | Perfil no navegador: o que sobra é a quantidade de nós desenhados (abrir 5 mil blocos leva 18 s; arrastar prende a página) | **feito** (sem placa de vídeo) |
 | C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos de 16,7–17,8 s para 13,9–14,0 s, duas amostras por braço, sem artefato bruto versionado); a abertura sem desenhar a cauda distante está em andamento (etapa 3 do plano de 20/11) |
+| C6, botões do canto dos blocos | Pedido dela em 20/11: centralizar, aproximar, afastar e a lixeira sumiam e no lugar vinha uma imagem esquisita; o conserto pôs ícones locais mais feios, a lixeira ficou por baixo dos blocos e não abre mais a tampa | pendente: causa raiz, voltar aos desenhos do Blockly sem sumir, lixeira por cima e com a tampa, teste e conferência nos três navegadores |
 | D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente (etapas 5 a 11 do plano de 20/11). Persistência v4: a rodada de homologação de 19/11 (`docs/qa/2026-11-19-studio-v4-homologacao.md`) terminou em falha; a revisão de 20/11 corrigiu P2 e mantém P1, P3 e P4 abertos |
 
 ## A1: o que existe e como rodar

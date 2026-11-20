@@ -19,7 +19,14 @@ interface Posted {
   origin: string
 }
 
-function runBridge(options: { drawn?: number | (() => never); canvas?: boolean } = {}) {
+function runBridge(
+  options: {
+    drawn?: number | (() => never)
+    canvas?: boolean
+    /** Uma porta de motor sem pausa pública (o 2D Avançado e os 3D), pelo nome. */
+    probe?: { name: string; reading: Record<string, unknown> }
+  } = {},
+) {
   const posted: Posted[] = []
   let pending: ((now: number) => void) | null = null
   const parent = {
@@ -33,6 +40,10 @@ function runBridge(options: { drawn?: number | (() => never); canvas?: boolean }
     inspectors['game-2d:observation'] = () => ({
       lifecycle: () => (typeof drawn === 'function' ? drawn() : { drawn }),
     })
+  }
+  if (options.probe) {
+    const { reading } = options.probe
+    inspectors[options.probe.name] = () => reading
   }
   const window = {
     parent,
@@ -97,6 +108,23 @@ describe('a ponte da aba Desempenho', () => {
     }
   })
 
+  it('nos 3D, a fatia leva os objetos e os desenhos que a porta do motor contou', () => {
+    for (const name of [
+      'game-3d:investigar',
+      'world-3d:investigar',
+      'game-3d-advanced:investigar',
+    ]) {
+      const { posted, frame } = runBridge({
+        probe: { name, reading: { frame: 9, paused: false, drawn: null, objects: 12, draws: 30 } },
+      })
+      frame(0)
+      frame(520)
+      const message = posted[0]?.message
+      expect(isDevtoolsPerfMessage(message)).toBe(true)
+      expect(message).toMatchObject({ sprites: null, objects: 12, draws: 30 })
+    }
+  })
+
   it('uma página sem canvas avisa que não tem quadros de jogo', () => {
     const { posted, frame } = runBridge({ canvas: false })
     frame(0)
@@ -112,6 +140,8 @@ describe('a ponte da aba Desempenho', () => {
       frameMsAvg: 16,
       frameMsMax: 20,
       sprites: 2,
+      objects: null,
+      draws: null,
       canvas: true,
       doc: 3,
     }
@@ -180,6 +210,8 @@ describe('quem escuta as fatias, no editor', () => {
     frameMsAvg: 16,
     frameMsMax: 20,
     sprites: 2,
+    objects: null,
+    draws: null,
     canvas: true,
     doc,
   })

@@ -109,7 +109,15 @@ describe('ClassicDock', () => {
 })
 
 describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
-  const fatia = { fps: 22, frameMsAvg: 45, frameMsMax: 120, sprites: 2, canvas: true }
+  const fatia = {
+    fps: 22,
+    frameMsAvg: 45,
+    frameMsMax: 120,
+    sprites: 2,
+    objects: null,
+    draws: null,
+    canvas: true,
+  }
 
   it('Investigar e Desempenho ainda não existem no Python (o Python ganha as abas no lote dele)', () => {
     const { stores, wrap } = setup()
@@ -153,6 +161,34 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     expect(within(painel).getAllByText('medido')).toHaveLength(3)
     expect(within(painel).getByText(/o jogo ficou lento 1 vez/)).toBeTruthy()
     expect(within(painel).getByText('O quadro mais lento levou 120 ms.')).toBeTruthy()
+  })
+
+  it('num jogo 3D, mostra os objetos na cena e os desenhos por quadro no lugar dos sprites', async () => {
+    const { stores, wrap } = setup()
+    act(() =>
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        ),
+    )
+    act(() => stores.ui.getState().setClassicDock('performance'))
+    act(() => stores.ui.setState({ measuring: true }))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('switch', { name: 'Parar de medir' })
+    act(() =>
+      perfWindowFor(stores.ui)
+        .getState()
+        .push({ ...fatia, sprites: null, objects: 12, draws: 30 }),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('Objetos na cena')).toBeTruthy()
+    expect(within(painel).getByText('12')).toBeTruthy()
+    expect(within(painel).getByText('Desenhos por quadro')).toBeTruthy()
+    expect(within(painel).getByText('30')).toBeTruthy()
+    expect(within(painel).queryByText('Coisas no jogo')).toBeNull()
+    expect(within(painel).getAllByText('medido')).toHaveLength(4)
   })
 
   it('numa página sem canvas, diz que não há quadros de jogo para medir', async () => {
