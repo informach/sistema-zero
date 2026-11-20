@@ -95,6 +95,7 @@ async function matchesCommittedRecovery(
     recovery.head.sequence < head.sequence
   ) {
     const { recoverySourceArchiveKey } = await import('./projectRecoverySources')
+    const { isV3RecoveryArchiveOf } = await import('../project-migrations/localV3RecoveryArchive')
     const archived = await readValues(scope.store, [
       await recoverySourceArchiveKey(
         recovery.projectId,
@@ -103,7 +104,17 @@ async function matchesCommittedRecovery(
         version,
       ),
     ])
-    if (archived[0] === undefined) return true
+    // The migration's archive of this very v3 copy is not a recovery-source archive: a browser
+    // that migrated before the keys were split keeps it here (P1 of the 20/11/2026 review).
+    if (
+      archived[0] === undefined ||
+      isV3RecoveryArchiveOf(archived[0], {
+        projectId: recovery.projectId,
+        writer: recovery.head.writer,
+        token: recovery.head.token,
+      })
+    )
+      return true
   }
   try {
     if (!puts.every(([, value], index) => localSnapshotsEqual(value, values[index]))) return false

@@ -50,6 +50,11 @@ if (new URLSearchParams(location.search).has('symbols')) {
     'export function zzUpdate() { return item349; }',
   ].join('\n')
 }
+if (new URLSearchParams(location.search).has('lineBreaks')) {
+  // Um arquivo trazido de fora com CRLF e LF juntos (o Monaco mostra com uma quebra só).
+  project.tree['src/main.ts'].content =
+    'import { speed } from "./config"\r\nexport const score = speed + 1\nexport const mixed: number = "text"\r\n'
+}
 if (new URLSearchParams(location.search).has('references')) {
   project.tree['src/main.ts'].content = [
     'export const score = 1;',

@@ -1,10 +1,18 @@
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
 import { createEmptyProject } from '../core/project'
+import { encodeExitJournal } from '../state/exitJournalCodec'
 import { readAllKeys, readValue, writeInOneTransaction } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
 import { decodeProjectJsonGraph } from '../state/projectJsonGraphDecode'
-import { projectBackupKey, projectHeadKey, projectMetaKey } from '../state/projectStorageKeys'
+import { recoverySourceArchiveKey } from '../state/projectRecoverySources'
+import type { RecoveryWrite } from '../state/projectStorageCoordinator'
+import {
+  projectBackupKey,
+  projectHeadKey,
+  projectMetaKey,
+  projectRecoveryKey,
+} from '../state/projectStorageKeys'
 import { projectStorageEntries } from '../state/projectStorageRecords'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 import {
@@ -18,6 +26,7 @@ import {
 } from './localBackups'
 import { migrateLocalProject } from './localProjects'
 import { migrateLocalV3Project } from './localV3'
+import { archiveLocalV3Recovery, prepareLocalV3Recovery } from './localV3Recovery'
 
 function database(): ProjectStorageScope {
   const identity = `backups-${crypto.randomUUID()}`
@@ -236,12 +245,172 @@ test('card preservado sem backup: a cópia vem dos registros que continuam no lu
   expect(await readValue(scope.store, `sz:v3:project-meta:${original.id}`)).toBeDefined()
 })
 
-test('com backup, o card preservado restaura o backup', async () => {
+// P1 da revisão de 20/11/2026: "Restaurar uma cópia" pegava o backup do dia da migração antes de
+// tudo e ignorava a edição preservada, que é justamente o que o card "Preservado" guarda.
+function capturingImport() {
+  const imported: Array<{ files: Record<string, string>; name: string }> = []
+  return {
+    imported,
+    importSnapshot: async (raw: unknown, opts: { name: string; namespace: string }) => {
+      imported.push(raw as { files: Record<string, string>; name: string })
+      return fakeImport(raw, opts)
+    },
+  }
+}
+
+function editedProject(id: string, script: string, updatedAt: number) {
+  const project = createEmptyProject(id, 'Meu jogo de antes')
+  project.files['script.js'] = script
+  project.updatedAt = updatedAt
+  return project
+}
+
+function exitCopy(
+  project: ReturnType<typeof editedProject>,
+  writer: string,
+  version: 3 | 4,
+  extra: Partial<RecoveryWrite> = {},
+): RecoveryWrite {
+  return {
+    version: 1,
+    projectId: project.id,
+    head: { version: 1, writer, token: `saida-${writer}`, base: 'v3-base', sequence: 0 },
+    applications: [],
+    write: { puts: projectStorageEntries(project, version) },
+    ...extra,
+  }
+}
+
+test('sem edição preservada, a cópia é o documento atual; o backup do dia da migração fica por último', async () => {
   const scope = database()
   const original = await seedV3(scope)
   await migrateLocalV3Project(original.id, scope)
   const copy = await restorePreservedProject(original.id, { scope, importSnapshot: fakeImport })
+  expect(copy?.source).toBe('records')
+})
+
+test('só o backup reconstrói: a cópia vem dele', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  await writeInOneTransaction(scope.store, {
+    deletes: (await readAllKeys(scope.store)).filter((key) =>
+      /^sz:v4:project-(meta|files|state):/.test(String(key)),
+    ),
+  })
+  const { imported, importSnapshot } = capturingImport()
+  const copy = await restorePreservedProject(original.id, { scope, importSnapshot })
   expect(copy?.source).toBe('backup')
+  expect(imported[0]!.files).toEqual(original.files)
+})
+
+test('com uma cópia de saída v3 deixada depois da migração, a cópia restaurada é essa edição', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const edit = editedProject(original.id, 'console.log("edição preservada")', Date.now() + 60_000)
+  const nativeKey = projectRecoveryKey(original.id, 'aba-antiga', 3)
+  await writeInOneTransaction(scope.store, {
+    puts: [[nativeKey, exitCopy(edit, 'aba-antiga', 3)]],
+  })
+  const { imported, importSnapshot } = capturingImport()
+  const copy = await restorePreservedProject(original.id, { scope, importSnapshot })
+  expect(copy?.source).toBe('edit')
+  expect(imported[0]!.files['script.js']).toBe('console.log("edição preservada")')
+  // Nada do que existe muda: a cópia de saída, o documento atual e o backup continuam lá.
+  expect(await readValue(scope.store, nativeKey)).toBeDefined()
+  expect(await readValue(scope.store, projectMetaKey(original.id, 4))).toBeDefined()
+  expect(await listLocalProjectBackups(original.id, scope)).toHaveLength(1)
+})
+
+test('entre várias edições preservadas vale a mais nova; a de blocos incompletos não entra', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const now = Date.now()
+  const older = editedProject(original.id, 'console.log("cópia v4 mais velha")', now + 1_000)
+  const newer = editedProject(original.id, 'console.log("cópia v4 mais nova")', now + 2_000)
+  const incomplete = editedProject(original.id, 'console.log("sem os blocos")', now + 3_000)
+  await writeInOneTransaction(scope.store, {
+    puts: [
+      [projectRecoveryKey(original.id, 'aba-1', 4), exitCopy(older, 'aba-1', 4)],
+      [projectRecoveryKey(original.id, 'aba-2', 4), exitCopy(newer, 'aba-2', 4)],
+      [
+        projectRecoveryKey(original.id, 'aba-3', 4),
+        exitCopy(incomplete, 'aba-3', 4, { incompleteBlocks: true }),
+      ],
+    ],
+  })
+  const { imported, importSnapshot } = capturingImport()
+  const copy = await restorePreservedProject(original.id, { scope, importSnapshot })
+  expect(copy?.source).toBe('edit')
+  expect(imported[0]!.files['script.js']).toBe('console.log("cópia v4 mais nova")')
+})
+
+test('a cópia de saída que ficou no journal síncrono também é a edição preservada', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const edit = editedProject(original.id, 'console.log("só no journal")', Date.now() + 60_000)
+  const value = exitCopy(edit, 'aba-saindo', 4)
+  const key = `sz:studio-exit:1|${encodeURIComponent(scope.identity)}|${original.id}|aba-saindo|${value.head.token}`
+  globalThis.localStorage.setItem(key, encodeExitJournal(value))
+  try {
+    const { imported, importSnapshot } = capturingImport()
+    const copy = await restorePreservedProject(original.id, {
+      scope: { ...scope, exitJournalStorage: globalThis.localStorage },
+      importSnapshot,
+    })
+    expect(copy?.source).toBe('edit')
+    expect(imported[0]!.files['script.js']).toBe('console.log("só no journal")')
+    expect(globalThis.localStorage.getItem(key)).not.toBeNull()
+  } finally {
+    globalThis.localStorage.removeItem(key)
+  }
+})
+
+test('as partes v3 que uma aba antiga gravou depois da migração são a edição preservada', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const edit = editedProject(original.id, 'console.log("gravado pela aba v3")', Date.now() + 60_000)
+  await seedV3(scope, edit)
+  const { imported, importSnapshot } = capturingImport()
+  const copy = await restorePreservedProject(original.id, { scope, importSnapshot })
+  expect(copy?.source).toBe('records')
+  expect(imported[0]!.files['script.js']).toBe('console.log("gravado pela aba v3")')
+})
+
+test('o arquivo da cópia v3 que a migração guardou é listado e devolve aquela edição', async () => {
+  const scope = database()
+  const original = await seedV3(scope)
+  await migrateLocalV3Project(original.id, scope)
+  const edit = editedProject(original.id, 'console.log("cópia v3 arquivada")', Date.now())
+  const value = exitCopy(edit, 'aba-antiga', 3)
+  const prepared = await prepareLocalV3Recovery(
+    {
+      key: 'entrada-imutavel',
+      projectId: original.id,
+      writer: 'aba-antiga',
+      token: value.head.token,
+      value,
+      encoded: encodeExitJournal(value),
+    },
+    scope,
+  )
+  await archiveLocalV3Recovery(scope, prepared)
+  // O mesmo arquivo, gravado antes de 20/11/2026 na chave do arquivo de origem.
+  const legacyKey = await recoverySourceArchiveKey(original.id, 'aba-antiga', value.head.token, 4)
+  await writeInOneTransaction(scope.store, { puts: [[legacyKey, prepared.archive]] })
+  const backups = await listLocalProjectBackups(original.id, scope)
+  const archived = backups.filter((backup) => backup.kind === 'v3-recovery')
+  expect(archived.map((backup) => backup.key).sort()).toEqual(
+    [prepared.backupKey, legacyKey].sort(),
+  )
+  for (const backup of archived)
+    expect((await readLocalProjectBackup(backup, scope))?.files).toMatchObject({
+      'script.js': 'console.log("cópia v3 arquivada")',
+    })
 })
 
 test('sem backup e sem registros, não inventa cópia', async () => {
