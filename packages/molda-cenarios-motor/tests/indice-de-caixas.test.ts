@@ -68,3 +68,44 @@ test('vazio, caixas coincidentes, raio interno e refit para vazio conservam a or
   indice.definir([])
   expect(indice.limites(new Box3()).isEmpty()).toBe(true)
 })
+
+test('a distância limita a consulta ao trecho e concorda com a varredura das caixas', () => {
+  const caixas = Array.from(
+    { length: 4000 },
+    (_, i) =>
+      new Box3(
+        new Vector3((i % 80) * 2.5 - 100, 0, Math.floor(i / 80) * 2.5 - 60),
+        new Vector3((i % 80) * 2.5 - 99, 2, Math.floor(i / 80) * 2.5 - 59),
+      ),
+  )
+  const indice = new IndiceDeCaixas()
+  indice.definir(caixas)
+  let estado = 99
+  const sortear = () => {
+    estado = (Math.imul(estado, 1664525) + 1013904223) >>> 0
+    return estado / 4294967296
+  }
+  const ponto = new Vector3()
+  for (let i = 0; i < 200; i++) {
+    const raio = new Ray(
+      new Vector3(sortear() * 200 - 100, sortear() * 3, sortear() * 120 - 60),
+      new Vector3(sortear() - 0.5, sortear() * 0.2 - 0.1, sortear() - 0.5).normalize(),
+    )
+    const distancia = sortear() * 6
+    const esperado = caixas.flatMap((c, n) =>
+      c.containsPoint(raio.origin) ||
+      (raio.intersectBox(c, ponto) !== null && ponto.distanceTo(raio.origin) <= distancia)
+        ? [n]
+        : [],
+    )
+    expect(indice.consultar(raio, 0, distancia)).toEqual(esperado)
+    // Um trecho curto visita uma fração do que o raio inteiro cruzaria.
+    expect(esperado.length).toBeLessThanOrEqual(indice.consultar(raio).length)
+  }
+  // Sem distância, tudo como antes; distância inválida é recusada.
+  const raio = new Ray(new Vector3(-120, 1, -59.5), new Vector3(1, 0, 0))
+  expect(indice.consultar(raio, 0, 3)).toEqual([])
+  expect(indice.consultar(raio).length).toBe(80)
+  expect(indice.consultar(raio, 0, 21)).toEqual([0])
+  expect(() => indice.consultar(raio, 0, -1)).toThrow('Distância')
+})
