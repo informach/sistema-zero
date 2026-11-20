@@ -750,6 +750,13 @@ jobs:
           cd packages/studio
           bunx playwright test --config playwright.pinta-chunks.config.ts
 
+      # As aulas protegidas (Cadê e Farol) cobram os objetivos que RODAM o jogo pelo executor do
+      # servidor; sem ele, esses objetivos saíam sem nota. Só o executor aponta para o Chromium do
+      # Playwright: o navegador dos outros testes deste job não muda.
+      - name: Apontar o executor dos objetivos das aulas protegidas
+        working-directory: packages/studio
+        run: node -e "const p=require('playwright-core').chromium.executablePath();require('node:fs').appendFileSync(process.env.GITHUB_ENV,'SZ_CHECK_CHROMIUM='+p+'\n')"
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
