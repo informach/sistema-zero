@@ -35,9 +35,13 @@ const cliente: Ator = { usuarioId: OUTRA, contaId: OUTRA, equipe: false, suporte
 const digest = (letra: string) => letra.repeat(64)
 const AGORA = new Date('2026-11-16T12:00:00Z')
 
-function montar(modo: ModoDosCenarios = 'equipe', lista: string[] = []) {
+function montar(
+  modo: ModoDosCenarios = 'equipe',
+  lista: string[] = [],
+  produto: AberturaDosCenarios['produto'] = async () => true,
+) {
   const repo = new CenariosEmMemoria()
-  const abertura: AberturaDosCenarios = { modo, lista: new Set(lista) }
+  const abertura: AberturaDosCenarios = { modo, lista: new Set(lista), produto }
   let n = 0
   const servico = new CenariosService(
     repo,
@@ -214,6 +218,33 @@ describe('quem entra', () => {
       CenariosFechadosError,
     )
     expect(await montar('aberto').servico.espacos(cliente)).toHaveLength(1)
+  })
+  test('fora da equipe, lista e aberto exigem também o Molda de quem pede', async () => {
+    const pedidos: Ator[] = []
+    const semMolda = async (ator: Ator) => {
+      pedidos.push(ator)
+      return false
+    }
+    await expect(montar('aberto', [], semMolda).servico.espacos(cliente)).rejects.toBeInstanceOf(
+      CenariosFechadosError,
+    )
+    await expect(
+      montar('lista', [OUTRA], semMolda).servico.espacos(cliente),
+    ).rejects.toBeInstanceOf(CenariosFechadosError)
+    expect(pedidos).toEqual([cliente, cliente])
+    // Sem a conferência ligada, a ferramenta fica só para a equipe.
+    const semConferencia = new CenariosService(new CenariosEmMemoria(), () => AGORA, {
+      modo: 'aberto',
+      lista: new Set(),
+    })
+    await expect(semConferencia.espacos(cliente)).rejects.toBeInstanceOf(CenariosFechadosError)
+    expect(await semConferencia.aberto(cliente)).toBe(false)
+    // A equipe na própria conta nem pergunta; em suporte, vale o Molda da conta olhada.
+    expect(await montar('aberto', [], semMolda).servico.espacos(ana)).toHaveLength(2)
+    expect(pedidos).toHaveLength(2)
+    const suporte: Ator = { ...ana, contaId: OUTRA, usuarioId: OUTRA, suporte: true }
+    expect(await montar('aberto', [], semMolda).servico.aberto(suporte)).toBe(false)
+    expect(pedidos.at(-1)).toEqual(suporte)
   })
   test('a equipe em sessão de suporte não entra como equipe nem vê o espaço da equipe', async () => {
     const suporte: Ator = { ...ana, contaId: OUTRA, usuarioId: OUTRA, suporte: true }

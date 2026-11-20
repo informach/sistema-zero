@@ -75,14 +75,14 @@ export class PublicacoesDeCenariosService {
   constructor(
     private readonly repo: CenariosPublicacoesRepository,
     private readonly autoria: Pick<CenariosRepository, 'espaco' | 'reservarBlobs'>,
-    private readonly cenarios: Pick<CenariosService, 'aberto' | 'exportacao'>,
+    private readonly cenarios: Pick<CenariosService, 'modoAdmite' | 'exportacao'>,
     private readonly clock: () => Date,
     private readonly novoId: () => string = randomUUID,
   ) {}
 
   private exigirEquipe(identidade: Ator): Ator {
     const ator = { ...identidade }
-    if (!equipeNaPropriaConta(ator) || !this.cenarios.aberto(ator))
+    if (!equipeNaPropriaConta(ator) || !this.cenarios.modoAdmite(ator))
       throw new CenariosFechadosError(
         'Somente a equipe, na própria conta e fora de suporte, pode publicar no Arquipélago',
       )

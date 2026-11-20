@@ -23,6 +23,7 @@ import { GetAvatarService } from './application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { CenariosService } from './application/cenarios/cenarios.service'
+import { criarConferenciaDoMolda } from './application/cenarios/molda-dos-cenarios'
 import { PublicacoesDeCenariosService } from './application/cenarios/publicacoes.service'
 import { SendChallengeLifecycleService } from './application/challenge-lifecycle/send-challenge-lifecycle.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
@@ -383,23 +384,6 @@ export async function createApplication(env: Env): Promise<Application> {
       )
     : undefined
   const clock = () => new Date()
-  const cenariosRepo = new DrizzleCenariosRepository(db)
-  const cenariosService = new CenariosService(cenariosRepo, clock, {
-    modo: env.CENARIOS_MODO,
-    lista: new Set(
-      (env.CENARIOS_LISTA ?? '')
-        .split(',')
-        .map((id) => id.trim().toLowerCase())
-        .filter(Boolean),
-    ),
-  })
-  const publicacoesDeCenarios = new PublicacoesDeCenariosService(
-    new DrizzlePublicacoesDeCenariosRepository(db),
-    cenariosRepo,
-    cenariosService,
-    clock,
-  )
-
   // Adapters
   const learningRepository = new DrizzleLearningRepository(db, studioAuthoringPolicy)
   const courses = new DrizzleCourseRepository(db)
@@ -476,6 +460,23 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
+  const cenariosRepo = new DrizzleCenariosRepository(db)
+  const cenariosService = new CenariosService(cenariosRepo, clock, {
+    modo: env.CENARIOS_MODO,
+    lista: new Set(
+      (env.CENARIOS_LISTA ?? '')
+        .split(',')
+        .map((id) => id.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+    produto: criarConferenciaDoMolda({ accessCheck, kidsJourney: kidsJourneyQuery, adultJourney }),
+  })
+  const publicacoesDeCenarios = new PublicacoesDeCenariosService(
+    new DrizzlePublicacoesDeCenariosRepository(db),
+    cenariosRepo,
+    cenariosService,
+    clock,
+  )
   const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)

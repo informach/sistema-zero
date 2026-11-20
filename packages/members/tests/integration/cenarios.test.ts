@@ -488,6 +488,19 @@ describe('Molda Cenários: quem entra', () => {
     expect(recusa.status).toBe(403)
     expect((await json(recusa)).error.code).toBe('CENARIOS_FECHADOS')
   })
+  test('aberto para todos, sem o Molda: o cliente recebe aberto falso e 403', async () => {
+    const { app } = buildApp({ cenariosModo: 'aberto', cenariosProduto: async () => false })
+    expect(
+      await json(await pedir(app, 'GET', '/members/cenarios/acesso', undefined, doCliente)),
+    ).toEqual({ aberto: false })
+    const recusa = await pedir(app, 'GET', '/members/cenarios/espacos', undefined, doCliente)
+    expect(recusa.status).toBe(403)
+    expect((await json(recusa)).error.code).toBe('CENARIOS_FECHADOS')
+    // A equipe segue entrando.
+    expect(await json(await pedir(app, 'GET', '/members/cenarios/acesso'))).toEqual({
+      aberto: true,
+    })
+  })
   test('aberto para todos: o cliente tem o espaço dele e não enxerga o de outra conta', async () => {
     const ctx = buildApp({ cenariosModo: 'aberto' })
     const { biblioteca } = await comBiblioteca(ctx)

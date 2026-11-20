@@ -30,7 +30,7 @@ export interface VersaoDeConjuntoView extends Omit<VersaoDeConjunto, 'criadoEm' 
 }
 
 interface Contexto {
-  exigirAberto(ator: Ator): void
+  exigirAberto(ator: Ator): Promise<void>
   bibliotecaDe(ator: Ator, id: string): Promise<{ biblioteca: Biblioteca; espaco: Espaco }>
   abrirCenario(ator: Ator, id: string): Promise<CenarioView>
   abrirMundo(ator: Ator, id: string): Promise<MundoView>
@@ -88,7 +88,7 @@ export class ConjuntosService {
   ) {}
 
   private async de(ator: Ator, id: string) {
-    this.contexto.exigirAberto(ator)
+    await this.contexto.exigirAberto(ator)
     const conjunto = await this.repo.conjunto(id)
     if (!conjunto) throw new CenarioNaoEncontradoError('O conjunto')
     const { espaco } = await this.contexto.bibliotecaDe(ator, conjunto.bibliotecaId)

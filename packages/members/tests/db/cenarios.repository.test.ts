@@ -1793,7 +1793,12 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     const { espaco, biblioteca } = await comBiblioteca(),
       ator = { usuarioId: CONTA, contaId: CONTA, equipe: true, suporte: false },
       comum = { ...ator, equipe: false },
-      abrir = () => new CenariosService(repo, () => AGORA, { modo: 'aberto', lista: new Set() }),
+      abrir = () =>
+        new CenariosService(repo, () => AGORA, {
+          modo: 'aberto',
+          lista: new Set(),
+          produto: async () => true,
+        }),
       s = abrir()
     await guardar(espaco.id, 'a')
     const [m] = (await repo.criarModelos(

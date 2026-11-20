@@ -167,36 +167,44 @@ export class CenariosService {
     })
   }
 
-  aberto(ator: Ator): boolean {
+  /** Só o modo, sem o produto: serve para quem já exige a equipe na própria conta. */
+  modoAdmite(ator: Ator): boolean {
     return podeUsarCenarios(this.abertura, ator)
   }
 
-  private exigirAberto(ator: Ator): void {
-    if (!this.aberto(ator)) throw new CenariosFechadosError()
+  /** A ferramenta está aberta para esta pessoa: o modo e, fora da equipe, o produto Molda. */
+  async aberto(ator: Ator): Promise<boolean> {
+    if (!podeUsarCenarios(this.abertura, ator)) return false
+    if (ator.equipe && !ator.suporte) return true
+    return (await this.abertura.produto?.(ator)) === true
+  }
+
+  private async exigirAberto(ator: Ator): Promise<void> {
+    if (!(await this.aberto(ator))) throw new CenariosFechadosError()
   }
 
   private async espacoDe(ator: Ator, espacoId: string, oque = 'O espaço'): Promise<Espaco> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const espaco = await this.repo.espaco(espacoId)
     if (!espaco || !podeNoEspaco(espaco, ator)) throw new CenarioNaoEncontradoError(oque)
     return espaco
   }
   private async bibliotecaDe(ator: Ator, id: string) {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const biblioteca = await this.repo.biblioteca(id)
     if (!biblioteca) throw new CenarioNaoEncontradoError('A biblioteca')
     const espaco = await this.espacoDe(ator, biblioteca.espacoId, 'A biblioteca')
     return { biblioteca, espaco }
   }
   private async mundoDe(ator: Ator, id: string) {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const mundo = await this.repo.mundo(id)
     if (!mundo) throw new CenarioNaoEncontradoError('O mundo')
     const espaco = await this.espacoDe(ator, mundo.espacoId, 'O mundo')
     return { mundo, espaco }
   }
   private async cenarioDe(ator: Ator, id: string) {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const cenario = await this.repo.cenario(id)
     if (!cenario) throw new CenarioNaoEncontradoError('O cenário')
     const { mundo, espaco } = await this.mundoDe(ator, cenario.mundoId)
@@ -207,7 +215,7 @@ export class CenariosService {
 
   /** Os espaços de quem pede: o da conta e, para a equipe, o da equipe. Cria na primeira vez. */
   async espacos(ator: Ator): Promise<EspacoView[]> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const agora = this.clock()
     const lista = [
       await this.repo.espacoDaConta(ator.contaId, LIMITES_DOS_CENARIOS.bytesDaConta, agora),
@@ -517,7 +525,7 @@ export class CenariosService {
     id: string,
     dados: { nome?: string; pasta?: string; etiquetas?: string[] },
   ): Promise<Modelo> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const modelo = await this.repo.modelo(id)
     if (!modelo) throw new CenarioNaoEncontradoError('O modelo')
     await this.bibliotecaDe(ator, modelo.bibliotecaId)
@@ -667,7 +675,7 @@ export class CenariosService {
     id: string,
     dados: { nome?: string; pasta?: string; etiquetas?: string[]; repeticaoMetros?: number },
   ): Promise<Textura> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const atual = await this.repo.textura(id)
     if (!atual) throw new CenarioNaoEncontradoError('O chão')
     await this.bibliotecaDe(ator, atual.bibliotecaId)

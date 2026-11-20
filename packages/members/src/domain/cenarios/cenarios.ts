@@ -270,9 +270,16 @@ export interface AberturaDosCenarios {
   modo: ModoDosCenarios
   /** Contas liberadas no modo `lista`. */
   lista: ReadonlySet<string>
+  /**
+   * Nos modos `lista` e `aberto`, quem não é da equipe precisa também do Molda: o produto da
+   * conta e a ferramenta liberada na jornada de quem pede (no Kids, a do perfil da criança). Sem
+   * esta conferência, a ferramenta fica só para a equipe.
+   */
+  produto?: (ator: Ator) => Promise<boolean>
 }
 
-/** A ferramenta está aberta para esta pessoa? A equipe entra em qualquer modo, menos desligado. */
+/** O modo admite esta pessoa? A equipe entra em qualquer modo, menos desligado. O produto Molda
+ * de quem não é da equipe é conferido à parte (`AberturaDosCenarios.produto`). */
 export function podeUsarCenarios(abertura: AberturaDosCenarios, ator: Ator): boolean {
   if (abertura.modo === 'desligado') return false
   if (abertura.modo === 'aberto') return true
