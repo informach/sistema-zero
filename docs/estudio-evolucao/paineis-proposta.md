@@ -272,8 +272,11 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   - Provas: o quadro (`framePause.test.ts`: o próximo quadro pintado, a leitura que solta uma volta,
     Continuar, Avançar, os bytes, fechar, pedido de pixels, a próxima resposta do Turtle), a sessão
     (pausar, avançar, continuar e a recusa), as pontes em CPython (o Pygame Zero, a Raylib e o
-    Turtle esperando e respondendo as leituras, provado por mutação no Turtle) e o laço da aba
+    Turtle esperando e respondendo as leituras, provado por mutação no Turtle), o laço da aba
     (pausar, avançar e continuar com os valores do quadro, o quadro antigo, a pausa desfeita e o
-    programa sem tela, provado por mutação).
+    programa sem tela, provado por mutação) e, na suíte Python do navegador, o Pygame Zero (o
+    contador para, anda com Avançar e volta com Continuar) e o Turtle parado no `mainloop`. Foi essa
+    prova que achou o pedido curto barrado no worker: os transportes do Turtle, do Pygame Zero e da
+    Raylib conferiam todo pedido como quadro, e agora deixam o pedido curto ir ao quadro como veio.
 - Próximos: as etapas que faltam do plano (casca ligada em staging, linha de base, Pro em escala,
   persistência, motores e streaming, Pinta e Molda, homologação final).

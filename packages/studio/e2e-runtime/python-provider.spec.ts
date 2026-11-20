@@ -535,8 +535,9 @@ test('Investigar: o Turtle parado no mainloop pausa na próxima resposta e respo
     const { observation } = await page.evaluate(() =>
       globalThis.pythonControllerProbe.observe('tartaruga', 'passos'),
     )
-    if (observation.type !== 'value' || !observation.observed.found) throw new Error('passos')
-    return Number(observation.observed.value)
+    if (observation.type !== 'value') throw new Error('passos')
+    // A tartaruga já checa ao nascer: antes de `passos = 0` a leitura responde que não achou.
+    return observation.observed.found ? Number(observation.observed.value) : null
   }
   await expect.poll(passos, { timeout: 10_000 }).toBe(5)
   const held = await page.evaluate(() => globalThis.pythonControllerProbe.pause('tartaruga', true))
