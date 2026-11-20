@@ -20,3 +20,6 @@ do JSON foi conferida por deepEqual. Biome completo posterior: saída 0,
 16.597 arquivos. A CI Linux precisa ser repetida; estes resultados locais
 não representam uma execução global verde. Core ClassicShell: dez testes e
 27 asserções. Perfil e três gerados: verificadores oficiais aprovados.
+
+Os extratos textuais foram normalizados para LF antes da selagem final. Os hashes
+referem-se aos bytes versionados; os resultados e os hashes dos logs brutos foram mantidos.

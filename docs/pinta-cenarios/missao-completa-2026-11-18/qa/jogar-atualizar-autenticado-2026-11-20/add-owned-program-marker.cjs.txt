@@ -1,0 +1,8 @@
+module.exports=async function(qa){const before=await require('./checkpoint-owned-game.cjs')(qa);if(before.customMarkerInFiles)throw Error('Custom marker already exists');
+const page=qa.modern;await page.getByRole('button',{name:'Programa · script.js',exact:true}).click();
+await page.waitForFunction(id=>Array.from(document.querySelectorAll('.monaco-editor')).some(e=>{const uri=e.getAttribute('data-uri')??'';return uri.includes(id)&&uri.endsWith('/script.js')}),qa.ownedGeneratedGameId);
+const input=page.locator('.monaco-editor textarea');await input.press('Control+End');await page.keyboard.insertText('\nlet qaPinta20261120 = 26020;\n');
+let result;for(let i=0;i<20;i++){await page.waitForTimeout(250);result=await require('./checkpoint-owned-game.cjs')(qa);if(result.customMarkerInFiles&&result.customMarkerInIR)break}
+if(!result?.customMarkerInFiles||!result.customMarkerInIR)throw Error('Custom program not confirmed in files and IR');
+qa.ownedProgramBeforeMapUpdate=result;
+return {...result,editedThroughKeyboard:true};};

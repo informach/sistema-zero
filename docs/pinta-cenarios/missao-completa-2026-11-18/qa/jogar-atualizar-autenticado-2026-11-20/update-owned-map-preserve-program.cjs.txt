@@ -1,0 +1,14 @@
+module.exports=async function(qa){delete require.cache[require.resolve('./checkpoint-protected-map.cjs')];const expected=qa.ownedProgramBeforeMapUpdate;if(!expected?.customMarkerInIR||!expected.customMarkerInFiles)throw Error('Custom program checkpoint missing');
+const page=await qa.context.newPage();qa.updatePage=page;
+await page.goto(qa.origin+'/pinta',{waitUntil:'domcontentloaded',timeout:45000});await page.getByRole('button',{name:'Abrir homologacao-aba-nklptd (Mapa)',exact:true}).click();
+await page.getByRole('img',{name:'Grade do mapa',exact:true}).waitFor({state:'visible',timeout:20000});
+const snapshot=()=>require('./checkpoint-protected-map.cjs')({...qa,modern:page});const before=await snapshot();if(before.secondCell!==0)throw Error('Expected unedited second cell');
+await page.getByRole('button',{name:'Chão',exact:true}).click();await page.getByRole('button',{name:'Borracha',exact:true}).click();await page.getByRole('img',{name:'Grade do mapa',exact:true}).click({position:{x:48,y:16}});
+let changed;for(let i=0;i<30;i++){await page.waitForTimeout(200);changed=await snapshot();if(changed.secondCell===-1)break}
+if(changed?.secondCell!==-1||changed.sha256===before.sha256)throw Error('Map gesture not committed');qa.currentProtectedCheckpoint=changed;
+await qa.modern.bringToFront();let after;
+for(let i=0;i<40;i++){await qa.modern.waitForTimeout(250);after=await require('./checkpoint-owned-game.cjs')(qa);if(after.sceneSha256!==expected.sceneSha256&&after.libRevision>expected.libRevision)break}
+if(!after||after.sceneSha256===expected.sceneSha256||after.libRevision<=expected.libRevision)throw Error('Linked drawing not updated');
+if(after.programSha256!==expected.programSha256||!after.customMarkerInFiles||!after.customMarkerInIR)throw Error('Program changed during drawing update');
+qa.ownedMapUpdate={mapBefore:before.sha256,mapAfter:changed.sha256,programBefore:expected.programSha256,programAfter:after.programSha256,sceneBefore:expected.sceneSha256,sceneAfter:after.sceneSha256,libRevisionBefore:expected.libRevision,libRevisionAfter:after.libRevision,customProgramPreserved:true,precisePhysics:true,nativeSchema:7,firstCell:changed.firstCell,secondCell:changed.secondCell,oldPagePreserved:!qa.old.isClosed(),authenticatedHost:true,cloudWriter6Activated:false};
+return qa.ownedMapUpdate;};

@@ -53,6 +53,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   novo, rollback e publicação completa continuam pendentes. A CI de qualificação
   44741178796 falhou no observador do DOM; uma reprodução com coleta de memória
   identificou o defeito upstream Happy DOM 2264, cuja correção está em verificação.
+  O lote remoto 9456c3da foi integrado e o runtime correspondente 4daf3280… passou
+  na qualificação Linux e na execução real em staging; módulo e ambos os contêineres
+  foram conferidos em `qa/leitor-a-runtime-staging-2026-11-19/continuidade-4daf-2026-11-20/`.
+  A CI 44749541850 parou na formatação de um JSON remoto de QA; o ajuste preserva
+  seus dados, e a nova CI 44752366629 está em execução. Nenhuma ativação de Python,
+  política nova ou gravador foi feita por essas provas.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
@@ -78,6 +84,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   importação, atualização, execução, pacote web e publicação conferem esse leitor, com
   proteção da revisão pública anterior e da proveniência privada. Provas locais em
   `qa/leitores-de-cenarios/README.md`; implantação e ciclo autenticado continuam na etapa 0b.
+  No piloto autenticado de 20/11, Jogar meu mapa criou e executou uma cena 3 a partir
+  de documento 7. Uma variável acrescentada pelo teclado foi preservada, junto com
+  o código, IR e blocos, depois de editar o mapa, atualizar o jogo e reabrir o aplicativo.
+  O foco foi emulado no Chrome headless. São duas camadas, sem publicação ou nuvem 6;
+  a prova não encerra a Vila nem o fechamento Python. Ver
+  `qa/jogar-atualizar-autenticado-2026-11-20/README.md`.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
   O primeiro lote corrige peças reduzidas que caíam entre as amostras do corpo no

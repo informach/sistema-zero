@@ -1,7 +1,7 @@
 [
   {
     "file": "README.md",
-    "sha256": "43e56e77f9569a53f89aedd50b907863ea91cae364c4f1b85d9cd66d94a52bc9"
+    "sha256": "887d42ae953e45548a5100a8c28a325c66aa72022696b4f70f92d27168efdfef"
   },
   {
     "file": "biome-raiz.txt",
@@ -17,11 +17,11 @@
   },
   {
     "file": "gerado-portatil.txt",
-    "sha256": "1ac57bd4045235521ee5fa80c6419354823aa5b1f928401bf95acbc3a7ebc123"
+    "sha256": "8eb8aba7da2b265511364633d4485c531316cd39763e3e17e95b93678f38fdf4"
   },
   {
     "file": "gerados-iframe.txt",
-    "sha256": "3e1040b8f5099065f7f4ef622f082130a8e0bcf090f1a674fea4f82f90027e86"
+    "sha256": "994d22ceba78a1f152480e5c23fec1b971572cb65d295da04d9811b8da839289"
   },
   {
     "file": "origem.json",
@@ -29,7 +29,7 @@
   },
   {
     "file": "perfil.txt",
-    "sha256": "fe65ed98bc6df91698f4f7f7038645e19b2c2ef19d01f1f70eb6210acf690bae"
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
   },
   {
     "file": "previa-pos-ajuste.txt",

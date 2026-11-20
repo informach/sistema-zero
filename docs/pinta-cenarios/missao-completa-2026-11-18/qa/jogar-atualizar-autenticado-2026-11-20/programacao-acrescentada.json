@@ -1,0 +1,18 @@
+{
+  "id": "01M7WMNJ23X9B80X2YE1M0QY5R",
+  "mode": "bridge",
+  "programSha256": "214cb63907092000a1de4c9c72e277a00b5afd686a293cf277cec6ee244e70bb",
+  "filesSha256": "3eac55da994c9fb69f7f59f9ec21ed2c31c819c59bf5992cbf1eb20f6aed9e67",
+  "irSha256": "3715de2b9bd7aa307e589dbc60e0718989ac353407d43ffe9b135f29098333a2",
+  "blocksSha256": "d6e4c558aec5945b2f55addbfda957d6393128c05616b6a9f7cd3e7711cfa7de",
+  "customMarkerInFiles": true,
+  "customMarkerInIR": true,
+  "sceneSha256": "5bc850f91d7068291435016c7156caa6d694bb167f7dfb15a99cad19bfcfcbcf",
+  "sceneVersion": 3,
+  "layers": 2,
+  "tilesets": 1,
+  "libId": "personal:1cb291ea-b512-4e46-b3cd-e5d783454c3a",
+  "libRevision": 1795183789658,
+  "readOnly": true,
+  "editedThroughKeyboard": true
+}
