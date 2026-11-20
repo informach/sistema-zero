@@ -6,7 +6,13 @@ test('zoom and trash use the pinned Blockly image from the host, without the dem
   page,
   baseURL,
 }) => {
-  await page.goto('/aula?aula=cade-todo-mundo/cade-todo-mundo-aula-1')
+  await page.goto('/')
+  await page
+    .locator('button')
+    .filter({ has: page.getByText('Pegue a moeda', { exact: true }) })
+    .first()
+    .click()
+  await expect(page).toHaveURL(/\/editor\//)
   const image = page.locator('.blocklyTrash image').first()
   await expect(image).toBeAttached()
   const url = await image.evaluate(
