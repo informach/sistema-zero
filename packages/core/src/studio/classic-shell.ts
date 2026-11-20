@@ -82,7 +82,19 @@ function shellScript(parentOrigins: readonly string[]): string {
   const allowed = new Set(${JSON.stringify(parentOrigins)});
   let host = null;
   let frame = null;
+  // Leva o foco do teclado ao jogo. Focar o ELEMENTO, como a prévia direta faz
+  // (\`contentWindow.focus()\` num quadro de origem opaca o navegador ignora sem gesto). Se o quadro
+  // já é o ativo, focar de novo não faz nada: solta e foca.
+  const focarJogo = () => {
+    if (!frame) return;
+    if (document.activeElement === frame) frame.blur();
+    frame.focus();
+  };
   const mount = (doc, seq) => {
+    // Com o foco na casca (ou no jogo de antes), o jogo novo herda o foco quando carregar: sem
+    // isso, depois de Rodar as setas iam para a casca vazia (o editor foca o quadro da casca e
+    // ela troca o quadro do jogo a cada documento). Conferência em staging, 20/11/2026.
+    const tinhaFoco = document.hasFocus();
     if (frame) frame.remove();
     frame = document.createElement('iframe');
     frame.setAttribute('sandbox', ${JSON.stringify(CLASSIC_SHELL_GAME_SANDBOX)});
@@ -91,6 +103,7 @@ function shellScript(parentOrigins: readonly string[]): string {
     const mounted = frame;
     mounted.addEventListener('load', () => {
       if (mounted !== frame || host === null) return;
+      if (tinhaFoco || document.hasFocus()) focarJogo();
       parent.postMessage(seq === null ? { type: ${JSON.stringify(CLASSIC_SHELL_LOADED)} } : { type: ${JSON.stringify(CLASSIC_SHELL_LOADED)}, seq }, host);
     });
     mounted.srcdoc = doc;
@@ -114,9 +127,9 @@ function shellScript(parentOrigins: readonly string[]): string {
     if (relayed && typeof relayed.type === 'string' && relayed.type.indexOf('sz-shell:') === 0) return;
     parent.postMessage(relayed, host);
   });
-  addEventListener('focus', () => {
-    try { if (frame && frame.contentWindow) frame.contentWindow.focus(); } catch (_) {}
-  });
+  // Na tarefa seguinte: o evento chega enquanto o navegador ainda leva o foco até a casca, e um
+  // foco dado aqui mesmo terminava de volta na casca (as setas iam para a página vazia dela).
+  addEventListener('focus', () => setTimeout(focarJogo, 0));
   for (const origin of allowed) parent.postMessage({ type: ${JSON.stringify(CLASSIC_SHELL_READY)} }, origin);
 })();`
 }

@@ -54,4 +54,30 @@ test.describe('prévia dentro da casca em outro site', () => {
     await rodar(page).click()
     await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
   })
+
+  test('depois de Rodar, as setas chegam ao jogo sem clicar no palco', async ({ page }) => {
+    // Conferência em staging (20/11/2026): o editor focava o quadro da casca, a casca trocava o
+    // quadro do jogo e as setas iam para a casca vazia. Sem a casca, a prévia já focava o jogo.
+    await createProject(page)
+    await replaceBridgeScript(
+      page,
+      `${CONSERTADO}
+document.addEventListener("keydown", (e) => console.log("tecla " + e.key));`,
+    )
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
+    await parar(page).click()
+    await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 5_000 })
+    await rodar(page).click()
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
+    // O editor passa o foco ao quadro da prévia quando o jogo novo carrega; a casca, ao jogo.
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement?.getAttribute('title')))
+      .toBe('Pré-visualização')
+    await page.keyboard.press('ArrowUp')
+    await expect(
+      page
+        .getByRole('region', { name: 'Problemas e saída do jogo' })
+        .getByText('tecla ArrowUp', { exact: true }),
+    ).toBeAttached({ timeout: 10_000 })
+  })
 })

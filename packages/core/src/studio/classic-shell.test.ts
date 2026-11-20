@@ -12,11 +12,11 @@ import {
 } from './classic-shell'
 
 /** Roda o script da página da casca com uma janela e um documento falsos. */
-function runShell(origins: string[]) {
+function runShell(origins: string[], focus = { has: false }) {
   const page = buildClassicShellPage(origins)
   const script = page.slice(page.indexOf('<script>') + 8, page.lastIndexOf('</script>'))
   const windowListeners = new Map<string, (event: unknown) => void>()
-  const frames: { listeners: Map<string, () => void>; removed: boolean }[] = []
+  const frames: { listeners: Map<string, () => void>; removed: boolean; focused: number }[] = []
   const parentMessages: { data: unknown; target: string }[] = []
   const parent = {
     postMessage: (data: unknown, target: string) => parentMessages.push({ data, target }),
@@ -33,6 +33,12 @@ function runShell(origins: string[]) {
         remove() {
           this.removed = true
         },
+        focused: 0,
+        // O elemento, como a prévia direta: `contentWindow.focus()` o navegador ignora sem gesto.
+        focus() {
+          this.focused += 1
+        },
+        blur: () => undefined,
         contentWindow: { postMessage: () => undefined },
         srcdoc: '',
       }
@@ -40,6 +46,8 @@ function runShell(origins: string[]) {
       return frame
     },
     body: { append: () => undefined },
+    hasFocus: () => focus.has,
+    activeElement: null,
   }
   const addEventListener = (type: string, listener: (event: unknown) => void) =>
     windowListeners.set(type, listener)
@@ -157,5 +165,22 @@ describe('classicShellUrlFromEnv: a casca só liga com a chave e um runtime vál
     expect(classicShellLoadedSeq({ type: CLASSIC_SHELL_LOADED, seq: 1.5 })).toBeNull()
     expect(classicShellLoadedSeq({ type: CLASSIC_SHELL_LOADED, seq: '3' })).toBeNull()
     expect(classicShellLoadedSeq({ type: 'outro', seq: 3 })).toBeNull()
+  })
+
+  it('com a casca em foco, o jogo novo herda o foco ao carregar (as setas chegam depois de Rodar)', () => {
+    // Conferência em staging, 20/11: o editor focava o quadro da casca, a casca trocava o quadro do
+    // jogo e as setas iam para a casca vazia.
+    const focus = { has: true }
+    const shell = runShell(['https://kids.exemplo.test'], focus)
+    shell.load({ document: '<p>um</p>', seq: 1 })
+    shell.frames[0]?.listeners.get('load')?.()
+    expect(shell.frames[0]?.focused).toBe(1)
+  })
+
+  it('sem foco na casca (a criança no editor), o jogo novo não rouba o foco', () => {
+    const shell = runShell(['https://kids.exemplo.test'], { has: false })
+    shell.load({ document: '<p>um</p>', seq: 1 })
+    shell.frames[0]?.listeners.get('load')?.()
+    expect(shell.frames[0]?.focused).toBe(0)
   })
 })
