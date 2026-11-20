@@ -560,7 +560,11 @@ export function createCenariosRoutes(deps: {
     if (portador !== null) {
       const token = /^Bearer ([A-Za-z0-9._-]{16,4096})$/.exec(portador)?.[1]
       if (!token) return erro(401, 'UNAUTHENTICATED', 'Token de acesso inválido.')
-      const veredito = await session.verifyAccessTokenLocally(token)
+      // A verificação COMPLETA: o pedido do agente chega também às confirmações por HMAC e à
+      // leitura dos arquivos, que o gateway não confere em nome de uma sessão do Kids; sem ela,
+      // um token do Kids com o acesso já encerrado pelos pais valeria até vencer. Token de
+      // adulto (a equipe) não faz a ida extra ao Auth.
+      const veredito = await session.verifyAccessToken(token)
       if (!veredito.ok)
         return veredito.unavailable
           ? erro(503, 'AUTH_UNAVAILABLE', 'Não consegui conferir o acesso agora.')

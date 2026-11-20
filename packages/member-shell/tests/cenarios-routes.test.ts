@@ -911,7 +911,10 @@ describe('BFF do Molda Cenários: agente com token no cabeçalho', () => {
         getSession: async () => {
           throw Error('o pedido do agente não lê a sessão do cookie')
         },
-        verifyAccessTokenLocally: async (t: string) => veredito(t),
+        verifyAccessToken: async (t: string) => veredito(t),
+        verifyAccessTokenLocally: async () => {
+          throw Error('o pedido do agente usa a verificação completa')
+        },
       } as unknown as SessionModule,
       gatewayDoToken: (token) =>
         ({
