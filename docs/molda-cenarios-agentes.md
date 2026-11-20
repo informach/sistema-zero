@@ -1,0 +1,110 @@
+# Oficina de cenários para agentes (Molda › Cenários)
+
+Este guia é para quem programa um agente (MCP ou linha de comando) que monta cenários 3D na
+oficina do Molda. O agente faz o mesmo caminho da mão: as mesmas regras, o mesmo histórico de
+desfazer e as mesmas peças do relevo. Não precisa de aba aberta.
+
+O pacote é `packages/molda-cenarios-agente`. As ferramentas são as mesmas no MCP
+(`bun run mcp`) e no CLI (`bun run cli <ferramenta> '<JSON>'`); a lista completa sai em
+`bun run cli ajuda` ou no `tools/list` do MCP.
+
+## Acesso
+
+O agente fala com o servidor do app que serve a oficina (o mesmo `/api/cenarios` do navegador),
+com um token de acesso no cabeçalho `Authorization`. Nada de segredo em arquivo do repositório.
+
+| Variável | Para quê |
+|---|---|
+| `MOLDA_CENARIOS_APP` | Endereço do app (para a equipe, o da comunidade adulta). Obrigatório. |
+| `MOLDA_CENARIOS_TOKEN` | Um token de acesso já emitido (vale pouco tempo). |
+| `MOLDA_CENARIOS_GATEWAY`, `MOLDA_CENARIOS_EMAIL`, `MOLDA_CENARIOS_SENHA` | Ou entrar com uma conta da equipe: o agente entra e renova sozinho. |
+| `MOLDA_CENARIOS_CHROMIUM` | Opcional: caminho do Chrome para a captura sem janela. |
+
+A conta precisa ser da equipe, na própria conta (fora de um perfil de criança), enquanto a
+oficina estiver no modo `equipe`.
+
+## Unidades e eixos
+
+- Tudo em **metros**. `x` e `z` são o chão; `y` é a altura.
+- Giros em **radianos** em volta do eixo vertical.
+- O mar fica no nível `0` quando há mar.
+
+## Revisão e desfazer
+
+- Cada comando de intenção vira **um lote**, ou seja, **um passo de desfazer** na oficina.
+- Passe `revisaoEsperada` (a revisão que você leu por último) para não gravar por cima de outra
+  pessoa: se o cenário mudou, nada é gravado e a resposta traz `revisaoAtual`.
+- `operacaoId` (8 a 80 letras, números, `-` ou `_`): repetir o mesmo id depois de uma resposta
+  perdida não aplica duas vezes.
+- `desfazer` e `refazer` são os mesmos botões da oficina.
+- Com a oficina aberta no mesmo cenário (aba à vista), ela abre sozinha a versão que o agente
+  guardou, em até uns 4 segundos (edição ao vivo).
+
+## Ferramentas
+
+Organização e leitura: `listar_espacos`, `listar_bibliotecas`, `buscar_modelos`,
+`buscar_modelos_no_espaco`, `listar_conjuntos`, `listar_mundos`, `criar_mundo`,
+`ligar_bibliotecas`, `listar_cenarios`, `criar_cenario`, `ler_cenario`, `duplicar_cenario`,
+`editar_cenario` (lote cru de comandos do documento).
+
+Intenções (um passo de desfazer cada):
+
+| Ferramenta | O que faz |
+|---|---|
+| `gerar_terreno` | Relevo inteiro por receita: `ilha` (altura acima do mar), `colinas`, `vale`, `plano`... Cria o relevo se ainda não houver. |
+| `esculpir_terreno` | Passa uma ferramenta pelos pontos: `elevar`, `abaixar` (`metros`), `aplainar`, `suavizar`, `nivelar` (`altura`), `plato`, `rampa`, `ruido`, `erosao`, `morro`, `cratera`, `furar`, `fechar`. `raio` e `forca` controlam o pincel. |
+| `pintar_chao` | Pinta com uma camada de solo (criada se não existir, até oito). |
+| `encher_agua` | `mar`, `lago` (enche a bacia a partir de um ponto, até o `nivel`), `rio` (cava o leito), `represa`, `cachoeira`. |
+| `tracar_caminho` | `trilha`, `praca`, `estrada`, `cerca`, `muro`, `ponte` (dois pontos). Trilha, praça e estrada moldam o relevo por baixo. |
+| `colocar_modelo` | Põe um modelo da biblioteca em `(x, z)`, pisando no chão. |
+| `montar_conjunto` | Monta um conjunto da biblioteca, na versão publicada dele. |
+| `espalhar` | Espalha modelos numa área redonda, sem encostar nos objetos e fora da água. `densidade` é quantos por 100 m². |
+| `alinhar_ao_chao` | Faz objetos pisarem no relevo. |
+| `desfazer`, `refazer` | O histórico da oficina. |
+
+Consultas (não gravam nada): `consultar_pontos` (há chão? altura? água?), `consultar_regiao`
+(o que existe num retângulo), `validar_lote` (passaria no servidor?), `orcamento` (objetos,
+triângulos e bytes contra os tetos de cada destino) e `capturar_cenario` (foto).
+
+### Captura
+
+- `modo: "sem-janela"` (padrão): um Chrome local, sem tela, monta o palco da oficina e devolve a
+  foto. Escolha `vista` (`livre`, `cima`, `frente`, `lado`) e, se quiser, `enquadrar` alguns ids.
+  Precisa do Chrome neste computador.
+- `modo: "oficina"`: espera a oficina aberta no cenário (aba à vista) abrir a versão atual e
+  fotografá-la, com a câmera de quem está nela.
+
+No MCP a foto volta como imagem; no CLI, como arquivo (terceiro argumento).
+
+## Receitas
+
+### Uma ilha com um lago, uma trilha até um farol e árvores em volta
+
+1. `listar_espacos` → pegue o espaço; `listar_bibliotecas` e `buscar_modelos_no_espaco`
+   (`busca: "farol"`, depois `busca: "arvore"` com `alturaMin: 3`) para escolher os modelos.
+2. `criar_mundo`, `ligar_bibliotecas` (as que têm esses modelos) e `criar_cenario`.
+3. `gerar_terreno` com `{ "tipo": "ilha", "altura": 16 }`.
+4. Uma bacia para o lago: `esculpir_terreno` com `abaixar` (`raio` 8, `forca` 1, `metros` 4)
+   num ponto da encosta. Leia a altura do fundo com `consultar_pontos`.
+5. `encher_agua` com `{ "tipo": "lago", "ponto": <o mesmo ponto>, "nivel": <fundo + 1> }`.
+   ⚠️ O lago enche a bacia até o nível: num pico, sem bacia, a água cobriria a ilha inteira.
+6. `encher_agua` com `{ "tipo": "mar", "nivel": 0 }` para o mar em volta.
+7. `colocar_modelo` com o farol perto da costa.
+8. `tracar_caminho` com uma `trilha` de pontos que vão de perto do lago até o farol.
+9. `espalhar` as árvores com `centro` no meio da ilha, `raio` que cubra a ilha e `densidade`
+   1 a 2. Elas evitam a água e os objetos que já existem.
+10. `capturar_cenario` para conferir, e `orcamento` para saber em quais destinos o cenário cabe.
+
+Cada passo é um desfazer: se algo ficou ruim, `desfazer` e refaça com outros números.
+
+### Um vilarejo num platô
+
+`esculpir_terreno` com `plato` (`altura` desejada) numa área, `tracar_caminho` com uma `praca`
+(pontos do contorno), `colocar_modelo` para as casas em volta e `espalhar` flores fora da praça.
+
+## Limites
+
+- Até 2.000 objetos espalhados por passada e o teto de objetos do documento.
+- O `orcamento` é uma estimativa a partir dos dados de cada modelo: a exportação junta peças e
+  comprime, então o pacote final costuma ficar menor.
+- Biblioteca de licença restrita (o acervo da equipe) não sai do espaço da equipe.

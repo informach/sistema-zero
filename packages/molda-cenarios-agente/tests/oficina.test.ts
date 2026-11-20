@@ -5,7 +5,7 @@ import { capturarPelaOficina } from '../src/oficina/captura'
 import { criarClienteDaOficina } from '../src/oficina/cliente'
 import { criarContexto, executarFerramenta, FERRAMENTAS } from '../src/oficina/ferramentas'
 import { CenarioMudou, criarIntencoes } from '../src/oficina/intencoes'
-import { listarFerramentas } from '../src/oficina/mcp'
+import { lerGuia, listarFerramentas } from '../src/oficina/mcp'
 
 test('o cliente recusa endereço inseguro e e-mail sem o gateway para entrar', () => {
   expect(() => criarClienteDaOficina({ app: 'http://example.com', token: 'x' })).toThrow('HTTPS')
@@ -237,4 +237,10 @@ test('pela oficina aberta: espera o retrato da revisão atual e o baixa com o to
   const foto = await capturarPelaOficina(host, baixar, c.id, { prazoMs: 50, intervaloMs: 10 })
   expect(foto).toMatchObject({ revisao: 1, origem: 'oficina', tipo: 'image/webp' })
   expect(baixados).toHaveLength(1)
+})
+
+test('o guia vai como recurso do MCP e cita toda ferramenta', () => {
+  const guia = lerGuia()
+  expect(guia).toContain('Oficina de cenários para agentes')
+  for (const f of FERRAMENTAS) expect(guia).toContain(`\`${f.name}\``)
 })
