@@ -101,6 +101,14 @@ export interface StudioRuntimeSession {
    * Recusa quando o quadro do Python não conhece o comando (distribuição anterior a ele).
    */
   pressKey?(key: string, down: boolean): Promise<void>
+  /**
+   * A aba Investigar: pausa o programa na troca de quadro (`true`) ou continua (`false`). Resolve
+   * com o quadro em que ele parou (ou `null` ao continuar, ou quando ele não pintou quadro nenhum
+   * dentro do prazo). Recusa no programa sem tela e no quadro do Python anterior ao comando.
+   */
+  pausePython?(on: boolean): Promise<{ frame: number } | null>
+  /** Avança 1 quadro com o programa pausado; resolve com o quadro em que ele parou de novo. */
+  stepPython?(): Promise<{ frame: number } | null>
   measurePerformance?(
     listener: ((slice: StudioRuntimePerformanceSlice) => void) | null,
   ): Promise<void>

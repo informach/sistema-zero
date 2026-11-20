@@ -90,6 +90,32 @@ class Fonts(unittest.TestCase):
             turtle.Turtle().write("oi", font=("Arial", 12.5))
 
 
+class PauseFromTheStudio(unittest.TestCase):
+    def test_a_held_reply_waits_answering_the_reads_and_returns_the_original_response(self):
+        checks = []
+        sent = []
+        replies = [
+            {"events": [{"type": "keypress", "key": "a"}], "value": None, "hold": True},
+            {"hold": True},
+            {"hold": False},
+        ]
+
+        def paused(raw):
+            sent.append(json.loads(raw))
+            return json.dumps(replies.pop(0))
+
+        # configure() vale uma vez por processo: a prova troca só o transporte e a checagem.
+        saved = (backend._transport, backend._activity_checkpoint)
+        backend._transport, backend._activity_checkpoint = paused, lambda: checks.append(1)
+        try:
+            response = backend._exchange([], {"type": "present"})
+        finally:
+            backend._transport, backend._activity_checkpoint = saved
+        self.assertEqual(sent[1:], [{"hold": True}, {"hold": True}])
+        self.assertEqual(len(checks), 2)
+        self.assertEqual(response["events"], [{"type": "keypress", "key": "a"}])
+
+
 class IdleTimers(unittest.TestCase):
     def test_a_timer_of_zero_that_schedules_itself_still_redraws_in_mainloop(self):
         global turtle

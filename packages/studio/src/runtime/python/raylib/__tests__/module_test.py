@@ -150,6 +150,33 @@ class Loop(unittest.TestCase):
             _szraylib.configure(transport, None, ROOT, '2d')
             del _rt.ops[:]
 
+    def test_paused_by_the_studio_waits_in_the_frame_and_answers_the_reads(self):
+        # A aba Investigar pausou: a resposta do quadro leva hold, e a ponte espera em pedidos
+        # curtos; cada volta roda o ponto de checagem (a leitura dos valores) sem andar o programa.
+        checks = []
+        holds = []
+        replies = [{'hold': True}, {'hold': False}]
+
+        def paused_transport(header, payload):
+            parsed = json.loads(header)
+            if parsed == _rt.HOLD_REQUEST:
+                holds.append(bytes(payload))
+                return json.dumps(replies.pop(0)), None
+            FRAMES.append((parsed, bytes(payload)))
+            CLOCK[0] += 1000 / 60
+            return json.dumps({'now': CLOCK[0], 'events': [], 'hold': True}), None
+
+        _szraylib.configure(paused_transport, None, ROOT, '2d', checkpoint=lambda: checks.append(1))
+        try:
+            frame()
+            self.assertEqual(len(FRAMES), 1)
+            self.assertEqual(holds, [b'', b''])
+            self.assertEqual(len(checks), 3)
+            self.assertFalse(_rt._held)
+        finally:
+            _szraylib.configure(transport, None, ROOT, '2d')
+            del _rt.ops[:]
+
     def test_one_exchange_per_end_drawing_and_keep(self):
         for _ in range(3):
             P.begin_drawing()

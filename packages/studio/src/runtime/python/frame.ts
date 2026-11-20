@@ -12,6 +12,7 @@ import {
 import { executionKeyEvent, readExecutionKey } from '../../studentTests/keyEvent'
 import type { StudioRuntimeImage } from '../types'
 import { pythonCanvasExtension } from './canvasExtension'
+import { createFramePause } from './framePause'
 import {
   isPythonChallenge,
   PYTHON_FRAME_PROTOCOL,
@@ -109,6 +110,7 @@ async function initialize(event: MessageEvent<unknown>) {
           type: 'perf'
           slice: { fps: number; frameMsAvg: number; frameMsMax: number; canvas: boolean }
         }
+      | { type: 'pause'; held: boolean; frame: number }
       | {
           type: 'ack'
           commandId: number
@@ -134,6 +136,17 @@ async function initialize(event: MessageEvent<unknown>) {
    * e desligada não custa nada. O programa sem tela (só print e input) manda fatias sem quadros.
    */
   let perf: { frame: number; timer: ReturnType<typeof setInterval> } | null = null
+  // A aba Investigar: a pausa na troca de quadro (`framePause.ts`), nos programas que desenham na
+  // tela (Turtle, Pygame Zero, pygame-ce e Raylib); o programa sem tela recusa o comando. O Turtle
+  // pausa na próxima resposta, e a espera dele é acordada para ela chegar.
+  const pause = createFramePause({
+    onHeld: (frame) => send({ type: 'pause', held: true, frame }),
+  })
+  let pausable = false
+  let pauseOnAnyReply = false
+  const wakeTurtle = () => {
+    if (pauseOnAnyReply && renderer && 'requestCheckpoint' in renderer) renderer.requestCheckpoint()
+  }
   function stopPerf() {
     if (!perf) return
     cancelAnimationFrame(perf.frame)
@@ -192,6 +205,7 @@ async function initialize(event: MessageEvent<unknown>) {
     if (closed) return
     closed = true
     stopPerf()
+    pause.dispose()
     pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
     pendingAudio = undefined
     audio.close()
@@ -283,6 +297,13 @@ async function initialize(event: MessageEvent<unknown>) {
       else if (command.type === 'perf' && 'on' in command && typeof command.on === 'boolean') {
         if (command.on) startPerf()
         else stopPerf()
+      } else if (command.type === 'pause' && 'on' in command && typeof command.on === 'boolean') {
+        if (!pausable) throw new Error('Este programa ainda não pausa pelo Estúdio.')
+        pause.set(command.on)
+        if (command.on) wakeTurtle()
+      } else if (command.type === 'step') {
+        if (!pause.step()) throw new Error('O programa não está pausado.')
+        wakeTurtle()
       } else if (command.type === 'key' && 'down' in command && typeof command.down === 'boolean') {
         // A tecla do teste chega como a do teclado: no desenho (o Turtle escuta nele) e, subindo,
         // na janela (Pygame Zero, pygame-ce e Raylib). Sem desenho, na janela.
@@ -331,6 +352,8 @@ async function initialize(event: MessageEvent<unknown>) {
           throw new Error('A sonda da missão está incompleta.')
         supervisor.observeMission(command.requestId, readStudioPythonMissionProbe(command.probe))
         if (renderer && 'requestCheckpoint' in renderer) renderer.requestCheckpoint()
+        // Pausado, a ponte espera num pedido curto: uma volta deixa o ponto de checagem responder.
+        pause.wake()
       } else if (
         command.type === 'activity-check' &&
         'requestId' in command &&
@@ -400,6 +423,8 @@ async function initialize(event: MessageEvent<unknown>) {
     )
       throw new Error('O snapshot pertence a outra execução.')
     const canvas = pythonCanvasExtension(snapshot.configuration.extensions)
+    pausable = canvas !== undefined
+    pauseOnAnyReply = canvas === 'python-turtle'
     rendererReady = !canvas
     const ready = () => {
       document.documentElement.style.height = '100%'
@@ -531,9 +556,15 @@ async function initialize(event: MessageEvent<unknown>) {
               request: string,
               images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
             ) => {
-              if (!prepared || !renderer || closed)
+              const current = renderer
+              if (!prepared || !current || closed)
                 throw new Error('O ambiente gráfico ainda não está pronto.')
-              return renderer.exchange(request, images)
+              return pause.exchange(
+                request,
+                () => current.exchange(request, images),
+                () => current.paintedFrames(),
+                pauseOnAnyReply,
+              )
             },
           }
         : {}),

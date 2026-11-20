@@ -385,6 +385,28 @@ export function createPythonExecutionController(options: {
       requireOwner(current)
     },
     /**
+     * A aba Investigar: pausa (`true`) ou continua o programa na troca de quadro; avançar 1 quadro
+     * com `step`. Só numa execução que começou no modo de observação (os valores pausados são
+     * lidos pelo observador das missões). Recusa no programa sem tela e no quadro anterior ao
+     * comando.
+     */
+    async pause(on: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pausePython) throw new Error('Este ambiente não pausa o programa.')
+      const result = await session.pausePython(on)
+      requireOwner(current)
+      return result
+    },
+    async step() {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.stepPython) throw new Error('Este ambiente não pausa o programa.')
+      const result = await session.stepPython()
+      requireOwner(current)
+      return result
+    },
+    /**
      * A aba Meus testes: aperta (`down`) ou solta uma tecla no programa da execução da vez, como
      * o teclado faria. Recusa quando o quadro do Python não conhece o comando.
      */

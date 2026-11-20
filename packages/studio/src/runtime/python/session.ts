@@ -114,6 +114,13 @@ export function preparePythonFrameSession(options: {
   let commandInFlight = false
   /** A aba Desempenho: quem recebe as fatias de meio segundo do quadro (`null` = desligada). */
   let perfListener: ((slice: StudioRuntimePerformanceSlice) => void) | null = null
+  // A pausa da aba Investigar: quem espera o programa parar no próximo quadro.
+  let pauseWaiters: ((frame: number | null) => void)[] = []
+  const settlePause = (frame: number | null) => {
+    const waiting = pauseWaiters
+    pauseWaiters = []
+    for (const resolve of waiting) resolve(frame)
+  }
   let captureInFlight = false
   let frameWindowStart = performance.now()
   let frameMessages = 0
@@ -295,6 +302,10 @@ export function preparePythonFrameSession(options: {
       if (!active) return
       if (message.type === 'perf') {
         perfListener?.(message.slice)
+        return
+      }
+      if (message.type === 'pause') {
+        if (message.held) settlePause(message.frame)
         return
       }
       if (message.type === 'mission-result') {
@@ -493,6 +504,32 @@ export function preparePythonFrameSession(options: {
         if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
         perfListener = listener
         await send({ type: 'perf', on: listener !== null })
+      },
+      async pausePython(on) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        if (!on) {
+          settlePause(null)
+          await send({ type: 'pause', on: false })
+          return null
+        }
+        // O programa para no próximo quadro pintado; o que não pinta em 2 s fica esperando.
+        const held = new Promise<number | null>((resolve) => {
+          pauseWaiters.push(resolve)
+          setTimeout(() => resolve(null), 2000)
+        })
+        await send({ type: 'pause', on: true })
+        const frame = await held
+        return frame === null ? null : { frame }
+      },
+      async stepPython() {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        const held = new Promise<number | null>((resolve) => {
+          pauseWaiters.push(resolve)
+          setTimeout(() => resolve(null), 2000)
+        })
+        await send({ type: 'step' })
+        const frame = await held
+        return frame === null ? null : { frame }
       },
       async pressKey(key, down) {
         if (!active || !prepared) throw new Error('O programa ainda não está rodando.')

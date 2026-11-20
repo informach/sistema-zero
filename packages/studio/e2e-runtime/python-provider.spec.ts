@@ -455,3 +455,98 @@ test('Investigar: o controlador no modo de observação lê as variáveis do jog
   })
   await page.evaluate(() => globalThis.pythonControllerProbe.stop('investigar'))
 })
+
+test('Investigar: Pausar segura o jogo no quadro, Avançar anda 1 quadro e Continuar solta', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('pausa', 'pgzeroGame', { observation: true }),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('pausa'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('pausa').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const quadros = async () => {
+    const { observation } = await page.evaluate(() =>
+      globalThis.pythonControllerProbe.observe('pausa', 'quadros'),
+    )
+    if (observation.type !== 'value' || !observation.observed.found) throw new Error('quadros')
+    return Number(observation.observed.value)
+  }
+  const held = await page.evaluate(() => globalThis.pythonControllerProbe.pause('pausa', true))
+  if (!held) throw new Error('O jogo não parou no quadro.')
+  // Parado: as leituras dos valores são respondidas, e o jogo não anda.
+  const parado = await quadros()
+  await page.waitForTimeout(300)
+  expect(await quadros()).toBe(parado)
+  const next = await page.evaluate(() => globalThis.pythonControllerProbe.step('pausa'))
+  if (!next) throw new Error('O jogo não parou de novo depois de avançar.')
+  expect(next.frame).toBeGreaterThan(held.frame)
+  const avancou = await quadros()
+  expect(avancou).toBeGreaterThan(parado)
+  await page.waitForTimeout(300)
+  expect(await quadros()).toBe(avancou)
+  expect(await page.evaluate(() => globalThis.pythonControllerProbe.pause('pausa', false))).toBe(
+    null,
+  )
+  await expect.poll(quadros).toBeGreaterThan(avancou)
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('pausa'))
+})
+
+test('Investigar: o Turtle parado no mainloop pausa na próxima resposta e responde as leituras', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('tartaruga', 'turtleEvents', { observation: true }),
+  )
+  // O desenho anda cinco passos e fica parado no mainloop, sem relógio nenhum: só a espera
+  // acordada pelo quadro devolve uma resposta.
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.source(
+      'tartaruga',
+      [
+        'import turtle',
+        's = turtle.Screen()',
+        's.tracer(0)',
+        't = turtle.Turtle()',
+        'passos = 0',
+        'def andar():',
+        '    global passos',
+        '    passos += 1',
+        '    t.forward(10)',
+        '    s.update()',
+        '    if passos < 5:',
+        '        s.ontimer(andar, 20)',
+        'andar()',
+        's.mainloop()',
+        '',
+      ].join('\n'),
+    ),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('tartaruga'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('tartaruga').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const passos = async () => {
+    const { observation } = await page.evaluate(() =>
+      globalThis.pythonControllerProbe.observe('tartaruga', 'passos'),
+    )
+    if (observation.type !== 'value' || !observation.observed.found) throw new Error('passos')
+    return Number(observation.observed.value)
+  }
+  await expect.poll(passos, { timeout: 10_000 }).toBe(5)
+  const held = await page.evaluate(() => globalThis.pythonControllerProbe.pause('tartaruga', true))
+  expect(held).not.toBeNull()
+  expect(await passos()).toBe(5)
+  expect(
+    await page.evaluate(() => globalThis.pythonControllerProbe.pause('tartaruga', false)),
+  ).toBe(null)
+  expect(await page.evaluate(() => globalThis.pythonControllerProbe.read('tartaruga').status)).toBe(
+    'running',
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('tartaruga'))
+})

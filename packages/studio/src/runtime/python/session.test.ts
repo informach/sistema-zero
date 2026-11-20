@@ -328,6 +328,62 @@ test('a tecla de Meus testes vai pelo canal da execução, e o quadro antigo só
   await session.dispose()
 })
 
+test('pausar e avançar 1 quadro: a sessão espera o quadro em que o programa parou', async () => {
+  const value = await fixture()
+  value.complete()
+  value.hello()
+  await value.admitted()
+  const initialization = value.transfers[0]!.data as PythonFrameInitialization
+  const remote = value.transfers[0]!.ports[0] as MessagePort
+  let sequence = 2
+  const emit = (body: Record<string, unknown>) =>
+    remote.postMessage({
+      ...body,
+      protocol: 1,
+      challenge: initialization.challenge,
+      identity: initialization.identity,
+      sequence: ++sequence,
+    })
+  const commands: string[] = []
+  let frame = 10
+  // O Turtle (e o quadro anterior ao comando) recusa a pausa.
+  let pausable = true
+  remote.onmessage = (event: MessageEvent<PythonFrameCommand>) => {
+    const command = event.data
+    if (command.type === 'run') emit({ type: 'event', event: { type: 'state', state: 'running' } })
+    if (command.type === 'pause' || command.type === 'step') {
+      if (!pausable) {
+        emit({
+          type: 'ack',
+          commandId: command.commandId,
+          ok: false,
+          error: 'Este programa ainda não pausa pelo Estúdio.',
+        })
+        return
+      }
+      commands.push(command.type === 'pause' ? `pause:${command.on}` : 'step')
+      emit({ type: 'ack', commandId: command.commandId, ok: true })
+      // O programa para no próximo quadro pintado.
+      if (command.type === 'step' || command.on) emit({ type: 'pause', held: true, frame: ++frame })
+      return
+    }
+    emit({ type: 'ack', commandId: command.commandId, ok: true })
+  }
+  remote.start()
+  const session = await value.prepared()
+  if (!session.pausePython || !session.stepPython) throw new Error('Missing pause capability')
+  await session.run()
+  expect(await session.pausePython(true)).toEqual({ frame: 11 })
+  expect(await session.stepPython()).toEqual({ frame: 12 })
+  expect(await session.pausePython(false)).toBeNull()
+  expect(commands).toEqual(['pause:true', 'step', 'pause:false'])
+  pausable = false
+  await expect(session.pausePython(true)).rejects.toThrow(
+    'Este programa ainda não pausa pelo Estúdio.',
+  )
+  await session.dispose()
+})
+
 test('routes audio over the authenticated session channel and correlates its response', async () => {
   const value = await fixture()
   value.complete()
