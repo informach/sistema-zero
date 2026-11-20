@@ -81,7 +81,9 @@ export function CenarioPublicado({
   )
   // Setor que já falhou não é tentado de novo a cada quadro (o erro apareceria em rajada).
   const setoresQueFalharam = useRef(new Set<string>()),
-    ultimoErro = useRef<string | null>(null)
+    ultimoErro = useRef<string | null>(null),
+    // O setor cuja colisão está montada no Rapier agora (o `ref` do collider o marca).
+    setorMontado = useRef<string | null>(null)
   const celulaDe = (p: { x: number; z: number }) => ({
     x: Math.floor(p.x / LADO_DO_SETOR),
     z: Math.floor(p.z / LADO_DO_SETOR),
@@ -103,6 +105,15 @@ export function CenarioPublicado({
           setoresQueFalharam.current.add(chave)
           aoErro?.(erro instanceof Error ? erro.message : String(erro))
         }
+      // A espera de chão solta quando a colisão do setor de destino já está montada; isso
+      // vale também para um destino no mesmo setor (nenhum collider novo nasce aí).
+      if (
+        pedidos.chaoChegando.has('cenario-publicado') &&
+        setorMontado.current === chave &&
+        x === colisao.celula.x &&
+        z === colisao.celula.z
+      )
+        pedidos.chaoChegando.delete('cenario-publicado')
       for (const l of luminarias) l.luz.intensity = ambiente.noite ? l.intensidade : 0
       pronto.atualizar(pausado ? 0 : Math.min(dt, 0.1))
       pronto.quadro(camera, pronto.raiz.position)
@@ -121,7 +132,12 @@ export function CenarioPublicado({
             key={`${colisao.celula.x}:${colisao.celula.z}`}
             args={[colisao.vertices, colisao.indices]}
             ref={(c) => {
-              if (!c) return
+              const montado = `${colisao.celula.x}:${colisao.celula.z}`
+              if (!c) {
+                if (setorMontado.current === montado) setorMontado.current = null
+                return
+              }
+              setorMontado.current = montado
               // Só solta a espera quando o chão montado é o do setor para onde ela vai.
               const alvo = celulaDe(pedidos.teleporte ?? rastro)
               if (alvo.x === colisao.celula.x && alvo.z === colisao.celula.z)

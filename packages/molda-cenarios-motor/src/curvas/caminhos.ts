@@ -25,6 +25,7 @@ import { montarEstrutura, type PartePreparadaDeCaminho } from './estruturas'
 import { conformarParteAoChao, type ParteConformada } from './geometria'
 import { agruparPecas } from './lotes'
 import { montarPisoDeModelo } from './pisos'
+import { topoFisicoDoPiso } from './topo-fisico'
 
 export interface EstadoDosCaminhos {
   carregando: number
@@ -226,8 +227,14 @@ export class CaminhosDoPalco {
           matriz: p.matriz,
           ...(p.parte ? { parte: p.parte } : {}),
         })
-        if ((modelo || estrutural) && c.colisao !== 'nenhuma')
+        if (estrutural && c.colisao !== 'nenhuma')
           colisoes.push({ objeto: c.id, geometria: p.geometria, matriz: p.matriz })
+        else if (modelo && c.colisao !== 'nenhuma') {
+          // Piso de peças: a física fica só com o topo das lajes (ver topoFisicoDoPiso).
+          const topo = topoFisicoDoPiso(p.geometria, p.matriz)
+          limpezas.push(() => topo.dispose())
+          colisoes.push({ objeto: c.id, geometria: topo, matriz: p.matriz })
+        }
       }
       return {
         chave: '',
