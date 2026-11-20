@@ -86,12 +86,14 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       id: randomUUID(),
       accountUserId: account.id,
       name: 'André',
+      publicNickname: 'estrela',
     })
     debora = ProfileAggregate.create({
       birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: account.id,
       name: 'Débora',
+      publicNickname: 'lua',
     })
     await conn.db.insert(profileRows).values({ ...andre.toSnapshot(), admissionState: 'ready' })
     await conn.db.insert(profileRows).values({ ...debora.toSnapshot(), admissionState: 'ready' })
@@ -457,6 +459,7 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       id: randomUUID(),
       accountUserId: other.id,
       name: 'Primo',
+      publicNickname: 'cometa',
     })
     await conn.db.insert(profileRows).values({ ...primo.toSnapshot(), admissionState: 'ready' })
     const codeHash = sha256Hex(randomUUID())
@@ -546,7 +549,7 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
     expect(
       await repository.renew(account.id, own.id, new Date(Date.now() + 86400000), new Date()),
     ).toBe(false)
-    expect((await service.recognize(deviceToken)).profiles.map((p) => p.name)).toEqual(['Primo'])
+    expect((await service.recognize(deviceToken)).profiles.map((p) => p.name)).toEqual(['cometa'])
   })
 
   test('navegador sem nenhuma autorização viva é desconhecido; com uma viva lista os irmãos', async () => {
@@ -554,8 +557,8 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
     const { service } = services()
     const view = await service.recognize(deviceToken)
     expect(view.profiles.map((p) => [p.name, p.available]).sort()).toEqual([
-      ['André', true],
-      ['Débora', false],
+      ['estrela', true],
+      ['lua', false],
     ])
     await repository.revoke(account.id, own.id, new Date())
     expect((await service.recognize(deviceToken)).profiles).toEqual([])
@@ -603,8 +606,32 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
     expect(payload.role).toBe('customer')
     for (const field of ['email', 'firstName', 'lastName', 'phone', 'signupSource'])
       expect(payload[field]).toBeUndefined()
-    expect(payload.pfl).toMatchObject({ accountId: account.id, name: 'André' })
+    expect(payload.pfl).toMatchObject({
+      accountId: account.id,
+      name: 'estrela',
+      nickname: 'estrela',
+      pub: false,
+    })
+    expect(JSON.stringify(payload)).not.toContain('André')
     expect((await issuer.verifyAccessToken(entered.tokens.accessToken))?.sub).toBe(andre.id)
+  })
+
+  test('perfil legado sem apelido usa o nome neutro, sem expor o nome privado no token', async () => {
+    const legacy = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: account.id,
+      name: 'Nome privado da criança',
+      birthDate: '2016-05-10',
+    })
+    await conn.db.insert(profileRows).values({ ...legacy.toSnapshot(), admissionState: 'ready' })
+    await grant(legacy.id)
+    const { service, issuer } = services()
+    const entered = await service.enter({ deviceToken, profileId: legacy.id })
+    const payload = decodeJwt(entered.tokens.accessToken)
+    expect(payload.pfl).toMatchObject({ accountId: account.id, name: 'Criador(a)', pub: false })
+    expect(payload.pfl).not.toHaveProperty('nickname')
+    expect(JSON.stringify(payload)).not.toContain(legacy.name)
+    expect((await issuer.verifyAccessToken(entered.tokens.accessToken))?.sub).toBe(legacy.id)
   })
 
   test('esquecer o navegador exige responsável recente da própria família', async () => {

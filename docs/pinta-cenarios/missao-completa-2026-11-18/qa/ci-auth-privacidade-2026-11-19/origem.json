@@ -1,0 +1,37 @@
+{
+  "source": "ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6",
+  "ciRun": 44638651291,
+  "postgres": {
+    "version": "16.16",
+    "source": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260731",
+    "bytes": 378075555,
+    "sha256": "add1de261b150e6923266abee293f05050795e73f5356158aee4221a2170c073",
+    "at": "2026-11-20T00:18:31.967Z",
+    "listen": "127.0.0.1:55486",
+    "isolatedCluster": true,
+    "stopped": true
+  },
+  "red": {
+    "pass": 71,
+    "fail": 4,
+    "skip": 0
+  },
+  "green": {
+    "pass": 76,
+    "fail": 0,
+    "skip": 0,
+    "assertions": 375
+  },
+  "hashes": [
+    {
+      "source": "pinta-ci-auth-local-red-r2.log",
+      "sourceSha256": "40a7d6d78804cff275edfcdff46aa43b39e95f3f18dfcaf2ecf6214c07a5485c",
+      "summary": "vermelho.txt"
+    },
+    {
+      "source": "pinta-ci-auth-local-green-r2.log",
+      "sourceSha256": "0e99a5c6141db4ba87eab842c9989dd386843dea44b61e919d9a31ab191ccbc2",
+      "summary": "verde.txt"
+    }
+  ]
+}
