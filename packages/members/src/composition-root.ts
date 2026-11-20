@@ -131,6 +131,7 @@ import { AuthorizePythonAnalysisService } from './application/studio/authorize-p
 import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
 import { OpenLessonStudioService } from './application/studio/open-lesson-studio.service'
 import { PythonProjectCheckerService } from './application/studio/python-project-checker.service'
+import { StudioStudentTestsService } from './application/studio/studio-student-tests.service'
 import { StudioPythonBuilderPolicy } from './application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
@@ -493,6 +494,11 @@ export async function createApplication(env: Env): Promise<Application> {
     freeStudioAccess,
     studioRuntimePolicy,
     studioAuthoringPolicy,
+  )
+  // "Meus testes" no Pro: os testes da criança no executor do "Verificar projeto".
+  const studioStudentTests = new StudioStudentTestsService(
+    freeStudioAccess,
+    projectExecutor ?? null,
   )
   const liveBenefits = new DrizzleLiveBenefitsRepository(db)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
@@ -1419,6 +1425,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getChallenge,
       getStudioUnlocks,
       authorizeFreeRuntime,
+      studioStudentTests,
       getMissions,
       claimMission,
       claimUnitChest,
