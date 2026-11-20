@@ -92,6 +92,8 @@ export interface AguaRasa {
   /** Contorno local extraído do modelo; sem ele continua a elipse existente. */
   contorno?: readonly { x: number; z: number }[]
   consultaNivel?: ConsultaNivelDaAgua
+  /** Esta água responde por toda a região: as outras não valem dentro dela (`aguaCobertaEm`). */
+  cobre?: (x: number, z: number) => boolean
 }
 
 export interface TroncoVivo {

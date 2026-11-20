@@ -1,8 +1,10 @@
 import { flushSync, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { Scene } from 'three'
 import { useJogo } from '../estado/contexto'
 import { CORPO } from '../sistemas/corpo'
 import type { TerritorioId } from '../sistemas/geografia-do-arquipelago'
+import type { MemoriaDePublicacoes } from '../sistemas/ler-cenario-publicado'
 import {
   chaveDaRetomada,
   codificarRetomadaDoCenario,
@@ -15,10 +17,21 @@ import { usarRecorteLocal } from './recorte-local'
 
 /** Consome somente publicações fixas da plataforma; o salvamento é exclusivo do ensaio local. */
 export function useCenarioPublicado(
-  ilha: TerritorioId,
+  /** `null`: esta vaga ainda não tem ilha (nada é carregado). */
+  ilha: TerritorioId | null,
   tentativa: number,
   aoMudar: (p: CenarioPublicadoPronto | null) => void,
   aoErro: (erro: string) => void,
+  opcoes: {
+    /** Subcena desta vaga (duas ilhas publicadas convivem, cada uma na sua). */
+    alvo?: Scene
+    memoria?: MemoriaDePublicacoes
+    /**
+     * Cada mudança relê o perfil publicado (ela voltou à ilha): a mesma versão continua
+     * instalada, sem baixar nem preparar nada; uma versão nova entra.
+     */
+    conferencia?: number
+  } = {},
 ) {
   const { plataforma, rastro, pedidos, movimento } = useJogo(),
     { gl, scene, camera } = useThree(),
@@ -34,14 +47,18 @@ export function useCenarioPublicado(
   // A posição guardada vale UMA vez por publicação nesta montagem: voltar à ilha depois de
   // cruzar a divisa não leva a criança de volta ao ponto de minutos atrás (nem ao início).
   const retomadasUsadas = useMemo(() => new Set<string>(), []),
-    ultimoPontoSeguro = useRef<{ x: number; y: number; z: number } | null>(null)
-  const pedido = useMemo(() => ({ ilha, tentativa }), [ilha, tentativa])
+    ultimoPontoSeguro = useRef<{ x: number; y: number; z: number } | null>(null),
+    esperaDestaVaga = useRef(false),
+    instalada = useRef<CenarioPublicadoPronto | null>(null)
+  const conferencia = opcoes.conferencia ?? 0
+  const pedido = useMemo(() => ({ ilha, tentativa, conferencia }), [ilha, tentativa, conferencia])
   useEffect(() => {
     if (!porta) return
     const liberarRecorte = usarRecorteLocal(gl),
       novo = criarCarregadorPublicado({
         porta,
-        alvo: scene,
+        alvo: opcoes.alvo ?? scene,
+        ...(opcoes.memoria ? { memoria: opcoes.memoria } : {}),
         foco: () => rastro,
         maxTextura: gl.capabilities.maxTextureSize,
         async prepararGpu(p, sinal) {
@@ -56,7 +73,12 @@ export function useCenarioPublicado(
         },
         antesDeInstalar(novo) {
           let guardada = null
-          if (!retomadasUsadas.has(chaveDaRetomada(novo.publicacao)))
+          // A vizinha carregada antes da hora (ela ainda está na outra ilha) não puxa a criança
+          // para a posição guardada dela: a retomada só vale com ela dentro desta publicação.
+          if (
+            novo.regiao.contem(rastro.x, rastro.z) &&
+            !retomadasUsadas.has(chaveDaRetomada(novo.publicacao))
+          )
             try {
               guardada = lerRetomadaDoCenario(
                 localStorage.getItem(chaveDaRetomada(novo.publicacao)),
@@ -80,28 +102,53 @@ export function useCenarioPublicado(
     return () => {
       novo.descartar()
       liberarRecorte()
-      pedidos.chaoChegando.delete('cenario-publicado')
+      if (esperaDestaVaga.current) pedidos.chaoChegando.delete('cenario-publicado')
+      esperaDestaVaga.current = false
+      instalada.current = null
       // A cena descartada não pode continuar montada nos sistemas do jogo.
       setPronto(null)
       aoMudar(null)
     }
-  }, [porta, gl, scene, camera, rastro, pedidos, chegadas, aoErro, retomadasUsadas, aoMudar])
+  }, [
+    porta,
+    gl,
+    scene,
+    camera,
+    rastro,
+    pedidos,
+    chegadas,
+    aoErro,
+    retomadasUsadas,
+    aoMudar,
+    opcoes.alvo,
+    opcoes.memoria,
+  ])
   useEffect(() => {
-    if (!carregador) return
+    if (!carregador || !pedido.ilha) return
     let vigente = true
     carregador
       .carregar(pedido.ilha)
       .then((novo) => {
         if (!vigente) return
+        // A mesma cena (ela voltou e nada foi publicado): nada muda, nem o ponto seguro.
+        if (novo !== null && novo === instalada.current) return
+        instalada.current = novo
         ultimoPontoSeguro.current = null
         if (novo) {
           retomadasUsadas.add(chaveDaRetomada(novo.publicacao))
+          // A chegada vale uma vez, na instalação.
           const chegada = chegadas.get(novo)
+          chegadas.delete(novo)
           if (chegada) {
             pedidos.teleporte = chegada
             pedidos.chaoChegando.add('cenario-publicado')
+            esperaDestaVaga.current = true
           }
-        } else pedidos.chaoChegando.delete('cenario-publicado')
+        } else if (esperaDestaVaga.current) {
+          // Só solta a espera que esta vaga pôs: a outra vaga pode estar esperando o chão dela.
+          pedidos.chaoChegando.delete('cenario-publicado')
+          esperaDestaVaga.current = false
+        }
         flushSync(() => {
           setPronto(novo)
           aoMudar(novo)

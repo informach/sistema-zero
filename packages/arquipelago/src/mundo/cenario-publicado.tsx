@@ -7,6 +7,7 @@ import { jogoPausado } from '../sistemas/pausa'
 import { LADO_DO_SETOR } from '../sistemas/setores-do-arquipelago'
 import { TextoSobreMadeira } from './faisca/caminhos'
 import { Iris } from './faisca/piloto'
+import { gruposDoColisor } from './grupos'
 import type { CenarioPublicadoPronto } from './preparar-cenario-publicado'
 
 /** A cena visual pertence ao instalador canônico; este componente registra seus sistemas nativos. */
@@ -23,8 +24,8 @@ export function CenarioPublicado({
     camera = useThree((s) => s.camera)
   const [colisao, setColisao] = useState(pronto.colisao)
   useLayoutEffect(() => {
-    const anteriores = movimento.aguas.filter((a) => pronto.regiao.contem(a.x, a.z))
-    movimento.aguas = movimento.aguas.filter((a) => !anteriores.includes(a))
+    // A água compilada responde pela região inteira (`cobre`): as águas em código das ilhas
+    // continuam na lista, com os donos delas, e simplesmente não valem aqui dentro.
     const agua: AguaRasa = {
       id: `publicado:${pronto.publicacao.id}`,
       ...pronto.perfil.ilha.centro,
@@ -35,12 +36,12 @@ export function CenarioPublicado({
       consultaNivel(x, z, raio) {
         return pronto.regiao.contem(x, z) ? (pronto.agua.nivel(x, z, raio)?.nivel ?? null) : null
       },
+      cobre: (x, z) => pronto.regiao.contem(x, z),
     }
     movimento.aguas.push(agua)
     return () => {
       const i = movimento.aguas.indexOf(agua)
       if (i >= 0) movimento.aguas.splice(i, 1)
-      for (const a of anteriores) if (!movimento.aguas.includes(a)) movimento.aguas.push(a)
     }
   }, [pronto, movimento])
   const placas = useMemo(
@@ -107,8 +108,10 @@ export function CenarioPublicado({
         }
       // A espera de chão solta quando a colisão do setor de destino já está montada; isso
       // vale também para um destino no mesmo setor (nenhum collider novo nasce aí).
+      // Com duas ilhas publicadas montadas, só a dona do destino solta a espera.
       if (
         pedidos.chaoChegando.has('cenario-publicado') &&
+        pronto.regiao.contem(foco.x, foco.z) &&
         setorMontado.current === chave &&
         x === colisao.celula.x &&
         z === colisao.celula.z
@@ -124,6 +127,24 @@ export function CenarioPublicado({
       ultimoErro.current = frase
     }
   }, -2)
+  // O colisor do setor montou (ou saiu) no Rapier: só solta a espera quando o chão montado é o
+  // do setor para onde ela vai, dentro desta publicação.
+  const montou = (c: unknown) => {
+    const montado = `${colisao.celula.x}:${colisao.celula.z}`
+    if (!c) {
+      if (setorMontado.current === montado) setorMontado.current = null
+      return
+    }
+    setorMontado.current = montado
+    const destino = pedidos.teleporte ?? rastro,
+      alvo = celulaDe(destino)
+    if (
+      pronto.regiao.contem(destino.x, destino.z) &&
+      alvo.x === colisao.celula.x &&
+      alvo.z === colisao.celula.z
+    )
+      pedidos.chaoChegando.delete('cenario-publicado')
+  }
   return (
     <>
       <RigidBody type="fixed" colliders={false}>
@@ -131,18 +152,16 @@ export function CenarioPublicado({
           <TrimeshCollider
             key={`${colisao.celula.x}:${colisao.celula.z}`}
             args={[colisao.vertices, colisao.indices]}
-            ref={(c) => {
-              const montado = `${colisao.celula.x}:${colisao.celula.z}`
-              if (!c) {
-                if (setorMontado.current === montado) setorMontado.current = null
-                return
-              }
-              setorMontado.current = montado
-              // Só solta a espera quando o chão montado é o do setor para onde ela vai.
-              const alvo = celulaDe(pedidos.teleporte ?? rastro)
-              if (alvo.x === colisao.celula.x && alvo.z === colisao.celula.z)
-                pedidos.chaoChegando.delete('cenario-publicado')
-            }}
+            ref={montou}
+          />
+        )}
+        {/* Folhagem e peças finas: seguram o corpo, a câmera passa (a régua das ilhas). */}
+        {colisao.soDoCorpo.triangulos > 0 && (
+          <TrimeshCollider
+            key={`corpo:${colisao.celula.x}:${colisao.celula.z}`}
+            args={[colisao.soDoCorpo.vertices, colisao.soDoCorpo.indices]}
+            {...gruposDoColisor(true)}
+            ref={colisao.triangulos > 0 ? undefined : montou}
           />
         )}
       </RigidBody>
