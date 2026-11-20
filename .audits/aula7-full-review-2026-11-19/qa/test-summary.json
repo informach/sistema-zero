@@ -1,0 +1,80 @@
+[
+  {
+    "file": "admin-tests.log",
+    "pass": 14,
+    "skip": 0,
+    "fail": 0
+  },
+  {
+    "file": "api-gateway-tests.log",
+    "pass": 328,
+    "skip": 2,
+    "fail": 0
+  },
+  {
+    "file": "auth-tests.log",
+    "pass": 307,
+    "skip": 87,
+    "fail": 0
+  },
+  {
+    "file": "catalog-tests.log",
+    "pass": 163,
+    "skip": 13,
+    "fail": 0
+  },
+  {
+    "file": "editorial-tests.log",
+    "pass": 32,
+    "skip": 0,
+    "fail": 0
+  },
+  {
+    "file": "funnel-tests.log",
+    "pass": 680,
+    "skip": 5,
+    "fail": 0
+  },
+  {
+    "file": "hub-tests.log",
+    "pass": 187,
+    "skip": 53,
+    "fail": 0
+  },
+  {
+    "file": "member-shell-tests.log",
+    "pass": 2539,
+    "skip": 0,
+    "fail": 0
+  },
+  {
+    "file": "members-review-tests.log",
+    "pass": 49,
+    "skip": 0,
+    "fail": 0
+  },
+  {
+    "file": "payments-tests.log",
+    "pass": 439,
+    "skip": 219,
+    "fail": 0
+  },
+  {
+    "file": "referrals-tests.log",
+    "pass": 214,
+    "skip": 50,
+    "fail": 0
+  },
+  {
+    "file": "commerce-postgres.log",
+    "pass": 1,
+    "skip": 0,
+    "fail": 0
+  },
+  {
+    "file": "auth-postgres.log",
+    "pass": 20,
+    "skip": 0,
+    "fail": 0
+  }
+]
