@@ -549,18 +549,28 @@ describe('PreviewIframe', () => {
     useProjectStore.setState({ project, isDirty: false, saveError: null })
     render(<PreviewIframe />)
     const frame = screen.getByTitle('Pré-visualização')
+    // O documento entra no iframe pelo `setAttribute` da instância (o React e o `srcdoc` do
+    // happy-dom passam por ele), e a marca é lida na microtarefa seguinte, o mesmo instante em que
+    // um MutationObserver entregaria: depois do commit inteiro do React, antes de qualquer tarefa
+    // nova (é numa tarefa nova que o navegador carrega o documento). O MutationObserver do
+    // happy-dom não serve: ele guarda o callback num WeakRef e para de entregar quando o coletor
+    // de lixo passa (reprovou assim no CI de 20/11/2026). Medido no mesmo dia: o teste reprova a
+    // marca armada numa tarefa seguinte; a troca do efeito de layout por um passivo não reprova
+    // aqui, porque esta atualização é síncrona e o React roda os efeitos passivos no mesmo commit.
     const observed: Array<string | null> = []
-    const observer = new MutationObserver(() => {
-      if (frame.getAttribute('srcdoc')?.includes('Preview automático'))
-        observed.push(marcaDaAba(project.id))
-    })
-    observer.observe(frame, { attributes: true, attributeFilter: ['srcdoc'] })
+    const setAttribute = frame.setAttribute
+    frame.setAttribute = function (this: HTMLElement, name: string, value: string) {
+      if (name.toLowerCase() === 'srcdoc' && String(value).includes('Preview automático'))
+        queueMicrotask(() => observed.push(marcaDaAba(project.id)))
+      setAttribute.call(this, name, value)
+    }
     try {
       fireEvent.load(frame)
-      await waitFor(() => expect(observed.length).toBeGreaterThan(0))
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      expect(observed.length).toBeGreaterThan(0)
       expect(observed.every((mark) => mark !== null)).toBe(true)
     } finally {
-      observer.disconnect()
+      frame.setAttribute = setAttribute
     }
   })
 
