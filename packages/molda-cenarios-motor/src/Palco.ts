@@ -212,6 +212,8 @@ class PalcoThree implements Palco {
   private readonly trancados = new Set<string>()
   private selecao: string[] = []
   private ferramenta: Ferramenta = 'selecionar'
+  /** A faixa não libera tamanho por eixo: o puxador de tamanho escala sempre por igual. */
+  private tamanhoSoUniforme = false
   private encaixe: EncaixeDeComposicao = EncaixeDeComposicaoSchema.parse({
     grade: null,
     angulo: null,
@@ -571,6 +573,11 @@ class PalcoThree implements Palco {
   definirFerramenta(ferramenta: Ferramenta): void {
     this.ferramenta = ferramenta
     this.atualizarAlca()
+  }
+
+  /** Sem a faixa do tamanho por eixo, qualquer puxador do tamanho escala por igual. */
+  definirTamanhoSoUniforme(soUniforme: boolean): void {
+    this.tamanhoSoUniforme = soUniforme
   }
 
   definirModoDeSelecao(modo: ModoDeSelecao): void {
@@ -2025,7 +2032,9 @@ class PalcoThree implements Palco {
     if (!gesto) return
     if (
       this.ferramenta === 'tamanho' &&
-      (gesto.inicio.size > 1 || [...gesto.inicio.keys()].some((id) => this.alvos.get(id)?.uniforme))
+      (this.tamanhoSoUniforme ||
+        gesto.inicio.size > 1 ||
+        [...gesto.inicio.keys()].some((id) => this.alvos.get(id)?.uniforme))
     ) {
       const s = this.pivo.scale
       this.pivo.scale.setScalar(fatorUniforme(s.x, s.y, s.z))

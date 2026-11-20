@@ -153,6 +153,17 @@ describe('o que o lote criou ou mudou', () => {
     expect(familiasMudadas(antes, esticado)).toEqual(['objetos.precisao'])
   })
 
+  test('o tamanho uniforme com resto de ponto flutuante não conta como tamanho por eixo', () => {
+    const antes = mudar(vazio(), (d) => d.instancias.push(objeto('a')))
+    // 1,4 → 1,5 pelo campo do tamanho: x = 1,4 × (1,5 / 1,4) = 1,4999999999999998.
+    const k = 1.5 / 1.4
+    const depois = mudar(antes, (d) => {
+      d.instancias[0]!.transformacao.escala = { x: 1.4 * k, y: 1.5, z: 1.4 * k }
+    })
+    expect(depois.instancias[0]!.transformacao.escala.x).not.toBe(1.5)
+    expect(familiasMudadas(antes, depois)).toEqual([])
+  })
+
   test('colisão só conta num objeto que já existia; tamanho do chão só num chão que já existia', () => {
     const antes = mudar(vazio(), (d) => d.instancias.push(objeto('a')))
     const novo = mudar(antes, (d) => d.instancias.push(objeto('b', { colisao: 'malha' })))

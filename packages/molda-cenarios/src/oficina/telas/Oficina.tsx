@@ -285,6 +285,7 @@ function OficinaAberta({
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
   // As faixas do posto: a ferramenta trancada some do trilho e dos painéis.
   const ferramentas = useFerramentas()
+  const tamanhoSoUniforme = useRef(false)
   const liberada = (aba: keyof typeof FAMILIA_DA_FERRAMENTA, ferramenta: string) => {
     const familia = FAMILIA_DA_FERRAMENTA[aba][ferramenta]
     return !familia || ferramentas.pode(familia)
@@ -736,6 +737,7 @@ function OficinaAberta({
       movimentoReduzido: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
     })
     palco.current = novo
+    novo.definirTamanhoSoUniforme(tamanhoSoUniforme.current)
     novo.definirDocumento(controlador.getState().documento)
     if (entidadesTransformaveis(controlador.getState().documento).length) novo.enquadrar()
     return () => {
@@ -838,6 +840,11 @@ function OficinaAberta({
     [encaixe, configuracaoDoEncaixe],
   )
   useEffect(() => palco.current?.definirTema(tema), [tema])
+  // Sem a faixa do tamanho por eixo, o puxador de tamanho do palco escala por igual (também no
+  // palco recriado: ele lê a referência ao nascer).
+  const tamanhoPorEixo = ferramentas.pode('objetos.precisao')
+  tamanhoSoUniforme.current = !tamanhoPorEixo
+  useEffect(() => palco.current?.definirTamanhoSoUniforme(!tamanhoPorEixo), [tamanhoPorEixo])
 
   const por = useCallback(
     (modelo: ModeloDeBiblioteca, ponto: LocalDeColocacao | null) => {
@@ -2096,7 +2103,9 @@ function OficinaAberta({
           <div style={emEnsaio ? { display: 'none' } : undefined} inert={emEnsaio}>
             <Gaveta
               atualizacaoDosConjuntos={conjuntos.atualizacao}
-              aoPorConjunto={porConjunto}
+              // Montar conjunto é do intermediário: a biblioteca da família pode ter conjuntos
+              // de um irmão que já chegou lá.
+              {...(ferramentas.pode('objetos.conjuntos') ? { aoPorConjunto: porConjunto } : {})}
               conjuntoEmEdicao={conjunto?.id}
               modo={
                 escolhendoPersonagem
