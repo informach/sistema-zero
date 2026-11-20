@@ -414,6 +414,9 @@ test('editor adota a cópia confirmada e permite continuar, voltar e reabrir', a
   await canvas.click({ position: { x: 48, y: 16 } })
   await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeEnabled()
   await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  // Voltar só fecha o editor depois de o flush confirmar a edição. Não interromper
+  // essa gravação com um reload antes de a galeria reaparecer.
+  await expect(page.getByRole('heading', { name: 'Meus desenhos', exact: true })).toBeVisible()
   await page.reload()
   await expect(
     page.getByRole('button', { name: 'Abrir vila-copia (Mapa)', exact: true }),
