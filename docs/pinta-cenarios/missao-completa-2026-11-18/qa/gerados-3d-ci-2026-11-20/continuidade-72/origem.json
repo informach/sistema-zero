@@ -1,0 +1,77 @@
+{
+  "at": "2026-11-20T11:47:15.436Z",
+  "base": "2f08d0d1ea0b7760ee39b9054a65028e2843eca6",
+  "remoteSource": "72e091418",
+  "approvedFiles": [
+    {
+      "file": "packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "sha256": "6cd0e6c5162428cd49d1e92f5a548e776c4d351aa32fdd59fb75e968e0c7bfe8"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+      "sha256": "03277f4b6fb326dec0bcd5cc23f97a9ee63aa7873e1be5ed84ce21a59298a5ac"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+      "sha256": "e2c20400ec69c88bfeac2c5cd7e539b32dec50dee5a9d2b374022c66a9f0a713"
+    }
+  ],
+  "typecheckExit": 0,
+  "logs": [
+    {
+      "file": ".cache/pinta-post-72-molda-cenarios-core-tests.log",
+      "sha256": "bc863c7aecca684949944eb06b5e3701d7b88cf984c8bc19452270ac1828ffbd",
+      "summary": "core.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-molda-cenarios-motor-tests.log",
+      "sha256": "ae36a5df52ededac55bec18edf4aa78abc28ea06581a3f69eda51fb0c3289da5",
+      "summary": "motor.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-molda-cenarios-tests.log",
+      "sha256": "e3d2c51f9e788caadec2341b45577cd052e16597d31a0575deccda49186e2132",
+      "summary": "oficina.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-molda-cenarios-agente-tests.log",
+      "sha256": "809f3ef86583c761e2d16d23167dcde69fde6184a30f6a2c6750e13202d6da2f",
+      "summary": "agente.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-studio-tests.log",
+      "sha256": "3a304e57b31290042a1aaf47e2eb9465fd6a955cf0ae88d15f8c42258d2220f1",
+      "summary": "studio.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-native-green.log",
+      "sha256": "5cc36a35fe7d6b2c7acc653f2cb2730f886496f2f2c4450345c047a488064a9d",
+      "summary": "navegador.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-studio-types-r2.log",
+      "sha256": "05553ca9dd2e46ef84cccb16131dea1a8b4bf09117e57615c59246ebef1a08e9",
+      "summary": "tipos.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-biome.log",
+      "sha256": "0f13b300917c405e2083901bc3723cacfa53ec710babacf1f27d104bde4cfe73",
+      "summary": "biome.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-budget.log",
+      "sha256": "900bf3eec2867581b250c1a472bb199cf341b271418c23b80e80edb770568dd8",
+      "summary": "orcamento.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-portable-check-green.log",
+      "sha256": "8ac068de8e770de620c514b0785277691f29f6c91fa59d706b5b0217424d0516",
+      "summary": "portatil.txt"
+    },
+    {
+      "file": ".cache/pinta-post-72-loaders-check-green.log",
+      "sha256": "6b6ff6d0fd7798270d70aaea455fc04bc3050ff5f2b0fa39a959b6be907294c3",
+      "summary": "carregadores.txt"
+    }
+  ]
+}
