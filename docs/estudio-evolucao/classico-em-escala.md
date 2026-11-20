@@ -449,4 +449,30 @@ e reproduzidos no navegador antes do conserto:
 Provas: `e2e/offscreen-lifecycle.spec.ts` ganhou a fixture com o mutador e dois testes (os dois
 reprovavam antes; o segundo reprova sem o gancho novo); `classMutators.test.ts` ganhou três (os três
 reprovam com o `rebuild_` antigo); as cinco aulas protegidas passam. O pacote de abertura do modo
-Blocos foi a 4.749.761 bytes (teto 4.750.000).
+Blocos foi a 4.749.761 bytes (teto 4.750.000). Com o editor de mundo 3D baixado sob demanda
+(`4265fd976`), o pacote foi a 4.221.401 bytes. (A mensagem daquele commit dá um "antes" maior, que
+somava trabalho ainda sem commit; a base commitada era 4.749.761.)
+
+### Abrir o projeto reescrevia o programa (20/11/2026, à noite)
+
+Depois do conserto acima, o e2e do Reino Zero Ultra (`reino-zero-ultra.spec.ts`) passou a reprovar:
+o jogo voltava à tela de título no meio da partida. O documento da prévia era o mesmo nas duas
+versões; o que mudou foi QUANDO ele era trocado. Abrir o projeto mudava o código: o ajuste do
+mutador depois da carga completava as chamadas com menos argumentos que a função
+(`loadStage(stage.id)` virava `loadStage(stage.id, 0)`), a geração saía diferente e a prévia
+recarregava. Com o `rebuild_` antigo isso acontecia logo na abertura, antes de a partida começar
+(e a cauda se desenhava quase inteira: sobravam 32 blocos adiados); com o novo, a cauda fica
+adiada (7.205 blocos) e a troca chegava segundos depois, no meio do jogo.
+
+O defeito é antigo e é de conteúdo: a quantidade de argumentos é parte do programa. Desde esta data
+o mutador só a muda quando a criança mexe (escolhe a função, a classe ou o método, muda os
+parâmetros dela, aperta + ou −). Um bloco que vem de um estado guardado (abrir o projeto, a Ponte
+refazendo os blocos do código, colar, desfazer) adota a contagem dele e só ganha os rótulos
+(`adoptCount_`); a chamada sem argumentos criada por uma carga também (ela não passa pelo
+`loadExtraState`). No automático, um parâmetro que ficou sem espaço ganha o +, com o rótulo dele.
+
+Provas: quatro testes novos em `classMutators.test.ts` (menos argumentos, nenhum argumento, o + e a
+chamada nova da paleta, que continua ganhando os espaços), e o teste de ida e volta do Ultra
+(`reinoZeroUltraExample.test.ts`) agora abre como o editor abre, com a cerca de carga e os eventos
+processados (antes ele nunca rodava o ajuste); os dois primeiros e o do Ultra reprovam com o
+mutador anterior. `e2e/reino-zero-ultra.spec.ts` e `e2e/offscreen-lifecycle.spec.ts` passam.

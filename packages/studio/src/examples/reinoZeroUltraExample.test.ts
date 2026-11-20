@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { behaviorStatements, type JSStatement, normalizeSZIR, SZIRV2Schema } from '#ir'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
+import { withWorkspaceLoad } from '../blockly/loadFence'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
 import { compileStatements } from '../generators/js'
@@ -188,13 +189,24 @@ describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
   // ficava DENTRO da variação normal e virava cara ou coroa. O teto existe para pegar
   // pendura, não para policiar desempenho: a mesma proporção do irmão (~4 s → 30 s)
   // dá 60 s aqui.
-  it('preserva o motor inteiro no round-trip IR → blocos → IR', () => {
+  // ⚠️ Abre como o editor abre: com a cerca de carga e os eventos PROCESSADOS (o `await` entrega o
+  // `FINISHED_LOADING`, que ajusta os 348 blocos de chamada). Sem isso o teste nunca rodava o
+  // ajuste do mutador de argumentos, que até 20/11/2026 completava `loadStage(stage.id)` para
+  // `loadStage(stage.id, 0)`: abrir o exemplo reescrevia o programa e a prévia recarregava no
+  // meio da partida (e2e `reino-zero-ultra.spec.ts`).
+  it('preserva o motor inteiro no round-trip IR → blocos → IR', async () => {
     const workspace = new Blockly.Workspace()
     try {
-      Blockly.serialization.workspaces.load(
-        buildWorkspaceStateFromIR(reinoZeroUltraExample.ir, reinoZeroUltraExample.workspaceOptions),
-        workspace,
+      withWorkspaceLoad(() =>
+        Blockly.serialization.workspaces.load(
+          buildWorkspaceStateFromIR(
+            reinoZeroUltraExample.ir,
+            reinoZeroUltraExample.workspaceOptions,
+          ),
+          workspace,
+        ),
       )
+      await new Promise<void>((resolve) => setTimeout(resolve, 0))
       const rebuilt = stripIds(behaviorStatements(buildIRFromWorkspace(workspace)))
       expect(rebuilt).toEqual(stripIds(behaviorStatements(reinoZeroUltraExample.ir)))
       expect(collectTypes(rebuilt).has('rawJS')).toBe(false)
