@@ -189,7 +189,7 @@ export default defineConfig({
             {
               // Blockly-only presentation remains absent from source-only modes.
               name: 'studio-blockly-presentation',
-              test: /(?:[\\/]studio[\\/]src[\\/](?:blockly[\\/](?:theme|themeColors|blocks[\\/]mutatorEvents)|components[\\/]blocks[\\/]blocklyHistory)\.ts$|[\\/]blockly[\\/]msg[\\/]pt-br\.m?js$)/,
+              test: /(?:[\\/]studio[\\/]src[\\/](?:blockly[\\/](?:theme|themeColors|blocks[\\/]mutatorEvents|fields[\\/]declaringBlocks)|components[\\/]blocks[\\/]blocklyHistory)\.ts$|[\\/]blockly[\\/]msg[\\/]pt-br\.m?js$)/,
             },
             {
               // Coalesce shared modules already reachable through the editor's

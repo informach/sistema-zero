@@ -1,5 +1,4 @@
-import { GROUP_DECL_BLOCKS } from '../../blockly/fields/FieldNamePicker'
-import { SPRITE_DECL_BLOCKS } from '../../blockly/fields/FieldSpritePicker'
+import { GROUP_DECL_BLOCKS, SPRITE_DECL_BLOCKS } from '../../blockly/fields/declaringBlocks'
 import { checkScriptNames } from '../../check/instrumentCheckScript'
 
 /**
