@@ -229,6 +229,32 @@ describe('sanitizeProjectAssets', () => {
   })
 })
 
+describe('imagens de uma cena do Molda', () => {
+  it('passam do teto das imagens soltas sem abrir esse teto para as outras imagens', () => {
+    const grande = `data:image/png;base64,${'A'.repeat(PROJECT_ASSET_LIMITS.maxAssetDataUrlChars + 100)}`
+    const out = sanitizeProjectAssets([
+      {
+        id: 'ceu',
+        kind: 'image',
+        name: 'ceu-360',
+        dataUrl: grande,
+        source: 'library',
+        libId: 'cenario-recurso:abc',
+      },
+      { id: 'solta', kind: 'image', name: 'solta', dataUrl: grande, source: 'upload' },
+      {
+        id: 'outra-lib',
+        kind: 'image',
+        name: 'outra',
+        dataUrl: grande,
+        source: 'library',
+        libId: 'lib-1',
+      },
+    ])
+    expect(out.map((a) => a.name)).toEqual(['ceu-360'])
+  })
+})
+
 describe('assetManifest', () => {
   it('mapeia nome → dataUrl, só imagens (ignora áudio e ausência)', () => {
     const assets = sanitizeProjectAssets([

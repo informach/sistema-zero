@@ -6,6 +6,7 @@ import { createEmptyProject, type Project } from '#core'
 import * as gameUiFonts from '../../official-extensions/gameUiFont'
 import * as gameStorage from '../../state/gameStorage'
 import { useHighlightStore } from '../../state/highlightStore'
+import { useLogsStore } from '../../state/logsStore'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
 import { useProRun } from '../../state/proRun'
@@ -165,6 +166,27 @@ describe('PreviewIframe', () => {
     await act(async () => useProRun.getState().actions?.run())
     await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
     expect(useProRun.getState().state?.phase).toBe('running')
+  })
+
+  it('um cenário 3D que não confere vai para os Problemas sem derrubar a prévia', async () => {
+    useLogsStore.getState().clear()
+    const project = createPreviewProject()
+    project.assets = [
+      {
+        id: 'cena-quebrada',
+        name: 'praca',
+        kind: 'scene3d',
+        source: 'library',
+        originalFileName: 'praca.scene3d.json',
+        dataUrl: 'data:application/json;base64,e30=',
+      },
+    ]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    expect(() => render(<PreviewIframe />)).not.toThrow()
+    await waitFor(() =>
+      expect(useLogsStore.getState().entries.some((e) => e.text.includes('praca'))).toBe(true),
+    )
+    useLogsStore.getState().clear()
   })
 
   it('executa ao montar, reexecuta ao atualizar e volta a executar ao sair de parado', async () => {

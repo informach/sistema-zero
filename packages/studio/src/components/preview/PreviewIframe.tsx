@@ -427,8 +427,27 @@ export function PreviewIframe(): JSX.Element {
   )
   const bootstrapContextRef = useRef(bootstrapContext)
   bootstrapContextRef.current = bootstrapContext
-  const transporteDeCenas = useMemo(() => criarTransporteDeCenas3D(assets), [assets])
+  // Conferir o cenário durante o render não pode derrubar o editor: o problema vai para a
+  // gaveta de Problemas e o jogo roda sem o cenário (o bloco dele avisa ao procurá-lo).
+  const cenas = useMemo(() => {
+    try {
+      return { transporte: criarTransporteDeCenas3D(assets), erro: null }
+    } catch (erro) {
+      return { transporte: undefined, erro: erro instanceof Error ? erro.message : String(erro) }
+    }
+  }, [assets])
+  const transporteDeCenas = cenas.transporte
   const comCenas3D = !!transporteDeCenas
+  useEffect(() => {
+    if (!cenas.erro) return
+    pushLog({
+      source: 'sz-preview',
+      kind: 'error',
+      parts: [cenas.erro],
+      error: { message: cenas.erro },
+      timestamp: Date.now(),
+    })
+  }, [cenas, pushLog])
   const runtimeKey = useMemo(
     () =>
       `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}`,

@@ -148,6 +148,9 @@ export async function prepararImportacaoDeCena3D(
   for (const a of atuais) {
     sinal.throwIfAborted()
     if (!kindsNecessarios.has(a.kind)) continue
+    // Criação ligada ao Pinta/Molda da criança segue sincronizando sozinha: virar dependência
+    // fixada da cena a congelaria. Com o mesmo conteúdo, a cena ganha uma cópia própria.
+    if (a.pintaImage || a.libId?.startsWith('personal:')) continue
     const { mime, bytes } = decodificar(a.dataUrl)
     porConteudo.set(
       chaveDoConteudo(a.kind, mime, await digestAssetBytes(bytes), a.dado3d?.papel),
@@ -265,7 +268,7 @@ export async function prepararImportacaoDeCena3D(
         metadados = new Map(d.cena.arquivos.map((f) => [f.caminho, f]))
       malhas += d.cena.nos.reduce((s, n) => s + metadados.get(n.arquivo)!.malhas!, 0)
     } else if (a.kind === 'model3d' && !referenciados.has(a.id))
-      malhas += inspecionarGlbDaCompilacao(bytes, { fonte: true, luzes: true }).malhas
+      malhas += malhasDeModeloComum(bytes, inspecionarGlbDaCompilacao)
   }
   const orcamento = avaliarOrcamentoDaCena({ malhas, arquivos }, 'studio')
   if (!orcamento.permitido) throw new OrcamentoDeImportacaoDeCenaExcedido(orcamento)
@@ -295,5 +298,36 @@ export async function prepararImportacaoDeCena3D(
     adicionados: assets.length - atuais.length,
     orcamento,
     ...(fontesPython ? { fontesPython, avisos } : {}),
+  }
+}
+
+/**
+ * Malhas de um modelo comum do projeto, só para o orçamento. O inspetor estrito da compilação
+ * recusa extensões que o Three carrega bem (quantização, instâncias, Draco): um modelo antigo do
+ * projeto impedia importar qualquer cena. Fora do inspetor, conta as primitivas do JSON do GLB.
+ */
+function malhasDeModeloComum(
+  bytes: Uint8Array,
+  inspecionar: (
+    bytes: Uint8Array,
+    opcoes: { fonte: boolean; luzes: boolean },
+  ) => { malhas: number },
+): number {
+  try {
+    return inspecionar(bytes, { fonte: true, luzes: true }).malhas
+  } catch {
+    try {
+      const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+      if (bytes.byteLength < 20 || v.getUint32(0, true) !== 0x46546c67) return 1
+      const tamanho = v.getUint32(12, true)
+      if (v.getUint32(16, true) !== 0x4e4f534a || 20 + tamanho > bytes.byteLength) return 1
+      const json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + tamanho))) as {
+        meshes?: { primitives?: unknown[] }[]
+      }
+      const total = (json.meshes ?? []).reduce((s, m) => s + (m.primitives?.length ?? 0), 0)
+      return Math.max(1, total)
+    } catch {
+      return 1
+    }
   }
 }

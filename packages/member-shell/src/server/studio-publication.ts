@@ -13,7 +13,10 @@ import {
   type StudioPythonPublication,
 } from '@sistemazero/core/studio'
 import { pintaImageRequiredRuntimeFeature } from '@sistemazero/core/studio/pinta-image'
-import { PYTHON_PINTA_WORLD_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioPublicationRuntimeDecision,
   StudioRuntimeCandidate,
@@ -337,6 +340,16 @@ export async function publishStudioPythonRevision(options: {
     throw new StudioPublicationError(
       409,
       'O ambiente deste projeto precisa ser atualizado para publicar este cenário. O mapa e o programa foram preservados.',
+      STUDIO_PINTA_READER_OUTDATED,
+    )
+  // O cenário do Molda só abre num ambiente que traz o leitor de cenas (`cenario.py`).
+  if (
+    original.assets?.some((asset) => asset.kind === 'scene3d') &&
+    !availablePintaFeatures.includes(PYTHON_MOLDA_SCENE_FEATURE)
+  )
+    throw new StudioPublicationError(
+      409,
+      'O ambiente deste projeto precisa ser atualizado para publicar este cenário 3D. Os materiais e o programa foram preservados.',
       STUDIO_PINTA_READER_OUTDATED,
     )
   const result = await callStudioPublication(
