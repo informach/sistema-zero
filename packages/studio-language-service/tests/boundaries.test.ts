@@ -120,7 +120,10 @@ it('preserves the complete Python symbol index beyond 300 entries', () => {
       name,
       kind: 13,
       range,
-      selectionRange: { start: { line: n, character: 0 }, end: { line: n, character: name.length } },
+      selectionRange: {
+        start: { line: n, character: 0 },
+        end: { line: n, character: name.length },
+      },
     }
   })
   const result = mapper('symbols', symbols)
