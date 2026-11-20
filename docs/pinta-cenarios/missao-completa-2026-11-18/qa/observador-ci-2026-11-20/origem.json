@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-20T13:56:02.469Z",
+  "previousCi": {
+    "run": 44741178796,
+    "source": "3b40f44024415ba3d56cbdc69380d467e137ece7",
+    "conclusion": "failure",
+    "test": "PreviewIframe: marca antes do documento executável"
+  },
+  "upstream": {
+    "issue": "https://github.com/capricorn86/happy-dom/issues/2264",
+    "release": "https://github.com/capricorn86/happy-dom/releases/tag/v20.11.2",
+    "installedBefore": "20.10.2",
+    "pinnedAfter": "20.11.2"
+  },
+  "gates": [
+    {
+      "name": "components",
+      "exit": 0,
+      "log": ".cache/pinta-happy-dom-components.log",
+      "files": 68
+    },
+    {
+      "name": "types",
+      "exit": 0,
+      "log": ".cache/pinta-happy-dom-types.log"
+    }
+  ],
+  "logs": [
+    {
+      "file": "pinta-observer-gc-red.log",
+      "sha256": "642971d9aca539e81f52c63629b3ec0a5f37139e240e845fc1bdf47579858886",
+      "summary": "regressao-vermelha.txt"
+    },
+    {
+      "file": "pinta-happy-dom-upstream-focused-r3.log",
+      "sha256": "91d64031edf468254327183ce2c37c49770e77fbaa4931cd3a97cddbb9b6aeb1",
+      "summary": "regressao-verde.txt"
+    },
+    {
+      "file": "pinta-happy-dom-components.log",
+      "sha256": "636e5f2219fafa52f3921199c6ed06881d76b85dbf194f1f5cce833b60525c81",
+      "summary": "componentes.txt"
+    },
+    {
+      "file": "pinta-happy-dom-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": "tipos.txt"
+    },
+    {
+      "file": "pinta-happy-dom-root-biome.log",
+      "sha256": "aa323b057f41bc704540a7966f43ebb1c0e641e478a993c1e9990e61f877d23e",
+      "summary": "biome.txt"
+    }
+  ],
+  "newRemoteCiVerified": false,
+  "productVisualChanged": false
+}

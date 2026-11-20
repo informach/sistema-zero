@@ -1,0 +1,5 @@
+(pass) o observador continua entregando alterações depois da coleta de memória [141.00ms]
+ 591 pass
+ 0 fail
+ 3363 expect() calls
+Ran 591 tests across 68 files. [76.40s]
