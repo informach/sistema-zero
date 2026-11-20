@@ -40,6 +40,34 @@ it('does not materialize a normalized shell for the standard generated document'
   expect(blockGenerationInput(built(), project, true).ir.htmlShell).toBeUndefined()
 })
 
+it('does not freeze the head of a brand new project created from the blank template', () => {
+  // `createEmptyProject` writes the blank template, which has no viewport. Installing it as a
+  // shell would drop the viewport from every generation and freeze the title forever.
+  const project = createEmptyProject('blank-shell', 'Projeto novo')
+  project.ir = null
+  expect(project.files['index.html']).toContain('<title>Projeto novo</title>')
+  expect(blockGenerationInput(built(), project, true).ir.htmlShell).toBeUndefined()
+})
+
+it('lets the title follow a rename when the saved head is the generated default', () => {
+  const project = createEmptyProject('renamed-shell', 'Nome novo')
+  project.ir = null
+  project.files['index.html'] = generateHTML({ title: 'Nome antigo', body: [] })
+  expect(blockGenerationInput(built(), project, true).ir.htmlShell).toBeUndefined()
+})
+
+it('still preserves a head the child customized beyond the title', () => {
+  const project = createEmptyProject('custom-head', 'Nome novo')
+  project.ir = null
+  project.files['index.html'] = generateHTML({ title: 'Nome antigo', body: [] }).replace(
+    '</head>',
+    '<meta name="author" content="a criança"></head>',
+  )
+  const shell = blockGenerationInput(built(), project, true).ir.htmlShell
+  expect(shell?.head).toContain('name="author"')
+  expect(shell?.head).toContain('<title>Nome antigo</title>')
+})
+
 it('recovers inline placement and the actual absence of a banner', () => {
   const project = createEmptyProject('inline-shell', 'Inline')
   project.ir = null
