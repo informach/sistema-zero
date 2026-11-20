@@ -19,11 +19,24 @@ const jwt = (subject: string, claims: Record<string, unknown>): Principal => ({
 describe('createClaimsUserResolver — sessão de perfil (claim pfl)', () => {
   test('pfl.accountId/name → user.accountId/profileName; o sub continua sendo o PERFIL', async () => {
     const user = await resolver.resolve(
-      jwt('profile-1', { ...baseClaims, pfl: { accountId: 'conta-1', name: 'Sofia' } }),
+      jwt('profile-1', {
+        ...baseClaims,
+        pfl: { accountId: 'conta-1', name: 'Sofia Silva Santos', nickname: 'Fada Azul' },
+      }),
     )
     expect(user?.id).toBe('profile-1')
     expect(user?.accountId).toBe('conta-1')
-    expect(user?.profileName).toBe('Sofia')
+    expect(user?.profileName).toBe('Fada Azul')
+  })
+
+  test('token antigo nunca usa o nome privado como apelido', async () => {
+    const user = await resolver.resolve(
+      jwt('profile-1', {
+        ...baseClaims,
+        pfl: { accountId: 'conta-1', name: 'Sofia Silva Santos' },
+      }),
+    )
+    expect(user?.profileName).toBe('Criador(a)')
   })
 
   test('sessão normal da conta (sem pfl) → accountId/profileName ausentes', async () => {

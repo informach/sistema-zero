@@ -2,21 +2,21 @@
   "version": 5,
   "courseSlug": "transformando-o-vilao-em-aliado",
   "lessonSlug": "transformando-o-vilao-em-aliado-aula-1",
-  "title": "A pergunta certa sobre telas",
+  "title": "O vilão que não dá para tirar",
   "blocks": [
     {
+      "key": "video-a1-abertura",
+      "plannedVideo": "Título: O maior vilão dos pais\n\nAbrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
       "key": "video-a1-pergunta",
-      "plannedVideo": "Título: A pergunta que cansa\n\nHelena na câmera: a palavra guardada, a briga para desligar, por que tirar a tela não funciona, a troca da pergunta, o mesmo tempo e não mais tempo, e o vídeo de depoimentos da preocupação (Flávia, Daniel e Débora). Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 1."
+      "plannedVideo": "Título: A pergunta que muda tudo\n\nTrocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar. Fala completa em transformando-o-vilao-em-aliado-aula-1.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
     },
     {
-      "key": "video-a1-tres-usos",
-      "plannedVideo": "Título: Assistir, jogar e criar\n\nO fogo como ferramenta, os três usos da tela e o mapa da semana de telas. Fala completa no roteiro, Parte 2."
-    },
-    {
-      "key": "para-casa-a1",
+      "key": "resumo-a1",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para fazer esta semana: o mapa da semana de telas\n\nTodo dia, anote em qual uso o seu filho passou a maior parte do tempo de tela. Sem julgar e sem mudar nada ainda.\n\n| Dia | Assistir | Jogar | Criar |\n| --- | --- | --- | --- |\n| Segunda | | | |\n| Terça | | | |\n| Quarta | | | |\n| Quinta | | | |\n| Sexta | | | |\n| Sábado | | | |\n| Domingo | | | |\n\nE guarde a sua palavra: o que você mais deseja para o futuro do seu filho? Ela volta na última aula."
+        "markdown": "## Para consultar\n\nA grande pergunta não é como tirar a tela, e sim o que oferecer dentro dela. A proposta usa o mesmo tempo de tela que a criança já tem, de forma mais produtiva."
       }
     },
     {
@@ -27,75 +27,37 @@
         "bookPreview": true,
         "items": []
       }
-    },
-    {
-      "key": "quiz-a1",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 50,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "O seu filho passa uma hora por dia assistindo vídeos. O que este curso propõe para esse tempo de tela?",
-            "choices": [
-              { "id": "a", "label": "Cortar esse tempo pela metade." },
-              {
-                "id": "b",
-                "label": "Usar uma parte desse mesmo tempo para ele criar alguma coisa."
-              },
-              { "id": "c", "label": "Dar mais tempo de tela, desde que ele crie." }
-            ],
-            "correctChoiceIds": ["b"],
-            "explanation": "A ideia não é aumentar nem só cortar o tempo de tela. É mudar o que acontece dentro do tempo que já existe."
-          },
-          {
-            "id": "q2",
-            "prompt": "Qual destas atividades é criar?",
-            "choices": [
-              { "id": "a", "label": "Assistir a um vídeo de alguém passando uma fase difícil." },
-              { "id": "b", "label": "Jogar a fase mais difícil de um jogo." },
-              { "id": "c", "label": "Inventar as regras de um jogo e testar se funcionam." }
-            ],
-            "correctChoiceIds": ["c"],
-            "explanation": "Criar é inventar as próprias regras e ver tudo funcionar. Assistir e jogar usam o que outra pessoa já decidiu."
-          }
-        ]
-      }
     }
   ],
   "sections": [
     {
-      "key": "pergunta",
-      "title": "A pergunta que cansa",
-      "objective": "Trocar \"como eu tiro a tela?\" por \"o que eu posso oferecer dentro dela?\" e entender que a proposta usa o mesmo tempo de tela.",
-      "intent": "presentation",
-      "blockKeys": ["video-a1-pergunta"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a1-pergunta"] }
-    },
-    {
-      "key": "tres-usos",
-      "title": "Assistir, jogar e criar",
-      "objective": "Reconhecer a tela como ferramenta, diferenciar os três usos e começar o mapa da semana.",
+      "key": "abertura",
+      "title": "O maior vilão dos pais",
+      "objective": "Abrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital.",
       "intent": "explanation",
-      "blockKeys": ["video-a1-tres-usos", "para-casa-a1", "apostila"],
+      "blockKeys": ["video-a1-abertura"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["video-a1-tres-usos"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-abertura"]
+      }
     },
     {
-      "key": "confira-a1",
-      "title": "Confira o que ficou",
-      "objective": "Aplicar a ideia da aula a duas situações do dia a dia.",
-      "intent": "application",
-      "blockKeys": ["quiz-a1"],
+      "key": "pergunta",
+      "title": "A pergunta que muda tudo",
+      "objective": "Trocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar.",
+      "intent": "explanation",
+      "blockKeys": ["video-a1-pergunta", "resumo-a1", "apostila"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
-      "completion": { "version": 1, "blockIds": ["quiz-a1"] }
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a1-pergunta"]
+      }
     }
-  ]
+  ],
+  "retireBlockKeys": ["video-a1-tres-usos", "para-casa-a1", "quiz-a1"]
 }

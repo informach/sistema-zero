@@ -43,7 +43,8 @@ describe('PreviewIframe', () => {
     })
     const initialNonce = getRenderNonce(initialDoc)
 
-    expect(useProRun.getState().state?.phase).toBe('running')
+    // O documento entra no DOM antes de o efeito publicar a fase no proRun.
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
     act(() => useProRun.getState().actions?.reload?.())
 
     const refreshedDoc = await waitFor(() => {
@@ -78,6 +79,7 @@ describe('PreviewIframe', () => {
     const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
     fireEvent.load(iframe)
     await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
     const contentWindow = iframe.contentWindow
     if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
     act(() => {

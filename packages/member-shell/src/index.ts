@@ -1,4 +1,5 @@
 import { createAdultProfileRoutes } from './routes/adult-profile'
+import { createCommerceRoutes } from './routes/commerce'
 import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { paletteCookieName } from './lib/palette-cookie'
@@ -77,6 +78,7 @@ export function createShell(cfg: ShellConfig) {
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
+    ...createCommerceRoutes({ session, gateway, auth, members, payments, audience: cfg.audience }),
     ...createAdultProfileRoutes({ session, gateway }),
     ...createLiveRoutes({ session, gateway }),
     ...createStudyAccessRoutes({ session, gateway, study }),

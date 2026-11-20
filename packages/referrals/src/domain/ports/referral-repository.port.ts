@@ -78,7 +78,29 @@ export interface RedemptionRecord {
   muralVisitorGrantedAt: Date | null
   /** Oferta concedida pelos resgates `offer`; null nos anteriores. */
   giftOfferId?: string | null
+  /** Vaga do presente (`giftSlotOf`); ausente = `main`. */
+  giftSlot?: string
   createdAt: Date
+}
+
+/** A vaga do presente do público: um por e-mail e público. */
+export const MAIN_GIFT_SLOT = 'main'
+
+/**
+ * A vaga que um presente ocupa (18/11/2026). Curso para pais não ocupa a vaga do presente do
+ * público: quem recebe o curso ainda pode receber o presente da criança com o mesmo e-mail, e
+ * vice-versa. Vale um resgate por curso para pais.
+ */
+export function giftSlotOf(
+  course: { slug: string; learner: 'child' | 'parents' | null } | null | undefined,
+  offerId?: string,
+): string {
+  if (course?.learner === 'parents') return `parents:${course.slug}`
+  // O Cadê conserva a vaga histórica, inclusive nos links de embaixadores.
+  if (course && ['cade-todo-mundo', 'cade-todo-mundo-adulto'].includes(course.slug))
+    return MAIN_GIFT_SLOT
+  if (course) return `course:${course.slug}`
+  return offerId ? `offer:${offerId}` : MAIN_GIFT_SLOT
 }
 
 /** O que um resgate NOVO grava sobre o presente (resolvido no catálogo antes do claim). */
@@ -282,6 +304,8 @@ export interface ReferralRepository {
     courseSlug?: string
     attribution?: GiftAttribution | null
     gift?: RedemptionGift
+    /** Vaga do presente (`giftSlotOf`); ausente = `main`. */
+    giftSlot?: string
   }): Promise<{ created: boolean; redemption: RedemptionRecord }>
   /**
    * Lease atômico: só vence quem encontra `processing_until` NULL/expirado e a
@@ -303,7 +327,15 @@ export interface ReferralRepository {
   releaseRedemptionWelcome(id: string): Promise<void>
   markWelcomeAccepted(id: string, when: Date): Promise<void>
   /** Resgate do e-mail NAQUELE público (o mesmo e-mail pode ter um Kids e um adulto). */
-  findRedemptionByEmail(email: string, audience: GiftAudience): Promise<RedemptionRecord | null>
+  /** O resgate do e-mail numa vaga do público; sem `giftSlot`, a vaga do presente (`main`). */
+  findRedemptionByEmail(
+    email: string,
+    audience: GiftAudience,
+    giftSlot?: string,
+  ): Promise<RedemptionRecord | null>
+  /** Todos os resgates do e-mail no público (todas as vagas), do mais antigo ao mais novo. */
+  listRedemptionsByEmail(email: string, audience: GiftAudience): Promise<RedemptionRecord[]>
+  listRedemptionsByAccount(userId: string, audience: GiftAudience): Promise<RedemptionRecord[]>
   listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]>
 
   // ── Convites ──────────────────────────────────────────────────────────────

@@ -1,63 +1,111 @@
 # Roteiro de produção · transformando-o-vilao-em-aliado-aula-2
 
-A Helena grava sozinha, olhando para a câmera. A fala é para teleprompter: dá para dizer com as próprias palavras, desde que nenhuma ideia se perca.
+A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção, e a apresentadora é o avatar da Helena (HeyGen) durante toda a aula. A fala copiável da aula inteira está no arquivo `.elevenlabs.txt` ao lado. Os depoimentos são cortes já existentes e entram em edição no ponto indicado; o texto deles não vai para a voz.
 
-## Parte 1. O que acontece por dentro
+## Parte 1. Assistir, jogar ou criar
 
-**Clipe:** `video-a2-por-dentro`
+**Clipe:** `video-a2-tres-usos`
 
-**Na tela:** Helena na câmera. Uma tela simples com duas colunas (A tela que só entretém / A tela que faz pensar) quando ela compara. Uma lista com as cinco habilidades, uma por linha, quando ela explica cada uma com a manhã da casa. Câmera no exemplo do Lego.
+**Na tela:** No "pensa no fogo", ilustrar a comparação [na edição: o fogo que aquece e prepara a comida, e o fogo que destrói a floresta]. No "três jeitos diferentes de usar a tela", mostrar os três usos [na edição: assistir, jogar e criar]. No "o terceiro jeito, que é o criar", destacar o terceiro [na edição: criar].
 
-**Fala da Helena:**
-
-```text
-Talvez você já tenha visto esta cena. O seu filho trava numa fase do jogo, abre um vídeo de alguém passando aquela fase, copia e segue em frente. Parece que ele aprendeu, mas na verdade ele só memorizou um caminho que outra pessoa achou. Na próxima dificuldade, ele vai procurar outro vídeo.
-
-A tela que só entretém funciona assim. Tudo chega pronto. Por isso sobra pouca paciência para tentar de novo, e na hora de desligar vem a briga, porque nunca tem um fim.
-
-A tela que faz pensar é diferente. Ela pede raciocínio, resolver problemas, foco, planejamento e saber lidar com o erro. E por trás disso estão umas habilidades que têm um nome: funções executivas. Eu vou te explicar com a manhã da sua casa.
-
-Lembrar que hoje tem educação física e que precisa do tênis: isso é memória de trabalho, guardar uma informação para usar depois.
-
-Saber que primeiro se veste, depois toma café, depois escova os dentes: isso é planejamento e organização.
-
-Esperar o irmão sair do banheiro sem empurrar a porta: isso é controle do impulso.
-
-E respirar quando o tênis não aparece, em vez de explodir: isso é controle emocional.
-
-São essas habilidades que fazem uma pessoa dar conta da própria vida. Quando a criança só joga o que outra pessoa criou, ela usa uma parte pequena disso. Quando ela cria, usa tudo, e de um jeito mais profundo.
-
-Pense no Lego. Com o manual, a criança olha a figura e monta. Treina atenção e seguir instruções. Terminou o foguete, acabou. Agora entregue as peças sem manual e diga: vamos montar a fazenda daquele passeio? As peças não vão encaixar do jeito que ela imaginou. Uma pecinha vai ter que virar cavalo, ela vai inventar um laguinho, a casa não vai sair igual. Ela vai ter que mudar o plano no caminho. Isso se chama flexibilidade, e é uma das coisas mais importantes que uma criança pode treinar. Criar um jogo é o Lego sem manual. Clique em Próxima parte.
-```
-
-**Recado na página (não gravar):** Memória de trabalho, planejamento, organização, controle do impulso e controle emocional: as habilidades que a criança usa quando cria.
-
-## Parte 2. Quando o jogo é dele
-
-**Clipe:** `video-a2-autoria`
-
-**Na tela:** Helena na câmera. Entra o vídeo de depoimentos das crianças e dos pais sobre criar o próprio jogo (Rafael, Daniel, Fernando e Débora) logo depois de "Veja o que acontece quando o jogo é dele". Câmera na história da família. No fim, a pergunta da tarefa na tela.
-
-**Fala da Helena:**
+**Fala para ElevenLabs:**
 
 ```text
-Tem uma coisa curiosa. A mesma criança que larga uma tarefa da escola no primeiro erro aguenta errar dez vezes no jogo que ela está criando. Por quê? Porque o resultado é dela. Ela quer que funcione. Existe o orgulho de poder dizer: fui eu que fiz.
+[upbeat, welcoming voice] Oi! Que bom te ver de novo. [engaging, energetic, conversational voice] Na aula passada a gente trocou a pergunta, lembra? Em vez de "como tirar a tela", a gente passou a perguntar "o que oferecer dentro dela". E, para responder isso, a primeira coisa é mudar o jeito de olhar para a tecnologia.
 
-E quem cria precisa escolher. Escolher uma coisa é abrir mão de outra. Se o personagem vai pular, talvez não dê para ele voar. Isso ensina a pensar melhor nas próprias escolhas, coisa que o jogo pronto não pede, porque lá tudo já foi decidido.
+[thoughtful] Porque muita gente enxerga a tecnologia como um vilão. [engaging, energetic, conversational voice] Só que a tecnologia é uma ferramenta, como qualquer outra.
 
-Tem mais um efeito que eu vejo muito. Um projeto de criação tem começo, meio e fim, como uma história. Então a criança consegue terminar uma parte e sair satisfeita, em vez de ficar presa num vídeo atrás do outro. A hora de desligar fica menos difícil. Veja o que acontece quando o jogo é dele.
+[curious] Quer ver? Então pensa no fogo. [engaging, energetic, conversational voice] O fogo aquece, e ajuda a preparar a comida para a família inteira. [thoughtful] Mas o fogo também queima, e pode destruir uma floresta inteira. [engaging, energetic, conversational voice] Ou seja: dependendo do uso que a gente dá para a ferramenta, o resultado é completamente diferente.
 
-Repare no jeito que o Fernando explica as regras do jogo que ele criou. Ele não está só jogando. Ele sabe por que cada coisa acontece.
+[upbeat, encouraging voice] E com as telas é a mesma coisa. Elas são ferramentas, e a gente precisa aprender a usar as ferramentas que tem na mão a nosso favor, para o nosso bem.
 
-Eu vou te contar de onde eu tirei tudo isso. O André, meu filho mais velho, é autista e sempre amou jogos. Ele passava muito tempo nas telas, e muitas vezes era assim que ele se acalmava. Tirar a tela na hora que eu queria virava briga. Eu e o meu marido somos da área de tecnologia, e um dia a gente decidiu não brigar mais com esse interesse. A gente usou uma parte do tempo que ele já passava na tela para ensinar ele a criar os próprios jogos.
+[curious] E como é que a gente usa a tela, então? [engaging, energetic, conversational voice] Olha só: existem três jeitos diferentes de usar a tela.
 
-Muita coisa mudou. O André disse uma frase que eu nunca esqueci: eu já jogava um monte, agora eu faço os meus jogos. Os meus filhos se desenvolveram em vários pontos, inclusive na escola. E há pouco tempo o André deu uma palestra numa faculdade, ensinando uma turma de tecnologia a criar jogos. O mesmo menino que um tempo atrás tinha tantas dificuldades.
+[confident, clear, unhurried voice] O primeiro é só assistir. Aí eu estou recebendo cem por cento do conteúdo pronto, e não estou desenvolvendo praticamente nada. [thoughtful] Até dá para aprender alguma coisa, guardar algumas coisas na memória, mas o nível de desenvolvimento é o menor dos três.
 
-Para esta semana: pergunte ao seu filho que jogo ele inventaria se pudesse. Só escute, sem corrigir. Anote a resposta, porque ela vai servir daqui a duas aulas. Depois responda as perguntas da próxima parte.
+[confident, clear, unhurried voice] O segundo jeito é jogar. [thoughtful] E aí depende do jogo, né? Porque tem jogo que faz mal. [engaging, energetic, conversational voice] Mas tem vários jogos que realmente ajudam, que desenvolvem algumas coisas.
+
+[upbeat, encouraging voice] E aí vem o terceiro jeito, que é o criar. [engaging, energetic, conversational voice] É nele que está a maior diferença. [curious] E, para você entender por quê, eu preciso te apresentar um conceito. [upbeat, encouraging voice] Clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Pergunte ao seu filho: que jogo você inventaria se pudesse? Só escute e anote.
+## Parte 2. Função executiva e o exemplo do Lego
 
-## Parte 3. Confira o que ficou (quiz, sem vídeo)
+**Clipe:** `video-a2-funcoes`
 
-O quiz `quiz-a2` fica numa parte própria, sem gravação.
+**Na tela:** No "função executiva", mostrar o conceito [na edição: função executiva: memória de trabalho, planejamento, organização, controle inibitório e controle emocional]. No "pensa no Lego", ilustrar a comparação [na edição: Lego com manual e peças de Lego sem manual]. No "flexibilidade cognitiva", destacar o termo [na edição: flexibilidade cognitiva].
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] O conceito que eu quero te apresentar tem um nome que a gente vai lembrar o curso inteiro: [confident, clear, unhurried voice] função executiva. [engaging, energetic, conversational voice] Com ele, fica fácil entender por que criar faz tanta diferença.
+
+[curious] E o que é função executiva? [confident, clear, unhurried voice] É o conjunto de habilidades que a gente usa para dar conta de uma tarefa do começo ao fim. [engaging, energetic, conversational voice] É uma coisa que se trabalha bastante na terapia, e que faz muita falta na vida de qualquer pessoa.
+
+[curious] E por que é tão importante assim? [engaging, energetic, conversational voice] Porque é com a função executiva que eu desenvolvo a minha memória de trabalho. Quer dizer: eu tenho que guardar dados e informações para usar em algum outro momento, e ainda tenho que adaptar essas informações de acordo com a situação. Aí entram tanto a memória de curto prazo quanto a de longo prazo.
+
+[engaging, energetic, conversational voice] E não para na memória, não. [confident, clear, unhurried voice] Eu preciso ter planejamento. Preciso ter organização. Preciso ter controle inibitório, que é conseguir segurar o impulso. E preciso ter controle emocional, para lidar com a vida.
+
+[thoughtful] Agora, quando a gente pensa no jogar, muitas vezes a gente alcança só uma parte bem pequena, bem superficial, dessas funções executivas. [upbeat, encouraging voice] Já quando a criança cria a própria regra, o próprio jogo, o próprio cenário, o próprio contexto, ela está elaborando e trabalhando todas essas habilidades de um jeito mais complexo e mais profundo. [engaging, energetic, conversational voice] Aí deixa de ser um simples jogo e passa a ser uma habilidade para a vida. A criança pode trazer até as rotinas e as experiências dela para dentro dessa criação.
+
+[curious] Para ficar bem claro, pensa no Lego. [engaging, energetic, conversational voice] Se eu dou o Lego com o manual, o que essa criança está aprendendo? O que ela está desenvolvendo? [confident, clear, unhurried voice] Atenção compartilhada e memória de curto prazo: ela olha aqui e executa ali. [thoughtful] Terminou, montou o foguete, acabou.
+
+[curious] Agora, e se eu entrego as peças de Lego sem manual e falo assim: [warmly] "Você foi passear na fazenda no fim de semana. O que você fez lá? Vamos criar." [engaging, energetic, conversational voice] Aí as peças não vão encaixar. Às vezes ela vai ter que pegar uma pecinha e fingir que é um cavalo. Vai ter que construir um laguinho. A casa que ela queria não vai sair igual. [pleased, lively voice] E olha só o que está acontecendo: eu estou trabalhando a flexibilidade cognitiva, que é tão importante.
+
+[upbeat, encouraging voice] Pois então: criar um jogo é o Lego sem manual. Clique em Próxima parte.
+```
+
+## Parte 3. Criar em vez de só consumir
+
+**Clipe:** `video-a2-criar`
+
+**Na tela:** No "colocar os nossos filhos para criarem jogos", mostrar a proposta [na edição: criar, e não apenas consumir]. No "quando você joga um jogo pronto", comparar [na edição: jogar o jogo de outra pessoa e criar o próprio jogo]. No "deixam o papel de espectadoras e passam a ser protagonistas", fechar com a ideia [na edição: de espectador a protagonista].
+
+**Depoimento (inserir na edição, não gravar):** Corte das crianças e dos pais sobre o que aconteceu quando passaram a criar, o mesmo exibido no encontro de 13/11. Inserir depois de "elas passaram a criar." Identificar nome e vínculo. Transcrição do corte: "A coisa que eu mais gostei de fazer é criar meu próprio jogo, que eu posso ter várias ideias e eu posso fazer o que eu quiser. Parece que eu tenho tipo um superpoder." "Ele está conseguindo criar as coisas, já criou alguns jogos, e cada dia ele vai sendo mais criativo, vai pensando: ah, eu quero mudar isso aqui no jogo. Às vezes nós sentamos e ele fala: pai, meu jogo, eu quero que seja assim, assim e assado." "Esse aqui é o meu jogo, que eu estou me dedicando. Você tem que fugir do balão, ganhar mais pontuação e mais vida para conseguir vencer o jogo, e o tempo é de 40 segundos." "Ele se sente motivado em mostrar para as outras pessoas o que ele conseguiu. Abriu um pouquinho a mente dele sobre as tantas possibilidades que a tecnologia pode trazer."
+
+**Fala para ElevenLabs:**
+
+```text
+[upbeat, encouraging voice] E é aqui que entra a proposta que eu quero te fazer: em vez de só assistir, ou de só jogar, [short pause] colocar os nossos filhos para criarem jogos.
+
+[engaging, energetic, conversational voice] Só que a gente não deve olhar para o criar jogo como um fim. Ele é um meio, uma ferramenta. É o caminho que vai dar esse treino de habilidades cognitivas para a vida deles. [warmly] Eu trabalho de perto com isso, já vi muitas famílias experimentarem, e vejo a diferença que faz.
+
+[engaging, energetic, conversational voice] Porque, se você olhar de perto, a construção de um joguinho nada mais é do que o desenvolvimento daquelas habilidades que são importantes para a vida: lidar com a frustração, saber esperar, seguir uma sequência. A criança tem que dar conta de um passo a passo, tem que elaborar, tem que criar, tem que organizar, tem que mudar a estratégia.
+
+[thoughtful] Agora compara com o outro lado. Quando você joga um jogo pronto, já está tudo decidido ali. É como o Lego com o manual: alguém já decidiu como tem que ser feito. A criança só segue o roteiro que quem criou o jogo determinou para ela.
+
+[thoughtful] E pensa nos joguinhos que eles já têm hoje. A maioria tem tutorial. Eles assistem para conseguir passar para a frente, para achar o objeto que dá mais moeda ou mais vida. Em momento nenhum eles estão desenvolvendo raciocínio lógico. O máximo que eles conseguem é memorizar um conteúdo para repetir depois. E aí o que eu tenho é uma mera cópia. Não tem aprendizado, nem aquela ampliação de estratégias que eles poderiam levar para outras situações da vida.
+
+[upbeat, encouraging voice] Já quando a criança cria, é bem diferente. [engaging, energetic, conversational voice] Ela vai ter que ter raciocínio lógico, um raciocínio coerente com aquele assunto. Vai ter que pensar em hipóteses para resolver os probleminhas, vai ter que ter foco, vai ter que planejar. [confident, clear, unhurried voice] E tudo isso é função executiva.
+
+[engaging, energetic, conversational voice] Porque aí é ela que vai inventar as regras. É ela que vai ter que montar tudo. [reassuring, encouraging voice] E ela vai ter que lidar com o erro e com a frustração, porque não vai acertar de primeira. Não vai mesmo. [upbeat, encouraging voice] Só que ela tem a motivação da criação, porque criar, por si só, já motiva. [thoughtful] Não é como numa rotina qualquer do dia a dia, em que a criança erra, se frustra, não quer mais, e pronto, acabou. [pleased, lively voice] Aqui, o que costuma acontecer é que a criança quer fazer dar certo no jogo dela, porque tem outra coisa envolvida ali: o orgulho de falar "fui eu que fiz isso".
+
+[curious] E lembra da briga na hora de desligar? [engaging, energetic, conversational voice] Então: como a criação tem uma sequência, com início, meio e fim, a criança consegue construir esse raciocínio e desenvolver essa habilidade com a hora certa de terminar. Existe um final, como numa história. [pleased, lively voice] E nesse final ela se sente orgulhosa de ter construído alguma coisa, e sai satisfeita. [thoughtful] Isso os joguinhos do dia a dia, o YouTube e os vídeos não permitem.
+
+[curious] E por que será que a criança se envolve tanto? [engaging, energetic, conversational voice] Tem a ver com o hiperfoco, que se usa muito no trabalho terapêutico. Se eu uso o hiperfoco da criança a meu favor, eu ensino as habilidades de que ela precisa. [thoughtful] Se eu pego qualquer outro interesse, que não é o dela, até dá para ensinar, mas é muito mais difícil. [upbeat, encouraging voice] Na criação, eu estou usando a construção de um projeto que é da própria criança, onde está o interesse dela, o personagem dela.
+
+[engaging, energetic, conversational voice] E olha, eu falo muito "criança", mas isso vale também para o adolescente. Vai até os 17 anos. Quando eu uso esse interesse, é muito mais motivador. Eles aderem muito mais. E, aderindo mais, eles ficam abertos e aprendem mais.
+
+[curious] Quer ver isso acontecendo? [upbeat, encouraging voice] Olha só o que aconteceu com algumas crianças quando, em vez de só jogar, elas passaram a criar. [short pause]
+
+[pleased, lively voice] Deu para sentir um pouquinho da empolgação delas, né? De como elas ficam quando fazem uma coisa que é delas, que elas criaram. [engaging, energetic, conversational voice] Muita coisa muda quando as crianças deixam o papel de espectadoras e passam a ser protagonistas. [upbeat, encouraging voice] Clique em Próxima parte.
+```
+
+## Parte 4. Mais tempo de tela?
+
+**Clipe:** `video-a2-tempo`
+
+**Na tela:** No "um receio muito grande dos pais", mostrar a apresentadora [na edição: avatar da Helena]. No "o que acontece é uma substituição", destacar a ideia [na edição: mesmo tempo de tela, uso diferente].
+
+**Depoimento (inserir na edição, não gravar):** Corte dos pais sobre o tempo de tela, o mesmo exibido no encontro de 13/11. Inserir depois de "Escuta só o que eles viveram." Identificar nome e vínculo de cada pessoa. Transcrição do corte: "Fernando passava muito tempo nas telas, mas ele mais assistia. Não desenvolvia nada, era mais assistindo vídeos, youtubers e outras coisas. Ele gostou demais, ficou super empolgado, se envolveu bastante." "É uma preocupação da nossa casa, sempre, de ser meio passivo, de estar só recebendo. Isso era um medo inicial nosso, de ele realmente ficar mais em tempo de tela. Mas isso não aconteceu. Surpreendentemente para nós, ele não ficou com maior tempo de tela; ficou às vezes com o mesmo tempo." "Assim como alguns pais, eu também tive o receio de que aumentasse ainda mais o tempo de tela, mas eu percebi que houve uma substituição. Em vez de ele estar consumindo a tela de uma forma passiva, como espectador, somente assistindo, ele está consumindo a tela de uma forma produtiva e criativa. Isso fez muita diferença."
+
+**Fala para ElevenLabs:**
+
+```text
+[thoughtful] Agora, toda vez que eu apresento essa proposta, aparece um receio muito grande dos pais. [engaging, energetic, conversational voice] É mais ou menos assim: "Ai, meu Deus, mas se eu oferecer mais uma atividade na tela, meu filho vai ficar com mais tempo de tela ainda. E isso eu não quero. Eu quero é diminuir, não aumentar."
+
+[reassuring, encouraging voice] E, para não ficar só eu falando, eu trouxe alguns pais que já passaram por isso, que compraram essa ideia e colocaram os filhos para criar. [warmly] Eles tinham esse mesmo receio. Escuta só o que eles viveram. [short pause]
+
+[pleased, lively voice] Viu só? Você ouviu da boca de outros pais: [confident, clear, unhurried voice] o que acontece é uma substituição, e não um aumento do tempo de tela. [engaging, energetic, conversational voice] É aquilo que a gente combinou lá no início: a ideia é usar o mesmo tempo de tela que ele já usa, só que de um jeito mais produtivo.
+
+[upbeat, encouraging voice] E na próxima aula eu te conto de onde veio tudo isso, lá dentro da minha casa. E você vai ver por onde o seu filho pode começar. Clique em Concluir aula para continuar.
+```

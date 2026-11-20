@@ -1,4 +1,8 @@
+import type { GiftBlock, PurchaseBlock } from '@sistemazero/core/commerce'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
+
+export type { GiftBlock, PurchaseBlock } from '@sistemazero/core/commerce'
+
 import type {
   QuizQuestionSpeech,
   SceneVozes,
@@ -28,6 +32,8 @@ export const LESSON_BLOCK_KINDS = [
   'certificate',
   'coming_soon',
   'materials',
+  'gift',
+  'purchase',
 ] as const
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
@@ -568,6 +574,8 @@ export type LessonBlockContent =
   | CertificateBlock
   | ComingSoonBlock
   | MaterialsBlock
+  | GiftBlock
+  | PurchaseBlock
 
 /**
  * O bloco TRAVA a conclusão da aula? Estúdio e Pinta SEMPRE travam (exigem envio —

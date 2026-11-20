@@ -21,6 +21,8 @@ export async function prepareContentReadinessTables(conn: DbConnection): Promise
       "journey_role text not null default 'reward'",
       'sequential_lock boolean not null default true',
       'video_before_activity boolean not null default false',
+      "modality text not null default 'recorded'",
+      "learner text not null default 'child'",
       'metadata jsonb',
       'created_at timestamptz not null default now()',
       'updated_at timestamptz not null default now()',

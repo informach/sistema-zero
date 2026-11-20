@@ -8,7 +8,9 @@ import {
   IdempotencyConflictError,
   IdempotencyInFlightError,
 } from '../../src/domain/payment/payment.errors'
+import { ValidationError } from '../../src/domain/shared/errors'
 import { SubscriptionDataIncompleteError } from '../../src/domain/subscription/subscription.errors'
+import { buildErrorResponse } from '../../src/interfaces/http/error-handler'
 import {
   FakePixGateway,
   InMemoryIdempotencyStore,
@@ -77,6 +79,27 @@ describe('CreateSubscriptionService', () => {
     gateway = new FakePixGateway()
   })
 
+  test('rejeição antes do efeito é distinguida de erro de domínio após envio ao provedor', async () => {
+    const service = buildService({ subscriptions, payments, planRegistry, gateway })
+    const before = await service
+      .execute({ ...baseCommand, customer: undefined })
+      .catch((error) => error)
+    expect(
+      buildErrorResponse({ error: before, code: 'UNKNOWN', logger: silentLogger }).body,
+    ).toMatchObject({
+      paymentCreation: 'not_started',
+      error: { code: 'SUBSCRIPTION_DATA_INCOMPLETE' },
+    })
+    gateway.createCardSubscription = async () => {
+      throw new ValidationError('Falha após envio')
+    }
+    const after = await service
+      .execute({ ...baseCommand, idempotencyKey: 'idem-post-effect' })
+      .catch((error) => error)
+    expect(
+      buildErrorResponse({ error: after, code: 'UNKNOWN', logger: silentLogger }).body,
+    ).not.toHaveProperty('paymentCreation')
+  })
   test('cria plano + assinatura, ativa e cria o pagamento do 1º ciclo (PAID)', async () => {
     const view = await buildService({ subscriptions, payments, planRegistry, gateway }).execute(
       baseCommand,

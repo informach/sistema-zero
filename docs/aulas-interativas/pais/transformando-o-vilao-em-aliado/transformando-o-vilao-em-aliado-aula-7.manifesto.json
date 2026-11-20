@@ -1,0 +1,84 @@
+{
+  "version": 5,
+  "courseSlug": "transformando-o-vilao-em-aliado",
+  "lessonSlug": "transformando-o-vilao-em-aliado-aula-7",
+  "title": "Um presente para vocês experimentarem",
+  "blocks": [
+    {
+      "key": "video-a7-plataforma",
+      "plannedVideo": "Título: Você no controle\n\nMostrar que o presente fica na mesma plataforma, nos dois lados dela (área dos pais e área da criança), e o controle que o responsável tem. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 1. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a7-ferramentas",
+      "plannedVideo": "Título: O que tem na área da criança\n\nMostrar o que existe na área da criança, cursos e ferramentas de criação, e o atendimento na área dos pais. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 2. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "video-a7-presente",
+      "plannedVideo": "Título: O presente: sete dias de Cadê Todo Mundo\n\nEntregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar ou usar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final. Fala completa em transformando-o-vilao-em-aliado-aula-7.roteiro.md, Parte 3. Refação de 18/11/2026: gravar o conteúdo novo."
+    },
+    {
+      "key": "presente",
+      "content": {
+        "kind": "gift",
+        "campaignCode": "vilao-em-aliado-cade",
+        "title": "O presente: Cadê Todo Mundo por 7 dias",
+        "description": "O primeiro jogo do seu filho, de presente. O Cadê Todo Mundo fica liberado por 7 dias, gratuito e sem cartão. Acesso para 1 perfil de criança. Idade recomendada: de 5 a 17 anos; abaixo de 9 anos, com um adulto do lado.",
+        "buttonLabel": "Ativar meu presente"
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "title": "Certificado de conclusão",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o curso Transformando o vilão em aliado",
+        "bodyText": "Conheceu como usar a tela para criar e treinar habilidades cognitivas para a vida, com a participação da família."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "plataforma",
+      "title": "Você no controle",
+      "objective": "Mostrar que o presente fica na mesma plataforma, nos dois lados dela (área dos pais e área da criança), e o controle que o responsável tem.",
+      "intent": "explanation",
+      "blockKeys": ["video-a7-plataforma"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a7-plataforma"]
+      }
+    },
+    {
+      "key": "ferramentas",
+      "title": "O que tem na área da criança",
+      "objective": "Mostrar o que existe na área da criança, cursos e ferramentas de criação, e o atendimento na área dos pais.",
+      "intent": "explanation",
+      "blockKeys": ["video-a7-ferramentas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a7-ferramentas"]
+      }
+    },
+    {
+      "key": "presente",
+      "title": "O presente: sete dias de Cadê Todo Mundo",
+      "objective": "Entregar o presente, o Cadê Todo Mundo por sete dias, com os três passos para quem já está na área dos pais (pegar o presente, criar ou usar o perfil do filho e autorizar o aparelho), fechar a reflexão sobre o futuro dos filhos e deixar a mensagem final.",
+      "intent": "delivery",
+      "blockKeys": ["video-a7-presente", "presente", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a7-presente", "certificado"]
+      }
+    }
+  ]
+}

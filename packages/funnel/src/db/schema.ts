@@ -1,16 +1,29 @@
+import type { CommerceContact, CommerceOrigin } from '@sistemazero/core/commerce'
 import {
   boolean,
   index,
   integer,
   jsonb,
   pgSchema,
+  primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
 import type { AnalyticsEnvironment, QuizDefinition } from '../analytics/types'
+import type { AddressFormInput } from '../lib/checkout-schema'
 import type { LeadAttributionV1 } from '../lib/lead-attribution'
 import type { QuizAnswers } from '../lib/quiz-types'
+import type { CheckoutPlan } from '../server/checkout-plan'
+import type { MemberCheckoutPresentation, PreparedMemberCharge } from './member-commerce-types'
+
+export interface MemberCheckoutContext {
+  accountId: string
+  audience: 'kids' | 'adult'
+  origin: CommerceOrigin
+  termsVersion: string
+}
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -46,6 +59,7 @@ export const leads = funil.table(
     // gravado na CRIAÇÃO. Resolve a oferta/conteúdo certos quando há mais de um produto;
     // nullable → leads legados (pré-multifunil) caem no funil default (ver src/funnels).
     funnel: text('funnel'),
+    memberContext: jsonb('member_context').$type<MemberCheckoutContext>(),
 
     // First-touch versionado. Só aceita identificadores técnicos curtos e nunca
     // é sobrescrito depois de preenchido (QR/evento continuam atribuíveis).
@@ -291,7 +305,58 @@ export const analyticsSnapshots = funil.table(
   (t) => [index('analytics_snapshot_page_idx').on(t.page, t.revision, t.viewport)],
 )
 
+export const memberCustomers = funil.table('member_customers', {
+  accountId: uuid('account_id').primaryKey(),
+  contact: jsonb('contact').$type<CommerceContact>().notNull(),
+  birth: text('birth'),
+  address: jsonb('address').$type<AddressFormInput>(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const memberCheckouts = funil.table(
+  'member_checkouts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    accountId: uuid('account_id').notNull(),
+    offerId: uuid('offer_id').notNull(),
+    offerRef: text('offer_ref').notNull(),
+    leadId: uuid('lead_id')
+      .notNull()
+      .references(() => leads.id),
+    origin: jsonb('origin').$type<CommerceOrigin>().notNull(),
+    originKeys: text('origin_keys').array().notNull().default([]),
+    presentation: jsonb('presentation').$type<MemberCheckoutPresentation>().notNull(),
+    pendingRequest: jsonb('pending_request').$type<PreparedMemberCharge>(),
+    dispatchPlan: jsonb('dispatch_plan').$type<CheckoutPlan>(),
+    attemptPhase: text('attempt_phase')
+      .$type<'ready' | 'dispatched' | 'rejected' | 'recorded'>()
+      .notNull()
+      .default('ready'),
+    cardAttemptId: uuid('card_attempt_id').notNull().defaultRandom(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('member_checkout_account_offer_uq').on(t.accountId, t.offerId)],
+)
+
+/** Uma intenção financeira de cada produto por conta, inclusive durante respostas incertas. */
+export const memberProductClaims = funil.table(
+  'member_product_claims',
+  {
+    accountId: uuid('account_id').notNull(),
+    productId: uuid('product_id').notNull(),
+    checkoutId: uuid('checkout_id').notNull(),
+    leadId: uuid('lead_id')
+      .notNull()
+      .references(() => leads.id),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.productId] })],
+)
+
 export const schema = {
+  memberCustomers,
+  memberCheckouts,
+  memberProductClaims,
   leads,
   funnelEvents,
   processedWebhooks,

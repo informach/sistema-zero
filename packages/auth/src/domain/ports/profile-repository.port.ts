@@ -42,6 +42,7 @@ export interface ProfileAccountSummary {
 export interface ProfileWithAccountRow {
   id: string
   name: string
+  publicNickname?: string | null
   avatarUrl: string | null
   birthDate: string | null
   accountUserId: string

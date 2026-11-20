@@ -1,8 +1,10 @@
+import { memberPromotionSchema } from '@sistemazero/core/commerce'
 import { envelope } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { GetOfferService } from '../../../application/get-offer/get-offer.service'
 import type { GetProductService } from '../../../application/get-product/get-product.service'
+import type { ListOffersService } from '../../../application/list-offers/list-offers.service'
 import type { OfferView } from '../../../application/mappers/offer-view'
 import type { PublicProductView } from '../../../application/mappers/product-view'
 import type { QuoteOfferService } from '../../../application/quote-offer/quote-offer.service'
@@ -12,6 +14,7 @@ import { assertInternalCaller } from '../auth'
 import { QuoteOfferBody } from '../dtos'
 
 export interface CatalogRoutesDeps {
+  listOffers?: ListOffersService
   logger: Logger
   getOffer: GetOfferService
   getProduct: GetProductService
@@ -43,6 +46,41 @@ export function catalogRoutes(deps: CatalogRoutesDeps) {
 
   return (
     new Elysia({ prefix: '/catalog' })
+      .get('/member-promotions', async ({ query, set }) => {
+        if (query.audience !== 'kids' && query.audience !== 'adult') {
+          set.status = 400
+          return envelope('BAD_REQUEST', 'Público inválido.')
+        }
+        if (!deps.listOffers) {
+          set.status = 503
+          return envelope('UNAVAILABLE', 'Ofertas indisponíveis.')
+        }
+        const items: OfferView[] = []
+        let offset = 0
+        while (true) {
+          const page = await deps.listOffers.execute({
+            audience: query.audience,
+            status: 'active',
+            limit: 100,
+            offset,
+          })
+          for (const row of page.items) {
+            const promo = memberPromotionSchema.safeParse(row.content?.memberPromotion)
+            if (
+              !row.isAvailable ||
+              !promo.success ||
+              !promo.data.enabled ||
+              promo.data.location !== 'parent_home'
+            )
+              continue
+            const offer = await deps.getOffer.getBySlugOrId(row.slug)
+            if (offer?.isAvailable && offer.product.audience === query.audience) items.push(offer)
+          }
+          offset += page.items.length
+          if (!page.items.length || offset >= page.total) break
+        }
+        return { items }
+      })
       .get('/offers/:slug', async ({ params, set }) => {
         const key = params.slug.trim().toLowerCase()
         let offer = offerCache.get(key)

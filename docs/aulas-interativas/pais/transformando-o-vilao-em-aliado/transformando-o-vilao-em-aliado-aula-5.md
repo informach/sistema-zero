@@ -1,15 +1,16 @@
-# Aula 5. Quando fica difícil: foco, erro e o seu papel
+# Aula 5. Será que meu filho consegue?
 
-**Objetivo de aprendizagem:** o responsável responde às dúvidas de foco e de dificuldade e aprende a apoiar sem fazer pela criança.
+**Objetivo:** Responder às dúvidas sobre foco e dificuldade, ver como a criação ajuda na escola e ligar tudo ao desejo de que os filhos sejam felizes.
 
-**Crença que muda:** "se ele travar, eu preciso resolver por ele (ou ele não é capaz)." Passa a ser: "a primeira barreira é normal, e o meu papel é estar do lado, com a ajuda na medida certa."
+**Ideia central:** O foco na tela eles já têm. Com apoio no início e exigência crescente, a criança amplia o repertório que vai usar na escola e na vida.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| O foco que eles já têm | Depoimentos sobre foco; levar o foco da tela para o aprendizado; a Isabela; a primeira barreira; aprender a andar. | Vídeo assistido. |
-| O seu papel: do lado, sem fazer por ele | Os três degraus de apoio; o repertório; o cuidado com a resposta pronta. | Vídeo assistido; tarefa à vista. |
-| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. "Será que ele vai ter foco?" | Responder à dúvida sobre o foco com o relato de pais: já que vai focar, que foque aprendendo. |
+| 2. "Será que não vai ser difícil?" | Responder à dúvida sobre a dificuldade com a história da Isabela e os níveis de suporte. |
+| 3. Também ajuda na escola | Mostrar como a criação dá sentido ao que a escola ensina: matemática, português, ciências, artes e planejamento. |
+| 4. O que a gente mais deseja: que eles sejam felizes | Retomar a reflexão da primeira aula: a felicidade que desejamos passa pela autonomia e pelas habilidades que a vida adulta exige. |
 
-**Ferramenta:** a pergunta "o que você já tentou?" quando o filho pedir "faz para mim".
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Cuidados:** sem prazo garantido para a barreira passar; cada criança tem o seu tempo. Confirmar a autorização da família da Isabela antes de publicar o vídeo (ver [Fontes](fontes.md)).
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

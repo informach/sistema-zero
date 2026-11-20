@@ -1,14 +1,15 @@
-# Aula 3. Programar é organizar a vida
+# Aula 3. De onde veio essa ideia e por onde começar
 
-**Objetivo de aprendizagem:** o responsável desmistifica a programação, reconhece que a rotina da casa já é um algoritmo e vive, num desafio curto, o ciclo de observar, ajustar e testar.
+**Objetivo:** Conhecer a história que deu origem ao projeto e reconhecer no próprio filho as portas de entrada para a criação.
 
-**Crença que muda:** "programação é difícil e não é para o meu filho (nem para mim)." Passa a ser: "programar é organizar passos, e a gente já faz isso em casa."
+**Ideia central:** O interesse que a criança já tem é a porta de entrada. Quando o adulto entra no mundo dela, ela abre portas para o dele.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| Você já programa em casa | Blocos coloridos em vez da tela preta; QUANDO, SE e ENTÃO com a rotina da manhã e com a porta e a chave; a ordem dos passos no banho; causa e consequência. | Vídeo assistido. |
-| Você consegue programar este caminho? | O desafio da grade, da bolinha azul até a estrela. | Vídeo assistido. |
-| Qual é o seu caminho? | Quiz com a sequência do caminho (parte própria, sem vídeo). O que fazer depois do erro é ensinado na parte seguinte. | Quiz respondido. |
-| E se a primeira tentativa não funcionar? | A resposta; observar, mudar uma instrução, testar de novo; o erro como pista; o olhar para o todo e para o ponto importante. | Vídeo assistido; tarefa à vista. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. De onde veio tudo isso | Contar a história da família, do André que jogava muito ao André que ensina a criar jogos. |
+| 2. Você reconhece o seu filho aqui? | Reconhecer o filho em seis situações e ver como cada uma se liga à criação. |
+| 3. Entrar no mundo dele | Mostrar como conversar sobre o jogo aproxima e o que os pais percebem depois que os filhos começam a criar. |
 
-**Ferramenta:** escrever com o filho uma rotina da casa em forma de regra, e usar as três perguntas quando algo der errado.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
+
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

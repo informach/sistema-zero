@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { registerExtensionBlocks } from '../blockly/blocks'
+import { BLOCKLY_MEDIA_PATH } from '../blockly/media'
 import { renderWorkspaceImage } from '../blockly/screenshot'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { szTheme } from '../blockly/theme'
@@ -80,6 +81,7 @@ export async function captureBlocksImage(project: Project, container: HTMLElemen
     document.fonts.load('600 16px Nunito'),
   ])
   const workspace = Blockly.inject(container, {
+    media: BLOCKLY_MEDIA_PATH,
     readOnly: true,
     renderer: 'zelos',
     theme: szTheme,

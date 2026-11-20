@@ -1,4 +1,5 @@
 'use client'
+import { CommercePromotions } from '@sistemazero/member-shell/components/commerce/commerce-card'
 
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { BookOpen, ChevronRight, Info } from 'lucide-react'
@@ -15,7 +16,6 @@ import {
   resolveParentGuideStep,
   writeGuideFlag,
 } from '@/lib/guide'
-import { comunidadeContinuarUrl } from '@/lib/links'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import { familyAccessReady } from '@/lib/study-access-view'
@@ -55,14 +55,6 @@ function FamilyInvite() {
         próprios jogos, com aulas, o Estúdio e a nossa equipe por perto. Quem assina também tem
         todos os cursos para pais.
       </p>
-      <a
-        href={comunidadeContinuarUrl('pais-curso-convite')}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${SECONDARY_ACTION} self-start`}
-      >
-        Conhecer a Comunidade dos Criadores
-      </a>
     </section>
   )
 }
@@ -422,6 +414,7 @@ export function ParentsClient({
           </ParentSection>
         )}
         <aside className="flex flex-col gap-6">
+          <CommercePromotions />
           <ParentCourseCard course={parentCourse} />
           <FamilyAiCredits />
         </aside>

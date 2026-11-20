@@ -1,15 +1,15 @@
-# Aula 4. O interesse do seu filho é a porta de entrada
+# Aula 4. Programar não é um bicho de sete cabeças
 
-**Objetivo de aprendizagem:** o responsável transforma o interesse do filho no rascunho de um jogo e vê como a criação dá sentido a conteúdos da escola.
+**Objetivo:** Entender que programar é um passo a passo para chegar a um objetivo e o que esse processo treina.
 
-**Crença que muda:** "esse interesse exagerado atrapalha." Passa a ser: "o interesse é a porta de entrada para aprender."
+**Ideia central:** A programação já está no dia a dia. Com blocos coloridos, a criança pratica sequência, observação e mudança de rota.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| O interesse como porta de entrada | As seis cenas e o que o jogo oferece em cada uma, sem diagnóstico; o interesse forte como aliado; nem toda criança é dos jogos; o vídeo do Bernardo; o exercício "Meu filho ama". | Vídeo assistido. |
-| Quando a matéria da escola ganha sentido | A casa 2 e a estrela; a amiga professora; português, ciências, arte e planejamento; depoimentos do que os pais percebem; a pesquisa, com honestidade. | Vídeo assistido; tarefa e referências à vista. |
-| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. Programar não é um bicho de sete cabeças | Desmistificar a programação com a rotina visual e a regra da porta e da chave, e ligar isso à sequenciação. |
+| 2. Um passo a passo para chegar a um objetivo | Definir programação com o exemplo da bolinha e da estrela: instruir, observar, ajustar e tentar de novo. |
+| 3. O que esse vai e volta treina | Relacionar esse vai e volta à percepção do ambiente, à flexibilidade e à disposição para tentar de novo. |
 
-**Ferramenta:** a frase "Meu filho ama ___. Um jogo sobre isso poderia ter ___.", usando também a resposta da Aula 2.
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Cuidados:** as cenas não são diagnóstico; a pesquisa não é específica sobre autismo e não é fórmula mágica.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

@@ -1,0 +1,8 @@
+ALTER TABLE "members"."cenario_conjuntos" ADD COLUMN "cenario_de_edicao_id" uuid;--> statement-breakpoint
+ALTER TABLE "members"."cenario_conjuntos" ADD COLUMN "revisao_publicada_do_cenario" integer;--> statement-breakpoint
+ALTER TABLE "members"."cenario_mundos" ADD COLUMN "biblioteca_conjuntos_id" uuid;--> statement-breakpoint
+ALTER TABLE "members"."cenario_conjuntos" ADD CONSTRAINT "cenario_conjuntos_cenario_de_edicao_id_cenario_cenarios_id_fk" FOREIGN KEY ("cenario_de_edicao_id") REFERENCES "members"."cenario_cenarios"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "members"."cenario_mundos" ADD CONSTRAINT "cenario_mundos_biblioteca_conjuntos_id_cenario_bibliotecas_id_fk" FOREIGN KEY ("biblioteca_conjuntos_id") REFERENCES "members"."cenario_bibliotecas"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "cenario_conjuntos_edicao_uq" ON "members"."cenario_conjuntos" USING btree ("cenario_de_edicao_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "cenario_mundos_conjuntos_biblioteca_uq" ON "members"."cenario_mundos" USING btree ("biblioteca_conjuntos_id");--> statement-breakpoint
+ALTER TABLE "members"."cenario_conjuntos" ADD CONSTRAINT "cenario_conjuntos_edicao_check" CHECK (("members"."cenario_conjuntos"."cenario_de_edicao_id" is null and "members"."cenario_conjuntos"."revisao_publicada_do_cenario" is null) or ("members"."cenario_conjuntos"."cenario_de_edicao_id" is not null and "members"."cenario_conjuntos"."revisao_publicada_do_cenario" is not null and "members"."cenario_conjuntos"."revisao_publicada_do_cenario" >= 0));

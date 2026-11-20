@@ -1,0 +1,3 @@
+ALTER TABLE "members"."cenario_bibliotecas" ADD COLUMN "descricao" varchar(1000) DEFAULT '' NOT NULL;--> statement-breakpoint
+ALTER TABLE "members"."cenario_bibliotecas" ADD COLUMN "capa_modelo" uuid;--> statement-breakpoint
+ALTER TABLE "members"."cenario_bibliotecas" ADD CONSTRAINT "cenario_bibliotecas_capa_modelo_cenario_modelos_id_fk" FOREIGN KEY ("capa_modelo") REFERENCES "members"."cenario_modelos"("id") ON DELETE set null ON UPDATE no action;

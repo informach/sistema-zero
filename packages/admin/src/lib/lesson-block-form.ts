@@ -53,6 +53,10 @@ export interface BlockForm {
   interactive: InteractiveBlock
   toolPurpose: 'experiment' | 'submission'
   kind: LessonBlockKind
+  commerceOfferRef: string
+  commerceCampaignCode: string
+  commerceDescription: string
+  commerceButtonLabel: string
   /** Diálogo: pose do mascote e a fala (texto simples, sem markdown). */
   dialoguePose: DialoguePose
   dialogueText: string
@@ -143,6 +147,10 @@ export const EMPTY_BLOCK: BlockForm = {
   interactive: EMPTY_LEARNING,
   toolPurpose: 'submission',
   kind: 'rich_text',
+  commerceOfferRef: '',
+  commerceCampaignCode: '',
+  commerceDescription: '',
+  commerceButtonLabel: '',
   dialoguePose: 'speaking',
   dialogueText: '',
   markdown: '',
@@ -302,6 +310,22 @@ export function buildContent(
     }
     // ⚠️ O `default` deste switch cai em QUIZ — um kind sem `case` vira quiz em
     // silêncio (o TS não avisa). Todo tipo novo precisa do seu case aqui.
+    case 'gift':
+      return {
+        kind: 'gift',
+        campaignCode: f.commerceCampaignCode.trim(),
+        ...(opt(f.title) ? { title: f.title.trim() } : {}),
+        ...(opt(f.commerceDescription) ? { description: f.commerceDescription.trim() } : {}),
+        ...(opt(f.commerceButtonLabel) ? { buttonLabel: f.commerceButtonLabel.trim() } : {}),
+      }
+    case 'purchase':
+      return {
+        kind: 'purchase',
+        offerRef: f.commerceOfferRef.trim(),
+        ...(opt(f.title) ? { title: f.title.trim() } : {}),
+        ...(opt(f.commerceDescription) ? { description: f.commerceDescription.trim() } : {}),
+        ...(opt(f.commerceButtonLabel) ? { buttonLabel: f.commerceButtonLabel.trim() } : {}),
+      }
     case 'coming_soon':
       return {
         kind: 'coming_soon',
@@ -443,6 +467,14 @@ export function buildContent(
 /** Campo obrigatório faltando → mensagem amigável (null = válido). */
 export function validateBlock(f: LessonFormSnapshot<BlockForm>): string | null {
   switch (f.kind) {
+    case 'gift':
+      return /^[a-z0-9-]{4,32}$/.test(f.commerceCampaignCode.trim())
+        ? null
+        : 'Escolha a campanha do presente.'
+    case 'purchase':
+      return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$/.test(f.commerceOfferRef.trim())
+        ? null
+        : 'Escolha a oferta.'
     case 'dialogue': {
       const fala = f.dialogueText.trim()
       if (!fala) return 'Escreva a fala do Zappy.'

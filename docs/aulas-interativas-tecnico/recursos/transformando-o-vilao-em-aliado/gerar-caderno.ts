@@ -1,5 +1,5 @@
 /**
- * Apostila do curso para pais "Transformando o vilão em aliado" (15/11/2026), pela Receita do
+ * Apostila de consulta do minicurso para pais "Transformando o vilão em aliado" (refeita em 18/11/2026), pela Receita do
  * Passo a passo do projeto (`../caderno-visual/README.md`): capa com a composição fixa, abertura
  * com o mapa das aulas, uma ou duas folhas por aula com o cabeçalho simples da receita (curso
  * para pais não tem cena de jogo) e os cards de `../caderno-visual/visual.ts`. Só o nome do
@@ -62,7 +62,7 @@ type Item = {
   name?: string
   author?: string
   steps?: Array<string | [string, string]>
-  cards?: { title: string; text: string }[]
+  cards?: { pageId: string; title: string; text: string }[]
   pairs?: [string, string][]
   refs?: [string, string, string][]
   left?: { title: string; text: string }
@@ -96,7 +96,7 @@ const fontes = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${n
 const slide = (arquivo: string) =>
   `data:image/jpeg;base64,${readFileSync(resolve(scriptDir, 'slides', arquivo)).toString('base64')}`
 
-/** A regra do Cadê Todo Mundo que a Helena monta na demonstração da Aula 6. */
+/** A regra do Cadê Todo Mundo que a Helena mostra na demonstração da Aula 6. */
 const B = criarBlocos([...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks])
 const drawings: Record<string, { area: string; corpo: () => string }> = {
   'cade-regra': {
@@ -130,9 +130,9 @@ function grade(): string {
       const x = (coluna - 1) * casa
       const y = (linha - 1) * casa
       const escuro = escuros.has(`${linha}-${coluna}`)
-      celulas += `<rect x="${x + 1.5}" y="${y + 1.5}" width="${casa - 3}" height="${casa - 3}" rx="5" fill="${escuro ? '#2b3550' : '#ffffff'}" stroke="#c8d2e6"/>`
+      celulas += `<rect x="${x + 1.5}" y="${y + 1.5}" width="${casa - 3}" height="${casa - 3}" rx="5" fill="${escuro ? '#3a1547' : '#ffffff'}" stroke="#dccbe3"/>`
     }
-  const bolinha = `<circle cx="${casa / 2}" cy="${3 * casa + casa / 2}" r="10" fill="#2f6fe0"/>`
+  const bolinha = `<circle cx="${casa / 2}" cy="${3 * casa + casa / 2}" r="10" fill="#eb57b4"/>`
   const cx = 3 * casa + casa / 2
   const cy = casa / 2
   const pontas = Array.from({ length: 10 }, (_, i) => {
@@ -144,16 +144,15 @@ function grade(): string {
   return `<div class="grade"><svg viewBox="0 0 ${4 * casa} ${4 * casa}" role="img" aria-label="Grade 4 por 4 com a bolinha azul embaixo à esquerda, a estrela em cima à direita e dois quadrados escuros na segunda coluna">${celulas}${bolinha}${estrela}</svg><div class="grade-instrucoes">${['Subir', 'Descer', 'Ir para a direita', 'Ir para a esquerda'].map((t) => `<span>${t}</span>`).join('')}</div></div>`
 }
 
-const CORES_DO_MAPA = ['azul', 'ambar', 'roxo', 'verde', 'vermelho', 'azul', 'ambar']
-
 function renderItem(item: Item): string {
   const text = item.text ?? ''
   if (item.kind === 'map')
     return `<h3 class="titulo-secao">${item.title ?? ''}</h3><div class="mapa">${(item.cards ?? [])
-      .map(
-        (c, i) =>
-          `<div class="mapa-card mapa-card--${CORES_DO_MAPA[i % CORES_DO_MAPA.length]}"><span class="mapa-numero">${i + 1}</span><div><h3>${c.title}</h3><p>${c.text}</p></div></div>`,
-      )
+      .map((c, i) => {
+        const destino = pages.find((page) => page.id === c.pageId)
+        if (!destino) throw new Error(`Página do mapa não existe: ${c.pageId}`)
+        return `<div class="mapa-card mapa-card--${destino.theme ?? 'azul'}"><span class="mapa-numero">${i + 1}</span><div><h3>${c.title}</h3><p>${c.text}</p></div></div>`
+      })
       .join('')}</div>`
   if (item.kind === 'box')
     return caixa({
@@ -200,7 +199,7 @@ function renderItem(item: Item): string {
     return `<div class="referencias">${(item.refs ?? [])
       .map(
         ([autores, assunto, onde]) =>
-          `<div class="referencia"><h3>${autores}</h3><p>${assunto}</p><p class="referencia-onde">${onde}</p></div>`,
+          `<div class="referencia"><h3>${autores}</h3><p>${assunto}</p><p class="referencia-onde">${/^doi\.org\/10\.[a-z0-9./-]+$/i.test(onde) ? `<a href="https://${onde}">${onde}</a>` : onde}</p></div>`,
       )
       .join('')}</div>`
   throw new Error(`Item desconhecido na apostila: ${item.kind}`)
@@ -239,17 +238,28 @@ const cover = capaHtml({
   iconeSelo: 'livro',
   linha1: 'Transformando',
   linha2: 'o vilão em aliado',
-  frase: 'Como a tela que o seu filho já usa pode treinar habilidades para a vida.',
-  fraseBaixo: 'Um curso para pais, em sete aulas curtas.',
+  frase: 'Como fazer das telas o maior aliado no desenvolvimento dos seus filhos.',
+  fraseBaixo: 'Um minicurso para pais, em sete aulas.',
   tema: 'capa--vilao',
   selo: material,
 })
-// Cores do curso, puxadas da arte da capa: azul-marinho, azul e amarelo.
+// Tema visual do curso (18/11/2026), puxado da ilustração da capa: roxo da sombra, lilás do chão,
+// rosa e amarelo dos blocos e o azul-marinho do painel. Os temas por aula variam dentro dessa paleta.
 const cursoCss = `
-body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8; --destaque-claro: #e6ecfb; --caminho: #2f4fb8;
+body { --fundo: #fcf9f4; --tinta: #3a1547; --texto: #4a4252; --destaque: #60226c; --destaque-claro: #f2e5f6; --caminho: #60226c;
   --numero-raio: 9px; --numero-fundo: var(--destaque-claro); --numero-cor: var(--destaque);
-  --entrega-fundo: #13204a; --entrega-borda: #13204a; --entrega-texto: #e6ebf8; --entrega-rotulo: #13204a; --entrega-rotulo-fundo: #ffc02e; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #ffc02e; }
-.capa--vilao { --capa-painel: #111a33; --capa-amarelo: #ffc02e; --capa-frase: #cfd8f5; --selo-fundo: #2f4fb8; --selo-topo: 592px; --selo-altura: 73px; --selo-largura: 470px; --selo-letra: 24px; --titulo-topo: 692px; --frase-largura: 560px; }
+  --entrega-fundo: #3a1547; --entrega-borda: #3a1547; --entrega-texto: #f4e9f7; --entrega-rotulo: #3a1547; --entrega-rotulo-fundo: #fdac03; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #fdac03; }
+.tema-azul { --destaque: #60226c; --destaque-claro: #f2e5f6; }
+.tema-roxo { --destaque: #b02a7c; --destaque-claro: #fde7f2; }
+.tema-verde { --destaque: #7a45a0; --destaque-claro: #efe4f7; }
+.tema-ambar { --destaque: #a36a00; --destaque-claro: #fdf0d2; }
+.tema-vermelho { --destaque: #0b4fc4; --destaque-claro: #e4edfd; }
+.capa--vilao { --capa-painel: #0f1b36; --capa-amarelo: #ffc400; --capa-frase: #cfd8f5; --selo-fundo: #2f4fb8; --selo-topo: 592px; --selo-altura: 73px; --selo-largura: 470px; --selo-letra: 24px; --titulo-topo: 692px; --frase-largura: 560px; }
+/* A ilustração é larga (1049 × 711): ocupa a faixa de cima inteira, sem corte lateral, e o painel
+   começa logo abaixo, com borda reta, como na capa aprovada pela dona. */
+.capa--vilao .capa-arte { height: 538px; }
+.capa--vilao .capa-painel { top: 532px; }
+.capa--vilao .capa-painel::before { display: none; }
 .capa--vilao .capa-titulo span { font-size: 84px; }
 .capa--vilao .capa-titulo em { font-size: 68px; }
 .abertura { margin-bottom: 4mm; }
@@ -261,11 +271,11 @@ body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8
 .mapa-card h3 { font-size: 12.6pt; margin-bottom: .6mm; }
 .mapa-card p { font-size: 10pt; font-weight: 700; line-height: 1.4; color: #4a5250; }
 .mapa-numero { flex: none; width: 9mm; height: 9mm; display: grid; place-items: center; background: #fff; border-radius: 9px; font-family: 'Baloo 2', Arial, sans-serif; font-weight: 800; font-size: 12pt; }
-.mapa-card--azul { background: #e8f2fb; border-color: #c8dcf0; color: #0b5394; }
+.mapa-card--azul { background: #f2e5f6; border-color: #dcc3e4; color: #60226c; }
 .mapa-card--ambar { background: #fff4dc; border-color: #f0d9a2; color: #a36a00; }
-.mapa-card--roxo { background: #f0eafd; border-color: #d8ccf6; color: #6a3cc4; }
-.mapa-card--verde { background: #e3f3ea; border-color: #bfe0cd; color: #087a54; }
-.mapa-card--vermelho { background: #fde9e9; border-color: #f4c8c8; color: #c22a2a; }
+.mapa-card--roxo { background: #fde7f2; border-color: #f4c3dc; color: #b02a7c; }
+.mapa-card--verde { background: #efe4f7; border-color: #d6c2e6; color: #7a45a0; }
+.mapa-card--vermelho { background: #e4edfd; border-color: #c3d4f6; color: #0b4fc4; }
 .comparar { display: grid; grid-template-columns: 1fr 8mm 1fr; align-items: stretch; gap: 2mm; }
 .comparar-lado { border-radius: 14px; padding: 3.6mm 4.6mm; border: 1px solid #dfe6ee; background: #fff; }
 .comparar-lado h3 { font-size: 12.6pt; margin-bottom: 1.4mm; }
@@ -277,6 +287,7 @@ body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8
 .comparar-icone { width: 7mm; height: 7mm; transform: rotate(-90deg); }
 .citacao { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 1mm 4mm; background: #fff; border: 1px solid #dfe6ee; border-left: 5px solid #ffc02e; border-radius: 0 14px 14px 0; padding: 4mm 5mm; }
 .citacao-icone { width: 6mm; height: 6mm; color: #b07d00; grid-row: span 2; }
+.citacao { border-left-color: #fdac03; }
 .citacao blockquote { margin: 0; font-family: 'Baloo 2', Arial, sans-serif; font-size: 14pt; font-weight: 700; line-height: 1.3; color: var(--tinta); }
 .citacao figcaption { font-size: 10pt; font-weight: 800; color: #8a94a6; }
 .pares { display: flex; flex-direction: column; gap: 1.6mm; }
@@ -301,6 +312,7 @@ body { --fundo: #f7f9fd; --tinta: #13204a; --texto: #3d4a5c; --destaque: #2f4fb8
 .referencia h3 { font-size: 12pt; margin-bottom: .8mm; }
 .referencia p { font-size: 10pt; font-weight: 600; line-height: 1.4; }
 .referencia-onde { margin-top: .6mm; color: var(--destaque); font-weight: 800 !important; }
+.content a { color: var(--destaque); text-decoration: underline; text-underline-offset: .15em; overflow-wrap: anywhere; }
 [data-id="abertura"] .content { gap: 3mm; }
 `
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Apostila do curso - ${curso}</title><style>${cssDoCaderno(fontes)}\n${cursoCss}</style></head><body>${cover}${folhas.join('\n')}</body></html>`
@@ -316,7 +328,11 @@ if (process.argv.includes('--html-only')) process.exit(0)
 const browser = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-].find(existsSync)
+  process.env.CHROME_PATH ?? '',
+  '/opt/pw-browsers/chromium',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+].find((caminho) => caminho && existsSync(caminho) && statSync(caminho).isFile())
 if (!browser) throw new Error('Chrome ou Edge não encontrado para gerar a apostila.')
 const temporary = mkdtempSync(join(tmpdir(), 'sistema-zero-caderno-'))
 const htmlPath = join(temporary, 'caderno.html')
@@ -328,6 +344,7 @@ try {
     browser,
     [
       '--headless=new',
+      ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
       '--disable-gpu',
       '--no-first-run',
       '--no-default-browser-check',

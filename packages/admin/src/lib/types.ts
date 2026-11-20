@@ -505,6 +505,10 @@ export interface CourseTreeView extends CourseView {
 }
 
 // Blocos: união discriminada por `kind` (espelha o domínio do members).
+export type { GiftBlock, PurchaseBlock } from '@sistemazero/core/commerce'
+
+import type { GiftBlock, MemberPromotion, PurchaseBlock } from '@sistemazero/core/commerce'
+
 export const LESSON_BLOCK_KINDS = [
   'rich_text',
   'dialogue',
@@ -520,6 +524,8 @@ export const LESSON_BLOCK_KINDS = [
   'certificate',
   'coming_soon',
   'materials',
+  'gift',
+  'purchase',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
@@ -550,6 +556,8 @@ export const LESSON_BLOCK_KIND_LABELS: Record<LessonBlockKind, string> = {
   certificate: 'Certificado',
   coming_soon: 'Em breve (aula em produção)',
   materials: 'Materiais complementares',
+  gift: 'Presente / bolsa',
+  purchase: 'Compra / assinatura',
 }
 
 /** Poses que o balão de fala oferece (subconjunto do elenco do mascote). */
@@ -795,6 +803,8 @@ export type LessonBlockContent =
   | CertificateBlock
   | ComingSoonBlock
   | MaterialsBlock
+  | GiftBlock
+  | PurchaseBlock
 
 /** Resumo de UMA entrega do Estúdio (admin), com identidade hidratada do auth. */
 export interface StudioSubmissionRow {
@@ -1039,6 +1049,8 @@ export interface FulfillmentSpec {
 
 /** Conteúdo comercial da oferta (badge/cta/cupom/perfis). Editado no form da oferta. */
 export interface OfferContent {
+  memberPromotion?: MemberPromotion
+  checkoutTerms?: import('@sistemazero/core/commerce').CheckoutTerms
   badge?: string
   ctaLabel?: string
   highlight?: string

@@ -1,5 +1,6 @@
 /** Contratos financeiros compartilhados entre BFF e formulário, sem importar o player. */
 export interface MySubscriptionView {
+  offerId?: string | null
   id: string
   status: string
   /** Mensal = 1, anual = 12. */

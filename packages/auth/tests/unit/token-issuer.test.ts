@@ -75,10 +75,18 @@ describe('TokenIssuer (HS256)', () => {
       const profileId = crypto.randomUUID()
       const { token } = await kidsIssuer.issueAccessToken(user, {
         kids: student,
-        profile: { profileId, accountId: user.id, name: 'Ana', pub: false },
+        profile: {
+          profileId,
+          accountId: user.id,
+          name: 'Ana Maria Santos',
+          nickname: 'Ana',
+          pub: false,
+        },
       })
       const raw = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString())
       expect(raw.role).toBe(expected)
+      expect(JSON.stringify(raw)).not.toContain('Ana Maria Santos')
+      expect(raw.pfl.nickname).toBe('Ana')
       for (const field of ['email', 'firstName', 'lastName', 'phone', 'signupSource'])
         expect(raw[field]).toBeUndefined()
       const claims = await kidsIssuer.verifyAccessToken(token)

@@ -28,6 +28,7 @@ import type { Channel } from '../../domain/space/space'
 import type { ThreadStudioMeta } from '../../domain/thread/thread'
 import type { AccessResolutionService, Actor } from '../access/access-resolution.service'
 import { type ThreadView, toThreadView } from '../mappers/thread-views'
+import { PublicAuthorIdentities } from '../public-author-identities'
 import { threadSlug } from '../slug'
 
 const MAX_TITLE = 300
@@ -163,6 +164,7 @@ export interface CreateStandaloneShowcaseCommand {
  * projeto concluído vira post) e exige que o destino seja um space KIDS com canal curado.
  */
 export class ShowcaseService {
+  private readonly identities: PublicAuthorIdentities
   constructor(
     private readonly read: CommunityReadRepository,
     private readonly threads: ThreadRepository,
@@ -179,7 +181,9 @@ export class ShowcaseService {
     /** Slug do canal que recebe os posts de vitrine dentro do servidor designado. */
     private readonly showcaseChannelSlug = 'parede',
     private readonly adult?: { walls: ReadonlySet<string>; access: AccessResolutionService },
-  ) {}
+  ) {
+    this.identities = new PublicAuthorIdentities(members)
+  }
 
   private reservationInput(
     actor: Actor,
@@ -227,10 +231,19 @@ export class ShowcaseService {
       now: new Date(input.now.getTime()),
     }
   }
-  private reservationView(outcome: StudioReservationOutcome) {
-    if (outcome.state === 'finalized') return { ...outcome, thread: toThreadView(outcome.thread) }
+  private async reservationView(outcome: StudioReservationOutcome, audience: 'kids' | 'adult') {
+    if (outcome.state === 'finalized')
+      return {
+        ...outcome,
+        thread: toThreadView(await this.identities.one(outcome.thread, audience)),
+      }
     if (outcome.state === 'retired')
-      return { ...outcome, thread: outcome.thread ? toThreadView(outcome.thread) : null }
+      return {
+        ...outcome,
+        thread: outcome.thread
+          ? toThreadView(await this.identities.one(outcome.thread, audience))
+          : null,
+      }
     return outcome
   }
   async prepareFromStudio(actor: Actor, cmd: CreateShowcaseFromStudioCommand) {
@@ -436,7 +449,7 @@ export class ShowcaseService {
       courseId: elig.courseId,
       audience: elig.audience,
     })
-    return { thread: toThreadView(thread), deduped }
+    return { thread: toThreadView(await this.identities.one(thread, elig.audience)), deduped }
   }
 
   /**
@@ -474,9 +487,20 @@ export class ShowcaseService {
     }
     // `authorId` alimenta SÓ o play-check S2S (validação do remix) — a rota pública
     // do /jogar segue expondo apenas visible + 1º nome.
+    const identity = res.authorId
+      ? await this.identities.one(
+          {
+            authorId: res.authorId,
+            authorAccountId: res.authorAccountId ?? null,
+            authorDisplayName: res.authorDisplayName,
+            authorPublic: false,
+          },
+          audience,
+        )
+      : null
     return {
       visible: res.visible,
-      authorDisplayName: res.authorDisplayName,
+      authorDisplayName: identity?.authorDisplayName ?? null,
       authorId: res.authorId,
     }
   }
@@ -642,14 +666,18 @@ export class ShowcaseService {
       canonicalJson({ kind: 'lesson', lessonId: cmd.lessonId, blockId: cmd.blockId }),
     )
     if (prepare)
-      return this.reservationView(await this.threads.prepareStudioPublication(reservation))
+      return this.reservationView(
+        await this.threads.prepareStudioPublication(reservation),
+        elig.audience,
+      )
     if (!cmd.reservationId) throw new ValidationError('Prepare a publicação antes de finalizar.')
     const { thread, deduped } = await this.threads.finalizeStudioPublication(
       cmd.reservationId,
       reservation,
       candidate,
     )
-    if (thread.status !== 'visible') return { thread: toThreadView(thread), deduped }
+    if (thread.status !== 'visible')
+      return { thread: toThreadView(await this.identities.one(thread, elig.audience)), deduped }
     // Nível do aluno: mesma notificação best-effort do `create` (idempotente por user+curso).
     // FIRE-AND-FORGET (não `await`): a thread já está salva; bloquear a resposta aqui
     // penduraria o "Publicar no Mural" por segundos se o members estivesse lento/fora (o
@@ -661,7 +689,7 @@ export class ShowcaseService {
       courseId: elig.courseId,
       audience: elig.audience,
     })
-    return { thread: toThreadView(thread), deduped }
+    return { thread: toThreadView(await this.identities.one(thread, elig.audience)), deduped }
   }
 
   /**
@@ -846,14 +874,18 @@ export class ShowcaseService {
       ),
     )
     if (prepare)
-      return this.reservationView(await this.threads.prepareStudioPublication(reservation))
+      return this.reservationView(
+        await this.threads.prepareStudioPublication(reservation),
+        audience,
+      )
     if (!cmd.reservationId) throw new ValidationError('Prepare a publicação antes de finalizar.')
     const { thread, deduped } = await this.threads.finalizeStudioPublication(
       cmd.reservationId,
       reservation,
       candidate,
     )
-    if (thread.status !== 'visible') return { thread: toThreadView(thread), deduped }
+    if (thread.status !== 'visible')
+      return { thread: toThreadView(await this.identities.one(thread, audience)), deduped }
     // Desafio do mês: avisa o members (XP + badge) SÓ quando a thread nasceu/existe
     // com a tag — fire-and-forget best-effort como o notifyShowcasePublished; o
     // members deduplica por mês (mesmo no `deduped` a notificação recupera uma 1ª falha).
@@ -885,6 +917,6 @@ export class ShowcaseService {
         `studio:${thread.id}:standalone`,
       )
     }
-    return { thread: toThreadView(thread), deduped }
+    return { thread: toThreadView(await this.identities.one(thread, audience)), deduped }
   }
 }

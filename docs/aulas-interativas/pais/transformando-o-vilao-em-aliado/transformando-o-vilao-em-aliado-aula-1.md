@@ -1,15 +1,14 @@
-# Aula 1. A pergunta certa sobre telas
+# Aula 1. O vilão que não dá para tirar
 
-**Objetivo de aprendizagem:** o responsável troca a pergunta "como eu tiro a tela?" por "o que eu posso oferecer dentro dela?" e passa a enxergar três usos diferentes da tela.
+**Objetivo:** Entender por que tirar a tela é uma batalha perdida e trocar a pergunta: o que oferecer dentro dela.
 
-**Crença que muda:** "a tela é o inimigo e o único caminho é cortar." Passa a ser: "a tela é uma ferramenta; o que importa é o uso, dentro do tempo que já existe."
+**Ideia central:** Não é tirar a tela nem acrescentar tempo. É tornar produtivo o tempo que a criança já usa.
 
-| Parte | O que acontece | Saída |
-| --- | --- | --- |
-| A pergunta que cansa | A palavra guardada; a briga para desligar; por que tirar a tela não funciona; o mesmo tempo, não mais tempo; o depoimento de pais que tinham medo de aumentar o tempo de tela. | Vídeo assistido. |
-| Assistir, jogar e criar | O fogo como ferramenta; os três usos; o mapa da semana de telas. | Vídeo assistido; mapa e apostila à vista. |
-| Confira o que ficou | Quiz de situação com duas perguntas. | Quiz respondido. |
+| Parte | O que a explicação desenvolve |
+| --- | --- |
+| 1. O maior vilão dos pais | Abrir o curso, pensar no que desejamos para os filhos e reconhecer que as crianças já nasceram no mundo digital. |
+| 2. A pergunta que muda tudo | Trocar a pergunta: em vez de como tirar a tela, o que oferecer dentro dela. A tela que só entretém e a tela que faz pensar. |
 
-**Ferramenta:** o mapa da semana de telas (anotar todo dia o uso que mais apareceu, sem julgar).
+**Formato:** vídeos com a Helena, com imagens de apoio e depoimentos de famílias inseridos na edição. Sem quiz nem tarefa.
 
-**Fio do curso:** a palavra guardada aqui volta na Aula 6.
+**Conclusão:** assistir aos vídeos desta aula e usar a navegação do curso.

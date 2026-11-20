@@ -17,8 +17,10 @@ export class DrizzleRecoveryReviewRepository implements RecoveryReviewRepository
   constructor(private readonly db: Database) {}
 
   async list(query: RecoveryReviewQuery): Promise<RecoveryReviewPage> {
-    const audience = sql`case when s.metadata->>'billingAudienceSource' = 'funnel-registry-v1'
-      and jsonb_typeof(s.metadata->'billingFunnelKey') = 'string' and s.metadata->>'billingFunnelKey' <> ''
+    const audience = sql`case when ((s.metadata->>'billingAudienceSource' = 'funnel-registry-v1'
+      and jsonb_typeof(s.metadata->'billingFunnelKey') = 'string' and s.metadata->>'billingFunnelKey' <> '')
+      or (s.metadata->>'billingAudienceSource' = 'member-commerce-v1'
+      and s.metadata->>'accountUserId' ~* '^[0-9a-f-]{36}$' and coalesce(s.metadata->>'offerId','') <> ''))
       and s.metadata->>'billingAudience' in ('kids','adult') then s.metadata->>'billingAudience'
       else coalesce((select r.audience from payments.subscription_recovery_admission_reviews r
         join payments.subscription_recovery_cases rc on rc.id = r.case_id

@@ -23,6 +23,24 @@ export class AccessCheckService {
     private readonly clock: () => Date,
   ) {}
 
+  async commerceAccess(userId: string) {
+    const active = await this.entitlements.listActiveByUser(userId, this.clock())
+    return active.map((entry) => {
+      const e = entry.toSnapshot()
+      return {
+        productId: e.productId,
+        offerId: e.offerId,
+        subscriptionId: e.subscriptionId,
+        expiresAt: e.expiresAt?.toISOString() ?? null,
+        kind: e.sourceId.startsWith('scholarship:')
+          ? ('gift' as const)
+          : e.sourceKind === 'manual'
+            ? ('manual' as const)
+            : ('paid' as const),
+      }
+    })
+  }
+
   async execute(userId: string, courseRefs: string[]): Promise<AccessCheckResult> {
     const active = await this.entitlements.listActiveByUser(userId, this.clock())
     const hasMaster = active.some((e) => e.accessType === 'all_courses')

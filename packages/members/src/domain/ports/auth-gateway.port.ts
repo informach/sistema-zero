@@ -9,7 +9,7 @@ export interface AccountIdentity {
 
 /** Identidade PÚBLICA mínima de um perfil de criança (rosto/nome da liga kids). */
 export interface ProfileIdentity {
-  /** 1º nome (primeiro token do nome do perfil). */
+  /** Apelido público completo; nome do campo preservado por compatibilidade. */
   firstName: string
   /** Opt-in dos pais (`public_profile_enabled`) — habilita o link p/ o perfil público. */
   public: boolean
@@ -22,11 +22,18 @@ export interface ProfileIdentity {
  * decide o fallback — o report pula a conta, a liga degrada p/ "Colega").
  */
 export interface AuthGateway {
+  /** Active staff accounts only; never infer staff from a missing child profile. */
+  getPublicStaffNames?(ids: string[]): Promise<Map<string, string>>
+  /** Identidade privada da própria família, exclusivamente para emissão. */
+  getCertificateIdentity?(
+    accountId: string,
+    profileId: string,
+  ): Promise<{ fullName: string; confirmed: boolean } | null>
   getAccountIdentities(ids: string[]): Promise<AccountIdentity[]>
-  /** id do perfil → primeiro nome (só perfis ATIVOS; ausentes são omitidos). */
+  /** id do perfil → apelido público (só perfis ATIVOS; ausentes são omitidos). */
   getProfileNames(ids: string[]): Promise<Map<string, string>>
   /**
-   * id do perfil → {1º nome, flag público} (só perfis ATIVOS; ausentes omitidos).
+   * id do perfil → {apelido público, flag público} (só perfis ATIVOS; ausentes omitidos).
    * Superset de `getProfileNames` — a liga usa o flag p/ linkar SÓ perfis públicos.
    */
   getProfileIdentities(ids: string[]): Promise<Map<string, ProfileIdentity>>

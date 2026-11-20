@@ -168,6 +168,7 @@ export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
 export function buildApp(
   opts: {
+    authGateway?: import('../src/domain/ports/auth-gateway.port').AuthGateway
     moradaHouse?: import('../src/application/room/morada-house.service').MoradaHouseService
     now?: Date
     internalToken?: string
@@ -659,6 +660,7 @@ export function buildApp(
         clock,
         learningRepository,
         sectionProgression,
+        opts.authGateway,
       ),
       getGamification: new GetGamificationService(
         gamification,
@@ -925,6 +927,7 @@ export function buildApp(
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),
     },
     internal: {
+      authGateway: opts.authGateway,
       purgeUserData: new PurgeUserDataService({
         purgeForUser: async () => {},
         isFenced: async () => false,

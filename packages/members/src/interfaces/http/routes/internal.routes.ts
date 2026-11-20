@@ -1,9 +1,10 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
 import type { GetShowcasePayloadService } from '../../../application/get-showcase-payload/get-showcase-payload.service'
 import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import type { ValidateCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
+import type { AuthGateway } from '../../../domain/ports/auth-gateway.port'
 import { assertInternalCaller } from '../auth'
 import {
   AccessCheckBody,
@@ -14,6 +15,7 @@ import {
 } from '../dtos'
 
 export interface InternalRoutesDeps {
+  authGateway?: AuthGateway
   accessCheck: AccessCheckService
   /** Teto de perfis (kids) da conta — consumido pelo `auth` ao criar perfil. */
   profileAllowance: GetProfileAllowanceService
@@ -38,6 +40,35 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     new Elysia({ prefix: '/members/internal' })
       .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+      )
+      .post(
+        '/public-profile-identities',
+        async ({ body, set }) => {
+          set.headers['cache-control'] = 'private, no-store'
+          if (!deps.authGateway) {
+            set.status = 503
+            return { error: { code: 'PROFILE_IDENTITY_UNAVAILABLE' } }
+          }
+          const identities = await deps.authGateway.getProfileIdentities(body.ids)
+          // An active profile wins even when its UUID equals a staff account's UUID.
+          const unresolved = body.ids.filter((id) => !identities.has(id))
+          const staff = await deps.authGateway.getPublicStaffNames?.(unresolved)
+          return {
+            profiles: [
+              ...[...identities].map(([id, identity]) => ({
+                id,
+                publicNickname: identity.firstName,
+                publicProfileEnabled: identity.public,
+              })),
+              ...[...(staff ?? [])].map(([id, name]) => ({
+                id,
+                publicNickname: name,
+                publicProfileEnabled: false,
+              })),
+            ],
+          }
+        },
+        { body: t.Object({ ids: t.Array(t.String({ format: 'uuid' }), { maxItems: 200 }) }) },
       )
       .post('/access-check', ({ body }) => deps.accessCheck.execute(body.userId, body.courseRefs), {
         body: AccessCheckBody,
