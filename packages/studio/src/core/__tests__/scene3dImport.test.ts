@@ -440,3 +440,43 @@ test('preparo de cena aceita metadados profundos dentro do orçamento do documen
   expect(project.assets ?? []).toEqual([])
   expect(project.futureMetadata).toBe(deep)
 })
+
+test('modelo comum com extensão que a compilação recusa não impede importar; conta as primitivas', async () => {
+  const outro = exemplo()
+  const bytes = glb({ ...outro.j, extensionsUsed: ['EXT_extensao_de_ensaio'] }, outro.bin),
+    modelo: ProjectAsset = {
+      id: 'antigo',
+      name: 'casa',
+      kind: 'model3d',
+      source: 'upload',
+      originalFileName: 'casa.glb',
+      dataUrl: `data:model/gltf-binary;base64,${encodeAssetBase64(bytes)}`,
+    },
+    projeto = { ...createEmptyProject('p', 'Jogo'), assets: [modelo] },
+    plano = await prepararImportacaoDeCena3D(projeto, await pacote())
+  expect(plano.orcamento.malhas).toBe(2)
+  expect(plano.assets.find((a) => a.id === 'antigo')).toEqual(modelo)
+})
+
+test('criação ligada ao Pinta/Molda com o mesmo conteúdo não vira dependência fixada da cena', async () => {
+  const p = await pacote(),
+    bytes = p.arquivos.get('modelos/arvore.glb')!,
+    pessoal: ProjectAsset = {
+      id: 'meu-modelo',
+      name: 'arvore-do-molda',
+      kind: 'model3d',
+      source: 'library',
+      libOrigin: 'molda',
+      libId: 'personal:modelo:arvore',
+      originalFileName: 'arvore.glb',
+      dataUrl: `data:model/gltf-binary;base64,${encodeAssetBase64(bytes)}`,
+    },
+    plano = await prepararImportacaoDeCena3D(
+      { ...createEmptyProject('p', 'Jogo'), assets: [pessoal] },
+      p,
+    ),
+    envelope = lerAssetDeCena3D(plano.assets.find((a) => a.id === plano.assetId)!)
+  expect(envelope.recursos.map((r) => r.asset)).not.toContain('meu-modelo')
+  expect(plano.assets.filter((a) => a.kind === 'model3d')).toHaveLength(2)
+  expect(plano.assets.find((a) => a.id === 'meu-modelo')).toEqual(pessoal)
+})

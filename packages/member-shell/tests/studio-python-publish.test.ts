@@ -3,8 +3,10 @@ import { createHash } from 'node:crypto'
 import { initialKidsJourneyPolicy, projectAdultJourney } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import {
+  PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_PINTA_PHYSICS_FEATURE,
   PYTHON_PINTA_WORLD_FEATURE,
+  type StudioPythonRuntimeFeature,
 } from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioFreeRuntimeRequest,
@@ -55,17 +57,19 @@ async function fixture(
   identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
   runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
   releaseCapabilities?: readonly StudioProjectCapability[],
-  completePintaReader: boolean | 'world' = false,
+  completePintaReader: boolean | 'world' | readonly StudioPythonRuntimeFeature[] = false,
 ) {
   const f = await authoringFixture(
     language,
     kind,
     releaseCapabilities,
-    completePintaReader
-      ? completePintaReader === 'world'
-        ? [PYTHON_PINTA_WORLD_FEATURE]
-        : [PYTHON_PINTA_WORLD_FEATURE, PYTHON_PINTA_PHYSICS_FEATURE]
-      : undefined,
+    Array.isArray(completePintaReader)
+      ? completePintaReader
+      : completePintaReader
+        ? completePintaReader === 'world'
+          ? [PYTHON_PINTA_WORLD_FEATURE]
+          : [PYTHON_PINTA_WORLD_FEATURE, PYTHON_PINTA_PHYSICS_FEATURE]
+        : undefined,
   )
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
   if (language === 'python') {
@@ -600,6 +604,66 @@ for (const context of ['free', 'lesson', 'live'] as const)
           }
           expect(JSON.stringify(f.project)).toBe(before)
         })
+
+for (const supported of [false, true])
+  test(`cenário 3D do Molda ${supported ? 'publica com o leitor de cenas' : 'recusa o ambiente sem o leitor de cenas'}`, async () => {
+    const { MIME_DA_CENA_PARA_STUDIO } = await import('@sistemazero/molda-cenarios-core/studio')
+    const f = await fixture(
+      'classic',
+      'free',
+      'kids',
+      'python',
+      undefined,
+      'active',
+      undefined,
+      supported ? [PYTHON_MOLDA_SCENE_FEATURE] : [],
+    )
+    const envelope = {
+      formato: 'studio-cena3d',
+      versao: 1,
+      recursos: [],
+      cena: {
+        formato: 'molda-cena-compilada',
+        versao: 1,
+        nome: 'Praça vazia',
+        unidade: 'metro',
+        eixoVertical: 'y',
+        fonte: { cenario: 'praca', revisao: 1, digest: 'a'.repeat(64) },
+        arquivos: [],
+        nos: [],
+        entidades: [],
+        colisoes: [],
+        aguas: [],
+        caminhos: [],
+        marcadores: [],
+        texturas: [],
+        fontes: { modelos: [], texturas: [], conjuntos: [] },
+        licencas: [],
+        ambiente: { hora: 12 },
+      },
+    }
+    f.project.assets = [
+      {
+        id: 'praca',
+        name: 'praca',
+        kind: 'scene3d',
+        source: 'library',
+        originalFileName: 'praca.json',
+        proPath: 'cenarios/praca.json',
+        dataUrl: `data:${MIME_DA_CENA_PARA_STUDIO};base64,${Buffer.from(JSON.stringify(envelope)).toString('base64')}`,
+      },
+    ]
+    const before = JSON.stringify(f.project)
+    const response = await f.publish(f.project)
+    expect(response.status).toBe(supported ? 200 : 409)
+    if (!supported) {
+      expect(await response.json()).toMatchObject({
+        error: { code: 'RUNTIME_PINTA_READER_OUTDATED' },
+      })
+      expect(f.state.posts).toBe(0)
+    }
+    expect(JSON.stringify(f.project)).toBe(before)
+  })
 
 for (const context of ['free', 'lesson', 'live'] as const)
   for (const kind of ['classic', 'pro'] as const)

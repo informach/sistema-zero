@@ -608,7 +608,24 @@ export function sanitizeProjectAssets(
     // 3D: a validação cruza extensão × MIME × assinatura, então o nome do
     // arquivo original faz parte do contrato (sem ele o asset é descartado).
     const fileName = typeof a.originalFileName === 'string' ? a.originalFileName : undefined
-    if (!isValidAssetDataUrl(a.dataUrl, kind, fileName, dataLimits)) continue
+    // Imagens de uma cena do Molda (textura, céu 360°, mapa de alturas) vêm com o pacote e o
+    // orçamento da cena; o teto de 800 mil caracteres das imagens soltas de projetos JavaScript
+    // recusava um céu 2048×1024 e o projeto inteiro falhava ao guardar.
+    const daCena =
+      kind === 'image' &&
+      a.source === 'library' &&
+      typeof a.libId === 'string' &&
+      a.libId.startsWith('cenario-recurso:')
+    const limites = daCena
+      ? {
+          ...dataLimits,
+          maxAssetDataUrlChars: Math.max(
+            dataLimits.maxAssetDataUrlChars,
+            MAX_MODEL3D_DATA_URL_CHARS,
+          ),
+        }
+      : dataLimits
+    if (!isValidAssetDataUrl(a.dataUrl, kind, fileName, limites)) continue
     const name = typeof a.name === 'string' ? normalizeAssetName(a.name) : null
     if (!name || seenNames.has(name)) continue
     if (totalChars + a.dataUrl.length > dataLimits.maxAssetsTotalChars) continue
