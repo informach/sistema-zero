@@ -26,7 +26,7 @@ import {
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { extensionMinLevel } from '#extensions'
-import { GENERATED_JS_HEADER, generateProjectFilesWithMap } from '#generators'
+import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
@@ -54,6 +54,7 @@ import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyou
 import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
+import { blockGenerationInput } from '../../state/blockGenerationInput'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
@@ -544,7 +545,18 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Lê o projeto mais recente do store (evita closure obsoleta) e preserva a
       // casca do documento (head/doctype) que os blocos não representam.
       const current = javaScriptProject(projectStoreApi.getState().project)
-      const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
+      let generationInput: ReturnType<typeof blockGenerationInput>
+      try {
+        generationInput = blockGenerationInput(built, current, options.force === true)
+      } catch {
+        diagnosticsStoreApi
+          .getState()
+          .setSemanticIssues([
+            { message: 'Não foi possível recuperar o documento salvo. Seu código foi preservado.' },
+          ])
+        return
+      }
+      const { ir, jsHeader } = generationInput
       // ⭐ Abrir não é editar. Na CARGA (force) com os mesmos blocos que estão salvos,
       // nada do que a criança fez mudou: o que falta completar é só o que DERIVA deles.
       // A casca do projeto chega SEM a IR (o load não lê essa partição:
@@ -574,25 +586,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         applyProjectState({ blocksState: state })
         return
       }
-      const projectNameForGen = current?.name ?? 'Projeto'
-      // Hydrating saved blocks must not rewrite an otherwise identical script
-      // just to add our optional banner. That reloads a running iframe during
-      // native input and shifts source-map lines. Real edits keep the standard
-      // banner; inline placements retain their existing generation contract.
-      const jsPlacement = ir.htmlShell?.jsPlacement ?? 'external'
-      const preserveHeader =
-        options.force &&
-        current?.mode === 'blocks' &&
-        (jsPlacement === 'external' || jsPlacement === 'external-head')
-      const jsHeader =
-        preserveHeader && !current.files['script.js'].startsWith(GENERATED_JS_HEADER)
-          ? undefined
-          : GENERATED_JS_HEADER
-      const { files, sourceMap } = generateProjectFilesWithMap({
-        ir,
-        projectName: projectNameForGen,
-        jsHeader,
-      })
+      const projectNameForGen = generationInput.projectName
+      const { files, sourceMap } = generateProjectFilesWithMap(generationInput)
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
       primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap)

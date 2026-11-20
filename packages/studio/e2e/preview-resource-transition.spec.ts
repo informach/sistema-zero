@@ -3,6 +3,28 @@ import { expect, test } from '@playwright/test'
 // Qualify the actual Chromium renderer/process arrangement, not headless-shell.
 test.use({ channel: 'chromium' })
 
+test('a carga leve conserva título e viewport do documento salvo', async ({ page }) => {
+  await page.goto('/')
+  await page
+    .locator('button')
+    .filter({ has: page.getByText('Vale Ensolarado (na mão)', { exact: true }) })
+    .first()
+    .click()
+  await expect(page).toHaveURL(/\/editor\//)
+  const preview = page.frameLocator('iframe[title="Pré-visualização"]')
+  await expect(preview.locator('canvas').first()).toBeVisible()
+  // Observe the completed opening, including the existing source debounce.
+  await page.waitForTimeout(2000)
+  const metadata = await preview.locator('body').evaluate(() => ({
+    title: document.title,
+    viewport: document.querySelector('meta[name="viewport"]')?.getAttribute('content'),
+  }))
+  expect(metadata).toEqual({
+    title: 'Vale Ensolarado',
+    viewport: 'width=device-width, initial-scale=1.0',
+  })
+})
+
 for (const width of [390, 1280]) {
   for (const example of ['Desvie dos blocos', 'Duelo de Heróis']) {
     test(`${example}: hidratação preserva o jogo e recursos em ${width}px`, async ({ page }) => {

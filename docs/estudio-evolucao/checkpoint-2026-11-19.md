@@ -46,6 +46,14 @@ a revisão posterior. Consultar a CI e os recortes novos de cada alteração.
 
 ## Limites que continuam bloqueando a conclusão
 
+A carga leve também recupera a casca HTML dos arquivos quando a IR não
+foi lida: [relatório](../qa/2026-11-19-studio-document-shell-recovery.md).
+Título/viewport foram preservados no Vale real; 49 testes, cinco casos de
+navegador, dois recortes protegidos e TypeScript passaram. CSS continua
+sendo uma investigação distinta. Os runtimes de cena do Estúdio foram
+regenerados para a integração commitada; o relatório de regeneração
+explicita o estado concorrente do motor e os limites da prova.
+
 Nova causa reproduzida e corrigida na abertura: inserção de banner sem
 mudança de programa e geração do primeiro executável antes de os blocos
 da galeria terem suas identidades. O atribuidor existente agora inclui
