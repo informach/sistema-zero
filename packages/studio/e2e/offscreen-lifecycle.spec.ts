@@ -126,10 +126,10 @@ test('centerOnBlock puts a far body back on the page (Mostrar o bloco, code curs
 /*
  * Abertura sem desenhar a cauda distante (`src/blockly/deferredTail.ts`, etapa 3 da evolução).
  *
- * Dois workspaces lado a lado com o MESMO projeto (uma área com 800 unidades encadeadas, 1 601
- * blocos, acima do limiar de 1 500): um abre como sempre, o outro com a cauda adiada. O que vale
- * comparar é o que a criança e o código veem: o estado gravado, e a posição e o tamanho de cada
- * bloco desenhado. As adaptações do Blockly são globais; o workspace normal na mesma página prova
+ * Dois workspaces lado a lado com o MESMO projeto (uma área com 50 unidades encadeadas de 31
+ * blocos, 1 551 blocos, acima do limiar de 1 500): um abre como sempre, o outro com a cauda
+ * adiada. O que vale comparar é o que a criança e o código veem: o estado gravado, e a posição e o
+ * tamanho de cada bloco desenhado. As adaptações do Blockly são globais; o workspace normal na mesma página prova
  * que elas não mudam nada onde não há cauda.
  */
 const tailBundle = buildSync({
@@ -147,8 +147,16 @@ const tailBundle = buildSync({
         args0: [{ type: 'input_dummy' }, { type: 'input_statement', name: 'CHILDREN' }],
         colour: 200,
       }]);
-      const unit = (i) => ({ type: 'controls_repeat', id: 'u' + i, fields: { TIMES: 10 },
-        inputs: { DO: { block: { type: 'controls_if', id: 'c' + i } } } });
+      // Cada unidade: um "repetir" com 30 comandos no corpo (31 blocos). A cadeia fica curta (50
+      // unidades para 1 551 blocos): o caminho normal do Firefox leva 80 s com 300 unidades
+      // aninhadas de 2 blocos (6 s com estas 50), e o workspace normal é a régua de cada teste.
+      const BODY = 30;
+      const unit = (i) => {
+        let body;
+        for (let k = BODY - 1; k >= 0; k--)
+          body = { type: 'controls_if', id: k ? 'c' + i + '_' + k : 'c' + i, ...(body ? { next: { block: body } } : {}) };
+        return { type: 'controls_repeat', id: 'u' + i, fields: { TIMES: 10 }, inputs: { DO: { block: body } } };
+      };
       function project(count) {
         let chain;
         for (let i = count - 1; i >= 0; i--) {
@@ -265,18 +273,30 @@ const tailBundle = buildSync({
           const rect = block(name, id).getSvgRoot().querySelector('.blocklyPath').getBoundingClientRect();
           return { x: rect.x, y: rect.y };
         },
-        /** A pilha que começa em \`id\`: é raiz? quantos blocos? conexões no lugar e no banco? */
+        /**
+         * A pilha que começa em \`id\`: é raiz? quantos blocos? As desenhadas com a conexão no lugar
+         * e no banco; quais desenhadas, na ordem.
+         */
         stack(name, id) {
           const first = block(name, id);
           const tracked = Blockly.RenderedConnection.TrackedState.TRACKED;
           let length = 0, misplaced = 0, untracked = 0;
+          const drawn = [];
           for (let b = first; b; b = b.getNextBlock()) {
             length++;
+            drawn.push(!isDeferredBlock(b));
+            if (isDeferredBlock(b)) continue;
             const c = b.previousConnection;
             if (Math.abs(c.y - b.getRelativeToSurfaceXY().y) > 0.5) misplaced++;
             if (c.trackedState !== tracked) untracked++;
           }
-          return { root: first.getParent() === null, length, misplaced, untracked };
+          return { root: first.getParent() === null, length, misplaced, untracked, drawn };
+        },
+        /** A conexão de baixo da pilha que começa em \`id\` (a que encaixa a pilha em cima de outro). */
+        bottomY(name, id) {
+          let last = block(name, id);
+          while (last.getNextBlock()) last = last.getNextBlock();
+          return last.nextConnection.y;
         },
         areaUnits: (name) => units(name).length,
       };
@@ -322,14 +342,15 @@ declare global {
       stack(
         name: string,
         id: string,
-      ): { root: boolean; length: number; misplaced: number; untracked: number }
+      ): { root: boolean; length: number; misplaced: number; untracked: number; drawn: boolean[] }
+      bottomY(name: string, id: string): number
       areaUnits(name: string): number
     }
   }
 }
 
 /** Abre o mesmo projeto nos dois workspaces e devolve se o adiado de fato adiou. */
-async function openPair(page: Page, units = 800): Promise<{ deferred: boolean; errors: string[] }> {
+async function openPair(page: Page, units = 50): Promise<{ deferred: boolean; errors: string[] }> {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   if (!tailBundle) throw new Error('The deferred tail fixture was not compiled')
@@ -359,10 +380,10 @@ test('cauda adiada: o que está longe fica fora da página, o modelo inteiro e a
   expect(deferred).toBe(true)
   const normal = await page.evaluate(() => window.__tail.snapshot('normal'))
   const adiado = await page.evaluate(() => window.__tail.snapshot('adiado'))
-  expect(normal.inPage).toBe(1601)
+  expect(normal.inPage).toBe(1551)
   expect(adiado.deferred).toBeGreaterThan(1400)
-  expect(adiado.inPage).toBe(1601 - adiado.deferred)
-  expect(await page.evaluate(() => window.__tail.inPage('adiado', 'u799'))).toBe(false)
+  expect(adiado.inPage).toBe(1551 - adiado.deferred)
+  expect(await page.evaluate(() => window.__tail.inPage('adiado', 'u49'))).toBe(false)
   expect(adiado.state).toBe(normal.state)
   expect(adiado.geometry).toEqual([])
   expect(adiado.areaHeight).toBeCloseTo(adiado.areaHeightExpected, 2)
@@ -401,20 +422,20 @@ test('cauda adiada: "Mostrar o bloco" e o cursor do código chegam a um bloco ai
   page,
 }) => {
   const { errors } = await openPair(page)
-  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'c700'))).toBe(true)
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'c35_7'))).toBe(true)
   // "Mostrar o bloco" e o chip do Zappy: `centerOnBlock(id, true)`.
-  expect(await page.evaluate(() => window.__tail.center('adiado', 'c700'))).toBe(true)
-  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'c700'))).toBe(false)
-  expect(await page.evaluate(() => window.__tail.inPage('adiado', 'c700'))).toBe(true)
+  expect(await page.evaluate(() => window.__tail.center('adiado', 'c35_7'))).toBe(true)
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'c35_7'))).toBe(false)
+  expect(await page.evaluate(() => window.__tail.inPage('adiado', 'c35_7'))).toBe(true)
   // O cursor do código seleciona o bloco antes de medir se ele está na vista.
-  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u760'))).toBe(true)
-  await page.evaluate(() => window.__tail.select('adiado', 'u760'))
-  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u760'))).toBe(false)
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u38'))).toBe(true)
+  await page.evaluate(() => window.__tail.select('adiado', 'u38'))
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u38'))).toBe(false)
   const depois = await page.evaluate(async () => {
     await window.__tail.settle()
     return window.__tail.snapshot('adiado')
   })
-  expect(depois.units.slice(0, 761).every(Boolean)).toBe(true)
+  expect(depois.units.slice(0, 39).every(Boolean)).toBe(true)
   expect(topDown(depois.units)).toBe(true)
   expect(depois.geometry).toEqual([])
   expect(errors).toEqual([])
@@ -426,16 +447,16 @@ test('cauda adiada: desfazer e refazer uma mudança num bloco ainda não desenha
   const { errors } = await openPair(page)
   // Uma mudança feita por programa (como a Ponte) num bloco adiado entra no histórico sem desenhá-lo.
   await page.evaluate(async () => {
-    for (const name of ['normal', 'adiado']) window.__tail.setField(name, 'u790', '7')
+    for (const name of ['normal', 'adiado']) window.__tail.setField(name, 'u40', '7')
     await window.__tail.settle()
   })
-  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u790'))).toBe(true)
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u40'))).toBe(true)
   await page.evaluate(async () => {
     for (const name of ['normal', 'adiado']) window.__tail.undo(name, false)
     await window.__tail.settle()
   })
-  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u790'))).toBe(false)
-  expect(await page.evaluate(() => window.__tail.field('adiado', 'u790'))).toBe(10)
+  expect(await page.evaluate(() => window.__tail.isDeferred('adiado', 'u40'))).toBe(false)
+  expect(await page.evaluate(() => window.__tail.field('adiado', 'u40'))).toBe(10)
   let adiado = await page.evaluate(() => window.__tail.snapshot('adiado'))
   let normal = await page.evaluate(() => window.__tail.snapshot('normal'))
   expect(adiado.state).toBe(normal.state)
@@ -443,7 +464,7 @@ test('cauda adiada: desfazer e refazer uma mudança num bloco ainda não desenha
     for (const name of ['normal', 'adiado']) window.__tail.undo(name, true)
     await window.__tail.settle()
   })
-  expect(await page.evaluate(() => window.__tail.field('adiado', 'u790'))).toBe(7)
+  expect(await page.evaluate(() => window.__tail.field('adiado', 'u40'))).toBe(7)
   adiado = await page.evaluate(() => window.__tail.snapshot('adiado'))
   normal = await page.evaluate(() => window.__tail.snapshot('normal'))
   expect(adiado.state).toBe(normal.state)
@@ -451,29 +472,32 @@ test('cauda adiada: desfazer e refazer uma mudança num bloco ainda não desenha
   expect(errors).toEqual([])
 })
 
-test('cauda adiada: arrastar uma unidade cuja pilha leva a cauda não desenhada leva a cauda inteira, desenhada e encaixável', async ({
+test('cauda adiada: arrastar uma unidade leva a cauda no modelo, sem desenhá-la, e nada encaixa no fim invisível', async ({
   page,
 }) => {
   const { errors } = await openPair(page)
   // Arrastar uma unidade da área (sem segurar Ctrl) leva junto tudo o que vem depois dela, inclusive
-  // a cauda que a abertura não desenhou: ela é desenhada antes de o arrasto medir a pilha.
-  const caixa = await page.evaluate(() => window.__tail.pathBox('adiado', 'u1'))
+  // a cauda que a abertura não desenhou. O gesto não a desenha (custaria a abertura inteira).
+  const caixa = await page.evaluate(() => window.__tail.pathBox('adiado', 'u0'))
   await page.mouse.move(caixa.x + 12, caixa.y + 12)
   await page.mouse.down()
-  await page.mouse.move(caixa.x + 300, caixa.y + 40, { steps: 15 })
+  await page.mouse.move(caixa.x + 150, caixa.y + 20, { steps: 8 })
+  // No meio do gesto: a conexão de baixo da pilha (num bloco sem desenho) está longe de tudo.
+  expect(await page.evaluate(() => window.__tail.bottomY('adiado', 'u0'))).toBeGreaterThan(1e8)
+  await page.mouse.move(caixa.x + 300, caixa.y + 40, { steps: 8 })
   await page.mouse.up()
   await page.evaluate(() => window.__tail.settle())
-  expect(await page.evaluate(() => window.__tail.stack('adiado', 'u1'))).toEqual({
-    root: true,
-    length: 799,
-    misplaced: 0,
-    untracked: 0,
-  })
-  expect(await page.evaluate(() => window.__tail.areaUnits('adiado'))).toBe(1)
+  const pilha = await page.evaluate(() => window.__tail.stack('adiado', 'u0'))
+  expect(pilha).toMatchObject({ root: true, length: 50, misplaced: 0, untracked: 0 })
+  // A cauda continua sem desenho; o que a vista alcança na pilha nova é desenhado de cima para baixo.
+  expect(pilha.drawn[0]).toBe(true)
+  expect(pilha.drawn.includes(false)).toBe(true)
+  expect(topDown(pilha.drawn)).toBe(true)
+  expect(await page.evaluate(() => window.__tail.areaUnits('adiado'))).toBe(0)
   const depois = await page.evaluate(() => window.__tail.snapshot('adiado'))
-  expect(depois.deferred).toBe(0)
-  // Só a pilha arrastada (e a área, que encolheu) mudou de lugar em relação ao caminho normal.
-  expect(depois.geometry.filter((blockId) => blockId !== 'area')).toHaveLength(799 * 2)
+  expect(depois.deferred).toBeGreaterThan(1000)
+  expect(depois.deferredInPage).toBe(0)
+  expect(depois.trackedDeferred).toBe(0)
   // Desfazer devolve a pilha à área, como no caminho normal.
   await page.evaluate(async () => {
     window.__tail.undo('adiado', false)
@@ -483,6 +507,8 @@ test('cauda adiada: arrastar uma unidade cuja pilha leva a cauda não desenhada 
   const normal = await page.evaluate(() => window.__tail.snapshot('normal'))
   expect(desfeito.state).toBe(normal.state)
   expect(desfeito.geometry).toEqual([])
+  expect(desfeito.areaHeight).toBeCloseTo(desfeito.areaHeightExpected, 2)
+  expect(desfeito.deferredInPage).toBe(0)
   expect(errors).toEqual([])
 })
 
@@ -504,7 +530,7 @@ test('cauda adiada: apagar a última unidade desenhada sobe a cauda, que continu
   expect(await page.evaluate(() => window.__tail.deferredInPage('adiado'))).toBe(0)
   const depois = await page.evaluate(() => window.__tail.snapshot('adiado'))
   const normal = await page.evaluate(() => window.__tail.snapshot('normal'))
-  expect(depois.inPage).toBe(1599 - depois.deferred)
+  expect(depois.inPage).toBe(1520 - depois.deferred)
   expect(depois.state).toBe(normal.state)
   expect(depois.geometry).toEqual([])
   expect(depois.areaHeight).toBeCloseTo(depois.areaHeightExpected, 2)
@@ -559,12 +585,12 @@ test('cauda adiada: um bloco adiado levado por programa para baixo de um desenha
 })
 
 test('cauda adiada: abaixo de 1 500 blocos nada muda', async ({ page }) => {
-  // 1 área + 749 unidades de 2 blocos = 1 499 blocos.
-  const { deferred, errors } = await openPair(page, 749)
+  // 1 área + 48 unidades de 31 blocos = 1 489 blocos.
+  const { deferred, errors } = await openPair(page, 48)
   expect(deferred).toBe(false)
   const adiado = await page.evaluate(() => window.__tail.snapshot('adiado'))
   const normal = await page.evaluate(() => window.__tail.snapshot('normal'))
-  expect(adiado.inPage).toBe(1499)
+  expect(adiado.inPage).toBe(1489)
   expect(adiado.deferred).toBe(0)
   expect(await page.locator('#adiado [data-sz-deferred-blocks]').count()).toBe(0)
   expect(adiado.state).toBe(normal.state)

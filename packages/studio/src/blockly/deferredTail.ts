@@ -19,17 +19,20 @@ import {
  * 1. Antes do `load`, só com `OFFSCREEN_BODIES_MIN_BLOCKS` ou mais, o plano (`planDeferredTail`)
  *    estima pelo JSON onde cada unidade (filho direto de uma área `sz_frame_*`, na cadeia `next`)
  *    vai cair e escolhe, por área, a primeira que passa de uma tela abaixo da vista inicial.
- * 2. Na carga, quando essa unidade termina de nascer (`initSvg`, depois dos filhos), ela e tudo o
- *    que vem depois (o SVG do bloco seguinte mora DENTRO do anterior) saem da página numa operação
- *    só, antes do primeiro desenho. Esses blocos entram no conjunto dos adiados deste workspace.
+ * 2. Na carga, quando essa unidade termina de nascer (`initSvg`, depois dos filhos e da cadeia
+ *    seguinte), ela e tudo o que vem depois saem da página antes do primeiro desenho (a árvore da
+ *    área ainda nem entrou na página), cada unidade num pedaço solto (`deferChain`). Esses blocos
+ *    entram no conjunto dos adiados deste workspace.
  * 3. Bloco adiado não é desenhado, não põe conexão no banco de conexões (nada encaixa num bloco
- *    invisível), não empurra vizinhos e conta como altura zero para quem está acima dele.
+ *    invisível), não empurra vizinhos e, para quem está acima, fecha a conta da altura na borda
+ *    do último desenhado.
  * 4. Quando a vista chega perto do fim do que foi desenhado, a próxima unidade volta à página e é
  *    desenhada, sempre de cima para baixo: a unidade k+1 nunca antes da k, então tudo o que está
  *    acima de algo à vista tem a geometria exata.
  * 5. Antes de algo precisar da posição de um bloco adiado ("Mostrar o bloco", o cursor do código,
- *    o chip do Zappy, desfazer e refazer, arrastar a pilha onde ele está, organizar, a foto dos
- *    blocos), a cauda é desenhada até ele.
+ *    o chip do Zappy, desfazer e refazer, desencaixá-lo, organizar, a foto dos blocos), a cauda é
+ *    desenhada até ele. Arrastar uma pilha que leva a cauda não a desenha: a conexão de baixo dela
+ *    fica longe durante o gesto (`parkStackBottom`).
  *
  * Nunca nas aulas: os jogos dos cursos têm de 70 a 80 blocos e este módulo nem é carregado ali.
  *
@@ -48,6 +51,8 @@ const AREA_HEADER_ESTIMATE = 64
 const BLOCK_HEIGHT_ESTIMATE = 40
 /** Tempo de desenho por tarefa ao rolar; o resto continua no quadro seguinte. */
 const FILL_BUDGET_MS = 24
+/** Onde fica, durante um arrasto, a conexão de baixo de uma pilha que termina sem desenho. */
+const PARKED_CONNECTION = 1e9
 
 /** A vista em que o projeto vai abrir, em unidades do workspace. */
 export interface OpeningView {
@@ -248,13 +253,23 @@ class DeferredTail implements DeferredDrawing {
     trackDeferredDrawing(workspace, this)
   }
 
-  /** Na carga: a unidade `head` e tudo o que vem depois dela saem da página antes do desenho. */
+  /**
+   * Na carga: a unidade `head` e tudo o que vem depois dela saem da página antes do desenho.
+   *
+   * Cada unidade vira um pedaço solto, cortado de baixo para cima. Tirar um nó do DOM custa o
+   * tamanho do que está dentro dele (o Blink avisa cada descendente, conectado ou não): com a cauda
+   * inteira aninhada na fronteira, desenhar a unidade k+1 e tirar dela a k+2 custava a cauda toda,
+   * a cada unidade (medido: 600 unidades levavam 5,5 s, 3,8 s só em `remove`). Cortando de baixo
+   * para cima, cada corte leva só a própria unidade.
+   */
   deferChain(head: Block): void {
     const parent = head.getParent()
     if (!parent || this.deferred.has(parent)) return
     for (const block of head.getDescendants(false)) this.deferred.add(block)
     this.boundaries.add(head)
-    head.getSvgRoot().remove()
+    const units: Block[] = []
+    for (let unit: Block | null = head; unit; unit = unit.getNextBlock()) units.push(unit)
+    for (let i = units.length - 1; i >= 0; i--) units[i]?.getSvgRoot().remove()
   }
 
   /** Um bloco desenhado foi encaixado dentro da parte adiada: some com ela, sem conexões vivas. */
@@ -265,13 +280,14 @@ class DeferredTail implements DeferredDrawing {
 
   /**
    * Desenha a unidade adiada `unit` (o pai dela já está desenhado) e devolve a próxima adiada da
-   * mesma cadeia. O resto da cauda continua fora da página.
+   * mesma cadeia. O resto da cauda continua fora da página: cada unidade adiada é um pedaço solto
+   * (`deferChain`), e só uma que o Blockly tenha aninhado de novo precisa sair.
    */
   private drawUnit(unit: Block): Block | null {
     const next = unit.getNextBlock()
     const nextDeferred = next && this.deferred.has(next) ? next : null
     if (nextDeferred) {
-      nextDeferred.getSvgRoot().remove()
+      if (nextDeferred.getSvgRoot().parentNode) nextDeferred.getSvgRoot().remove()
       this.boundaries.add(nextDeferred)
     }
     this.boundaries.delete(unit)
@@ -318,11 +334,29 @@ class DeferredTail implements DeferredDrawing {
     this.publish()
   }
 
+  /**
+   * Um lote de desenho mede cada texto uma vez, como o `workspaces.load` do Blockly faz com estes
+   * mesmos blocos na abertura de sempre (a memória de larguras dura a carga inteira). Sem isto,
+   * cada campo pedia `getComputedStyle` no fundo da cadeia aninhada, e cada pedido custa a
+   * profundidade: arrastar o primeiro evento de 2 mil blocos (a pilha leva a cauda inteira)
+   * travava 3,8 s. A memória dura só o lote, que roda inteiro depois da fonte dos blocos chegar.
+   */
+  private measuringOnce<T>(draw: () => T): T {
+    Blockly.utils.dom.startTextWidthCache()
+    try {
+      return draw()
+    } finally {
+      Blockly.utils.dom.stopTextWidthCache()
+    }
+  }
+
   /** Desenha, de cima para baixo, as unidades até `block` (adiado); devolve a primeira desenhada. */
   private drawUnitsThrough(block: Block): Block {
     const first = this.boundaryAbove(block)
-    for (let unit: Block | null = first; unit && this.deferred.has(block); )
-      unit = this.drawUnit(unit)
+    this.measuringOnce(() => {
+      for (let unit: Block | null = first; unit && this.deferred.has(block); )
+        unit = this.drawUnit(unit)
+    })
     return first
   }
 
@@ -335,21 +369,28 @@ class DeferredTail implements DeferredDrawing {
 
   /** Desenha a cadeia inteira a partir da unidade adiada `first`. */
   private drawChain(first: Block, drawn: Map<Block, Block[]>): void {
-    for (let unit: Block | null = first; unit; ) unit = this.drawUnit(unit)
+    this.measuringOnce(() => {
+      for (let unit: Block | null = first; unit; ) unit = this.drawUnit(unit)
+    })
     const root = first.getRootBlock()
     drawn.set(root, [...(drawn.get(root) ?? []), first])
   }
 
-  /** Antes de arrastar `block`: a pilha que vai junto (a cadeia `next`) é desenhada inteira. */
-  drawStackBelow(block: Block): void {
+  /**
+   * Antes de arrastar `block`. Da cauda que vai junto, o arrasto só consulta a conexão de baixo da
+   * pilha (`lastConnectionInStack`, para encaixar a pilha em cima de outro bloco). Num bloco adiado
+   * a posição dela é velha (perto da fronteira): ela vai para longe durante o arrasto, e nada
+   * encaixa embaixo de uma pilha cujo fim a criança nem vê. O fim do arrasto redesenha a raiz e a
+   * devolve ao lugar (fora do banco de conexões, como toda conexão adiada).
+   *
+   * Desenhar a cauda aqui era o caminho direto, e custava a abertura inteira no começo do gesto:
+   * arrastar o primeiro evento de 5 mil blocos travava 8,3 s (a base, com tudo desenhado, 2,0 s).
+   */
+  parkStackBottom(block: Block): void {
     if (this.disposed || this.boundaries.size === 0) return
-    for (let next = block.getNextBlock(); next; next = next.getNextBlock())
-      if (this.deferred.has(next)) {
-        const drawn = new Map<Block, Block[]>()
-        this.drawChain(this.boundaryAbove(next), drawn)
-        this.settle(drawn)
-        return
-      }
+    const bottom = block.lastConnectionInStack(true)
+    if (bottom && this.deferred.has(bottom.getSourceBlock()))
+      bottom.moveTo(PARKED_CONNECTION, PARKED_CONNECTION)
   }
 
   /** O bloco adiado vai virar raiz (desencaixado): a unidade dele é desenhada antes. */
@@ -420,12 +461,22 @@ class DeferredTail implements DeferredDrawing {
     // No meio de um arrasto nada muda; o fim do arrasto chama de novo.
     if (this.workspace.isDragging()) return
     const view = this.workspace.getMetricsManager().getViewMetrics(true)
+    const drawn = new Map<Block, Block[]>()
+    const unfinished = this.measuringOnce(() => this.drawNearView(view, drawn))
+    this.settle(drawn)
+    if (unfinished) this.scheduleFill()
+  }
+
+  /** O lote da rolagem: as unidades que a vista alcança, até o tempo da tarefa. Sobrou algo? */
+  private drawNearView(
+    view: { top: number; left: number; width: number; height: number },
+    drawn: Map<Block, Block[]>,
+  ): boolean {
     const margin = view.height * MARGIN_IN_VIEWS
     const bottom = view.top + view.height + margin
     const left = view.left - view.width * MARGIN_IN_VIEWS
     const right = view.left + view.width + view.width * MARGIN_IN_VIEWS
     const deadline = performance.now() + FILL_BUDGET_MS
-    const drawn = new Map<Block, Block[]>()
     let unfinished = false
     for (const boundary of [...this.boundaries]) {
       if (!this.boundaries.has(boundary)) continue
@@ -453,8 +504,7 @@ class DeferredTail implements DeferredDrawing {
       if (unit !== boundary) drawn.set(root, [...(drawn.get(root) ?? []), boundary])
       if (unfinished) break
     }
-    this.settle(drawn)
-    if (unfinished) this.scheduleFill()
+    return unfinished
   }
 
   /** Fim da carga: a contagem vai para a página e a vista confere o que falta perto dela. */
@@ -565,7 +615,7 @@ function installHooks(): void {
     select.call(this)
   }
   proto.startDrag = function (this: Block, e?: PointerEvent) {
-    tailOf(this)?.drawStackBelow(this)
+    tailOf(this)?.parkStackBottom(this)
     startDrag.call(this, e)
   }
 }

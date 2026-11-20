@@ -189,6 +189,12 @@ describe('guarda de atualização do Blockly (o que as adaptações supõem)', (
     )
   })
 
+  it('a carga de sempre mede o texto com a memória de larguras ligada (o lote adiado faz igual)', () => {
+    expect(compressed).toContain(
+      '$.setGroup$$module$build$src$core$events$utils(!0);startTextWidthCache$$module$build$src$core$utils$dom();b instanceof WorkspaceSvg$$module$build$src$core$workspace_svg&&b.setResizesEnabled(!1);',
+    )
+  })
+
   it('a altura de uma pilha desconta NOTCH_HEIGHT por bloco seguinte', () => {
     expect(compressed).toContain(
       'getHeightWidth(){let a=this.height,b=this.width;var c=this.getNextBlock();if(c){c=c.getHeightWidth();const d=this.workspace.getRenderer().getConstants().NOTCH_HEIGHT;a+=c.height-d;',
