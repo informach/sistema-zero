@@ -93,3 +93,39 @@ test('desmontagem durante preparo GPU não ativa nem conserva uma cena parcial',
   expect(carregador.instalado()).toBeNull()
   await expect(carregador.carregar('sua-ilha')).rejects.toThrow(/encerrado/)
 })
+
+test('voltar à ilha com a mesma versão não prepara nada; pedir de novo durante a carga espera a mesma', async () => {
+  const porta = await portaDoCenarioParaTeste(await cenarioPublicadoParaTeste()),
+    alvo = new Scene()
+  let preparos = 0
+  const carregador = criarCarregadorPublicado({
+    ...porta,
+    alvo,
+    maxTextura: 4096,
+    foco: () => ({ x: 10, z: -4 }),
+    async prepararGpu() {
+      preparos++
+    },
+  })
+  try {
+    const a = carregador.carregar('sua-ilha'),
+      b = carregador.carregar('sua-ilha')
+    expect(b).toBe(a)
+    const primeira = (await a)!
+    expect(preparos).toBe(1)
+    // A criança voltou à ilha: o perfil é relido, a cena instalada continua a mesma.
+    expect(await carregador.carregar('sua-ilha')).toBe(primeira)
+    expect(preparos).toBe(1)
+    expect(alvo.children).toEqual([primeira.cena])
+    // Publicaram a versão 2 enquanto ela estava fora: voltar instala a nova.
+    const segunda = await cenarioPublicadoParaTeste()
+    segunda.publicacao.versao = 2
+    await porta.usar(segunda)
+    const nova = (await carregador.carregar('sua-ilha'))!
+    expect(nova).not.toBe(primeira)
+    expect(nova.publicacao.versao).toBe(2)
+    expect(preparos).toBe(2)
+  } finally {
+    carregador.descartar()
+  }
+})

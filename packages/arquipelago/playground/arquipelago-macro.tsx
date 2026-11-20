@@ -4,7 +4,7 @@ import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { AVATAR_CATALOG, drawAvatar } from '@sistemazero/avatar-quarto/avatar/pack-catalog'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Object3D, PCFShadowMap } from 'three'
+import { Object3D, PCFShadowMap, Scene } from 'three'
 import { criarControle, ligarTeclado } from '../src/controles/controle'
 import { ligarGamepad } from '../src/controles/gamepad'
 import {
@@ -48,6 +48,7 @@ import {
   territorioEm,
 } from '../src/sistemas/geografia-do-arquipelago'
 import { LAGO_DA_FAISCA } from '../src/sistemas/lago-da-faisca'
+import { criarMemoriaDePublicacoes } from '../src/sistemas/ler-cenario-publicado'
 import type { MedicaoDePercurso } from '../src/sistemas/medicao-de-percurso'
 import { estadoDaPonte, SEGUNDOS_PARA_RECONSTRUIR } from '../src/sistemas/ponte-do-arquipelago'
 import {
@@ -58,6 +59,11 @@ import {
 import { LAGO_DE_CATALOGO, pisoDoRefino } from '../src/sistemas/refino-da-faisca'
 import { chaveDaRetomada } from '../src/sistemas/retomada-do-cenario'
 import { LADO_DO_SETOR, malhaDistante, malhaDoSetor } from '../src/sistemas/setores-do-arquipelago'
+import {
+  ilhasEmVolta,
+  proximasVagas,
+  type VagasDePublicacao,
+} from '../src/sistemas/vagas-de-publicacao'
 import { ConversaDaIrisDeEstudo } from './faisca-interface'
 import { CameraDaCaptura, vistaDaFaisca } from './faisca-vistas'
 import { CHAVE_DO_ENSAIO, ensaioInicial, lerEnsaio, partidaDoEnsaio } from './macro-estado'
@@ -105,6 +111,7 @@ const CONEXOES = ARQUIPELAGO.slice(1).map((i) => conexaoDaIlha(i.id))
 const PONTE = conexaoDaIlha('bosque')
 const FORA_DE_CASA = () => false
 const ALTURA_BASE = (x: number, z: number) => alturaDoArquipelago(x, z)
+const SEM_AVISO = () => {}
 const VAZIA: MedidaMacro = {
   x: 0,
   y: 0,
@@ -149,44 +156,80 @@ function MundoMacro({
   tentativaArte: number
   pedidoMedicao: PedidoDeMedicao | null
   aoMedicao: (m: MedicaoDePercurso | null) => void
-  aoPublicacao: (p: CenarioPublicadoPronto | null) => void
+  aoPublicacao: (ativas: CenarioPublicadoPronto[], aqui: CenarioPublicadoPronto | null) => void
   aoErro: (erro: string) => void
 }) {
   const { rastro, loja } = useJogo()
   const gl = useThree((s) => s.gl)
   const camera = useThree((s) => s.camera)
   const [ilhaPublicada, setIlhaPublicada] = useState(ARQUIPELAGO[0]!.id)
-  const publicada = useCenarioPublicado(ilhaPublicada, tentativaArte, aoPublicacao, aoErro)
-  const publicadas = useMemo(
-    () => new Set(publicada ? [publicada.perfil.ilha.id] : []),
-    [publicada],
+  // Duas vagas: a ilha onde ela está e a vizinha perto da divisa (ou a de onde ela veio). Cada
+  // vaga monta numa subcena própria; a memória guarda os pacotes baixados por versão.
+  const [vagas, setVagas] = useState<VagasDePublicacao<(typeof ARQUIPELAGO)[number]['id']>>([
+    ARQUIPELAGO[0]!.id,
+    null,
+  ])
+  const vagasAtuais = useRef(vagas)
+  vagasAtuais.current = vagas
+  const cena = useThree((s) => s.scene)
+  const subcenas = useMemo(() => [new Scene(), new Scene()] as const, [])
+  const memoria = useMemo(() => criarMemoriaDePublicacoes(3), [])
+  useEffect(() => {
+    cena.add(subcenas[0], subcenas[1])
+    return () => {
+      cena.remove(subcenas[0], subcenas[1])
+    }
+  }, [cena, subcenas])
+  // Voltar a uma ilha que já está numa vaga relê o perfil dela: a mesma versão não baixa nada,
+  // uma versão publicada enquanto ela estava fora entra.
+  const [conferencias, setConferencias] = useState<readonly [number, number]>([0, 0])
+  const ilhaAtual = useRef(ilhaPublicada),
+    ilhaAnterior = useRef<(typeof ARQUIPELAGO)[number]['id'] | null>(null)
+  const opcoesA = useMemo(
+    () => ({ alvo: subcenas[0], memoria, conferencia: conferencias[0] }),
+    [subcenas, memoria, conferencias],
   )
+  const opcoesB = useMemo(
+    () => ({ alvo: subcenas[1], memoria, conferencia: conferencias[1] }),
+    [subcenas, memoria, conferencias],
+  )
+  const vagaA = useCenarioPublicado(vagas[0], tentativaArte, SEM_AVISO, aoErro, opcoesA)
+  const vagaB = useCenarioPublicado(vagas[1], tentativaArte, SEM_AVISO, aoErro, opcoesB)
+  const ativas = useMemo(
+    () => [vagaA, vagaB].filter((p): p is CenarioPublicadoPronto => p !== null),
+    [vagaA, vagaB],
+  )
+  // A publicação da ilha onde ela está; a outra vaga fica pronta ao lado.
+  const publicada = ativas.find((p) => p.perfil.ilha.id === ilhaPublicada) ?? null
+  useEffect(() => {
+    aoPublicacao(ativas, publicada)
+  }, [ativas, publicada, aoPublicacao])
+  const publicadas = useMemo(() => new Set(ativas.map((p) => p.perfil.ilha.id)), [ativas])
   const fonte = useMemo<FonteDoTerreno | undefined>(
     () =>
-      publicada
+      ativas.length
         ? {
             setor: malhaDoSetor,
-            distante: (ilha, excluir) =>
-              malhaDistante(
+            distante: (ilha, excluir) => {
+              const p = ativas.find((a) => a.perfil.ilha.id === ilha.id && a.alturas)
+              return malhaDistante(
                 ilha,
                 excluir,
-                ilha.id === publicada.perfil.ilha.id && publicada.alturas
-                  ? (x, z) => publicada.alturas!(x + ilha.centro.x, z + ilha.centro.z)
-                  : undefined,
-              ),
+                p ? (x, z) => p.alturas!(x + ilha.centro.x, z + ilha.centro.z) : undefined,
+              )
+            },
           }
         : undefined,
-    [publicada],
+    [ativas],
   )
   const chaoPublicado = useCallback(
     (x: number, z: number) => {
-      if (!publicada?.regiao.contem(x, z)) return alturaDoArquipelago(x, z)
-      if (!publicada.alturas) return publicada.piso(x, z) ?? FUNDO_DO_ARQUIPELAGO
-      return publicada.alturas.temChao?.({ x, z }) === false
-        ? FUNDO_DO_ARQUIPELAGO
-        : publicada.alturas(x, z)
+      const p = ativas.find((a) => a.regiao.contem(x, z))
+      if (!p) return alturaDoArquipelago(x, z)
+      if (!p.alturas) return p.piso(x, z) ?? FUNDO_DO_ARQUIPELAGO
+      return p.alturas.temChao?.({ x, z }) === false ? FUNDO_DO_ARQUIPELAGO : p.alturas(x, z)
     },
-    [publicada],
+    [ativas],
   )
   const sol = useMemo(() => {
     const alvo = new Object3D()
@@ -208,7 +251,22 @@ function MundoMacro({
         ? a
         : b,
     )
-    if (proxima.id !== ilhaPublicada) setIlhaPublicada(proxima.id)
+    if (proxima.id !== ilhaAtual.current) {
+      ilhaAnterior.current = ilhaAtual.current
+      ilhaAtual.current = proxima.id
+      setIlhaPublicada(proxima.id)
+      const vaga = vagasAtuais.current.indexOf(proxima.id)
+      if (vaga >= 0) setConferencias((c) => (vaga === 0 ? [c[0] + 1, c[1]] : [c[0], c[1] + 1]))
+    }
+    const proximas = proximasVagas(
+      vagasAtuais.current,
+      ilhasEmVolta(ARQUIPELAGO, rastro),
+      ilhaAnterior.current,
+    )
+    if (proximas !== vagasAtuais.current) {
+      vagasAtuais.current = proximas
+      setVagas(proximas)
+    }
     if (!loja.getState().menuAberto) tempoAtual.current += Math.min(dt, 0.1)
     const a = amostra.current
     a.tempo += dt
@@ -300,13 +358,13 @@ function MundoMacro({
               progresso={progresso}
             />
           ))}
-          {publicada?.perfil.ilha.id !== 'sua-ilha' && (
+          {!publicadas.has('sua-ilha') && (
             <CaminhosDaFaisca
               marcos={!VISTA && new URLSearchParams(location.search).get('debug') === 'lugares'}
             />
           )}
           <MedirPercurso pedido={pedidoMedicao} aoMudar={aoMedicao} />
-          {publicada?.perfil.ilha.id !== 'sua-ilha' && (
+          {!publicadas.has('sua-ilha') && (
             <PilotoDaFaisca
               key={tentativaArte}
               aoMudar={aoArte}
@@ -316,16 +374,16 @@ function MundoMacro({
               noite={noite}
             />
           )}
-          {publicada && (
-            <CenarioPublicado key={publicada.publicacao.id} pronto={publicada} aoErro={aoErro} />
-          )}
+          {ativas.map((p) => (
+            <CenarioPublicado key={p.publicacao.id} pronto={p} aoErro={aoErro} />
+          ))}
           <Personagem partida={partida} interior={FORA_DE_CASA} />
           {VISTA ? (
             <CameraDaCaptura vista={VISTA} />
           ) : (
             <Camera
               chaoDoCenario={chaoPublicado}
-              baseDoCenario={publicada ? chaoPublicado : ALTURA_BASE}
+              baseDoCenario={ativas.length ? chaoPublicado : ALTURA_BASE}
             />
           )}
         </Physics>
@@ -366,15 +424,16 @@ function Blockout() {
   const [visitados, setVisitados] = useState<string[]>(inicial.ensaio.visitados)
   // Na ilha publicada, a posição é guardada pela retomada da publicação (por versão); o resto
   // do ensaio (ponte, lugares visitados, posição nas outras ilhas) continua sendo guardado.
-  const regiaoPublicada = useRef<CenarioPublicadoPronto['regiao'] | null>(null),
-    cenarioPublicado = useRef<CenarioPublicadoPronto | null>(null)
+  const cenariosPublicados = useRef<CenarioPublicadoPronto[]>([])
   const [publicacao, setPublicacao] = useState<CenarioPublicadoPronto['publicacao'] | null>(null)
-  const aoPublicacao = useCallback((p: CenarioPublicadoPronto | null) => {
-    regiaoPublicada.current = p?.regiao ?? null
-    cenarioPublicado.current = p
-    setPublicacao(p?.publicacao ?? null)
-    if (p) setArte({ estado: 'pronto', modelos: p.dados.fontes.modelos.length })
-  }, [])
+  const aoPublicacao = useCallback(
+    (ativas: CenarioPublicadoPronto[], aqui: CenarioPublicadoPronto | null) => {
+      cenariosPublicados.current = ativas
+      setPublicacao(aqui?.publicacao ?? null)
+      if (aqui) setArte({ estado: 'pronto', modelos: aqui.dados.fontes.modelos.length })
+    },
+    [],
+  )
   const contexto = useMemo<ContextoDoJogo>(() => {
     const partida = partidaDoEnsaio(inicial.ensaio, CORPO.doCentroAoPe)
     const loja = criarLoja({
@@ -485,7 +544,7 @@ function Blockout() {
       const ilha = territorioEm(m.x, m.z)
       if (
         ilha &&
-        !regiaoPublicada.current?.contem(m.x, m.z) &&
+        !cenariosPublicados.current.some((p) => p.regiao.contem(m.x, m.z)) &&
         (ilha.id !== 'bosque' || ensaio.current.ponteInstalada)
       ) {
         const local = paraLocal(ilha, m)
@@ -531,8 +590,8 @@ function Blockout() {
     contexto.movimento.ida = null
     // Na ilha publicada, a altura e o chão são os do cenário compilado: a chegada segura dele
     // diz onde pisar, e a colisão do destino solta a espera (`CenarioPublicado`).
-    const publicado = cenarioPublicado.current
-    if (publicado?.regiao.contem(p.x, p.z)) {
+    const publicado = cenariosPublicados.current.find((c) => c.regiao.contem(p.x, p.z))
+    if (publicado) {
       try {
         const piso = publicado.piso(p.x, p.z)
         contexto.pedidos.teleporte = publicado.chegada({ x: p.x, y: piso ?? p.y, z: p.z })

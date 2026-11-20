@@ -8,7 +8,11 @@
  *   - `srcdoc`: o de hoje, `<iframe sandbox="allow-scripts allow-modals allow-pointer-lock" srcdoc>`;
  *   - `outro-site`: um iframe de OUTRO site (localhost × 127.0.0.1) que põe o documento num
  *     `srcdoc` interno com o mesmo sandbox (a "casca" do pacote B2);
- *   - `mesma-origem`: controle, um iframe da mesma origem sem sandbox (tem de travar junto).
+ *   - `mesma-origem`: controle, um iframe da mesma origem sem sandbox (tem de travar junto);
+ *   - `janela-noopener`: o jogo numa JANELA própria de outro site, aberta com `noopener` (a saída
+ *     pendente do estudo B4 para o WebKit, onde nenhum arranjo de iframe isolou). Sem `opener`, a
+ *     página não fala com a janela: o filho trava sozinho ao abrir e registra quando travou, e a
+ *     medição confere que o clique caiu dentro do travamento.
  *
  * O filho ocupa a thread por `BLOQUEIO_MS` com trabalho síncrono que NÃO é laço instrumentável
  * (ordenar um vetor grande repetidas vezes dentro de uma função nativa). A página de fora mede:
@@ -19,6 +23,12 @@
  * vírgula entre chromium, firefox e webkit; padrão: chromium).
  * `SZ_MEASURE_HOST_POLICY_SPLIT=1` separa COOP e COEP do host, mantendo na casca
  * os cabeçalhos reais. Sem essa opção, os dois perfis históricos não mudam.
+ * `SZ_MEASURE_FIREFOX_SITE_ISOLATION=1` devolve ao Firefox o isolamento por site do navegador de
+ * verdade: o Firefox do Playwright vem com `fission.webContentIsolationStrategy = 0` ("Disable
+ * cross-process iframes", `browser_patches/firefox/preferences/playwright.cfg` do Playwright),
+ * então ali um iframe de outro site roda no MESMO processo da página. O Firefox de mesa usa 1
+ * (isolar todo site). Sem a opção, a medição segue com a preferência do Playwright, e cada linha
+ * diz qual valeu (`isolamentoDoFirefox`).
  */
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
@@ -41,6 +51,16 @@ addEventListener('message', (ev) => {
   parent.postMessage('destravou', '*')
 })
 parent.postMessage('pronto', '*')
+</script>`
+
+/** A janela do arranjo `janela-noopener`: trava assim que abre e guarda o intervalo (relógio de parede). */
+const FILHO_JANELA = `<!doctype html><meta charset="utf-8"><body>janela
+<script>
+window.inicio = Date.now()
+const fim = performance.now() + ${BLOQUEIO_MS}
+const dados = Array.from({ length: 200000 }, (_, i) => (i * 7919) % 10007)
+while (performance.now() < fim) dados.slice().sort((a, b) => a - b)
+window.fim = Date.now()
 </script>`
 
 // Positive control for thread isolation, not an implementation of the game engines.
@@ -136,7 +156,9 @@ function pagina(arranjo, outraOrigem) {
       ? `<iframe id="previa" sandbox="${SANDBOX}"></iframe>`
       : arranjo === 'outro-site'
         ? `<iframe id="previa" src="${outraOrigem}/casca"></iframe>`
-        : `<iframe id="previa" src="/filho"></iframe>`
+        : arranjo === 'janela-noopener'
+          ? ''
+          : `<iframe id="previa" src="/filho"></iframe>`
   return `<!doctype html><meta charset="utf-8"><body>
 <button id="botao">clicar</button> ${quadro}
 <script>
@@ -158,7 +180,14 @@ addEventListener('message', (ev) => {
   if (ev.data === 'destravou') { estado.maior = Math.max(estado.maior, performance.now() - ultimo); estado.destravou = true; medindo = false }
 })
 if (${JSON.stringify(arranjo)} === 'srcdoc') previa.srcdoc = FILHO
-window.travar = () => { medindo = true; ultimo = performance.now(); estado.inicio = ultimo; previa.contentWindow.postMessage('travar', '*') }
+if (${JSON.stringify(arranjo)} === 'janela-noopener') estado.pronto = true
+window.travar = () => {
+  medindo = true; ultimo = performance.now(); estado.inicio = ultimo
+  if (${JSON.stringify(arranjo)} !== 'janela-noopener') { previa.contentWindow.postMessage('travar', '*'); return }
+  window.open(${JSON.stringify(outraOrigem)} + '/janela', '_blank', 'noopener')
+  setTimeout(() => { estado.maior = Math.max(estado.maior, performance.now() - ultimo); estado.destravou = true; medindo = false }, ${BLOQUEIO_MS} + 1500)
+}
+document.getElementById('botao').addEventListener('click', () => { estado.cliqueEm = Date.now() })
 </script>`
 }
 
@@ -202,13 +231,14 @@ function servidor(profile) {
       }
       Object.assign(
         headers,
-        ['/casca', '/filho'].includes(url.pathname) ? profile.frame : profile.host,
+        ['/casca', '/filho', '/janela'].includes(url.pathname) ? profile.frame : profile.host,
       )
       res.writeHead(200, headers)
       if (url.pathname === '/canvas-worker.js') res.end(CANVAS_WORKER)
       else if (url.pathname === '/canvas-host') res.end(CANVAS_HOST)
       else if (url.pathname === '/filho') res.end(FILHO)
       else if (url.pathname === '/casca') res.end(CASCA)
+      else if (url.pathname === '/janela') res.end(FILHO_JANELA)
       else
         res.end(
           pagina(url.searchParams.get('arranjo'), `http://localhost:${server.address().port}`),
@@ -240,6 +270,10 @@ async function medir(browser, base, arranjo) {
     await page.goto(`${base}/?arranjo=${arranjo}`)
     await page.waitForFunction(() => window.estado.pronto, undefined, { timeout: 15_000 })
     await page.waitForTimeout(300)
+    const janela =
+      arranjo === 'janela-noopener'
+        ? page.context().waitForEvent('page', { timeout: BLOQUEIO_MS + 10_000 })
+        : null
     await page.evaluate(() => window.travar())
     // Um clique de verdade 500 ms depois de o bloqueio começar: quanto tempo até ser atendido?
     await page.waitForTimeout(500).catch(() => {})
@@ -248,6 +282,26 @@ async function medir(browser, base, arranjo) {
       timeout: BLOQUEIO_MS + 10_000,
     })
     const maior = await page.evaluate(() => Math.round(window.estado.maior))
+    if (janela) {
+      // Sem opener a página não sabe da janela: a prova de que o clique caiu DENTRO do travamento
+      // vem dos relógios de parede dos dois lados.
+      const popup = await janela
+      await popup.waitForFunction(() => typeof window.fim === 'number', undefined, {
+        timeout: BLOQUEIO_MS + 10_000,
+      })
+      const filho = await popup.evaluate(() => ({ inicio: window.inicio, fim: window.fim }))
+      const cliqueEm = await page.evaluate(() => window.estado.cliqueEm)
+      const cliqueDuranteOTravamento = cliqueEm >= filho.inicio && cliqueEm <= filho.fim
+      await popup.close()
+      return {
+        arranjo,
+        maiorAtrasoDoRelogioMs: maior,
+        cliqueAtendidoEmMs: cliqueMs,
+        travamentoDaJanelaMs: filho.fim - filho.inicio,
+        cliqueDuranteOTravamento,
+        isolado: maior < 500 && cliqueDuranteOTravamento,
+      }
+    }
     return {
       arranjo,
       maiorAtrasoDoRelogioMs: maior,
@@ -294,7 +348,14 @@ async function medirWorker(browser, base, canvas = true) {
     await page.close()
   }
 }
-const allowedArrangements = ['mesma-origem', 'srcdoc', 'outro-site', 'worker-canvas', 'worker-cpu']
+const allowedArrangements = [
+  'mesma-origem',
+  'srcdoc',
+  'outro-site',
+  'janela-noopener',
+  'worker-canvas',
+  'worker-cpu',
+]
 const arrangements = (process.env.SZ_MEASURE_ARRANGEMENTS ?? allowedArrangements.join(','))
   .split(',')
   .map((value) => value.trim())
@@ -309,12 +370,16 @@ const chromiumMode = process.env.SZ_CHECK_CHROMIUM
   : process.env.SZ_MEASURE_HEADLESS_SHELL === '1'
     ? 'headless-shell'
     : 'chromium'
+const firefoxSiteIsolation = process.env.SZ_MEASURE_FIREFOX_SITE_ISOLATION === '1'
 const saida = []
 for (const nome of nomes) {
   let browser
   try {
     browser = await playwright[nome].launch({
       headless: true,
+      ...(nome === 'firefox' && firefoxSiteIsolation
+        ? { firefoxUserPrefs: { 'fission.webContentIsolationStrategy': 1 } }
+        : {}),
       ...(nome === 'chromium' && chromiumMode === 'chromium' ? { channel: 'chromium' } : {}),
       ...(nome === 'chromium' && process.env.SZ_CHECK_CHROMIUM
         ? { executablePath: process.env.SZ_CHECK_CHROMIUM }
@@ -333,6 +398,13 @@ for (const nome of nomes) {
           saida.push({
             navegador: `${nome} ${browser.version()}`,
             ...(nome === 'chromium' ? { chromiumMode } : {}),
+            ...(nome === 'firefox'
+              ? {
+                  isolamentoDoFirefox: firefoxSiteIsolation
+                    ? 'por site (1, o do Firefox de mesa)'
+                    : 'do Playwright (0, iframes no mesmo processo)',
+                }
+              : {}),
             cabecalhosDoHost: Object.keys(profile.host).length > 0,
             ...(splitHostPolicies
               ? {

@@ -1,5 +1,12 @@
 # Evolução do Estúdio (Clássico e Pro)
 
+**Retomada de 20/11/2026** (Claude Code, a pedido da dona: revisão completa e conclusão da missão).
+O plano vigente está em `~/.claude/plans/foi-feito-um-plano-transient-rabin.md` (etapas 1 a 11) e a
+régua é este `plano-execucao.md` mais o relatório de 20/11 que ela trouxe. A revisão completa do que
+o Claude na nuvem (17/11) e o Codex (18 a 20/11) fizeram, com a situação de cada achado e o
+andamento do dia, está em [`revisao-2026-11-20.md`](revisao-2026-11-20.md). Os parágrafos abaixo
+são o registro das retomadas anteriores.
+
 Retomada de 19/11/2026: o trabalho agora ocorre na `staging` da pasta
 principal, conforme orientação da dona, preservando alterações das frentes
 paralelas e sem novas worktrees. A revisão atual e a correção do ciclo de
@@ -55,16 +62,16 @@ isolamento pode acrescentar bytes a ele.
 | A3 | Reprodução dos gestos das aulas no navegador (Playwright) | **feito** |
 | A4 | Objetivos que rodam o jogo, no executor do servidor | **feito em parte**: o executor de verdade aprova os 17; falta a prova pela página da aula (Verificar e Enviar no app) |
 | A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
-| B0 | Medição do isolamento da prévia | **feito** (só Chromium) |
+| B0 | Medição do isolamento da prévia | **feito** nas três engines (18/11); no Firefox, refeita em 20/11 com o isolamento por site do Firefox de mesa ([`../qa/2026-11-20-studio-firefox-site-isolation.md`](../qa/2026-11-20-studio-firefox-site-isolation.md)) |
 | B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **parcial**: o reinício após trabalho nativo falha no Chromium 148/Windows, inclusive com os arquivos originais da branch |
 | B1 | Marca de execução e salvar antes do comando explícito de Rodar | Marca já existente; salvamento explícito implementado nesta continuação, com testes de falha/cancelamento/autoridade; atualizações automáticas ainda seguem o autosave |
-| B2 | Prévia em outra origem | **casca implementada e desligada** (19/11/2026, `isolamento-da-previa.md`): rota no studio-runtime sem origens = 404; ligar no app é deploy e decisão dela. Vigia do modo outra origem corrigido |
+| B2 | Prévia em outra origem | **casca ligada em staging** (20/11/2026, decisão dela; produção de fora): o layout raiz dos dois apps entrega a URL ao Estúdio, a lista de origens é secret do Worker de staging, sem COEP na página (o Firefox de mesa isola com ela sem COEP). Sem resposta em 4 s, a prévia volta ao documento direto. Conferência logada em staging pendente |
 | B4 | Estudo do Jogo 2D em Worker | pendente; decisão registrada para o WebKit (nenhum arranjo de iframe isola; Worker exige proxy de DOM) |
 | C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
 | C1 | Perfil de CPU e três desperdícios tirados: a edição com 10 mil blocos foi de 444 ms para 199 ms | **feito** |
 | C5 | Perfil no navegador: o que sobra é a quantidade de nós desenhados (abrir 5 mil blocos leva 18 s; arrastar prende a página) | **feito** (sem placa de vídeo) |
-| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos ~17,2 s → ~14,0 s); não criar os corpos distantes segue pendente |
-| D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente; persistência v4 com homologação em curso (`docs/qa/2026-11-19-studio-v4-homologacao.md`) |
+| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos de 16,7–17,8 s para 13,9–14,0 s, duas amostras por braço, sem artefato bruto versionado); a abertura sem desenhar a cauda distante está em andamento (etapa 3 do plano de 20/11) |
+| D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | pendente (etapas 5 a 11 do plano de 20/11). Persistência v4: a rodada de homologação de 19/11 (`docs/qa/2026-11-19-studio-v4-homologacao.md`) terminou em falha; a revisão de 20/11 corrigiu P2 e mantém P1, P3 e P4 abertos |
 
 ## A1: o que existe e como rodar
 

@@ -3,6 +3,7 @@ import { lerCenaCompilada, type PacoteCompilado } from '@sistemazero/molda-cenar
 import {
   MIME_DO_MANIFESTO,
   PerfilDePublicacaoSchema,
+  type PublicacaoParaOJogo,
   PublicacaoParaOJogoSchema,
 } from '@sistemazero/molda-cenarios-core/publicacao'
 import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
@@ -13,11 +14,46 @@ import {
 
 /** A plataforma autoriza e assina; o jogo confere novamente o inventário antes do runtime.
  * Nenhum rascunho, cookie, chave de armazenamento ou progresso da conta entra no pacote. */
+type PacoteDaPublicacao = { publicacao: PublicacaoParaOJogo; pacote: PacoteCompilado }
+
+/**
+ * Pacotes já baixados e conferidos, pela versão exata (id, versão e hash do manifesto): voltar a
+ * uma ilha não baixa tudo de novo. Guarda as últimas `maximo` versões; o pacote é só leitura
+ * depois de baixado (o carregador copia o que entrega ao three).
+ */
+export function criarMemoriaDePublicacoes(maximo = 3) {
+  const guardados = new Map<string, PacoteDaPublicacao>()
+  return {
+    ler(chave: string) {
+      const v = guardados.get(chave)
+      if (!v) return undefined
+      // A mais usada vai para o fim: sai primeiro a esquecida há mais tempo.
+      guardados.delete(chave)
+      guardados.set(chave, v)
+      return v
+    },
+    guardar(chave: string, v: PacoteDaPublicacao) {
+      guardados.delete(chave)
+      guardados.set(chave, v)
+      while (guardados.size > maximo) guardados.delete(guardados.keys().next().value!)
+    },
+    limpar() {
+      guardados.clear()
+    },
+    get tamanho() {
+      return guardados.size
+    },
+  }
+}
+export type MemoriaDePublicacoes = ReturnType<typeof criarMemoriaDePublicacoes>
+const chaveDaVersao = (p: PublicacaoParaOJogo) => `${p.id}:${p.versao}:${p.manifesto.digest}`
+
 export async function lerCenarioPublicado(
   porta: CenariosPublicadosDoJogo,
   ilha: string,
   sinal: AbortSignal,
   buscar: BuscarArquivoCompilado = fetch,
+  memoria?: MemoriaDePublicacoes,
 ) {
   sinal.throwIfAborted()
   const perfil = PerfilDePublicacaoSchema.parse({ tipo: 'arquipelago-v2', ilha })
@@ -34,6 +70,8 @@ export async function lerCenarioPublicado(
   if (!publicacao) return null
   if (publicacao.perfil.ilha !== perfil.ilha)
     throw Error('O cenário publicado pertence a outra ilha.')
+  const lembrado = memoria?.ler(chaveDaVersao(publicacao))
+  if (lembrado) return lembrado
   type Esperado = { digest: string; bytes: number; mime: string }
   const baixar = async (esperado: Esperado, meta: unknown) => {
     const m = meta as { url?: unknown; bytes?: unknown; tipoDoConteudo?: unknown } | null
@@ -100,8 +138,10 @@ export async function lerCenarioPublicado(
   )
   const arquivos = new Map<string, Uint8Array>()
   for (const a of cena.arquivos) arquivos.set(a.caminho, conteudos.get(a.digest)!)
-  const pacote: PacoteCompilado = { cena, arquivos }
-  return { publicacao, pacote }
+  const pacote: PacoteCompilado = { cena, arquivos },
+    resultado: PacoteDaPublicacao = { publicacao, pacote }
+  memoria?.guardar(chaveDaVersao(publicacao), resultado)
+  return resultado
 }
 
 const POR_LOTE = 100,

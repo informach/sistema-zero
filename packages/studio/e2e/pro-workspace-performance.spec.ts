@@ -1,4 +1,6 @@
+import { execFileSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { build, type PreviewServer, preview } from 'vite'
@@ -159,7 +161,18 @@ test('records real editor input, openings and layout lifecycle with controlled s
     sampleCount,
   )
   expect(errors).toEqual([])
+  // Achado T5 da revisão de 20/11: sem SHA nem data, o artefato podia levar a medição antiga.
+  let commit = process.env.GITHUB_SHA ?? null
+  if (!commit) {
+    try {
+      commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+    } catch {
+      commit = null
+    }
+  }
   const report = {
+    commit,
+    measuredAt: new Date().toISOString(),
     browser: browser.version(),
     fixture: '78-source-files-controlled-remote-runtime',
     limitations: [
@@ -177,9 +190,7 @@ test('records real editor input, openings and layout lifecycle with controlled s
   const output =
     process.env.STUDIO_BROWSER_BENCH_OUTPUT ??
     '../../.audits/studio-pro-evolution/browser-current.json'
-  await mkdir(fileURLToPath(new URL('../../../.audits/studio-pro-evolution/', import.meta.url)), {
-    recursive: true,
-  })
+  await mkdir(dirname(resolve(output)), { recursive: true })
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
   // Laboratory budgets fixed in batch 0. These are not physical-device acceptance.
   expect(openings[0]).toBeLessThan(10_000)

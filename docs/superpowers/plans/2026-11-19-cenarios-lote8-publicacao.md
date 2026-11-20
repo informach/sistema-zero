@@ -32,10 +32,10 @@
 
 **Interfaces:** perfil `arquipelago-v2` com alvos fechados `sua-ilha`, `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens`. Pedido identifica cenário/revisão/digest da fonte, perfil/versão esperada e `operacaoId`. Versão publicada fixa manifesto compilado, recursos, proveniência e autor do servidor; o apontador do perfil muda por CAS.
 
-- [ ] Escrever testes vermelhos: pessoa comum/suporte recusados antes de reservar/publicar; fonte alheia ou privada recusada; revisão/digest vencidos; perfil inválido; recurso ausente/incompatível; pacote inválido e licença restrita sem autorização.
+- [x] Escrever testes vermelhos: pessoa comum/suporte recusados antes de reservar/publicar; fonte alheia ou privada recusada; revisão/digest vencidos; perfil inválido; recurso ausente/incompatível; pacote inválido e licença restrita sem autorização.
 - [x] Testar publicação 1→2, repetição idempotente sem nova versão, mesma operação com outro conteúdo recusada e duas publicações concorrentes com apenas uma troca de perfil.
 - [x] Implementar serviço usando `ExportacaoDeCenariosService.preparar` e autorização existentes. Capturar entrada antes de awaits, revalidar fonte/perfil na transação e não aceitar autor/espaço do navegador.
-- [ ] Testar leitura somente do perfil publicado e referências de versões antigas, sem seleção arbitrária de espaço/biblioteca. Rodar/revisar o contrato e serviço antes da persistência.
+- [x] Testar leitura somente do perfil publicado e referências de versões antigas, sem seleção arbitrária de espaço/biblioteca. Rodar/revisar o contrato e serviço antes da persistência.
 
 ## 2. Persistência, arquivos e PostgreSQL
 
@@ -43,10 +43,10 @@
 
 **Interfaces:** reserva reaproveita `reservarBlobs`, cota e chaves `cenarios/<espaço>/blobs/<digest>`. A confirmação confiável inclui os digests/bytes/MIMEs reais. A transação usa a mesma trava do espaço que lotes/reservas e protege versões e seus recursos.
 
-- [ ] Acrescentar somente tipos compilados necessários; conferir manifesto pelo leitor estrito e todo conteúdo pelo validador compilado existente. Cancelamento, digest/tamanho/Float32/máscara/GLB inválidos impedem publicação completa.
+- [x] Acrescentar somente tipos compilados necessários; conferir manifesto pelo leitor estrito e todo conteúdo pelo validador compilado existente. Cancelamento, digest/tamanho/Float32/máscara/GLB inválidos impedem publicação completa.
 - [x] Gerar schema-only migration pelo script, preservando journal concorrente; revisar FK/índices, imutabilidade e nenhuma remoção de dados da plataforma.
 - [x] Testar PostgreSQL isolado: CAS simultâneo, idempotência, fonte alterada antes da transação, rollback de arquivo ausente e leitura por perfil. Recursos publicados resistem à exclusão da biblioteca/cenário e continuam na cota.
-- [ ] Rodar tipagem/testes/review do repositório e documentação de implantação antes das rotas.
+- [x] Rodar tipagem/testes/review do repositório e documentação de implantação antes das rotas.
 
 ## 3. HTTP, BFF e confirmação na oficina
 
@@ -60,10 +60,10 @@ Preservar a paleta existente: fundo creme/claro `mld-bg`, superfície clara `mld
 
 **Interfaces:** preparar/reservar upload autorizado, confirmar por rota interna HMAC exclusiva do `member-shell`, listar versão do perfil e ler publicação/arquivos vinculados. Para o jogador, o BFF primeiro exige sessão e acesso ao Arquipélago pelo fluxo atual; somente depois consulta a publicação fixa. Não assinar chave fornecida pelo cliente.
 
-- [ ] Testar rotas de equipe sem suporte, JWT que tenta afirmar upload, digest fora da versão, perfil desconhecido, leitura sem acesso ao jogo e tentativas de outro espaço. Preservar políticas Kids/responsável.
-- [ ] Implementar “Publicar no Arquipélago”: compilar revisão salva pelo preparo real, mostrar ilha/revisão/versão e confirmação concreta; enviar recursos, confirmar e mostrar resultado publicado. Alteração/fechamento/troca de perfil durante awaits cancela; falha conserva versão anterior.
-- [ ] Testar host/interface/BFF, operação repetida e dois editores concorrentes. Capturar a confirmação e resultado no estilo atual, com fluxo de produto, sem aprovação adicional de desenvolvimento.
-- [ ] Implementar leitura limitada aos blobs da publicação, sem exposição de biblioteca ou inventário autoral. Autorizar cada pedido e conferir prefixo/digest antes da assinatura.
+- [x] Testar rotas de equipe sem suporte, JWT que tenta afirmar upload, digest fora da versão, perfil desconhecido, leitura sem acesso ao jogo e tentativas de outro espaço. Preservar políticas Kids/responsável.
+- [x] Implementar “Publicar no Arquipélago”: compilar revisão salva pelo preparo real, mostrar ilha/revisão/versão e confirmação concreta; enviar recursos, confirmar e mostrar resultado publicado. Alteração/fechamento/troca de perfil durante awaits cancela; falha conserva versão anterior.
+- [x] Testar host/interface/BFF, operação repetida e dois editores concorrentes. Capturar a confirmação e resultado no estilo atual, com fluxo de produto, sem aprovação adicional de desenvolvimento.
+- [x] Implementar leitura limitada aos blobs da publicação, sem exposição de biblioteca ou inventário autoral. Autorizar cada pedido e conferir prefixo/digest antes da assinatura.
 
 ## 4. Perfil e carregador nativos no Arquipélago
 
@@ -82,17 +82,17 @@ Essas notas não significam consumidor ativo: `cenario-publicado.tsx`, a composi
 
 **Files:** `arquipelago/src/sistemas/perfil-de-cenario.ts`, `mundo/cenario-publicado.tsx`, portas/plataforma e composição macro existentes. Se a integração exigir instalar ambiente/trocar base, extrair o instalador canônico para `motor/runtime` com reexports compatíveis; não duplicar o algoritmo do Studio.
 
-- [ ] Testes vermelhos do perfil: atores/placas/marcos/parâmetros físicos e propriedades desconhecidas, coordenadas da ilha, chegada e vínculo com os sistemas existentes. Nenhum motor novo de NPC, câmera, inventário ou navegação.
-- [ ] Carregar o pacote completo pelos recursos publicados e pelo runtime canônico. Conservar física visual correspondente, setores/LOD e oceano compartilhado; retirar somente a composição substituída. Rapier recebe os triângulos/setores da mesma geometria, sem piso artificial sob recortes.
-- [ ] Conservar base/colisão vigentes durante preparo; trocar atomicamente depois da preparação GPU. Abort/erro/revisão vencida descartam recursos novos. Uma ilha sem publicação usa o código existente; erro real permanece explícito.
-- [ ] Preservar posição/retomada local com identidade da versão de ensaio e ponto seguro; não migrar coordenadas do mundo compacto nem tocar dados compartilhados da plataforma.
-- [ ] Percorrer `/macro` com personagem e controlador reais: caminhar/correr, ponte, água/nado, câmera, pulo, pausa, toque, retomada, descarregamento/reentrada e versão publicada 1→2. Medir recursos; não aprovar arte/IK/aparelhos físicos por contadores.
+- [x] Testes vermelhos do perfil: atores/placas/marcos/parâmetros físicos e propriedades desconhecidas, coordenadas da ilha, chegada e vínculo com os sistemas existentes. Nenhum motor novo de NPC, câmera, inventário ou navegação.
+- [x] Carregar o pacote completo pelos recursos publicados e pelo runtime canônico. Conservar física visual correspondente, setores/LOD e oceano compartilhado; retirar somente a composição substituída. Rapier recebe os triângulos/setores da mesma geometria, sem piso artificial sob recortes.
+- [x] Conservar base/colisão vigentes durante preparo; trocar atomicamente depois da preparação GPU. Abort/erro/revisão vencida descartam recursos novos. Uma ilha sem publicação usa o código existente; erro real permanece explícito.
+- [x] Preservar posição/retomada local com identidade da versão de ensaio e ponto seguro; não migrar coordenadas do mundo compacto nem tocar dados compartilhados da plataforma.
+- [x] Percorrer `/macro` com personagem e controlador reais: caminhar/correr, ponte, água/nado, câmera, pulo, pausa, toque, retomada, descarregamento/reentrada e versão publicada 1→2. Medir recursos; não aprovar arte/IK/aparelhos físicos por contadores.
 
 ## 5. Fechamento de 8.5
 
-- [ ] Regressão integrada de núcleo/motor/Members/BFF/gateway/oficina/Arquipélago pertinentes, PostgreSQL e builds/tipagem. Se houver extração compartilhada, repetir consumidores afetados e geradores sem elevar limites.
-- [ ] Capturas/vídeos e publicação de ensaio separada, sem bytes pagos no Git; relatório de implementado/corrigido/provisório/limites reais.
-- [ ] Review linha a linha, commit/push em staging. Somente depois fechar este recorte e iniciar 8.6. Lotes 9–10, composição final da Faísca, full review/CI e implantação/validação real permanecem no encerramento global.
+- [x] Regressão integrada de núcleo/motor/Members/BFF/gateway/oficina/Arquipélago pertinentes, PostgreSQL e builds/tipagem. Se houver extração compartilhada, repetir consumidores afetados e geradores sem elevar limites.
+- [x] Capturas/vídeos e publicação de ensaio separada, sem bytes pagos no Git; relatório de implementado/corrigido/provisório/limites reais. Feito em 20/11: capturas da prova em `output/cenarios-reforma/lote8-publicacao/macro-prova` (fora do Git) e publicação de ensaio separada em `macro-qa-12`; o relatório final vai no encerramento global.
+- [x] Review linha a linha, commit/push em staging. Somente depois fechar este recorte e iniciar 8.6. Lotes 9–10, composição final da Faísca, full review/CI e implantação/validação real permanecem no encerramento global.
 
 ## Revisão do plano
 

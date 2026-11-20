@@ -49,9 +49,16 @@ export default defineConfig({
       testMatch: [
         /preview-security\.spec\.ts/,
         /preview-executes-user-code\.spec\.ts/,
-        /preview-shell(?:-performance)?\.spec\.ts/,
+        /preview-shell(?:-performance|-hostile)?\.spec\.ts/,
       ],
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        // O Firefox do Playwright vem com `fission.webContentIsolationStrategy = 0` (iframes de
+        // outro site no MESMO processo da página); o Firefox de mesa usa 1 (isolar todo site).
+        // Sem devolver o 1, o ensaio media o navegador de teste e não o das famílias: foi assim
+        // que a casca pareceu exigir COEP no host (docs/qa/2026-11-20-studio-firefox-site-isolation.md).
+        launchOptions: { firefoxUserPrefs: { 'fission.webContentIsolationStrategy': 1 } },
+      },
     },
     {
       name: 'webkit',

@@ -2,6 +2,7 @@ import type { Companhia } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef } from 'react'
 import { lojaDoBicho, PAINEL_DO_BICHO, useBicho } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
+import { aguaCobertaEm } from '../sistemas/agua'
 import {
   CUIDADO,
   EMOJI_DO_BICHO,
@@ -67,9 +68,11 @@ export function PainelDoBicho() {
   const nome = adotado.nome
   const nomes = { adotado: nome, pet, filhote: nomeDoFilhote }
   const pertoDaAgua = movimento.aguas.some((a) =>
-    a.consultaNivel
-      ? a.consultaNivel(rastro.x, rastro.z, PERTO_DA_AGUA) !== null
-      : Math.hypot(rastro.x - a.x, rastro.z - a.z) < Math.max(a.raioX, a.raioZ) + PERTO_DA_AGUA,
+    aguaCobertaEm(movimento.aguas, a, rastro.x, rastro.z)
+      ? false
+      : a.consultaNivel
+        ? a.consultaNivel(rastro.x, rastro.z, PERTO_DA_AGUA) !== null
+        : Math.hypot(rastro.x - a.x, rastro.z - a.z) < Math.max(a.raioX, a.raioZ) + PERTO_DA_AGUA,
   )
   const podeBanho = dentroDeCasa || pertoDaAgua
   const fechar = () => loja.getState().abrirPainel(null)

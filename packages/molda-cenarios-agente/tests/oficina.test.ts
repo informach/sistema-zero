@@ -1,187 +1,208 @@
 import { expect, test } from 'bun:test'
-import { resolve } from 'node:path'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
-import { criarClienteDaOficina, RecusaDaOficina } from '../src/oficina/cliente'
-import { chamarFerramenta, FERRAMENTAS } from '../src/oficina/mcp'
+import { criarHostEmMemoria } from '@sistemazero/molda-cenarios/oficina/host-memoria'
+import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
+import { criarClienteDaOficina } from '../src/oficina/cliente'
+import { criarContexto, executarFerramenta, FERRAMENTAS } from '../src/oficina/ferramentas'
+import { CenarioMudou, criarIntencoes } from '../src/oficina/intencoes'
+import { listarFerramentas } from '../src/oficina/mcp'
 
-const CENARIO = '44444444-4444-4444-8444-444444444444'
-const ESPACO = '11111111-1111-4111-8111-111111111111'
-const BIBLIOTECA = '33333333-3333-4333-8333-333333333333'
-
-interface Pedido {
-  metodo: string
-  caminho: string
-  token: string | null
-  corpo: unknown
-}
-
-/** Uma plataforma de mentira: login, renovação e as rotas da oficina. */
-function plataforma(opcoes: { vencerPrimeiroToken?: boolean } = {}) {
-  const pedidos: Pedido[] = []
-  let emitidos = 0
-  const buscar = async (endereco: string, init: RequestInit): Promise<Response> => {
-    const url = new URL(endereco)
-    const corpo = typeof init.body === 'string' ? JSON.parse(init.body) : undefined
-    const token = new Headers(init.headers).get('authorization')?.replace('Bearer ', '') ?? null
-    pedidos.push({ metodo: init.method ?? 'GET', caminho: url.pathname + url.search, token, corpo })
-    if (url.pathname === '/auth/login') {
-      if (corpo.password !== 'senha-certa') return Response.json({}, { status: 401 })
-      emitidos++
-      return Response.json({
-        tokens: { accessToken: `acesso-${emitidos}`, refreshToken: 'renova-1' },
-      })
-    }
-    if (url.pathname === '/auth/refresh') {
-      emitidos++
-      return Response.json({
-        tokens: { accessToken: `acesso-${emitidos}`, refreshToken: 'renova-2' },
-      })
-    }
-    if (opcoes.vencerPrimeiroToken && token === 'acesso-1')
-      return Response.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
-    if (url.pathname.endsWith('/lotes') && corpo.revisaoEsperada !== 3)
-      return Response.json(
-        {
-          error: { code: 'CENARIO_DESATUALIZADO', message: 'O cenário mudou em outro lugar' },
-          details: { revisaoAtual: 3 },
-        },
-        { status: 409 },
-      )
-    if (url.pathname.endsWith('/lotes')) return Response.json({ revisao: 4 })
-    return Response.json([])
-  }
-  return { buscar, pedidos }
-}
-
-const acesso = { url: 'http://127.0.0.1:9', email: 'equipe@exemplo.com', senha: 'senha-certa' }
-
-test('o cliente recusa HTTP remoto, URL com credenciais e acesso sem token nem senha', () => {
-  expect(() => criarClienteDaOficina({ url: 'http://example.com', token: 'x' })).toThrow('HTTPS')
-  expect(() => criarClienteDaOficina({ url: 'https://u:p@example.com', token: 'x' })).toThrow('URL')
-  expect(() => criarClienteDaOficina({ url: 'http://127.0.0.1' })).toThrow('token de acesso')
-  expect(() => criarClienteDaOficina({ url: 'http://127.0.0.1', email: 'a@b.c' })).toThrow(
-    'token de acesso',
+test('o cliente recusa endereço inseguro e e-mail sem o gateway para entrar', () => {
+  expect(() => criarClienteDaOficina({ app: 'http://example.com', token: 'x' })).toThrow('HTTPS')
+  expect(() => criarClienteDaOficina({ app: 'https://u:p@example.com', token: 'x' })).toThrow(
+    'inválido',
   )
+  expect(() => criarClienteDaOficina({ app: 'https://app.example.com' })).toThrow('token')
+  expect(() =>
+    criarClienteDaOficina({ app: 'https://app.example.com', email: 'a@b.c', senha: 'x' }),
+  ).toThrow('gateway')
 })
 
-test('entra uma vez, fala nas rotas da oficina e renova quando o acesso vence', async () => {
-  const { buscar, pedidos } = plataforma({ vencerPrimeiroToken: true })
-  const cliente = criarClienteDaOficina(acesso, buscar)
-  // Dois pedidos juntos dividem o mesmo login.
-  await Promise.all([cliente.espacos(), cliente.mundos(ESPACO)])
-  expect(pedidos.filter((p) => p.caminho === '/auth/login')).toHaveLength(1)
-  // O primeiro token venceu: renova (sem mandar a senha de novo) e repete o pedido.
-  expect(pedidos.some((p) => p.caminho === '/auth/refresh')).toBe(true)
-  const ultimo = pedidos.at(-1)!
-  expect(ultimo.caminho).toMatch(/^\/members\/cenarios\//)
-  expect(ultimo.token).not.toBe('acesso-1')
-  await cliente.modelos(BIBLIOTECA, { busca: ' árvore ', limite: 20 })
-  expect(pedidos.at(-1)).toMatchObject({
-    metodo: 'GET',
-    caminho: `/members/cenarios/bibliotecas/${BIBLIOTECA}/modelos?busca=%C3%A1rvore&limite=20`,
-  })
-})
-
-test('senha errada e token vencido sem senha dizem o que fazer', async () => {
-  const errada = criarClienteDaOficina({ ...acesso, senha: 'outra' }, plataforma().buscar)
-  await expect(errada.espacos()).rejects.toThrow('Não consegui entrar')
-  const { buscar } = plataforma({ vencerPrimeiroToken: true })
-  const soToken = criarClienteDaOficina({ url: acesso.url, token: 'acesso-1' }, buscar)
-  await expect(soToken.espacos()).rejects.toThrow('O token de acesso venceu')
-})
-
-test('editar manda o lote como a edição à mão; comando inválido nem sai da máquina', async () => {
-  const { buscar, pedidos } = plataforma()
-  const cliente = criarClienteDaOficina(acesso, buscar)
-  const comandos = [{ tipo: 'cenario.renomear' as const, nome: 'Praia do Farol' }]
-  expect(await cliente.editar(CENARIO, 3, comandos, 'operacao-0001')).toEqual({ revisao: 4 })
-  expect(pedidos.at(-1)).toMatchObject({
-    metodo: 'POST',
-    caminho: `/members/cenarios/cenarios/${CENARIO}/lotes`,
-    corpo: { revisaoEsperada: 3, comandos, operacaoId: 'operacao-0001' },
-  })
-  const antes = pedidos.length
-  await expect(
-    cliente.editar(CENARIO, 3, [{ tipo: 'eval', codigo: 'qualquer coisa' } as never]),
-  ).rejects.toThrow()
-  await expect(cliente.cenario('../admin')).rejects.toThrow()
-  expect(pedidos.length).toBe(antes)
-
-  const recusa = await cliente.editar(CENARIO, 2, comandos).catch((e: unknown) => e)
-  expect(recusa).toBeInstanceOf(RecusaDaOficina)
-  expect(recusa).toMatchObject({ codigo: 'CENARIO_DESATUALIZADO', detalhes: { revisaoAtual: 3 } })
-})
-
-test('as ferramentas conferem a entrada antes do serviço e devolvem a revisão atual na recusa', async () => {
-  const { buscar, pedidos } = plataforma()
-  const cliente = criarClienteDaOficina(acesso, buscar)
-  const invalido = await chamarFerramenta(cliente, 'editar_cenario', {
-    cenarioId: 'incorreto',
-    revisaoEsperada: 0,
-    comandos: [{ tipo: 'eval' }],
-  })
-  expect(invalido.isError).toBe(true)
-  expect(pedidos).toEqual([])
-  expect((await chamarFerramenta(cliente, 'apagar_tudo', {})).isError).toBe(true)
-
-  const atrasado = await chamarFerramenta(cliente, 'editar_cenario', {
-    cenarioId: CENARIO,
-    revisaoEsperada: 1,
-    comandos: [{ tipo: 'cenario.renomear', nome: 'Praia' }],
-  })
-  expect(atrasado.isError).toBe(true)
-  expect(JSON.parse((atrasado.content[0] as { text: string }).text)).toMatchObject({
-    codigo: 'CENARIO_DESATUALIZADO',
-    revisaoAtual: 3,
-  })
-  const feito = await chamarFerramenta(cliente, 'editar_cenario', {
-    cenarioId: CENARIO,
-    revisaoEsperada: 3,
-    comandos: [{ tipo: 'cenario.renomear', nome: 'Praia' }],
-  })
-  expect(feito.isError).not.toBe(true)
-  // Nenhuma ferramenta apaga: apagar mundo, cenário ou biblioteca fica com a pessoa, na tela.
-  expect(FERRAMENTAS.map((f) => f.name).filter((n) => /apagar|remover|excluir/.test(n))).toEqual([])
-})
-
-test('MCP de verdade por stdio publica as ferramentas e os comandos do documento', async () => {
-  let chamadas = 0
-  const http = Bun.serve({
-    hostname: '127.0.0.1',
-    port: 0,
-    fetch(r) {
-      if (r.headers.get('authorization') !== 'Bearer qa-local')
-        return new Response(null, { status: 401 })
-      chamadas++
-      return Response.json([])
-    },
-  })
-  const transporte = new StdioClientTransport({
-    command: process.execPath,
-    args: ['--no-env-file', resolve(import.meta.dir, '../src/oficina/mcp.ts')],
-    env: {
-      ...Object.fromEntries(
-        Object.entries(process.env).filter((e): e is [string, string] => typeof e[1] === 'string'),
-      ),
-      MOLDA_CENARIOS_URL: `http://127.0.0.1:${http.port}`,
-      MOLDA_CENARIOS_TOKEN: 'qa-local',
-    },
-    stderr: 'pipe',
-  })
-  const cliente = new Client({ name: 'qa-cenarios', version: '1.0.0' })
-  try {
-    await cliente.connect(transporte)
-    const lista = await cliente.listTools()
-    expect(lista.tools.map((t) => t.name).sort()).toEqual(FERRAMENTAS.map((f) => f.name).sort())
-    // O agente enxerga o formato de cada comando no próprio contrato da ferramenta.
-    const editar = lista.tools.find((t) => t.name === 'editar_cenario')
-    expect(JSON.stringify(editar?.inputSchema)).toContain('instancia.criar')
-    const r = await cliente.callTool({ name: 'listar_espacos', arguments: {} })
-    expect(r.isError).not.toBe(true)
-    expect(chamadas).toBe(1)
-  } finally {
-    await cliente.close()
-    http.stop(true)
+test('o token vai no cabeçalho do app, renova uma vez num 401 e nunca vai ao armazenamento', async () => {
+  const pedidos: Array<{ url: string; autorizacao: string | null }> = []
+  let entradas = 0
+  const buscar = async (url: string, opcoes: RequestInit = {}) => {
+    const autorizacao = new Headers(opcoes.headers).get('authorization')
+    pedidos.push({ url, autorizacao })
+    if (url === 'https://gw.example.com/auth/login') {
+      entradas++
+      return Response.json({ tokens: { accessToken: 'novo-token-de-acesso', refreshToken: 'r' } })
+    }
+    if (url.startsWith('https://r2.example.com/')) return new Response(new Uint8Array([1, 2]))
+    if (url.endsWith('/api/cenarios/espacos'))
+      return autorizacao === 'Bearer novo-token-de-acesso'
+        ? Response.json([{ id: 'e1', tipo: 'conta', usadoBytes: 0, limiteBytes: 1 }])
+        : Response.json({ error: { code: 'UNAUTHENTICATED' } }, { status: 401 })
+    return new Response(null, { status: 404 })
   }
-}, 20000)
+  const { host } = criarClienteDaOficina(
+    {
+      app: 'https://app.example.com/',
+      gateway: 'https://gw.example.com',
+      token: 'token-vencido-123456',
+      email: 'equipe@example.com',
+      senha: 'segredo',
+    },
+    buscar,
+  )
+  expect(await host.espacos()).toEqual([
+    { id: 'e1', tipo: 'conta', usadoBytes: 0, limiteBytes: 1, nome: 'Meu espaço' },
+  ])
+  expect(entradas).toBe(1)
+  expect(pedidos.map((p) => [p.url, p.autorizacao])).toEqual([
+    ['https://app.example.com/api/cenarios/espacos', 'Bearer token-vencido-123456'],
+    ['https://gw.example.com/auth/login', null],
+    ['https://app.example.com/api/cenarios/espacos', 'Bearer novo-token-de-acesso'],
+  ])
+})
+
+/** O pedido de prova, sem servidor: ilha, lago, farol, trilha até ele e árvores em volta. */
+async function ilhaNoHostEmMemoria() {
+  const host = criarHostEmMemoria({ equipe: true })
+  const biblioteca = await host.criarBiblioteca('conta', {
+    nome: 'Natureza',
+    licenca: 'propria',
+  })
+  const modelo = async (nome: string, max: [number, number, number]) => {
+    const conteudo = new TextEncoder().encode(`glb de ensaio: ${nome}`)
+    const [m] = await host.importarModelos(biblioteca.id, [
+      {
+        nome,
+        pasta: '',
+        etiquetas: [],
+        conteudo,
+        digest: await digestDosBytes(conteudo),
+        miniatura: new Blob([new Uint8Array([1])], { type: 'image/webp' }),
+        min: [-max[0] / 2, 0, -max[2] / 2],
+        max: [max[0] / 2, max[1], max[2] / 2],
+        triangulos: 120,
+      },
+    ])
+    return { bibliotecaId: biblioteca.id, modeloId: m!.id, digest: m!.digest }
+  }
+  const farol = await modelo('Farol', [3, 9, 3]),
+    arvore = await modelo('Árvore', [2, 5, 2])
+  const mundo = await host.criarMundo('conta', 'Ilha do agente')
+  await host.editarMundo(mundo.id, { bibliotecas: [biblioteca.id] })
+  const cenario = await host.criarCenario(mundo.id, 'Ilha')
+  return { host, cenario, farol, arvore }
+}
+
+test('cada intenção é um lote só, um passo de desfazer, e a ilha fica como pedida', async () => {
+  const { host, cenario, farol, arvore } = await ilhaNoHostEmMemoria()
+  const a = criarIntencoes(host)
+  const id = cenario.id
+  const passos = async () => (await host.abrirCenario(id)).historico.desfazer
+
+  await a.gerarTerreno(id, { tipo: 'ilha', altura: 14, semente: 7 })
+  expect(await passos()).toBe(1)
+  const [centro] = await a.consultarPontos(id, [{ x: 0, z: 0 }])
+  expect(centro!.chao).toBe(true)
+  expect(centro!.altura!).toBeGreaterThan(5)
+
+  // Uma bacia cavada na encosta e o lago enchendo nela, abaixo da borda.
+  const bacia = { x: -12, z: -8 }
+  const [borda] = await a.consultarPontos(id, [{ x: -12, z: -1 }])
+  await a.esculpirTerreno(id, {
+    parametros: { ferramenta: 'abaixar', raio: 6, forca: 1, metros: 4 },
+    pontos: [bacia],
+  })
+  expect(await passos()).toBe(2)
+  const [fundo] = await a.consultarPontos(id, [bacia])
+  expect(fundo!.altura!).toBeLessThan(borda!.altura!)
+  const lago = await a.encherAgua(id, {
+    nome: 'Lago',
+    intencao: { tipo: 'lago', ponto: bacia, nivel: fundo!.altura! + 1 },
+  })
+  expect(lago.criados).toHaveLength(1)
+  expect(await passos()).toBe(3)
+  const [noLago, noCentro] = await a.consultarPontos(id, [bacia, { x: 0, z: 0 }])
+  expect(noLago!.agua?.id).toBe(lago.criados[0])
+  expect(noCentro!.agua).toBeNull()
+
+  const posto = await a.colocarModelo(id, { ...farol, x: 25, z: 0 })
+  expect(await passos()).toBe(4)
+  const trilha = await a.tracarCaminho(id, {
+    caminho: {
+      tipo: 'trilha',
+      nome: 'Trilha do farol',
+      pontos: [
+        { x: 8, z: 8 },
+        { x: 18, z: 4 },
+        { x: 25, z: 2 },
+      ],
+      largura: 2,
+      acabamento: null,
+    },
+  })
+  expect(await passos()).toBe(5)
+
+  const arvores = await a.espalhar(id, {
+    modelos: [arvore],
+    centro: { x: 0, z: 0 },
+    raio: 40,
+    densidade: 1,
+    afastamento: 4,
+    limite: 30,
+    semente: 11,
+  })
+  expect(arvores.criados.length).toBeGreaterThan(0)
+  expect(await passos()).toBe(6)
+
+  // Nenhuma árvore dentro do lago, e a região em volta do farol mostra o farol e a trilha.
+  const doc = (await host.abrirCenario(id)).documento
+  const posicoes = doc.instancias
+    .filter((o) => arvores.criados.includes(o.id))
+    .map((o) => o.transformacao.posicao)
+  const naAgua = await a.consultarPontos(id, posicoes)
+  expect(naAgua.every((p) => p.agua === null)).toBe(true)
+  const regiao = await a.consultarRegiao(id, { x0: 20, z0: -5, x1: 30, z1: 5 })
+  expect(regiao.objetos.map((o) => o.id)).toContain(posto.criados[0])
+  expect(regiao.caminhos.map((c) => c.id)).toContain(trilha.criados[0])
+
+  // Desfazer volta um passo por vez: as árvores saem, o resto fica.
+  const depois = await a.moverHistorico(id, 'desfazer')
+  expect(depois.desfazer).toBe(5)
+  const semArvores = (await host.abrirCenario(id)).documento
+  expect(semArvores.instancias.some((o) => arvores.criados.includes(o.id))).toBe(false)
+  expect(semArvores.instancias.some((o) => o.id === posto.criados[0])).toBe(true)
+})
+
+test('com a revisão esperada vencida nada é gravado; validar não grava', async () => {
+  const { host, cenario } = await ilhaNoHostEmMemoria()
+  const a = criarIntencoes(host)
+  const antes = (await host.abrirCenario(cenario.id)).revisao
+  await a.gerarTerreno(cenario.id, { tipo: 'plano', altura: 2 })
+  await expect(
+    a.gerarTerreno(cenario.id, { tipo: 'plano', altura: 3 }, { revisaoEsperada: antes }),
+  ).rejects.toBeInstanceOf(CenarioMudou)
+  const v = await a.validarLote(cenario.id, [{ tipo: 'cenario.renomear', nome: 'Outra' }])
+  expect(v.valido).toBe(true)
+  expect((await host.abrirCenario(cenario.id)).resumo.nome).toBe('Ilha')
+  const ruim = await a.validarLote(cenario.id, [{ tipo: 'instancia.remover', id: 'nao-existe' }])
+  expect(ruim.valido).toBe(false)
+})
+
+test('as ferramentas publicam um JSON Schema válido e conferem a entrada antes do serviço', async () => {
+  const lista = listarFerramentas()
+  expect(lista.map((f) => f.name)).toEqual(FERRAMENTAS.map((f) => f.name))
+  for (const f of lista) expect(f.inputSchema.type).toBe('object')
+  let chamou = false
+  const memoria = criarHostEmMemoria()
+  const contexto = criarContexto({
+    ...memoria,
+    abrirCenario: (id: string) => {
+      chamou = true
+      return memoria.abrirCenario(id)
+    },
+  })
+  const r = await executarFerramenta(contexto, 'gerar_terreno', {
+    cenarioId: 'nao-e-uuid',
+    receita: { tipo: 'ilha' },
+  })
+  expect(r.ok).toBe(false)
+  expect(chamou).toBe(false)
+  expect(await executarFerramenta(contexto, 'nao-existe', {})).toEqual({
+    ok: false,
+    erro: { erro: 'Ferramenta desconhecida' },
+  })
+})

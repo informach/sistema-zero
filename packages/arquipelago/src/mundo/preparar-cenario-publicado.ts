@@ -1,6 +1,6 @@
 import { carregarCenaNoThree } from '@sistemazero/molda-cenarios-motor/runtime'
 import { Box3, Vector3 } from 'three'
-import { prepararColisaoDoCenario } from '../sistemas/colisao-do-cenario'
+import { entidadesSoDoCorpo, prepararColisaoDoCenario } from '../sistemas/colisao-do-cenario'
 import { CORPO } from '../sistemas/corpo'
 import { prepararFisicaNativa, transformacaoNativa } from '../sistemas/fisica-nativa-do-cenario'
 import type { lerCenarioPublicado } from '../sistemas/ler-cenario-publicado'
@@ -74,9 +74,14 @@ export async function prepararCenarioPublicado(
         throw Error('A Íris precisa de escala uniforme para acompanhar seu colisor nativo.')
       return { id: a.entidade, ator, ...t }
     })
+    // Folhagem e peças finas seguram só o corpo; a câmera passa por elas (a régua das ilhas).
+    const soDoCorpo = entidadesSoDoCorpo(vista.dados.colisoes)
     const prepararColisao = (ponto: { x: number; z: number }) =>
-      prepararColisaoDoCenario(vista.colisoes, ponto, (t) =>
-        regiao.contem((t.a.x + t.b.x + t.c.x) / 3, (t.a.z + t.b.z + t.c.z) / 3),
+      prepararColisaoDoCenario(
+        vista.colisoes,
+        ponto,
+        (t) => regiao.contem((t.a.x + t.b.x + t.c.x) / 3, (t.a.z + t.b.z + t.c.z) / 3),
+        (t) => t.objeto !== undefined && soDoCorpo.has(t.objeto),
       )
     let colisao = prepararColisao(foco)
     recorte = restringirCenarioARegiao(

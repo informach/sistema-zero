@@ -132,7 +132,7 @@ jobs:
       - name: Reference diagnostics and scoped-name measurement
         working-directory: packages/studio
         run: |
-          bun scripts/reference-diagnostics-golden.ts > .cache/mission/reference-diagnostics.json
+          bun scripts/reference-diagnostics-golden.ts --check > .cache/mission/reference-diagnostics.json
           bun scripts/profile-reference-scopes.ts > .cache/mission/reference-scopes.json
       - name: Modular Pro language-service baseline
         working-directory: packages/studio
@@ -211,11 +211,13 @@ jobs:
         working-directory: packages/studio
         env:
           CI: '1'
+          # A medição do Pro vai para a pasta do artefato desta rodada (com SHA e data dentro).
+          STUDIO_BROWSER_BENCH_OUTPUT: .cache/mission/pro-browser-current.json
         run: |
           set -o pipefail
           mkdir -p .cache/mission
           if [ '${{ runner.os }}' = 'Windows' ]; then
-            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts e2e/preview-resource-transition.spec.ts e2e/preview-shell.spec.ts e2e/preview-shell-performance.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
+            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts e2e/preview-resource-transition.spec.ts e2e/preview-shell.spec.ts e2e/preview-shell-performance.spec.ts e2e/preview-shell-hostile.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           else
             bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
           fi
@@ -280,7 +282,6 @@ jobs:
             packages/studio/.cache/pinta-minimap-results
             packages/studio/.cache/pinta-integration-results
             packages/studio/.cache/pinta-world-proof-results
-            .audits/studio-pro-evolution/browser-current.json
           retention-days: 14
 
   isolation-measurement:
@@ -305,6 +306,19 @@ jobs:
         run: |
           mkdir -p .cache/mission
           node scripts/measure-preview-isolation.mjs --json > .cache/mission/isolation.json
+      # O Firefox do Playwright desliga os iframes em outro processo; o de mesa isola por site. Com a
+      # preferência do navegador de verdade, a casca precisa isolar com qualquer cabeçalho do host
+      # (a aula fica sem COEP por causa dos vídeos): docs/qa/2026-11-20-studio-firefox-site-isolation.md.
+      - name: Firefox with desktop site isolation (the shell must isolate under every host policy)
+        working-directory: packages/studio
+        env:
+          SZ_MEASURE_BROWSERS: firefox
+          SZ_MEASURE_FIREFOX_SITE_ISOLATION: '1'
+          SZ_MEASURE_HOST_POLICY_SPLIT: '1'
+          SZ_MEASURE_ARRANGEMENTS: srcdoc,outro-site
+        run: |
+          node scripts/measure-preview-isolation.mjs --json > .cache/mission/isolation-firefox-site.json
+          node scripts/check-shell-isolation.mjs .cache/mission/isolation-firefox-site.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -12,8 +12,9 @@
     "mcp:piloto": "bun src/mcp.ts"
   },
   "dependencies": {
-    "@sistemazero/molda-cenarios-core": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@sistemazero/molda-cenarios": "workspace:*",
+    "@sistemazero/molda-cenarios-core": "workspace:*",
     "zod": "4.3.6"
   },
   "devDependencies": {

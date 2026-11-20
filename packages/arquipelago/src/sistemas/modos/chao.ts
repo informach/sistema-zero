@@ -1,4 +1,4 @@
-import { dentroDaAgua, discoTocaAgua } from '../agua'
+import { aguaCobertaEm, dentroDaAgua, discoTocaAgua } from '../agua'
 import { empurraoDasAreas } from '../cinza-quente'
 import { CORPO } from '../corpo'
 import { correnteza } from '../correnteza'
@@ -33,7 +33,10 @@ const BOIAR = { rapidez: 3, suavidade: 0.15 } as const
  * completas têm fundo na colisão, então a mesma regra vale nos dois).
  */
 export function superficieDaAgua(
-  aguas: readonly (Parameters<typeof dentroDaAgua>[0] & { y: number })[],
+  aguas: readonly (Parameters<typeof dentroDaAgua>[0] & {
+    y: number
+    cobre?: (x: number, z: number) => boolean
+  })[],
   nivelDoMar: number,
   x: number,
   z: number,
@@ -41,7 +44,8 @@ export function superficieDaAgua(
 ): number {
   let superficie = nivelDoMar
   for (const a of aguas)
-    if (a.consultaNivel) {
+    if (aguaCobertaEm(aguas, a, x, z)) continue
+    else if (a.consultaNivel) {
       const nivel = a.consultaNivel(x, z, raio)
       if (nivel !== null) superficie = Math.max(superficie, nivel)
     } else if (raio > 0 ? discoTocaAgua(a, x, z, raio) : dentroDaAgua(a, x, z))

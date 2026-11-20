@@ -44,6 +44,11 @@ const context = await browser.newContext({ viewport: { width: 1280, height: 800 
   erros = [],
   evidencias = []
 page.on('pageerror', (e) => erros.push(e.message))
+// Arquivos do pacote baixados (o perfil, pequeno, não conta): voltar à ilha não baixa de novo.
+let arquivosBaixados = 0
+page.on('request', (r) => {
+  if (/\/api\/cenarios\/jogo\/publicacoes\/[^/]+\/arquivos\//.test(r.url())) arquivosBaixados++
+})
 const anotar = (caso, dados) => {
   evidencias.push({ caso, ...dados })
   console.log(JSON.stringify(evidencias.at(-1)))
@@ -250,7 +255,8 @@ try {
       .getByRole('button', { name: 'Chegada do Bosque', exact: true })
       .waitFor({ timeout: 180000 })
   }
-  const ciclos = []
+  const ciclos = [],
+    baixadosAntesDosCiclos = arquivosBaixados
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: 'Chegada do Bosque', exact: true }).click()
     await esperarPublicacao(null, 120000)
@@ -261,6 +267,12 @@ try {
     await page.waitForTimeout(3000)
     const perto = await dados(),
       onde = await posicao()
+    // A Faísca continua carregada na outra vaga: voltar não baixa nenhum arquivo.
+    assert.equal(
+      arquivosBaixados,
+      baixadosAntesDosCiclos,
+      'Voltar à ilha publicada não baixa o pacote de novo',
+    )
     // Voltar não leva ao ponto guardado antes: a chegada é a do "Ir" (a Vila).
     assert.ok(
       Math.hypot(onde.x - seguro.x, onde.z - seguro.z) > 5,
@@ -271,6 +283,7 @@ try {
       geometrias: [longe.Geometrias, perto.Geometrias],
       texturas: [longe.Texturas, perto.Texturas],
       onde,
+      arquivosBaixados: arquivosBaixados - baixadosAntesDosCiclos,
     })
   }
   assert.ok(
@@ -285,6 +298,7 @@ try {
 
   // Versão 2: o perfil da ilha passa a apontar para ela; sair e voltar instala a nova.
   copyFileSync(perfilV2, perfil)
+  const baixadosAntesDaV2 = arquivosBaixados
   await page.getByRole('button', { name: 'Chegada do Bosque', exact: true }).click()
   await esperarPublicacao(null, 120000)
   await page.waitForTimeout(1500)
@@ -292,7 +306,12 @@ try {
   await esperarPublicacao('sua-ilha:2')
   await page.waitForTimeout(3000)
   await page.screenshot({ path: resolve(saida, 'v2-chegada.png') })
-  anotar('Troca para a versão 2', { publicacao: await publicacao(), dados: await dados() })
+  assert.ok(arquivosBaixados > baixadosAntesDaV2, 'A versão nova baixa os arquivos dela')
+  anotar('Troca para a versão 2', {
+    publicacao: await publicacao(),
+    dados: await dados(),
+    arquivosBaixados: arquivosBaixados - baixadosAntesDaV2,
+  })
   await semErroNaTela()
 
   assert.deepEqual(erros, [], erros.join('\n'))

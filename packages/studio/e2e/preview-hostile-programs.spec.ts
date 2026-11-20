@@ -127,15 +127,22 @@ test.describe('programas hostis na prévia', () => {
     await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 15_000 })
     const id = decodeURIComponent(new URL(page.url()).pathname.replace('/editor/', ''))
     const chave = `sz:run-tripwire:${id}`
-    // Mesmo depois dos primeiros batimentos, um travamento tardio precisa deixar a marca.
+    // Mesmo depois dos primeiros batimentos, um travamento tardio precisa deixar a marca (a da
+    // aba, `<chave>#<aba>`, renovada enquanto o jogo roda).
     await page.waitForTimeout(3500)
-    expect(await page.evaluate((k) => window.localStorage.getItem(k), chave)).not.toBeNull()
+    expect(
+      await page.evaluate(
+        (k) => Object.keys(window.localStorage).filter((key) => key.startsWith(`${k}#`)).length,
+        chave,
+      ),
+    ).toBe(1)
 
     // Recarregar com a página viva não deixa marca: a prévia roda sozinha, como sempre.
     await page.reload()
     await expect(corpoDoJogo(page)).toHaveAttribute('data-voltou', 'sim', { timeout: 20_000 })
 
-    // A marca de uma aba que congelou: na abertura seguinte a prévia fica parada.
+    // A marca de uma aba que congelou (aqui no formato sem dono, que conta como parada): na
+    // abertura seguinte a prévia fica parada.
     await page.evaluate((k) => window.localStorage.setItem(k, String(Date.now())), chave)
     await page.addInitScript((k) => {
       if (!window.sessionStorage.getItem('marca-posta')) {

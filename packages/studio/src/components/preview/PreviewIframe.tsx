@@ -1,5 +1,6 @@
 import {
   CLASSIC_SHELL_LOAD,
+  classicShellLoadedSeq,
   isClassicShellLoaded,
   isClassicShellReady,
 } from '@sistemazero/core/studio/classic-shell'
@@ -62,7 +63,12 @@ import {
   type PreviewBudgetInput,
   shouldPausePreviewRender,
 } from './previewBudget'
-import { armRunTripwire, disarmRunTripwire, wasRunInterrupted } from './runTripwire'
+import {
+  armRunTripwire,
+  disarmRunTripwire,
+  forgetInterruptedRuns,
+  wasRunInterrupted,
+} from './runTripwire'
 import {
   projectUsesKeyboardControls,
   useTouchInput,
@@ -194,11 +200,15 @@ export function PreviewIframe(): JSX.Element {
   const [frameAbsent, setFrameAbsent] = useState(false)
   const frameGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameGapStepRef = useRef(0)
+  // O documento que travou o iframe trocado (achado E4): enquanto o próximo carrega os recursos,
+  // a prévia segura o documento anterior, e o iframe novo não pode recebê-lo de novo.
+  const stuckDocumentRef = useRef<string | null>(null)
   const swapFrame = useCallback((stuck: boolean) => {
     if (!stuck) {
       setFrameGeneration((n) => n + 1)
       return
     }
+    stuckDocumentRef.current = attemptedDocumentRef.current
     const step = Math.min(frameGapStepRef.current, FRAME_GAPS_MS.length - 1)
     frameGapStepRef.current += 1
     setFrameAbsent(true)
@@ -621,7 +631,7 @@ export function PreviewIframe(): JSX.Element {
     // A última execução deste projeto nunca deu sinal de vida (a aba congelou ou caiu com o
     // jogo rodando): desta vez a prévia espera o Rodar em vez de rodar sozinha.
     if (wasRunInterrupted(projectId)) {
-      disarmRunTripwire(projectId)
+      forgetInterruptedRuns(projectId)
       setPreviewRunning(false)
       return
     }
@@ -763,12 +773,15 @@ export function PreviewIframe(): JSX.Element {
     !extensionRuntimeFailed &&
     !courseModelError &&
     execution.editingAccess !== 'observer'
-  const doc =
-    previewRunning &&
-    (preparingRun || preparationError !== null || waitingForDocumentResources) &&
-    committedDoc.current.projectId === projectId
-      ? committedDoc.current.document
-      : candidateDoc
+  const doc = heldPreviewDocument({
+    holding:
+      previewRunning &&
+      (preparingRun || preparationError !== null || waitingForDocumentResources) &&
+      committedDoc.current.projectId === projectId,
+    held: committedDoc.current.document,
+    stuck: stuckDocumentRef.current,
+    candidate: candidateDoc,
+  })
   useLayoutEffect(() => {
     committedDoc.current = { projectId, document: doc }
   }, [doc, projectId])
@@ -850,6 +863,9 @@ export function PreviewIframe(): JSX.Element {
   if (!shell) frameDocumentRef.current = directDocument
   // A casca da geração atual do iframe avisou que está pronta para receber o documento.
   const [shellReadyGeneration, setShellReadyGeneration] = useState(-1)
+  // O número do último documento mandado à casca (achado E7): o "carregou" de um documento que já
+  // foi trocado não vale pelo atual.
+  const shellLoadSeqRef = useRef(0)
   const frameGenerationRef = useRef(frameGeneration)
   frameGenerationRef.current = frameGeneration
   const shellReady = shell !== null && !frameAbsent && shellReadyGeneration === frameGeneration
@@ -886,7 +902,11 @@ export function PreviewIframe(): JSX.Element {
     if (!target) return
     frameDocumentRef.current = effectiveDoc
     if (previewRunning && effectiveDoc !== PAUSED_PREVIEW_DOC) recordDocumentAttempt(effectiveDoc)
-    target.postMessage({ type: CLASSIC_SHELL_LOAD, document: effectiveDoc }, shell.origin)
+    shellLoadSeqRef.current += 1
+    target.postMessage(
+      { type: CLASSIC_SHELL_LOAD, document: effectiveDoc, seq: shellLoadSeqRef.current },
+      shell.origin,
+    )
   }, [shell, shellReady, effectiveDoc, previewRunning, recordDocumentAttempt])
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
@@ -1023,7 +1043,9 @@ export function PreviewIframe(): JSX.Element {
           return
         }
         if (isClassicShellLoaded(ev.data)) {
-          frameLoadedRef.current()
+          // Sem número (casca publicada antes de 20/11/2026), o aviso vale como antes.
+          const seq = classicShellLoadedSeq(ev.data)
+          if (seq === null || seq === shellLoadSeqRef.current) frameLoadedRef.current()
           return
         }
       } else if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
@@ -1384,6 +1406,23 @@ const SWAP_STUCK_AFTER_MS = 3000
 const SHELL_READY_TIMEOUT_MS = 4000
 /** Intervalos sem iframe na troca de um jogo preso; cada nova tentativa espera mais. */
 const FRAME_GAPS_MS = [200, 1200, 3500] as const
+
+/**
+ * O documento do iframe enquanto o próximo ainda prepara os recursos: o que já estava (para não
+ * piscar em branco), MENOS o que travou o iframe que acabou de ser trocado. Achado E4 da revisão
+ * de 20/11: no Rodar de novo com o jogo preso, o iframe novo nasce depois do intervalo de 200 ms;
+ * se os recursos do documento novo demoravam mais que isso, o iframe novo recebia o documento
+ * preso e travava outra vez. Ali ele fica com a página em branco até o novo ficar pronto.
+ */
+export function heldPreviewDocument(input: {
+  holding: boolean
+  held: string
+  stuck: string | null
+  candidate: string
+}): string {
+  if (!input.holding) return input.candidate
+  return input.held === input.stuck ? PAUSED_PREVIEW_DOC : input.held
+}
 
 // Cap de taxa de mensagens vindas do iframe (anti-flood). Janela de 1s e teto
 // generoso: heartbeat (1/s) + escritas de jogo em laço cabem; só corta abuso.
