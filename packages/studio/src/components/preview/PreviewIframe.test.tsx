@@ -529,6 +529,13 @@ describe('PreviewIframe', () => {
 
   // Em navegador que não isola a prévia, um jogo que congela a aba congelaria de novo a cada
   // abertura do projeto (a prévia roda sozinha). A marca de execução quebra o laço.
+  // Desde o achado E6 (20/11) a marca é por aba: `sz:run-tripwire:<projeto>#<aba>`.
+  const marcaDaAba = (projectId: string) => {
+    const key = Object.keys(window.localStorage).find((k) =>
+      k.startsWith(`sz:run-tripwire:${projectId}#`),
+    )
+    return key === undefined ? null : window.localStorage.getItem(key)
+  }
   it('a marca já existe quando o documento executável é observado no DOM', async () => {
     const project = createPreviewProject()
     const key = `sz:run-tripwire:${project.id}`
@@ -539,7 +546,7 @@ describe('PreviewIframe', () => {
     const observed: Array<string | null> = []
     const observer = new MutationObserver(() => {
       if (frame.getAttribute('srcdoc')?.includes('Preview automático'))
-        observed.push(window.localStorage.getItem(key))
+        observed.push(marcaDaAba(project.id))
     })
     observer.observe(frame, { attributes: true, attributeFilter: ['srcdoc'] })
     try {
@@ -561,7 +568,7 @@ describe('PreviewIframe', () => {
       fireEvent.load(screen.getByTitle('Pré-visualização'))
       await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
       const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
 
       const contentWindow = iframe.contentWindow
       if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
@@ -577,15 +584,16 @@ describe('PreviewIframe', () => {
         })
       batimento()
       batimento()
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
       batimento()
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
       // Um jogo pode travar depois de já ter enviado batimentos. Encerrar corretamente,
       // não um batimento anterior, é o que permite a próxima abertura automática.
 
       // A aba congelou com o jogo rodando: nada desmontou, a marca ficou. Na abertura seguinte...
       montada.unmount()
-      expect(window.localStorage.getItem(chave)).toBeNull()
+      expect(marcaDaAba(project.id)).toBeNull()
+      // A marca que uma aba congelada deixa (aqui no formato sem dono, que conta como parada).
       window.localStorage.setItem(chave, String(Date.now()))
       useUIStore.setState({ previewRunning: true })
       render(<PreviewIframe />)
@@ -597,7 +605,7 @@ describe('PreviewIframe', () => {
       // ...a prévia espera o Rodar, e aí roda (com a marca posta de novo).
       act(() => useProRun.getState().actions?.run())
       await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
     }))
 
   it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {

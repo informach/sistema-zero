@@ -63,7 +63,12 @@ import {
   type PreviewBudgetInput,
   shouldPausePreviewRender,
 } from './previewBudget'
-import { armRunTripwire, disarmRunTripwire, wasRunInterrupted } from './runTripwire'
+import {
+  armRunTripwire,
+  disarmRunTripwire,
+  forgetInterruptedRuns,
+  wasRunInterrupted,
+} from './runTripwire'
 import {
   projectUsesKeyboardControls,
   useTouchInput,
@@ -622,7 +627,7 @@ export function PreviewIframe(): JSX.Element {
     // A última execução deste projeto nunca deu sinal de vida (a aba congelou ou caiu com o
     // jogo rodando): desta vez a prévia espera o Rodar em vez de rodar sozinha.
     if (wasRunInterrupted(projectId)) {
-      disarmRunTripwire(projectId)
+      forgetInterruptedRuns(projectId)
       setPreviewRunning(false)
       return
     }
