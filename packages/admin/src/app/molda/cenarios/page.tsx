@@ -5,25 +5,19 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getEnv } from '@/lib/env'
 import { getSession } from '@/server/session'
-import { CenariosClient } from './cenarios-client'
 
 /** Onde a oficina mora em cada comunidade (a mesma rota nas duas). */
 const ROTA_DA_OFICINA = '/molda/cenarios'
 
 /**
  * Cenários 3D. A oficina mora na plataforma (Molda › Cenários, no Kids e na comunidade adulta) e
- * guarda tudo na conta: aqui fica o atalho para ela. O editor antigo do piloto, que roda só numa
- * máquina com o ambiente local montado, continua abrindo quando `CENARIOS_RUNTIME_URL` existe.
+ * guarda tudo na conta: aqui fica o atalho para ela.
  */
 export default async function CenariosPage() {
   const user = await getSession()
   if (!user) redirect('/login')
   if (user.status !== 'active' || !['admin', 'superadmin'].includes(user.role)) redirect('/admin')
   const env = getEnv()
-  const runtimeUrl =
-    env.CENARIOS_RUNTIME_URL ??
-    (env.NODE_ENV === 'development' ? 'http://127.0.0.1:4531/runtime/entrada.js' : null)
-  if (runtimeUrl) return <CenariosClient runtimeUrl={runtimeUrl} />
 
   const destinos = [
     { nome: 'Abrir no Kids', base: env.KIDS_COMMUNITY_URL },

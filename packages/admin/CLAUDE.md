@@ -5,9 +5,9 @@
 A oficina de cenários mora na plataforma (`/molda/cenarios` no Kids e na comunidade adulta) e
 guarda tudo na conta. A página `/molda/cenarios` DESTE painel virou o atalho: dois botões que
 abrem a oficina em outra aba (`KIDS_COMMUNITY_URL` e `COMMUNITY_URL`; sem as envs, a página diz
-o caminho). O login da comunidade é separado do deste painel. O editor antigo do piloto só abre
-quando `CENARIOS_RUNTIME_URL` existe (máquina com o ambiente local montado) e sai no lote de
-limpeza da reforma, com as rotas `api/molda-cenarios`.
+o caminho). O login da comunidade é separado do deste painel. O editor antigo do piloto, as rotas
+`api/molda-cenarios`, `CENARIOS_RUNTIME_URL` e `r2ReadCenarioAsset` saíram no lote 10 da reforma
+(20/11/2026); a conferência da arte do acervo foi para `scripts/molda-cenarios-arte.ts`.
 
 ## Campanhas ligadas a embaixadores (04/11/2026)
 

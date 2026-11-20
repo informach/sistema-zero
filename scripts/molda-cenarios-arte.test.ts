@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { descreverArteCenario, validarArteCenario } from '../src/lib/cenarios-assets'
+import { descreverArteCenario, validarArteCenario } from './molda-cenarios-arte'
 
 test('arte privada exige identificador por conteúdo e GLB sem dependências externas', () => {
   const glb = (uri?: string) => {

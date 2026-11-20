@@ -1,5 +1,11 @@
 import { createHash } from 'node:crypto'
 
+/**
+ * A conferência de cada arte do acervo de cenários (`arte:cenarios`): identificador por conteúdo
+ * (SHA-256), tamanho, cabeçalho PNG ou GLB, e GLB com imagens e buffers embutidos. Morava no
+ * Admin, junto do piloto antigo dos cenários; ficou aqui, ao lado do único script que a usa.
+ */
+
 export const ARTE_CENARIO_MAX_BYTES = 64 * 1024 * 1024
 export function descreverArteCenario(nome: string) {
   const m = /^([a-f0-9]{64})\.(glb|png)$/.exec(nome)
