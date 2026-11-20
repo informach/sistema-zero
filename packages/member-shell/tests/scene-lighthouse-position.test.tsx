@@ -48,6 +48,27 @@ describe('a experiência do lugar da chave', () => {
     )
   })
 
+  test('o lugar anterior é um quadrado pontilhado e uma seta que para na beirada da chave', () => {
+    const palco = (axis: 'x' | 'y', value: number) =>
+      renderToStaticMarkup(
+        <LighthousePositionStage
+          state={stepScene(start, openScene(start), { type: 'key-position', axis, value })}
+        />,
+      )
+    const seta = (html: string) =>
+      html.match(/data-seta-da-chave=""[\s\S]*?<polygon points="([^"]+)" fill="#865900"/)?.[1]
+    // x + 60 (passo da experiência): sai do meio do quadrado (227, 69) e encosta na chave em 271.
+    const direita = palco('x', 271)
+    expect(direita.match(/stroke-dasharray/g)).toHaveLength(1)
+    expect(seta(direita)?.startsWith('268,69 ')).toBe(true)
+    // y − 40: a seta sobe e a ponta para embaixo da chave, que vai de 13 a 45.
+    expect(seta(palco('y', 13))?.startsWith('227,48 ')).toBe(true)
+    // Um passo menor que a chave não tem espaço para seta: fica só o quadrado.
+    const curto = palco('x', 231)
+    expect(curto).toContain('data-posicao-anterior')
+    expect(curto).not.toContain('data-seta-da-chave')
+  })
+
   test('o player entrega o palco do Farol e controles digitáveis, deslizantes e botões de passo', () => {
     const state = openScene(start)
     const stage = renderToStaticMarkup(
