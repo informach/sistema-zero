@@ -148,6 +148,8 @@ export function Biblioteca({
     const controle = new AbortController()
     trabalho.current = controle
     setAndamento({ fase: 'conferindo', feitos: 0, total: arquivos.length })
+    // Os lotes de 50 já guardados antes de uma falha contam: a criança vê o que entrou.
+    let trazidos = 0
     try {
       const preparados = await prepararArquivos(
         arquivos,
@@ -163,6 +165,7 @@ export function Biblioteca({
           bibliotecaId,
           preparados.prontos,
           (feitos, quantos) => {
+            trazidos = feitos
             if (!controle.signal.aborted) setAndamento({ fase: 'trazendo', feitos, total: quantos })
           },
           controle.signal,
@@ -175,7 +178,7 @@ export function Biblioteca({
       if (!controle.signal.aborted)
         setAndamento({
           fase: 'pronto',
-          novos: 0,
+          novos: trazidos,
           recusados: [
             {
               arquivo: '',

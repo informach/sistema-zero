@@ -234,16 +234,23 @@ function SeloDeGuardar({
         {COPY.oficina.salvo.guardando}
       </span>
     )
-  const erro = salvamento === 'erro'
+  const erro = salvamento === 'erro',
+    recusado = salvamento === 'recusado'
   return (
     <button
       type="button"
-      className={`sz-tool-status ${erro ? 'sz-tool-status--danger' : 'sz-tool-status--warn'}`}
-      title={erro ? COPY.oficina.erroTexto : COPY.oficina.desatualizadoTexto}
+      className={`sz-tool-status ${erro || recusado ? 'sz-tool-status--danger' : 'sz-tool-status--warn'}`}
+      title={
+        erro
+          ? COPY.oficina.erroTexto
+          : recusado
+            ? COPY.oficina.recusadoTexto
+            : COPY.oficina.desatualizadoTexto
+      }
       onClick={() => (erro ? controlador.tentarDeNovo() : void controlador.recarregar())}
     >
       {erro ? <CloudOff aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
-      {erro ? COPY.oficina.tentar : COPY.oficina.recarregar}
+      {erro ? COPY.oficina.tentar : recusado ? COPY.oficina.abrirGuardado : COPY.oficina.recarregar}
     </button>
   )
 }
@@ -273,6 +280,20 @@ function OficinaAberta({
 }): JSX.Element {
   const controlador = useMemo(() => criarControlador(host, aberto), [host, aberto])
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
+  // Fechar a aba ou recarregar com algo ainda não guardado pede confirmação; ao sair da tela por
+  // outro caminho (menu, voltar do navegador), a fila que estava guardando termina de enviar.
+  useEffect(() => {
+    const aoSair = (evento: BeforeUnloadEvent) => {
+      if (controlador.getState().salvamento === 'guardado') return
+      evento.preventDefault()
+      evento.returnValue = ''
+    }
+    globalThis.addEventListener('beforeunload', aoSair)
+    return () => {
+      globalThis.removeEventListener('beforeunload', aoSair)
+      void controlador.terminar()
+    }
+  }, [controlador])
   const canvas = useRef<HTMLCanvasElement>(null)
   const previaDaArea = useRef<SVGPolygonElement>(null)
   const palco = useRef<Palco | null>(null)
@@ -1101,7 +1122,14 @@ function OficinaAberta({
     if (saindo) return
     setSaindo(true)
     await controlador.terminar()
-    if (controlador.getState().salvamento !== 'guardado') {
+    const salvamento = controlador.getState().salvamento
+    if (salvamento !== 'guardado') {
+      // Antes a seta não fazia nada; agora diz o que falta para poder sair.
+      controlador.avisar(
+        salvamento === 'erro' || salvamento === 'guardando'
+          ? COPY.oficina.sairSemGuardar
+          : COPY.oficina.sairRecusado,
+      )
       setSaindo(false)
       return
     }
@@ -2437,7 +2465,9 @@ export default function Oficina({
     }
   }, [host, espacoId, mundoId, cenarioId, conjuntoId])
 
-  if (aberto.falhou || mundo.falhou)
+  // Falha ao recarregar só o mundo (depois de trocar as bibliotecas) não desmonta o editor
+  // aberto: ele continua com a lista de antes. Desmontar perdia o que não estava guardado.
+  if (aberto.falhou || (mundo.falhou && !mundo.dados))
     return (
       <div className="mcn-centro" data-molda-theme={tema}>
         <Falhou

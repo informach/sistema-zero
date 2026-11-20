@@ -53,8 +53,10 @@ export function CampoNumero({
   const [texto, setTexto] = useState(String(valor))
   useEffect(() => setTexto(String(valor)), [valor])
   const gravar = () => {
-    const numero = Number(texto.replace(',', '.'))
-    if (!Number.isFinite(numero)) {
+    const limpo = texto.trim().replace(',', '.')
+    const numero = Number(limpo)
+    // Campo vazio (ou só "-") volta ao valor de antes: Number('') é 0 e mudaria o objeto.
+    if (!limpo || limpo === '-' || !Number.isFinite(numero)) {
       setTexto(String(valor))
       return
     }

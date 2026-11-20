@@ -466,6 +466,48 @@ describe('controlador da oficina', () => {
       4, 3, 2, 1,
     ])
   })
+  test('recusa definitiva do servidor não prende o editor: diz o motivo e abre o guardado', async () => {
+    const real = criarHostEmMemoria()
+    const recusa = Object.assign(new Error('Sessão de suporte é só leitura'), { status: 403 })
+    let recusar = true
+    const host: CenariosHost = {
+      ...real,
+      editarCenario: (...args) => (recusar ? Promise.reject(recusa) : real.editarCenario(...args)),
+    }
+    const { controlador } = await abrir(host)
+    controlador.executar([{ tipo: 'cenario.renomear', nome: 'Nova' }])
+    await controlador.terminar()
+    expect(controlador.getState()).toMatchObject({
+      salvamento: 'recusado',
+      recusa: 'Sessão de suporte é só leitura',
+      podeDesfazer: false,
+    })
+    // Repetir não adianta e nada novo entra na fila.
+    expect(controlador.executar([{ tipo: 'cenario.renomear', nome: 'Outra' }])).toBe(false)
+    recusar = false
+    await controlador.recarregar()
+    expect(controlador.getState()).toMatchObject({ salvamento: 'guardado', recusa: null })
+    expect(controlador.getState().documento.nome).toBe('Fase 1')
+  })
+  test('outra versão escolhida depois de uma restauração que falhou é a que volta', async () => {
+    const real = criarHostEmMemoria()
+    let cair = true
+    const host: CenariosHost = {
+      ...real,
+      restaurarRevisao: (...args) =>
+        cair ? Promise.reject(new Error('sem rede')) : real.restaurarRevisao(...args),
+    }
+    const { controlador } = await abrir(host)
+    controlador.executar([{ tipo: 'cenario.renomear', nome: 'Primeira' }])
+    controlador.executar([{ tipo: 'cenario.renomear', nome: 'Segunda' }])
+    controlador.executar([{ tipo: 'cenario.renomear', nome: 'Terceira' }])
+    await controlador.terminar()
+    await controlador.restaurar(1)
+    expect(controlador.getState().salvamento).toBe('erro')
+    cair = false
+    await controlador.restaurar(2)
+    expect(controlador.getState().documento.nome).toBe('Segunda')
+  })
   test('a edição aparece na hora e é guardada no host, na ordem', async () => {
     const { host, cenario, controlador } = await abrir()
     const novoId = ids()

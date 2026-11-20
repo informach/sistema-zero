@@ -1,5 +1,5 @@
 import { Box, Boxes, ChevronDown, ChevronUp, Search } from 'lucide-react'
-import { type JSX, useEffect, useState } from 'react'
+import { type JSX, useEffect, useRef, useState } from 'react'
 import { COPY } from '../copy'
 import { BIBLIOTECA_MOLDA_ID, useMoldes } from '../moldes'
 import { Capa } from '../pecas'
@@ -101,16 +101,36 @@ export function Gaveta({
     }
   }, [host, bibliotecaId, buscaAplicada, noMolda])
 
+  const pedindoMais = useRef<string | null>(null)
   const mostrarMais = async () => {
     if (!bibliotecaId || !proximo || noMolda) return
-    const pagina = await host.listarModelos(bibliotecaId, {
-      busca: buscaAplicada,
-      limite: PAGINA,
-      cursor: proximo,
-    })
-    setModelos((atuais) => [...atuais, ...pagina.itens])
-    setProximo(pagina.proximo)
+    // Um pedido de cada vez, e só vale para a mesma biblioteca e busca de quando saiu.
+    const consulta = `${bibliotecaId}|${buscaAplicada}|${proximo}`
+    if (pedindoMais.current) return
+    pedindoMais.current = consulta
+    try {
+      const pagina = await host.listarModelos(bibliotecaId, {
+        busca: buscaAplicada,
+        limite: PAGINA,
+        cursor: proximo,
+      })
+      if (pedindoMais.current !== consulta) return
+      setModelos((atuais) => {
+        const vistos = new Set(atuais.map((m) => m.id))
+        return [...atuais, ...pagina.itens.filter((m) => !vistos.has(m.id))]
+      })
+      setProximo(pagina.proximo)
+    } catch {
+      // Sem rede: o botão continua lá para tentar de novo.
+    } finally {
+      if (pedindoMais.current === consulta) pedindoMais.current = null
+    }
   }
+  // Trocar de biblioteca ou de busca esquece o pedido que estava no caminho.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: só a troca de consulta importa
+  useEffect(() => {
+    pedindoMais.current = null
+  }, [bibliotecaId, buscaAplicada])
 
   return (
     <section className="mcn-gaveta mld-bar" aria-label={COPY.gaveta.titulo} data-aberta={aberta}>

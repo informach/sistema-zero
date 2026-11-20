@@ -133,10 +133,16 @@ export const COPY = {
       guardado: 'Guardado',
       guardando: 'Guardando',
       erro: 'Não guardou',
+      recusado: 'Não deu para guardar',
       desatualizado: 'Mudou em outro lugar',
     },
     tentar: 'Tentar de novo',
     recarregar: 'Abrir a versão nova',
+    abrirGuardado: 'Abrir o que está guardado',
+    recusadoTexto:
+      'Esta mudança não pôde ser guardada. Abra de novo o que está guardado para continuar.',
+    sairSemGuardar: 'Ainda não guardou. Tente de novo antes de sair.',
+    sairRecusado: 'Abra o que está guardado antes de sair.',
     desatualizadoTexto:
       'Este cenário foi mudado em outro lugar. Abra a versão nova para continuar daqui.',
     erroTexto: 'Sem conexão para guardar. O que você fez continua aqui na tela.',

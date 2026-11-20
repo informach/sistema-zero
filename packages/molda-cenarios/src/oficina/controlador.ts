@@ -15,7 +15,23 @@ import {
   type RecursoDeTerrenoParaGravar,
 } from './portas'
 
-export type Salvamento = 'guardado' | 'guardando' | 'erro' | 'desatualizado'
+/**
+ * `erro`: falha de rede ou do servidor, vale tentar de novo. `recusado`: o servidor disse não
+ * (sessão de suporte que só olha, perfil trocado em outra aba, cenário apagado, lote inválido):
+ * repetir dá no mesmo, então o caminho é abrir de novo o que está guardado.
+ */
+export type Salvamento = 'guardado' | 'guardando' | 'erro' | 'recusado' | 'desatualizado'
+
+/** Falha que não melhora repetindo o mesmo pedido. */
+function recusaPermanente(erro: unknown): boolean {
+  if (erro instanceof CenarioInvalido) return true
+  if (!(erro instanceof Error)) return false
+  // Só a resposta do servidor com 4xx é definitiva; rede, 5xx e falhas locais repetem.
+  const status = (erro as { status?: unknown }).status
+  return (
+    typeof status === 'number' && status >= 400 && status < 500 && ![408, 425, 429].includes(status)
+  )
+}
 
 export interface EstadoDaOficina {
   documento: DocumentoDeCenario
@@ -57,6 +73,8 @@ export interface ControladorDaOficina {
   definirEncaixe(ligado: boolean): void
   definirSomarSelecao(ligado: boolean): void
   limparRecusa(): void
+  /** Mostra um aviso no mesmo lugar das recusas (ex.: por que ainda não dá para sair). */
+  avisar(texto: string): void
   /** Tenta de novo a gravação que falhou. */
   tentarDeNovo(): void
   /** Joga fora o que não foi gravado e abre de novo o que está guardado. */
@@ -110,7 +128,7 @@ export function criarControlador(
 
   const emitir = (mudanca: Partial<EstadoDaOficina>) => {
     const disponivel =
-      !['erro', 'desatualizado'].includes(mudanca.salvamento ?? estado.salvamento) &&
+      !['erro', 'recusado', 'desatualizado'].includes(mudanca.salvamento ?? estado.salvamento) &&
       !(mudanca.ocupado ?? estado.ocupado) &&
       !pendente
     estado = {
@@ -149,7 +167,9 @@ export function criarControlador(
           if (erro instanceof CenarioDesatualizado) {
             fila.length = 0
             emitir({ salvamento: 'desatualizado' })
-          } else emitir({ salvamento: 'erro' })
+          } else if (recusaPermanente(erro))
+            emitir({ salvamento: 'recusado', recusa: mensagemDaRecusa(erro) })
+          else emitir({ salvamento: 'erro' })
           return
         }
       }
@@ -168,6 +188,7 @@ export function criarControlador(
     if (
       !comandos.length ||
       estado.salvamento === 'desatualizado' ||
+      estado.salvamento === 'recusado' ||
       estado.ocupado ||
       pendente ||
       precisaReabrir
@@ -220,7 +241,11 @@ export function criarControlador(
   const andar = (acao?: 'desfazer' | 'refazer' | number): Promise<void> => {
     if (movendo) return movendo
     if (reabrindo || precisaReabrir) return Promise.resolve()
-    if (estado.salvamento === 'desatualizado' || (estado.salvamento === 'erro' && !pendente))
+    if (
+      estado.salvamento === 'desatualizado' ||
+      estado.salvamento === 'recusado' ||
+      (estado.salvamento === 'erro' && !pendente)
+    )
       return Promise.resolve()
     if (
       acao !== undefined &&
@@ -231,6 +256,9 @@ export function criarControlador(
     movendo = (async () => {
       await enviar()
       if (estado.salvamento !== 'guardado') return
+      // Outra ação depois de uma que falhou substitui a antiga: a revisão esperada impede aplicar
+      // as duas (se a antiga chegou ao servidor, a nova volta "mudou em outro lugar").
+      if (pendente && acao !== undefined && acao !== pendente.acao) pendente = null
       if (!pendente && acao !== undefined)
         pendente = { acao, revisaoEsperada: estado.revisao, operacaoId: novaOperacao() }
       const pedido = pendente
@@ -252,6 +280,9 @@ export function criarControlador(
         if (erro instanceof CenarioDesatualizado) {
           pendente = null
           emitir({ salvamento: 'desatualizado' })
+        } else if (recusaPermanente(erro)) {
+          pendente = null
+          emitir({ salvamento: 'recusado', recusa: mensagemDaRecusa(erro) })
         } else emitir({ salvamento: 'erro', recusa: mensagemDaRecusa(erro) })
       }
     })().finally(() => {
@@ -344,6 +375,7 @@ export function criarControlador(
     limparRecusa: () => {
       if (estado.recusa) emitir({ recusa: null })
     },
+    avisar: (texto) => emitir({ recusa: texto }),
     tentarDeNovo() {
       if (estado.salvamento !== 'erro') return
       if (precisaReabrir) {

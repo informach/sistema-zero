@@ -32,7 +32,7 @@ export async function arquivosDoPacoteThree(pacote: PacoteCompilado, sinal: Abor
   texto(
     'licencas-runtime.txt',
     runtime.RUNTIME_THREE_DEPENDENCIAS.map(
-      (d) => `${d.nome} ${d.versao} — ${d.licenca}\n${d.texto}`,
+      (d) => `${d.nome} ${d.versao}: ${d.licenca}\n${d.texto}`,
     ).join('\n\n'),
   )
   texto(

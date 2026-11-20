@@ -303,13 +303,10 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         sinal?.throwIfAborted()
         throw new ErroDaOficina('O envio parou no meio. Tente de novo.', 0, null, null)
       }
+      // Falha do armazenamento (inclusive endereço vencido) se resolve repetindo: a nova
+      // tentativa reserva de novo e recebe endereços novos. Por isso não vira recusa.
       if (!resposta.ok && !(arquivo.criarUmaVez && resposta.status === 412))
-        throw new ErroDaOficina(
-          'O envio parou no meio. Tente de novo.',
-          resposta.status,
-          null,
-          null,
-        )
+        throw new ErroDaOficina('O envio parou no meio. Tente de novo.', 0, null, null)
     })
   }
 

@@ -38,6 +38,7 @@ export function EscolherBibliotecas({
   const bibliotecas = useCarga(() => host.listarBibliotecas(mundo.espacoId), [host, mundo.espacoId])
   const [escolhidas, setEscolhidas] = useState(() => new Set(mundo.bibliotecas))
   const [ocupado, setOcupado] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
   const alternar = (id: string) =>
     setEscolhidas((atual) => {
       const novo = new Set(atual)
@@ -73,6 +74,11 @@ export function EscolherBibliotecas({
           ))
         )}
       </div>
+      {erro ? (
+        <p role="alert" className="mt-3 text-sm font-semibold text-mld-danger">
+          {erro}
+        </p>
+      ) : null}
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="ghost" onClick={aoFechar} disabled={ocupado}>
           {COPY.nome.cancelar}
@@ -82,10 +88,13 @@ export function EscolherBibliotecas({
           disabled={ocupado || bibliotecas.dados === null}
           onClick={async () => {
             setOcupado(true)
+            setErro(null)
             try {
               await host.editarMundo(mundo.id, { bibliotecas: [...escolhidas] })
               aoGuardar()
               aoFechar()
+            } catch (falha) {
+              setErro(falha instanceof Error ? falha.message : COPY.inicio.falhou)
             } finally {
               setOcupado(false)
             }
@@ -116,6 +125,8 @@ export function Mundo({
   moldesDisponiveis?: boolean
 }): JSX.Element {
   const [janela, setJanela] = useState<Janela>(null)
+  const [duplicando, setDuplicando] = useState<string | null>(null)
+  const [erroDaAcao, setErroDaAcao] = useState<string | null>(null)
   const dados = useCarga(async () => {
     const [mundos, cenarios, bibliotecas] = await Promise.all([
       host.listarMundos(espacoId),
@@ -207,6 +218,11 @@ export function Mundo({
                       {COPY.mundo.semCenarios}
                     </p>
                   ) : null}
+                  {erroDaAcao ? (
+                    <p role="alert" className="mt-3 text-sm font-semibold text-mld-danger">
+                      {erroDaAcao}
+                    </p>
+                  ) : null}
                   <ul className="sz-tool-grid mt-4">
                     <li className="flex">{cartaoNovo}</li>
                     {cenarios.map((cenario) => (
@@ -232,9 +248,21 @@ export function Mundo({
                           </IconButton>
                           <IconButton
                             aria-label={`${COPY.mundo.duplicar}: ${cenario.nome}`}
+                            disabled={duplicando !== null}
                             onClick={async () => {
-                              await host.duplicarCenario(cenario.id)
-                              dados.recarregar()
+                              if (duplicando) return
+                              setDuplicando(cenario.id)
+                              setErroDaAcao(null)
+                              try {
+                                await host.duplicarCenario(cenario.id)
+                                dados.recarregar()
+                              } catch (falha) {
+                                setErroDaAcao(
+                                  falha instanceof Error ? falha.message : COPY.inicio.falhou,
+                                )
+                              } finally {
+                                setDuplicando(null)
+                              }
                             }}
                           >
                             <Copy aria-hidden="true" className="size-4" />
