@@ -2411,6 +2411,13 @@
   /* biome-ignore lint/complexity/noImportantStyles: o Blockly anima a opacidade da lixeira inline (0,4 parada). */
   opacity: 0.85 !important;
 }
+/* Até a lixeira e o zoom irem para o lugar deles (mais altos, a lixeira por cima dos blocos, o
+   desenho em vetor: `blockly/workspaceControls.ts`, baixado logo depois da injeção), eles ficam
+   escondidos, para não pularem de lugar. Só nos editores do Estúdio, que marcam `pending`. */
+[data-sz-theme] .injectionDiv[data-sz-controls="pending"] .blocklyTrash,
+[data-sz-theme] .injectionDiv[data-sz-controls="pending"] .blocklyZoom {
+  visibility: hidden;
+}
 /* Scroll shadow is decorative: text underneath must remain clickable. */
 [data-sz-theme] .monaco-editor .scroll-decoration {
   pointer-events: none;
