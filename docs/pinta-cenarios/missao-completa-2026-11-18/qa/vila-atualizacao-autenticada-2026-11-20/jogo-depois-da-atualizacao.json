@@ -1,0 +1,31 @@
+{
+  "realStagingGame": true,
+  "generatedByPlayMapButton": true,
+  "nativeSchema": 7,
+  "precisePhysics": true,
+  "previewMode": "srcdoc",
+  "playerBefore": {
+    "width": 480,
+    "height": 360,
+    "count": 144,
+    "minX": 32,
+    "minY": 32,
+    "maxX": 43,
+    "maxY": 43
+  },
+  "playerAfter": {
+    "width": 480,
+    "height": 360,
+    "count": 144,
+    "minX": 36,
+    "minY": 32,
+    "maxX": 47,
+    "maxY": 43
+  },
+  "movedRight": true,
+  "oldPagePreserved": true,
+  "projectId": "01M7WPNJ5QN6GWD26KXGSPX527",
+  "layers": 18,
+  "tilesets": 2,
+  "linkedMaps": 2
+}

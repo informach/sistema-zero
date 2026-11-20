@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-20T13:54:40.378Z",
+  "version": "6276e3b7-98a4-4a1c-a40d-172d5b0f6b17",
+  "module": {
+    "name": "worker.js",
+    "sha256": "09a9e72e01e58b426112edcfb7c9b51ec7f7a5602da53a1735d6fb148671c6fb",
+    "bytes": 1961731
+  },
+  "profile": "761eb04c8007c582145ec615257b06159429955fbc6f52f3af8b38c719353149",
+  "containers": [
+    {
+      "id": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+      "version": 33,
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-f64ece189@sha256:cfef5ed509b091119efe3722f13427c265a945d2c4e508db804cc0fcced11e8f",
+      "health": {
+        "errors": [],
+        "instances": {
+          "active": 0,
+          "assigned": 0,
+          "healthy": 4,
+          "stopped": 0,
+          "failed": 0,
+          "scheduling": 1,
+          "starting": 0
+        }
+      }
+    },
+    {
+      "id": "a03599fe-80d3-4b3d-ba17-fdf5131aeb18",
+      "version": 9,
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-f64ece189@sha256:cfef5ed509b091119efe3722f13427c265a945d2c4e508db804cc0fcced11e8f",
+      "health": {
+        "errors": [],
+        "instances": {
+          "active": 0,
+          "assigned": 0,
+          "healthy": 4,
+          "stopped": 0,
+          "failed": 0,
+          "scheduling": 0,
+          "starting": 1
+        }
+      }
+    }
+  ],
+  "health": {
+    "status": 200,
+    "ok": true
+  },
+  "pythonActivated": false,
+  "stagingOnly": true
+}

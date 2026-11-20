@@ -1,0 +1,22 @@
+[
+  {
+    "file": "packages/studio/src/ir/symbolNames.ts",
+    "identicalJavaScript": true,
+    "sha256": "7ee4d3d45ea7df0e793c1aee53574064823d6f4be632c30386a3530c472676f8"
+  },
+  {
+    "file": "packages/studio/src/ir/programmingReferences.ts",
+    "identicalJavaScript": true,
+    "sha256": "4f2b417db00d5525f7526aa2555b40586424812ced9f1049fc225536d2761e35"
+  },
+  {
+    "file": "packages/studio/src/ir/schema.ts",
+    "identicalJavaScript": true,
+    "sha256": "32eb1dd49f141bbf108b2831ab7b1f5a0676a0075806abb9cfb6415856551130"
+  },
+  {
+    "file": "packages/studio/src/three/canvas3dContract.ts",
+    "identicalJavaScript": true,
+    "sha256": "928f7ae3ec4d075e025ce0278fa2bab2bf31b09bab00acb9165c020bfcef1a27"
+  }
+]

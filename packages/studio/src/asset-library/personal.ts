@@ -42,7 +42,7 @@ const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
  * Por que `localStorage` e não `BroadcastChannel`: o valor precisa SOBREVIVER à
  * aba fechada (editar hoje, abrir o Estúdio amanhã) e ser lido de forma
  * SÍNCRONA sob demanda. É a mesma escolha (e o mesmo motivo) do
- * `blockly/blockClipboard.ts`. Sem listener: quem sincroniza lê no foco.
+ * `blockly/blockClipboard.ts`. O Estúdio lê no foco e acompanha commits de outras abas.
  *
  * A chave leva o NAMESPACE porque a biblioteca é por PERFIL: o desenho de um
  * irmão não pode disparar a sincronia dos projetos do outro.
@@ -62,17 +62,23 @@ function safeLocalStorage(): Storage | null {
 /** Carimba "a biblioteca deste perfil mudou agora". Best-effort. */
 function markPersonalAssetsChanged(namespace?: string): void {
   try {
-    safeLocalStorage()?.setItem(changedKey(namespace), JSON.stringify({ at: Date.now() }))
+    safeLocalStorage()?.setItem(
+      changedKey(namespace),
+      JSON.stringify({ at: Date.now(), changeId: crypto.randomUUID() }),
+    )
   } catch {
-    // fail-soft: sem o carimbo a sincronia só perde a otimização (ela ainda roda
-    // uma vez por aba, porque o relógio dela começa em 0).
+    // Only the notification is removed; the committed library stays intact.
+    // A missing marker makes the next sweep conservative instead of looking unchanged.
+    try {
+      safeLocalStorage()?.removeItem(changedKey(namespace))
+    } catch {}
   }
 }
 
 /**
  * Quando a biblioteca deste perfil mudou pela última vez (0 = nunca/indisponível).
- * É o portão barato da sincronia: igual ao já visto ⇒ nada a fazer, sem tocar
- * no IndexedDB.
+ * Carimbo legado para consumidores de datas. A sincronia compara o token completo,
+ * pois duas gravações podem acontecer no mesmo milissegundo.
  */
 export function personalAssetsChangedAt(namespace?: string): number {
   try {
@@ -85,6 +91,34 @@ export function personalAssetsChangedAt(namespace?: string): number {
   } catch {
     return 0
   }
+}
+
+/** Opaque change identity; legacy `{at}` markers remain readable. */
+export function personalAssetsChangeToken(namespace?: string): string {
+  try {
+    const raw = safeLocalStorage()?.getItem(changedKey(namespace))
+    if (!raw) return ''
+    const value: unknown = JSON.parse(raw)
+    if (!value || typeof value !== 'object' || !('at' in value)) return ''
+    return typeof value.at === 'number' && Number.isFinite(value.at) ? raw : ''
+  } catch {
+    return ''
+  }
+}
+
+/** Notify only after another tab commits this profile's personal library. */
+export function subscribePersonalAssetsChanged(
+  onChange: () => void,
+  namespace = storageNamespace,
+): () => void {
+  const storage = safeLocalStorage()
+  if (!storage || typeof window === 'undefined') return () => {}
+  const key = changedKey(namespace)
+  const onStorage = (event: StorageEvent): void => {
+    if (event.storageArea === storage && event.key === key) onChange()
+  }
+  window.addEventListener('storage', onStorage)
+  return () => window.removeEventListener('storage', onStorage)
 }
 
 export const PERSONAL_ASSET_LIMITS = {
@@ -479,9 +513,10 @@ export async function removePersonalAsset(
   id: string,
   options?: { namespace?: string },
 ): Promise<RemovePersonalAssetResult> {
+  const namespace = options?.namespace ?? storageNamespace
   try {
-    await del(assetKey(id), getStoreHandle(options?.namespace))
-    markPersonalAssetsChanged(options?.namespace)
+    await del(assetKey(id), getStoreHandle(namespace))
+    markPersonalAssetsChanged(namespace)
     return { ok: true }
   } catch {
     return { ok: false, error: 'Não consegui excluir agora. Tente de novo daqui a pouco.' }

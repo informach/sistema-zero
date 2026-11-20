@@ -1,0 +1,75 @@
+{
+  "format": "pinta-gallery",
+  "version": 7,
+  "assets": [
+    {
+      "id": "fdfc2756-83f7-433e-8003-bcfe8bb69449",
+      "name": "pecas-aba-nklptd",
+      "createdAt": 1795094006410,
+      "updatedAt": 1795094006410,
+      "kind": "tileset",
+      "tileSize": 16,
+      "paletteId": "arcade",
+      "tiles": [
+        {
+          "width": 16,
+          "height": 16,
+          "rle": "/wMBAw=="
+        }
+      ],
+      "solid": [false],
+      "platform": [false]
+    },
+    {
+      "id": "1cb291ea-b512-4e46-b3cd-e5d783454c3a",
+      "name": "homologacao-aba-nklptd",
+      "createdAt": 1795094006411,
+      "updatedAt": 1795180180647,
+      "kind": "tilemap",
+      "tilesetId": "fdfc2756-83f7-433e-8003-bcfe8bb69449",
+      "physics": "precise",
+      "cols": 8,
+      "rows": 8,
+      "layers": [
+        {
+          "id": "fa148ddd-5a28-4d55-b37e-8dc9313e32cf",
+          "name": "Chão",
+          "visible": true,
+          "cells": [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0
+          ]
+        },
+        {
+          "kind": "objects",
+          "id": "d287d680-e992-4fb1-856e-7e1dc5b1a9ff",
+          "name": "Objetos",
+          "visible": true,
+          "objects": [
+            {
+              "id": "6dd9d589-1487-407f-a291-3270aaa8a682",
+              "name": "Protegido 026",
+              "type": "qa-offline",
+              "x": 25,
+              "y": 32,
+              "width": 24,
+              "height": 16,
+              "properties": {
+                "verificacao": {
+                  "type": "int",
+                  "value": 26
+                }
+              },
+              "collision": true,
+              "shape": "rect",
+              "rotation": 15,
+              "role": "trigger"
+            }
+          ]
+        }
+      ],
+      "schema": 7
+    }
+  ]
+}

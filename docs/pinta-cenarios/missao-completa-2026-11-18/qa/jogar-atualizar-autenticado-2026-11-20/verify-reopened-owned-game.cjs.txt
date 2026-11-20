@@ -1,0 +1,3 @@
+module.exports=async function(qa){if(!qa.ownedMapUpdate?.customProgramPreserved)throw Error('Update not verified');const current=await require('./checkpoint-owned-game.cjs')(qa);const expected=qa.ownedProgramBeforeMapUpdate;
+if(current.programSha256!==expected.programSha256||!current.customMarkerInIR||!current.customMarkerInFiles||current.sceneSha256!==qa.ownedMapUpdate.sceneAfter)throw Error('Reopening lost map or custom program');
+qa.ownedReopenedGame=current;return {...current,reopenedInFreshAppPage:true,customProgramPreserved:true,updatedScenePreserved:true};};

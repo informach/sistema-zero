@@ -1,0 +1,72 @@
+[
+  {
+    "name": "observer-environment",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-observer-environment.log"
+  },
+  {
+    "name": "generated-studio",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-generated-studio.log"
+  },
+  {
+    "name": "generated-molda",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-generated-molda.log"
+  },
+  {
+    "name": "generated-motor",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-generated-motor.log"
+  },
+  {
+    "name": "classic-shell",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-classic-shell.log"
+  },
+  {
+    "name": "pinta",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-pinta.log"
+  },
+  {
+    "name": "scenes",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-scenes.log"
+  },
+  {
+    "name": "integration",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-integration.log"
+  },
+  {
+    "name": "library",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-library.log"
+  },
+  {
+    "name": "components",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-r2-components.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-r2-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-r2-members-types.log"
+  },
+  {
+    "name": "runtime-profile",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-r2-runtime-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "log": ".cache/pinta-integrated-r2-biome.log"
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-20T13:47:16.580Z",
+  "recordedAtSource": "3b40f44024415ba3d56cbdc69380d467e137ece7",
+  "witnesses": [
+    {
+      "step": "23",
+      "sourceSha256": "1f9b7710e12c1820a147c0ee3e8b564124bb0ce752765eefae87f29907628a2c",
+      "file": "antes.json"
+    },
+    {
+      "step": "27",
+      "sourceSha256": "67436c8a7c7d73cce7d4c9174996764ce4f0195571bad6ce3edb09aed08c7570",
+      "file": "gravacao-legada.json"
+    },
+    {
+      "step": "28",
+      "sourceSha256": "278b40c22a2dcf5c487cc9d6503f5337242bdc6ff38cc679405575c395c1e657",
+      "file": "recuperacao-offline.json"
+    },
+    {
+      "step": "29",
+      "sourceSha256": "278b40c22a2dcf5c487cc9d6503f5337242bdc6ff38cc679405575c395c1e657",
+      "file": "segunda-reabertura-offline.json"
+    },
+    {
+      "step": "30",
+      "sourceSha256": "851eea7caa75f147999cd5d18a32c7c2796eef47b80270aa6a5ea4b746e6d11e",
+      "file": "reabertura-aplicativo.json"
+    }
+  ],
+  "legacyAppSource": "c7e9c70a4de5ea889c1af4819283887a33add461",
+  "readerAppSource": "08f040a9167f646b661b5ea13955162951194587",
+  "physicalMachines": 1,
+  "independentBrowserContexts": 2,
+  "offlineRecoveryRealms": 2,
+  "cloudWriter6Activated": false,
+  "python132Activated": false,
+  "productionChanged": false,
+  "containsAuthenticationState": false
+}

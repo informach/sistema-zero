@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "overrides": {
+    "happy-dom": "20.11.2",
     "postcss": "8.5.23"
   },
   "scripts": {

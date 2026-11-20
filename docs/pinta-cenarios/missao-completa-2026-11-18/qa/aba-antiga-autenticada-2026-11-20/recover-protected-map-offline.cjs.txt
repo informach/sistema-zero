@@ -1,0 +1,26 @@
+module.exports=async function(qa){
+ if(!qa.offlineProofActive||!qa.legacyOverwrite||qa.modern&&!qa.modern.isClosed())throw Error('Offline proof preconditions missing');
+ const page=await qa.makeAuthorityPage();
+ try{
+  const result=await page.evaluate(async({namespace,expected,id})=>{
+   if(navigator.onLine)throw Error('Recovery realm must be offline');
+   const client=window.pinta026.createPintaPersistence({namespace});
+   const assets=await client.listAllAssets();
+   const primary=assets.find(asset=>asset.id===id);
+   function canonical(value){if(ArrayBuffer.isView(value))return Array.from(value);if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().filter(k=>value[k]!==undefined).map(k=>[k,canonical(value[k])]));return value}
+   async function digest(value){const bytes=new TextEncoder().encode(JSON.stringify(canonical(value)));return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('')}
+   if(primary?.kind!=='tilemap'||primary.schema!==7||primary.physics!=='precise'||primary.layers.length!==2)throw Error('Primary document was cut');
+   const object=primary.layers.find(layer=>layer.kind==='objects')?.objects[0];
+   if(object?.id!==expected.objectId||object.collision!==true||object.properties.verificacao.type!=='int'||object.properties.verificacao.value!==26)throw Error('Protected geometry or typed property lost');
+   const sha256=await digest(primary);
+   if(sha256!==expected.sha256)throw Error('Full protected document digest changed');
+   const copies=assets.filter(asset=>asset.kind==='tilemap'&&asset.id!==id&&asset.name.startsWith('homologacao-aba-nklptd-copia'));
+   const recovered=copies.filter(asset=>asset.layers.length===1&&asset.layers[0].cells?.[0]===-1);
+   if(recovered.length!==1)throw Error('Legacy edit not recovered uniquely');
+   return {offline:!navigator.onLine,schema:primary.schema,physics:primary.physics,layers:primary.layers.length,objectId:object.id,property:object.properties.verificacao,primarySha256:sha256,completeDocumentEqual:true,firstCell:primary.layers[0].cells[0],copyId:recovered[0].id,copyName:recovered[0].name,copyFirstCell:recovered[0].layers[0].cells[0],copyCount:copies.length,copySha256:await digest(recovered[0])};
+  },{namespace:qa.ownedStorageNamespace,expected:qa.protectedCheckpoint,id:'1cb291ea-b512-4e46-b3cd-e5d783454c3a'});
+  if(qa.offlineRecovery&&(qa.offlineRecovery.copyId!==result.copyId||qa.offlineRecovery.copyCount!==result.copyCount||qa.offlineRecovery.copySha256!==result.copySha256))throw Error('Reopening duplicated or changed recovery');
+  qa.offlineRecovery=result;
+  return {...result,freshRealm:true,modernAuthoringPageClosed:true,cloudConfigured:false,codeOnlyBootstrap:true,coldOfflineHttpAppBootstrapProven:false};
+ }finally{await page.close()}
+};

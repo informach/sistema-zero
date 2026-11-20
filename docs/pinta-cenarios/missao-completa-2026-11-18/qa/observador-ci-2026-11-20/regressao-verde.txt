@@ -1,0 +1,7 @@
+(pass) MutationObserver conserva o callback após GC=false [94.00ms]
+(pass) MutationObserver conserva o callback após GC=true [109.00ms]
+(pass) o observador continua entregando alterações depois da coleta de memória [109.00ms]
+ 43 pass
+ 0 fail
+ 296 expect() calls
+Ran 43 tests across 3 files. [17.61s]

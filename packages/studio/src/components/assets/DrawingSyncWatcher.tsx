@@ -1,13 +1,17 @@
 import { useCallback, useEffect } from 'react'
-import { getPersonalAssetsNamespace } from '../../asset-library/personal'
+import {
+  getPersonalAssetsNamespace,
+  subscribePersonalAssetsChanged,
+} from '../../asset-library/personal'
 import { syncDrawingsIntoProjects } from '../../asset-library/personalSync'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStoreApi } from '../../state/projectStore'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 
 /**
- * Reconcilia os desenhos do Pinta quando a janela do Estúdio volta ao foco — é
- * assim que "editei o desenho na outra aba" chega ao jogo sem nenhum clique.
+ * Reconcilia no foco e quando a ponte do Pinta termina em outra aba. O commit
+ * pode chegar depois do foco: o jogo não deve esperar uma segunda volta à janela.
  *
  * Não renderiza nada. Fica no Shell (ao lado dos outros observadores sempre
  * ligados) porque a janela dos materiais pode estar fechada justamente quando ela
@@ -25,12 +29,43 @@ export function DrawingSyncWatcher(): null {
   useEffect(() => {
     // Só o Estúdio Completo tem biblioteca pessoal (namespace por PERFIL). Na
     // aula e no adulto o namespace é vazio e não há o que sincronizar.
-    if (!getPersonalAssetsNamespace()) return
+    const namespace = getPersonalAssetsNamespace()
+    if (!namespace) return
 
     let disposed = false
+    let running = false
+    let pending = false
+    let scheduled = false
     const controller = new AbortController()
+    const ownerScope = captureProjectStorageScope()
+    const isActive = () =>
+      !disposed &&
+      !ownerScope.signal?.aborted &&
+      getPersonalAssetsNamespace() === namespace &&
+      captureProjectStorageScope().identity === ownerScope.identity
+    const flush = async () => {
+      scheduled = false
+      if (!isActive()) return
+      running = true
+      try {
+        do {
+          pending = false
+          await syncDrawingsIntoProjects(storeApi, {
+            pintaLibrary,
+            signal: controller.signal,
+            runtimeCatalog,
+          })
+        } while (pending && isActive())
+      } finally {
+        running = false
+        if (pending && isActive()) run()
+      }
+    }
     const run = () => {
-      if (disposed) return
+      if (!isActive()) return
+      pending = true
+      if (running || scheduled) return
+      scheduled = true
       // A varredura dos projetos FECHADOS é I/O de fundo: espera a aba ficar
       // ociosa para não competir com o editor/preview no instante do foco.
       const idle = (cb: () => void) =>
@@ -38,11 +73,8 @@ export function DrawingSyncWatcher(): null {
           ? requestIdleCallback(() => cb(), { timeout: 2000 })
           : setTimeout(cb, 200)
       idle(() => {
-        if (disposed) return
-        void syncDrawingsIntoProjects(storeApi, {
-          pintaLibrary,
-          signal: controller.signal,
-          runtimeCatalog,
+        void flush().catch((error: unknown) => {
+          console.warn('Não consegui atualizar os desenhos do Pinta.', error)
         })
       })
     }
@@ -63,10 +95,12 @@ export function DrawingSyncWatcher(): null {
     })
     window.addEventListener('focus', run)
     document.addEventListener('visibilitychange', onVisible)
+    const unsubscribeChanges = subscribePersonalAssetsChanged(run, namespace)
     return () => {
       disposed = true
       controller.abort()
       unsubscribe()
+      unsubscribeChanges()
       window.removeEventListener('focus', run)
       document.removeEventListener('visibilitychange', onVisible)
     }

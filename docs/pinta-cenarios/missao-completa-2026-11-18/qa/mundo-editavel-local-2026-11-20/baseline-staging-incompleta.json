@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-20T15:12:45.269Z",
+  "exportedThroughRealStagingUi": true,
+  "version": 7,
+  "expectedResources": 6,
+  "actualResources": 5,
+  "missing": [
+    {
+      "id": "fc15aec6-b219-452a-9f85-80c2c2681598",
+      "name": "qa-cabana-20261120",
+      "kind": "tilemap",
+      "sha256": "221c78fb4d0858010d8423d687d371e31b224bb132fce215a51cb8580ea15777"
+    }
+  ],
+  "otherCompleteDocumentHashesMatch": true,
+  "warnings": 0,
+  "fixedLocalCodeAppliedToStaging": false
+}

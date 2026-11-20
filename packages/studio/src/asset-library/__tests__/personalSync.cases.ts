@@ -110,6 +110,33 @@ const { getPersonalAsset } = await import('../personal')
 const PNG = 'data:image/png;base64,AAAA'
 const PNG_NOVO = 'data:image/png;base64,BBBB'
 const PNG_PERFIL_B = 'data:image/png;base64,CCCC'
+
+it('duas alterações no mesmo milissegundo chegam ao projeto sem perder a segunda', async () => {
+  const clock = spyOn(Date, 'now').mockReturnValue(1720000000000)
+  try {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    seedOpenProject([drawingAsset({})])
+    await syncDrawingsIntoProjects(useProjectStore)
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    await syncDrawingsIntoProjects(useProjectStore)
+    expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(PNG_NOVO)
+  } finally {
+    clock.mockRestore()
+  }
+})
+
+it('sem marcador confiável, novas leituras conferem os desenhos novamente', async () => {
+  const { getPersonalAssetsNamespace } = await import('../personal')
+  const key = `sz:desenhos-alterados:${getPersonalAssetsNamespace()}`
+  await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+  localStorage.removeItem(key)
+  seedOpenProject([drawingAsset({})])
+  await syncDrawingsIntoProjects(useProjectStore)
+  await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+  localStorage.setItem(key, 'quebrado')
+  await syncDrawingsIntoProjects(useProjectStore)
+  expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(PNG_NOVO)
+})
 /**
  * Imagem NO teto de um asset (800k chars) — válida sozinha. A MESMA string é
  * reusada em vários assets (JS compartilha por referência: o teste custa ~800KB
@@ -1764,6 +1791,8 @@ describe('C3 recipe sync', () => {
     const js = createEmptyProject('js-unchanged', 'JS intacto')
     js.assets = [drawingAsset({})]
     await persistProject(js)
+    // This case requires an unchanged, valid signal. A missing signal now forces a safe scan.
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
     const resolver = imageResolver()
     resolver.setProvenance(asset.pintaImage.provenance)
     const options = { pintaLibrary: resolver.adapter }

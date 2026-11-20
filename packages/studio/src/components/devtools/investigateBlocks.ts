@@ -30,7 +30,10 @@ export function blockAtScriptLine(map: SourceMap, line: number): string | null {
   return findIdAtLine(reverseSourceMap(map), 'script.js', line)
 }
 
-type BlockJson = { id?: unknown; [key: string]: unknown }
+type BlockJson = { id: string; type: string; [key: string]: unknown }
+
+const isBlockWithId = (record: Record<string, unknown>, id: string): record is BlockJson =>
+  record.id === id && typeof record.type === 'string'
 
 /** O JSON de um bloco dentro do estado salvo dos blocos (procura em toda a árvore). */
 export function findBlockJson(state: unknown, id: string): BlockJson | null {
@@ -44,8 +47,8 @@ export function findBlockJson(state: unknown, id: string): BlockJson | null {
       for (const item of node) stack.push(item)
       continue
     }
-    const record = node as BlockJson
-    if (record.id === id && typeof record.type === 'string') return record
+    const record = node as Record<string, unknown>
+    if (isBlockWithId(record, id)) return record
     for (const value of Object.values(record))
       if (value && typeof value === 'object') stack.push(value)
   }

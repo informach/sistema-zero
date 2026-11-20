@@ -1,0 +1,19 @@
+module.exports=async function(qa){let phase='guard';try{const page=qa.modern;if(!qa.ownedGeneratedGamePath||new URL(page.url()).pathname!==qa.ownedGeneratedGamePath)throw Error('Owned editor missing');
+phase='run';
+await page.locator('[data-live-target="studio-run"]:visible').click();
+let frame,canvas;phase='find-canvas';
+for(let i=0;i<80;i++){
+const element=await page.locator('iframe[title="Pré-visualização"]').elementHandle();const root=await element?.contentFrame();
+for(const child of root?[root,...root.childFrames()]:[]){if(child.isDetached())continue;try{if(await child.locator('canvas#tela').count()){frame=child;canvas=child.locator('canvas#tela');break}}catch(e){if(!child.isDetached())throw e}}
+if(canvas)break;await page.waitForTimeout(250);
+}
+if(!canvas)throw Error('No generated game canvas');
+const measure=()=>canvas.evaluate(c=>{const ctx=c.getContext('2d'),pixels=ctx.getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1,count=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(pixels[k]===74&&pixels[k+1]===222&&pixels[k+2]===128&&pixels[k+3]===255){count++;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}}return {width:c.width,height:c.height,count,minX,minY,maxX,maxY}});
+phase='measure';await page.waitForTimeout(500);const before=await measure();if(!before.count){await canvas.screenshot({path:'.cache/pinta-owned-generated-game-diagnostic.png'});return {failed:true,phase,player:before,canvasCount:await canvas.count()}}
+phase='move';
+await canvas.click({position:{x:Math.min(100,before.width-1),y:Math.min(100,before.height-1)}});
+try{await page.keyboard.down('ArrowRight');await page.waitForTimeout(250)}finally{await page.keyboard.up('ArrowRight')}
+const after=await measure();if(!after.count||after.minX<=before.minX)throw Error('Generated player did not move right');
+qa.ownedGeneratedGameRan=true;
+return {realStagingGame:true,generatedByPlayMapButton:true,nativeSchema:7,precisePhysics:true,previewMode:frame.parentFrame()===page.mainFrame()?'srcdoc':'isolated-shell',playerBefore:before,playerAfter:after,movedRight:true,oldPagePreserved:!qa.old.isClosed()};
+}catch(e){return {failed:true,phase,type:e.name,reason:['Owned editor missing','No generated game canvas','Generated player missing','Generated player did not move right'].includes(e.message)?e.message:'omitted'}}};

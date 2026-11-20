@@ -1,0 +1,17 @@
+const path=require('node:path');
+module.exports=async function(qa){if(qa.old.isClosed()||!qa.oldNetworkSuspended)throw Error('Legacy witness must remain held');
+const page=await qa.context.newPage();qa.vilaPage=page;
+await page.goto(qa.origin+'/pinta',{waitUntil:'domcontentloaded',timeout:45000});
+const own=page.getByRole('button',{name:'Abrir qa-vila-floresta-20261120 (Mapa)',exact:true});if(await own.count())throw Error('Owned Vila already exists');
+const file=page.locator('input[type=file][accept^=".pinta.json"]');await file.waitFor({state:'attached',timeout:20000});
+await file.setInputFiles(path.resolve('.cache/pinta-authenticated-vila.pinta.json'));
+await own.waitFor({state:'visible',timeout:30000});await own.click();
+await page.getByRole('img',{name:'Grade do mapa',exact:true}).waitFor({state:'visible',timeout:20000});
+const reader=await qa.makeAuthorityPage();
+try{const result=await reader.evaluate(async namespace=>{const client=window.pinta026.createPintaPersistence({namespace});const assets=(await client.listAllAssets()).filter(a=>/^qa-(terra|agua|morador|conjunto|vila-floresta|cabana)-20261120$/.test(a.name));
+if(assets.length!==6)throw Error('Vila resource closure incomplete');const map=assets.find(a=>a.name==='qa-vila-floresta-20261120');const cabana=assets.find(a=>a.name==='qa-cabana-20261120');
+if(map?.kind!=='tilemap'||map.schema!==7||map.physics!=='precise'||map.layers.length!==18||cabana?.kind!=='tilemap'||cabana.schema!==7)throw Error('Vila native contract lost');
+const ids=new Set(assets.map(a=>a.id));if(!ids.has(map.tilesetId)||map.layers.some(l=>l.kind==='tiles'&&l.tilesetId&&!ids.has(l.tilesetId)))throw Error('Vila tileset link lost');
+return {assets:assets.map(a=>({id:a.id,name:a.name,kind:a.kind,schema:a.schema})),mapId:map.id,cabanaId:cabana.id,layers:map.layers.length,physics:map.physics,doorTargets:map.layers.filter(l=>l.kind==='objects').flatMap(l=>l.objects.filter(o=>o.role==='door').map(o=>o.properties.destino)),nativeSchema:map.schema};},qa.ownedStorageNamespace);
+qa.ownedVila=result;return {...result,importedThroughFileInput:true,realStagingEditor:true,cloudWriter6Activated:false};
+}finally{await reader.close()}};

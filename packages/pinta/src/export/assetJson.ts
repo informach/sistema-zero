@@ -20,6 +20,7 @@ import {
   type PintaAsset,
   pintaAssetDependencyIds,
 } from '../core/project'
+import { pintaDoorDependencyIds, SceneMapClosureError } from '../core/sceneMapClosure'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
 
 export interface AssetImportResult {
@@ -48,10 +49,35 @@ export function assetBundleToJson(
   asset: PintaAsset,
   galleryAssets: readonly PintaAsset[],
 ): string | null {
-  const dependencies = pintaAssetDependencyIds(asset)
-  if (dependencies.length === 0) return assetToJson(asset)
-  const byId = new Map(galleryAssets.map((a) => [a.id, a])),
-    seen = new Set<string>([asset.id]),
+  const byId = new Map(galleryAssets.map((a) => [a.id, a]))
+  byId.set(asset.id, asset)
+  const bundle = collectAssetBundle(asset, byId, new Map())
+  return bundle ? galleryToPintaJson(bundle) : null
+}
+
+/** References only: the detector never repeatedly encodes cells or images. */
+function collectAssetBundle(
+  asset: PintaAsset,
+  byId: ReadonlyMap<string, PintaAsset>,
+  cache: Map<string, readonly string[] | null>,
+): PintaAsset[] | null {
+  const dependenciesOf = (item: PintaAsset): readonly string[] | null => {
+    if (cache.has(item.id)) return cache.get(item.id) ?? null
+    try {
+      const ids = [
+        ...new Set([...pintaAssetDependencyIds(item), ...pintaDoorDependencyIds(item, byId)]),
+      ]
+      cache.set(item.id, ids)
+      return ids
+    } catch (error) {
+      if (!(error instanceof SceneMapClosureError)) throw error
+      cache.set(item.id, null)
+      return null
+    }
+  }
+  const dependencies = dependenciesOf(asset)
+  if (!dependencies) return null
+  const seen = new Set<string>([asset.id]),
     ordered: PintaAsset[] = []
   // Iterativo: propriedades podem ligar recursos em ciclos ou cadeias longas. O teto é o da
   // captura de imagens; ultrapassá-lo recusa o pacote inteiro em vez de omitir referências.
@@ -67,25 +93,28 @@ export function assetBundleToJson(
     if (seen.has(id)) continue
     const dependency = byId.get(id)
     if (!dependency || seen.size >= PINTA_DEPENDENCY_ASSET_LIMIT) return null
+    const next = dependenciesOf(dependency)
+    if (!next) return null
     seen.add(id)
-    pending.push({ asset: dependency, dependencies: pintaAssetDependencyIds(dependency), next: 0 })
+    pending.push({ asset: dependency, dependencies: next, next: 0 })
   }
-  return galleryToPintaJson(ordered)
+  return ordered
 }
 
 /**
- * O arquivo é o pacote de UM mapa (o que `assetBundleToJson` gera)? Um mapa só +
- * tilesets que ele usa, com as peças padrão dele presentes. A galeria restaura
- * esse pacote de forma ATÔMICA (ou volta tudo, ou nada).
+ * O arquivo é um cenário conectado completo? Inclui mundos com portas e ciclos.
+ * A galeria restaura o pacote de forma ATÔMICA (ou volta tudo, ou nada).
  */
 export function isTilemapBundle(assets: readonly PintaAsset[]): boolean {
-  const maps = assets.filter((asset) => asset.kind === 'tilemap')
-  const map = maps[0]
-  if (maps.length !== 1 || map?.kind !== 'tilemap') return false
-  const bundle = assetBundleToJson(map, assets)
-  if (!bundle) return false
-  const ids = new Set(importPintaJson(bundle).assets.map((a) => a.id))
-  return assets.length > 1 && ids.size === assets.length && assets.every((a) => ids.has(a.id))
+  if (assets.length < 2 || assets.length > PINTA_DEPENDENCY_ASSET_LIMIT) return false
+  if (!assets.some((asset) => asset.kind === 'tilemap')) return false
+  const byId = new Map(assets.map((asset) => [asset.id, asset]))
+  if (byId.size !== assets.length) return false
+  const cache = new Map<string, readonly string[] | null>()
+  // Portable exports put their root last. Other gallery ordering remains supported.
+  for (const root of [...assets].reverse())
+    if (collectAssetBundle(root, byId, cache)?.length === assets.length) return true
+  return false
 }
 
 /**

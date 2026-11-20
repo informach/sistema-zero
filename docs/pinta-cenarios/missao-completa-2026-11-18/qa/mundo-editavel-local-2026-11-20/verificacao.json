@@ -1,0 +1,77 @@
+{
+  "at": "2026-11-20T15:23:36.515Z",
+  "base": "a46d2723028e39f743752b941adee1ea4972026c",
+  "focused": {
+    "pass": 53,
+    "fail": 0,
+    "assertions": 236,
+    "files": 5
+  },
+  "pinta": {
+    "pass": 2269,
+    "skip": 3,
+    "fail": 0,
+    "assertions": 22963,
+    "files": 194
+  },
+  "pygameSeparate": {
+    "pass": 18,
+    "skip": 0,
+    "fail": 0,
+    "assertions": 5231,
+    "files": 2,
+    "includesAllThreeSkipped": true
+  },
+  "browser": {
+    "pass": 2,
+    "desktop": true,
+    "touchEmulated": true,
+    "authenticated": false,
+    "server": "Pinta production build harness"
+  },
+  "gates": [
+    {
+      "name": "browser",
+      "exit": 0,
+      "log": ".cache/pinta-native-world-browser.log"
+    },
+    {
+      "name": "pinta-tests",
+      "exit": 0,
+      "log": ".cache/pinta-native-world-pinta-tests.log"
+    },
+    {
+      "name": "pinta-types",
+      "exit": 0,
+      "log": ".cache/pinta-native-world-pinta-types.log"
+    },
+    {
+      "name": "flow-types",
+      "exit": 0,
+      "log": ".cache/pinta-native-world-flow-types.log"
+    }
+  ],
+  "code": [
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "sha256": "10d242ec8ea324ec491fb3654b5baa6a10394e3a9f36571f294e9d223e06da12"
+    },
+    {
+      "file": "packages/pinta/src/core/sceneMapClosure.ts",
+      "sha256": "e3ed12d6224543a3dd2f34d7ffe827e1371aff799b52b02d9b6c030844d1d1a9"
+    },
+    {
+      "file": "packages/pinta/src/export/assetJson.ts",
+      "sha256": "26aa60f798c32344e27c3abb12ab6aa14338579e62be7e148bf4e9ef57859405"
+    },
+    {
+      "file": "packages/pinta/src/export/assetJsonWorld.test.ts",
+      "sha256": "1b94211693673cada42749dca74774a2b20c51d462d8ef56650c501a136ad346"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-native-world-scenes.flow.ts",
+      "sha256": "a596c4ac7dd1d133e7a713c556de776909f3b4fd932bf6b339f1b1b7ef48a016"
+    }
+  ],
+  "codeHashEncoding": "UTF-8 with LF"
+}

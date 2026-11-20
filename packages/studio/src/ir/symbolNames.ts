@@ -1,9 +1,22 @@
+/** The read-only lexical collection contract, independent of ambient Set proposals. */
+export interface ReadonlySymbolNames<T> extends Iterable<T> {
+  readonly size: number
+  has(value: T): boolean
+  entries(): IterableIterator<[T, T]>
+  keys(): IterableIterator<T>
+  values(): IterableIterator<T>
+  forEach(
+    callback: (value: T, key: T, set: ReadonlySymbolNames<T>) => void,
+    thisArg?: unknown,
+  ): void
+}
+
 /**
  * A lexical-scope snapshot. Forking shares read-only storage; the first actual
  * mutation detaches it. Unlike a parent-linked scope, later parent writes cannot
  * become visible in an earlier snapshot. Iteration reads the captured storage.
  */
-export class SymbolNames<T = string> implements ReadonlySet<T> {
+export class SymbolNames<T = string> implements ReadonlySymbolNames<T> {
   private storage: { values: Set<T>; shared: boolean }
 
   constructor(values?: Iterable<T>, storage?: { values: Set<T>; shared: boolean }) {
@@ -57,7 +70,10 @@ export class SymbolNames<T = string> implements ReadonlySet<T> {
     return this.values()
   }
 
-  forEach(callback: (value: T, key: T, set: ReadonlySet<T>) => void, thisArg?: unknown): void {
+  forEach(
+    callback: (value: T, key: T, set: ReadonlySymbolNames<T>) => void,
+    thisArg?: unknown,
+  ): void {
     this.storage.values.forEach((value) => {
       callback.call(thisArg, value, value, this)
     })

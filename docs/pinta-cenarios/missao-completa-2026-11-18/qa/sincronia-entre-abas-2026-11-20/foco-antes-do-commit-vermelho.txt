@@ -1,0 +1,35 @@
+
+  ✘  1 .cache\pinta-focus-before-bridge.flow.ts:468:1 › Pinta real cria jogo estruturado; atualização do cenário conserva a programação (20.8s)
+
+
+  1) .cache\pinta-focus-before-bridge.flow.ts:468:1 › Pinta real cria jogo estruturado; atualização do cenário conserva a programação
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: -1
+    Received: 15
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      562 |       { timeout: 10000 },
+      563 |     )
+    > 564 |     .toBe(-1)
+          |      ^
+      565 |   const after = await snapshot(page)
+      566 |   expect(after.files).toEqual(before.files)
+      567 |   expect(after.ir).toEqual(before.ir)
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\.cache\pinta-focus-before-bridge.flow.ts:564:6
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-focus-before-bridge-results\pinta-focus-before-bridge.-4fef0-ário-conserva-a-programação\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-focus-before-bridge-results\pinta-focus-before-bridge.-4fef0-ário-conserva-a-programação\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-focus-before-bridge-results\pinta-focus-before-bridge.-4fef0-ário-conserva-a-programação\error-context.md
+
+  1 failed
+    .cache\pinta-focus-before-bridge.flow.ts:468:1 › Pinta real cria jogo estruturado; atualização do cenário conserva a programação

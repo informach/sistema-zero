@@ -1,263 +1,263 @@
 {
- "medidoEm": "2026-11-20",
- "maquina": "Windows 11 (máquina da dona), Firefox 157.0 do Playwright 1.64.1",
- "programa": "packages/studio/scripts/measure-preview-isolation.mjs (5 s de trabalho síncrono nativo no filho)",
- "playwrightPadrao": [
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
-   "cabecalhosDoHost": false,
-   "arranjo": "mesma-origem",
-   "maiorAtrasoDoRelogioMs": 5001,
-   "cliqueAtendidoEmMs": 4539,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
-   "cabecalhosDoHost": false,
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5002,
-   "cliqueAtendidoEmMs": 4530,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
-   "cabecalhosDoHost": false,
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 5013,
-   "cliqueAtendidoEmMs": 4546,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
-   "cabecalhosDoHost": true,
-   "arranjo": "mesma-origem",
-   "maiorAtrasoDoRelogioMs": 5003,
-   "cliqueAtendidoEmMs": 4533,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
-   "cabecalhosDoHost": true,
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5002,
-   "cliqueAtendidoEmMs": 4524,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
-   "cabecalhosDoHost": true,
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 57,
-   "cliqueAtendidoEmMs": 40,
-   "isolado": true
-  }
- ],
- "isolamentoPorSite": [
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": false,
-   "arranjo": "mesma-origem",
-   "maiorAtrasoDoRelogioMs": 5006,
-   "cliqueAtendidoEmMs": 4540,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": false,
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5005,
-   "cliqueAtendidoEmMs": 4527,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": false,
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 55,
-   "cliqueAtendidoEmMs": 58,
-   "isolado": true
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "arranjo": "mesma-origem",
-   "maiorAtrasoDoRelogioMs": 5003,
-   "cliqueAtendidoEmMs": 4549,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5007,
-   "cliqueAtendidoEmMs": 4546,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 58,
-   "cliqueAtendidoEmMs": 50,
-   "isolado": true
-  }
- ],
- "isolamentoPorSitePerfisDoHost": [
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": false,
-   "perfilDoHost": "none",
-   "hostHeaders": {},
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5014,
-   "cliqueAtendidoEmMs": 4542,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": false,
-   "perfilDoHost": "none",
-   "hostHeaders": {},
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 67,
-   "cliqueAtendidoEmMs": 82,
-   "isolado": true
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "perfilDoHost": "coop",
-   "hostHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin"
-   },
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5009,
-   "cliqueAtendidoEmMs": 4539,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "perfilDoHost": "coop",
-   "hostHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin"
-   },
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 53,
-   "cliqueAtendidoEmMs": 53,
-   "isolado": true
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "perfilDoHost": "coep",
-   "hostHeaders": {
-    "Cross-Origin-Embedder-Policy": "credentialless"
-   },
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5006,
-   "cliqueAtendidoEmMs": 4532,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "perfilDoHost": "coep",
-   "hostHeaders": {
-    "Cross-Origin-Embedder-Policy": "credentialless"
-   },
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 56,
-   "cliqueAtendidoEmMs": 45,
-   "isolado": true
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "perfilDoHost": "coop-coep",
-   "hostHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "srcdoc",
-   "maiorAtrasoDoRelogioMs": 5008,
-   "cliqueAtendidoEmMs": 4530,
-   "isolado": false
-  },
-  {
-   "navegador": "firefox 157.0",
-   "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
-   "cabecalhosDoHost": true,
-   "perfilDoHost": "coop-coep",
-   "hostHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "frameHeaders": {
-    "Cross-Origin-Opener-Policy": "same-origin",
-    "Cross-Origin-Embedder-Policy": "credentialless",
-    "Cross-Origin-Resource-Policy": "cross-origin"
-   },
-   "arranjo": "outro-site",
-   "maiorAtrasoDoRelogioMs": 56,
-   "cliqueAtendidoEmMs": 42,
-   "isolado": true
-  }
- ]
+  "medidoEm": "2026-11-20",
+  "maquina": "Windows 11 (máquina da dona), Firefox 157.0 do Playwright 1.64.1",
+  "programa": "packages/studio/scripts/measure-preview-isolation.mjs (5 s de trabalho síncrono nativo no filho)",
+  "playwrightPadrao": [
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
+      "cabecalhosDoHost": false,
+      "arranjo": "mesma-origem",
+      "maiorAtrasoDoRelogioMs": 5001,
+      "cliqueAtendidoEmMs": 4539,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
+      "cabecalhosDoHost": false,
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5002,
+      "cliqueAtendidoEmMs": 4530,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
+      "cabecalhosDoHost": false,
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 5013,
+      "cliqueAtendidoEmMs": 4546,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
+      "cabecalhosDoHost": true,
+      "arranjo": "mesma-origem",
+      "maiorAtrasoDoRelogioMs": 5003,
+      "cliqueAtendidoEmMs": 4533,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
+      "cabecalhosDoHost": true,
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5002,
+      "cliqueAtendidoEmMs": 4524,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "do Playwright (0, iframes no mesmo processo)",
+      "cabecalhosDoHost": true,
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 57,
+      "cliqueAtendidoEmMs": 40,
+      "isolado": true
+    }
+  ],
+  "isolamentoPorSite": [
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": false,
+      "arranjo": "mesma-origem",
+      "maiorAtrasoDoRelogioMs": 5006,
+      "cliqueAtendidoEmMs": 4540,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": false,
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5005,
+      "cliqueAtendidoEmMs": 4527,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": false,
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 55,
+      "cliqueAtendidoEmMs": 58,
+      "isolado": true
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "arranjo": "mesma-origem",
+      "maiorAtrasoDoRelogioMs": 5003,
+      "cliqueAtendidoEmMs": 4549,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5007,
+      "cliqueAtendidoEmMs": 4546,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 58,
+      "cliqueAtendidoEmMs": 50,
+      "isolado": true
+    }
+  ],
+  "isolamentoPorSitePerfisDoHost": [
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": false,
+      "perfilDoHost": "none",
+      "hostHeaders": {},
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5014,
+      "cliqueAtendidoEmMs": 4542,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": false,
+      "perfilDoHost": "none",
+      "hostHeaders": {},
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 67,
+      "cliqueAtendidoEmMs": 82,
+      "isolado": true
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "perfilDoHost": "coop",
+      "hostHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin"
+      },
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5009,
+      "cliqueAtendidoEmMs": 4539,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "perfilDoHost": "coop",
+      "hostHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin"
+      },
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 53,
+      "cliqueAtendidoEmMs": 53,
+      "isolado": true
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "perfilDoHost": "coep",
+      "hostHeaders": {
+        "Cross-Origin-Embedder-Policy": "credentialless"
+      },
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5006,
+      "cliqueAtendidoEmMs": 4532,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "perfilDoHost": "coep",
+      "hostHeaders": {
+        "Cross-Origin-Embedder-Policy": "credentialless"
+      },
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 56,
+      "cliqueAtendidoEmMs": 45,
+      "isolado": true
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "perfilDoHost": "coop-coep",
+      "hostHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "srcdoc",
+      "maiorAtrasoDoRelogioMs": 5008,
+      "cliqueAtendidoEmMs": 4530,
+      "isolado": false
+    },
+    {
+      "navegador": "firefox 157.0",
+      "isolamentoDoFirefox": "por site (1, o do Firefox de mesa)",
+      "cabecalhosDoHost": true,
+      "perfilDoHost": "coop-coep",
+      "hostHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "frameHeaders": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+        "Cross-Origin-Resource-Policy": "cross-origin"
+      },
+      "arranjo": "outro-site",
+      "maiorAtrasoDoRelogioMs": 56,
+      "cliqueAtendidoEmMs": 42,
+      "isolado": true
+    }
+  ]
 }

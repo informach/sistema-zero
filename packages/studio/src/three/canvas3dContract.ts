@@ -403,7 +403,7 @@ export function isCanvas3DResourceCreatorExpression(
     className?: string
     namespace?: string
   },
-  importedClassNames: ReadonlySet<string> = new Set(),
+  importedClassNames: Pick<ReadonlySet<string>, 'has'> = new Set(),
 ): boolean {
   if (expression.type !== 'newExpr') return false
   const className = expression.className?.trim() ?? ''
@@ -654,7 +654,7 @@ export function isCanvas3DResourceCreatorStatement(
     namespace?: string
     className?: string
   },
-  importedClassNames: ReadonlySet<string> = new Set(),
+  importedClassNames: Pick<ReadonlySet<string>, 'has'> = new Set(),
 ): boolean {
   return (
     CANVAS3D_RESOURCE_CREATOR_TYPES.has(statement.type) ||

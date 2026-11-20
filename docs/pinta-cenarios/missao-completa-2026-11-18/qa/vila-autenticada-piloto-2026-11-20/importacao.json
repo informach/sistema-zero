@@ -1,0 +1,48 @@
+{
+  "assets": [
+    {
+      "id": "fc15aec6-b219-452a-9f85-80c2c2681598",
+      "name": "qa-cabana-20261120",
+      "kind": "tilemap",
+      "schema": 7
+    },
+    {
+      "id": "209771ff-621e-41a8-a05d-e454853b5071",
+      "name": "qa-morador-20261120",
+      "kind": "pixel-sprite"
+    },
+    {
+      "id": "3d36c552-4ecd-418c-9a1d-72032dcd6e3c",
+      "name": "qa-agua-20261120",
+      "kind": "tileset",
+      "schema": 4
+    },
+    {
+      "id": "6c7c2b91-0023-42c4-8252-59d27b202f46",
+      "name": "qa-terra-20261120",
+      "kind": "tileset",
+      "schema": 4
+    },
+    {
+      "id": "9ab472dd-a61c-4f2b-8092-b413ac1ed6e6",
+      "name": "qa-conjunto-20261120",
+      "kind": "map-set",
+      "schema": 4
+    },
+    {
+      "id": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+      "name": "qa-vila-floresta-20261120",
+      "kind": "tilemap",
+      "schema": 7
+    }
+  ],
+  "mapId": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+  "cabanaId": "fc15aec6-b219-452a-9f85-80c2c2681598",
+  "layers": 18,
+  "physics": "precise",
+  "doorTargets": ["fc15aec6-b219-452a-9f85-80c2c2681598"],
+  "nativeSchema": 7,
+  "importedThroughFileInput": true,
+  "realStagingEditor": true,
+  "cloudWriter6Activated": false
+}

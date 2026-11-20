@@ -42,6 +42,38 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   ignorados por caminho de Chromium foram reexecutados com Chrome real e passaram.
   Deltas posteriores, tipos, formatação e limites da prova estão em
   `qa/revisao-integrada-2026-11-20/README.md`.
+  Continuidade de 20/11: os aplicativos Community e Kids leitores foram implantados
+  por outra sessão no commit 08f040a9 e conferidos em uso. A aba publicada antiga
+  gravou offline após fechar a página nova; duas reaberturas preservaram integralmente
+  o mapa 7 e recuperaram a edição antiga como cópia estável. Aplicativo real e
+  exportação/importação oficial conservaram o mesmo hash. Ver
+  `qa/aba-antiga-autenticada-2026-11-20/README.md`, incluindo a distinção entre
+  código de leitura previamente disponível e cold start HTTP offline do aplicativo.
+  Members/Auth permanecem na política anterior; distribuição Python 132, gravador
+  novo, rollback e publicação completa continuam pendentes. A CI de qualificação
+  44741178796 falhou no observador do DOM; uma reprodução com coleta de memória
+  identificou o defeito upstream Happy DOM 2264, cuja correção está em verificação.
+  O lote remoto 9456c3da foi integrado e o runtime correspondente 4daf3280… passou
+  na qualificação Linux e na execução real em staging; módulo e ambos os contêineres
+  foram conferidos em `qa/leitor-a-runtime-staging-2026-11-19/continuidade-4daf-2026-11-20/`.
+  A CI 44749541850 parou na formatação de um JSON remoto de QA; o ajuste preserva
+  seus dados. A CI 44752366629 aprovou os demais jobs e falhou no typecheck de Members:
+  a coleção de nomes do Estúdio declarava um ReadonlySet incompleto sob ESNext.
+  O contrato foi corrigido somente nos tipos, com JavaScript gerado idêntico nos
+  quatro arquivos envolvidos. Members e Estúdio passaram na checagem completa;
+  84 regressões, perfil oficial e Biome de 16.635 arquivos também passaram.
+  Evidências em `qa/contrato-de-nomes-ci-2026-11-20/`. É necessária nova qualificação
+  remota; nenhuma ativação de Python, política nova ou gravador foi feita por essas provas.
+  A integração posterior combina o remoto publicado 6c32a1fb3 com Pinta c08075547,
+  sem copiar o trabalho privado de outras sessões. Passaram 14 verificações locais,
+  incluindo 2.272 testes Pinta sem pulos, 48 ensaios de cenários, 12 de integração,
+  tipos completos de Estúdio/Members e Biome. Foram regenerados somente os três
+  SDKs autorizados, mantendo imports e licenças. A revisão também corrigiu o sinal
+  de atualização para duas gravações no mesmo milissegundo, preservando os dados.
+  O primeiro typecheck integrado encontrou 20 erros nos diagnósticos/fixtures do
+  remoto; foram corrigidos nos tipos e a repetição passou. As tentativas constam
+  em `qa/integracao-6c32-2026-11-20/`. O perfil db27c95b… ainda precisa de nova CI,
+  imagem Linux e rollout independente; esta prova local não conclui a etapa 0b.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
@@ -67,6 +99,21 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   importação, atualização, execução, pacote web e publicação conferem esse leitor, com
   proteção da revisão pública anterior e da proveniência privada. Provas locais em
   `qa/leitores-de-cenarios/README.md`; implantação e ciclo autenticado continuam na etapa 0b.
+  No piloto autenticado de 20/11, Jogar meu mapa criou e executou uma cena 3 a partir
+  de documento 7. Uma variável acrescentada pelo teclado foi preservada, junto com
+  o código, IR e blocos, depois de editar o mapa, atualizar o jogo e reabrir o aplicativo.
+  O foco foi emulado no Chrome headless. São duas camadas, sem publicação ou nuvem 6;
+  a prova não encerra a Vila nem o fechamento Python. Ver
+  `qa/jogar-atualizar-autenticado-2026-11-20/README.md`.
+  A própria Vila também percorreu Vila → Cabana → Vila, com colisão, água animada,
+  primeiro plano e seis documentos nativos iguais após reabertura. Código, IR e
+  blocos foram preservados depois de editar o Chão e reabrir o jogo. A atualização
+  exigiu foco após a biblioteca estar pronta. Esse intervalo foi depois corrigido
+  localmente, incluindo guardas para troca de perfil e sessão: seis regressões,
+  12 fluxos, 626 componentes, tipos completos de Estúdio/Members e Biome passaram.
+  A fonte final integrada ainda precisa de qualificação e repetição autenticada;
+  ver `sincronia-entre-abas.md`. Provas em `qa/vila-autenticada-piloto-2026-11-20/`
+  e `qa/vila-atualizacao-autenticada-2026-11-20/`; isso não encerra publicação/Python/nuvem.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
   O primeiro lote corrige peças reduzidas que caíam entre as amostras do corpo no
@@ -133,6 +180,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   `qa/motores-externos-2026-11-19/README.md`. O comando oficial agora pode exigir
   os três programas instalados. Projeções e chunks expansíveis pertencem à etapa 8;
   publicação e atualização autenticadas continuam nas etapas 0b/9.
+  O piloto encontrou uma omissão no arquivo editável: a cabana ligada por porta
+  não acompanhava a Vila. A correção compartilha a resolução de portas e restaura
+  mundos completos atomicamente, sem mudar formatos nem visual. Passaram 53 testes
+  focados, 2.269 da suíte (três Pygame reexecutados em rodada separada com o motor real)
+  e dois ensaios Chrome desktop/toque. Ver `exportacao-nativa-de-mundos.md` e
+  `qa/mundo-editavel-local-2026-11-20/`. A prova verde autenticada espera o frontend corrigido.
 - [ ] 8a. Documento e persistência incremental por chunks, cache/culling estritamente orçados,
   navegação, mapas expansíveis e recuperação; medir heap, buffers e tempo, sem prometer hardware.
   Lote 8a1 implementado: envelope físico local 2 com blocos 32 × 32, transação

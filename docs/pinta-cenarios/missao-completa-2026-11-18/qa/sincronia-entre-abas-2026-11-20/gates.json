@@ -1,0 +1,37 @@
+[
+  {
+    "name": "integration",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-integration.log"
+  },
+  {
+    "name": "library",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-library.log"
+  },
+  {
+    "name": "components",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-components.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-members-types.log"
+  },
+  {
+    "name": "runtime-profile",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-runtime-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "log": ".cache/pinta-sync-owner-final-biome.log"
+  }
+]

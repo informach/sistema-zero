@@ -460,7 +460,10 @@ describe('PreviewIframe', () => {
       Object.defineProperty(frame, 'contentWindow', { configurable: true, get: () => casca })
       const daCasca = (data: unknown) =>
         act(() => {
-          window.dispatchEvent(new MessageEvent('message', { source: casca, origin, data }))
+          const event = new MessageEvent('message', { origin, data })
+          // Match the contentWindow fixture without pretending it is a complete Window.
+          Object.defineProperty(event, 'source', { value: casca })
+          window.dispatchEvent(event)
         })
       fireEvent.load(frame)
       daCasca({ type: 'sz-shell:ready' })
@@ -546,20 +549,32 @@ describe('PreviewIframe', () => {
     const key = `sz:run-tripwire:${project.id}`
     window.localStorage.removeItem(key)
     useProjectStore.setState({ project, isDirty: false, saveError: null })
-    render(<PreviewIframe />)
-    const frame = screen.getByTitle('Pré-visualização')
+    // Observe before mounting: a ready document may be present in the first
+    // commit. Watching only that iframe's later attributes misses this valid
+    // path, and also keeps watching a detached frame when React replaces it.
+    const container = document.createElement('div')
+    document.body.appendChild(container)
     const observed: Array<string | null> = []
     const observer = new MutationObserver(() => {
-      if (frame.getAttribute('srcdoc')?.includes('Preview automático'))
+      if (container.querySelector('iframe')?.getAttribute('srcdoc')?.includes('Preview automático'))
         observed.push(marcaDaAba(project.id))
     })
-    observer.observe(frame, { attributes: true, attributeFilter: ['srcdoc'] })
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['srcdoc'],
+    })
+    let unmount: (() => void) | undefined
     try {
-      fireEvent.load(frame)
+      unmount = render(<PreviewIframe />, { container }).unmount
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
       await waitFor(() => expect(observed.length).toBeGreaterThan(0))
       expect(observed.every((mark) => mark !== null)).toBe(true)
     } finally {
       observer.disconnect()
+      unmount?.()
+      container.remove()
     }
   })
 

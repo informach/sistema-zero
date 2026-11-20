@@ -11312,7 +11312,7 @@ const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
 
 function containsCanvas3DResourceCreatorExpression(
   value: unknown,
-  importedClassNames: ReadonlySet<string> | undefined,
+  importedClassNames: Pick<ReadonlySet<string>, 'has'> | undefined,
 ): boolean {
   if (Array.isArray(value)) {
     return value.some((child) =>

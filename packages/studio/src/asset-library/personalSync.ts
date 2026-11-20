@@ -90,13 +90,13 @@ import {
   getPersonalAssets,
   getPersonalAssetsNamespace,
   type PersonalAsset,
-  personalAssetsChangedAt,
+  personalAssetsChangeToken,
   readPersonalAssetInventory,
   savePersonalAsset,
 } from './personal'
 
 interface DrawingSyncState {
-  lastSyncAt: number
+  lastSyncToken: string
   didInitialSweep: boolean
   inFlight: Promise<DrawingSyncResult> | null
   inFlightAdapter?: StudioPintaLibraryAdapter | null
@@ -140,7 +140,7 @@ function captureSyncContext(): DrawingSyncContext {
   const identity = syncIdentity(namespace, storageScope)
   let state = syncStates.get(identity)
   if (!state) {
-    state = { lastSyncAt: 0, didInitialSweep: false, inFlight: null, pendingFailures: [] }
+    state = { lastSyncToken: '', didInitialSweep: false, inFlight: null, pendingFailures: [] }
     syncStates.set(identity, state)
   }
   return { namespace, storageScope, state }
@@ -435,9 +435,9 @@ export function syncDrawingsIntoProjects(
     !context.storageScope.signal?.aborted
   )
     return context.state.inFlight
-  const changedAt = personalAssetsChangedAt(context.namespace)
+  const changeToken = personalAssetsChangeToken(context.namespace)
   context.canonicalChanged =
-    !context.state.didInitialSweep || changedAt !== context.state.lastSyncAt
+    !context.state.didInitialSweep || !changeToken || changeToken !== context.state.lastSyncToken
   if (options.signal?.aborted || (!context.canonicalChanged && !adapter?.inspectImage)) {
     return Promise.resolve(emptyResult())
   }
@@ -479,7 +479,7 @@ export function syncDrawingsIntoProjects(
         createPintaImageSync(adapter, signal),
       )),
   }
-  const run = sweep(storeApi, changedAt, context)
+  const run = sweep(storeApi, changeToken, context)
   context.state.inFlightAdapter = adapter
   context.state.inFlightSignal = options.signal
   context.state.inFlightRuntimeCatalog = options.runtimeCatalog
@@ -494,7 +494,7 @@ export function syncDrawingsIntoProjects(
 
 function sweep(
   storeApi: ProjectStoreApi,
-  changedAt: number,
+  changeToken: string,
   context: DrawingSyncContext,
 ): Promise<DrawingSyncResult> {
   // O `detail` é preenchido DURANTE a varredura (quantos projetos, quantos trocados): a medida
@@ -503,7 +503,7 @@ function sweep(
   return perfSpanAsync(
     'studio:drawings:sweep',
     async () => {
-      const result = await sweepUnmeasured(storeApi, changedAt, context, detail)
+      const result = await sweepUnmeasured(storeApi, changeToken, context, detail)
       detail.updated = result.updatedInOpenProject + result.updatedInOtherProjects
       detail.failures = result.failures.length
       return result
@@ -514,7 +514,7 @@ function sweep(
 
 async function sweepUnmeasured(
   storeApi: ProjectStoreApi,
-  changedAt: number,
+  changeToken: string,
   context: DrawingSyncContext,
   detail: Record<string, unknown> = {},
 ): Promise<DrawingSyncResult> {
@@ -721,7 +721,7 @@ async function sweepUnmeasured(
   // A pending opening/CAS can refuse a required write. Keep its marker unconsumed so the
   // next normal focus/hydration sweep can reconcile it; do not retry inside this sweep.
   if (canonicalWritesCompleted && !context.canonicalWriteRefused && context.python?.current()) {
-    context.state.lastSyncAt = changedAt
+    context.state.lastSyncToken = changeToken
     context.state.didInitialSweep = true
   }
   return result

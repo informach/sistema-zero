@@ -1,0 +1,17 @@
+(node:28668) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   1 e2e\pinta-studio.flow.ts:56:1 › Jogar meu mapa cria e executa a plataforma de um conjunto com a física precisa (10.9s)
+  ✓   2 e2e\pinta-studio.flow.ts:152:3 › javascript: contornos do Pinta atualizam no Estúdio sem apagar o programa e reabrem inteiros (13.4s)
+  ✓   3 e2e\pinta-studio.flow.ts:152:3 › python: contornos do Pinta atualizam no Estúdio sem apagar o programa e reabrem inteiros (10.0s)
+  ✓   4 e2e\pinta-studio.flow.ts:258:1 › o leitor de mundos anterior também recusa o PNG de contornos (3.0s)
+  ✓   5 e2e\pinta-studio.flow.ts:283:1 › o catálogo com leitor anterior recusa os dados avançados e permite escolher a imagem simples (4.7s)
+  ✓   6 e2e\pinta-studio.flow.ts:329:1 › Python traz o mundo pela interface e atualiza só o destino conservando o programa (9.5s)
+  ✓   7 e2e\pinta-studio.flow.ts:401:1 › uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa (10.1s)
+  ✓   8 e2e\pinta-studio.flow.ts:468:1 › Pinta real cria jogo estruturado; atualização do cenário conserva a programação (11.0s)
+  ✓   9 e2e\pinta-studio.flow.ts:573:1 › editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa (8.6s)
+  ✓  10 e2e\pinta-studio.flow.ts:618:1 › Trazer do Pinta importa a Vila e o destino da porta juntos, sem mudar o programa (8.1s)
+  ✓  11 e2e\pinta-studio.flow.ts:670:1 › Trazer do Pinta conserva o mapa nativo 6 autocontido e sua animação sem os originais (3.8s)
+  ✓  12 e2e\pinta-studio.flow.ts:699:1 › falha síncrona no segundo put não deixa metade da Vila na biblioteca nem no projeto (2.0s)
+
+  12 passed (2.0m)

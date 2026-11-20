@@ -1,0 +1,8 @@
+(pass) desenho com várias peças > o SVG do mapa vetorial dá um símbolo por (tileset, peça); o padrão mantém o id antigo
+(pass) desenho com várias peças > o minimapa pinta cada célula com a cor das peças da camada que venceu
+(pass) desenho com várias peças > a camada sem as peças dela (sumiram ou são de outro tamanho) não tapa a de baixo, como no jogo
+
+ 53 pass
+ 0 fail
+ 236 expect() calls
+Ran 53 tests across 5 files. [787.00ms]
