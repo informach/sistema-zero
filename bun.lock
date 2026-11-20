@@ -933,6 +933,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
+        "@sistemazero/molda-cenarios": "workspace:*",
         "@sistemazero/molda-cenarios-core": "workspace:*",
         "zod": "4.3.6",
       },
