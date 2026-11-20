@@ -41,14 +41,15 @@ interface HighlightStore {
   runtimeMark: RuntimeMark | null
   /**
    * "Mostrar o bloco": o editor rola até o bloco, seleciona e abre o balão. O nonce sobe a cada
-   * pedido (apertar duas vezes mostra de novo). `runtime` = o bloco do `runtimeMark`.
+   * pedido (apertar duas vezes mostra de novo). `runtime` = o bloco do `runtimeMark`; `line` = o
+   * bloco de uma linha do código (um passo do caminho até o erro, na aba Investigar).
    */
   revealRequest: {
-    target: { kind: 'runtime' } | { kind: 'block'; blockId: string }
+    target: RevealTarget
     nonce: number
   } | null
   setRuntimeMark: (mark: RuntimeMark | null) => void
-  revealBlock: (target: { kind: 'runtime' } | { kind: 'block'; blockId: string }) => void
+  revealBlock: (target: RevealTarget) => void
   selectBlock: (id: string | null) => void
   setCursor: (file: SourceMappedFile, line: number, column?: number) => void
   focusTutorReference: (target: {
@@ -59,6 +60,11 @@ interface HighlightStore {
   }) => void
   reset: () => void
 }
+
+export type RevealTarget =
+  | { kind: 'runtime' }
+  | { kind: 'block'; blockId: string }
+  | { kind: 'line'; file: string; line: number }
 
 export interface RuntimeMark {
   /** O arquivo gerado (JavaScript: `script.js`; Python: o caminho do `.py`). */

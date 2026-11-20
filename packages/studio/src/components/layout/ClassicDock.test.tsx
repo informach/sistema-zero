@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createEmptyProject } from '#core'
-import { investigationWindowFor, perfWindowFor, setDevtoolsSender } from '../../state/devtools'
+import {
+  investigationWindowFor,
+  perfWindowFor,
+  programTimeFor,
+  setDevtoolsSender,
+} from '../../state/devtools'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
@@ -44,11 +49,17 @@ const runtimeError = {
 afterEach(cleanup)
 
 describe('ClassicDock', () => {
-  it('começa fechada: Mensagens do jogo, Problemas, Investigar e Desempenho, sem corpo aberto', () => {
+  it('começa fechada: Mensagens do jogo, Problemas, Investigar, Desempenho e Meus testes, sem corpo aberto', () => {
     const { wrap } = setup()
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
-    expect(abas).toEqual(['Mensagens do jogo', 'Problemas', 'Investigar', 'Desempenho'])
+    expect(abas).toEqual([
+      'Mensagens do jogo',
+      'Problemas',
+      'Investigar',
+      'Desempenho',
+      'Meus testes',
+    ])
     expect(
       screen.getAllByRole('tab').every((tab) => tab.getAttribute('aria-selected') === 'false'),
     ).toBe(true)
@@ -119,7 +130,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     canvas: true,
   }
 
-  it('Investigar e Desempenho ainda não existem no Python (o Python ganha as abas no lote dele)', () => {
+  it('no Python, por enquanto, Investigar e Desempenho (Meus testes vem no lote dele)', () => {
     const { stores, wrap } = setup()
     act(() =>
       stores.project.setState({
@@ -131,8 +142,9 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     )
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
-    expect(abas).not.toContain('Desempenho')
-    expect(abas).not.toContain('Investigar')
+    expect(abas).toContain('Desempenho')
+    expect(abas).toContain('Investigar')
+    expect(abas).not.toContain('Meus testes')
   })
 
   it('liga a medida pelo botão e mostra os números do jogo, cada um com a sua marca', async () => {
@@ -161,6 +173,167 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     expect(within(painel).getAllByText('medido')).toHaveLength(3)
     expect(within(painel).getByText(/o jogo ficou lento 1 vez/)).toBeTruthy()
     expect(within(painel).getByText('O quadro mais lento levou 120 ms.')).toBeTruthy()
+  })
+
+  it('no Python que desenha, só os quadros por segundo e o tempo de cada quadro', async () => {
+    const { stores, wrap } = setup()
+    act(() => {
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Tartaruga'),
+          programmingLanguage: 'python',
+        } as never,
+      })
+      programTimeFor(stores.ui).setState({ canvas: true })
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        )
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    fireEvent.click(await screen.findByRole('switch', { name: 'Medir o desempenho' }))
+    act(() =>
+      perfWindowFor(stores.ui)
+        .getState()
+        .push({ ...fatia, sprites: null, objects: null, draws: null }),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('22')).toBeTruthy()
+    expect(within(painel).queryByText('Coisas no jogo')).toBeNull()
+    expect(within(painel).getByText(/Medir não pesa no programa/)).toBeTruthy()
+  })
+
+  it('quando o ambiente recusa a medida, a aba diz que ainda não dá para medir', async () => {
+    const { stores, wrap } = setup()
+    act(() => {
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Tartaruga'),
+          programmingLanguage: 'python',
+        } as never,
+      })
+      programTimeFor(stores.ui).setState({ canvas: true })
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        )
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    fireEvent.click(await screen.findByRole('switch', { name: 'Medir o desempenho' }))
+    expect(screen.getByText(/os primeiros números chegam/)).toBeTruthy()
+    act(() => perfWindowFor(stores.ui).getState().refuse())
+    expect(screen.getByText('Ainda não dá para medir este programa aqui.')).toBeTruthy()
+  })
+
+  it('Investigar no Python: os valores, o "Mostrar o bloco" pela linha e o caminho até o erro', async () => {
+    const { stores, wrap } = setup()
+    const python = {
+      ...createEmptyProject('01J0000000000000000000PYTH', 'Contas'),
+      programmingLanguage: 'python',
+      kind: 'classic',
+      python: { entrypoint: 'main.py' },
+      files: {
+        'main.py': ['pontos = 0', 'vidas = 3', 'print(pontos)', ''].join('\n'),
+        'inimigos.py': ['def mover():', '    velocidade + 1', ''].join('\n'),
+      },
+    }
+    act(() => {
+      stores.project.setState({ project: python as never })
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        )
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Investigar o programa' }))
+    expect(stores.ui.getState().investigating).toBe(true)
+    act(() =>
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive({
+          frame: null,
+          paused: false,
+          canPause: false,
+          pauseLater: false,
+          values: [
+            { name: 'pontos', text: '0' },
+            { name: 'vidas', text: '3' },
+          ],
+          error: null,
+        }),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('O programa está rodando')).toBeTruthy()
+    expect(within(painel).getByText(/O Python ainda não pausa pelo Estúdio/)).toBeTruthy()
+    fireEvent.click(
+      within(painel).getAllByRole('button', { name: 'Mostrar o bloco' })[1] as HTMLElement,
+    )
+    expect(stores.highlight.getState().revealRequest?.target).toEqual({
+      kind: 'line',
+      file: 'main.py',
+      line: 2,
+    })
+    // O programa parou com erro: o caminho vem do traceback, de onde ele veio até onde parou.
+    act(() => {
+      stores.proRun.getState().publish(
+        {
+          phase: 'error',
+          canRun: true,
+          canStop: false,
+          errorKind: 'runtime',
+          errorHint: 'Você usou algo que ainda não existe.',
+        },
+        { run: () => {}, stop: () => {} },
+      )
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive({
+          frame: null,
+          paused: false,
+          canPause: false,
+          pauseLater: false,
+          values: [{ name: 'pontos', text: '0' }],
+          error: {
+            lines: [],
+            trace: [
+              { file: 'inimigos.py', line: 2 },
+              { file: 'main.py', line: 3 },
+            ],
+          },
+        })
+    })
+    expect(within(painel).getByText('O programa parou')).toBeTruthy()
+    expect(within(painel).getByText('print(pontos)')).toBeTruthy()
+    expect(within(painel).getByText('velocidade + 1')).toBeTruthy()
+    expect(within(painel).getByText('aqui o programa parou')).toBeTruthy()
+  })
+
+  it('no Python que não desenha, o tempo que o programa levou', async () => {
+    const { stores, wrap } = setup()
+    act(() => {
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Contas'),
+          programmingLanguage: 'python',
+        } as never,
+      })
+      programTimeFor(stores.ui).setState({ canvas: false, startedAt: null, endedAt: null })
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    expect(await screen.findByText('Rode o programa para ver quanto tempo ele leva.')).toBeTruthy()
+    expect(screen.queryByRole('switch', { name: 'Medir o desempenho' })).toBeNull()
+    act(() => programTimeFor(stores.ui).setState({ startedAt: 1000, endedAt: 2500 }))
+    expect(screen.getByText('O programa levou 1,5 segundos.')).toBeTruthy()
   })
 
   it('num jogo 3D, mostra os objetos na cena e os desenhos por quadro no lugar dos sprites', async () => {

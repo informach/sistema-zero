@@ -108,4 +108,55 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   - **Executor:** um quadro escondido com o documento da prévia, o leitor das variáveis e um
     piloto (tecla e clique sintéticos, como os controles da página de jogar); a observação no
     formato `ExecutionObservation`, julgada por `judgeExecutionObservation`.
-- Próximos: Python e Pro.
+  - **Feito (20/11):** o documento no projeto (`6d775ab7a`), o executor (`studentTests/`) e a aba
+    na gaveta, nas duas pranchas: "Rodar os testes", "+ Novo teste", o resumo ("2 de 3 testes
+    passaram."), cada teste escrito como na prancha, "Passou:"/"Não passou:", "Ver como o jogo
+    terminou" (a foto do palco escondido no fim, pela ponte da capa) e "Editar"; o formulário com
+    Nome, Quando eu (Apertar a tecla, Segurar a tecla por N segundos, Esperar), No fim, confira
+    (a variável, a posição x ou y do sprite, o texto na tela, as mensagens do jogo, com os nomes
+    que existem no projeto e as comparações que fazem sentido para cada uma), Salvar e Cancelar.
+    A prévia entrega à instância a fábrica do documento (`state/previewDocumentFactory.ts`), que
+    prepara como o Rodar (o rascunho do editor desce para o projeto e o projeto é gravado) e monta
+    com o projeto gravado. A edição ganhou "Apagar teste" (sem ele um teste não sai mais do
+    projeto). e2e `student-tests.spec.ts` no Chromium, no Firefox e no WebKit.
+  - **"Clicar no sprite … do grupo …" (20/11, noite):** o clique do contrato é o do Jogo 2D
+    (sprite de um grupo, pelo inspetor oficial de grupos, palco sem câmera), e a aba só o oferece
+    num jogo com o Jogo 2D instalado. As quatro funções que rodam na página (o leitor do grupo, a
+    medida do palco, a escolha do ponto e a conversão para a tela) passaram a ter uma fonte só,
+    `studio/src/check/clickTargetInPage.ts`: o piloto as injeta no jogo e o executor do servidor as
+    recebe pelo módulo gerado `click-target.generated.mjs` (o `check:validation-profile` reprova
+    se o gerado não for o da fonte). e2e com o jogo final do Cadê Todo Mundo (clicar no
+    esconderijo2 conta um achado) no Chromium, no Firefox e no WebKit.
+  - ⚠️ **Ordem do deploy:** o Members confere o envio pelo esquema do documento; ele sai com o
+    esquema novo (`6d775ab7a` ou depois) ANTES do Kids, da comunidade e do member-shell, senão um
+    projeto com testes não sobe para a conta.
+- **Lote 6 (20/11, noite): Desempenho no Python.** A aba aparece na gaveta do Python clássico. Com
+  Turtle, Pygame Zero, pygame-ce ou Raylib: quadros por segundo e tempo de cada quadro (sem a
+  contagem de sprites, como a tabela pede), medidos no quadro do Python: cada renderizador diz
+  quantos quadros já pintou (`paintedFrames`), e o quadro, com a medida ligada, olha esse contador
+  a cada quadro da tela e manda uma fatia a cada meio segundo (comando e mensagem `perf` no
+  protocolo do quadro, conferidos pela página). Não toca no programa nem no worker, e medir não
+  recomeça o programa. Programa sem tela (só print e input): o tempo que ele levou, marcado pela
+  prévia no começo e no fim de cada execução. O painel não carrega nada do Python (quem decide se
+  há tela é a prévia), e o painel de Meus testes passou a baixar à parte (Investigar e Desempenho
+  não pagam mais pelo executor e pelo analisador do script). Provas: o leitor da mensagem, a aba no
+  Python (com e sem tela) e, na suíte Python do navegador (`e2e-runtime/python-provider.spec.ts`,
+  na homologação), um jogo de Pygame Zero com os quadros contados e a medida que para ao desligar.
+  ⚠️ O quadro do Python vem da distribuição publicada do runtime (o endereço vem da decisão do
+  servidor), e nenhum CI a publica: a medida só funciona em staging depois de uma versão nova da
+  distribuição. Até lá, o quadro publicado recusa o comando e a aba diz "Ainda não dá para medir
+  este programa aqui." (o tempo do programa sem tela já funciona, é da página).
+- **Lote 7 (20/11, noite): Investigar no Python.** "Investigar o programa" recomeça o programa no
+  modo de observação (o observador das missões, que o runtime publicado já tem: lê as variáveis a
+  cada quadro sem mudar o programa). Os valores agora: as variáveis criadas no topo do arquivo,
+  uma por quadro, refeitas a cada meio segundo; no programa sem tela, os valores do fim (a sonda
+  só é respondida no fim, e perguntar enquanto ele roda prenderia a sonda). "Mostrar o bloco" vai
+  pela linha onde a variável nasce. O caminho até o erro vem do traceback: cada passo do projeto
+  com o arquivo e a linha, o texto da linha e "Mostrar o bloco" (o pedido ganhou o alvo por linha,
+  que o editor de blocos do Python resolve, abrindo o outro arquivo quando precisa). Pausar e
+  Avançar 1 quadro no Python ainda não: a aba diz que o Python ainda não pausa pelo Estúdio (a
+  pausa precisa do quadro do Python, que chega com a próxima versão da distribuição). Provas: as
+  funções puras (nomes, traceback, valores), a aba no Python (valores, linha, erro) e, na suíte
+  Python do navegador (homologação), o controlador no modo de observação lendo `WIDTH` e o
+  contador de quadros subindo num jogo de Pygame Zero.
+- Próximos: Pausar no Python e Meus testes no Python; os três no Pro.

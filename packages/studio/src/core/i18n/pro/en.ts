@@ -46,6 +46,7 @@ export const en: Record<string, string> = {
   'pro.dock.problems': 'Problems',
   'pro.dock.investigate': 'Investigate',
   'pro.dock.performance': 'Performance',
+  'pro.dock.tests': 'My tests',
   'pro.dock.terminal': 'Terminal',
   'pro.dock.advanced': 'advanced',
   'pro.dock.repl': 'Try commands',

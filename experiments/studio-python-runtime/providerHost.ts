@@ -5,6 +5,7 @@ import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtim
 import type {
   StudioRuntimeEvent,
   StudioRuntimeInput,
+  StudioRuntimePerformanceSlice,
   StudioRuntimeSession,
 } from '../../packages/studio/src/runtime/types'
 import { createControllerProbe } from './controllerHost'
@@ -16,6 +17,8 @@ interface Entry {
   status: string
   error?: string
   session?: StudioRuntimeSession
+  /** As fatias da aba Desempenho, quando a medida está ligada. */
+  perf: StudioRuntimePerformanceSlice[]
 }
 const entries = new Map<string, Entry>()
 const configuration = await (await fetch('/configuration')).json()
@@ -85,7 +88,13 @@ const api = {
     }
     const frame = document.createElement('iframe')
     document.body.append(frame)
-    const entry: Entry = { frame, abort: new AbortController(), events: [], status: 'loading' }
+    const entry: Entry = {
+      frame,
+      abort: new AbortController(),
+      events: [],
+      status: 'loading',
+      perf: [],
+    }
     entries.set(slot, entry)
     try {
       const project = await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json()
@@ -171,6 +180,12 @@ const api = {
     if (repl.kind !== 'python') throw new Error('No REPL')
     return repl.evaluate({ requestId, source })
   },
+  async measure(slot: string, on: boolean) {
+    const entry = get(slot)
+    const session = entry.session
+    if (!session?.measurePerformance) throw new Error('No performance measure')
+    await session.measurePerformance(on ? (slice) => entry.perf.push(slice) : null)
+  },
   input(slot: string, requestId: string, response: StudioRuntimeInput) {
     return get(slot).session!.provideInput(requestId, response)
   },
@@ -190,8 +205,8 @@ const api = {
     return [...savedRecords.values()].flatMap((record) => Object.keys(record)).sort()
   },
   read(slot: string) {
-    const { events, status, error, frame } = get(slot)
-    return { events, status, error, frameURL: frame.src }
+    const { events, status, error, frame, perf } = get(slot)
+    return { events, status, error, frameURL: frame.src, perf }
   },
 }
 declare global {

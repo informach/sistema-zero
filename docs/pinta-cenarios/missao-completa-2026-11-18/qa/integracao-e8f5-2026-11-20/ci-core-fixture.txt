@@ -1,0 +1,104 @@
+ci	Typecheck (todos os pacotes)	﻿2026-11-20T21:31:59.0699935Z ##[group]Run bun run --sequential --no-exit-on-error --filter '*' typecheck
+ci	Typecheck (todos os pacotes)	2026-11-20T21:31:59.0700226Z bun run --sequential --no-exit-on-error --filter '*' typecheck
+ci	Typecheck (todos os pacotes)	2026-11-20T21:31:59.0715799Z shell: /usr/bin/bash -e {0}
+ci	Typecheck (todos os pacotes)	2026-11-20T21:31:59.0715936Z env:
+ci	Typecheck (todos os pacotes)	2026-11-20T21:31:59.0716061Z   NODE_OPTIONS: --max-old-space-size=6144
+ci	Typecheck (todos os pacotes)	2026-11-20T21:31:59.0716227Z ##[endgroup]
+ci	Typecheck (todos os pacotes)	2026-11-20T21:33:54.6420292Z @sistemazero/admin:typecheck                    | Done in 115.56s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:33:55.4413576Z @sistemazero/agent-core:typecheck               | Done in 800ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:33:57.7857427Z @sistemazero/agent-integrations:typecheck       | Done in 2.34s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:34:00.9623210Z @sistemazero/agent-runtime:typecheck            | Done in 3.18s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:34:04.3967645Z @sistemazero/api-gateway:typecheck              | Done in 3.43s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:34:25.3404364Z @sistemazero/arquipelago:typecheck              | Done in 20.94s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:36:00.0626509Z @sistemazero/arquipelago-admin:typecheck        | Done in 94.72s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:36:14.9450202Z @sistemazero/arquipelago-api:typecheck          | Done in 14.88s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:36:17.0207926Z @sistemazero/arquipelago-contracts:typecheck    | Done in 2.08s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:36:20.3560235Z @sistemazero/auth:typecheck                     | Done in 3.34s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:36:23.2151038Z @sistemazero/avatar-quarto:typecheck            | Done in 2.86s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:36:25.3678890Z @sistemazero/catalog:typecheck                  | Done in 2.15s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:38:10.5473479Z @sistemazero/community:typecheck                | Done in 105.18s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:01.2278058Z @sistemazero/community-kids:typecheck           | Done in 110.68s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.7385729Z ##[error]@sistemazero/core:typecheck                     | tests/studio-student-tests.test.ts(115,100): error TS2769: No overload matches this call.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.7386594Z @sistemazero/core:typecheck                     |   The last overload gave the following error.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.7387576Z @sistemazero/core:typecheck                     |     Argument of type '{ id: string; name: string; rule: { type: string; steps: ({ action: string; key: string; holdMs?: undefined; ms?: undefined; } | { action: string; key: string; holdMs: number; ms?: undefined; } | { action: string; ms: number; key?: undefined; holdMs?: undefined; })[]; expect: { ...; }; }; }[]' is not assignable to parameter of type 'StudioStudentTest[]'.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.7388987Z @sistemazero/core:typecheck                     |       Type '{ id: string; name: string; rule: { type: string; steps: ({ action: string; key: string; holdMs?: undefined; ms?: undefined; } | { action: string; key: string; holdMs: number; ms?: undefined; } | { action: string; ms: number; key?: undefined; holdMs?: undefined; })[]; expect: { ...; }; }; }' is not assignable to type 'StudioStudentTest'.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.7389783Z @sistemazero/core:typecheck                     |         The types of 'rule.type' are incompatible between these types.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.7390174Z @sistemazero/core:typecheck                     |           Type 'string' is not assignable to type '"behavior"'.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:06.8311564Z @sistemazero/core:typecheck                     | Exited with code 2
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:07.5576800Z @sistemazero/creation-cleanup-cron:typecheck    | Done in 726ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:08.5123092Z @sistemazero/edisvg:typecheck                   | Done in 955ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:10.7097437Z @sistemazero/fiscal:typecheck                   | Done in 2.20s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:11.6089078Z @sistemazero/funnel:typecheck                   | 21:40:11 [@astrojs/node] Enabling sessions with filesystem storage
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:12.1704667Z @sistemazero/funnel:typecheck                   | 21:40:12 [types] Generated 560ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:12.1752326Z @sistemazero/funnel:typecheck                   | 21:40:12 [check] Getting diagnostics for Astro files in /home/runner/work/sistema-zero/sistema-zero/packages/funnel...
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:16.0027658Z @sistemazero/funnel:typecheck                   | src/analytics/collector.ts:30:9 - warning ts(80006): This may be converted to an async function.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:16.0028327Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:16.0028921Z @sistemazero/funnel:typecheck                   | 30   const post = (action: string, body: unknown, detached = false) => {
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:16.0029530Z @sistemazero/funnel:typecheck                   |            ~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:16.0029909Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.3333431Z @sistemazero/funnel:typecheck                   | src/pages/[audience]/termos.astro:2:1 - warning ts(6133): 'COMUNIDADE_DOS_CRIADORES' is declared but its value is never read.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.3334353Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.3335201Z @sistemazero/funnel:typecheck                   | 2 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.3335948Z @sistemazero/funnel:typecheck                   |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.3336266Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.4796637Z @sistemazero/funnel:typecheck                   | src/pages/[audience]/[produto]/resultado.astro:38:7 - warning ts(6133): 'leadQuizUrl' is declared but its value is never read.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.4798089Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.4798808Z @sistemazero/funnel:typecheck                   | 38 const leadQuizUrl =
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.4799210Z @sistemazero/funnel:typecheck                   |          ~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:21.4799471Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3169879Z @sistemazero/funnel:typecheck                   | tests/integration/member-commerce.test.ts:614:5 - warning ts(80007): 'await' has no effect on the type of this expression.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3171111Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3172017Z @sistemazero/funnel:typecheck                   | 614     await expect(handleMemberCommerce(request({ ...base, data }), 'pay', deps)).rejects.toThrow(
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3172658Z @sistemazero/funnel:typecheck                   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3173080Z @sistemazero/funnel:typecheck                   | 615       'Falha local',
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3173439Z @sistemazero/funnel:typecheck                   |     ~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3173760Z @sistemazero/funnel:typecheck                   | 616     )
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3174075Z @sistemazero/funnel:typecheck                   |     ~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3174708Z @sistemazero/funnel:typecheck                   | tests/integration/member-commerce.test.ts:235:5 - warning ts(80007): 'await' has no effect on the type of this expression.
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3175652Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3176120Z @sistemazero/funnel:typecheck                   | 235     await expect(handleMemberCommerce(request({ ...base, data }), 'pay', deps)).rejects.toThrow(
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3176686Z @sistemazero/funnel:typecheck                   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3177089Z @sistemazero/funnel:typecheck                   | 236       'Falha de limpeza',
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3177449Z @sistemazero/funnel:typecheck                   |     ~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3177893Z @sistemazero/funnel:typecheck                   | 237     )
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3178193Z @sistemazero/funnel:typecheck                   |     ~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:23.3178432Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:24.0391947Z @sistemazero/funnel:typecheck                   | Result (399 files):
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:24.0392665Z @sistemazero/funnel:typecheck                   | - 0 errors
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:24.0393272Z @sistemazero/funnel:typecheck                   | - 0 warnings
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:24.0393569Z @sistemazero/funnel:typecheck                   | - 5 hints
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:24.0393807Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:24.1345021Z @sistemazero/funnel:typecheck                   | Done in 13.42s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:27.1896244Z @sistemazero/helpdesk:typecheck                 | Done in 3.06s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:29.2771208Z @sistemazero/helpdesk-app:typecheck             | Done in 2.09s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:29.9435840Z @sistemazero/helpdesk-contracts:typecheck       | Done in 666ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:32.8347688Z @sistemazero/hub:typecheck                      | Done in 2.89s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:34.2293762Z @sistemazero/live-recorder:typecheck            | Done in 1.39s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:34.9945785Z @sistemazero/live-supervisor:typecheck          | Done in 765ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:40.8000763Z @sistemazero/marketing:typecheck                | Done in 5.81s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:45.7432398Z @sistemazero/marketing-app:typecheck            | Done in 4.94s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:40:46.9108350Z @sistemazero/marketing-contracts:typecheck      | Done in 1.17s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:41:45.8448013Z @sistemazero/marketing-desktop:typecheck        | Done in 58.93s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:41:47.3290281Z @sistemazero/marketing-import:typecheck         | Done in 1.48s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:41:49.0427815Z @sistemazero/marketing-production:typecheck     | Done in 1.71s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:41:52.9780131Z @sistemazero/marketing-workbench:typecheck      | Done in 3.94s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:43:48.8319362Z @sistemazero/member-shell:typecheck             | Done in 115.85s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:24.4091158Z @sistemazero/members:typecheck                  | Done in 95.58s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:27.3141835Z @sistemazero/messaging:typecheck                | Done in 2.91s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:41.2903859Z @sistemazero/molda:typecheck                    | Done in 13.98s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:47.1154299Z @sistemazero/molda-cenarios:typecheck           | Done in 5.83s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:51.1987326Z @sistemazero/molda-cenarios-agente:typecheck    | Done in 4.08s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:53.7640198Z @sistemazero/molda-cenarios-core:typecheck      | Done in 2.57s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:45:57.6871364Z @sistemazero/molda-cenarios-motor:typecheck     | Done in 3.92s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:47:34.4561822Z @sistemazero/palco-gravacao:typecheck           | Done in 96.77s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:47:38.2595779Z @sistemazero/payments:typecheck                 | Done in 3.80s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:47:40.7161957Z @sistemazero/pensa:typecheck                    | Done in 2.46s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:47:48.4632309Z @sistemazero/pinta:typecheck                    | Done in 7.75s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:47:51.2557022Z @sistemazero/referrals:typecheck                | Done in 2.79s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:49:57.7589964Z @sistemazero/studio:typecheck                   | Done in 126.50s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:49:58.5395076Z @sistemazero/studio-ai-reconcile-cron:typecheck | Done in 780ms
+ci	Typecheck (todos os pacotes)	2026-11-20T21:50:02.4732972Z @sistemazero/studio-language-service:typecheck  | Done in 3.93s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:51:26.7878184Z @sistemazero/studio-runtime:typecheck           | Done in 84.31s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:51:28.5849868Z @sistemazero/tui:typecheck                      | Done in 1.80s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:51:30.4082912Z @sistemazero/ui:typecheck                       | Done in 1.82s
+ci	Typecheck (todos os pacotes)	2026-11-20T21:51:30.4104553Z ##[error]Process completed with exit code 2.

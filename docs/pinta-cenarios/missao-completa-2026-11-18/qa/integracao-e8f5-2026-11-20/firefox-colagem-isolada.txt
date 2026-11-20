@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:11564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [firefox] › e2e\preview-shell-hostile.spec.ts:53:3 › programas hostis na prévia dentro da casca › trabalho síncrono longo que não é laço não trava o editor (12.0s)
+
+  1 passed (13.4s)

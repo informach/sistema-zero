@@ -49,6 +49,8 @@ export interface PgzeroRenderer {
     attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<string | PgzeroBinaryReply>
   capture(): Promise<StudioRuntimeImage | null>
+  /** Quantos quadros já pintou (a aba Desempenho conta por aqui; não toca no programa). */
+  paintedFrames(): number
   missionPose(objectId: number): ExecutionMotionSample | null
   dispose(): void
 }
@@ -995,6 +997,9 @@ export function createPgzeroRenderer(
       } finally {
         busy = false
       }
+    },
+    paintedFrames() {
+      return frameSequence
     },
     async capture() {
       active()

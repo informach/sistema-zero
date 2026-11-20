@@ -105,6 +105,10 @@ async function initialize(event: MessageEvent<unknown>) {
       | { type: 'audio-request'; requestId: string; request: string }
       | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
       | {
+          type: 'perf'
+          slice: { fps: number; frameMsAvg: number; frameMsMax: number; canvas: boolean }
+        }
+      | {
           type: 'ack'
           commandId: number
           ok: boolean
@@ -122,9 +126,71 @@ async function initialize(event: MessageEvent<unknown>) {
     }
     port.postMessage(payload)
   }
+  /**
+   * A aba Desempenho. Com a medida ligada, o quadro olha, a cada quadro da tela, quantos quadros o
+   * renderizador já pintou, e manda uma fatia a cada meio segundo: os quadros por segundo e o
+   * intervalo entre dois quadros pintados (médio e o maior). Não toca no programa nem no worker,
+   * e desligada não custa nada. O programa sem tela (só print e input) manda fatias sem quadros.
+   */
+  let perf: { frame: number; timer: ReturnType<typeof setInterval> } | null = null
+  function stopPerf() {
+    if (!perf) return
+    cancelAnimationFrame(perf.frame)
+    clearInterval(perf.timer)
+    perf = null
+  }
+  function startPerf() {
+    stopPerf()
+    let painted = renderer?.paintedFrames() ?? 0
+    let paintedAt = performance.now()
+    let frames = 0
+    let total = 0
+    let longest = 0
+    let sliceStart = performance.now()
+    const state = { frame: 0, timer: 0 as unknown as ReturnType<typeof setInterval> }
+    const watch = () => {
+      const now = performance.now()
+      const current = renderer?.paintedFrames() ?? painted
+      if (current !== painted) {
+        const interval = now - paintedAt
+        frames += current - painted
+        total += interval
+        longest = Math.max(longest, interval)
+        painted = current
+        paintedAt = now
+      }
+      state.frame = requestAnimationFrame(watch)
+    }
+    state.frame = requestAnimationFrame(watch)
+    state.timer = setInterval(() => {
+      if (!renderer) {
+        send({ type: 'perf', slice: { fps: 0, frameMsAvg: 0, frameMsMax: 0, canvas: false } })
+        return
+      }
+      const now = performance.now()
+      const seconds = Math.max((now - sliceStart) / 1000, 0.001)
+      // Um quadro que ainda não chegou também conta como atraso (o programa parado no meio dele).
+      const waiting = now - paintedAt
+      send({
+        type: 'perf',
+        slice: {
+          fps: Math.min(1000, frames / seconds),
+          frameMsAvg: Math.min(60_000, frames ? total / frames : waiting),
+          frameMsMax: Math.min(60_000, Math.max(longest, frames ? 0 : waiting)),
+          canvas: true,
+        },
+      })
+      frames = 0
+      total = 0
+      longest = 0
+      sliceStart = now
+    }, 500)
+    perf = state
+  }
   function close() {
     if (closed) return
     closed = true
+    stopPerf()
     pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
     pendingAudio = undefined
     audio.close()
@@ -213,7 +279,10 @@ async function initialize(event: MessageEvent<unknown>) {
         return
       }
       if (command.type === 'run') supervisor.run()
-      else if (
+      else if (command.type === 'perf' && 'on' in command && typeof command.on === 'boolean') {
+        if (command.on) startPerf()
+        else stopPerf()
+      } else if (
         command.type === 'audio-response' &&
         'requestId' in command &&
         isPythonRequestId(command.requestId) &&

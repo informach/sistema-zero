@@ -1069,8 +1069,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const target = revealRequest.target
     let frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => {
-        let id = target.kind === 'runtime' ? runtimeErrorBlockId(svgWorkspace) : target.blockId
         const { runtimeMark: mark, cross: map } = markLookupRef.current
+        let id =
+          target.kind === 'runtime'
+            ? runtimeErrorBlockId(svgWorkspace)
+            : target.kind === 'block'
+              ? target.blockId
+              : target.file === 'script.js'
+                ? map.lookupLine('script.js', target.line)
+                : null
         if (!id && target.kind === 'runtime' && mark?.file === 'script.js') {
           // O erro chegou antes de os blocos terminarem de carregar: marca agora pela linha.
           const found = map.lookupLine('script.js', mark.line, mark.column ?? undefined)

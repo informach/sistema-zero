@@ -183,6 +183,9 @@ export async function verifyFirefoxNativeKeys(baseURL: string) {
     const state = await js<FocusState['inner']>(
       'return {focused:document.hasFocus(),active:document.activeElement?.tagName,ready:document.body?.dataset.voltou}',
     )
+    // O frame pode navegar entre selecioná-lo e executar a leitura nativa.
+    // Nesse instante o WebDriver devolve null; aguarde o documento novo no mesmo prazo.
+    if (!state) return null
     return { top, middle, inner: state }
   }
   try {

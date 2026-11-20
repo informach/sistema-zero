@@ -46,6 +46,7 @@ export const ptBR: Record<string, string> = {
   'pro.dock.problems': 'Problemas',
   'pro.dock.investigate': 'Investigar',
   'pro.dock.performance': 'Desempenho',
+  'pro.dock.tests': 'Meus testes',
   'pro.dock.terminal': 'Terminal',
   'pro.dock.advanced': 'avançado',
   'pro.dock.repl': 'Experimentar comandos',

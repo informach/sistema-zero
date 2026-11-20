@@ -48,9 +48,14 @@ import { glossErrorMessage } from '../../state/errorGloss'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useHighlightStoreApi } from '../../state/highlightStore'
 import { previewErrorLocation, useLogsStore } from '../../state/logsStore'
+import type { PreviewDocumentFactory } from '../../state/previewDocumentFactory'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
-import { usePendingEditorEdits, useStudioPersistence } from '../../state/studioStores'
+import {
+  usePendingEditorEdits,
+  usePreviewDocumentSource,
+  useStudioPersistence,
+} from '../../state/studioStores'
 import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
@@ -828,6 +833,97 @@ export function PreviewIframe(): JSX.Element {
     investigationScope,
     locale,
   ])
+
+  // "Meus testes": a prévia entrega à instância a receita do documento do jogo (os mesmos
+  // motores, materiais, fonte e cenas), para o teste rodar o jogo que a criança vê. Antes, a regra
+  // do Rodar: o que o editor ainda segura desce para o projeto e o projeto é gravado (o teste roda o
+  // projeto gravado, nunca o valor atrasado da prévia: um código recém-colado na Ponte ainda não
+  // chegou nela). O teste roda do zero: sem o armazenamento guardado do jogo e sem gravar nele
+  // (sem `storageProjectId`), e o quadro dele mora na página do editor (a origem vem de quem pede,
+  // nunca a da casca).
+  const previewDocument = usePreviewDocumentSource()
+  const testDocumentFactory = useCallback<PreviewDocumentFactory>(
+    async ({ transformScript, trustedScripts, parentOrigin, runtimeInspection }) => {
+      if (execution.editingAccess === 'observer' || !documentResourcesReady)
+        return { unavailable: 'loading' }
+      const prepared = await new Promise<{
+        project: ReturnType<typeof javaScriptProject>
+        failed: boolean
+      }>((resolve) => {
+        let failed = false
+        let started = false
+        void createRunPreparation({
+          project: () => {
+            const project = projectStore.getState().project
+            return project?.id === projectId ? project : null
+          },
+          dirty: () => projectStore.getState().isDirty,
+          flush: () => pendingEdits?.flush(),
+          save: () => persistence.save(),
+          pending: () => undefined,
+          error: (message) => {
+            if (message) failed = true
+          },
+        })
+          .run((project) => {
+            started = true
+            resolve({ project: javaScriptProject(project), failed: false })
+          })
+          .then(() => {
+            if (!started) resolve({ project: null, failed })
+          })
+      })
+      const project = prepared.project
+      if (!project) return { unavailable: prepared.failed ? 'unsaved' : 'loading' }
+      return {
+        document: buildJavaScriptClassicDocument({
+          html: project.files['index.html'] ?? '',
+          css: project.files['style.css'] ?? '',
+          js: transformScript(project.files['script.js'] ?? ''),
+          resources: {
+            extensionScripts: [...extensionScripts, ...trustedScripts],
+            extensionImports,
+            installedPermissions,
+            gameUiFont: gameUiFontState.bundle ?? undefined,
+            cenas3d: moduloDeCenas,
+          },
+          extraFiles: project.extraFiles,
+          parentOrigin,
+          fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
+          loopBudgetMs: previewSecurity.loopBudgetMs,
+          assets: assetsManifest,
+          assetsMeta,
+          sounds: soundsManifest,
+          models3d: models3dManifest,
+          cenas3d: transporteDeCenas,
+          runtimeInspection: runtimeInspection === true,
+        }),
+      }
+    },
+    [
+      execution.editingAccess,
+      documentResourcesReady,
+      projectStore,
+      projectId,
+      pendingEdits,
+      persistence,
+      extensionScripts,
+      extensionImports,
+      installedPermissions,
+      gameUiFontState.bundle,
+      moduloDeCenas,
+      previewSecurity,
+      assetsManifest,
+      assetsMeta,
+      soundsManifest,
+      models3dManifest,
+      transporteDeCenas,
+    ],
+  )
+  useEffect(
+    () => previewDocument?.register(testDocumentFactory),
+    [previewDocument, testDocumentFactory],
+  )
 
   // Keep the committed game while the next document's resources are loading.
   // Navigating live → blank → live during an asynchronous runtime/font change

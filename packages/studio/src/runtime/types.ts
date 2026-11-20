@@ -56,6 +56,18 @@ export type StudioRuntimeEvent = { identity: StudioExecutionIdentity; sequence: 
     }
 )
 
+/**
+ * Uma fatia de meio segundo da aba Desempenho, medida no quadro do Python (fora do programa e do
+ * worker: o quadro só olha quantos quadros o renderizador pintou). `canvas` falso: o programa não
+ * desenha (só print e input) e não há quadros para medir.
+ */
+export interface StudioRuntimePerformanceSlice {
+  fps: number
+  frameMsAvg: number
+  frameMsMax: number
+  canvas: boolean
+}
+
 export interface StudioRuntimeSession {
   /** Read-only probes on a dedicated validation generation. Never a client verdict. */
   observePythonMission?(
@@ -80,6 +92,13 @@ export interface StudioRuntimeSession {
   provideInput(requestId: string, response: StudioRuntimeInput): Promise<void>
   /** Captures an already presented frame. It never executes or changes learner source. */
   captureSnapshot?(): Promise<StudioRuntimeSnapshot | null>
+  /**
+   * A aba Desempenho: com um ouvinte, o quadro manda uma fatia a cada meio segundo; `null`
+   * desliga. Só lê o contador de quadros do renderizador; nunca toca no programa.
+   */
+  measurePerformance?(
+    listener: ((slice: StudioRuntimePerformanceSlice) => void) | null,
+  ): Promise<void>
 }
 
 export interface StudioRuntimePrepareInput {

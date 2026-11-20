@@ -1124,10 +1124,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   useEffect(() => {
     if (!revealRequest || revealRequest.nonce === handledReveal.current) return
     const target = revealRequest.target
-    if (target.kind === 'runtime' && runtimeMark && !samePythonPath(runtimeMark.file, props.path)) {
-      // O erro está em outro .py: abre aquele arquivo e o pedido espera o editor dele ficar
-      // pronto (este efeito roda de novo com o `path` e a fase novos).
-      const file = filesRef.current?.find((item) => samePythonPath(item, runtimeMark.file))
+    const wantedFile =
+      target.kind === 'runtime' ? runtimeMark?.file : target.kind === 'line' ? target.file : null
+    if (wantedFile && !samePythonPath(wantedFile, props.path)) {
+      // O erro (ou o passo do caminho até ele) está em outro .py: abre aquele arquivo e o pedido
+      // espera o editor dele ficar pronto (este efeito roda de novo com o `path` e a fase novos).
+      const file = filesRef.current?.find((item) => samePythonPath(item, wantedFile))
       if (file && changeFileRef.current) changeFileRef.current(file)
       else handledReveal.current = revealRequest.nonce
       return
@@ -1140,7 +1142,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (surface.current !== current) return
-        let id = target.kind === 'runtime' ? runtimeErrorBlockId(current.workspace) : target.blockId
+        let id =
+          target.kind === 'runtime'
+            ? runtimeErrorBlockId(current.workspace)
+            : target.kind === 'block'
+              ? target.blockId
+              : current.blockAtLine(target.line)
         if (!id && target.kind === 'runtime' && runtimeMark) {
           // Os blocos foram refeitos depois da marca (uma edição na Ponte): marca de novo pela
           // linha antes de mostrar.

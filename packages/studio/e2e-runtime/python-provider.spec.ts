@@ -313,3 +313,77 @@ test('provider delivers lines and EOF without evaluating input as code', async (
     ),
   ).toBe("Nome: primeiro: \"print('não executar')\"\nvazio: ''\nEOF\n")
 })
+test('a aba Desempenho: o quadro conta os quadros pintados do jogo e para quando desliga', async ({
+  page,
+}) => {
+  await prepare(page, 'perf', 'pgzeroGame')
+  await page.locator('iframe').evaluate((frame) => {
+    frame.style.cssText = 'width:640px;height:480px;border:0'
+  })
+  await page.evaluate(() => globalThis.providerProbe.run('perf'))
+  await page.evaluate(() => globalThis.providerProbe.measure('perf', true))
+  const drawn = () =>
+    page.evaluate(
+      () =>
+        globalThis.providerProbe.read('perf').perf.filter((slice) => slice.canvas && slice.fps > 0)
+          .length,
+    )
+  await expect.poll(drawn, { timeout: 30_000 }).toBeGreaterThan(1)
+  const last = (await page.evaluate(() => globalThis.providerProbe.read('perf').perf)).at(-1)
+  expect(last?.canvas).toBe(true)
+  expect(last?.frameMsAvg).toBeGreaterThan(0)
+  // Desligada, o quadro para de mandar fatias.
+  await page.evaluate(() => globalThis.providerProbe.measure('perf', false))
+  const before = await page.evaluate(() => globalThis.providerProbe.read('perf').perf.length)
+  await page.waitForTimeout(1200)
+  expect(await page.evaluate(() => globalThis.providerProbe.read('perf').perf.length)).toBe(before)
+  await page.evaluate(() => globalThis.providerProbe.dispose('perf'))
+})
+test('a aba Desempenho num programa sem tela: as fatias dizem que não há quadros', async ({
+  page,
+}) => {
+  await prepare(page, 'perf-text', 'loop')
+  await page.evaluate(() => globalThis.providerProbe.run('perf-text'))
+  await page.evaluate(() => globalThis.providerProbe.measure('perf-text', true))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.providerProbe.read('perf-text').perf.length), {
+      timeout: 10_000,
+    })
+    .toBeGreaterThan(0)
+  expect(await page.evaluate(() => globalThis.providerProbe.read('perf-text').perf[0])).toEqual({
+    fps: 0,
+    frameMsAvg: 0,
+    frameMsMax: 0,
+    canvas: false,
+  })
+  await page.evaluate(() => globalThis.providerProbe.dispose('perf-text'))
+})
+
+test('Investigar: o controlador no modo de observação lê as variáveis do jogo a cada quadro', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('investigar', 'pgzeroGame', { observation: true }),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('investigar'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('investigar').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const read = (path: string) =>
+    page.evaluate((path) => globalThis.pythonControllerProbe.observe('investigar', path), path)
+  expect((await read('WIDTH')).observation).toEqual({
+    type: 'value',
+    observed: { found: true, value: 320 },
+  })
+  const first = (await read('quadros')).observation
+  const second = (await read('quadros')).observation
+  if (first.type !== 'value' || second.type !== 'value') throw new Error('valor esperado')
+  expect(Number(second.observed.value)).toBeGreaterThan(Number(first.observed.value))
+  expect((await read('nao_existe')).observation).toEqual({
+    type: 'value',
+    observed: { found: false },
+  })
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('investigar'))
+})

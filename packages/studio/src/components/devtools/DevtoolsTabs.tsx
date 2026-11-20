@@ -1,4 +1,4 @@
-import { type JSX, useEffect } from 'react'
+import { type JSX, lazy, Suspense, useEffect } from 'react'
 import { ErrorBoundary } from '#ui'
 import { type ClassicDockTab, useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
@@ -6,10 +6,17 @@ import { SectionErrorFallback } from '../layout/ErrorViews'
 import { InvestigatePanel } from './InvestigatePanel'
 import { PerformancePanel } from './PerformancePanel'
 
+// O painel de Meus testes traz o executor e o analisador do script (Babel): baixa só quando a aba
+// abre, para Investigar e Desempenho não pagarem por ele.
+const StudentTestsPanel = lazy(async () => ({
+  default: (await import('./StudentTestsPanel')).StudentTestsPanel,
+}))
+
 /**
- * Os painéis das abas Investigar e Desempenho dentro da gaveta (proposta aprovada em
+ * Os painéis das abas Investigar, Desempenho e Meus testes dentro da gaveta (proposta aprovada em
  * 20/11/2026), baixados só quando a criança abre uma das abas. A investigação e a medida param
- * quando a gaveta fecha (a frase de cada aba promete) e quando a gaveta sai de cena.
+ * quando a gaveta fecha (a frase de cada aba promete) e quando a gaveta sai de cena; a rodada dos
+ * testes também (o painel dela sai de cena junto).
  */
 export default function DevtoolsTabs({
   id,
@@ -27,7 +34,7 @@ export default function DevtoolsTabs({
     if (!open && on) ui.setState({ measuring: false, investigating: false })
   }, [open, on, ui])
   useEffect(() => () => ui.setState({ measuring: false, investigating: false }), [ui])
-  const panel = (tab: 'investigate' | 'performance', content: JSX.Element) => (
+  const panel = (tab: 'investigate' | 'performance' | 'tests', content: JSX.Element) => (
     <div
       id={`${id}-${tab}`}
       role="tabpanel"
@@ -47,6 +54,14 @@ export default function DevtoolsTabs({
     <>
       {panel('investigate', <InvestigatePanel />)}
       {panel('performance', <PerformancePanel />)}
+      {active === 'tests'
+        ? panel(
+            'tests',
+            <Suspense fallback={null}>
+              <StudentTestsPanel />
+            </Suspense>,
+          )
+        : null}
     </>
   )
 }

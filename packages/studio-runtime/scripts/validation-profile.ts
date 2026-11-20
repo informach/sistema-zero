@@ -13,6 +13,8 @@ for (const [entry, output, label] of [
     'execution-observation.generated.mjs',
     'observação dos objetivos',
   ],
+  // O clique no sprite de um grupo: a mesma fonte do piloto de "Meus testes" do Estúdio.
+  ['../studio/src/check/clickTargetInPage.ts', 'click-target.generated.mjs', 'clique no sprite'],
 ]) {
   const build = await Bun.build({
     entrypoints: [path.join(root, entry)],

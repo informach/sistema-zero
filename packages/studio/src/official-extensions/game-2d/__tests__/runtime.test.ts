@@ -2046,6 +2046,42 @@ describe('gameTwoDRuntime.onPointer', () => {
     expect(calls).toBe(1)
   })
 
+  it('o ponteiro sintético conserva o foco do editor e os callbacks; o toque real foca o palco', () => {
+    const { api, firePointer, stage } = loadWithPointer()
+    const editor = document.createElement('input')
+    document.body.append(editor)
+    editor.focus()
+    const clicks: number[][] = []
+    api.onPointer((x, y) => clicks.push([x, y]))
+
+    firePointer('pointerdown', {
+      target: stage,
+      clientX: 10,
+      clientY: 20,
+      pointerId: 1,
+      isTrusted: false,
+    })
+    expect(document.activeElement).toBe(editor)
+    expect(api.pointer.down).toBe(true)
+    expect(clicks).toEqual([[10, 20]])
+    firePointer('pointerup', { target: stage, pointerId: 1 })
+
+    firePointer('pointerdown', {
+      target: stage,
+      clientX: 30,
+      clientY: 40,
+      pointerId: 2,
+      isTrusted: true,
+    })
+    expect(document.activeElement).toBe(stage)
+    expect(clicks).toEqual([
+      [10, 20],
+      [30, 40],
+    ])
+    firePointer('pointerup', { target: stage, pointerId: 2 })
+    editor.remove()
+  })
+
   it('funções DIFERENTES continuam acumulando (API compatível)', () => {
     const { api, firePointerDown } = loadWithPointer()
     let a = 0

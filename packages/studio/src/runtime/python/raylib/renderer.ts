@@ -37,6 +37,8 @@ export interface RaylibRenderer {
     attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<string>
   capture(): Promise<StudioRuntimeImage | null>
+  /** Quantos quadros já pintou (a aba Desempenho conta por aqui; não toca no programa). */
+  paintedFrames(): number
   dispose(): void
 }
 
@@ -1991,6 +1993,9 @@ export function createRaylibRenderer(
       } finally {
         busy = false
       }
+    },
+    paintedFrames() {
+      return frameSequence
     },
     async capture() {
       active()

@@ -14,6 +14,18 @@ export const PERFORMANCE_COPY: Record<Locale, Record<string, string>> = {
     'perf.on':
       'Medindo há {seconds} segundos. Medir quase não pesa no jogo, e a medida para quando você fecha a gaveta.',
     'perf.notRunning': 'Rode o jogo para ver os números.',
+    'perf.off.python':
+      'Veja se o programa está rodando liso. A medida segue enquanto a gaveta estiver aberta.',
+    'perf.on.python':
+      'Medindo há {seconds} segundos. Medir não pesa no programa, e a medida para quando você fecha a gaveta.',
+    'perf.notRunning.python': 'Rode o programa para ver os números.',
+    'perf.refused': 'Ainda não dá para medir este programa aqui.',
+    'perf.program': 'Tempo do programa',
+    'perf.program.done': 'O programa levou {seconds} segundos.',
+    'perf.program.running': 'O programa está rodando há {seconds} segundos.',
+    'perf.program.none': 'Rode o programa para ver quanto tempo ele leva.',
+    'perf.program.note':
+      'Este programa não desenha na tela: o que dá para medir é o tempo que ele leva.',
     'perf.collecting': 'Medindo… os primeiros números chegam em meio segundo.',
     'perf.fps': 'Quadros por segundo',
     'perf.fps.unit': 'por segundo',
@@ -51,6 +63,18 @@ export const PERFORMANCE_COPY: Record<Locale, Record<string, string>> = {
     'perf.on':
       'Measuring for {seconds} seconds. Measuring barely weighs on the game, and it stops when you close the drawer.',
     'perf.notRunning': 'Run the game to see the numbers.',
+    'perf.off.python':
+      'See whether the program runs smoothly. The measure goes on while the drawer is open.',
+    'perf.on.python':
+      'Measuring for {seconds} seconds. Measuring does not weigh on the program, and it stops when you close the drawer.',
+    'perf.notRunning.python': 'Run the program to see the numbers.',
+    'perf.refused': 'This program cannot be measured here yet.',
+    'perf.program': 'Program time',
+    'perf.program.done': 'The program took {seconds} seconds.',
+    'perf.program.running': 'The program has been running for {seconds} seconds.',
+    'perf.program.none': 'Run the program to see how long it takes.',
+    'perf.program.note':
+      'This program does not draw on the screen: what can be measured is how long it takes.',
     'perf.collecting': 'Measuring… the first numbers arrive in half a second.',
     'perf.fps': 'Frames per second',
     'perf.fps.unit': 'per second',

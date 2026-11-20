@@ -1,0 +1,42 @@
+
+Running 2 tests using 1 worker
+
+(node:35324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e\student-tests.spec.ts:69:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto (7.8s)
+  ✘  2 [chromium] › e2e\student-tests.spec.ts:113:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo (4.1s)
+
+
+  1) [chromium] › e2e\student-tests.spec.ts:113:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      30 | })
+      31 | test.afterEach(async ({ page }) => {
+    > 32 |   expect(focusTaken.get(page)).toBe(false)
+         |                                ^
+      33 | })
+      34 |
+      35 | /**
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\student-tests.spec.ts:32:32
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-focus-results\student-tests-Meus-testes--cf903-go-final-do-Cadê-Todo-Mundo-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-e8f5-student-focus-results\student-tests-Meus-testes--cf903-go-final-do-Cadê-Todo-Mundo-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-focus-results\student-tests-Meus-testes--cf903-go-final-do-Cadê-Todo-Mundo-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-e8f5-student-focus-results\student-tests-Meus-testes--cf903-go-final-do-Cadê-Todo-Mundo-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › e2e\student-tests.spec.ts:113:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo
+  1 passed (12.7s)

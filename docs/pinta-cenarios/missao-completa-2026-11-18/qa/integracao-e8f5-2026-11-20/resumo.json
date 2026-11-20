@@ -1,0 +1,28 @@
+{
+  "studio": {
+    "pass": 12071,
+    "skip": 4,
+    "groups": 167
+  },
+  "core": 3170,
+  "browser": {
+    "startTime": "2026-11-20T22:28:32.958Z",
+    "duration": 215397.18600000002,
+    "expected": 35,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "integration": {
+    "startTime": "2026-11-20T22:32:09.104Z",
+    "duration": 121912.91,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "profile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "a5ceea5e3abcc69047cfab170460c6b913d7363381d676f8a72d6f6e2c6647b1"
+  }
+}

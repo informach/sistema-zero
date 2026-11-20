@@ -13,6 +13,7 @@ import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
+import { createPreviewDocumentSource, type PreviewDocumentSource } from './previewDocumentFactory'
 import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
 import {
   createLocalPersistenceAdapter,
@@ -50,6 +51,8 @@ export interface StudioStores {
   editorHistory: EditorHistory
   /** O estado de execução do projeto Pro (o Rodar/Parar da barra lê daqui; a prévia publica). */
   proRun: ReturnType<typeof createProRunStore>
+  /** O documento do jogo como a prévia o monta (a aba "Meus testes" pede a ela). */
+  previewDocument: PreviewDocumentSource
   persistence: PersistenceService
   workspacePreferences: StudioWorkspacePreferencesAdapter | null
 }
@@ -89,6 +92,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     pythonConsole: createPythonEditorConsole(),
     editorHistory: createEditorHistory(),
     proRun: createProRunStore(),
+    previewDocument: createPreviewDocumentSource(),
     workspacePreferences:
       options.workspacePreferences ??
       ((options.persistence ?? 'local') === 'local' ? createLocalWorkspacePreferences() : null),
@@ -167,4 +171,12 @@ export function usePythonEditorConsole(): PythonEditorConsole | null {
  */
 export function useEditorHistory(): EditorHistory | null {
   return useContext(StudioStoresContext)?.editorHistory ?? null
+}
+
+/**
+ * A fábrica do documento do jogo desta instância (a prévia registra; a aba "Meus testes" pede).
+ * `null` fora de um <Studio>.
+ */
+export function usePreviewDocumentSource(): PreviewDocumentSource | null {
+  return useContext(StudioStoresContext)?.previewDocument ?? null
 }

@@ -99,6 +99,8 @@ export interface TurtleRenderer {
   exchange(raw: string, images: { id: number; bytes: Uint8Array<ArrayBuffer> }[]): Promise<string>
   dispose(): void
   capture(): Promise<StudioRuntimeImage | null>
+  /** Quantos quadros já pintou (a aba Desempenho conta por aqui; não toca no programa). */
+  paintedFrames(): number
   missionPose(objectId: number): ExecutionMotionSample | null
 }
 
@@ -709,6 +711,9 @@ export function createTurtleRenderer(
       active()
       checkpointPending = !pendingWait
       wake()
+    },
+    paintedFrames() {
+      return frameSequence
     },
     async capture() {
       active()

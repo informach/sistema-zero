@@ -2,7 +2,7 @@ import { type JSX, useMemo } from 'react'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { IconPause, IconPlay, IconRefresh } from '#ui'
-import { javaScriptProject } from '../../core/editableProject'
+import { isPythonProject, javaScriptProject } from '../../core/editableProject'
 import { createDictionaryTranslator, type Translator } from '../../core/i18n/translator'
 import {
   forgetInvestigationWindow,
@@ -10,7 +10,7 @@ import {
   investigationWindowFor,
   sendDevtoolsCommand,
 } from '../../state/devtools'
-import { useHighlightStoreApi } from '../../state/highlightStore'
+import { type RevealTarget, useHighlightStoreApi } from '../../state/highlightStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useProRun, useProRunApi } from '../../state/proRun'
 import { useSourcemapStore } from '../../state/sourcemapStore'
@@ -19,6 +19,7 @@ import { useT } from '../../studio/i18n'
 import { useStudioTutor } from '../../studio/tutor'
 import { blockAtScriptLine, blockLabel, declarationLine } from './investigateBlocks'
 import { INVESTIGATE_COPY } from './investigateCopy'
+import { pythonDeclarationLine } from './pythonInvestigation'
 
 function useInvestigateT(): Translator {
   const t = useT()
@@ -41,10 +42,18 @@ function IconStep(): JSX.Element {
  * investigação (o jogo recomeça com o leitor das variáveis e a ponte), pausa e avança um quadro
  * pela pausa que o motor já tem, mostra os valores do jogo e, quando ele para com erro, o caminho
  * por onde o jogo passou até o bloco que falhou. Nada disso vale nota.
+ *
+ * No Python clássico (lote 7): o programa recomeça no modo de observação, os valores vêm do
+ * observador das missões (a cada quadro; no programa sem tela, no fim) e o caminho até o erro
+ * vem do traceback, com o arquivo e a linha de cada passo. Pausar no Python chega com a próxima
+ * versão da distribuição do runtime (o quadro dele precisa da pausa).
  */
 export function InvestigatePanel(): JSX.Element {
   const t = useInvestigateT()
   const ui = useUIStoreApi()
+  const python = useProjectStore((s) => Boolean(s.project && isPythonProject(s.project)))
+  /** O texto do Python quando ele fala de "programa" e não de "jogo". */
+  const k = (key: string) => (python ? `${key}.python` : key)
   const investigating = useUIStore((s) => s.investigating)
   // Ligar esquece a janela anterior: a nova começa limpa.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `investigating` é o GATILHO da janela nova
@@ -82,9 +91,9 @@ export function InvestigatePanel(): JSX.Element {
           onClick={toggle}
         >
           <IconPlay />
-          {t('inv.start')}
+          {t(k('inv.start'))}
         </button>
-        <span className="text-sm">{t('inv.off')}</span>
+        <span className="text-sm">{t(k('inv.off'))}</span>
       </div>
     )
 
@@ -95,13 +104,34 @@ export function InvestigatePanel(): JSX.Element {
   )
   let left: JSX.Element
   let right: JSX.Element | null = null
+  // No Python, esperar a entrada (input) é rodar, e o programa que terminou mostra os valores do fim.
+  const running = run.phase === 'running' || (python && run.phase === 'waiting')
+  const done = python && run.phase === 'done'
   if (run.runtimeError && reading.stopped) {
-    left = <StoppedCard t={t} frame={reading.stopped.frame} hint={run.hint} stop={stopButton} />
-    right = <PathCard t={t} lines={reading.stopped.lines} values={reading.stopped.values} />
-  } else if (run.phase !== 'running' && run.phase !== 'error') {
+    left = (
+      <StoppedCard
+        t={t}
+        python={python}
+        frame={reading.stopped.frame}
+        hint={run.hint}
+        stop={stopButton}
+      />
+    )
+    right = (
+      <PathCard
+        t={t}
+        python={python}
+        steps={
+          reading.stopped.trace ??
+          reading.stopped.lines.map((line) => ({ file: 'script.js', line }))
+        }
+        values={reading.stopped.values}
+      />
+    )
+  } else if (!running && !done && run.phase !== 'error') {
     left = (
       <article className="sz-pro-card flex flex-col gap-2.5 p-3.5">
-        <p className="m-0 text-sm">{t('inv.notRunning')}</p>
+        <p className="m-0 text-sm">{t(k('inv.notRunning'))}</p>
         <div>{stopButton}</div>
       </article>
     )
@@ -109,11 +139,19 @@ export function InvestigatePanel(): JSX.Element {
     left = (
       <article className="sz-pro-card flex flex-col gap-2.5 p-3.5">
         <p className="m-0 text-sm" role="status">
-          {t('inv.waiting')}
+          {t(k('inv.waiting'))}
         </p>
         <div>{stopButton}</div>
       </article>
     )
+  } else if (done) {
+    left = (
+      <article className="sz-pro-card flex flex-col gap-2.5 p-3.5">
+        <p className="m-0 text-sm">{t('inv.done.python')}</p>
+        <div>{stopButton}</div>
+      </article>
+    )
+    right = <ValuesCard t={t} python={python} values={reading.values} frame={reading.frame} />
   } else if (reading.paused) {
     left = (
       <article className="sz-pro-card flex flex-col gap-2.5 p-3.5">
@@ -149,11 +187,11 @@ export function InvestigatePanel(): JSX.Element {
         </div>
       </article>
     )
-    right = <ValuesCard t={t} values={reading.values} frame={reading.frame} />
+    right = <ValuesCard t={t} python={python} values={reading.values} frame={reading.frame} />
   } else {
     left = (
       <article className="sz-pro-card flex flex-col gap-2.5 p-3.5">
-        <p className="m-0 text-xs font-bold text-sz-fg-soft">{t('inv.running')}</p>
+        <p className="m-0 text-xs font-bold text-sz-fg-soft">{t(k('inv.running'))}</p>
         {reading.frame !== null ? (
           <p className="m-0 text-[17px] font-bold">
             {t('inv.frame', { frame: reading.frame.toLocaleString(locale(t)) })}
@@ -161,7 +199,7 @@ export function InvestigatePanel(): JSX.Element {
         ) : null}
         {reading.canPause ? null : (
           <p className="m-0 text-sm">
-            {t(reading.pauseLater ? 'inv.pauseLater' : 'inv.cantPause')}
+            {t(reading.pauseLater ? 'inv.pauseLater' : k('inv.cantPause'))}
           </p>
         )}
         <div className="flex flex-wrap gap-2">
@@ -179,7 +217,7 @@ export function InvestigatePanel(): JSX.Element {
         </div>
       </article>
     )
-    right = <ValuesCard t={t} values={reading.values} frame={reading.frame} />
+    right = <ValuesCard t={t} python={python} values={reading.values} frame={reading.frame} />
   }
   return (
     <div
@@ -194,41 +232,80 @@ export function InvestigatePanel(): JSX.Element {
 
 const locale = (t: Translator) => (t.locale === 'en' ? 'en-US' : 'pt-BR')
 
-/** O bloco que o painel mostra: por uma linha do script gerado, pelo mapa do sinal vermelho. */
-function useBlockFinder(): {
-  forLine: (line: number) => string | null
-  forName: (name: string) => string | null
-  label: (blockId: string) => string | null
-  reveal: (blockId: string) => void
+/** Um passo do caminho como o painel o mostra: o alvo do "Mostrar o bloco" e o texto. */
+interface FinderStep {
+  key: string
+  target: RevealTarget | null
+  label: string | null
+}
+
+/**
+ * O bloco que o painel mostra. No JavaScript, por uma linha do script gerado, pelo mapa do sinal
+ * vermelho; no Python, pela linha do arquivo (o editor de blocos do Python acha o bloco dela).
+ */
+function useBlockFinder(python: boolean): {
+  forName: (name: string) => RevealTarget | null
+  step: (file: string, line: number) => FinderStep
+  reveal: (target: RevealTarget) => void
 } {
-  const project = useProjectStore((s) => (s.project ? javaScriptProject(s.project) : null))
+  const project = useProjectStore((s) => s.project)
   const map = useSourcemapStore((s) => s.map)
   const highlight = useHighlightStoreApi()
   return useMemo(() => {
-    const script = project?.files['script.js'] ?? ''
-    const forLine = (line: number) => blockAtScriptLine(map, line)
+    const reveal = (target: RevealTarget) => highlight.getState().revealBlock(target)
+    if (python && project && isPythonProject(project) && project.kind !== 'pro') {
+      const entry = project.python.entrypoint
+      const source = (file: string) => project.files[file] ?? ''
+      return {
+        forName: (name) => {
+          const line = pythonDeclarationLine(source(entry), name)
+          return line === null ? null : { kind: 'line', file: entry, line }
+        },
+        step: (file, line) => {
+          const text = source(file).split(/\r?\n/)[line - 1]?.trim() ?? ''
+          return {
+            key: `${file}:${line}`,
+            target: { kind: 'line', file, line },
+            label: text ? (text.length > 60 ? `${text.slice(0, 60)}…` : text) : null,
+          }
+        },
+        reveal,
+      }
+    }
+    const javascript = project ? javaScriptProject(project) : null
+    const script = javascript?.files['script.js'] ?? ''
+    const blockFor = (line: number) => blockAtScriptLine(map, line)
     return {
-      forLine,
       forName: (name) => {
         const line = declarationLine(script, name)
-        return line === null ? null : forLine(line)
+        const blockId = line === null ? null : blockFor(line)
+        return blockId ? { kind: 'block', blockId } : null
       },
-      label: (blockId) => blockLabel(project?.blocksState ?? null, blockId),
-      reveal: (blockId) => highlight.getState().revealBlock({ kind: 'block', blockId }),
+      step: (_file, line) => {
+        const blockId = blockFor(line)
+        return {
+          key: blockId ?? `line:${line}`,
+          target: blockId ? { kind: 'block', blockId } : null,
+          label: blockId ? blockLabel(javascript?.blocksState ?? null, blockId) : null,
+        }
+      },
+      reveal,
     }
-  }, [project, map, highlight])
+  }, [python, project, map, highlight])
 }
 
 function ValuesCard({
   t,
+  python,
   values,
   frame,
 }: {
   t: Translator
+  python: boolean
   values: readonly InvestigationValue[]
   frame: number | null
 }): JSX.Element {
-  const blocks = useBlockFinder()
+  const blocks = useBlockFinder(python)
   return (
     <article className="sz-pro-card px-3.5 pt-3 pb-2">
       <div className="mb-1 flex items-baseline justify-between gap-2">
@@ -239,9 +316,13 @@ function ValuesCard({
           </span>
         ) : null}
       </div>
-      {values.length === 0 ? <p className="m-0 py-1.5 text-sm">{t('inv.values.none')}</p> : null}
+      {values.length === 0 ? (
+        <p className="m-0 py-1.5 text-sm">
+          {t(python ? 'inv.values.none.python' : 'inv.values.none')}
+        </p>
+      ) : null}
       {values.map((value) => {
-        const blockId = blocks.forName(value.name)
+        const target = blocks.forName(value.name)
         return (
           <div
             key={value.name}
@@ -254,11 +335,11 @@ function ValuesCard({
                 <span className="sz-pro-badge sz-pro-badge--quiet ml-1.5">{t('inv.changed')}</span>
               ) : null}
             </span>
-            {blockId ? (
+            {target ? (
               <button
                 type="button"
                 className="sz-pro-btn sz-pro-btn--sm"
-                onClick={() => blocks.reveal(blockId)}
+                onClick={() => blocks.reveal(target)}
               >
                 {t('inv.showBlock')}
               </button>
@@ -274,11 +355,13 @@ function ValuesCard({
 
 function StoppedCard({
   t,
+  python,
   frame,
   hint,
   stop,
 }: {
   t: Translator
+  python: boolean
   frame: number | null
   hint: string | null
   stop: JSX.Element
@@ -290,7 +373,7 @@ function StoppedCard({
       <p className="m-0 text-xs font-bold text-sz-error">
         {frame !== null
           ? t('inv.stopped', { frame: frame.toLocaleString(locale(t)) })
-          : t('inv.stopped.noFrame')}
+          : t(python ? 'inv.stopped.python' : 'inv.stopped.noFrame')}
       </p>
       {hint ? <p className="m-0 text-[15px] font-bold leading-snug">{hint}</p> : null}
       <div className="flex flex-wrap gap-2">
@@ -323,40 +406,46 @@ function StoppedCard({
 
 function PathCard({
   t,
-  lines,
+  python,
+  steps: raw,
   values,
 }: {
   t: Translator
-  lines: readonly number[]
+  python: boolean
+  steps: readonly { file: string; line: number }[]
   values: readonly InvestigationValue[]
 }): JSX.Element {
-  const blocks = useBlockFinder()
+  const blocks = useBlockFinder(python)
   // O jogo manda de dentro para fora; a criança lê de onde o jogo veio até onde parou. Linhas
   // repetidas (o mesmo bloco chamado de novo) e as que não viram bloco ficam uma vez só.
   const steps = useMemo(() => {
     const seen = new Set<string>()
-    const out: { key: string; line: number; blockId: string | null; label: string }[] = []
-    for (const line of [...lines].reverse()) {
-      const blockId = blocks.forLine(line)
-      const key = blockId ?? `line:${line}`
-      if (seen.has(key)) continue
-      seen.add(key)
+    const out: { key: string; target: RevealTarget | null; label: string }[] = []
+    for (const { file, line } of [...raw].reverse()) {
+      const found = blocks.step(file, line)
+      if (seen.has(found.key)) continue
+      seen.add(found.key)
       out.push({
-        key,
-        line,
-        blockId,
-        label: (blockId && blocks.label(blockId)) || t('inv.path.line', { line }),
+        key: found.key,
+        target: found.target,
+        label:
+          found.label ||
+          (python ? t('inv.path.pyLine', { file, line }) : t('inv.path.line', { line })),
       })
     }
     return out
-  }, [lines, blocks, t])
+  }, [raw, blocks, python, t])
   return (
     <article className="sz-pro-card px-3.5 pt-3 pb-2">
       <div className="mb-1 flex items-baseline justify-between gap-2">
         <p className="m-0 font-bold">{t('inv.path')}</p>
-        <span className="text-xs text-sz-fg-soft">{t('inv.path.from')}</span>
+        <span className="text-xs text-sz-fg-soft">
+          {t(python ? 'inv.path.from.python' : 'inv.path.from')}
+        </span>
       </div>
-      {steps.length === 0 ? <p className="m-0 py-1.5 text-sm">{t('inv.path.none')}</p> : null}
+      {steps.length === 0 ? (
+        <p className="m-0 py-1.5 text-sm">{t(python ? 'inv.path.none.python' : 'inv.path.none')}</p>
+      ) : null}
       {steps.map((step, index) => {
         const here = index === steps.length - 1
         return (
@@ -367,13 +456,17 @@ function PathCard({
             <span className="text-xs font-bold text-sz-fg-soft">{index + 1}</span>
             <span className={`text-sm ${here ? 'font-bold' : ''}`}>
               {step.label}
-              {here ? <span className="sz-pro-badge ml-1.5">{t('inv.path.here')}</span> : null}
+              {here ? (
+                <span className="sz-pro-badge ml-1.5">
+                  {t(python ? 'inv.path.here.python' : 'inv.path.here')}
+                </span>
+              ) : null}
             </span>
-            {step.blockId ? (
+            {step.target ? (
               <button
                 type="button"
                 className={`sz-pro-btn sz-pro-btn--sm ${here ? 'sz-pro-btn--primary' : ''}`}
-                onClick={() => step.blockId && blocks.reveal(step.blockId)}
+                onClick={() => step.target && blocks.reveal(step.target)}
               >
                 {t('inv.showBlock')}
               </button>

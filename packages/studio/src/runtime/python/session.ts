@@ -17,6 +17,7 @@ import {
   type StudioHostAudioPreference,
   type StudioRuntimeEvent,
   type StudioRuntimeImage,
+  type StudioRuntimePerformanceSlice,
   type StudioRuntimeSession,
   StudioRuntimeUnavailableError,
 } from '../types'
@@ -112,6 +113,8 @@ export function preparePythonFrameSession(options: {
   let state = 'preparing'
   let inputId: string | undefined
   let commandInFlight = false
+  /** A aba Desempenho: quem recebe as fatias de meio segundo do quadro (`null` = desligada). */
+  let perfListener: ((slice: StudioRuntimePerformanceSlice) => void) | null = null
   let captureInFlight = false
   let frameWindowStart = performance.now()
   let frameMessages = 0
@@ -291,6 +294,10 @@ export function preparePythonFrameSession(options: {
         return
       }
       if (!active) return
+      if (message.type === 'perf') {
+        perfListener?.(message.slice)
+        return
+      }
       if (message.type === 'mission-result') {
         const waiting = pendingMission
         if (!options.mission || !waiting || message.requestId !== waiting.requestId) {
@@ -483,6 +490,11 @@ export function preparePythonFrameSession(options: {
     const session: StudioRuntimeSession = {
       identity,
       playback: { kind: 'stop-only' },
+      async measurePerformance(listener) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        perfListener = listener
+        await send({ type: 'perf', on: listener !== null })
+      },
       repl: {
         kind: 'python',
         async evaluate({ requestId, source }) {
