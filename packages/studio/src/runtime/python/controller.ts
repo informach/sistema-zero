@@ -10,6 +10,7 @@ import type {
   StudioExecutionIdentity,
   StudioRuntimeEvent,
   StudioRuntimeInput,
+  StudioRuntimePerformanceSlice,
   StudioRuntimeSession,
   StudioRuntimeSnapshot,
 } from '../types'
@@ -357,6 +358,24 @@ export function createPythonExecutionController(options: {
       } finally {
         if (current.capture === pending) current.capture = undefined
       }
+    },
+    /**
+     * A aba Desempenho: liga (com um ouvinte) ou desliga (`null`) a medida da execução da vez. As
+     * fatias de uma execução que já saiu não chegam (o dono é conferido a cada fatia).
+     */
+    async measurePerformance(listener: ((slice: StudioRuntimePerformanceSlice) => void) | null) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.measurePerformance)
+        throw new Error('Este ambiente não mede o desempenho do programa.')
+      await session.measurePerformance(
+        listener
+          ? (slice) => {
+              if (owns(current)) listener(slice)
+            }
+          : null,
+      )
+      requireOwner(current)
     },
     async input(requestId: string, response: StudioRuntimeInput) {
       const { current, session } = await active()

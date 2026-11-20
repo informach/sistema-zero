@@ -1,11 +1,16 @@
-import { type JSX, useEffect } from 'react'
+import { type JSX, lazy, Suspense, useEffect } from 'react'
 import { ErrorBoundary } from '#ui'
 import { type ClassicDockTab, useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
 import { SectionErrorFallback } from '../layout/ErrorViews'
 import { InvestigatePanel } from './InvestigatePanel'
 import { PerformancePanel } from './PerformancePanel'
-import { StudentTestsPanel } from './StudentTestsPanel'
+
+// O painel de Meus testes traz o executor e o analisador do script (Babel): baixa só quando a aba
+// abre, para Investigar e Desempenho não pagarem por ele.
+const StudentTestsPanel = lazy(async () => ({
+  default: (await import('./StudentTestsPanel')).StudentTestsPanel,
+}))
 
 /**
  * Os painéis das abas Investigar, Desempenho e Meus testes dentro da gaveta (proposta aprovada em
@@ -49,7 +54,14 @@ export default function DevtoolsTabs({
     <>
       {panel('investigate', <InvestigatePanel />)}
       {panel('performance', <PerformancePanel />)}
-      {active === 'tests' ? panel('tests', <StudentTestsPanel />) : null}
+      {active === 'tests'
+        ? panel(
+            'tests',
+            <Suspense fallback={null}>
+              <StudentTestsPanel />
+            </Suspense>,
+          )
+        : null}
     </>
   )
 }

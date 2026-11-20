@@ -138,3 +138,25 @@ test('activity feedback keeps execution identity and refuses server authority or
   ])
     expect(readPythonFrameMessage({ ...raw, ...changes })).toBeUndefined()
 })
+
+test('a fatia da aba Desempenho: só os quatro números, dentro dos limites', () => {
+  const slice = { fps: 58.2, frameMsAvg: 17.1, frameMsMax: 40, canvas: true }
+  const message = { ...packet, type: 'perf' as const, slice }
+  expect(readPythonFrameMessage(message)).toEqual(message)
+  expect(
+    readPythonFrameMessage({
+      ...message,
+      slice: { fps: 0, frameMsAvg: 0, frameMsMax: 0, canvas: false },
+    }),
+  ).toMatchObject({ slice: { canvas: false } })
+  for (const change of [
+    { fps: -1 },
+    { fps: 1001 },
+    { frameMsAvg: Number.NaN },
+    { frameMsMax: 60_001 },
+    { canvas: 'sim' },
+    { extra: 1 },
+  ])
+    expect(readPythonFrameMessage({ ...message, slice: { ...slice, ...change } })).toBeUndefined()
+  expect(readPythonFrameMessage({ ...message, slice: undefined })).toBeUndefined()
+})

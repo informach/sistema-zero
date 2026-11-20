@@ -34,6 +34,12 @@ export interface PerfWindow {
   push(slice: PerfSlice): void
   /** O jogo recomeçou (Rodar de novo, edição): as fatias antigas eram de outro jogo. */
   clear(): void
+  /**
+   * O ambiente recusou a medida (no Python, um quadro publicado antes da medida existir): a aba
+   * diz que ainda não dá para medir, em vez de esperar números que não vêm.
+   */
+  refused: boolean
+  refuse(): void
 }
 
 const windows = new WeakMap<object, StoreApi<PerfWindow>>()
@@ -48,7 +54,9 @@ export function createPerfWindow(now = Date.now()): StoreApi<PerfWindow> {
         slices: slices.length > PERF_HISTORY_SLICES ? slices.slice(-PERF_HISTORY_SLICES) : slices,
       })
     },
-    clear: () => set({ slices: [] }),
+    clear: () => set({ slices: [], refused: false }),
+    refused: false,
+    refuse: () => set({ refused: true }),
   }))
 }
 
@@ -176,4 +184,32 @@ export function sendDevtoolsCommand(
   if (!sender) return false
   sender(cmd)
   return true
+}
+
+/**
+ * O tempo do programa Python sem tela (só print e input), que a aba Desempenho mostra no lugar dos
+ * quadros (proposta aprovada: "Python sem biblioteca de jogo: o tempo que o programa levou"). A
+ * prévia Python marca o começo e o fim de cada execução; uma por instância do Estúdio.
+ */
+export interface ProgramTime {
+  /**
+   * O projeto Python desenha numa tela (Turtle, Pygame Zero, pygame-ce, Raylib)? `null` fora do
+   * Python. Quem decide é a prévia Python (o painel não carrega nada do Python).
+   */
+  canvas: boolean | null
+  /** Quando a execução da vez começou a rodar (relógio da página do editor). */
+  startedAt: number | null
+  /** Quando ela terminou (completou, parou com erro ou foi parada); `null` enquanto roda. */
+  endedAt: number | null
+}
+
+const programTimes = new WeakMap<object, StoreApi<ProgramTime>>()
+
+export function programTimeFor(instance: object): StoreApi<ProgramTime> {
+  let time = programTimes.get(instance)
+  if (!time) {
+    time = createStore<ProgramTime>(() => ({ canvas: null, startedAt: null, endedAt: null }))
+    programTimes.set(instance, time)
+  }
+  return time
 }

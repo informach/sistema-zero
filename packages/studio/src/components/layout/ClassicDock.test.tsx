@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createEmptyProject } from '#core'
-import { investigationWindowFor, perfWindowFor, setDevtoolsSender } from '../../state/devtools'
+import {
+  investigationWindowFor,
+  perfWindowFor,
+  programTimeFor,
+  setDevtoolsSender,
+} from '../../state/devtools'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
@@ -125,7 +130,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     canvas: true,
   }
 
-  it('Investigar e Desempenho ainda não existem no Python (o Python ganha as abas no lote dele)', () => {
+  it('no Python, por enquanto, só o Desempenho (Investigar e Meus testes vêm nos lotes deles)', () => {
     const { stores, wrap } = setup()
     act(() =>
       stores.project.setState({
@@ -137,8 +142,9 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     )
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
-    expect(abas).not.toContain('Desempenho')
+    expect(abas).toContain('Desempenho')
     expect(abas).not.toContain('Investigar')
+    expect(abas).not.toContain('Meus testes')
   })
 
   it('liga a medida pelo botão e mostra os números do jogo, cada um com a sua marca', async () => {
@@ -167,6 +173,81 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     expect(within(painel).getAllByText('medido')).toHaveLength(3)
     expect(within(painel).getByText(/o jogo ficou lento 1 vez/)).toBeTruthy()
     expect(within(painel).getByText('O quadro mais lento levou 120 ms.')).toBeTruthy()
+  })
+
+  it('no Python que desenha, só os quadros por segundo e o tempo de cada quadro', async () => {
+    const { stores, wrap } = setup()
+    act(() => {
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Tartaruga'),
+          programmingLanguage: 'python',
+        } as never,
+      })
+      programTimeFor(stores.ui).setState({ canvas: true })
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        )
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    fireEvent.click(await screen.findByRole('switch', { name: 'Medir o desempenho' }))
+    act(() =>
+      perfWindowFor(stores.ui)
+        .getState()
+        .push({ ...fatia, sprites: null, objects: null, draws: null }),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('22')).toBeTruthy()
+    expect(within(painel).queryByText('Coisas no jogo')).toBeNull()
+    expect(within(painel).getByText(/Medir não pesa no programa/)).toBeTruthy()
+  })
+
+  it('quando o ambiente recusa a medida, a aba diz que ainda não dá para medir', async () => {
+    const { stores, wrap } = setup()
+    act(() => {
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Tartaruga'),
+          programmingLanguage: 'python',
+        } as never,
+      })
+      programTimeFor(stores.ui).setState({ canvas: true })
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        )
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    fireEvent.click(await screen.findByRole('switch', { name: 'Medir o desempenho' }))
+    expect(screen.getByText(/os primeiros números chegam/)).toBeTruthy()
+    act(() => perfWindowFor(stores.ui).getState().refuse())
+    expect(screen.getByText('Ainda não dá para medir este programa aqui.')).toBeTruthy()
+  })
+
+  it('no Python que não desenha, o tempo que o programa levou', async () => {
+    const { stores, wrap } = setup()
+    act(() => {
+      stores.project.setState({
+        project: {
+          ...createEmptyProject('01J0000000000000000000PYTH', 'Contas'),
+          programmingLanguage: 'python',
+        } as never,
+      })
+      programTimeFor(stores.ui).setState({ canvas: false, startedAt: null, endedAt: null })
+    })
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    expect(await screen.findByText('Rode o programa para ver quanto tempo ele leva.')).toBeTruthy()
+    expect(screen.queryByRole('switch', { name: 'Medir o desempenho' })).toBeNull()
+    act(() => programTimeFor(stores.ui).setState({ startedAt: 1000, endedAt: 2500 }))
+    expect(screen.getByText('O programa levou 1,5 segundos.')).toBeTruthy()
   })
 
   it('num jogo 3D, mostra os objetos na cena e os desenhos por quadro no lugar dos sprites', async () => {

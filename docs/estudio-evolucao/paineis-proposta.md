@@ -130,4 +130,20 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   - ⚠️ **Ordem do deploy:** o Members confere o envio pelo esquema do documento; ele sai com o
     esquema novo (`6d775ab7a` ou depois) ANTES do Kids, da comunidade e do member-shell, senão um
     projeto com testes não sobe para a conta.
-- Próximos: Python e Pro.
+- **Lote 6 (20/11, noite): Desempenho no Python.** A aba aparece na gaveta do Python clássico. Com
+  Turtle, Pygame Zero, pygame-ce ou Raylib: quadros por segundo e tempo de cada quadro (sem a
+  contagem de sprites, como a tabela pede), medidos no quadro do Python: cada renderizador diz
+  quantos quadros já pintou (`paintedFrames`), e o quadro, com a medida ligada, olha esse contador
+  a cada quadro da tela e manda uma fatia a cada meio segundo (comando e mensagem `perf` no
+  protocolo do quadro, conferidos pela página). Não toca no programa nem no worker, e medir não
+  recomeça o programa. Programa sem tela (só print e input): o tempo que ele levou, marcado pela
+  prévia no começo e no fim de cada execução. O painel não carrega nada do Python (quem decide se
+  há tela é a prévia), e o painel de Meus testes passou a baixar à parte (Investigar e Desempenho
+  não pagam mais pelo executor e pelo analisador do script). Provas: o leitor da mensagem, a aba no
+  Python (com e sem tela) e, na suíte Python do navegador (`e2e-runtime/python-provider.spec.ts`,
+  na homologação), um jogo de Pygame Zero com os quadros contados e a medida que para ao desligar.
+  ⚠️ O quadro do Python vem da distribuição publicada do runtime (o endereço vem da decisão do
+  servidor), e nenhum CI a publica: a medida só funciona em staging depois de uma versão nova da
+  distribuição. Até lá, o quadro publicado recusa o comando e a aba diz "Ainda não dá para medir
+  este programa aqui." (o tempo do programa sem tela já funciona, é da página).
+- Próximos: Investigar e Meus testes no Python; os três no Pro.

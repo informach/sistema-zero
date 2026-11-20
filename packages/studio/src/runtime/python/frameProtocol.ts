@@ -86,6 +86,8 @@ export type PythonFrameCommand = {
   | { type: 'mission-observe'; requestId: string; probe: StudioPythonMissionProbe }
   | { type: 'input'; requestId: string; response: StudioRuntimeInput }
   | { type: 'audio-response'; requestId: string; response: string }
+  /** A aba Desempenho liga e desliga a medida (o quadro conta os quadros pintados). */
+  | { type: 'perf'; on: boolean }
 )
 export type PythonFrameMessage = {
   protocol: 1
@@ -99,6 +101,10 @@ export type PythonFrameMessage = {
   | { type: 'mission-result'; requestId: string; result: StudioPythonMissionFrameObservation }
   | { type: 'audio-request'; requestId: string; request: string }
   | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
+  | {
+      type: 'perf'
+      slice: { fps: number; frameMsAvg: number; frameMsMax: number; canvas: boolean }
+    }
   | {
       type: 'ack'
       commandId: number

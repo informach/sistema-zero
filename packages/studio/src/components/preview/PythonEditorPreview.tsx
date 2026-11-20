@@ -1,4 +1,5 @@
 import { isPythonProject } from '../../core/editableProject'
+import { pythonCanvasExtension } from '../../runtime/python/canvasExtension'
 import type {
   PythonExecutionController,
   PythonExecutionView,
@@ -12,6 +13,7 @@ import {
   usePythonEditorConsole,
   useStudioRuntimeCapture,
 } from '../../state/studioStores'
+import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
@@ -37,8 +39,10 @@ export function PythonEditorPreview() {
   const capture = useStudioRuntimeCapture()
   const consoleBridge = usePythonEditorConsole()
   const consoleRelease = useRef<(() => void) | undefined>(undefined)
+  const controllerRef = useRef<PythonExecutionController | null>(null)
   const connectConsole = useCallback(
     (controller: PythonExecutionController | null) => {
+      controllerRef.current = controller
       consoleRelease.current?.()
       consoleRelease.current = controller ? consoleBridge?.register(controller) : undefined
     },
@@ -118,6 +122,66 @@ export function PythonEditorPreview() {
     if (!editing) return
     proRun.getState().publish(runState, runState ? commands : null)
   }, [editing, proRun, runState, commands])
+  // A aba Desempenho (proposta aprovada em 20/11/2026). O tempo de cada execução, para o programa
+  // sem tela, e a medida dos quadros, só com a aba medindo: o quadro do Python conta os quadros
+  // pintados e manda uma fatia a cada meio segundo. O módulo das janelas entra sob demanda.
+  const ui = useUIStoreApi()
+  const measuring = useUIStore((state) => state.measuring)
+  const runId = current.identity?.runId ?? null
+  const runningNow = current.status === 'running' || current.status === 'waiting-input'
+  const ended =
+    current.status === 'completed' || current.status === 'failed' || current.status === 'stopped'
+  const timedRun = useRef<string | null>(null)
+  const drawsOnCanvas = useMemo(() => {
+    if (!python) return null
+    try {
+      return pythonCanvasExtension(python.installedExtensions) !== undefined
+    } catch {
+      // Duas bibliotecas de tela ao mesmo tempo: o Rodar avisa; para a aba, o programa desenha.
+      return true
+    }
+  }, [python])
+  useEffect(() => {
+    if (drawsOnCanvas === null) return
+    void import('../../state/devtools').then(({ programTimeFor }) =>
+      programTimeFor(ui).setState({ canvas: drawsOnCanvas }),
+    )
+  }, [ui, drawsOnCanvas])
+  useEffect(() => {
+    if (!runningNow && !ended) return
+    const startsNow = runningNow && runId !== null && timedRun.current !== runId
+    if (startsNow) timedRun.current = runId
+    void import('../../state/devtools').then(({ programTimeFor }) => {
+      const time = programTimeFor(ui)
+      if (startsNow) time.setState({ startedAt: Date.now(), endedAt: null })
+      else if (ended && time.getState().startedAt !== null && time.getState().endedAt === null)
+        time.setState({ endedAt: Date.now() })
+    })
+  }, [ui, runId, runningNow, ended])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runId` é o GATILHO (uma execução nova religa a medida)
+  useEffect(() => {
+    const controller = controllerRef.current
+    if (!measuring || !runningNow || !controller) return
+    let gone = false
+    void import('../../state/devtools').then(({ perfWindowFor }) => {
+      if (gone) return
+      const window = perfWindowFor(ui)
+      window.getState().clear()
+      // Recusa: o quadro publicado não mede (é de antes da medida) ou a execução acabou antes
+      // (Parar, erro). A aba diz que ainda não dá para medir; a próxima execução tenta de novo.
+      controller
+        .measurePerformance((slice) =>
+          window.getState().push({ ...slice, sprites: null, objects: null, draws: null }),
+        )
+        .catch(() => {
+          if (!gone) window.getState().refuse()
+        })
+    })
+    return () => {
+      gone = true
+      controller.measurePerformance(null).catch(() => undefined)
+    }
+  }, [measuring, runningNow, ui, runId])
   useEffect(() => () => proRun.getState().publish(null, null), [proRun])
   if (!python) return null
   return (
