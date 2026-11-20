@@ -8,6 +8,7 @@ import {
 import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
+import { formatarJson } from './formatar-json'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
@@ -24,8 +25,17 @@ import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-e
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
 mkdirSync(dir, { recursive: true })
+// Os JSON já saem no formato que a CI confere (biome ci), como nos geradores do Cadê e do Farol.
+// O projeto portátil passa do tamanho que o Biome lê (files.maxSize) e fica como o JSON.stringify.
 const write = (name: string, v: string | object) =>
-  gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : JSON.stringify(v, null, 2) + '\n')
+  gravarArquivo(
+    resolve(dir, name),
+    typeof v === 'string'
+      ? v
+      : name.endsWith('.szproject.json')
+        ? `${JSON.stringify(v, null, 2)}\n`
+        : formatarJson(v),
+  )
 // Da parte da aparência em diante, os exemplos usam a combinação que o vídeo monta.
 const projects = Object.fromEntries(
   ILHA_PARTES.map((p) => [
