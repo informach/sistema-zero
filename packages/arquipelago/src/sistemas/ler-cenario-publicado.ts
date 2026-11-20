@@ -34,24 +34,28 @@ export async function lerCenarioPublicado(
   if (!publicacao) return null
   if (publicacao.perfil.ilha !== perfil.ilha)
     throw Error('O cenário publicado pertence a outra ilha.')
-  const ler = async (esperado: { digest: string; bytes: number; mime: string }) => {
-    sinal.throwIfAborted()
-    const r = await porta.arquivo(publicacao.id, esperado.digest, sinal)
-    sinal.throwIfAborted()
-    if (r.status !== 200) throw Error(`Não consegui localizar um arquivo publicado (${r.status}).`)
-    const meta = r.corpo as { url?: unknown; bytes?: unknown; tipoDoConteudo?: unknown } | null
+  type Esperado = { digest: string; bytes: number; mime: string }
+  const baixar = async (esperado: Esperado, meta: unknown) => {
+    const m = meta as { url?: unknown; bytes?: unknown; tipoDoConteudo?: unknown } | null
     if (
-      !meta ||
-      typeof meta.url !== 'string' ||
-      meta.bytes !== esperado.bytes ||
-      meta.tipoDoConteudo !== esperado.mime
+      !m ||
+      typeof m.url !== 'string' ||
+      m.bytes !== esperado.bytes ||
+      m.tipoDoConteudo !== esperado.mime
     )
       throw Error('O arquivo publicado não corresponde ao inventário.')
-    const bytes = await lerBytesDoCenario(new URL(meta.url), esperado.bytes, sinal, buscar)
+    const bytes = await lerBytesDoCenario(new URL(m.url), esperado.bytes, sinal, buscar)
     if (bytes.length !== esperado.bytes || (await digestDosBytes(bytes)) !== esperado.digest)
       throw Error('O conteúdo do arquivo publicado não corresponde ao inventário.')
     sinal.throwIfAborted()
     return bytes
+  }
+  const ler = async (esperado: Esperado) => {
+    sinal.throwIfAborted()
+    const r = await porta.arquivo(publicacao.id, esperado.digest, sinal)
+    sinal.throwIfAborted()
+    if (r.status !== 200) throw Error(`Não consegui localizar um arquivo publicado (${r.status}).`)
+    return baixar(esperado, r.corpo)
   }
   const manifesto = await ler({ ...publicacao.manifesto, mime: MIME_DO_MANIFESTO })
   const cena = lerCenaCompilada(new TextDecoder('utf-8', { fatal: true }).decode(manifesto))
@@ -61,19 +65,74 @@ export async function lerCenarioPublicado(
     cena.fonte.digest !== publicacao.fonte.digest
   )
     throw Error('O manifesto publicado pertence a outra revisão.')
-  const arquivos = new Map<string, Uint8Array>()
-  const porDigest = new Map<string, { bytes: number; mime: string; conteudo: Uint8Array }>()
+  const unicos = new Map<string, Esperado>()
   for (const a of cena.arquivos) {
-    sinal.throwIfAborted()
-    let anterior = porDigest.get(a.digest)
+    const anterior = unicos.get(a.digest)
     if (anterior && (anterior.bytes !== a.bytes || anterior.mime !== a.mime))
       throw Error('O inventário repete um hash com metadados diferentes.')
-    if (!anterior) {
-      anterior = { bytes: a.bytes, mime: a.mime, conteudo: await ler(a) }
-      porDigest.set(a.digest, anterior)
-    }
-    arquivos.set(a.caminho, anterior.conteudo)
+    unicos.set(a.digest, { digest: a.digest, bytes: a.bytes, mime: a.mime })
   }
+  const conteudos = await lerArquivosPublicados(
+    [...unicos.values()],
+    async (lote) => {
+      // Host com leitura em lote: um pedido por até 100 arquivos (o limite da conta agradece).
+      if (!porta.arquivos) return lote.map((e) => () => ler(e))
+      sinal.throwIfAborted()
+      const r = await porta.arquivos(
+        publicacao.id,
+        lote.map((e) => e.digest),
+        sinal,
+      )
+      sinal.throwIfAborted()
+      if (r.status !== 200)
+        throw Error(`Não consegui localizar os arquivos publicados (${r.status}).`)
+      const lista = (r.corpo as { arquivos?: unknown } | null)?.arquivos
+      if (!Array.isArray(lista) || lista.length !== lote.length)
+        throw Error('Os arquivos publicados não correspondem ao inventário.')
+      return lote.map((e, i) => {
+        const meta = lista[i] as { digest?: unknown } | null
+        if (meta?.digest !== e.digest)
+          throw Error('Os arquivos publicados não correspondem ao inventário.')
+        return () => baixar(e, meta)
+      })
+    },
+    sinal,
+  )
+  const arquivos = new Map<string, Uint8Array>()
+  for (const a of cena.arquivos) arquivos.set(a.caminho, conteudos.get(a.digest)!)
   const pacote: PacoteCompilado = { cena, arquivos }
   return { publicacao, pacote }
+}
+
+const POR_LOTE = 100,
+  DOWNLOADS_SIMULTANEOS = 4
+
+/** Pede os endereços em lotes e baixa poucos arquivos por vez: o pacote chega sem um pedido por
+ * arquivo e sem abrir dezenas de conexões de uma vez no aparelho da criança. */
+export async function lerArquivosPublicados<T extends { digest: string }>(
+  esperados: readonly T[],
+  enderecos: (
+    lote: readonly T[],
+  ) => Promise<ReadonlyArray<Uint8Array | (() => Promise<Uint8Array>)>>,
+  sinal: AbortSignal,
+): Promise<Map<string, Uint8Array>> {
+  const conteudos = new Map<string, Uint8Array>()
+  for (let i = 0; i < esperados.length; i += POR_LOTE) {
+    sinal.throwIfAborted()
+    const lote = esperados.slice(i, i + POR_LOTE)
+    const tarefas = await enderecos(lote)
+    let proximo = 0
+    const trabalhar = async () => {
+      while (proximo < tarefas.length) {
+        const k = proximo++
+        const t = tarefas[k]!
+        conteudos.set(lote[k]!.digest, typeof t === 'function' ? await t() : t)
+      }
+    }
+    await Promise.all(
+      Array.from({ length: Math.min(DOWNLOADS_SIMULTANEOS, tarefas.length) }, trabalhar),
+    )
+  }
+  sinal.throwIfAborted()
+  return conteudos
 }

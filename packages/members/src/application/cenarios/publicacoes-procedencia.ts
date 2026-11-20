@@ -4,7 +4,7 @@ import { CenarioInvalidoError } from '../../domain/cenarios/cenarios.errors'
 
 /** A compilação troca aliases ao resolver conjuntos, mas não pode trocar a origem do acervo. */
 export function conferirProcedenciaPublicada(
-  cena: CenaCompilada,
+  cena: Pick<CenaCompilada, 'fontes' | 'licencas'>,
   preparo: PreparoDeExportacao,
 ): void {
   try {

@@ -8,5 +8,7 @@ export function atorDosCenarios(headers: Record<string, string | undefined>): At
     contaId: resolveAccountId(headers),
     equipe: isPrivilegedActor(headers),
     suporte: Boolean(headers['x-auth-impersonator-id']?.trim()),
+    // O gateway só injeta a conta numa sessão de perfil (o Kids).
+    perfil: Boolean(headers['x-auth-account-id']?.trim()),
   }
 }

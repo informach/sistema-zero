@@ -598,7 +598,11 @@ export function Biblioteca({
             setVolta((v) => v + 1)
           }}
         >
-          <SeletorDeLicenca valor={licenca} aoMudar={setLicenca} />
+          <SeletorDeLicenca
+            valor={licenca}
+            aoMudar={setLicenca}
+            equipe={cota.dados?.tipo === 'equipe' || licenca === 'restrita'}
+          />
           <label className="mcn-campo">
             Descrição
             <textarea

@@ -232,9 +232,37 @@ test('reserva de recursos lê só o manifesto e a confirmação confere também 
   ).toBe(200)
   expect(b.lidos).toEqual([`cenarios/${ESPACO}/blobs/${b.pedido.manifesto.digest}`])
   expect(b.assinados).toHaveLength(1)
+  // A reserva leva só o metadado do recurso escolhido, nunca o manifesto.
+  const reserva = b.chamadas.filter((c) => c.via === 'hmac').at(-1)?.body as Record<string, unknown>
+  expect(reserva).not.toHaveProperty('manifesto')
+  expect(reserva.recursos).toEqual([
+    {
+      digest: b.recurso.digest,
+      bytes: b.recurso.bytes,
+      mime: 'model/gltf-binary',
+      papel: 'recurso',
+    },
+  ])
   expect((await b.pedir('confirmar', { pedido: b.pedido })).status).toBe(200)
   const prova = b.chamadas.filter((c) => c.via === 'hmac').at(-1)?.body
+  expect(prova).not.toHaveProperty('manifesto')
   expect(prova).toMatchObject({
+    resumo: {
+      recursos: [
+        {
+          ...b.pedido.manifesto,
+          mime: 'application/vnd.sistemazero.cena-compilada+json',
+          papel: 'manifesto',
+        },
+        {
+          digest: b.recurso.digest,
+          bytes: b.recurso.bytes,
+          mime: 'model/gltf-binary',
+          papel: 'recurso',
+        },
+      ],
+      fontes: { modelos: [], texturas: [], conjuntos: [] },
+    },
     conferidos: [
       { ...b.pedido.manifesto, tipoDoConteudo: 'application/vnd.sistemazero.cena-compilada+json' },
       { digest: b.recurso.digest, bytes: b.recurso.bytes, tipoDoConteudo: 'model/gltf-binary' },
@@ -242,11 +270,15 @@ test('reserva de recursos lê só o manifesto e a confirmação confere também 
   })
 })
 
-test('transporte do manifesto conserva bytes UTF-8 com BOM', async () => {
+test('manifesto UTF-8 com BOM é conferido pelos bytes e confirmado só pelo resumo', async () => {
   const b = await montar({ bom: true })
   expect((await b.pedir('confirmar', { pedido: b.pedido })).status).toBe(200)
-  const prova = b.chamadas.find((c) => c.via === 'hmac')?.body as { manifesto: string }
-  expect(new TextEncoder().encode(prova.manifesto)).toEqual(b.bytes)
+  const prova = b.chamadas.find((c) => c.via === 'hmac')?.body as {
+    resumo: { recursos: { digest: string; bytes: number }[] }
+  }
+  expect(prova.resumo.recursos[0]).toMatchObject(b.pedido.manifesto)
+  // O corpo que atravessa o gateway é pequeno: nada do manifesto inteiro.
+  expect(JSON.stringify(prova).length).toBeLessThan(4096)
 })
 
 test('resposta com outra versão não vira confirmação bem-sucedida no BFF', async () => {

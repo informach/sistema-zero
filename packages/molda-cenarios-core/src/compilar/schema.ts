@@ -25,6 +25,25 @@ import {
 } from './schema-metadados'
 
 export const MAX_BYTES_DO_MANIFESTO = 16 * 1024 * 1024
+/** Procedência da cena: o que veio do acervo, por biblioteca, modelo e revisão do conjunto. */
+export const FontesDaCenaCompiladaSchema = z
+  .object({
+    modelos: z.array(ModeloDoCenarioSchema).max(5000),
+    texturas: z.array(TexturaDoCenarioSchema).max(256),
+    conjuntos: z
+      .array(
+        z
+          .object({
+            id: IdentificadorDeCenarioSchema,
+            biblioteca: IdentificadorDeCenarioSchema,
+            conjunto: IdentificadorDeCenarioSchema,
+            revisao: z.number().int().positive().max(2147483647),
+          })
+          .strict(),
+      )
+      .max(128),
+  })
+  .strict()
 const id = IdentificadorDeCenarioSchema
 export const CenaCompiladaSchema = z
   .object({
@@ -45,24 +64,7 @@ export const CenaCompiladaSchema = z
     marcadores: z.array(MarcadorCompiladoSchema).max(4096),
     texturas: z.array(z.object({ id, arquivo: CaminhoCompiladoSchema }).strict()).max(256),
     /** Procedência, sem presumir que todo GLB original precise viajar junto de sua geometria derivada. */
-    fontes: z
-      .object({
-        modelos: z.array(ModeloDoCenarioSchema).max(5000),
-        texturas: z.array(TexturaDoCenarioSchema).max(256),
-        conjuntos: z
-          .array(
-            z
-              .object({
-                id,
-                biblioteca: id,
-                conjunto: id,
-                revisao: z.number().int().positive().max(2147483647),
-              })
-              .strict(),
-          )
-          .max(128),
-      })
-      .strict(),
+    fontes: FontesDaCenaCompiladaSchema,
     licencas: z.array(LicencaDaBibliotecaSchema).max(8192),
     ambiente: IluminacaoSchema,
   })

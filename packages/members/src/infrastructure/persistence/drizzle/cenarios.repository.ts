@@ -30,6 +30,7 @@ import {
   type Cenario,
   type ConferenciaDeBlob,
   type Espaco,
+  LIMITES_DOS_CENARIOS,
   type Modelo,
   type Mundo,
   type ResumoDeCenario,
@@ -41,6 +42,7 @@ import {
 } from '../../../domain/cenarios/cenarios'
 import {
   CenarioArquivoAusenteError,
+  CenarioArquivoSaindoError,
   CenarioInvalidoError,
 } from '../../../domain/cenarios/cenarios.errors'
 import { avancarHistorico } from '../../../domain/cenarios/historico'
@@ -66,6 +68,7 @@ import type { Database } from './db'
 import {
   cenarioBibliotecas,
   cenarioBlobs,
+  cenarioBlobsSaindo,
   cenarioCenarios,
   cenarioConjuntos,
   cenarioConjuntoVersoes,
@@ -431,7 +434,31 @@ export class DrizzleCenariosRepository implements CenariosRepository {
         ),
       )
       .returning({ digest: cenarioBlobs.digest })
+    // Até o BFF confirmar que apagou o objeto, o mesmo hash não se reserva de novo neste espaço.
+    if (orfaos.length)
+      await tx
+        .insert(cenarioBlobsSaindo)
+        .values(orfaos.map((o) => ({ espacoId, digest: o.digest, desde: sql`now()` })))
+        .onConflictDoUpdate({
+          target: [cenarioBlobsSaindo.espacoId, cenarioBlobsSaindo.digest],
+          set: { desde: sql`now()` },
+        })
     return orfaos.map((o) => o.digest)
+  }
+
+  async arquivosSairam(espacoId: string, digests: readonly string[]): Promise<void> {
+    const unicos = [...new Set(digests)]
+    if (!unicos.length) return
+    await this.comTrava(espacoId, (tx) =>
+      tx
+        .delete(cenarioBlobsSaindo)
+        .where(
+          and(
+            eq(cenarioBlobsSaindo.espacoId, espacoId),
+            inArray(cenarioBlobsSaindo.digest, unicos),
+          ),
+        ),
+    )
   }
 
   async apagarBiblioteca(id: string): Promise<string[]> {
@@ -520,6 +547,30 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     return this.comTrava(espacoId, async (tx) => {
       const espaco = await this.lerEspaco(tx, eq(cenarioEspacos.id, espacoId), agora)
       if (!espaco) return null
+      const pedidos = blobs.map((b) => b.digest)
+      const saindo = await tx
+        .select({ digest: cenarioBlobsSaindo.digest, desde: cenarioBlobsSaindo.desde })
+        .from(cenarioBlobsSaindo)
+        .where(
+          and(
+            eq(cenarioBlobsSaindo.espacoId, espacoId),
+            inArray(cenarioBlobsSaindo.digest, pedidos),
+          ),
+        )
+      const prazo = agora.getTime() - LIMITES_DOS_CENARIOS.saidaDoArquivoMs
+      // Lápide velha: a limpeza não voltou (BFF reiniciado). O objeto pode ter ficado; um novo
+      // envio condicional resolve sem perder nada, então a lápide sai.
+      const velhas = saindo.filter((x) => x.desde.getTime() <= prazo).map((x) => x.digest)
+      if (velhas.length)
+        await tx
+          .delete(cenarioBlobsSaindo)
+          .where(
+            and(
+              eq(cenarioBlobsSaindo.espacoId, espacoId),
+              inArray(cenarioBlobsSaindo.digest, velhas),
+            ),
+          )
+      if (saindo.length > velhas.length) throw new CenarioArquivoSaindoError()
       const guardados = await tx
         .select({
           digest: cenarioBlobs.digest,

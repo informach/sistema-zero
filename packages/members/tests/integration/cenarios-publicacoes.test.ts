@@ -1,4 +1,8 @@
 import { expect, test } from 'bun:test'
+import {
+  criarSnapshotDePublicacao,
+  resumirPublicacao,
+} from '@sistemazero/molda-cenarios-core/publicacao'
 import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import { buildApp } from '../helpers'
 
@@ -81,7 +85,7 @@ async function fonte() {
     confirmacao: {
       ator,
       pedido,
-      manifesto,
+      resumo: resumirPublicacao(await criarSnapshotDePublicacao(pedido, bytes)),
       conferidos: [
         { ...pedido.manifesto, tipoDoConteudo: 'application/vnd.sistemazero.cena-compilada+json' },
       ],
@@ -201,29 +205,30 @@ test('leitura HMAC do jogo serve apenas publicação e digest vinculado, sem abr
   ).toBe(400)
 })
 
-test('transporte interno aceita manifesto compilado acima do corpo comum sem ampliar os pedidos públicos', async () => {
+test('o manifesto nunca entra no corpo interno: só o resumo, e os pedidos públicos seguem pequenos', async () => {
   const b = await fonte()
-  const manifesto = ' '.repeat(128 * 1024) + b.manifesto,
-    bytes = new TextEncoder().encode(manifesto)
-  const pedido = {
-    ...b.pedido,
-    manifesto: { digest: await digestDosBytes(bytes), bytes: bytes.length },
-  }
   expect(
-    (await pedir(b.ctx, 'POST', '/members/cenarios/publicacoes/manifesto/reservar', pedido)).status,
+    (await pedir(b.ctx, 'POST', '/members/cenarios/publicacoes/manifesto/reservar', b.pedido))
+      .status,
   ).toBe(200)
+  // Com o manifesto inteiro no lugar do resumo, o contrato recusa.
+  const { resumo: _resumo, ...semResumo } = b.confirmacao
+  expect(
+    (
+      await pedir(
+        b.ctx,
+        'POST',
+        '/members/internal/cenarios/publicacoes/confirmar',
+        { ...semResumo, manifesto: b.manifesto },
+        bff,
+      )
+    ).status,
+  ).toBe(400)
   const r = await pedir(
     b.ctx,
     'POST',
     '/members/internal/cenarios/publicacoes/confirmar',
-    {
-      ator,
-      pedido,
-      manifesto,
-      conferidos: [
-        { ...pedido.manifesto, tipoDoConteudo: 'application/vnd.sistemazero.cena-compilada+json' },
-      ],
-    },
+    b.confirmacao,
     bff,
   )
   expect(r.status).toBe(200)
@@ -231,7 +236,7 @@ test('transporte interno aceita manifesto compilado acima do corpo comum sem amp
   expect(
     (
       await pedir(b.ctx, 'POST', '/members/cenarios/publicacoes/preparar', {
-        ...pedido,
+        ...b.pedido,
         extra: 'x'.repeat(128 * 1024),
       })
     ).status,

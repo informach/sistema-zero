@@ -172,6 +172,7 @@ const Reserva = z.object({
   ),
 })
 const Apagados = z.object({ apagar: z.array(z.string()) })
+const CHAVE_DE_ARQUIVO = /^cenarios\/([0-9a-f-]{36})\/blobs\/([a-f0-9]{64})$/
 
 const ArquivoGuardado = z.object({
   chave: z.string(),
@@ -253,6 +254,8 @@ function atorDe(user: SessionUser) {
     contaId: user.activeProfile?.accountId ?? user.id,
     equipe: isPrivilegedRole(user.role) && user.status === 'active',
     suporte: isSupportSession(user),
+    // Sessão de perfil (a criança no Kids): o acervo da equipe e a publicação ficam de fora.
+    perfil: Boolean(user.activeProfile),
   }
 }
 
@@ -385,21 +388,47 @@ export function createCenariosRoutes(deps: {
       ? erro(422, 'CENARIO_ARQUIVO_INVALIDO', e.message)
       : semConferencia()
 
-  /** O members disse quais arquivos ficaram sem dono: saem do armazenamento depois da resposta. */
-  function soltar(r: GatewayResponse, retrato?: z.infer<typeof RetratoGuardadoBody>): NextResponse {
+  /** O members disse quais arquivos ficaram sem dono: saem do armazenamento depois da resposta.
+   * Só depois de apagar o members libera o mesmo hash para uma nova reserva (até lá, uma reserva
+   * dele espera): sem isso, um envio no meio do caminho seria confirmado e apagado em seguida. */
+  function soltar(
+    user: SessionUser | null,
+    r: GatewayResponse,
+    retrato?: z.infer<typeof RetratoGuardadoBody>,
+  ): NextResponse {
     if (r.status !== 200) return repasse(r)
     const apagados = Apagados.safeParse(r.body)
     const chaves = apagados.success
-      ? apagados.data.apagar.filter((c) => /^cenarios\/[0-9a-f-]{36}\/blobs\/[a-f0-9]{64}$/.test(c))
+      ? apagados.data.apagar.filter((c) => CHAVE_DE_ARQUIVO.test(c))
       : []
-    if (chaves.length)
+    if (chaves.length) {
+      // Sem sessão o gateway já recusou antes; sem ator, a marca vence sozinha em 10 minutos.
+      const ator = user ? atorDe(user) : null
       agendar(async () => {
         try {
           await armazenamento.apagar(chaves)
         } catch (error) {
           console.warn('[cenarios] não apagou arquivos soltos', { quantos: chaves.length, error })
+          return
         }
+        if (!ator) return
+        const porEspaco = new Map<string, string[]>()
+        for (const c of chaves) {
+          const [, espacoId, digest] = CHAVE_DE_ARQUIVO.exec(c)!
+          porEspaco.set(espacoId!, [...(porEspaco.get(espacoId!) ?? []), digest!])
+        }
+        for (const [espacoId, digests] of porEspaco)
+          for (let i = 0; i < digests.length; i += 2000)
+            await gateway
+              .gatewayFetchHmac('/members/internal/cenarios/arquivos/sairam', {
+                method: 'POST',
+                body: { ator, espacoId, digests: digests.slice(i, i + 2000) },
+              })
+              .catch((error: unknown) =>
+                console.warn('[cenarios] não liberou arquivos apagados', { espacoId, error }),
+              )
       })
+    }
     return privado(NextResponse.json(retrato ?? { ok: true }))
   }
 
@@ -722,13 +751,14 @@ export function createCenariosRoutes(deps: {
         const retrato = RetratoGuardadoBody.safeParse(resultado.body)
         if (!retrato.success || retrato.data.revisao !== corpo.data.revisao)
           return erro(502, 'CENARIOS_RETRATO', 'O servidor não confirmou o retrato desta versão')
-        return soltar(resultado, retrato.data)
+        return soltar(user, resultado, retrato.data)
       }
 
       if (APAGAR_MODELOS.test(caminho) || APAGAR_TEXTURAS.test(caminho)) {
         const lido = await corpoJson(req, CORPO_PEQUENO)
         if (!lido.ok) return invalido()
         return soltar(
+          user,
           await gateway.gatewayFetch(members(caminho), { method: 'POST', body: lido.corpo }),
         )
       }
@@ -738,12 +768,12 @@ export function createCenariosRoutes(deps: {
       metodo === 'DELETE' &&
       (APAGAR_BIBLIOTECA.test(caminho) || exato(`conjuntos/${U}`).test(caminho))
     )
-      return soltar(await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
+      return soltar(user, await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
     if (
       metodo === 'DELETE' &&
       (exato(`mundos/${U}`).test(caminho) || exato(`cenarios/${U}`).test(caminho))
     )
-      return soltar(await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
+      return soltar(user, await gateway.gatewayFetch(members(caminho), { method: 'DELETE' }))
 
     const rota = REPASSES.find((r) => r.metodo === metodo && r.caminho.test(caminho))
     if (!rota) return semRota()

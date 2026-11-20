@@ -118,9 +118,9 @@ export function criarPublicacoesDeCenariosBff(deps: {
     try {
       if (recursos) {
         const entrada = Recursos.parse(corpo.data)
-        const { manifesto, snapshot } = await lerManifestoDaPublicacao(pedido, ler, sinal)
-        const inventario = new Set(
-          snapshot.recursos.filter((r) => r.papel === 'recurso').map((r) => r.digest),
+        const { snapshot } = await lerManifestoDaPublicacao(pedido, ler, sinal)
+        const inventario = new Map(
+          snapshot.recursos.filter((r) => r.papel === 'recurso').map((r) => [r.digest, r]),
         )
         if (
           new Set(entrada.digests).size !== entrada.digests.length ||
@@ -136,13 +136,11 @@ export function criarPublicacoesDeCenariosBff(deps: {
           {
             method: 'POST',
             signal: sinal,
+            // Só os metadados dos recursos escolhidos: o manifesto fica no armazenamento.
             body: {
               ator: deps.ator(user),
               pedido,
-              manifesto: new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(
-                manifesto,
-              ),
-              digests: entrada.digests,
+              recursos: entrada.digests.map((d) => inventario.get(d)!),
             },
           },
         )
@@ -163,9 +161,7 @@ export function criarPublicacoesDeCenariosBff(deps: {
           body: {
             ator: deps.ator(user),
             pedido,
-            manifesto: new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(
-              resultado.manifesto,
-            ),
+            resumo: resultado.resumo,
             conferidos: resultado.conferidos,
           },
         },

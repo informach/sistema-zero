@@ -52,7 +52,7 @@ async function comBiblioteca(ctx: Ctx = buildApp()) {
   const biblioteca = await json(
     await pedir(ctx.app, 'POST', `/members/cenarios/espacos/${espaco.id}/bibliotecas`, {
       nome: 'Aventura',
-      licenca: 'restrita',
+      licenca: 'propria',
     }),
   )
   return { ctx, espaco, biblioteca }

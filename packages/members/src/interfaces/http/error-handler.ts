@@ -12,6 +12,7 @@ import {
 import { type Logger, serializeError } from '@sistemazero/core/logging'
 import {
   CenarioArquivoAusenteError,
+  CenarioArquivoSaindoError,
   CenarioDesatualizadoError,
   CenarioInvalidoError,
 } from '../../domain/cenarios/cenarios.errors'
@@ -284,6 +285,8 @@ export function buildErrorResponse(input: {
       },
     }
   }
+  if (error instanceof CenarioArquivoSaindoError)
+    return { status: 409, body: envelope(error.code, error.message) }
   if (error instanceof CenarioArquivoAusenteError) {
     return {
       status: 409,

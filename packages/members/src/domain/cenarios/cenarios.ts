@@ -67,6 +67,9 @@ export const LIMITES_DOS_CENARIOS = {
   bytesDaConta: 2 * 1024 ** 3,
   /** Espaço da equipe: 20 GB (o acervo licenciado passa de 800 MB). */
   bytesDaEquipe: 20 * 1024 ** 3,
+  /** Quanto tempo um arquivo sem dono pode ficar "saindo" antes de a reserva voltar a valer
+   * sozinha (a limpeza do BFF normalmente confirma em menos de um segundo). */
+  saidaDoArquivoMs: 10 * 60_000,
   bibliotecasPorEspaco: 200,
   modelosPorBiblioteca: 5000,
   texturasPorBiblioteca: 2000,
@@ -255,6 +258,9 @@ export interface Ator {
   equipe: boolean
   /** Sessão de suporte: alguém da equipe olhando a conta de outra pessoa. */
   suporte: boolean
+  /** Sessão de um perfil (a criança no Kids). Ausente em pedido antigo: vale a comparação
+   * entre o usuário e a conta. */
+  perfil?: boolean
 }
 
 export const MODOS_DOS_CENARIOS = ['desligado', 'equipe', 'lista', 'aberto'] as const
@@ -274,8 +280,19 @@ export function podeUsarCenarios(abertura: AberturaDosCenarios, ator: Ator): boo
   return abertura.modo === 'lista' && abertura.lista.has(ator.contaId.toLowerCase())
 }
 
+/**
+ * A equipe na PRÓPRIA conta, fora de um perfil de criança: só ela vê o espaço da equipe, o
+ * acervo licenciado ("só para a gente") e publica no jogo. O papel da conta também vale numa
+ * sessão de perfil do Kids (é como a equipe testa a interface), mas o perfil pode ser de um filho
+ * de quem é da equipe: lá a ferramenta abre só com o espaço da família.
+ */
+export function equipeNaPropriaConta(ator: Ator): boolean {
+  const perfil = ator.perfil ?? ator.usuarioId !== ator.contaId
+  return ator.equipe && !ator.suporte && !perfil
+}
+
 /** Este ator pode mexer neste espaço? */
 export function podeNoEspaco(espaco: Espaco, ator: Ator): boolean {
-  if (espaco.tipo === 'equipe') return ator.equipe && !ator.suporte
+  if (espaco.tipo === 'equipe') return equipeNaPropriaConta(ator)
   return espaco.contaId === ator.contaId
 }

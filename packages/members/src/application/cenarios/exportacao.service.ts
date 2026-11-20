@@ -6,7 +6,11 @@ import {
 } from '@sistemazero/molda-cenarios-core/compilar'
 import { validarDocumento } from '@sistemazero/molda-cenarios-core/v2'
 import type { Ator, Cenario, Espaco } from '../../domain/cenarios/cenarios'
-import { TETO_DO_BLOB, tiposDeBlobCompativeis } from '../../domain/cenarios/cenarios'
+import {
+  equipeNaPropriaConta,
+  TETO_DO_BLOB,
+  tiposDeBlobCompativeis,
+} from '../../domain/cenarios/cenarios'
 import {
   BibliotecaRestritaError,
   CenarioArquivoAusenteError,
@@ -43,7 +47,7 @@ export class ExportacaoDeCenariosService {
         if (!b) throw new CenarioNaoEncontradoError('A biblioteca usada pelo cenário')
         return { id: b.id, nome: b.nome, licenca: b.licenca }
       }),
-      contexto = { equipe: ator.equipe && !ator.suporte, bibliotecas },
+      contexto = { equipe: equipeNaPropriaConta(ator), bibliotecas },
       restrita = bibliotecas.find((b) => b.licenca === 'restrita')
     if (restrita && !contexto.equipe)
       throw new BibliotecaRestritaError(

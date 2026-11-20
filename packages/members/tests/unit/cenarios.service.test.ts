@@ -63,12 +63,30 @@ test('biblioteca do Molda é idempotente por perfil, pertence à conta e não se
   )
   await expect(servico.bibliotecaDoMolda(ana, equipe!.id)).rejects.toThrow('espaço da conta')
 })
+test('licença restrita é só do acervo da equipe: numa conta, criar ou trocar para ela é recusado', async () => {
+  const { servico } = montar('aberto')
+  const [conta, equipe] = await servico.espacos(ana)
+  await expect(
+    servico.criarBiblioteca(ana, conta!.id, { nome: 'Pacote', licenca: 'restrita' }),
+  ).rejects.toThrow(/restrita/)
+  const propria = await servico.criarBiblioteca(ana, conta!.id, {
+    nome: 'Pacote',
+    licenca: 'propria',
+  })
+  await expect(servico.editarBiblioteca(ana, propria.id, { licenca: 'restrita' })).rejects.toThrow(
+    /restrita/,
+  )
+  expect(
+    (await servico.criarBiblioteca(ana, equipe!.id, { nome: 'Acervo', licenca: 'restrita' }))
+      .licenca,
+  ).toBe('restrita')
+})
 async function comBiblioteca(ator: Ator = ana, modo: ModoDosCenarios = 'equipe') {
   const base = montar(modo)
   const [espaco] = await base.servico.espacos(ator)
   const biblioteca = await base.servico.criarBiblioteca(ator, espaco!.id, {
     nome: 'Aventura',
-    licenca: 'restrita',
+    licenca: 'propria',
   })
   return { ...base, espaco: espaco!, biblioteca }
 }
@@ -380,7 +398,7 @@ describe('mundos e cenários', () => {
     expect(p.digest).toBe(await digestDoDocumentoDeCenario(antes.documento))
     expect(p.contexto).toEqual({
       equipe: true,
-      bibliotecas: [{ id: base.biblioteca.id, nome: 'Aventura', licenca: 'restrita' }],
+      bibliotecas: [{ id: base.biblioteca.id, nome: 'Aventura', licenca: 'propria' }],
     })
     expect(await base.servico.abrirCenario(ana, base.cenario.id)).toEqual(antes)
     await expect(base.servico.exportacao.preparar(ana, base.cenario.id, 0)).rejects.toBeInstanceOf(
@@ -407,8 +425,10 @@ describe('mundos e cenários', () => {
       base.servico.exportacao.preparar({ ...ana, contaId: OUTRA }, base.cenario.id, 1),
     ).rejects.toBeInstanceOf(CenarioNaoEncontradoError)
     // Abre a ferramenta para a conta, sem promover a pessoa a membro da equipe.
-    const comum = await comBiblioteca(ana, 'aberto'),
-      [modelo] = await trazerArvore(comum),
+    const comum = await comBiblioteca(ana, 'aberto')
+    // Biblioteca restrita numa conta só existe em dado antigo (hoje o serviço recusa criar).
+    await comum.repo.editarBiblioteca(comum.biblioteca.id, { licenca: 'restrita' }, AGORA)
+    const [modelo] = await trazerArvore(comum),
       mundo = await comum.servico.criarMundo(ana, comum.espaco.id, 'Mundo'),
       c = await comum.servico.criarCenario(ana, mundo.id, 'Cena')
     await comum.servico.editarCenario(ana, c.id, {
@@ -596,4 +616,20 @@ describe('mundos e cenários', () => {
       CenarioNaoEncontradoError,
     )
   })
+})
+
+test('equipe num perfil de criança usa a ferramenta, mas sem o espaço da equipe nem o acervo', async () => {
+  const { servico } = montar('equipe')
+  const [, equipe] = await servico.espacos(ana)
+  expect(equipe?.tipo).toBe('equipe')
+  // O mesmo papel numa sessão de perfil (o filho de alguém da equipe, no Kids).
+  const noPerfil: Ator = { ...ana, usuarioId: OUTRA, perfil: true }
+  const espacos = await servico.espacos(noPerfil)
+  expect(espacos.map((e) => e.tipo)).toEqual(['conta'])
+  await expect(servico.bibliotecas(noPerfil, equipe!.id)).rejects.toBeInstanceOf(
+    CenarioNaoEncontradoError,
+  )
+  // Pedido antigo sem o campo: perfil é quando o usuário não é a própria conta.
+  const antigo: Ator = { usuarioId: OUTRA, contaId: CONTA, equipe: true, suporte: false }
+  expect((await servico.espacos(antigo)).map((e) => e.tipo)).toEqual(['conta'])
 })

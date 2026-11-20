@@ -159,3 +159,82 @@ test('ilha sem publicação conserva resposta explícita nula para usar composi�
   expect(r.status).toBe(200)
   expect(await r.json()).toEqual({ publicacao: null })
 })
+
+test('leitura em lote: um acesso ao jogo, uma ida ao serviço e um endereço assinado por hash', async () => {
+  const OUTRO = 'c'.repeat(64)
+  const chamadas: { path: string; body?: unknown }[] = [],
+    assinados: string[] = []
+  const gateway = {
+    gatewayFetch: async (path: string) => {
+      chamadas.push({ path })
+      return {
+        status: 200,
+        body: { liberado: true, motivo: null, limiteDiarioMinutos: 20, usadoHojeSegundos: 0 },
+      }
+    },
+    gatewayFetchHmac: async (path: string, p: { body: { digests: string[] } }) => {
+      chamadas.push({ path, body: p.body })
+      return {
+        status: 200,
+        body: {
+          arquivos: p.body.digests.map((d) => ({
+            digest: d,
+            chave: `cenarios/${ESPACO}/blobs/${d}`,
+            bytes: 512,
+            tipoDoConteudo: 'model/gltf-binary',
+          })),
+        },
+      }
+    },
+  } as unknown as GatewayModule
+  const rotas = createCenariosRoutes({
+    gateway,
+    session: { getSession: async () => user } as unknown as SessionModule,
+    armazenamento: {
+      presignGet: async (key) => {
+        assinados.push(key)
+        return `https://armazenamento.exemplo/${key}`
+      },
+      presignPut: async () => {
+        throw Error('Sem envio no jogo')
+      },
+      abrir: async () => {
+        throw Error('Sem leitura de biblioteca no jogo')
+      },
+      apagar: async () => {},
+    },
+  }).cenarios
+  const pedir = (consulta: string) =>
+    rotas.GET(
+      new Request(`http://localhost/api/cenarios/jogo/publicacoes/${ID}/arquivos?${consulta}`, {
+        headers: { 'x-sz-viewer': PESSOA },
+      }),
+      { params: Promise.resolve({ caminho: ['jogo', 'publicacoes', ID, 'arquivos'] }) },
+    )
+  const r = await pedir(`digests=${DIGEST},${OUTRO}`)
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect((await r.json()).arquivos.map((a: { digest: string }) => a.digest)).toEqual([
+    DIGEST,
+    OUTRO,
+  ])
+  expect(chamadas.map((c) => c.path)).toEqual([
+    '/arquipelago/acesso',
+    '/members/internal/cenarios/publicacoes/jogo/arquivos',
+  ])
+  expect(chamadas[1]!.body).toMatchObject({ publicacaoId: ID, digests: [DIGEST, OUTRO] })
+  expect(assinados).toEqual([
+    `cenarios/${ESPACO}/blobs/${DIGEST}`,
+    `cenarios/${ESPACO}/blobs/${OUTRO}`,
+  ])
+  // Lista vazia, hash torto, repetido ou mais de 100: recusado antes de qualquer leitura.
+  const antes = chamadas.length
+  for (const consulta of [
+    'digests=',
+    'digests=xyz',
+    `digests=${DIGEST},${DIGEST}`,
+    `digests=${Array.from({ length: 101 }, (_, i) => i.toString(16).padStart(64, '0')).join(',')}`,
+  ])
+    expect((await pedir(consulta)).status).toBe(404)
+  expect(chamadas.length).toBe(antes)
+})

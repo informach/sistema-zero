@@ -171,6 +171,8 @@ export interface CenariosRepository extends ConjuntosRepository {
     agora: Date,
     venceEm: Date,
   ): Promise<{ faltam: BlobReservado[] } | null>
+  /** O BFF apagou do armazenamento estes arquivos sem dono: a reserva deles volta a valer. */
+  arquivosSairam(espacoId: string, digests: readonly string[]): Promise<void>
   /** Marca como enviados os arquivos que o BFF conferiu no bucket. */
   confirmarBlobs(
     espacoId: string,

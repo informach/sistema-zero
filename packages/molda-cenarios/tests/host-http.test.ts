@@ -618,3 +618,16 @@ describe('a oficina falando com o app', () => {
     expect(baixados).toEqual(['https://r2/modelo-a'])
   })
 })
+
+test('arquivo ainda saindo do armazenamento: espera e repete o mesmo pedido, sem erro na tela', async () => {
+  let vezes = 0
+  const { host, pedidos } = montar((p) => {
+    if (p.caminho !== 'espacos') return undefined
+    vezes++
+    return vezes === 1
+      ? { status: 409, corpo: { error: { code: 'CENARIO_ARQUIVO_SAINDO', message: 'Saindo' } } }
+      : { corpo: [] }
+  })
+  expect(await host.espacos()).toEqual([])
+  expect(pedidos.filter((p) => p.caminho === 'espacos')).toHaveLength(2)
+})

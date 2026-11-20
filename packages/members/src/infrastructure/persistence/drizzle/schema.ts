@@ -3330,6 +3330,23 @@ export const cenarioBlobs = members.table(
   ],
 )
 
+/**
+ * Arquivo sem dono saindo do armazenamento (`cenario_blobs` já apagado): o BFF apaga o objeto
+ * depois da resposta e só então retira esta linha. Enquanto ela existe, uma reserva do mesmo
+ * hash espera em vez de confiar num objeto que pode sumir no meio do caminho.
+ */
+export const cenarioBlobsSaindo = members.table(
+  'cenario_blobs_saindo',
+  {
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    desde: timestamp('desde', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.espacoId, t.digest] })],
+)
+
 export const cenarioBibliotecas = members.table(
   'cenario_bibliotecas',
   {

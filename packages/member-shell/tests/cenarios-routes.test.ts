@@ -548,7 +548,7 @@ describe('BFF do Molda Cenários: trazer modelos', () => {
         method: 'POST',
         body: {
           // Quem pede sai da sessão: o perfil, a conta do responsável e o papel da conta.
-          ator: { usuarioId: PERFIL, contaId: CONTA, equipe: true, suporte: false },
+          ator: { usuarioId: PERFIL, contaId: CONTA, equipe: true, suporte: false, perfil: true },
           bibliotecaId: BIBLIOTECA,
           espacoId: ESPACO,
           modelos: [{ ...modelo, miniatura: null }],
@@ -795,6 +795,16 @@ describe('BFF do Molda Cenários: apagar e ler arquivos', () => {
     await Promise.all(t.tarefas.map((tarefa) => tarefa()))
     // Só chave de arquivo de cenário: nada de prefixo nem de outra ferramenta.
     expect(t.apagados).toEqual([[solto]])
+    // Depois de apagar, o members libera o mesmo hash para uma nova reserva.
+    expect(
+      t.chamadas.filter((c) => c.path === '/members/internal/cenarios/arquivos/sairam'),
+    ).toEqual([
+      expect.objectContaining({
+        via: 'hmac',
+        method: 'POST',
+        body: expect.objectContaining({ espacoId: ESPACO, digests: [digest('a')] }),
+      }),
+    ])
 
     const biblioteca = montar({ responder: () => ({ status: 200, body: { apagar: [] } }) })
     expect(await (await biblioteca.pedir('DELETE', `bibliotecas/${BIBLIOTECA}`)).json()).toEqual({

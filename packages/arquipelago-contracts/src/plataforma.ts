@@ -126,6 +126,13 @@ export interface ServicoDoJogo {
 export interface CenariosPublicadosDoJogo {
   perfil(ilha: Exclude<IlhaId, 'farol'>, sinal?: AbortSignal): Promise<RespostaDoServico>
   arquivo(publicacaoId: string, digest: string, sinal?: AbortSignal): Promise<RespostaDoServico>
+  /** Até 100 arquivos da mesma versão numa ida (`{arquivos: [{digest, url, bytes,
+   * tipoDoConteudo}]}`, na ordem pedida). Opcional: host antigo só tem `arquivo`. */
+  arquivos?(
+    publicacaoId: string,
+    digests: readonly string[],
+    sinal?: AbortSignal,
+  ): Promise<RespostaDoServico>
 }
 
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */

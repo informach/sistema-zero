@@ -22,6 +22,7 @@ import {
   chaveDoBlob,
   type Espaco,
   ehImagemDeCenario,
+  equipeNaPropriaConta,
   LIMITES_DOS_CENARIOS,
   type Licenca,
   type Modelo,
@@ -138,6 +139,13 @@ const resumoView = (c: ResumoDeCenario): ResumoDeCenarioView => ({
  * Molda Cenários. Toda operação confere duas coisas: se a ferramenta está aberta para quem pede
  * e se o que ele pede é do espaço dele. O que é de outro espaço responde "não existe".
  */
+/** `restrita` é o acervo licenciado da equipe: numa conta, a própria pessoa ficaria sem poder
+ * exportar os modelos dela. Para "só eu uso" existe `propria`. */
+function exigirLicencaDoEspaco(espaco: Espaco, licenca: Licenca) {
+  if (licenca === 'restrita' && espaco.tipo !== 'equipe')
+    throw new ValidationError('A licença restrita é só do acervo da equipe. Use "uso próprio".')
+}
+
 export class CenariosService {
   readonly conjuntos: ConjuntosService
   readonly exportacao: ExportacaoDeCenariosService
@@ -204,7 +212,7 @@ export class CenariosService {
     const lista = [
       await this.repo.espacoDaConta(ator.contaId, LIMITES_DOS_CENARIOS.bytesDaConta, agora),
     ]
-    if (ator.equipe && !ator.suporte)
+    if (equipeNaPropriaConta(ator))
       lista.push(await this.repo.espacoDaEquipe(LIMITES_DOS_CENARIOS.bytesDaEquipe, agora))
     return lista.map(espacoView)
   }
@@ -241,7 +249,8 @@ export class CenariosService {
     espacoId: string,
     dados: { nome: string; licenca: Licenca; descricao?: string },
   ): Promise<BibliotecaView> {
-    await this.espacoDe(ator, espacoId)
+    const espaco = await this.espacoDe(ator, espacoId)
+    exigirLicencaDoEspaco(espaco, dados.licenca)
     const criada = await this.repo.criarBiblioteca(
       {
         id: this.novoId(),
@@ -264,6 +273,7 @@ export class CenariosService {
     dados: { nome?: string; licenca?: Licenca; descricao?: string; capaModelo?: string | null },
   ): Promise<BibliotecaView> {
     const { espaco } = await this.bibliotecaDe(ator, id)
+    if (dados.licenca !== undefined) exigirLicencaDoEspaco(espaco, dados.licenca)
     if (dados.capaModelo) {
       const modelo = await this.repo.modelo(dados.capaModelo)
       const origem = modelo ? await this.repo.biblioteca(modelo.bibliotecaId) : null
@@ -367,6 +377,17 @@ export class CenariosService {
         por(m.miniatura.digest, m.miniatura.bytes, 'miniatura', m.miniatura.tipoDoConteudo)
     }
     return this.reservar(espaco.id, [...blobs.values()])
+  }
+
+  /** Chamada interna do BFF depois de apagar do armazenamento os objetos sem dono que o próprio
+   * members devolveu: a reserva desses hashes volta a valer. */
+  async arquivosSairam(ator: Ator, espacoId: string, digests: readonly string[]) {
+    const espaco = await this.espacoDe(ator, espacoId)
+    const unicos = [...new Set(digests)]
+    if (!unicos.length || unicos.length > 2000)
+      throw new ValidationError('Informe de 1 a 2000 arquivos apagados')
+    await this.repo.arquivosSairam(espaco.id, unicos)
+    return { ok: true as const }
   }
 
   private async reservar(espacoId: string, blobs: BlobReservado[]) {

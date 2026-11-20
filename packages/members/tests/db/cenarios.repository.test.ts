@@ -32,6 +32,7 @@ import { chaveDoBlob } from '../../src/domain/cenarios/cenarios'
 import {
   BibliotecaRestritaError,
   CenarioArquivoAusenteError,
+  CenarioArquivoSaindoError,
   CenarioDesatualizadoError,
   CenarioInvalidoError,
   CenarioNaoEncontradoError,
@@ -207,6 +208,15 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       'utf8',
     )
     for (const comando of publicacoesDdl.split('--> statement-breakpoint'))
+      if (comando.trim()) await conn.sql.unsafe(comando)
+    const saindoDdl = readFileSync(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0165_cenarios_blobs_saindo.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    )
+    for (const comando of saindoDdl.split('--> statement-breakpoint'))
       if (comando.trim()) await conn.sql.unsafe(comando)
     repo = new DrizzleCenariosRepository(conn.db)
   })
@@ -1390,6 +1400,31 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
       [digest('a'), digest('c')].sort(),
     )
     expect(await repo.biblioteca(biblioteca.id)).toBeNull()
+    // Enquanto o BFF não confirma que apagou o objeto, o mesmo hash espera; depois volta a valer.
+    const reservar = () =>
+      repo.reservarBlobs(
+        espaco.id,
+        [{ digest: digest('a'), bytes: 1000, tipo: 'modelo' }],
+        new Date(),
+        new Date(Date.now() + 3_600_000),
+      )
+    const erro = await reservar().catch((e: unknown) => e)
+    expect(erro).toBeInstanceOf(CenarioArquivoSaindoError)
+    await repo.arquivosSairam(espaco.id, [digest('a'), digest('c')])
+    expect((await reservar())?.faltam.map((f) => f.digest)).toEqual([digest('a')])
+    // Lápide que ficou para trás (BFF reiniciado) vence sozinha depois do prazo.
+    await repo.apagarModelos(biblioteca.id, [], DEPOIS)
+    await conn.sql.unsafe(
+      `insert into members.cenario_blobs_saindo (espaco_id, digest, desde)
+       values ('${espaco.id}', '${digest('e')}', now() - interval '11 minutes')`,
+    )
+    const velha = await repo.reservarBlobs(
+      espaco.id,
+      [{ digest: digest('e'), bytes: 1000, tipo: 'modelo' }],
+      new Date(),
+      new Date(Date.now() + 3_600_000),
+    )
+    expect(velha?.faltam.map((f) => f.digest)).toEqual([digest('e')])
   })
   async function guardar(espacoId: string, ...letras: string[]) {
     await repo.reservarBlobs(

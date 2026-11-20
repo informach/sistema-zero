@@ -3,6 +3,7 @@ import {
   criarSnapshotDePublicacao,
   MIME_DO_MANIFESTO,
   PedidoDePublicacaoSchema,
+  resumirPublicacao,
 } from '@sistemazero/molda-cenarios-core/publicacao'
 import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import { conferirConteudoCompilado } from '@sistemazero/molda-cenarios-motor/conteudo'
@@ -94,6 +95,8 @@ export async function conferirPacoteDaPublicacao(
   sinal?.throwIfAborted()
   return {
     manifesto,
+    /** O que o Members guarda: inventário e procedência, sem o manifesto inteiro. */
+    resumo: resumirPublicacao(snapshot),
     conferidos: snapshot.recursos.map((r) => ({
       digest: r.digest,
       bytes: r.bytes,

@@ -98,6 +98,7 @@ const AtorBody = t.Object({
   contaId: UUID,
   equipe: t.Boolean(),
   suporte: t.Boolean(),
+  perfil: t.Optional(t.Boolean()),
 })
 
 /**
@@ -561,6 +562,23 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
                 }),
                 { maxItems: MAX_RECURSOS_TERRENO },
               ),
+            }),
+          },
+        )
+        .post(
+          '/arquivos/sairam',
+          ({ headers, body }) => {
+            assertMemberShellConsumer(headers['x-consumer-id'])
+            return s.arquivosSairam(body.ator, body.espacoId, body.digests)
+          },
+          {
+            body: t.Object({
+              ator: AtorBody,
+              espacoId: UUID,
+              digests: t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), {
+                minItems: 1,
+                maxItems: 2000,
+              }),
             }),
           },
         )

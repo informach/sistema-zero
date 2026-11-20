@@ -12,6 +12,7 @@ import {
   type Cenario,
   type ConferenciaDeBlob,
   type Espaco,
+  LIMITES_DOS_CENARIOS,
   type Modelo,
   type Mundo,
   type Textura,
@@ -22,6 +23,7 @@ import {
 } from '../../src/domain/cenarios/cenarios'
 import {
   CenarioArquivoAusenteError,
+  CenarioArquivoSaindoError,
   CenarioInvalidoError,
 } from '../../src/domain/cenarios/cenarios.errors'
 import {
@@ -200,10 +202,20 @@ export class CenariosEmMemoria implements CenariosRepository {
       if (c.capa) usados.add(c.capa)
       for (const digest of this.retratosGuardados.get(c.id)?.values() ?? []) usados.add(digest)
     }
-    const orfaos = [...new Set(digests)].filter((d) => !usados.has(d))
-    for (const d of orfaos) this.blobs.delete(this.chave(espacoId, d))
+    const orfaos = [...new Set(digests)].filter(
+      (d) => !usados.has(d) && this.blobs.has(this.chave(espacoId, d)),
+    )
+    for (const d of orfaos) {
+      this.blobs.delete(this.chave(espacoId, d))
+      this.saindo.set(this.chave(espacoId, d), agora)
+    }
     this.atualizarUso(espacoId, agora)
     return orfaos
+  }
+  /** Arquivos sem dono esperando o BFF apagar o objeto (lápide por espaço e hash). */
+  readonly saindo = new Map<string, Date>()
+  async arquivosSairam(espacoId: string, digests: readonly string[]) {
+    for (const d of digests) this.saindo.delete(this.chave(espacoId, d))
   }
   private contar(bibliotecaId: string) {
     const biblioteca = this.bibliotecasGuardadas.get(bibliotecaId)
@@ -435,6 +447,15 @@ export class CenariosEmMemoria implements CenariosRepository {
   ) {
     const espaco = this.espacosGuardados.get(espacoId)
     if (!espaco) return null
+    let saindo = false
+    for (const b of blobs) {
+      const desde = this.saindo.get(this.chave(espacoId, b.digest))
+      if (!desde) continue
+      if (desde.getTime() <= agora.getTime() - LIMITES_DOS_CENARIOS.saidaDoArquivoMs)
+        this.saindo.delete(this.chave(espacoId, b.digest))
+      else saindo = true
+    }
+    if (saindo) throw new CenarioArquivoSaindoError()
     for (const b of blobs) {
       const existente = this.blobs.get(this.chave(espacoId, b.digest))
       if (

@@ -4,9 +4,13 @@ import {
   conferirPreparacaoDePublicacao,
   criarSnapshotDePublicacao,
   lerResultadoDaPublicacao,
+  lerResumoDaPublicacao,
+  MAX_BYTES_DO_RESUMO_DE_PUBLICACAO,
   PERFIS_DE_ILHA,
   type PedidoDePublicacao,
   PedidoDePublicacaoSchema,
+  RecursosAReservarSchema,
+  resumirPublicacao,
 } from '../src/publicacao'
 import { digestDosBytes } from '../src/v2/glb'
 
@@ -173,4 +177,70 @@ test('resultado e repetição precisam corresponder à fonte, ao manifesto, à v
   expect(() =>
     conferirPreparacaoDePublicacao(pedido, { ...base, pedido: { ...pedido, versaoEsperada: 2 } }),
   ).toThrow()
+})
+
+test('o resumo leva inventário e procedência, nunca o manifesto, e confere o manifesto do pedido', async () => {
+  const p = await preparo()
+  const arquivo = {
+    caminho: 'terreno/a.bin',
+    digest: 'c'.repeat(64),
+    bytes: 4,
+    mime: 'application/octet-stream',
+    papel: 'alturas',
+  }
+  const bytes = new TextEncoder().encode(JSON.stringify({ ...p.cena, arquivos: [arquivo] }))
+  const pedido = {
+    ...p.pedido,
+    manifesto: { digest: await digestDosBytes(bytes), bytes: bytes.length },
+  }
+  const resumo = resumirPublicacao(await criarSnapshotDePublicacao(pedido, bytes))
+  expect(resumo).toEqual({
+    recursos: [
+      {
+        ...pedido.manifesto,
+        mime: 'application/vnd.sistemazero.cena-compilada+json',
+        papel: 'manifesto',
+      },
+      { digest: arquivo.digest, bytes: 4, mime: 'application/octet-stream', papel: 'recurso' },
+    ],
+    fontes: { modelos: [], texturas: [], conjuntos: [] },
+    licencas: [],
+  })
+  expect(lerResumoDaPublicacao(pedido, structuredClone(resumo))).toEqual(resumo)
+  // Outro manifesto, dois manifestos, arquivo repetido ou campo a mais: recusado.
+  expect(() => lerResumoDaPublicacao(p.pedido, resumo)).toThrow(/manifesto/i)
+  expect(() =>
+    lerResumoDaPublicacao(pedido, {
+      ...resumo,
+      recursos: [...resumo.recursos, resumo.recursos[0]],
+    }),
+  ).toThrow()
+  expect(() =>
+    lerResumoDaPublicacao(pedido, {
+      ...resumo,
+      recursos: [resumo.recursos[0], { ...resumo.recursos[0], digest: 'd'.repeat(64) }],
+    }),
+  ).toThrow()
+  expect(() => lerResumoDaPublicacao(pedido, { ...resumo, manifesto: 'x' })).toThrow()
+  // O pior caso cabe com folga no teto do corpo, bem abaixo do teto global do gateway.
+  const pior = {
+    recursos: [
+      resumo.recursos[0],
+      ...Array.from({ length: 8192 }, (_, i) => ({
+        digest: i.toString(16).padStart(64, '0'),
+        bytes: 268435456,
+        mime: 'model/gltf-binary',
+        papel: 'recurso',
+      })),
+    ],
+    fontes: resumo.fontes,
+    licencas: [],
+  }
+  expect(JSON.stringify(pior).length).toBeLessThan(MAX_BYTES_DO_RESUMO_DE_PUBLICACAO)
+  // A reserva de recursos nunca aceita o manifesto nem repetição.
+  expect(RecursosAReservarSchema.safeParse([resumo.recursos[0]]).success).toBe(false)
+  expect(RecursosAReservarSchema.safeParse([resumo.recursos[1], resumo.recursos[1]]).success).toBe(
+    false,
+  )
+  expect(RecursosAReservarSchema.safeParse([resumo.recursos[1]]).success).toBe(true)
 })

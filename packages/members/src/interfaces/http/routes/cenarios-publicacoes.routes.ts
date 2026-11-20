@@ -1,7 +1,10 @@
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import { MAX_BYTES_DO_MANIFESTO, PERFIS_DE_ILHA } from '@sistemazero/molda-cenarios-core/publicacao'
 import { Elysia, t } from 'elysia'
-import { publicacaoParaOJogo } from '../../../application/cenarios/publicacoes.service'
+import {
+  LIMITE_DE_ARQUIVOS_POR_LEITURA,
+  publicacaoParaOJogo,
+} from '../../../application/cenarios/publicacoes.service'
 import { TIPOS_DE_CONTEUDO } from '../../../domain/cenarios/cenarios'
 import { assertInternalCaller, assertMemberShellConsumer } from '../auth'
 import type { CenariosRoutesDeps } from './cenarios.routes'
@@ -31,10 +34,24 @@ const PEDIDO = t.Object(
   { additionalProperties: false },
 )
 const ATOR = t.Object(
-  { usuarioId: UUID, contaId: UUID, equipe: t.Boolean(), suporte: t.Boolean() },
+  {
+    usuarioId: UUID,
+    contaId: UUID,
+    equipe: t.Boolean(),
+    suporte: t.Boolean(),
+    perfil: t.Optional(t.Boolean()),
+  },
   { additionalProperties: false },
 )
-const TEXTO_DO_MANIFESTO = t.String({ minLength: 1, maxLength: MAX_BYTES_DO_MANIFESTO })
+const RECURSO = t.Object(
+  {
+    digest: DIGEST,
+    bytes: t.Integer({ minimum: 1, maximum: LIMITES_DA_EXPORTACAO.bytesDoPacote }),
+    mime: t.Union(TIPOS_DE_CONTEUDO.map((m) => t.Literal(m))),
+    papel: t.Union([t.Literal('recurso'), t.Literal('manifesto')]),
+  },
+  { additionalProperties: false },
+)
 const CONFERIDO = t.Object(
   {
     digest: DIGEST,
@@ -79,20 +96,13 @@ export function cenariosPublicacoesRoutes(
         .onBeforeHandle(({ headers }) => assertMemberShellConsumer(headers['x-consumer-id']))
         .post(
           '/recursos',
-          ({ body }) =>
-            s.reservarRecursosDoManifesto(
-              body.ator,
-              body.pedido,
-              new TextEncoder().encode(body.manifesto),
-              body.digests,
-            ),
+          ({ body }) => s.reservarRecursosDoManifesto(body.ator, body.pedido, body.recursos),
           {
             body: t.Object(
               {
                 ator: ATOR,
                 pedido: PEDIDO,
-                manifesto: TEXTO_DO_MANIFESTO,
-                digests: t.Array(DIGEST, { minItems: 1, maxItems: 50 }),
+                recursos: t.Array(RECURSO, { minItems: 1, maxItems: 50 }),
               },
               { additionalProperties: false },
             ),
@@ -104,7 +114,7 @@ export function cenariosPublicacoesRoutes(
             const resultado = await s.publicarConferido(
               body.ator,
               body.pedido,
-              new TextEncoder().encode(body.manifesto),
+              body.resumo,
               body.conferidos,
             )
             return {
@@ -117,7 +127,18 @@ export function cenariosPublicacoesRoutes(
               {
                 ator: ATOR,
                 pedido: PEDIDO,
-                manifesto: TEXTO_DO_MANIFESTO,
+                // Inventário e procedência: o formato fino é conferido no serviço (Zod do core).
+                resumo: t.Object(
+                  {
+                    recursos: t.Array(RECURSO, {
+                      minItems: 1,
+                      maxItems: LIMITES_DA_EXPORTACAO.arquivos + 1,
+                    }),
+                    fontes: t.Unknown(),
+                    licencas: t.Array(t.Unknown(), { maxItems: 8192 }),
+                  },
+                  { additionalProperties: false },
+                ),
                 conferidos: t.Array(CONFERIDO, {
                   minItems: 1,
                   maxItems: LIMITES_DA_EXPORTACAO.arquivos + 1,
@@ -135,6 +156,16 @@ export function cenariosPublicacoesRoutes(
         .post('/jogo/arquivo', ({ body }) => s.arquivoDoJogo(body.publicacaoId, body.digest), {
           body: t.Object(
             { ator: ATOR, publicacaoId: UUID, digest: DIGEST },
+            { additionalProperties: false },
+          ),
+        })
+        .post('/jogo/arquivos', ({ body }) => s.arquivosDoJogo(body.publicacaoId, body.digests), {
+          body: t.Object(
+            {
+              ator: ATOR,
+              publicacaoId: UUID,
+              digests: t.Array(DIGEST, { minItems: 1, maxItems: LIMITE_DE_ARQUIVOS_POR_LEITURA }),
+            },
             { additionalProperties: false },
           ),
         }),

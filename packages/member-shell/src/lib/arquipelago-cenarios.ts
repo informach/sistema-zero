@@ -22,5 +22,10 @@ export function criarPortaDeCenariosPublicados(
         `publicacoes/${encodeURIComponent(publicacaoId)}/arquivos/${encodeURIComponent(digest)}?como=endereco`,
         sinal,
       ),
+    arquivos: (publicacaoId, digests, sinal) =>
+      ler(
+        `publicacoes/${encodeURIComponent(publicacaoId)}/arquivos?digests=${digests.map(encodeURIComponent).join(',')}`,
+        sinal,
+      ),
   }
 }

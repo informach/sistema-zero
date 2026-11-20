@@ -158,3 +158,73 @@ test('GLB real com dois aliases é lido uma vez e recurso adulterado impede o pa
     lerCenarioPublicado(porta, 'sua-ilha', new AbortController().signal, buscar),
   ).rejects.toThrow(/conteúdo/)
 })
+
+test('host com leitura em lote pede os endereços num pedido só e baixa cada hash uma vez', async () => {
+  const b = await montar(),
+    origem = exemplo(),
+    recurso = glb(origem.j, origem.bin)
+  const digest = await digestDosBytes(recurso)
+  const ref = {
+    caminho: 'modelos/peca.glb',
+    digest,
+    bytes: recurso.length,
+    mime: 'model/gltf-binary',
+    papel: 'modelo',
+    malhas: 2,
+    triangulos: 2,
+    verticesMaximos: 3,
+  }
+  const cena = { ...b.cena, arquivos: [ref, { ...ref, caminho: 'modelos/alias.glb' }] }
+  const manifesto = new TextEncoder().encode(JSON.stringify(cena))
+  const hash = await digestDosBytes(manifesto)
+  const publicacao = { ...b.publicacao, manifesto: { digest: hash, bytes: manifesto.length } }
+  const pedidos: string[] = []
+  const porta: CenariosPublicadosDoJogo = {
+    perfil: async () => ({ status: 200, corpo: { publicacao } }),
+    arquivo: async (_id, d) => {
+      pedidos.push(`um:${d}`)
+      return {
+        status: 200,
+        corpo: {
+          url: `https://armazenamento.exemplo/${d}`,
+          bytes: manifesto.length,
+          tipoDoConteudo: MIME_DO_MANIFESTO,
+        },
+      }
+    },
+    arquivos: async (_id, ds) => {
+      pedidos.push(`lote:${ds.length}`)
+      return {
+        status: 200,
+        corpo: {
+          arquivos: ds.map((d) => ({
+            digest: d,
+            url: `https://armazenamento.exemplo/${d}`,
+            bytes: recurso.length,
+            tipoDoConteudo: 'model/gltf-binary',
+          })),
+        },
+      }
+    },
+  }
+  const baixados: string[] = []
+  const buscar = (async (url: string | URL) => {
+    const caminho = new URL(String(url)).pathname.slice(1)
+    baixados.push(caminho)
+    return new Response(caminho === hash ? manifesto : recurso)
+  }) as typeof fetch
+  const r = await lerCenarioPublicado(porta, 'sua-ilha', new AbortController().signal, buscar)
+  // Manifesto pelo pedido unitário; os dois aliases do GLB viram um lote com um hash só.
+  expect(pedidos).toEqual([`um:${hash}`, 'lote:1'])
+  expect(baixados.sort()).toEqual([digest, hash].sort())
+  expect(r?.pacote.arquivos.get('modelos/peca.glb')).toEqual(recurso)
+  expect(r?.pacote.arquivos.get('modelos/alias.glb')).toEqual(recurso)
+  // Lote que responde fora da ordem ou com outro hash é recusado inteiro.
+  const torta = {
+    ...porta,
+    arquivos: async () => ({ status: 200, corpo: { arquivos: [{ digest: 'f'.repeat(64) }] } }),
+  }
+  await expect(
+    lerCenarioPublicado(torta, 'sua-ilha', new AbortController().signal, buscar),
+  ).rejects.toThrow(/inventário/)
+})

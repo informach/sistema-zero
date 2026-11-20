@@ -22,6 +22,19 @@ const Arquivo = z
   })
   .strict()
 
+/** `?digests=a,b,c`: até 100 hashes distintos de uma versão, na ordem pedida. */
+const Digests = z
+  .string()
+  .max(100 * 65)
+  .transform((v) => v.split(','))
+  .pipe(
+    z
+      .array(z.string().regex(/^[a-f0-9]{64}$/))
+      .min(1)
+      .max(100)
+      .refine((d) => new Set(d).size === d.length),
+  )
+
 /** A consulta do jogador não abre espaços/bibliotecas nem depende do modo de autoria. */
 export function criarLeituraDeCenariosDoJogo(deps: {
   gateway: Pick<GatewayModule, 'gatewayFetch' | 'gatewayFetchHmac'>
@@ -34,12 +47,18 @@ export function criarLeituraDeCenariosDoJogo(deps: {
   return async (metodo: string, caminho: string, req: Request, user: SessionUser | null) => {
     const perfil = /^jogo\/perfis\/([^/]+)$/.exec(caminho)
     const recurso = /^jogo\/publicacoes\/([a-f0-9-]{36})\/arquivos\/([a-f0-9]{64})$/.exec(caminho)
-    if (metodo !== 'GET' || (!perfil && !recurso)) return null
+    const lote = /^jogo\/publicacoes\/([a-f0-9-]{36})\/arquivos$/.exec(caminho)
+    if (metodo !== 'GET' || (!perfil && !recurso && !lote)) return null
     if (!user) return deps.erro(401, 'UNAUTHENTICATED', 'Entre de novo para continuar.')
     const destino =
       perfil && PerfilDePublicacaoSchema.safeParse({ tipo: 'arquipelago-v2', ilha: perfil[1] })
-    const id = recurso && z.uuid().safeParse(recurso[1])
-    if ((perfil && !destino?.success) || (recurso && !id?.success))
+    const id = (recurso ?? lote) && z.uuid().safeParse((recurso ?? lote)![1])
+    const digests = lote ? Digests.safeParse(new URL(req.url).searchParams.get('digests')) : null
+    if (
+      (perfil && !destino?.success) ||
+      ((recurso || lote) && !id?.success) ||
+      (lote && !digests?.success)
+    )
       return deps.erro(404, 'NOT_FOUND', 'Não achei isso')
     // A política é a do jogo (inclui Kids, responsável e equipe), não a da oficina.
     const acesso = await deps.gateway.gatewayFetch('/arquipelago/acesso', {
@@ -71,6 +90,48 @@ export function criarLeituraDeCenariosDoJogo(deps: {
         { headers: { 'cache-control': 'private, no-store' } },
       )
     }
+    const janela = avatarLinkWindow(deps.agora())
+    const assinar = (a: z.infer<typeof Arquivo>) =>
+      deps.assinar(a.chave, {
+        expiresInSeconds: janela.expiresInSeconds,
+        signingDate: janela.signingDate,
+        responseCacheControl: janela.fileCacheControl,
+        responseContentType: a.tipoDoConteudo,
+      })
+    const chaveDe = (digest: string) => new RegExp(`^cenarios/[a-f0-9-]{36}/blobs/${digest}$`)
+    if (lote && digests?.success) {
+      // Um pedido para até 100 arquivos: o acesso ao jogo é conferido uma vez para o lote todo.
+      const r = await deps.gateway.gatewayFetchHmac(
+        '/members/internal/cenarios/publicacoes/jogo/arquivos',
+        {
+          method: 'POST',
+          body: { ator, publicacaoId: id!.data, digests: digests.data },
+          signal: req.signal,
+        },
+      )
+      if (r.status !== 200) return deps.responder(r)
+      const lidos = z
+        .object({ arquivos: z.array(Arquivo) })
+        .strict()
+        .safeParse(r.body)
+      if (
+        !lidos.success ||
+        lidos.data.arquivos.length !== digests.data.length ||
+        lidos.data.arquivos.some(
+          (a, i) => a.digest !== digests.data[i] || !chaveDe(a.digest).test(a.chave),
+        )
+      )
+        return deps.erro(502, 'ARQUIPELAGO_INDISPONIVEL', 'O arquivo respondeu fora do combinado.')
+      const arquivos = await Promise.all(
+        lidos.data.arquivos.map(async (a) => ({
+          digest: a.digest,
+          url: await assinar(a),
+          bytes: a.bytes,
+          tipoDoConteudo: a.tipoDoConteudo,
+        })),
+      )
+      return NextResponse.json({ arquivos }, { headers: { 'cache-control': 'private, no-store' } })
+    }
     const r = await deps.gateway.gatewayFetchHmac(
       '/members/internal/cenarios/publicacoes/jogo/arquivo',
       {
@@ -81,19 +142,9 @@ export function criarLeituraDeCenariosDoJogo(deps: {
     )
     if (r.status !== 200) return deps.responder(r)
     const a = Arquivo.safeParse(r.body)
-    if (
-      !a.success ||
-      a.data.digest !== recurso![2] ||
-      !new RegExp(`^cenarios/[a-f0-9-]{36}/blobs/${recurso![2]}$`).test(a.data.chave)
-    )
+    if (!a.success || a.data.digest !== recurso![2] || !chaveDe(recurso![2]).test(a.data.chave))
       return deps.erro(502, 'ARQUIPELAGO_INDISPONIVEL', 'O arquivo respondeu fora do combinado.')
-    const janela = avatarLinkWindow(deps.agora())
-    const url = await deps.assinar(a.data.chave, {
-      expiresInSeconds: janela.expiresInSeconds,
-      signingDate: janela.signingDate,
-      responseCacheControl: janela.fileCacheControl,
-      responseContentType: a.data.tipoDoConteudo,
-    })
+    const url = await assinar(a.data)
     // Cada passagem no BFF confere o acesso de novo; o blob imutável conserva o cache por hash.
     const resposta =
       new URL(req.url).searchParams.get('como') === 'endereco'

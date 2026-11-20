@@ -1,6 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { criarSnapshotDePublicacao } from '@sistemazero/molda-cenarios-core/publicacao'
+import {
+  criarSnapshotDePublicacao,
+  type PedidoDePublicacao,
+  resumirPublicacao,
+} from '@sistemazero/molda-cenarios-core/publicacao'
 import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import postgres from 'postgres'
 import { exemplo, glb } from '../../../molda-cenarios-motor/tests/fixtures/glb-compilacao'
@@ -18,6 +22,9 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 
+/** O que o BFF manda depois de ler e conferir o manifesto no armazenamento. */
+const resumoDe = async (pedido: PedidoDePublicacao, bytes: Uint8Array) =>
+  resumirPublicacao(await criarSnapshotDePublicacao(pedido, bytes))
 const url = process.env.CENARIOS_TEST_DATABASE_URL
 const nome = url ? new URL(url).pathname.slice(1) : ''
 if (
@@ -60,7 +67,10 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
       entries: { idx: number; tag: string }[]
     }
     for (const entrada of journal.entries.filter(
-      (e) => (e.idx >= 151 && e.idx <= 162) || e.tag === '0164_cenarios_publicacoes',
+      (e) =>
+        (e.idx >= 151 && e.idx <= 162) ||
+        e.tag === '0164_cenarios_publicacoes' ||
+        e.tag === '0165_cenarios_blobs_saindo',
     )) {
       const ddl = readFileSync(new URL(`${entrada.tag}.sql`, base), 'utf8')
       for (const comando of ddl.split('--> statement-breakpoint'))
@@ -117,14 +127,15 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
       },
     ]
     await servico.reservarManifesto(ator, pedido)
-    return { espaco, mundo, cenario, bytes, pedido, conferidos }
+    const resumo = await resumoDe(pedido, bytes)
+    return { espaco, mundo, cenario, bytes, resumo, pedido, conferidos }
   }
 
   test('migração real, confirmação de arquivos e repetição preservam uma versão imutável', async () => {
     const b = await preparar()
-    const a = await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos)
+    const a = await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos)
     expect(a.publicacao.versao).toBe(1)
-    expect(await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos)).toEqual({
+    expect(await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos)).toEqual({
       ...a,
       repetido: true,
     })
@@ -145,11 +156,11 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
   test('concorrência troca apontador apenas uma vez; versão anterior continua consultável', async () => {
     const b = await preparar()
     const resultados = await Promise.allSettled([
-      servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos),
+      servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos),
       servico.publicarConferido(
         ator,
         { ...b.pedido, operacaoId: crypto.randomUUID() },
-        b.bytes,
+        b.resumo,
         b.conferidos,
       ),
     ])
@@ -159,7 +170,7 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
     const segunda = await servico.publicarConferido(
       ator,
       { ...b.pedido, operacaoId: crypto.randomUUID(), versaoEsperada: 1 },
-      b.bytes,
+      b.resumo,
       b.conferidos,
     )
     expect(segunda.publicacao.versao).toBe(2)
@@ -169,7 +180,7 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
   test('arquivo sem reserva recusa tudo e não deixa publicação nem confirmação parcial', async () => {
     const b = await preparar()
     await conn.sql`delete from members.cenario_blobs where espaco_id=${b.espaco.id}`
-    const resultado = await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos).then(
+    const resultado = await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos).then(
       () => null,
       (erro) => erro,
     )
@@ -180,11 +191,11 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
 
   test('fonte apagada não apaga versão publicada e seus arquivos seguem na cota', async () => {
     const b = await preparar()
-    const a = await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos)
+    const a = await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos)
     expect(await cenarios.apagarMundo(ator, b.mundo.id)).toEqual({ apagar: [] })
     expect(await repo.porId(a.publicacao.id)).toEqual(a.publicacao)
     expect((await autoria.espaco(b.espaco.id))!.usadoBytes).toBe(b.bytes.length)
-    const repetida = await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos)
+    const repetida = await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos)
     expect(repetida.repetido).toBe(true)
   })
 
@@ -222,18 +233,18 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
   test('reserva vencida não vira publicação; o banco também protege blobs de versões antigas', async () => {
     const b = await preparar()
     await conn.sql`update members.cenario_blobs set vence_em = now() - interval '1 second' where espaco_id=${b.espaco.id}`
-    const erro = await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos).then(
+    const erro = await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos).then(
       () => null,
       (e) => e,
     )
     expect(erro).toBeInstanceOf(CenarioArquivoAusenteError)
     expect(await repo.atual(b.pedido.perfil)).toBeNull()
     await servico.reservarManifesto(ator, b.pedido)
-    const a = await servico.publicarConferido(ator, b.pedido, b.bytes, b.conferidos)
+    const a = await servico.publicarConferido(ator, b.pedido, b.resumo, b.conferidos)
     await servico.publicarConferido(
       ator,
       { ...b.pedido, versaoEsperada: 1, operacaoId: crypto.randomUUID() },
-      b.bytes,
+      b.resumo,
       b.conferidos,
     )
     const bloqueio =
@@ -300,9 +311,14 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
       manifesto: { digest: await digestDosBytes(bytes), bytes: bytes.length },
     }
     await servico.reservarManifesto(ator, pedido)
-    const reserva = await servico.reservarRecursosDoManifesto(ator, pedido, bytes, [digest])
+    const resumo = await resumoDe(pedido, bytes)
+    const reserva = await servico.reservarRecursosDoManifesto(
+      ator,
+      pedido,
+      resumo.recursos.filter((r) => r.papel === 'recurso'),
+    )
     expect(reserva.arquivos).toEqual([])
-    const a = await servico.publicarConferido(ator, pedido, bytes, [
+    const a = await servico.publicarConferido(ator, pedido, resumo, [
       { ...pedido.manifesto, tipoDoConteudo: 'application/vnd.sistemazero.cena-compilada+json' },
       { digest, bytes: recurso.length, tipoDoConteudo: 'model/gltf-binary' },
     ])

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { KidsSessionClaim } from '@sistemazero/core/security'
-import { MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
+import { MAX_BYTES_DO_RESUMO_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
 import config from '../../gateway.config'
 import { kidsMayAccess } from '../../src/application/auth/kids-access-policy'
 import {
@@ -128,11 +128,13 @@ describe('Molda Cenários na borda', () => {
       '/members/internal/cenarios/texturas',
       '/members/internal/cenarios/lotes',
       '/members/internal/cenarios/capa',
+      '/members/internal/cenarios/arquivos/sairam',
       '/members/internal/cenarios/conjuntos/miniatura',
       '/members/internal/cenarios/publicacoes/recursos',
       '/members/internal/cenarios/publicacoes/confirmar',
       '/members/internal/cenarios/publicacoes/jogo/perfil',
       '/members/internal/cenarios/publicacoes/jogo/arquivo',
+      '/members/internal/cenarios/publicacoes/jogo/arquivos',
     ]) {
       const rota = resolver('POST', caminho)
       expect(rota).toMatchObject({
@@ -164,11 +166,15 @@ describe('Molda Cenários na borda', () => {
     expect(kidsMayAccess(crianca, '/members/internal/cenarios/modelos', 'POST', ID)).toBe(false)
   })
 
-  test('somente as provas internas de publicação recebem o envelope do manifesto compilado', () => {
-    for (const acao of ['recursos', 'confirmar'])
-      expect(resolver('POST', `/members/internal/cenarios/publicacoes/${acao}`)?.maxBodyBytes).toBe(
-        MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO,
-      )
+  test('o manifesto compilado não atravessa a borda: só o resumo, dentro do teto padrão', () => {
+    expect(resolver('POST', '/members/internal/cenarios/publicacoes/confirmar')?.maxBodyBytes).toBe(
+      MAX_BYTES_DO_RESUMO_DE_PUBLICACAO,
+    )
+    expect(
+      resolver('POST', '/members/internal/cenarios/publicacoes/recursos')?.maxBodyBytes,
+    ).toBeLessThanOrEqual(64 * 1024)
+    // O teto global padrão do servidor (9 MiB) precisa caber todas as rotas: senão o gateway nem sobe.
+    expect(MAX_BYTES_DO_RESUMO_DE_PUBLICACAO).toBeLessThan(9 * 1024 * 1024)
     expect(
       resolver('POST', '/members/cenarios/publicacoes/preparar')?.maxBodyBytes,
     ).toBeLessThanOrEqual(64 * 1024)

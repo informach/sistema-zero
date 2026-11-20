@@ -48,6 +48,15 @@ export class CenarioArquivoAusenteError extends DomainError {
   }
 }
 
+/** O mesmo arquivo acabou de ficar sem dono e ainda está saindo do armazenamento. → 409,
+ * o cliente tenta de novo em instantes (a nova reserva pede o envio outra vez). */
+export class CenarioArquivoSaindoError extends DomainError {
+  readonly code = 'CENARIO_ARQUIVO_SAINDO'
+  constructor() {
+    super('Este arquivo acabou de ser apagado. Tente de novo em instantes.')
+  }
+}
+
 /** A biblioteca é restrita e a ação a levaria para fora da conta. → 403. */
 export class BibliotecaRestritaError extends DomainError {
   readonly code = 'BIBLIOTECA_RESTRITA'

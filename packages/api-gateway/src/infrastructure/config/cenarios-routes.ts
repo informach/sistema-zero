@@ -1,4 +1,4 @@
-import { MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
+import { MAX_BYTES_DO_RESUMO_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
 import type { GatewayConfigInput } from './gateway-config.schema'
 
 type Route = NonNullable<GatewayConfigInput['routes']>[number]
@@ -134,10 +134,16 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     interna('texturas', '/texturas', CENARIOS_REGISTRO_MAX_BYTES),
     interna('lotes', '/lotes', CENARIOS_LOTE_MAX_BYTES),
     interna('capa', '/capa', 16 * 1024),
+    // O BFF apagou os objetos sem dono: as lápides saem (até 2000 hashes).
+    interna('arquivos-sairam', '/arquivos/sairam', 160 * 1024),
     interna('conjunto-miniatura', '/conjuntos/miniatura', 16 * 1024),
-    interna('publicacao-recursos', '/publicacoes/recursos', MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO),
-    interna('publicacao-confirmar', '/publicacoes/confirmar', MAX_BYTES_DO_ENVELOPE_DE_PUBLICACAO),
+    // Até 50 metadados de recurso; o manifesto nunca passa pela borda.
+    interna('publicacao-recursos', '/publicacoes/recursos', 64 * 1024),
+    // Inventário e procedência do pacote (o BFF lê o manifesto no armazenamento).
+    interna('publicacao-confirmar', '/publicacoes/confirmar', MAX_BYTES_DO_RESUMO_DE_PUBLICACAO),
     interna('publicacao-jogo-perfil', '/publicacoes/jogo/perfil', 16 * 1024),
     interna('publicacao-jogo-arquivo', '/publicacoes/jogo/arquivo', 16 * 1024),
+    // Até 100 hashes de uma vez: o pacote publicado não gasta um pedido por arquivo.
+    interna('publicacao-jogo-arquivos', '/publicacoes/jogo/arquivos', 16 * 1024),
   ]
 }

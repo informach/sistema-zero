@@ -37,14 +37,20 @@ const semAcento = (texto: string) => texto.normalize('NFD').replace(/[̀-ͯ]/g, 
 export function SeletorDeLicenca({
   valor,
   aoMudar,
+  equipe,
 }: {
   valor: Licenca
   aoMudar(licenca: Licenca): void
+  /** A licença restrita é só do acervo da equipe: numa conta, o servidor recusa. */
+  equipe: boolean
 }): JSX.Element {
+  const opcoes = equipe
+    ? (['propria', 'livre', 'restrita'] as const)
+    : (['propria', 'livre'] as const)
   return (
     <fieldset className="mcn-opcoes">
       <legend>{COPY.biblioteca.licencaRotulo}</legend>
-      {(['propria', 'livre', 'restrita'] as const).map((licenca) => (
+      {opcoes.map((licenca) => (
         <label key={licenca} className="mcn-opcao">
           <input
             type="radio"
@@ -336,7 +342,11 @@ export function Inicio({
             aoAbrirBiblioteca(biblioteca.id)
           }}
         >
-          <SeletorDeLicenca valor={licenca} aoMudar={setLicenca} />
+          <SeletorDeLicenca
+            valor={licenca}
+            aoMudar={setLicenca}
+            equipe={espaco.tipo === 'equipe'}
+          />
           <label className="mcn-campo">
             Descrição
             <textarea

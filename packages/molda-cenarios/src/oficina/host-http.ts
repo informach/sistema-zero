@@ -114,6 +114,36 @@ async function emFila<T>(itens: readonly T[], juntos: number, fazer: (item: T) =
   )
 }
 
+/** Prazo de cada pedido ao BFF (lotes grandes incluídos). */
+const PRAZO_DO_PEDIDO_MS = 120_000
+const ESPERAS_DO_ARQUIVO_SAINDO = [800, 1500, 3000, 5000] as const
+/** O sinal de quem pediu junto com o prazo; navegador antigo sem `AbortSignal.any` também. */
+function comPrazo(sinal?: AbortSignal): AbortSignal | undefined {
+  if (typeof AbortSignal.timeout !== 'function') return sinal
+  const prazo = AbortSignal.timeout(PRAZO_DO_PEDIDO_MS)
+  if (!sinal) return prazo
+  if (typeof AbortSignal.any === 'function') return AbortSignal.any([sinal, prazo])
+  const juntos = new AbortController()
+  const parar = () => juntos.abort(sinal.aborted ? sinal.reason : prazo.reason)
+  sinal.addEventListener('abort', parar, { once: true })
+  prazo.addEventListener('abort', parar, { once: true })
+  return juntos.signal
+}
+function esperar(ms: number, sinal?: AbortSignal): Promise<void> {
+  return new Promise((resolver, rejeitar) => {
+    if (sinal?.aborted) return rejeitar(sinal.reason)
+    const t = setTimeout(() => {
+      sinal?.removeEventListener('abort', parar)
+      resolver()
+    }, ms)
+    const parar = () => {
+      clearTimeout(t)
+      rejeitar(sinal!.reason)
+    }
+    sinal?.addEventListener('abort', parar, { once: true })
+  })
+}
+
 export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
   const base = (opcoes.base ?? '/api/cenarios').replace(/\/+$/, '')
   const buscar: Buscar = opcoes.buscar ?? ((endereco, o) => fetch(endereco, o))
@@ -130,12 +160,14 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     caminho: string,
     corpo?: unknown,
     sinal?: AbortSignal,
+    tentativa = 0,
   ): Promise<T> {
     let resposta: Response
     try {
       resposta = await buscar(`${base}/${caminho}`, {
         method: metodo,
-        signal: sinal,
+        // Pedido parado não segura o selo em "Guardando" para sempre.
+        signal: comPrazo(sinal),
         headers: {
           accept: 'application/json',
           ...(corpo === undefined ? {} : { 'content-type': 'application/json' }),
@@ -154,6 +186,11 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
     const erro = objeto(envelope?.error)
     const codigo = typeof erro?.code === 'string' ? erro.code : null
     const detalhes = objeto(envelope?.details)
+    // O mesmo arquivo acabou de ser apagado e ainda está saindo do armazenamento: espera e repete.
+    if (codigo === 'CENARIO_ARQUIVO_SAINDO' && tentativa < ESPERAS_DO_ARQUIVO_SAINDO.length) {
+      await esperar(ESPERAS_DO_ARQUIVO_SAINDO[tentativa]!, sinal)
+      return pedir<T>(metodo, caminho, corpo, sinal, tentativa + 1)
+    }
     if (codigo === 'CENARIO_DESATUALIZADO' && typeof detalhes?.revisaoAtual === 'number')
       throw new CenarioDesatualizado(detalhes.revisaoAtual)
     if (codigo === 'PUBLICACAO_CENARIO_CONFLITANTE')
