@@ -553,7 +553,7 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(await hidden.json()).toEqual({ visible: false, authorDisplayName: null })
   })
 
-  test('studio: mesmo clientIdempotencyKey dedup-a; novo key = post NOVO (republicar)', async () => {
+  test('studio: mesmo clientIdempotencyKey dedup-a; republicar o MESMO projeto devolve o post existente', async () => {
     const headers = child(randomUUID())
     const sameKey = randomUUID()
     const first = (await (
@@ -585,8 +585,9 @@ describe('vitrine (Mural dos Criadores)', () => {
     ).json()) as { thread: { id: string }; deduped: boolean }
     expect(retry.deduped).toBe(true)
     expect(retry.thread.id).toBe(first.thread.id)
-    expect(republish.deduped).toBe(false)
-    expect(republish.thread.id).not.toBe(first.thread.id)
+    // A aula é um projeto só: a próxima publicação ATUALIZA o post (prepare → existing).
+    expect(republish.deduped).toBe(true)
+    expect(republish.thread.id).toBe(first.thread.id)
   })
 
   test('studio: projeto NÃO elegível → 403 (re-valida no members)', async () => {

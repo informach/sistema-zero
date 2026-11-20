@@ -63,6 +63,7 @@ import type {
   ListCommentsOpts,
   ListThreadsOpts,
   ThreadRepository,
+  UpdateShowcaseThreadInput,
 } from '../../src/domain/ports/thread-repository.port'
 import type { Audience, Channel, Space } from '../../src/domain/space/space'
 import type { Comment, Thread } from '../../src/domain/thread/thread'
@@ -276,6 +277,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       playsCount: 0,
       challengeKey: null,
       studioMeta: null,
+      gameUpdatedAt: null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -296,6 +298,68 @@ export class InMemoryThreadRepository implements ThreadRepository {
 
   /** Dedupe da vitrine: chave de idempotência → id do tópico (a chave não é do domínio). */
   private readonly showcaseKeys = new Map<string, string>()
+  /** Identidade do projeto: id do tópico → chave (a chave não é do domínio). */
+  readonly sourceKeys = new Map<string, string>()
+  private linkable(t: Thread) {
+    return t.isShowcase && ['visible', 'hidden', 'pending'].includes(t.status)
+  }
+  async findShowcaseBySourceKey(sourceKey: string): Promise<Thread | null> {
+    for (const [id, key] of this.sourceKeys)
+      if (key === sourceKey) {
+        const t = this.threads.find((x) => x.id === id)
+        if (t && this.linkable(t)) return t
+      }
+    return null
+  }
+  async adoptShowcaseSource(authorId: string, playId: string, sourceKey: string) {
+    const holder = await this.findShowcaseBySourceKey(sourceKey)
+    if (holder) return holder
+    const t = this.threads.find(
+      (x) =>
+        x.authorId === authorId &&
+        x.playId === playId &&
+        this.linkable(x) &&
+        !this.sourceKeys.has(x.id),
+    )
+    if (!t) return null
+    this.sourceKeys.set(t.id, sourceKey)
+    return t
+  }
+  async findFinalizedReservationThread(authorId: string, context: string) {
+    const found = [...this.studioReservations.values()]
+      .filter((r) => r.authorId === authorId && r.context === context && r.phase === 'finalized')
+      .map((r) => this.threads.find((t) => t.id === r.threadId))
+      .filter((t): t is Thread => Boolean(t && this.linkable(t)))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    return found[0] ?? null
+  }
+  async updateShowcaseThread(input: UpdateShowcaseThreadInput) {
+    const t = this.threads.find(
+      (x) =>
+        this.sourceKeys.get(x.id) === input.sourceKey &&
+        x.authorId === input.authorId &&
+        x.playId === input.playId &&
+        this.linkable(x),
+    )
+    if (!t) return null
+    const previousCoverUrl =
+      input.coverImageUrl && t.coverImageUrl !== input.coverImageUrl ? t.coverImageUrl : null
+    t.body = input.body
+    t.studioMeta = input.studioMeta
+    if (input.title) t.title = input.title
+    if (input.coverImageUrl) t.coverImageUrl = input.coverImageUrl
+    t.gameUpdatedAt = input.now
+    t.version += 1
+    return { thread: t, previousCoverUrl }
+  }
+  async touchShowcaseGame(authorId: string, playId: string, now: Date) {
+    const t = this.threads.find(
+      (x) => x.authorId === authorId && x.playId === playId && this.linkable(x),
+    )
+    if (!t) return false
+    t.gameUpdatedAt = now
+    return true
+  }
   readonly studioReservations = new Map<
     string,
     Omit<StudioReservationInput, 'scopeKey' | 'accountId' | 'snapshotHash'> & {
@@ -452,9 +516,15 @@ export class InMemoryThreadRepository implements ThreadRepository {
       playsCount: 0,
       challengeKey: input.challengeKey ?? null,
       studioMeta: input.studioMeta ?? null,
+      gameUpdatedAt: null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
+    }
+    if (input.showcaseSourceKey) {
+      for (const [id, key] of this.sourceKeys)
+        if (key === input.showcaseSourceKey) this.sourceKeys.delete(id)
+      this.sourceKeys.set(thread.id, input.showcaseSourceKey)
     }
     this.threads.push(thread)
     this.showcaseKeys.set(input.idempotencyKey, thread.id)
@@ -698,6 +768,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
     if (!t) return 'not_found'
     if (!fromStatuses.includes(t.status)) return 'invalid_state'
     t.status = status
+    if (status === 'deleted' || status === 'rejected') this.sourceKeys.delete(id)
     if (status === 'deleted' || status === 'rejected')
       for (const reservation of this.studioReservations.values())
         if (reservation.threadId === id) reservation.phase = 'retired'

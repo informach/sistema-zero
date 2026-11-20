@@ -315,6 +315,8 @@ export async function publishStudioRequest(
   )
   if (prepared.status !== 200) return prepared
   const result = await readStudioPreparation(prepared)
+  if (result.state === 'existing')
+    return Response.json({ thread: result.thread, deduped: true, existing: true })
   if (result.state !== 'reserved') return Response.json({ thread: result.thread, deduped: true })
   return app.handle(
     new Request(request.url, {
@@ -347,6 +349,7 @@ const studioPreparationSchema = z.discriminatedUnion('state', [
     thread: studioThreadSchema.nullable(),
     playId: z.string(),
   }),
+  z.object({ state: z.literal('existing'), thread: studioThreadSchema, playId: z.string() }),
 ])
 export async function readStudioPreparation(response: Pick<Response, 'json'>) {
   return studioPreparationSchema.parse(await response.json())
