@@ -58,6 +58,7 @@ export function MoldaClient({
   viewerId,
   audience = 'kids',
   studioAvailable,
+  cenariosAvailable = false,
   toolAccess = null,
   narrationEnabled = false,
   onCompletionControlChange,
@@ -66,6 +67,8 @@ export function MoldaClient({
   viewerId: string | null
   audience?: 'adult' | 'kids'
   studioAvailable: boolean
+  /** A oficina de cenários abre para esta pessoa (o members decide): a galeria ganha o atalho. */
+  cenariosAvailable?: boolean
   /** O molde de um objeto do Arquipélago: o Molda abre (ou reabre) o modelo com a caixa dele. */
   initialModel?: MoldaInitialModel
   /** As ferramentas do posto (`moldaToolAccessFor`); `null` = tudo liberado. */
@@ -286,6 +289,7 @@ export function MoldaClient({
       ...(paletteLibrary ? { paletteLibrary } : {}),
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
+      ...(cenariosAvailable ? { onOpenCenarios: () => router.push('/molda/cenarios') } : {}),
       ...(initialAssetId ? { initialAssetId } : {}),
       ...(initialModel ? { initialModel } : {}),
       // As ferramentas de profissional abrem por posto; trancar tira a autoria, nunca a leitura.
@@ -333,6 +337,7 @@ export function MoldaClient({
     // nesta plataforma (o hook que o calculava era código morto).
     [
       studioAvailable,
+      cenariosAvailable,
       router,
       initialAssetId,
       initialModel,

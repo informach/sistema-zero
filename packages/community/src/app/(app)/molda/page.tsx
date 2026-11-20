@@ -3,9 +3,14 @@ import { adultMoldaToolAccess } from '@sistemazero/member-shell/lib/adult-molda-
 import { ToolNotice } from '@/components/community/tool-notice'
 import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
+import { shell } from '@/server/shell'
 export const dynamic = 'force-dynamic'
 export default async function MoldaPage() {
-  const state = await getCreativeToolsState()
+  const [state, cenarios] = await Promise.all([
+    getCreativeToolsState(),
+    // O atalho da oficina de cenários: só para quem o members abre (hoje, a equipe).
+    shell.members.checkCenariosAccessReadonly().catch(() => null),
+  ])
   if (state.kind !== 'ready')
     return (
       <ToolNotice
@@ -22,6 +27,7 @@ export default async function MoldaPage() {
       audience="adult"
       viewerId={state.session.id}
       studioAvailable={state.studioAvailable}
+      cenariosAvailable={cenarios?.status === 200 && cenarios.body?.aberto === true}
       toolAccess={adultMoldaToolAccess(state.journey)}
     />
   )
