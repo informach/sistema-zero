@@ -113,4 +113,8 @@ test('projeto grande: o que está longe sai da página e volta, sem mudar o proj
   await page.waitForTimeout(1500)
   await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
   await expect.poll(() => ler(page, 'script'), { timeout: 60_000 }).toBe(scriptAoAbrir)
+
+  // Refazer com o bloco ainda longe da vista: a edição volta ao código (revisão, achado D1).
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  await expect.poll(() => ler(page, 'script'), { timeout: 60_000 }).toContain('500')
 })

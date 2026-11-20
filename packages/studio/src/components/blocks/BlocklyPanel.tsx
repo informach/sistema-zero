@@ -30,6 +30,7 @@ import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
+import { isBlockInView } from '../../blockly/blockInView'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import type { OrganizerWorkspace, ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
 import { installCornerSpacer, showBlocksFromTop } from '../../blockly/cornerSpacer'
@@ -183,31 +184,6 @@ function restoreStackPositions(
     moved = true
   }
   return moved
-}
-
-/**
- * Diz se o bloco já está inteiramente visível na viewport atual. Usamos para
- * só centralizar (centerOnBlock) quando o bloco está fora da tela — assim a
- * sincronização cursor→bloco não fica sacudindo o canvas a cada movimento.
- * Em caso de dúvida (não conseguimos medir), retorna false para que o fallback
- * centralize.
- */
-function isBlockInView(workspace: Blockly.WorkspaceSvg, block: Blockly.BlockSvg): boolean {
-  try {
-    const metricsManager = workspace.getMetricsManager?.()
-    if (!metricsManager || typeof metricsManager.getViewMetrics !== 'function') return false
-    const view = metricsManager.getViewMetrics(true) // coordenadas do workspace
-    const xy = block.getRelativeToSurfaceXY()
-    const size = block.getHeightWidth()
-    return (
-      xy.x >= view.left &&
-      xy.y >= view.top &&
-      xy.x + size.width <= view.left + view.width &&
-      xy.y + size.height <= view.top + view.height
-    )
-  } catch {
-    return false
-  }
 }
 
 function resizeBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {

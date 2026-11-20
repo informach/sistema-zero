@@ -124,15 +124,15 @@ const BUDGETS: readonly {
   // teto no valor medido, cerca de 1% acima do de antes de 19/11 por causa do que a
   // integração pôs no motor base, fora do fragmento. A liberação do mapa de sombra no
   // Recomeçar (88c6dfb50, tirada em 72e091418) volta nas duas.
-  // Gzip Linux das variantes sem cenário: PROVISÓRIO no valor do Windows até a medição do
-  // CI (o teste registra o medido no log); depois desce para a medida do Linux.
+  // Gzip Linux de cada entrada: medido no CI (job contracts da homologação 44729611073; o
+  // teste registra o medido no log), com folga de ~0,2%.
   // Completo (kit e cenário), o de quem chama sem contexto. Medido 20/11 (Bun 1.3.11, com a
   // sombra): 248_765 caracteres; gzip Windows 70_123. Linux medido no CI em 386eb685b (89
   // caracteres a menos): 67_504.
   {
     extension: gameThreeDExtension,
     maxChars: 248_900,
-    maxGzipBytes: 67_650,
+    maxGzipBytes: 67_650, // Linux medido: 67_520
     maxGzipBytesWindows: 70_250,
   },
   // Sem cenário, com o kit. Medido: 241_722 caracteres; gzip Windows 68_289. Antes de 19/11
@@ -145,7 +145,7 @@ const BUDGETS: readonly {
     variant: 'sem cenário',
     context: { code: 'SZGame3D.loadStage(cena, mapa)' },
     maxChars: 241_800,
-    maxGzipBytes: 68_400,
+    maxGzipBytes: 65_900, // Linux medido: 65_783
     maxGzipBytesWindows: 68_400,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
@@ -180,7 +180,7 @@ const BUDGETS: readonly {
     // 20/11 (decisão acima): este contexto não usa cenário. Medido: 207_640 caracteres; gzip
     // Windows 58_573. A mesma composição da variante "sem cenário" do Jogo 3D.
     maxChars: 207_700,
-    maxGzipBytes: 58_700,
+    maxGzipBytes: 56_450, // Linux medido: 56_343
     maxGzipBytesWindows: 58_700,
   },
   // Com cenário, sem o kit. Medido 20/11: 214_683 caracteres; gzip Windows 60_412. Linux
@@ -192,7 +192,7 @@ const BUDGETS: readonly {
       code: 'const cena = SZGame3D.createScene("tela"); SZGame3D.loadScene(cena, "ilha")',
     },
     maxChars: 214_800,
-    maxGzipBytes: 58_250,
+    maxGzipBytes: 58_250, // Linux medido: 58_099
     maxGzipBytesWindows: 60_550,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
@@ -256,11 +256,11 @@ const BUDGETS: readonly {
   // Tetos próximos da medida, com gzip limitado a 107_000 nas duas plataformas.
   // A execução Linux do CI continua conferindo seu compressor real.
   // 20/11 (decisão acima): este é o completo, com cenário. Medido: 357_367 caracteres; gzip
-  // Windows 106_823. Linux ainda sem medição própria (achado T3): provisório no Windows.
+  // Windows 106_823; Linux 102_838 (achado T3 fechado: o Linux tem medição própria).
   {
     extension: worldThreeDExtension,
     maxChars: 357_450,
-    maxGzipBytes: 106_950,
+    maxGzipBytes: 102_950,
     maxGzipBytesWindows: 106_950,
   },
   // Sem cenário. Medido: 349_931 caracteres; gzip Windows 104_710. Antes de 19/11: 346_415 /
@@ -272,7 +272,7 @@ const BUDGETS: readonly {
     variant: 'sem cenário',
     context: { code: 'SZWorld3D.setup({ style: "floresta" })' },
     maxChars: 350_000,
-    maxGzipBytes: 104_850,
+    maxGzipBytes: 100_900, // Linux medido: 100_755
     maxGzipBytesWindows: 104_850,
   },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
@@ -334,7 +334,7 @@ const BUDGETS: readonly {
     variant: 'sem cenário',
     context: { code: 'SZGameKit3D.setup({ width: 640, height: 360 })' },
     maxChars: 213_150,
-    maxGzipBytes: 62_900,
+    maxGzipBytes: 60_550, // Linux medido: 60_422
     maxGzipBytesWindows: 62_900,
   },
 ]
