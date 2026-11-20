@@ -325,6 +325,9 @@ const folioCanvasProceduralIr: SZIR = {
     },
     {
       type: 'animationLoop',
+      // O bloco mostra o relógio junto do delta; com o nome declarado, ida e volta pelos blocos
+      // não troca `frameTime` por `tempo` (abrir o exemplo não regrava o script.js).
+      timeVar: 'frameTime',
       deltaVar: 'dt',
       body: [
         {

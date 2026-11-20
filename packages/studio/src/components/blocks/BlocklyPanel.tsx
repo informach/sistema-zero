@@ -61,6 +61,7 @@ import { cssSourceCompatible } from '../../state/cssSourceCompatibility'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
+import { htmlSourceCompatible } from '../../state/htmlSourceCompatibility'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
@@ -622,6 +623,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap, files['style.css'])
       if (current && cssSourceCompatible(current.files['style.css'], files['style.css'])) {
         files['style.css'] = current.files['style.css']
+      }
+      // O mesmo vale para o HTML que difere só na ordem dos atributos (o bloco guarda a classe à
+      // parte): manter o salvo evita regravar o arquivo e recarregar a prévia só por abrir.
+      if (current && htmlSourceCompatible(current.files['index.html'], files['index.html'])) {
+        files['index.html'] = current.files['index.html']
       }
       const displayedMap = () =>
         getDisplayedSourceMap(ir, projectNameForGen, jsHeader, files['style.css'])
