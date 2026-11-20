@@ -1,6 +1,7 @@
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import {
   createStudioPythonPublicationRecipe,
+  isStudioClassicPublication,
   isStudioProjectId,
   isStudioProPublication,
   isStudioProValidationIdentity,
@@ -11,6 +12,8 @@ import {
   parseStudioArtifactManifest,
   STUDIO_PRO_PUBLICATION_LIMITS,
   STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS,
+  StudioClassicPublicationSchema,
+  type StudioClassicPublishedRevision,
   StudioProjectDocumentSchema,
   type StudioProPublishedRevision,
   type StudioPublication,
@@ -20,6 +23,7 @@ import {
   StudioPythonPublicationManifestSchema,
   StudioPythonPublicationSchema,
   type StudioPythonPublishedRevision,
+  studioClassicPublicationReceiptText,
   studioPythonPublicationRecipeText,
   studioPythonRecipeMatchesProject,
   validStudioArtifactPath,
@@ -60,6 +64,8 @@ interface StoredPublication {
     StudioPythonPublication,
     'publicationVersion' | 'programmingLanguage' | 'kind' | 'runtime'
   >
+  /** Classic JavaScript: source-only revisions served by the public sandbox player. */
+  classic?: true
   owner: string
   parentOrigin: string
   projectId: string
@@ -145,6 +151,7 @@ async function readState(bucket: PublicationBucket, playId: string) {
           },
         }
       : {}),
+    ...(isStudioClassicPublication(raw) ? { classic: true as const } : {}),
     owner: value.owner,
     projectId: value.projectId,
     parentOrigin,
@@ -162,6 +169,13 @@ function view(state: StoredPublication): StudioPublication {
     revisions: state.revisions.map(({ requestId: _requestId, ...revision }) => revision),
   }
   if (state.python) return StudioPythonPublicationSchema.parse({ ...result, ...state.python })
+  if (state.classic)
+    return StudioClassicPublicationSchema.parse({
+      ...result,
+      publicationVersion: 1,
+      programmingLanguage: 'javascript',
+      kind: 'classic',
+    })
   if (!isStudioProPublication(result))
     throw new PublicationError(409, 'Histórico JavaScript inválido.')
   return result
@@ -204,7 +218,9 @@ async function retainPublicationRevision(
     proof:
       | Pick<StudioProPublishedRevision, 'validation'>
       | Pick<StudioPythonPublishedRevision, 'approval'>
+      | Pick<StudioClassicPublishedRevision, 'classic'>
     python?: StoredPublication['python']
+    classic?: true
     saved: Awaited<ReturnType<typeof readState>>
     files?: {
       path: string
@@ -259,6 +275,7 @@ async function retainPublicationRevision(
         activeRevision: id,
         disabled: false,
         ...(input.python ? { python: input.python } : {}),
+        ...(input.classic ? { classic: true as const } : {}),
         revisions: [...(input.saved?.state.revisions ?? []), revision],
         lastOperation: { id: input.requestId, revision: id, disabled: false },
       },
@@ -295,7 +312,7 @@ export async function publicationCommand(
   if (input.operation === 'get') return saved ? view(saved.state) : null
   if (input.operation === 'cover') {
     if (!saved) throw new PublicationError(404, 'Publicação não encontrada.')
-    if (saved.state.python)
+    if (saved.state.python || saved.state.classic)
       throw new PublicationError(404, 'A capa deste jogo é fornecida pelo autor.')
     const prefix = publishedRevisionPrefix(playId, saved.state.activeRevision)
     const stored = await bucket.get(`${prefix}manifest.json`)
@@ -377,6 +394,8 @@ export async function publicationCommand(
   }
   if (input.operation === 'promote-python')
     return promotePythonPublication(bucket, input, saved, now)
+  if (input.operation === 'promote-classic')
+    return promoteClassicPublication(bucket, input, saved, now)
   if (
     input.operation !== 'promote' ||
     typeof input.source !== 'string' ||
@@ -385,10 +404,10 @@ export async function publicationCommand(
     !isStudioProjectId(input.projectId)
   )
     throw new PublicationError(400, 'Revisão de publicação inválida.')
-  if (saved?.state.python)
+  if (saved?.state.python || saved?.state.classic)
     throw new PublicationError(
       409,
-      'A publicação Python não pode receber uma compilação JavaScript.',
+      'Esta publicação não pode receber uma compilação JavaScript Pro.',
     )
   const parentOrigin = origin(input.parentOrigin)
   const sourceBytes = new TextEncoder().encode(input.source)
@@ -537,6 +556,97 @@ async function promotePythonPublication(
     },
     now,
   )
+}
+
+/**
+ * Classic JavaScript games are played from their own source in the sandbox player. The BFF
+ * already sanitized the document; this boundary binds the retained bytes to the project and
+ * refuses anything that is not a classic JavaScript project.
+ */
+async function promoteClassicPublication(
+  bucket: PublicationBucket,
+  input: Record<string, unknown>,
+  saved: Awaited<ReturnType<typeof readState>>,
+  now: number,
+) {
+  if (
+    !isStudioPublicationId(input.playId) ||
+    !isStudioPublicationHash(input.owner) ||
+    !isStudioPublicationId(input.requestId) ||
+    typeof input.source !== 'string' ||
+    !isStudioProjectId(input.projectId)
+  )
+    throw new PublicationError(400, 'Projeto clássico inválido.')
+  const sourceBytes = new TextEncoder().encode(input.source)
+  if (sourceBytes.length > STUDIO_PRO_PUBLICATION_LIMITS.maxSourceBytes)
+    throw new PublicationError(413, 'Fonte grande demais.')
+  const projectId = classicProjectId(input.source)
+  if (projectId !== input.projectId)
+    throw new PublicationError(409, 'O pacote pertence a outro projeto.')
+  const parentOrigin = origin(input.parentOrigin)
+  const sourceHash = await sha256(sourceBytes)
+  const manifestText = studioClassicPublicationReceiptText({ projectId, sourceHash })
+  const artifactHash = await sha256(new TextEncoder().encode(manifestText))
+  if (saved) {
+    if (
+      !saved.state.classic ||
+      saved.state.projectId !== projectId ||
+      saved.state.parentOrigin !== parentOrigin
+    )
+      throw new PublicationError(409, 'A publicação pertence a outro projeto ou ambiente.')
+    const previous = saved.state.revisions.find(
+      (revision) => revision.requestId === input.requestId,
+    )
+    if (previous) {
+      if (previous.sourceHash !== sourceHash)
+        throw new PublicationError(409, 'Esta operação já foi usada com outro conteúdo.')
+      return view(saved.state)
+    }
+  }
+  if ((saved?.state.version ?? 0) !== input.expectedVersion)
+    throw new PublicationError(409, 'A publicação mudou. Atualize o histórico.')
+  if ((saved?.state.revisions.length ?? 0) >= STUDIO_PRO_PUBLICATION_LIMITS.maxRevisions)
+    throw new PublicationError(
+      409,
+      'O histórico atingiu 20 versões. Crie uma nova publicação para continuar.',
+    )
+  return retainPublicationRevision(
+    bucket,
+    {
+      playId: input.playId,
+      owner: input.owner,
+      requestId: input.requestId,
+      projectId,
+      parentOrigin,
+      sourceBytes,
+      sourceHash,
+      artifactHash,
+      manifestText,
+      proof: { classic: true },
+      classic: true,
+      saved,
+    },
+    now,
+  )
+}
+
+function classicProjectId(source: string): string {
+  let raw: unknown
+  try {
+    raw = JSON.parse(source)
+  } catch {
+    throw new PublicationError(400, 'Projeto clássico inválido.')
+  }
+  const value = object(raw)
+  if (
+    (value.programmingLanguage !== undefined && value.programmingLanguage !== 'javascript') ||
+    (value.kind !== undefined && value.kind !== 'classic') ||
+    !value.files ||
+    typeof value.files !== 'object' ||
+    !isStudioProjectId(value.id)
+  )
+    throw new PublicationError(400, 'Projeto clássico inválido.')
+  return value.id as string
 }
 
 function sameRuntime(a: StudioPythonPublication['runtime'], b: StudioPythonPublication['runtime']) {
@@ -762,6 +872,16 @@ async function readSource(
   const source = await content.text()
   if ((await sha256(new TextEncoder().encode(source))) !== revision.sourceHash)
     throw new PublicationError(409, 'Fonte inválida.')
+  if ('classic' in revision && revision.classic === true) {
+    const stored = await bucket.get(`${publishedRevisionPrefix(playId, revision.id)}manifest.json`)
+    if (
+      !stored ||
+      stored.size > 4096 ||
+      (await sha256(new TextEncoder().encode(await stored.text()))) !== revision.artifactHash
+    )
+      throw new PublicationError(409, 'Registro clássico inválido.')
+    return source
+  }
   if ('approval' in revision) {
     const stored = await bucket.get(`${publishedRevisionPrefix(playId, revision.id)}manifest.json`)
     if (!stored || stored.size > STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS.maxBytes)
@@ -826,6 +946,7 @@ export async function servePublishedArtifact(
   if (
     !saved ||
     saved.state.python ||
+    saved.state.classic ||
     saved.state.disabled ||
     saved.state.activeRevision !== revisionId ||
     !(await authorize(playId))

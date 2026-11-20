@@ -514,7 +514,9 @@ export function createStudioRuntimeHandler(
             body &&
             typeof body === 'object' &&
             'operation' in body &&
-            ['promote', 'promote-python', 'activate'].includes(String(body.operation)) &&
+            ['promote', 'promote-python', 'promote-classic', 'activate'].includes(
+              String(body.operation),
+            ) &&
             'owner' in body &&
             isStudioPublicationHash(body.owner)
           ) {
