@@ -56,6 +56,15 @@ jobs:
           cp packages/studio-runtime/runtime/validation-profile.json .cache/pinta-runtime-image/validation-profile.json
           printf '%s\n' "$PINTA_SOURCE_SHA" > .cache/pinta-runtime-image/source-sha.txt
           docker image inspect sistemazero-studio-runtime:verify --format '{{.Id}}' > .cache/pinta-runtime-image/image-id.txt
+          node --input-type=module <<'NODE'
+          import { readdirSync, cpSync, writeFileSync } from 'node:fs'
+          const base = '.cache/studio-python-runtime/distributions'
+          const candidates = readdirSync(base, { withFileTypes: true }).filter(entry => entry.isDirectory() && /^[a-f0-9]{64}$/.test(entry.name))
+          if (candidates.length !== 1) throw new Error('Expected the exact qualified Python distribution')
+          const hash = candidates[0].name
+          cpSync(`${base}/${hash}`, `.cache/pinta-runtime-image/python/${hash}`, { recursive: true, force: false, errorOnExist: true })
+          writeFileSync('.cache/pinta-runtime-image/python-distribution-sha.txt', `${hash}\n`, { flag: 'wx' })
+          NODE
       - uses: actions/upload-artifact@v4
         with:
           name: pinta-staging-runtime-image-6c4b50299
