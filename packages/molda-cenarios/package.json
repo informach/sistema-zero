@@ -8,6 +8,8 @@
     "./oficina/autoria": "./src/oficina/autoria.ts",
     "./oficina/host-http": "./src/oficina/host-http.ts",
     "./oficina/host-memoria": "./src/oficina/host-memoria.ts",
+    "./oficina/importar": "./src/oficina/importar.ts",
+    "./exportar/preparar": "./src/exportar/preparar.ts",
     "./oficina.css": "./src/oficina/oficina.css",
     "./oficina-regras.css": "./src/oficina/oficina-regras.css",
     "./studio-library": "./src/studio-library.ts"

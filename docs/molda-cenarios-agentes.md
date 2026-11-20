@@ -76,6 +76,23 @@ triângulos e bytes contra os tetos de cada destino) e `capturar_cenario` (foto)
 
 No MCP a foto volta como imagem; no CLI, como arquivo (terceiro argumento).
 
+### Trazer modelos e exportar
+
+As duas usam o Chrome deste computador, sem tela, com o mesmo código da oficina; o envio à
+biblioteca e a leitura do cenário continuam pelo token do agente.
+
+- `trazer_modelos`: `bibliotecaId` e `caminhos` (arquivos ou pastas deste computador). Aceita GLB,
+  glTF (com os arquivos que ele usa), OBJ, FBX e ZIP. Uma pasta inteira vira a pasta dos modelos
+  na biblioteca, como na oficina. Cada modelo é conferido, medido e fotografado; volta a lista
+  `trazidos` (id, nome, digest, triângulos e medidas em metros) e a lista `recusados`, com o
+  motivo de cada arquivo que não serviu. Até 5.000 arquivos e 512 MB por vez.
+- `exportar_cenario`: `destino` `three` (ZIP com o carregador three.js e um exemplo), `glb` (um
+  arquivo só) ou `raylib` (ZIP para Raylib; sempre junta as peças). `juntar` une as peças
+  estáticas por região (`tamanhoDaRegiao`, em metros; o Estúdio usa 128) para desenhar mais
+  leve. `saida` é o arquivo ou a pasta onde gravar (sem ela, a pasta atual); um arquivo que já
+  existe não é sobrescrito (o novo ganha " (2)"). Volta o caminho gravado, as medidas e os
+  avisos. Com `revisaoEsperada` vencida, nada é exportado.
+
 ## Receitas
 
 ### Uma ilha com um lago, uma trilha até um farol e árvores em volta
@@ -94,6 +111,11 @@ No MCP a foto volta como imagem; no CLI, como arquivo (terceiro argumento).
 9. `espalhar` as árvores com `centro` no meio da ilha, `raio` que cubra a ilha e `densidade`
    1 a 2. Elas evitam a água e os objetos que já existem.
 10. `capturar_cenario` para conferir, e `orcamento` para saber em quais destinos o cenário cabe.
+11. `exportar_cenario` com o destino que você quer (por exemplo `glb`), se for usar fora da
+    plataforma.
+
+Sem um farol na biblioteca? Traga um do computador antes do passo 7: `trazer_modelos` com a
+biblioteca do mundo e o caminho do arquivo, e use o `id` e o `digest` que voltarem.
 
 Cada passo é um desfazer: se algo ficou ruim, `desfazer` e refaça com outros números.
 

@@ -5,9 +5,15 @@ import {
 } from '@sistemazero/molda-cenarios-motor/compilar'
 import type { CenariosHost } from '../oficina/portas'
 
+/** O que a compilação lê do host: só o conteúdo (a oficina, o agente sem janela). */
+export type FonteDaCompilacao = Pick<
+  CenariosHost,
+  'conteudoDoModelo' | 'conteudoDaTextura' | 'conteudoDoTerreno'
+>
+
 /** Mesma compilação da revisão autorizada para arquivo e publicação; o chamador possui a fila. */
 export async function compilarRevisaoDaOficina(
-  host: CenariosHost,
+  host: FonteDaCompilacao,
   preparo: PreparoDeExportacao,
   opcoes: { juntar: boolean; tamanhoDaRegiao: number },
   sinal: AbortSignal,

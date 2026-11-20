@@ -12,6 +12,12 @@ import {
 import { z } from 'zod'
 import { capturarPelaOficina, capturarSemJanela } from './captura'
 import { CenarioMudou, criarIntencoes, type Intencoes } from './intencoes'
+import {
+  type ExecutarPagina,
+  exportarCenario,
+  paginaNoChrome,
+  trazerModelos,
+} from './trazer-e-exportar'
 
 /**
  * As ferramentas do agente, iguais no MCP e no CLI. As de leitura e organização chamam o cliente
@@ -24,6 +30,8 @@ export interface Contexto {
   intencoes: Intencoes
   /** Baixa um arquivo do app com o token (o retrato que a oficina aberta guardou). */
   baixar?(endereco: string): Promise<Uint8Array>
+  /** Quem roda a página sem janela (trazer e exportar); sem ele, o Chrome deste computador. */
+  executarPagina?: ExecutarPagina
 }
 export function criarContexto(
   host: CenariosHost,
@@ -140,6 +148,23 @@ export const FERRAMENTAS = [
       const { espacoId, ...filtro } = a
       return c.host.buscarModelosNoEspaco(espacoId, filtro)
     },
+  }),
+  ferramenta({
+    name: 'trazer_modelos',
+    description:
+      'Traz modelos deste computador para uma biblioteca, pelo mesmo caminho da oficina: GLB, glTF (com os arquivos dele), OBJ, FBX e ZIP, arquivos soltos ou pastas inteiras (a pasta vira a pasta do modelo). Cada modelo é conferido, medido e fotografado; o que não serve volta em `recusados` com o motivo. Até 5.000 arquivos e 512 MB por vez; precisa do Chrome neste computador.',
+    schema: z
+      .object({
+        bibliotecaId: id,
+        caminhos: z
+          .array(z.string().min(1).max(1024))
+          .min(1)
+          .max(200)
+          .describe('Arquivos ou pastas neste computador.'),
+      })
+      .strict(),
+    executar: (c, a) =>
+      trazerModelos(c.host, a.bibliotecaId, a.caminhos, c.executarPagina ?? paginaNoChrome()),
   }),
   ferramenta({
     name: 'listar_conjuntos',
@@ -460,6 +485,34 @@ export const FERRAMENTAS = [
         ...(a.enquadrar ? { enquadrar: a.enquadrar } : {}),
       })
     },
+  }),
+  ferramenta({
+    name: 'exportar_cenario',
+    description:
+      'Exporta o cenário como a oficina: `three` (ZIP com o carregador three.js e um exemplo), `glb` (um arquivo só) ou `raylib` (ZIP para Raylib, sempre com as peças juntadas). `juntar` une as peças estáticas por região (`tamanhoDaRegiao`, em metros) para desenhar mais leve. Grava o arquivo neste computador em `saida` (arquivo ou pasta; sem ela, a pasta atual) e devolve o caminho, as medidas e os avisos. Precisa do Chrome neste computador.',
+    schema: z
+      .object({
+        cenarioId: id,
+        destino: z.enum(['three', 'glb', 'raylib']),
+        juntar: z.boolean().default(false),
+        tamanhoDaRegiao: z.number().int().min(16).max(512).default(64),
+        revisaoEsperada,
+        saida: z.string().min(1).max(1024).optional(),
+      })
+      .strict(),
+    executar: (c, a) =>
+      exportarCenario(
+        c.host,
+        a.cenarioId,
+        {
+          destino: a.destino,
+          juntar: a.juntar,
+          tamanhoDaRegiao: a.tamanhoDaRegiao,
+          ...(a.revisaoEsperada !== undefined ? { revisaoEsperada: a.revisaoEsperada } : {}),
+          ...(a.saida ? { saida: a.saida } : {}),
+        },
+        c.executarPagina ?? paginaNoChrome(),
+      ),
   }),
   ferramenta({
     name: 'validar_lote',

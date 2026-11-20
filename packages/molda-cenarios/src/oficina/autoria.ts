@@ -59,6 +59,7 @@ export type {
   FiltroDeModelos,
   FiltroDeModelosNoEspaco,
   ModeloDeBiblioteca,
+  ModeloParaImportar,
   Mundo,
   PaginaDeModelos,
   ResumoDeCenario,

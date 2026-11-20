@@ -3,8 +3,7 @@ import {
   type PreparoDeExportacao,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import type { ProgressoDaCompilacao } from '@sistemazero/molda-cenarios-motor/compilar'
-import type { CenariosHost } from '../oficina/portas'
-import { compilarRevisaoDaOficina } from './compilar-revisao'
+import { compilarRevisaoDaOficina, type FonteDaCompilacao } from './compilar-revisao'
 import { naFilaDeCompilacao } from './fila'
 import { nomeDoArquivoExportado } from './nomes'
 
@@ -24,7 +23,7 @@ export interface ArquivoDaExportacao {
 /** Uma execução isolada. Somente o Blob/medidas escapam; o pacote intermediário
  * deixa de ser retido ao retornar. O compilador possui e descarta seus recursos 3D. */
 export async function prepararArquivoDaExportacao(
-  host: CenariosHost,
+  host: FonteDaCompilacao,
   preparo: PreparoDeExportacao,
   opcoes: OpcoesDoArquivo,
   sinal: AbortSignal,
@@ -34,7 +33,7 @@ export async function prepararArquivoDaExportacao(
 }
 
 async function gerarArquivo(
-  host: CenariosHost,
+  host: FonteDaCompilacao,
   preparo: PreparoDeExportacao,
   opcoes: OpcoesDoArquivo,
   sinal: AbortSignal,
