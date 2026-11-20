@@ -42,6 +42,17 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   ignorados por caminho de Chromium foram reexecutados com Chrome real e passaram.
   Deltas posteriores, tipos, formatação e limites da prova estão em
   `qa/revisao-integrada-2026-11-20/README.md`.
+  Continuidade de 20/11: os aplicativos Community e Kids leitores foram implantados
+  por outra sessão no commit 08f040a9 e conferidos em uso. A aba publicada antiga
+  gravou offline após fechar a página nova; duas reaberturas preservaram integralmente
+  o mapa 7 e recuperaram a edição antiga como cópia estável. Aplicativo real e
+  exportação/importação oficial conservaram o mesmo hash. Ver
+  `qa/aba-antiga-autenticada-2026-11-20/README.md`, incluindo a distinção entre
+  código de leitura previamente disponível e cold start HTTP offline do aplicativo.
+  Members/Auth permanecem na política anterior; distribuição Python 132, gravador
+  novo, rollback e publicação completa continuam pendentes. A CI de qualificação
+  44741178796 falhou no observador do DOM; uma reprodução com coleta de memória
+  identificou o defeito upstream Happy DOM 2264, cuja correção está em verificação.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

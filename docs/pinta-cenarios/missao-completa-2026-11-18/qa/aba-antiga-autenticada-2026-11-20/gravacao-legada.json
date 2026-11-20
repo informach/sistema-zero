@@ -1,0 +1,13 @@
+{
+  "modernPageClosed": true,
+  "networkOffline": true,
+  "legacyWriteTransactionCommitted": true,
+  "schema": null,
+  "layers": 1,
+  "objectLayers": 0,
+  "emptyCells": 1,
+  "erasedIndex": 0,
+  "expectedProtectedSha256": "00d8e2c2a16fd54be9843e721ae381b44d726ecbb3c6c6bfbf255bdabbe31a7e",
+  "authoringDocumentRetained": false,
+  "nativeWriteSemanticsChanged": false
+}

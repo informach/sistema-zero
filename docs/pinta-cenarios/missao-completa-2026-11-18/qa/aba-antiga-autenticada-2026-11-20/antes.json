@@ -1,0 +1,17 @@
+{
+  "schema": 7,
+  "capability": 7,
+  "physics": "precise",
+  "layers": 2,
+  "objectId": "6dd9d589-1487-407f-a291-3270aaa8a682",
+  "objectName": "Protegido 026",
+  "objectCollision": true,
+  "property": {
+    "type": "int",
+    "value": 26
+  },
+  "firstCell": 0,
+  "sha256": "00d8e2c2a16fd54be9843e721ae381b44d726ecbb3c6c6bfbf255bdabbe31a7e",
+  "readOnly": true,
+  "completeAuthoringDocumentRetained": false
+}

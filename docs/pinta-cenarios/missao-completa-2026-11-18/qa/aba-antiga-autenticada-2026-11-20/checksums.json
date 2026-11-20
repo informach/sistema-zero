@@ -1,0 +1,54 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "c0b3c1961cdd31a9ecdb482210c9bdc04c87747de70a03aee62aab3cf4fde611"
+  },
+  {
+    "file": "antes.json",
+    "sha256": "b5e92fb7ae2ea4be9f84bdb3dde12f4d83de20a05e83e1fffa2bc059761fd874"
+  },
+  {
+    "file": "checkpoint-protected-map.cjs.txt",
+    "sha256": "3a4df5fe20ced33ae0298c2ab5f813b468740a329e4729f74af37577f8881825"
+  },
+  {
+    "file": "exportacao-verificada.json",
+    "sha256": "e689ef56cf95cf8e786123daa6b4e024d884d603587ad776700f6c5a256b575a"
+  },
+  {
+    "file": "gravacao-legada.json",
+    "sha256": "ee52815a1dc26a0af3e60e7023accc458af1f7691edefb62c2b23482b7b0c67e"
+  },
+  {
+    "file": "mapa-proprio-recuperado.pinta.json",
+    "sha256": "9c3491a6a8fe4654997cc285f40129c03b6d287030286622f4eb9df197b6aeda"
+  },
+  {
+    "file": "old-client-overwrite-offline.cjs.txt",
+    "sha256": "6eed0e2149ba4bd9c9598b904baf0297b0a054c192c0a7d8db63e2949139e954"
+  },
+  {
+    "file": "origem.json",
+    "sha256": "f789dedbf0a7486cef93fffbd4ae8835375b56cd63e3251bef9c1a16e3da30ee"
+  },
+  {
+    "file": "reabertura-aplicativo.json",
+    "sha256": "25a13c174d9c30e98680f044f9bc2c99bc41218699b283b4e2fec7084c4e2cca"
+  },
+  {
+    "file": "recover-protected-map-offline.cjs.txt",
+    "sha256": "e3922cfb785be62275c7ec5105bbc5b3cb41fcbe5603be424522bab75225065b"
+  },
+  {
+    "file": "recuperacao-offline.json",
+    "sha256": "be33f79245043c5a867e3d6e2d6fd730ba44ed5e7bd02b796dc3c8bc04785799"
+  },
+  {
+    "file": "reopen-real-app-after-recovery.cjs.txt",
+    "sha256": "662bd21cf992c1502092787e95b5c196e858d8f5169a11f27b348274891925c1"
+  },
+  {
+    "file": "segunda-reabertura-offline.json",
+    "sha256": "be33f79245043c5a867e3d6e2d6fd730ba44ed5e7bd02b796dc3c8bc04785799"
+  }
+]

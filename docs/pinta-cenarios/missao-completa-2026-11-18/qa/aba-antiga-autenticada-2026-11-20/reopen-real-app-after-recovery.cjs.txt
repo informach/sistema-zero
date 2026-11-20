@@ -1,0 +1,17 @@
+module.exports=async function(qa){
+ if(!qa.offlineRecovery?.completeDocumentEqual)throw Error('Offline recovery not verified');
+ // Keep the historical writer available for the later cloud-format test,
+ // without allowing its queued legacy upload to run during this phase.
+ await qa.old.route('**/*',route=>route.abort());qa.oldNetworkSuspended=true;
+ await qa.context.setOffline(false);qa.offlineProofActive=false;
+ const page=await qa.context.newPage();qa.modern=page;
+ await page.goto(qa.origin+'/pinta',{waitUntil:'domcontentloaded',timeout:60000});
+ const original=page.getByRole('button',{name:'Abrir homologacao-aba-nklptd (Mapa)',exact:true});
+ const copy=page.getByRole('button',{name:'Abrir homologacao-aba-nklptd-copia (Mapa)',exact:true});
+ await original.waitFor({state:'visible',timeout:30000});await copy.waitFor({state:'visible',timeout:30000});
+ await original.click();await page.getByRole('img',{name:'Grade do mapa',exact:true}).waitFor({state:'visible',timeout:30000});
+ const expected=qa.protectedCheckpoint.sha256;
+ const checkpoint=await require('./checkpoint-protected-map.cjs')(qa);
+ if(checkpoint.sha256!==expected)throw Error('Real app or cloud reconciliation changed the protected document');
+ return {realStagingApp:true,recoveredOriginalVisible:true,recoveredCopyVisible:true,completeDocumentEqual:true,sha256:checkpoint.sha256,schema:checkpoint.schema,layers:checkpoint.layers,oldPageNetworkSuspended:true};
+};

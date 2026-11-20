@@ -1,0 +1,41 @@
+module.exports=async function(qa){
+ if(!qa.protectedCheckpoint||qa.protectedCheckpoint.schema!==7)throw Error('Protected checkpoint missing');
+ if(qa.modern&&!qa.modern.isClosed()){await qa.modern.close();qa.modern=undefined}
+ else if(!qa.offlineProofActive)throw Error('Modern page was not closed by this proof');
+ await qa.context.setOffline(true);qa.offlineProofActive=true;
+ const old=qa.old;
+ if(new URL(old.url()).pathname!=='/pinta')throw Error('Held legacy page left the editor');
+ const point=await old.getByRole('img',{name:'Grade do mapa',exact:true}).evaluate(canvas=>{
+  const rect=canvas.getBoundingClientRect();
+  // This owned fixture is the verified 8×8 map, wholly visible at 256×256.
+  // Target the first cell by geometry, independently of palette and art.
+  if(rect.width!==256||rect.height!==256)throw Error('Held fixture viewport changed');
+  return {x:rect.width/16,y:rect.height/16};
+ });
+ await old.evaluate(id=>{
+  if(window.__qaOriginalPut026)throw Error('Write observer already installed');
+  const original=IDBObjectStore.prototype.put;
+  window.__qaOriginalPut026=original;window.__qaCommittedLegacy026=null;
+  IDBObjectStore.prototype.put=function(value,key){
+   const request=original.apply(this,arguments);
+   if(key==='pinta:asset:'+id&&value?.kind==='tilemap'){
+    const floor=value.layers.find(layer=>layer.cells);
+    const metadata={schema:value.schema??null,layers:value.layers.length,objectLayers:value.layers.filter(layer=>layer.kind==='objects').length,emptyCells:Array.from(floor.cells).filter(cell=>cell===-1).length,erasedIndex:Array.from(floor.cells).findIndex(cell=>cell===-1)};
+    request.transaction.addEventListener('complete',()=>{window.__qaCommittedLegacy026=metadata},{once:true});
+   }
+   return request;
+  };
+ },'1cb291ea-b512-4e46-b3cd-e5d783454c3a');
+ let committed;
+ try{
+  await old.getByRole('button',{name:'Borracha',exact:true}).click();
+  await old.getByRole('img',{name:'Grade do mapa',exact:true}).click({position:point});
+  await old.waitForFunction(()=>window.__qaCommittedLegacy026?.emptyCells>0,{},{timeout:15000});
+  committed=await old.evaluate(()=>window.__qaCommittedLegacy026);
+ }finally{
+  await old.evaluate(()=>{if(window.__qaOriginalPut026)IDBObjectStore.prototype.put=window.__qaOriginalPut026;delete window.__qaOriginalPut026;delete window.__qaCommittedLegacy026});
+ }
+ if((committed.schema??1)>=7||committed.layers!==1||committed.objectLayers!==0||committed.emptyCells!==1||committed.erasedIndex!==0)throw Error('Held writer did not commit the expected legacy edit');
+ qa.legacyOverwrite=committed;
+ return {modernPageClosed:true,networkOffline:true,legacyWriteTransactionCommitted:true,...committed,expectedProtectedSha256:qa.protectedCheckpoint.sha256,authoringDocumentRetained:false,nativeWriteSemanticsChanged:false};
+};
