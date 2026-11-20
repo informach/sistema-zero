@@ -575,14 +575,27 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         return
       }
       const projectNameForGen = current?.name ?? 'Projeto'
+      // Hydrating saved blocks must not rewrite an otherwise identical script
+      // just to add our optional banner. That reloads a running iframe during
+      // native input and shifts source-map lines. Real edits keep the standard
+      // banner; inline placements retain their existing generation contract.
+      const jsPlacement = ir.htmlShell?.jsPlacement ?? 'external'
+      const preserveHeader =
+        options.force &&
+        current?.mode === 'blocks' &&
+        (jsPlacement === 'external' || jsPlacement === 'external-head')
+      const jsHeader =
+        preserveHeader && !current.files['script.js'].startsWith(GENERATED_JS_HEADER)
+          ? undefined
+          : GENERATED_JS_HEADER
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
         projectName: projectNameForGen,
-        jsHeader: GENERATED_JS_HEADER,
+        jsHeader,
       })
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
-      primeCanonicalSourceMap(ir, projectNameForGen, GENERATED_JS_HEADER, sourceMap)
+      primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap)
       // Modo Ponte: ao CARREGAR os blocos (force), NUNCA reescrever os arquivos do
       // aluno com o canônico — "código é sagrado". Só sincronizamos o IR (para os
       // ids/__declIds e o sourcemap de HTML/JS ficarem completos) e o blocksState

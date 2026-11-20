@@ -107,12 +107,7 @@ export function configurePreviewInputDiagnostics(): void {
         // renderers answer. Keep a bounded diff of the actual fixture documents
         // to distinguish source regeneration from runtime/resource changes.
         const documents = new WeakMap<HTMLIFrameElement, string>()
-        const observeDocument = (frame: HTMLIFrameElement) => {
-          if (frame.title !== 'Pré-visualização') return
-          const next = frame.srcdoc
-          const previous = documents.get(frame) ?? ''
-          if (next === previous) return
-          documents.set(frame, next)
+        const difference = (previous: string, next: string) => {
           let start = 0
           while (start < previous.length && start < next.length && previous[start] === next[start])
             start++
@@ -123,14 +118,38 @@ export function configurePreviewInputDiagnostics(): void {
             previous[previous.length - end - 1] === next[next.length - end - 1]
           )
             end++
+          return {
+            start,
+            removed: previous.slice(start, previous.length - end).slice(0, 1024),
+            inserted: next.slice(start, next.length - end).slice(0, 1024),
+          }
+        }
+        // Diagnostic strings only: never replace the actual document or its CSP.
+        // A changed CSP hash otherwise hides the actual program change later on.
+        const readableSource = (source: string) =>
+          source
+            .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/g, '')
+            .replace(/data:text\/javascript;base64,([A-Za-z0-9+/=]+)/g, (_, encoded: string) =>
+              new TextDecoder().decode(
+                Uint8Array.from(atob(encoded), (char) => char.charCodeAt(0)),
+              ),
+            )
+        const observeDocument = (frame: HTMLIFrameElement) => {
+          if (frame.title !== 'Pré-visualização') return
+          const next = frame.srcdoc
+          const previous = documents.get(frame) ?? ''
+          if (next === previous) return
+          documents.set(frame, next)
           retain({
             type: 'preview-document',
             time: Date.now(),
             previousBytes: previous.length,
             bytes: next.length,
-            start,
-            removed: previous.slice(start, previous.length - end).slice(0, 1024),
-            inserted: next.slice(start, next.length - end).slice(0, 1024),
+            ...difference(previous, next),
+            sourceChange:
+              previous.length > 54 && next.length > 54
+                ? difference(readableSource(previous), readableSource(next))
+                : null,
           })
         }
         new MutationObserver((mutations) => {

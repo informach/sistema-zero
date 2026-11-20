@@ -46,6 +46,17 @@ a revisão posterior. Consultar a CI e os recortes novos de cada alteração.
 
 ## Limites que continuam bloqueando a conclusão
 
+Nova causa reproduzida e corrigida na abertura: inserção de banner sem
+mudança de programa e geração do primeiro executável antes de os blocos
+da galeria terem suas identidades. O atribuidor existente agora inclui
+moldes. [Relatório completo](../qa/2026-11-19-studio-noop-hydration.md):
+240 testes/6.013 asserções, seis casos de navegador, bundle e tipos aprovados.
+O ensaio ampliado ainda precisa qualificar a correção; foi particionado
+em 50+50 casos por SO, sem mudar ações, retries ou prazos. A inspeção dos
+185 round-trips também deixou 35 diferenças de fonte a classificar, sobretudo
+ordenação de CSS/atributos. Isso não é conclusão global ou prova de 35
+regressões funcionais.
+
 Incremento mais recente: interromper a primeira tentativa antes de `load`,
 quebras de linha em comentários sem sugestão tardia consumir Enter e
 referências completas no Pro. Recortes finais: 63 testes/311 asserções para
@@ -81,9 +92,10 @@ integrações das aulas. Não houve alteração em ambiente publicado.
    não equivale a montagem inicial incremental.
 2. A casca isolada não está ativada/homologada no host publicado. WebKit
    continua sem isolamento efetivo de CPU pelo arranjo de iframes testado.
-3. Uma das seis repetições locais da galeria corrigida ainda teve timeout
-   de `keyboard.press`, depois de desenhar o primeiro frame. Cinco
-   aprovações não tornam essa rodada verde.
+3. Os ensaios anteriores à correção das identidades/banner tiveram
+   timeouts de `keyboard.press`. Os seis casos novos passaram; falta
+   concluir a qualificação ampliada e classificar as diferenças de fonte
+   restantes. Aprovações novas não tornam as rodadas antigas verdes.
 4. A homologação Verificar/Enviar/Concluir no Members não foi executada
    aqui. `node scripts/local-studio-stack/preflight.mjs` recusou os
    `.env` existentes nesta pasta e nos serviços. Nenhum valor foi lido,

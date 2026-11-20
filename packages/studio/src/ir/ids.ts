@@ -11,8 +11,8 @@ export function assignStableIdsToIR(input: SZIRInput, prefix = 'ir'): SZIRV2 {
   // O id é baseado no caminho (chave + índice): determinístico e estável para a
   // mesma estrutura, e idêntico ao esquema antigo nos casos que ele já cobria.
   const behavior = structuredClone(ir.behavior)
-  for (const area of ['start', 'events', 'loops'] as const) {
-    behavior[area].forEach((statement, index) => {
+  for (const area of ['molds', 'start', 'events', 'loops'] as const) {
+    behavior[area]?.forEach((statement, index) => {
       assignNodeIds(statement, `${prefix}_${area}_${index}`)
     })
   }

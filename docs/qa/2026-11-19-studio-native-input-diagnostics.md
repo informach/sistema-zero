@@ -88,3 +88,16 @@ nova geração de fonte de uma troca de runtime/recursos; não é coletor
 de código em produção. Um segundo controle verifica diferença, limite
 e integridade do atributo. Os dois controles passaram localmente em
 11 s; TypeScript focado não emitiu erros.
+
+A leitura foi ampliada para mostrar a fonte sem confundir mudanças de hash
+CSP com mudanças de programa. Essa transformação existe apenas no registro
+diagnóstico; o documento executado e sua CSP são preservados. Três controles
+passaram, incluindo mudança de código em `data:` e preservação do atributo
+real. O caso local do Patrulha mostrou só a inserção do banner do gerador.
+O [relatório da correção](2026-11-19-studio-noop-hydration.md) descreve também
+as identidades da galeria e os limites da investigação.
+
+O workflow passou de cem casos em um job por SO para dois shards de
+cinquenta por SO (`--list` conferido). Não aumentou prazo dos testes ou
+do job, não trocou ações e não adicionou retries. Artefatos novos têm o
+sufixo do shard; a execução antiga conserva seus nomes originais.
