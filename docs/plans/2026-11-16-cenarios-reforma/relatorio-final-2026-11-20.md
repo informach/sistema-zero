@@ -11,8 +11,8 @@ esperando a sua conferência.
   água, caminhos e objetos, o Testar com personagem, versões com retrato, desfazer e refazer.
 - Exportar para three.js, GLB e Raylib; levar o cenário para o Estúdio ("Usar o cenário");
   publicar no Arquipélago (provado localmente no `/macro`).
-- Agentes de IA pelo MCP e pelo CLI, com os mesmos comandos da tela (guia em
-  `docs/molda-cenarios-agentes.md`).
+- Agentes de IA pelo MCP e pelo CLI, com os mesmos comandos da tela, inclusive trazer modelos do
+  computador e exportar (guia em `docs/molda-cenarios-agentes.md`).
 - Abertura pronta, sem ligar: exige o Molda, os mundos são da criança no Kids, cota configurável e
   as ferramentas seguem as faixas do Molda.
 - O piloto antigo saiu de todos os serviços; as tabelas antigas nunca existiram em staging nem em
@@ -48,6 +48,16 @@ sem janela tem prazo em tudo e não deixa Chrome nem pasta temporária para trá
   informação de que aquela versão já tinha retrato. Corrigido, com teste.
 - **Botões dos avisos com o texto por cima da frase**: o CSS prendia todo botão em 32 px.
   Corrigido.
+- **Nenhum cenário com relevo cabia no Estúdio** (limite de 48 malhas): o "juntar peças" não
+  reduzia o relevo nem o mar. Agora junta os dois: as peças do relevo de cada região viram uma
+  malha com um mapa único de textura, e o mar junta as faixas de mar aberto numa malha e os
+  pedaços pintados junto à ilha por região. A "Praia" foi de 78 para dentro do limite; numa ilha
+  com mar e 12 objetos, de 48 para 16 malhas. O desenho sai igual ao de antes (diferença máxima
+  de 1 em 255). Junto, a beira de uma peça vizinha de célula vazia não escurece mais de longe.
+- **O cenário não aparecia no Estúdio** com um programa sem laço ("Criar cena" e "Usar o
+  cenário", sem "A cada quadro"): ele carregava, mas o Jogo 3D só redesenhava a tela num laço.
+  Agora carregar um cenário liga o desenho de cada quadro. O Mundo 3D e o Avançado já tinham
+  laço próprio.
 
 **Desempenho** (medido num mundo grande, com a CPU 4× mais lenta simulando um aparelho modesto):
 
@@ -75,23 +85,13 @@ A medição só deixa a CPU mais lenta; a placa de vídeo era dedicada.
 | Atalho "Cenários" no Molda | ok |
 | Adulto: seletor de espaço com a equipe; mundo do perfil aparece na conta | ok |
 | Sem login | 401 nos dois apps e no gateway |
-| "Usar o cenário" no Estúdio | **não cabe** (ver item 4) |
+| "Usar o cenário" no Estúdio | ok: a "Praia" cabe com "juntar peças" e aparece no jogo |
 | Publicar a Faísca em staging | **pendente** (ver item 4) |
 
 Fotos (fora do Git, em `output/cenarios-reforma/etapa7/`): a oficina em staging, e no playground
 1440, 1024, celular e tema escuro. As medições de desempenho estão na mesma pasta.
 
 ## 4. O que fica pendente
-
-**Levar um cenário com relevo para o Estúdio.** O orçamento aprovado do Estúdio é de 48 malhas, e o
-exportador oferece "juntar peças". Mas uma ilha de 256 m já soma 36 malhas sem nenhum objeto: 16
-peças de relevo (cada uma com a própria textura do chão) e 20 pedaços de mar (cada setor perto da
-ilha leva a própria textura do fundo, para a beira da água). Juntar não reduz nenhum dos dois, e
-com três objetos a "Praia" chega a 69. **Minha recomendação:** fazer o "juntar" cumprir o que a
-proposta promete, montando, só para o Estúdio, um mapa único de textura por região para o relevo
-(as 16 peças viram de 1 a 4) e unindo as faixas de mar aberto. Assim o orçamento de 48 continua
-protegendo os aparelhos mais fracos e uma ilha comum com alguns objetos cabe. É o próximo trabalho
-que faço.
 
 **A Faísca publicada em staging e a prova do agente.** A Faísca convertida existe só localmente (a
 publicação foi provada no `/macro`). O caminho para levá-la ao espaço da equipe em staging é o
@@ -100,9 +100,17 @@ variáveis `MOLDA_CENARIOS_APP` (o endereço da comunidade adulta de staging) e
 `MOLDA_CENARIOS_EMAIL` / `MOLDA_CENARIOS_SENHA` de uma conta da equipe (ou um
 `MOLDA_CENARIOS_TOKEN`). Eu não digito senha.
 
+**O agente agora também traz modelos e exporta** (`trazer_modelos` e `exportar_cenario`), pelo
+mesmo código da oficina, num Chrome sem tela neste computador. Provado localmente com o Chrome de
+verdade: 3 GLB e um ZIP com 5 modelos trazidos, uma ilha montada com eles e os três pacotes
+exportados. Publicar no Arquipélago continua só pela tela, por decisão sua.
+
 **Outros limites:**
 
 - A medição num aparelho físico modesto (com vídeo integrado) não foi feita.
+- O mar fica mais claro no quadrado do relevo e mais escuro fora dele, com uma linha reta onde o
+  relevo acaba. Já era assim na oficina (a profundidade sai do relevo, e fora dele o fundo é
+  tratado como mar aberto). É acabamento para depois, se você quiser.
 - Conta comum recebendo 404 com login: coberto pelos testes do Members; não havia sessão de conta
   comum no navegador para conferir.
 - A biblioteca inicial livre ficou para depois, por decisão sua.
@@ -133,4 +141,6 @@ então em `.railway/variables.ts`), PR de staging para main e o `deploy-producti
   além de testes e documentação, então implantar a staging não desfez nada da aula 7.
 - **Build de staging quebrado por outra frente:** por algumas horas os três apps não subiam por um
   erro de tipo no Estúdio (da sessão do Estúdio). Avisei, ela corrigiu (`f20ef6e95`).
-- Commits desta etapa em `origin/staging`: `d5a5f14a5` a `ad45276fa`.
+- Commits desta etapa em `origin/staging`: `d5a5f14a5` a `ad45276fa`; depois do relatório,
+  `5a444c6a2` (relevo no juntar), `f7aaa264f` (mar no juntar), `52a522168` (o cenário aparece no
+  Estúdio sem laço) e `b327ea7d1` (o agente traz modelos e exporta).
