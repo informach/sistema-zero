@@ -23,6 +23,28 @@ Regressões: `live-public-identities`, `live-contract-1410`, `certificate` e `pu
 - Histórico, fotografias e cópias protegem os hashes de terreno. Apagar mundo/cenário devolve `{apagar: chaves[]}` só dos arquivos sem referências, para a limpeza do BFF. Outra conta nunca divide o mesmo objeto de armazenamento.
 - `ehImagemDeCenario` enumera os papéis de imagem explicitamente; um terreno não pode servir de capa. O núcleo e os testes de fronteira continuam sem Three/React/IO.
 
+## Molda Cenários: abertura pronta, faixas e mundos por criança (20/11/2026, lote 10)
+
+- **Abertura com o Molda.** Nos modos `lista` e `aberto`, quem não é da equipe precisa também do
+  Molda (`AberturaDosCenarios.produto`, `application/cenarios/molda-dos-cenarios.ts`): o produto
+  pela conta (`creativeToolAccessRef('molda', público)`, o cache curto da posse das criações, que a
+  revogação de matrícula apaga) e a capacidade `molda` na jornada de quem pede (Kids: a do perfil;
+  adulto: a jornada adulta). Sem a conferência ligada, só a equipe. O "pode" fica 60 s na memória.
+- **Faixas de ferramentas.** O catálogo é `FAMILIAS_DA_OFICINA` de `molda-cenarios-core/v2`
+  (`faixas.ts`), com as três faixas do Molda. `aplicarMudanca` compara o documento antes e depois
+  (`familiasTrancadas`) e recusa com 403 `CENARIO_FERRAMENTA_TRANCADA` (`details.familias`) o lote
+  de quem não é da equipe que cria ou muda uma família fora das faixas
+  (`AberturaDosCenarios.faixas`, a régua do Molda: no adulto sem currículo, `molda` dá todas).
+  Desfazer, refazer e voltar a uma versão (`restaurarRevisao`) não passam pela conferência.
+  Criar, editar e publicar conjuntos exigem `objetos.conjuntos` (intermediário). O relevo
+  esculpido não diz qual ferramenta o fez: rampa, platô, ruído e erosão só a tela tranca.
+- **Mundos por criança.** Numa sessão de perfil, o espaço da família lista e abre só os mundos que
+  o perfil criou (`podeNoMundo`); o de um irmão responde "não existe". Bibliotecas e os rascunhos
+  de conjunto delas seguem da família; fora de sessão de perfil, a conta vê todos.
+- **Cota da conta.** `CENARIOS_COTA_DA_CONTA_MB` (opcional, padrão 2048; criar no Railway antes de
+  pôr no `.railway/variables.ts`). Vale também para os espaços que já existem: a cota guardada é
+  trocada no próximo uso (`definirLimiteDaConta`). O espaço da equipe não muda.
+
 ## Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026, migration `0151`)
 
 Os dados da oficina de cenários 3D (`@sistemazero/molda-cenarios`). Plano da reforma em

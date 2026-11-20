@@ -47,6 +47,16 @@ um mapa de formato novo era gravado cortado no aparelho e depois subia por cima 
 - Testes: o bloco "formato mais novo que este código" de
   `community-kids/tests/pinta-cloud-persistence.test.ts`.
 
+## Molda Cenários: faixas na tela e atalho no Molda (20/11/2026, lote 10)
+
+`lib/cenarios-tool-access.ts` traduz as faixas em famílias da oficina (`cenariosToolAccessFromBands`,
+`adultCenariosToolAccess` com a régua de `adult-molda-tool-access`, e `cenariosBasicToolAccess`
+quando a jornada não chegou). `CenariosClient` recebe `ferramentas` e passa à oficina; ausente =
+todas (a equipe). O Kids traduz com `cenariosToolAccessFor` (mesma régua do Molda). O `MoldaClient`
+ganhou `cenariosAvailable`: com ele, a galeria do Molda mostra o atalho "Cenários"; as páginas do
+Molda perguntam ao members (`checkCenariosAccessReadonly`). O Members confere as faixas no lote:
+a tela só decide o que aparece.
+
 ## Importação do relevo no Molda Cenários (17/11/2026)
 
 `cenarios/:id/recursos/reservar` reutiliza assinatura condicional e cota. Um POST de lote com `recursos: {espacoId, digests}` primeiro autoriza o cenário, lê cada peça de 8.474 bytes, confere SHA/cabeçalho e só então encaminha a prova para `/members/internal/cenarios/lotes` por HMAC. A prova não vem do navegador. Lotes sem recursos mantêm a porta JWT existente. Erro ou falta de arquivo impede a confirmação; o Members confirma e grava atomicamente. DELETE de cenário ou mundo usa a mesma limpeza posterior de arquivos sem referências das bibliotecas. A DDL é `0157_tiresome_shen`.
