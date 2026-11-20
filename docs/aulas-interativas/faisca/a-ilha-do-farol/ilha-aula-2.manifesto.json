@@ -33,7 +33,11 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": ["axis-x", "axis-y", "axis-z"],
+            "goals": [
+              "axis-x",
+              "axis-y",
+              "axis-z"
+            ],
             "freeExploration": true,
             "goalCopy": {
               "axis-x": {
@@ -59,7 +63,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora escolha um lugar novo para a chave! No bloco Colocar o objeto chave, troque o z por −2 e o x por −3. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -91,7 +95,10 @@
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": ["contact-apart", "contact-touch"],
+            "goals": [
+              "contact-apart",
+              "contact-touch"
+            ],
             "freeExploration": true,
             "goalCopy": {
               "contact-apart": {
@@ -116,7 +123,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora faça o personagem pegar a chave! Coloque o encontro logo abaixo do evento da tecla R e, dentro dele, Esconder o objeto chave. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -128,7 +135,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora faça o jogo guardar que o personagem pegou a chave! Crie temChave com falso em Ao iniciar e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -140,19 +147,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
-      }
-    },
-    {
-      "key": "video-fecho",
-      "plannedVideo": "Título: A chave já pode ser encontrada\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-fecho. Gravação pendente."
-    },
-    {
-      "key": "ponte-fecho",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você concluiu os testes desta aula. Clique em Concluir aula."
+        "text": "Agora mostre na tela que a chave foi pega! No encontro com a chave, mude o aviso para Você pegou a chave! Agora vá ao farol. Teste e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -162,7 +157,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -1543,7 +1540,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -2900,7 +2897,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -4254,7 +4251,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -5640,7 +5637,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -7078,7 +7075,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -8542,7 +8539,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -8576,13 +8573,20 @@
       "title": "Para onde vai a chave?",
       "intent": "exploration",
       "objective": "Para onde vai a chave?",
-      "blockKeys": ["video-posicao-3d", "ponte-posicao-3d", "experiencia-posicao-3d"],
+      "blockKeys": [
+        "video-posicao-3d",
+        "ponte-posicao-3d",
+        "experiencia-posicao-3d"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao-3d", "experiencia-posicao-3d"]
+        "blockIds": [
+          "video-posicao-3d",
+          "experiencia-posicao-3d"
+        ]
       }
     },
     {
@@ -8590,13 +8594,18 @@
       "title": "Coloque a chave na ilha",
       "intent": "application",
       "objective": "Coloque a chave na ilha.",
-      "blockKeys": ["video-posicao", "ponte-posicao"],
+      "blockKeys": [
+        "video-posicao",
+        "ponte-posicao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao"],
+        "blockIds": [
+          "video-posicao"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -8819,13 +8828,20 @@
       "title": "Parece junto, mas está encostando?",
       "intent": "exploration",
       "objective": "Parece junto, mas está encostando?",
-      "blockKeys": ["video-contato-3d", "ponte-contato-3d", "experiencia-contato-3d"],
+      "blockKeys": [
+        "video-contato-3d",
+        "ponte-contato-3d",
+        "experiencia-contato-3d"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-contato-3d", "experiencia-contato-3d"]
+        "blockIds": [
+          "video-contato-3d",
+          "experiencia-contato-3d"
+        ]
       }
     },
     {
@@ -8833,13 +8849,18 @@
       "title": "Recolha a chave",
       "intent": "application",
       "objective": "Recolha a chave.",
-      "blockKeys": ["video-recolher", "ponte-recolher"],
+      "blockKeys": [
+        "video-recolher",
+        "ponte-recolher"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-recolher"],
+        "blockIds": [
+          "video-recolher"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9216,13 +9237,18 @@
       "title": "Guarde que você pegou a chave",
       "intent": "application",
       "objective": "Guarde que você pegou a chave.",
-      "blockKeys": ["video-memoria", "ponte-memoria"],
+      "blockKeys": [
+        "video-memoria",
+        "ponte-memoria"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-memoria"],
+        "blockIds": [
+          "video-memoria"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9814,13 +9840,20 @@
       "title": "Conte que a chave foi recolhida",
       "intent": "delivery",
       "objective": "Conte que a chave foi recolhida.",
-      "blockKeys": ["video-aviso", "ponte-aviso", "projeto"],
+      "blockKeys": [
+        "video-aviso",
+        "ponte-aviso",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-aviso", "projeto"],
+        "blockIds": [
+          "video-aviso",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -10445,21 +10478,9 @@
         ],
         "submissionUpToDate": true
       }
-    },
-    {
-      "key": "fecho",
-      "title": "A chave já pode ser encontrada",
-      "intent": "closing",
-      "objective": "A chave já pode ser encontrada.",
-      "blockKeys": ["video-fecho", "ponte-fecho"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-fecho"]
-      }
     }
   ],
-  "retireBlockKeys": ["materiais"]
+  "retireBlockKeys": [
+    "materiais"
+  ]
 }

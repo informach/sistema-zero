@@ -107,19 +107,21 @@ for (const [i, aula] of ilhaAulas.entries()) {
       key: vk,
       plannedVideo: `Título: ${t.title}\n\nMaster integral da professora. Roteiro: ${aula.slug}.roteiro.md, clipe ${vk}. Gravação pendente.`,
     })
+    // O recado do Zappy na página: o da parte (como no Farol) ou, sem ele, o comum do tipo.
     const bridge =
-      t.kind === 'closing'
-        ? 'Você concluiu os testes desta aula. Clique em Concluir aula.'
-        : t.kind === 'experience'
-          ? (t.ponte ??
-            'Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.')
-          : t.kind === 'delivery'
-            ? 'Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.'
-            : t.kind === 'build'
-              ? 'Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.'
-              : t.kind === 'intro'
-                ? 'Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.'
-                : 'Consulte seu Passo a passo do projeto quando quiser. Para seguir, clique em Próxima parte.'
+      t.kind === 'experience'
+        ? (t.ponte ??
+          'Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.')
+        : (t.recado ??
+          (t.kind === 'closing'
+            ? 'Você concluiu os testes desta aula. Clique em Concluir aula.'
+            : t.kind === 'delivery'
+              ? 'Confira o jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
+              : t.kind === 'build'
+                ? 'Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.'
+                : t.kind === 'intro'
+                  ? 'Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Quando terminar, clique em Próxima parte.'
+                  : 'Consulte seu Passo a passo do projeto quando quiser. Para seguir, clique em Próxima parte.'))
     blocks.push(fala(pk, bridge))
     if (t.kind === 'intro') {
       keys.push('jogo-pronto')
@@ -190,7 +192,7 @@ for (const [i, aula] of ilhaAulas.entries()) {
       keys.push('projeto')
       required.push('projeto')
     }
-    const part = (t.key === 'entrega' ? 'movimento' : t.key) as IlhaParte
+    const part = t.key as IlhaParte
     sections.push({
       key: t.key,
       title: t.title,
@@ -227,8 +229,6 @@ for (const [i, aula] of ilhaAulas.entries()) {
     mapping[p] = { entryExampleId: id(before), solutionExampleId: id(p) }
     before = p
   }
-  if (i === 0)
-    mapping.entrega = { entryExampleId: id('movimento'), solutionExampleId: id('movimento') }
   if (i === 2)
     mapping.fecho = { entryExampleId: id('personalizar'), solutionExampleId: id('personalizar') }
   blocks.push({
@@ -313,7 +313,11 @@ for (const [i, aula] of ilhaAulas.entries()) {
   )
     throw new Error(`O manifesto ${aula.slug} excede o limite real de importação.`)
   write(`${aula.slug}.manifesto.json`, manifest)
-  let script = `# Roteiro de produção · ${aula.title}\n\nMaster integral da professora. Sem intervenções de personagens nesta versão. Gerar áudio, escutar, gravar e publicar são etapas pendentes. Teclado necessário no jogo.\n\n**Antes de gravar:** abra a aula numa aba nova após o deploy. Use uma sessão sem progresso na experiência e sem envio anterior nesta aula. Não preencha Recado (opcional) na tomada do envio. Mostre Salvo somente quando o estado aparecer de verdade. Para repetir um primeiro envio, use outro perfil de ensaio. Nas partes sem Estúdio, use a cena da própria parte; não simule botões ou estados na edição.\n\n`
+  let script = `# Roteiro de produção · ${aula.title}
+
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
+
+`
   // A numeração segue as partes da aula, com a revisão onde o manifesto a põe (antes da aparência).
   // Antes, o roteiro a punha antes do uma-vez e trocava os recados dessas duas partes.
   const parte = (key: string) => sections.findIndex((s) => s.key === key) + 1
@@ -326,7 +330,7 @@ for (const [i, aula] of ilhaAulas.entries()) {
   write(`${aula.slug}.roteiro.md`, script)
   write(
     `${aula.slug}.md`,
-    `# ${aula.title}\n\n## Resumo\n\nAula ${i + 1} de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa ${starts[i]} e termina em ${builds[i].at(-1)}. Um envio encerra a construção; o vídeo final reconhece o resultado.\n\n## Partes e critérios\n\n${sections.map((s, j) => `### Parte ${j + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Conclusão: ${s.completion.blockIds.join(', ')}${s.completion.projectChecks?.length ? '; objetivos do projeto atual' : ''}${s.completion.submissionUpToDate ? '; envio atualizado confirmado' : ''}.\n\n${s.completion.projectChecks?.map((c: { label: string }) => '- ' + c.label).join('\n') ?? ''}\n\n**Zappy na página (não gravar):** ${blocks.find((b) => s.blockKeys.includes(b.key) && b.content?.kind === 'dialogue')?.content.text ?? ''}`).join('\n\n')}\n\n## Produção\n\n[Fala integral e notas de tela](${aula.slug}.roteiro.md). Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.\n`,
+    `# ${aula.title}\n\n## Resumo\n\nAula ${i + 1} de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa ${starts[i]} e termina em ${builds[i].at(-1)}. A última parte de construção termina com o envio do projeto e o reconhecimento do que a criança fez.\n\n## Partes e critérios\n\n${sections.map((s, j) => `### Parte ${j + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Conclusão: ${s.completion.blockIds.join(', ')}${s.completion.projectChecks?.length ? '; objetivos do projeto atual' : ''}${s.completion.submissionUpToDate ? '; envio atualizado confirmado' : ''}.\n\n${s.completion.projectChecks?.map((c: { label: string }) => '- ' + c.label).join('\n') ?? ''}\n\n**Zappy na página (não gravar):** ${blocks.find((b) => s.blockKeys.includes(b.key) && b.content?.kind === 'dialogue')?.content.text ?? ''}`).join('\n\n')}\n\n## Produção\n\n[Fala integral e notas de tela](${aula.slug}.roteiro.md). Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.\n`,
   )
   for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
     write(`${aula.slug}${ext}`, text)
@@ -360,7 +364,7 @@ write('ilha-do-farol.szproject.json', {
 })
 write(
   'passo-a-passo.md',
-  '# Passo a passo do projeto — A Ilha do Farol\n\nUse o teclado para jogar: setas ou WASD. R recomeça.\n\n' +
+  '# Passo a passo do projeto: A Ilha do Farol\n\nUse o teclado para jogar: setas ou WASD. R recomeça.\n\n' +
     ilhaAulas
       .map(
         (a) =>

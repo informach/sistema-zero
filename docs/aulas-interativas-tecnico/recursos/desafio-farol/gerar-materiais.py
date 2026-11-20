@@ -17,6 +17,7 @@ def main():
     outros = {
         'cade-todo-mundo': 'docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf',
         'transformando-o-vilao-em-aliado': 'docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/apostila.pdf',
+        'ilha-farol': 'docs/aulas-interativas/faisca/a-ilha-do-farol/passo-a-passo-do-projeto.pdf',
     }
     if curso != 'desafio-farol' and curso not in outros:
         raise SystemExit(f'Curso desconhecido: {curso}')

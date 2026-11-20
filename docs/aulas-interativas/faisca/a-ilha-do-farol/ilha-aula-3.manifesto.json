@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o bloco Se com temChave e o aviso no espaço do senão. Depois vá ao farol sem pegar a chave. Funcionou? Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -25,7 +25,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora acenda o farol! No espaço do então, ponha Tocar a animação acender em farol uma vez, ganhou verdadeiro e o aviso da vitória. Teste sem a chave e com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -58,7 +58,10 @@
           "scene": "lighthouse-key",
           "cenario": "ilha",
           "setup": {
-            "goals": ["not-flips-with-key", "not-flips-without-key"],
+            "goals": [
+              "not-flips-with-key",
+              "not-flips-without-key"
+            ],
             "freeExploration": true,
             "goalCopy": {
               "not-flips-without-key": {
@@ -81,7 +84,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora faça o farol acender uma vez só! Ponha um Se novo com não ganhou no encontro com o farol e leve o Se temChave para dentro do então dele. Teste: acenda o farol, ande para trás e volte. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -116,7 +119,9 @@
                 "label": "A pedra ficou invisível."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "A câmera mudou de lugar. A chave e a pedra continuaram nas mesmas posições. Um objeto pode esconder outro dependendo de onde você olha."
           },
           {
@@ -137,7 +142,9 @@
                 "label": "Vira zero."
               }
             ],
-            "correctChoiceIds": ["a"],
+            "correctChoiceIds": [
+              "a"
+            ],
             "explanation": "X e z indicam as duas direções do chão neste jogo. Y indica a altura. Mudar só x desloca a chave sem levantá-la."
           },
           {
@@ -158,7 +165,9 @@
                 "label": "Não. Precisamos conferir também a altura."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "A vista de cima esconde a distância na altura. De lado, vemos que a chave está alta demais. As áreas de contato não se encontram."
           },
           {
@@ -179,7 +188,9 @@
                 "label": "Só trocar a vista da câmera."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "Ver a chave não garante que o personagem consiga alcançá-la. Jogue até o novo lugar, confira a coleta e depois leve a chave ao farol."
           }
         ]
@@ -194,7 +205,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Troque só o modelo e deixe o nome e o tamanho como estão. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -206,7 +217,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
+        "text": "Agora escolha o esconderijo da chave! Mude o x e o z no bloco Colocar o objeto chave e teste se o personagem alcança. Se quiser, escreva os seus avisos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -218,7 +229,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você concluiu os testes desta aula. Clique em Concluir aula."
+        "text": "Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você também pode clicar em Concluir aula e continuar a jornada sem publicar."
       }
     },
     {
@@ -228,7 +239,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -1719,7 +1732,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -3186,7 +3199,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -4722,7 +4735,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -6328,7 +6341,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -7968,7 +7981,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -9608,7 +9621,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -11248,7 +11261,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -11295,13 +11308,18 @@
       "title": "O farol precisa conferir a chave",
       "intent": "application",
       "objective": "O farol precisa conferir a chave.",
-      "blockKeys": ["video-sem-chave", "ponte-sem-chave"],
+      "blockKeys": [
+        "video-sem-chave",
+        "ponte-sem-chave"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-sem-chave"],
+        "blockIds": [
+          "video-sem-chave"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -12099,7 +12117,9 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 }
               ],
               "checkpoints": [
@@ -12154,13 +12174,18 @@
       "title": "Acenda o farol com a chave",
       "intent": "application",
       "objective": "Acenda o farol com a chave.",
-      "blockKeys": ["video-decisao", "ponte-decisao"],
+      "blockKeys": [
+        "video-decisao",
+        "ponte-decisao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-decisao"],
+        "blockIds": [
+          "video-decisao"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -12791,7 +12816,9 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 }
               ],
               "checkpoints": [
@@ -13291,7 +13318,10 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-pergunta-com-nao", "experiencia-pergunta-com-nao"]
+        "blockIds": [
+          "video-pergunta-com-nao",
+          "experiencia-pergunta-com-nao"
+        ]
       }
     },
     {
@@ -13299,13 +13329,18 @@
       "title": "O farol acende uma vez só",
       "intent": "application",
       "objective": "O farol acende uma vez só.",
-      "blockKeys": ["video-uma-vez", "ponte-uma-vez"],
+      "blockKeys": [
+        "video-uma-vez",
+        "ponte-uma-vez"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-uma-vez"],
+        "blockIds": [
+          "video-uma-vez"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -13956,7 +13991,9 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 }
               ],
               "checkpoints": [
@@ -14465,13 +14502,18 @@
       "title": "O que você descobriu no 3D",
       "intent": "explanation",
       "objective": "Conferir ponto de vista, posição, altura e escolha de teste.",
-      "blockKeys": ["ponte-quiz", "quiz"],
+      "blockKeys": [
+        "ponte-quiz",
+        "quiz"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz"]
+        "blockIds": [
+          "quiz"
+        ]
       }
     },
     {
@@ -14479,13 +14521,18 @@
       "title": "Deixe o jogo com a sua cara",
       "intent": "application",
       "objective": "Deixe o jogo com a sua cara.",
-      "blockKeys": ["video-aparencia", "ponte-aparencia"],
+      "blockKeys": [
+        "video-aparencia",
+        "ponte-aparencia"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-aparencia"],
+        "blockIds": [
+          "video-aparencia"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -15136,7 +15183,9 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 }
               ],
               "checkpoints": [
@@ -15694,13 +15743,20 @@
       "title": "Escolha seu esconderijo e teste de verdade",
       "intent": "delivery",
       "objective": "Escolha seu esconderijo e teste de verdade.",
-      "blockKeys": ["video-personalizar", "ponte-personalizar", "projeto"],
+      "blockKeys": [
+        "video-personalizar",
+        "ponte-personalizar",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-personalizar", "projeto"],
+        "blockIds": [
+          "video-personalizar",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -16351,7 +16407,9 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 }
               ],
               "checkpoints": [
@@ -16910,15 +16968,22 @@
       "title": "Sua ilha está pronta",
       "intent": "closing",
       "objective": "Sua ilha está pronta.",
-      "blockKeys": ["video-fecho", "ponte-fecho"],
+      "blockKeys": [
+        "video-fecho",
+        "ponte-fecho"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho"]
+        "blockIds": [
+          "video-fecho"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["materiais"]
+  "retireBlockKeys": [
+    "materiais"
+  ]
 }

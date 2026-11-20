@@ -7,13 +7,6 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": [
-    "video-abertura",
-    "video-material",
-    "video-ponto-de-vista",
-    "video-movimento",
-    "video-entrega",
-    "video-fecho"
-  ],
+  "clipes": ["video-abertura", "video-material", "video-ponto-de-vista", "video-movimento"],
   "intervencoes": []
 }
