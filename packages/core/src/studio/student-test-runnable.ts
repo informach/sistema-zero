@@ -1,9 +1,23 @@
 import {
   EXECUTION_LIMITS,
   executionRuleBudgetMs,
+  type FunctionCase,
   isSectionExecutionRule,
 } from '../learning/project-execution'
-import type { StudentTestRule, StudioStudentTest } from './student-tests'
+import type {
+  StudentTestBehaviorRule,
+  StudentTestFunctionRule,
+  StudentTestRule,
+  StudioStudentTest,
+} from './student-tests'
+
+/** O teste de função conferido: os casos com os valores no formato dos objetivos. */
+export type RunnableStudentTestFunctionRule = Omit<StudentTestFunctionRule, 'cases'> & {
+  cases: FunctionCase[]
+}
+
+/** A regra que passou pelo contrato inteiro (a que os executores rodam e julgam). */
+export type RunnableStudentTestRule = StudentTestBehaviorRule | RunnableStudentTestFunctionRule
 
 /**
  * O contrato inteiro de um teste da criança ("Meus testes"), conferido por quem o RODA antes de
@@ -22,7 +36,7 @@ import type { StudentTestRule, StudioStudentTest } from './student-tests'
 export function isRunnableStudentTestRule(
   rule: StudentTestRule,
   language: 'javascript' | 'python' = 'javascript',
-): boolean {
+): rule is RunnableStudentTestRule {
   if (!isSectionExecutionRule(rule, 'final', language)) return false
   if (rule.type === 'functionReturns') return language === 'python'
   if (

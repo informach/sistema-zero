@@ -59,10 +59,11 @@ describe('setStudentTests', () => {
     }
     expect(useProjectStore.getState().setStudentTests([dobro, teste('a')])).toBeNull()
     const project = useProjectStore.getState().project
-    expect(project && isPythonProject(project) ? project.studentTests : null).toEqual([
-      dobro,
-      teste('a'),
-    ])
+    expect(
+      project && isPythonProject(project) && project.kind === 'classic'
+        ? project.studentTests
+        : null,
+    ).toEqual([dobro, teste('a')])
     expect(useProjectStore.getState().isDirty).toBe(true)
     expect(useProjectStore.getState().setStudentTests([])).toBeNull()
     expect(useProjectStore.getState().project).not.toHaveProperty('studentTests')

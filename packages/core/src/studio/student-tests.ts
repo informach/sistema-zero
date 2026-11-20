@@ -1,9 +1,5 @@
 import { z } from 'zod'
-import type {
-  ExecutionExpectation,
-  ExecutionStep,
-  FunctionCase,
-} from '../learning/project-execution'
+import type { ExecutionExpectation, ExecutionStep } from '../learning/project-execution'
 
 /**
  * Os testes que a criança escreve no Estúdio, na aba "Meus testes" (proposta aprovada em
@@ -57,13 +53,24 @@ export interface StudentTestBehaviorRule {
   expect: ExecutionExpectation
 }
 
+/**
+ * Um caso como o documento guarda. Os valores (JSON dentro dos tetos dos objetivos) são de
+ * `student-test-runnable.ts`, que devolve o tipo exato (`FunctionCase`) a quem roda. ⚠️ O tipo do
+ * documento não leva o JSON recursivo: o tipo do `page.evaluate` do Playwright não o percorre
+ * (TS2589 nos testes que passam um projeto ao navegador, medido em 20/11/2026).
+ */
+export interface StudentTestCase {
+  args: unknown[]
+  expected: unknown
+}
+
 /** A regra de um teste de função: o nome da função e os casos (o que recebe, o que responde). */
 export interface StudentTestFunctionRule {
   type: 'functionReturns'
   name: string
   /** O arquivo da função, quando não é o arquivo inicial. */
   module?: string
-  cases: FunctionCase[]
+  cases: StudentTestCase[]
 }
 
 export type StudentTestRule = StudentTestBehaviorRule | StudentTestFunctionRule

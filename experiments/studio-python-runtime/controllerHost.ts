@@ -62,14 +62,28 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
       await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json(),
     )
   }
-  function environmentFor(allowed: () => boolean): StudioRuntimeEnvironment {
+  /**
+   * O ambiente da prova: concede a Turtle (as provas de sempre) e as extensões do projeto aberto
+   * (o jogo de Pygame Zero das provas de Investigar e de Meus testes).
+   */
+  function environmentFor(
+    allowed: () => boolean,
+    project: () => PythonProjectDocument,
+  ): StudioRuntimeEnvironment {
     return {
       catalog,
       registry,
       access: () => ({
         releaseStatus: 'active',
         grantedCapabilities: ['execute', 'python-repl'],
-        grantedExtensionIds: allowed() ? ['python-turtle'] : [],
+        grantedExtensionIds: allowed()
+          ? [
+              ...new Set([
+                'python-turtle',
+                ...project().installedExtensions.map((extension) => extension.id),
+              ]),
+            ]
+          : [],
         hostOperations: [
           {
             capability: 'execute',
@@ -94,7 +108,10 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
       const project = await readFixture(fixture)
       const container = document.createElement('div')
       document.body.append(container)
-      const environment = environmentFor(() => get(slot).allowed)
+      const environment = environmentFor(
+        () => get(slot).allowed,
+        () => get(slot).project,
+      )
       const controller = createPythonExecutionController({
         instanceId: slot,
         project: () => get(slot).project,
@@ -140,7 +157,10 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
     async studentTest(fixture: string, test: StudioStudentTest) {
       const project = await readFixture(fixture)
       if (project.kind !== 'classic') throw new Error('O teste da aba é do Python clássico.')
-      const environment = environmentFor(() => true)
+      const environment = environmentFor(
+        () => true,
+        () => project,
+      )
       return runPythonStudentTest({
         test,
         host: {

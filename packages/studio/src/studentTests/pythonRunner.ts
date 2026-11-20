@@ -8,10 +8,12 @@ import type {
   StudioPythonMissionFrameObservation,
   StudioPythonMissionProbe,
 } from '@sistemazero/core/studio/python-mission-observation'
-import { isRunnableStudentTestRule } from '@sistemazero/core/studio/student-test-runnable'
+import {
+  isRunnableStudentTestRule,
+  type RunnableStudentTestFunctionRule,
+} from '@sistemazero/core/studio/student-test-runnable'
 import type {
   StudentTestBehaviorRule,
-  StudentTestFunctionRule,
   StudioStudentTest,
 } from '@sistemazero/core/studio/student-tests'
 import { pythonCanvasExtension } from '../runtime/python/canvasExtension'
@@ -240,7 +242,9 @@ export async function runPythonStudentTest(
     return { id: test.id, type: 'behavior', initial, final, errors }
   }
 
-  const observeFunction = async (call: StudentTestFunctionRule): Promise<ExecutionObservation> => {
+  const observeFunction = async (
+    call: RunnableStudentTestFunctionRule,
+  ): Promise<ExecutionObservation> => {
     // O programa sem desenho só responde no fim: chamar enquanto ele roda prenderia a sonda.
     const started = await reach(draws ? ['running', 'completed'] : ['completed'])
     if (started.status === 'failed') {

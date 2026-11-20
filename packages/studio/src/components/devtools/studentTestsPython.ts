@@ -68,7 +68,9 @@ export function pythonCall(name: string, args: readonly unknown[]): string {
 }
 
 /** Os casos do teste, de volta ao texto da caixa (um por linha). */
-export function pythonCasesText(cases: readonly FunctionCase[]): string {
+export function pythonCasesText(
+  cases: readonly { args: readonly unknown[]; expected: unknown }[],
+): string {
   return cases
     .map((item) => {
       const args = item.args.map(pythonLiteral).join(', ')

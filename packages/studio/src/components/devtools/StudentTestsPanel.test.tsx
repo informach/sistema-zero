@@ -130,7 +130,8 @@ describe('a aba Meus testes', () => {
       target: { value: 'pausado' },
     })
     fireEvent.click(within(form).getByRole('button', { name: 'Salvar teste' }))
-    expect(savedTests()?.[0]?.rule.expect.value).toBe('pausado')
+    const saved = savedTests()?.[0]?.rule
+    expect(saved?.type === 'behavior' ? saved.expect.value : null).toBe('pausado')
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Apagar teste' }))
     expect(savedTests()).toBeUndefined()
