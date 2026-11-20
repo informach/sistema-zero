@@ -1,5 +1,6 @@
 import {
   CLASSIC_SHELL_LOAD,
+  classicShellLoadedSeq,
   isClassicShellLoaded,
   isClassicShellReady,
 } from '@sistemazero/core/studio/classic-shell'
@@ -850,6 +851,9 @@ export function PreviewIframe(): JSX.Element {
   if (!shell) frameDocumentRef.current = directDocument
   // A casca da geração atual do iframe avisou que está pronta para receber o documento.
   const [shellReadyGeneration, setShellReadyGeneration] = useState(-1)
+  // O número do último documento mandado à casca (achado E7): o "carregou" de um documento que já
+  // foi trocado não vale pelo atual.
+  const shellLoadSeqRef = useRef(0)
   const frameGenerationRef = useRef(frameGeneration)
   frameGenerationRef.current = frameGeneration
   const shellReady = shell !== null && !frameAbsent && shellReadyGeneration === frameGeneration
@@ -886,7 +890,11 @@ export function PreviewIframe(): JSX.Element {
     if (!target) return
     frameDocumentRef.current = effectiveDoc
     if (previewRunning && effectiveDoc !== PAUSED_PREVIEW_DOC) recordDocumentAttempt(effectiveDoc)
-    target.postMessage({ type: CLASSIC_SHELL_LOAD, document: effectiveDoc }, shell.origin)
+    shellLoadSeqRef.current += 1
+    target.postMessage(
+      { type: CLASSIC_SHELL_LOAD, document: effectiveDoc, seq: shellLoadSeqRef.current },
+      shell.origin,
+    )
   }, [shell, shellReady, effectiveDoc, previewRunning, recordDocumentAttempt])
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
@@ -1023,7 +1031,9 @@ export function PreviewIframe(): JSX.Element {
           return
         }
         if (isClassicShellLoaded(ev.data)) {
-          frameLoadedRef.current()
+          // Sem número (casca publicada antes de 20/11/2026), o aviso vale como antes.
+          const seq = classicShellLoadedSeq(ev.data)
+          if (seq === null || seq === shellLoadSeqRef.current) frameLoadedRef.current()
           return
         }
       } else if (ev.origin !== 'null' && ev.origin !== window.location.origin) return

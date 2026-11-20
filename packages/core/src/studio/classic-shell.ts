@@ -28,6 +28,11 @@ export const CLASSIC_SHELL_LOADED = 'sz-shell:loaded'
 export interface ClassicShellLoadMessage {
   type: typeof CLASSIC_SHELL_LOAD
   document: string
+  /**
+   * O número deste documento (achado E7 da revisão de 20/11). A casca o devolve no
+   * `sz-shell:loaded`, e o editor ignora o aviso de um documento que já foi trocado.
+   */
+  seq?: number
 }
 
 function hasType(value: unknown, type: string): boolean {
@@ -40,6 +45,16 @@ export function isClassicShellReady(value: unknown): boolean {
 
 export function isClassicShellLoaded(value: unknown): boolean {
   return hasType(value, CLASSIC_SHELL_LOADED)
+}
+
+/**
+ * O número do documento a que o `sz-shell:loaded` se refere, ou `null` quando a casca não o
+ * manda (a casca publicada antes de 20/11/2026: o editor aceita o aviso como antes).
+ */
+export function classicShellLoadedSeq(value: unknown): number | null {
+  if (!isClassicShellLoaded(value)) return null
+  const seq = (value as { seq?: unknown }).seq
+  return typeof seq === 'number' && Number.isSafeInteger(seq) ? seq : null
 }
 
 /** Lista de origens do editor (separadas por vírgula ou espaço); só http(s), sem caminho. */
@@ -67,7 +82,7 @@ function shellScript(parentOrigins: readonly string[]): string {
   const allowed = new Set(${JSON.stringify(parentOrigins)});
   let host = null;
   let frame = null;
-  const mount = (doc) => {
+  const mount = (doc, seq) => {
     if (frame) frame.remove();
     frame = document.createElement('iframe');
     frame.setAttribute('sandbox', ${JSON.stringify(CLASSIC_SHELL_GAME_SANDBOX)});
@@ -75,7 +90,8 @@ function shellScript(parentOrigins: readonly string[]): string {
     frame.setAttribute('title', 'Jogo');
     const mounted = frame;
     mounted.addEventListener('load', () => {
-      if (mounted === frame && host !== null) parent.postMessage({ type: ${JSON.stringify(CLASSIC_SHELL_LOADED)} }, host);
+      if (mounted !== frame || host === null) return;
+      parent.postMessage(seq === null ? { type: ${JSON.stringify(CLASSIC_SHELL_LOADED)} } : { type: ${JSON.stringify(CLASSIC_SHELL_LOADED)}, seq }, host);
     });
     mounted.srcdoc = doc;
     document.body.append(mounted);
@@ -86,7 +102,7 @@ function shellScript(parentOrigins: readonly string[]): string {
       host = event.origin;
       const data = event.data;
       if (data && data.type === ${JSON.stringify(CLASSIC_SHELL_LOAD)} && typeof data.document === 'string') {
-        mount(data.document);
+        mount(data.document, typeof data.seq === 'number' && Number.isSafeInteger(data.seq) ? data.seq : null);
         return;
       }
       if (frame && frame.contentWindow) frame.contentWindow.postMessage(data, '*');

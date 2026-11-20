@@ -421,6 +421,84 @@ describe('PreviewIframe', () => {
     }
   }, 10_000)
 
+  it('na casca, o "carregou" de um documento já trocado não vale pelo atual', async () => {
+    // Achado E7 da revisão de 20/11: o aviso não dizia qual documento carregou.
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    const happyDOM = (window as unknown as { happyDOM?: { setURL(url: string): void } }).happyDOM
+    const previousURL = window.location.href
+    happyDOM?.setURL('http://localhost:5173/estudio')
+    const origin = 'https://casca.exemplo.test'
+    try {
+      render(
+        <StudioExecutionProvider
+          value={{
+            editingAccess: 'author',
+            autoRun: true,
+            requireIsolatedPreview: false,
+            muted: false,
+            shellUrl: `${origin}/v1/classic-shell/1.html`,
+          }}
+        >
+          <PreviewIframe />
+        </StudioExecutionProvider>,
+      )
+      const frame = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+      // O happy-dom não dá janela a um iframe com `src` de outro site: uma janela falsa no próprio
+      // elemento (é o que o componente consulta para mandar e para autenticar a origem do aviso).
+      const enviados: { type?: string; seq?: number; document?: string }[] = []
+      const casca = {
+        postMessage: (data: { type?: string; seq?: number; document?: string }) => {
+          enviados.push(data)
+        },
+      }
+      Object.defineProperty(frame, 'contentWindow', { configurable: true, get: () => casca })
+      const daCasca = (data: unknown) =>
+        act(() => {
+          window.dispatchEvent(new MessageEvent('message', { source: casca, origin, data }))
+        })
+      fireEvent.load(frame)
+      daCasca({ type: 'sz-shell:ready' })
+      const pedidos = () => enviados.filter((message) => message.type === 'sz-shell:load')
+      // A casca carrega o primeiro documento (a prévia parada) e avisa, como a página dela faria.
+      await waitFor(() => expect(pedidos().length).toBeGreaterThan(0))
+      daCasca({ type: 'sz-shell:loaded', seq: pedidos().at(-1)?.seq })
+      await waitFor(() => expect(pedidos().at(-1)?.document).toContain('Preview automático'), {
+        timeout: 3000,
+      })
+      const antigo = pedidos().at(-1)?.seq
+      act(() =>
+        useProjectStore.setState({
+          project: {
+            ...project,
+            files: {
+              ...project.files,
+              'index.html': project.files['index.html'].replace(
+                'Preview automático',
+                'Documento B',
+              ),
+            },
+          },
+          isDirty: false,
+        }),
+      )
+      await waitFor(() => expect(pedidos().at(-1)?.document).toContain('Documento B'), {
+        timeout: 3000,
+      })
+      const atual = pedidos().at(-1)?.seq
+      expect(typeof antigo).toBe('number')
+      expect(atual).toBe((antigo ?? 0) + 1)
+      const avisosDeSom = () => enviados.filter((message) => message.type === 'sz:audio').length
+      const antes = avisosDeSom()
+      daCasca({ type: 'sz-shell:loaded', seq: antigo })
+      expect(avisosDeSom()).toBe(antes)
+      daCasca({ type: 'sz-shell:loaded', seq: atual })
+      expect(avisosDeSom()).toBe(antes + 1)
+    } finally {
+      happyDOM?.setURL(previousURL)
+    }
+  }, 10_000)
+
   // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo
   // iframe espera o cálculo, um iframe novo roda na hora (medido no navegador, ver
   // `e2e/preview-hostile-programs.spec.ts`). No caminho normal o iframe NÃO pode ser trocado.
