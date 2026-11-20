@@ -1,0 +1,11 @@
+{
+  "sourceSha": "f64ece1897b4a544c3bfcb7a22637892cfe321c8",
+  "compressedSha256": "5c6359dba93a318a319cec705bade2f74f48585227a4277fd229236b2f0e0a96",
+  "imageId": "sha256:e94d04e23b69c6a56251dbf6d43542e3f19e49fa72334fc2cd1b67e27a2f7ae6",
+  "profile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "761eb04c8007c582145ec615257b06159429955fbc6f52f3af8b38c719353149"
+  },
+  "tarBytes": 1242307072,
+  "deployed": false
+}
