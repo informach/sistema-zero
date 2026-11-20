@@ -192,3 +192,26 @@ Decisão: no WebKit a proteção continua a de hoje (vigia, marca de execução 
 iframe preso, guarda de laço, limite de mensagens). Isolamento completo ali exige o Jogo 2D em
 Worker com proxy de DOM (estudo B4), fora deste lote. Uma saída ainda não medida é a janela
 própria aberta com `noopener` (troca de processo no WebKit); fica registrada como pendente.
+
+**A janela própria, medida em 20/11/2026.** O `measure-preview-isolation.mjs` ganhou o arranjo
+`janela-noopener`: o jogo numa janela de OUTRO site aberta com `noopener`, que trava 5 s assim que
+abre. Sem `opener`, a página não fala com a janela; a prova de que o clique caiu dentro do
+travamento vem dos relógios de parede dos dois lados. WebKit 27.2 do Playwright, Windows 11 (a
+máquina da dona), uma observação por linha:
+
+| Cabeçalhos do host | `srcdoc` (o de hoje) | Janela de outro site com `noopener` |
+|---|---|---|
+| nenhum | 5.042 ms / 4.572 ms | **82 ms / 44 ms** (janela travada 5.029 ms, clique dentro) |
+| COOP + COEP | 5.045 ms / 4.553 ms | **68 ms / 36 ms** (janela travada 5.012 ms, clique dentro) |
+
+(atraso do relógio do editor / clique atendido em.) O job `isolation-measurement` da homologação
+passou a medir o arranjo nas três engines.
+
+**Leitura:** no WebKit a janela própria isola; o iframe não. Mas levar o jogo para lá muda a
+experiência: o jogo sai de dentro do editor (outra aba no iPad), a página não manda mais o
+documento nem recebe o console, o erro e o batimento (sem `opener` não há canal; um canal pelo
+servidor seria peça nova), o Parar da página não alcança a janela, e o documento precisa morar
+num endereço de outro site (hoje só a sala ao vivo publica um documento temporário). Por isso
+**não foi implementado**: é decisão da dona, a ser levada como proposta com as fotos do app (o
+"jogar numa janela própria" só no WebKit), junto do que se perde. Até lá, a proteção do WebKit
+segue a de cima.
