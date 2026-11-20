@@ -628,20 +628,12 @@ for (const context of ['free', 'lesson', 'live'] as const)
             },
           ]
           const before = JSON.stringify(f.project)
+          // A revisão é a REPUBLICAÇÃO do mesmo projeto: o hub responde "existing" e o
+          // Compartilhar sobe uma versão nova atrás do mesmo link.
+          if (revision)
+            f.state.existing = { id: crypto.randomUUID(), playId: initial.publicationId }
           const response = revision
-            ? await f.routes.studioPublication.POST(
-                new Request('https://kids.test/api/studio/publication', {
-                  method: 'POST',
-                  headers: { 'content-type': 'application/json' },
-                  body: JSON.stringify({
-                    operation: 'update',
-                    playId: initial.publicationId,
-                    requestId: crypto.randomUUID(),
-                    expectedVersion: 1,
-                    project: f.project,
-                  }),
-                }),
-              )
+            ? await f.publish(f.project, undefined, crypto.randomUUID())
             : await f.publish(f.project)
           expect(response.status).toBe(malformed ? 400 : supported ? 200 : 409)
           if (supported && !malformed) {
