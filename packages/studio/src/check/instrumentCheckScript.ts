@@ -92,29 +92,22 @@ function reader(scope: string, names: string[]): string {
   return `;(function(){var __szG=globalThis,__szK=${JSON.stringify(scope)},__szR=__szG[__szK];if(!__szR){var __szS=[],__szL=[];__szR=Object.freeze({get:function(__szN){for(var __szI=__szS.length-1;__szI>=0;__szI--){var __szF=__szS[__szI](__szN);if(__szF)return __szF}return null},names:function(){var __szO=[];for(var __szI=0;__szI<__szL.length;__szI++)for(var __szJ=0;__szJ<__szL[__szI].length;__szJ++)if(__szO.indexOf(__szL[__szI][__szJ])<0)__szO.push(__szL[__szI][__szJ]);return __szO},add:function(__szF,__szN){if(typeof __szF==='function'){__szS.push(__szF);__szL.push(Array.isArray(__szN)?__szN.slice():[])}}});try{Object.defineProperty(__szG,__szK,{value:__szR})}catch(__szE){return}}__szR.add(function(__szN){switch(__szN){${cases}}return null},${JSON.stringify(names)})})();`
 }
 
-export function instrumentCheckScript(source: string, scope: string): string {
-  if (!CHECK_SCOPE_PATTERN.test(scope)) throw new Error('Nome de escopo de teste inválido.')
-  let program: Node
+function parseProgram(source: string): Node | null {
   try {
-    program = parse(source, {
+    return parse(source, {
       sourceType: 'unambiguous',
       allowReturnOutsideFunction: true,
       allowAwaitOutsideFunction: true,
       errorRecovery: false,
     }).program as unknown as Node
   } catch {
-    return source
+    return null
   }
-  const insertions: { at: number; text: string }[] = []
-  const directiveEnd = (node: Node, fallback: number) => {
-    const directives = (node.directives as Node[] | undefined) ?? []
-    const last = directives.at(-1)
-    return typeof last?.end === 'number' ? last.end : fallback
-  }
-  const topNames = declaredNames((program.body as unknown[]) ?? [])
-  if (topNames.length)
-    insertions.push({ at: directiveEnd(program, 0), text: reader(scope, topNames) })
-  // A função da partida pode estar em qualquer lugar (embrulhada pelo motor da extensão).
+}
+
+/** As funções da partida (`__szProjectRun`), em qualquer lugar do programa. */
+function runFunctions(program: Node): Node[] {
+  const found: Node[] = []
   const stack: unknown[] = [program]
   while (stack.length) {
     const node = stack.pop()
@@ -129,17 +122,51 @@ export function instrumentCheckScript(source: string, scope: string): string {
       node.id.name === RUN_FUNCTION &&
       isNode(node.body) &&
       typeof node.body.start === 'number'
-    ) {
-      const names = declaredNames((node.body.body as unknown[]) ?? [])
-      if (names.length)
-        insertions.push({
-          at: directiveEnd(node.body, node.body.start + 1),
-          text: reader(scope, names),
-        })
-    }
+    )
+      found.push(node)
     for (const [key, value] of Object.entries(node))
       if (key !== 'loc' && key !== 'start' && key !== 'end' && typeof value === 'object')
         stack.push(value)
+  }
+  return found
+}
+
+/**
+ * Os nomes que o leitor das variáveis consegue ler neste script (os do topo e os da função da
+ * partida), na ordem em que aparecem: é a lista que a aba "Meus testes" oferece. Script que não
+ * analisa não tem nome nenhum.
+ */
+export function checkScriptNames(source: string): string[] {
+  const program = parseProgram(source)
+  if (!program) return []
+  const names = declaredNames((program.body as unknown[]) ?? [])
+  for (const run of runFunctions(program).reverse())
+    names.push(...declaredNames((((run.body as Node).body as unknown[]) ?? []) as unknown[]))
+  return [...new Set(names)]
+}
+
+export function instrumentCheckScript(source: string, scope: string): string {
+  if (!CHECK_SCOPE_PATTERN.test(scope)) throw new Error('Nome de escopo de teste inválido.')
+  const program = parseProgram(source)
+  if (!program) return source
+  const insertions: { at: number; text: string }[] = []
+  const directiveEnd = (node: Node, fallback: number) => {
+    const directives = (node.directives as Node[] | undefined) ?? []
+    const last = directives.at(-1)
+    return typeof last?.end === 'number' ? last.end : fallback
+  }
+  const topNames = declaredNames((program.body as unknown[]) ?? [])
+  if (topNames.length)
+    insertions.push({ at: directiveEnd(program, 0), text: reader(scope, topNames) })
+  // A função da partida pode estar em qualquer lugar (embrulhada pelo motor da extensão).
+  for (const run of runFunctions(program)) {
+    const body = run.body as Node
+    const names = declaredNames((body.body as unknown[]) ?? [])
+    if (names.length)
+      insertions.push({
+        at: directiveEnd(body, (body.start as number) + 1),
+        text: reader(scope, names),
+      })
   }
   let out = source
   for (const insertion of insertions.sort((a, b) => b.at - a.at))

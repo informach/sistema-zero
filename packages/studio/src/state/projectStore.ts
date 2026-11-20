@@ -3,6 +3,10 @@ import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { encodeProjectJsonGraph } from '@sistemazero/core/studio/project-json-graph'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
+import {
+  type StudioStudentTest,
+  StudioStudentTestsSchema,
+} from '@sistemazero/core/studio/student-tests'
 import { useContext } from 'react'
 import { ulid } from 'ulid'
 import { useStore } from 'zustand'
@@ -311,6 +315,12 @@ interface ProjectStore {
    * legível ou `null`.
    */
   setCoverAsset: (assetId: string | null) => string | null
+  /**
+   * Os testes da aba "Meus testes" (proposta aprovada em 20/11/2026), guardados no projeto. Só no
+   * Estúdio clássico em JavaScript. A lista inteira de uma vez (a aba edita uma cópia); vazia tira
+   * a chave do projeto. Bumpa `updatedAt`, como qualquer edição. Devolve erro legível ou `null`.
+   */
+  setStudentTests: (tests: StudioStudentTest[]) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -1887,6 +1897,21 @@ export function createProjectStore(
           isDirty: true,
           saveError: null,
         })
+        return null
+      },
+      setStudentTests: (tests) => {
+        const p = get().project
+        if (!p) return 'Nenhum projeto carregado.'
+        if (isPythonProject(p) || p.kind === 'pro')
+          return 'Os testes valem no Estúdio clássico em JavaScript.'
+        if (!StudioStudentTestsSchema.safeParse(tests).success) return 'Teste com forma inválida.'
+        if (tests.length === 0) {
+          if (p.studentTests === undefined) return null
+          const { studentTests: _tests, ...rest } = p
+          set({ project: bump(rest), isDirty: true, saveError: null })
+          return null
+        }
+        set({ project: bump({ ...p, studentTests: tests }), isDirty: true, saveError: null })
         return null
       },
       addProFile: (path) => {

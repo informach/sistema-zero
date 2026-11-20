@@ -27,7 +27,10 @@ interface AssetAccessor {
  * campo `NAME`; quem usa outro campo informa em `nameField`. ⚠️ Bloco novo que
  * cria sprite nomeado? Adicione aqui.
  */
-const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameField?: string }> = {
+export const SPRITE_DECL_BLOCKS: Record<
+  string,
+  { color?: string; image?: string; nameField?: string }
+> = {
   sz_g2d_create_sprite: { color: 'COLOR' },
   sz_g2d_create_text_sprite: {},
   sz_g2d_spawn_text_in_group: {},

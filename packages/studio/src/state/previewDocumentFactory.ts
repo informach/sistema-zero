@@ -17,10 +17,19 @@ export interface PreviewDocumentRequest {
 }
 
 /**
- * O documento pedido, ou `null` quando a prévia não tem como montá-lo agora (os materiais ou os
- * motores ainda chegando, ou quem olha não pode rodar o jogo).
+ * O documento pedido, ou por que não deu: `loading` quando a prévia não tem como montá-lo agora
+ * (os materiais ou os motores ainda chegando, ou quem olha não pode rodar o jogo) e `unsaved`
+ * quando o projeto não pôde ser gravado antes (a regra do Rodar: só roda o que está gravado).
  */
-export type PreviewDocumentFactory = (request: PreviewDocumentRequest) => string | null
+export type PreviewDocumentResult = { document: string } | { unavailable: 'loading' | 'unsaved' }
+
+/**
+ * Prepara como o Rodar (descarrega o que o editor ainda segura e grava o projeto) e monta o
+ * documento com o projeto gravado. Assíncrona por causa da gravação.
+ */
+export type PreviewDocumentFactory = (
+  request: PreviewDocumentRequest,
+) => Promise<PreviewDocumentResult>
 
 export interface PreviewDocumentSource {
   /** A prévia montada entrega a fábrica; a devolução a retira. */

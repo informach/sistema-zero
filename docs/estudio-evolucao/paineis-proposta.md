@@ -108,4 +108,21 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   - **Executor:** um quadro escondido com o documento da prévia, o leitor das variáveis e um
     piloto (tecla e clique sintéticos, como os controles da página de jogar); a observação no
     formato `ExecutionObservation`, julgada por `judgeExecutionObservation`.
+  - **Feito (20/11):** o documento no projeto (`6d775ab7a`), o executor (`studentTests/`) e a aba
+    na gaveta, nas duas pranchas: "Rodar os testes", "+ Novo teste", o resumo ("2 de 3 testes
+    passaram."), cada teste escrito como na prancha, "Passou:"/"Não passou:", "Ver como o jogo
+    terminou" (a foto do palco escondido no fim, pela ponte da capa) e "Editar"; o formulário com
+    Nome, Quando eu (Apertar a tecla, Segurar a tecla por N segundos, Esperar), No fim, confira
+    (a variável, a posição x ou y do sprite, o texto na tela, as mensagens do jogo, com os nomes
+    que existem no projeto e as comparações que fazem sentido para cada uma), Salvar e Cancelar.
+    A prévia entrega à instância a fábrica do documento (`state/previewDocumentFactory.ts`), que
+    prepara como o Rodar (o rascunho do editor desce para o projeto e o projeto é gravado) e monta
+    com o projeto gravado. A edição ganhou "Apagar teste" (sem ele um teste não sai mais do
+    projeto). e2e `student-tests.spec.ts` no Chromium, no Firefox e no WebKit.
+  - **Falta:** "Clicar no sprite". O clique do contrato é o do Jogo 2D (sprite de um grupo, pelo
+    inspetor oficial de grupos, palco sem câmera) e precisa ir para o piloto; até lá a aba não o
+    oferece (a nota da prancha: só o que o executor sabe fazer).
+  - ⚠️ **Ordem do deploy:** o Members confere o envio pelo esquema do documento; ele sai com o
+    esquema novo (`6d775ab7a` ou depois) ANTES do Kids, da comunidade e do member-shell, senão um
+    projeto com testes não sobe para a conta.
 - Próximos: Python e Pro.

@@ -834,47 +834,82 @@ export function PreviewIframe(): JSX.Element {
   ])
 
   // "Meus testes": a prévia entrega à instância a receita do documento do jogo (os mesmos
-  // motores, materiais, fonte e cenas), para o teste rodar o jogo que a criança vê. O teste roda do
-  // zero: sem o armazenamento guardado do jogo e sem gravar nele (sem `storageProjectId`), e o
-  // quadro dele mora na página do editor (a origem vem de quem pede, nunca a da casca).
+  // motores, materiais, fonte e cenas), para o teste rodar o jogo que a criança vê. Antes, a regra
+  // do Rodar: o que o editor ainda segura desce para o projeto e o projeto é gravado (o teste roda o
+  // projeto gravado, nunca o valor atrasado da prévia: um código recém-colado na Ponte ainda não
+  // chegou nela). O teste roda do zero: sem o armazenamento guardado do jogo e sem gravar nele
+  // (sem `storageProjectId`), e o quadro dele mora na página do editor (a origem vem de quem pede,
+  // nunca a da casca).
   const previewDocument = usePreviewDocumentSource()
   const testDocumentFactory = useCallback<PreviewDocumentFactory>(
-    ({ transformScript, trustedScripts, parentOrigin }) => {
-      if (execution.editingAccess === 'observer' || !documentResourcesReady) return null
-      return buildJavaScriptClassicDocument({
-        html: debouncedHtml,
-        css: debouncedCss,
-        js: transformScript(debouncedJs),
-        resources: {
-          extensionScripts: [...extensionScripts, ...trustedScripts],
-          extensionImports,
-          installedPermissions,
-          gameUiFont: gameUiFontState.bundle ?? undefined,
-          cenas3d: moduloDeCenas,
-        },
-        extraFiles: debouncedExtraFiles,
-        parentOrigin,
-        fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
-        loopBudgetMs: previewSecurity.loopBudgetMs,
-        assets: assetsManifest,
-        assetsMeta,
-        sounds: soundsManifest,
-        models3d: models3dManifest,
-        cenas3d: transporteDeCenas,
+    async ({ transformScript, trustedScripts, parentOrigin }) => {
+      if (execution.editingAccess === 'observer' || !documentResourcesReady)
+        return { unavailable: 'loading' }
+      const prepared = await new Promise<{
+        project: ReturnType<typeof javaScriptProject>
+        failed: boolean
+      }>((resolve) => {
+        let failed = false
+        let started = false
+        void createRunPreparation({
+          project: () => {
+            const project = projectStore.getState().project
+            return project?.id === projectId ? project : null
+          },
+          dirty: () => projectStore.getState().isDirty,
+          flush: () => pendingEdits?.flush(),
+          save: () => persistence.save(),
+          pending: () => undefined,
+          error: (message) => {
+            if (message) failed = true
+          },
+        })
+          .run((project) => {
+            started = true
+            resolve({ project: javaScriptProject(project), failed: false })
+          })
+          .then(() => {
+            if (!started) resolve({ project: null, failed })
+          })
       })
+      const project = prepared.project
+      if (!project) return { unavailable: prepared.failed ? 'unsaved' : 'loading' }
+      return {
+        document: buildJavaScriptClassicDocument({
+          html: project.files['index.html'] ?? '',
+          css: project.files['style.css'] ?? '',
+          js: transformScript(project.files['script.js'] ?? ''),
+          resources: {
+            extensionScripts: [...extensionScripts, ...trustedScripts],
+            extensionImports,
+            installedPermissions,
+            gameUiFont: gameUiFontState.bundle ?? undefined,
+            cenas3d: moduloDeCenas,
+          },
+          extraFiles: project.extraFiles,
+          parentOrigin,
+          fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
+          loopBudgetMs: previewSecurity.loopBudgetMs,
+          assets: assetsManifest,
+          assetsMeta,
+          sounds: soundsManifest,
+          models3d: models3dManifest,
+          cenas3d: transporteDeCenas,
+        }),
+      }
     },
     [
       execution.editingAccess,
       documentResourcesReady,
-      debouncedHtml,
-      debouncedCss,
-      debouncedJs,
+      projectStore,
+      projectId,
+      pendingEdits,
+      persistence,
       extensionScripts,
       extensionImports,
       installedPermissions,
       gameUiFontState.bundle,
       moduloDeCenas,
-      debouncedExtraFiles,
       previewSecurity,
       assetsManifest,
       assetsMeta,

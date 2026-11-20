@@ -7,6 +7,7 @@ import {
 import { isRunnableStudentTestRule } from '@sistemazero/core/studio/student-test-runnable'
 import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import { createCheckScope, instrumentCheckScript } from '../check/instrumentCheckScript'
+import { isPreviewSnapshotMessage, PREVIEW_SNAPSHOT_REQUEST } from '../preview/snapshotBridge'
 import type { PreviewDocumentFactory } from '../state/previewDocumentFactory'
 import { buildStudentTestDriver, STUDENT_TEST_MESSAGE } from './driver'
 
@@ -30,10 +31,18 @@ export const STUDENT_TEST_VIEWPORT = { width: 1024, height: 640 } as const
 const LOAD_MS = 15_000
 const MODELS_WAIT_MS = 10_000
 const SETTLE_MS = 500
+/** Quanto o executor espera a foto do fim de um teste que não passou. */
+const ENDING_WAIT_MS = 1500
 
 export type StudentTestOutcome =
   | { status: 'passed'; observation: ExecutionObservation }
-  | { status: 'failed'; detail: string; observation: ExecutionObservation }
+  | {
+      status: 'failed'
+      detail: string
+      observation: ExecutionObservation
+      /** "Ver como o jogo terminou": a foto do palco escondido no fim (ou `null` sem foto). */
+      ending: string | null
+    }
   /** O jogo não respondeu a tempo (abriu travado, ou um passo nunca terminou). */
   | { status: 'timeout' }
   /** O teste não segue o contrato inteiro (um passo ou uma conferência fora dos limites). */
@@ -42,6 +51,8 @@ export type StudentTestOutcome =
   | { status: 'unsupported' }
   /** A prévia não tem como montar o jogo agora (os materiais ou os motores chegando). */
   | { status: 'unavailable' }
+  /** O projeto não pôde ser gravado antes (o teste, como o Rodar, só roda o que está gravado). */
+  | { status: 'unsaved' }
   | { status: 'cancelled' }
 
 /** O quadro do teste: o documento montado e um jeito de tirá-lo da página. */
@@ -60,6 +71,8 @@ export interface RunStudentTestOptions {
   createFrame?: (document: string) => StudentTestFrame
   /** Testes: troca o prazo calculado. */
   timeoutMs?: number
+  /** Testes: troca a espera pela foto do fim. */
+  endingWaitMs?: number
 }
 
 /** Os passos que o piloto sabe fazer hoje (o clique no sprite vem depois). */
@@ -127,14 +140,15 @@ function toObservation(id: string, raw: unknown): ExecutionObservation {
   }
 }
 
-export function runStudentTest(options: RunStudentTestOptions): Promise<StudentTestOutcome> {
+export async function runStudentTest(options: RunStudentTestOptions): Promise<StudentTestOutcome> {
   const { test, signal } = options
-  if (!isRunnableStudentTestRule(test.rule)) return Promise.resolve({ status: 'invalid' })
-  if (!pilotCanRun(test)) return Promise.resolve({ status: 'unsupported' })
-  if (signal?.aborted) return Promise.resolve({ status: 'cancelled' })
+  if (!isRunnableStudentTestRule(test.rule)) return { status: 'invalid' }
+  if (!pilotCanRun(test)) return { status: 'unsupported' }
+  if (signal?.aborted) return { status: 'cancelled' }
+  if (!options.documentFactory) return { status: 'unavailable' }
   const scope = createCheckScope()
   const token = createCheckScope().slice(4)
-  const document = options.documentFactory?.({
+  const built = await options.documentFactory({
     transformScript: (source) => instrumentCheckScript(source, scope),
     trustedScripts: [
       buildStudentTestDriver({
@@ -147,7 +161,10 @@ export function runStudentTest(options: RunStudentTestOptions): Promise<StudentT
     ],
     parentOrigin: options.parentOrigin,
   })
-  if (!document) return Promise.resolve({ status: 'unavailable' })
+  if ('unavailable' in built)
+    return { status: built.unavailable === 'unsaved' ? 'unsaved' : 'unavailable' }
+  if (signal?.aborted) return { status: 'cancelled' }
+  const document = built.document
 
   return new Promise((resolve) => {
     const frame = (options.createFrame ?? createHiddenStudentTestFrame)(document)
@@ -163,21 +180,37 @@ export function runStudentTest(options: RunStudentTestOptions): Promise<StudentT
       frame.remove()
       resolve(outcome)
     }
+    let failed: Omit<Extract<StudentTestOutcome, { status: 'failed' }>, 'ending'> | null = null
     const onMessage = (event: MessageEvent) => {
       // Só o quadro deste teste, e só a resposta deste teste (um quadro antigo não responde por ele).
       if (!frame.window || event.source !== frame.window) return
       const data: unknown = event.data
+      if (failed) {
+        // A foto do fim (a ponte da capa, `preview/snapshotBridge.ts`, que todo documento tem).
+        if (isPreviewSnapshotMessage(data)) finish({ ...failed, ending: data.dataUrl })
+        return
+      }
       if (!isRecord(data) || data.type !== STUDENT_TEST_MESSAGE || data.token !== token) return
       const observation = toObservation(test.id, data.observation)
       const judged = judgeExecutionObservation(test.rule, observation)
-      finish(
-        judged.passed
-          ? { status: 'passed', observation }
-          : { status: 'failed', detail: judged.detail ?? '', observation },
+      if (judged.passed) {
+        finish({ status: 'passed', observation })
+        return
+      }
+      // O teste não passou: antes de tirar o quadro, a foto de como o jogo terminou.
+      failed = { status: 'failed', detail: judged.detail ?? '', observation }
+      clearTimeout(timer)
+      const pending = failed
+      timer = setTimeout(
+        () => finish({ ...pending, ending: null }),
+        options.endingWaitMs ?? ENDING_WAIT_MS,
       )
+      // A origem do quadro é opaca (sandbox sem `allow-same-origin`): não há origem para mirar. A
+      // ponte do outro lado só atende o próprio `parent`, e a resposta volta com a origem do editor.
+      frame.window.postMessage({ type: PREVIEW_SNAPSHOT_REQUEST }, '*')
     }
     const onAbort = () => finish({ status: 'cancelled' })
-    const timer = setTimeout(() => finish({ status: 'timeout' }), timeoutMs)
+    let timer = setTimeout(() => finish({ status: 'timeout' }), timeoutMs)
     window.addEventListener('message', onMessage)
     signal?.addEventListener('abort', onAbort, { once: true })
   })

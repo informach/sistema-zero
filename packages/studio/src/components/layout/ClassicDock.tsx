@@ -16,7 +16,7 @@ import { SectionErrorFallback } from './ErrorViews'
 
 type OpenTab = Exclude<ClassicDockTab, 'closed'>
 
-// As abas Investigar e Desempenho só baixam os painéis quando a criança abre uma delas (o pacote
+// As abas Investigar, Desempenho e Meus testes só baixam os painéis quando a criança abre uma delas (o pacote
 // de abertura do modo Blocos tem teto). Os painéis cuidam de si: a moldura de erro e o "fechar a
 // gaveta desliga".
 const DevtoolsTabs = lazy(() => import('../devtools/DevtoolsTabs'))
@@ -79,11 +79,12 @@ export function ClassicDock({
     })),
   )
   const subject = python ? 'program' : 'game'
-  // Investigar e Desempenho (proposta aprovada em 20/11/2026): por enquanto, o jogo em JavaScript.
+  // Investigar, Desempenho e Meus testes (proposta aprovada em 20/11/2026): por enquanto, o jogo
+  // em JavaScript.
   const tabs: OpenTab[] = [
     ...(config.console ? (['console'] as const) : []),
     'problems',
-    ...(python ? [] : (['investigate', 'performance'] as const)),
+    ...(python ? [] : (['investigate', 'performance', 'tests'] as const)),
   ]
   const tabMode = variant === 'tab'
   // No estreito a aba "Mensagens" está sempre aberta: a escolhida, ou a primeira.
@@ -105,12 +106,18 @@ export function ClassicDock({
     highlight.getState().revealBlock(target)
     onRevealBlock?.()
   }
-  // `pro.dock.problems`, `pro.dock.investigate` e `pro.dock.performance`: o rótulo segue a aba.
+  // `pro.dock.problems`, `pro.dock.investigate`, `pro.dock.performance` e `pro.dock.tests`: o
+  // rótulo segue a aba.
   const label = (tab: OpenTab) =>
     t(tab === 'console' ? `pro.dock.messages.${subject}` : `pro.dock.${tab}`)
   // Os painéis ficam montados enquanto medem ou investigam, para desligar quando a gaveta fecha.
   const devtoolsMounted = useUIStore(
-    (s) => active === 'investigate' || active === 'performance' || s.measuring || s.investigating,
+    (s) =>
+      active === 'investigate' ||
+      active === 'performance' ||
+      active === 'tests' ||
+      s.measuring ||
+      s.investigating,
   )
 
   return (

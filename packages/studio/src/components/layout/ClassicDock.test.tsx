@@ -44,11 +44,17 @@ const runtimeError = {
 afterEach(cleanup)
 
 describe('ClassicDock', () => {
-  it('começa fechada: Mensagens do jogo, Problemas, Investigar e Desempenho, sem corpo aberto', () => {
+  it('começa fechada: Mensagens do jogo, Problemas, Investigar, Desempenho e Meus testes, sem corpo aberto', () => {
     const { wrap } = setup()
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
-    expect(abas).toEqual(['Mensagens do jogo', 'Problemas', 'Investigar', 'Desempenho'])
+    expect(abas).toEqual([
+      'Mensagens do jogo',
+      'Problemas',
+      'Investigar',
+      'Desempenho',
+      'Meus testes',
+    ])
     expect(
       screen.getAllByRole('tab').every((tab) => tab.getAttribute('aria-selected') === 'false'),
     ).toBe(true)

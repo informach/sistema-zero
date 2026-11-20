@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { createExecutionObservationCodec } from '@sistemazero/core/learning'
 import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import { CHECK_VIEWPORT } from '../blockly/projectCheckAuthoring'
+import { PREVIEW_SNAPSHOT_REQUEST } from '../preview/snapshotBridge'
 import type { PreviewDocumentFactory } from '../state/previewDocumentFactory'
 import { STUDENT_TEST_MESSAGE } from './driver'
 import { runStudentTest, STUDENT_TEST_VIEWPORT, type StudentTestFrame } from './runner'
@@ -24,14 +25,19 @@ const pontosChegaA = (n: number): StudioStudentTest => ({
   },
 })
 
-const factory: PreviewDocumentFactory = ({ transformScript, trustedScripts }) =>
-  `<script>${transformScript('let pontos = 0')}</script>${trustedScripts.map((s) => `<script>${s}</script>`).join('')}`
+const factory: PreviewDocumentFactory = async ({ transformScript, trustedScripts }) => ({
+  document: `<script>${transformScript('let pontos = 0')}</script>${trustedScripts.map((s) => `<script>${s}</script>`).join('')}`,
+})
 
 interface FakeFrame extends StudentTestFrame {
   document: string
   removed: boolean
   token: string
+  /** O que o executor pediu ao quadro (a foto do fim). */
+  requests: unknown[]
   answer(observation: unknown, overrides?: { token?: string; source?: object }): void
+  /** A ponte da capa respondendo com a foto. */
+  snapshot(dataUrl: string | null): void
 }
 
 function fakeFrames(): { frames: FakeFrame[]; createFrame: (document: string) => FakeFrame } {
@@ -39,12 +45,16 @@ function fakeFrames(): { frames: FakeFrame[]; createFrame: (document: string) =>
   return {
     frames,
     createFrame(document) {
-      const self = {} as Window
+      const requests: unknown[] = []
+      const self = {
+        postMessage: (message: unknown) => requests.push(message),
+      } as unknown as Window
       const token = /var token = "([a-f0-9]+)"/.exec(document)?.[1] ?? ''
       const frame: FakeFrame = {
         document,
         removed: false,
         token,
+        requests,
         window: self,
         remove() {
           frame.removed = true
@@ -54,6 +64,14 @@ function fakeFrames(): { frames: FakeFrame[]; createFrame: (document: string) =>
             new MessageEvent('message', {
               data: { type: STUDENT_TEST_MESSAGE, token: overrides.token ?? token, observation },
               source: (overrides.source ?? self) as Window,
+            }),
+          )
+        },
+        snapshot(dataUrl) {
+          window.dispatchEvent(
+            new MessageEvent('message', {
+              data: { source: 'sz-preview', kind: 'snapshot', dataUrl, timestamp: Date.now() },
+              source: self,
             }),
           )
         },
@@ -79,6 +97,7 @@ describe('o executor de "Meus testes"', () => {
       parentOrigin: 'https://editor.test',
       createFrame,
     })
+    await tick()
     const [frame] = frames
     if (!frame) throw new Error('o executor não montou o quadro')
     // O leitor entrou no script da criança e o piloto veio depois, com a origem do editor.
@@ -103,14 +122,53 @@ describe('o executor de "Meus testes"', () => {
       parentOrigin: 'https://editor.test',
       createFrame,
     })
-    frames[0]?.answer({
+    await tick()
+    const frame = frames[0]
+    frame?.answer({
       initial: { found: true, value: encoded(0) },
       final: { found: true, value: encoded(1) },
       errors: [],
     })
+    // Antes de tirar o quadro, o executor pede a foto de como o jogo terminou.
+    expect(frame?.requests).toEqual([{ type: PREVIEW_SNAPSHOT_REQUEST }])
+    expect(frame?.removed).toBe(false)
+    frame?.snapshot('data:image/jpeg;base64,AAAA')
     const outcome = await running
     expect(outcome.status).toBe('failed')
-    if (outcome.status === 'failed') expect(outcome.detail.length).toBeGreaterThan(0)
+    if (outcome.status === 'failed') {
+      expect(outcome.detail.length).toBeGreaterThan(0)
+      expect(outcome.ending).toBe('data:image/jpeg;base64,AAAA')
+    }
+    expect(frame?.removed).toBe(true)
+  })
+
+  it('sem a foto do fim, o resultado sai mesmo assim, e o teste que passou não pede foto', async () => {
+    const { frames, createFrame } = fakeFrames()
+    const semFoto = runStudentTest({
+      test: pontosChegaA(2),
+      documentFactory: factory,
+      parentOrigin: 'https://editor.test',
+      createFrame,
+      endingWaitMs: 20,
+    })
+    await tick()
+    const viu = {
+      initial: { found: true, value: encoded(0) },
+      final: { found: true, value: encoded(1) },
+      errors: [],
+    }
+    frames[0]?.answer(viu)
+    expect(await semFoto).toMatchObject({ status: 'failed', ending: null })
+    const passou = runStudentTest({
+      test: pontosChegaA(1),
+      documentFactory: factory,
+      parentOrigin: 'https://editor.test',
+      createFrame,
+    })
+    await tick()
+    frames[1]?.answer(viu)
+    expect((await passou).status).toBe('passed')
+    expect(frames[1]?.requests).toEqual([])
   })
 
   it('o erro do jogo durante o teste reprova', async () => {
@@ -121,11 +179,13 @@ describe('o executor de "Meus testes"', () => {
       parentOrigin: 'https://editor.test',
       createFrame,
     })
+    await tick()
     frames[0]?.answer({
       initial: { found: true, value: encoded(0) },
       final: { found: true, value: encoded(1) },
       errors: ['pontos is not defined'],
     })
+    frames[0]?.snapshot(null)
     expect((await running).status).toBe('failed')
   })
 
@@ -138,6 +198,7 @@ describe('o executor de "Meus testes"', () => {
       createFrame,
       timeoutMs: 50,
     })
+    await tick()
     const passou = {
       initial: { found: true, value: encoded(0) },
       final: { found: true, value: encoded(1) },
@@ -160,6 +221,7 @@ describe('o executor de "Meus testes"', () => {
       createFrame,
       signal: controller.signal,
     })
+    await tick()
     await tick()
     controller.abort()
     expect((await running).status).toBe('cancelled')
@@ -186,8 +248,23 @@ describe('o executor de "Meus testes"', () => {
     expect((await runStudentTest({ ...comum, test: longo })).status).toBe('invalid')
     expect((await runStudentTest({ ...comum, test: clique })).status).toBe('unsupported')
     expect(
-      (await runStudentTest({ ...comum, test: base, documentFactory: () => null })).status,
+      (
+        await runStudentTest({
+          ...comum,
+          test: base,
+          documentFactory: async () => ({ unavailable: 'loading' }),
+        })
+      ).status,
     ).toBe('unavailable')
+    expect(
+      (
+        await runStudentTest({
+          ...comum,
+          test: base,
+          documentFactory: async () => ({ unavailable: 'unsaved' }),
+        })
+      ).status,
+    ).toBe('unsaved')
     expect((await runStudentTest({ ...comum, test: base, documentFactory: null })).status).toBe(
       'unavailable',
     )
