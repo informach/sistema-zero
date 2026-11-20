@@ -1,5 +1,6 @@
 import { sha256Hex } from '@sistemazero/core/creations'
 import { localSnapshotsEqual } from '../project-migrations/localTransaction'
+import { v3RecoveryArchiveHolds } from '../project-migrations/localV3RecoveryArchive'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import { encodeRecoverySnapshot } from './exitJournalCodec'
 import { type IdbWrite, prepareProjectStorageWrite, readValues } from './idbTransaction'
@@ -23,7 +24,11 @@ export interface PreparedRecoverySources {
   canRetire(source: Source): boolean
 }
 
-/** Where an exit copy is archived once a descendant names its token as a recovery source. */
+/**
+ * Where an exit copy is archived once a descendant names its token as a recovery source.
+ * ⚠️ The migration's archive of a v3 exit copy has its own key (`v3RecoveryArchiveKey`): the
+ * two formats must never share one (P1 of the 20/11/2026 review).
+ */
 export async function recoverySourceArchiveKey(
   projectId: string,
   writer: string,
@@ -79,7 +84,7 @@ export async function prepareRecoverySources(
   }
   const retireable = new Set<string>()
   const checked = new Set<string>()
-  const archives = new Map<string, unknown>()
+  const archives = new Map<string, { record: unknown; source: unknown }>()
   async function validate(value: unknown, source: Source) {
     const parent = nativeRecovery(value, source.key, version)
     if (parent.projectId !== incoming.projectId || parent.head.token !== source.token)
@@ -121,14 +126,17 @@ export async function prepareRecoverySources(
       )
       const encoded = encodeRecoverySnapshot(previous)
       archives.set(key, {
-        version: 1,
-        kind: 'recovery-source',
-        projectId: incoming.projectId,
-        sourceKey: source.key,
-        token: source.token,
-        encoding: 'project-json-graph-v1',
-        encoded,
-        sha256: await sha256Hex(encoded),
+        record: {
+          version: 1,
+          kind: 'recovery-source',
+          projectId: incoming.projectId,
+          sourceKey: source.key,
+          token: source.token,
+          encoding: 'project-json-graph-v1',
+          encoded,
+          sha256: await sha256Hex(encoded),
+        },
+        source: previous,
       })
     }
   }
@@ -137,9 +145,16 @@ export async function prepareRecoverySources(
   const puts: Array<[string, unknown]> = []
   const physicalKeys = physical.map((source) => source.key)
   for (const [index, key] of archiveKeys.entries()) {
-    const expected = archives.get(key)
+    const { record: expected, source } = archives.get(key)!
     const existing = existingArchives[index]
-    if (existing !== undefined && !localSnapshotsEqual(existing, expected))
+    // A browser that migrated before the archive keys were split keeps the v3 archive of this
+    // very revision here. It already holds the source (the v4 copy is its projection), so it
+    // stays in place as the archive; overwriting it would destroy the original v3 bytes.
+    if (
+      existing !== undefined &&
+      !localSnapshotsEqual(existing, expected) &&
+      !(version === 4 && v3RecoveryArchiveHolds(existing, source))
+    )
       throw new ExitJournalError(
         'O arquivo desta origem contém outra revisão. Ambas foram preservadas.',
       )

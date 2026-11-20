@@ -3,8 +3,9 @@ import { IDBFactory } from 'fake-indexeddb'
 import { createEmptyProject } from '../core/project'
 import { encodeExitJournal } from '../state/exitJournalCodec'
 import { readAllKeys, readValue, writeInOneTransaction } from '../state/idbTransaction'
+import { prepareRecoverySources, recoverySourceArchiveKey } from '../state/projectRecoverySources'
 import type { RecoveryWrite } from '../state/projectStorageCoordinator'
-import { projectMetaKey, projectRecoveryKey } from '../state/projectStorageKeys'
+import { projectHeadKey, projectMetaKey, projectRecoveryKey } from '../state/projectStorageKeys'
 import { projectStorageEntries } from '../state/projectStorageRecords'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 import type { ExitJournalEntry } from '../state/synchronousExitJournal'
@@ -364,3 +365,150 @@ for (const payload of [undefined, null, 0, { version: 2 }])
       f.close()
     }
   })
+
+// P1 da revisão de 20/11/2026: o arquivo que a migração grava da cópia de saída v3 usava a MESMA
+// chave do arquivo de origem de recuperação v4 (`recoverySourceArchiveKey`). Os dois formatos
+// colidiam: a revisão que superava a cópia migrada era recusada, e a cópia mais velha do mesmo
+// escritor deixava de ser reconhecida como contida na revisão gravada.
+const v3Head = (token: string, sequence: number) => ({
+  version: 1 as const,
+  writer: 'writer',
+  token,
+  base: null,
+  sequence,
+})
+
+test('cópia v3 mais velha do mesmo escritor, já contida na revisão gravada, não vira "(edição recuperada)"', async () => {
+  const f = await fixture()
+  try {
+    const later = { ...f.project, name: 'Revisão gravada depois' }
+    const { replacesRecovery: _ancestry, ...older } = f.entry.value
+    const nativeKey = projectRecoveryKey(f.project.id, 'writer', 3)
+    await writeInOneTransaction(f.scope.store, {
+      puts: [
+        ...projectStorageEntries(later, 3),
+        [projectHeadKey(f.project.id, 3), v3Head('gravada', 5)],
+        [nativeKey, { ...older, head: v3Head('token', 1) }],
+      ],
+    })
+    await recoverLocalV3ProjectWrites(f.scope, f.project.id)
+    const keys = (await readAllKeys(f.scope.store)).map(String)
+    expect(keys.filter((key) => key.startsWith('sz:v4:project-meta:'))).toEqual([
+      projectMetaKey(f.project.id, 4),
+    ])
+    expect(await readValue(f.scope.store, projectMetaKey(f.project.id, 4))).toMatchObject({
+      name: later.name,
+    })
+    expect(await readValue(f.scope.store, nativeKey)).toBeUndefined()
+    // O arquivo da cópia v3 fica guardado (nada se perde).
+    const archives = keys.filter((key) => key.startsWith(`sz:v4:project-backup:${f.project.id}:`))
+    const values = await Promise.all(archives.map((key) => readValue(f.scope.store, key)))
+    expect(values).toContainEqual(expect.objectContaining({ sourceVersion: 3, token: 'token' }))
+  } finally {
+    f.close()
+  }
+})
+
+test('a revisão v4 que supera a cópia v3 migrada arquiva a origem sem esbarrar no arquivo da migração', async () => {
+  const f = await fixture()
+  try {
+    const prepared = await prepare(f, f.entry)
+    await archiveLocalV3Recovery(f.scope, prepared)
+    const staged = projectRecoveryKey(f.project.id, 'writer', 4)
+    await writeInOneTransaction(f.scope.store, { puts: [[staged, prepared.projected]] })
+    const child = {
+      version: 1,
+      projectId: f.project.id,
+      head: { version: 1, writer: 'nova-aba', token: 'filho', base: null, sequence: 0 },
+      applications: [],
+      write: { puts: projectStorageEntries({ ...f.project, name: 'Depois da cópia' }, 4) },
+      replacesRecovery: [{ key: staged, token: 'token' }],
+    } satisfies RecoveryWrite
+    const sources = await prepareRecoverySources(
+      f.scope,
+      child,
+      child.replacesRecovery,
+      projectRecoveryKey(f.project.id, 'nova-aba', 4),
+      4,
+    )
+    expect(sources.puts.map(([key]) => key)).toEqual([
+      await recoverySourceArchiveKey(f.project.id, 'writer', 'token', 4),
+    ])
+    expect(sources.puts[0]![0]).not.toBe(prepared.backupKey)
+    expect(await readValue(f.scope.store, prepared.backupKey)).toEqual(prepared.archive)
+  } finally {
+    f.close()
+  }
+})
+
+// Navegadores da staging que rodaram a migração antes desta correção guardam o arquivo da cópia
+// v3 na chave do arquivo de origem. Ele continua valendo como o arquivo daquela revisão.
+async function legacyArchive(f: Awaited<ReturnType<typeof fixture>>, value: RecoveryWrite) {
+  const prepared = await prepare(f, { ...f.entry, value, encoded: encodeExitJournal(value) })
+  const legacyKey = await recoverySourceArchiveKey(f.project.id, 'writer', value.head.token, 4)
+  await writeInOneTransaction(f.scope.store, { puts: [[legacyKey, prepared.archive]] })
+  return { prepared, legacyKey }
+}
+
+test('o arquivo v3 antigo, gravado na chave da origem, vale como o arquivo daquela revisão', async () => {
+  const f = await fixture()
+  try {
+    const { prepared, legacyKey } = await legacyArchive(f, f.entry.value)
+    const staged = projectRecoveryKey(f.project.id, 'writer', 4)
+    await writeInOneTransaction(f.scope.store, { puts: [[staged, prepared.projected]] })
+    const child = {
+      version: 1,
+      projectId: f.project.id,
+      head: { version: 1, writer: 'nova-aba', token: 'filho', base: null, sequence: 0 },
+      applications: [],
+      write: { puts: projectStorageEntries({ ...f.project, name: 'Depois da cópia' }, 4) },
+      replacesRecovery: [{ key: staged, token: 'token' }],
+    } satisfies RecoveryWrite
+    const stagedKey = projectRecoveryKey(f.project.id, 'nova-aba', 4)
+    const sources = await prepareRecoverySources(
+      f.scope,
+      child,
+      child.replacesRecovery,
+      stagedKey,
+      4,
+    )
+    expect(sources.puts).toEqual([])
+    expect(await readValue(f.scope.store, legacyKey)).toEqual(prepared.archive)
+    // Conteúdo diferente sob o mesmo token continua recusado: os dois ficam preservados.
+    const changed = structuredClone(prepared.projected) as RecoveryWrite
+    const meta = changed.write.puts!.find(([key]) => key === projectMetaKey(f.project.id, 4))!
+    meta[1] = { ...(meta[1] as object), name: 'Outro conteúdo' }
+    await writeInOneTransaction(f.scope.store, { puts: [[staged, changed]] })
+    await expect(
+      prepareRecoverySources(f.scope, child, child.replacesRecovery, stagedKey, 4),
+    ).rejects.toThrow('outra revisão')
+    expect(await readValue(f.scope.store, legacyKey)).toEqual(prepared.archive)
+  } finally {
+    f.close()
+  }
+})
+
+test('com o arquivo v3 antigo na chave da origem, a cópia mais velha do mesmo escritor também não se duplica', async () => {
+  const f = await fixture()
+  try {
+    const later = { ...f.project, name: 'Revisão gravada depois' }
+    const { replacesRecovery: _ancestry, ...rest } = f.entry.value
+    const older = { ...rest, head: v3Head('token', 1) } satisfies RecoveryWrite
+    const { legacyKey, prepared } = await legacyArchive(f, older)
+    await writeInOneTransaction(f.scope.store, {
+      puts: [
+        ...projectStorageEntries(later, 3),
+        [projectHeadKey(f.project.id, 3), v3Head('gravada', 5)],
+        [projectRecoveryKey(f.project.id, 'writer', 3), older],
+      ],
+    })
+    await recoverLocalV3ProjectWrites(f.scope, f.project.id)
+    const keys = (await readAllKeys(f.scope.store)).map(String)
+    expect(keys.filter((key) => key.startsWith('sz:v4:project-meta:'))).toEqual([
+      projectMetaKey(f.project.id, 4),
+    ])
+    expect(await readValue(f.scope.store, legacyKey)).toEqual(prepared.archive)
+  } finally {
+    f.close()
+  }
+})
