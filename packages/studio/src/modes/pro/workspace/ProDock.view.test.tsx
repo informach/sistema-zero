@@ -103,10 +103,10 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     ])
   })
 
-  it('Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens', () => {
+  it('Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens', async () => {
     mount({ python: true, initial: 'repl' })
     expect(
-      within(screen.getByRole('tabpanel')).getByRole('textbox', { name: 'Comando Python' }),
+      await within(screen.getByRole('tabpanel')).findByRole('textbox', { name: 'Comando Python' }),
     ).toBeTruthy()
     fireEvent.click(screen.getByRole('tab', { name: 'Mensagens do programa' }))
     const messages = screen.getByRole('tabpanel')

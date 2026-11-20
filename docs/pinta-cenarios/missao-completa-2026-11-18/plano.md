@@ -116,6 +116,16 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   gates de tipos/perfil/formatação. A distribuição 55471575… tem todos os 126
   arquivos conferidos; necessita de nova qualificação Linux e ativação própria.
   Ver `qa/python-foco-2026-11-20/`. Isso não encerra o rollout nem a etapa 0b.
+  A qualificação Linux 44813052295 preservou o pacote exato 52ec7bb5… e a imagem
+  do perfil 18aedad…. Os 126 arquivos foram conferidos; os 110 lógicos coincidem
+  com a compilação Windows, e somente 16 gzip diferem. Passaram 83 ensaios no
+  Chrome do contrato oficial e 17 Pinta/Pygame no Chromium 159. A comparação
+  adicional Raylib no Chromium teve seis divergências de pixels, preservadas
+  com controles verdes no Chrome; não se afirma paridade entre esses navegadores.
+  O teste da gaveta foi corrigido para esperar o comando adiado. A revisão ampla
+  e sua retomada, tipos, catálogo e imagem estão em
+  `qa/catalogo-python-linux-2026-11-20/`. Catálogo Linux preparado sem ativação;
+  nova CI geral, upload imutável, rollout e ciclo autenticado continuam separados.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

@@ -1,0 +1,15 @@
+{
+  "source": "6c4b5029928bddf089f0f4c15033190505fe0ec7",
+  "qualificationRun": 44813052295,
+  "hash": "52ec7bb5b7f4a11dd3ad915064a6b6b9b0f32bb33b8335dba4dbfebc389dcd13",
+  "manifestSha256": "4d8e9011eb85669b1b2f4df734e237565c829cc153e6a9f2d317e7a32464c3e0",
+  "files": 126,
+  "totalBytes": 25963931,
+  "recomputedAllFileHashes": true,
+  "compressedImageSha256": "a76c25ca6b3fd69a3f4355f813c52c82a5b56c1bec06b8fd708b9cb4a458fc7f",
+  "profile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "18aedaded74dfd6feb7cd37e91493f59939f216831c4c11e0e34765c18790976"
+  },
+  "activated": false
+}

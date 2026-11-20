@@ -1,0 +1,87 @@
+bun test v1.3.11 (af24e281)
+
+src\modes\pro\workspace\ProDock.view.test.tsx:
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > JavaScript: Mensagens do jogo · Problemas (com a contagem) · Terminal avançado, em abas de verdade [109.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: Problemas · Experimentar comandos · Mensagens do programa (sem terminal) [16.00ms]
+71 | // if an empty list of elements is returned
+72 | function makeGetAllQuery(allQuery, getMissingError) {
+73 |   return (container, ...args) => {
+74 |     const els = allQuery(container, ...args);
+75 |     if (!els.length) {
+76 |       throw (0, _config.getConfig)().getElementError(getMissingError(container, ...args), container);
+                                                                                                        ^
+TestingLibraryElementError: Unable to find an accessible element with the role "textbox" and name "Comando Python"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "Limpar":
+  <button
+    class="sz-touch-target inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 bg-transparent text-sz-fg-soft hover:bg-sz-panel hover:text-sz-fg border border-sz-border h-8 px-3.5 py-1.5 text-sm gap-1.5"
+    style="touch-action: manipulation;"
+    type="button"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="text-sz-fg-mute"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<div
+  aria-labelledby="_r_2_-tab-repl"
+  class="h-full"
+  id="_r_2_-repl"
+  role="tabpanel"
+>
+  <div
+    class="flex h-full flex-col"
+  >
+    <div
+      class="flex items-center justify-between gap-2 border-b border-sz-border-soft px-3 py-1.5"
+    >
+      <span
+        class="text-xs text-sz-fg-mute"
+      >
+        0 mensagens
+      </span>
+      <button
+        class="sz-touch-target inline-flex items-center justify-center whitespace-nowrap rounded-xl font-medium leading-none transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 bg-transparent text-sz-fg-soft hover:bg-sz-panel hover:text-sz-fg border border-sz-border h-8 px-3.5 py-1.5 text-sm gap-1.5"
+        style="touch-action: manipulation;"
+        type="button"
+      >
+        Limpar
+      </button>
+    </div>
+    <div
+      class="flex-1 overflow-auto px-3 py-2 font-mono text-xs"
+    >
+      <p
+        class="text-sz-fg-mute"
+      >
+        Sem mensagens. Use print para mostrar algo aqui.
+      </p>
+    </div>
+  </div>
+</div>
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\@testing-library+dom@10.4.1\node_modules\@testing-library\dom\dist\query-helpers.js:76:100)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\@testing-library+dom@10.4.1\node_modules\@testing-library\dom\dist\query-helpers.js:52:17)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\@testing-library+dom@10.4.1\node_modules\@testing-library\dom\dist\query-helpers.js:95:19)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\modes\pro\workspace\ProDock.view.test.tsx:109:44)
+(fail) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens [16.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: esconder "Mensagens do programa" pelo menu ⋯ não leva o Experimentar comandos junto [15.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > cada problema vira um cartão: lugar, a dica como texto principal, ir para a linha e pedir dica
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > sem problemas, a aba ganha o ✓ e o texto convida a rodar o jogo [16.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > sem a análise pronta (ainda analisando, ou ela falhou) não há ✓: zero problemas não é "tudo certo" [15.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Mensagens: filtros Tudo · Avisos · Erros sobre o console da instância [16.00ms]
+
+ 7 pass
+ 1 fail
+ 24 expect() calls
+Ran 8 tests across 1 file. [942.00ms]
