@@ -272,6 +272,64 @@ describe('PreviewIframe', () => {
     })
   }
 
+  // Revisão da missão (achado E3): o vigia da troca derrubava até três vezes um documento que só
+  // demora a dar `load`. Ele agora exige silêncio: com sinal de vida do iframe, espera.
+  for (const sinalDeVida of [true, false] as const) {
+    it(`documento novo sem load ${sinalDeVida ? 'que dá sinal de vida é esperado' : 'e calado é trocado'}`, async () => {
+      const project = createPreviewProject()
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
+      render(<PreviewIframe />)
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+      // O documento B nunca dá load (módulos chegando, ou o processo preso pelo A).
+      antes.addEventListener(
+        'load',
+        (event) => {
+          if (antes.getAttribute('srcdoc')?.includes('Documento B'))
+            event.stopImmediatePropagation()
+        },
+        true,
+      )
+      act(() =>
+        useProjectStore.setState({
+          project: {
+            ...project,
+            files: {
+              ...project.files,
+              'index.html': project.files['index.html'].replace(
+                'Preview automático',
+                'Documento B',
+              ),
+            },
+          },
+          isDirty: false,
+        }),
+      )
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Documento B'), { timeout: 3000 })
+      const contentWindow = antes.contentWindow
+      if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+      if (sinalDeVida)
+        act(() => {
+          window.dispatchEvent(
+            new MessageEvent('message', {
+              source: contentWindow,
+              origin: 'null',
+              data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+            }),
+          )
+        })
+      await act(async () => Bun.sleep(3_600))
+      const depois = screen.queryByTitle('Pré-visualização')
+      if (sinalDeVida) {
+        expect(document.querySelector('[data-sz-preview-gap]')).toBeNull()
+        expect(depois).toBe(antes)
+      } else {
+        expect(depois === antes && !document.querySelector('[data-sz-preview-gap]')).toBe(false)
+      }
+    }, 10_000)
+  }
+
   // Lote 3.1 (19/11/2026): com a prévia em outra origem o iframe usa `src`, e o `srcdoc` lido do
   // DOM era nulo. Resultado: o Parar nunca reconhecia o jogo preso e não abria o intervalo sem
   // iframe que libera o processo travado.

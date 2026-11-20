@@ -881,14 +881,21 @@ export function PreviewIframe(): JSX.Element {
   // conserta o código logo depois de rodar o que trava). Um iframe novo carrega na hora. Uma vez
   // por documento: num aparelho lento, um jogo grande que só demora a carregar não entra em laço.
   // Até `FRAME_GAPS_MS.length` tentativas por documento, cada uma com um intervalo sem iframe maior.
+  // Só sem sinal de vida (revisão da missão, achado E3): a ponte do documento novo manda um
+  // batimento assim que o começo dele roda. Um documento que só demora (módulos 3D chegando,
+  // tablet) já falou; o processo preso pelo jogo anterior não fala. Trocar o lento derrubava o
+  // download e a execução e repetia o código de topo até três vezes.
   const swapRescueRef = useRef<{ doc: string; count: number } | null>(null)
+  const lastFrameSignalRef = useRef(0)
   // biome-ignore lint/correctness/useExhaustiveDependencies: `frameGeneration` e `frameAbsent` são gatilhos (iframe novo que também não entra pede outra tentativa)
   useEffect(() => {
     if (isolatedUrl || frameAbsent || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
     const rescued = swapRescueRef.current?.doc === effectiveDoc ? swapRescueRef.current.count : 0
     if (rescued >= FRAME_GAPS_MS.length) return
+    const requestedAt = Date.now()
     const timer = setTimeout(() => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
+      if (lastFrameSignalRef.current >= requestedAt) return
       swapRescueRef.current = { doc: effectiveDoc, count: rescued + 1 }
       swapFrame(true)
     }, SWAP_STUCK_AFTER_MS)
@@ -989,6 +996,8 @@ export function PreviewIframe(): JSX.Element {
       // própria origem caso o navegador a reporte.
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
+      // Qualquer mensagem autenticada do iframe é sinal de que o processo dele está vivo.
+      lastFrameSignalRef.current = Date.now()
       if (shell && ev.origin === shell.origin) {
         // Os avisos da própria casca (o jogo não consegue mandá-los: a casca os barra).
         if (isClassicShellReady(ev.data)) {
