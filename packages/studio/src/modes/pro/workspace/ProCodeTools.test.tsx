@@ -343,3 +343,29 @@ it('keeps the expanded file map window when an edit refreshes the symbols of the
   await act(async () => {})
   expect(panel.querySelectorAll('li').length).toBe(200)
 })
+
+it('opens the map and finds the name in a file with mixed line breaks, which the editor normalizes', async () => {
+  // O projeto guarda o texto como veio (CRLF e LF juntos); o Monaco mostra o mesmo texto com uma
+  // quebra só. Os dois são o mesmo documento: o mapa não pode ficar em "Lendo o mapa…".
+  const saved = 'const score = 1;\r\nconst stars = score\n'
+  const shown = 'const score = 1;\nconst stars = score\n'
+  const calls: unknown[][] = []
+  const language = {
+    request: async (method: string, ...args: unknown[]) => {
+      calls.push([method, ...args])
+      return method === 'symbols' ? [{ name: 'score', start: 6, depth: 0 }] : []
+    },
+  } as unknown as ProLanguageSession
+  const props = toolsFixture(language)
+  props.tree['main.ts'] = { kind: 'file', content: saved }
+  const editor = props.editor.current as unknown as { getModel: () => Record<string, unknown> }
+  const original = editor.getModel
+  editor.getModel = () => ({ ...original(), getValue: () => shown })
+  const view = render(<ProCodeTools {...props} />)
+  await act(async () => tools?.openSymbols())
+  expect(view.queryByText('Lendo o mapa…')).toBeNull()
+  expect(view.queryByRole('button', { name: /^score\b/ })).not.toBeNull()
+  await act(async () => tools?.findReferences())
+  expect(view.queryByText(/Clique no nome dentro do código/)).toBeNull()
+  expect(calls).toContainEqual(['references', 'main.ts', 6])
+})
