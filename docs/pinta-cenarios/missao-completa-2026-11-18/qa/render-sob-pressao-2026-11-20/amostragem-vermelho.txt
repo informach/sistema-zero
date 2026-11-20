@@ -1,0 +1,103 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\chunksPressure.test.ts:
+ 95 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+ 96 |       const data = fixture()
+ 97 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+ 98 |       const direct = paint(data, 1, scale, time)
+ 99 |       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
+100 |       expect(mismatch, `first values: ${direct.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)} / ${reference.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)}`).toBe(-1)
+                                                                                                                                                                                   ^
+error: first values: 204,185,176,255,217 / 107,45,86,255,144
+
+Expected: -1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:100:174)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=0 [547.00ms]
+ 95 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+ 96 |       const data = fixture()
+ 97 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+ 98 |       const direct = paint(data, 1, scale, time)
+ 99 |       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
+100 |       expect(mismatch, `first values: ${direct.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)} / ${reference.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)}`).toBe(-1)
+                                                                                                                                                                                   ^
+error: first values: 204,185,176,255,217 / 107,45,86,255,144
+
+Expected: -1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:100:174)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=100 [359.00ms]
+ 95 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+ 96 |       const data = fixture()
+ 97 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+ 98 |       const direct = paint(data, 1, scale, time)
+ 99 |       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
+100 |       expect(mismatch, `first values: ${direct.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)} / ${reference.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)}`).toBe(-1)
+                                                                                                                                                                                   ^
+error: first values: 204,185,176,255,217 / 107,45,86,255,144
+
+Expected: -1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:100:174)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=250 [328.00ms]
+ 95 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+ 96 |       const data = fixture()
+ 97 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+ 98 |       const direct = paint(data, 1, scale, time)
+ 99 |       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
+100 |       expect(mismatch, `first values: ${direct.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)} / ${reference.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)}`).toBe(-1)
+                                                                                                                                                                                   ^
+error: first values: 121,106,191,255,84 / 129,116,196,255,113
+
+Expected: -1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:100:174)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=0 [172.00ms]
+ 95 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+ 96 |       const data = fixture()
+ 97 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+ 98 |       const direct = paint(data, 1, scale, time)
+ 99 |       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
+100 |       expect(mismatch, `first values: ${direct.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)} / ${reference.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)}`).toBe(-1)
+                                                                                                                                                                                   ^
+error: first values: 121,106,191,255,84 / 129,116,196,255,113
+
+Expected: -1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:100:174)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=100 [157.00ms]
+ 95 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+ 96 |       const data = fixture()
+ 97 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+ 98 |       const direct = paint(data, 1, scale, time)
+ 99 |       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
+100 |       expect(mismatch, `first values: ${direct.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)} / ${reference.pixels.slice(Math.max(0, mismatch - 3), mismatch + 5)}`).toBe(-1)
+                                                                                                                                                                                   ^
+error: first values: 121,106,191,255,84 / 129,116,196,255,113
+
+Expected: -1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:100:174)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=250 [171.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=0 [79.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=100 [93.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=250 [78.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=0 [110.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=100 [140.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=250 [79.00ms]
+(pass) preserva o renderer geral com suavização [203.00ms]
+(pass) preserva o renderer geral com translação fracionária [172.00ms]
+(pass) preserva o renderer geral com rotação [171.00ms]
+(pass) preserva o renderer geral com composição [157.00ms]
+(pass) preserva o renderer geral com sombra [187.00ms]
+
+ 11 pass
+ 6 fail
+ 108 expect() calls
+Ran 17 tests across 1 file. [4.04s]

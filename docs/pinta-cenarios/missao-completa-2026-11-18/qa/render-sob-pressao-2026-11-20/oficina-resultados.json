@@ -1,0 +1,138 @@
+{
+  "stats": {
+    "startTime": "2026-11-20T10:25:54.010Z",
+    "duration": 53266.493,
+    "expected": 21,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "espelho 2 do clipboard conserva arte privada e é recusado pelos leitores antigos",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "leitor nativo 5 recusa leitura e gravação sobre a versão 6 offline",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "026: RAM4 real, promoção5, páginas fechadas e recuperação offline na galeria",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "duas abas atuais conservam revisão concorrente; downgrade e lápide após reinício",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "falha no segundo put aborta IndexedDB real e permite tentar novamente",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "editor adota a cópia confirmada e permite continuar, voltar e reabrir",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "orçamento da transação com 500 sprites; captura e revisões preservadas",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "oficina sob pressão: 32 camadas, rolagem, edição e histórico conservam os pixels",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "IndexedDB: abertura fria conserva 65536 células e uma edição grava só um chunk",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "quota após enfileirar o chunk aborta cabeçalho, espelho e células; retry conserva a revisão",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "leitor anterior real recusa o protocolo físico novo e preserva o mapa",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "aba legada escreve offline; realm sem RAM recupera as duas versões com chunks",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "duas abas modernas mantêm CAS; apagar o original coleta só seus chunks",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "oficina: apagar, desfazer, refazer e reabrir conserva o mapa em chunks",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "oficina sob pressão: 32 camadas, rolagem, edição e histórico conservam os pixels",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "IndexedDB: abertura fria conserva 65536 células e uma edição grava só um chunk",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "quota após enfileirar o chunk aborta cabeçalho, espelho e células; retry conserva a revisão",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "leitor anterior real recusa o protocolo físico novo e preserva o mapa",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "aba legada escreve offline; realm sem RAM recupera as duas versões com chunks",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "duas abas modernas mantêm CAS; apagar o original coleta só seus chunks",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "oficina: apagar, desfazer, refazer e reabrir conserva o mapa em chunks",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    }
+  ]
+}

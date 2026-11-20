@@ -14,22 +14,22 @@ entre tarefas, conforme instrução do usuário. Preservar todo o trabalho 3D.
 
 ## 1. Referência e núcleo
 
-- [ ] Ajustar somente o probe para usar a suavização do palco real; repetir
+- [x] Ajustar somente o probe para usar a suavização do palco real; repetir
   baseline com três aquecimentos/dez execuções e guardar perfil e imagens.
-- [ ] Criar casos em `packages/pinta/src/tiles/chunks.test.ts` para pixels,
+- [x] Criar casos em `packages/pinta/src/tiles/chunks.test.ts` para pixels,
   pressão, flags, transparência, offsets, animação e recusa de efeitos.
-- [ ] Implementar em `chunks.ts` uma única estratégia sob pressão; conferir
+- [x] Implementar em `chunks.ts` uma única estratégia sob pressão; conferir
   acessos às células na arquitetura existente e não duplicar decodificação.
 
 ## 2. Consumidor real e desempenho
 
-- [ ] Exercitar Chromium com comparação completa da imagem anterior,
+- [x] Exercitar Chromium com comparação completa da imagem anterior,
   palco/rolagem/edição/animação; simulações de CPU e toque separadas.
-- [ ] Repetir baseline, percentis, perfil e memória; não confundir os tempos
+- [x] Repetir baseline, percentis, perfil e memória; não confundir os tempos
   de persistência com o tempo de composição nem prometer aparelhos físicos.
 
 ## 3. Fechamento
 
-- [ ] Executar tipos, Pinta e regressões pertinentes, revisar e corrigir.
+- [x] Executar tipos, Pinta e regressões pertinentes, revisar e corrigir.
 - [ ] Documentar resultados/limites, commitar e integrar staging preservando
   as alterações concorrentes. Atualizar a etapa 8a sem encerrar o restante.

@@ -123,6 +123,9 @@ export class TileChunkCache {
   get usedBytes(): number {
     return this.bytes + (this.scratch ? this.scratch.width * this.scratch.height * 4 : 0)
   }
+  get underPressure(): boolean {
+    return this.workingSetBytes > this.budget
+  }
   clear(): void {
     for (const entry of this.entries.values()) this.release(entry.canvas)
     this.entries.clear()
@@ -291,6 +294,45 @@ export function visibleLayerChunks(
   return out
 }
 
+/** Direct cells equal scaled chunks only when their destination pixels cannot overlap. */
+function directPixels(ctx: CanvasRenderingContext2D, size: number): boolean {
+  if (
+    !Number.isSafeInteger(size) ||
+    size < 1 ||
+    ctx.imageSmoothingEnabled ||
+    ctx.globalCompositeOperation !== 'source-over' ||
+    (ctx.filter !== undefined && ctx.filter !== 'none') ||
+    ctx.shadowColor !== 'rgba(0, 0, 0, 0)'
+  )
+    return false
+  const matrix = ctx.getTransform()
+  return (
+    matrix.a === 1 &&
+    matrix.b === 0 &&
+    matrix.c === 0 &&
+    matrix.d === 1 &&
+    Number.isSafeInteger(matrix.e) &&
+    Number.isSafeInteger(matrix.f)
+  )
+}
+
+function untransformedChunks(
+  map: TilemapAsset,
+  layer: TilemapTileLayer,
+  chunks: Array<{ col: number; row: number }>,
+): boolean {
+  for (const { col, row } of chunks)
+    for (let r = 0; r < MAP_CHUNK_SIDE && row * MAP_CHUNK_SIDE + r < map.rows; r++)
+      for (let c = 0; c < MAP_CHUNK_SIDE && col * MAP_CHUNK_SIDE + c < map.cols; c++)
+        if (
+          cellFlags(
+            layer.cells[(row * MAP_CHUNK_SIDE + r) * map.cols + col * MAP_CHUNK_SIDE + c] ?? -1,
+          )
+        )
+          return false
+  return true
+}
+
 export function paintTilemapLayers(
   ctx: CanvasRenderingContext2D,
   map: TilemapAsset,
@@ -312,6 +354,63 @@ export function paintTilemapLayers(
     if (!sheet) continue
     ctx.save()
     ctx.globalAlpha *= opacity
+    const size = ts.tileSize * scale
+    const direct =
+      cache.underPressure &&
+      directPixels(ctx, size) &&
+      // Flipping before downsampling and flipping the destination choose different samples.
+      (Number.isInteger(scale) || untransformedChunks(map, layer, chunks)) &&
+      chunks.every(
+        ({ col, row }) =>
+          Number.isSafeInteger((col * MAP_CHUNK_SIDE * ts.tileSize + offsetX) * scale) &&
+          Number.isSafeInteger((row * MAP_CHUNK_SIDE * ts.tileSize + offsetY) * scale),
+      )
+    if (direct) {
+      // The real canvas bounds may cull cells; the supplied viewport is not an implicit clip.
+      const frames = new Map<number, number>()
+      const transform = ctx.getTransform()
+      for (const { col, row } of chunks) {
+        const left = (col * MAP_CHUNK_SIDE * ts.tileSize + offsetX) * scale,
+          top = (row * MAP_CHUNK_SIDE * ts.tileSize + offsetY) * scale,
+          firstCol = Math.max(0, Math.floor((-transform.e - left) / size)),
+          firstRow = Math.max(0, Math.floor((-transform.f - top) / size)),
+          endCol = Math.min(
+            MAP_CHUNK_SIDE,
+            map.cols - col * MAP_CHUNK_SIDE,
+            Math.ceil((ctx.canvas.width - transform.e - left) / size),
+          ),
+          endRow = Math.min(
+            MAP_CHUNK_SIDE,
+            map.rows - row * MAP_CHUNK_SIDE,
+            Math.ceil((ctx.canvas.height - transform.f - top) / size),
+          )
+        for (let r = firstRow; r < endRow; r++)
+          for (let c = firstCol; c < endCol; c++) {
+            const cell =
+                layer.cells[(row * MAP_CHUNK_SIDE + r) * map.cols + col * MAP_CHUNK_SIDE + c] ?? -1,
+              tile = cellTile(cell)
+            if (tile < 0 || tile >= ts.tiles.length) continue
+            let frame = frames.get(tile)
+            if (frame === undefined) {
+              frame = animatedTile(ts, tile, time)
+              frames.set(tile, frame)
+            }
+            drawCellImage(
+              ctx,
+              sheet,
+              sheet.width,
+              ts.tileSize,
+              cell,
+              left + c * size,
+              top + r * size,
+              size,
+              frame,
+            )
+          }
+      }
+      ctx.restore()
+      continue
+    }
     for (const { col, row } of chunks) {
       const chunk = cache.get(map, layer, ts, sheet, col, row, time)
       if (chunk)

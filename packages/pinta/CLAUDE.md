@@ -28,6 +28,14 @@ cabeçalho ainda leva os recursos imutáveis; não declarar escrita total de
 apenas 2 KiB nem carregamento autoral somente da região visível.
 Contrato, retenção, provas e limites: `docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md`.
 
+**Render sob pressão:** `TileChunkCache` mantém o teto de 32 MiB. Quando o
+working set o excede, o compositor pode desenhar diretamente células alinhadas
+a pixels, sem suavização/efeitos/composição especial. Escala fracionária com
+peças transformadas conserva os chunks: a amostragem é diferente. O recorte
+adicional usa os limites reais do canvas, nunca supõe clip pelo viewport.
+Comparação com renderer publicado, orçamento e limites em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/render-sob-pressao-2026-11-20/README.md`.
+
 **Carimbo `schema` e envelope `.pinta.json` dependem do conteúdo.**
 - `PINTA_MAP_SCHEMA = 3`: o que é de CAMADAS (grupos, opacidade, deslocamento, trava, colisão,
   peça virada, mapa grande, conjunto de peças com mais de 64 peças).

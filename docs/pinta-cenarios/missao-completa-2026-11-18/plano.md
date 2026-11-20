@@ -132,6 +132,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   anteriores reais e recuperação offline. Medições, custos do espelho legado e
   limites em `qa/chunks-locais-2026-11-19/README.md`. A abertura ainda é densa;
   streaming, expansão e otimização do pior caso de render continuam pendentes.
+  Lote 8a2: composição direta sob pressão com conservação exata de pixels e
+  culling pelos limites reais do canvas; suavização, efeitos e peças transformadas
+  em zoom fracionário mantêm o renderer anterior. Suíte com 2.264 aprovados,
+  21 ensaios de autoridade/oficina e 72 imagens iguais ao código publicado.
+  Mediana local do pior caso: 498,8 → 198,6 ms, ainda sem comprovar fluidez.
+  Provas e limites em `qa/render-sob-pressao-2026-11-20/README.md`.
 - [ ] 8b. Automapping em várias camadas: regras autorais, prévia, determinismo e histórico.
 - [ ] 8c. Isométrico e hexagonal: contratos próprios, coordenadas/picking, desenho, objetos,
   colisão e adaptadores reais; não apenas opções de interface.

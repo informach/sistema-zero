@@ -1,0 +1,4 @@
+  ✓  1 [desktop] › packages\studio\e2e\pinta-render-pressure.flow.ts:11:1 › mapa sob pressão conserva todos os pixels do renderer publicado (4.9s)
+  ✓  2 [touch] › packages\studio\e2e\pinta-render-pressure.flow.ts:11:1 › mapa sob pressão conserva todos os pixels do renderer publicado (4.7s)
+  ✓  3 [cpu-4x] › packages\studio\e2e\pinta-render-pressure.flow.ts:11:1 › mapa sob pressão conserva todos os pixels do renderer publicado (23.0s)
+  3 passed (35.1s)

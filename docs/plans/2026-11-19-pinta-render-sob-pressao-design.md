@@ -33,6 +33,9 @@ Impacto 4 × confiança 4 / esforço 2 = **8**, acima do mínimo 2 da skill.
   tamanho de peça e deslocamento escalados inteiros, composição normal,
   sem filtros/sombras. Fora dessas condições conservar o caminho anterior.
 - Ordem de camadas, opacidade efetiva, hierarquia, flags e animações iguais.
+- A revisão encontrou amostragem diferente nas peças transformadas quando
+  a escala não é inteira. Nesses blocos/camadas conservar o renderer
+  anterior; a comparação continua byte a byte, sem tolerância de cor.
 - Não alterar o documento ou mutá-lo; não mudar RNG, desempates ou física.
 - Recorte por região somente até onde o contrato do viewport permitir;
   nunca assumir que o consumidor impôs um clip que não existe.

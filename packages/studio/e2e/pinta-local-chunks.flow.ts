@@ -48,6 +48,75 @@ async function seed(page: Page, namespace: string) {
     return map.id
   }, namespace)
 }
+
+test('oficina sob pressão: 32 camadas, rolagem, edição e histórico conservam os pixels', async ({
+  page,
+}, info) => {
+  test.setTimeout(180_000)
+  const namespace = `render-ui-${Date.now()}-${info.project.name}`
+  await open(page)
+  await page.evaluate(async (namespace) => {
+    const p = window.pinta026
+    const tiles = p.createTilesetAsset({ name: 'cores-pressao', tileSize: 48 })
+    const bitmap = tiles.tiles[0]!
+    tiles.tiles = [1, 2].map((color) => ({ ...bitmap, data: new Uint8Array(48 * 48).fill(color) }))
+    tiles.solid = tiles.platform = [false, false]
+    const map = p.createTilemapAsset({
+      name: 'mapa-pressao',
+      tilesetId: tiles.id,
+      cols: 256,
+      rows: 256,
+    })
+    map.cols = map.rows = 256
+    map.layers = Array.from({ length: 32 }, (_, index) => ({
+      id: `pressure-${index}`,
+      name: `Camada ${index + 1}`,
+      visible: true,
+      cells: new Int16Array(256 * 256).fill(index % 2),
+    }))
+    await p.createPintaPersistence({ namespace }).persistAssets([tiles, map])
+  }, namespace)
+  await page.goto(`/?namespace=${namespace}`)
+  await page.getByRole('button', { name: 'Abrir mapa-pressao (Mapa)', exact: true }).click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  // The last layer covers the others; select it through the existing layer control.
+  await page.getByRole('button', { name: 'Camada 32', exact: true }).click()
+  const grid = page.getByRole('img', { name: 'Grade do mapa', exact: true })
+  await grid.focus()
+  await page.keyboard.press('Control+Home')
+  const pixel = async () => {
+    const box = await page.locator('[data-pin-keyboard-cell]').boundingBox()
+    if (!box) throw new Error('Cursor ausente')
+    return (
+      await page.screenshot({
+        clip: { x: box.x + box.width / 2, y: box.y + box.height / 2, width: 1, height: 1 },
+      })
+    ).toString('base64')
+  }
+  await expect(page.locator('[data-pin-keyboard-cell]')).toBeVisible()
+  const before = await pixel()
+  await page.getByRole('button', { name: 'Borracha', exact: true }).click()
+  await grid.focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(pixel).not.toBe(before)
+  const erased = await pixel()
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  await grid.focus()
+  await expect.poll(pixel).toBe(before)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  await grid.focus()
+  await expect.poll(pixel).toBe(erased)
+  await page.keyboard.press('Control+End')
+  await expect(page.locator('[data-pin-keyboard-cell]')).toBeVisible()
+  await expect.poll(pixel).toBe(before)
+  await page.keyboard.press('Control+Home')
+  await expect.poll(pixel).toBe(erased)
+  await info.attach('oficina-render-pressao', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  })
+})
 async function disk(page: Page, namespace: string, id: string) {
   return page.evaluate(
     async ({ namespace, id }) => {

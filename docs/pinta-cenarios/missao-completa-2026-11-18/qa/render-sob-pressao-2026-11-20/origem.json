@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-20T10:31:24.450Z",
+  "base": "666811fa8cce166635c2283545e099f104943d04",
+  "reference": "0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d",
+  "logs": [
+    {
+      "file": "pinta-render-full-final.log",
+      "sha256": "b7aef1f887ec9a6d1fcf16c8a7744929ce22d16465b778d59dff95b14f2cbd6f",
+      "summary": "pinta-completo.txt"
+    },
+    {
+      "file": "pinta-render-pressure-red-flags.log",
+      "sha256": "814e1a0e8388b3cea1fa157868965aec01d31a44575f42c908a58d14f28af6e0",
+      "summary": "nucleo-vermelho.txt"
+    },
+    {
+      "file": "pinta-render-pressure-debug-r3.log",
+      "sha256": "169cc279d01df8990a1debf81a342fe1f1dc82d541d82d496976528ff2854cee",
+      "summary": "amostragem-vermelho.txt"
+    },
+    {
+      "file": "pinta-render-pressure-cull-green.log",
+      "sha256": "eebd8ef1d71e645e0bb2fcf3981ce96d4de5c8f1a635d7f9a548f840fefc20d4",
+      "summary": "nucleo-verde.txt"
+    },
+    {
+      "file": "pinta-render-authority-final.log",
+      "sha256": "d9b22e3e09f9c08247afe8f17fb346abdadcea6a9483f1ddc1f1e49608584998",
+      "summary": "autoridade-e-oficina.txt"
+    },
+    {
+      "file": "pinta-render-native-final.log",
+      "sha256": "356c96b59af573ea02e26323b77be26202b26c3d0e3b97f806030628d024eab7",
+      "summary": "pixels-chromium.txt"
+    },
+    {
+      "file": "pinta-render-types-final.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "tipos-pinta.txt"
+    },
+    {
+      "file": "pinta-render-harness-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": "tipos-harness.txt"
+    },
+    {
+      "file": "pinta-render-biome-final.log",
+      "sha256": "1eadcbc958ba8e7a437d284e484ec974a46858e288cc016efe8a10ae92787694",
+      "summary": "biome.txt"
+    }
+  ],
+  "nativePhotosInspected": true,
+  "simulatedProfiles": ["touch", "cpu-4x"],
+  "physicalDeviceCount": 1,
+  "externalEnginesRerun": false
+}

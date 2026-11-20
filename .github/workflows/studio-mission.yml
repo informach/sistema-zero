@@ -230,9 +230,10 @@ jobs:
       - name: Pinta local authority and chunks preserve actual historical readers
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         run: |
-          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6
+          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d
           cd packages/studio
           bunx playwright test --config playwright.pinta-chunks.config.ts
+          bunx playwright test --config playwright.pinta-render.config.ts
       - name: Public 3D scene uses the actual preview and exported site
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
@@ -274,6 +275,7 @@ jobs:
             packages/studio/.cache/protected-lessons
             packages/studio/.cache/pinta-scenes-results
             packages/studio/.cache/pinta-local-chunks-results
+            packages/studio/.cache/pinta-render-pressure-results
             packages/studio/.cache/pinta-integration-results
             packages/studio/.cache/pinta-world-proof-results
             .audits/studio-pro-evolution/browser-current.json
