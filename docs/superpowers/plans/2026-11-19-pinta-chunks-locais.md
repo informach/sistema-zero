@@ -39,4 +39,9 @@ determinou continuar sem aprovação entre etapas e preservar o trabalho 3D.
   chunks, espelho, memória e duração, separando CPU/toque emulados.
 - [x] Executar tipos, suíte Pinta, autoridade local e regressão dos destinos.
 - [x] Documentar protocolo, resultados, custos e limites; revisar e commitar.
-- [ ] Integrar somente a entrega verificada, preservando mudanças concorrentes.
+- [x] Integrar somente a entrega verificada, preservando mudanças concorrentes.
+  `00cea8696` contém a implementação; `0ebb89a63` inclui os gates de CI e foi
+  integrado em staging local e remoto, preservando os 82 arquivos de trabalho
+  preexistentes por comparação de status e SHA-256. O typecheck completo do
+  Estúdio após os merges passou; Biome conferiu 16.482 arquivos e 65 casos
+  focados de persistência/células passaram. Isso não declara o CI global verde.
