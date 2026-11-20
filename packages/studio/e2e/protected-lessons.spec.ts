@@ -46,8 +46,18 @@ const CHEGADA: Record<string, string> = {
 }
 const CABECALHO = '// Gerado pelo Sistema Zero Studio\n\n'
 
-/** O navegador do executor dos objetivos de execução (opcional). */
+/** O navegador do executor dos objetivos de execução (opcional fora do CI). */
 const EXECUTOR = process.env.SZ_CHECK_CHROMIUM ?? process.env.PW_CHROMIUM ?? ''
+
+// Revisão completa da missão (testes e CI, item 2): no CI estas aulas são a prova automática dos
+// 66 objetivos. Sem o executor, os 17 que RODAM o jogo saíam sem nota e passavam calados; com
+// as novas tentativas do CI, uma falha intermitente nas aulas virava verde. Aqui não há nenhum
+// dos dois: o executor é obrigatório no CI e cada aula roda uma vez só.
+test.describe.configure({ retries: 0 })
+if (process.env.CI && !EXECUTOR)
+  throw new Error(
+    'protected-lessons no CI precisa de SZ_CHECK_CHROMIUM: sem o executor os objetivos que rodam o jogo não são cobrados.',
+  )
 
 const AULAS = [
   { curso: 'cade-todo-mundo', arquivo: 'cade-todo-mundo-aula-1' },

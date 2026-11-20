@@ -315,3 +315,31 @@ it('keeps syntactic symbols for an unchanged file and discards an old response a
   await act(async () => finish([{ name: 'stars', start: 6, depth: 0 }]))
   expect(view.getByRole('button', { name: /^stars\b/ })).toBeDefined()
 })
+
+it('keeps the expanded file map window when an edit refreshes the symbols of the same file', async () => {
+  // Revisão completa da missão (Pro, item 2): a janela ficava presa à identidade da lista e
+  // voltava a 100 a cada edição, levando embora o símbolo que a criança estava vendo.
+  const items = () =>
+    Array.from({ length: 500 }, (_, index) => ({
+      name: `item${index}`,
+      kind: 'const',
+      start: 6,
+      length: 5,
+      depth: 0,
+    }))
+  let content = 'const score = 1; const stars = score'
+  const props = toolsFixture({ request: async () => items() } as unknown as ProLanguageSession)
+  const model = props.editor.current as unknown as { getModel: () => { getValue: () => string } }
+  const original = model.getModel
+  model.getModel = () => ({ ...original(), getValue: () => content })
+  const view = render(<ProCodeTools {...props} />)
+  await act(async () => tools?.openSymbols())
+  const panel = view.getByRole('region', { name: 'Mapa do arquivo' })
+  fireEvent.click(view.getByRole('button', { name: 'Mostrar mais símbolos' }))
+  expect(panel.querySelectorAll('li').length).toBe(200)
+  content = `${content} `
+  const tree: ProjectTree = { 'main.ts': { kind: 'file', content } }
+  await act(async () => view.rerender(<ProCodeTools {...props} tree={tree} />))
+  await act(async () => {})
+  expect(panel.querySelectorAll('li').length).toBe(200)
+})

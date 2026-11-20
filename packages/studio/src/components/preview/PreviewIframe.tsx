@@ -620,7 +620,10 @@ export function PreviewIframe(): JSX.Element {
       setPreviewRunning(false)
       return
     }
-    setRenderNonce((n) => n + 1)
+    // A prévia pode montar já rodando com uma edição ainda não gravada (o Rodar do palco com o
+    // jogo escondido, a troca Blocos ⇄ Ponte, o olho). Pela mesma preparação do Rodar: sem
+    // edição pendente roda na hora, como antes; com ela, grava e só executa a revisão confirmada.
+    void preparation.run(() => setRenderNonce((n) => n + 1))
   }, [
     projectId,
     previewRunning,
@@ -629,6 +632,7 @@ export function PreviewIframe(): JSX.Element {
     execution.autoRun,
     execution.editingAccess,
     setPreviewRunning,
+    preparation,
   ])
 
   useEffect(() => {
@@ -1318,7 +1322,8 @@ export function PreviewIframe(): JSX.Element {
               continuar esperando se for algo demorado de propósito.
             </p>
             <div className="mt-3 flex items-center justify-center gap-2">
-              <Button size="sm" variant="primary" onClick={() => setPreviewRunning(false)}>
+              {/* O mesmo Parar da barra: também cancela um Rodar que ainda está gravando. */}
+              <Button size="sm" variant="primary" onClick={() => runActions.stop()}>
                 Parar
               </Button>
               <Button

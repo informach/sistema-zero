@@ -102,8 +102,11 @@ export function ProCodeTools({
       : null
   const symbols = currentSymbols?.items ?? []
   const [symbolQuery, setSymbolQuery] = useState('')
+  // A janela pertence ao arquivo e à sessão, não à lista: uma edição devolve uma lista nova do
+  // mesmo arquivo, e voltar a 100 levaria embora o símbolo que a criança estava vendo.
   const [symbolWindow, setSymbolWindow] = useState<{
-    items: readonly ProSymbol[]
+    path: string
+    session: ProWorkspaceLanguage | null
     count: number
   } | null>(null)
   const filteredSymbols = useMemo(() => {
@@ -112,7 +115,10 @@ export function ProCodeTools({
       ? symbols.filter((symbol) => symbol.name.toLocaleLowerCase().includes(query))
       : symbols
   }, [symbols, symbolQuery])
-  const symbolCount = symbolWindow?.items === symbols ? symbolWindow.count : SYMBOL_PAGE_SIZE
+  const symbolCount =
+    symbolWindow?.path === path && symbolWindow.session === language
+      ? symbolWindow.count
+      : SYMBOL_PAGE_SIZE
   const visibleSymbols = filteredSymbols.slice(0, symbolCount)
   const references =
     referenceResult?.tree === tree && referenceResult.session === language
@@ -463,7 +469,7 @@ export function ProCodeTools({
                 value={symbolQuery}
                 onChange={(event) => {
                   setSymbolQuery(event.target.value)
-                  setSymbolWindow({ items: symbols, count: SYMBOL_PAGE_SIZE })
+                  setSymbolWindow({ path, session: language, count: SYMBOL_PAGE_SIZE })
                 }}
                 className="block min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3 text-sm"
               />
@@ -517,7 +523,11 @@ export function ProCodeTools({
                   type="button"
                   className="sz-pro-btn sz-pro-btn--sm mt-2"
                   onClick={() =>
-                    setSymbolWindow({ items: symbols, count: symbolCount + SYMBOL_PAGE_SIZE })
+                    setSymbolWindow({
+                      path,
+                      session: language,
+                      count: symbolCount + SYMBOL_PAGE_SIZE,
+                    })
                   }
                 >
                   {t('pro.symbols.more')}

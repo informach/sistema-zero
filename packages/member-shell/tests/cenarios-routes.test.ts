@@ -872,3 +872,78 @@ describe('BFF do Molda Cenários: apagar e ler arquivos', () => {
     )
   })
 })
+
+describe('BFF do Molda Cenários: agente com token no cabeçalho', () => {
+  const TOKEN = 'eyJhbGciOiJIUzI1NiJ9.e30.agente-valido'
+  function agente(veredito: (t: string) => unknown) {
+    const usados: Array<{ token: string; path: string; method: string }> = []
+    const hmac: string[] = []
+    const rotas = createCenariosRoutes({
+      gateway: {
+        gatewayFetch: async () => {
+          throw Error('o pedido do agente não pode usar o cookie')
+        },
+        gatewayFetchHmac: async (path: string) => {
+          hmac.push(path)
+          return { status: 200, body: {} }
+        },
+      } as unknown as GatewayModule,
+      session: {
+        getSession: async () => {
+          throw Error('o pedido do agente não lê a sessão do cookie')
+        },
+        verifyAccessTokenLocally: async (t: string) => veredito(t),
+      } as unknown as SessionModule,
+      gatewayDoToken: (token) =>
+        ({
+          gatewayFetch: async (path: string, o: { method?: string } = {}) => {
+            usados.push({ token, path, method: o.method ?? 'GET' })
+            return { status: 200, body: { aberto: true } }
+          },
+        }) as unknown as Pick<GatewayModule, 'gatewayFetch'>,
+    }).cenarios
+    const pedir = (autorizacao: string, metodo: 'GET' | 'DELETE' = 'GET', caminho = 'acesso') =>
+      rotas[metodo](
+        new Request(`http://localhost/api/cenarios/${caminho}`, {
+          method: metodo,
+          headers: { authorization: autorizacao },
+        }),
+        { params: Promise.resolve({ caminho: caminho.split('/') }) },
+      )
+    return { pedir, usados, hmac }
+  }
+
+  test('o token vai em toda chamada ao gateway daquele pedido', async () => {
+    const t = agente((tk) => (tk === TOKEN ? { ok: true, user: crianca } : { ok: false }))
+    const r = await t.pedir(`Bearer ${TOKEN}`)
+    expect(r.status).toBe(200)
+    expect(await r.json()).toEqual({ aberto: true })
+    expect(t.usados).toEqual([{ token: TOKEN, path: '/members/cenarios/acesso', method: 'GET' }])
+  })
+
+  test('token vencido, inválido ou malformado responde sem chegar ao gateway', async () => {
+    const t = agente((tk) =>
+      tk === TOKEN
+        ? { ok: false, expired: true }
+        : tk.endsWith('fora')
+          ? { ok: false, expired: false, unavailable: true }
+          : { ok: false, expired: false },
+    )
+    expect((await t.pedir(`Bearer ${TOKEN}`)).status).toBe(401)
+    expect((await t.pedir(`Bearer ${TOKEN}-outro`)).status).toBe(401)
+    expect((await t.pedir(`Bearer ${TOKEN}.fora`)).status).toBe(503)
+    expect((await t.pedir('Basic abc')).status).toBe(401)
+    expect((await t.pedir('Bearer curto')).status).toBe(401)
+    expect(t.usados).toHaveLength(0)
+  })
+
+  test('sessão de suporte só de leitura também não escreve pelo token', async () => {
+    const t = agente(() => ({
+      ok: true,
+      user: { ...crianca, act: { sub: 'suporte', mode: 'readonly' } },
+    }))
+    const r = await t.pedir(`Bearer ${TOKEN}`, 'DELETE', `cenarios/${CENARIO}`)
+    expect(r.status).toBe(403)
+    expect(t.usados).toHaveLength(0)
+  })
+})

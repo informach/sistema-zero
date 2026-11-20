@@ -1,4 +1,5 @@
 import 'server-only'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { MAX_RECURSOS_TERRENO } from '@sistemazero/molda-cenarios-core/v2'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -12,7 +13,7 @@ import {
   conferirUploadDeCenario,
   type TipoDeArquivoDeCenario,
 } from '../server/cenarios-conteudo'
-import type { GatewayModule, GatewayResponse } from '../server/gateway'
+import { createGatewayModule, type GatewayModule, type GatewayResponse } from '../server/gateway'
 import { r2DeleteObjectsUgc, r2GetObjectUgc, r2PresignGetUgc, r2PresignPutUgc } from '../server/r2'
 import { readJsonBodyWithLimit } from '../server/read-json-body'
 import type { SessionModule } from '../server/session'
@@ -286,8 +287,34 @@ export function createCenariosRoutes(deps: {
   /** Só testes: onde a limpeza do armazenamento é agendada. */
   depois?: (tarefa: () => Promise<void>) => void
   agora?: () => number
+  /** Só testes: o gateway que fala com o token do agente (padrão: o módulo de sempre). */
+  gatewayDoToken?: (token: string) => Pick<GatewayModule, 'gatewayFetch'>
 }) {
-  const { gateway, session } = deps
+  const { session } = deps
+  /**
+   * Agentes (CLI/MCP) não têm cookie: mandam o MESMO token de acesso no `Authorization`, que o
+   * navegador nunca envia sozinho (sem vetor de CSRF). Durante esse pedido, toda chamada ao
+   * gateway leva esse token, sem renovação nem escrita de cookie.
+   */
+  const gatewayDoToken =
+    deps.gatewayDoToken ??
+    ((token: string) =>
+      createGatewayModule({
+        ...session,
+        getAccessToken: async () => token,
+        getRefreshToken: async () => null,
+        setSessionCookies: async () => {},
+        setAccessCookie: async () => {},
+        clearSessionCookies: async () => {},
+      }))
+  const doAgente = new AsyncLocalStorage<Pick<GatewayModule, 'gatewayFetch'>>()
+  const gateway: Pick<GatewayModule, 'gatewayFetch' | 'gatewayFetchHmac'> = {
+    gatewayFetch: <T = unknown>(
+      caminho: string,
+      opcoes?: Parameters<GatewayModule['gatewayFetch']>[1],
+    ) => (doAgente.getStore() ?? deps.gateway).gatewayFetch<T>(caminho, opcoes),
+    gatewayFetchHmac: deps.gateway.gatewayFetchHmac,
+  }
   const armazenamento: Armazenamento = deps.armazenamento ?? {
     presignPut: r2PresignPutUgc,
     presignGet: r2PresignGetUgc,
@@ -509,8 +536,27 @@ export function createCenariosRoutes(deps: {
     req: Request,
     ctx: { params: Promise<{ caminho: string[] }> },
   ): Promise<NextResponse> {
+    const portador = req.headers.get('authorization')
+    if (portador !== null) {
+      const token = /^Bearer ([A-Za-z0-9._-]{16,4096})$/.exec(portador)?.[1]
+      if (!token) return erro(401, 'UNAUTHENTICATED', 'Token de acesso inválido.')
+      const veredito = await session.verifyAccessTokenLocally(token)
+      if (!veredito.ok)
+        return veredito.unavailable
+          ? erro(503, 'AUTH_UNAVAILABLE', 'Não consegui conferir o acesso agora.')
+          : erro(401, 'UNAUTHENTICATED', 'Entre de novo para continuar.')
+      return doAgente.run(gatewayDoToken(token), () => atenderComo(metodo, req, ctx, veredito.user))
+    }
+    return atenderComo(metodo, req, ctx, await session.getSession())
+  }
+
+  async function atenderComo(
+    metodo: Repasse['metodo'],
+    req: Request,
+    ctx: { params: Promise<{ caminho: string[] }> },
+    user: SessionUser | null,
+  ): Promise<NextResponse> {
     const caminho = (await ctx.params).caminho.join('/')
-    const user = await session.getSession()
     const trocou = await mesmaPessoa(req, user)
     if (trocou) return trocou
     if (metodo !== 'GET') {

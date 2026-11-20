@@ -108,11 +108,12 @@ export function languageResultMapper(root: string, snapshot: PythonLanguageSnaps
       throw new Error('Project diagnostics must be mapped against each owned source')
     },
     symbols(value) {
+      // The complete index, as in TypeScript (4d3643ebe): the file map bounds what it renders
+      // and loads the rest on demand. Truncating here hid every symbol after the 300th.
       const result: PythonLanguageResults['symbols'] = []
       const visit = (items: (DocumentSymbol | SymbolInformation)[], depth: number) => {
         if (depth > 100) throw new Error('Symbol nesting exceeds limit')
         for (const item of items) {
-          if (result.length >= 300) return
           const range = 'selectionRange' in item ? item.selectionRange : item.location.range
           if ('location' in item && local(item.location.uri) !== path) continue
           result.push({
