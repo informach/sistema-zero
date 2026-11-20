@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+packages\core\src\creations\pinta-regions.test.ts:
+(pass) preserva todos os valores de célula, endian e representação JSON canônica
+(pass) região vazia não aloca células e pode cobrir uma extensão lógica grande
+(pass) mantém buffers em memória e não compartilha buffers entre chunks decodificados
+(pass) coordenadas negativas e bordas não alinhadas preservam as células
+(pass) rejeita chunks vazios, duplicados, malformados e células inválidas sem cortar dados
+(pass) barreira de formato rejeita versões, campos e codificações desconhecidos
+(pass) rejeita limites inválidos antes de ler dados de chunks
+(pass) orçamento é global e precede decodificação e alocação de buffers
+(pass) base64 deve ser exato e canônico, sem payload truncado, lixo ou células negativas
+(pass) teto real de 2048 regiões conserva 4 MiB sem alocar as áreas vazias do mundo [32.00ms]
+(pass) codificação ordena os chunks por linha e coluna sem reordenar o documento
+(pass) o gravador também confere o orçamento global antes de acessar os buffers
+(pass) preserva todos os 32769 valores históricos sem interpretar as flags das peças
+(pass) payload não-JSON ou futuro falha fechado e nunca lança ao chamador [15.00ms]
+
+ 14 pass
+ 0 fail
+ 65 expect() calls
+Ran 14 tests across 1 file. [329.00ms]

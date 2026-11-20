@@ -13,12 +13,19 @@ usuário dispensa confirmações entre etapas; as exclusões 3D permanecem.
 
 ## 1. Contrato compartilhado e orçamento
 
-- [ ] Inspecionar codecs/binários/limites existentes em Core e Pinta para
+- [x] Inspecionar codecs/binários/limites existentes em Core e Pinta para
   reaproveitar helpers e conservar a representação histórica.
-- [ ] Testar DTOs, coordenadas negativas, base64 canônico, flags, orçamento
+- [x] Testar DTOs, coordenadas negativas, base64 canônico, flags, orçamento
   global, descritores duplicados/futuros e rejeição antes da alocação.
-- [ ] Implementar `packages/core/src/creations/pinta-regions.ts` e exportar
+- [x] Implementar `packages/core/src/creations/pinta-regions.ts` e exportar
   o contrato puro. Não anunciar suporte do editor ainda.
+
+Contrato implementado com 14 testes focados e suíte Core completa. Os limites
+são conferidos globalmente antes de ler buffers ou base64. Os leitores/escritores
+densos e os números dos formatos ativos permanecem intactos. Evidências em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/regioes-autorais-contrato-2026-11-20/`.
+Auditoria inicial de células registrou 89 arquivos; a integração abaixo ainda
+precisa conferir os consumidores um a um. Esta primeira tarefa não conclui 8a.
 
 ## 2. Documento e operações
 

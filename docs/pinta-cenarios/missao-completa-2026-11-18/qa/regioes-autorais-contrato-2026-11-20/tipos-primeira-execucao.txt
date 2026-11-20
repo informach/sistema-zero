@@ -1,0 +1,4 @@
+$ tsc --noEmit
+src/creations/pinta-regions.test.ts(258,35): error TS2322: Type '{ chunks: void; kind: "regions"; version: 1; side: 32; }' is not assignable to type 'PintaRegionCells'.
+  Types of property 'chunks' are incompatible.
+    Type 'void' is not assignable to type '{ col: number; row: number; cells: Int16Array<ArrayBufferLike>; }[]'.
