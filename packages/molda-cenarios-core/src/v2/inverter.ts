@@ -151,9 +151,12 @@ export function inverterLote(
     if (c.bloqueado) camadasAbertas.add(c.id)
   }
 
-  // 3. Abre os cadeados de grupo que impediriam a volta.
+  // 3. Abre os cadeados de grupo que impediriam a volta, dos pais para os filhos: abrir o
+  // filho com o pai ainda trancado é recusado ("Grupo bloqueado").
   const abertos = new Set<string>()
-  for (const g of depois.grupos)
+  for (const g of [...depois.grupos].sort(
+    (a, b) => profundidade(gruposDepois, a.id) - profundidade(gruposDepois, b.id),
+  ))
     if (g.bloqueado && noCaminho(g.id)) {
       comandos.push({ tipo: 'grupo.definir', grupo: { ...g, bloqueado: false } })
       abertos.add(g.id)

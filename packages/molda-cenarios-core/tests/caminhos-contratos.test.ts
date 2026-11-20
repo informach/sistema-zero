@@ -122,3 +122,15 @@ test('ponte de GLB exige medida explícita do piso local e referências continua
     'Acabamento',
   )
 })
+
+test('praça suavizada que a curva recusa não passa na validação do documento', () => {
+  // 21 controles a 100 m: a suavização a cada 0,5 m passa de 4.096 pontos.
+  const pontos = Array.from({ length: 21 }, (_, i) => {
+    const a = (i / 21) * Math.PI * 2
+    return { x: Math.cos(a) * 330, z: Math.sin(a) * 330 }
+  })
+  const praca = CaminhoSchema.parse({ ...comum, tipo: 'praca', suave: true, pontos })
+  expect(() => validarDocumento({ ...criarDocumentoVazio('d', 'D'), caminhos: [praca] })).toThrow(
+    /pontos demais/,
+  )
+})

@@ -586,3 +586,86 @@ test('clipboard mantém cópias vivas; salvar uma composição com conjuntos fix
   expect(conteudo.instancias.every((o) => o.apoio.tipo === 'absoluto')).toBe(true)
   expect(d).toEqual(antes)
 })
+
+test('muitas montagens de uma definição cheia de grupos são recusadas antes de expandir', () => {
+  const f = fonte()
+  // 2.000 grupos vazios e um objeto: pouco texto, mas cada montagem copiaria todos.
+  for (let i = 0; i < 2000; i++)
+    f.grupos.push({ id: `g${i}`, nome: 'G', grupo: null, bloqueado: false, oculto: false })
+  const d = criarDocumentoVazio('c', 'Mundo')
+  d.definicoesConjuntos = [
+    {
+      ...definicao(),
+      conteudo: capturarFragmento(
+        f,
+        f.grupos.map((g) => g.id),
+        'conta',
+      ),
+    },
+  ]
+  d.montagens = Array.from({ length: 11 }, (_, i) => montagem(`m${i}`))
+  const inicio = performance.now()
+  expect(() => resolverConjuntos(d)).toThrow(/orçamento de grupos/)
+  // Recusa antes de copiar: rápido mesmo com o pedido grande.
+  expect(performance.now() - inicio).toBeLessThan(2000)
+})
+
+test('desfazer com pastas trancadas uma dentro da outra abre os pais antes dos filhos', () => {
+  const antes = criarDocumentoVazio('c', 'Mundo')
+  antes.formas = [
+    { id: 'caixa', nome: 'Caixa', tipo: 'caixa', largura: 1, altura: 1, comprimento: 1 },
+  ]
+  // P veio antes no arquivo, mas mora dentro de F (agrupada depois).
+  antes.grupos = [
+    { id: 'P', nome: 'P', grupo: 'F', bloqueado: false, oculto: false },
+    { id: 'F', nome: 'F', grupo: null, bloqueado: false, oculto: false },
+  ]
+  const depois = structuredClone(antes)
+  depois.instancias.push({
+    id: 'o',
+    nome: 'Caixa',
+    modelo: 'caixa',
+    grupo: 'P',
+    bloqueado: false,
+    oculto: false,
+    apoio: { tipo: 'absoluto' },
+    colisao: 'caixa',
+    transformacao: {
+      posicao: { x: 0, y: 0, z: 0 },
+      rotacao: { x: 0, y: 0, z: 0 },
+      escala: { x: 1, y: 1, z: 1 },
+    },
+  })
+  for (const g of depois.grupos) g.bloqueado = true
+  const desfeito = executarLote(
+    { revisao: 1, documento: depois },
+    { revisaoEsperada: 1, comandos: inverterLote(antes, depois) },
+  )
+  expect(desfeito.documento.instancias).toEqual([])
+})
+
+test('separar conjunto com marcador associado solta o marcador em vez de falhar', () => {
+  const d = cena()
+  d.marcadores = [
+    {
+      id: 'placa',
+      nome: 'Placa',
+      grupo: null,
+      oculto: false,
+      bloqueado: false,
+      posicao: { x: 10, y: 7, z: 20 },
+      giro: 0,
+      noChao: false,
+      objeto: 'copia',
+    },
+  ]
+  const depois = executarLote(
+    { revisao: 0, documento: d },
+    { revisaoEsperada: 0, comandos: [{ tipo: 'montagem.desvincular', id: 'copia' }] },
+  )
+  expect(depois.documento.marcadores[0]).toMatchObject({
+    objeto: null,
+    posicao: { x: 10, y: 7, z: 20 },
+  })
+  expect(depois.documento.montagens?.map((m) => m.id)).toEqual(['outra'])
+})

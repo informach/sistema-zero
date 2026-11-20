@@ -9,6 +9,7 @@ import type {
 } from './documento'
 import { estruturaDoCaminho } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
+import { lembrar } from './memoria-da-validacao'
 import { type FonteDeAlturas, PecaDeTerrenoAusente } from './terreno'
 import { destransformarPonto, transformarPonto, transformarVolume } from './volume'
 
@@ -143,8 +144,17 @@ export function transformacaoResolvida(
   }
 }
 
+const SEM_FONTE = Symbol('sem-fonte')
+
 function suporteDoObjeto(doc: BaseComModelos, id: string, fonte?: FonteDeAlturas) {
-  const suporte = doc.instancias?.find((o) => o.id === id)
+  const instancias = doc.instancias
+  // Apoio em objeto procurava a base numa lista de até 20 mil: quadrático numa validação.
+  // O índice vale para o tamanho atual da lista (a expansão de conjuntos acrescenta objetos).
+  const suporte = instancias
+    ? (lembrar(instancias, instancias.length, () => new Map(instancias.map((o) => [o.id, o]))).get(
+        id,
+      ) ?? instancias.find((o) => o.id === id))
+    : undefined
   if (suporte) return suporte
   const montagem = doc.montagens?.find((m) => m.id === id)
   // O contato pertence ao espaço da raiz; não muda ao reorganizar suas peças internas.
@@ -173,12 +183,15 @@ function superficieDoCaminho(
   // um pilar em GLB arqueado. Consultas puras sem esse cache usam o mesmo plano numérico.
   const parte: import('./terreno').SuperficieDeCaminho | null | undefined = fonte?.parteDoCaminho
     ? fonte.parteDoCaminho(id, chave)
-    : estruturaDoCaminho(
-        caminho,
-        fonte ?? (() => 0),
-        volumeDaReferencia(doc, caminho.acabamento ?? undefined),
-        { somenteParte: chave },
-      ).pecas.find((p) => p.chave === chave)
+    : lembrar(caminho, fonte ?? SEM_FONTE, () => {
+        // Numa validação, a estrutura inteira sai uma vez e cada objeto apoiado só consulta.
+        const pecas = estruturaDoCaminho(
+          caminho,
+          fonte ?? (() => 0),
+          volumeDaReferencia(doc, caminho.acabamento ?? undefined),
+        ).pecas
+        return new Map(pecas.map((p) => [p.chave, p]))
+      }).get(chave)
   if (!parte)
     throw new CenarioInvalido([`Parte do caminho sem superfície disponível: ${id}/${chave}`])
   const { posicao, rotacao, escala } = parte.transformacao

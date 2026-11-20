@@ -5,7 +5,7 @@ import {
   LIMITES_CENARIO,
   type Ponto,
 } from './documento'
-import { segmentosSeCruzam as cruza } from './poligonos'
+import { algumParSeCruza, segmentosSeCruzam as cruza } from './poligonos'
 
 export class CenarioInvalido extends Error {
   constructor(public readonly problemas: readonly string[]) {
@@ -27,9 +27,21 @@ export function poligonoSimples(p: readonly Ponto[]): boolean {
     const a = p[i]!,
       b = p[(i + 1) % p.length]!
     if (Math.hypot(a.x - b.x, a.z - b.z) < 1e-6) return false
-    for (let j = i + 1; j < p.length; j++) {
-      if (j === i + 1 || (i === 0 && j === p.length - 1)) continue
-      if (cruza(a, b, p[j]!, p[(j + 1) % p.length]!)) return false
+  }
+  const n = p.length,
+    vizinhos = (i: number, j: number) =>
+      Math.abs(i - j) === 1 || (Math.min(i, j) === 0 && Math.max(i, j) === n - 1)
+  if (n > 64)
+    return !algumParSeCruza(
+      p.map((a, i) => [a, p[(i + 1) % n]!] as const),
+      vizinhos,
+    )
+  for (let i = 0; i < n; i++) {
+    const a = p[i]!,
+      b = p[(i + 1) % n]!
+    for (let j = i + 1; j < n; j++) {
+      if (vizinhos(i, j)) continue
+      if (cruza(a, b, p[j]!, p[(j + 1) % n]!)) return false
     }
   }
   return true

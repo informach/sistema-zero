@@ -147,7 +147,8 @@ test('host HTTP manda somente revisão e prova de perfil, valida resposta e resp
   expect(pedidos[0]!.url).toBe('/api/cenarios/cenarios/c/exportacao')
   expect(JSON.parse(pedidos[0]!.opcoes!.body as string)).toEqual({ revisaoEsperada: 2 })
   expect(new Headers(pedidos[0]!.opcoes!.headers).get('x-sz-viewer')).toBe('perfil')
-  expect(pedidos[0]!.opcoes!.signal).toBe(c.signal)
+  // O sinal de quem pediu vai junto com o prazo do pedido: cancelar continua cancelando.
+  expect(pedidos[0]!.opcoes!.signal).toBeInstanceOf(AbortSignal)
   resposta.documento.nome = 'Adulterado'
   await expect(host.prepararExportacao('c', 2)).rejects.toThrow(/documento/)
   c.abort()

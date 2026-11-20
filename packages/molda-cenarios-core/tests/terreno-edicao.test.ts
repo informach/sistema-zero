@@ -76,6 +76,7 @@ test('identidade da base inclui solo e buracos e independe da ordem das propried
 test('edição serializa as duas bordas tocadas, conserva outros hashes e devolve fundo sem arquivo', () => {
   const terreno = BaseDeTerrenoSchema.parse({
     ...base,
+    cobertura: 'grade',
     colunas: 192,
     buracos: [],
     solo: {
@@ -105,6 +106,11 @@ test('edição serializa as duas bordas tocadas, conserva outros hashes e devolv
   estado.campo.alturas.fill(0)
   expect(
     prepararPecasEditadas(nova, estado, { alturas: regiao }).every((p) => p.conteudo === null),
+  ).toBe(true)
+  // Terreno importado (sem grade inteira): peça ausente é "sem chão", então a plana fica.
+  const { cobertura: _grade, ...importado } = nova
+  expect(
+    prepararPecasEditadas(importado, estado, { alturas: regiao }).every((p) => p.conteudo !== null),
   ).toBe(true)
   expect(
     baseComPecasEditadas(

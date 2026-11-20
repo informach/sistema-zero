@@ -200,3 +200,36 @@ test('mudar o nível leva a pilha inteira e desfaz exatamente; água com depende
   fora.instancias[0]!.apoio.local.x = 100000
   expect(() => validarDocumento(fora)).toThrow('limites')
 })
+
+test('validar milhares de objetos no mesmo rio calcula a superfície uma vez só', () => {
+  const { d, o } = exemplo()
+  const pontos = Array.from({ length: 400 }, (_, i) => ({
+    x: i * 2,
+    y: 4,
+    z: Math.sin(i / 8) * 6,
+  }))
+  d.aguas.push({
+    id: 'rio',
+    nome: 'Rio',
+    tipo: 'rio',
+    largura: 4,
+    profundidade: 2,
+    correnteza: 1,
+    pontos,
+    grupo: null,
+    bloqueado: false,
+    oculto: false,
+  })
+  d.instancias = []
+  for (let i = 0; i < 3000; i++) {
+    const mundo = {
+      ...o.transformacao,
+      posicao: { x: pontos[i % 400]!.x, y: 4, z: pontos[i % 400]!.z },
+    }
+    d.instancias.push({ ...structuredClone(o), id: `b${i}`, apoio: apoioNaAgua(d, 'rio', mundo) })
+  }
+  const inicio = performance.now()
+  validarDocumento(d)
+  // Antes: a superfície do rio era refeita por objeto (minutos com rios longos).
+  expect(performance.now() - inicio).toBeLessThan(5000)
+})

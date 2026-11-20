@@ -13,8 +13,9 @@ import { TransformacaoSchema } from './entidades-schema'
 import { parteEstruturalExiste } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
 import { planoDeAmostragemDaRota } from './marcadores'
+import { comMemoriaDaValidacao } from './memoria-da-validacao'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
-import { errosDaTopologiaDoCaminho } from './topologia-de-caminho'
+import { curvaDoCaminho, errosDaTopologiaDoCaminho } from './topologia-de-caminho'
 
 export interface OpcoesDeValidacao {
   /** Confere se o modelo fixado existe no acervo de quem valida (o servidor, em geral). */
@@ -26,7 +27,7 @@ export function validarDocumento(
   valor: unknown,
   opcoes: OpcoesDeValidacao = {},
 ): DocumentoDeCenario {
-  return validarDocumentoInterno(valor, opcoes)
+  return comMemoriaDaValidacao(() => validarDocumentoInterno(valor, opcoes))
 }
 
 function validarDocumentoInterno(
@@ -49,8 +50,9 @@ function validarDocumentoInterno(
   // A expansão física de conjuntos não cria nem apaga as identidades autorais
   // às quais os metadados do jogo estão associados. Esse contexto é só interno.
   const associaveis = associacoesDaRaiz ?? new Set([...objetos.keys(), ...montagens])
+  // Acima do orçamento nada mais é conferido: as checagens seguintes custam caro.
   if (new TextEncoder().encode(JSON.stringify(d)).length > LIMITES_CENARIO_V2.bytes)
-    erros.push('Documento excede o orçamento de bytes')
+    throw new CenarioInvalido(['Documento excede o orçamento de bytes'])
 
   for (const m of d.modelos) {
     if (modelos.has(m.id)) erros.push(`Modelo duplicado: ${m.id}`)
@@ -172,7 +174,17 @@ function validarDocumentoInterno(
       erros.push(`Textura fora da tabela do cenário: ${c.id}`)
     if (c.acabamento && !modelos.has(c.acabamento))
       erros.push(`Acabamento fora da tabela do cenário: ${c.id}`)
-    erros.push(...errosDaTopologiaDoCaminho(c))
+    const daTopologia = errosDaTopologiaDoCaminho(c)
+    erros.push(...daTopologia)
+    // A mesma curva do desenho, da exportação e da cópia: o que ela recusa (praça suavizada
+    // que se cruza, pontos demais) não pode ser gravado para quebrar tudo depois.
+    if (!daTopologia.length)
+      try {
+        curvaDoCaminho(c)
+      } catch (erro) {
+        if (!(erro instanceof CenarioInvalido)) throw erro
+        erros.push(...erro.problemas.map((p) => `${p} (${c.id})`))
+      }
   }
 
   for (const a of d.aguas) {

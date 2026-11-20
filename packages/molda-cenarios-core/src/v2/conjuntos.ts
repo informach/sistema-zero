@@ -152,6 +152,29 @@ export function resolverConjuntos(
     }, 0)
   if (total > LIMITES_CENARIO_V2.objetos)
     falhar('A expansão dos conjuntos excede o orçamento de objetos')
+  // Grupos e bytes também são contados ANTES de expandir: cada montagem copia os grupos e os
+  // objetos da definição, e um documento pequeno com milhares de montagens de uma definição
+  // cheia de grupos alocaria dezenas de milhões de objetos antes da conferência final.
+  const pesoDaDefinicao = new Map<string, { grupos: number; bytes: number }>()
+  for (const [id, f] of fontes)
+    pesoDaDefinicao.set(id, {
+      grupos: f.grupos.length,
+      bytes:
+        new TextEncoder().encode(JSON.stringify(f.instancias)).length +
+        new TextEncoder().encode(JSON.stringify(f.grupos)).length,
+    })
+  let gruposDepois = doc.grupos.length,
+    bytesDepois = new TextEncoder().encode(JSON.stringify(doc)).length
+  for (const m of doc.montagens ?? []) {
+    const peso = pesoDaDefinicao.get(m.definicao)!
+    gruposDepois += 1 + peso.grupos
+    bytesDepois += peso.bytes
+    if (gruposDepois > LIMITES_CENARIO_V2.objetos)
+      falhar('A expansão dos conjuntos excede o orçamento de grupos')
+    // Folga para os ids e as transformações reescritas; a conta exata vem no fim.
+    if (bytesDepois > LIMITES_CENARIO_V2.bytes * 1.5)
+      falhar('A expansão dos conjuntos excede o orçamento do documento')
+  }
   const montagens = doc.montagens ?? []
   const raizes = new Set(montagens.map((m) => m.id))
   for (const o of doc.instancias) {

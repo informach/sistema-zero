@@ -201,6 +201,9 @@ function modeloEmUso(d: DocumentoDeCenario, id: string) {
 }
 
 /** O lote trabalha numa cópia validada. Só devolve estado novo quando TODOS os comandos e vínculos valem. */
+/** Comandos que validam o documento inteiro, por lote. */
+export const COMANDOS_PESADOS_POR_LOTE = 8
+
 export function executarLote(
   estado: EstadoDeCenario,
   entrada: unknown,
@@ -208,6 +211,20 @@ export function executarLote(
 ): EstadoDeCenario {
   const lote = LoteDeCenarioSchema.parse(entrada)
   if (lote.revisaoEsperada !== estado.revisao) throw new ConflitoDeCenario(estado.revisao)
+  // Colar, restaurar e separar conjunto validam o documento inteiro: num lote só cabem poucos,
+  // senão um pedido de 500 colagens trava o servidor por minutos (a fila da oficina junta no
+  // máximo alguns gestos seguidos).
+  if (
+    lote.comandos.filter(
+      (c) =>
+        c.tipo === 'fragmento.colar' ||
+        c.tipo === 'cenario.restaurar' ||
+        c.tipo === 'montagem.desvincular',
+    ).length > COMANDOS_PESADOS_POR_LOTE
+  )
+    throw new CenarioInvalido([
+      `Um lote leva no máximo ${COMANDOS_PESADOS_POR_LOTE} colagens, restaurações ou separações`,
+    ])
   let d = validarDocumento(estado.documento, opcoes)
   let travas = indiceDeTravas(d)
   for (const c of lote.comandos) {
@@ -278,6 +295,13 @@ export function executarLote(
             'Carregue as alturas e informe a posição atual antes de separar o conjunto apoiado.',
           ])
         if (c.posicao) atual.transformacao = { ...atual.transformacao, posicao: c.posicao }
+        // Separado, o conjunto vira uma pasta e marcador não aponta para pasta: o marcador fica
+        // onde está, solto do conjunto (antes a separação sempre falhava).
+        for (const m of d.marcadores)
+          if (m.objeto === c.id) {
+            exigeLivre(travas, m)
+            m.objeto = null
+          }
         const outras = d.montagens!.filter((m) => m.id !== c.id),
           definicoes = d.definicoesConjuntos
         d = resolverConjuntos({ ...d, montagens: [atual] }).documento

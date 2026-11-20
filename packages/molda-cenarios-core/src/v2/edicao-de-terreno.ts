@@ -104,13 +104,18 @@ export function prepararPecasEditadas(
         const q = Math.round(
           ((base.fundo - estado.campo.min) / (estado.campo.max - estado.campo.min)) * 65535,
         )
-        conteudo = amostras.every(
-          (h) =>
-            Math.round(((h - estado.campo.min) / (estado.campo.max - estado.campo.min)) * 65535) ===
-            q,
-        )
-          ? null
-          : codificarPecaDeAlturas(amostras, estado.campo.min, estado.campo.max)
+        // Peça plana no fundo só pode sumir numa grade inteira: num terreno importado, peça
+        // ausente quer dizer "aqui não há chão" (uma praia aplainada perderia o chão).
+        conteudo =
+          base.cobertura === 'grade' &&
+          amostras.every(
+            (h) =>
+              Math.round(
+                ((h - estado.campo.min) / (estado.campo.max - estado.campo.min)) * 65535,
+              ) === q,
+          )
+            ? null
+            : codificarPecaDeAlturas(amostras, estado.campo.min, estado.campo.max)
       } else if (papel === 'pintura') {
         const bytes = codificarPecaDePintura(estado.pintura, posicao.coluna, posicao.linha)
         const n = estado.pintura.camadas

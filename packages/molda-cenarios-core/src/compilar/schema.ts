@@ -8,6 +8,9 @@ import {
   TexturaDoCenarioSchema,
 } from '../v2/entidades-schema'
 import { IluminacaoSchema } from '../v2/iluminacao'
+import { errosDaTopologiaDaAgua } from '../v2/topologia-de-agua'
+import { curvaDoCaminho } from '../v2/topologia-de-caminho'
+import { CenarioInvalido } from '../validacao'
 import { FonteDaCompilacaoSchema } from './fonte'
 import { LicencaDaBibliotecaSchema } from './licencas'
 import { LIMITES_DA_EXPORTACAO } from './limites'
@@ -85,6 +88,16 @@ export const CenaCompiladaSchema = z
       d.arquivos.map((a) => a.caminho.toLowerCase()),
       'arquivos',
     )
+    // O jogo triangula as águas e refaz a curva dos caminhos ao carregar: o que o documento
+    // recusa também não entra num pacote publicado.
+    for (const a of d.aguas) for (const e of errosDaTopologiaDaAgua(a)) falhar(e)
+    for (const c of d.caminhos)
+      try {
+        curvaDoCaminho(c)
+      } catch (erro) {
+        if (!(erro instanceof CenarioInvalido)) throw erro
+        for (const e of erro.problemas) falhar(`${e} (${c.id})`)
+      }
     for (const [tipo, ids] of [
       ['entidades', d.entidades.map((e) => e.id)],
       ['nós', d.nos.map((n) => n.id)],

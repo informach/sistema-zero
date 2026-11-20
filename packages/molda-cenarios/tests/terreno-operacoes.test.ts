@@ -79,7 +79,10 @@ test('redimensionar o terreno importado sem camadas não tenta gravar pintura in
   const r = prepararDimensoes(b, e, { ...b, passo: 2 })
   expect(r.regioes.pintura).toBeUndefined()
   const pecas = prepararPecasEditadas(r.base, r.estado, r.regioes)
-  expect(pecas.every((p) => p.papel !== 'pintura' && p.conteudo === null)).toBe(true)
+  expect(pecas.some((p) => p.papel === 'pintura')).toBe(false)
+  // Terreno importado: peça ausente é "sem chão", então as planas continuam gravadas (antes
+  // sumiam e o terreno redimensionado ficava sem chão nenhum).
+  expect(pecas.filter((p) => p.papel === 'alturas').every((p) => p.conteudo !== null)).toBe(true)
   expect(
     baseComPecasEditadas(
       r.base,

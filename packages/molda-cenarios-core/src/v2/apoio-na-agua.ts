@@ -2,6 +2,7 @@ import { CenarioInvalido } from '../validacao'
 import { prepararConsultaDaAgua } from './consulta-de-agua'
 import type { DocumentoDeCenario, InstanciaDeCenario, Transformacao } from './documento'
 import { ApoioSchema } from './entidades-schema'
+import { lembrar } from './memoria-da-validacao'
 import { girarNaVertical } from './rotacao'
 
 type DocumentoComAgua = Partial<Pick<DocumentoDeCenario, 'aguas'>>
@@ -15,7 +16,10 @@ function referencial(doc: DocumentoComAgua, id: string, local: { x: number; z: n
   if (agua.tipo === 'lago' || agua.tipo === 'represa')
     return { centro: agua.centro, giro: agua.giro, escala: agua.escala, nivel: agua.nivel }
   if (agua.tipo === 'mar') return { centro: { x: 0, z: 0 }, giro: 0, escala: 1, nivel: agua.nivel }
-  const nivel = prepararConsultaDaAgua(agua).em(local.x, local.z)?.nivel
+  const nivel = lembrar(agua, 'consulta', () => prepararConsultaDaAgua(agua)).em(
+    local.x,
+    local.z,
+  )?.nivel
   if (nivel === undefined)
     throw new CenarioInvalido(['O ponto de apoio está fora da superfície do rio.'])
   return { centro: { x: 0, z: 0 }, giro: 0, escala: 1, nivel }
