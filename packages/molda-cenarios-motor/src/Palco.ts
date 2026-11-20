@@ -119,7 +119,7 @@ const CAIXA_DO_FANTASMA = new Box3(new Vector3(-0.5, 0, -0.5), new Vector3(0.5, 
 const TOQUE_MAXIMO_PX = 5
 
 type EstadoDoModelo =
-  | { estado: 'carregando' }
+  | { estado: 'carregando'; controle: AbortController }
   | { estado: 'pronto'; modelo: ModeloCarregado; representacoes: RepresentacoesDoModelo }
   | { estado: 'falhou' }
 
@@ -430,7 +430,12 @@ class PalcoThree implements Palco {
         this.aguas.atualizarTerreno(regioes)
         this.marcadores.atualizarTerreno(regioes)
         this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(regioes))
-        if (!this.destruido) this.reconstruir()
+        if (this.destruido) return
+        // Com o pincel em uso, o relevo, a água e os caminhos já acompanham a cada quadro; os
+        // objetos apoiados seguem no máximo a cada 100 ms (refazer tudo a cada quadro travava
+        // cenas grandes). No fim do gesto (sem regiões), na hora.
+        if (regioes) this.reconstruirEmBreve()
+        else this.reconstruir()
       },
       aplicar: (gesto) => {
         if (!this.opcoes.aoEsculpir) throw new Error('Este ambiente não recebe edições de terreno')
@@ -1273,6 +1278,8 @@ class PalcoThree implements Palco {
     if (this.destruido) return
     this.encerrarTeste()
     this.destruido = true
+    for (const estado of this.modelos.values())
+      if (estado.estado === 'carregando') estado.controle.abort()
     if (this.reconstrucaoAgendada) clearTimeout(this.reconstrucaoAgendada)
     this.laco.dispose()
     this.espalhamento.descartar()
@@ -1543,6 +1550,8 @@ class PalcoThree implements Palco {
     }
     for (const [digest, estado] of this.modelos) {
       if (vivos.has(digest)) continue
+      // A leitura de um modelo que saiu do cenário para de baixar e de decodificar.
+      if (estado.estado === 'carregando') estado.controle.abort()
       if (estado.estado === 'pronto') {
         this.aguas.esquecerModelo(estado.modelo)
         this.caminhos.esquecerModelo(estado.modelo)
@@ -1556,13 +1565,16 @@ class PalcoThree implements Palco {
   private carregar(modelo: ModeloDoCenario) {
     // Uma leitura antiga pode terminar depois de remover e recolocar o mesmo hash.
     // Só a leitura que ainda ocupa a entrada pode publicar sucesso ou falha.
-    const pedido: EstadoDoModelo = { estado: 'carregando' }
+    const pedido: EstadoDoModelo = { estado: 'carregando', controle: new AbortController() }
     let publicado: EstadoDoModelo | undefined
     this.modelos.set(modelo.digest, pedido)
     this.opcoes
-      .carregarModelo(modelo)
+      .carregarModelo(modelo, pedido.controle.signal)
       .then((bytes) => conferirConteudoDoModelo(bytes, modelo.digest))
-      .then((bytes) => lerGlb(bytes))
+      .then((bytes) => {
+        pedido.controle.signal.throwIfAborted()
+        return lerGlb(bytes)
+      })
       .then((carregado) => {
         if (this.destruido || this.modelos.get(modelo.digest) !== pedido) {
           carregado.descartar()
