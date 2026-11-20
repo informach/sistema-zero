@@ -14,7 +14,8 @@ import * as Blockly from 'blockly/core'
  * Só liga a partir de `OFFSCREEN_BODIES_MIN_BLOCKS`. Os jogos dos cursos têm de 70 a 80 blocos:
  * neles isto nunca roda, e o robô das aulas continua achando todo bloco pelo texto na tela.
  */
-import { OFFSCREEN_BODIES_MIN_BLOCKS } from './offscreenThreshold'
+import { isDeferredBlock } from './deferredTail'
+import { drawDeferredBlocks, OFFSCREEN_BODIES_MIN_BLOCKS } from './offscreenThreshold'
 
 export { OFFSCREEN_BODIES_MIN_BLOCKS }
 
@@ -61,11 +62,13 @@ export function trackOffscreenBodies(
 }
 
 /**
- * Põe de volta na página todo corpo desmontado deste workspace. A foto dos blocos clona o
- * canvas: sem isto, os eventos longe da vista saíam com a "boca" vazia (revisão da missão,
- * achado C3). Workspace sem montagem sob demanda: nada a fazer.
+ * Põe de volta na página todo corpo desmontado deste workspace, e desenha o que a abertura adiou
+ * (`deferredTail.ts`). A foto dos blocos clona o canvas: sem isto, os eventos longe da vista saíam
+ * com a "boca" vazia (revisão da missão, achado C3). Workspace sem montagem sob demanda: nada a
+ * fazer.
  */
 export function mountAllOffscreenBodies(workspace: object): void {
+  drawDeferredBlocks(workspace)
   controllers.get(workspace)?.restoreAll()
 }
 
@@ -142,6 +145,9 @@ export function createOffscreenBodies(
   ): void {
     let blockY = y
     for (let block = first; block; block = block.getNextBlock() as Blockly.BlockSvg | null) {
+      // Daqui para baixo a abertura ainda não desenhou nada (`deferredTail.ts`): o que não está na
+      // página não tem o que tirar, e o corpo dele precisa estar no lugar quando for desenhado.
+      if (isDeferredBlock(block)) break
       if (block !== first) {
         blockY += block.relativeCoords.y
       }

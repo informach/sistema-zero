@@ -1,11 +1,13 @@
 import { expect, type Page, test } from '@playwright/test'
 
 /**
- * Montagem sob demanda do Clássico (`src/blockly/offscreenBodies.ts`).
+ * Montagem sob demanda do Clássico (`src/blockly/offscreenBodies.ts`) e abertura sem desenhar a
+ * cauda distante (`src/blockly/deferredTail.ts`, etapa 3).
  *
- * Projeto grande (o dia 3 de A Chave do Farol com os eventos repetidos): o corpo dos blocos longe
- * da vista sai da página, volta quando a vista chega, e o projeto gravado e o código gerado não
- * mudam com isso. No tamanho das aulas nada sai da página.
+ * Projeto grande (o dia 3 de A Chave do Farol com os eventos repetidos): a cauda longe da vista
+ * nem é desenhada na abertura, o que a vista alcança é desenhado e o corpo do que fica longe sai
+ * da página; o projeto gravado e o código gerado não mudam com isso. No tamanho das aulas nada
+ * sai da página.
  */
 
 const corposFora = (page: Page) =>
@@ -13,6 +15,13 @@ const corposFora = (page: Page) =>
     .locator('[data-sz-offscreen-bodies]')
     .first()
     .getAttribute('data-sz-offscreen-bodies')
+    .then((valor) => Number(valor ?? 0))
+
+const adiados = (page: Page) =>
+  page
+    .locator('[data-sz-deferred-blocks]')
+    .first()
+    .getAttribute('data-sz-deferred-blocks')
     .then((valor) => Number(valor ?? 0))
 
 const blocosNaPagina = (page: Page) =>
@@ -49,6 +58,7 @@ test('no tamanho das aulas nenhum bloco sai da página', async ({ page }) => {
   await abrir(page, 0)
   expect(await page.locator('[data-sz-offscreen-bodies]').count()).toBe(0)
   expect(await page.locator('.sz-block-far').count()).toBe(0)
+  expect(await page.locator('[data-sz-deferred-blocks]').count()).toBe(0)
 })
 
 test('projeto grande: o que está longe sai da página e volta, sem mudar o projeto', async ({
@@ -61,8 +71,10 @@ test('projeto grande: o que está longe sai da página e volta, sem mudar o proj
   const tiposNoProjeto = blocosAoAbrir.split('"type":"sz_').length - 1
   expect(tiposNoProjeto).toBeGreaterThan(1900)
 
-  // Longe da vista: corpos fora da página, e muito menos blocos desenhados que os do projeto.
-  await expect.poll(() => corposFora(page), { timeout: 20_000 }).toBeGreaterThan(100)
+  // Longe da vista: a cauda de cada área nem foi desenhada, e muito menos blocos estão na página
+  // que os do projeto.
+  const adiadosNoAlto = await adiados(page)
+  expect(adiadosNoAlto).toBeGreaterThan(1500)
   const desenhadosNoAlto = await blocosNaPagina(page)
   expect(desenhadosNoAlto).toBeLessThan(tiposNoProjeto / 2)
 
@@ -71,9 +83,10 @@ test('projeto grande: o que está longe sai da página e volta, sem mudar o proj
   const caixa = await canvas.boundingBox()
   if (!caixa) throw new Error('O canvas não tem caixa na tela.')
   await page.mouse.move(caixa.x + caixa.width / 2, caixa.y + caixa.height / 2)
-  const foraNoAlto = await corposFora(page)
   for (let vez = 0; vez < 40; vez++) await page.mouse.wheel(0, 3000)
   await page.waitForTimeout(1500)
+  // Rolar desenhou o que a vista alcançou.
+  expect(await adiados(page)).toBeLessThan(adiadosNoAlto)
   const visiveis = await page.evaluate(() => {
     const alto = window.innerHeight
     let comCorpo = 0
@@ -87,9 +100,8 @@ test('projeto grande: o que está longe sai da página e volta, sem mudar o proj
     return comCorpo
   })
   expect(visiveis, 'blocos na vista com o corpo montado').toBeGreaterThan(0)
-  // A vista mudou de lugar: o alto, que estava montado, agora está fora.
+  // A vista mudou de lugar: o alto, que estava montado, agora está sem corpo.
   expect(await corposFora(page)).toBeGreaterThan(0)
-  expect(foraNoAlto).toBeGreaterThan(0)
 
   // Rolar não é edição: o projeto e o código são os mesmos.
   expect(await ler(page, 'script')).toBe(scriptAoAbrir)

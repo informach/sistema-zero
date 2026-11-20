@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import { chromium } from 'playwright-core'
@@ -26,6 +27,24 @@ if (
   sizes.some((size) => !Number.isSafeInteger(size) || size < 1 || size > 10000)
 )
   throw new Error('Invalid bounded measurement parameters')
+/**
+ * O projeto da aula não traz ids: o Blockly sorteia um id por bloco a cada abertura. Para comparar
+ * dois braços, cada id vira a ordem em que aparece no estado (a serialização do Blockly anda os
+ * blocos sempre na mesma ordem), no estado e nos arquivos gerados.
+ */
+function canonicalProject(blocksStateText, filesText) {
+  const ids = new Map()
+  const state = JSON.stringify(JSON.parse(blocksStateText), (key, value) => {
+    if (key !== 'id' || typeof value !== 'string') return value
+    if (!ids.has(value)) ids.set(value, `#${ids.size}`)
+    return ids.get(value)
+  })
+  let files = filesText
+  for (const [id, canonical] of ids) files = files.split(id).join(canonical)
+  return { state, files }
+}
+const digest = (text) => createHash('sha256').update(text).digest('hex').slice(0, 16)
+
 const browser = await chromium.launch({
   headless: true,
   ...(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}),
@@ -51,6 +70,8 @@ try {
       for (const arm of order) {
         const context = await browser.newContext({ viewport: report.environment.viewport })
         const page = await context.newPage()
+        const pageErrors = []
+        page.on('pageerror', (error) => pageErrors.push(String(error)))
         const profiler =
           process.env.SZ_CLASSIC_OPEN_CPU_PROFILE === '1' ? await context.newCDPSession(page) : null
         if (profiler) {
@@ -121,6 +142,20 @@ try {
             }
             return { settledMs: stableSince, drawnBlocks: last }
           })
+          // A prova de equivalência (etapa 3, 20/11/2026): o projeto gravado e o código gerado
+          // depois de abrir, comparáveis entre os braços. Lidos como TEXTO (o Playwright não
+          // devolve um objeto com centenas de blocos encadeados).
+          const project = await page.evaluate(() => {
+            const projeto = window.__aula.projeto()
+            return {
+              blocksState: JSON.stringify(projeto.blocksState),
+              files: JSON.stringify(projeto.files),
+              deferredBlocks: Number(
+                document.querySelector('[data-sz-deferred-blocks]')?.dataset.szDeferredBlocks ?? 0,
+              ),
+            }
+          })
+          const canonical = canonicalProject(project.blocksState, project.files)
           const sample = {
             arm: arm.name,
             size,
@@ -128,6 +163,10 @@ try {
             cpuProfileEnabled: Boolean(profiler),
             ...measured,
             ...settled,
+            deferredBlocks: project.deferredBlocks,
+            blocksStateDigest: digest(canonical.state),
+            filesDigest: digest(canonical.files),
+            pageErrors,
           }
           report.samples.push(sample)
           console.log(JSON.stringify(sample))

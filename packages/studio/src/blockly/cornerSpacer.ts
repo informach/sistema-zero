@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { BLOCKS_FROM_TOP_PADDING } from './offscreenThreshold'
 
 /**
  * Sobe a lixeira e o zoom do Blockly (pedido dela, 08/11/2026: "está muito para baixo e a
@@ -66,7 +67,10 @@ export function installCornerSpacer(
  * no meio da tela com metade do canvas vazio em cima. Só na primeira carga de cada editor: a
  * Ponte recarrega os blocos a cada mudança no código, e a tela não pode pular.
  */
-export function showBlocksFromTop(workspace: Blockly.WorkspaceSvg, padding = 24): void {
+export function showBlocksFromTop(
+  workspace: Blockly.WorkspaceSvg,
+  padding = BLOCKS_FROM_TOP_PADDING,
+): void {
   try {
     if (workspace.getTopBlocks(false).length === 0) return
     const metrics = workspace.getMetrics()

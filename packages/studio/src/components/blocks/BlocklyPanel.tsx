@@ -34,6 +34,7 @@ import { isBlockInView } from '../../blockly/blockInView'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import type { OrganizerWorkspace, ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
 import { installCornerSpacer, showBlocksFromTop } from '../../blockly/cornerSpacer'
+import type { DeferredTailLoad } from '../../blockly/deferredTail'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
   attachAnimationNameWatcher,
@@ -45,7 +46,11 @@ import {
 } from '../../blockly/fields/FieldSpritePicker'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
 import type { OffscreenBodies } from '../../blockly/offscreenBodies'
-import { OFFSCREEN_BODIES_MIN_BLOCKS } from '../../blockly/offscreenThreshold'
+import {
+  disposeDeferredDrawing,
+  mayHaveManyBlocks,
+  OFFSCREEN_BODIES_MIN_BLOCKS,
+} from '../../blockly/offscreenThreshold'
 import { blockFontSpec, waitForOpeningFonts } from '../../blockly/openingRender'
 import {
   revealBlockInWorkspace,
@@ -209,6 +214,18 @@ function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   } catch {
     // Workspace pode ter sido descartado entre o agendamento e o render.
   }
+}
+
+/**
+ * A abertura que não desenha a cauda distante (`deferredTail.ts`) só é baixada para projeto
+ * grande, junto da espera da fonte. Se o download falhar, o projeto abre como sempre abriu.
+ */
+function loadDeferredTail(serialized: string) {
+  if (!mayHaveManyBlocks(serialized)) return null
+  return import('../../blockly/deferredTail').catch((error: unknown) => {
+    console.warn('Abrindo sem adiar o desenho:', error)
+    return null
+  })
 }
 
 /** Roda depois dos eventos que o Blockly já enfileirou (mesmo caminho do despacho dele). */
@@ -1145,20 +1162,30 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
     loadPendingRef.current = true
-    const load = () => {
+    const load = (deferredTail: Awaited<ReturnType<typeof loadDeferredTail>>) => {
       if (cancelled) return
       loadPendingRef.current = false
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
       lastAppliedBlocksStateRef.current = serialized
+      let deferredLoad: DeferredTailLoad | null | undefined = null
       try {
+        // Projeto grande: a cauda de cada área longe da vista nasce sem desenho (fecha no `finally`).
+        deferredLoad = deferredTail?.prepareDeferredTail(
+          workspace as Blockly.WorkspaceSvg,
+          stateToLoad,
+          !initialViewDoneRef.current,
+        )
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
         // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
         // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
         withWorkspaceLoad(() =>
-          Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
+          Blockly.serialization.workspaces.load(
+            (deferredLoad?.state ?? stateToLoad) as Record<string, unknown>,
+            workspace,
+          ),
         )
         // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
         // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
@@ -1212,18 +1239,19 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         isApplyingStateRef.current = false
         console.warn('Não foi possível restaurar blocksState:', e)
       } finally {
+        deferredLoad?.finish()
         setIsLoadingWorkspace(false)
       }
     }
     const handle = requestAnimationFrame(() => {
       if (cancelled) return
       // Fonte ainda chegando: espera um pouco (no máximo 1,5 s) para medir os textos uma vez só,
-      // com a fonte certa. Com a fonte pronta, a carga segue na mesma tarefa, como antes.
-      void waitForOpeningFonts(
-        document,
-        undefined,
-        blockFontSpec(workspace as Blockly.WorkspaceSvg),
-      ).then(load)
+      // com a fonte certa. Com a fonte pronta, a carga segue na mesma tarefa, como antes. No
+      // projeto grande, o módulo da abertura adiada é baixado durante essa mesma espera.
+      void Promise.all([
+        waitForOpeningFonts(document, undefined, blockFontSpec(workspace as Blockly.WorkspaceSvg)),
+        loadDeferredTail(serialized),
+      ]).then(([, deferredTail]) => load(deferredTail))
     })
     return () => {
       cancelled = true
@@ -1376,6 +1404,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       offscreenDisposed = true
       injected.removeChangeListener(offscreenGate)
       offscreenBodies?.dispose()
+      disposeDeferredDrawing(injected)
       injected.dispose()
       appliedToolboxRef.current = null
     }
