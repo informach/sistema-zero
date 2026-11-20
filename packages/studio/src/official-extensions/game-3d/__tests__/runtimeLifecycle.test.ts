@@ -35,6 +35,36 @@ it('recomeça no mesmo canvas sem perder seu contexto WebGL, liberando-o no ence
   expect(renderer.loop).toBeNull()
 })
 
+it('o recomeço com o renderer mantido solta o mapa de sombra das luzes da partida anterior', async () => {
+  // Do 88c6dfb50 (frente dos cenários), retirado no 72e091418 só para caber na catraca e
+  // devolvido pela missão do Estúdio: um vazamento de GPU não sai para caber num teto.
+  const { api } = loadRuntime(),
+    partidas: RuntimeWorld[] = [],
+    sombrasSoltas: number[] = []
+  api.runProject(() => {
+    const world = api.createScene('tela')
+    partidas.push(world)
+    const indice = partidas.length - 1
+    sombrasSoltas.push(0)
+    world.scene.traverse((objeto) => {
+      const luz = objeto as RealThree.DirectionalLight
+      if (!luz.isDirectionalLight || !luz.castShadow) return
+      const soltar = luz.shadow.dispose.bind(luz.shadow)
+      luz.shadow.dispose = () => {
+        sombrasSoltas[indice] = (sombrasSoltas[indice] ?? 0) + 1
+        soltar()
+      }
+    })
+  })
+  api.restart()
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(partidas).toHaveLength(2)
+  expect(partidas[1]!.renderer).toBe(partidas[0]!.renderer)
+  expect(sombrasSoltas[0]).toBeGreaterThan(0)
+  expect(sombrasSoltas[1]).toBe(0)
+  api.disposeAll()
+})
+
 it('libera o renderer da partida anterior quando o novo início não reutiliza aquele canvas', async () => {
   const { api } = loadRuntime(),
     partidas: RuntimeWorld[] = []
