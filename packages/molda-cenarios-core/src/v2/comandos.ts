@@ -114,7 +114,18 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
     })
     .strict(),
   z.object({ tipo: z.literal('elementos.remover'), ids: idsOrganizaveis }).strict(),
-  z.object({ tipo: z.literal('caminho.definir'), caminho: CaminhoSchema }).strict(),
+  z
+    .object({
+      tipo: z.literal('caminho.definir'),
+      caminho: CaminhoSchema,
+      /**
+       * Só para um caminho NOVO: em que lugar da lista ele entra. A ordem decide quem vence num
+       * encontro (o primeiro recorta os seguintes); o desfazer devolve o caminho apagado ao lugar
+       * dele. Sem ela, o caminho novo entra no fim.
+       */
+      posicao: z.number().int().min(0).max(100_000).optional(),
+    })
+    .strict(),
   z.object({ tipo: z.literal('caminho.remover'), id }).strict(),
   z.object({ tipo: z.literal('agua.definir'), agua: AguaSchema }).strict(),
   z.object({ tipo: z.literal('agua.remover'), id }).strict(),
@@ -507,9 +518,15 @@ export function executarLote(
         for (const id of apagar) travas.grupos.delete(id)
         break
       }
-      case 'caminho.definir':
+      case 'caminho.definir': {
+        const novo = !d.caminhos.some((e) => e.id === c.caminho.id)
+        if (c.posicao !== undefined && !novo)
+          throw new CenarioInvalido(['A posição só vale para um caminho novo'])
         definirTravavel(travas, d.caminhos, c.caminho)
+        if (c.posicao !== undefined)
+          d.caminhos.splice(Math.min(c.posicao, d.caminhos.length - 1), 0, d.caminhos.pop()!)
         break
+      }
       case 'caminho.remover':
         d.caminhos = removerTravavel(travas, d.caminhos, c.id)
         break

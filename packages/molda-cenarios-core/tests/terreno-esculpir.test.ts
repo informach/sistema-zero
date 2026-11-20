@@ -556,3 +556,26 @@ test('PNG de alturas: lê 8 bits colorido com filtros de linha', async () => {
   paleta[9] = 3
   await expect(lerPngDeAlturas(montar(paleta))).rejects.toThrow('paleta')
 })
+
+test('abrir para editar recusa borda diferente entre vizinhas e peça fora da grade, como o palco', () => {
+  const c = novo()
+  aplicarReceitaDeTerreno(c, { tipo: 'colinas', altura: 20, semente: 2 })
+  const { base, recursos } = gravar(c)
+  // Uma peça da direita com a borda da esquerda deslocada (não coincide com a vizinha).
+  const direita = base.pecas.find((p) => p.coluna === 1)!
+  const amostras = amostrasDaPeca(c, 1, 0).map((h, i) => (i % 65 === 0 ? h + 7 : h))
+  const bytes = codificarPecaDeAlturas(amostras, c.min, c.max)
+  const torta = new Map(recursos)
+  torta.set(digestDe(bytes), lerPecaDeAlturas(bytes))
+  const comBordaTorta: BaseDeTerreno = {
+    ...base,
+    pecas: base.pecas.map((p) => (p === direita ? { ...p, digest: digestDe(bytes) } : p)),
+  }
+  expect(() => criarFonteDeAlturas(comBordaTorta, torta)).toThrow(TerrenoInvalido)
+  expect(() => campoDaBase(comBordaTorta, torta)).toThrow(TerrenoInvalido)
+  const foraDaGrade: BaseDeTerreno = {
+    ...base,
+    pecas: [{ ...base.pecas[0]!, coluna: 5 }],
+  }
+  expect(() => campoDaBase(foraDaGrade, recursos)).toThrow()
+})

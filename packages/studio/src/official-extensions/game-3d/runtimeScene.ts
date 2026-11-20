@@ -173,3 +173,24 @@ export const gameThreeDSceneRuntimeSource = `
     world.camera.position.copy(to);
   }
 `
+
+/**
+ * O que entra no lugar do cenário quando o código do projeto não usa `loadScene` nem
+ * `sceneStart` (variante `sem-cenario-molda`, `sceneVariant.ts`). Sem cenário carregado nenhum
+ * `_sceneHandle` existe: os ganchos que o motor chama sem guarda (chão, câmera, quadro e
+ * descarte) são exatamente "nada" ou `null`, como no runtime completo. Os outros nomes do
+ * fragmento ficam declarados num substituto que para com recado: se a detecção errar, o jogo
+ * diz o que faltou em vez de um ReferenceError no carregamento.
+ */
+export const gameThreeDSceneAbsentRuntimeSource = `
+  function sceneAbsent() {
+    throw new Error('SZGame3D: o cenário do Molda não foi carregado neste jogo.');
+  }
+  var loadScene = sceneAbsent, sceneStart = sceneAbsent, removeDefaultSceneLights = sceneAbsent,
+    placeAtImportedStart = sceneAbsent, importedBodyRadius = sceneAbsent,
+    supportImportedFeet = sceneAbsent, resolveImportedBody = sceneAbsent;
+  function importedGroundHit() { return null; }
+  function occludeImportedCamera() {}
+  function updateImportedScene() {}
+  function disposeImportedScene() {}
+`

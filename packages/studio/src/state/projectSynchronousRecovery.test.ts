@@ -375,6 +375,36 @@ test('a confirmed save retires a byte-equivalent exit copy without creating a re
   }
 })
 
+test('a later confirmed revision of the same lineage retires an older exit copy without duplicating the project', async () => {
+  // Revisão completa da missão (persistência, item 2): a cópia de saída só saía quando o
+  // conteúdo era igual ao gravado. Uma cópia mais velha do MESMO escritor ficava no journal e,
+  // na abertura seguinte, virava "(edição recuperada)" com o estado antigo.
+  const f = await fixture()
+  try {
+    const older = f.edit('hidden tab, older')
+    await stageProjectExit(older, { puts: projectStorageEntries(older) }, f.failed)
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toHaveLength(1)
+    // Como no editor: a edição seguinte avança a partir da revisão anterior (sequência maior).
+    const later = advanceLocalRevision(older, {
+      ...older,
+      tree: { 'main.ts': { kind: 'file' as const, content: 'edited after returning, saved' } },
+    })
+    await coordinatedProjectWrite(later, { puts: projectStorageEntries(later) }, f.scope)
+    expect(await recoverProjectWrites(f.scope, later.id)).toEqual([])
+    expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
+    expect(await readValue(f.scope.store, projectFilesKey(later.id))).toMatchObject({
+      tree: { 'main.ts': { content: 'edited after returning, saved' } },
+    })
+    expect(
+      (await readAllKeys(f.scope.store)).filter(
+        (key) => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
+      ),
+    ).toHaveLength(1)
+  } finally {
+    f.close()
+  }
+})
+
 test('quota failure does not claim an exit copy and still requests the native journal', async () => {
   const f = await fixture()
   try {

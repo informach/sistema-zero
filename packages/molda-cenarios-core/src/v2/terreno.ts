@@ -209,12 +209,15 @@ export function lerPecaDeAlturas(bytes: Uint8Array): PecaDeAlturas {
   return { min, max, amostras }
 }
 
-/** Índice e recursos pertencem à base aberta; não há registro global nem resolução por rede. */
-export function criarFonteDeAlturas(
-  entrada: BaseDeTerreno,
+/**
+ * As peças da base por índice (linha × largura + coluna), cada uma com o intervalo e a
+ * resolução da base, e as bordas que duas peças vizinhas repetem com exatamente as mesmas
+ * alturas. Régua única de quem lê o relevo (palco, compilação) e de quem o edita.
+ */
+export function pecasConferidasDaBase(
+  base: BaseDeTerreno,
   recursos: ReadonlyMap<string, PecaDeAlturas>,
-): FonteDeAlturas {
-  const base = BaseDeTerrenoSchema.parse(entrada)
+): Map<number, PecaDeAlturas> {
   const larguraEmPecas = base.colunas / CELULAS_DA_PECA
   const pecas = new Map<number, PecaDeAlturas>()
   for (const p of base.pecas) {
@@ -244,6 +247,17 @@ export function criarFonteDeAlturas(
         invalidar('As bordas das peças de terreno não coincidem')
     }
   }
+  return pecas
+}
+
+/** Índice e recursos pertencem à base aberta; não há registro global nem resolução por rede. */
+export function criarFonteDeAlturas(
+  entrada: BaseDeTerreno,
+  recursos: ReadonlyMap<string, PecaDeAlturas>,
+): FonteDeAlturas {
+  const base = BaseDeTerrenoSchema.parse(entrada)
+  const larguraEmPecas = base.colunas / CELULAS_DA_PECA
+  const pecas = pecasConferidasDaBase(base, recursos)
   const ler = (p: PecaDeAlturas, x: number, z: number) =>
     p.min + (p.amostras[z * LADO_DAS_AMOSTRAS + x]! / 65535) * (p.max - p.min)
   return (x, z) => {

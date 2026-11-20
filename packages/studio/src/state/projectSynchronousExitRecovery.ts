@@ -83,6 +83,28 @@ async function matchesCommittedRecovery(
     ...deletes,
   ])
   if (!isLocalHead(head) || head.deleted) return false
+  // A later confirmed revision of the SAME lineage already contains this copy: one writer saves
+  // complete snapshots in sequence (the rule of `acceptsLocalHead`). Replaying the older copy
+  // would only fork it into a duplicate "(edição recuperada)" project with stale content.
+  // Not for a token already archived as a recovery source: that archive is the known content of
+  // the token, and only the source check may judge a copy that reuses it (both are preserved).
+  // The same sequence still compares content: a reused token must not hide a different payload.
+  if (
+    head.writer === recovery.head.writer &&
+    head.base === recovery.head.base &&
+    recovery.head.sequence < head.sequence
+  ) {
+    const { recoverySourceArchiveKey } = await import('./projectRecoverySources')
+    const archived = await readValues(scope.store, [
+      await recoverySourceArchiveKey(
+        recovery.projectId,
+        recovery.head.writer,
+        recovery.head.token,
+        version,
+      ),
+    ])
+    if (archived[0] === undefined) return true
+  }
   try {
     if (!puts.every(([, value], index) => localSnapshotsEqual(value, values[index]))) return false
     if (!deletes.every((_, index) => values[puts.length + index] === undefined)) return false

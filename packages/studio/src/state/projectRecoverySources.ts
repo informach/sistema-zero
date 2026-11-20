@@ -23,6 +23,19 @@ export interface PreparedRecoverySources {
   canRetire(source: Source): boolean
 }
 
+/** Where an exit copy is archived once a descendant names its token as a recovery source. */
+export async function recoverySourceArchiveKey(
+  projectId: string,
+  writer: string,
+  token: string,
+  version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
+): Promise<string> {
+  const digest = await sha256Hex(JSON.stringify([projectId, writer, token]))
+  return version === 4
+    ? projectBackupKey(projectId, `recovery-${digest}`, 4)
+    : `sz:project-backup:${projectId}:recovery-${digest}`
+}
+
 /** Validate rare ancestry outside the live CAS; no capture/pagehide work is added. */
 export async function prepareRecoverySources(
   scope: ProjectStorageScope,
@@ -100,13 +113,12 @@ export async function prepareRecoverySources(
     }
     if (previous !== undefined) {
       const parent = nativeRecovery(previous, source.key, version)
-      const digest = await sha256Hex(
-        JSON.stringify([incoming.projectId, parent.head.writer, source.token]),
+      const key = await recoverySourceArchiveKey(
+        incoming.projectId,
+        parent.head.writer,
+        source.token,
+        version,
       )
-      const key =
-        version === 4
-          ? projectBackupKey(incoming.projectId, `recovery-${digest}`, 4)
-          : `sz:project-backup:${incoming.projectId}:recovery-${digest}`
       const encoded = encodeRecoverySnapshot(previous)
       archives.set(key, {
         version: 1,
