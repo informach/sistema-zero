@@ -11,10 +11,17 @@ import {
   within,
 } from '@testing-library/react'
 import { createEmptyProject } from '#core'
+import { javaScriptProject } from '../../core/editableProject'
 import { useProjectStore } from '../../state/projectStore'
 import { studentTestResultsFor } from '../../state/studentTestResults'
 import { useUIStoreApi } from '../../state/uiStore'
 import { StudentTestsPanel } from './StudentTestsPanel'
+
+/** Os testes guardados no projeto da store (só o projeto em JavaScript os tem). */
+function savedTests() {
+  const project = useProjectStore.getState().project
+  return project ? javaScriptProject(project)?.studentTests : undefined
+}
 
 /**
  * A aba Meus testes FORA de um <Studio> (lê a store default; sem a prévia, não há fábrica do
@@ -87,7 +94,7 @@ describe('a aba Meus testes', () => {
     // "aumentou" não pede valor.
     expect(within(form).queryByLabelText('Valor para comparar')).toBeNull()
     fireEvent.click(within(form).getByRole('button', { name: 'Salvar teste' }))
-    const saved = useProjectStore.getState().project?.studentTests
+    const saved = savedTests()
     expect(saved).toHaveLength(1)
     expect(saved?.[0]).toMatchObject({
       name: 'Enter dá um ponto',
@@ -108,7 +115,7 @@ describe('a aba Meus testes', () => {
     fireEvent.change(within(form).getByLabelText('Nome do teste'), { target: { value: 'Teste' } })
     fireEvent.click(within(form).getByRole('button', { name: 'Salvar teste' }))
     expect(within(form).getByRole('alert').textContent).toBe('Escolha o que conferir no fim.')
-    expect(useProjectStore.getState().project?.studentTests).toBeUndefined()
+    expect(savedTests()).toBeUndefined()
   })
 
   it('edita e apaga um teste guardado', () => {
@@ -123,10 +130,10 @@ describe('a aba Meus testes', () => {
       target: { value: 'pausado' },
     })
     fireEvent.click(within(form).getByRole('button', { name: 'Salvar teste' }))
-    expect(useProjectStore.getState().project?.studentTests?.[0]?.rule.expect.value).toBe('pausado')
+    expect(savedTests()?.[0]?.rule.expect.value).toBe('pausado')
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Apagar teste' }))
-    expect(useProjectStore.getState().project?.studentTests).toBeUndefined()
+    expect(savedTests()).toBeUndefined()
   })
 
   it('rodar sem a prévia pronta dá o recado de carregar de novo', async () => {
@@ -175,7 +182,7 @@ describe('a aba Meus testes', () => {
     const semJogo2D = screen.getByLabelText('Passo 1', { exact: true }) as HTMLSelectElement
     expect([...semJogo2D.options].map((option) => option.value)).toEqual(['press', 'hold', 'wait'])
     unmount()
-    const project = useProjectStore.getState().project
+    const project = javaScriptProject(useProjectStore.getState().project)
     if (!project) throw new Error('sem projeto')
     useProjectStore.setState({
       project: {

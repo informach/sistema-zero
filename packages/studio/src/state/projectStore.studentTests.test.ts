@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import { createEmptyProject } from '#core'
+import { javaScriptProject } from '../core/editableProject'
 import { useProjectStore } from './projectStore'
+
+/** Os testes guardados no projeto da store (só o projeto em JavaScript os tem). */
+function savedTests() {
+  const project = useProjectStore.getState().project
+  return project ? javaScriptProject(project)?.studentTests : undefined
+}
 
 /**
  * Os testes da aba "Meus testes" no projeto (`setStudentTests`): a lista inteira de uma vez, só no
@@ -26,7 +33,7 @@ describe('setStudentTests', () => {
   it('guarda a lista no projeto e marca a mudança; a lista vazia tira a chave', () => {
     useProjectStore.setState({ project: createEmptyProject('p1', 'Jogo'), isDirty: false })
     expect(useProjectStore.getState().setStudentTests([teste('a'), teste('b')])).toBeNull()
-    expect(useProjectStore.getState().project?.studentTests?.map((t) => t.id)).toEqual(['a', 'b'])
+    expect(savedTests()?.map((t) => t.id)).toEqual(['a', 'b'])
     expect(useProjectStore.getState().isDirty).toBe(true)
     expect(useProjectStore.getState().setStudentTests([])).toBeNull()
     expect(useProjectStore.getState().project).not.toHaveProperty('studentTests')
