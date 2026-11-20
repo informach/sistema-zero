@@ -76,6 +76,7 @@ export interface InvestigationReading {
   frame: number | null
   paused: boolean
   canPause: boolean
+  pauseLater: boolean
   values: readonly { name: string; text: string }[]
   error: { lines: readonly number[] } | null
 }
@@ -86,6 +87,8 @@ export interface InvestigationWindow {
   frame: number | null
   paused: boolean
   canPause: boolean
+  /** O motor pausa, só que não agora (ver `DevtoolsStateMessage.pauseLater`). */
+  pauseLater: boolean
   values: readonly InvestigationValue[]
   /** O jogo parou com erro: o quadro, as linhas do caminho e os valores daquele momento. */
   stopped: {
@@ -102,6 +105,7 @@ const EMPTY_INVESTIGATION = {
   frame: null,
   paused: false,
   canPause: false,
+  pauseLater: false,
   values: [],
   stopped: null,
 } as const
@@ -121,6 +125,7 @@ export function createInvestigationWindow(): StoreApi<InvestigationWindow> {
         frame: reading.frame,
         paused: reading.paused,
         canPause: reading.canPause,
+        pauseLater: reading.pauseLater,
         values,
         // O PRIMEIRO erro manda (num laço de jogo o mesmo erro repete a cada quadro).
         stopped:

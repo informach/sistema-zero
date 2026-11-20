@@ -72,8 +72,13 @@ export interface DevtoolsStateMessage {
   /** O quadro do motor (o Jogo 2D conta); `null` quando o motor não conta. */
   frame: number | null
   paused: boolean
-  /** O motor tem a pausa que o Estúdio sabe chamar. */
+  /** O motor tem a pausa que o Estúdio sabe chamar, e ela vale agora. */
   canPause: boolean
+  /**
+   * O motor tem a pausa, mas não agora: o Jogo 2D Avançado só pausa com a partida rolando (no
+   * menu, no fim ou numa batalha, não).
+   */
+  pauseLater: boolean
   values: DevtoolsValueReading[]
   /** O jogo parou com erro: as linhas do script da criança, de dentro para fora. */
   error: { lines: number[] } | null
@@ -92,7 +97,12 @@ export function isDevtoolsStateMessage(value: unknown): value is DevtoolsStateMe
     !(finite(m.frame, 0, Number.MAX_SAFE_INTEGER) && Number.isInteger(m.frame))
   )
     return false
-  if (typeof m.paused !== 'boolean' || typeof m.canPause !== 'boolean') return false
+  if (
+    typeof m.paused !== 'boolean' ||
+    typeof m.canPause !== 'boolean' ||
+    typeof m.pauseLater !== 'boolean'
+  )
+    return false
   if (!Array.isArray(m.values) || m.values.length > DEVTOOLS_MAX_VALUES) return false
   for (const item of m.values) {
     if (!item || typeof item !== 'object') return false

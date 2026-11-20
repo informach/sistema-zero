@@ -67,5 +67,15 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   variável, pelo mapa do sinal vermelho). Parado com erro: o quadro, a frase do erro, o caminho
   até o erro (as linhas do script da criança na pilha, cada uma virando o bloco e o texto dele) e
   os valores daquele momento. Fechar a gaveta desliga.
-- Próximos: Investigar e Desempenho no Jogo 2D Avançado e nos 3D (pausa de cada motor), Meus
-  testes, Python e Pro.
+- **Lote 3 (20/11): Investigar e Desempenho no Jogo 2D Avançado.** A pausa é o estado "pausado"
+  do motor (a tela de pausa do próprio jogo aparece), pela porta opt-in dos inspetores
+  `game-2d-advanced:investigar`, que só existe com a aba ligada. O motor passou a contar os
+  quadros em que o jogo andou (o contador de passos dele anda também na pausa) e faz o Avançar 1
+  quadro sozinho, pausando no começo do passo seguinte: exato também com o relógio fixo, que pode
+  rodar zero ou dois passos num quadro da tela. Fora da partida (menu, fim, batalha) a aba diz
+  "Dá para pausar quando a partida está rolando." A tecla de pausa do próprio jogo também aparece
+  na aba. Desempenho: quantos personagens o motor desenhou no último quadro, depois do recorte da
+  câmera. Custo no motor: +779 caracteres (409.632 de 415.000) e +209 em gzip (122.593 de
+  124.000), com as explicações fora do texto do runtime; a dívida de parâmetros sem tipo não
+  cresceu (as ações não têm parâmetro).
+- Próximos: Investigar e Desempenho nos 3D (pausa de cada motor), Meus testes, Python e Pro.

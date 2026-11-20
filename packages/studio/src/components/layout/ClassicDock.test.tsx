@@ -185,6 +185,7 @@ describe('a aba Investigar (proposta aprovada em 20/11/2026)', () => {
     frame: 1284,
     paused: true,
     canPause: true,
+    pauseLater: false,
     values: [
       { name: 'estado', text: '"inicio"' },
       { name: 'pontos', text: '0' },
@@ -252,6 +253,22 @@ describe('a aba Investigar (proposta aprovada em 20/11/2026)', () => {
         .receive(leitura({ paused: false, canPause: false })),
     )
     expect(screen.getByText(/ainda não pausa pelo Estúdio/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Pausar' })).toBeNull()
+  })
+
+  it('rodando com a pausa do motor que ainda não vale (o Avançado no menu), diz quando dá', async () => {
+    const { stores, wrap } = setup()
+    rodando(stores)
+    act(() => stores.ui.setState({ classicDock: 'investigate', investigating: true }))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('button', { name: 'Parar de investigar' })
+    act(() =>
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive(leitura({ paused: false, canPause: false, pauseLater: true })),
+    )
+    expect(screen.getByText('Dá para pausar quando a partida está rolando.')).toBeTruthy()
+    expect(screen.queryByText(/ainda não pausa pelo Estúdio/)).toBeNull()
     expect(screen.queryByRole('button', { name: 'Pausar' })).toBeNull()
   })
 

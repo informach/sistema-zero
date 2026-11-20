@@ -7,17 +7,23 @@
  *
  * Desempenho: um relógio de `requestAnimationFrame` dentro do jogo conta os quadros que o
  * navegador conseguiu desenhar e o maior intervalo entre dois deles, em fatias de meio segundo.
- * Os motores que contam o que desenharam (o Jogo 2D, pelo inspetor `game-2d:observation`) mandam
- * junto quantos sprites entraram no último quadro; os outros mandam `null` ("indisponível").
+ * Os motores que contam o que desenharam mandam junto quantos sprites entraram no último quadro:
+ * o Jogo 2D (inspetor `game-2d:observation`, os sprites pintados entre duas "Limpar a tela") e o
+ * Jogo 2D Avançado (inspetor `game-2d-advanced:investigar`, quem o `drawEntity` pôs no canvas);
+ * os outros mandam `null` ("indisponível").
  *
- * Investigar: Pausar e Continuar chamam a pausa que o Jogo 2D já tem (`SZGame2D.pauseGame` e
- * `resumeGame`), na troca de quadro. Avançar 1 quadro continua e pausa de novo no quadro seguinte:
- * a pausa do motor zera o relógio dele, então ao continuar ele roda exatamente UM quadro antes de
- * o callback daqui (registrado depois) pausar. Os valores vêm do leitor dos objetivos
+ * Investigar: Pausar e Continuar chamam a pausa que o motor já tem. No Jogo 2D,
+ * `SZGame2D.pauseGame` e `resumeGame`; Avançar 1 quadro continua e pausa no callback seguinte
+ * (a pausa do motor zera o relógio dele, então ele roda exatamente UM quadro antes). No Jogo 2D
+ * Avançado, o estado "pausado" dele, pelo inspetor `game-2d-advanced:investigar`, que também
+ * conta os quadros em que o jogo andou e faz o Avançar (o motor pausa sozinho no passo seguinte,
+ * exato também com o relógio fixo); só pausa com o jogo no estado "jogando". Os 3D ainda não têm
+ * uma pausa que o Estúdio chame: a aba diz isso. Os valores vêm do leitor dos objetivos
  * (`instrumentCheckScript`, que a prévia aplica no script da criança só com a aba ligada), uma
- * vez a cada meio segundo com o jogo rodando e a cada comando. Quando o jogo para com erro, a
- * ponte manda as linhas do script da criança que estavam no caminho (o mesmo `__SZ_USER_JS_TAIL`
- * que o interceptor usa) e os valores daquele momento.
+ * vez a cada meio segundo com o jogo rodando, a cada comando e quando o jogo pausa sozinho (a
+ * tecla de pausa do próprio jogo). Quando o jogo para com erro, a ponte manda as linhas do script
+ * da criança que estavam no caminho (o mesmo `__SZ_USER_JS_TAIL` que o interceptor usa) e os
+ * valores daquele momento.
  *
  * String pura (vai dentro de um `<script>`): sem imports, sem crase crua. O `postMessage` leva
  * SEMPRE a origem do pai (nunca `'*'`); o editor ainda confere `ev.source`. Os comandos do editor
@@ -97,6 +103,14 @@ export interface DevtoolsBridgeOptions {
   labels?: DevtoolsValueLabels
 }
 
+/**
+ * Quantos quadros da tela a ponte espera o "Avançar 1 quadro" terminar antes de contar o estado.
+ * O Jogo 2D pausa no quadro seguinte; o Avançado com relógio fixo pode levar um quadro a mais
+ * (o relógio roda zero passos num quadro curto). Passou disso (o jogo saiu do "jogando" no meio,
+ * uma batalha), a ponte conta o estado como está e o meio segundo seguinte mostra a pausa.
+ */
+const STEP_WAIT_FRAMES = 30
+
 /** Cada documento montado ganha um número maior que o anterior (ver `doc` nas mensagens). */
 let lastDocument = 0
 
@@ -134,8 +148,18 @@ export function buildDevtoolsBridgeRuntime(
   }
   function lifecycle() {
     var observe = inspectors && inspectors['game-2d:observation'];
-    if (typeof observe !== 'function') return null;
-    try { return observe().lifecycle(); } catch (error) { return null; }
+    if (typeof observe === 'function') {
+      try { return observe().lifecycle(); } catch (error) { return null; }
+    }
+    var probe = advanced();
+    if (probe) {
+      try { return probe(); } catch (error) { return null; }
+    }
+    return null;
+  }
+  function advanced() {
+    var probe = inspectors && inspectors['game-2d-advanced:investigar'];
+    return typeof probe === 'function' ? probe : null;
   }
   if (${measure} && raf) (function () {
     var started = false, start = 0, last = 0, frames = 0, sum = 0, slowest = 0;
@@ -201,15 +225,38 @@ export function buildDevtoolsBridgeRuntime(
     }
     return out;
   }
-  function game() {
+  function control() {
+    var probe = advanced();
+    if (probe) return {
+      can: function (state) { return !!(state && state.canPause); },
+      pause: function () { probe().pause(); },
+      resume: function () { probe().resume(); },
+      step: function () { probe().step(); }
+    };
     var api = window.SZGame2D;
-    return api && typeof api.pauseGame === 'function' && typeof api.resumeGame === 'function' ? api : null;
+    if (!api || typeof api.pauseGame !== 'function' || typeof api.resumeGame !== 'function') return null;
+    return {
+      can: function () { return true; },
+      pause: function () { api.pauseGame(); },
+      resume: function () { api.resumeGame(); },
+      step: function () { api.resumeGame(); raf(function () { api.pauseGame(); }); }
+    };
   }
+  var lastPaused = false;
   function report(error) {
-    var state = lifecycle();
+    var state = lifecycle(), api = control();
+    lastPaused = !!(state && state.paused);
     post({ type: '${DEVTOOLS_STATE_MESSAGE}',
       frame: state && typeof state.frame === 'number' && state.frame >= 0 && state.frame % 1 === 0 ? state.frame : null,
-      paused: !!(state && state.paused), canPause: !!game(), values: values(), error: error || null });
+      paused: lastPaused, canPause: !!api && api.can(state), pauseLater: !!api && !api.can(state),
+      values: values(), error: error || null });
+  }
+  function afterStep(left) {
+    raf(function () {
+      var state = lifecycle();
+      if (state && !state.paused && left > 0) afterStep(left - 1);
+      else report();
+    });
   }
   function userLines(error) {
     var tail = window.__SZ_USER_JS_TAIL, lines = [];
@@ -226,12 +273,12 @@ export function buildDevtoolsBridgeRuntime(
   window.addEventListener('message', function (event) {
     var data = event.data;
     if (event.source !== host || !data || data.type !== '${DEVTOOLS_COMMAND_MESSAGE}') return;
-    var api = game();
-    if (data.cmd === 'pause' && api) api.pauseGame();
-    else if (data.cmd === 'resume' && api) api.resumeGame();
+    var api = control();
+    if (data.cmd === 'pause' && api) api.pause();
+    else if (data.cmd === 'resume' && api) api.resume();
     else if (data.cmd === 'step' && api && raf) {
-      api.resumeGame();
-      raf(function () { api.pauseGame(); report(); });
+      api.step();
+      afterStep(${STEP_WAIT_FRAMES});
       return;
     }
     report();
@@ -245,7 +292,7 @@ export function buildDevtoolsBridgeRuntime(
   window.addEventListener('error', function (event) { report({ lines: userLines(event.error) }); });
   setInterval(function () {
     var state = lifecycle();
-    if (!state || !state.paused) report();
+    if (!state || !state.paused || !lastPaused) report();
   }, 500);
 })();`
 }

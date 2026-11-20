@@ -77,6 +77,7 @@ describe('a janela da aba Investigar', () => {
     frame: 10,
     paused: true,
     canPause: true,
+    pauseLater: false,
     values: values.map(([name, text]) => ({ name, text })),
     error: null,
   })

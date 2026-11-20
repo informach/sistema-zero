@@ -56,6 +56,7 @@ export function InvestigatePanel(): JSX.Element {
       frame: s.frame,
       paused: s.paused,
       canPause: s.canPause,
+      pauseLater: s.pauseLater,
       values: s.values,
       stopped: s.stopped,
     })),
@@ -158,7 +159,11 @@ export function InvestigatePanel(): JSX.Element {
             {t('inv.frame', { frame: reading.frame.toLocaleString(locale(t)) })}
           </p>
         ) : null}
-        {reading.canPause ? null : <p className="m-0 text-sm">{t('inv.cantPause')}</p>}
+        {reading.canPause ? null : (
+          <p className="m-0 text-sm">
+            {t(reading.pauseLater ? 'inv.pauseLater' : 'inv.cantPause')}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           {reading.canPause ? (
             <button

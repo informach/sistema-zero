@@ -221,7 +221,8 @@ describe('a ponte da aba Investigar', () => {
   function runInvestigation(options: { paused?: boolean; frame?: number; noGame?: boolean } = {}) {
     const posted: Posted[] = []
     const listeners: Record<string, ((event: unknown) => void)[]> = {}
-    let pending: ((now: number) => void) | null = null
+    // A fila do navegador: tudo o que foi pedido até o quadro roda nele, na ordem do pedido.
+    let pending: ((now: number) => void)[] = []
     let paused = options.paused ?? false
     let frame = options.frame ?? 41
     const calls: string[] = []
@@ -244,8 +245,8 @@ describe('a ponte da aba Investigar', () => {
     const window: Record<string, unknown> = {
       parent,
       requestAnimationFrame(callback: (now: number) => void) {
-        pending = callback
-        return 1
+        pending.push(callback)
+        return pending.length
       },
       addEventListener(type: string, listener: (event: unknown) => void) {
         listeners[type] = [...(listeners[type] ?? []), listener]
@@ -298,10 +299,10 @@ describe('a ponte da aba Investigar', () => {
         listener({ source: from, data: { type: 'sz:devtools', cmd } })
     }
     const nextFrame = () => {
-      const callback = pending
-      pending = null
+      const callbacks = pending
+      pending = []
       frame++
-      callback?.(0)
+      for (const callback of callbacks) callback(0)
     }
     const states = () => posted.map((p) => p.message).filter((m) => m.type === 'sz:devtools:state')
     return {
@@ -324,7 +325,13 @@ describe('a ponte da aba Investigar', () => {
     game.command('pause')
     expect(game.calls).toEqual(['pause'])
     const [state] = game.states()
-    expect(state).toMatchObject({ frame: 41, paused: true, canPause: true, error: null })
+    expect(state).toMatchObject({
+      frame: 41,
+      paused: true,
+      canPause: true,
+      pauseLater: false,
+      error: null,
+    })
     expect(isDevtoolsStateMessage(state)).toBe(true)
     // Os valores com o texto da criança: número com vírgula, sprite pela posição, texto entre
     // aspas, lista contada; a função não aparece.
@@ -351,7 +358,7 @@ describe('a ponte da aba Investigar', () => {
   it('sem a pausa do motor, diz que não pausa e ainda manda os valores', () => {
     const game = runInvestigation({ noGame: true })
     game.command('pause')
-    expect(game.states()[0]).toMatchObject({ canPause: false, paused: false })
+    expect(game.states()[0]).toMatchObject({ canPause: false, pauseLater: false, paused: false })
   })
 
   it('com o jogo rodando, os valores chegam sozinhos; pausado, ficam parados', () => {
@@ -362,6 +369,18 @@ describe('a ponte da aba Investigar', () => {
     game.command('pause')
     game.timers[0]?.()
     expect(game.states()).toHaveLength(2)
+  })
+
+  it('o jogo que pausa sozinho (a tecla de pausa dele) aparece pausado uma vez, e então para', () => {
+    const game = runInvestigation()
+    game.timers[0]?.()
+    ;(game.window.SZGame2D as { pauseGame: () => void }).pauseGame()
+    game.timers[0]?.()
+    expect(game.states().at(-1)).toMatchObject({ paused: true })
+    const count = game.states().length
+    game.timers[0]?.()
+    game.timers[0]?.()
+    expect(game.states()).toHaveLength(count)
   })
 
   it('quando o jogo para com erro, manda as linhas do script da criança e passa o erro adiante', () => {

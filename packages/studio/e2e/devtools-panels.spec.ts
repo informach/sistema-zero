@@ -79,6 +79,40 @@ test.describe('as abas Investigar e Desempenho', () => {
     await expect.poll(() => srcdoc(page), { timeout: 15_000 }).not.toContain('sz:devtools')
   })
 
+  test('Investigar no Jogo 2D Avançado: no menu diz quando dá, jogando pausa e avança um quadro', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await exampleCard(page, 'Pong Profissional').click()
+    await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
+    const jogo = page.frameLocator('iframe[title="Pré-visualização"]')
+    await expect(jogo.locator('canvas')).toBeAttached({ timeout: 20_000 })
+    await page.getByRole('tab', { name: 'Investigar' }).click()
+    await page.getByRole('button', { name: 'Investigar o jogo' }).click()
+    // O jogo começa no menu dele: a pausa do motor só vale com a partida rolando.
+    await expect(
+      investigar(page).getByText('Dá para pausar quando a partida está rolando.', { exact: true }),
+    ).toBeVisible({ timeout: 20_000 })
+    await jogo.getByRole('button', { name: 'Jogar', exact: true }).click()
+    await page.getByRole('button', { name: 'Pausar', exact: true }).click({ timeout: 10_000 })
+    await expect(investigar(page).getByText('O jogo está pausado', { exact: true })).toBeVisible({
+      timeout: 10_000,
+    })
+    // A pausa é a do próprio jogo: a tela de pausa dele aparece.
+    await expect(jogo.getByRole('heading', { name: 'Pausa' })).toBeVisible()
+    const antes = await frameNumber(page)
+    await page.waitForTimeout(600)
+    expect(await frameNumber(page)).toBe(antes)
+    await page.getByRole('button', { name: 'Avançar 1 quadro' }).click()
+    await expect.poll(() => frameNumber(page), { timeout: 10_000 }).toBe(antes + 1)
+    await expect(investigar(page).getByText('O jogo está pausado', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+    await expect(investigar(page).getByText('O jogo está rodando', { exact: true })).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect.poll(() => frameNumber(page), { timeout: 10_000 }).toBeGreaterThan(antes + 1)
+  })
+
   test('Desempenho: mede os quadros do jogo e desliga ao fechar a gaveta', async ({ page }) => {
     await openCoinGame(page)
     await page.getByRole('tab', { name: 'Desempenho' }).click()

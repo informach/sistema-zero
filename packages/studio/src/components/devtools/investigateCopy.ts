@@ -18,6 +18,7 @@ export const INVESTIGATE_COPY: Record<Locale, Record<string, string>> = {
     'inv.pause': 'Pausar',
     'inv.cantPause':
       'Este tipo de jogo ainda não pausa pelo Estúdio. Os valores mudam enquanto ele roda.',
+    'inv.pauseLater': 'Dá para pausar quando a partida está rolando.',
     'inv.paused': 'O jogo está pausado',
     'inv.paused.before': 'A cada quadro, o jogo faz uma vez tudo o que está em ',
     'inv.paused.loop': 'A cada quadro do jogo',
@@ -52,6 +53,7 @@ export const INVESTIGATE_COPY: Record<Locale, Record<string, string>> = {
     'inv.pause': 'Pause',
     'inv.cantPause':
       "This kind of game can't be paused by the Studio yet. The values change while it runs.",
+    'inv.pauseLater': 'You can pause while a round is being played.',
     'inv.paused': 'The game is paused',
     'inv.paused.before': 'Each frame, the game runs once everything inside ',
     'inv.paused.loop': 'Every game frame',
