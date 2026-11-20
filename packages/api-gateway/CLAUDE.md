@@ -9,6 +9,7 @@ Quatro rotas exatas do hub na régua das de publicação (JWT de aluno ativo + H
 (`…/showcase-thread-studio/touch`) e `hub-showcase-source` (`POST /hub/internal/showcase-source`).
 Liberadas ao aluno no `kidsMayAccess` (lista exata). Testes: `kids-access-policy.test.ts` e
 `studio-publication-provenance.test.ts`.
+
 ## Meus testes no Pro (20/11/2026)
 
 `members-studio-student-tests` (`POST /members/studio/student-tests`): JWT de conta ativa,
