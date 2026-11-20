@@ -10,6 +10,7 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { world3DPromptContext } from './ai'
 import { world3DBlocks, world3DToolboxCategory } from './blocks'
 import { world3DManifest } from './manifest'
+import { world3DRuntimeVariant } from './sceneVariant'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(world3DManifest)
@@ -43,7 +44,11 @@ export const worldThreeDExtension: ExtensionDefinition = {
     toolboxCategory: world3DToolboxCategory,
   },
   runtime: {
-    loadBootstrapScript: async () => (await import('./runtime')).world3DRuntime,
+    // O cenário do Molda só entra quando o código usa `loadScene` (`sceneVariant.ts`);
+    // sem contexto, o runtime completo.
+    loadBootstrapScript: async (context) =>
+      (await import('./runtime')).world3DRuntimeForVariant(world3DRuntimeVariant(context)),
+    bootstrapVariant: world3DRuntimeVariant,
     lifecycle: WORLD_3D_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
