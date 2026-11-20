@@ -1,0 +1,18 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "dac03996b53e9aa19e9863976c2c2dde1279822d0ef4eba4708dda544b93fef0"
+  },
+  {
+    "file": "baseline-ci.json",
+    "sha256": "f396eaa72998c6e93a1720b85f4e2b0550e2129fb7e92150cc33554cc760f69e"
+  },
+  {
+    "file": "navegador-completo.txt",
+    "sha256": "e603b844342130965252c6b546c63d9800e1e4f0cb397ac7cf2febdb06746610"
+  },
+  {
+    "file": "navegador-focado.txt",
+    "sha256": "3957bdf4101b419dc6974450437ab2d63d595cb45450c50a4e1733c60afa523c"
+  }
+]

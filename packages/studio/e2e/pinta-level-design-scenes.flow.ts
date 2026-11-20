@@ -1,19 +1,40 @@
 import { execFileSync } from 'node:child_process'
-import { readFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
 import { sceneObjects, sceneSpawn } from '../../core/src/studio/pinta-scene-runtime'
 import { COPY } from '../../pinta/src/core/copy'
-import { effectiveLayer, isObjectLayer, type PintaAsset } from '../../pinta/src/core/project'
+import {
+  createTilemapAsset,
+  effectiveLayer,
+  isObjectLayer,
+  type PintaAsset,
+} from '../../pinta/src/core/project'
+import { galleryToPintaJson, importPintaJson } from '../../pinta/src/export/projectJson'
 import { exportPintaScene } from '../../pinta/src/export/scene'
 import { objectBounds } from '../../pinta/src/tiles/objectGeometry'
 
 const root = resolve(import.meta.dirname, '../../..'),
   directory = resolve(root, '.tmp/pinta-level-design-e2e')
-test.beforeAll(() => {
+test.beforeAll(async () => {
   execFileSync('bun', [resolve(root, 'packages/pinta/scripts/homologacao/library.ts'), directory], {
     cwd: root,
   })
+  const library = importPintaJson(
+    await readFile(resolve(directory, 'biblioteca.pinta.json'), 'utf8'),
+  )
+  const map = library.assets.find((asset) => asset.kind === 'tilemap')
+  if (map?.kind !== 'tilemap') throw new Error('Vila da fixture ausente')
+  const forest = createTilemapAsset({
+    name: 'floresta',
+    tilesetId: map.tilesetId,
+    cols: 8,
+    rows: 6,
+  })
+  await writeFile(
+    resolve(directory, 'biblioteca-com-floresta.pinta.json'),
+    galleryToPintaJson([...library.assets, forest]),
+  )
 })
 test.beforeEach(({ page }) => page.setDefaultTimeout(15_000))
 async function backup(page: Page): Promise<PintaAsset[]> {
@@ -141,7 +162,7 @@ test('autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrev
   await page
     .locator('input[type=file]')
     .first()
-    .setInputFiles(resolve(directory, 'biblioteca.pinta.json'))
+    .setInputFiles(resolve(directory, 'biblioteca-com-floresta.pinta.json'))
   const open = page.getByRole('button', { name: 'Abrir vila-da-biblioteca (Mapa)', exact: true })
   await open.click()
   const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
@@ -214,8 +235,9 @@ test('autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrev
   await field(`${COPY.tiles.propertyKey}: ${COPY.scene.nomeDaPropriedade(1)}`, 'bioma')
   await field(`${COPY.tiles.propertyValue}: bioma`, 'vila')
   const final = await backup(page)
-  const map = final.find((a) => a.kind === 'tilemap')
+  const map = final.find((a) => a.kind === 'tilemap' && a.name === 'vila-da-biblioteca')
   if (map?.kind !== 'tilemap') throw new Error('Mapa esperado')
+  expect(final.some((a) => a.kind === 'tilemap' && a.name === 'floresta')).toBe(true)
   const layer = map.layers.find(isObjectLayer)!,
     objects = layer.objects
   expect(objects).toHaveLength(4)
@@ -259,7 +281,9 @@ test('autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrev
   await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
   await page.reload()
   await open.click()
-  const reopened = (await backup(page)).find((a) => a.kind === 'tilemap')
+  const reopened = (await backup(page)).find(
+    (a) => a.kind === 'tilemap' && a.name === 'vila-da-biblioteca',
+  )
   if (reopened?.kind !== 'tilemap') throw new Error('Mapa esperado')
   expect(reopened.layers).toEqual(map.layers)
   await cdp.detach()
