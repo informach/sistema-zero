@@ -14,7 +14,9 @@ import * as Blockly from 'blockly/core'
  * Só liga a partir de `OFFSCREEN_BODIES_MIN_BLOCKS`. Os jogos dos cursos têm de 70 a 80 blocos:
  * neles isto nunca roda, e o robô das aulas continua achando todo bloco pelo texto na tela.
  */
-export const OFFSCREEN_BODIES_MIN_BLOCKS = 1500
+import { OFFSCREEN_BODIES_MIN_BLOCKS } from './offscreenThreshold'
+
+export { OFFSCREEN_BODIES_MIN_BLOCKS }
 
 /** Quantas alturas de tela, acima e abaixo da vista, continuam montadas. */
 const MARGIN_IN_VIEWS = 1
@@ -45,6 +47,26 @@ function isStatementInput(input: Blockly.Input): boolean {
 
 function isArea(block: Blockly.Block): boolean {
   return block.type.startsWith('sz_frame_')
+}
+
+const controllers = new WeakMap<object, Pick<OffscreenBodies, 'restoreAll'>>()
+
+/** Liga um controlador ao seu workspace, para quem precisa de todos os corpos na página. */
+export function trackOffscreenBodies(
+  workspace: object,
+  controller: Pick<OffscreenBodies, 'restoreAll'> | null,
+): void {
+  if (controller) controllers.set(workspace, controller)
+  else controllers.delete(workspace)
+}
+
+/**
+ * Põe de volta na página todo corpo desmontado deste workspace. A foto dos blocos clona o
+ * canvas: sem isto, os eventos longe da vista saíam com a "boca" vazia (revisão da missão,
+ * achado C3). Workspace sem montagem sob demanda: nada a fazer.
+ */
+export function mountAllOffscreenBodies(workspace: object): void {
+  controllers.get(workspace)?.restoreAll()
 }
 
 export function createOffscreenBodies(
@@ -235,7 +257,7 @@ export function createOffscreenBodies(
   }
   workspace.undo = undo
 
-  return {
+  const controller: OffscreenBodies = {
     sync,
     reveal,
     restoreAll,
@@ -243,6 +265,7 @@ export function createOffscreenBodies(
     dispose() {
       if (disposed) return
       disposed = true
+      if (controllers.get(workspace) === controller) trackOffscreenBodies(workspace, null)
       workspace.removeChangeListener(listener)
       restoreAll()
       // Only release methods still owned by this controller, preserving later integrations.
@@ -250,4 +273,6 @@ export function createOffscreenBodies(
       if (workspace.undo === undo) workspace.undo = originalUndo
     },
   }
+  trackOffscreenBodies(workspace, controller)
+  return controller
 }

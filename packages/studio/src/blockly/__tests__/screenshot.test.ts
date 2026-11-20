@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { trackOffscreenBodies } from '../offscreenBodies'
 import {
   buildBlocksSvg,
   canonicalBlockFontFamily,
@@ -34,6 +35,21 @@ describe('buildBlocksSvg — imagem de TODOS os blocos', () => {
     expect(out?.svg).not.toContain('translate(40,30)')
     expect(out?.svg).toContain('zelos-renderer')
     expect(out?.svg).toContain('sz-light-theme')
+  })
+
+  it('põe de volta os corpos desmontados antes de clonar (projeto grande, achado C3)', () => {
+    // Montagem sob demanda: o corpo longe da vista fica fora da página. A foto precisa dele.
+    const workspace = fakeWorkspace({ left: 0, top: 0, right: 100, bottom: 50 }) as unknown as {
+      getCanvas: () => SVGGElement
+    }
+    const corpo = document.createElementNS(SVG_NS, 'g')
+    corpo.setAttribute('data-corpo', 'longe-da-vista')
+    trackOffscreenBodies(workspace, { restoreAll: () => workspace.getCanvas().appendChild(corpo) })
+    try {
+      expect(buildBlocksSvg(workspace as never)?.svg).toContain('data-corpo="longe-da-vista"')
+    } finally {
+      trackOffscreenBodies(workspace, null)
+    }
   })
 
   it('devolve null quando não há blocos (moldura sem área)', () => {
