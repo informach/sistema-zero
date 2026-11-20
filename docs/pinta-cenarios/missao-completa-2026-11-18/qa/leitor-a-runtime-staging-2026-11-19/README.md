@@ -1,7 +1,7 @@
 # Leitor A: runtime implantado em staging
 
-**Continuação vigente:** o runtime foi atualizado para o perfil `f11aa057`;
-ver [identidades e recibos atuais](continuidade-f11/README.md). As identidades
+**Continuação vigente:** o runtime foi atualizado para o perfil `4daf3280`;
+ver [identidades e recibos atuais](continuidade-4daf-2026-11-20/README.md). As identidades
 abaixo documentam a primeira implantação, preservada como histórico.
 
 Em 19/11/2026, Worker e os dois aplicativos de contêiner de **staging** receberam

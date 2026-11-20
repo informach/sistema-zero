@@ -8,6 +8,16 @@ export class CenariosFechadosError extends DomainError {
   }
 }
 
+/** Não deu para conferir o Molda de quem pede agora (banco ou jornada fora). → 424 (não 5xx: o
+ * disjuntor do gateway contaria contra o members inteiro); tentar de novo resolve, ao contrário
+ * do "fechado". */
+export class CenariosIndisponiveisError extends DomainError {
+  readonly code = 'CENARIOS_INDISPONIVEIS'
+  constructor(readonly causa?: unknown) {
+    super('Não consegui conferir o seu acesso agora. Tente de novo em instantes.')
+  }
+}
+
 /** Não existe, ou é de outro espaço (nunca vaza existência). → 404. */
 export class CenarioNaoEncontradoError extends DomainError {
   readonly code = 'CENARIO_NAO_ENCONTRADO'

@@ -1,0 +1,71 @@
+{
+  "browserVersion": "159.0",
+  "protocol": "W3C WebDriver",
+  "siteIsolation": 1,
+  "realStudioUi": true,
+  "rounds": [
+    {
+      "iteration": 0,
+      "focus": {
+        "top": {
+          "active": "IFRAME",
+          "focused": true
+        },
+        "middle": {
+          "active": "IFRAME",
+          "focused": true
+        },
+        "inner": {
+          "active": "BODY",
+          "focused": true,
+          "ready": "sim"
+        }
+      },
+      "nativeArrowReceived": true,
+      "trustedEvent": true,
+      "noPreviewClick": true
+    },
+    {
+      "iteration": 1,
+      "focus": {
+        "top": {
+          "active": "IFRAME",
+          "focused": true
+        },
+        "middle": {
+          "active": "IFRAME",
+          "focused": true
+        },
+        "inner": {
+          "active": "BODY",
+          "focused": true,
+          "ready": "sim"
+        }
+      },
+      "nativeArrowReceived": true,
+      "trustedEvent": true,
+      "noPreviewClick": true
+    },
+    {
+      "iteration": 2,
+      "focus": {
+        "top": {
+          "active": "IFRAME",
+          "focused": true
+        },
+        "middle": {
+          "active": "IFRAME",
+          "focused": true
+        },
+        "inner": {
+          "active": "BODY",
+          "focused": true,
+          "ready": "sim"
+        }
+      },
+      "nativeArrowReceived": true,
+      "trustedEvent": true,
+      "noPreviewClick": true
+    }
+  ]
+}

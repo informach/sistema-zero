@@ -302,6 +302,10 @@ function estavel(valor: unknown): string {
 }
 
 const CAMADAS_DO_BASICO = 5
+/** O tamanho uniforme feito na tela passa por multiplicações: 1,4 → 1,5 dá x = 1,4999999999999998.
+ * Diferença relativa dessa ordem não é tamanho por eixo. */
+const desigual = (a: number, b: number) =>
+  Math.abs(a - b) > 1e-6 * Math.max(1, Math.abs(a), Math.abs(b))
 const APARENCIA_PADRAO = estavel(AparenciaDaAguaSchema.parse({}))
 const AGUAS_AVANCADAS = new Set(['rio', 'represa', 'cachoeira'])
 const CAMINHOS_AVANCADOS = new Set(['estrada', 'cerca', 'muro', 'ponte'])
@@ -340,7 +344,7 @@ function marcas(doc: DocumentoDeCenario): Map<string, string> {
 
   for (const i of doc.instancias) {
     const e = i.transformacao.escala
-    if (e.x !== e.y || e.y !== e.z) marcar('objetos.precisao', `escala:${i.id}`, e)
+    if (desigual(e.x, e.y) || desigual(e.y, e.z)) marcar('objetos.precisao', `escala:${i.id}`, e)
     if (i.espelho && (i.espelho.x || i.espelho.y || i.espelho.z))
       marcar('objetos.precisao', `espelho:${i.id}`, i.espelho)
     if (i.aparencia) marcar('objetos.aparencia', i.id, i.aparencia)

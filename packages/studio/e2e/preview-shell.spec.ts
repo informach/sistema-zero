@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { verifyFirefoxNativeKeys } from './helpers/firefoxNativeKeys'
 import {
   CONSERTADO,
   casca,
@@ -55,7 +56,20 @@ test.describe('prévia dentro da casca em outro site', () => {
     await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
   })
 
-  test('depois de Rodar, as setas chegam ao jogo sem clicar no palco', async ({ page }) => {
+  test('depois de Rodar, as setas chegam ao jogo sem clicar no palco', async ({
+    page,
+    browserName,
+    baseURL,
+  }, testInfo) => {
+    if (browserName === 'firefox') {
+      if (!baseURL) throw new Error('Local Studio origin required')
+      const report = await verifyFirefoxNativeKeys(baseURL)
+      await testInfo.attach('teclado-nativo-firefox', {
+        body: JSON.stringify(report),
+        contentType: 'application/json',
+      })
+      return
+    }
     // Conferência em staging (20/11/2026): o editor focava o quadro da casca, a casca trocava o
     // quadro do jogo e as setas iam para a casca vazia. Sem a casca, a prévia já focava o jogo.
     await createProject(page)

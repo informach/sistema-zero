@@ -274,6 +274,10 @@ export interface CenariosRepository extends ConjuntosRepository {
   /** A revisão que uma operação já aplicada produziu, ou nulo. */
   operacaoAplicada(cenarioId: string, operacaoId: string): Promise<number | null>
   pilhasDoHistorico(cenarioId: string): Promise<PilhasDoHistorico>
+  /** Só o mundo, a revisão e as pilhas, sem o documento: a consulta da edição ao vivo. */
+  resumoDoHistorico(
+    cenarioId: string,
+  ): Promise<{ mundoId: string; revisao: number; pilhas: PilhasDoHistorico } | null>
   inicioDoHistorico(cenarioId: string): Promise<number | null>
   passoDoHistorico(cenarioId: string, revisao: number): Promise<PassoDoHistorico | null>
   /** Resumos paginados; comandos só são lidos para desfazer, refazer ou restaurar. */

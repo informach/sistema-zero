@@ -1,0 +1,37 @@
+{
+  "parents": [
+    "cf5233178019faad63bd096de55a1ba897091b88",
+    "b2c8d5e7bd32315708d98abc64d77fd2fb7e6e94"
+  ],
+  "encoding": "UTF-8 LF",
+  "code": [
+    {
+      "file": "bun.lock",
+      "sha256": "3cad51a3b9b9eada1bf27ebb8bf21417ad22c601486045ca0cbd4308a32b6ce6"
+    },
+    {
+      "file": "packages/studio/package.json",
+      "sha256": "bcfc038e4b1b6a2cf4edf3bfc1141238010c7dd6ebfd84dafa36263f271f288a"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/firefoxNativeKeys.ts",
+      "sha256": "e83cc20b2d985f2a8f35e58e81b4bb70c1112fd78c2e3e0ebb2b9875a89116f6"
+    },
+    {
+      "file": "packages/studio/e2e/preview-shell.spec.ts",
+      "sha256": "b9d2b96be534f6b6dcfc243bc7551bcccdd35c49e568ced2633b595809374894"
+    },
+    {
+      "file": "packages/studio/e2e/reino-zero-performance.spec.ts",
+      "sha256": "2072179e12958e11f3bcd4a7eff34c4a4adecff9c72bd885c8bb18607bed7a3b"
+    },
+    {
+      "file": "packages/studio-runtime/tests/motion-observation.cases.mjs",
+      "sha256": "ffc2f158e05eaa5da257fb353fdf05d6199d911fd58c5110c9d1ac4d438d2fb2"
+    },
+    {
+      "file": "packages/studio/src/preview/__tests__/devtoolsEngines.test.ts",
+      "sha256": "4692bf440651ee18b6a0bce464f65e137474151b6bbeabcc05c614bcb7aa2aac"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { creativeToolAccessRef } from '@sistemazero/core/creations'
 import { KIDS_MOLDA_BAND_CAPABILITIES } from '@sistemazero/core/journey'
 import { FAIXAS_DA_OFICINA, type FaixaDaOficina } from '@sistemazero/molda-cenarios-core/v2'
 import type { Ator } from '../../domain/cenarios/cenarios'
+import { CenariosIndisponiveisError } from '../../domain/cenarios/cenarios.errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import {
@@ -23,7 +24,7 @@ import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query
  * A oficina pergunta muitas vezes por minuto (a gaveta, a edição ao vivo), então a liberação da
  * jornada também fica 60 s na memória. Ela nunca regride (conquista não se perde), e só o "pode" é
  * guardado: uma recusa volta a consultar (a criança acabou de chegar ao posto e tenta de novo).
- * Leitura que falha conta como recusa, sem guardar nada.
+ * Leitura que falha vira 424 (`CenariosIndisponiveisError`), sem guardar nada.
  */
 const JORNADA_TTL_MS = 60_000
 
@@ -97,6 +98,11 @@ export function criarConferenciaDoMolda(deps: {
   const audienciaDe = (ator: Ator) =>
     (ator.perfil ?? ator.usuarioId !== ator.contaId) ? 'kids' : 'adult'
 
+  // Leitura que falha (banco, jornada inicializando) NÃO é "não tem": vira 424, que a oficina
+  // trata como "tente de novo". Como recusa, ela travava a oficina e perdia o que estava na fila.
+  const indisponivel = (causa: unknown): never => {
+    throw new CenariosIndisponiveisError(causa)
+  }
   return {
     async produto(ator) {
       const audiencia = audienciaDe(ator)
@@ -105,15 +111,15 @@ export function criarConferenciaDoMolda(deps: {
           (await temProduto(ator.contaId, audiencia)) &&
           (await faixasDaJornada(ator, audiencia)).includes('basic')
         )
-      } catch {
-        return false
+      } catch (erro) {
+        return indisponivel(erro)
       }
     },
     async faixas(ator) {
       try {
         return await faixasDaJornada(ator, audienciaDe(ator))
-      } catch {
-        return []
+      } catch (erro) {
+        return indisponivel(erro)
       }
     },
   }

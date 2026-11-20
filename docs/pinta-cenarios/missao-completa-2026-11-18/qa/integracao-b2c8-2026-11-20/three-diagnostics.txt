@@ -1,0 +1,17 @@
+(pass) o documento da prévia > com a medida ligada (como a prévia monta), leva os dois, o registro antes da ponte [32.00ms]
+(pass) quem escuta as fatias, no editor > aceita só o iframe da prévia, e um jogo novo recomeça a janela; mensagem atrasada do anterior é ignorada
+(pass) a ponte da aba Investigar > pausa e continua pela pausa do motor, só a pedido do parent, e responde com o estado
+(pass) a ponte da aba Investigar > avançar 1 quadro continua e pausa de novo no quadro seguinte, e então responde
+(pass) a ponte da aba Investigar > sem a pausa do motor, diz que não pausa e ainda manda os valores
+(pass) a ponte da aba Investigar > com o jogo rodando, os valores chegam sozinhos; pausado, ficam parados
+(pass) a ponte da aba Investigar > o jogo que pausa sozinho (a tecla de pausa dele) aparece pausado uma vez, e então para
+(pass) a ponte da aba Investigar > quando o jogo para com erro, manda as linhas do script da criança e passa o erro adiante
+
+src\preview\__tests__\devtoolsEngines.test.ts:
+(pass) os motores da prévia com uma aba ligada > os 3D vêm na variante investigar, sobre a variante de sempre do projeto
+(pass) os motores da prévia com uma aba ligada > os outros motores vêm iguais, na mesma ordem e sem repetir [31.00ms]
+
+ 36 pass
+ 0 fail
+ 152 expect() calls
+Ran 36 tests across 4 files. [1042.00ms]

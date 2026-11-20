@@ -1,0 +1,165 @@
+{
+  "focusStates": [
+    {
+      "top": {
+        "active": "IFRAME",
+        "focused": true
+      },
+      "middle": {
+        "active": "IFRAME",
+        "focused": true
+      },
+      "inner": {
+        "active": "BODY",
+        "focused": true
+      }
+    },
+    {
+      "top": {
+        "active": "IFRAME",
+        "focused": true
+      },
+      "middle": {
+        "active": "IFRAME",
+        "focused": true
+      },
+      "inner": {
+        "active": "BODY",
+        "focused": true
+      }
+    },
+    {
+      "top": {
+        "active": "IFRAME",
+        "focused": true
+      },
+      "middle": {
+        "active": "IFRAME",
+        "focused": true
+      },
+      "inner": {
+        "active": "BODY",
+        "focused": true
+      }
+    }
+  ],
+  "browserVersion": "159.0",
+  "protocol": "W3C WebDriver, native Firefox without Juggler",
+  "siteIsolation": 1,
+  "rows": [
+    {
+      "active": "Preview",
+      "events": [
+        {
+          "type": "sz-shell:ready"
+        },
+        {
+          "seq": 1,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "kind": "boot"
+        },
+        {
+          "seq": 2,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "key": "ArrowUp",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "active": "Preview",
+      "events": [
+        {
+          "type": "sz-shell:ready"
+        },
+        {
+          "seq": 1,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "kind": "boot"
+        },
+        {
+          "seq": 2,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "key": "ArrowUp",
+          "kind": "key"
+        },
+        {
+          "seq": 3,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "kind": "boot"
+        },
+        {
+          "seq": 4,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "key": "ArrowUp",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "active": "Preview",
+      "events": [
+        {
+          "type": "sz-shell:ready"
+        },
+        {
+          "seq": 1,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "kind": "boot"
+        },
+        {
+          "seq": 2,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "key": "ArrowUp",
+          "kind": "key"
+        },
+        {
+          "seq": 3,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "kind": "boot"
+        },
+        {
+          "seq": 4,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "key": "ArrowUp",
+          "kind": "key"
+        },
+        {
+          "seq": 5,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "kind": "boot"
+        },
+        {
+          "seq": 6,
+          "type": "sz-shell:loaded"
+        },
+        {
+          "key": "ArrowUp",
+          "kind": "key"
+        }
+      ]
+    }
+  ]
+}

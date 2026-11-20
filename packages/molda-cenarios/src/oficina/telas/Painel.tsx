@@ -226,9 +226,15 @@ function PainelDoObjeto({
             sufixo="×"
             aoMudar={(fator) => {
               const k = fator / escala.y
+              // Objeto do mesmo tamanho nos três eixos continua exato (sem o resto da divisão).
+              const uniforme =
+                Math.abs(escala.x - escala.y) <= 1e-6 * escala.y &&
+                Math.abs(escala.z - escala.y) <= 1e-6 * escala.y
               transformar({
                 ...mundo,
-                escala: { x: escala.x * k, y: fator, z: escala.z * k },
+                escala: uniforme
+                  ? { x: fator, y: fator, z: fator }
+                  : { x: escala.x * k, y: fator, z: escala.z * k },
               })
             }}
           />

@@ -1,0 +1,17 @@
+(pass) BFF do Molda Cenários: trazer modelos > registro malformado ou sem sessão não chega ao members
+(pass) BFF do Molda Cenários: trazer modelos > retrato exige revisão antes de ler o bucket e recusa confirmação de outra revisão
+(pass) BFF do Molda Cenários: trazer modelos > a capa do cenário passa pela mesma conferência
+(pass) BFF do Molda Cenários: chãos > confirma as dimensões da imagem e só então usa a rota HMAC
+(pass) BFF do Molda Cenários: chãos > não lê imagens de outro espaço nem confirma um arquivo GLB como textura
+(pass) BFF do Molda Cenários: apagar e ler arquivos > o MIME confirmado prevalece sobre a consulta e nunca permite servir HTML
+(pass) BFF do Molda Cenários: apagar e ler arquivos > o que o members soltou sai do armazenamento depois da resposta, e as chaves não vão à tela
+(pass) BFF do Molda Cenários: apagar e ler arquivos > ler um arquivo: confere o espaço uma vez e redireciona para o mesmo endereço na janela
+(pass) BFF do Molda Cenários: apagar e ler arquivos > arquivo de um espaço que não é da pessoa não existe para ela
+(pass) BFF do Molda Cenários: agente com token no cabeçalho > o token vai em toda chamada ao gateway daquele pedido
+(pass) BFF do Molda Cenários: agente com token no cabeçalho > token vencido, inválido ou malformado responde sem chegar ao gateway
+(pass) BFF do Molda Cenários: agente com token no cabeçalho > sessão de suporte só de leitura também não escreve pelo token
+
+ 32 pass
+ 0 fail
+ 173 expect() calls
+Ran 32 tests across 1 file. [604.00ms]

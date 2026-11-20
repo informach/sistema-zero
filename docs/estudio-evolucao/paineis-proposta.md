@@ -78,4 +78,18 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   câmera. Custo no motor: +779 caracteres (409.632 de 415.000) e +209 em gzip (122.593 de
   124.000), com as explicações fora do texto do runtime; a dívida de parâmetros sem tipo não
   cresceu (as ações não têm parâmetro).
-- Próximos: Investigar e Desempenho nos 3D (pausa de cada motor), Meus testes, Python e Pro.
+- **Lote 4 (20/11): Investigar e Desempenho nos três 3D.** Os tetos dos 3D não têm folga (o Jogo
+  3D sem cenário mede 207.640 de 207.700) e nenhum teto sobe, então o código das abas entra numa
+  VARIANTE do motor, `investigar` (`official-extensions/three3dInvestigation.ts`), que a prévia só
+  pede com uma aba ligada, pela ponte (baixada sob demanda). No motor de sempre os dois marcadores
+  viram nada: as oito variantes de sempre saíram byte a byte iguais (impressão digital antes e
+  depois). A pausa é a de cada motor: a `_paused` no Jogo 3D e no Mundo 3D, e a aba só continua o
+  que ELA pausou (a tela de Jogar e o fim de jogo das regras não são desfeitos: a aba diz "Dá para
+  pausar quando a partida está rolando."); o estado "pausado" no 3D Avançado. Avançar 1 quadro
+  anda um quadro do laço da partida. Desempenho: "Objetos na cena" (malhas, sprites, pontos e
+  linhas ligados) e "Desenhos por quadro" (as chamadas da placa de vídeo no último quadro, somando
+  todas as passadas do pós-processamento), no lugar dos sprites. O pacote de abertura do modo
+  Blocos segue no teto: a ponte só usa de `#extensions` o que a prévia já usava, porque um nome
+  novo exportado do pedaço principal muda os apelidos curtos do build e cresce os pedaços de
+  abertura (medido: +23 bytes).
+- Próximos: Meus testes, Python e Pro.

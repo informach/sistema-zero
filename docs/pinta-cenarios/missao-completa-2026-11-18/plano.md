@@ -74,6 +74,17 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   remoto; foram corrigidos nos tipos e a repetição passou. As tentativas constam
   em `qa/integracao-6c32-2026-11-20/`. O perfil db27c95b… ainda precisa de nova CI,
   imagem Linux e rollout independente; esta prova local não conclui a etapa 0b.
+  O lote público b2c8d5e7b foi incorporado em seguida para conservar as mudanças
+  de Members já implantadas por outra sessão. A CI 44781842284 encontrou três
+  falhas de QA: fixture sem o fragmento real de texto do motor, contagem de blocos
+  que omitia a cauda adiada e teclado Juggler fora do contexto remoto focado.
+  As correções conservam os orçamentos e a programação; o caso Firefox usa
+  ações nativas WebDriver, sem clicar nem forçar foco na prévia, em três ciclos.
+  Os 14 ensaios Firefox, o teste de Reino Zero, os dez contratos Node, três
+  repetições de startup, tipos de Estúdio/Members e Biome passaram localmente.
+  A imagem db27 foi qualificada em 44781914334 e armazenada no registry de staging,
+  com leitura independente do digest. Isso ainda não a ativa nem libera a escrita.
+  Ver `qa/integracao-b2c8-2026-11-20/`; nova CI geral e rollout continuam necessários.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

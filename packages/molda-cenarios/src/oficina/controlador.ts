@@ -26,10 +26,14 @@ export type Salvamento = 'guardado' | 'guardando' | 'erro' | 'recusado' | 'desat
 function recusaPermanente(erro: unknown): boolean {
   if (erro instanceof CenarioInvalido) return true
   if (!(erro instanceof Error)) return false
-  // Só a resposta do servidor com 4xx é definitiva; rede, 5xx e falhas locais repetem.
+  // Só a resposta do servidor com 4xx é definitiva; rede, 5xx e falhas locais repetem. O 424 é
+  // dependência fora do ar (o members não conseguiu conferir o acesso agora): repete também.
   const status = (erro as { status?: unknown }).status
   return (
-    typeof status === 'number' && status >= 400 && status < 500 && ![408, 425, 429].includes(status)
+    typeof status === 'number' &&
+    status >= 400 &&
+    status < 500 &&
+    ![408, 424, 425, 429].includes(status)
   )
 }
 

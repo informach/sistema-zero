@@ -64,8 +64,11 @@ hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
   "Mostrar o bloco" = `highlightStore.revealBlock` (centraliza só no bloco: `centerOnBlock(id,
   true)`). O Jogo 2D avisa o erro apanhado por `window.__szReportCaughtError` (o interceptor
   acha a linha do script do aluno no stack). Python: o `diagnostic` traz arquivo e linha.
-- **Blockly**: `blockly/cornerSpacer.ts` (lixeira e zoom mais altos por um componente
-  posicionável invisível); zoom 1,0 e blocos no alto na 1ª carga; `blockly/categoryNames.ts`
+- **Blockly**: `blockly/workspaceControls.ts` (lixeira e zoom mais altos por um componente
+  posicionável invisível; desde 20/11/2026 também a lixeira POR CIMA dos blocos, que o Blockly 12
+  punha antes da camada dos blocos, e os desenhos no `sprites.svg` do SDK, em vetor; baixado logo
+  depois da injeção por `cornerSpacer.ts`, fora do pacote de abertura; até chegar, o CSS esconde os
+  dois pelo `data-sz-controls="pending"`, que só os editores do Estúdio marcam); zoom 1,0 e blocos no alto na 1ª carga; `blockly/categoryNames.ts`
   (D3, nomes de exibição — a curadoria segue pela chave); `contextMenuWords.ts` (palavras de
   criança + "Perguntar ao Zappy", o "Arrumar blocos" nativo sai); `moreBlocksItem.ts` ("Mais
   blocos" no pé da paleta); a busca (`searchCategory.ts`) aceita um resolvedor por workspace

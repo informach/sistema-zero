@@ -113,6 +113,46 @@ test.describe('as abas Investigar e Desempenho', () => {
     await expect.poll(() => frameNumber(page), { timeout: 10_000 }).toBeGreaterThan(antes + 1)
   })
 
+  test('Jogo 3D: na tela de Jogar diz quando dá, jogando pausa e avança um quadro, e mede objetos e desenhos', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await exampleCard(page, 'Desvie dos blocos').click()
+    await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
+    const jogo = page.frameLocator('iframe[title="Pré-visualização"]')
+    await expect(jogo.locator('canvas').first()).toBeAttached({ timeout: 30_000 })
+    await page.getByRole('tab', { name: 'Investigar' }).click()
+    await page.getByRole('button', { name: 'Investigar o jogo' }).click()
+    // A tela de Jogar é a pausa das regras: a aba não a desfaz, diz quando dá para pausar.
+    await expect(
+      investigar(page).getByText('Dá para pausar quando a partida está rolando.', { exact: true }),
+    ).toBeVisible({ timeout: 30_000 })
+    // O motor veio na variante da investigação; o documento de sempre não a tem.
+    expect(await srcdoc(page)).toContain('_szJogados')
+    await jogo.getByRole('button', { name: 'Jogar', exact: true }).click()
+    await page.getByRole('button', { name: 'Pausar', exact: true }).click({ timeout: 10_000 })
+    await expect(investigar(page).getByText('O jogo está pausado', { exact: true })).toBeVisible({
+      timeout: 10_000,
+    })
+    const antes = await frameNumber(page)
+    await page.waitForTimeout(600)
+    expect(await frameNumber(page)).toBe(antes)
+    await page.getByRole('button', { name: 'Avançar 1 quadro' }).click()
+    await expect.poll(() => frameNumber(page), { timeout: 10_000 }).toBe(antes + 1)
+    await page.getByRole('button', { name: 'Continuar', exact: true }).click()
+    await expect.poll(() => frameNumber(page), { timeout: 10_000 }).toBeGreaterThan(antes + 1)
+
+    // Desempenho no mesmo jogo: objetos na cena e desenhos por quadro, medidos.
+    await page.getByRole('tab', { name: 'Desempenho' }).click()
+    await page.getByRole('switch', { name: 'Medir o desempenho' }).click()
+    const painel = page.locator('[data-sz-devtools="performance"]')
+    await expect(painel.getByText('Objetos na cena')).toBeVisible({ timeout: 30_000 })
+    await expect(painel.getByText('Desenhos por quadro')).toBeVisible()
+    await expect(painel.getByText('Coisas no jogo')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Fechar a gaveta' }).click()
+    await expect.poll(() => srcdoc(page), { timeout: 15_000 }).not.toContain('_szJogados')
+  })
+
   test('Desempenho: mede os quadros do jogo e desliga ao fechar a gaveta', async ({ page }) => {
     await openCoinGame(page)
     await page.getByRole('tab', { name: 'Desempenho' }).click()

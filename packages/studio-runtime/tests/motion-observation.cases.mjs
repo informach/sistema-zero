@@ -5,6 +5,7 @@ import vm from 'node:vm'
 import { gameTwoDInspectionRuntime } from '../../studio/src/official-extensions/game-2d/runtime/inspection.ts'
 import { gameTwoDLifecycleRuntime } from '../../studio/src/official-extensions/game-2d/runtime/lifecycle.ts'
 import { gameTwoDSpritesRuntime } from '../../studio/src/official-extensions/game-2d/runtime/sprites.ts'
+import { gameTwoDTextSpritesRuntime } from '../../studio/src/official-extensions/game-2d/runtime/textSprites.ts'
 import {
   createClickTargetHandle,
   createClickTargetReaderInPage,
@@ -41,6 +42,7 @@ function motor(name = 'directional-fixture') {
     context,
   )
   vm.runInContext(gameTwoDSpritesRuntime, context)
+  vm.runInContext(gameTwoDTextSpritesRuntime, context)
   vm.runInContext(gameTwoDLifecycleRuntime, context)
   vm.runInContext(gameTwoDInspectionRuntime, context)
   return context

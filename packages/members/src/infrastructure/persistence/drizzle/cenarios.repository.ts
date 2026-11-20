@@ -1173,6 +1173,24 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     })
   }
 
+  async resumoDoHistorico(cenarioId: string) {
+    const [c] = await this.db
+      .select({
+        mundoId: cenarioCenarios.mundoId,
+        revisao: cenarioCenarios.revisao,
+        historico: cenarioCenarios.historico,
+      })
+      .from(cenarioCenarios)
+      .where(eq(cenarioCenarios.id, cenarioId))
+      .limit(1)
+    return c
+      ? {
+          mundoId: c.mundoId,
+          revisao: c.revisao,
+          pilhas: c.historico ?? { passado: [], futuro: [] },
+        }
+      : null
+  }
   async pilhasDoHistorico(cenarioId: string) {
     const [c] = await this.db
       .select({ historico: cenarioCenarios.historico })

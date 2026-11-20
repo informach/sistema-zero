@@ -46,10 +46,13 @@ export default defineConfig({
       // execução no documento isolado. A galeria completa já é coberta pelo
       // Chromium e duplicá-la adicionava centenas de casos sem sinal novo.
       // A casca em outro site (lote 3.2) existe por causa do Firefox: o arranjo que o isolou.
+      // A lixeira e o zoom do Blockly (desenho em vetor, a lixeira por cima, a tampa): cada motor
+      // desenha o SVG à sua maneira, e foi no desenho que os ícones sumiram (20/11/2026).
       testMatch: [
         /preview-security\.spec\.ts/,
         /preview-executes-user-code\.spec\.ts/,
         /preview-shell(?:-performance|-hostile)?\.spec\.ts/,
+        /blockly-media\.spec\.ts/,
       ],
       use: {
         ...devices['Desktop Firefox'],
@@ -67,7 +70,12 @@ export default defineConfig({
       // a mudança voltou em 0 de 10 recargas. Só os specs dessa gravação: o resto da suíte é
       // coberto pelo Chromium, e duplicá-lo não traria sinal novo.
       // A casca: só o funcionamento (nenhum arranjo de iframe isolou o WebKit na medição).
-      testMatch: [/reload-flush\.spec\.ts/, /preview-shell(?:-performance)?\.spec\.ts/],
+      // E a lixeira e o zoom do Blockly, como no Firefox (o desenho do SVG é de cada motor).
+      testMatch: [
+        /reload-flush\.spec\.ts/,
+        /preview-shell(?:-performance)?\.spec\.ts/,
+        /blockly-media\.spec\.ts/,
+      ],
       use: { ...devices['Desktop Safari'] },
     },
   ],

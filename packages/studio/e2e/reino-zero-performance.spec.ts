@@ -40,9 +40,22 @@ test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', as
   await card.click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
   await expect
-    .poll(() => page.locator('.blocklyBlockCanvas .blocklyDraggable').count(), {
-      timeout: 15_000,
-    })
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const rendered = document.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable').length
+          const deferred = Number(
+            document
+              .querySelector('[data-sz-deferred-blocks]')
+              ?.getAttribute('data-sz-deferred-blocks') ?? 0,
+          )
+          // A abertura adia a cauda fora da vista; ela continua pertencendo ao projeto.
+          return rendered + deferred
+        }),
+      {
+        timeout: 15_000,
+      },
+    )
     .toBeGreaterThan(1000)
   const preview = page.frameLocator('iframe[title="Pré-visualização"]')
   await expect(preview.locator('canvas')).toBeVisible({ timeout: 15_000 })
@@ -53,6 +66,11 @@ test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', as
     return {
       openMs: performance.now() - start,
       blocks: document.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable').length,
+      deferredBlocks: Number(
+        document
+          .querySelector('[data-sz-deferred-blocks]')
+          ?.getAttribute('data-sz-deferred-blocks') ?? 0,
+      ),
       blocklyDomNodes: document.querySelectorAll('.blocklySvg *').length,
       srcdocBytes: new TextEncoder().encode(iframe?.getAttribute('srcdoc') ?? '').byteLength,
       maxLongTaskMs: Math.max(0, ...tasks.map((task) => task.duration)),

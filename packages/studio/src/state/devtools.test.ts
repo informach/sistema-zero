@@ -18,6 +18,8 @@ const slice = (fps: number, frameMsMax = 1000 / fps): PerfSlice => ({
   frameMsAvg: 1000 / fps,
   frameMsMax,
   sprites: 2,
+  objects: null,
+  draws: null,
   canvas: true,
 })
 

@@ -80,11 +80,29 @@ function conversaComPagina(endereco: string) {
   })
   return {
     erros,
-    async enviar<T>(metodo: string, params: Record<string, unknown> = {}): Promise<T> {
+    /** Toda chamada tem prazo: um Chrome parado não segura o agente para sempre. */
+    async enviar<T>(
+      metodo: string,
+      params: Record<string, unknown> = {},
+      prazoMs = 60_000,
+    ): Promise<T> {
       await aberto
       const id = ++proximo
       return new Promise<T>((ok, falha) => {
-        esperando.set(id, { ok: (v) => ok(v as T), falha })
+        const relogio = setTimeout(() => {
+          esperando.delete(id)
+          falha(Error(`O Chrome não respondeu a tempo (${metodo}).`))
+        }, prazoMs)
+        esperando.set(id, {
+          ok: (v) => {
+            clearTimeout(relogio)
+            ok(v as T)
+          },
+          falha: (e) => {
+            clearTimeout(relogio)
+            falha(e)
+          },
+        })
         ws.send(JSON.stringify({ id, method: metodo, params }))
       })
     },
@@ -98,33 +116,78 @@ const PORTA_DO_CHROME = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//
  * Abre o Chrome sem tela, já na página da captura, com uma porta de depuração SÓ do computador.
  * Fala com a página pelo protocolo do Chrome direto: o Playwright trava sob o Bun no Windows.
  */
+/** Chrome e perfis temporários ainda abertos: a interrupção do processo (Ctrl+C, o cliente do
+ * MCP fechando) fecha e apaga o que sobrou, em vez de deixar Chrome sem tela rodando. */
+interface Aberto {
+  processo: { kill(): void }
+  perfil: string
+}
+const abertos = new Set<Aberto>()
+const aoInterromper = (sinal: NodeJS.Signals) => {
+  for (const a of abertos) {
+    try {
+      a.processo.kill()
+      rmSync(a.perfil, { recursive: true, force: true })
+    } catch {
+      // Melhor esforço: o processo está saindo.
+    }
+  }
+  process.exit(sinal === 'SIGINT' ? 130 : 143)
+}
+function vigiar(item: Aberto) {
+  if (!abertos.size) {
+    process.on('SIGINT', aoInterromper)
+    process.on('SIGTERM', aoInterromper)
+  }
+  abertos.add(item)
+  return () => {
+    if (!abertos.delete(item) || abertos.size) return
+    process.off('SIGINT', aoInterromper)
+    process.off('SIGTERM', aoInterromper)
+  }
+}
+
+const esperar = (ms: number) =>
+  new Promise<'prazo'>((ok) => setTimeout(() => ok('prazo'), Math.max(0, ms)))
+
 async function abrirPagina(executavel: string, url: string, largura: number, altura: number) {
   const perfil = mkdtempSync(join(tmpdir(), 'sz-captura-'))
-  const processo = Bun.spawn(
-    [
-      executavel,
-      '--headless=new',
-      '--remote-debugging-address=127.0.0.1',
-      '--remote-debugging-port=0',
-      `--user-data-dir=${perfil}`,
-      `--window-size=${largura},${altura}`,
-      '--no-first-run',
-      '--no-default-browser-check',
-      '--disable-extensions',
-      '--enable-unsafe-swiftshader',
-      url,
-    ],
-    { stdout: 'ignore', stderr: 'pipe' },
-  )
-  /** Fecha o Chrome e, depois que ele saiu de vez, apaga o perfil temporário. */
-  const fechar = async () => {
-    processo.kill()
-    await processo.exited
+  const apagarPerfil = () => {
     try {
       rmSync(perfil, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
     } catch {
       // Um arquivo ainda preso no Windows fica para a limpeza da pasta temporária do sistema.
     }
+  }
+  let processo: Bun.Subprocess<'ignore', 'ignore', 'pipe'>
+  try {
+    processo = Bun.spawn(
+      [
+        executavel,
+        '--headless=new',
+        '--remote-debugging-address=127.0.0.1',
+        '--remote-debugging-port=0',
+        `--user-data-dir=${perfil}`,
+        `--window-size=${largura},${altura}`,
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-extensions',
+        '--enable-unsafe-swiftshader',
+        url,
+      ],
+      { stdin: 'ignore', stdout: 'ignore', stderr: 'pipe' },
+    )
+  } catch (falha) {
+    apagarPerfil()
+    throw falha
+  }
+  const largar = vigiar({ processo, perfil })
+  /** Fecha o Chrome e, depois que ele saiu de vez, apaga o perfil temporário. */
+  const fechar = async () => {
+    processo.kill()
+    await processo.exited
+    apagarPerfil()
+    largar()
   }
   try {
     const leitor = processo.stderr.getReader(),
@@ -133,13 +196,23 @@ async function abrirPagina(executavel: string, url: string, largura: number, alt
       porta: string | null = null
     const prazo = Date.now() + 30_000
     while (!porta) {
-      if (Date.now() > prazo) throw Error('O Chrome não abriu a tempo.')
-      const parte = await leitor.read()
+      // O prazo vale também com o Chrome calado: a leitura corre contra o relógio.
+      const parte = await Promise.race([leitor.read(), esperar(prazo - Date.now())])
+      if (parte === 'prazo') throw Error('O Chrome não abriu a tempo.')
       if (parte.done) throw Error('O Chrome fechou antes de abrir a porta local.')
       lido += decodificar.decode(parte.value, { stream: true })
       porta = PORTA_DO_CHROME.exec(lido)?.[1] ?? null
     }
-    leitor.releaseLock()
+    // A saída continua sendo lida e jogada fora: com o cano cheio o Chrome para de andar.
+    void (async () => {
+      try {
+        while (!(await leitor.read()).done) {
+          // nada a fazer com ela
+        }
+      } catch {
+        // O Chrome fechou.
+      }
+    })()
     const alvos = (await (await fetch(`http://127.0.0.1:${porta}/json/list`)).json()) as Array<{
       type: string
       url: string
@@ -203,6 +276,10 @@ export async function capturarSemJanela(
     port: 0,
     async fetch(pedido) {
       const url = new URL(pedido.url)
+      // Só o próprio endereço local: um nome de outro site apontado para 127.0.0.1 (rebinding)
+      // não lê os arquivos do cenário por aqui.
+      if (pedido.headers.get('host') !== `127.0.0.1:${servidor.port}`)
+        return new Response('recusado', { status: 403 })
       try {
         if (url.pathname === '/')
           return new Response(PAGINA(largura, altura), {
@@ -253,11 +330,16 @@ export async function capturarSemJanela(
       vista: opcoes.vista ?? 'livre',
       ...(opcoes.enquadrar?.length ? { enquadrar: opcoes.enquadrar } : {}),
     }
-    const r = await conversa.enviar<RespostaDaAvaliacao<string>>('Runtime.evaluate', {
-      expression: `globalThis.capturarCenario(${JSON.stringify(pedido)})`,
-      awaitPromise: true,
-      returnByValue: true,
-    })
+    const r = await conversa.enviar<RespostaDaAvaliacao<string>>(
+      'Runtime.evaluate',
+      {
+        expression: `globalThis.capturarCenario(${JSON.stringify(pedido)})`,
+        awaitPromise: true,
+        returnByValue: true,
+      },
+      // Carregar os modelos de um cenário grande leva tempo; sem fim, nunca.
+      180_000,
+    )
     if (r.exceptionDetails)
       throw Error(
         `A captura falhou: ${r.exceptionDetails.exception?.description ?? r.exceptionDetails.text}`,

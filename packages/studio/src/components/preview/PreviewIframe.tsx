@@ -501,10 +501,13 @@ export function PreviewIframe(): JSX.Element {
       timestamp: Date.now(),
     })
   }, [cenas, pushLog])
+  // Com uma aba da gaveta ligada (e a ponte já baixada), os motores 3D vêm na variante
+  // `investigar`, que só a ponte sabe pedir (`loadDevtoolsExtensionScripts`).
+  const devtoolsEngines = devtoolsOn && devtoolsBridge ? devtoolsBridge : null
   const runtimeKey = useMemo(
     () =>
-      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}`,
-    [debouncedIds, extensionContext, bootstrapContext, comCenas3D],
+      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}|abas:${devtoolsEngines !== null}`,
+    [debouncedIds, extensionContext, bootstrapContext, comCenas3D, devtoolsEngines],
   )
 
   useEffect(() => {
@@ -517,7 +520,9 @@ export function PreviewIframe(): JSX.Element {
     let active = true
     setExtensionRuntimeState({ key: runtimeKey, status: 'loading', scripts: [] })
     void Promise.all([
-      loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current),
+      devtoolsEngines
+        ? devtoolsEngines.loadDevtoolsExtensionScripts(extensions, bootstrapContextRef.current)
+        : loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current),
       comCenas3D ? carregarModuloDeCenas3D() : undefined,
     ]).then(
       ([scripts, cenas3d]) => {
@@ -530,7 +535,7 @@ export function PreviewIframe(): JSX.Element {
     return () => {
       active = false
     }
-  }, [runtimeKey, runtimeAttempt, extensionContext, comCenas3D])
+  }, [runtimeKey, runtimeAttempt, extensionContext, comCenas3D, devtoolsEngines])
 
   // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
   // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
