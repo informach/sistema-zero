@@ -1382,6 +1382,21 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         signal: options?.signal,
       })
     },
+    /**
+     * "Meus testes" no Pro: os testes da criança no executor do "Verificar projeto" (um lote por
+     * pedido, até 8 testes). O prazo é o do Verificar projeto (o members compila e abre o jogo).
+     */
+    studioStudentTests(
+      input: { project: unknown; tests: unknown[] },
+      options?: { signal?: AbortSignal },
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(`/members/studio/student-tests?audience=${audience}`, {
+        method: 'POST',
+        body: input,
+        signal: options?.signal,
+        timeoutMs: 165_000,
+      })
+    },
     authorizePythonAnalysis(
       input: StudioPythonAnalysisAuthorization,
       options?: { signal?: AbortSignal },

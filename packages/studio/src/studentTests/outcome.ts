@@ -25,6 +25,16 @@ export type StudentTestOutcome =
   /** O projeto não pôde ser gravado antes (o teste, como o Rodar, só roda o que está gravado). */
   | { status: 'unsaved' }
   | { status: 'cancelled' }
+  /**
+   * O resultado do executor do servidor (o Pro): passou ou não, e o que ele viu (o teste é da
+   * própria criança, o valor esperado é dela). Sem a observação nem a foto do fim.
+   */
+  | { status: 'remote'; passed: boolean; detail: string | null }
 
 /** O tamanho do palco do teste: o mesmo do executor do servidor (`CHECK_VIEWPORT`). */
 export const STUDENT_TEST_VIEWPORT = { width: 1024, height: 640 } as const
+
+/** O teste passou (no navegador ou no servidor). */
+export function outcomePassed(outcome: StudentTestOutcome | undefined): boolean {
+  return outcome?.status === 'passed' || (outcome?.status === 'remote' && outcome.passed)
+}

@@ -7,6 +7,7 @@ import {
   createPythonEditorConsole,
   type PythonEditorConsole,
 } from '../runtime/python/editorConsole'
+import type { StudioStudentTestsServer } from '../studio/student-tests-server'
 import type { StudioWorkspacePreferencesAdapter } from '../studio/workspace'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createEditorHistory, type EditorHistory } from './editorHistory'
@@ -56,6 +57,8 @@ export interface StudioStores {
   previewDocument: PreviewDocumentSource
   /** O ambiente e o projeto do Python como a prévia os tem (a aba "Meus testes" pede a ela). */
   pythonTestHost: PythonTestHostSource
+  /** O executor dos testes do Pro no servidor (a aba "Meus testes" no Pro); `null` sem ele. */
+  studentTestsServer: StudioStudentTestsServer | null
   persistence: PersistenceService
   workspacePreferences: StudioWorkspacePreferencesAdapter | null
 }
@@ -68,6 +71,8 @@ export interface CreateStudioStoresOptions {
   limits?: StudioLimits
   /** Cotas do compilador Pro remoto, quando o host usa um runtime remoto. */
   proBuildLimits?: StudioProBuildLimits
+  /** O executor dos testes do Pro no servidor, quando o host o entrega (estático por instância). */
+  studentTestsServer?: StudioStudentTestsServer
   /** Locale estático usado também por mensagens produzidas fora do React. */
   locale?: Locale
 }
@@ -97,6 +102,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     proRun: createProRunStore(),
     previewDocument: createPreviewSlot(),
     pythonTestHost: createPreviewSlot(),
+    studentTestsServer: options.studentTestsServer ?? null,
     workspacePreferences:
       options.workspacePreferences ??
       ((options.persistence ?? 'local') === 'local' ? createLocalWorkspacePreferences() : null),

@@ -69,9 +69,15 @@ describe('setStudentTests', () => {
     expect(useProjectStore.getState().project).not.toHaveProperty('studentTests')
   })
 
-  it('fica fora do Pro', () => {
+  it('o Pro em JavaScript guarda (os testes rodam no servidor); o Python Pro fica de fora', () => {
     useProjectStore.setState({
       project: { ...createEmptyProject('p1', 'Jogo'), kind: 'pro' },
+      isDirty: false,
+    })
+    expect(useProjectStore.getState().setStudentTests([teste('a')])).toBeNull()
+    expect(savedTests()?.map((t) => t.id)).toEqual(['a'])
+    useProjectStore.setState({
+      project: documentFixture('python', 'pro') as never,
       isDirty: false,
     })
     expect(useProjectStore.getState().setStudentTests([teste('a')])).not.toBeNull()

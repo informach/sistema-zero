@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  casesLanguageOf,
   parsePythonCases,
+  proTestFunctions,
   pythonCall,
   pythonCasesText,
   pythonLiteral,
@@ -74,5 +76,52 @@ describe('as funções que a aba oferece', () => {
       }),
     ).toEqual([{ name: 'dobro' }, { name: 'somar', module: 'util.py' }])
     expect(pythonTestFunctions({ 'main.py': 'print(1)' })).toEqual([])
+  })
+})
+
+describe('o teste de função no Pro (JavaScript)', () => {
+  it('lê e escreve os casos como no JavaScript', () => {
+    expect(
+      parsePythonCases(
+        '2, 3 -> 5\n"Ana", true -> null\n{ vidas: 3 } -> [1, false]',
+        8,
+        'javascript',
+      ),
+    ).toEqual({
+      cases: [
+        { args: [2, 3], expected: 5 },
+        { args: ['Ana', true], expected: null },
+        { args: [{ vidas: 3 }], expected: [1, false] },
+      ],
+    })
+    // As palavras do Python não valem no JavaScript (e o contrário).
+    expect(parsePythonCases('True -> 1', 8, 'javascript')).toEqual({
+      problem: 'tests.form.badCase',
+    })
+    expect(parsePythonCases('true -> 1', 8)).toEqual({ problem: 'tests.form.badCase' })
+    expect(pythonCasesText([{ args: [true], expected: null }], 'javascript')).toBe('true -> null')
+    expect(pythonCall('somarPontos', [2, 3], 'javascript')).toBe('somarPontos(2, 3)')
+    expect(casesLanguageOf({ module: 'src/regras.js' })).toBe('javascript')
+    expect(casesLanguageOf({ module: 'util.py' })).toBe('python')
+    expect(casesLanguageOf({})).toBe('python')
+  })
+
+  it('as funções exportadas dos arquivos de src, com o arquivo', () => {
+    expect(
+      proTestFunctions({
+        src: { kind: 'dir' },
+        'src/regras.js': {
+          kind: 'file',
+          content:
+            'export function somarPontos(a, b) { return a + b }\nexport const dobro = (n) => n * 2\nfunction escondida() {}\nexport async function carregar() {}',
+        },
+        'src/style.css': { kind: 'file', content: 'export function nao() {}' },
+        'index.html': { kind: 'file', content: '' },
+      }),
+    ).toEqual([
+      { name: 'somarPontos', module: 'src/regras.js' },
+      { name: 'carregar', module: 'src/regras.js' },
+      { name: 'dobro', module: 'src/regras.js' },
+    ])
   })
 })

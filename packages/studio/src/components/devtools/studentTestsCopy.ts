@@ -141,6 +141,32 @@ export const STUDENT_TESTS_COPY: Record<Locale, Record<string, string>> = {
     'tests.form.badCase':
       'Um caso não deu para ler. Escreva o que a função recebe, uma seta e a resposta: 2, 3 -> 5.',
     'tests.form.tooManyCases': 'Um teste tem até 8 casos.',
+    'tests.kind.game': 'Testar o jogo',
+    'tests.function.none.pro':
+      'Ainda não tem nenhuma função para testar. Crie uma com export function num arquivo da pasta src e ela aparece aqui.',
+    'tests.function.casesNote.pro':
+      'Escreva o que a função recebe, uma seta e o que ela tem de responder, como no JavaScript: 2, 3 -> 5. Texto vai entre aspas: "Ana" -> "Olá, Ana". Até 8 casos.',
+    'tests.function.note.pro': 'O teste roda no servidor e chama a função com cada caso.',
+    'tests.note.server.many': 'Eles rodam no servidor, sem mexer no projeto.',
+    'tests.note.server.one': 'Ele roda no servidor, sem mexer no projeto.',
+    'tests.empty.pro':
+      'Nenhum teste ainda. Um teste roda o seu jogo no servidor e confere se aconteceu o que você queria, ou chama uma função exportada e confere a resposta.',
+    'tests.ranOnServer': 'Rodou no servidor em {seconds} segundos.',
+    'tests.ranOnServer.one': 'Rodou no servidor em 1 segundo.',
+    'tests.serverError': 'Não deu para rodar os testes no servidor agora. Tente de novo.',
+    'tests.what.remoteFailed': 'o servidor não disse o que viu',
+    'tests.form.target.game': 'o estado do jogo',
+    'tests.form.name.game': 'Qual parte do jogo',
+    'tests.game.phase': 'a fase',
+    'tests.game.score': 'os pontos',
+    'tests.game.goal': 'a meta',
+    'tests.game.health': 'a vida',
+    'tests.subject.game.phase': 'a fase do jogo',
+    'tests.subject.game.score': 'os pontos do jogo',
+    'tests.subject.game.goal': 'a meta do jogo',
+    'tests.subject.game.health': 'a vida do jogo',
+    'tests.form.note.pro':
+      'O teste começa o jogo do zero no servidor, faz os passos e olha o resultado no fim. Ele pode durar até 15 segundos.',
   },
   en: {
     'tests.run': 'Run the tests',
@@ -276,6 +302,32 @@ export const STUDENT_TESTS_COPY: Record<Locale, Record<string, string>> = {
     'tests.form.badCase':
       'A case could not be read. Write what the function receives, an arrow and the answer: 2, 3 -> 5.',
     'tests.form.tooManyCases': 'A test has up to 8 cases.',
+    'tests.kind.game': 'Test the game',
+    'tests.function.none.pro':
+      'There is no function to test yet. Create one with export function in a file of the src folder and it shows up here.',
+    'tests.function.casesNote.pro':
+      'Write what the function receives, an arrow and what it has to answer, as in JavaScript: 2, 3 -> 5. Text goes in quotes: "Ana" -> "Hi, Ana". Up to 8 cases.',
+    'tests.function.note.pro': 'The test runs on the server and calls the function with each case.',
+    'tests.note.server.many': 'They run on the server, without changing the project.',
+    'tests.note.server.one': 'It runs on the server, without changing the project.',
+    'tests.empty.pro':
+      'No tests yet. A test runs your game on the server and checks whether what you wanted happened, or calls an exported function and checks the answer.',
+    'tests.ranOnServer': 'Ran on the server in {seconds} seconds.',
+    'tests.ranOnServer.one': 'Ran on the server in 1 second.',
+    'tests.serverError': 'The tests could not run on the server now. Try again.',
+    'tests.what.remoteFailed': 'the server did not say what it saw',
+    'tests.form.target.game': 'the game state',
+    'tests.form.name.game': 'Which part of the game',
+    'tests.game.phase': 'the phase',
+    'tests.game.score': 'the score',
+    'tests.game.goal': 'the goal',
+    'tests.game.health': 'the health',
+    'tests.subject.game.phase': 'the game phase',
+    'tests.subject.game.score': 'the game score',
+    'tests.subject.game.goal': 'the game goal',
+    'tests.subject.game.health': 'the game health',
+    'tests.form.note.pro':
+      'The test starts the game from the beginning on the server, does the steps and looks at the result at the end. It can take up to 15 seconds.',
   },
 }
 

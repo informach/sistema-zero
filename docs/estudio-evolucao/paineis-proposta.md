@@ -214,4 +214,34 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
     outra origem ignorada, erro com a pilha e o teto de 20), a pilha do Chromium, do Firefox e do
     Safari virando passos, e a gaveta do Pro (as abas, o caminho até o erro com "Ir para a linha",
     a medida que para ao fechar e o Python Pro sem as abas).
-- Próximos: Meus testes no Pro (no executor do servidor); Pausar no Python.
+- **Lote 10 (20/11, noite): Meus testes no Pro em JavaScript.** A aba entra na gaveta do Pro
+  (entre Desempenho e Terminal) quando o host entrega o executor do servidor; hoje, o Pro do
+  Estúdio Completo (Kids e adulto). Na prancha: "Rodar os testes", "1 de 1 teste passou. Rodou no
+  servidor em 6 segundos.", e o teste novo com "Testar o jogo" e "Testar uma função".
+  - **Testar o jogo:** Apertar a tecla, Segurar a tecla e Esperar; no fim, o texto na tela ou as
+    mensagens do jogo e, nos kits, o estado do jogo (a fase, os pontos, a meta ou a vida, pelo
+    `__studioGame.inspect`). As variáveis não entram no Pro (o leitor das variáveis é do clássico).
+  - **Testar uma função:** uma `export function` (ou `export const … =>`) de um arquivo da pasta
+    `src`, com os casos um por linha escritos como no JavaScript (`2, 3 -> 5`, `true`, `null`);
+    sem função, o texto e o exemplo `somarPontos` da prancha.
+  - **Por trás:** `POST /members/studio/student-tests` (`StudioStudentTestsService`): confere o
+    acesso ao Pro do Estúdio Completo (`FreeStudioAccessService`, `existing-pro`), confere cada
+    teste pela régua do Pro (`isRunnableStudentTestRule(rule, 'javascript', 'pro')`) e roda no
+    MESMO checador do "Verificar projeto" (`ProjectExecutionChecker`: limite por pessoa do
+    executor, resultado reaproveitado para o mesmo projeto e as mesmas regras). Um lote por pedido
+    (`studentTestServerBatches`: até 8 testes e 40 s de espera, os tetos do executor), porque a
+    borda espera 160 s; o Estúdio manda os lotes em sequência. O gateway ganhou
+    `members-studio-student-tests` (JWT de conta ativa, 2 MB, 20 por minuto, 160 s), o member-shell
+    a rota `/api/studio/student-tests` (com os shims nos dois apps) e o adaptador
+    `createStudentTestsServer`, que o `StudioProEditor` passa ao `StudioEditor`
+    (`studentTestsServer`, guardado nas lojas da instância, sem código novo na abertura). O
+    resultado vem como `remote` (passou ou não, e o que o executor viu): "Passou: o texto na tela
+    tem o texto …" ou "Não passou: com (2, 3) respondeu 6; esperava 5".
+  - **No documento:** o Pro em JavaScript guarda `studentTests` (`project-document.ts`).
+  - ⚠️ **Ordem do deploy:** Members (esquema e rota) e gateway (a rota) antes do Kids e da
+    comunidade.
+  - Provas: a régua e os lotes no core, o serviço do Members (acesso, lotes, recusas, executor fora
+    e o motivo da recusa), a rota no gateway, a rota do BFF e o adaptador, os casos em JavaScript,
+    as funções exportadas e a gaveta do Pro (a aba só com o servidor, o formulário do jogo e o da
+    função, e os resultados com o tempo do servidor).
+- Próximos: Pausar no Python.

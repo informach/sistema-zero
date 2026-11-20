@@ -1,4 +1,4 @@
-import { type JSX, lazy, Suspense, useEffect, useId, useMemo, useState } from 'react'
+import { type JSX, lazy, Suspense, useContext, useEffect, useId, useMemo, useState } from 'react'
 import { cn, ErrorBoundary, IconChevronDown, IconChevronUp, IconFile } from '#ui'
 import { proFileBaseName, proFileKind } from '../../../components/code/proFileKinds'
 import { ConsolePanel } from '../../../components/console/ConsolePanel'
@@ -8,6 +8,7 @@ import type { ProjectTree } from '../../../core/proProject'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
 import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
+import { StudioStoresContext } from '../../../state/storesContext'
 import { useUIStore, useUIStoreApi } from '../../../state/uiStore'
 import { useStudioConfig } from '../../../studio/config'
 import { useT } from '../../../studio/i18n'
@@ -24,6 +25,10 @@ const ProInvestigatePanel = lazy(async () => ({
 }))
 const PerformancePanel = lazy(async () => ({
   default: (await import('../../../components/devtools/PerformancePanel')).PerformancePanel,
+}))
+// Meus testes no Pro: os testes rodam no executor do servidor (o host entrega o adaptador).
+const StudentTestsPanel = lazy(async () => ({
+  default: (await import('../../../components/devtools/StudentTestsPanel')).StudentTestsPanel,
 }))
 
 function diagnosticHint(code: number | string, source?: ProEditorDiagnostic['source']) {
@@ -103,6 +108,8 @@ export function ProDock({
   // pelo menu ⋯ (a preferência que o `useVisibleBottomTabs` cruza) não pode levar o REPL junto.
   const hasRepl = python && config.console
   const hasTerminal = !python && allowed.some((item) => item.id === 'terminal')
+  const serverTests = useContext(StudioStoresContext)?.studentTestsServer ?? null
+  const hasServerTests = !python && serverTests !== null
   const subject = python ? 'program' : 'game'
   const tabs: DockTab[] = python
     ? [
@@ -115,6 +122,7 @@ export function ProDock({
         'problems',
         'investigate',
         'performance',
+        ...(hasServerTests ? (['tests'] as const) : []),
         ...(hasTerminal ? (['terminal'] as const) : []),
       ]
   const active: ProWorkspaceBottom = (tabs as string[]).includes(selected) ? selected : 'closed'
@@ -135,7 +143,9 @@ export function ProDock({
             ? t('pro.dock.investigate')
             : tab === 'performance'
               ? t('pro.dock.performance')
-              : t('pro.dock.repl')
+              : tab === 'tests'
+                ? t('pro.dock.tests')
+                : t('pro.dock.repl')
   const open = active !== 'closed'
   // A medida para quando a gaveta fecha, como a frase da aba promete (a mesma do clássico).
   const ui = useUIStoreApi()
@@ -321,8 +331,8 @@ export function ProDock({
         </div>
         {tabs
           .filter(
-            (tab): tab is 'investigate' | 'performance' =>
-              tab === 'investigate' || tab === 'performance',
+            (tab): tab is 'investigate' | 'performance' | 'tests' =>
+              tab === 'investigate' || tab === 'performance' || tab === 'tests',
           )
           .map((tab) => (
             <div
@@ -343,6 +353,8 @@ export function ProDock({
                   <Suspense fallback={null}>
                     {tab === 'investigate' ? (
                       <ProInvestigatePanel tree={tree} navigate={navigate} />
+                    ) : tab === 'tests' ? (
+                      <StudentTestsPanel />
                     ) : (
                       <PerformancePanel />
                     )}

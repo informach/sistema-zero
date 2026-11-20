@@ -13,6 +13,8 @@ export type ProWorkspaceBottom =
   /** As abas Investigar e Desempenho do Pro em JavaScript (proposta aprovada em 20/11/2026). */
   | 'investigate'
   | 'performance'
+  /** Meus testes no Pro, quando o host entrega o executor do servidor. */
+  | 'tests'
 
 /** Presentation only. Never serialized into the game document or its export. */
 export interface ProWorkspacePreferences {
@@ -45,6 +47,7 @@ const BOTTOMS: readonly ProWorkspaceBottom[] = [
   'repl',
   'investigate',
   'performance',
+  'tests',
 ]
 
 export function emptyWorkspace(): ProWorkspacePreferences {

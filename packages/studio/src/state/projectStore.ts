@@ -1902,7 +1902,9 @@ export function createProjectStore(
       setStudentTests: (tests) => {
         const p = get().project
         if (!p) return 'Nenhum projeto carregado.'
-        if (p.kind === 'pro') return 'Os testes valem no Estúdio clássico.'
+        // O Pro em JavaScript também guarda (os testes rodam no executor do servidor); o Python
+        // Pro não tem a aba.
+        if (p.kind === 'pro' && isPythonProject(p)) return 'Os testes valem no Estúdio clássico.'
         if (!StudioStudentTestsSchema.safeParse(tests).success) return 'Teste com forma inválida.'
         // O Python clássico guarda os testes no documento dele (testar o programa e testar uma
         // função, proposta aprovada em 20/11/2026), pelo mesmo caminho das outras edições.
