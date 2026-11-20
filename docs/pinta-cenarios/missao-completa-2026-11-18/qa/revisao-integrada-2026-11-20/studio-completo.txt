@@ -1,0 +1,822 @@
+Studio test selection: 906 files in 164 isolated processes
+Studio tests: src/activity (1 files)
+ 2 pass
+ 0 fail
+ 8 expect() calls
+Ran 2 tests across 1 file. [660.00ms]
+Studio tests: src/ai (4 files)
+ 44 pass
+ 0 fail
+ 111 expect() calls
+Ran 44 tests across 4 files. [835.00ms]
+Studio tests: src/arte (7 files)
+ 90 pass
+ 0 fail
+ 1471 expect() calls
+Ran 90 tests across 7 files. [2.57s]
+Studio tests: src/asset-library (5 files)
+ 28 pass
+ 0 fail
+ 485 expect() calls
+Ran 28 tests across 5 files. [11.64s]
+Studio tests: src/blockly/__tests__/addonModuleExtension.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 9 expect() calls
+Ran 4 tests across 1 file. [6.91s]
+Studio tests: src/blockly/__tests__/animLoopMutator.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 6 expect() calls
+Ran 4 tests across 1 file. [8.10s]
+Studio tests: src/blockly/__tests__/blockCatalog.test.ts (1 files)
+ 12 pass
+ 0 fail
+ 20810 expect() calls
+Ran 12 tests across 1 file. [2.46s]
+Studio tests: src/blockly/__tests__/blockClipboard.test.ts (1 files)
+ 17 pass
+ 0 fail
+ 32 expect() calls
+Ran 17 tests across 1 file. [5.55s]
+Studio tests: src/blockly/__tests__/blockContracts.test.ts (1 files)
+ 29 pass
+ 0 fail
+ 10273 expect() calls
+Ran 29 tests across 1 file. [9.68s]
+Studio tests: src/blockly/__tests__/blockLevels.test.ts (1 files)
+ 16 pass
+ 0 fail
+ 375 expect() calls
+Ran 16 tests across 1 file. [641.00ms]
+Studio tests: src/blockly/__tests__/bosqueManifest.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 45 expect() calls
+Ran 2 tests across 1 file. [3.57s]
+Studio tests: src/blockly/__tests__/canvas3dAudit.test.ts (1 files)
+ 17 pass
+ 0 fail
+ 339 expect() calls
+Ran 17 tests across 1 file. [1.64s]
+Studio tests: src/blockly/__tests__/canvasAudit.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 55 expect() calls
+Ran 7 tests across 1 file. [1451.00ms]
+Studio tests: src/blockly/__tests__/canvasNewBlocks.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 16 expect() calls
+Ran 3 tests across 1 file. [552.00ms]
+Studio tests: src/blockly/__tests__/canvasPipeline.test.ts (1 files)
+ 69 pass
+ 0 fail
+ 259 expect() calls
+Ran 69 tests across 1 file. [1.93s]
+Studio tests: src/blockly/__tests__/changeSemantics.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 19 expect() calls
+Ran 5 tests across 1 file. [1330.00ms]
+Studio tests: src/blockly/__tests__/classMutators.test.ts (1 files)
+ 13 pass
+ 0 fail
+ 28 expect() calls
+Ran 13 tests across 1 file. [1.55s]
+Studio tests: src/blockly/__tests__/codeIdeas.test.ts (1 files)
+ 21 pass
+ 0 fail
+ 51 expect() calls
+Ran 21 tests across 1 file. [885.00ms]
+Studio tests: src/blockly/__tests__/contextMenuWords.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 13 expect() calls
+Ran 2 tests across 1 file. [1.97s]
+Studio tests: src/blockly/__tests__/correDinoEditorial.test.ts (1 files)
+ 24 pass
+ 0 fail
+ 130 expect() calls
+Ran 24 tests across 1 file. [3.15s]
+Studio tests: src/blockly/__tests__/cssBridgeHighlight.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 4 expect() calls
+Ran 1 test across 1 file. [2.24s]
+Studio tests: src/blockly/__tests__/cssFidelityRoundtrip.test.ts (1 files)
+ 8 pass
+ 0 fail
+ 40 expect() calls
+Ran 8 tests across 1 file. [1494.00ms]
+Studio tests: src/blockly/__tests__/cssGameBlocks.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 17 expect() calls
+Ran 3 tests across 1 file. [1492.00ms]
+Studio tests: src/blockly/__tests__/cssLearning.test.ts (1 files)
+ 10 pass
+ 0 fail
+ 223 expect() calls
+Ran 10 tests across 1 file. [1110.00ms]
+Studio tests: src/blockly/__tests__/cssPhase3.test.ts (1 files)
+ 8 pass
+ 0 fail
+ 25 expect() calls
+Ran 8 tests across 1 file. [1338.00ms]
+Studio tests: src/blockly/__tests__/deleteContextMenu.test.ts (1 files)
+ 9 pass
+ 0 fail
+ 16 expect() calls
+Ran 9 tests across 1 file. [1132.00ms]
+Studio tests: src/blockly/__tests__/domSafety.test.ts (1 files)
+ 27 pass
+ 0 fail
+ 35 expect() calls
+Ran 27 tests across 1 file. [1.57s]
+Studio tests: src/blockly/__tests__/draftDiagnostics.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 14 expect() calls
+Ran 6 tests across 1 file. [1445.00ms]
+Studio tests: src/blockly/__tests__/frames.test.ts (1 files)
+ 18 pass
+ 0 fail
+ 82 expect() calls
+Ran 18 tests across 1 file. [1.67s]
+Studio tests: src/blockly/__tests__/fullscreenRoundtrip.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 16 expect() calls
+Ran 7 tests across 1 file. [1.56s]
+Studio tests: src/blockly/__tests__/gameCtxRoundtrip.test.ts (1 files)
+ 12 pass
+ 0 fail
+ 50 expect() calls
+Ran 12 tests across 1 file. [1.67s]
+Studio tests: src/blockly/__tests__/gameExtensionVisualPolicy.test.ts (1 files)
+ 12 pass
+ 0 fail
+ 53 expect() calls
+Ran 12 tests across 1 file. [1.70s]
+Studio tests: src/blockly/__tests__/gameLoopBlocksRoundtrip.test.ts (1 files)
+ 13 pass
+ 0 fail
+ 25 expect() calls
+Ran 13 tests across 1 file. [1423.00ms]
+Studio tests: src/blockly/__tests__/grantedBlocks.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 16 expect() calls
+Ran 4 tests across 1 file. [1.52s]
+Studio tests: src/blockly/__tests__/htmlBlocksPedagogy.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 128 expect() calls
+Ran 7 tests across 1 file. [498.00ms]
+Studio tests: src/blockly/__tests__/htmlSemantics.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 9 expect() calls
+Ran 5 tests across 1 file. [1.96s]
+Studio tests: src/blockly/__tests__/ifElseMutator.test.ts (1 files)
+ 15 pass
+ 0 fail
+ 39 expect() calls
+Ran 15 tests across 1 file. [2.09s]
+Studio tests: src/blockly/__tests__/jsPhase4.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 20 expect() calls
+Ran 4 tests across 1 file. [1.65s]
+Studio tests: src/blockly/__tests__/landingRoundtrip.test.ts (1 files)
+ 9 pass
+ 0 fail
+ 35 expect() calls
+Ran 9 tests across 1 file. [2.01s]
+Studio tests: src/blockly/__tests__/manifestStudioSnapshots.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 137 expect() calls
+Ran 1 test across 1 file. [1169.00ms]
+Studio tests: src/blockly/__tests__/mediaQueryRoundtrip.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 8 expect() calls
+Ran 3 tests across 1 file. [1464.00ms]
+Studio tests: src/blockly/__tests__/memoryGameRoundtrip.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 29 expect() calls
+Ran 3 tests across 1 file. [832.00ms]
+Studio tests: src/blockly/__tests__/meuJeitoEditorial.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 35 expect() calls
+Ran 4 tests across 1 file. [1.98s]
+Studio tests: src/blockly/__tests__/moldsArea.test.ts (1 files)
+ 38 pass
+ 0 fail
+ 93 expect() calls
+Ran 38 tests across 1 file. [2.59s]
+Studio tests: src/blockly/__tests__/naveEditorial.test.ts (1 files)
+ 19 pass
+ 0 fail
+ 250 expect() calls
+Ran 19 tests across 1 file. [2.14s]
+Studio tests: src/blockly/__tests__/nuvensManifest.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 72 expect() calls
+Ran 1 test across 1 file. [2.68s]
+Studio tests: src/blockly/__tests__/objectsRoundtrip.test.ts (1 files)
+ 14 pass
+ 0 fail
+ 29 expect() calls
+Ran 14 tests across 1 file. [1.75s]
+Studio tests: src/blockly/__tests__/omitEmptyFrames.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [1150.00ms]
+Studio tests: src/blockly/__tests__/organize.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 12 expect() calls
+Ran 2 tests across 1 file. [1089.00ms]
+Studio tests: src/blockly/__tests__/paramsFlyout.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 7 expect() calls
+Ran 6 tests across 1 file. [1267.00ms]
+Studio tests: src/blockly/__tests__/paramsSanitize.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [1248.00ms]
+Studio tests: src/blockly/__tests__/picoManifest.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 72 expect() calls
+Ran 1 test across 1 file. [3.19s]
+Studio tests: src/blockly/__tests__/programmingAccessibility.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 196 expect() calls
+Ran 5 tests across 1 file. [1238.00ms]
+Studio tests: src/blockly/__tests__/programmingContract.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 680 expect() calls
+Ran 6 tests across 1 file. [1.50s]
+Studio tests: src/blockly/__tests__/programmingCopy.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 6 expect() calls
+Ran 3 tests across 1 file. [446.00ms]
+Studio tests: src/blockly/__tests__/programmingPipeline.test.ts (1 files)
+ 169 pass
+ 0 fail
+ 1656 expect() calls
+Ran 169 tests across 1 file. [3.25s]
+Studio tests: src/blockly/__tests__/programmingSemantics.test.ts (1 files)
+ 27 pass
+ 0 fail
+ 162 expect() calls
+Ran 27 tests across 1 file. [1.99s]
+Studio tests: src/blockly/__tests__/projectAreaGuard.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 17 expect() calls
+Ran 5 tests across 1 file. [1.91s]
+Studio tests: src/blockly/__tests__/projectAreas.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 1646 expect() calls
+Ran 2 tests across 1 file. [705.00ms]
+Studio tests: src/blockly/__tests__/projectAreaSafeDeleteLoad.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 9 expect() calls
+Ran 2 tests across 1 file. [1.55s]
+Studio tests: src/blockly/__tests__/projectCheckAuthoring.test.ts (1 files)
+ 44 pass
+ 0 fail
+ 148 expect() calls
+Ran 44 tests across 1 file. [1.95s]
+Studio tests: src/blockly/__tests__/protectedCourses.test.ts (1 files)
+ 15 pass
+ 0 fail
+ 43 expect() calls
+Ran 15 tests across 1 file. [2.18s]
+Studio tests: src/blockly/__tests__/readingOrder.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [494.00ms]
+Studio tests: src/blockly/__tests__/recifeManifest.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 72 expect() calls
+Ran 1 test across 1 file. [4.07s]
+Studio tests: src/blockly/__tests__/restoreShadowLiterals.test.ts (1 files)
+ 9 pass
+ 0 fail
+ 31 expect() calls
+Ran 9 tests across 1 file. [926.00ms]
+Studio tests: src/blockly/__tests__/screenshot.test.ts (1 files)
+ 13 pass
+ 0 fail
+ 28 expect() calls
+Ran 13 tests across 1 file. [1.56s]
+Studio tests: src/blockly/__tests__/searchCategory.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [1.51s]
+Studio tests: src/blockly/__tests__/searchFlyoutMetrics.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 7 expect() calls
+Ran 5 tests across 1 file. [981.00ms]
+Studio tests: src/blockly/__tests__/searchGrouping.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [1273.00ms]
+Studio tests: src/blockly/__tests__/searchLevels.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 42 expect() calls
+Ran 6 tests across 1 file. [1070.00ms]
+Studio tests: src/blockly/__tests__/searchTerms.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 3 expect() calls
+Ran 1 test across 1 file. [382.00ms]
+Studio tests: src/blockly/__tests__/semanticDiagnostics.test.ts (1 files)
+ 46 pass
+ 0 fail
+ 104 expect() calls
+Ran 46 tests across 1 file. [543.00ms]
+Studio tests: src/blockly/__tests__/serverChecksDeploy.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [372.00ms]
+Studio tests: src/blockly/__tests__/serverProjectChecks.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 20 expect() calls
+Ran 6 tests across 1 file. [1314.00ms]
+Studio tests: src/blockly/__tests__/shadowLevels.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 11 expect() calls
+Ran 6 tests across 1 file. [532.00ms]
+Studio tests: src/blockly/__tests__/somAudit.test.ts (1 files)
+ 15 pass
+ 0 fail
+ 133 expect() calls
+Ran 15 tests across 1 file. [1.79s]
+Studio tests: src/blockly/__tests__/stackLayout.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 9 expect() calls
+Ran 6 tests across 1 file. [573.00ms]
+Studio tests: src/blockly/__tests__/svgDynamicRoundtrip.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 13 expect() calls
+Ran 4 tests across 1 file. [652.00ms]
+Studio tests: src/blockly/__tests__/svgPedagogy.test.ts (1 files)
+ 8 pass
+ 0 fail
+ 134 expect() calls
+Ran 8 tests across 1 file. [478.00ms]
+Studio tests: src/blockly/__tests__/svgRoundtrip.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 25 expect() calls
+Ran 7 tests across 1 file. [1.76s]
+Studio tests: src/blockly/__tests__/svgTitleDupRepro.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 4 expect() calls
+Ran 2 tests across 1 file. [705.00ms]
+Studio tests: src/blockly/__tests__/ternaryRoundtrip.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [1.64s]
+Studio tests: src/blockly/__tests__/themeColors.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [451.00ms]
+Studio tests: src/blockly/__tests__/toolboxLevels.test.ts (1 files)
+ 16 pass
+ 0 fail
+ 199 expect() calls
+Ran 16 tests across 1 file. [1445.00ms]
+Studio tests: src/blockly/__tests__/toolboxRestrict.test.ts (1 files)
+ 18 pass
+ 0 fail
+ 59 expect() calls
+Ran 18 tests across 1 file. [1473.00ms]
+Studio tests: src/blockly/__tests__/valeManifest.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 72 expect() calls
+Ran 1 test across 1 file. [2.68s]
+Studio tests: src/blockly/__tests__/valueFieldsMigration.test.ts (1 files)
+ 10 pass
+ 0 fail
+ 35 expect() calls
+Ran 10 tests across 1 file. [1.60s]
+Studio tests: src/blockly/__tests__/valueSockets.test.ts (1 files)
+ 15 pass
+ 0 fail
+ 47 expect() calls
+Ran 15 tests across 1 file. [2.29s]
+Studio tests: src/blockly/__tests__/velocityMovementBlocks.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 20 expect() calls
+Ran 6 tests across 1 file. [2.34s]
+Studio tests: src/blockly/__tests__/vilaDoceManifest.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 36 expect() calls
+Ran 1 test across 1 file. [2.15s]
+Studio tests: src/blockly/__tests__/workspaceState.test.ts (1 files)
+ 33 pass
+ 0 fail
+ 313 expect() calls
+Ran 33 tests across 1 file. [1.81s]
+Studio tests: src/blockly/blocks/__tests__/classIntrospection.test.ts (1 files)
+ 9 pass
+ 0 fail
+ 18 expect() calls
+Ran 9 tests across 1 file. [1.71s]
+Studio tests: src/blockly/fields/__tests__/applySuggestedSize.test.ts (1 files)
+ 22 pass
+ 0 fail
+ 50 expect() calls
+Ran 22 tests across 1 file. [1491.00ms]
+Studio tests: src/blockly/fields/__tests__/farolAssetSize.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 92 expect() calls
+Ran 1 test across 1 file. [1289.00ms]
+Studio tests: src/blockly/fields/__tests__/FieldAnimationPicker.test.ts (1 files)
+ 14 pass
+ 0 fail
+ 21 expect() calls
+Ran 14 tests across 1 file. [1192.00ms]
+Studio tests: src/blockly/fields/__tests__/FieldCampaignStage.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 6 expect() calls
+Ran 2 tests across 1 file. [944.00ms]
+Studio tests: src/blockly/fields/__tests__/FieldModelClipPicker.test.ts (1 files)
+ 10 pass
+ 0 fail
+ 31 expect() calls
+Ran 10 tests across 1 file. [1479.00ms]
+Studio tests: src/blockly/fields/__tests__/FieldNamePicker.test.ts (1 files)
+ 106 pass
+ 0 fail
+ 294 expect() calls
+Ran 106 tests across 1 file. [1.59s]
+Studio tests: src/blockly/fields/__tests__/FieldSpritePicker.test.ts (1 files)
+ 8 pass
+ 0 fail
+ 9 expect() calls
+Ran 8 tests across 1 file. [1345.00ms]
+Studio tests: src/blockly/fields/__tests__/FieldSvgPaint.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 5 expect() calls
+Ran 2 tests across 1 file. [1201.00ms]
+Studio tests: src/blockly/fields/__tests__/FieldTileGrid.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 12 expect() calls
+Ran 5 tests across 1 file. [1160.00ms]
+Studio tests: src/blockly/fields/__tests__/filterAssetsForPicker.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 7 expect() calls
+Ran 6 tests across 1 file. [1154.00ms]
+Studio tests: src/blockly/fields/__tests__/modelClipResolution.test.ts (1 files)
+ 11 pass
+ 0 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [519.00ms]
+Studio tests: src/blockly/fields/__tests__/sceneAssetPicker.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 5 expect() calls
+Ran 1 test across 1 file. [1.92s]
+Studio tests: src/blockly/fields/__tests__/spriteVisual.test.ts (1 files)
+ 10 pass
+ 0 fail
+ 23 expect() calls
+Ran 10 tests across 1 file. [1364.00ms]
+Studio tests: src/blockly/fields/__tests__/suggestedSpriteSize.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 10 expect() calls
+Ran 4 tests across 1 file. [932.00ms]
+Studio tests: src/blockly/media.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [483.00ms]
+Studio tests: src/blockly/openingRender.test.ts (1 files)
+ 8 pass
+ 0 fail
+ 15 expect() calls
+Ran 8 tests across 1 file. [935.00ms]
+Studio tests: src/blockly/paletteMap.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 6 expect() calls
+Ran 5 tests across 1 file. [1.60s]
+Studio tests: src/blockly/publicTheme.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 54 expect() calls
+Ran 2 tests across 1 file. [1.73s]
+Studio tests: src/check (2 files)
+ 12 pass
+ 4 skip
+ 0 fail
+ 28 expect() calls
+Ran 16 tests across 2 files. [1444.00ms]
+Studio tests: src/codecs (4 files)
+ 211 pass
+ 0 fail
+ 2744 expect() calls
+Ran 211 tests across 4 files. [4.04s]
+Studio tests: src/components (67 files)
+ 589 pass
+ 0 fail
+ 3288 expect() calls
+Ran 589 tests across 67 files. [78.37s]
+Studio tests: src/components/blocks/blocklyHistory.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 20 expect() calls
+Ran 7 tests across 1 file. [1.54s]
+Studio tests: src/components/blocks/BlocksWorkspaceEditor.test.tsx (1 files)
+ 3 pass
+ 0 fail
+ 7 expect() calls
+Ran 3 tests across 1 file. [2.02s]
+Studio tests: src/components/blocks/PythonBlocksHeader.test.tsx (1 files)
+ 3 pass
+ 0 fail
+ 11 expect() calls
+Ran 3 tests across 1 file. [598.00ms]
+Studio tests: src/components/blocks/tutorCategory.test.ts (1 files)
+ 6 pass
+ 0 fail
+ 13 expect() calls
+Ran 6 tests across 1 file. [400.00ms]
+Studio tests: src/components/blocks/worldComposerModel.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 19 expect() calls
+Ran 4 tests across 1 file. [1.87s]
+Studio tests: src/controls (1 files)
+ 13 pass
+ 0 fail
+ 69 expect() calls
+Ran 13 tests across 1 file. [663.00ms]
+Studio tests: src/core (29 files)
+ 247 pass
+ 0 fail
+ 4456 expect() calls
+Ran 247 tests across 29 files. [21.40s]
+Studio tests: src/cover (8 files)
+ 62 pass
+ 0 fail
+ 125 expect() calls
+Ran 62 tests across 8 files. [1.52s]
+Studio tests: src/examples (14 files)
+ 578 pass
+ 0 fail
+ 11430 expect() calls
+Ran 578 tests across 14 files. [41.73s]
+Studio tests: src/export (21 files)
+ 124 pass
+ 0 fail
+ 634 expect() calls
+Ran 124 tests across 21 files. [5.02s]
+Studio tests: src/extensions (7 files)
+ 42 pass
+ 0 fail
+ 153 expect() calls
+Ran 42 tests across 7 files. [836.00ms]
+Studio tests: src/generators (12 files)
+ 203 pass
+ 0 fail
+ 566 expect() calls
+Ran 203 tests across 12 files. [956.00ms]
+Studio tests: src/hooks (2 files)
+ 6 pass
+ 0 fail
+ 17 expect() calls
+Ran 6 tests across 2 files. [620.00ms]
+Studio tests: src/html (1 files)
+ 17 pass
+ 0 fail
+ 26 expect() calls
+Ran 17 tests across 1 file. [426.00ms]
+Studio tests: src/ir (10 files)
+ 101 pass
+ 0 fail
+ 94873 expect() calls
+Ran 101 tests across 10 files. [2.95s]
+Studio tests: src/modes (24 files)
+ 134 pass
+ 0 fail
+ 571 expect() calls
+Ran 134 tests across 24 files. [14.44s]
+Studio tests: src/monaco (6 files)
+ 56 pass
+ 0 fail
+ 174 expect() calls
+Ran 56 tests across 6 files. [4.49s]
+Studio tests: src/official-extensions (233 files)
+ 5431 pass
+ 0 fail
+ 102180 expect() calls
+Ran 5431 tests across 233 files. [125.43s]
+Studio tests: src/parsers (76 files)
+ 650 pass
+ 0 fail
+ 2758 expect() calls
+Ran 650 tests across 76 files. [9.84s]
+Studio tests: src/persistence (3 files)
+ 32 pass
+ 0 fail
+ 89 expect() calls
+Ran 32 tests across 3 files. [2.46s]
+Studio tests: src (1 files)
+ 4 pass
+ 0 fail
+ 12 expect() calls
+Ran 4 tests across 1 file. [588.00ms]
+Studio tests: src/preview (22 files)
+ 260 pass
+ 0 fail
+ 716 expect() calls
+Ran 260 tests across 22 files. [3.74s]
+Studio tests: src/project-migrations (15 files)
+ 126 pass
+ 0 fail
+ 514 expect() calls
+Ran 126 tests across 15 files. [46.99s]
+Studio tests: src/projects (13 files)
+ 266 pass
+ 0 fail
+ 6828 expect() calls
+Ran 266 tests across 13 files. [81.42s]
+Studio tests: src/python/blocks/advancedSyntax.test.ts (1 files)
+ 12 pass
+ 0 fail
+ 181 expect() calls
+Ran 12 tests across 1 file. [1.60s]
+Studio tests: src/python/blocks/authoring.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 27 expect() calls
+Ran 5 tests across 1 file. [632.00ms]
+Studio tests: src/python/blocks/blockFoundation.test.ts (1 files)
+ 18 pass
+ 0 fail
+ 460 expect() calls
+Ran 18 tests across 1 file. [1149.00ms]
+Studio tests: src/python/blocks/blockly.test.ts (1 files)
+ 10 pass
+ 0 fail
+ 393 expect() calls
+Ran 10 tests across 1 file. [1.61s]
+Studio tests: src/python/blocks/classesAndLambda.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 26 expect() calls
+Ran 5 tests across 1 file. [1296.00ms]
+Studio tests: src/python/blocks/commitWorkspace.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 30 expect() calls
+Ran 7 tests across 1 file. [1.83s]
+Studio tests: src/python/blocks/coreCatalog.test.ts (1 files)
+ 4 pass
+ 0 fail
+ 450 expect() calls
+Ran 4 tests across 1 file. [456.00ms]
+Studio tests: src/python/blocks/programArea.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 16 expect() calls
+Ran 3 tests across 1 file. [1.99s]
+Studio tests: src/python/blocks/projectModules.test.ts (1 files)
+ 13 pass
+ 0 fail
+ 64 expect() calls
+Ran 13 tests across 1 file. [604.00ms]
+Studio tests: src/python/blocks/provenance.test.ts (1 files)
+ 3 pass
+ 0 fail
+ 43 expect() calls
+Ran 3 tests across 1 file. [1322.00ms]
+Studio tests: src/python/blocks/pythonCallLabels.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 15 expect() calls
+Ran 5 tests across 1 file. [1274.00ms]
+Studio tests: src/python/blocks/readWorkspaceState.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 25 expect() calls
+Ran 5 tests across 1 file. [1398.00ms]
+Studio tests: src/python/blocks/restoreWorkspace.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 6 expect() calls
+Ran 1 test across 1 file. [1318.00ms]
+Studio tests: src/python/blocks/selection.test.ts (1 files)
+ 7 pass
+ 0 fail
+ 142 expect() calls
+Ran 7 tests across 1 file. [824.00ms]
+Studio tests: src/python/blocks/workspaceDraft.test.ts (1 files)
+ 8 pass
+ 0 fail
+ 67 expect() calls
+Ran 8 tests across 1 file. [842.00ms]
+Studio tests: src/python/blocks/workspaceDraftPersistence.test.ts (1 files)
+ 10 pass
+ 0 fail
+ 34 expect() calls
+Ran 10 tests across 1 file. [1.57s]
+Studio tests: src/python/blocks/workspaceHydration.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 12 expect() calls
+Ran 2 tests across 1 file. [967.00ms]
+Studio tests: src/python/blocks/workspacePresentation.test.ts (1 files)
+ 1 pass
+ 0 fail
+ 4 expect() calls
+Ran 1 test across 1 file. [1168.00ms]
+Studio tests: src/python/blocks/workspaceScratch.test.ts (1 files)
+ 5 pass
+ 0 fail
+ 31 expect() calls
+Ran 5 tests across 1 file. [1.87s]
+Studio tests: src/python/blocks/workspaceState.test.ts (1 files)
+ 2 pass
+ 0 fail
+ 8 expect() calls
+Ran 2 tests across 1 file. [1038.00ms]
+Studio tests: src/python (26 files)
+ 144 pass
+ 0 fail
+ 4118 expect() calls
+Ran 144 tests across 26 files. [6.29s]
+Studio tests: src/runtime (61 files)
+ 344 pass
+ 0 fail
+ 79436 expect() calls
+Ran 344 tests across 61 files. [20.52s]
+Studio tests: src/state (68 files)
+ 465 pass
+ 0 fail
+ 2578 expect() calls
+Ran 465 tests across 68 files. [56.37s]
+Studio tests: src/studio (18 files)
+ 106 pass
+ 0 fail
+ 767 expect() calls
+Ran 106 tests across 18 files. [12.36s]
+Studio tests: src/styles (2 files)
+ 12 pass
+ 0 fail
+ 26 expect() calls
+Ran 12 tests across 2 files. [928.00ms]
+Studio tests: src/three (9 files)
+ 77 pass
+ 0 fail
+ 286 expect() calls
+Ran 77 tests across 9 files. [13.48s]
+Studio tests: src/ui-internal (3 files)
+ 9 pass
+ 0 fail
+ 27 expect() calls
+Ran 9 tests across 3 files. [886.00ms]

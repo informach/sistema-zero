@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-20T12:22:53.863Z",
+  "target": {
+    "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+    "service": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+    "deployment": "3bf3b72a-6eeb-4a64-bf4d-23a5dc17de6e",
+    "source": "c7e9c70a4de5ea889c1af4819283887a33add461"
+  },
+  "stagingOnly": true,
+  "readonly": true,
+  "exitCode": 0,
+  "checks": {
+    "environment": true,
+    "service": true,
+    "deployment": true,
+    "source": true,
+    "baselinePolicy": true,
+    "preparedPolicy": false
+  },
+  "bun": "1.4.4",
+  "verified": true
+}

@@ -1,0 +1,13 @@
+{
+  "readOnly": true,
+  "httpStatus": 200,
+  "found": true,
+  "item": {
+    "itemId": "1cb291ea-b512-4e46-b3cd-e5d783454c3a",
+    "kind": "tilemap",
+    "revision": 1,
+    "formatVersion": 1,
+    "bytes": 318,
+    "deleted": false
+  }
+}

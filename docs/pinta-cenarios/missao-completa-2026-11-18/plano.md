@@ -33,6 +33,15 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   módulo, perfil, digest e objetivo real no contêiner conferidos. Isso não ativa
   a distribuição Python nem o gravador. O aplicativo leitor nos hosts, abas
   offline e rollback continuam pendentes; ver `qa/leitor-a-runtime-staging-2026-11-19/README.md`.
+  Em 20/11, preflight e verificação canônicos confirmaram a base de staging saudável
+  e a jornada publicada na versão 3. Aba legada mantida aberta e mapa próprio
+  conferido pela API autenticada; leitor controlado preparado sem dados autorais
+  em RAM. O CI foi fixado em uma branch de qualificação. Aplicativos leitores,
+  seletor Python e gravador continuam pendentes; isso não fecha o ciclo 0b.
+  A revisão local registrou 11.919 testes do Estúdio sem falhas; quatro casos
+  ignorados por caminho de Chromium foram reexecutados com Chrome real e passaram.
+  Deltas posteriores, tipos, formatação e limites da prova estão em
+  `qa/revisao-integrada-2026-11-20/README.md`.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
