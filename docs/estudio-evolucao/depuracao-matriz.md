@@ -90,5 +90,6 @@ clique, pode rodar numa prévia oculta no navegador com o leitor (sem `script`).
 
 ## Próximo passo
 
-A proposta inteira dos três painéis (Depurar, Desempenho, Testes do aluno), com fotos do app real e
-só o que a tabela acima mostra que é factível, para a dona aprovar antes de qualquer interface.
+Feito em 20/11: a proposta inteira dos três painéis (Investigar, Desempenho e Meus testes) está em
+[`paineis-proposta.md`](paineis-proposta.md), com as fotos do app de staging no artifact. A interface
+espera a aprovação.

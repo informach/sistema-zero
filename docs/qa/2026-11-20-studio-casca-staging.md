@@ -66,6 +66,18 @@ Também visto no caminho:
   cabe acima do rodapé quando o console chega ao topo da aula (`useAlturaDaCenaNoCelular`, regra
   descrita no próprio código); com o cartão no começo, o cabeçalho "Experimente" ainda está acima.
 
+## Sinais vistos no caminho, para investigar
+
+- **Abrir um projeto Python já o marca como mudado.** No Estúdio Completo do Kids, abrir "Space
+  Arena" e "Pac-Man" (Python, blocos) mostrou "Alterações não salvas" e depois "Guardando…" sem
+  nenhuma edição: a abertura grava e sobe o projeto para a conta. Abrir não deveria mudar o projeto
+  (régua da hidratação sem mudança); uma gravação por abertura também troca a data do projeto e
+  pode gerar cópia de conflito em outro aparelho. Vai para a etapa 7 (persistência).
+- **Erro técnico cru no Pro enquanto a oficina prepara.** Abrindo um projeto Pro, a faixa de cima
+  do editor mostrou por alguns segundos "ENOENT: no such file or directory, scandir
+  '…/node_modules'", e Problemas contou 1; quando a oficina ficou pronta, os dois sumiram. A criança
+  não deveria ler mensagem técnica do sistema de arquivos. Vai para a etapa 6 (Pro).
+
 ## Não conferido aqui
 
 - Vídeos da aula com a casca ligada (a casca foi desligada antes dessa parte; ela não mexe nos
