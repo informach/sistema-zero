@@ -3,6 +3,13 @@ import {
   type ExecutionStep,
   type ExecutionTarget,
 } from '@sistemazero/core/learning'
+import {
+  CLICK_TARGET_LIMITS,
+  chooseTargetPoint,
+  createClickTargetReaderInPage,
+  readStageGeometryInPage,
+  stagePointToViewport,
+} from '../check/clickTargetInPage'
 
 /**
  * O piloto de um teste da aba "Meus testes" (proposta aprovada em 20/11/2026), que roda DENTRO do
@@ -12,8 +19,12 @@ import {
  * começo; faz os passos; espera 250 ms; lê o valor do fim. As mensagens do jogo e os erros são
  * anotados desde o começo, com os tetos do servidor (200 mensagens de até 300 caracteres).
  *
- * A diferença é a mão: lá o navegador de teste aperta teclas de verdade; aqui o piloto despacha
- * a tecla (KeyboardEvent), como os controles da página de jogar. Os valores saem pelo leitor das
+ * A diferença é a mão: lá o navegador de teste aperta teclas e clica de verdade; aqui o piloto
+ * despacha a tecla (KeyboardEvent) e o clique (PointerEvent e MouseEvent), como os controles da
+ * página de jogar. O clique no sprite de um grupo segue o servidor passo a passo, com as MESMAS
+ * funções (`check/clickTargetInPage.ts`, injetadas pela fonte): mede o palco, lê o grupo pelo
+ * inspetor oficial do Jogo 2D, escolhe um ponto só daquele sprite, confere que o palco não mudou,
+ * clica e registra o ponto (o "último ponto" do contrato). Os valores saem pelo leitor das
  * variáveis (`instrumentCheckScript`, o nome sorteado em `scope`) e pelo codificador dos
  * objetivos (`createExecutionObservationCodec`, feito para ser injetado pela fonte).
  *
@@ -56,6 +67,14 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
   const plan = JSON.stringify({ steps, target: options.target })
     .replaceAll('<', '\\u003c')
     .replaceAll('`', '\\u0060')
+  // O clique traz as funções do servidor só quando o teste clica.
+  const clicks = options.steps.some((step) => step.action === 'clickTarget')
+  const clickFunctions = clicks
+    ? `var chooseTargetPoint = ${chooseTargetPoint.toString()};
+  var stagePointToViewport = ${stagePointToViewport.toString()};
+  var readStageGeometryInPage = ${readStageGeometryInPage.toString()};
+  var createClickTargetReaderInPage = ${createClickTargetReaderInPage.toString()};`
+    : ''
   return `(function () {
   var host = window.parent;
   if (!host || host === window) return;
@@ -117,6 +136,50 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
     var target = document.activeElement || document.body || document.documentElement;
     target.dispatchEvent(new KeyboardEvent(type, { key: event.key, code: event.code, bubbles: true, cancelable: true }));
   }
+  ${clickFunctions}
+  var targets = null;
+  function resolveTarget(path) {
+    var parts = String(path).split('.');
+    if (parts.length > 4 || parts.some(function (part) { return !part || part === '__proto__' || part === 'prototype' || part === 'constructor'; }))
+      throw new Error('Caminho de alvo inválido.');
+    function observable(value) {
+      if (!value || (typeof value !== 'object' && typeof value !== 'function'))
+        throw new Error('O alvo não contém um objeto diretamente observável.');
+      return value;
+    }
+    var value = observable(targets.ownValue(observable(targets.root(parts[0])), 'v'));
+    for (var i = 1; i < parts.length; i++) value = observable(targets.ownValue(value, parts[i]));
+    return value;
+  }
+  function pointer(type, point, element) {
+    var pressed = type === 'pointerdown' || type === 'mousedown';
+    var init = { bubbles: true, cancelable: true, composed: true, view: window, clientX: point.x, clientY: point.y,
+      button: 0, buttons: pressed ? 1 : 0, pointerId: 1, pointerType: 'mouse', isPrimary: true, detail: type === 'click' ? 1 : 0 };
+    var Kind = type.indexOf('pointer') === 0 && typeof PointerEvent === 'function' ? PointerEvent : MouseEvent;
+    element.dispatchEvent(new Kind(type, init));
+  }
+  async function clickTarget(step) {
+    if (!targets) targets = createClickTargetReaderInPage({ scope: scope, maxGroupItems: ${CLICK_TARGET_LIMITS.maxGroupItems} });
+    var geometry = readStageGeometryInPage(null);
+    await frame();
+    await frame();
+    var paths = targets.paths(step.target);
+    var group = resolveTarget(paths.groupPath);
+    var actor = paths.actorPath === null ? null : resolveTarget(paths.actorPath);
+    var scene = targets.read(step.target, group, actor);
+    var point = chooseTargetPoint(scene);
+    var viewport = stagePointToViewport(point, scene, geometry);
+    var current = readStageGeometryInPage(viewport);
+    for (var key in geometry)
+      if (current[key] !== geometry[key]) throw new Error('O palco mudou durante a observação do gesto.');
+    var element = document.elementFromPoint(viewport.x, viewport.y) || document.body;
+    ['pointermove', 'mousemove', 'pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(function (type) {
+      pointer(type, viewport, element);
+    });
+    targets.admit(point);
+    await frame();
+    await frame();
+  }
   async function models() {
     var until = Date.now() + ${MODELS_WAIT_MS};
     while (Date.now() < until && Number(window.__szModelosPendentes) > 0) await wait(100);
@@ -134,7 +197,8 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
         key('keydown', step.event);
         try { await wait(step.holdMs === undefined ? 80 : step.holdMs); }
         finally { key('keyup', step.event); }
-      } else throw new Error('O teste não sabe fazer este passo.');
+      } else if (step.action === 'clickTarget') await clickTarget(step);
+      else throw new Error('O teste não sabe fazer este passo.');
     }
     await wait(${SETTLE_MS});
     var final = read(plan.target);

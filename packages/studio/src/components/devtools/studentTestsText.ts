@@ -62,6 +62,8 @@ function secondsText(t: Translator, ms: number): { seconds: string; unit: string
 
 function stepText(t: Translator, step: ExecutionStep): string {
   if (step.action === 'wait') return t('tests.step.wait', secondsText(t, step.ms))
+  if (step.action === 'clickTarget' && step.target.kind === 'sprite')
+    return t('tests.step.click', { sprite: step.target.path })
   if (step.action === 'press')
     return step.holdMs === undefined
       ? t('tests.step.press', { key: keyLabel(t, step.key) })
@@ -241,6 +243,8 @@ export type FormStep =
   | { kind: 'press'; key: ExecutionKey }
   | { kind: 'hold'; key: ExecutionKey; seconds: string }
   | { kind: 'wait'; seconds: string }
+  /** Clicar no sprite de um grupo (o `clickTarget` do Jogo 2D). */
+  | { kind: 'click'; sprite: string; group: string }
 
 export interface TestForm {
   name: string
@@ -271,6 +275,8 @@ export function formFromTest(t: Translator, test: StudioStudentTest | null): Tes
     name: test.name,
     steps: test.rule.steps.flatMap((step): FormStep[] => {
       if (step.action === 'wait') return [{ kind: 'wait', seconds: secondsInput(t, step.ms) }]
+      if (step.action === 'clickTarget' && step.target.kind === 'sprite')
+        return [{ kind: 'click', sprite: step.target.path, group: step.target.groupPath }]
       if (step.action === 'press')
         return [
           step.holdMs === undefined
@@ -324,6 +330,7 @@ export function newTestId(taken: ReadonlySet<string>): string {
 
 export type FormProblem =
   | 'tests.form.needName'
+  | 'tests.form.needSprite'
   | 'tests.form.needSubject'
   | 'tests.form.needValue'
   | 'tests.form.tooLong'
@@ -345,6 +352,14 @@ export function testFromForm(
   for (const step of form.steps.slice(0, STUDENT_TEST_STEPS_MAX)) {
     if (step.kind === 'press') {
       steps.push({ action: 'press', key: step.key })
+      continue
+    }
+    if (step.kind === 'click') {
+      if (!step.sprite || !step.group) return { problem: 'tests.form.needSprite' }
+      steps.push({
+        action: 'clickTarget',
+        target: { kind: 'sprite', path: step.sprite, groupPath: step.group },
+      })
       continue
     }
     const seconds = parseNumberInput(step.seconds)

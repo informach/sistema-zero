@@ -174,3 +174,48 @@ describe('os textos de "Meus testes"', () => {
     expect(parseValueInput(t, 'jogando')).toBe('jogando')
   })
 })
+
+describe('o clique no sprite de um grupo', () => {
+  const clique: StudioStudentTest = {
+    id: 'd',
+    name: 'Achar a raposa',
+    rule: {
+      type: 'behavior',
+      steps: [
+        {
+          action: 'clickTarget',
+          target: { kind: 'sprite', path: 'esconderijo2', groupPath: 'esconderijos' },
+        },
+      ],
+      expect: { target: { kind: 'value', path: 'achados' }, compare: 'increased' },
+    },
+  }
+
+  it('vira o passo do contrato, é escrito como os outros e volta igual', () => {
+    expect(describeTest(t, clique)).toBe(
+      'Quando eu clicar no esconderijo2. No fim, achados aumentou.',
+    )
+    expect(formFromTest(t, clique).steps).toEqual([
+      { kind: 'click', sprite: 'esconderijo2', group: 'esconderijos' },
+    ])
+    expect(testFromForm(t, formFromTest(t, clique), 'd')).toEqual({ test: clique })
+  })
+
+  it('não salva sem o sprite ou sem o grupo', () => {
+    const form = formFromTest(t, clique)
+    expect(
+      testFromForm(
+        t,
+        { ...form, steps: [{ kind: 'click', sprite: '', group: 'esconderijos' }] },
+        'd',
+      ),
+    ).toEqual({ problem: 'tests.form.needSprite' })
+    expect(
+      testFromForm(
+        t,
+        { ...form, steps: [{ kind: 'click', sprite: 'esconderijo2', group: '' }] },
+        'd',
+      ),
+    ).toEqual({ problem: 'tests.form.needSprite' })
+  })
+})

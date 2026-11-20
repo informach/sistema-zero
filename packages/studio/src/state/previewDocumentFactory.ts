@@ -14,6 +14,11 @@ export interface PreviewDocumentRequest {
   trustedScripts: readonly string[]
   /** A origem que recebe as mensagens do jogo (o quadro do teste mora na página do editor). */
   parentOrigin: string
+  /**
+   * Liga o registro dos inspetores dos motores (`runtimeInspection`): o clique no sprite de um
+   * grupo lê o grupo pelo inspetor oficial do Jogo 2D.
+   */
+  runtimeInspection?: boolean
 }
 
 /**

@@ -239,9 +239,8 @@ describe('o executor de "Meus testes"', () => {
       ...base,
       rule: {
         ...base.rule,
-        steps: [
-          { action: 'clickTarget', target: { kind: 'sprite', path: 'moeda', groupPath: 'moedas' } },
-        ],
+        // O clique numa coordenada fixa é do contrato, mas a aba não o oferece nem o piloto o faz.
+        steps: [{ action: 'click', x: 10, y: 10 }],
       },
     }
     const comum = { documentFactory: factory, parentOrigin: 'https://editor.test', createFrame }

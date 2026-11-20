@@ -167,4 +167,25 @@ describe('a aba Meus testes', () => {
       screen.getByRole('img', { name: 'Como o jogo terminou no teste "Começar o jogo"' }),
     ).toBeTruthy()
   })
+
+  it('oferece "Clicar no sprite" só num jogo com o Jogo 2D', () => {
+    seed()
+    const { unmount } = render(<StudentTestsPanel />)
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo teste' }))
+    const semJogo2D = screen.getByLabelText('Passo 1', { exact: true }) as HTMLSelectElement
+    expect([...semJogo2D.options].map((option) => option.value)).toEqual(['press', 'hold', 'wait'])
+    unmount()
+    const project = useProjectStore.getState().project
+    if (!project) throw new Error('sem projeto')
+    useProjectStore.setState({
+      project: {
+        ...project,
+        installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
+      },
+    })
+    render(<StudentTestsPanel />)
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo teste' }))
+    const comJogo2D = screen.getByLabelText('Passo 1', { exact: true }) as HTMLSelectElement
+    expect([...comJogo2D.options].map((option) => option.value)).toContain('click')
+  })
 })

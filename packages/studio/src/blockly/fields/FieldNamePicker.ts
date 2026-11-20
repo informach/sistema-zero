@@ -1034,7 +1034,7 @@ const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
  * também entra aqui: ele É um grupo estendido (tem .items) — os blocos de grupo
  * (para cada / contar / colisões / tirar) funcionam direto no tipo.
  */
-const GROUP_DECL_BLOCKS: Record<string, string[]> = {
+export const GROUP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_group: ['NAME'],
   sz_g2d_all_enemies_group: ['NAME'],
   sz_g2d_define_enemy_type: ['NAME'],

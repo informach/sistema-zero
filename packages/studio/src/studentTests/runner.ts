@@ -75,9 +75,11 @@ export interface RunStudentTestOptions {
   endingWaitMs?: number
 }
 
-/** Os passos que o piloto sabe fazer hoje (o clique no sprite vem depois). */
+/** Os passos que o piloto sabe fazer: teclas, esperas e o clique no sprite de um grupo. */
 function pilotCanRun(test: StudioStudentTest): boolean {
-  return test.rule.steps.every((step) => step.action === 'press' || step.action === 'wait')
+  return test.rule.steps.every(
+    (step) => step.action === 'press' || step.action === 'wait' || step.action === 'clickTarget',
+  )
 }
 
 /** O quadro escondido de verdade: na página, sem receber clique nem foco, e desenhando. */
@@ -160,6 +162,7 @@ export async function runStudentTest(options: RunStudentTestOptions): Promise<St
       }),
     ],
     parentOrigin: options.parentOrigin,
+    runtimeInspection: test.rule.steps.some((step) => step.action === 'clickTarget'),
   })
   if ('unavailable' in built)
     return { status: built.unavailable === 'unsaved' ? 'unsaved' : 'unavailable' }

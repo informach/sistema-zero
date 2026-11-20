@@ -145,6 +145,7 @@ export function StudentTestsPanel(): JSX.Element {
         t={t}
         test={editing.test}
         names={studentTestNames(project.files['script.js'] ?? '', project.blocksState)}
+        canClick={project.installedExtensions.some((extension) => extension.id === 'game-2d')}
         error={saveError}
         onCancel={() => {
           setSaveError(null)
@@ -340,6 +341,7 @@ function TestEditor({
   t,
   test,
   names,
+  canClick,
   error,
   onSave,
   onCancel,
@@ -348,6 +350,8 @@ function TestEditor({
   t: Translator
   test: StudioStudentTest | null
   names: StudentTestNames
+  /** O clique no sprite de um grupo lê o grupo pelo inspetor do Jogo 2D: só com ele instalado. */
+  canClick: boolean
   error: string | null
   onSave: (form: TestForm) => FormProblem | null
   onCancel: () => void
@@ -371,6 +375,20 @@ function TestEditor({
         : []
   const compares = comparesFor(form.check)
   const needsValue = !['changed', 'increased', 'decreased', 'truthy'].includes(form.compare)
+  const nameOptions = (list: readonly string[], current: string) => (
+    <>
+      <option value="" disabled>
+        {list.length ? '' : t('tests.form.noNames')}
+      </option>
+      {/* O nome guardado num teste que o projeto não tem mais continua na lista. */}
+      {current && !list.includes(current) ? <option value={current}>{current}</option> : null}
+      {list.map((name) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </>
+  )
   const secondsUnit = (text: string) => {
     const value = Number(text.replace(',', '.'))
     return t(Number.isFinite(value) && value < 2 ? 'tests.second' : 'tests.seconds')
@@ -416,22 +434,50 @@ function TestEditor({
                   value={step.kind}
                   onChange={(event) => {
                     const kind = event.target.value as FormStep['kind']
-                    const key = step.kind === 'wait' ? 'Enter' : step.key
+                    const key = step.kind === 'press' || step.kind === 'hold' ? step.key : 'Enter'
+                    const seconds =
+                      step.kind === 'hold' || step.kind === 'wait' ? step.seconds : '1'
                     setStep(
                       index,
                       kind === 'press'
                         ? { kind, key }
                         : kind === 'hold'
-                          ? { kind, key, seconds: step.kind === 'press' ? '1' : step.seconds }
-                          : { kind, seconds: step.kind === 'press' ? '1' : step.seconds },
+                          ? { kind, key, seconds }
+                          : kind === 'wait'
+                            ? { kind, seconds }
+                            : { kind, sprite: '', group: '' },
                     )
                   }}
                 >
                   <option value="press">{t('tests.form.step.press')}</option>
                   <option value="hold">{t('tests.form.step.hold')}</option>
                   <option value="wait">{t('tests.form.step.wait')}</option>
+                  {canClick || step.kind === 'click' ? (
+                    <option value="click">{t('tests.form.step.click')}</option>
+                  ) : null}
                 </select>
-                {step.kind !== 'wait' ? (
+                {step.kind === 'click' ? (
+                  <>
+                    <select
+                      aria-label={t('tests.form.clickSprite', { n: index + 1 })}
+                      className={FIELD}
+                      value={step.sprite}
+                      onChange={(event) => setStep(index, { ...step, sprite: event.target.value })}
+                    >
+                      {nameOptions(names.sprites, step.sprite)}
+                    </select>
+                    <span>{t('tests.form.ofGroup')}</span>
+                    <select
+                      aria-label={t('tests.form.clickGroup', { n: index + 1 })}
+                      className={FIELD}
+                      value={step.group}
+                      onChange={(event) => setStep(index, { ...step, group: event.target.value })}
+                    >
+                      {nameOptions(names.groups, step.group)}
+                    </select>
+                  </>
+                ) : null}
+                {step.kind === 'press' || step.kind === 'hold' ? (
                   <select
                     aria-label={t('tests.form.key', { n: index + 1 })}
                     className={FIELD}
@@ -448,7 +494,7 @@ function TestEditor({
                     ))}
                   </select>
                 ) : null}
-                {step.kind !== 'press' ? (
+                {step.kind === 'hold' || step.kind === 'wait' ? (
                   <>
                     {step.kind === 'hold' ? <span>{t('tests.form.for')}</span> : null}
                     <input
@@ -515,18 +561,7 @@ function TestEditor({
                 value={form.subject}
                 onChange={(event) => change({ subject: event.target.value })}
               >
-                <option value="" disabled>
-                  {subjects.length ? '' : t('tests.form.noNames')}
-                </option>
-                {/* O nome guardado num teste que o projeto não tem mais continua na lista. */}
-                {form.subject && !subjects.includes(form.subject) ? (
-                  <option value={form.subject}>{form.subject}</option>
-                ) : null}
-                {subjects.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
+                {nameOptions(subjects, form.subject)}
               </select>
             ) : null}
             <select

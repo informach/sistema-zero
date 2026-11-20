@@ -842,7 +842,7 @@ export function PreviewIframe(): JSX.Element {
   // nunca a da casca).
   const previewDocument = usePreviewDocumentSource()
   const testDocumentFactory = useCallback<PreviewDocumentFactory>(
-    async ({ transformScript, trustedScripts, parentOrigin }) => {
+    async ({ transformScript, trustedScripts, parentOrigin, runtimeInspection }) => {
       if (execution.editingAccess === 'observer' || !documentResourcesReady)
         return { unavailable: 'loading' }
       const prepared = await new Promise<{
@@ -895,6 +895,7 @@ export function PreviewIframe(): JSX.Element {
           sounds: soundsManifest,
           models3d: models3dManifest,
           cenas3d: transporteDeCenas,
+          runtimeInspection: runtimeInspection === true,
         }),
       }
     },

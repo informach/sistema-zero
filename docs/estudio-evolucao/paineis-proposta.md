@@ -119,9 +119,14 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
     prepara como o Rodar (o rascunho do editor desce para o projeto e o projeto é gravado) e monta
     com o projeto gravado. A edição ganhou "Apagar teste" (sem ele um teste não sai mais do
     projeto). e2e `student-tests.spec.ts` no Chromium, no Firefox e no WebKit.
-  - **Falta:** "Clicar no sprite". O clique do contrato é o do Jogo 2D (sprite de um grupo, pelo
-    inspetor oficial de grupos, palco sem câmera) e precisa ir para o piloto; até lá a aba não o
-    oferece (a nota da prancha: só o que o executor sabe fazer).
+  - **"Clicar no sprite … do grupo …" (20/11, noite):** o clique do contrato é o do Jogo 2D
+    (sprite de um grupo, pelo inspetor oficial de grupos, palco sem câmera), e a aba só o oferece
+    num jogo com o Jogo 2D instalado. As quatro funções que rodam na página (o leitor do grupo, a
+    medida do palco, a escolha do ponto e a conversão para a tela) passaram a ter uma fonte só,
+    `studio/src/check/clickTargetInPage.ts`: o piloto as injeta no jogo e o executor do servidor as
+    recebe pelo módulo gerado `click-target.generated.mjs` (o `check:validation-profile` reprova
+    se o gerado não for o da fonte). e2e com o jogo final do Cadê Todo Mundo (clicar no
+    esconderijo2 conta um achado) no Chromium, no Firefox e no WebKit.
   - ⚠️ **Ordem do deploy:** o Members confere o envio pelo esquema do documento; ele sai com o
     esquema novo (`6d775ab7a` ou depois) ANTES do Kids, da comunidade e do member-shell, senão um
     projeto com testes não sobe para a conta.
