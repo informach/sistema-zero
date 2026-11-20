@@ -12,7 +12,12 @@ import { useProjectStore } from '../../state/projectStore'
 import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { StudioExecutionProvider } from '../../studio/observation'
-import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
+import {
+  chosenCoverPausesSnapshots,
+  extractDocumentTitle,
+  heldPreviewDocument,
+  PreviewIframe,
+} from './PreviewIframe'
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
 
@@ -732,6 +737,26 @@ function titleViaFullParse(html: string): string | null {
   }
   return null
 }
+
+describe('heldPreviewDocument (achado E4): o iframe trocado não recebe o documento que travou', () => {
+  it('enquanto o próximo prepara, segura o documento que já estava', () => {
+    expect(
+      heldPreviewDocument({ holding: true, held: 'jogo-a', stuck: null, candidate: 'jogo-b' }),
+    ).toBe('jogo-a')
+  })
+
+  it('mas não o que travou o iframe que acabou de ser trocado', () => {
+    expect(
+      heldPreviewDocument({ holding: true, held: 'preso', stuck: 'preso', candidate: 'novo' }),
+    ).toBe(PAUSED_PREVIEW_DOC)
+  })
+
+  it('pronto o próximo, vale o próximo', () => {
+    expect(
+      heldPreviewDocument({ holding: false, held: 'preso', stuck: 'preso', candidate: 'novo' }),
+    ).toBe('novo')
+  })
+})
 
 describe('extractDocumentTitle (paridade com o parse completo)', () => {
   const cases: string[] = [

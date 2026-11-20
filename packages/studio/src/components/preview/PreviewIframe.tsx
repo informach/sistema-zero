@@ -200,11 +200,15 @@ export function PreviewIframe(): JSX.Element {
   const [frameAbsent, setFrameAbsent] = useState(false)
   const frameGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameGapStepRef = useRef(0)
+  // O documento que travou o iframe trocado (achado E4): enquanto o próximo carrega os recursos,
+  // a prévia segura o documento anterior, e o iframe novo não pode recebê-lo de novo.
+  const stuckDocumentRef = useRef<string | null>(null)
   const swapFrame = useCallback((stuck: boolean) => {
     if (!stuck) {
       setFrameGeneration((n) => n + 1)
       return
     }
+    stuckDocumentRef.current = attemptedDocumentRef.current
     const step = Math.min(frameGapStepRef.current, FRAME_GAPS_MS.length - 1)
     frameGapStepRef.current += 1
     setFrameAbsent(true)
@@ -769,12 +773,15 @@ export function PreviewIframe(): JSX.Element {
     !extensionRuntimeFailed &&
     !courseModelError &&
     execution.editingAccess !== 'observer'
-  const doc =
-    previewRunning &&
-    (preparingRun || preparationError !== null || waitingForDocumentResources) &&
-    committedDoc.current.projectId === projectId
-      ? committedDoc.current.document
-      : candidateDoc
+  const doc = heldPreviewDocument({
+    holding:
+      previewRunning &&
+      (preparingRun || preparationError !== null || waitingForDocumentResources) &&
+      committedDoc.current.projectId === projectId,
+    held: committedDoc.current.document,
+    stuck: stuckDocumentRef.current,
+    candidate: candidateDoc,
+  })
   useLayoutEffect(() => {
     committedDoc.current = { projectId, document: doc }
   }, [doc, projectId])
@@ -1399,6 +1406,23 @@ const SWAP_STUCK_AFTER_MS = 3000
 const SHELL_READY_TIMEOUT_MS = 4000
 /** Intervalos sem iframe na troca de um jogo preso; cada nova tentativa espera mais. */
 const FRAME_GAPS_MS = [200, 1200, 3500] as const
+
+/**
+ * O documento do iframe enquanto o próximo ainda prepara os recursos: o que já estava (para não
+ * piscar em branco), MENOS o que travou o iframe que acabou de ser trocado. Achado E4 da revisão
+ * de 20/11: no Rodar de novo com o jogo preso, o iframe novo nasce depois do intervalo de 200 ms;
+ * se os recursos do documento novo demoravam mais que isso, o iframe novo recebia o documento
+ * preso e travava outra vez. Ali ele fica com a página em branco até o novo ficar pronto.
+ */
+export function heldPreviewDocument(input: {
+  holding: boolean
+  held: string
+  stuck: string | null
+  candidate: string
+}): string {
+  if (!input.holding) return input.candidate
+  return input.held === input.stuck ? PAUSED_PREVIEW_DOC : input.held
+}
 
 // Cap de taxa de mensagens vindas do iframe (anti-flood). Janela de 1s e teto
 // generoso: heartbeat (1/s) + escritas de jogo em laço cabem; só corta abuso.
