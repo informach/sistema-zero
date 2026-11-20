@@ -35,6 +35,12 @@ Também permanecem as exclusões anteriormente bloqueadas: `packages/studio/.cac
 
 ## Preservado por conter rascunhos não integrados
 
+Atualização posterior, a pedido do usuário: as duas referências abaixo foram
+[consolidadas no histórico de staging](2026-11-20-studio-draft-integration.md).
+O diagnóstico já estava aplicado; o laboratório foi preservado como experimento
+rejeitado, sem ativação no produto. A remoção das branches ocorre após confirmar
+a ancestralidade e o push. A descrição abaixo registra a situação anterior.
+
 - `estudio-incremental-lab-20261118`: experimentos de carregamento incremental rejeitados (`582aa52b0`).
 - `backup-studio-diagnostic-draft-20261119`: snapshot de diagnóstico preservado antes da limpeza anterior (`60c8afa97`).
 
