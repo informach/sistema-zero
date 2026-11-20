@@ -158,6 +158,7 @@ na tela.
 | C4 memória por raiz na geração | saiu do plano |
 | C5 perfil no navegador | **feito** (sem placa de vídeo) |
 | Montagem sob demanda no JavaScript (fora das aulas) | **feita em 18/11/2026** (ver abaixo); abrir projeto enorme continua lento |
+| Abertura sem desenhar a cauda distante | **feita em 20/11/2026** (etapa 3, ver o fim); 5 mil abre em ~5 s; 10 mil abre, mas não gera código (teto da serialização, anterior a isto) |
 
 ## Montagem sob demanda (18/11/2026)
 
@@ -257,3 +258,169 @@ recolher os corpos distantes na carga: `render_management.renderBlock` desenha t
 um bloco recolhido do mesmo jeito. O caminho que resta é não criar os corpos distantes
 (estado JSON guardado fora do workspace e montado ao chegar perto), com `save` recompondo o
 estado inteiro. Ainda não foi feito.
+
+## Abertura sem desenhar a cauda distante (20/11/2026, etapa 3)
+
+`packages/studio/src/blockly/deferredTail.ts`. A partir de 1 500 blocos, todos os blocos continuam
+CRIADOS (o modelo fica inteiro: gravar, gerar o código, desfazer e copiar leem os blocos vivos do
+workspace), mas a cauda de cada área longe da vista inicial não é desenhada na abertura.
+
+**Como funciona**
+
+1. Antes do `load`, só com 1 500 blocos ou mais, o plano estima pelo JSON onde cada unidade
+   (filho direto de uma área `sz_frame_*`, na cadeia `next`) vai cair e escolhe, por área, a
+   primeira que começa mais de uma tela abaixo da vista inicial (zoom e "blocos no alto" da
+   primeira carga; a vista de agora nas recargas da Ponte).
+2. Quando essa unidade termina de nascer (`initSvg`, que roda depois dos filhos e da cadeia
+   seguinte), ela e tudo o que vem depois saem da página antes do primeiro desenho (a árvore da
+   área ainda nem entrou na página), cada unidade num pedaço solto, cortado de baixo para cima.
+3. Bloco adiado não é desenhado (`renderEfficiently`), não põe conexão no banco de conexões
+   (`setConnectionTracking`: o `appendInternal` liga a árvore inteira num `setTimeout`), não empurra
+   vizinhos (`bumpNeighbours`) e, para quem está acima, ocupa `NOTCH_HEIGHT` (`getHeightWidth`), o
+   que fecha a conta do anterior exatamente na borda do último desenhado.
+4. Quando a vista chega perto do fim do que foi desenhado (rolar, zoom, painel que cresce, mudança
+   no projeto), as próximas unidades voltam à página e são desenhadas, sempre de cima para baixo, em
+   lotes de até 24 ms. Cada lote mede cada texto uma vez (a mesma memória de larguras que o
+   `workspaces.load` do Blockly liga na abertura de sempre, só durante o lote). A raiz se redesenha
+   pela fila do próprio Blockly (a área cresce, as conexões vão para o lugar, os vizinhos são
+   empurrados como na abertura de sempre).
+5. "Mostrar o bloco", o chip do Zappy (`centerOnBlock`), o cursor do código (`select`),
+   desfazer/refazer, desencaixar um bloco adiado (`setParent(null)`), "Organizar blocos" e a foto
+   dos blocos desenham a cauda até onde precisam antes de medir. Bloco adiado que o Blockly põe
+   dentro de um pai desenhado sem passar por "sem pai" sai de novo da página na mesma hora.
+   Arrastar uma pilha que leva a cauda NÃO a desenha: da cauda o arrasto só consulta a conexão de
+   baixo da pilha, que fica longe durante o gesto (`parkStackBottom`).
+6. O módulo só é baixado com o projeto grande, junto da espera da fonte. O `offscreenBodies` para
+   no primeiro bloco adiado de cada cadeia (o que não está na página não tem corpo a tirar).
+
+As adaptações em `BlockSvg.prototype` estão marcadas como WORKAROUND no código: o Blockly 12.5.1 não
+tem ponto de extensão para desenhar só parte do workspace. O que elas supõem do Blockly instalado
+(o `renderBlock`, a ordem da carga, o `setTimeout` das conexões, a conta do `getHeightWidth`, o
+`setParent` e o `tightenEfficiently`) está preso em `deferredTail.test.ts`.
+
+**O que divergiu do desenho recomendado, e por quê**
+
+- *Unidade sem id.* Projeto recém-criado de um exemplo nasce da IR sem ids (o Blockly sorteia um
+  na carga), e o plano não teria como reconhecer a unidade. O plano sorteia o id da unidade da
+  fronteira numa cópia rasa do caminho da área até ela; o estado de quem chamou não muda.
+- *Desenhar o lote sem marcar os ancestrais.* `queueRender` num bloco marca todos os pais: com a
+  cadeia `next`, desenhar a unidade 500 redesenharia as 499 de cima. O lote é desenhado direto
+  (`renderEfficiently`, filhos antes do pai, como o `renderBlock`), e só a raiz entra na fila.
+- *O pai reencaixa a unidade.* Quem estava acima posicionou a unidade adiada quando a conexão de
+  cima dela ainda estava em (0, 0): sem reencaixar depois do desenho, a unidade ficava deslocada na
+  horizontal. Pego pelo teste de geometria.
+- *Desencaixar desenha antes.* O Blockly mede a posição do bloco que perde o pai pelo DOM; com a
+  unidade fora da página a posição saía errada. Ela é desenhada antes do `setParent(null)`.
+- *Pedaços soltos e memória de larguras por lote.* A primeira versão guardava a cauda inteira
+  aninhada na fronteira e media cada campo com `getComputedStyle`. Desenhar muitas unidades de uma
+  vez crescia com o quadrado da cauda: tirar um nó do DOM custa o tamanho do que está dentro dele
+  (o Blink avisa cada descendente), e cada `getComputedStyle` no fundo da cadeia custa a
+  profundidade. Num workspace de teste com uma cauda de 2 500 unidades (5 mil blocos), desenhar as
+  primeiras 600 levava 5,5 s (3,8 s só em `remove`); com os pedaços soltos, 1,0 s. Desenhar as 2 500
+  levava 24 s só com os pedaços soltos, 5,4 s com a memória por lote e 0,93 s de JavaScript com a
+  memória e o atalho do `Drawer` do lote 2.2 (que o Estúdio já instala; o workspace de teste não).
+- *O arrasto não desenha a cauda.* Desenhá-la no começo do gesto era o caminho direto e custava a
+  abertura inteira: arrastar o primeiro evento (a pilha leva todos os de baixo) travava 1,9 s com 2
+  mil blocos e 8,3 s com 5 mil (a base, com tudo desenhado, 0,5 s e 2,0 s). A conexão de baixo
+  fica longe durante o gesto; o efeito colateral é que, só nesse arrasto, a pilha não encaixa por
+  baixo em outro bloco (o fim dela, a milhares de pixels, nem está desenhado).
+- *Sem completar a cauda em segundo plano.* Medido (abaixo): com a cauda inteira desenhada a página
+  volta a ter a cadeia aninhada inteira, e no Chromium sem interface (headless shell) a aba cai ao
+  passar de ~750 unidades desenhadas (a mesma queda da base ao arrastar com 5 mil). Completar em
+  segundo plano levaria todo projeto grande a esse estado sem a criança pedir.
+
+**Como foi medido**
+
+Windows 11 Pro, Ryzen 5 5600G (12 processadores lógicos), 32 GB, estação compartilhada (outras
+sessões rodavam ao mesmo tempo: as rodadas variam entre si, compare só dentro de uma rodada).
+Chromium 156.0.8078.4 completo, sem interface (`PW_CHROMIUM` = o `chromium-1248` do Playwright),
+1440×900, fixture `/aula?aula=desafio-primeiro-jogo/desafio-dia-3&escala=N`. Dois builds servidos
+lado a lado: **base** = staging no commit anterior ao desta etapa (`ac7174ace`, construído trocando
+só os arquivos da etapa de volta) e **candidato** = o código final. `scripts/measure-classic-opening.mjs`
+em ordem alternada, contexto novo por amostra; "editável" é o campo 480 à vista e o editor sem a
+camada de carregamento (`readyMs`). O script agora grava o resumo do projeto aberto (ids
+canonizados, porque o projeto da aula não traz ids e o Blockly sorteia um por abertura) e os erros
+da página.
+
+```bash
+cd packages/studio
+PW_CHROMIUM=…/chromium-1248/chrome-win64/chrome.exe \
+SZ_CLASSIC_OPEN_URLS=baseline=http://127.0.0.1:5302,candidate=http://127.0.0.1:5301 \
+SZ_CLASSIC_OPEN_SIZES=2000,5000 SZ_CLASSIC_OPEN_REPEATS=3 node scripts/measure-classic-opening.mjs
+```
+
+**Abrir** (rodada final; cada célula são as amostras, em s; "maior" é a maior tarefa longa):
+
+| Blocos | Editável, base | Editável, candidato | Maior tarefa, base | Maior tarefa, candidato | Desenhados na página |
+|---|---|---|---|---|---|
+| 2 002 | 5,13 · 3,84 · 3,81 | 3,10 · 2,18 · 2,16 | 1,61 · 1,24 · 1,14 | 0,97 · 0,54 · 0,51 | 422 → 106 |
+| 5 002 | 11,56 · 13,24 · 12,43 | 6,21 · 5,07 · 5,81 | 4,71 · 5,91 · 5,06 | 3,58 · 2,51 · 3,05 | 922 → 106 |
+| 10 000 | 38,9 · 33,8 | 15,9 · 16,8 | 26,4 · 21,8 | 12,0 · 12,6 | 1 755 → 106 |
+
+Uma rodada anterior, com a abertura igual à final (as correções seguintes mexeram no que se desenha
+depois de abrir), deu 2 002: 4,14 · 3,64 · 3,70 contra 2,23 · 2,07 · 2,12; 5 002: 10,21 · 10,55 ·
+10,59 contra 4,21 · 4,49 · 4,64; 10 000: 26,5 · 28,4 contra 11,3 · 12,7. A diferença entre as
+rodadas é a máquina; dentro de cada uma, o candidato abre 2,2 a 2,5 vezes mais rápido.
+
+**Editar e mover** (`e2e/classic-scale.spec.ts`, uma amostra por braço, mesmo Chromium):
+
+| Blocos | Abrir, base | candidato | Editar um campo (maior), base | candidato | Mover uma área (maior · soma), base | candidato |
+|---|---|---|---|---|---|---|
+| 70 (o curso) | 2,3 s | 2,0 s | nenhuma | nenhuma | nenhuma | nenhuma |
+| 2 002 | 4,5 s | 2,8 s | 51 ms | 78 ms | 198 · 448 ms | 55 · 55 ms |
+| 5 002 | 11,2 s | 5,6 s | 142 ms | 162 ms | 915 · 3 071 ms | 158 · 638 ms |
+
+**Outros gestos com o projeto aberto** (Chromium completo):
+
+| Gesto | Base | Candidato |
+|---|---|---|
+| Rolar 30 × 900 px, 5 002 blocos | 30 tarefas longas, maior 349 ms, soma 7,3 s | nenhuma tarefa longa |
+| Arrastar o primeiro evento (a pilha leva a cauda), 2 002 | maior 479 ms | maior 102 ms |
+| Arrastar o primeiro evento, 5 002 | maior 2 004 ms, soma 5,96 s | maior 334 ms, soma 1,05 s |
+
+**Prova de que o projeto não muda**
+
+- Mesma fixture, os dois braços: o estado gravado e o código gerado depois de abrir têm o mesmo
+  resumo em todas as amostras (2 002: `12c51686…`/`30ea420a…`; 5 002: `95bb441a…`/`45ddb464…`).
+- Os 185 exemplos oficiais e os sete projetos dos cursos: 183 exemplos e todos os cursos ficam
+  abaixo de 1 500 blocos e abrem pelo caminho de sempre (o módulo nem é baixado nos cursos;
+  `deferredTail.test.ts`). Os dois de cima abrem pelo caminho novo e foram comparados no navegador:
+  **Reino Zero** (1 510 blocos, 683 adiados) com estado e código iguais à base; **Reino Zero Ultra**
+  (7 297 blocos, 29 adiados) com código igual e estado igual fora a posição da área "Ao iniciar",
+  que varia entre aberturas até na base (o empurrão do Blockly é sorteado: y 352 e 348 em duas
+  aberturas da base, 363 no candidato).
+- `e2e/offscreen-lifecycle.spec.ts` (Blockly de verdade, nas três engines; um workspace normal e um
+  adiado com o mesmo projeto, 50 unidades de 31 blocos): estado igual, posição e tamanho de cada bloco desenhado iguais, a área termina na borda
+  do último desenhado, nenhum bloco adiado na página nem no banco de conexões, rolar, "Mostrar o
+  bloco", o cursor, desfazer/refazer, arrastar, apagar, encaixar na fronteira, troca de pai por
+  programa e nada muda abaixo de 1 500. Cada adaptação foi provada por sabotagem (tirá-la reprova o
+  teste dela).
+
+**O que não foi atingido, sem enfeite**
+
+- **10 mil blocos não geram código, nem na base.** Os dois braços abrem (o candidato em 16 a 17 s
+  nesta rodada, a base em 34 a 39 s), mas `JSON.stringify` do estado estoura a pilha
+  (`RangeError: Maximum call stack size exceeded`) e nenhuma edição chega ao código. A causa é a
+  forma do estado do Blockly: cada evento mora dentro do `next` do anterior, e a fixture de 10 mil é
+  uma cadeia de ~1 660 eventos. Com 6 mil (~990 eventos) o candidato abre em 5,2 s e a edição chega
+  ao código; de 7 mil em diante, não. É o mesmo teto que o protótipo de 18/11 achou no
+  `IDBObjectStore.put` e não depende do desenho: resolver pede guardar as cadeias sem aninhamento
+  (salvar, IndexedDB, nuvem e Ponte), que não é desta etapa.
+- **O Chromium sem interface padrão do Playwright (headless shell) cai com a cadeia aninhada
+  inteira desenhada.** Na base: arrastar uma área com 5 mil blocos derruba a aba (2 de 2) e abrir 6
+  mil ou 10 mil também. No candidato (primeira versão, a mesma abertura), abrir e mexer com 5 mil
+  passa (4,1 a 4,7 s, editar 143 ms, mover 141 ms), mas rolar até o fim derruba a aba quando ~4 470 blocos (~745 unidades aninhadas)
+  estão desenhados. No Chromium completo, rolar até o fim desenha tudo (18 mil nós na página) e
+  mover a área depois custa 91 ms. Não foi medido em navegador com placa de vídeo nem em tablet.
+- **"Mostrar o bloco" no fim de um projeto enorme desenha tudo até ele numa tarefa só** (a regra de
+  cima para baixo): no workspace de teste, 2 500 unidades em 0,93 s de JavaScript, mais o layout.
+  No projeto real não foi medido.
+- **Empurrão de vizinhos**: bloco adiado não empurra quem está perto dele até ser desenhado. Só muda
+  algo se outra pilha estiver a menos de 28 px de uma conexão da cauda; nos acervos medidos não há.
+- **Firefox**: o caminho normal sofre muito mais com a cadeia aninhada. No workspace de teste
+  (blocos padrão do Blockly), abrir 300 unidades de 2 blocos leva 80 s; 50 unidades de 31 blocos,
+  6 s. O caminho adiado abre 800 unidades de 2 blocos em 1,5 s. O Estúdio no Firefox não foi medido
+  com a fixture do Farol.
+- A abertura segue dominada por CRIAR os blocos (o `initSvg` e os campos, ~1,6 s com 5 mil no perfil
+  de CPU) e pelo `setConnectionTracking(false)` do próprio Blockly, que anda a cadeia inteira para
+  cada bloco criado (quadrático na cadeia). Não foi mexido.
