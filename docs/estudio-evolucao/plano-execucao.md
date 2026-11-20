@@ -204,14 +204,17 @@ isolamento. Nenhuma etapa abaixo passa a "concluída" pelos critérios da tabela
   prova do cliente v3 congelado depois da migração, acervo real (185 exemplos e cursos) migrado
   idêntico, troca de perfil com gravação em voo no navegador real, Firefox no driver. CI da missão
   em `465abc2f`: modo profundo Linux/Windows, Firefox Linux/Windows e reversão aprovados. Relatório:
-  `docs/qa/2026-11-19-studio-v4-homologacao.md`. Faltam Members (Verificar/Enviar, perfil no app),
+  `docs/qa/2026-11-19-studio-v4-homologacao.md` (a rodada terminou em falha; o relatório registra
+  o que passou). Faltam Members (Verificar/Enviar, perfil no app),
   aparelho físico e sessões longas.
 - **Etapa 2 (Clássico em escala):** abertura sem trabalho repetido (desenho sem a subida inútil pelo
   DOM, fonte dos blocos carregada antes, pós-carga que rodava duas vezes). 5 mil blocos de
-  ~17,2 s para ~14,0 s nesta máquina; meta de 8 s NÃO atingida. Ver `classico-em-escala.md`.
+  16,7–17,8 s para 13,9–14,0 s nesta máquina (duas amostras por braço; os números brutos não foram
+  versionados); meta de 8 s NÃO atingida. Ver `classico-em-escala.md`.
   Descartado: recolher na carga (o Blockly desenha os filhos de bloco recolhido).
-- **Etapa 1 (isolamento):** vigia em outra origem corrigido; casca em outro site implementada e
-  desligada por padrão (B2 com decisão: feito no código, ligar é deploy dela); WebKit com decisão
+- **Etapa 1 (isolamento):** vigia em outra origem corrigido; casca em outro site implementada e,
+  desde 20/11, **ligada em staging** (decisão dela; sem COEP na página, porque o Firefox de mesa isola
+  com a casca sem ele: `../qa/2026-11-20-studio-firefox-site-isolation.md`). WebKit com decisão
   registrada (B4 continua estudo). Ver `isolamento-da-previa.md`.
 - Achados fora destas frentes, não corrigidos aqui: `blockLevels.test.ts`, a catraca do game-3d e
   os cartões 3D da galeria reprovam desde a integração de cenas do Molda no Jogo 3D (`97028f4f`);

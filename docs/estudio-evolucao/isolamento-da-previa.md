@@ -151,7 +151,11 @@ padrão**:
 
 - Contrato e página: `packages/core/src/studio/classic-shell.ts` (`sz-shell:ready`, `sz-shell:load`,
   `sz-shell:loaded`). A casca confere a origem do host contra a lista do servidor, repassa as
-  mensagens nos dois sentidos com `targetOrigin` exato e barra qualquer `sz-shell:*` vindo do jogo.
+  mensagens nos dois sentidos e barra qualquer `sz-shell:*` vindo do jogo. Para o host, o
+  `targetOrigin` é a origem exata dele; para o jogo, é `'*'`, porque o jogo tem origem opaca (sandbox
+  sem `allow-same-origin`) e nenhuma origem nomeada o alcança. Quem garante o destino é a referência
+  da janela (`frame.contentWindow`), e o jogo não recebe nada que o host não mandaria ao `srcdoc`
+  direto.
   O jogo dentro dela leva o MESMO sandbox (`allow-scripts allow-modals allow-pointer-lock`).
 - Rota: `packages/studio-runtime/src/classic-shell.ts`, em `/v1/classic-shell/1.html`. Sem
   `STUDIO_CLASSIC_SHELL_PARENT_ORIGINS` a rota responde 404: nenhum deploy muda até alguém
