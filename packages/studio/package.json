@@ -53,6 +53,7 @@
     "./tutor-safety": "./src/studio/tutorSafety.ts",
     "./tutor-mode": "./src/studio/tutorMode.ts",
     "./player": "./src/components/preview/StudioProjectPlayer.tsx",
+    "./preview-shell": "./src/studio/preview-shell.ts",
     "./personal-assets": "./src/asset-library/personal.ts",
     "./styles.css": "./src/styles/studio.css",
     "./project-validation": "./src/state/projectValidation.ts",

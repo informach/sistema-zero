@@ -128,3 +128,26 @@ export function classicShellHeaders(parentOrigins: readonly string[]): Record<st
     'x-content-type-options': 'nosniff',
   }
 }
+
+/**
+ * A URL da casca quando o host a ligou. Só com `STUDIO_CLASSIC_SHELL_ENABLED=1` E o endereço do
+ * runtime (`STUDIO_PRO_RUNTIME_URL`): sem a chave, nada muda, inclusive em produção, onde a rota
+ * da casca responde 404 enquanto o runtime não conhece as origens dos apps. HTTPS, salvo o
+ * computador local. O layout raiz dos dois apps entrega esta URL ao Estúdio; o `frame-src` já
+ * libera a origem do runtime pelo `withStudioPublishedProCsp` (travado em
+ * `community-kids/tests/classic-shell-csp.test.ts`).
+ */
+export function classicShellUrlFromEnv(env: Record<string, string | undefined>): string | null {
+  if (env.STUDIO_CLASSIC_SHELL_ENABLED?.trim() !== '1') return null
+  const runtime = env.STUDIO_PRO_RUNTIME_URL?.trim().replace(/\/+$/, '')
+  if (!runtime) return null
+  try {
+    const url = new URL(`${runtime}${CLASSIC_SHELL_PATH}`)
+    const local = url.hostname === '127.0.0.1' || url.hostname === 'localhost'
+    if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) return null
+    if (url.username || url.password || url.search || url.hash) return null
+    return url.href
+  } catch {
+    return null
+  }
+}
