@@ -2,7 +2,9 @@
  * Persistência LOCAL (IndexedDB via idb-keyval). Cada asset é independente;
  * mapas/peças/conjuntos têm autoridade versionada `pinta:local:document:<id>` e
  * espelho legado `pinta:asset:<id>`. Não há PNG achatado como documento autoral.
- * Buffers passam no structured clone, sem codec; RLE só no `.pinta.json` portátil.
+ * Mapas grandes usam chunks físicos de 32 casas na autoridade (protocolo 2),
+ * reconstruídos pelo IO antes do domínio; o espelho legado continua completo.
+ * RLE permanece no transporte portátil, não na representação física dos chunks.
  *
  * Namespace por PERFIL: o host chama `setPintaStorageNamespace(viewerId)`
  * ANTES de montar o <PintaApp> (mesmo contrato do studio) — um DB por criança,

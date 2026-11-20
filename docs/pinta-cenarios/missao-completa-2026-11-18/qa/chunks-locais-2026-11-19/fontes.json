@@ -1,0 +1,58 @@
+[
+  {
+    "file": "packages/pinta/CLAUDE.md",
+    "sha256": "be167f142548b3c95de5fdc9adaa5f10765ce2fac295d3c013cb3c5fae243c2e"
+  },
+  {
+    "file": "packages/pinta/scripts/map-budget-probe.ts",
+    "sha256": "1184a6beeeeab970dd5a9d01d4317037b8533d750809bef3865895980b45090c"
+  },
+  {
+    "file": "packages/pinta/scripts/serve-authority-e2e.ts",
+    "sha256": "85d6eb5d7b4e4c84c170254bba98d750e87c21cdcea04a9aa116b8509525be46"
+  },
+  {
+    "file": "packages/pinta/src/state/assetAuthorityDb.ts",
+    "sha256": "40bdb5ffa02322b440a587e2fed7af8add3b20eafb7c1daae4d30ac314f12466"
+  },
+  {
+    "file": "packages/pinta/src/state/persistence.ts",
+    "sha256": "05b700dc13bbfa1c7f7c6e80e85a30d61ba1b634edd2bddd36ecd93a3f9dd119"
+  },
+  {
+    "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+    "sha256": "40fdfcf1bdedc29e83dfa3a8e6d050cf20a2400a75197df7b3ae4830194ba00e"
+  },
+  {
+    "file": "packages/studio/e2e/pinta-authority.flow.ts",
+    "sha256": "ed5abb11b964a6338a0c5deb352a43cd475ee6a46d829063dd77d6bb1ab1346d"
+  },
+  {
+    "file": "packages/studio/e2e/pinta-budget.flow.ts",
+    "sha256": "dff69addac247af782348405180a9d58f71d7f5d0a3f21a4a86c8105e20a7562"
+  },
+  {
+    "file": "packages/studio/tsconfig.json",
+    "sha256": "2f55d79eb887ce735cee1a3a85d7a122a7cad9f7a9ffda20c042e05b073c579a"
+  },
+  {
+    "file": "packages/pinta/src/state/localChunkStorage.test.ts",
+    "sha256": "bbbe0f12a58de89a72e1d099ad239931b71b048b80a8bc07602532a661edf5f3"
+  },
+  {
+    "file": "packages/pinta/src/state/localChunkStorage.ts",
+    "sha256": "b4f0fd965b1108a10e689b6d4ea2aa7ecaead0545c326a362c58547c4e8ed3ee"
+  },
+  {
+    "file": "packages/studio/e2e/helpers/pintaAuthorityRealm.ts",
+    "sha256": "bb760ebd9264fdb174a2b79c0d5d2eabf8dff566390a27fb449c922a5a133a35"
+  },
+  {
+    "file": "packages/studio/e2e/pinta-local-chunks.flow.ts",
+    "sha256": "3ae60fa35dfd20bb164f33a7f89dc46eb27969552331996dd85db156da2b4748"
+  },
+  {
+    "file": "packages/studio/playwright.pinta-chunks.config.ts",
+    "sha256": "8c602cc27fe03e0a594b9f0fe5b10357b90a1dca6a7b459f2c871442266263d2"
+  }
+]

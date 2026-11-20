@@ -10,6 +10,44 @@ import { createPintaPersistence } from '../src/state/persistence'
 import { chunkBytes, paintTilemapLayers, TileChunkCache } from '../src/tiles/chunks'
 import { setCell } from '../src/tiles/tilemapOps'
 
+/** Observe real IndexedDB puts; buffers are counted separately from header JSON. */
+async function observeMapWrites(id: string, save: () => Promise<void>) {
+  const writes = {
+    chunkPuts: 0,
+    chunkIndexBytes: 0,
+    headerPuts: 0,
+    headerJsonBytes: 0,
+    mirrorPuts: 0,
+    mirrorIndexBytes: 0,
+  }
+  const original = IDBObjectStore.prototype.put
+  IDBObjectStore.prototype.put = function (value, key) {
+    const text = String(key)
+    if (text.startsWith(`pinta:local:chunk:${encodeURIComponent(id)}:`)) {
+      if (!(value instanceof Int16Array)) throw new Error('Chunk não é Int16Array')
+      writes.chunkPuts++
+      writes.chunkIndexBytes += value.byteLength
+    } else if (text === `pinta:local:document:${id}`) {
+      writes.headerPuts++
+      writes.headerJsonBytes += new TextEncoder().encode(JSON.stringify(value)).length
+    } else if (text === `pinta:asset:${id}`) {
+      writes.mirrorPuts++
+      const map = value as TilemapAsset
+      writes.mirrorIndexBytes += map.layers.reduce(
+        (sum, layer) => sum + (isTileLayer(layer) ? layer.cells.byteLength : 0),
+        0,
+      )
+    }
+    return original.call(this, value, key)
+  }
+  try {
+    await save()
+  } finally {
+    IDBObjectStore.prototype.put = original
+  }
+  return writes
+}
+
 /** Prova no navegador: dados sem corridas repetidas, cache real e transação IndexedDB real. */
 export async function runMapBudgetProbe() {
   const store = createPintaPersistence({ namespace: `budget-${crypto.randomUUID()}` })
@@ -75,7 +113,7 @@ export async function runMapBudgetProbe() {
   }
   await store.persistAsset(tileset)
   const saveStart = performance.now()
-  await store.persistAsset(map)
+  const initialWrites = await observeMapWrites(map.id, () => store.persistAsset(map))
   const saveMs = performance.now() - saveStart
   const readStart = performance.now()
   const loaded = await store.loadAssetById(map.id)
@@ -97,7 +135,7 @@ export async function runMapBudgetProbe() {
   if (!first) throw new Error('Sem camada inicial')
   const editStart = performance.now()
   const edited = setCell(loaded, first.id, 255, 255, 7)
-  await store.persistAsset(edited)
+  const editWrites = await observeMapWrites(map.id, () => store.persistAsset(edited))
   const editSaveMs = performance.now() - editStart
   const reopened = await store.loadAssetById(map.id)
   const last = reopened?.kind === 'tilemap' ? reopened.layers[0] : null
@@ -118,6 +156,8 @@ export async function runMapBudgetProbe() {
     chunkBytes: chunkBytes(48),
     allocations,
     reopenedLayers: loaded.layers.length,
+    initialWrites,
+    editWrites,
   }
   cache.clear()
   sheet.width = sheet.height = target.width = target.height = 0

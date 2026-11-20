@@ -1,0 +1,22 @@
+{
+  "equal": true,
+  "writes": [
+    {
+      "key": "pinta:asset:5bbce1ae-97e7-45a8-9508-d19aca2ea8bc",
+      "bytes": 0
+    },
+    {
+      "key": "pinta:local:document:5bbce1ae-97e7-45a8-9508-d19aca2ea8bc",
+      "bytes": 0
+    },
+    {
+      "key": "pinta:local:chunk:5bbce1ae-97e7-45a8-9508-d19aca2ea8bc:chao:0:0",
+      "bytes": 2048
+    }
+  ],
+  "value": 7,
+  "capture": {
+    "tilesets": 1,
+    "complete": true
+  }
+}

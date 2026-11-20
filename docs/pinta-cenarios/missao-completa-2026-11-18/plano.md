@@ -126,6 +126,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   publicação e atualização autenticadas continuam nas etapas 0b/9.
 - [ ] 8a. Documento e persistência incremental por chunks, cache/culling estritamente orçados,
   navegação, mapas expansíveis e recuperação; medir heap, buffers e tempo, sem prometer hardware.
+  Lote 8a1 implementado: envelope físico local 2 com blocos 32 × 32, transação
+  atômica e coleção isolada, mantendo o documento lógico completo. Suíte Pinta
+  com 2.242 aprovados e 19 ensaios nativos sem falhas/omissões, incluindo leitores
+  anteriores reais e recuperação offline. Medições, custos do espelho legado e
+  limites em `qa/chunks-locais-2026-11-19/README.md`. A abertura ainda é densa;
+  streaming, expansão e otimização do pior caso de render continuam pendentes.
 - [ ] 8b. Automapping em várias camadas: regras autorais, prévia, determinismo e histórico.
 - [ ] 8c. Isométrico e hexagonal: contratos próprios, coordenadas/picking, desenho, objetos,
   colisão e adaptadores reais; não apenas opções de interface.

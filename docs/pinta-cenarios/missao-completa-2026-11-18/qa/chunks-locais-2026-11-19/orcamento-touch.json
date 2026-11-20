@@ -1,0 +1,54 @@
+{
+  "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+  "cells": 2097152,
+  "maxCells": 2097152,
+  "wireChars": 11188227,
+  "wireMs": 252.70000000298023,
+  "saveMs": 392,
+  "readMs": 420,
+  "editSaveMs": 534,
+  "frames": [600.0999999940395, 623.6000000089407, 589.3999999910593],
+  "cacheBytes": 28311552,
+  "workingSetBytes": 603979776,
+  "chunkBytes": 9437184,
+  "allocations": 3,
+  "reopenedLayers": 32,
+  "initialWrites": {
+    "chunkPuts": 2048,
+    "chunkIndexBytes": 4194304,
+    "headerPuts": 1,
+    "headerJsonBytes": 204920,
+    "mirrorPuts": 1,
+    "mirrorIndexBytes": 4194304
+  },
+  "editWrites": {
+    "chunkPuts": 1,
+    "chunkIndexBytes": 2048,
+    "headerPuts": 1,
+    "headerJsonBytes": 204920,
+    "mirrorPuts": 1,
+    "mirrorIndexBytes": 4194304
+  },
+  "cpuSlowdown": 1,
+  "simulated": true,
+  "heapBefore": {
+    "usedSize": 1616316,
+    "totalSize": 2428928,
+    "embedderHeapUsedSize": 320928,
+    "backingStorageSize": 250455
+  },
+  "heapAfterRun": {
+    "usedSize": 16308820,
+    "totalSize": 85086208,
+    "embedderHeapUsedSize": 2454488,
+    "backingStorageSize": 87033585
+  },
+  "heapAfterGc": {
+    "usedSize": 2230968,
+    "totalSize": 3215360,
+    "embedderHeapUsedSize": 420336,
+    "backingStorageSize": 5035931
+  },
+  "memoryNote": "V8 snapshots, not peak memory; canvas and index buffers reported separately",
+  "timingNote": "Writes include the IO observer; local elapsed times are not a hardware certification"
+}

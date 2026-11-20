@@ -11,6 +11,21 @@ legado antes de entregar RAM. Divergência antiga vira cópia; origem de RAM aco
 linhagem, nunca a última listagem. Falha/quota aborta tudo. Não comparar por maior schema
 ou horário, nem remover checkpoint para caber. Captura e exportação usam a mesma autoridade.
 Saves protegidos têm custo O(galeria); só sprites mantêm o inventário incremental.
+
+**Chunks locais (etapa 8a):** mapas/conjuntos com pelo menos 32.768 células
+usam envelope físico 2 (`storage: 'pinta-cells-32-v1'`) e chunks de 32 × 32
+sob `pinta:local:chunk:`. O IO `assetAuthorityDb.ts` reconstrói o envelope
+lógico 1 antes do planejador. `localChunkStorage.ts` valida limites e chaves
+do próprio documento antes de alocar; chunk ausente/inválido aborta, sem
+fallback para o espelho. Escrita, revisão, espelho, cópias e coleta de chunks
+obsoletos são uma transação. Igualdade usa células exatas, sem hash de dados.
+Leitores anteriores já recusam envelope `version > 1`; legado que ignora a
+autoridade continua sendo recuperado pela issue 026. IDs antigos longos ou
+Unicode não emparelhado conservam armazenamento denso, sem alterar o ID.
+Nativo 3–7, backup, nuvem e contratos dos motores continuam independentes
+desse protocolo físico. O espelho ainda grava o buffer completo e o
+cabeçalho ainda leva os recursos imutáveis; não declarar escrita total de
+apenas 2 KiB nem carregamento autoral somente da região visível.
 Contrato, retenção, provas e limites: `docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md`.
 
 **Carimbo `schema` e envelope `.pinta.json` dependem do conteúdo.**

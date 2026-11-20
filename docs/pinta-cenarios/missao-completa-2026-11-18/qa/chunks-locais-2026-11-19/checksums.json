@@ -1,0 +1,117 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 3549,
+    "sha256": "20a753b2829abdaa5ef6d11dc2025b4b54e769d2af126187affe3f5dbc446305"
+  },
+  {
+    "file": "biome-final.txt",
+    "bytes": 46,
+    "sha256": "daa5abc079ec7f01f25b61977113bec27e1c18d41c0488ec171de48c198e829c"
+  },
+  {
+    "file": "biome.txt",
+    "bytes": 102,
+    "sha256": "736a70838d572801bf2281fbaa60eec22f853585ad7d96f0b0a0d2645454d473"
+  },
+  {
+    "file": "cabecalho-vermelho.txt",
+    "bytes": 3890,
+    "sha256": "65b8f39b98e54c87ff921a8c6c02c6574053e327a22c83ce1d18092536d0e077"
+  },
+  {
+    "file": "fontes.json",
+    "bytes": 2076,
+    "sha256": "c4f964b98e62fac0e61765be63908b24723b8a0b81eeb5d08eb4d66b7a8310c5"
+  },
+  {
+    "file": "ids-vermelho.txt",
+    "bytes": 5072,
+    "sha256": "d65e9c858d863140421c20ffac92e92703354a85a5dea72497472f25ce0144ab"
+  },
+  {
+    "file": "io-cpu-4x.json",
+    "bytes": 424,
+    "sha256": "f623683d2896b9de54160cb0124fe135ec0deae515f169328d5237ce9d0fc8e1"
+  },
+  {
+    "file": "io-desktop.json",
+    "bytes": 424,
+    "sha256": "ecaa8152ac7f1db71d71377fa5d9fed92975d225e48604ed5db28e697ab0b440"
+  },
+  {
+    "file": "navegador.json",
+    "bytes": 4090,
+    "sha256": "f194b6c220b6780d843223d44bf6c8f507bead4f56f7b0edce5e41c1687baeb5"
+  },
+  {
+    "file": "navegador.txt",
+    "bytes": 2850,
+    "sha256": "446e2622252ceae25fb427328544b104ea5435f99deb4dc59d8cc3cbdf20f991"
+  },
+  {
+    "file": "nucleo-25.txt",
+    "bytes": 2877,
+    "sha256": "0509a472f45e4cf54d221db27ee6ddf0e67b59fc9e82b135809a57d5638f3b9a"
+  },
+  {
+    "file": "nucleo-26.txt",
+    "bytes": 3004,
+    "sha256": "ad6e418224d01f2bd39264ff2bd5cbd9c9d3f728ded6bd68ef5f2e0b2acb6519"
+  },
+  {
+    "file": "oficina-cpu-4x.png",
+    "bytes": 56248,
+    "sha256": "a48f23a60d963de12edad5ebc66c6aea330718dcdfc173f338b3b5f6dca15a21"
+  },
+  {
+    "file": "oficina-desktop.png",
+    "bytes": 56486,
+    "sha256": "a7e2204a713434f72600c5cdc17168b7a995eab766f164a711576c8083f0ab41"
+  },
+  {
+    "file": "orcamento-cpu-4x.json",
+    "bytes": 1563,
+    "sha256": "2ca1755db4dc86131362ab1aa70c8090c60d78fe713e9db86c5f93967d9be3b4"
+  },
+  {
+    "file": "orcamento-desktop.json",
+    "bytes": 1547,
+    "sha256": "204d55a34926c6428b73aeb045679f05d4b7fa0ab21d8838320a1ac37d49b05c"
+  },
+  {
+    "file": "orcamento-touch.json",
+    "bytes": 1536,
+    "sha256": "7c229ea0722b07dc331d885542d1662a6447c15faa3f36bae34b6ffcfccb8bc1"
+  },
+  {
+    "file": "orcamento.txt",
+    "bytes": 494,
+    "sha256": "e5a0a66877445fc10ac8ad6aa0bc5dacec9bf4abe47bdc60254a6fb47dab4b62"
+  },
+  {
+    "file": "origem.json",
+    "bytes": 1714,
+    "sha256": "cfa931e30d86c736b37da87e3efc2663717ddc6cf787b01f964a19cae2895c15"
+  },
+  {
+    "file": "pinta-completo.txt",
+    "bytes": 245260,
+    "sha256": "aa3509bb5406a65d9ecfb5b3be5d708b5c762976d5576e4a521bb49e3806a965"
+  },
+  {
+    "file": "tipos-estudio.txt",
+    "bytes": 54,
+    "sha256": "d8c7ff03c12f4026e52705ab9df4e54801946bac7eea6edcfd0859a24ef07afc"
+  },
+  {
+    "file": "tipos-harness-final.txt",
+    "bytes": 1,
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  {
+    "file": "tipos-pinta.txt",
+    "bytes": 15,
+    "sha256": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92"
+  }
+]
