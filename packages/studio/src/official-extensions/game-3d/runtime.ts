@@ -18,9 +18,11 @@ import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
 import { GAME_3D_PLATFORM_KIT_METHODS } from './platformCodec'
+import { GAME_3D_WITHOUT_PLATFORM_VARIANT } from './platformKitVariant'
 import { gameThreeDModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameThreeDPlatformRuntimeSource } from './runtimePlatform'
-import { gameThreeDSceneRuntimeSource } from './runtimeScene'
+import { gameThreeDSceneAbsentRuntimeSource, gameThreeDSceneRuntimeSource } from './runtimeScene'
+import { GAME_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 const gameThreeDRuntimeBase = `import * as THREE from 'three';
 (function () {
@@ -4592,13 +4594,16 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
  * compõe os seus subsistemas: o fragmento roda DENTRO da IIFE e enxerga tudo que
  * o runtime principal já definiu, sem criar outro global nem outro import.
  */
-function composeGameThreeDRuntime(platformSource: string): string {
+function composeGameThreeDRuntime(
+  platformSource: string,
+  sceneSource: string = gameThreeDSceneRuntimeSource,
+): string {
   return compactOfficialRuntimeSource(
     withThreeRenderBudgetRuntime(
       withGameRules3DRuntime(
         withThreeModelsRuntime(
           gameThreeDRuntimeBase
-            .replace('  /*__SZ_GAME_3D_SCENE_RUNTIME__*/', () => gameThreeDSceneRuntimeSource)
+            .replace('  /*__SZ_GAME_3D_SCENE_RUNTIME__*/', () => sceneSource)
             // Funções como substituto: um `$&`/`$'` no fragmento seria lido como padrão.
             .replace('  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/', () => platformSource)
             // Modelos .glb e céu .hdr (lote 7 do Molda): mesmo mecanismo, outro fragmento. O
@@ -4642,3 +4647,29 @@ export const gameThreeDRuntime = composeGameThreeDRuntime(gameThreeDPlatformRunt
 
 /** O runtime sem o Kit Plataforma (~33 mil caracteres a menos), para quem não usa o kit. */
 export const gameThreeDRuntimeWithoutPlatform = composeGameThreeDRuntime(PLATFORM_KIT_ABSENT_SOURCE)
+
+const composedByVariant = new Map<string, string>([
+  ['', gameThreeDRuntime],
+  [GAME_3D_WITHOUT_PLATFORM_VARIANT, gameThreeDRuntimeWithoutPlatform],
+])
+
+/**
+ * O runtime de uma variante de `gameThreeDRuntimeVariant` (`sceneVariant.ts`): cada parte da
+ * chave tira um fragmento que o projeto não usa (`sem-kit-plataforma`, `sem-cenario-molda`).
+ * Composto uma vez por variante.
+ */
+export function gameThreeDRuntimeForVariant(variant: string): string {
+  const cached = composedByVariant.get(variant)
+  if (cached !== undefined) return cached
+  const parts = new Set(variant.split('+'))
+  const composed = composeGameThreeDRuntime(
+    parts.has(GAME_3D_WITHOUT_PLATFORM_VARIANT)
+      ? PLATFORM_KIT_ABSENT_SOURCE
+      : gameThreeDPlatformRuntimeSource,
+    parts.has(GAME_3D_WITHOUT_SCENE_VARIANT)
+      ? gameThreeDSceneAbsentRuntimeSource
+      : gameThreeDSceneRuntimeSource,
+  )
+  composedByVariant.set(variant, composed)
+  return composed
+}
