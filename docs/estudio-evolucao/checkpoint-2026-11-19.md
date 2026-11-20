@@ -133,7 +133,14 @@ protegidas do CI. A [correção de geração/desfazer](../qa/2026-11-20-studio-c
 restaura o contrato das edições e usa a pilha nativa do Blockly para recuperar o
 cabeçalho original ao desfazer tudo. Passaram 18 testes focados (56 asserções),
 TypeScript e 11 casos reais de Chromium, incluindo as primeiras aulas dos dois
-cursos, sem alterar referências. Falta comprovar novamente as cinco aulas no CI.
+cursos, sem alterar referências. Depois passaram as cinco aulas completas no
+Windows local (7,7 min), 49 objetivos estruturais e, em execução separada com
+Chromium configurado, os 17 objetivos de execução, sem notas ausentes.
+Falta comprovar novamente as cinco aulas no CI. A revisão de código `f86541d25`
+está na execução `44707709421`; na última conferência, Firefox, WebKit, Python,
+runtime hospedado, auditoria e isolamento passaram em seus recortes, com os
+demais trabalhos ainda em execução. A [sombra do Monaco](../qa/2026-11-20-studio-monaco-scroll-shadow.md)
+também foi corrigida; duas colagens e os dois fluxos de CSS passaram localmente.
 
 A correção de [CSS salvo e editar/desfazer](../qa/2026-11-19-studio-css-hydration-integrity.md)
 passou em 18 testes focados (55 asserções), TypeScript e nove casos reais de
@@ -165,6 +172,9 @@ mensagem `blocked by policy`; não houve tentativa de contornar a decisão:
 - `packages/studio/.cache/e2e-dist-5355/` — build redundante do ensaio anterior.
 - `packages/studio/.cache/mission/preview-first-document-red.txt`.
 - `packages/studio/.cache/mission/preview-first-document-green.txt`.
+- `packages/studio/.cache/e2e-dist-5359/` — build redundante de 20/11; destino
+  absoluto e ausência de servidor na porta conferidos, mas a revisão automática
+  também recusou a exclusão com `blocked by policy`. Não houve nova tentativa.
 
 Os dois logs grandes são da hipótese descartada de remount; o registro
 compacto do teste e a prova da correção definitiva estão preservados nos

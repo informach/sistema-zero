@@ -18,8 +18,10 @@ O CSS semanticamente equivalente é preservado também ao editar outras partes d
 - 11 casos de Chromium no Windows, aprovados em 3,3 minutos: primeiras aulas de Cadê Todo Mundo? e Desafio do Primeiro Jogo, dois casos de blocos fora da tela, metadados HTML e três exemplos em 390/1280 px, incluindo troca real de fonte.
 - Nenhuma referência dos cursos foi regravada. O teste de desfazer continua exigindo igualdade do JavaScript original.
 - Logs: `.cache/mission/banner-undo-unit.txt`, `.cache/mission/banner-undo-browser.txt`.
+- Rodada completa posterior: cinco aulas aprovadas em 7,7 minutos, mantendo gestos e referências. Log: `.cache/mission/course-banner-all-browser.txt`. Os arquivos de objetivos confirmam 49 verificações estruturais aprovadas e 17 objetivos de execução sem medição nessa chamada, que não definiu `SZ_CHECK_CHROMIUM`.
+- Execução separada dos projetos acabados de montar, com `SZ_CHECK_CHROMIUM` apontando para Chromium 1248 instalado: **17 objetivos de execução aprovados, zero falhas, zero sem medição**. São seis partes com objetivos executáveis e uma parte adicional no dia 3. Incluem toque, contagem sem recontar, quatro direções, memória e porta com/sem chave. O script `scripts/check-lesson-objectives.ts` chamou o executor real do servidor para cada parte, sem publicar projetos. Logs e resultados separados: `.cache/mission/course-runtime-objectives.txt` e `.cache/mission/course-runtime-objectives.json`. Os registros inicialmente sem nota foram preservados.
 
-TypeScript completo do pacote aprovado, saída 0 sem diagnósticos (`.cache/mission/banner-undo-types.txt`). A cobertura local destas duas aulas não substitui os cinco testes de aulas no CI nem a homologação de Verificar/Enviar/Concluir no Members real.
+TypeScript completo do pacote aprovado, saída 0 sem diagnósticos (`.cache/mission/banner-undo-types.txt`). A cobertura local das cinco aulas não substitui a qualificação no Linux/Windows do CI nem a homologação de Verificar/Enviar/Concluir no Members real.
 
 ## Próximos bloqueios conhecidos
 
