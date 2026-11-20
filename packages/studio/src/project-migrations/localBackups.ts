@@ -2,13 +2,22 @@ import { isDocumentRecord } from '../core/projectDocument'
 import { readAllKeys, readValues } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
 import { decodeProjectJsonGraph } from '../state/projectJsonGraphDecode'
-import { projectBackupKey } from '../state/projectStorageKeys'
+import { nativeRecovery, synchronousRecovery } from '../state/projectRecoveryGuards'
+import { projectFromRecovery, type RecoveryWrite } from '../state/projectStorageCoordinator'
+import {
+  PROJECT_STORAGE_VERSION,
+  type ProjectStorageVersion,
+  projectBackupKey,
+  projectRecoveryKey,
+} from '../state/projectStorageKeys'
 import { assembleProjectRecord, type StoredProjectRecord } from '../state/projectStorageRecords'
 import {
   captureProjectStorageScope,
   type ProjectStorageScope,
 } from '../state/projectStorageRuntime'
 import { decodeProjectStorageValue } from '../state/projectStorageTransport'
+import { readSynchronousExitJournal } from '../state/synchronousExitJournalRead'
+import { isV3ExitCopy, isV3RecoveryArchive } from './localV3RecoveryArchive'
 
 /**
  * Segurança de reversão do armazenamento v4 (lote 1.1, 19/11/2026).
@@ -17,14 +26,16 @@ import { decodeProjectStorageValue } from '../state/projectStorageTransport'
  * - v3 → v4: `sz:v4:project-backup:<id>:<sha>` `{version: 1, sourceVersion: 3, records}`;
  * - v1/v2 → v4: a mesma chave, `{version: 2, sourceKeys, records}` (objeto por chave);
  * - v1/v2 → v3 (bundles antigos): `sz:project-backup:<id>:<sha>` `{version: 1, sourceKeys, records[]}`;
- * - ancestral de recuperação: `...:recovery-<sha>` `{kind: 'recovery-source', encoded}`.
+ * - ancestral de recuperação: `...:recovery-<sha>` `{kind: 'recovery-source', encoded}`;
+ * - cópia de saída v3 que a migração reaplicou: `...:v3-recovery-<sha>` `{sourceVersion: 3,
+ *   writer, token, encoded}` (antes de 20/11/2026 ela ia na chave do ancestral, `recovery-<sha>`).
  *
  * Até aqui nenhum código lia esses registros. Este módulo os lê SEM alterar nada e devolve o
  * documento como estava, para virar uma CÓPIA NOVA pelo import (que cria outro id): restaurar
  * nunca sobrescreve o projeto atual nem o próprio backup.
  */
 
-export type LocalProjectBackupKind = 'v3' | 'legacy-layout' | 'recovery-source'
+export type LocalProjectBackupKind = 'v3' | 'legacy-layout' | 'recovery-source' | 'v3-recovery'
 
 export interface LocalProjectBackup {
   key: string
@@ -50,6 +61,9 @@ function describeBackup(key: string, projectId: string, value: unknown): LocalPr
     return value.projectId === projectId && typeof value.encoded === 'string'
       ? { key, projectId, kind: 'recovery-source' }
       : null
+  // Reconhecido pelo formato, não pela chave: o mesmo arquivo pode estar na chave antiga.
+  if (isV3RecoveryArchive(value))
+    return value.projectId === projectId ? { key, projectId, kind: 'v3-recovery' } : null
   if (value.sourceId !== projectId) return null
   if (value.version === 1 && value.sourceVersion === 3 && isDocumentRecord(value.records))
     return { key, projectId, kind: 'v3', capturedAt }
@@ -96,13 +110,13 @@ function partOf(key: string, projectId: string): { part: Part | 'flat'; version:
 }
 
 /**
- * Monta o documento a partir de registros por chave. Prefere o layout mais novo que esteja
- * completo; um documento plano (v1) só vale quando não há partições.
+ * Cada layout guardado (v4, v3, v2, v1) que monta um documento completo, do mais novo para o
+ * mais antigo. Um documento plano (v1) só vale quando aquele layout não tem partições.
  */
-export function projectFromStorageRecords(
+function projectLayoutsFromStorageRecords(
   projectId: string,
   records: ReadonlyArray<readonly [string, unknown]>,
-): StoredProjectRecord | null {
+): Map<number, StoredProjectRecord> {
   const layouts = new Map<number, Partial<Record<Part | 'flat', unknown>>>()
   for (const [key, raw] of records) {
     const located = partOf(key, projectId)
@@ -112,6 +126,7 @@ export function projectFromStorageRecords(
     layout[located.part] = value
     layouts.set(located.version, layout)
   }
+  const documents = new Map<number, StoredProjectRecord>()
   for (const version of [...layouts.keys()].sort((a, b) => b - a)) {
     const layout = layouts.get(version)!
     if (layout.meta || layout.files || layout.state) {
@@ -123,17 +138,25 @@ export function projectFromStorageRecords(
         layout.assets,
         layout.blocks,
       )
-      if (assembled) return assembled
+      if (assembled) documents.set(version, assembled)
       continue
     }
     if (isDocumentRecord(layout.flat) && layout.flat.id === projectId)
-      return { ...layout.flat, id: projectId }
+      documents.set(version, { ...layout.flat, id: projectId })
   }
-  return null
+  return documents
+}
+
+/** Monta o documento a partir de registros por chave: o layout mais novo que esteja completo. */
+export function projectFromStorageRecords(
+  projectId: string,
+  records: ReadonlyArray<readonly [string, unknown]>,
+): StoredProjectRecord | null {
+  return projectLayoutsFromStorageRecords(projectId, records).values().next().value ?? null
 }
 
 function recordsOfBackup(value: Record<string, unknown>): Array<readonly [string, unknown]> {
-  if (value.kind === 'recovery-source') {
+  if (value.kind === 'recovery-source' || isV3RecoveryArchive(value)) {
     const decoded = decodeProjectJsonGraph(value.encoded as string) as {
       write?: { puts?: unknown }
     }
@@ -256,22 +279,130 @@ export async function readPreservedProjectRecords(
   )
 }
 
+/** A cópia preservada como documento; fora do contrato ou sem os blocos, ela não entra. */
+function preservedDraft(
+  projectId: string,
+  version: ProjectStorageVersion,
+  read: () => RecoveryWrite,
+): StoredProjectRecord | null {
+  let recovery: RecoveryWrite
+  try {
+    recovery = read()
+  } catch (error) {
+    // Ela continua guardada e vai inteira no "Baixar o que foi preservado".
+    console.warn('[studio] cópia preservada fora do contrato; não entra na restauração', error)
+    return null
+  }
+  // Sem os blocos atuais (`incompleteBlocks`), a cópia sairia com blocos velhos ou sem nenhum.
+  if (recovery.projectId !== projectId || recovery.incompleteBlocks) return null
+  return projectFromRecovery(recovery, version)
+}
+
+/** As cópias de saída que ficaram no journal síncrono (localStorage) deste perfil. */
+function exitJournalDrafts(projectId: string, scope: ProjectStorageScope): StoredProjectRecord[] {
+  let entries: ReturnType<typeof readSynchronousExitJournal>
+  try {
+    entries = readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, projectId)
+  } catch (error) {
+    // As entradas continuam no journal e vão no "Baixar o que foi preservado".
+    console.warn('[studio] journal de saída ilegível; não entra na restauração', error)
+    return []
+  }
+  return entries.flatMap((entry) => {
+    const version = isV3ExitCopy(entry.value) ? 3 : 4
+    const draft = preservedDraft(projectId, version, () => synchronousRecovery(entry, version))
+    return draft ? [draft] : []
+  })
+}
+
+type RestoreSource = 'edit' | 'records' | 'backup'
+interface RestoreCandidate {
+  document: StoredProjectRecord
+  source: RestoreSource
+}
+
 /**
- * "Restaurar uma cópia" do card preservado: o backup mais recente; sem backup, os registros que
- * continuam no lugar. Sempre uma cópia NOVA pelo import; nada do que existe é apagado.
- * Devolve `null` quando nem o backup nem os registros reconstroem o projeto.
+ * O que este navegador guarda do projeto, separado no que está PRESERVADO (o que ainda não virou
+ * documento: cópias de saída v4 e v3, no banco e no journal, e as partições de um layout antigo
+ * que não migraram) e no documento ATUAL (o layout desta versão). Só lê.
+ */
+async function readPreservedProjectSources(
+  projectId: string,
+  scope: ProjectStorageScope,
+): Promise<{ preserved: RestoreCandidate[]; current: StoredProjectRecord | null }> {
+  const keys = (await readAllKeys(scope.store)).filter(
+    (key): key is string => typeof key === 'string',
+  )
+  const drafts = keys.flatMap((key) => {
+    const version = ([4, 3] as const).find((candidate) =>
+      key.startsWith(projectRecoveryKey(projectId, '', candidate)),
+    )
+    return version ? [[key, version] as const] : []
+  })
+  const parts = keys.filter((key) => partOf(key, projectId) !== null)
+  const values = await readValues(scope.store, [...drafts.map(([key]) => key), ...parts])
+  const preserved: RestoreCandidate[] = []
+  drafts.forEach(([key, version], index) => {
+    // Um id com dois-pontos não vaza: o contrato confere a chave contra o projeto e o escritor.
+    const draft = preservedDraft(projectId, version, () =>
+      nativeRecovery(values[index], key, version),
+    )
+    if (draft) preserved.push({ document: draft, source: 'edit' })
+  })
+  for (const draft of exitJournalDrafts(projectId, scope))
+    preserved.push({ document: draft, source: 'edit' })
+  const layouts = projectLayoutsFromStorageRecords(
+    projectId,
+    parts.map((key, index) => [key, values[drafts.length + index]] as const),
+  )
+  for (const [version, document] of layouts)
+    if (version !== PROJECT_STORAGE_VERSION) preserved.push({ document, source: 'records' })
+  return { preserved, current: layouts.get(PROJECT_STORAGE_VERSION) ?? null }
+}
+
+function editedAt({ document }: RestoreCandidate): number {
+  return typeof document.updatedAt === 'number' && Number.isFinite(document.updatedAt)
+    ? document.updatedAt
+    : 0
+}
+
+/** A mais nova pelo `updatedAt`; no empate, a primeira da lista. */
+function newest(candidates: readonly RestoreCandidate[]): RestoreCandidate | undefined {
+  let best: RestoreCandidate | undefined
+  for (const candidate of candidates)
+    if (!best || editedAt(candidate) > editedAt(best)) best = candidate
+  return best
+}
+
+/**
+ * "Restaurar uma cópia" do card preservado. A ordem é a do que o card guarda:
+ * 1. a edição PRESERVADA mais nova: cópia de saída v4 ou v3, no banco ou no journal (`'edit'`),
+ *    ou as partições de um layout antigo que não migraram (`'records'`);
+ * 2. sem nada preservado, o documento atual (`'records'`);
+ * 3. só então o backup mais novo (o do dia da migração é o mais antigo de todos).
+ * Até 20/11/2026 o backup vinha primeiro e a edição preservada era ignorada (P1 da revisão).
+ * Sempre uma cópia NOVA pelo import; nada do que existe é apagado ou regravado.
+ * Devolve `null` quando nada reconstrói o projeto.
  */
 export async function restorePreservedProject(
   projectId: string,
   opts: Parameters<typeof restoreLocalProjectBackup>[1] = {},
-): Promise<{ id: string; name: string; warnings: string[]; source: 'backup' | 'records' } | null> {
+): Promise<{ id: string; name: string; warnings: string[]; source: RestoreSource } | null> {
   const scope = opts.scope ?? captureProjectStorageScope()
-  for (const backup of await listLocalProjectBackups(projectId, scope)) {
-    if (!(await readLocalProjectBackup(backup, scope))) continue
-    return { ...(await restoreLocalProjectBackup(backup, { ...opts, scope })), source: 'backup' }
+  const stored = await readPreservedProjectSources(projectId, scope)
+  let chosen =
+    newest(stored.preserved) ??
+    (stored.current ? { document: stored.current, source: 'records' as const } : undefined)
+  if (!chosen) {
+    const backups: RestoreCandidate[] = []
+    for (const backup of await listLocalProjectBackups(projectId, scope)) {
+      const restored = await readLocalProjectBackup(backup, scope)
+      if (restored) backups.push({ document: restored, source: 'backup' })
+    }
+    chosen = newest(backups)
   }
-  const document = await readPreservedProjectRecords(projectId, scope)
-  if (!document) return null
+  if (!chosen) return null
+  const { document, source } = chosen
   const baseName = typeof document.name === 'string' && document.name ? document.name : 'Projeto'
   const importSnapshot =
     opts.importSnapshot ?? (await import('../projects/importSnapshot')).importProjectSnapshot
@@ -279,5 +410,5 @@ export async function restorePreservedProject(
     name: `${baseName.slice(0, 175)}${RESTORED_COPY_SUFFIX}`,
     namespace: opts.namespace ?? scope.namespace,
   })
-  return { id: project.id, name: project.name, warnings, source: 'records' }
+  return { id: project.id, name: project.name, warnings, source }
 }
