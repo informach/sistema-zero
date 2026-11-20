@@ -1,0 +1,10 @@
+module.exports=async function(qa){const page=qa.vilaPage;
+ const before=await require('./checkpoint-owned-vila-program.cjs')(qa);if(before.markerInFiles)throw Error('Marker already present');
+ const stop=page.getByRole('button',{name:'Parar',exact:true});if(await stop.isVisible())await stop.click();
+ await page.getByRole('button',{name:'Ponte',exact:true}).click();
+ await page.getByRole('button',{name:'Programa · script.js',exact:true}).click();
+ await page.waitForFunction(id=>Array.from(document.querySelectorAll('.monaco-editor')).some(e=>(e.getAttribute('data-uri')??'').includes(id)&&(e.getAttribute('data-uri')??'').endsWith('/script.js')),qa.ownedVilaGame.projectId);
+ const input=page.locator('.monaco-editor textarea');await input.press('Control+End');await page.keyboard.insertText('\nlet qaVila20261120 = 261120;\n');
+ let after;for(let i=0;i<40;i++){await page.waitForTimeout(250);after=await require('./checkpoint-owned-vila-program.cjs')(qa);if(after.markerInFiles&&after.markerInIR)break}
+ if(!after?.markerInFiles||!after.markerInIR)throw Error('Vila custom program not persisted');qa.ownedVilaProgramBeforeUpdate=after;
+ return {...after,keyboardEdit:true,oldPagePreserved:!qa.old.isClosed()};};

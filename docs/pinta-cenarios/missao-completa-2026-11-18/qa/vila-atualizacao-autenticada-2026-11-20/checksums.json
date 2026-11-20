@@ -1,0 +1,54 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "8a06d5bfead7aeba8511995f80f7b6a3ae9fc36523739c2456e47dde5e6c3159"
+  },
+  {
+    "file": "add-owned-vila-program-marker.cjs.txt",
+    "sha256": "0b3b57ceef53622d1b213865b42d368341cd5162687239d1600a3431f8901903"
+  },
+  {
+    "file": "atualizacao.json",
+    "sha256": "6f906d02832774237ebf656915c34517d88bc226174491bfe5b816317a2cea8a"
+  },
+  {
+    "file": "biblioteca-pronta-projeto-antigo.json",
+    "sha256": "cf33e2dfb5c87967b933bce278dbd073036330123aea6070953524156a6f223b"
+  },
+  {
+    "file": "checkpoint-owned-vila-program.cjs.txt",
+    "sha256": "0f6fa1c85f1edf374187913a812f83534836acf1ef1b6820fbbdfceeb33c3d7c"
+  },
+  {
+    "file": "finalize-owned-vila-update.cjs.txt",
+    "sha256": "b2e3237710a576cf9d5386faeacc14e28c7b594683a9604ede899af95b0a912d"
+  },
+  {
+    "file": "foco-antes-da-biblioteca.json",
+    "sha256": "e27c3cb3ead71a30d7a42ab9ace46661640ed8af6fdeb0bc168c5fb4c8089014"
+  },
+  {
+    "file": "inspect-owned-vila-sync.cjs.txt",
+    "sha256": "123affb48eb5b4b69482e25e92c70926d562f5e85fac89788321d99ef2ab923a"
+  },
+  {
+    "file": "jogo-depois-da-atualizacao.json",
+    "sha256": "0c892ed55904886d8061cff2959ae5dd6f69c76dd30ed51f42d2b9ac818ec6d2"
+  },
+  {
+    "file": "programa-personalizado.json",
+    "sha256": "283f58411d99c7f5414cc41dab9ed47d5e204e380a2b6e0b85244fa309473e56"
+  },
+  {
+    "file": "reabertura.json",
+    "sha256": "7a45e406bded9f2419702f08db42acba4b6eb5018b304b876fad9bd40849088f"
+  },
+  {
+    "file": "reopen-owned-vila-program.cjs.txt",
+    "sha256": "1d5b8b96ab0498612201185ea13422591132aa18315e030882881ec941637cc2"
+  },
+  {
+    "file": "update-owned-vila-preserve-program.cjs.txt",
+    "sha256": "1deac463b62f4689fe283b9a7972f93a1d6c0cc2d0c210d04c7da720a329ebf3"
+  }
+]

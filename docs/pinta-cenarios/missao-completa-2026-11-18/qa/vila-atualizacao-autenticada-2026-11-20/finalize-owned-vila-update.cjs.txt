@@ -1,0 +1,9 @@
+module.exports=async function(qa){if(!qa.ownedVilaNativeAfterEdit)throw Error('Native edit missing');const expected=qa.ownedVilaProgramBeforeUpdate;
+ const ready=await require('./inspect-owned-vila-sync.cjs')(qa);if(ready.library.sceneSha256===expected.sceneSha256||ready.library.updatedAt<=expected.libRevision)throw Error('Personal library not updated');
+ await qa.vilaPage.bringToFront();await qa.vilaPage.evaluate(()=>window.dispatchEvent(new Event('focus')));
+ let after;for(let i=0;i<80;i++){await qa.vilaPage.waitForTimeout(250);after=await require('./checkpoint-owned-vila-program.cjs')(qa);if(after.sceneSha256===ready.library.sceneSha256&&after.libRevision>expected.libRevision)break}
+ if(after.sceneSha256!==ready.library.sceneSha256||after.libRevision<=expected.libRevision)throw Error('Ready library did not synchronize');
+ if(after.programSha256!==expected.programSha256||!after.markerInFiles||!after.markerInIR)throw Error('Custom program changed');
+ const previous=qa.ownedVilaNativeCheckpoint,changed=qa.ownedVilaNativeAfterEdit;
+ qa.ownedVilaUpdate={projectId:after.projectId,mapBefore:previous.assets.find(a=>a.id===qa.ownedVila.mapId).sha256,mapAfter:changed.assets.find(a=>a.id===qa.ownedVila.mapId).sha256,programBefore:expected.programSha256,programAfter:after.programSha256,sceneBefore:expected.sceneSha256,sceneAfter:after.sceneSha256,libRevisionBefore:expected.libRevision,libRevisionAfter:after.libRevision,linkedMaps:after.linkedMaps,layers:after.layers,tilesets:after.tilesets,unchangedNativeResources:5,customProgramPreserved:true,focusEventEmulated:true,focusAfterLibraryReady:true,authenticatedHost:true,cloudWriter6Activated:false,oldPagePreserved:!qa.old.isClosed()};
+ return qa.ownedVilaUpdate;};

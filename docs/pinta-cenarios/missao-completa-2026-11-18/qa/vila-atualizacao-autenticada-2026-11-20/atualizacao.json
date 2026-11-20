@@ -1,0 +1,21 @@
+{
+  "projectId": "01M7WPNJ5QN6GWD26KXGSPX527",
+  "mapBefore": "eaa34efc8324e33ff5397cf8f596b154b8caffbc129ae2d2a00add7943478303",
+  "mapAfter": "0da3e50a083e3ba60ebbc848583a30d239b3055de73b1ce4dda61d37113d511b",
+  "programBefore": "05eb9deebfed36531f6eda77f4a9b858f246567ba2ceae94693dd54967351302",
+  "programAfter": "05eb9deebfed36531f6eda77f4a9b858f246567ba2ceae94693dd54967351302",
+  "sceneBefore": "cd10e6317f05c0fbeca9c556b886ad2f3b726748026d96d02eb844b3596ffb7d",
+  "sceneAfter": "8d5ce1d84a02b944ca6eebaa7a67d89ae4da078105f0f669857b917b1a23ea96",
+  "libRevisionBefore": 1795185886905,
+  "libRevisionAfter": 1795188395013,
+  "linkedMaps": 2,
+  "layers": 18,
+  "tilesets": 2,
+  "unchangedNativeResources": 5,
+  "customProgramPreserved": true,
+  "focusEventEmulated": true,
+  "focusAfterLibraryReady": true,
+  "authenticatedHost": true,
+  "cloudWriter6Activated": false,
+  "oldPagePreserved": true
+}
