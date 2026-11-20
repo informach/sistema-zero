@@ -1933,6 +1933,8 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       /** Tag do Desafio do mês — o hub valida (posse + mês) com drop silencioso. */
       challengeKey?: string | null
       /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
+      sourceProjectId?: string | null
+      asNewPost?: boolean
       studioMeta?: StudioPublicProjectMetadata | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio-standalone', {

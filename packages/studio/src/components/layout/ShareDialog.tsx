@@ -156,7 +156,11 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
           if (value.description?.trim())
             setDescription(value.description.trim().slice(0, MAX_DESCRIPTION))
           if (editableTitle && value.title?.trim()) setTitle(value.title.trim().slice(0, MAX_TITLE))
-          if (value.coverUrl) setCover({ kind: 'current' })
+          // Só quando a criança ainda não escolheu outra capa enquanto o status carregava.
+          if (value.coverUrl)
+            setCover((chosen) =>
+              chosen === null || chosen.kind === 'verified' ? { kind: 'current' } : chosen,
+            )
           // Descrição já existe: a IA não precisa rascunhar outra.
           describeStartedRef.current = true
         })

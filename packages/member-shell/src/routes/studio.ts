@@ -499,15 +499,26 @@ export function createStudioRoutes(deps: {
       }
     }
     let fingerprint: string | null = null
+    let kind: string | null = null
     if (source !== null) {
       try {
         const raw: unknown = JSON.parse(source)
-        if (!isRetiredStudioPublicationSnapshot(raw)) fingerprint = studioGameFingerprint(raw)
+        if (!isRetiredStudioPublicationSnapshot(raw)) {
+          fingerprint = studioGameFingerprint(raw)
+          kind = publicationKind(raw)
+        }
       } catch {
         fingerprint = null
       }
     }
-    return { version, fingerprint }
+    return { version, fingerprint, kind }
+  }
+  /** O tipo do jogo (linguagem + clássico/Pro): uma versão nova não pode trocá-lo no link. */
+  function publicationKind(project: unknown): string | null {
+    if (!project || typeof project !== 'object') return null
+    const value = project as { programmingLanguage?: unknown; kind?: unknown }
+    const kind = value.kind === 'pro' ? 'pro' : 'classic'
+    return value.programmingLanguage === 'python' ? `python-${kind}` : kind
   }
 
   type ExistingPublication = Extract<StudioPublicationPreparation, { state: 'existing' }>
@@ -550,6 +561,17 @@ export function createStudioRoutes(deps: {
           'Atualizar o jogo publicado ainda não está disponível neste ambiente.',
         )
       const published = await publishedGame(playId, owner, req.signal)
+      if (published.kind && published.kind !== publicationKind(project))
+        return NextResponse.json(
+          {
+            error: {
+              code: 'SHOWCASE_KIND_CHANGED',
+              message:
+                'Este projeto virou outro tipo de jogo depois de publicado e não pode atualizar o post de antes. Publique como jogo novo.',
+            },
+          },
+          { status: 409 },
+        )
       if (published.fingerprint && published.fingerprint === studioGameFingerprint(project))
         return unchanged()
       await publishRevision({
@@ -1347,6 +1369,10 @@ export function createStudioRoutes(deps: {
         clientIdempotencyKey,
         challengeKey: liveSnapshot ? null : challengeKey,
         studioMeta,
+        // A identidade do projeto vai também na finalização: é dela que o hub grava o
+        // vínculo do post (sem isso, a próxima publicação criaria outro post).
+        ...(sourceProjectId ? { sourceProjectId } : {}),
+        ...(asNewPost && !liveSnapshot ? { asNewPost: true } : {}),
       })
       if (r.status !== 200 || !r.body) {
         // A timeout or even a rejected retry cannot prove Hub did not commit a
@@ -1468,10 +1494,12 @@ export function createStudioRoutes(deps: {
         ) {
           // Jogo clássico com histórico: a versão ativa do link. Sem registro de versões
           // (publicado antes do histórico) vale o primeiro retrato; link desativado = 404.
+          // Prazo curto: antes do histórico o /jogar clássico nem consultava o serviço de versões.
+          const quick = AbortSignal.any([req.signal, AbortSignal.timeout(3_000)])
           try {
             const published = await callStudioPublication(
               { operation: 'resolve', playId: id },
-              req.signal,
+              quick,
             )
             if (
               published &&
@@ -1484,7 +1512,7 @@ export function createStudioRoutes(deps: {
             } else {
               const status = await callStudioPublication(
                 { operation: 'resolve-status', playId: id },
-                req.signal,
+                quick,
               )
               if (status && 'exists' in status && status.exists)
                 return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
@@ -1770,7 +1798,12 @@ export function createStudioRoutes(deps: {
           )
         const result = await callStudioPublication({ ...input, owner }, request.signal)
         // Restaurar ou desativar uma versão também é atualizar o jogo publicado.
-        if (input.operation === 'activate' && result && isStudioPublication(result))
+        if (
+          input.operation === 'activate' &&
+          !input.disabled &&
+          result &&
+          isStudioPublication(result)
+        )
           await hub.touchShowcase(input.playId).catch(() => null)
         return NextResponse.json(result, { headers: { 'Cache-Control': 'no-store' } })
       } catch (error) {

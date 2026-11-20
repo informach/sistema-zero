@@ -462,6 +462,28 @@ describe('ShareDialog: republicar atualiza o post do projeto', () => {
     expect(pubArg(adapter).asNewPost).toBeUndefined()
   })
 
+  it('a capa escolhida enquanto o status carrega não é trocada pela do post', async () => {
+    seedProject()
+    let answer!: (value: typeof published & { unchanged: boolean }) => void
+    const adapter = makeAdapter({
+      status: () =>
+        new Promise((done) => {
+          answer = done
+        }),
+      publish: mock(async () => ({ playUrl: '/jogar/x', updated: true })),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+    await waitFor(() => expect(document.querySelector('img[src^="data:image/png"]')).toBeTruthy())
+    answer({ ...published, unchanged: false })
+    await screen.findByText('Atualizar no Mural dos Criadores')
+    expect(screen.queryByText('Usando a capa que o post já tem.')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+    await waitFor(() => expect(adapter.publish).toHaveBeenCalledTimes(1))
+    expect(pubArg(adapter)).toMatchObject({ coverDataUrl: 'data:image/png;base64,FAKECOVER' })
+    expect(pubArg(adapter).keepCover).toBeUndefined()
+  })
+
   it('jogo igual ao do Mural: avisa e não deixa atualizar', async () => {
     seedProject()
     const adapter = makeAdapter({
