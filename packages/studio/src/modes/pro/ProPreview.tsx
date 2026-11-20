@@ -20,6 +20,7 @@ import { useStudioProDependencies, useStudioProRuntime } from '../../studio/pro-
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { useProWebContainer } from './ProWebContainerProvider'
 import { isProConsoleMessage } from './proConsoleBridge'
+import { useProPreviewDevtools } from './proPreviewDevtools'
 import { RemoteProPreview } from './RemoteProPreview'
 import { useProGameStorage } from './useProGameStorage'
 
@@ -271,6 +272,14 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   // Origem do dev-server CORRENTE (setada no server-ready): o listener de
   // console só aceita mensagens vindas exatamente dela.
   const previewOriginRef = useRef<string | null>(null)
+  // A aba Desempenho mede o jogo pela ponte da página (o erro já chega pelo `preview-message`).
+  useProPreviewDevtools({
+    frame: () => iframeRef.current,
+    origin: () => previewOriginRef.current,
+    errors: false,
+    active: Boolean(active && url && phase === 'ready' && started),
+    documentKey: storageName,
+  })
 
   // `attempt` é dep PROPOSITAL: "Tentar de novo" (fase de erro) e "⏻ Reiniciar"
   // (barra do ready) o incrementam para re-disparar o boot/install/dev — a

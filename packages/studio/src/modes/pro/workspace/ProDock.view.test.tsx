@@ -70,12 +70,14 @@ function mount({
 }
 
 describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
-  it('JavaScript: Mensagens do jogo · Problemas (com a contagem) · Terminal avançado, em abas de verdade', () => {
+  it('JavaScript: Mensagens do jogo · Problemas (com a contagem) · Investigar · Desempenho · Terminal avançado, em abas de verdade', () => {
     const { selected } = mount()
     const tabs = screen.getAllByRole('tab')
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       'Mensagens do jogo',
       'Problemas1',
+      'Investigar',
+      'Desempenho',
       'Terminalavançado',
     ])
     expect(screen.getByRole('region', { name: 'Problemas e saída do jogo' })).toBeTruthy()
@@ -171,5 +173,59 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     expect(panel.textContent).toContain('0 mensagens')
     fireEvent.click(within(panel).getByRole('button', { name: 'Avisos' }))
     expect(panel.textContent).toContain('1 mensagem')
+  })
+})
+
+describe('Investigar e Desempenho no Pro (proposta aprovada em 20/11/2026)', () => {
+  it('Investigar: o caminho até o erro com o arquivo, a linha e "Ir para a linha"', async () => {
+    const { stores, navigate } = mount({ diagnostics: [] })
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    expect(await screen.findByText(/Quando o jogo parar com um erro/)).toBeTruthy()
+    act(() =>
+      stores.logs.getState().push({
+        source: 'sz-preview',
+        kind: 'runtimeError',
+        parts: ['TypeError: score is not a function'],
+        error: {
+          message: 'TypeError: score is not a function',
+          stack: [
+            'TypeError: score is not a function',
+            '    at https://jogo.test/src/main.ts?t=1:1:7',
+            '    at https://jogo.test/node_modules/.vite/deps/lib.js:9:1',
+          ].join('\n'),
+        },
+        timestamp: 1,
+      }),
+    )
+    const painel = screen.getByRole('tabpanel', { name: 'Investigar' })
+    expect(within(painel).getByText('O caminho até o erro')).toBeTruthy()
+    expect(within(painel).getByText('src/main.ts, linha 1')).toBeTruthy()
+    // A linha do arquivo como a criança escreveu; a biblioteca fica de fora.
+    expect(within(painel).getByText(content)).toBeTruthy()
+    expect(within(painel).queryByText(/lib\.js/)).toBeNull()
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Ir para a linha 1 de src/main.ts' }),
+    )
+    expect(navigate).toHaveBeenCalledWith('src/main.ts', 1, 7)
+  })
+
+  it('Desempenho: a medida liga pela aba e para quando a gaveta fecha', async () => {
+    const { stores, selected } = mount()
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    const medir = await screen.findByRole('switch', { name: 'Medir o desempenho' })
+    // No Pro a medida não monta o jogo de novo.
+    expect(screen.getByText(/A medida segue enquanto a gaveta estiver aberta/)).toBeTruthy()
+    fireEvent.click(medir)
+    expect(stores.ui.getState().measuring).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar a gaveta' }))
+    expect(selected()).toBe('closed')
+    expect(stores.ui.getState().measuring).toBe(false)
+  })
+
+  it('Python Pro não ganha as abas (a tabela da proposta é do Pro em JavaScript)', () => {
+    mount({ python: true })
+    const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
+    expect(abas).not.toContain('Investigar')
+    expect(abas).not.toContain('Desempenho')
   })
 })

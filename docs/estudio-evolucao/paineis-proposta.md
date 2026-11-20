@@ -191,4 +191,27 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
     Python) e, na suíte Python do navegador (homologação; o servidor de provas não roda no Windows
     com o Bun 1.3), o quadro apertando Espaço e a seta num jogo de Pygame Zero e o executor
     inteiro testando uma função do Python clássico.
-- Próximos: Pausar no Python; os três no Pro.
+- **Lote 9 (20/11, noite): Investigar e Desempenho no Pro em JavaScript.** A gaveta do Pro ganha
+  as abas Investigar e Desempenho, entre Problemas e Terminal (a ordem da prancha). O Python Pro
+  não entra (a tabela da proposta é do Pro em JavaScript).
+  - **Investigar:** o caminho até o erro que parou o jogo, da pilha que a prévia já recebe: cada
+    passo que é arquivo do projeto, com o arquivo, a linha, o texto da linha e "Ir para a linha"
+    (abre o arquivo no editor); a biblioteca e o navegador ficam de fora. Sem erro, a aba diz que
+    o caminho aparece quando o jogo parar com um erro. Pausar e Valores não entram no Pro.
+  - **Desempenho:** a mesma aba do clássico, com os quadros por segundo e o tempo de cada quadro
+    (sem sprites; a memória segue indisponível), sem montar o jogo de novo.
+  - **Por trás:** a ponte que a prévia do Pro já injeta na página (`buildProHostBridgeScript`, do
+    core) ganhou `sz:perf` (desligada até o Estúdio pedir; ligada, conta os quadros pelo
+    `requestAnimationFrame` e devolve o do navegador ao desligar) e `sz:pro-error` (o erro com a
+    pilha, no máximo 20 por página). `modes/pro/proPreviewDevtools.ts` liga as duas prévias: a do
+    WebContainer (só a medida; o erro já chega pelo `preview-message`) e a montada no servidor
+    (medida e erro). Fechar a gaveta desliga a medida.
+  - ⚠️ A prévia montada no servidor como artefato recebe a ponte no build do studio-runtime: a
+    medida e o erro com a pilha valem nela depois do próximo deploy do studio-runtime (o perfil de
+    validação foi regenerado). A prévia do WebContainer (Estúdio Completo) e a de documento direto
+    já valem.
+  - Provas: a ponte sobre uma janela de mentira (medida ligada e desligada, página sem quadros,
+    outra origem ignorada, erro com a pilha e o teto de 20), a pilha do Chromium, do Firefox e do
+    Safari virando passos, e a gaveta do Pro (as abas, o caminho até o erro com "Ir para a linha",
+    a medida que para ao fechar e o Python Pro sem as abas).
+- Próximos: Meus testes no Pro (no executor do servidor); Pausar no Python.

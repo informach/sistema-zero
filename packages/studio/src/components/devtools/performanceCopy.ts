@@ -19,6 +19,8 @@ export const PERFORMANCE_COPY: Record<Locale, Record<string, string>> = {
     'perf.on.python':
       'Medindo há {seconds} segundos. Medir não pesa no programa, e a medida para quando você fecha a gaveta.',
     'perf.notRunning.python': 'Rode o programa para ver os números.',
+    'perf.off.pro':
+      'Veja se o jogo está rodando liso. A medida segue enquanto a gaveta estiver aberta.',
     'perf.refused': 'Ainda não dá para medir este programa aqui.',
     'perf.program': 'Tempo do programa',
     'perf.program.done': 'O programa levou {seconds} segundos.',
@@ -68,6 +70,8 @@ export const PERFORMANCE_COPY: Record<Locale, Record<string, string>> = {
     'perf.on.python':
       'Measuring for {seconds} seconds. Measuring does not weigh on the program, and it stops when you close the drawer.',
     'perf.notRunning.python': 'Run the program to see the numbers.',
+    'perf.off.pro':
+      'See whether the game runs smoothly. Measuring goes on while the drawer is open.',
     'perf.refused': 'This program cannot be measured here yet.',
     'perf.program': 'Program time',
     'perf.program.done': 'The program took {seconds} seconds.',

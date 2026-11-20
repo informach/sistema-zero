@@ -40,6 +40,12 @@ export const INVESTIGATE_COPY: Record<Locale, Record<string, string>> = {
     'inv.path.line': 'Linha {line} do código',
     'inv.path.none': 'O computador não disse por onde o jogo passou.',
     'inv.stoppedValues': 'Valores no momento do erro: {values}',
+    'inv.pro.none':
+      'Quando o jogo parar com um erro, o caminho até ele aparece aqui, com o arquivo e a linha de cada passo.',
+    'inv.pro.noFiles': 'O computador não disse por quais arquivos do projeto o jogo passou.',
+    'inv.pro.where': '{file}, linha {line}',
+    'inv.pro.go': 'Ir para a linha {line}',
+    'inv.pro.goLabel': 'Ir para a linha {line} de {file}',
     'inv.start.python': 'Investigar o programa',
     'inv.off.python':
       'Veja os valores das variáveis enquanto o programa roda e o caminho até um erro. Ao investigar, o programa começa de novo.',
@@ -91,6 +97,12 @@ export const INVESTIGATE_COPY: Record<Locale, Record<string, string>> = {
     'inv.path.line': 'Line {line} of the code',
     'inv.path.none': "The computer didn't say where the game went.",
     'inv.stoppedValues': 'Values when the error happened: {values}',
+    'inv.pro.none':
+      'When the game stops with an error, the path to it shows up here, with the file and line of each step.',
+    'inv.pro.noFiles': 'The computer did not say which project files the game went through.',
+    'inv.pro.where': '{file}, line {line}',
+    'inv.pro.go': 'Go to line {line}',
+    'inv.pro.goLabel': 'Go to line {line} of {file}',
     'inv.start.python': 'Investigate the program',
     'inv.off.python':
       'See the values of the variables while the program runs and the path to an error. Investigating starts the program over.',
