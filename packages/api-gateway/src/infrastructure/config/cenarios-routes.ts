@@ -73,6 +73,8 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     escrever('biblioteca-apagar', 'DELETE', '/bibliotecas/:id'),
 
     ler('modelos', '/bibliotecas/:id/modelos'),
+    // A busca dos agentes: todas as bibliotecas do espaço, por tamanho e por ids.
+    ler('modelos-no-espaco', '/espacos/:espacoId/modelos'),
     ler('texturas', '/bibliotecas/:id/texturas'),
     escrever('texturas-reservar', 'POST', '/bibliotecas/:id/texturas/reservar'),
     escrever('texturas-apagar', 'POST', '/bibliotecas/:id/texturas/apagar'),

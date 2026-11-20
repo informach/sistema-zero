@@ -16,6 +16,7 @@ import {
   prepararReceita,
   type TerrenoAberto,
 } from '@sistemazero/molda-cenarios/oficina/autoria'
+import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   aplicarFerramentaDeTerreno,
   type ComandoDeCenario,
@@ -37,6 +38,8 @@ import {
   type ReceitaDeEspalhamento,
   type ReceitaDeTerreno,
   type RegioesDeTerreno,
+  referenciasDoTerreno,
+  resolverConjuntos,
   unirRegioes,
 } from '@sistemazero/molda-cenarios-core/v2'
 import type { z } from 'zod'
@@ -547,6 +550,90 @@ export function criarIntencoes(host: CenariosHost) {
         marcadores: d.marcadores
           .filter((m) => dentro(m.posicao))
           .map((m) => ({ id: m.id, nome: m.nome, posicao: m.posicao, giro: m.giro })),
+      }
+    },
+
+    /**
+     * Orçamento de autoria a partir dos dados dos modelos (triângulos e bytes guardados de cada
+     * um), comparado aos limites de cada destino. É uma estimativa: a exportação junta peças e
+     * comprime, então o pacote final costuma ficar menor.
+     */
+    async orcamento(cenarioId: string) {
+      const aberto = await host.abrirCenario(cenarioId)
+      const mundo = await host.obterMundo(aberto.resumo.mundoId)
+      const doc = resolverConjuntos(aberto.documento).documento
+      const usos = new Map<string, number>()
+      for (const o of doc.instancias) usos.set(o.modelo, (usos.get(o.modelo) ?? 0) + 1)
+      const refs = doc.modelos.filter((m) => usos.has(m.id))
+      const ids = [...new Set(refs.map((m) => m.modelo))]
+      const dados = new Map<string, ModeloDeBiblioteca>()
+      for (let i = 0; i < ids.length; i += 100) {
+        const pagina = await host.buscarModelosNoEspaco(mundo.espacoId, {
+          ids: ids.slice(i, i + 100),
+          limite: 100,
+        })
+        for (const m of pagina.itens) dados.set(m.id, m)
+      }
+      let triangulos = 0,
+        bytesDosModelos = 0,
+        maiorModelo = 0
+      const semDados: string[] = []
+      for (const m of refs) {
+        const d = dados.get(m.modelo)
+        if (!d) {
+          semDados.push(m.nome ?? m.id)
+          continue
+        }
+        triangulos += d.triangulos * usos.get(m.id)!
+        bytesDosModelos += d.bytes
+        maiorModelo = Math.max(maiorModelo, d.bytes)
+      }
+      const pecasDoRelevo = doc.base.tipo === 'terreno' ? referenciasDoTerreno(doc.base).length : 0
+      const arquivos = refs.length + pecasDoRelevo + (doc.texturas?.length ?? 0)
+      const objetos = doc.instancias.length
+      const MIB = 1024 * 1024
+      const destino = (motivos: Array<string | false>) => {
+        const lista = motivos.filter((m): m is string => !!m)
+        return { cabe: lista.length === 0, motivos: lista }
+      }
+      return {
+        objetos,
+        modelosDiferentes: refs.length,
+        triangulos,
+        bytesDosModelos,
+        pecasDoRelevo,
+        arquivos,
+        ...(semDados.length ? { semDados } : {}),
+        destinos: {
+          oficina: destino([
+            objetos > LIMITES_CENARIO_V2.objetos &&
+              `Passa de ${LIMITES_CENARIO_V2.objetos} objetos no cenário.`,
+          ]),
+          three: destino([
+            bytesDosModelos > LIMITES_DA_EXPORTACAO.bytesDoPacote &&
+              `Os modelos passam de ${LIMITES_DA_EXPORTACAO.bytesDoPacote / MIB} MiB.`,
+            arquivos > LIMITES_DA_EXPORTACAO.arquivos &&
+              `Passa de ${LIMITES_DA_EXPORTACAO.arquivos} arquivos.`,
+          ]),
+          // O GLB único: um arquivo de até 32 MiB e 8.192 partes visíveis (`glb-unico.ts`).
+          glb: destino([
+            bytesDosModelos > 32 * MIB && 'Os modelos passam de 32 MiB num arquivo só.',
+            objetos > 8192 && 'Passa de 8.192 partes visíveis.',
+          ]),
+          estudio: destino([
+            bytesDosModelos > LIMITES_DA_EXPORTACAO.studio.bytesDoProjeto &&
+              `Os modelos passam de ${LIMITES_DA_EXPORTACAO.studio.bytesDoProjeto / MIB} MiB do projeto.`,
+            maiorModelo > LIMITES_DA_EXPORTACAO.studio.bytesPorModelo &&
+              `Um modelo passa de ${LIMITES_DA_EXPORTACAO.studio.bytesPorModelo / MIB} MiB.`,
+          ]),
+          // A publicação no jogo leva o pacote Three: os mesmos tetos.
+          arquipelago: destino([
+            bytesDosModelos > LIMITES_DA_EXPORTACAO.bytesDoPacote &&
+              `Os modelos passam de ${LIMITES_DA_EXPORTACAO.bytesDoPacote / MIB} MiB.`,
+            arquivos > LIMITES_DA_EXPORTACAO.arquivos &&
+              `Passa de ${LIMITES_DA_EXPORTACAO.arquivos} arquivos.`,
+          ]),
+        },
       }
     },
 

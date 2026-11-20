@@ -509,6 +509,48 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     return { itens: linhas.map(paraModelo), total: conta?.n ?? 0 }
   }
 
+  async modelosNoEspaco(
+    espacoId: string,
+    filtro: Parameters<CenariosRepository['modelosNoEspaco']>[1],
+  ) {
+    // A caixa guardada é [minX, minY, minZ, maxX, maxY, maxZ] em metros. O índice vai como
+    // inteiro LITERAL: como parâmetro, o Postgres lê `->> $1` como chave de texto e acha nada.
+    const n = (i: 0 | 1 | 2 | 3 | 4 | 5) =>
+      sql`(${cenarioModelos.caixa}->>${sql.raw(String(i))})::float8`
+    const altura = sql`(${n(4)} - ${n(1)})`,
+      lado = sql`greatest(${n(3)} - ${n(0)}, ${n(5)} - ${n(2)})`
+    const condicao = and(
+      eq(cenarioBibliotecas.espacoId, espacoId),
+      filtro.pasta !== undefined ? eq(cenarioModelos.pasta, filtro.pasta) : undefined,
+      filtro.etiqueta !== undefined
+        ? sql`${cenarioModelos.etiquetas} @> ${JSON.stringify([filtro.etiqueta])}::jsonb`
+        : undefined,
+      filtro.ids !== undefined ? inArray(cenarioModelos.id, [...filtro.ids]) : undefined,
+      filtro.altura?.min !== undefined ? sql`${altura} >= ${filtro.altura.min}` : undefined,
+      filtro.altura?.max !== undefined ? sql`${altura} <= ${filtro.altura.max}` : undefined,
+      filtro.lado?.min !== undefined ? sql`${lado} >= ${filtro.lado.min}` : undefined,
+      filtro.lado?.max !== undefined ? sql`${lado} <= ${filtro.lado.max}` : undefined,
+      // Os termos já chegam só com letras e números: não há curinga a escapar.
+      ...filtro.termos.map((termo) => sql`${cenarioModelos.busca} like ${`%${termo}%`}`),
+    )
+    const [linhas, [conta]] = await Promise.all([
+      this.db
+        .select({ modelo: cenarioModelos })
+        .from(cenarioModelos)
+        .innerJoin(cenarioBibliotecas, eq(cenarioBibliotecas.id, cenarioModelos.bibliotecaId))
+        .where(condicao)
+        .orderBy(sql`${cenarioModelos.busca} collate "C"`, asc(cenarioModelos.id))
+        .limit(filtro.limite)
+        .offset(filtro.inicio),
+      this.db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(cenarioModelos)
+        .innerJoin(cenarioBibliotecas, eq(cenarioBibliotecas.id, cenarioModelos.bibliotecaId))
+        .where(condicao),
+    ])
+    return { itens: linhas.map((l) => paraModelo(l.modelo)), total: conta?.n ?? 0 }
+  }
+
   async modelo(id: string): Promise<Modelo | null> {
     const [linha] = await this.db
       .select()

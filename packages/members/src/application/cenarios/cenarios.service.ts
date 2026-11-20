@@ -337,6 +337,55 @@ export class CenariosService {
   }
 
   /**
+   * A busca dos agentes: modelos de TODAS as bibliotecas do espaço, por nome, pasta, etiqueta e
+   * tamanho (pela caixa guardada de cada modelo), ou só os ids pedidos (o orçamento de um cenário).
+   */
+  async modelosNoEspaco(
+    ator: Ator,
+    espacoId: string,
+    filtro: {
+      busca?: string
+      pasta?: string
+      etiqueta?: string
+      ids?: string
+      alturaMin?: number
+      alturaMax?: number
+      ladoMin?: number
+      ladoMax?: number
+      cursor?: string
+      limite?: number
+    },
+  ): Promise<{ itens: Modelo[]; total: number; proximo: string | null }> {
+    await this.espacoDe(ator, espacoId)
+    const inicio = Math.max(0, Number(filtro.cursor ?? 0) || 0)
+    const limite = Math.min(LIMITES_DOS_CENARIOS.paginaDeModelos, Math.max(1, filtro.limite ?? 60))
+    const termos = normalizarBusca(filtro.busca ?? '')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 8)
+    const faixa = (min?: number, max?: number) =>
+      min !== undefined || max !== undefined
+        ? { ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}) }
+        : undefined
+    const altura = faixa(filtro.alturaMin, filtro.alturaMax),
+      lado = faixa(filtro.ladoMin, filtro.ladoMax)
+    const pagina = await this.repo.modelosNoEspaco(espacoId, {
+      termos,
+      ...(filtro.pasta !== undefined ? { pasta: filtro.pasta } : {}),
+      ...(filtro.etiqueta !== undefined ? { etiqueta: filtro.etiqueta } : {}),
+      ...(filtro.ids !== undefined ? { ids: filtro.ids.split(',') } : {}),
+      ...(altura ? { altura } : {}),
+      ...(lado ? { lado } : {}),
+      inicio,
+      limite,
+    })
+    return {
+      ...pagina,
+      proximo: inicio + pagina.itens.length < pagina.total ? String(inicio + limite) : null,
+    }
+  }
+
+  /**
    * Primeiro passo de trazer modelos: reserva os arquivos no espaço e diz quais precisam subir.
    * O que já está guardado (o mesmo conteúdo, trazido antes) não sobe de novo.
    */

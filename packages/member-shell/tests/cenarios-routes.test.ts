@@ -372,6 +372,25 @@ describe('BFF do Molda Cenários: repasse', () => {
     ])
   })
 
+  test('a busca no espaço leva tamanho, etiqueta e a lista inteira de ids, e nada mais', async () => {
+    const t = montar({ responder: () => ({ status: 200, body: { itens: [], total: 0 } }) })
+    const ids = Array.from({ length: 150 }, () => crypto.randomUUID()).join(',')
+    const r = await t.pedir(
+      'GET',
+      `espacos/${BIBLIOTECA}/modelos?alturaMin=2&ladoMax=5&etiqueta=verde&ids=${ids}&espaco=outro`,
+    )
+    expect(r.status).toBe(200)
+    expect(t.chamadas).toEqual([
+      {
+        via: 'jwt',
+        path: `/members/cenarios/espacos/${BIBLIOTECA}/modelos`,
+        method: 'GET',
+        body: undefined,
+        query: { etiqueta: 'verde', ids, alturaMin: '2', ladoMax: '5' },
+      },
+    ])
+  })
+
   test('o lote do editor segue com o corpo; recusa do members volta inteira', async () => {
     const t = montar({
       responder: () => ({

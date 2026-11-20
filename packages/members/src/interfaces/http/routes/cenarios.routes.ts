@@ -269,6 +269,34 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
           },
         )
         .get(
+          '/espacos/:espacoId/modelos',
+          ({ headers, params, query }) =>
+            s.modelosNoEspaco(atorDe(headers), params.espacoId, query),
+          {
+            params: EspacoId,
+            query: t.Object({
+              busca: t.Optional(t.String({ maxLength: 120 })),
+              pasta: t.Optional(t.String({ maxLength: 240 })),
+              etiqueta: t.Optional(t.String({ minLength: 1, maxLength: 60 })),
+              // Até 200 ids separados por vírgula: o orçamento de um cenário.
+              ids: t.Optional(
+                t.String({
+                  pattern:
+                    '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(,[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}){0,199}$',
+                }),
+              ),
+              alturaMin: t.Optional(t.Numeric({ minimum: 0, maximum: 10_000 })),
+              alturaMax: t.Optional(t.Numeric({ minimum: 0, maximum: 10_000 })),
+              ladoMin: t.Optional(t.Numeric({ minimum: 0, maximum: 10_000 })),
+              ladoMax: t.Optional(t.Numeric({ minimum: 0, maximum: 10_000 })),
+              cursor: t.Optional(t.String({ pattern: '^[0-9]{1,7}$' })),
+              limite: t.Optional(
+                t.Numeric({ minimum: 1, maximum: LIMITES_DOS_CENARIOS.paginaDeModelos }),
+              ),
+            }),
+          },
+        )
+        .get(
           '/bibliotecas/:id/texturas',
           ({ headers, params, query }) => s.texturas(atorDe(headers), params.id, query),
           {

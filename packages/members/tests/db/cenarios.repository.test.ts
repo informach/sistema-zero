@@ -1555,6 +1555,69 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     expect((await repo.espaco(espaco.id))!.usadoBytes).toBe(1)
   })
 
+  test('busca no espaço: todas as bibliotecas, tamanho pela caixa, etiqueta, ids e só o espaço', async () => {
+    const { espaco, biblioteca } = await comBiblioteca()
+    const outra = (await repo.criarBiblioteca(
+      {
+        id: randomUUID(),
+        espacoId: espaco.id,
+        nome: 'Pedras',
+        licenca: 'propria',
+        criadoPor: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    await guardar(espaco.id, 'a', 'b', 'c')
+    const [arvore] = (await repo.criarModelos(
+      biblioteca.id,
+      [modelo('a', 'Árvore alta', { min: [-1, 0, -1.5], max: [1, 6, 1.5] })],
+      10,
+      CONTA,
+      AGORA,
+    ))!
+    const [pedra] = (await repo.criarModelos(
+      outra.id,
+      [modelo('b', 'Pedra baixa', { etiquetas: ['cinza'], min: [-2, 0, -1], max: [2, 1, 1] })],
+      10,
+      CONTA,
+      AGORA,
+    ))!
+    // Outro espaço, outra conta: nunca aparece.
+    const alheio = await repo.espacoDaConta(randomUUID(), 5000, AGORA)
+    const deFora = (await repo.criarBiblioteca(
+      {
+        id: randomUUID(),
+        espacoId: alheio.id,
+        nome: 'Alheia',
+        licenca: 'propria',
+        criadoPor: CONTA,
+      },
+      10,
+      AGORA,
+    ))!
+    await guardar(alheio.id, 'c')
+    await repo.criarModelos(deFora.id, [modelo('c', 'Árvore alheia')], 10, CONTA, AGORA)
+
+    const nomes = async (f: Partial<Parameters<typeof repo.modelosNoEspaco>[1]> = {}) =>
+      (await repo.modelosNoEspaco(espaco.id, { termos: [], inicio: 0, limite: 10, ...f })).itens
+        .map((m) => m.nome)
+        .sort()
+    expect(await nomes()).toEqual(['Pedra baixa', 'Árvore alta'])
+    // Altura = max.y - min.y; lado = o maior entre largura (x) e profundidade (z).
+    expect(await nomes({ altura: { min: 5 } })).toEqual(['Árvore alta'])
+    expect(await nomes({ altura: { max: 2 } })).toEqual(['Pedra baixa'])
+    expect(await nomes({ lado: { min: 3.5 } })).toEqual(['Pedra baixa'])
+    expect(await nomes({ lado: { max: 3.2 } })).toEqual(['Árvore alta'])
+    expect(await nomes({ etiqueta: 'cinza' })).toEqual(['Pedra baixa'])
+    expect(await nomes({ termos: ['arvore'] })).toEqual(['Árvore alta'])
+    expect(await nomes({ ids: [pedra!.id, randomUUID()] })).toEqual(['Pedra baixa'])
+    const pagina = await repo.modelosNoEspaco(espaco.id, { termos: [], inicio: 1, limite: 1 })
+    expect(pagina.total).toBe(2)
+    expect(pagina.itens).toHaveLength(1)
+    expect([arvore!.id, pedra!.id]).toContain(pagina.itens[0]!.id)
+  })
+
   test('modelos: sem repetir conteúdo, com teto, busca e páginas', async () => {
     const { espaco, biblioteca } = await comBiblioteca()
     await guardar(espaco.id, 'a', 'b', 'c')

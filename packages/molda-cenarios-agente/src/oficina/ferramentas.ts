@@ -109,6 +109,33 @@ export const FERRAMENTAS = [
       }),
   }),
   ferramenta({
+    name: 'buscar_modelos_no_espaco',
+    description:
+      'Busca modelos em TODAS as bibliotecas de um espaço por nome, pasta, etiqueta e tamanho em metros (altura e o maior lado no chão), ou pelos ids. Bom para achar "uma árvore de 4 a 8 m" sem saber a biblioteca.',
+    schema: z
+      .object({
+        espacoId: id,
+        busca: z.string().max(120).optional(),
+        pasta: z.string().max(240).optional(),
+        etiqueta: z.string().min(1).max(60).optional(),
+        ids: z.array(id).min(1).max(200).optional(),
+        alturaMin: z.number().min(0).max(10_000).optional(),
+        alturaMax: z.number().min(0).max(10_000).optional(),
+        ladoMin: z.number().min(0).max(10_000).optional(),
+        ladoMax: z.number().min(0).max(10_000).optional(),
+        cursor: z
+          .string()
+          .regex(/^[0-9]{1,7}$/)
+          .optional(),
+        limite: z.number().int().min(1).max(200).default(40),
+      })
+      .strict(),
+    executar: (c, a) => {
+      const { espacoId, ...filtro } = a
+      return c.host.buscarModelosNoEspaco(espacoId, filtro)
+    },
+  }),
+  ferramenta({
     name: 'listar_conjuntos',
     description:
       'Lista os conjuntos (composições prontas de vários modelos) de uma biblioteca, com a revisão publicada de cada um.',
@@ -395,6 +422,13 @@ export const FERRAMENTAS = [
       .strict(),
     executar: (c, a) =>
       c.intencoes.consultarRegiao(a.cenarioId, { x0: a.x0, z0: a.z0, x1: a.x1, z1: a.z1 }),
+  }),
+  ferramenta({
+    name: 'orcamento',
+    description:
+      'Conta objetos, triângulos e bytes do cenário (a partir dos dados de cada modelo) e diz em quais destinos ele cabe: oficina, three (pacote), glb (arquivo único), estudio e arquipelago. É uma estimativa.',
+    schema: z.object({ cenarioId: id }).strict(),
+    executar: (c, a) => c.intencoes.orcamento(a.cenarioId),
   }),
   ferramenta({
     name: 'validar_lote',

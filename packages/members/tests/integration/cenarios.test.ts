@@ -633,6 +633,24 @@ describe('Molda Cenários: trazer modelos', () => {
       ),
     )
     expect(achados).toMatchObject({ total: 1, proximo: null })
+
+    // A busca dos agentes, no espaço inteiro: tamanho pela caixa (4 m de altura, 2 m de lado).
+    const noEspaco = async (consulta: string) =>
+      pedir(ctx.app, 'GET', `/members/cenarios/espacos/${espaco.id}/modelos?${consulta}`)
+    expect(
+      await json(await noEspaco('busca=arvore&etiqueta=verde&alturaMin=3.5&ladoMax=2.5')),
+    ).toMatchObject({ total: 1, itens: [{ id: criados[0].id, max: [1, 4, 1] }] })
+    expect(await json(await noEspaco('alturaMax=3'))).toMatchObject({ total: 0 })
+    expect(await json(await noEspaco('ladoMin=2.5'))).toMatchObject({ total: 0 })
+    expect(await json(await noEspaco('etiqueta=azul'))).toMatchObject({ total: 0 })
+    expect(await json(await noEspaco(`ids=${criados[0].id},${crypto.randomUUID()}`))).toMatchObject(
+      { total: 1 },
+    )
+    expect((await noEspaco('ids=nao-e-id')).status).toBe(400)
+    expect(
+      (await pedir(ctx.app, 'GET', `/members/cenarios/espacos/${crypto.randomUUID()}/modelos`))
+        .status,
+    ).toBe(404)
     const arquivo = await json(
       await pedir(ctx.app, 'GET', `/members/cenarios/espacos/${espaco.id}/arquivos/${digest('a')}`),
     )

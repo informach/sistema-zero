@@ -57,6 +57,22 @@ export interface PaginaDeModelos {
   proximo: string | null
 }
 
+/** A busca dos agentes no espaço inteiro: tamanho em metros pela caixa de cada modelo. */
+export interface FiltroDeModelosNoEspaco {
+  busca?: string
+  pasta?: string
+  etiqueta?: string
+  /** Só estes modelos (até 200): o orçamento pergunta pelos que um cenário usa. */
+  ids?: readonly string[]
+  alturaMin?: number
+  alturaMax?: number
+  /** O maior lado no chão (largura ou profundidade). */
+  ladoMin?: number
+  ladoMax?: number
+  cursor?: string | null
+  limite?: number
+}
+
 export interface FiltroDeModelos {
   busca?: string
   pasta?: string
@@ -242,6 +258,11 @@ export interface CenariosHost {
   apagarBiblioteca(id: string): Promise<void>
 
   listarModelos(bibliotecaId: string, filtro?: FiltroDeModelos): Promise<PaginaDeModelos>
+  /** Modelos de todas as bibliotecas do espaço, por nome, pasta, etiqueta, tamanho ou ids. */
+  buscarModelosNoEspaco(
+    espacoId: string,
+    filtro?: FiltroDeModelosNoEspaco,
+  ): Promise<PaginaDeModelos>
   organizacaoDaBiblioteca(bibliotecaId: string): Promise<{ pastas: string[]; etiquetas: string[] }>
   importarModelos(
     bibliotecaId: string,

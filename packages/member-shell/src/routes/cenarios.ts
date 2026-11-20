@@ -48,6 +48,9 @@ interface Repasse {
   consulta?: readonly string[]
 }
 const exato = (padrao: string) => new RegExp(`^${padrao}$`, 'i')
+/** A lista de ids da busca no espaço leva até 200 ids de 36 caracteres e as vírgulas. */
+const TETO_DA_CONSULTA: Readonly<Record<string, number>> = { ids: 200 * 37 }
+
 const REPASSES: readonly Repasse[] = [
   { metodo: 'GET', caminho: exato('acesso') },
   { metodo: 'GET', caminho: exato('espacos') },
@@ -61,6 +64,23 @@ const REPASSES: readonly Repasse[] = [
     metodo: 'GET',
     caminho: exato(`bibliotecas/${U}/modelos`),
     consulta: ['busca', 'pasta', 'digest', 'cursor', 'limite'],
+  },
+  // A busca dos agentes no espaço inteiro (tamanho pela caixa, ou os ids de um cenário).
+  {
+    metodo: 'GET',
+    caminho: exato(`espacos/${U}/modelos`),
+    consulta: [
+      'busca',
+      'pasta',
+      'etiqueta',
+      'ids',
+      'alturaMin',
+      'alturaMax',
+      'ladoMin',
+      'ladoMax',
+      'cursor',
+      'limite',
+    ],
   },
   { metodo: 'PATCH', caminho: exato(`modelos/${U}`) },
   { metodo: 'PATCH', caminho: exato(`texturas/${U}`) },
@@ -828,7 +848,8 @@ export function createCenariosRoutes(deps: {
       const pedida = new URL(req.url).searchParams
       for (const nome of rota.consulta) {
         const valor = pedida.get(nome)
-        if (valor !== null && valor !== '') consulta[nome] = valor.slice(0, 240)
+        if (valor !== null && valor !== '')
+          consulta[nome] = valor.slice(0, TETO_DA_CONSULTA[nome] ?? 240)
       }
     }
     let body: unknown

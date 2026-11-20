@@ -57,6 +57,7 @@ export type {
   ConjuntoDeBiblioteca,
   Espaco,
   FiltroDeModelos,
+  FiltroDeModelosNoEspaco,
   ModeloDeBiblioteca,
   Mundo,
   PaginaDeModelos,

@@ -356,6 +356,27 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       return { ...pagina, itens: pagina.itens.map(modelo) }
     },
 
+    async buscarModelosNoEspaco(espacoId, filtro = {}) {
+      const consulta = new URLSearchParams()
+      if (filtro.busca?.trim()) consulta.set('busca', filtro.busca.trim().slice(0, 120))
+      if (filtro.pasta !== undefined) consulta.set('pasta', filtro.pasta)
+      if (filtro.etiqueta) consulta.set('etiqueta', filtro.etiqueta)
+      if (filtro.ids?.length) consulta.set('ids', filtro.ids.slice(0, 200).join(','))
+      for (const nome of ['alturaMin', 'alturaMax', 'ladoMin', 'ladoMax'] as const) {
+        const valor = filtro[nome]
+        if (valor !== undefined) consulta.set(nome, String(valor))
+      }
+      if (filtro.cursor) consulta.set('cursor', filtro.cursor)
+      if (filtro.limite) consulta.set('limite', String(filtro.limite))
+      const sufixo = consulta.size ? `?${consulta}` : ''
+      const pagina = await pedir<Omit<PaginaDeModelos, 'itens'> & { itens: ModeloDoServidor[] }>(
+        'GET',
+        `espacos/${espacoId}/modelos${sufixo}`,
+      )
+      for (const m of pagina.itens) espacoDaBiblioteca.set(m.bibliotecaId, espacoId)
+      return { ...pagina, itens: pagina.itens.map(modelo) }
+    },
+
     async importarModelos(bibliotecaId, modelos, aoAndar, sinal) {
       sinal?.throwIfAborted()
       await acharEspacoDaBiblioteca(bibliotecaId)

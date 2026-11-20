@@ -148,6 +148,16 @@ test('cada intenção é um lote só, um passo de desfazer, e a ilha fica como p
   expect(arvores.criados.length).toBeGreaterThan(0)
   expect(await passos()).toBe(6)
 
+  // O orçamento conta pelos dados dos modelos (120 triângulos cada) e cabe em todo destino.
+  const conta = await a.orcamento(id)
+  expect(conta.objetos).toBe(1 + arvores.criados.length)
+  expect(conta.modelosDiferentes).toBe(2)
+  expect(conta.triangulos).toBe(120 * conta.objetos)
+  expect(Object.values(conta.destinos).every((d) => d.cabe)).toBe(true)
+  // A busca no espaço acha pelo tamanho: o farol tem 9 m de altura, a árvore 5 m.
+  const altos = await host.buscarModelosNoEspaco('conta', { alturaMin: 8 })
+  expect(altos.itens.map((m) => m.nome)).toEqual(['Farol'])
+
   // Nenhuma árvore dentro do lago, e a região em volta do farol mostra o farol e a trilha.
   const doc = (await host.abrirCenario(id)).documento
   const posicoes = doc.instancias
