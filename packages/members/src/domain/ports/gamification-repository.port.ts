@@ -45,7 +45,7 @@ export type XpSourceType =
   | 'mural_comment'
   // Estúdio standalone no Mural (retenção pós-cursos, 07/2026):
   // `studio_published` = MARCO (amount 0) por publicação standalone (sourceId =
-  // playId do post; republicar = post novo = marco novo, deliberado — alimenta as
+  // playId do post; um post novo = marco novo (republicar o mesmo projeto ATUALIZA o post e não notifica) — alimenta as
   // missões semanais/mensais gated por estudio-completo). `studio_publish_day` =
   // XP REAL (move streak/liga — a âncora diária de quem já acabou os cursos e só
   // CRIA), 1×/dia pelo sourceId determinístico do dia civil SP
