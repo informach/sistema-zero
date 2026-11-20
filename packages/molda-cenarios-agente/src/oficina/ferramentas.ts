@@ -10,7 +10,7 @@ import {
   ReceitaDeTerrenoSchema,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { z } from 'zod'
-import { capturarSemJanela } from './captura'
+import { capturarPelaOficina, capturarSemJanela } from './captura'
 import { CenarioMudou, criarIntencoes, type Intencoes } from './intencoes'
 
 /**
@@ -22,9 +22,14 @@ import { CenarioMudou, criarIntencoes, type Intencoes } from './intencoes'
 export interface Contexto {
   host: CenariosHost
   intencoes: Intencoes
+  /** Baixa um arquivo do app com o token (o retrato que a oficina aberta guardou). */
+  baixar?(endereco: string): Promise<Uint8Array>
 }
-export function criarContexto(host: CenariosHost): Contexto {
-  return { host, intencoes: criarIntencoes(host) }
+export function criarContexto(
+  host: CenariosHost,
+  baixar?: (endereco: string) => Promise<Uint8Array>,
+): Contexto {
+  return { host, intencoes: criarIntencoes(host), ...(baixar ? { baixar } : {}) }
 }
 
 const id = z.uuid()
@@ -434,21 +439,27 @@ export const FERRAMENTAS = [
   ferramenta({
     name: 'capturar_cenario',
     description:
-      'Fotografa o cenário sem abrir janela: um Chrome local, sem tela, monta o palco da oficina e devolve a imagem. `vista` livre (de lado, de cima em ângulo), cima, frente ou lado; `enquadrar` limita a foto a alguns ids. Precisa do Chrome instalado neste computador.',
+      'Fotografa o cenário. `modo` sem-janela (padrão): um Chrome local, sem tela, monta o palco da oficina; `vista` livre, cima, frente ou lado; `enquadrar` limita a foto a alguns ids; precisa do Chrome neste computador. `modo` oficina: espera a oficina aberta neste cenário (aba à vista) abrir a versão atual e fotografá-la com a câmera de quem está nela.',
     schema: z
       .object({
         cenarioId: id,
+        modo: z.enum(['sem-janela', 'oficina']).default('sem-janela'),
         vista: z.enum(['livre', 'cima', 'frente', 'lado']).default('livre'),
         largura: z.number().int().min(160).max(1920).default(960),
         enquadrar: z.array(idDoDocumento).max(200).optional(),
       })
       .strict(),
-    executar: (c, a) =>
-      capturarSemJanela(c.host, a.cenarioId, {
+    executar: (c, a) => {
+      if (a.modo === 'oficina') {
+        if (!c.baixar) throw Error('Este acesso não baixa arquivos do app.')
+        return capturarPelaOficina(c.host, c.baixar, a.cenarioId)
+      }
+      return capturarSemJanela(c.host, a.cenarioId, {
         vista: a.vista,
         largura: a.largura,
         ...(a.enquadrar ? { enquadrar: a.enquadrar } : {}),
-      }),
+      })
+    },
   }),
   ferramenta({
     name: 'validar_lote',

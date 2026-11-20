@@ -35,8 +35,8 @@ if (import.meta.main) {
     console.error('Os argumentos precisam ser um JSON válido.')
     process.exit(2)
   }
-  const { host } = criarClienteDaOficina(lerAcessoDaOficina())
-  const r = await executarFerramenta(criarContexto(host), nome, argumentos)
+  const { host, baixar } = criarClienteDaOficina(lerAcessoDaOficina())
+  const r = await executarFerramenta(criarContexto(host, baixar), nome, argumentos)
   if (r.ok && ehImagem(r.valor)) {
     // A captura vira um arquivo (o terceiro argumento, ou captura.webp aqui mesmo).
     const arquivo = process.argv[4] ?? 'captura.webp'

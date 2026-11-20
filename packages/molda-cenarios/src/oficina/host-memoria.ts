@@ -714,6 +714,11 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         },
       })
     },
+    async historicoDoCenario(id) {
+      await esperar()
+      const c = exigir(cenarios, id, 'O cenário')
+      return { revisao: c.resumo.revisao, desfazer: c.passado.length, refazer: c.futuro.length }
+    },
     async prepararExportacao(id, revisaoEsperada, sinal) {
       sinal?.throwIfAborted()
       await esperar()

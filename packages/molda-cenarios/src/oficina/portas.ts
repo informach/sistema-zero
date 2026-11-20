@@ -339,6 +339,8 @@ export interface CenariosHost {
   listarCenarios(mundoId: string): Promise<ResumoDeCenario[]>
   criarCenario(mundoId: string, nome: string): Promise<ResumoDeCenario>
   abrirCenario(id: string): Promise<CenarioAberto>
+  /** Só a revisão guardada e as pilhas de desfazer: a consulta leve da edição ao vivo. */
+  historicoDoCenario(id: string): Promise<CenarioAberto['historico']>
   prepararExportacao(
     id: string,
     revisaoEsperada: number,

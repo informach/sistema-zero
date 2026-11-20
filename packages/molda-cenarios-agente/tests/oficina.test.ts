@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { criarHostEmMemoria } from '@sistemazero/molda-cenarios/oficina/host-memoria'
 import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
+import { capturarPelaOficina } from '../src/oficina/captura'
 import { criarClienteDaOficina } from '../src/oficina/cliente'
 import { criarContexto, executarFerramenta, FERRAMENTAS } from '../src/oficina/ferramentas'
 import { CenarioMudou, criarIntencoes } from '../src/oficina/intencoes'
@@ -215,4 +216,25 @@ test('as ferramentas publicam um JSON Schema válido e conferem a entrada antes 
     ok: false,
     erro: { erro: 'Ferramenta desconhecida' },
   })
+})
+
+test('pela oficina aberta: espera o retrato da revisão atual e o baixa com o token', async () => {
+  const host = criarHostEmMemoria(),
+    mundo = await host.criarMundo('conta', 'M'),
+    c = await host.criarCenario(mundo.id, 'C')
+  await host.editarCenario(c.id, 0, [{ tipo: 'cenario.renomear', nome: 'Ilha' }], 'op-00000001')
+  const baixados: string[] = []
+  const baixar = async (endereco: string) => {
+    baixados.push(endereco)
+    return new Uint8Array([82, 73, 70, 70])
+  }
+  // Sem a oficina aberta, ninguém fotografa a revisão 1: a captura recusa no prazo.
+  await expect(
+    capturarPelaOficina(host, baixar, c.id, { prazoMs: 50, intervaloMs: 10 }),
+  ).rejects.toThrow('aba à vista')
+  // A oficina fotografou a revisão atual (o retrato automático de toda revisão estável).
+  await host.guardarCapa(c.id, 1, new Blob([new Uint8Array([1, 2, 3])], { type: 'image/webp' }))
+  const foto = await capturarPelaOficina(host, baixar, c.id, { prazoMs: 50, intervaloMs: 10 })
+  expect(foto).toMatchObject({ revisao: 1, origem: 'oficina', tipo: 'image/webp' })
+  expect(baixados).toHaveLength(1)
 })

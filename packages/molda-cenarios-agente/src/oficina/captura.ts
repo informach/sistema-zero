@@ -275,3 +275,35 @@ export async function capturarSemJanela(
     servidor.stop(true)
   }
 }
+
+/**
+ * Captura PELA OFICINA ABERTA: a oficina, com a aba à vista, abre sozinha a versão que o agente
+ * guardou (edição ao vivo) e a fotografa como faz com toda revisão estável. Aqui só se espera o
+ * retrato da revisão atual aparecer e ele é baixado. A foto mostra a câmera de quem está na
+ * oficina; sem a oficina aberta, use o modo sem janela.
+ */
+export async function capturarPelaOficina(
+  host: Pick<CenariosHost, 'historicoDoCenario' | 'listarRevisoes'>,
+  baixar: (endereco: string) => Promise<Uint8Array>,
+  cenarioId: string,
+  { prazoMs = 30_000, intervaloMs = 1500 }: { prazoMs?: number; intervaloMs?: number } = {},
+): Promise<{ imagem: Uint8Array; tipo: 'image/webp'; revisao: number; origem: 'oficina' }> {
+  const { revisao } = await host.historicoDoCenario(cenarioId)
+  const fim = Date.now() + prazoMs
+  while (true) {
+    const pagina = await host.listarRevisoes(cenarioId)
+    const item = pagina.itens.find((i) => i.revisao === revisao)
+    if (item?.miniatura)
+      return {
+        imagem: await baixar(item.miniatura),
+        tipo: 'image/webp',
+        revisao,
+        origem: 'oficina',
+      }
+    if (Date.now() > fim)
+      throw Error(
+        'A oficina não fotografou a versão atual a tempo. Ela está aberta neste cenário, com a aba à vista? Sem ela, use o modo sem janela.',
+      )
+    await Bun.sleep(intervaloMs)
+  }
+}

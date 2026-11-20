@@ -63,8 +63,8 @@ export function listarFerramentas() {
 }
 
 if (import.meta.main) {
-  const { host } = criarClienteDaOficina(lerAcessoDaOficina())
-  const contexto = criarContexto(host)
+  const { host, baixar } = criarClienteDaOficina(lerAcessoDaOficina())
+  const contexto = criarContexto(host, baixar)
   const servidor = new Server(
     {
       name: 'molda-cenarios',

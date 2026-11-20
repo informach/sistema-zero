@@ -705,6 +705,9 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       espacoDoCenario.set(id, dados.espacoId)
       return dados
     },
+    async historicoDoCenario(id) {
+      return pedir<CenarioAberto['historico']>('GET', `cenarios/${id}/historico`)
+    },
     async moverHistorico(id, revisaoEsperada, acao, operacaoId) {
       return cenarioAberto(
         await pedir<CenarioDoServidor>('POST', `cenarios/${id}/historico`, {

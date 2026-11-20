@@ -41,7 +41,7 @@ function enderecoDeServico(valor: string, nome: string): string {
 export function criarClienteDaOficina(
   acesso: AcessoDaOficina,
   buscar: Buscar = (endereco, opcoes) => fetch(endereco, opcoes),
-): { host: CenariosHost; app: string } {
+): { host: CenariosHost; app: string; baixar(endereco: string): Promise<Uint8Array> } {
   const app = enderecoDeServico(acesso.app, 'do app')
   const gateway = acesso.gateway ? enderecoDeServico(acesso.gateway, 'do gateway') : null
   if (!acesso.token && !(acesso.email && acesso.senha))
@@ -101,8 +101,23 @@ export function criarClienteDaOficina(
     return enviar()
   }
 
+  /** Um arquivo do app (o retrato de uma revisão): pede o endereço assinado e baixa direto. */
+  async function baixar(endereco: string): Promise<Uint8Array> {
+    if (!endereco.startsWith(`${app}/api/cenarios/`)) throw Error('Endereço de arquivo inesperado')
+    const resposta = await comToken(`${endereco}?como=endereco`, {
+      headers: { accept: 'application/json' },
+    })
+    const lido = (await resposta.json().catch(() => null)) as { url?: unknown } | null
+    if (!resposta.ok || typeof lido?.url !== 'string')
+      throw Error('Não consegui o endereço da imagem.')
+    const arquivo = await buscar(lido.url, { redirect: 'error' })
+    if (!arquivo.ok) throw Error('Não consegui baixar a imagem.')
+    return new Uint8Array(await arquivo.arrayBuffer())
+  }
+
   return {
     app,
+    baixar,
     host: criarHostHttp({
       base: `${app}/api/cenarios`,
       buscar: comToken,

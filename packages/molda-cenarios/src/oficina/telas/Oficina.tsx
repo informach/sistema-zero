@@ -103,6 +103,7 @@ import { NOMES_CAMINHO } from '../caminho-formulario'
 import { comandosParaRemoverCaminho } from '../caminho-remocao'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
+import { useEdicaoAoVivo } from '../edicao-ao-vivo'
 import { encerrarPreparacao } from '../importar'
 import { NOMES_JOGO } from '../jogo-formulario'
 import { Chegando, Dialogo, Falhou, useCarga } from '../pecas'
@@ -618,6 +619,15 @@ function OficinaAberta({
       !marcadoresRender.carregando &&
       !marcadoresRender.falhas.length,
     emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado || edicaoAberta,
+  })
+
+  // Edição ao vivo: a versão que um agente (ou outra aba) guardou abre sozinha, sem nada
+  // local pendente e fora de gesto, ensaio, ferramenta aberta ou prévia de água e caminho.
+  useEdicaoAoVivo({
+    host,
+    controlador,
+    cenarioId: estado.documento.id,
+    livre: () => !(gestoAtivo || emEnsaio || janelaTeste || terrenoOcupado.current || edicaoAberta),
   })
 
   const executar = useCallback(
