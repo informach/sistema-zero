@@ -1,0 +1,42 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "43e56e77f9569a53f89aedd50b907863ea91cae364c4f1b85d9cd66d94a52bc9"
+  },
+  {
+    "file": "biome-raiz.txt",
+    "sha256": "5960d4fe98df7367bfa5677a822ed2c2f670bd40c84a24be32783b1a7f5c7136"
+  },
+  {
+    "file": "casca-core.txt",
+    "sha256": "090903d7767312cee8fb5381eb45d5895c1058306dc3f57d195ce940dea9bfbe"
+  },
+  {
+    "file": "componentes.txt",
+    "sha256": "ac0562f4e4def7ffc9c30596e5aed8c55baae30ca11d4a74b8ed3df82760896c"
+  },
+  {
+    "file": "gerado-portatil.txt",
+    "sha256": "1ac57bd4045235521ee5fa80c6419354823aa5b1f928401bf95acbc3a7ebc123"
+  },
+  {
+    "file": "gerados-iframe.txt",
+    "sha256": "3e1040b8f5099065f7f4ef622f082130a8e0bcf090f1a674fea4f82f90027e86"
+  },
+  {
+    "file": "origem.json",
+    "sha256": "b9c79b334ef52af8a6e6c52ebe5d871d3a114cc9578f8be3d5af0ec6f7cdd008"
+  },
+  {
+    "file": "perfil.txt",
+    "sha256": "fe65ed98bc6df91698f4f7f7038645e19b2c2ef19d01f1f70eb6210acf690bae"
+  },
+  {
+    "file": "previa-pos-ajuste.txt",
+    "sha256": "87d947cd519bf5530d9a60a858768f51b7cfef058eaeb61115ea487708eb37bb"
+  },
+  {
+    "file": "tipos-estudio.txt",
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  }
+]

@@ -460,7 +460,10 @@ describe('PreviewIframe', () => {
       Object.defineProperty(frame, 'contentWindow', { configurable: true, get: () => casca })
       const daCasca = (data: unknown) =>
         act(() => {
-          window.dispatchEvent(new MessageEvent('message', { source: casca, origin, data }))
+          const event = new MessageEvent('message', { origin, data })
+          // Match the contentWindow fixture without pretending it is a complete Window.
+          Object.defineProperty(event, 'source', { value: casca })
+          window.dispatchEvent(event)
         })
       fireEvent.load(frame)
       daCasca({ type: 'sz-shell:ready' })
