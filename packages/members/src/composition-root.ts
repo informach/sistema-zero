@@ -470,6 +470,9 @@ export async function createApplication(env: Env): Promise<Application> {
         .filter(Boolean),
     ),
     produto: criarConferenciaDoMolda({ accessCheck, kidsJourney: kidsJourneyQuery, adultJourney }),
+    ...(env.CENARIOS_COTA_DA_CONTA_MB
+      ? { cotaDaContaBytes: env.CENARIOS_COTA_DA_CONTA_MB * 1024 ** 2 }
+      : {}),
   })
   const publicacoesDeCenarios = new PublicacoesDeCenariosService(
     new DrizzlePublicacoesDeCenariosRepository(db),

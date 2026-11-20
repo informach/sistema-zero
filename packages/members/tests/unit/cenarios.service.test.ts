@@ -16,6 +16,7 @@ import {
   type Ator,
   chaveDoBlob,
   type Espaco,
+  LIMITES_DOS_CENARIOS,
   type ModoDosCenarios,
   podeNoMundo,
 } from '../../src/domain/cenarios/cenarios'
@@ -348,9 +349,13 @@ describe('trazer modelos', () => {
   })
   test('reserva acima da cota é recusada inteira', async () => {
     const base = await comBiblioteca()
-    base.repo.espacosGuardados.get(base.espaco.id)!.limiteBytes = 1500
+    const servico = new CenariosService(base.repo, () => AGORA, {
+      modo: 'equipe',
+      lista: new Set(),
+      cotaDaContaBytes: 1500,
+    })
     await expect(
-      base.servico.reservarModelos(ana, base.biblioteca.id, [
+      servico.reservarModelos(ana, base.biblioteca.id, [
         { digest: digest('a'), bytes: 1000 },
         { digest: digest('c'), bytes: 1000 },
       ]),
@@ -393,6 +398,31 @@ describe('trazer modelos', () => {
       apagar: [chaveDoBlob(base.espaco.id, digest('b'))],
     })
     expect((await base.servico.espacos(ana))[0]!.usadoBytes).toBe(1000)
+  })
+})
+
+describe('cota da conta', () => {
+  test('a cota configurada vale para o espaço novo e para o que já existia com outra', async () => {
+    const repo = new CenariosEmMemoria()
+    const antigo = await repo.espacoDaConta(OUTRA, LIMITES_DOS_CENARIOS.bytesDaConta)
+    expect(antigo.limiteBytes).toBe(2 * 1024 ** 3)
+    const servico = new CenariosService(repo, () => AGORA, {
+      modo: 'aberto',
+      lista: new Set(),
+      produto: async () => true,
+      cotaDaContaBytes: 5 * 1024 ** 3,
+    })
+    const biblioteca = await servico.criarBiblioteca(cliente, antigo.id, {
+      nome: 'Pedras',
+      licenca: 'propria',
+    })
+    expect(biblioteca.espacoId).toBe(antigo.id)
+    expect((await repo.espaco(antigo.id))!.limiteBytes).toBe(5 * 1024 ** 3)
+    const [novo] = await servico.espacos({ ...cliente, contaId: CONTA, usuarioId: CONTA })
+    expect(novo!.limiteBytes).toBe(5 * 1024 ** 3)
+    // A equipe não muda com a cota da conta.
+    const [, equipe] = await servico.espacos(ana)
+    expect(equipe!.limiteBytes).toBe(LIMITES_DOS_CENARIOS.bytesDaEquipe)
   })
 })
 

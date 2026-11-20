@@ -147,6 +147,8 @@ export interface CenariosRepository extends ConjuntosRepository {
   /** O espaço único da equipe, criado na primeira vez. */
   espacoDaEquipe(limiteBytes: number, agora: Date): Promise<Espaco>
   espaco(id: string): Promise<Espaco | null>
+  /** Troca a cota do espaço de uma conta (a cota configurada vale também para os que já existem). */
+  definirLimiteDaConta(espacoId: string, limiteBytes: number): Promise<void>
 
   bibliotecas(espacoId: string): Promise<Biblioteca[]>
   biblioteca(id: string): Promise<Biblioteca | null>

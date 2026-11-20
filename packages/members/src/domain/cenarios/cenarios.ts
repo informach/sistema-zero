@@ -276,6 +276,9 @@ export interface AberturaDosCenarios {
    * esta conferência, a ferramenta fica só para a equipe.
    */
   produto?: (ator: Ator) => Promise<boolean>
+  /** A cota de cada conta em bytes (padrão: `LIMITES_DOS_CENARIOS.bytesDaConta`). Vale também
+   * para os espaços que já existem: a cota guardada é trocada no próximo uso. */
+  cotaDaContaBytes?: number
 }
 
 /** O modo admite esta pessoa? A equipe entra em qualquer modo, menos desligado. O produto Molda

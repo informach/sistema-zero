@@ -80,6 +80,9 @@ const EnvSchema = z
     CENARIOS_MODO: z.enum(['desligado', 'equipe', 'lista', 'aberto']).default('desligado'),
     /** Ids de conta liberados no modo `lista`, separados por vírgula. */
     CENARIOS_LISTA: z.string().max(20_000).optional(),
+    /** A cota de cada conta nos cenários, em MB (padrão 2048). Vale também para os espaços que
+     * já existem. Opcional: só entra no Railway quando a cota mudar. */
+    CENARIOS_COTA_DA_CONTA_MB: z.coerce.number().int().min(100).max(1_000_000).optional(),
     ARQUIPELAGO_COINS_TOKEN: z.string().min(32).optional(),
     /** Leituras do serviço do jogo (jornada, blocos): token próprio, separado do das moedas. */
     ARQUIPELAGO_MEMBERS_TOKEN: z.string().min(32).optional(),

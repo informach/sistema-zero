@@ -188,7 +188,18 @@ export class CenariosService {
     await this.exigirAberto(ator)
     const espaco = await this.repo.espaco(espacoId)
     if (!espaco || !podeNoEspaco(espaco, ator)) throw new CenarioNaoEncontradoError(oque)
-    return espaco
+    return this.comACotaDeAgora(espaco)
+  }
+
+  private get cotaDaConta(): number {
+    return this.abertura.cotaDaContaBytes ?? LIMITES_DOS_CENARIOS.bytesDaConta
+  }
+
+  /** A cota configurada vale também para o espaço que já existia com outra. */
+  private async comACotaDeAgora(espaco: Espaco): Promise<Espaco> {
+    if (espaco.tipo !== 'conta' || espaco.limiteBytes === this.cotaDaConta) return espaco
+    await this.repo.definirLimiteDaConta(espaco.id, this.cotaDaConta)
+    return { ...espaco, limiteBytes: this.cotaDaConta }
   }
   private async bibliotecaDe(ator: Ator, id: string) {
     await this.exigirAberto(ator)
@@ -221,7 +232,9 @@ export class CenariosService {
     await this.exigirAberto(ator)
     const agora = this.clock()
     const lista = [
-      await this.repo.espacoDaConta(ator.contaId, LIMITES_DOS_CENARIOS.bytesDaConta, agora),
+      await this.comACotaDeAgora(
+        await this.repo.espacoDaConta(ator.contaId, this.cotaDaConta, agora),
+      ),
     ]
     if (equipeNaPropriaConta(ator))
       lista.push(await this.repo.espacoDaEquipe(LIMITES_DOS_CENARIOS.bytesDaEquipe, agora))

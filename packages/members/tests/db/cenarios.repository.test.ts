@@ -1451,12 +1451,17 @@ describe.skipIf(!url)('repositório dos cenários (Postgres)', () => {
     ])
     expect(a.id).toBe(b.id)
     expect(a).toMatchObject({ tipo: 'conta', contaId: CONTA, usadoBytes: 0, limiteBytes: 5000 })
+    // A cota configurada troca a guardada; o espaço da equipe não é de conta e não muda.
+    await repo.definirLimiteDaConta(a.id, 7000)
+    expect((await repo.espaco(a.id))!.limiteBytes).toBe(7000)
     const [equipe, deNovo] = await Promise.all([
       repo.espacoDaEquipe(9000, AGORA),
       repo.espacoDaEquipe(9000, AGORA),
     ])
     expect(equipe.id).toBe(deNovo.id)
     expect(equipe).toMatchObject({ tipo: 'equipe', contaId: null })
+    await repo.definirLimiteDaConta(equipe.id, 1)
+    expect((await repo.espaco(equipe.id))!.limiteBytes).toBe(9000)
   })
 
   test('a cota conta o confirmado e a reserva que não venceu', async () => {

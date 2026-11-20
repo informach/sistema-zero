@@ -260,6 +260,10 @@ export class CenariosEmMemoria implements CenariosRepository {
     const espaco = this.espacosGuardados.get(id)
     return espaco ? this.copia(espaco) : null
   }
+  async definirLimiteDaConta(espacoId: string, limiteBytes: number) {
+    const espaco = this.espacosGuardados.get(espacoId)
+    if (espaco?.tipo === 'conta') espaco.limiteBytes = limiteBytes
+  }
 
   async bibliotecas(espacoId: string) {
     for (const b of this.bibliotecasGuardadas.values()) this.contar(b.id)

@@ -286,6 +286,13 @@ export class DrizzleCenariosRepository implements CenariosRepository {
     return this.lerEspaco(this.db, eq(cenarioEspacos.id, id))
   }
 
+  async definirLimiteDaConta(espacoId: string, limiteBytes: number): Promise<void> {
+    await this.db
+      .update(cenarioEspacos)
+      .set({ limiteBytes })
+      .where(and(eq(cenarioEspacos.id, espacoId), eq(cenarioEspacos.tipo, 'conta')))
+  }
+
   // ---- bibliotecas --------------------------------------------------------
 
   async bibliotecas(espacoId: string): Promise<Biblioteca[]> {
