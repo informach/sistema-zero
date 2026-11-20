@@ -2,7 +2,6 @@ import { basename, resolve, sep } from 'node:path'
 import { isMoradaFile } from '@sistemazero/avatar-quarto/morada/catalog'
 import { conferirPortosDaArte } from '../scripts/gerar-portos'
 import { ARTE_DA_FAISCA } from '../src/mundo/faisca/arte.generated'
-import { pedidoAoEditorLocal } from './cenario-editor-local'
 import { publicacoesDoEnsaio } from './publicacoes-do-ensaio'
 
 await conferirPortosDaArte()
@@ -71,20 +70,6 @@ Bun.serve({
     const publicada = await publicacoesDoEnsaio(process.env.CENARIOS_PUBLICADOS_QA_DIR ?? null, req)
     if (publicada) return publicada
     const { pathname } = new URL(req.url)
-    if (pathname === '/api/cenario-aplicado') {
-      const aplicado = await pedidoAoEditorLocal('/aplicado/faisca-v2')
-      if (!aplicado.ok) return aplicado
-      const revisao = await aplicado.json()
-      if (!revisao) return new Response('Nenhuma revisão aplicada', { status: 404 })
-      const c = revisao.documento.catalogo
-      const catalogo = await pedidoAoEditorLocal(
-        `/catalogos/${encodeURIComponent(c.id)}/${c.digest}`,
-      )
-      if (!catalogo.ok) return catalogo
-      return Response.json({ revisao, modelos: (await catalogo.json()).modelos })
-    }
-    if (/^\/api\/cenario-arte\/[a-f0-9]{64}\.glb$/.test(pathname))
-      return pedidoAoEditorLocal(`/arte/${pathname.split('/').at(-1)}`)
     if (pathname.startsWith('/api/faisca3d/')) {
       const arquivo = pathname.slice('/api/faisca3d/'.length)
       if (!ARQUIVOS_FAISCA.has(arquivo))

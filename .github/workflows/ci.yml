@@ -216,9 +216,9 @@ jobs:
           bun --version
           bun run test
 
-      # Pacotes puros e rápidos: documento, comandos e migração dos cenários 3D, o
-      # controlador do editor e o cliente dos agentes. Nenhum outro job os executava.
-      - name: Cenários 3D (núcleo, motor, editor e agente)
+      # Pacotes puros e rápidos: documento, comandos e migração dos cenários 3D, a
+      # oficina e o cliente dos agentes. Nenhum outro job os executava.
+      - name: Cenários 3D (núcleo, motor, oficina e agente)
         run: |
           bun run --cwd packages/molda-cenarios conferir:runtime
           bun run --cwd packages/studio check:scene3d-runtime
@@ -1059,11 +1059,11 @@ jobs:
                   # precisam acompanhar o pacote para não servir contratos de versões diferentes.
                   packages/pinta/*) add community-kids; add_palco; add community; add admin; add members ;;
                   packages/molda/*) add community-kids; add_palco; add community ;; # oficina 3D compartilhada pelos dois públicos
-                  # Contrato dos cenários 3D: o gateway limita o corpo por ele, o serviço do jogo
-                  # valida os lotes e o Admin monta o editor. Sem esta linha, um contrato novo
-                  # ficava só no repositório e os três seguiam servindo o antigo.
-                  # Molda Cenários (a oficina de cenários 3D): o documento vai no members (roda os lotes), no gateway e
-                  # no piloto do Arquipélago; as telas e o motor 3D vão nos dois apps de aluno e no Admin.
+                  # Molda Cenários (a oficina de cenários 3D): o documento vai no members (roda os lotes),
+                  # no gateway (limita o corpo do resumo da publicação) e no serviço do jogo, cuja
+                  # imagem constrói o jogo, que lê o cenário publicado; as telas e o motor 3D vão
+                  # nos dois apps de aluno e no Admin. Sem esta linha, um contrato novo ficava só no
+                  # repositório e os serviços seguiam servindo o antigo.
                   packages/molda-cenarios-core/*) add api-gateway; add arquipelago-api; add admin; add members; add community-kids; add_palco; add community ;;
                   packages/molda-cenarios-motor/*) add community-kids; add_palco; add community ;;
                   packages/molda-cenarios/*) add admin; add community-kids; add_palco; add community ;;

@@ -7,9 +7,7 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "cli": "bun src/oficina/cli.ts",
-    "mcp": "bun src/oficina/mcp.ts",
-    "cli:piloto": "bun src/cli.ts",
-    "mcp:piloto": "bun src/mcp.ts"
+    "mcp": "bun src/oficina/mcp.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
