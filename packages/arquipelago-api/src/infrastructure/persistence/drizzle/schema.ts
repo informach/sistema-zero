@@ -38,6 +38,104 @@ import type { SituacaoDaCompra } from '../../../domain/insumos.port'
  */
 export const arquipelagoSchema = pgSchema('arquipelago')
 
+/**
+ * Tabelas do piloto antigo dos cenários (16/11/2026). O código que as usava saiu no lote 10 da
+ * reforma; elas ficam aqui, sem leitura nem escrita, até os dados de staging e de produção serem
+ * copiados para o bucket privado. Só então uma migração gerada as apaga (tirar daqui antes faria
+ * o próximo `db:generate` de qualquer frente apagá-las junto, sem a cópia).
+ */
+export const cenarioCatalogos = arquipelagoSchema.table(
+  'cenario_catalogos',
+  {
+    id: varchar({ length: 120 }).notNull(),
+    digest: varchar({ length: 64 }).notNull(),
+    modelos: jsonb().$type<unknown[]>().notNull(),
+    autorId: uuid().notNull(),
+    criadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.id, t.digest] }),
+    index('cenario_catalogos_criado_idx').on(t.criadoEm),
+  ],
+)
+
+/** Autoria da equipe, separada dos salvamentos e do inventário dos jogadores. */
+export const cenarioProjetos = arquipelagoSchema.table(
+  'cenario_projetos',
+  {
+    id: uuid().primaryKey(),
+    nome: varchar({ length: 120 }).notNull(),
+    revisao: integer().notNull().default(0),
+    revisaoAplicada: integer(),
+    atualizadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    autorId: uuid().notNull(),
+  },
+  (t) => [
+    check('cenario_projetos_revisao_check', sql`${t.revisao} >= 0`),
+    index('cenario_projetos_atualizado_idx').on(t.atualizadoEm),
+  ],
+)
+export const cenarioRevisoes = arquipelagoSchema.table(
+  'cenario_revisoes',
+  {
+    projetoId: uuid()
+      .notNull()
+      .references(() => cenarioProjetos.id, { onDelete: 'cascade' }),
+    revisao: integer().notNull(),
+    documento: jsonb().$type<unknown>().notNull(),
+    autorId: uuid().notNull(),
+    criadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    operacaoId: uuid().notNull(),
+    impressao: varchar({ length: 64 }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projetoId, t.revisao] }),
+    uniqueIndex('cenario_revisoes_operacao_idx').on(t.projetoId, t.operacaoId),
+    check('cenario_revisoes_revisao_check', sql`${t.revisao} >= 0`),
+  ],
+)
+
+export const cenarioAplicacoes = arquipelagoSchema.table('cenario_aplicacoes', {
+  base: varchar({ length: 240 }).primaryKey(),
+  projetoId: uuid()
+    .notNull()
+    .references(() => cenarioProjetos.id),
+  revisao: integer().notNull(),
+  autorId: uuid().notNull(),
+  aplicadoEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+})
+export const cenarioSessoes = arquipelagoSchema.table(
+  'cenario_sessoes',
+  {
+    id: uuid().primaryKey(),
+    projetoId: uuid()
+      .notNull()
+      .references(() => cenarioProjetos.id, { onDelete: 'cascade' }),
+    autorId: uuid().notNull(),
+    estado: jsonb().$type<unknown>().notNull(),
+    expiraEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (t) => [index('cenario_sessoes_expira_idx').on(t.expiraEm)],
+)
+export const cenarioTarefas = arquipelagoSchema.table(
+  'cenario_tarefas_viewport',
+  {
+    id: uuid().primaryKey(),
+    sessaoId: uuid()
+      .notNull()
+      .references(() => cenarioSessoes.id, { onDelete: 'cascade' }),
+    autorId: uuid().notNull(),
+    pedido: jsonb().$type<unknown>().notNull(),
+    estado: varchar({ length: 16 }).$type<'pendente' | 'executando' | 'concluido'>().notNull(),
+    resultado: jsonb().$type<unknown>(),
+    expiraEm: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+  },
+  (t) => [
+    index('cenario_tarefas_sessao_idx').on(t.sessaoId, t.estado),
+    index('cenario_tarefas_expira_idx').on(t.expiraEm),
+  ],
+)
+
 /** Uma cópia aprovada por jogador e desafio; a primeira aprovação é preservada para medição. */
 export const minijogos = arquipelagoSchema.table(
   'minijogos',
@@ -713,6 +811,12 @@ export const vendasNaFeira = arquipelagoSchema.table(
 )
 
 export const schema = {
+  cenarioAplicacoes,
+  cenarioSessoes,
+  cenarioTarefas,
+  cenarioCatalogos,
+  cenarioProjetos,
+  cenarioRevisoes,
   mudancasDeAparencia,
   convitesAdultos,
   convitesDeAmigos,
