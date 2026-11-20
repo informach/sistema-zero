@@ -1,0 +1,45 @@
+(pass) acesso cru às células do mapa > a varredura leu arquivos de verdade
+(pass) acesso cru às células do mapa > todo arquivo que lê células está na lista dos conferidos
+(pass) acesso cru às células do mapa > a lista não guarda arquivo que já não lê células
+(pass) acesso cru às células do mapa > a varredura pega o acesso sem colchete e a máscara escrita na mão
+(pass) acesso cru às células do mapa > não há pendência: quem decodifica a célula na mão é corrigido, não listado
+(pass) acesso cru às células do mapa > quem lê o índice da peça importa o cell.ts
+(pass) recorta por blocos de 32 sem visitar o resto do mapa
+(pass) os oito giros Tiled dão oito imagens distintas sem mudar a peça
+(pass) TileChunkCache > bloco vazio não gasta canvas nem conta no teto
+(pass) TileChunkCache > reaproveita o bloco e só refaz quando uma casa DELE muda
+(pass) TileChunkCache > folha de peças nova refaz o bloco
+(pass) TileChunkCache > o menos usado sai primeiro quando o teto enche [16.00ms]
+(pass) TileChunkCache > uma tela maior que o cache respeita o teto e recicla os canvases [31.00ms]
+(pass) TileChunkCache > um bloco maior que o teto usa um único canvas de trabalho e clear o libera
+(pass) TileChunkCache > camadas vazias não custam nada na pintura
+(pass) TileChunkCache > peça animada só refaz os blocos em que ela aparece
+(pass) animatedTile > peça sem animação é ela mesma
+(pass) animatedTile > anda pelos quadros pela duração, dá a volta e aceita tempo negativo
+(pass) recorte das camadas na pintura > pula camada escondida, transparente, de colisão e sem peças; desloca o recorte
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=0 [187.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=100 [172.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=250 [203.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=0 [94.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=100 [109.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=250 [79.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=0 [78.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=100 [93.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=250 [79.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=0 [62.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=100 [63.00ms]
+(pass) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=250 [78.00ms]
+(pass) peças transformadas conservam a amostragem anterior no zoom 0.25 [375.00ms]
+(pass) peças transformadas conservam a amostragem anterior no zoom 0.5 [172.00ms]
+(pass) peças transformadas conservam a amostragem anterior no zoom 1.5 [93.00ms]
+(pass) peças transformadas conservam a amostragem anterior no zoom 2.5 [94.00ms]
+(pass) preserva o renderer geral com suavização [172.00ms]
+(pass) preserva o renderer geral com translação fracionária [172.00ms]
+(pass) preserva o renderer geral com rotação [234.00ms]
+(pass) preserva o renderer geral com composição [203.00ms]
+(pass) preserva o renderer geral com sombra [188.00ms]
+(pass) preserva o renderer geral com filtro [187.00ms]
+ 41 pass
+ 0 fail
+ 248 expect() calls
+Ran 41 tests across 3 files. [3.86s]

@@ -1,0 +1,157 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 3811,
+    "sha256": "4d8fd76c5da06f0151f0b9468b6e006707b557853eebc716016092f579edf91b"
+  },
+  {
+    "file": "amostragem-vermelho.txt",
+    "bytes": 7547,
+    "sha256": "038fe6b81d3a81a5f5e66dc018f6c6905f91b29ae2333a032d6bf34d4b6ae5fe"
+  },
+  {
+    "file": "autoridade-e-oficina.txt",
+    "bytes": 3500,
+    "sha256": "81dfb083bab4ba222a8eee75b3b2dc6679fd347c470333594b32a3c835c4e194"
+  },
+  {
+    "file": "benchmark-source.txt",
+    "bytes": 2866,
+    "sha256": "ac1f83c6340b3b0950a60be71338a5cb0e8f72d717d1df6acdd23cf8daef682d"
+  },
+  {
+    "file": "biome.txt",
+    "bytes": 46,
+    "sha256": "e795b5e9452fde1bc9fc53f7264515d40d66f8e9b738f539b0bd42bb9127c8b8"
+  },
+  {
+    "file": "comparacao-resultados.json",
+    "bytes": 681,
+    "sha256": "0df26858b864184ce83508c1eac5f3f05efa2d330e3d1f48447fe50cdd082a24"
+  },
+  {
+    "file": "cpu-4x-oficina-render-pressao.png",
+    "bytes": 62181,
+    "sha256": "a94367e6d283c76850591dc161afd1aa51545ae94084d5a5dd24881006f6029d"
+  },
+  {
+    "file": "cpu-4x-renderer-anterior.png",
+    "bytes": 60857,
+    "sha256": "718b1af996d98a3069da4ddb45317e5fc95ac3911b59c817a65df3974b17c037"
+  },
+  {
+    "file": "cpu-4x-renderer-atual.png",
+    "bytes": 60857,
+    "sha256": "718b1af996d98a3069da4ddb45317e5fc95ac3911b59c817a65df3974b17c037"
+  },
+  {
+    "file": "desktop-oficina-render-pressao.png",
+    "bytes": 62273,
+    "sha256": "3dd9ece1968cb19c7433f79c2994165a4f84411e869a3759145aa3e0f9215eb8"
+  },
+  {
+    "file": "desktop-renderer-anterior.png",
+    "bytes": 60857,
+    "sha256": "718b1af996d98a3069da4ddb45317e5fc95ac3911b59c817a65df3974b17c037"
+  },
+  {
+    "file": "desktop-renderer-atual.png",
+    "bytes": 60857,
+    "sha256": "718b1af996d98a3069da4ddb45317e5fc95ac3911b59c817a65df3974b17c037"
+  },
+  {
+    "file": "fontes.json",
+    "bytes": 1323,
+    "sha256": "690d6a782ac0c171396ac26c807ba7c3d96841dce846686fd5bd4152d109bb7e"
+  },
+  {
+    "file": "medicoes-atual.json",
+    "bytes": 12842,
+    "sha256": "225bb1784d697d7270e559ef7c8499d757f161d5eca500b0106fcbef2fd63ed2"
+  },
+  {
+    "file": "medicoes-publicado.json",
+    "bytes": 12868,
+    "sha256": "ebd5bbc9306343c2fc36bd088e4cc301c9715878e3d6d7eaf4f4237098515b54"
+  },
+  {
+    "file": "nucleo-verde.txt",
+    "bytes": 3576,
+    "sha256": "0b49c8633335a44ae871ec5a326d3a415fbf3a06e4af3f6bb4d219d5d35f8f93"
+  },
+  {
+    "file": "nucleo-vermelho.txt",
+    "bytes": 9144,
+    "sha256": "40f56d6ae332a23c2c71463d3c2d61ff8c3886e71576e651cdb83adf24b57080"
+  },
+  {
+    "file": "oficina-resultados.json",
+    "bytes": 3970,
+    "sha256": "d146025c643951818a3a1f21e097cd2a324b3bd502c657253596699fdc1b8c6b"
+  },
+  {
+    "file": "origem.json",
+    "bytes": 1966,
+    "sha256": "027f8ef4c0e53fadda7ea64cfd2a86ce7e93eeea6b74eff62c1ba283c2108efb"
+  },
+  {
+    "file": "perfil-atual.json",
+    "bytes": 900,
+    "sha256": "879ac7a8dc36f85cd84956783b7468a7a2ca473f0709db245e566c9798904919"
+  },
+  {
+    "file": "perfil-publicado.json",
+    "bytes": 906,
+    "sha256": "56dc8bfe1193cc387a527f8562b198d480a5e92d905912246e29ea38414d611b"
+  },
+  {
+    "file": "pinta-completo.txt",
+    "bytes": 247102,
+    "sha256": "451114e7ffda76d9db5641e6803b8684f80af980db016c153dd50d65e76bb9ee"
+  },
+  {
+    "file": "pixels-chromium.txt",
+    "bytes": 479,
+    "sha256": "873ed97c4902e395a0901568be3cbac1d4a1eb6a9542ee4a330c4f6d920dafae"
+  },
+  {
+    "file": "pixels-cpu-4x.json",
+    "bytes": 11926,
+    "sha256": "09138291cff4c6008c64f14a0f23ddb573191fdd514724ff6f9d74d1fe16855c"
+  },
+  {
+    "file": "pixels-desktop.json",
+    "bytes": 11927,
+    "sha256": "b0dc3ba3dd70857028e8ee781c2c23fc11c92b749a9e581ad92b024a79f5ff87"
+  },
+  {
+    "file": "pixels-touch.json",
+    "bytes": 11926,
+    "sha256": "9ee695a43bec67356d1ce30a9377027809ece318b11b541ecf73acdf73c8d131"
+  },
+  {
+    "file": "tempos.json",
+    "bytes": 266,
+    "sha256": "4c2d22597a7b4292e1b8b0a1c7b88259e82a8974895c0da4e6d244fe753ac9a3"
+  },
+  {
+    "file": "tipos-harness.txt",
+    "bytes": 34,
+    "sha256": "e6b23d50d411fb35800022d37d59042934b9f2d69ff13542f0bcd3bfa09c794f"
+  },
+  {
+    "file": "tipos-pinta.txt",
+    "bytes": 15,
+    "sha256": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92"
+  },
+  {
+    "file": "touch-renderer-anterior.png",
+    "bytes": 60857,
+    "sha256": "718b1af996d98a3069da4ddb45317e5fc95ac3911b59c817a65df3974b17c037"
+  },
+  {
+    "file": "touch-renderer-atual.png",
+    "bytes": 60857,
+    "sha256": "718b1af996d98a3069da4ddb45317e5fc95ac3911b59c817a65df3974b17c037"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "hotspots": [
+    ["sanitizeTilemapCells:4545", 693793],
+    ["packCells:2230", 633362],
+    ["drawCellImage:6477", 553412],
+    ["(program):-1", 98507],
+    [":6784", 71328],
+    ["(idle):-1", 66400],
+    [":5986", 57631],
+    [":4549", 45219],
+    ["encode:-1", 42879],
+    [":6022", 37953],
+    ["(garbage collector):-1", 37813],
+    ["read:6153", 36289],
+    ["assetJsonFragment:5363", 32762],
+    ["runMapBudgetProbe:6764", 30492],
+    ["request.onsuccess:6158", 29861],
+    ["btoa:-1", 29270],
+    ["pintaValuesEqual:3771", 28536],
+    ["bytesToBase64:5274", 23345],
+    ["paintTilemapLayers:6661", 22964],
+    ["IDBObjectStore.put:6740", 22846],
+    [":6767", 18671],
+    ["isValidCell:2226", 17230],
+    ["encodeBitmap:5280", 15856],
+    ["tileLayerToWire:5002", 14628],
+    [":6831", 12373]
+  ],
+  "rawProfileSha256": "f18b2ccf2b855cd4690132c42d31a3658f29f2a19f5ae5cc4adcbda4aa7fde52"
+}

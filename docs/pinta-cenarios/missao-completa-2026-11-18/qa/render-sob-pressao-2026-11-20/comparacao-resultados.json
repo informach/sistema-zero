@@ -1,0 +1,30 @@
+{
+  "stats": {
+    "startTime": "2026-11-20T10:26:47.929Z",
+    "duration": 35093.194,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "mapa sob pressão conserva todos os pixels do renderer publicado",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "mapa sob pressão conserva todos os pixels do renderer publicado",
+      "project": "touch",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "mapa sob pressão conserva todos os pixels do renderer publicado",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    }
+  ]
+}

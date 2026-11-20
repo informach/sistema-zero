@@ -88,6 +88,8 @@ export async function runMapBudgetProbe() {
   target.height = 768
   const context = target.getContext('2d')
   if (!sheetContext || !context) throw new Error('Canvas 2D indisponível')
+  // Mesma configuração do palco real em mapCanvas.ts; o padrão suaviza a folha inteira.
+  context.imageSmoothingEnabled = false
   sheetContext.fillStyle = '#437b48'
   sheetContext.fillRect(0, 0, sheet.width, sheet.height)
   let allocations = 0
