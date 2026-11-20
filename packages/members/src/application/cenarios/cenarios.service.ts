@@ -840,13 +840,17 @@ export class CenariosService {
     }
   }
 
+  /** Sem o documento: a oficina pergunta isto a cada 4 s (edição ao vivo). As mesmas conferências
+   * do `cenarioDe` (aberto, espaço, mundo do perfil), lendo só a revisão e as pilhas. */
   async historico(ator: Ator, id: string): Promise<ResumoDoHistorico> {
-    const { cenario } = await this.cenarioDe(ator, id)
-    const pilhas = await this.repo.pilhasDoHistorico(id)
+    await this.exigirAberto(ator)
+    const resumo = await this.repo.resumoDoHistorico(id)
+    if (!resumo) throw new CenarioNaoEncontradoError('O cenário')
+    await this.mundoDe(ator, resumo.mundoId)
     return {
-      revisao: cenario.revisao,
-      desfazer: pilhas.passado.length,
-      refazer: pilhas.futuro.length,
+      revisao: resumo.revisao,
+      desfazer: resumo.pilhas.passado.length,
+      refazer: resumo.pilhas.futuro.length,
     }
   }
 

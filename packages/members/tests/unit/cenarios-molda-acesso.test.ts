@@ -6,6 +6,7 @@ import {
   resetToolOwnershipCacheForTests,
 } from '../../src/application/creations/tool-ownership-cache'
 import type { Ator } from '../../src/domain/cenarios/cenarios'
+import { CenariosIndisponiveisError } from '../../src/domain/cenarios/cenarios.errors'
 
 const CONTA = '11111111-1111-4111-8111-111111111111'
 const PERFIL = '33333333-3333-4333-8333-333333333333'
@@ -114,7 +115,7 @@ describe('o Molda de quem abre os cenários', () => {
     expect(chamadas.kids).toBe(3)
   })
 
-  test('recusa não fica guardada e leitura que falha conta como recusa', async () => {
+  test('recusa não fica guardada e leitura que falha vira indisponível, nunca "não tem"', async () => {
     const { conferir, chamadas } = montar({
       produto: [creativeToolAccessRef('molda', 'kids')],
       kids: [],
@@ -122,7 +123,11 @@ describe('o Molda de quem abre os cenários', () => {
     expect(await conferir(crianca)).toBe(false)
     expect(await conferir(crianca)).toBe(false)
     expect(chamadas.kids).toBe(2)
-    expect(await montar({ falha: true }).conferir(crianca)).toBe(false)
+    expect(
+      await montar({ falha: true })
+        .conferir(crianca)
+        .catch((e) => e),
+    ).toBeInstanceOf(CenariosIndisponiveisError)
   })
 
   test('as faixas seguem a jornada: uma capacidade por faixa, e o adulto antigo tem todas', async () => {
@@ -141,6 +146,10 @@ describe('o Molda de quem abre os cenários', () => {
     resetToolOwnershipCacheForTests()
     expect(await montar({ adulto: ['molda'], curriculo: true }).faixas(adulto)).toEqual(['basic'])
     resetToolOwnershipCacheForTests()
-    expect(await montar({ falha: true, kids: ['molda'] }).faixas(crianca)).toEqual([])
+    expect(
+      await montar({ falha: true, kids: ['molda'] })
+        .faixas(crianca)
+        .catch((e) => e),
+    ).toBeInstanceOf(CenariosIndisponiveisError)
   })
 })

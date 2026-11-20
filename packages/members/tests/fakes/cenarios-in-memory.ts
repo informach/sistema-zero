@@ -726,6 +726,15 @@ export class CenariosEmMemoria implements CenariosRepository {
     if (mundo) mundo.atualizadoEm = agora
     return { revisao: c.revisao, repetido: false }
   }
+  async resumoDoHistorico(id: string) {
+    const c = this.cenariosGuardados.get(id)
+    if (!c) return null
+    return {
+      mundoId: c.mundoId,
+      revisao: c.revisao,
+      pilhas: this.copia(this.pilhas.get(id) ?? { passado: [], futuro: [] }),
+    }
+  }
   async pilhasDoHistorico(id: string) {
     return this.copia(this.pilhas.get(id) ?? { passado: [], futuro: [] })
   }
