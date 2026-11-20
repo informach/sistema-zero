@@ -58,5 +58,14 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   sprites desenhados entre duas "Limpar a tela" (`drawn` no inspetor `game-2d:observation`).
   O pacote de abertura do modo Blocos continua no teto de sempre: a ponte, o painel, o resumo e
   os textos do painel são baixados sob demanda.
-- Próximos: Investigar (pausar, avançar 1 quadro, valores, caminho até o erro), Meus testes,
-  Python e Pro.
+- **Lote 2 (20/11): Investigar no Estúdio clássico em JavaScript.** "Investigar o jogo" monta o
+  jogo com o leitor das variáveis (`instrumentCheckScript`, o mesmo dos objetivos; as linhas não
+  mudam de número) e a ponte. Rodando: o quadro e os valores a cada meio segundo, e Pausar quando
+  o motor tem a pausa (o Jogo 2D, por `SZGame2D.pauseGame`); os outros dizem que ainda não pausam
+  pelo Estúdio e seguem mostrando os valores. Pausado: Continuar e Avançar 1 quadro (continua e
+  pausa de novo no quadro seguinte), valores com o que mudou e "Mostrar o bloco" (a declaração da
+  variável, pelo mapa do sinal vermelho). Parado com erro: o quadro, a frase do erro, o caminho
+  até o erro (as linhas do script da criança na pilha, cada uma virando o bloco e o texto dele) e
+  os valores daquele momento. Fechar a gaveta desliga.
+- Próximos: Investigar e Desempenho no Jogo 2D Avançado e nos 3D (pausa de cada motor), Meus
+  testes, Python e Pro.

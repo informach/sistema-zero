@@ -102,9 +102,12 @@ type DevtoolsBridgeModule = typeof import('../../preview/devtoolsBridge')
 
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
-  // A aba Desempenho pediu a medida: o jogo é montado com a ponte (e recomeça ao ligar/desligar).
+  // As abas Desempenho e Investigar: o jogo é montado com a ponte (e recomeça ao ligar/desligar).
   const measuring = useUIStore((s) => s.measuring)
+  const investigating = useUIStore((s) => s.investigating)
+  const devtoolsOn = measuring || investigating
   const ui = useUIStoreApi()
+  const locale = useT().locale
   // Casca em outro site (lote 3.2): o jogo roda num `srcdoc` dentro de uma página de outra
   // origem. Desligada sem `shellUrl`; nunca junto do adaptador de origem nem da sala isolada.
   const configuredShell = useMemo(() => {
@@ -175,23 +178,35 @@ export function PreviewIframe(): JSX.Element {
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  // A ponte (e quem escuta as fatias dela) só é baixada quando a medida liga: no pacote de
-  // abertura do modo Blocos ela pesaria para todos. As fatias chegam do MESMO iframe.
+  // A ponte (e quem escuta o que ela manda) só é baixada quando uma das abas liga: no pacote de
+  // abertura do modo Blocos ela pesaria para todos. As mensagens chegam do MESMO iframe, e os
+  // comandos do painel (Pausar, Continuar, Avançar) vão a ele.
   const [devtoolsBridge, setDevtoolsBridge] = useState<DevtoolsBridgeModule | null>(null)
   useEffect(() => {
-    if (!measuring) return
+    if (!devtoolsOn) return
+    let module: DevtoolsBridgeModule | null = null
     let stop: (() => void) | undefined
     let alive = true
     void import('../../preview/devtoolsBridge').then((m) => {
       if (!alive) return
+      module = m
       setDevtoolsBridge(m)
-      stop = m.listenToDevtoolsPerf(() => iframeRef.current?.contentWindow, ui)
+      stop = m.listenToDevtools(() => iframeRef.current?.contentWindow, ui)
+      m.setDevtoolsSender(ui, (cmd) =>
+        iframeRef.current?.contentWindow?.postMessage(m.commandMessage(cmd), '*'),
+      )
     })
     return () => {
       alive = false
       stop?.()
+      module?.setDevtoolsSender(ui, null)
     }
-  }, [measuring, ui])
+  }, [devtoolsOn, ui])
+  // O nome do leitor das variáveis desta prévia (sorteado uma vez).
+  const investigationScope = useMemo(
+    () => devtoolsBridge?.createInvestigationScope() ?? null,
+    [devtoolsBridge],
+  )
   const touchInput = useTouchInput()
   const usesKeyboardControls = useMemo(() => projectUsesKeyboardControls(ir), [ir])
   const sendVirtualGamepadInput = useCallback((input: VirtualGamepadInput) => {
@@ -727,12 +742,23 @@ export function PreviewIframe(): JSX.Element {
       shell?.origin ?? (typeof window !== 'undefined' ? window.location.origin : undefined)
     // A medida da aba Desempenho: a ponte entra como mais um script confiável, depois dos motores,
     // com o registro dos inspetores ligado (o documento de sempre não muda um byte).
+    const investigate = investigating && devtoolsBridge && investigationScope
     const devtoolsRuntime =
-      measuring && devtoolsBridge ? devtoolsBridge.buildDevtoolsBridgeRuntime(parentOrigin) : null
+      devtoolsOn && devtoolsBridge
+        ? devtoolsBridge.buildDevtoolsBridgeRuntime(parentOrigin, {
+            measure: measuring,
+            scope: investigate ? investigationScope : undefined,
+            labels:
+              locale === 'en' ? devtoolsBridge.EN_VALUE_LABELS : devtoolsBridge.PT_BR_VALUE_LABELS,
+          })
+        : null
     const base = buildJavaScriptClassicDocument({
       html: debouncedHtml,
       css: debouncedCss,
-      js: debouncedJs,
+      // Investigar: o leitor das variáveis entra no script (as linhas não mudam de número).
+      js: investigate
+        ? devtoolsBridge.instrumentForInvestigation(debouncedJs, investigationScope)
+        : debouncedJs,
       resources: {
         extensionScripts: devtoolsRuntime
           ? [...extensionScripts, devtoolsRuntime]
@@ -790,7 +816,11 @@ export function PreviewIframe(): JSX.Element {
     execution.editingAccess,
     shell?.origin,
     measuring,
+    investigating,
+    devtoolsOn,
     devtoolsBridge,
+    investigationScope,
+    locale,
   ])
 
   // Keep the committed game while the next document's resources are loading.

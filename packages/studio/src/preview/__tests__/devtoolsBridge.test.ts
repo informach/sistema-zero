@@ -4,6 +4,7 @@ import {
   buildDevtoolsBridgeRuntime,
   DEVTOOLS_PERF_MESSAGE,
   isDevtoolsPerfMessage,
+  isDevtoolsStateMessage,
   listenToDevtoolsPerf,
   perfWindowFor,
 } from '../devtoolsBridge'
@@ -213,5 +214,170 @@ describe('quem escuta as fatias, no editor', () => {
     }
     send(frame, fatia(3))
     expect(perfWindowFor(instance).getState().slices).toHaveLength(1)
+  })
+})
+
+describe('a ponte da aba Investigar', () => {
+  function runInvestigation(options: { paused?: boolean; frame?: number; noGame?: boolean } = {}) {
+    const posted: Posted[] = []
+    const listeners: Record<string, ((event: unknown) => void)[]> = {}
+    let pending: ((now: number) => void) | null = null
+    let paused = options.paused ?? false
+    let frame = options.frame ?? 41
+    const calls: string[] = []
+    const parent = {
+      postMessage(message: Record<string, unknown>, origin: string) {
+        posted.push({ message, origin })
+      },
+    }
+    const reader = Object.freeze({
+      names: () => ['pontos', 'heroi', 'nome', 'acao', 'itens'],
+      get: (name: string) =>
+        ({
+          pontos: { v: 2.5 },
+          heroi: { v: { x: 148, y: 108, w: 32 } },
+          nome: { v: 'Zé' },
+          acao: { v: () => 1 },
+          itens: { v: [1, 2, 3] },
+        })[name] ?? null,
+    })
+    const window: Record<string, unknown> = {
+      parent,
+      requestAnimationFrame(callback: (now: number) => void) {
+        pending = callback
+        return 1
+      },
+      addEventListener(type: string, listener: (event: unknown) => void) {
+        listeners[type] = [...(listeners[type] ?? []), listener]
+      },
+      __SZSTUDIO_RUNTIME_INSPECTORS: {
+        'game-2d:observation': () => ({ lifecycle: () => ({ frame, paused, drawn: 2 }) }),
+      },
+      __SZ_USER_JS_TAIL: 'QUJD',
+      __szReportCaughtError: () => {
+        calls.push('interceptor')
+      },
+    }
+    if (!options.noGame)
+      window.SZGame2D = {
+        pauseGame: () => {
+          calls.push('pause')
+          paused = true
+        },
+        resumeGame: () => {
+          calls.push('resume')
+          paused = false
+        },
+      }
+    const fakeGlobal = { __szabc: reader }
+    const timers: (() => void)[] = []
+    const setInterval = (fn: () => void) => {
+      timers.push(fn)
+      return 1
+    }
+    const source = buildDevtoolsBridgeRuntime('https://editor.test', {
+      scope: '__szabc',
+      labels: {
+        empty: 'vazio',
+        yes: 'verdadeiro',
+        no: 'falso',
+        listOne: 'lista com 1 item',
+        listMany: 'lista com {count} itens',
+        object: 'objeto',
+        decimal: ',',
+      },
+    })
+    new Function('window', 'document', 'globalThis', 'setInterval', source)(
+      window,
+      { querySelector: () => ({}) },
+      fakeGlobal,
+      setInterval,
+    )
+    const command = (cmd: string, from: unknown = parent) => {
+      for (const listener of listeners.message ?? [])
+        listener({ source: from, data: { type: 'sz:devtools', cmd } })
+    }
+    const nextFrame = () => {
+      const callback = pending
+      pending = null
+      frame++
+      callback?.(0)
+    }
+    const states = () => posted.map((p) => p.message).filter((m) => m.type === 'sz:devtools:state')
+    return {
+      posted,
+      states,
+      command,
+      nextFrame,
+      calls,
+      timers,
+      window,
+      listeners,
+      setFrame: (n: number) => (frame = n),
+    }
+  }
+
+  it('pausa e continua pela pausa do motor, só a pedido do parent, e responde com o estado', () => {
+    const game = runInvestigation()
+    game.command('pause', {})
+    expect(game.calls).toEqual([])
+    game.command('pause')
+    expect(game.calls).toEqual(['pause'])
+    const [state] = game.states()
+    expect(state).toMatchObject({ frame: 41, paused: true, canPause: true, error: null })
+    expect(isDevtoolsStateMessage(state)).toBe(true)
+    // Os valores com o texto da criança: número com vírgula, sprite pela posição, texto entre
+    // aspas, lista contada; a função não aparece.
+    expect(state?.values).toEqual([
+      { name: 'pontos', text: '2,5' },
+      { name: 'heroi', text: 'x 148 · y 108' },
+      { name: 'nome', text: '"Zé"' },
+      { name: 'itens', text: 'lista com 3 itens' },
+    ])
+    game.command('resume')
+    expect(game.calls).toEqual(['pause', 'resume'])
+  })
+
+  it('avançar 1 quadro continua e pausa de novo no quadro seguinte, e então responde', () => {
+    const game = runInvestigation({ paused: true, frame: 10 })
+    game.command('step')
+    expect(game.calls).toEqual(['resume'])
+    expect(game.states()).toHaveLength(0)
+    game.nextFrame()
+    expect(game.calls).toEqual(['resume', 'pause'])
+    expect(game.states().at(-1)).toMatchObject({ frame: 11, paused: true })
+  })
+
+  it('sem a pausa do motor, diz que não pausa e ainda manda os valores', () => {
+    const game = runInvestigation({ noGame: true })
+    game.command('pause')
+    expect(game.states()[0]).toMatchObject({ canPause: false, paused: false })
+  })
+
+  it('com o jogo rodando, os valores chegam sozinhos; pausado, ficam parados', () => {
+    const game = runInvestigation()
+    expect(game.timers).toHaveLength(1)
+    game.timers[0]?.()
+    expect(game.states()).toHaveLength(1)
+    game.command('pause')
+    game.timers[0]?.()
+    expect(game.states()).toHaveLength(2)
+  })
+
+  it('quando o jogo para com erro, manda as linhas do script da criança e passa o erro adiante', () => {
+    const game = runInvestigation()
+    const error = {
+      stack: [
+        'TypeError: x',
+        '    at a (data:...QUJD:12:5)',
+        '    at engine (about:srcdoc:900:1)',
+        '    at b (data:...QUJD:7:3)',
+      ].join('\n'),
+    }
+    ;(game.window.__szReportCaughtError as (e: unknown) => void)(error)
+    expect(game.calls).toEqual(['interceptor'])
+    expect(game.states().at(-1)).toMatchObject({ error: { lines: [12, 7] } })
+    for (const listener of game.listeners.error ?? []) listener({ error })
+    expect(game.states().at(-1)).toMatchObject({ error: { lines: [12, 7] } })
   })
 })

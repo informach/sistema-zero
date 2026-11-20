@@ -1,13 +1,12 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
-import { ErrorBoundary, IconPause, IconPlay } from '#ui'
+import { IconPause, IconPlay } from '#ui'
 import { createDictionaryTranslator, type Translator } from '../../core/i18n/translator'
 import { forgetPerfWindow, type PerfSlice, perfWindowFor } from '../../state/devtools'
 import { useProRun } from '../../state/proRun'
 import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
-import { SectionErrorFallback } from '../layout/ErrorViews'
 import { PERFORMANCE_COPY } from './performanceCopy'
 import { isSlowSlice, PERF_SMOOTH_FRAME_MS, summarizePerf } from './perfSummary'
 
@@ -15,46 +14,6 @@ import { isSlowSlice, PERF_SMOOTH_FRAME_MS, summarizePerf } from './perfSummary'
 function usePerfT(): Translator {
   const t = useT()
   return createDictionaryTranslator(PERFORMANCE_COPY, t.locale ?? 'pt-BR')
-}
-
-/**
- * O painel da aba dentro da gaveta, baixado só quando a criança abre a aba. A medida para quando
- * a gaveta fecha (a frase da aba promete) e quando a gaveta sai de cena.
- */
-export default function PerformanceTab({
-  id,
-  labelledBy,
-  hidden,
-  open,
-}: {
-  id: string
-  labelledBy: string
-  hidden: boolean
-  open: boolean
-}): JSX.Element {
-  const t = useT()
-  const ui = useUIStoreApi()
-  const measuring = useUIStore((s) => s.measuring)
-  useEffect(() => {
-    if (!open && measuring) ui.getState().setMeasuring(false)
-  }, [open, measuring, ui])
-  useEffect(() => () => ui.getState().setMeasuring(false), [ui])
-  return (
-    <div
-      id={id}
-      role="tabpanel"
-      aria-labelledby={labelledBy}
-      hidden={hidden}
-      className="h-full overflow-auto p-3"
-    >
-      <ErrorBoundary
-        label="performance"
-        fallback={(props) => <SectionErrorFallback {...props} title={t('pro.dock.performance')} />}
-      >
-        <PerformancePanel />
-      </ErrorBoundary>
-    </div>
-  )
 }
 
 /**
@@ -89,7 +48,7 @@ export function PerformancePanel(): JSX.Element {
           className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--primary"
           onClick={() => {
             forgetPerfWindow(ui)
-            ui.getState().setMeasuring(!measuring)
+            ui.setState({ measuring: !measuring })
           }}
         >
           {measuring ? <IconPause /> : <IconPlay />}

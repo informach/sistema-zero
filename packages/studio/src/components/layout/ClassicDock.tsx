@@ -16,9 +16,10 @@ import { SectionErrorFallback } from './ErrorViews'
 
 type OpenTab = Exclude<ClassicDockTab, 'closed'>
 
-// A aba Desempenho só baixa o painel quando a criança a abre (o pacote de abertura do modo Blocos
-// tem teto). O painel cuida de si: a moldura de erro e o "fechar a gaveta desliga a medida".
-const PerformanceTab = lazy(() => import('../devtools/PerformancePanel'))
+// As abas Investigar e Desempenho só baixam os painéis quando a criança abre uma delas (o pacote
+// de abertura do modo Blocos tem teto). Os painéis cuidam de si: a moldura de erro e o "fechar a
+// gaveta desliga".
+const DevtoolsTabs = lazy(() => import('../devtools/DevtoolsTabs'))
 
 /**
  * A gaveta de baixo do Estúdio clássico (blocos e Ponte, JavaScript e Python; redesenho de
@@ -78,11 +79,11 @@ export function ClassicDock({
     })),
   )
   const subject = python ? 'program' : 'game'
-  // Desempenho (proposta aprovada em 20/11/2026): por enquanto, o jogo em JavaScript.
+  // Investigar e Desempenho (proposta aprovada em 20/11/2026): por enquanto, o jogo em JavaScript.
   const tabs: OpenTab[] = [
     ...(config.console ? (['console'] as const) : []),
     'problems',
-    ...(python ? [] : (['performance'] as const)),
+    ...(python ? [] : (['investigate', 'performance'] as const)),
   ]
   const tabMode = variant === 'tab'
   // No estreito a aba "Mensagens" está sempre aberta: a escolhida, ou a primeira.
@@ -104,11 +105,13 @@ export function ClassicDock({
     highlight.getState().revealBlock(target)
     onRevealBlock?.()
   }
-  // `pro.dock.problems` e `pro.dock.performance`: o rótulo segue o nome da aba.
+  // `pro.dock.problems`, `pro.dock.investigate` e `pro.dock.performance`: o rótulo segue a aba.
   const label = (tab: OpenTab) =>
     t(tab === 'console' ? `pro.dock.messages.${subject}` : `pro.dock.${tab}`)
-  // A aba fica montada enquanto mede, para desligar a medida quando a gaveta fecha.
-  const perfMounted = useUIStore((s) => active === 'performance' || s.measuring)
+  // Os painéis ficam montados enquanto medem ou investigam, para desligar quando a gaveta fecha.
+  const devtoolsMounted = useUIStore(
+    (s) => active === 'investigate' || active === 'performance' || s.measuring || s.investigating,
+  )
 
   return (
     <section
@@ -285,14 +288,9 @@ export function ClassicDock({
             </article>
           ) : null}
         </div>
-        {perfMounted ? (
+        {devtoolsMounted ? (
           <Suspense fallback={null}>
-            <PerformanceTab
-              id={`${id}-performance`}
-              labelledBy={`${id}-tab-performance`}
-              hidden={active !== 'performance'}
-              open={open}
-            />
+            <DevtoolsTabs id={id} active={active} open={open} />
           </Suspense>
         ) : null}
         {config.console ? (

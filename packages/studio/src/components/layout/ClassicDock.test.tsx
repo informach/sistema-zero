@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createEmptyProject } from '#core'
-import { perfWindowFor } from '../../state/devtools'
+import { investigationWindowFor, perfWindowFor, setDevtoolsSender } from '../../state/devtools'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
@@ -44,11 +44,11 @@ const runtimeError = {
 afterEach(cleanup)
 
 describe('ClassicDock', () => {
-  it('começa fechada: só as abas Mensagens do jogo, Problemas e Desempenho, sem corpo aberto', () => {
+  it('começa fechada: Mensagens do jogo, Problemas, Investigar e Desempenho, sem corpo aberto', () => {
     const { wrap } = setup()
     render(wrap(<ClassicDock />))
     const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
-    expect(abas).toEqual(['Mensagens do jogo', 'Problemas', 'Desempenho'])
+    expect(abas).toEqual(['Mensagens do jogo', 'Problemas', 'Investigar', 'Desempenho'])
     expect(
       screen.getAllByRole('tab').every((tab) => tab.getAttribute('aria-selected') === 'false'),
     ).toBe(true)
@@ -111,7 +111,7 @@ describe('ClassicDock', () => {
 describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
   const fatia = { fps: 22, frameMsAvg: 45, frameMsMax: 120, sprites: 2, canvas: true }
 
-  it('ainda não existe no Python (o Python ganha a aba no lote dele)', () => {
+  it('Investigar e Desempenho ainda não existem no Python (o Python ganha as abas no lote dele)', () => {
     const { stores, wrap } = setup()
     act(() =>
       stores.project.setState({
@@ -122,7 +122,9 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
       }),
     )
     render(wrap(<ClassicDock />))
-    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).not.toContain('Desempenho')
+    const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
+    expect(abas).not.toContain('Desempenho')
+    expect(abas).not.toContain('Investigar')
   })
 
   it('liga a medida pelo botão e mostra os números do jogo, cada um com a sua marca', async () => {
@@ -156,7 +158,7 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
   it('numa página sem canvas, diz que não há quadros de jogo para medir', async () => {
     const { stores, wrap } = setup()
     act(() => stores.ui.getState().setClassicDock('performance'))
-    act(() => stores.ui.getState().setMeasuring(true))
+    act(() => stores.ui.setState({ measuring: true }))
     render(wrap(<ClassicDock />))
     await screen.findByRole('switch', { name: 'Parar de medir' })
     act(() =>
@@ -175,6 +177,119 @@ describe('a aba Desempenho (proposta aprovada em 20/11/2026)', () => {
     expect(stores.ui.getState().measuring).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: 'Fechar a gaveta' }))
     expect(stores.ui.getState().measuring).toBe(false)
+  })
+})
+
+describe('a aba Investigar (proposta aprovada em 20/11/2026)', () => {
+  const leitura = (extra: Record<string, unknown> = {}) => ({
+    frame: 1284,
+    paused: true,
+    canPause: true,
+    values: [
+      { name: 'estado', text: '"inicio"' },
+      { name: 'pontos', text: '0' },
+    ],
+    error: null,
+    ...extra,
+  })
+  const rodando = (stores: ReturnType<typeof setup>['stores']) =>
+    act(() =>
+      stores.proRun
+        .getState()
+        .publish(
+          { phase: 'running', canRun: true, canStop: true },
+          { run: () => {}, stop: () => {} },
+        ),
+    )
+
+  it('liga a investigação pelo botão (o jogo recomeça com o leitor das variáveis)', async () => {
+    const { stores, wrap } = setup()
+    render(wrap(<ClassicDock />))
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Investigar o jogo' }))
+    expect(stores.ui.getState().investigating).toBe(true)
+  })
+
+  it('pausado: o quadro, os valores com o que mudou, e Continuar e Avançar vão ao jogo', async () => {
+    const { stores, wrap } = setup()
+    rodando(stores)
+    act(() => stores.ui.setState({ classicDock: 'investigate', investigating: true }))
+    const enviados: string[] = []
+    setDevtoolsSender(stores.ui, (cmd) => enviados.push(cmd))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('button', { name: 'Parar de investigar' })
+    act(() => investigationWindowFor(stores.ui).getState().receive(leitura()))
+    act(() =>
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive(
+          leitura({
+            values: [
+              { name: 'estado', text: '"jogando"' },
+              { name: 'pontos', text: '0' },
+            ],
+          }),
+        ),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('O jogo está pausado')).toBeTruthy()
+    expect(within(painel).getByText('Quadro 1.284')).toBeTruthy()
+    expect(within(painel).getAllByText('mudou')).toHaveLength(1)
+    fireEvent.click(within(painel).getByRole('button', { name: 'Avançar 1 quadro' }))
+    fireEvent.click(within(painel).getByRole('button', { name: 'Continuar' }))
+    expect(enviados).toEqual(['step', 'resume'])
+  })
+
+  it('rodando sem a pausa do motor, diz que este jogo ainda não pausa', async () => {
+    const { stores, wrap } = setup()
+    rodando(stores)
+    act(() => stores.ui.setState({ classicDock: 'investigate', investigating: true }))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('button', { name: 'Parar de investigar' })
+    act(() =>
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive(leitura({ paused: false, canPause: false })),
+    )
+    expect(screen.getByText(/ainda não pausa pelo Estúdio/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Pausar' })).toBeNull()
+  })
+
+  it('parado com erro: o quadro, o caminho até o erro e os valores daquele momento', async () => {
+    const { stores, wrap } = setup()
+    act(() => stores.proRun.getState().publish(runtimeError, { run: () => {}, stop: () => {} }))
+    act(() => stores.ui.setState({ classicDock: 'investigate', investigating: true }))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('button', { name: 'Parar de investigar' })
+    act(() =>
+      investigationWindowFor(stores.ui)
+        .getState()
+        .receive(
+          leitura({
+            frame: 312,
+            paused: false,
+            error: { lines: [12, 7] },
+            values: [{ name: 'vidas', text: 'vazio' }],
+          }),
+        ),
+    )
+    const painel = screen.getByRole('tabpanel')
+    expect(within(painel).getByText('O jogo parou no quadro 312')).toBeTruthy()
+    expect(within(painel).getByText('O caminho até o erro')).toBeTruthy()
+    // Sem mapa de blocos, cada passo diz a linha; o último é onde o jogo parou.
+    expect(within(painel).getByText('Linha 7 do código')).toBeTruthy()
+    expect(within(painel).getByText('Linha 12 do código')).toBeTruthy()
+    expect(within(painel).getByText('aqui o jogo parou')).toBeTruthy()
+    expect(within(painel).getByText('Valores no momento do erro: vidas vazio')).toBeTruthy()
+  })
+
+  it('fechar a gaveta desliga a investigação', async () => {
+    const { stores, wrap } = setup()
+    act(() => stores.ui.setState({ classicDock: 'investigate', investigating: true }))
+    render(wrap(<ClassicDock />))
+    await screen.findByRole('button', { name: 'Parar de investigar' })
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar a gaveta' }))
+    expect(stores.ui.getState().investigating).toBe(false)
   })
 })
 

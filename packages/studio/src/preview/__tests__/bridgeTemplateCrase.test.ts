@@ -38,6 +38,10 @@ const RUNTIMES: Array<[string, () => string]> = [
   ],
   ['storageBridge', () => buildStorageBridgeRuntime()],
   ['devtoolsBridge', () => buildDevtoolsBridgeRuntime('https://x.test')],
+  [
+    'devtoolsBridge (investigar)',
+    () => buildDevtoolsBridgeRuntime('https://x.test', { scope: `__sz${'a'.repeat(24)}` }),
+  ],
   ['audioBridge', () => buildAudioRuntime()],
   ['inputBridge', () => buildInputRuntime()],
   ['inputBridge (bridge)', () => buildInputBridgeRuntime()],

@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'bun:test'
 import { summarizePerf } from '../components/devtools/perfSummary'
 import {
+  createInvestigationWindow,
   createPerfWindow,
+  forgetInvestigationWindow,
   forgetPerfWindow,
+  investigationWindowFor,
   PERF_HISTORY_SLICES,
   type PerfSlice,
   perfWindowFor,
+  sendDevtoolsCommand,
+  setDevtoolsSender,
 } from './devtools'
 
 const slice = (fps: number, frameMsMax = 1000 / fps): PerfSlice => ({
@@ -64,5 +69,66 @@ describe('o resumo da janela', () => {
       slowestFrameMs: 0,
       seconds: 0,
     })
+  })
+})
+
+describe('a janela da aba Investigar', () => {
+  const reading = (values: [string, string][]) => ({
+    frame: 10,
+    paused: true,
+    canPause: true,
+    values: values.map(([name, text]) => ({ name, text })),
+    error: null,
+  })
+
+  it('marca o valor que mudou desde a leitura anterior', () => {
+    const window = createInvestigationWindow()
+    window.getState().receive(
+      reading([
+        ['pontos', '0'],
+        ['estado', '"inicio"'],
+      ]),
+    )
+    expect(window.getState().values.every((v) => !v.changed)).toBe(true)
+    window.getState().receive(
+      reading([
+        ['pontos', '0'],
+        ['estado', '"jogando"'],
+        ['novo', '1'],
+      ]),
+    )
+    expect(window.getState().values.map((v) => [v.name, v.changed])).toEqual([
+      ['pontos', false],
+      ['estado', true],
+      ['novo', false],
+    ])
+  })
+
+  it('guarda o PRIMEIRO erro, com o quadro, as linhas e os valores daquele momento', () => {
+    const window = createInvestigationWindow()
+    window
+      .getState()
+      .receive({ ...reading([['vidas', '3']]), frame: 312, error: { lines: [12, 7] } })
+    window.getState().receive({ ...reading([['vidas', '2']]), frame: 313, error: { lines: [99] } })
+    expect(window.getState().stopped).toEqual({
+      frame: 312,
+      lines: [12, 7],
+      values: [{ name: 'vidas', text: '3', changed: false }],
+    })
+    window.getState().clear()
+    expect(window.getState()).toMatchObject({ ready: false, stopped: null, values: [] })
+  })
+
+  it('o painel manda comandos ao jogo pela prévia registrada da instância', () => {
+    const instance = {}
+    const sent: string[] = []
+    expect(sendDevtoolsCommand(instance, 'pause')).toBe(false)
+    setDevtoolsSender(instance, (cmd) => sent.push(cmd))
+    expect(sendDevtoolsCommand(instance, 'step')).toBe(true)
+    setDevtoolsSender(instance, null)
+    expect(sendDevtoolsCommand(instance, 'resume')).toBe(false)
+    expect(sent).toEqual(['step'])
+    forgetInvestigationWindow(instance)
+    expect(investigationWindowFor(instance).getState().ready).toBe(false)
   })
 })

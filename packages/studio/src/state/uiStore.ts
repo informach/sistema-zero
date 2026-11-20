@@ -10,7 +10,7 @@ export type BottomTab = 'console' | 'terminal' | 'ai'
  * só com as abas e os contadores, ou aberta numa das abas. `performance` é a aba Desempenho
  * (proposta aprovada em 20/11/2026, `docs/estudio-evolucao/paineis-proposta.md`).
  */
-export type ClassicDockTab = 'closed' | 'console' | 'problems' | 'performance'
+export type ClassicDockTab = 'closed' | 'console' | 'problems' | 'investigate' | 'performance'
 /** As três abas da janela "Materiais do jogo" — e as três portas dela no menu ⋯. */
 /** `fonts` só aparece nos projetos Raylib (TTF/OTF), e não tem porta no menu ⋯. */
 export type AssetsTab = 'images' | 'sounds' | 'models3d' | 'fonts'
@@ -71,7 +71,12 @@ interface UIStore {
    * (`preview/devtoolsBridge.ts`). As fatias medidas moram com a ponte, fora do pacote de abertura.
    */
   measuring: boolean
-  setMeasuring: (measuring: boolean) => void
+  /**
+   * A aba Investigar ligou: a prévia monta o jogo com o leitor das variáveis e a ponte. As duas
+   * chaves são escritas com `setState` pelos painéis (baixados sob demanda), sem setter próprio:
+   * cada byte aqui entra no pacote de abertura do modo Blocos, que tem teto.
+   */
+  investigating: boolean
   // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
   // visível). A primeira ação manual grava um boolean que prevalece em qualquer
   // modo/projeto nesta instância. Terminal/IA continuam booleanos porque só
@@ -112,7 +117,7 @@ export function createUIStore(): StoreApi<UIStore> {
     classicDock: 'closed',
     setClassicDock: (classicDock) => set({ classicDock }),
     measuring: false,
-    setMeasuring: (measuring) => set({ measuring }),
+    investigating: false,
     consoleVisibilityOverride: null,
     setConsoleVisibilityOverride: (consoleVisibilityOverride) => set({ consoleVisibilityOverride }),
     showTerminal: true,
