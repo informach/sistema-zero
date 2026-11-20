@@ -166,10 +166,14 @@ padrão**:
   `playwright.config.ts` (qualificação por render e resposta real, `e51d3bb7`), rodam na CI da
   missão.
 
-**Ligar no app é decisão da dona e mudança de deploy** (não feita): configurar a variável no
-studio-runtime com as origens do editor, mandar COOP `same-origin` + COEP `credentialless` na rota
-do Clássico do `community-kids` (hoje só `/estudio/pro` e `/arquipelago` têm COEP) e acrescentar a
-origem da casca ao `frame-src`. O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
+**Ligada em staging em 20/11/2026** (decisão da dona; produção de fora): `STUDIO_CLASSIC_SHELL_ENABLED=1`
+no staging dos dois apps faz o layout raiz entregar a URL ao Estúdio (`classicShellUrlFromEnv`), a
+lista de origens do editor é secret do Worker de staging, e o `frame-src` já liberava a origem do
+runtime. **COEP não foi ligado, e não precisa:** a medição de 20/11
+([`2026-11-20-studio-firefox-site-isolation.md`](../qa/2026-11-20-studio-firefox-site-isolation.md))
+mostrou que a necessidade de COOP + COEP no Firefox era do Firefox do Playwright, que desliga os
+iframes em outro processo (`fission.webContentIsolationStrategy = 0`). No Firefox de mesa a casca
+isola com qualquer combinação de cabeçalhos do host, também na página da aula com vídeos. O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
 mede o `srcdoc` do modo direto; no modo casca o documento é o mesmo, entregue por mensagem.
 
 ### 3.3 WebKit: decisão registrada

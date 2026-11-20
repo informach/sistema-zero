@@ -19,6 +19,12 @@
  * vírgula entre chromium, firefox e webkit; padrão: chromium).
  * `SZ_MEASURE_HOST_POLICY_SPLIT=1` separa COOP e COEP do host, mantendo na casca
  * os cabeçalhos reais. Sem essa opção, os dois perfis históricos não mudam.
+ * `SZ_MEASURE_FIREFOX_SITE_ISOLATION=1` devolve ao Firefox o isolamento por site do navegador de
+ * verdade: o Firefox do Playwright vem com `fission.webContentIsolationStrategy = 0` ("Disable
+ * cross-process iframes", `browser_patches/firefox/preferences/playwright.cfg` do Playwright),
+ * então ali um iframe de outro site roda no MESMO processo da página. O Firefox de mesa usa 1
+ * (isolar todo site). Sem a opção, a medição segue com a preferência do Playwright, e cada linha
+ * diz qual valeu (`isolamentoDoFirefox`).
  */
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
@@ -309,12 +315,16 @@ const chromiumMode = process.env.SZ_CHECK_CHROMIUM
   : process.env.SZ_MEASURE_HEADLESS_SHELL === '1'
     ? 'headless-shell'
     : 'chromium'
+const firefoxSiteIsolation = process.env.SZ_MEASURE_FIREFOX_SITE_ISOLATION === '1'
 const saida = []
 for (const nome of nomes) {
   let browser
   try {
     browser = await playwright[nome].launch({
       headless: true,
+      ...(nome === 'firefox' && firefoxSiteIsolation
+        ? { firefoxUserPrefs: { 'fission.webContentIsolationStrategy': 1 } }
+        : {}),
       ...(nome === 'chromium' && chromiumMode === 'chromium' ? { channel: 'chromium' } : {}),
       ...(nome === 'chromium' && process.env.SZ_CHECK_CHROMIUM
         ? { executablePath: process.env.SZ_CHECK_CHROMIUM }
@@ -333,6 +343,13 @@ for (const nome of nomes) {
           saida.push({
             navegador: `${nome} ${browser.version()}`,
             ...(nome === 'chromium' ? { chromiumMode } : {}),
+            ...(nome === 'firefox'
+              ? {
+                  isolamentoDoFirefox: firefoxSiteIsolation
+                    ? 'por site (1, o do Firefox de mesa)'
+                    : 'do Playwright (0, iframes no mesmo processo)',
+                }
+              : {}),
             cabecalhosDoHost: Object.keys(profile.host).length > 0,
             ...(splitHostPolicies
               ? {
