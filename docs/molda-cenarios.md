@@ -36,7 +36,9 @@ O primeiro editor (preso ao Arquipélago, com runtime local, sessões e as rotas
 `/arquipelago/admin/cenarios`) saiu no lote 10 da reforma: o código no `arquipelago-api`, no
 gateway, no Admin (`CENARIOS_RUNTIME_URL`, proxy `api/molda-cenarios`), em `arquipelago/src/cenarios`,
 o editor antigo do `molda-cenarios`, o cliente antigo do agente e `projetos`/`sessoes`/`runtime` do
-núcleo. As tabelas `arquipelago.cenario_*` ficam no banco, sem uso, até os dados de staging e de
-produção serem copiados para o bucket privado; depois uma migração gerada as apaga. O conversor
+núcleo. As tabelas `arquipelago.cenario_*` saem pela migração gerada `0030` do `arquipelago-api`.
+Em 20/11/2026 elas não existiam em staging nem em produção (as migrações 0027 a 0029 nunca tinham
+rodado lá); mesmo assim a leitura, só de leitura, ficou guardada no bucket privado de cada
+ambiente em `backups/arquipelago-cenarios-piloto/`. O conversor
 dos cenários antigos (`arquipelago/src/molda/converter-v1.ts`) continua: é ele que traz a Faísca
 para o formato novo.
