@@ -183,6 +183,8 @@ const javascriptProSchema = z.strictObject({
   proMeta: StudioJavaScriptProMetadataSchema,
   ir: requiredPayload,
   blocksState: requiredPayload,
+  /** "Meus testes" no Pro (`student-tests.ts`), que rodam no executor do servidor. */
+  studentTests: StudioStudentTestsSchema.optional(),
 })
 const pythonClassicSchema = z
   .strictObject({
