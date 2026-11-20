@@ -17,6 +17,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'state/localChunkStorage.ts':
+    'move e compara células inteiras entre buffers densos e chunks físicos, preserva flags e valida valores por isValidCell',
   'export/godot/physics.ts':
     'GDScript usa a máscara de CELL_MAX_TILES para consultar sólidos; o contorno retangular da peça é simétrico aos flips e recebe a base afim da camada/conjunto',
   'export/godot/project.ts':

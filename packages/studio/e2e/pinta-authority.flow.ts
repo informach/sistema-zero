@@ -1,19 +1,6 @@
 import { expect, type Page, test } from '@playwright/test'
+import { openPintaAuthorityProof as proof } from './helpers/pintaAuthorityRealm'
 
-type Proof = typeof import('../../pinta/src/state/persistence') &
-  typeof import('../../pinta/src/core/project') &
-  typeof import('../../pinta/src/state/clipboardStore')
-declare global {
-  interface Window {
-    pinta026: Proof
-    client026: ReturnType<Proof['createPintaPersistence']>
-    ram026: import('../../pinta/src/core/project').PintaAsset
-  }
-}
-async function proof(page: Page, version = 'current') {
-  await page.goto(`/proof/${version}.html`)
-  await page.waitForFunction(() => !!window.pinta026)
-}
 async function seed(page: Page, namespace: string) {
   return page.evaluate(async (ns) => {
     const p = window.pinta026

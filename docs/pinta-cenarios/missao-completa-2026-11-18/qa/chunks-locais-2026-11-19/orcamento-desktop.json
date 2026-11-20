@@ -1,0 +1,54 @@
+{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+  "cells": 2097152,
+  "maxCells": 2097152,
+  "wireChars": 11188227,
+  "wireMs": 252,
+  "saveMs": 366.6000000089407,
+  "readMs": 404.29999999701977,
+  "editSaveMs": 540.5,
+  "frames": [612.2000000029802, 594.5999999940395, 603.2000000029802],
+  "cacheBytes": 28311552,
+  "workingSetBytes": 603979776,
+  "chunkBytes": 9437184,
+  "allocations": 3,
+  "reopenedLayers": 32,
+  "initialWrites": {
+    "chunkPuts": 2048,
+    "chunkIndexBytes": 4194304,
+    "headerPuts": 1,
+    "headerJsonBytes": 204920,
+    "mirrorPuts": 1,
+    "mirrorIndexBytes": 4194304
+  },
+  "editWrites": {
+    "chunkPuts": 1,
+    "chunkIndexBytes": 2048,
+    "headerPuts": 1,
+    "headerJsonBytes": 204920,
+    "mirrorPuts": 1,
+    "mirrorIndexBytes": 4194304
+  },
+  "cpuSlowdown": 1,
+  "simulated": false,
+  "heapBefore": {
+    "usedSize": 1572924,
+    "totalSize": 2428928,
+    "embedderHeapUsedSize": 318512,
+    "backingStorageSize": 250455
+  },
+  "heapAfterRun": {
+    "usedSize": 54109004,
+    "totalSize": 97189888,
+    "embedderHeapUsedSize": 2411808,
+    "backingStorageSize": 91227883
+  },
+  "heapAfterGc": {
+    "usedSize": 2187748,
+    "totalSize": 2953216,
+    "embedderHeapUsedSize": 420992,
+    "backingStorageSize": 5035931
+  },
+  "memoryNote": "V8 snapshots, not peak memory; canvas and index buffers reported separately",
+  "timingNote": "Writes include the IO observer; local elapsed times are not a hardware certification"
+}

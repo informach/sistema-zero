@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-20T00:58:53.357Z",
+  "base": "28b97c02e851ffdc20912c1fdd86f0d93ec4b762",
+  "localStorageVersion": 2,
+  "nativeMaxSchema": 7,
+  "cloudWriteChanged": false,
+  "logs": [
+    {
+      "source": "pinta-local-chunks-ids-red.log",
+      "sourceSha256": "aa044f1ab3b63ed26792a4ac79da8cff2cbda8c1c982376f74e5ad7c6ae9edc8",
+      "summary": "ids-vermelho.txt"
+    },
+    {
+      "source": "pinta-local-chunks-header-red.log",
+      "sourceSha256": "d1a73b7933fbc7e191deed745ef67a3016b4a0251064ced4f49f6c95464bc321",
+      "summary": "cabecalho-vermelho.txt"
+    },
+    {
+      "source": "pinta-local-chunks-core-final.log",
+      "sourceSha256": "23943b1aa57acf8e51cbbf52a1acba5da25436396b205a7122e8f5d1631e4aaa",
+      "summary": "nucleo-25.txt"
+    },
+    {
+      "source": "pinta-local-chunks-header-green.log",
+      "sourceSha256": "64d787727f896cd80a52e6c7f7d235edf00b7ec312ec9d691cadcdbf5f01fbd8",
+      "summary": "nucleo-26.txt"
+    },
+    {
+      "source": "pinta-local-chunks-full-final.log",
+      "sourceSha256": "c6ae8c5aea4a32777a3bfba113f53670778f56814f036cd6fafc146d66735a0a",
+      "summary": "pinta-completo.txt"
+    },
+    {
+      "source": "pinta-local-chunks-native-r6.log",
+      "sourceSha256": "5bc9c14862408955756d312aa842febd4f0f3ee7b5ab177fc4a5d85c6360f514",
+      "summary": "navegador.txt"
+    },
+    {
+      "source": "pinta-local-chunks-budget-r1.log",
+      "sourceSha256": "62935f2425ba532a86ff72603e99c55ae89c8c05f246ef9a2ce04417b37fb739",
+      "summary": "orcamento.txt"
+    },
+    {
+      "source": "pinta-local-chunks-biome-final.log",
+      "sourceSha256": "8dd299afc9a084bed9dfba7dfabac9a1266b93d6dcd01747ee9ca112dab89e8b",
+      "summary": "biome.txt"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+  ✓  1 [desktop] › packages\studio\e2e\pinta-budget.flow.ts:10:1 › 256 × 256, 32 camadas e 256 peças: cache limitado e salvar/reabrir sem perda (4.2s)
+  ✓  2 [touch] › packages\studio\e2e\pinta-budget.flow.ts:10:1 › 256 × 256, 32 camadas e 256 peças: cache limitado e salvar/reabrir sem perda (4.2s)
+  ✓  3 [cpu-4x] › packages\studio\e2e\pinta-budget.flow.ts:10:1 › 256 × 256, 32 camadas e 256 peças: cache limitado e salvar/reabrir sem perda (18.5s)
+  3 passed (29.1s)

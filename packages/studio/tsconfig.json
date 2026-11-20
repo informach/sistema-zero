@@ -51,6 +51,7 @@
     "playwright.pinta-integration.config.ts",
     "playwright.pinta-resources.config.ts",
     "playwright.pinta-authority.config.ts",
+    "playwright.pinta-chunks.config.ts",
     "playwright.pinta-world.config.ts",
     "playwright.scene3d-document.config.ts",
     "playwright.pinta-budget.config.ts",

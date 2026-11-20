@@ -11,12 +11,14 @@ await mkdir(join(pinta, '.cache'), { recursive: true })
 const temporary = await mkdtemp(join(pinta, '.cache/authority-'))
 const { extracted } = await prepareAuthorityBaseline(root, temporary)
 const { extracted: previous } = await prepareAuthorityBaseline(root, temporary, '899d2596f')
+const { extracted: denseReader } = await prepareAuthorityBaseline(root, temporary, 'ec4e58066')
 const proof = join(temporary, 'proof')
 await mkdir(proof)
 for (const [version, src] of [
   ['current', join(pinta, 'src')],
   ['old', join(extracted, 'packages/pinta/src')],
   ['previous', join(previous, 'packages/pinta/src')],
+  ['dense-reader', join(denseReader, 'packages/pinta/src')],
 ]) {
   const entry = join(temporary, `${version}.ts`)
   const modulePath = (file: string) => JSON.stringify(join(src!, file).replaceAll('\\', '/'))
