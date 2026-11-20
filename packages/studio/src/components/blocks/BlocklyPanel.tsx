@@ -399,6 +399,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     jsHeader: string | undefined
   } | null>(null)
   const isApplyingStateRef = useRef(false)
+  // Uma carga agendada que ainda não começou (o quadro adiado e a espera pela fonte, até
+  // 1,5 s). O canvas que está à vista vai ser trocado pelo estado salvo: nada feito nele conta
+  // como edição. Separado do `isApplyingStateRef` porque o cancelamento sempre o desliga.
+  const loadPendingRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
   const initialViewDoneRef = useRef(false)
   const t = useT()
@@ -852,7 +856,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         }
         return
       }
-      if (isApplyingStateRef.current || event.isUiEvent) return
+      if (isApplyingStateRef.current || loadPendingRef.current || event.isUiEvent) return
       if (
         event.type !== Blockly.Events.BLOCK_CREATE &&
         event.type !== Blockly.Events.BLOCK_DELETE &&
@@ -1157,8 +1161,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // mas não carrega"). Mantendo tudo no rAF, um rAF cancelado é um no-op total e a
     // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
+    loadPendingRef.current = true
     const load = () => {
       if (cancelled) return
+      loadPendingRef.current = false
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
@@ -1238,6 +1244,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     })
     return () => {
       cancelled = true
+      loadPendingRef.current = false
       cancelAnimationFrame(handle)
       // rAF cancelado antes de rodar: solta o spinner (o `finally` dentro do rAF
       // nunca correrá). Sem isto o overlay "carregando" ficava preso.
@@ -1392,8 +1399,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       {(isLoadingWorkspace || isHydrationPending) && (
         <div
           aria-busy="true"
+          data-sz-blocks-loading=""
+          // Segura o clique enquanto o canvas à vista vai ser trocado pelo estado salvo: com a
+          // espera pela fonte (até 1,5 s), arrastar um bloco ali apagava a carga pendente.
           className={[
-            isHydrationPending ? 'pointer-events-auto' : 'pointer-events-none',
+            'pointer-events-auto',
             'absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/60',
           ].join(' ')}
         >

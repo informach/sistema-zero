@@ -336,7 +336,12 @@ it('a prévia que monta já rodando grava a edição pendente antes de executar'
   render(
     <StudioStoresContext.Provider value={stores}>
       <StudioExecutionProvider
-        value={{ editingAccess: 'author', autoRun: true, requireIsolatedPreview: false, muted: false }}
+        value={{
+          editingAccess: 'author',
+          autoRun: true,
+          requireIsolatedPreview: false,
+          muted: false,
+        }}
       >
         <PreviewIframe />
       </StudioExecutionProvider>
