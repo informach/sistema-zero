@@ -10,7 +10,10 @@ export function blockGenerationInput(
 ): ProjectGenerationInput & { ir: SZIRV2 } {
   let ir = project?.ir?.htmlShell ? { ...built, htmlShell: project.ir.htmlShell } : built
   let jsSource = project?.files['script.js'] ?? ''
-  if (project && (force || !project.ir)) {
+  if (
+    project &&
+    (force || !project.ir || project.ir.htmlShell?.jsPlacement?.startsWith('inline'))
+  ) {
     const metadata = extractInlineAssetMetadata(
       project.files['index.html'],
       project.files['style.css'],
@@ -36,8 +39,6 @@ export function blockGenerationInput(
     ir,
     projectName: project?.name ?? 'Projeto',
     jsHeader:
-      force && project && !jsSource.startsWith(GENERATED_JS_HEADER)
-        ? undefined
-        : GENERATED_JS_HEADER,
+      project && !jsSource.startsWith(GENERATED_JS_HEADER) ? undefined : GENERATED_JS_HEADER,
   }
 }

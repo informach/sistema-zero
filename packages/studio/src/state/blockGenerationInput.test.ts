@@ -7,6 +7,15 @@ import { blockGenerationInput } from './blockGenerationInput'
 
 const built = () => normalizeSZIR({ html: [], css: [], js: [], extensions: [] })
 
+it('preserves the saved external script banner through edits and undo', () => {
+  const project = createEmptyProject('banner-edit', 'Banner')
+  project.ir = built()
+  project.files['script.js'] = 'console.log(1);'
+  expect(blockGenerationInput(built(), project, false).jsHeader).toBeUndefined()
+  project.files['script.js'] = `${GENERATED_JS_HEADER}\nconsole.log(1);`
+  expect(blockGenerationInput(built(), project, false).jsHeader).toBe(GENERATED_JS_HEADER)
+})
+
 it('recovers saved document metadata when the lightweight load has no IR', () => {
   const project = createEmptyProject('shell-recovery', 'Nome no cartão')
   project.ir = null
@@ -44,7 +53,7 @@ it('recovers inline placement and the actual absence of a banner', () => {
   expect(input.ir.htmlShell?.jsPlacement).toBe('inline-body-end')
   expect(input.ir.htmlShell?.jsModule).toBe(true)
   expect(input.jsHeader).toBeUndefined()
-  expect(blockGenerationInput(built(), project, false).jsHeader).toBe(GENERATED_JS_HEADER)
+  expect(blockGenerationInput(built(), project, false).jsHeader).toBeUndefined()
 })
 
 it('reads the head of a deep document without rebuilding its body or parsing JavaScript', () => {

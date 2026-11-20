@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test'
+import { configurePreviewInputDiagnostics } from './helpers/previewInputDiagnostics'
+
+configurePreviewInputDiagnostics()
 
 // Qualify the actual Chromium renderer/process arrangement, not headless-shell.
 test.use({ channel: 'chromium' })
@@ -26,7 +29,7 @@ test('a carga leve conserva título e viewport do documento salvo', async ({ pag
 })
 
 for (const width of [390, 1280]) {
-  for (const example of ['Desvie dos blocos', 'Duelo de Heróis']) {
+  for (const example of ['Desvie dos blocos', 'Duelo de Heróis', 'Vale Ensolarado (na mão)']) {
     test(`${example}: hidratação preserva o jogo e recursos em ${width}px`, async ({ page }) => {
       const documents: number[] = []
       page.on('console', (message) => {
@@ -78,11 +81,16 @@ for (const width of [390, 1280]) {
       // Deliberate observation window for ABSENCE of navigation after first load,
       // covering the existing 800ms source debounce. Not a readiness workaround.
       await page.waitForTimeout(2000)
-      expect(documents.filter((size) => size > 54).length, JSON.stringify(documents)).toBe(1)
+      const changes = await page.evaluate(() => Reflect.get(window, 'sz-e2e-preview-input'))
+      expect(
+        documents.filter((size) => size > 54).length,
+        JSON.stringify({ documents, changes }),
+      ).toBe(1)
       if (example === 'Desvie dos blocos') {
         await expect(preview.getByRole('heading', { name: example })).toBeVisible()
         return
       }
+      if (example !== 'Duelo de Heróis') return
       // Exercise a real resource change instead of relying on a spurious rewrite
       // that only inserted the generator's comment into an unchanged program.
       await page.getByRole('button', { name: 'Ponte', exact: true }).click()

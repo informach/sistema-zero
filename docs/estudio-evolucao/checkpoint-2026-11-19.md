@@ -128,6 +128,15 @@ do processo, do serviço de linguagem e do navegador.
 
 ## Próxima sequência reproduzível
 
+A correção de [CSS salvo e editar/desfazer](../qa/2026-11-19-studio-css-hydration-integrity.md)
+passou em 18 testes focados (55 asserções), TypeScript e nove casos reais de
+Chromium no Windows. O exemplo Vale mantém a ordem do CSS original sem segunda
+navegação e o projeto grande volta ao JavaScript original após desfazer.
+Os contratos do CI `44648990720` passaram em Linux e Windows, mas essa revisão
+falhou em navegador (prévia inicial hostil, colagem e cabeçalho após desfazer).
+O último desses problemas foi corrigido nesta entrega; os demais continuam
+abertos. A revisão `44650964184` ainda estava em execução nesta conferência.
+
 1. Conferir o SHA de cada execução da CI da missão, inspecionar todas as
    falhas e seus traces, preservar evidências e corrigir causas.
 2. Fechar o problema residual de entrada no Chromium sem retries, prazos

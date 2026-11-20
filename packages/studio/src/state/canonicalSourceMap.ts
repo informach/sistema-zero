@@ -1,5 +1,5 @@
-import { generateProjectFilesWithMap, type SourceMap } from '#generators'
-import type { SZIRInput } from '#ir'
+import { buildCssSourceMapFromText, generateProjectFilesWithMap, type SourceMap } from '#generators'
+import { normalizeSZIR, type SZIRInput } from '#ir'
 
 /**
  * Memo do source-map CANÔNICO (HTML/JS) por referência de `ir`. Na Ponte, uma
@@ -19,9 +19,33 @@ interface CanonicalEntry {
   projectName: string
   jsHeader: string | undefined
   map: SourceMap
+  css?: string
 }
 
 const cache = new WeakMap<SZIRInput, CanonicalEntry>()
+const displayedCache = new WeakMap<
+  SZIRInput,
+  { canonical: SourceMap; css: string; map: SourceMap }
+>()
+
+/** Keep diagnostics aligned with retained CSS without poisoning the canonical cache. */
+export function getDisplayedSourceMap(
+  ir: SZIRInput,
+  projectName: string,
+  jsHeader: string | undefined,
+  css: string,
+): SourceMap {
+  const canonical = getCanonicalSourceMap(ir, projectName, jsHeader)
+  if (cache.get(ir)?.css === css) return canonical
+  const hit = displayedCache.get(ir)
+  if (hit?.canonical === canonical && hit.css === css) return hit.map
+  const map = Object.fromEntries(
+    Object.entries(canonical).filter(([, entry]) => entry.file !== 'style.css'),
+  )
+  Object.assign(map, buildCssSourceMapFromText(css, normalizeSZIR(ir).css, 'style.css'))
+  displayedCache.set(ir, { canonical, css, map })
+  return map
+}
 
 /** Devolve o mapa canônico do `ir`, gerando-o (e cacheando) só no 1º acesso. */
 export function getCanonicalSourceMap(
@@ -31,8 +55,8 @@ export function getCanonicalSourceMap(
 ): SourceMap {
   const hit = cache.get(ir)
   if (hit && hit.projectName === projectName && hit.jsHeader === jsHeader) return hit.map
-  const { sourceMap } = generateProjectFilesWithMap({ ir, projectName, jsHeader })
-  cache.set(ir, { projectName, jsHeader, map: sourceMap })
+  const { sourceMap, files } = generateProjectFilesWithMap({ ir, projectName, jsHeader })
+  cache.set(ir, { projectName, jsHeader, map: sourceMap, css: files['style.css'] })
   return sourceMap
 }
 
@@ -42,6 +66,7 @@ export function primeCanonicalSourceMap(
   projectName: string,
   jsHeader: string | undefined,
   map: SourceMap,
+  css?: string,
 ): void {
-  cache.set(ir, { projectName, jsHeader, map })
+  cache.set(ir, { projectName, jsHeader, map, css })
 }

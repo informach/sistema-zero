@@ -55,7 +55,8 @@ import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
 import { blockGenerationInput } from '../../state/blockGenerationInput'
-import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
+import { getDisplayedSourceMap, primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
+import { cssSourceCompatible } from '../../state/cssSourceCompatibility'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
@@ -590,7 +591,16 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const { files, sourceMap } = generateProjectFilesWithMap(generationInput)
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
-      primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap)
+      primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap, files['style.css'])
+      if (
+        options.force &&
+        current &&
+        cssSourceCompatible(current.files['style.css'], files['style.css'])
+      ) {
+        files['style.css'] = current.files['style.css']
+      }
+      const displayedMap = () =>
+        getDisplayedSourceMap(ir, projectNameForGen, jsHeader, files['style.css'])
       // Modo Ponte: ao CARREGAR os blocos (force), NUNCA reescrever os arquivos do
       // aluno com o canônico — "código é sagrado". Só sincronizamos o IR (para os
       // ids/__declIds e o sourcemap de HTML/JS ficarem completos) e o blocksState
@@ -617,11 +627,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         current.files['script.js'] === files['script.js']
       ) {
         hydrateDerivedIR()
-        setSourceMap(sourceMap)
+        setSourceMap(displayedMap())
         return
       }
       applyProjectState({ ir, blocksState: state, files })
-      setSourceMap(sourceMap)
+      setSourceMap(displayedMap())
       // Os arquivos acabaram de ser gerados DESTES blocos — eles refletem a
       // época corrente de edição de código (autoridade retomada).
       const storeState = projectStoreApi.getState()

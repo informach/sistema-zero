@@ -1529,8 +1529,10 @@ export function cssDeclarationsRecord(declarations: CSSDeclarations): Record<str
 export function hasDuplicateCSSDeclarations(declarations: CSSDeclarations): boolean {
   const seen = new Set<string>()
   for (const declaration of cssDeclarationEntries(declarations)) {
-    if (seen.has(declaration.property)) return true
-    seen.add(declaration.property)
+    const property = declaration.property.trim()
+    const identity = property.startsWith('--') ? property : property.toLowerCase()
+    if (seen.has(identity)) return true
+    seen.add(identity)
   }
   return false
 }
