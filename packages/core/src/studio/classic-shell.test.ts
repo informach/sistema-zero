@@ -3,6 +3,7 @@ import {
   buildClassicShellPage,
   CLASSIC_SHELL_GAME_SANDBOX,
   classicShellHeaders,
+  classicShellUrlFromEnv,
   isClassicShellReady,
   parseClassicShellParentOrigins,
 } from './classic-shell'
@@ -38,5 +39,44 @@ describe('casca da prévia do Clássico', () => {
   it('reconhece o aviso de pronta', () => {
     expect(isClassicShellReady({ type: 'sz-shell:ready' })).toBe(true)
     expect(isClassicShellReady('sz-shell:ready')).toBe(false)
+  })
+})
+
+describe('classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido', () => {
+  const runtime = 'https://runtime-staging.exemplo.test'
+  it('liga com a chave e o endereço do runtime, sem barra dupla', () => {
+    expect(
+      classicShellUrlFromEnv({
+        STUDIO_CLASSIC_SHELL_ENABLED: '1',
+        STUDIO_PRO_RUNTIME_URL: `${runtime}/`,
+      }),
+    ).toBe(`${runtime}/v1/classic-shell/1.html`)
+  })
+  it('sem a chave, sem runtime ou com endereço inseguro, não liga', () => {
+    expect(classicShellUrlFromEnv({ STUDIO_PRO_RUNTIME_URL: runtime })).toBeNull()
+    expect(
+      classicShellUrlFromEnv({
+        STUDIO_CLASSIC_SHELL_ENABLED: '0',
+        STUDIO_PRO_RUNTIME_URL: runtime,
+      }),
+    ).toBeNull()
+    expect(classicShellUrlFromEnv({ STUDIO_CLASSIC_SHELL_ENABLED: '1' })).toBeNull()
+    expect(
+      classicShellUrlFromEnv({
+        STUDIO_CLASSIC_SHELL_ENABLED: '1',
+        STUDIO_PRO_RUNTIME_URL: 'http://runtime.exemplo.test',
+      }),
+    ).toBeNull()
+    expect(
+      classicShellUrlFromEnv({ STUDIO_CLASSIC_SHELL_ENABLED: '1', STUDIO_PRO_RUNTIME_URL: 'nada' }),
+    ).toBeNull()
+  })
+  it('o computador local pode usar http', () => {
+    expect(
+      classicShellUrlFromEnv({
+        STUDIO_CLASSIC_SHELL_ENABLED: '1',
+        STUDIO_PRO_RUNTIME_URL: 'http://127.0.0.1:8787',
+      }),
+    ).toBe('http://127.0.0.1:8787/v1/classic-shell/1.html')
   })
 })

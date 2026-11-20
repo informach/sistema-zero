@@ -2,8 +2,15 @@ import type { CenaNoThree, TrianguloDaConsulta } from '@sistemazero/molda-cenari
 import { Box3, Vector3 } from 'three'
 import { LADO_DO_SETOR, RAIO_DE_SETORES } from './setores-do-arquipelago'
 
-/** O teto agregado não amplia o limite canônico de 20 mil visitas por consulta regional. */
+/** O que vai para a física do jogo: os triângulos únicos de toda a janela de setores. */
 const MAX_TRIANGULOS_ATIVOS = 100_000
+/**
+ * Visitas da árvore por setor de 80 m (trabalho da consulta). As 20 mil do Testar da oficina
+ * servem a consultas pequenas a cada passo; aqui a consulta é uma por setor, na troca de setor,
+ * e um setor denso de verdade passa disso (a praça de lajes da Faísca com as casas da Vila,
+ * uns 22 mil). O teto total acima continua limitando o que a física recebe.
+ */
+const MAX_VISITAS_POR_SETOR = 50_000
 
 /** Prepara somente os setores próximos, com as mesmas superfícies do runtime compilado.
  * Triângulos que atravessam limites entram uma vez, sem cortar tabuleiros ou preencher recortes. */
@@ -43,7 +50,7 @@ export function prepararColisaoDoCenario(
     for (let sx = x - RAIO_DE_SETORES; sx <= x + RAIO_DE_SETORES; sx++) {
       caixa.min.set(sx * LADO_DO_SETOR, -1e9, sz * LADO_DO_SETOR)
       caixa.max.set((sx + 1) * LADO_DO_SETOR, 1e9, (sz + 1) * LADO_DO_SETOR)
-      const parte = fonte.triangulosNaCaixa(caixa, 20_000, incluir)
+      const parte = fonte.triangulosNaCaixa(caixa, MAX_VISITAS_POR_SETOR, incluir)
       partes.push(parte)
       coordenadas += parte.length
     }
