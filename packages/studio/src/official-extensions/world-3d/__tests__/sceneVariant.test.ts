@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
-import { behaviorStatements, normalizeSZIR, type SZIR } from '#ir'
+import { behaviorStatements, normalizeSZIR } from '#ir'
 import { worldThreeDExtension } from '..'
 import { world3DExamples } from '../examples'
 import { world3DRuntime, world3DRuntimeForVariant } from '../runtime'
@@ -113,7 +113,7 @@ describe('Cenário do Molda no Mundo 3D: o runtime sem cenário joga os exemplos
   it('todo exemplo sem cenário joga igual nas duas variantes', async () => {
     let played = 0
     for (const example of world3DExamples) {
-      const code = compileStatements(behaviorStatements(normalizeSZIR(example.ir as SZIR)), 0)
+      const code = compileStatements(behaviorStatements(normalizeSZIR(example.ir)), 0)
       if (world3DRuntimeVariant({ code }) !== WORLD_3D_WITHOUT_SCENE_VARIANT) continue
       const enxuto = await play(code, runtimeBody(semCenario))
       const completo = await play(code, runtimeBody(world3DRuntime))
