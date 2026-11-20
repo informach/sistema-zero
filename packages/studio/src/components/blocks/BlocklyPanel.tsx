@@ -392,6 +392,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // do BLOCK_MOVE de conexão do mesmo gesto, envenenar o dedupe do compilador.
   const lastAppliedBlocksStateRef = useRef<string>('')
   const lastRegeneratedBlocksStateRef = useRef<string>('')
+  // One load checkpoint, paired with Blockly's own undo stack (not a second history).
+  const loadedGenerationRef = useRef<{
+    projectId: string
+    ir: ReturnType<typeof blockGenerationInput>['ir']
+    jsHeader: string | undefined
+  } | null>(null)
   const isApplyingStateRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
   const initialViewDoneRef = useRef(false)
@@ -557,7 +563,24 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           ])
         return
       }
-      const { ir, jsHeader } = generationInput
+      const { ir } = generationInput
+      if (current && options.force) {
+        loadedGenerationRef.current = {
+          projectId: current.id,
+          ir,
+          jsHeader: generationInput.jsHeader,
+        }
+      } else {
+        const loaded = loadedGenerationRef.current
+        if (
+          loaded &&
+          current?.id === loaded.projectId &&
+          workspace.getUndoStack().length === 0 &&
+          deepEqualIR(ir, loaded.ir)
+        )
+          generationInput.jsHeader = loaded.jsHeader
+      }
+      const { jsHeader } = generationInput
       // ⭐ Abrir não é editar. Na CARGA (force) com os mesmos blocos que estão salvos,
       // nada do que a criança fez mudou: o que falta completar é só o que DERIVA deles.
       // A casca do projeto chega SEM a IR (o load não lê essa partição:
@@ -592,11 +615,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
       primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap, files['style.css'])
-      if (
-        options.force &&
-        current &&
-        cssSourceCompatible(current.files['style.css'], files['style.css'])
-      ) {
+      if (current && cssSourceCompatible(current.files['style.css'], files['style.css'])) {
         files['style.css'] = current.files['style.css']
       }
       const displayedMap = () =>

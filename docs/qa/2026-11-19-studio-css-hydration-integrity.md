@@ -1,5 +1,7 @@
 # CSS salvo e integridade de editar/desfazer
 
+Atualização de 20/11: a regra de cabeçalho desta revisão afetou as referências dos cursos. Foi corrigida conforme [geração dos cursos e restauração após desfazer](2026-11-20-studio-course-generation-and-undo.md), sem regravar referências. As evidências locais abaixo não significaram homologação dos cursos nessa revisão.
+
 ## Problemas reproduzidos
 
 A observação do documento real do exemplo `Vale Ensolarado (na mão)` mostrou uma segunda navegação que apenas trocava `margin` e `background`. A carga também pode normalizar o estado serializado dos blocos; por isso, comparar somente esse estado não identifica todas as fontes equivalentes.

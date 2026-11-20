@@ -39,6 +39,8 @@ export function blockGenerationInput(
     ir,
     projectName: project?.name ?? 'Projeto',
     jsHeader:
-      project && !jsSource.startsWith(GENERATED_JS_HEADER) ? undefined : GENERATED_JS_HEADER,
+      force && project && !jsSource.startsWith(GENERATED_JS_HEADER)
+        ? undefined
+        : GENERATED_JS_HEADER,
   }
 }

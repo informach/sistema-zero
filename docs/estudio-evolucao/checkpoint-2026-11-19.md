@@ -128,6 +128,13 @@ do processo, do serviço de linguagem e do navegador.
 
 ## Próxima sequência reproduzível
 
+Em 20/11, a regra de cabeçalho introduzida em `696d1923e` falhou nas cinco aulas
+protegidas do CI. A [correção de geração/desfazer](../qa/2026-11-20-studio-course-generation-and-undo.md)
+restaura o contrato das edições e usa a pilha nativa do Blockly para recuperar o
+cabeçalho original ao desfazer tudo. Passaram 18 testes focados (56 asserções),
+TypeScript e 11 casos reais de Chromium, incluindo as primeiras aulas dos dois
+cursos, sem alterar referências. Falta comprovar novamente as cinco aulas no CI.
+
 A correção de [CSS salvo e editar/desfazer](../qa/2026-11-19-studio-css-hydration-integrity.md)
 passou em 18 testes focados (55 asserções), TypeScript e nove casos reais de
 Chromium no Windows. O exemplo Vale mantém a ordem do CSS original sem segunda
