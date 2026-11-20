@@ -1,0 +1,26 @@
+[
+  {
+    "file": "packages/pinta/src/components/editor/MapMinimapPanel.tsx",
+    "sha256": "b1c2afc071e5699e168194a2983e79ddacbbda08bb76249aa53bcc08f073a7ae"
+  },
+  {
+    "file": "packages/pinta/src/components/editor/mapToolsUi.test.tsx",
+    "sha256": "70a33e746a926a7741edf036137572fd50d38f5d361377cd4320356c8023ffc0"
+  },
+  {
+    "file": "packages/pinta/src/core/copy.ts",
+    "sha256": "38f360ad63791526cf91b166bc68a1b1647e842dc571eac6812dfcc26f2b69a3"
+  },
+  {
+    "file": "packages/studio/tsconfig.json",
+    "sha256": "23dc4fbffb214f513056ceafca60295f45055b975cea67787320d4bb21eda1d9"
+  },
+  {
+    "file": "packages/studio/e2e/pinta-minimap.flow.ts",
+    "sha256": "5d0d0dfcb50db05bc05742530178850ecddce0f75af72cdd266f4e0da99e648e"
+  },
+  {
+    "file": "packages/studio/playwright.pinta-minimap.config.ts",
+    "sha256": "e03a5ab6b44cca60cf5ec7b8be27ffd15faeb021c368ea5fb3b3ae1212bf43ce"
+  }
+]

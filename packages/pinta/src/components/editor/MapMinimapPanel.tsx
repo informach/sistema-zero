@@ -1,4 +1,4 @@
-import { type JSX, type RefObject, useEffect, useRef, useState } from 'react'
+import { type JSX, type RefObject, useEffect, useId, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
@@ -34,6 +34,21 @@ export function MapMinimapPanel({
   const ref = useRef<HTMLCanvasElement>(null),
     count = map.cols * map.rows * map.layers.filter(isTileLayer).length
   const [view, setView] = useState<MinimapViewRect | null>(null)
+  const helpId = useId()
+  function currentView(): MinimapViewRect | null {
+    const stage = stageRef?.current
+    return stage ? minimapViewRect(stage, cellPx, pad, map.cols, map.rows) : null
+  }
+  function viewCenter(): { col: number; row: number; view: MinimapViewRect | null } {
+    const current = currentView()
+    return {
+      col: ((current?.left ?? 0) + (current?.width ?? 1) / 2) * map.cols,
+      row: ((current?.top ?? 0) + (current?.height ?? 1) / 2) * map.rows,
+      view: current,
+    }
+  }
+  const jump = (col: number, row: number): void =>
+    onJump(Math.max(0, Math.min(map.cols - 1, col)), Math.max(0, Math.min(map.rows - 1, row)))
   // O mapa muda a cada movimento do lápis. O minimapa espera o traço sossegar: pinta na
   // primeira vez e depois só quando passa um instante sem mudança nenhuma.
   const painted = useRef(false)
@@ -80,8 +95,55 @@ export function MapMinimapPanel({
       <button
         type="button"
         aria-label={COPY.scene.navegarPeloMinimapa}
+        title={COPY.scene.minimapKeyboardHelp}
+        aria-describedby={helpId}
         className="pin-checkerboard relative block min-h-11 w-full overflow-hidden rounded-xl border-2 border-pin-border"
+        onKeyDown={(e) => {
+          if (e.altKey || e.metaKey || e.ctrlKey) return
+          const center = viewCenter()
+          const stepX = Math.max(1, ((center.view?.width ?? 1) * map.cols) / 2)
+          const stepY = Math.max(1, ((center.view?.height ?? 1) * map.rows) / 2)
+          let col = center.col,
+            row = center.row
+          switch (e.key) {
+            case 'ArrowLeft':
+              col -= stepX
+              break
+            case 'ArrowRight':
+              col += stepX
+              break
+            case 'ArrowUp':
+              row -= stepY
+              break
+            case 'ArrowDown':
+              row += stepY
+              break
+            case 'PageUp':
+              row -= stepY * 2
+              break
+            case 'PageDown':
+              row += stepY * 2
+              break
+            case 'Home':
+              col = row = 0
+              break
+            case 'End':
+              col = map.cols - 1
+              row = map.rows - 1
+              break
+            default:
+              return
+          }
+          e.preventDefault()
+          e.stopPropagation()
+          jump(col, row)
+        }}
         onClick={(e) => {
+          if (e.detail === 0 && e.clientX === 0 && e.clientY === 0) {
+            const center = viewCenter()
+            jump(center.col, center.row)
+            return
+          }
           const r = e.currentTarget.getBoundingClientRect()
           if (r.width <= 0 || r.height <= 0) return
           onJump(
@@ -105,6 +167,9 @@ export function MapMinimapPanel({
           />
         ) : null}
       </button>
+      <span id={helpId} className="sr-only">
+        {COPY.scene.minimapKeyboardHelp}
+      </span>
       <p className="mt-2 text-xs text-pin-muted">
         {COPY.scene.dimensions(map.cols, map.rows, map.layers.length)}
         <br />

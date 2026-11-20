@@ -53,6 +53,7 @@
     "playwright.pinta-authority.config.ts",
     "playwright.pinta-chunks.config.ts",
     "playwright.pinta-render.config.ts",
+    "playwright.pinta-minimap.config.ts",
     "playwright.pinta-world.config.ts",
     "playwright.scene3d-document.config.ts",
     "playwright.pinta-budget.config.ts",

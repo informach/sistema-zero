@@ -1,0 +1,44 @@
+{
+  "at": "2026-11-20T11:06:17.175Z",
+  "base": "94fecbf467854f3f42b69a306060c1177681c205",
+  "logs": [
+    {
+      "file": "pinta-minimap-keyboard-red.log",
+      "sha256": "aeb4969f64ed9d42ff2764e07ac736bcbdd6db5a93838427ab7073d4437ac2c4",
+      "summary": "regressao-vermelho.txt"
+    },
+    {
+      "file": "pinta-minimap-keyboard-green.log",
+      "sha256": "7c26aa9d3e33ecdf7a1c4319e51f39dc59528221ad16a814578bcba5621fe839",
+      "summary": "focado-verde.txt"
+    },
+    {
+      "file": "pinta-minimap-full-final.log",
+      "sha256": "29859389da2cb86314725dfea6c1ef559ce28bad2ee94d887d6dfcd9be8645a7",
+      "summary": "pinta-completo.txt"
+    },
+    {
+      "file": "pinta-minimap-native-final.log",
+      "sha256": "ce9dd692811c2de3b2e3326322df2fce2cb4d1bbc9a3268227a4c1f6ffa2157c",
+      "summary": "navegador.txt"
+    },
+    {
+      "file": "pinta-minimap-types-final.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "tipos-pinta.txt"
+    },
+    {
+      "file": "pinta-minimap-harness-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": "tipos-harness.txt"
+    },
+    {
+      "file": "pinta-minimap-biome-r2.log",
+      "sha256": "e4942df095cdaabfb0b834d392581292cc02ab1ded2bde0582bc8f9f010a3cf0",
+      "summary": "biome.txt"
+    }
+  ],
+  "simulated": ["touch", "cpu-4x"],
+  "physicalDevices": 1,
+  "authoringFormatChanged": false
+}

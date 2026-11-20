@@ -1,0 +1,60 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapToolsUi.test.tsx:
+945 |     const jumps: Array<[number, number]> = []
+946 |     render(<MapMinimapPanel map={mapa} tilesets={[pecas]} onJump={(col, row) => jumps.push([col, row])} />)
+947 |     const button = screen.getByRole('button', { name: COPY.scene.navegarPeloMinimapa })
+948 |     fixarCaixa(button, 200, 100)
+949 |     fireEvent.click(button)
+950 |     expect(jumps).toEqual([[20, 10]])
+                        ^
+error: expect(received).toEqual(expected)
+
+  [
+    [
+-     20,
+-     10,
++     0,
++     0,
+    ],
+  ]
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\components\editor\mapToolsUi.test.tsx:950:19)
+(fail) minimapa > ativação sem ponteiro usa o centro, não as coordenadas zero de um clique de teclado [47.00ms]
+964 |         stage.scrollTop = Math.max(0, Math.min(480, row * 32 - 80))
+965 |       }} />)
+966 |     const button = screen.getByRole('button', { name: COPY.scene.navegarPeloMinimapa })
+967 |     fireEvent.keyDown(button, { key: 'ArrowRight' })
+968 |     fireEvent.keyDown(button, { key: 'ArrowRight' })
+969 |     expect(jumps).toEqual([[20, 2.5], [25, 2.5]])
+                        ^
+error: expect(received).toEqual(expected)
+
+- [
+-   [
+-     20,
+-     2.5,
+-   ],
+-   [
+-     25,
+-     2.5,
+-   ],
+- ]
++ []
+
+- Expected  - 10
++ Received  + 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\components\editor\mapToolsUi.test.tsx:969:19)
+(fail) minimapa > setas repetidas usam o palco atual, e Home/End chegam aos extremos sem editar o mapa
+(pass) minimapa > tocar no minimapa leva o palco para aquele lugar [16.00ms]
+(pass) minimapa > mostra o retângulo da parte que aparece na tela e segue a rolagem [31.00ms]
+
+ 2 pass
+ 58 filtered out
+ 2 fail
+ 8 expect() calls
+Ran 4 tests across 1 file. [723.00ms]

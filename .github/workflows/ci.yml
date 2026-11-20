@@ -750,6 +750,7 @@ jobs:
           cd packages/studio
           bunx playwright test --config playwright.pinta-chunks.config.ts
           bunx playwright test --config playwright.pinta-render.config.ts
+          bunx playwright test --config playwright.pinta-minimap.config.ts
 
       # As aulas protegidas (Cadê e Farol) cobram os objetivos que RODAM o jogo pelo executor do
       # servidor; sem ele, esses objetivos saíam sem nota. Só o executor aponta para o Chromium do
@@ -772,6 +773,7 @@ jobs:
             packages/studio/.cache/pinta-scenes-results
             packages/studio/.cache/pinta-local-chunks-results
             packages/studio/.cache/pinta-render-pressure-results
+            packages/studio/.cache/pinta-minimap-results
           retention-days: 7
 
   studio-e2e-firefox:

@@ -49,6 +49,9 @@ limitada a 128×128 células, oito camadas e 64 peças por folha, com aviso ante
    propriedades. Os quadros apontam para peças da mesma folha.
 10. Use o minimapa para navegar e acompanhe o orçamento de células. **Testar com personagem**
     abre a cena com fundo, frente, colisão e animação. Setas e botões movem o personagem.
+    Com o foco no minimapa, as setas movem a janela visível, PageUp/PageDown movem
+    uma janela vertical e Home/End levam aos extremos. Enter/Espaço mantêm o centro
+    atual; para pintar pelo teclado, volte o foco à grade do palco.
 
 Para uma porta, use papel **porta** e propriedade `destino` com o nome ou identificador do
 mapa de chegada da biblioteca. O ponto de papel **início** define a chegada. O teste prepara

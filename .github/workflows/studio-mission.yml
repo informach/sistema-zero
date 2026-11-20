@@ -234,6 +234,7 @@ jobs:
           cd packages/studio
           bunx playwright test --config playwright.pinta-chunks.config.ts
           bunx playwright test --config playwright.pinta-render.config.ts
+          bunx playwright test --config playwright.pinta-minimap.config.ts
       - name: Public 3D scene uses the actual preview and exported site
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
@@ -276,6 +277,7 @@ jobs:
             packages/studio/.cache/pinta-scenes-results
             packages/studio/.cache/pinta-local-chunks-results
             packages/studio/.cache/pinta-render-pressure-results
+            packages/studio/.cache/pinta-minimap-results
             packages/studio/.cache/pinta-integration-results
             packages/studio/.cache/pinta-world-proof-results
             .audits/studio-pro-evolution/browser-current.json

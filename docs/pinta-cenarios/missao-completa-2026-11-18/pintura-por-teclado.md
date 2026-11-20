@@ -23,6 +23,12 @@ Uma recusa do host não cria edição nem desfazer.
 
 ## Arquitetura e revisão
 
+No painel **O mapa inteiro**, Tab também alcança o minimapa. Com o foco nele,
+as setas deslocam meia janela; PageUp/PageDown deslocam uma janela vertical.
+Home/End vão aos extremos e Enter/Espaço conservam o centro atual. Essas ações
+movem a visão, sem aplicar o pincel ou alterar o documento. Clique e toque
+continuam levando ao lugar escolhido. Volte o foco à grade para pintar.
+
 `keyboardPainting.ts` calcula candidatos com `mapBrush.ts`. O hook mantém só
 cursor e prévia transitória; o documento nativo e o store continuam sendo a
 autoridade. A confirmação consulta ferramenta, peça e revisão atuais. Isso

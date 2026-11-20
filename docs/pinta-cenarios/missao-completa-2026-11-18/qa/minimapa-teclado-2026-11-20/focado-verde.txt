@@ -1,0 +1,8 @@
+(pass) minimapa > ativação sem ponteiro usa o centro, não as coordenadas zero de um clique de teclado [31.00ms]
+(pass) minimapa > setas repetidas usam o palco atual, e Home/End chegam aos extremos sem editar o mapa [16.00ms]
+(pass) minimapa > tocar no minimapa leva o palco para aquele lugar
+(pass) minimapa > mostra o retângulo da parte que aparece na tela e segue a rolagem [47.00ms]
+ 4 pass
+ 0 fail
+ 11 expect() calls
+Ran 4 tests across 1 file. [681.00ms]

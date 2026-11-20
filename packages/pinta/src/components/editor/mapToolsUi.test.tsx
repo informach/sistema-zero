@@ -941,6 +941,61 @@ describe('editor de conjunto', () => {
 describe('minimapa', () => {
   const pecas = createTilesetAsset({ name: 'pecas', tileSize: 16 })
   const mapa = createTilemapAsset({ name: 'fase', tilesetId: pecas.id, cols: 40, rows: 20 })
+  it('ativação sem ponteiro usa o centro, não as coordenadas zero de um clique de teclado', () => {
+    const jumps: Array<[number, number]> = []
+    render(
+      <MapMinimapPanel
+        map={mapa}
+        tilesets={[pecas]}
+        onJump={(col, row) => jumps.push([col, row])}
+      />,
+    )
+    const button = screen.getByRole('button', { name: COPY.scene.navegarPeloMinimapa })
+    fixarCaixa(button, 200, 100)
+    fireEvent.click(button)
+    expect(jumps).toEqual([[20, 10]])
+  })
+  it('setas repetidas usam o palco atual, e Home/End chegam aos extremos sem editar o mapa', () => {
+    const stage = document.createElement('div')
+    const measurements = { scrollLeft: 320, scrollTop: 0, clientWidth: 320, clientHeight: 160 }
+    for (const [key, value] of Object.entries(measurements))
+      Object.defineProperty(stage, key, { configurable: true, writable: true, value })
+    const stageRef = createRef<HTMLElement | null>()
+    stageRef.current = stage
+    const jumps: Array<[number, number]> = []
+    render(
+      <MapMinimapPanel
+        map={mapa}
+        tilesets={[pecas]}
+        stageRef={stageRef}
+        cellPx={32}
+        onJump={(col, row) => {
+          jumps.push([col, row])
+          stage.scrollLeft = Math.max(0, Math.min(960, col * 32 - 160))
+          stage.scrollTop = Math.max(0, Math.min(480, row * 32 - 80))
+        }}
+      />,
+    )
+    const button = screen.getByRole('button', { name: COPY.scene.navegarPeloMinimapa })
+    fireEvent.keyDown(button, { key: 'ArrowRight' })
+    fireEvent.keyDown(button, { key: 'ArrowRight' })
+    expect(jumps).toEqual([
+      [20, 2.5],
+      [25, 2.5],
+    ])
+    fireEvent.keyDown(button, { key: 'Home' })
+    fireEvent.keyDown(button, { key: 'End' })
+    expect(jumps.slice(-2)).toEqual([
+      [0, 0],
+      [39, 19],
+    ])
+    const count = jumps.length
+    fireEvent.keyDown(button, { key: 'Delete' })
+    fireEvent.keyDown(button, { key: 'ArrowRight', altKey: true })
+    fireEvent.keyDown(button, { key: 'Home', ctrlKey: true })
+    expect(jumps.length).toBe(count)
+    expect(mapa.layers).toHaveLength(1)
+  })
   it('tocar no minimapa leva o palco para aquele lugar', () => {
     const jumps: Array<[number, number]> = []
     render(

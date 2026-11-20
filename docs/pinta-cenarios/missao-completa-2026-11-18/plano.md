@@ -138,6 +138,10 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   21 ensaios de autoridade/oficina e 72 imagens iguais ao código publicado.
   Mediana local do pior caso: 498,8 → 198,6 ms, ainda sem comprovar fluidez.
   Provas e limites em `qa/render-sob-pressao-2026-11-20/README.md`.
+  O minimapa existente foi auditado e corrigido para teclado: setas e extremos,
+  ativação sem coordenadas do ponteiro e teclas consecutivas. Suíte com 2.266
+  aprovados e três perfis nativos conservando todas as células. Provas em
+  `qa/minimapa-teclado-2026-11-20/README.md`; não há outro minimapa ou mudança visual.
 - [ ] 8b. Automapping em várias camadas: regras autorais, prévia, determinismo e histórico.
 - [ ] 8c. Isométrico e hexagonal: contratos próprios, coordenadas/picking, desenho, objetos,
   colisão e adaptadores reais; não apenas opções de interface.

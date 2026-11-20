@@ -123,6 +123,7 @@ export const COPY = {
     buscarDesenho: 'Buscar desenho',
     oMapaInteiro: 'O mapa inteiro',
     navegarPeloMinimapa: 'Navegar pelo minimapa',
+    minimapKeyboardHelp: 'Use as setas para passear. Home e End levam ao começo e ao fim do mapa.',
     camadas: 'camadas',
     de: 'de',
     celulas: 'células',
