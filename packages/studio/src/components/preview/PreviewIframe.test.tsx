@@ -242,7 +242,9 @@ describe('PreviewIframe', () => {
   for (const command of ['Parar', 'Rodar de novo'] as const) {
     it(`${command} libera uma primeira execução sem load e conserva a fonte`, async () => {
       const project = createPreviewProject()
-      useProjectStore.setState({ project, isDirty: command === 'Parar', saveError: null })
+      // A partida automática grava antes de executar (revisão da missão, execução item 2):
+      // a edição pendente que o Parar precisa conservar nasce depois de a execução começar.
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
       render(<PreviewIframe />)
       const frame = screen.getByTitle('Pré-visualização')
       // Model a program that never completes its first document load. The real
@@ -256,6 +258,7 @@ describe('PreviewIframe', () => {
       )
       fireEvent.load(frame)
       await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      act(() => useProjectStore.setState({ isDirty: command === 'Parar' }))
       fireEvent.load(frame)
       await act(async () => {
         if (command === 'Parar') useProRun.getState().actions?.stop()

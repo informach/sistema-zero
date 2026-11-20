@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
+import { STANDALONE_CONFIG, StudioConfigProvider } from '../../studio/config'
 import { type StudioExecutionPolicy, StudioExecutionProvider } from '../../studio/observation'
 import { PreviewIframe } from './PreviewIframe'
 
@@ -242,6 +243,8 @@ it('switching a running project never executes the previous project source in th
     f.stores.project.getState().setFile('script.js', oldCode)
     f.stores.ui.getState().setPreviewRunning(true)
   })
+  // A partida automática grava a edição antes de executar: confirmar a gravação libera o jogo A.
+  await act(async () => f.confirm())
   await waitFor(() =>
     expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(oldCode)),
   )
@@ -253,4 +256,99 @@ it('switching a running project never executes the previous project source in th
   await waitFor(() =>
     expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(newCode)),
   )
+})
+
+it('o Parar do cartão "parece travado" cancela o Rodar que ainda está gravando', async () => {
+  // Achado da revisão da missão (execução, item 1): o botão do cartão só desligava a prévia;
+  // a gravação confirmava depois e o Rodar pendente religava o jogo sozinho.
+  let confirm = () => {}
+  const acknowledgement = new Promise<void>((resolve) => {
+    confirm = resolve
+  })
+  const stores = createStudioStores({
+    persistence: { load: async () => null, save: async () => acknowledgement },
+  })
+  stores.project
+    .getState()
+    .hydrateProject(createEmptyProject(crypto.randomUUID(), 'Cartão de travado'))
+  stores.ui.getState().setPreviewRunning(false)
+  const config = {
+    ...STANDALONE_CONFIG,
+    previewSecurity: { ...STANDALONE_CONFIG.previewSecurity, heartbeatTimeoutMs: 300 },
+  }
+  render(
+    <StudioConfigProvider value={config}>
+      <StudioStoresContext.Provider value={stores}>
+        <StudioExecutionProvider
+          value={{
+            editingAccess: 'author',
+            autoRun: true,
+            requireIsolatedPreview: false,
+            muted: false,
+          }}
+        >
+          <PreviewIframe />
+        </StudioExecutionProvider>
+      </StudioStoresContext.Provider>
+    </StudioConfigProvider>,
+  )
+  fireEvent.load(screen.getByTitle('Pré-visualização'))
+  // Sem mudança, Rodar executa na hora. O documento nunca dá sinal de vida: o vigia acusa.
+  act(() => stores.proRun.getState().actions?.run())
+  await waitFor(() => expect(stores.ui.getState().previewRunning).toBe(true))
+  const stop = await screen.findByRole('button', { name: 'Parar' }, { timeout: 4000 })
+  // A criança conserta e aperta Rodar de novo: a gravação fica pendente.
+  act(() => {
+    stores.project.getState().setFile('script.js', 'window.CONSERTO = true;')
+    stores.proRun.getState().actions?.run()
+  })
+  await waitFor(() => expect(stores.proRun.getState().state?.phase).toBe('preparing'))
+  act(() => fireEvent.click(stop))
+  await act(async () => confirm())
+  await act(async () => Bun.sleep(50))
+  expect(stores.ui.getState().previewRunning).toBe(false)
+  expect(stores.proRun.getState().state?.phase).toBe('idle')
+}, 10_000)
+
+it('a prévia que monta já rodando grava a edição pendente antes de executar', async () => {
+  // Achado da revisão da missão (execução, item 2): com o jogo escondido, o Rodar do palco só
+  // liga a prévia; ao montar, a partida automática executava a revisão suja sem gravar.
+  let confirm = () => {}
+  const acknowledgement = new Promise<void>((resolve) => {
+    confirm = resolve
+  })
+  const writes: string[] = []
+  const stores = createStudioStores({
+    persistence: {
+      load: async () => null,
+      save: async (project) => {
+        writes.push(project.files?.['script.js'] ?? '')
+        await acknowledgement
+      },
+    },
+  })
+  stores.project
+    .getState()
+    .hydrateProject(createEmptyProject(crypto.randomUUID(), 'Jogo escondido'))
+  const code = 'window.EDITADO_COM_O_JOGO_ESCONDIDO = true;'
+  stores.project.getState().setFile('script.js', code)
+  stores.ui.getState().setPreviewRunning(true)
+  render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioExecutionProvider
+        value={{ editingAccess: 'author', autoRun: true, requireIsolatedPreview: false, muted: false }}
+      >
+        <PreviewIframe />
+      </StudioExecutionProvider>
+    </StudioStoresContext.Provider>,
+  )
+  fireEvent.load(screen.getByTitle('Pré-visualização'))
+  await waitFor(() => expect(writes).toEqual([code]))
+  expect(stores.proRun.getState().state?.phase).toBe('preparing')
+  expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).not.toContain(btoa(code))
+  await act(async () => confirm())
+  await waitFor(() =>
+    expect(screen.getByTitle('Pré-visualização').getAttribute('srcdoc')).toContain(btoa(code)),
+  )
+  expect(stores.project.getState().isDirty).toBe(false)
 })
