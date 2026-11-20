@@ -1,3 +1,4 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
 import { type JSX, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ProStageState } from '../../components/preview/ProStageState'
@@ -251,6 +252,7 @@ export function RemoteProPreview({
               srcDoc={shown.html}
               title="Pré-visualização do projeto Pro"
               sandbox="allow-scripts allow-pointer-lock"
+              allow={GAME_FRAME_FOCUS_ALLOW}
               referrerPolicy="no-referrer"
               className="h-full w-full border-0"
             />

@@ -67,17 +67,31 @@ export class IndiceDeCaixas {
     return this.nos.length ? destino.copy(this.nos[0]!.caixa) : destino.makeEmpty()
   }
 
-  consultar(raio: Ray, margem = 0): number[] {
+  /**
+   * Volumes que o raio cruza. Com `distancia`, só os que ele alcança até lá: um trecho curto (o
+   * passo da física) não visita todos os objetos na mesma linha até o outro lado do cenário.
+   */
+  consultar(raio: Ray, margem = 0, distancia = Number.POSITIVE_INFINITY): number[] {
     if (!Number.isFinite(margem) || margem < 0 || margem > 100_000)
       throw new RangeError('Margem inválida para consultar volumes')
+    if (Number.isNaN(distancia) || distancia < 0)
+      throw new RangeError('Distância inválida para consultar volumes')
     const pilha = this.nos.length ? [0] : [],
       resposta: number[] = [],
-      caixa = new Box3()
+      caixa = new Box3(),
+      entrada = new Vector3(),
+      // Folga do arredondamento: a face achada na entrada da caixa não pode ficar de fora.
+      alcance = distancia + 1e-6 * Math.max(1, distancia)
+    const alcanca = (alvo: Box3) => {
+      if (alcance === Number.POSITIVE_INFINITY) return raio.intersectsBox(alvo)
+      if (alvo.containsPoint(raio.origin)) return true
+      return raio.intersectBox(alvo, entrada) !== null && entrada.distanceTo(raio.origin) <= alcance
+    }
     while (pilha.length) {
       const no = this.nos[pilha.pop()!]!
       if (
         no.caixa.isEmpty() ||
-        !raio.intersectsBox(margem ? caixa.copy(no.caixa).expandByScalar(margem) : no.caixa)
+        !alcanca(margem ? caixa.copy(no.caixa).expandByScalar(margem) : no.caixa)
       )
         continue
       if (no.item !== -1) resposta.push(no.item)

@@ -1,24 +1,38 @@
-[upbeat, welcoming voice] Você já criou A Chave do Farol. Agora vamos levar essa ideia para uma ilha em três dimensões: A Ilha do Farol! O desafio continua: encontrar a chave e acender o farol para o barco chegar.
+[upbeat, welcoming voice] Oi! Você já criou A Chave do Farol. Agora vamos levar essa ideia para uma ilha em três dimensões: A Ilha do Farol! O desafio continua: encontrar a chave e acender o farol para o barco chegar.
 
-[interested, animated voice] Olha aqui: eu caminho pelo chão e posso passar na frente ou atrás dos objetos. Repare nas pedras: atrás delas pode ter alguma coisa escondida.
+[engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
-[upbeat, encouraging voice] Sua vez! Clique dentro do jogo e segure uma seta do teclado, ou uma das letras W, A, S e D, para andar. Para começar outra partida, toque na tecla R.
+[interested, animated voice] Olha aqui: com a seta da direita, o personagem anda para a direita.
 
-[upbeat, encouraging voice] Explore a ilha. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
+[interested, animated voice] Com a seta de baixo, ele vem para a frente, mais perto de quem está olhando. E com a seta de cima, ele volta para o fundo da ilha.
+
+[engaging, energetic, conversational voice] Essa é a novidade de um jogo em três dimensões: a profundidade. Um objeto pode ficar mais perto ou mais longe, e o da frente pode esconder o que está atrás dele.
+
+[curious] Será que a pedra está escondendo alguma coisa?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida.
+
+[engaging, energetic, conversational voice] Para começar outra partida, toque na tecla R.
+
+[upbeat, encouraging voice] Explore a ilha. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[upbeat, welcoming voice] Este é o seu Passo a passo do projeto! Ele guarda os blocos, os encaixes e os testes das três aulas. Se você esquecer um passo, pode voltar aqui e consultar.
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar o seu jogo nas três aulas, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o material.
 
-[engaging, energetic, conversational voice] Você pode ler aqui mesmo ou clicar em Baixar para guardar. O Como Fazer também tem ajuda para usar o Estúdio. Quando quiser continuar, clique em Próxima parte.
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
+
+[confident, clear, unhurried voice] Agora clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo.
+[engaging, energetic, conversational voice] Lembra da pedra da ilha? No 3D, um objeto pode esconder o que está atrás dele. Por isso, o que você vê depende de onde você olha.
 
-[curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar.
+[confident, clear, unhurried voice] O lugar de onde o jogo olha a ilha tem um nome: câmera. Ela funciona como os seus olhos dentro do jogo.
 
-[engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida.
+[engaging, energetic, conversational voice] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você muda de lugar e consegue olhar.
+
+[engaging, energetic, conversational voice] Na ilha, a câmera também pode mudar de lugar. E perto de uma pedra tem uma chave escondida.
 
 [curious] Se a câmera mudar de lugar, a chave também muda de lugar?
 
@@ -28,50 +42,40 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio. Depois clique dentro do jogo e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
 
-[engaging, energetic, conversational voice] Na experiência da parte anterior, quem mudava de lugar era a câmera. Agora quem vai sair do lugar é o personagem!
+[engaging, energetic, conversational voice] Na experiência, quem mudava de lugar era a câmera. Agora quem vai sair do lugar é o personagem!
 
-[engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? O jogo desenha a cena muitas vezes por segundo, e cada desenho é um quadro. Para o personagem andar, o jogo precisa olhar as setas em todo quadro.
+[engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? O jogo desenha a cena muitas vezes por segundo, e cada desenho é um quadro. No 3D é igual. Para o personagem andar, o jogo precisa olhar as setas em todo quadro.
 
-[confident, clear, unhurried voice] Por isso, o novo bloco vai dentro do bloco A cada quadro da cena. Nos blocos, encontre a área Enquanto estiver rodando e deixe à vista o bloco A cada quadro da cena.
+[confident, clear, unhurried voice] Por isso, o bloco novo vai dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Dentro dele, encontre o bloco Escrever na tela. O novo bloco vai logo antes dele.
+[confident, clear, unhurried voice] Repare: dentro de A cada quadro da cena já tem o bloco Escrever na tela. O bloco novo vai no começo, no espaço ao lado da palavra fazer.
 
-[confident, clear, unhurried voice] Agora abra Jogo 3D, depois Movimento e depois Andar com o teclado. Pegue o bloco Fazer personagem andar com as setas, ou WASD.
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Movimento e depois Andar com o teclado, e pegue o bloco Fazer personagem andar com as setas.
 
-[confident, clear, unhurried voice] Arraste até o lugar antes de Escrever na tela e solte quando aparecer o encaixe.
+[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer. Repare: o Escrever na tela desce e fica logo abaixo do bloco novo.
 
 [engaging, energetic, conversational voice] É este bloco que faz o personagem andar: em todo quadro, ele olha qual seta você está segurando e leva o personagem para aquele lado.
 
-[confident, clear, unhurried voice] Repare que o nome do bloco já é personagem. Se aparecer outro nome, clique nele e escolha personagem.
+[engaging, energetic, conversational voice] O nome no bloco já é personagem, o objeto que vai andar. E o número é a velocidade: quanto maior, mais rápido o personagem anda.
 
-[engaging, energetic, conversational voice] O número do bloco é a velocidade: quanto maior, mais rápido o personagem anda. Clique no 3 e troque por 4.
+[confident, clear, unhurried voice] Clique no 3 e troque por 4.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo. Depois clique dentro do jogo, segure a seta da direita por um tempo e solte.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez. Depois segure a seta da direita por um tempo e solte.
 
-[interested, animated voice] Olha só: ele anda enquanto você segura a seta e para quando você solta.
+[interested, animated voice] Olha só: ele anda enquanto você segura a seta e para quando você solta. Andando, ele mexe as pernas e os braços. Parado, ele respira.
 
-[upbeat, encouraging voice] Faça o mesmo com as outras três setas. Leve o personagem até a ponte e até a beirada da ilha.
+[upbeat, encouraging voice] Agora faça o mesmo com as outras três setas. Depois leve o personagem até a ponte e até a beirada da ilha: ele não cai na água.
 
-[interested, animated voice] E repare: enquanto anda, ele mexe as pernas e os braços. Parado, ele respira.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro da cena, primeiro vem Fazer personagem andar com as setas, com a velocidade 4, e logo abaixo dele está Escrever na tela.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro da cena está o bloco Fazer personagem andar com as setas, antes de Escrever na tela, com o nome personagem e a velocidade 4. Depois de corrigir, teste de novo.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
-
-[long pause]
-
-[pleased, lively voice] Você programou o movimento do personagem na ilha!
-
-[upbeat, encouraging voice] Agora faça um percurso: segure as setas para andar nas quatro direções, solte para parar e atravesse a ponte. Depois toque na tecla R para voltar ao começo.
-
-[engaging, energetic, conversational voice] A chave ainda não é recolhida. Essa reação vem na próxima aula.
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[confident, clear, unhurried voice] Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 
-[long pause]
+[pleased, lively voice] Pronto, você programou o movimento do personagem: agora ele anda pela ilha em três dimensões!
 
-[pleased, lively voice] Seu personagem já anda pelo mundo em 3D. Você também descobriu que olhar de outro lugar pode revelar algo escondido. Na próxima aula, vamos escolher um lugar para a chave e programar o encontro com ela. Clique em Concluir aula.
+[engaging, energetic, conversational voice] Na próxima aula, você vai escolher um lugar para a chave e ensinar o personagem a pegar a chave. Quando aparecer Projeto enviado!, clique em Concluir aula.

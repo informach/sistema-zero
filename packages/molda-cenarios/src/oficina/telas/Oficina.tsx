@@ -20,7 +20,6 @@ import {
   type EstadoDoAmbiente,
   type EstadoDosCaminhos,
   type EstadoDosMarcadores,
-  type EstadoDoTeste,
   type Estatisticas,
   type Ferramenta,
   type ModoDeSelecao,
@@ -144,7 +143,7 @@ import { Organizar } from './Organizar'
 import { Painel } from './Painel'
 import { Propriedades } from './Propriedades'
 import { FERRAMENTAS_TERRENO_RAIL, NOMES_TERRENO, Terreno } from './Terreno'
-import { ControlesTeste, PrepararTeste } from './Testar'
+import { ControlesDoTesteAoVivo, criarLojaDoTeste, PrepararTeste } from './Testar'
 import { Versoes } from './Versoes'
 
 type Aba = 'terreno' | 'agua' | 'objetos' | 'caminhos' | 'jogo' | 'luz'
@@ -307,7 +306,9 @@ function OficinaAberta({
   const canvas = useRef<HTMLCanvasElement>(null)
   const previaDaArea = useRef<SVGPolygonElement>(null)
   const palco = useRef<Palco | null>(null)
-  const [teste, setTeste] = useState<EstadoDoTeste | null>(null)
+  // O estado do teste (a cada 100 ms) mora numa loja: a oficina só guarda se está testando.
+  const [lojaDoTeste] = useState(criarLojaDoTeste)
+  const [testando, setTestando] = useState(false)
   const [escolhendoPersonagem, setEscolhendoPersonagem] = useState(false)
   const [personagemDaBiblioteca, setPersonagemDaBiblioteca] = useState<ModeloDoCenario | null>(null)
   const [janelaTeste, setJanelaTeste] = useState(false)
@@ -316,12 +317,13 @@ function OficinaAberta({
   const [erroTeste, setErroTeste] = useState<string | null>(null)
   const [conjuntosCarregando, setConjuntosCarregando] = useState(0)
   const controleDoTeste = useRef<AbortController | null>(null)
-  const emEnsaio = Boolean(teste) || preparandoTeste
+  const emEnsaio = testando || preparandoTeste
   const ensaioAtivo = useRef(false)
   ensaioAtivo.current = emEnsaio || janelaTeste || escolhendoPersonagem
   // biome-ignore lint/correctness/useExhaustiveDependencies: outra conexão/controlador encerra a sessão transitória anterior
   useEffect(() => {
-    setTeste(null)
+    lojaDoTeste.definir(null)
+    setTestando(false)
     setJanelaTeste(false)
     setPreparandoTeste(false)
     setErroTeste(null)
@@ -714,7 +716,8 @@ function OficinaAberta({
       aoGesto: setGestoAtivo,
       aoTeste: (estado) => {
         if (estado) alturaNativa.current = estado.altura
-        setTeste(estado)
+        lojaDoTeste.definir(estado)
+        setTestando(estado !== null)
       },
       aoPreverSelecao: (pontos) =>
         previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
@@ -747,6 +750,7 @@ function OficinaAberta({
   }, [
     host,
     controlador,
+    lojaDoTeste,
     aberto.resumo.id,
     mundo.espacoId,
     aoAplicarPincel,
@@ -1170,7 +1174,8 @@ function OficinaAberta({
     controleDoTeste.current?.abort()
     controleDoTeste.current = null
     palco.current?.encerrarTeste()
-    setTeste(null)
+    lojaDoTeste.definir(null)
+    setTestando(false)
     setJanelaTeste(false)
     setPreparandoTeste(false)
   }
@@ -1523,7 +1528,7 @@ function OficinaAberta({
               escolhendoPersonagem
             }
             onClick={() => {
-              if (teste) encerrarTeste()
+              if (testando) encerrarTeste()
               else {
                 setErroTeste(null)
                 setJanelaTeste(true)
@@ -1531,7 +1536,7 @@ function OficinaAberta({
             }}
           >
             <Play aria-hidden="true" />
-            {teste ? 'Editar' : COPY.oficina.testar}
+            {testando ? 'Editar' : COPY.oficina.testar}
           </button>
           <div
             className="contents"
@@ -1956,9 +1961,9 @@ function OficinaAberta({
             >
               <polygon ref={previaDaArea} points="" vectorEffect="non-scaling-stroke" />
             </svg>
-            {teste ? (
-              <ControlesTeste
-                estado={teste}
+            {testando ? (
+              <ControlesDoTesteAoVivo
+                loja={lojaDoTeste}
                 comandar={(c) => palco.current?.comandarTeste(c)}
                 entrada={(e) => palco.current?.entradaDoTeste(e)}
                 fechar={encerrarTeste}

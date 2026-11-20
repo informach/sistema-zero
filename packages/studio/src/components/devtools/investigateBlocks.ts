@@ -30,13 +30,15 @@ export function blockAtScriptLine(map: SourceMap, line: number): string | null {
   return findIdAtLine(reverseSourceMap(map), 'script.js', line)
 }
 
-type BlockJson = { id: string; type: string; [key: string]: unknown }
+type BlockState = Blockly.serialization.blocks.State
 
-const isBlockWithId = (record: Record<string, unknown>, id: string): record is BlockJson =>
-  record.id === id && typeof record.type === 'string'
+/** Um objeto do estado salvo que é um bloco: tem `type` em texto (o resto o Blockly confere). */
+function isBlockState(value: object): value is BlockState {
+  return 'type' in value && typeof value.type === 'string'
+}
 
 /** O JSON de um bloco dentro do estado salvo dos blocos (procura em toda a árvore). */
-export function findBlockJson(state: unknown, id: string): BlockJson | null {
+export function findBlockJson(state: unknown, id: string): BlockState | null {
   const stack: unknown[] = [state]
   let visited = 0
   while (stack.length && visited < 200_000) {
@@ -47,9 +49,8 @@ export function findBlockJson(state: unknown, id: string): BlockJson | null {
       for (const item of node) stack.push(item)
       continue
     }
-    const record = node as Record<string, unknown>
-    if (isBlockWithId(record, id)) return record
-    for (const value of Object.values(record))
+    if ('id' in node && node.id === id && isBlockState(node)) return node
+    for (const value of Object.values(node))
       if (value && typeof value === 'object') stack.push(value)
   }
   return null

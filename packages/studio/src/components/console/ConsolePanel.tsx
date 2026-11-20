@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { memo, useLayoutEffect, useRef, useState } from 'react'
+import { lazy, memo, Suspense, useLayoutEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { glossErrorMessage } from '../../state/errorGloss'
@@ -7,7 +7,12 @@ import { useHighlightStore } from '../../state/highlightStore'
 import { ERROR_LOG_KINDS, type LogEntry, useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
-import { PythonConsoleInput } from './PythonConsoleInput'
+
+// JavaScript consoles need messages only. Load the Python command channel when a
+// Python console actually offers it, without changing either console's log state.
+const PythonConsoleInput = lazy(() =>
+  import('./PythonConsoleInput').then((module) => ({ default: module.PythonConsoleInput })),
+)
 
 // Tipos de log que representam ERRO — só neles tentamos a dica em português.
 // A régua vive no store: o Zappy usa a MESMA para diagnosticar.
@@ -148,7 +153,11 @@ export function ConsolePanel({
           entries.map((e) => <LogEntryItem key={e.id} entry={e} />)
         )}
       </div>
-      {variant !== 'messages' ? <PythonConsoleInput /> : null}
+      {python && variant !== 'messages' ? (
+        <Suspense fallback={null}>
+          <PythonConsoleInput />
+        </Suspense>
+      ) : null}
     </div>
   )
 }

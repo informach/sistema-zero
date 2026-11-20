@@ -1,0 +1,382 @@
+bun test v1.3.11 (af24e281)
+
+src\projects\createPythonExampleProject.test.ts:
+(pass) free examples require earned extension grants at discovery and after fresh preparation [31.00ms]
+(pass) a Classic Python example starts in blocks and persists its editable source intact [16.00ms]
+(pass) a Classic Python example starts in bridge and persists its editable source intact [15.00ms]
+(pass) a new Classic example needs fresh host block approval and effective palette, while Pro source does not [63.00ms]
+(pass) Pro examples do not depend on classic block approval or curations
+(pass) required engine features are checked before loading and again after fresh preparation [16.00ms]
+(pass) a required provided module must exist at its exact version before loading the payload
+(pass) fresh prepare losing a required provided module never reaches authorization or storage [15.00ms]
+(pass) mutating module requirements while loading cannot remove a captured compatibility requirement
+(pass) changing a requirement version during load cannot authorize a different prepared module version
+(pass) the prepared context is captured before later awaits and does not follow external runtime mutation [16.00ms]
+(pass) module compatibility never substitutes the fresh host authorization
+(pass) the Python catalog keeps the original race and adds the separately licensed maze
+(pass) python:pacman-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [109.00ms]
+(pass) python:pacman-visual:code creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:space-arena-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [93.00ms]
+(pass) python:space-arena-visual:code creates, reopens and exports its entire authored program and native audio dependency [94.00ms]
+(pass) python:snake-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:snake-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:pong-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [46.00ms]
+(pass) python:pong-visual:code creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:tron-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:tron-visual:code creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:flappy-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:flappy-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:spinner-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [31.00ms]
+(pass) python:spinner-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:tictactoe-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:tictactoe-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:connect-four-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:connect-four-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:tiles-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:tiles-visual:code creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:memory-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:memory-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:simon-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:simon-visual:code creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:bubbles-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:bubbles-visual:code creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:egg-catcher-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:egg-catcher-visual:code creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:monkey-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:monkey-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:cannon-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:cannon-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:life-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [46.00ms]
+(pass) python:life-visual:code creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:starry-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:starry-visual:code creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:fortune-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [47.00ms]
+(pass) python:fortune-visual:code creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) python:turtle-bet-visual:blocks creates, reopens and exports its entire authored program and native audio dependency [62.00ms]
+(pass) python:turtle-bet-visual:code creates, reopens and exports its entire authored program and native audio dependency [63.00ms]
+(pass) the real maze saves fresh projects and exports all source, credits, three sounds and the exact native audio package [93.00ms]
+(pass) the real race is authorized against the exact prepared runtime and reopens with all five files [16.00ms]
+(pass) real factory, reader and IndexedDB preserve Pro sources and authorize before the only saved candidate
+(pass) fresh host denial never persists an empty project or a denied extension
+(pass) a release lost during fresh discovery does not fall back to another environment
+(pass) profile A→B→A during payload loading cannot create in either profile
+(pass) unmount/cancel during authorization prevents storage after late ACK
+(pass) conflicting source paths fail without losing a file or persisting a partial candidate
+(pass) missing Pro or unsupported extension never loads a game payload [16.00ms]
+(pass) source and licensed media survive the reader, asset hash validation and persisted snapshot
+(pass) invalid material cannot be silently dropped or leave a saved candidate
+(pass) python:ola-pgzero:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [62.00ms]
+(pass) python:ola-pgzero:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:acerte-a-maca:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:acerte-a-maca:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:raposa-moedas:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:raposa-moedas:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:ligue-os-pontos:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:ligue-os-pontos:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:estrela-vermelha:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:estrela-vermelha:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:quiz-relampago:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:quiz-relampago:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:voo-de-balao:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:voo-de-balao:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:desafio-da-danca:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:desafio-da-danca:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:jardim-feliz:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:jardim-feliz:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:dragoes-dorminhocos:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:dragoes-dorminhocos:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:barris-na-rampa:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:barris-na-rampa:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:salto-nas-plataformas:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:salto-nas-plataformas:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:piramide-de-cubos:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:piramide-de-cubos:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:cipo-sobre-o-poco:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:cipo-sobre-o-poco:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:mina-que-desmorona:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:mina-que-desmorona:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:escudos-contra-invasores:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:escudos-contra-invasores:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:mergulho-alienigena:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:mergulho-alienigena:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:nave-mae:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:nave-mae:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:rastro-de-ajudantes:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:rastro-de-ajudantes:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:helicoptero-bombardeiro:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:helicoptero-bombardeiro:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:cauda-espacial:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:cauda-espacial:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:mochila-a-jato:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:mochila-a-jato:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:propulsor-no-espaco:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:propulsor-no-espaco:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:encanamento-apressado:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:encanamento-apressado:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:troca-de-joias:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:troca-de-joias:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:bichinhos-em-fila:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:bichinhos-em-fila:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:cavando-por-gemas:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:cavando-por-gemas:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:editor-de-cavernas:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:editor-de-cavernas:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:corrida-vista-de-cima:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:corrida-vista-de-cima:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:sinuca:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:sinuca:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:fliperama:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:fliperama:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:minigolfe-maluco:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [32.00ms]
+(pass) python:minigolfe-maluco:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:tiro-ao-prato:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:tiro-ao-prato:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:rali-com-minimapa:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:rali-com-minimapa:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:pouso-lunar:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:pouso-lunar:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:quebra-tijolos:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:quebra-tijolos:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:sapo-atravessa:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:sapo-atravessa:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:patrulha-em-camadas:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:patrulha-em-camadas:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:motos-de-luz:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:motos-de-luz:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:arena-de-dois-comandos:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:arena-de-dois-comandos:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:bombas-no-labirinto:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:bombas-no-labirinto:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:corredor-do-kung-fu:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:corredor-do-kung-fu:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:bolinha-rolante:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:bolinha-rolante:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:bolhas-que-se-dividem:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:bolhas-que-se-dividem:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:masmorra-para-quatro:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:masmorra-para-quatro:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:duelo-por-turnos:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:duelo-por-turnos:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:passarinho-saltitante:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:passarinho-saltitante:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:placar-dos-campeoes:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:placar-dos-campeoes:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:continuar:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:continuar:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:bussola-maluca:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:bussola-maluca:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:cores-e-bolinha:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:cores-e-bolinha:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:piano-maluco:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:piano-maluco:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:duelo-de-tanques:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:duelo-de-tanques:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:memoria-contra-o-computador:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:memoria-contra-o-computador:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:batalha-naval:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:batalha-naval:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:atirador-espacial:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [31.00ms]
+(pass) python:atirador-espacial:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:boing:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [15.00ms]
+(pass) python:boing:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG
+(pass) python:centopeia:blocks creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:centopeia:code creates and reopens its whole program and media; the desktop copy reads every SVG as PNG [16.00ms]
+(pass) python:ola-raylib:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [140.00ms]
+(pass) python:ola-raylib:code creates and reopens its whole program and media; the desktop copy takes the real raylib [63.00ms]
+(pass) python:nave-que-desliza:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [31.00ms]
+(pass) python:nave-que-desliza:code creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:encostou:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [31.00ms]
+(pass) python:encostou:code creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:camera-que-segue:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [31.00ms]
+(pass) python:camera-que-segue:code creates and reopens its whole program and media; the desktop copy takes the real raylib [32.00ms]
+(pass) python:sprites-timer-animacao:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [46.00ms]
+(pass) python:sprites-timer-animacao:code creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:dino-corredor:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [78.00ms]
+(pass) python:dino-corredor:code creates and reopens its whole program and media; the desktop copy takes the real raylib [79.00ms]
+(pass) python:chuva-de-meteoros:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [78.00ms]
+(pass) python:chuva-de-meteoros:code creates and reopens its whole program and media; the desktop copy takes the real raylib [78.00ms]
+(pass) python:batalha-de-monstrinhos:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [109.00ms]
+(pass) python:batalha-de-monstrinhos:code creates and reopens its whole program and media; the desktop copy takes the real raylib [110.00ms]
+(pass) python:aventura-do-heroi:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [93.00ms]
+(pass) python:aventura-do-heroi:code creates and reopens its whole program and media; the desktop copy takes the real raylib [94.00ms]
+(pass) python:primeira-cena-3d:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [203.00ms]
+(pass) python:primeira-cena-3d:code creates and reopens its whole program and media; the desktop copy takes the real raylib [31.00ms]
+(pass) python:modelos-do-molda:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [110.00ms]
+(pass) python:modelos-do-molda:code creates and reopens its whole program and media; the desktop copy takes the real raylib [94.00ms]
+(pass) python:caixas-que-se-encostam:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [46.00ms]
+(pass) python:caixas-que-se-encostam:code creates and reopens its whole program and media; the desktop copy takes the real raylib [63.00ms]
+(pass) python:clarao-com-shader:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [62.00ms]
+(pass) python:clarao-com-shader:code creates and reopens its whole program and media; the desktop copy takes the real raylib [32.00ms]
+(pass) python:corrida-infinita:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [93.00ms]
+(pass) python:corrida-infinita:code creates and reopens its whole program and media; the desktop copy takes the real raylib [79.00ms]
+(pass) python:patrulha-espacial:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [62.00ms]
+(pass) python:patrulha-espacial:code creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:labirinto-dos-robos:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:labirinto-dos-robos:code creates and reopens its whole program and media; the desktop copy takes the real raylib [62.00ms]
+(pass) python:mundo-de-blocos:blocks creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:mundo-de-blocos:code creates and reopens its whole program and media; the desktop copy takes the real raylib [47.00ms]
+(pass) python:pong:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [125.00ms]
+(pass) python:pong:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [63.00ms]
+(pass) python:space-shooter:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [78.00ms]
+(pass) python:space-shooter:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [62.00ms]
+(pass) python:platformer:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [110.00ms]
+(pass) python:platformer:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [171.00ms]
+(pass) python:monster-battle:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [204.00ms]
+(pass) python:monster-battle:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [218.00ms]
+(pass) python:pirate-maker:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [250.00ms]
+(pass) python:pirate-maker:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [157.00ms]
+(pass) python:vampire-survivor:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [125.00ms]
+(pass) python:vampire-survivor:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [93.00ms]
+(pass) python:pydew-valley:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [94.00ms]
+(pass) python:pydew-valley:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [94.00ms]
+(pass) python:python-monsters:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [172.00ms]
+(pass) python:python-monsters:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [203.00ms]
+(pass) python:super-pirate-world:blocks creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [140.00ms]
+(pass) python:super-pirate-world:code creates, reopens and exports its Pygame-ce program, Pinta drawings and sounds [125.00ms]
+
+src\projects\KitGallery.discovery.test.ts:
+(pass) descoberta dos exemplos do Jogo 2D > todos os 46 exemplos têm dificuldade, gênero e conceitos pesquisáveis
+(pass) descoberta dos exemplos do Jogo 2D > o percurso recomendado preserva a progressão editorial aprovada
+(pass) descoberta dos exemplos do Jogo 2D > o loader validado entrega os metadados à galeria [938.00ms]
+(pass) descoberta dos exemplos do Jogo 2D > busca sem acento e filtros combinados encontram metadados editoriais
+
+src\projects\KitGallery.language.test.ts:
+(pass) the existing JavaScript catalog remains the default
+(pass) selecting Python never presents an existing JavaScript entry as Python
+(pass) language composes with accent-free search, experience and difficulty
+
+src\projects\KitGallery.offer.test.tsx:
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) without a host Python offer the gallery shows no language choice [16.00ms]
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) both host language rights show the choice with JavaScript as default [15.00ms]
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) Python-only achievements never offer JavaScript examples
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to KitGallery inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) losing the offer after choosing Python falls back to JavaScript [16.00ms]
+(pass) Turtle examples cannot be selected from a free environment without its course grant [297.00ms]
+
+src\projects\legacyCompatibility.test.ts:
+(pass) compatibilidade do projeto real do curso — game-2d 0.19.0 > abre no Estúdio, separa as três áreas e ergue o temporizador periódico [266.00ms]
+(pass) compatibilidade do projeto real do curso — game-2d 0.19.0 > o mural atualiza o snapshot em memória e mantém vitória, derrota e reinício [250.00ms]
+(pass) compatibilidade do projeto real do curso — game-2d 0.19.0 > não reescreve projeto da Ponte: o código da criança continua sagrado [140.00ms]
+
+src\projects\ProjectList.creationScope.test.tsx:
+Isolated ./src/projects/__tests__/ProjectList.creationScope.cases.tsx: 22 pass, 0 fail, 111 expect() calls
+(pass) ProjectList.creationScope.test.tsx mock cases own an isolated module realm [3813.00ms]
+
+src\projects\ProjectList.hostChrome.test.tsx:
+Isolated ./src/projects/__tests__/ProjectList.hostChrome.cases.tsx: 7 pass, 0 fail, 36 expect() calls
+(pass) ProjectList.hostChrome.test.tsx mock cases own an isolated module realm [1532.00ms]
+
+src\projects\ProjectList.perf.test.tsx:
+Isolated ./src/projects/__tests__/ProjectList.perf.cases.tsx: 1 pass, 0 fail, 5 expect() calls
+(pass) ProjectList.perf.test.tsx mock cases own an isolated module realm [26203.00ms]
+
+src\projects\ProjectList.test.tsx:
+Isolated ./src/projects/__tests__/ProjectList.cases.tsx: 17 pass, 0 fail, 106 expect() calls
+(pass) ProjectList.test.tsx mock cases own an isolated module realm [6188.00ms]
+
+src\projects\projectSearch.test.ts:
+(pass) busca de projetos > normaliza como o Pinta: minúsculas, sem acento, espaços viram hífen
+(pass) busca de projetos > casa por nome sem acento/caixa; vários termos casam todos; busca vazia casa tudo
+(pass) busca de projetos > modo: Blocos = blocks e bridge; Código = code; todos = tudo
+
+src\projects\tilemapGame.test.ts:
+(pass) assembleTilemapGameProject > cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade [47.00ms]
+(pass) assembleTilemapGameProject > cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição
+(pass) assembleTilemapGameProject > mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo [31.00ms]
+(pass) assembleTilemapGameProject > monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos
+(pass) assembleTilemapGameProject > mapa SEM plataforma → mecânica TOP-DOWN
+(pass) assembleTilemapGameProject > mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo)
+(pass) assembleTilemapGameProject > tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN
+(pass) assembleTilemapGameProject > com camada da frente: 2º tilemap desenhado DEPOIS do jogador
+(pass) assembleTilemapGameProject > mapa inválido (sem grade/folha) → null
+
+src\projects\__tests__\initialBundleBudget.test.ts:
+(pass) a lista inicial não pré-carrega o editor nem os catálogos pesados [14781.00ms]
+
+src\projects\__tests__\loadingArchitecture.test.ts:
+(pass) galeria e store completa ficam fora do grafo estático da lista
+(pass) playground separa a listagem do host completo do editor
+
+ 266 pass
+ 0 fail
+ 6828 expect() calls
+Ran 266 tests across 13 files. [65.63s]

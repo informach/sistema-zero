@@ -1,0 +1,31 @@
+{
+  "run": 44790132975,
+  "source": "cbc16602046db80807fafb34909642a6b47a22e2",
+  "conclusion": "failure",
+  "root": {
+    "cause": "BlocksMode raw bytes",
+    "actual": 4750099,
+    "max": 4750000,
+    "not": "build timeout"
+  },
+  "chromium": {
+    "cause": "focus-without-user-activation denied in opaque game frames",
+    "allThreeShardsFailed": true
+  },
+  "firefox": "success",
+  "webkit": "success",
+  "desktop": {
+    "firstJob": 136475316175,
+    "firstResult": "one native transfer timeout at 40 seconds",
+    "singleDiagnosticRerunJob": 136493339041,
+    "nativePassed": 65,
+    "desktopPassed": 95,
+    "rerunResult": "success",
+    "productCodeOrDeadlinesChanged": false
+  },
+  "localDesktop": {
+    "transferIsolated": "1 pass, 8 assertions, 11.735 seconds",
+    "full": "61 pass, 4 fail; machine rejected the native helper with EUNKNOWN",
+    "acceptedAsGreen": false
+  }
+}

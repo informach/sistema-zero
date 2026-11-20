@@ -85,6 +85,19 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   A imagem db27 foi qualificada em 44781914334 e armazenada no registry de staging,
   com leitura independente do digest. Isso ainda não a ativa nem libera a escrita.
   Ver `qa/integracao-b2c8-2026-11-20/`; nova CI geral e rollout continuam necessários.
+  A integração pública f923972b4 passou por 16 verificações locais. A CI anterior
+  44790132975 revelou a nova política de foco do Chromium 159 e o modo Blocos
+  99 bytes acima do teto. A delegação explícita no host e o carregamento adiado
+  do comando Python corrigem as causas, sem mudar estilos, sandbox ou os tetos.
+  Os 185 cartões passaram; três fixtures com quadros próprios foram corrigidas
+  e repetidas, junto do gesto de colagem que lia coordenadas antes do aviso.
+  Passaram 641 casos de componentes, 266 de projetos, 12 da regressão dirigida,
+  14 Firefox, sete WebKit, 12 Pinta/Estúdio, tipos completos e Biome. O caso de
+  isolamento de CPU continua ignorado no WebKit, conforme o contrato anterior.
+  Tentativas e limites em `qa/integracao-f923-chromium-2026-11-20/`.
+  O perfil 4de439a6… exige outra imagem qualificada: a imagem db27 armazenada
+  não corresponde à casca nova. CI geral, novos lotes publicados do remoto,
+  rollout e ciclo autenticado continuam pendentes; esta prova não conclui 0b.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

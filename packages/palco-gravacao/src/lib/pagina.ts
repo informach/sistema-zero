@@ -52,6 +52,15 @@ export interface PaginaDoPalco {
    */
   categoria(nome: string): 'aberta' | 'fechada' | null
   /**
+   * As categorias de um caminho ("Jogo 3D > Encostar > Encostar"), do começo até a última que
+   * está à vista: a primeira em qualquer nível (a mais de fora), cada uma das outras dentro da
+   * anterior. `repetida` diz que outra categoria tem o mesmo nome (a subcategoria Encostar dentro
+   * de Encostar), e aí só o ponto da própria linha acha a certa.
+   */
+  categoriaNoCaminho(
+    caminho: readonly string[],
+  ): { estado: 'aberta' | 'fechada'; alvo: Alvo; repetida: boolean }[]
+  /**
    * Um bloco pelo começo do texto dele, como aparece na tela ("Deixar o sprite" acha "Deixar o
    * sprite jogador com 50% de visibilidade"): na paleta, pego pela borda esquerda, ou na área de
    * trabalho, pelo meio.
@@ -252,13 +261,28 @@ function donoDe(el: Element): Element | null {
 }
 
 /** O texto que é do próprio bloco, sem o dos blocos encaixados nele. */
-const textoProprio = (block: Element): string => {
-  const meus = [...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block)
+const textoProprio = (block: Element): string =>
+  lerLinhas([...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block))
+
+/**
+ * O texto que se lê no bloco junto com o dos blocos encaixados nele ("Se valor da variável
+ * temChave então"), sem o dos blocos de baixo da pilha: separa dois Se que só a pergunta
+ * diferencia.
+ */
+const textoComOsDeDentro = (block: Element): string =>
+  lerLinhas(
+    [...block.querySelectorAll('text.blocklyText')].filter((t) => {
+      const dono = donoDe(t)
+      return dono === block || (dono !== null && dentroDoProprio(block, dono))
+    }),
+  )
+
+function lerLinhas(textos: Element[]): string {
   // A montagem do SVG pode pôr sombras antes dos rótulos no DOM, independentemente de onde
   // aparecem. Lemos as linhas desenhadas, da esquerda para a direita: isso também conserva o
   // primeiro número de "1 + 2" e valores entre rótulos. A interseção vertical comum impede
   // que campos altos juntem duas linhas diferentes numa única linha.
-  const medidos = meus
+  const medidos = textos
     .map((el) => ({ el, rect: el.getBoundingClientRect() }))
     .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left)
   const linhas: { top: number; bottom: number; campos: typeof medidos }[] = []
@@ -282,7 +306,8 @@ const textoProprio = (block: Element): string => {
 
 /**
  * Os blocos visíveis da área de trabalho ou da paleta cujo texto começa com `alvo` (ou o contém,
- * quando nenhum começa).
+ * quando nenhum começa). Sem nenhum, os que começam assim lidos com os blocos encaixados neles:
+ * "Se valor da variável temChave" é o Se que pergunta temChave.
  */
 function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'): Element[] {
   const raiz = onde === 'area' ? areaDeTrabalho(doc) : paleta(doc)
@@ -292,12 +317,32 @@ function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'
   const [proprio, ...fora] = alvo.split(/ dentro de /i)
   const donos = fora.length ? blocosCom(doc, fora.join(' dentro de '), onde) : null
   if (donos && !donos.length) return []
-  const wanted = fold(proprio ?? '')
+  // "Quando personagem encostar em chave abaixo de Quando personagem encostar em chave": o
+  // encontro novo, que chega com o mesmo texto do que já existe e fica logo abaixo dele.
+  const [nome, ...acima] = (proprio ?? '').split(/ abaixo de /i)
+  const deCima = acima.length ? blocosCom(doc, acima.join(' abaixo de '), onde) : null
+  if (deCima && !deCima.length) return []
+  const wanted = fold(nome ?? '')
   const blocos = [...raiz.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(
-    (b) => visivel(b) && (!donos || donos.some((d) => dentroDoProprio(d, b))),
+    (b) =>
+      visivel(b) &&
+      (!donos || donos.some((d) => dentroDoProprio(d, b))) &&
+      (!deCima || deCima.some((d) => d === emCimaNaPilha(b))),
   )
   const comecam = blocos.filter((b) => textoProprio(b).startsWith(wanted))
-  return comecam.length ? comecam : blocos.filter((b) => textoProprio(b).includes(wanted))
+  if (comecam.length) return comecam
+  const contem = blocos.filter((b) => textoProprio(b).includes(wanted))
+  if (contem.length) return contem
+  return blocos.filter((b) => textoComOsDeDentro(b).startsWith(wanted))
+}
+
+/**
+ * O bloco logo acima deste na pilha: o grupo SVG do bloco de baixo fica dentro do de cima. O
+ * bloco de fora de um espaço (o encontro, para o primeiro bloco do fazer dele) não conta.
+ */
+function emCimaNaPilha(block: Element): Element | null {
+  const pai = block.parentElement?.closest('.blocklyDraggable') ?? null
+  return pai && !dentroDoProprio(pai, block) ? pai : null
 }
 
 /** Os textos que são do próprio bloco, não dos blocos encaixados nele. */
@@ -332,11 +377,25 @@ function campoDe(doc: Document, valor: string, bloco?: string): Element | null {
   )
   // Primeiro os campos do próprio bloco; sem eles, os de um bloco encaixado nele (o verdadeiro
   // solto no valor de Criar variável, o texto no de Alterar variável).
-  const found = !blocos
+  const achado = !blocos
     ? campos[0]
     : (campos.find((t) => blocos.some((b) => donoDe(t) === b)) ??
       campos.find((t) => blocos.some((b) => dentroDoProprio(b, donoDe(t) ?? t))))
-  return found ? (found.closest('.blocklyEditableField') ?? found) : null
+  if (!achado) return null
+  // Dois campos iguais no mesmo bloco (o x e o z da chave valendo −2 juntos): vale o primeiro na
+  // leitura da tela, da esquerda para a direita, e não o primeiro do SVG (as sombras podem vir em
+  // outra ordem no DOM).
+  const dono = donoDe(achado)
+  const found =
+    campos
+      .filter((t) => donoDe(t) === dono)
+      .map((t) => ({ t, r: t.getBoundingClientRect() }))
+      .sort((a, b) =>
+        Math.abs(a.r.top - b.r.top) < Math.min(a.r.height, b.r.height) / 2
+          ? a.r.left - b.r.left
+          : a.r.top - b.r.top,
+      )[0]?.t ?? achado
+  return found.closest('.blocklyEditableField') ?? found
 }
 
 /** O caminho do próprio bloco, sem os de dentro. */
@@ -1056,13 +1115,65 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         if (fold(texto(rotulo)) !== wanted || !visivel(rotulo)) continue
         const linha = rotulo.closest('.blocklyToolboxCategory,.blocklyTreeRow')
         if (!linha) continue
-        // Uma categoria com outras dentro mostra o ícone aberto ou fechado (Blockly 12).
-        const icone = linha.querySelector('.blocklyToolboxCategoryIcon')
-        if (icone?.classList.contains('blocklyToolboxCategoryIconOpen')) return 'aberta'
-        if (icone?.classList.contains('blocklyToolboxCategoryIconClosed')) return 'fechada'
-        return linha.classList.contains('blocklyToolboxSelected') ? 'aberta' : 'fechada'
+        return estadoDaCategoria(linha)
       }
       return null
     },
+
+    categoriaNoCaminho(caminho) {
+      const caixa = toolbox(doc)
+      if (!caixa) return []
+      const rotulos = [...caixa.querySelectorAll('.blocklyToolboxCategoryLabel,.blocklyTreeLabel')]
+      const nomes = new Map<string, number>()
+      for (const r of rotulos) nomes.set(fold(texto(r)), (nomes.get(fold(texto(r))) ?? 0) + 1)
+      const niveis: { estado: 'aberta' | 'fechada'; alvo: Alvo; repetida: boolean }[] = []
+      let pai: Element | null = null
+      for (const [i, nome] of caminho.entries()) {
+        const wanted = fold(nome)
+        const achados = rotulos.filter(
+          (r) =>
+            fold(texto(r)) === wanted &&
+            visivel(r) &&
+            (i === 0 || categoriaDeFora(categoriaDe(r)) === pai),
+        )
+        // Sem a de fora no caminho, a mais de fora com esse nome (Encostar, e não a de dentro).
+        const rotulo =
+          i === 0
+            ? achados.sort((a, b) => profundidade(categoriaDe(a)) - profundidade(categoriaDe(b)))[0]
+            : achados[0]
+        const linha = rotulo?.closest('.blocklyToolboxCategory,.blocklyTreeRow')
+        if (!rotulo || !linha) break
+        const r = linha.getBoundingClientRect()
+        niveis.push({
+          estado: estadoDaCategoria(linha),
+          alvo: pontoEm(linha, r.left + r.width / 2, r.top + r.height / 2),
+          repetida: (nomes.get(wanted) ?? 0) > 1,
+        })
+        pai = categoriaDe(rotulo)
+      }
+      return niveis
+    },
   }
+}
+
+/** Uma categoria com outras dentro mostra o ícone aberto ou fechado (Blockly 12). */
+function estadoDaCategoria(linha: Element): 'aberta' | 'fechada' {
+  const icone = linha.querySelector('.blocklyToolboxCategoryIcon')
+  if (icone?.classList.contains('blocklyToolboxCategoryIconOpen')) return 'aberta'
+  if (icone?.classList.contains('blocklyToolboxCategoryIconClosed')) return 'fechada'
+  return linha.classList.contains('blocklyToolboxSelected') ? 'aberta' : 'fechada'
+}
+
+/** A caixa da categoria (a linha dela e as categorias de dentro). */
+const categoriaDe = (el: Element | null): Element | null =>
+  el?.closest('.blocklyToolboxCategoryContainer') ?? null
+
+/** A categoria em que esta está, ou nula na de mais de fora. */
+const categoriaDeFora = (categoria: Element | null): Element | null =>
+  categoriaDe(categoria?.parentElement ?? null)
+
+const profundidade = (categoria: Element | null): number => {
+  let n = 0
+  for (let c = categoriaDeFora(categoria); c; c = categoriaDeFora(c)) n++
+  return n
 }

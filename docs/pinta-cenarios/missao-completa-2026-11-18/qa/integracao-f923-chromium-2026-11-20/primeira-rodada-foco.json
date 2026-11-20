@@ -1,0 +1,44 @@
+[
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-20T18:57:57.946Z",
+    "finished": "2026-11-20T18:57:58.017Z",
+    "log": ".cache/pinta-focus-final-core.log"
+  },
+  {
+    "name": "runtime",
+    "exit": 0,
+    "started": "2026-11-20T18:57:58.020Z",
+    "finished": "2026-11-20T18:57:58.399Z",
+    "log": ".cache/pinta-focus-final-runtime.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T18:57:58.400Z",
+    "finished": "2026-11-20T18:57:58.565Z",
+    "log": ".cache/pinta-focus-final-profile.log"
+  },
+  {
+    "name": "components",
+    "exit": 0,
+    "started": "2026-11-20T18:57:58.566Z",
+    "finished": "2026-11-20T18:59:14.322Z",
+    "log": ".cache/pinta-focus-final-components.log"
+  },
+  {
+    "name": "projects",
+    "exit": 0,
+    "started": "2026-11-20T18:59:14.323Z",
+    "finished": "2026-11-20T19:00:20.343Z",
+    "log": ".cache/pinta-focus-final-projects.log"
+  },
+  {
+    "name": "chromium",
+    "exit": 1,
+    "started": "2026-11-20T19:00:20.344Z",
+    "finished": "2026-11-20T19:17:48.543Z",
+    "log": ".cache/pinta-focus-final-chromium.log"
+  }
+]

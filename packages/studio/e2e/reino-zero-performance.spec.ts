@@ -39,22 +39,21 @@ test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', as
   const openedAt = await page.evaluate(() => performance.now())
   await card.click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
+  // O projeto carregou: os blocos desenhados mais os que ficaram para desenhar perto da vista.
+  // Desde a etapa 3 (`blockly/deferredTail.ts`, acima de 1.500 blocos) a cauda distante de cada
+  // área é criada sem ser desenhada, então contar só os desenhados não diz mais que abriu.
   await expect
     .poll(
       () =>
-        page.evaluate(() => {
-          const rendered = document.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable').length
-          const deferred = Number(
-            document
-              .querySelector('[data-sz-deferred-blocks]')
-              ?.getAttribute('data-sz-deferred-blocks') ?? 0,
-          )
-          // A abertura adia a cauda fora da vista; ela continua pertencendo ao projeto.
-          return rendered + deferred
-        }),
-      {
-        timeout: 15_000,
-      },
+        page.evaluate(
+          () =>
+            document.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable').length +
+            Number(
+              document.querySelector<HTMLElement>('[data-sz-deferred-blocks]')?.dataset
+                .szDeferredBlocks ?? 0,
+            ),
+        ),
+      { timeout: 15_000 },
     )
     .toBeGreaterThan(1000)
   const preview = page.frameLocator('iframe[title="Pré-visualização"]')

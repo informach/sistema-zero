@@ -1,0 +1,27 @@
+
+Running 14 tests using 1 worker
+
+(node:21444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [firefox] › e2e\blockly-media.spec.ts:29:1 › zoom e lixeira usam o desenho em vetor do SDK, servido pelo host (4.6s)
+  ✓   2 [firefox] › e2e\blockly-media.spec.ts:56:1 › a lixeira fica por cima dos blocos e a tampa abre e fecha com o bloco (4.9s)
+  ✓   3 [firefox] › e2e\preview-executes-user-code.spec.ts:27:3 › preview executa o código do aluno › o script canônico roda e pinta a tela (5.2s)
+  ✓   4 [firefox] › e2e\preview-executes-user-code.spec.ts:42:3 › preview executa o código do aluno › um `<script>` inline no index.html também executa (5.3s)
+  ✓   5 [firefox] › e2e\preview-security.spec.ts:41:3 › segurança do preview › handlers HTML exatos funcionam, preservam return false e têm guarda de loop (9.9s)
+  ✓   6 [firefox] › e2e\preview-security.spec.ts:69:3 › segurança do preview › script inline criado em execução é bloqueado e a IDE continua responsiva (5.2s)
+  ✓   7 [firefox] › e2e\preview-security.spec.ts:94:3 › segurança do preview › script externo criado em execução é recusado e a IDE continua responsiva (5.1s)
+(node:18692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [firefox] › e2e\preview-shell-hostile.spec.ts:53:3 › programas hostis na prévia dentro da casca › trabalho síncrono longo que não é laço não trava o editor (11.7s)
+  ✓   9 [firefox] › e2e\preview-shell-hostile.spec.ts:67:3 › programas hostis na prévia dentro da casca › recursão sem fim vira erro do jogo, não do editor (10.3s)
+  ✓  10 [firefox] › e2e\preview-shell-hostile.spec.ts:73:3 › programas hostis na prévia dentro da casca › enxurrada de mensagens não trava o editor (10.1s)
+  ✓  11 [firefox] › e2e\preview-shell-hostile.spec.ts:82:3 › programas hostis na prévia dentro da casca › memória crescendo sem parar não derruba o editor (9.9s)
+(node:39828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  12 [firefox] › e2e\preview-shell-performance.spec.ts:23:3 › prévia isolada: resposta durante CPU ocupada › trabalho síncrono longo do jogo não trava o editor (11.5s)
+(node:35044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  13 [firefox] › e2e\preview-shell.spec.ts:20:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (6.6s)
+  ✓  14 [firefox] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (9.2s)
+
+  14 passed (1.9m)

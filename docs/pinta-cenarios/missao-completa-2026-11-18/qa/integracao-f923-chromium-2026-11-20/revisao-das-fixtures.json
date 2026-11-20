@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-20T19:21:34.608Z",
+  "changed": [
+    {
+      "file": "packages/studio/e2e/preview-focus-policy.spec.ts",
+      "before": "c20663acaf6628cdd6d9ddde867879c8c7e1b1b9dfb170c0b6b6bcf025d6099b",
+      "after": "fcea9d8ace961332d5c04a5d326790c2598e6791b02e44047dbffc533422ea36"
+    },
+    {
+      "file": "packages/studio/src/components/console/ConsolePanelPython.test.tsx",
+      "before": "a2fd7caef262fe427896840e935ec4693720888108fef0023c320788b829ce19",
+      "after": "55c7cbf6d52a39d129d3dcd6d2be74f1215d094e4e8a74287db5bc6ea001c6f7"
+    }
+  ],
+  "additionalFixtures": 2,
+  "productFilesChanged": false,
+  "reason": "custom iframe fixtures delegate the same nominal focus permission as the real host; new fixture protocol source and default test deadlines",
+  "paste": {
+    "reason": "draft diagnostic shifts text from x246 to x271 after initial visibility; wait for marker and stable hover, grip text center, preserve translation",
+    "stableRealRuns": 3,
+    "productChanged": false
+  }
+}

@@ -52,11 +52,35 @@ Implementação e autoria locais: experiências, quiz, objetivos, projetos progr
 
 Ainda dependem de produção: geração e escuta das vozes, gravação dos vídeos, anexação do PDF no Admin e publicação. `plannedVideo` é um molde de produção, não um vídeo publicado. O manifesto já contém os passos como material de texto para consulta; o PDF é anexado na publicação. Não houve importação remota nem implantação nesta tarefa.
 
-O caderno é anexado uma única vez, em `materiais`, na parte 2 da primeira aula. As demais aulas remetem a ele. Seu PDF segue o mesmo template visual do Cadê Todo Mundo e da Chave do Farol, com capa ilustrada, índice, experiências, passos numerados, esquemas com as cores reais dos blocos, testes, entrega e ajuda. O encerramento oferece publicação opcional no Mural, sem transformá-la em requisito de conclusão.
+O caderno é anexado uma única vez, em `materiais`, na parte 2 da primeira aula. As demais aulas remetem a ele. Desde 20/11/2026 o PDF segue a [receita do Passo a passo](../../../aulas-interativas-tecnico/recursos/caderno-visual/README.md) (capa, abertura com o índice das aulas, uma folha por parte com o cabeçalho da cena, passos numerados, esquemas com as cores dos blocos do Estúdio, galerias das escolhas, publicação no Mural e ajuda). O texto mora em `recursos/ilha-farol/caderno-conteudo.json`, e a arte da capa é a ilha do jogo, renderizada com as peças do curso por `docs/design/ilha-do-farol-blender/capa.py`. O encerramento oferece publicação opcional no Mural, sem transformá-la em requisito.
 
 Usar o curso reservado **`jornada-faisca-base-3d`**; na oferta adulta, **`jornada-faisca-base-3d-adulto`**. A projeção de destino conserva os IDs internos e a cadeia do projeto. Conferir os cursos existentes por slug antes de importar; não recriar o curso nem reiniciar progresso. O currículo aponta para esta autoria, mantendo o hash do outline original do seed. Os títulos e a montagem completos vêm destes manifestos. Havendo aulas provisórias no Admin, reconciliar sua identidade antes da publicação.
 
 Um ensaio com iniciantes ainda é necessário para avaliar compreensão, legibilidade e tempo de exploração. Os testes de software conferem funcionamento, não comprovam aprendizagem.
+
+## Revisão de 20/11/2026: falas, gravação automática e Passo a passo
+
+No molde do Cadê Todo Mundo? e de A Chave do Farol:
+
+- **Falas:** uma ideia por parágrafo, o porquê antes do como, a retomada "Tá vendo?" com a causa,
+  "É este bloco que…" e cada clique na sua frase. Nenhuma fala espera o "Salvo". A abertura
+  guarda as mudanças da Helena ("Oi!" e "Explore a ilha. Quando terminar, clique em Próxima
+  parte.").
+- **Estrutura:** o envio fecha a última construção de cada aula, como no Farol. Aula 1 com quatro
+  partes (a entrega e o fecho entraram no movimento), Aula 2 com seis (o fecho entrou no aviso) e
+  Aula 3 com oito, mais a revisão; o fecho da Aula 3 continua com o Compartilhar.
+- **Na tela:** cada gesto na sua palavra, nos verbos do palco (ESPEC-ROTEIRO, seção 9). O jogo é
+  de teclado: `[rodar de novo]` dá o foco ao jogo no Estúdio, e `[tocar jogo]` no jogo pronto. Os
+  caminhos das setas contam a velocidade 4 e os sólidos (a pedra fecha a linha do começo) e se
+  acertam no Verificar plano. Para os nomes repetidos da paleta e dos blocos 3D (Encostar dentro
+  de Encostar, dois Se, o encontro novo igual ao que já existe), o palco ganhou o caminho de
+  categorias, `abaixo de` e o nome que segue pelos blocos encaixados.
+- **Recados na página:** cada parte tem o seu, como no Farol.
+- **Passo a passo:** refeito na receita do caderno visual, com 29 páginas.
+
+**Pendências de produção:** gerar a voz nova (os três `.elevenlabs.txt`), gravar com o palco e
+acertar os tempos das setas no Verificar plano, reimportar as três aulas (a Aula 1 perdeu as seções
+`entrega` e `fecho`, e a Aula 2 a `fecho`) e anexar o PDF novo no Admin.
 
 ## Faísca: revisão de 27/10/2026
 

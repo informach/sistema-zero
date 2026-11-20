@@ -1,0 +1,493 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=webkit",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\playwright.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-focus-r4-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-focus-r4-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/preview-security\\.spec\\.ts/",
+          "/preview-executes-user-code\\.spec\\.ts/",
+          "/preview-shell(?:-performance|-hostile)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-focus-r4-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/reload-flush\\.spec\\.ts/",
+          "/preview-shell(?:-performance)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-focus-r4-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "webkit",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": [{}, {}, {}],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5497",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1792,
+            "height": 1120
+          },
+          "deviceScaleFactor": 2,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "webkit"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "webkit"
+      }
+    ],
+    "quiet": false,
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "bun run serve:e2e",
+      "env": {
+        "E2E_PORT": "5497"
+      },
+      "url": "http://127.0.0.1:5497",
+      "reuseExistingServer": true,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "blockly-media.spec.ts",
+      "file": "blockly-media.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "zoom e lixeira usam o desenho em vetor do SDK, servido pelo host",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4711,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:36:39.371Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "73e7d984409bd9c996be-5609b57c8e436c90525e",
+          "file": "blockly-media.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "a lixeira fica por cima dos blocos e a tampa abre e fecha com o bloco",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5097,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:36:44.159Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "73e7d984409bd9c996be-746c2d981e5df5017517",
+          "file": "blockly-media.spec.ts",
+          "line": 56,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "preview-shell-performance.spec.ts",
+      "file": "preview-shell-performance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "prévia isolada: resposta durante CPU ocupada",
+          "file": "preview-shell-performance.spec.ts",
+          "line": 21,
+          "column": 6,
+          "specs": [
+            {
+              "title": "trabalho síncrono longo do jogo não trava o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "no WebKit nenhum arranjo de iframe isolou (medido)",
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\preview-shell-performance.spec.ts",
+                        "line": 27,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 173,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:37:17.337Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "no WebKit nenhum arranjo de iframe isolou (medido)",
+                          "location": {
+                            "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\preview-shell-performance.spec.ts",
+                            "line": 27,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "121d71cc19b42cd2f0df-6286b0899941e541a3c8",
+              "file": "preview-shell-performance.spec.ts",
+              "line": 23,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-shell.spec.ts",
+      "file": "preview-shell.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "prévia dentro da casca em outro site",
+          "file": "preview-shell.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7627,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:37:18.001Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-4335cced4cd85756a55c",
+              "file": "preview-shell.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "depois de Rodar, as setas chegam ao jogo sem clicar no palco",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7932,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:37:25.702Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-fa1dc5839ca3a507f8e9",
+              "file": "preview-shell.spec.ts",
+              "line": 59,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "reload-flush.spec.ts",
+      "file": "reload-flush.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "enviar um céu de 1,5 MB e recarregar NA HORA: o arquivo sobrevive",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8602,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:36:49.320Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a69cac04dd85dfdcd6a4-e0c200aaa0ca1bc8161d",
+          "file": "reload-flush.spec.ts",
+          "line": 231,
+          "column": 1
+        },
+        {
+          "title": "trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta: os três sobrevivem",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10252,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:36:57.932Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a69cac04dd85dfdcd6a4-2d091aa289de08ed9c87",
+          "file": "reload-flush.spec.ts",
+          "line": 250,
+          "column": 1
+        },
+        {
+          "title": "esconder a aba grava NA HORA, sem esperar o autosave",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8676,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:37:08.197Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a69cac04dd85dfdcd6a4-da71837e6dd47449c6cb",
+          "file": "reload-flush.spec.ts",
+          "line": 280,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T19:36:38.902Z",
+    "duration": 54794.898,
+    "expected": 7,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

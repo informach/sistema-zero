@@ -16,6 +16,8 @@
  * `frame-ancestors`: qualquer outra diretiva restringiria o jogo além da CSP dele próprio.
  */
 
+import { CLASSIC_GAME_FRAME_ALLOW } from './frame-permissions'
+
 export const CLASSIC_SHELL_PATH = '/v1/classic-shell/1.html'
 /** O mesmo sandbox da prévia direta (`PreviewIframe`): nunca `allow-same-origin`. */
 export const CLASSIC_SHELL_GAME_SANDBOX = 'allow-scripts allow-modals allow-pointer-lock'
@@ -98,7 +100,7 @@ function shellScript(parentOrigins: readonly string[]): string {
     if (frame) frame.remove();
     frame = document.createElement('iframe');
     frame.setAttribute('sandbox', ${JSON.stringify(CLASSIC_SHELL_GAME_SANDBOX)});
-    frame.setAttribute('allow', 'fullscreen');
+    frame.setAttribute('allow', ${JSON.stringify(CLASSIC_GAME_FRAME_ALLOW)});
     frame.setAttribute('title', 'Jogo');
     const mounted = frame;
     mounted.addEventListener('load', () => {

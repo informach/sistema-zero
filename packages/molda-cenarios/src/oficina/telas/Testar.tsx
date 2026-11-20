@@ -22,7 +22,7 @@ import {
   Square,
   X,
 } from 'lucide-react'
-import { type JSX, useEffect, useState } from 'react'
+import { type JSX, useEffect, useState, useSyncExternalStore } from 'react'
 import { Dialogo } from '../pecas'
 
 const MODOS = [
@@ -229,6 +229,43 @@ function Pressionar({
 }
 
 const numero = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+
+/**
+ * O estado do teste chega do palco a cada 100 ms. Guardado aqui, fora do estado da oficina, só o
+ * painel do teste redesenha: no estado da oficina, a tela inteira (painéis, gaveta) redesenhava
+ * dez vezes por segundo e, num aparelho modesto, travava a caminhada.
+ */
+export interface LojaDoTeste {
+  ler(): EstadoDoTeste | null
+  assinar(aviso: () => void): () => void
+  definir(estado: EstadoDoTeste | null): void
+}
+export function criarLojaDoTeste(): LojaDoTeste {
+  let atual: EstadoDoTeste | null = null
+  const avisos = new Set<() => void>()
+  return {
+    ler: () => atual,
+    assinar(aviso) {
+      avisos.add(aviso)
+      return () => {
+        avisos.delete(aviso)
+      }
+    },
+    definir(estado) {
+      if (estado === atual) return
+      atual = estado
+      for (const aviso of avisos) aviso()
+    },
+  }
+}
+export function ControlesDoTesteAoVivo({
+  loja,
+  ...resto
+}: { loja: LojaDoTeste } & Omit<Parameters<typeof ControlesTeste>[0], 'estado'>) {
+  const estado = useSyncExternalStore(loja.assinar, loja.ler, loja.ler)
+  return estado ? <ControlesTeste estado={estado} {...resto} /> : null
+}
+
 export function ControlesTeste({
   estado,
   comandar,

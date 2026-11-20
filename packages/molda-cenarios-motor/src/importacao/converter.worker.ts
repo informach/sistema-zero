@@ -1,3 +1,5 @@
+// Primeiro, antes do three: ver janela-do-worker.ts.
+import './janela-do-worker'
 import { converterConjunto } from './converter'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>

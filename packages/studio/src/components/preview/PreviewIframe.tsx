@@ -4,6 +4,7 @@ import {
   isClassicShellLoaded,
   isClassicShellReady,
 } from '@sistemazero/core/studio/classic-shell'
+import { CLASSIC_GAME_FRAME_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -1329,7 +1330,7 @@ export function PreviewIframe(): JSX.Element {
           // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
           // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
           // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
-          allow="fullscreen"
+          allow={CLASSIC_GAME_FRAME_ALLOW}
           className="h-full w-full flex-1 bg-white"
         />
       )}

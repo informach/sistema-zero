@@ -32,11 +32,12 @@ ILHA_OUT=./out bun docs/aulas-interativas-tecnico/qa/gerar-ilha-artes.ts
 # Sempre:
 bun docs/aulas-interativas-tecnico/qa/gerar-ilha-do-farol.ts
 bun docs/aulas-interativas-tecnico/qa/ilha-preview/build.ts
-bun docs/aulas-interativas-tecnico/recursos/ilha-farol/gerar-caderno.ts
-node docs/aulas-interativas-tecnico/recursos/ilha-farol/renderizar-caderno.mjs
+python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py ilha-farol
+# Só quando a arte da capa mudar (precisa do Blender e dos GLB da biblioteca, ver capa.py):
+ILHA_GLB=./out ILHA_CAPA=docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-ilha-farol.jpg /tmp/blender-venv/bin/python docs/design/ilha-do-farol-blender/capa.py
 ```
 
-O PDF reutiliza o CSS, Nunito, Baloo 2, cartões e desenhos de encaixe do Cadê Todo Mundo; a galeria das escolhas usa as miniaturas de `docs/design/ilha-do-farol-blender/galeria/`. Chrome imprime o HTML; PyMuPDF ajuda na inspeção visual. O gerador recusa conteúdo cortado ou sobreposto ao rodapé. As dependências de otimização GLB são de autoria, não entram no runtime do aluno. Os modelos seguem o contrato do [README do Blender](../design/ilha-do-farol-blender/README.md): uma caixa por categoria, o farol com `acender`/`aceso` e o personagem com `parado`/`andando`.
+O PDF segue a receita do caderno visual (`recursos/caderno-visual/README.md`), com o texto em `recursos/ilha-farol/caderno-conteudo.json`, os esquemas desenhados com as cores dos blocos do Estúdio e as galerias das escolhas com as miniaturas de `docs/design/ilha-do-farol-blender/galeria/`. O `gerar-materiais.py` imprime o HTML no Chrome; PyMuPDF ajuda na inspeção visual. O gerador recusa conteúdo cortado ou sobreposto ao rodapé. As dependências de otimização GLB são de autoria, não entram no runtime do aluno. Os modelos seguem o contrato do [README do Blender](../design/ilha-do-farol-blender/README.md): uma caixa por categoria, o farol com `acender`/`aceso` e o personagem com `parado`/`andando`.
 
 ## Verificar
 

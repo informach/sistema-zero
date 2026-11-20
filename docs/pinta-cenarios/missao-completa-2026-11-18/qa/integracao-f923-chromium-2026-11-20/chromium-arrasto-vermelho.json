@@ -1,0 +1,671 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/examples-gallery.spec.ts",
+      "e2e/snow-descent.spec.ts",
+      "e2e/preview-focus-policy.spec.ts",
+      "e2e/paste-into-area.spec.ts",
+      "--grep",
+      "GLB animado|herói do Molda|personagem e|animated snow|recebe foco sem|colar blocos de outro projeto",
+      "--project=chromium",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\playwright.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-focus-followup-chromium-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-focus-followup-chromium-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/preview-security\\.spec\\.ts/",
+          "/preview-executes-user-code\\.spec\\.ts/",
+          "/preview-shell(?:-performance|-hostile)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-focus-followup-chromium-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/reload-flush\\.spec\\.ts/",
+          "/preview-shell(?:-performance)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-focus-followup-chromium-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5497",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.8154.6 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "permissions": ["clipboard-read", "clipboard-write"]
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "bun run serve:e2e",
+      "env": {
+        "E2E_PORT": "5497"
+      },
+      "url": "http://127.0.0.1:5497",
+      "reuseExistingServer": true,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "examples-gallery.spec.ts",
+      "file": "examples-gallery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "game-3d-advanced: GLB animado e HDR percorrem o preview real e toleram teardown",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11904,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:21:15.145Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7791aff2bb83b57a2d62-f5addcf009b4ccea6482",
+          "file": "examples-gallery.spec.ts",
+          "line": 459,
+          "column": 1
+        },
+        {
+          "title": "game-3d: o herói do Molda (GLB com ossos) anima e o céu HDR percorre o preview real",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5146,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:21:27.073Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7791aff2bb83b57a2d62-d03a970d7f2e9e71404f",
+          "file": "examples-gallery.spec.ts",
+          "line": 743,
+          "column": 1
+        },
+        {
+          "title": "world-3d: personagem e \"Pôr o modelo\" do Molda com o céu HDR percorrem o preview real",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9801,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:21:32.238Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7791aff2bb83b57a2d62-781f35b55af2b8fe0aa4",
+          "file": "examples-gallery.spec.ts",
+          "line": 800,
+          "column": 1
+        }
+      ],
+      "suites": [
+        {
+          "title": "KitGallery — os 185 cartões no Chromium",
+          "file": "examples-gallery.spec.ts",
+          "line": 449,
+          "column": 6,
+          "specs": [
+            {
+              "title": "game-3d:Meu herói do Molda: cria, mostra primeiro frame e aceita controles",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 75000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4534,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:21:04.909Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7791aff2bb83b57a2d62-f725a3e0c4a012c41599",
+              "file": "examples-gallery.spec.ts",
+              "line": 451,
+              "column": 5
+            },
+            {
+              "title": "game-3d-advanced:Herói do Molda: cria, mostra primeiro frame e aceita controles",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 75000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5580,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:21:09.549Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7791aff2bb83b57a2d62-74f5e4277c3939b8a180",
+              "file": "examples-gallery.spec.ts",
+              "line": 451,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "paste-into-area.spec.ts",
+      "file": "paste-into-area.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "colar blocos de outro projeto e arrastar para a Área",
+          "file": "paste-into-area.spec.ts",
+          "line": 101,
+          "column": 6,
+          "specs": [
+            {
+              "title": "só o \"preparar o jogo\" no Ao iniciar já tem que pintar a cor",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8277,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\paste-into-area.spec.ts:146:20",
+                        "location": {
+                          "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\paste-into-area.spec.ts",
+                          "column": 20,
+                          "line": 146
+                        },
+                        "snippet": " \u001b[90m 144 |\u001b[39m         \u001b[36mreturn\u001b[39m \u001b[33mBoolean\u001b[39m(block\u001b[33m?.\u001b[39mparentElement\u001b[33m?.\u001b[39mclosest(\u001b[32m'g.blocklyDraggable'\u001b[39m))\n \u001b[90m 145 |\u001b[39m       })\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 146 |\u001b[39m     expect(nested)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 147 |\u001b[39m\n \u001b[90m 148 |\u001b[39m     \u001b[36mawait\u001b[39m expect\n \u001b[90m 149 |\u001b[39m       \u001b[33m.\u001b[39mpoll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m generatedProgram(\u001b[36mawait\u001b[39m previewDoc(page))\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15_000\u001b[39m })"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\paste-into-area.spec.ts",
+                            "column": 20,
+                            "line": 146
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  144 |         return Boolean(block?.parentElement?.closest('g.blocklyDraggable'))\n  145 |       })\n> 146 |     expect(nested).toBe(true)\n      |                    ^\n  147 |\n  148 |     await expect\n  149 |       .poll(async () => generatedProgram(await previewDoc(page)), { timeout: 15_000 })\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\paste-into-area.spec.ts:146:20"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:21:42.068Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-focus-followup-chromium-results\\paste-into-area-colar-bloc-5dd24-iar-já-tem-que-pintar-a-cor-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\paste-into-area.spec.ts",
+                        "column": 20,
+                        "line": 146
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "76a78968fbdf7c66e2fd-9d95d7fdfab66356e2d9",
+              "file": "paste-into-area.spec.ts",
+              "line": 102,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-focus-policy.spec.ts",
+      "file": "preview-focus-policy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "o jogo recebe foco sem ativação e devolve o teclado à Ponte (direto)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4289,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:21:50.825Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4808a0af1faf36e60a48-371b1aa48835833b611a",
+          "file": "preview-focus-policy.spec.ts",
+          "line": 5,
+          "column": 3
+        },
+        {
+          "title": "o jogo recebe foco sem ativação e devolve o teclado à Ponte (casca)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4099,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:21:55.217Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4808a0af1faf36e60a48-6cd6d2c08fee81194194",
+          "file": "preview-focus-policy.spec.ts",
+          "line": 5,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "snow-descent.spec.ts",
+      "file": "snow-descent.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "game-2d: animated snow, touch and pause at 960px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2413,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:22:00.009Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "animation-and-frame-time",
+                      "contentType": "application/json",
+                      "body": "eyJzb3VyY2VYIjpbMCw1Ml0sInA5NSI6MTYuNzAwMDAwMDAwMDAwMDQ1fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "42a402d1542faeefdea1-3a084545dac00c95b725",
+          "file": "snow-descent.spec.ts",
+          "line": 19,
+          "column": 5
+        },
+        {
+          "title": "game-2d: animated snow, touch and pause at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2035,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:22:02.433Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "animation-and-frame-time",
+                      "contentType": "application/json",
+                      "body": "eyJzb3VyY2VYIjpbNTIsMF0sInA5NSI6MTYuNzAwMDAwMDAwMDAwMDQ1fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "42a402d1542faeefdea1-8cfac31dfa898918d4c5",
+          "file": "snow-descent.spec.ts",
+          "line": 19,
+          "column": 5
+        },
+        {
+          "title": "game-2d-advanced: animated snow, touch and pause at 960px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2221,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:22:04.477Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "animation-and-frame-time",
+                      "contentType": "application/json",
+                      "body": "eyJzb3VyY2VYIjpbMCw1Ml0sInA5NSI6MTYuODAwMDAwMDAwMDAwMDY4fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "42a402d1542faeefdea1-fc9d7e07283a66debd84",
+          "file": "snow-descent.spec.ts",
+          "line": 19,
+          "column": 5
+        },
+        {
+          "title": "game-2d-advanced: animated snow, touch and pause at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2441,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T19:22:06.706Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "animation-and-frame-time",
+                      "contentType": "application/json",
+                      "body": "eyJzb3VyY2VYIjpbMCw1Ml0sInA5NSI6MTYuNzAwMDAwMDAwMDAwMDQ1fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "42a402d1542faeefdea1-4a87b2dc961526b86dd9",
+          "file": "snow-descent.spec.ts",
+          "line": 19,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T19:21:03.016Z",
+    "duration": 66208.741,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

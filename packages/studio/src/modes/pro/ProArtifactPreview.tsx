@@ -1,3 +1,4 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { isStudioProArtifact, type StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
 import { type Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { isProConsoleMessage, type ProConsoleMessage } from './proConsoleBridge'
@@ -137,6 +138,7 @@ function ArtifactSession({
         src={artifact.url}
         title={title}
         sandbox="allow-scripts allow-pointer-lock"
+        allow={GAME_FRAME_FOCUS_ALLOW}
         referrerPolicy="no-referrer"
         className="min-h-0 w-full flex-1 border-0 bg-white"
         onError={() => setStatus('unavailable')}

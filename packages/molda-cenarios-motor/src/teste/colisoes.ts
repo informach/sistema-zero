@@ -207,7 +207,8 @@ export class MundoDoTeste {
     if (tamanho < 1e-9) return null
     this.raio.set(de, ate.clone().sub(de).normalize())
     let resposta: { ponto: Vector3; normal: Vector3; distancia: number } | null = null
-    for (const i of this.indice.consultar(this.raio)) {
+    // Só o que o trecho alcança: além de `tamanho` nenhuma face seria aceita mesmo.
+    for (const i of this.indice.consultar(this.raio, 0, tamanho)) {
       const e = this.entradas[i]!,
         local = this.raio.clone().applyMatrix4(e.inversa)
       const hit = e.arvore.raycastFirst(local, DoubleSide)

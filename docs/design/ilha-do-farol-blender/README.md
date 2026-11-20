@@ -57,6 +57,7 @@ criança aponta para o sha antigo). `--remover-antigos` no publicador só antes 
 
 | Arquivo | O quê |
 |---|---|
+| `capa.py` | a arte da capa do Passo a passo: a cena do jogo com as peças publicadas (os tamanhos de `ILHA_PREPARO`; a chave, o aventureiro e o barco onde a cena conta a história), o farol no clipe `aceso` e o aventureiro no `andando`; lê os GLB de `ILHA_GLB` e grava em `ILHA_CAPA` |
 | `lib_ilha.py` | paleta tirada dos SVGs, formas (contorno em camadas, faixa, folha, pedra, superelipsoide, mecha), materiais em degradê, clipes por faixas do NLA, as caixas das categorias e a exportação |
 | `cenario.py` | os quatro cenários (terreno, mar, grama), as pedras e a bancada |
 | `farol.py` | os quatro faróis com a luz animada |
