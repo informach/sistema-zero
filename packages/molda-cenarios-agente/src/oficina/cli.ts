@@ -1,10 +1,11 @@
 import { criarClienteDaOficina, lerAcessoDaOficina } from './cliente'
-import { criarContexto, executarFerramenta, FERRAMENTAS } from './ferramentas'
+import { criarContexto, ehImagem, executarFerramenta, FERRAMENTAS } from './ferramentas'
 
 /**
  * CLI da oficina de cenários: as MESMAS ferramentas do MCP, uma por chamada.
  *
  *   bun run cli <ferramenta> '<argumentos em JSON>'
+ *   bun run cli capturar_cenario '{"cenarioId":"..."}' foto.webp
  *   bun run cli ajuda
  *
  * Acesso pelo ambiente: MOLDA_CENARIOS_APP (obrigatório), MOLDA_CENARIOS_TOKEN, ou
@@ -36,7 +37,13 @@ if (import.meta.main) {
   }
   const { host } = criarClienteDaOficina(lerAcessoDaOficina())
   const r = await executarFerramenta(criarContexto(host), nome, argumentos)
-  if (r.ok) console.log(JSON.stringify(r.valor, null, 2))
+  if (r.ok && ehImagem(r.valor)) {
+    // A captura vira um arquivo (o terceiro argumento, ou captura.webp aqui mesmo).
+    const arquivo = process.argv[4] ?? 'captura.webp'
+    await Bun.write(arquivo, r.valor.imagem)
+    const { imagem: _imagem, ...resto } = r.valor
+    console.log(JSON.stringify({ ...resto, arquivo }, null, 2))
+  } else if (r.ok) console.log(JSON.stringify(r.valor, null, 2))
   else {
     console.error(JSON.stringify(r.erro, null, 2))
     process.exit(1)

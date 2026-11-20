@@ -11,7 +11,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { criarClienteDaOficina, lerAcessoDaOficina } from './cliente'
-import { type Contexto, criarContexto, executarFerramenta, FERRAMENTAS } from './ferramentas'
+import {
+  type Contexto,
+  criarContexto,
+  ehImagem,
+  executarFerramenta,
+  FERRAMENTAS,
+} from './ferramentas'
 
 /**
  * MCP da oficina de cenários (Molda › Cenários). As ferramentas são as do `ferramentas.ts` (as
@@ -33,9 +39,18 @@ export async function chamarFerramenta(
   argumentos: unknown,
 ): Promise<CallToolResult> {
   const r = await executarFerramenta(contexto, nome, argumentos)
-  return r.ok
-    ? { content: [{ type: 'text', text: JSON.stringify(r.valor) }] }
-    : { content: [{ type: 'text', text: JSON.stringify(r.erro) }], isError: true }
+  if (!r.ok) return { content: [{ type: 'text', text: JSON.stringify(r.erro) }], isError: true }
+  // A captura volta como imagem de verdade, com os dados dela ao lado.
+  if (ehImagem(r.valor)) {
+    const { imagem, tipo, ...resto } = r.valor
+    return {
+      content: [
+        { type: 'image', data: Buffer.from(imagem).toString('base64'), mimeType: tipo },
+        { type: 'text', text: JSON.stringify(resto) },
+      ],
+    }
+  }
+  return { content: [{ type: 'text', text: JSON.stringify(r.valor) }] }
 }
 
 export function listarFerramentas() {

@@ -10,6 +10,7 @@ import {
   ReceitaDeTerrenoSchema,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { z } from 'zod'
+import { capturarSemJanela } from './captura'
 import { CenarioMudou, criarIntencoes, type Intencoes } from './intencoes'
 
 /**
@@ -431,6 +432,25 @@ export const FERRAMENTAS = [
     executar: (c, a) => c.intencoes.orcamento(a.cenarioId),
   }),
   ferramenta({
+    name: 'capturar_cenario',
+    description:
+      'Fotografa o cenário sem abrir janela: um Chrome local, sem tela, monta o palco da oficina e devolve a imagem. `vista` livre (de lado, de cima em ângulo), cima, frente ou lado; `enquadrar` limita a foto a alguns ids. Precisa do Chrome instalado neste computador.',
+    schema: z
+      .object({
+        cenarioId: id,
+        vista: z.enum(['livre', 'cima', 'frente', 'lado']).default('livre'),
+        largura: z.number().int().min(160).max(1920).default(960),
+        enquadrar: z.array(idDoDocumento).max(200).optional(),
+      })
+      .strict(),
+    executar: (c, a) =>
+      capturarSemJanela(c.host, a.cenarioId, {
+        vista: a.vista,
+        largura: a.largura,
+        ...(a.enquadrar ? { enquadrar: a.enquadrar } : {}),
+      }),
+  }),
+  ferramenta({
     name: 'validar_lote',
     description:
       'Confere um lote de comandos sem gravar, com a mesma regra do servidor. Diz se passaria e quanto o cenário ficaria.',
@@ -440,6 +460,10 @@ export const FERRAMENTAS = [
     executar: (c, a) => c.intencoes.validarLote(a.cenarioId, a.comandos),
   }),
 ] as const
+
+/** A resposta de uma captura: a imagem e os dados dela. */
+export const ehImagem = (v: unknown): v is { imagem: Uint8Array; tipo: string } =>
+  typeof v === 'object' && v !== null && 'imagem' in v && v.imagem instanceof Uint8Array
 
 export type Resposta = { ok: true; valor: unknown } | { ok: false; erro: Record<string, unknown> }
 

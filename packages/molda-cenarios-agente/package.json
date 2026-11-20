@@ -15,6 +15,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@sistemazero/molda-cenarios": "workspace:*",
     "@sistemazero/molda-cenarios-core": "workspace:*",
+    "@sistemazero/molda-cenarios-motor": "workspace:*",
     "zod": "4.3.6"
   },
   "devDependencies": {
