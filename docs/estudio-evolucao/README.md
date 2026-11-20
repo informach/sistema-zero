@@ -60,7 +60,7 @@ isolamento pode acrescentar bytes a ele.
 | A1 | Matriz de compatibilidade e travas estáticas dos dois cursos | **feito** |
 | A2 | Aula montada no playground (`/aula?aula=`) | **feito** |
 | A3 | Reprodução dos gestos das aulas no navegador (Playwright) | **feito** |
-| A4 | Objetivos que rodam o jogo, no executor do servidor | **feito em parte**: o executor de verdade aprova os 17; falta a prova pela página da aula (Verificar e Enviar no app) |
+| A4 | Objetivos que rodam o jogo, no executor do servidor | **feito**: o executor de verdade aprova os 17; Verificar, Enviar e Concluir conferidos em 20/11 na página real de staging, uma aula de cada curso (Cadê adulto e Desafio no Kids, [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md)) |
 | A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
 | B0 | Medição do isolamento da prévia | **feito** nas três engines (18/11); no Firefox, refeita em 20/11 com o isolamento por site do Firefox de mesa ([`../qa/2026-11-20-studio-firefox-site-isolation.md`](../qa/2026-11-20-studio-firefox-site-isolation.md)) |
 | B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **parcial**: o reinício após trabalho nativo falha no Chromium 148/Windows, inclusive com os arquivos originais da branch |
