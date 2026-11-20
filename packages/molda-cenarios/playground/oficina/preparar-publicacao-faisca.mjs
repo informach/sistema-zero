@@ -114,74 +114,121 @@ try {
   console.log(
     `QA-Faisca: fonte guardada · ${documento.instancias.length} instâncias · ${documento.modelos.length} modelos`,
   )
-  const resultado = await page.evaluate(
-    async ({ cenario, publicar }) => {
+  // Com CENARIOS_QA_VERSOES=2, publica também uma versão 2 de verdade no mesmo host (a Íris
+  // dois metros ao lado, versaoEsperada 1): é a prova da troca 1 → 2 no /macro.
+  const versoes = process.env.CENARIOS_QA_VERSOES === '2' ? 2 : 1
+  const resultados = await page.evaluate(
+    async ({ cenario, publicar, versoes }) => {
       const host = window.__cenarios.host,
         porta = host.publicacoes,
         original = porta.publicar.bind(porta),
         controle = new AbortController(),
         { publicarRevisaoDaOficina } = await import(publicar)
+      window.__pacotesFaiscaPublicados = []
       porta.publicar = async (pacote, ...args) => {
-        window.__pacoteFaiscaPublicado = pacote
+        window.__pacotesFaiscaPublicados.push(pacote)
         return original(pacote, ...args)
       }
-      const revisao = await host.abrirCenario(cenario),
-        preparo = await host.prepararExportacao(cenario, revisao.revisao, controle.signal),
-        resultado = await publicarRevisaoDaOficina(
-          host,
-          preparo,
-          {
-            perfil: { tipo: 'arquipelago-v2', ilha: 'sua-ilha' },
-            versaoEsperada: 0,
-            operacaoId: crypto.randomUUID(),
-          },
-          controle.signal,
-          (p) =>
-            console.log(`QA-Faisca: compilação · ${p.etapa} · ${p.feitos ?? ''}/${p.total ?? ''}`),
-          (p) => console.log(`QA-Faisca: publicação · ${p.etapa} · ${p.feitos}/${p.total}`),
-        )
-      return { resultado, cena: window.__pacoteFaiscaPublicado.cena }
+      const feitos = []
+      for (let v = 0; v < versoes; v++) {
+        if (v > 0) {
+          const aberto = await host.abrirCenario(cenario),
+            iris = aberto.documento.instancias.find((o) => o.id === 'iris-qa'),
+            p = iris.transformacao.posicao
+          await host.editarCenario(
+            cenario,
+            aberto.revisao,
+            [
+              {
+                tipo: 'instancia.definir',
+                instancia: {
+                  ...iris,
+                  transformacao: { ...iris.transformacao, posicao: { ...p, x: p.x + 2 } },
+                },
+              },
+            ],
+            crypto.randomUUID(),
+          )
+        }
+        const revisao = await host.abrirCenario(cenario),
+          preparo = await host.prepararExportacao(cenario, revisao.revisao, controle.signal),
+          resultado = await publicarRevisaoDaOficina(
+            host,
+            preparo,
+            {
+              perfil: { tipo: 'arquipelago-v2', ilha: 'sua-ilha' },
+              versaoEsperada: v,
+              operacaoId: crypto.randomUUID(),
+            },
+            controle.signal,
+            (p) =>
+              console.log(
+                `QA-Faisca: v${v + 1} compilação · ${p.etapa} · ${p.feitos ?? ''}/${p.total ?? ''}`,
+              ),
+            (p) =>
+              console.log(`QA-Faisca: v${v + 1} publicação · ${p.etapa} · ${p.feitos}/${p.total}`),
+          )
+        feitos.push({ resultado, cena: window.__pacotesFaiscaPublicados.at(-1).cena })
+      }
+      return feitos
     },
-    { cenario: ids.cenario, publicar: modulo('packages/molda-cenarios/src/exportar/publicar.ts') },
+    {
+      cenario: ids.cenario,
+      publicar: modulo('packages/molda-cenarios/src/exportar/publicar.ts'),
+      versoes,
+    },
   )
-  const publicacao = resultado.resultado.publicacao,
-    manifesto = Buffer.from(JSON.stringify(resultado.cena)),
-    hash = (b) => createHash('sha256').update(b).digest('hex'),
+  const hash = (b) => createHash('sha256').update(b).digest('hex'),
     gravar = (digest, bytes) => {
       assert.equal(hash(bytes), digest)
       const destino = resolve(saida, 'blobs', digest)
       if (existsSync(destino)) assert.deepEqual(readFileSync(destino), bytes)
       else writeFileSync(destino, bytes, { flag: 'wx' })
     }
-  assert.equal(hash(manifesto), publicacao.manifesto.digest)
-  for (const p of ['blobs', 'perfis', `publicacoes/${publicacao.id}`])
-    mkdirSync(resolve(saida, p), { recursive: true })
-  gravar(publicacao.manifesto.digest, manifesto)
-  const vistos = new Set()
-  for (const a of resultado.cena.arquivos) {
-    if (vistos.has(a.digest)) continue
-    vistos.add(a.digest)
-    const base64 = await page.evaluate((caminho) => {
-      const b = window.__pacoteFaiscaPublicado.arquivos.get(caminho),
-        partes = []
-      for (let i = 0; i < b.length; i += 8192)
-        partes.push(String.fromCharCode(...b.subarray(i, i + 8192)))
-      return btoa(partes.join(''))
-    }, a.caminho)
-    const bytes = Buffer.from(base64, 'base64')
-    assert.equal(bytes.length, a.bytes)
-    gravar(a.digest, bytes)
+  const vistos = new Set(),
+    publicacoes = []
+  for (const [indice, feito] of resultados.entries()) {
+    const publicacao = feito.resultado.publicacao,
+      manifesto = Buffer.from(JSON.stringify(feito.cena))
+    assert.equal(publicacao.versao, indice + 1)
+    assert.equal(hash(manifesto), publicacao.manifesto.digest)
+    for (const p of ['blobs', 'perfis', `publicacoes/${publicacao.id}`])
+      mkdirSync(resolve(saida, p), { recursive: true })
+    gravar(publicacao.manifesto.digest, manifesto)
+    for (const a of feito.cena.arquivos) {
+      if (vistos.has(a.digest)) continue
+      vistos.add(a.digest)
+      const base64 = await page.evaluate(
+        ({ indice, caminho }) => {
+          const b = window.__pacotesFaiscaPublicados[indice].arquivos.get(caminho),
+            partes = []
+          for (let i = 0; i < b.length; i += 8192)
+            partes.push(String.fromCharCode(...b.subarray(i, i + 8192)))
+          return btoa(partes.join(''))
+        },
+        { indice, caminho: a.caminho },
+      )
+      const bytes = Buffer.from(base64, 'base64')
+      assert.equal(bytes.length, a.bytes)
+      gravar(a.digest, bytes)
+    }
+    writeFileSync(
+      resolve(saida, 'publicacoes', publicacao.id, 'publicacao.json'),
+      JSON.stringify(publicacao, null, 2),
+      { flag: 'wx' },
+    )
+    // O perfil da ilha começa na versão 1; as seguintes ficam ao lado para a troca no ensaio.
+    const nome = indice === 0 ? 'sua-ilha.json' : `sua-ilha.v${indice + 1}.json`,
+      temporario = resolve(saida, 'perfis', `${nome}.novo`)
+    writeFileSync(temporario, JSON.stringify(publicacao, null, 2))
+    renameSync(temporario, resolve(saida, 'perfis', nome))
+    publicacoes.push(publicacao)
   }
   assert.deepEqual(erros, [])
-  writeFileSync(
-    resolve(saida, 'publicacoes', publicacao.id, 'publicacao.json'),
-    JSON.stringify(publicacao, null, 2),
-    { flag: 'wx' },
-  )
-  const temporario = resolve(saida, 'perfis', 'sua-ilha.json.novo')
-  writeFileSync(temporario, JSON.stringify(publicacao, null, 2))
-  renameSync(temporario, resolve(saida, 'perfis', 'sua-ilha.json'))
+  const resultado = resultados[0],
+    publicacao = publicacoes[0]
   const resumo = {
+    versoes: publicacoes.map((p) => ({ id: p.id, versao: p.versao })),
     publicacao,
     instancias: documento.instancias.length,
     modelos: documento.modelos.length,

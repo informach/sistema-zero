@@ -47,7 +47,15 @@ export interface ModeloCarregado {
   descartar(): void
 }
 
-function novoLeitor(falhas: unknown[]): GLTFLoader {
+/**
+ * Imagens já decodificadas, pelo hash do conteúdo. Os modelos de um mesmo kit repetem o mesmo
+ * atlas dentro de cada arquivo: com o cache, cada imagem é decodificada uma vez e cada modelo
+ * recebe um clone da textura (a mesma imagem por baixo; o descarte de um não afeta os outros).
+ * Quem cria o cache é dono dele e o solta junto com os modelos.
+ */
+export type CacheDeImagens = Map<string, Promise<Texture>>
+
+function novoLeitor(falhas: unknown[], imagens?: CacheDeImagens): GLTFLoader {
   const externas = new Set<string>(),
     gerenciador = new LoadingManager(),
     leitor = new GLTFLoader(gerenciador)
@@ -66,9 +74,22 @@ function novoLeitor(falhas: unknown[]): GLTFLoader {
     // O GLTFLoader converte falha de imagem em textura null. A cena inteira deve
     // falhar, em vez de parecer válida com parte da arte perdida silenciosamente.
     const carregarImagem = parser.loadImageSource.bind(parser)
-    parser.loadImageSource = async (...argumentos) => {
+    parser.loadImageSource = async (indice, carregador) => {
       try {
-        return await carregarImagem(...argumentos)
+        const fonte = imagens ? parser.json.images?.[indice] : undefined
+        if (!imagens || typeof fonte?.bufferView !== 'number')
+          return await carregarImagem(indice, carregador)
+        const dados = (await parser.getDependency('bufferView', fonte.bufferView)) as ArrayBuffer,
+          chave = `${fonte.mimeType ?? ''}:${await digestDosBytes(new Uint8Array(dados))}`
+        let pendente = imagens.get(chave)
+        if (!pendente) {
+          pendente = carregarImagem(indice, carregador)
+          imagens.set(chave, pendente)
+          pendente.catch(() => {
+            if (imagens.get(chave) === pendente) imagens.delete(chave)
+          })
+        }
+        return (await pendente).clone()
       } catch (erro) {
         falhas.push(erro)
         throw erro
@@ -103,9 +124,12 @@ function descartarMaterial(material: Material) {
 }
 
 /** Lê um GLB e o deixa pronto para desenhar muitas cópias. Quem chama descarta. */
-export async function lerGlb(bytes: ArrayBuffer): Promise<ModeloCarregado> {
+export async function lerGlb(
+  bytes: ArrayBuffer,
+  opcoes: { imagens?: CacheDeImagens } = {},
+): Promise<ModeloCarregado> {
   const falhas: unknown[] = [],
-    gltf = await novoLeitor(falhas).parseAsync(bytes, '')
+    gltf = await novoLeitor(falhas, opcoes.imagens).parseAsync(bytes, '')
   const raiz = gltf.scene
   raiz.updateMatrixWorld(true)
   const partes: ParteDoModelo[] = []

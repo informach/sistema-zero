@@ -4,11 +4,11 @@ import {
   type PacoteCompilado,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import { Box3, type Material, Matrix4, Mesh } from 'three'
-import { lerGlb, type ModeloCarregado } from '../modelos'
+import { type CacheDeImagens, lerGlb, type ModeloCarregado } from '../modelos'
 import { ArquivosDaCompilacao } from './arquivos'
 import { gravarGlbCompilado } from './arquivos-glb'
 import { conferirConteudoCompilado } from './conteudo'
-import { inspecionarGlbDaCompilacao } from './inspecao-glb'
+import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from './inspecao-glb'
 import {
   bytesDaParteParaJuncao,
   LoteEstaticoCompilado,
@@ -47,85 +47,107 @@ export async function juntarEstaticosDoPacote(
     >(),
     nos: CenaCompilada['nos'] = [],
     ids = new Set(cena.nos.map((n) => n.id)),
-    metadados = new Map(cena.arquivos.map((a) => [a.caminho, a]))
+    metadados = new Map(cena.arquivos.map((a) => [a.caminho, a])),
+    // O atlas de um kit, repetido nos arquivos, é decodificado e contado uma vez.
+    imagens: CacheDeImagens = new Map(),
+    imagensContadas = new Set<string>(),
+    // A geometria vai copiada para os lotes: o arquivo sai da memória depois do último nó que o
+    // usa (os caminhos, um arquivo por caminho, ficavam todos juntos até o fim).
+    usosRestantes = new Map<string, number>(),
+    materializacao = new Map<string, number>()
+  for (const n of cena.nos) usosRestantes.set(n.arquivo, (usosRestantes.get(n.arquivo) ?? 0) + 1)
   let memoriaDosModelos = 0,
     memoriaDosLotes = 0,
     numero = 0
   try {
     for (const [i, no] of cena.nos.entries()) {
-      sinal.throwIfAborted()
-      opcoes.progresso?.({
-        etapa: 'geometria',
-        feitos: i,
-        total: cena.nos.length,
-        nome: 'Juntando peças estáticas',
-      })
-      if (no.efeito || no.preservarHierarquia || no.faixas || preservados.has(no.arquivo)) {
-        nos.push(no)
-        continue
-      }
-      let modelo = modelos.get(no.arquivo)
-      if (!modelo) {
-        const bytes = entrada.arquivos.get(no.arquivo)!,
-          r = inspecionarGlbDaCompilacao(bytes)
-        if (r.animavel) {
-          preservados.add(no.arquivo)
+      const restam = usosRestantes.get(no.arquivo)! - 1
+      usosRestantes.set(no.arquivo, restam)
+      try {
+        sinal.throwIfAborted()
+        opcoes.progresso?.({
+          etapa: 'geometria',
+          feitos: i,
+          total: cena.nos.length,
+          nome: 'Juntando peças estáticas',
+        })
+        if (no.efeito || no.preservarHierarquia || no.faixas || preservados.has(no.arquivo)) {
           nos.push(no)
           continue
         }
-        memoriaDosModelos += r.bytesDeMaterializacao + r.bytesDePixels
-        if (memoriaDosModelos + memoriaDosLotes * 3 > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
-          throw Error(
-            'Os modelos excedem a memória disponível para juntar. Divida a região de exportação.',
-          )
-        modelo = await lerGlb(bytes.slice().buffer)
-        modelos.set(no.arquivo, modelo)
-        sinal.throwIfAborted()
-      }
-      if (modelo.partes.some((p) => p.material.transparent)) {
-        nos.push(no)
-        continue
-      }
-      const centro = {
-          x: (no.volume.min.x + no.volume.max.x) / 2,
-          z: (no.volume.min.z + no.volume.max.z) / 2,
-        },
-        coluna = Math.floor(centro.x / tamanho),
-        linha = Math.floor(centro.z / tamanho),
-        matriz = new Matrix4().makeTranslation(
-          (coluna + 0.5) * tamanho,
-          0,
-          (linha + 0.5) * tamanho,
-        ),
-        relativa = matriz.clone().invert().multiply(new Matrix4().fromArray(no.matriz))
-      for (const p of modelo.partes) {
-        if (
-          memoriaDosModelos + (memoriaDosLotes + bytesDaParteParaJuncao(p.geometria)) * 3 >
-          LIMITES_DA_EXPORTACAO.malha.bytesDaFonte
-        )
-          throw Error(
-            'A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.',
-          )
-        const chave = `${coluna}/${linha}/${p.material.uuid}/${layoutDaParteEstatica(p.geometria)}`
-        let grupo = grupos.get(chave)
-        if (!grupo) {
-          if (grupos.size >= 8192)
-            throw Error('A junção exige lotes demais. Divida a região de exportação.')
-          grupo = { lote: new LoteEstaticoCompilado(), material: p.material, matriz }
-          grupos.set(chave, grupo)
+        let modelo = modelos.get(no.arquivo)
+        if (!modelo) {
+          const bytes = entrada.arquivos.get(no.arquivo)!,
+            r = inspecionarGlbDaCompilacao(bytes)
+          if (r.animavel) {
+            preservados.add(no.arquivo)
+            nos.push(no)
+            continue
+          }
+          memoriaDosModelos +=
+            r.bytesDeMaterializacao + (await pixelsDasImagensNovas(r.imagens, imagensContadas))
+          materializacao.set(no.arquivo, r.bytesDeMaterializacao)
+          if (memoriaDosModelos + memoriaDosLotes * 3 > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
+            throw Error(
+              'Os modelos excedem a memória disponível para juntar. Divida a região de exportação.',
+            )
+          modelo = await lerGlb(bytes.slice().buffer, { imagens })
+          modelos.set(no.arquivo, modelo)
+          sinal.throwIfAborted()
         }
-        const anterior = grupo.lote.bytesDeEntrada
-        grupo.lote.adicionar(
-          { geometria: p.geometria, matriz: relativa.clone().multiply(p.matriz) },
-          no.entidade,
-        )
-        memoriaDosLotes += grupo.lote.bytesDeEntrada - anterior
-        if (memoriaDosModelos + memoriaDosLotes * 3 > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
-          throw Error(
-            'A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.',
+        if (modelo.partes.some((p) => p.material.transparent)) {
+          nos.push(no)
+          continue
+        }
+        const centro = {
+            x: (no.volume.min.x + no.volume.max.x) / 2,
+            z: (no.volume.min.z + no.volume.max.z) / 2,
+          },
+          coluna = Math.floor(centro.x / tamanho),
+          linha = Math.floor(centro.z / tamanho),
+          matriz = new Matrix4().makeTranslation(
+            (coluna + 0.5) * tamanho,
+            0,
+            (linha + 0.5) * tamanho,
+          ),
+          relativa = matriz.clone().invert().multiply(new Matrix4().fromArray(no.matriz))
+        for (const p of modelo.partes) {
+          if (
+            memoriaDosModelos + (memoriaDosLotes + bytesDaParteParaJuncao(p.geometria)) * 3 >
+            LIMITES_DA_EXPORTACAO.malha.bytesDaFonte
           )
+            throw Error(
+              'A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.',
+            )
+          const chave = `${coluna}/${linha}/${p.material.uuid}/${layoutDaParteEstatica(p.geometria)}`
+          let grupo = grupos.get(chave)
+          if (!grupo) {
+            if (grupos.size >= 8192)
+              throw Error('A junção exige lotes demais. Divida a região de exportação.')
+            grupo = { lote: new LoteEstaticoCompilado(), material: p.material, matriz }
+            grupos.set(chave, grupo)
+          }
+          const anterior = grupo.lote.bytesDeEntrada
+          grupo.lote.adicionar(
+            { geometria: p.geometria, matriz: relativa.clone().multiply(p.matriz) },
+            no.entidade,
+          )
+          memoriaDosLotes += grupo.lote.bytesDeEntrada - anterior
+          if (memoriaDosModelos + memoriaDosLotes * 3 > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
+            throw Error(
+              'A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.',
+            )
+        }
+        await cederDuranteCompilacao(sinal)
+      } finally {
+        const modelo = restam === 0 ? modelos.get(no.arquivo) : undefined
+        if (modelo) {
+          // As imagens seguem no cache (outros arquivos as dividem): sai só a geometria.
+          modelo.descartar()
+          modelos.delete(no.arquivo)
+          memoriaDosModelos -= materializacao.get(no.arquivo) ?? 0
+        }
       }
-      await cederDuranteCompilacao(sinal)
     }
     for (const g of grupos.values()) {
       sinal.throwIfAborted()
@@ -204,6 +226,7 @@ export async function juntarEstaticosDoPacote(
   } finally {
     for (const g of grupos.values()) g.lote.descartar()
     for (const m of modelos.values()) m.descartar()
+    imagens.clear()
     arquivos.descartar()
   }
 }

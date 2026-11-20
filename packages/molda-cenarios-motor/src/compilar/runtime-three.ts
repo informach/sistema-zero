@@ -19,7 +19,7 @@ import {
 } from 'three'
 import { AmbienteDoPalco } from '../ambiente/ambiente'
 import { LuzesLocaisDoPalco } from '../ambiente/luzes-locais'
-import { lerGlb, type ModeloCarregado } from '../modelos'
+import { type CacheDeImagens, lerGlb, type ModeloCarregado } from '../modelos'
 import { type FonteDeColisao, MundoDoTeste } from '../teste/colisoes'
 import { lerTextura, type TexturaCarregada } from '../texturas'
 import { conferirConteudoCompilado } from './conteudo'
@@ -136,12 +136,22 @@ export async function carregarCenaNoThree(
       total = usados.length + panoramas.length
     let pronto = 0
     opcoes.progresso?.(pronto, total)
-    for (const arquivo of usados) {
-      sinal.throwIfAborted()
-      // A cópia pertence ao loader; o inventário recebido permanece somente leitura.
-      modelos.set(arquivo, await lerGlb(pacote.arquivos.get(arquivo)!.slice().buffer))
-      sinal.throwIfAborted()
-      opcoes.progresso?.(++pronto, total)
+    // Cada imagem (o atlas de um kit repetido nos arquivos) é decodificada uma vez; o cache só
+    // vive durante a carga: os modelos ficam com clones que dividem a mesma imagem.
+    const imagens: CacheDeImagens = new Map()
+    try {
+      for (const arquivo of usados) {
+        sinal.throwIfAborted()
+        // A cópia pertence ao loader; o inventário recebido permanece somente leitura.
+        modelos.set(
+          arquivo,
+          await lerGlb(pacote.arquivos.get(arquivo)!.slice().buffer, { imagens }),
+        )
+        sinal.throwIfAborted()
+        opcoes.progresso?.(++pronto, total)
+      }
+    } finally {
+      imagens.clear()
     }
     for (const t of panoramas) {
       sinal.throwIfAborted()
