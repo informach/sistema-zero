@@ -1,0 +1,266 @@
+(pass) a grade máxima cabe em páginas reais do dispositivo sem perder amostras ou passar de sua dimensão
+(pass) mapa compartilha alturas, atualiza só a região RGBA e distingue peças sem altura própria
+(pass) compilação separa layouts de textura e fundo por vértice sem duplicar o mapa compartilhado
+(pass) consulta portátil lê páginas Float32, diagonal, atualização e cobertura do mesmo mapa GPU
+(pass) matriz, volume e posição do apoio de água usam a mesma pose após mover e girar o lago
+(pass) prévia não altera a cabeça nem deixa água depois de cancelar [16.00ms]
+(pass) uma cabeça nova invalida a prévia e respostas antigas são recusadas
+(pass) substituir prévia restaura o relevo e aceitar não reverte o estado assumido pela fila
+(pass) prévia inválida não destrói uma prévia válida nem publica dois mares
+(pass) pontos são alças finitas limitadas, com descarte explícito e sem mutar entradas
+(pass) lago triangula ilha seca e contorno côncavo com face superior e escala física
+(pass) rio conserva eixo nas curvas e a geometria fica independente da consulta; mar e queda não degeneram
+(pass) água nativa não adiciona piso; configuração estável conserva recursos e ocultar libera sua malha
+(pass) lago de modelo usa nível e papéis explícitos; só margens colidem e o cache conserva seus arquivos [16.00ms]
+(pass) alvo da montagem transforma o lote real como unidade, com giros XYZ e sem acumular erro entre gestos [31.00ms]
+(pass) prévia usa os comandos reais sem revisão autoral nem restauração desnecessária do relevo
+(pass) panorama e sua referência são previstos atomicamente e uma falha mantém a prévia anterior
+(pass) painel inativo não pode encerrar nem substituir a prévia de outro dono
+(pass) nova cabeça, fechamento e ferramenta concorrente conservam a posse da prévia
+(pass) o céu e o alcance da sombra usam a posição global de câmeras filhas, inclusive ortográficas
+(pass) hora mantém o padrão existente e overrides de luz/névoa sobrevivem ao recorte da câmera
+(pass) panorama compartilha a imagem, isola mapping, troca e libera apenas seus próprios recursos
+(pass) panorama inválido ou erro de leitura informa a falha e não vira um céu esticado
+(pass) luzes reutilizam instâncias, alvo local gira uma vez e ocultar/remove libera targets e sombras [15.00ms]
+(pass) luz apoiada aguarda o campo real e respeita orçamento de luzes e sombras
+(pass) alterar resolução ou desligar sombra libera o target e permite recriação
+(pass) entrada compilada conserva posição apoiada e alvo girado das luzes nativas
+(pass) prévia de caminho troca só seu eixo e cancelar preserva a cabeça original
+(pass) água e caminho não substituem a prévia ou encerram o preparo do outro dono
+(pass) nova cabeça invalida o caminho e resultado atrasado não cria prévia
+(pass) editar uma trilha conserva sua ordem e a precedência dos encontros
+(pass) modelo escolhido existe só na prévia e não pode sobrescrever uma referência usada
+(pass) alças em movimento reutilizam os buffers e desenham somente os pontos ativos
+(pass) modelo conformado mantém relevo, espessura, UV e buffers originais com origem local [16.00ms]
+(pass) respeita drawRange da parte para não desenhar o grupo de outro material
+(pass) atualizar alturas conserva topologia, UV e identidade e atualiza limites da superfície
+(pass) máscara e recorte do lago retiram o modelo; descarte não libera a geometria original
+(pass) picking e seu índice acompanham a mesma geometria após mudar o relevo
+(pass) falha de altura não deixa alteração parcial e um modelo inteiramente recortado tem limites vazios [15.00ms]
+(pass) terreno ainda chegando deixa os caminhos em espera, sem publicar uma falha de geometria [16.00ms]
+(pass) agrupamento rígido conserva drawRange de cada material e os buffers compartilhados
+(pass) encontro praça e trilha retira a superfície duplicada e reassenta ao ocultar ou mover a praça [15.00ms]
+(pass) pisos no palco são selecionáveis, mantêm cache e não duplicam física do terreno
+(pass) ponte nativa mantém vão, pilares nas tampas reais e apoio estável na seleção [32.00ms]
+(pass) cerca e muro acompanham o terreno e agrupam módulos sem uma chamada por peça [47.00ms]
+(pass) contato fora do centro de um pilar acompanha suas tampas conformadas após editar a ponte [31.00ms]
+(pass) altura atualiza o piso exibido e o picking, e buracos exigem reconstruir a topologia
+(pass) textura autoral, espera de recurso e três ciclos não modificam o acervo [15.00ms]
+(pass) piso GLB recorta o último módulo sem comprimir UV ou alterar o modelo
+(pass) mesma bissetriz fecha a esquina dos módulos sem preencher fora da faixa
+(pass) praça de catálogo preserva contorno côncavo, origem distante e ambas as orientações [32.00ms]
+(pass) limites de montagem e medidas são conferidos antes de repetir o modelo
+(pass) a junta coplanar do teto não produz empurrão lateral, em qualquer ordem dos triângulos
+(pass) a borda externa real do mesmo teto continua produzindo contato lateral
+(pass) inspeção coincide com a física em drawRange indexado e matriz espelhada sem tocar nas fontes
+(pass) orçamento recusa desenho parcial antes de alocar e fontes degeneradas não ressuscitam após descarte
+(pass) PNG portátil não altera materiais, imagens ou metadados das fontes e restaura a raiz [15.00ms]
+(pass) acabamento facetado usa normais por face no GLB sem perder a geometria original
+(pass) normal morph de material facetado não desaparece silenciosamente na exportação
+(pass) pintura de água conserva gradiente real de profundidade e descarta margem seca
+(pass) cachoeira usa a faixa vertical e conserva os UVs autorais da fonte [16.00ms]
+(pass) conteúdo real conserva Float32 LE, PNG16 e máscara; arredondamento dos limites é válido [31.00ms]
+(pass) hash correto não transforma valores físicos inválidos em um pacote aprovado [32.00ms]
+(pass) PNG precisa corresponder às alturas físicas, resolução e profundidade de bits [15.00ms]
+(pass) PNG corrompido ou com dados após IEND não passa só porque possui hash confirmado
+(pass) máscara aceita só 0/1 e campo solto não pertence a um pacote sem terreno
+(pass) cancelamento não retorna alturas parciais
+(pass) faixas conferem nomes e triângulos reais do GLB, além do total declarado [16.00ms]
+(pass) GLB e imagem são medidos pelo conteúdo mesmo quando o hash do inventário é válido [16.00ms]
+(pass) albedo portátil conserva atenuação por profundidade e opacidade, antes da iluminação
+(pass) borda seca, fade de margem e espuma seguem a profundidade real sobre um plano
+(pass) água de catálogo exige profundidade interpolada e cachoeira congela os fios no instante zero
+(pass) conteúdo idêntico reaproveita caminho/metadados e o retorno não permite alterar o inventário
+(pass) divisão conserva skin, UVs, atributos próprios e slots de morph em todos os vértices remapeados [109.00ms]
+(pass) faixa de material conserva sua seleção de triângulos sem copiar os demais
+(pass) layout inválido, skin fracionária e orçamento excedido recusam a deformação sem entregar partes
+(pass) reflexo 1 conserva os movimentos da pele e morph em torno da caixa real
+(pass) reflexo 2 conserva os movimentos da pele e morph em torno da caixa real
+(pass) reflexo 3 conserva os movimentos da pele e morph em torno da caixa real
+(pass) reflexo 4 conserva os movimentos da pele e morph em torno da caixa real
+(pass) reflexo 5 conserva os movimentos da pele e morph em torno da caixa real
+(pass) reflexo 6 conserva os movimentos da pele e morph em torno da caixa real [15.00ms]
+(pass) reflexo 7 conserva os movimentos da pele e morph em torno da caixa real
+(pass) reflexo de peça rígida animada conserva TRS, winding e normais
+(pass) cancelamento anterior à compilação não lê recursos nem altera o documento
+(pass) fonte divergente e licença restrita são recusadas antes de baixar modelos [16.00ms]
+(pass) alturas com bytes corretos e hash trocado não geram um pacote parcial
+(pass) parte estática conserva drawRange, atributos e winding sob reflexão sem alterar a fonte
+(pass) divisão de geometria gerada respeita 65.000 vértices e conserva todos os triângulos [109.00ms]
+(pass) morphs não são assados implicitamente no caminho estático
+(pass) composição GLB compartilha peças estáticas e conserva canais independentes sem tocar a fonte
+(pass) GLB recusa transformação de pele não representável sem destruir a cena de origem
+(pass) GLB único conserva vértices/normais mundiais de wrappers com shear, giro, escala e reflexo
+(pass) luzes glTF exigem o destino explícito; não ampliam os modelos aceitos pelo pacote compilado [16.00ms]
+(pass) luz GLB aponta pelo eixo -Z sem alterar alvo/fonte e informa perda de decaimento
+(pass) gravação não descarta silenciosamente um canal de morph sem suporte
+(pass) a chegada prioriza o início principal e conserva posição e giro autorados
+(pass) sem marcador, a chegada encontra a superfície física no centro da cena
+(pass) um objeto remoto não desloca a chegada para fora do terreno fora da origem
+(pass) a cena vazia conserva a origem como referência, sem inventar um piso físico
+(pass) inspeção mede primitivas instanciadas, não o tamanho da tabela meshes
+(pass) arquivos compilados limitam vértices reais e fontes maiores seguem para divisão explícita [16.00ms]
+(pass) accessor gigante com poucos bytes, índices inválidos e ciclos são recusados antes do GLTFLoader
+(pass) extensões materiais suportadas não removem o bloqueio de compressão e arquivos externos
+(pass) hierarquia profunda não chega à recursão do decoder
+(pass) morph que o Three não conserva é recusado antes do carregamento
+(pass) imagem de fonte com padding do exportador é normalizada sem alterar o hash autoral; saída continua estrita
+(pass) GLB compacto não autoriza materialização multiplicada acima do orçamento
+(pass) junção conserva transformações, UVs e identidade das faces sem alterar a fonte
+(pass) junção divide mais de 65 mil vértices mantendo todas as faixas [453.00ms]
+(pass) orçamento insuficiente e layout distinto não provocam perda silenciosa de atributos
+(pass) âncoras/propriedades e vínculo com objeto oculto sobrevivem sem exigir sua geometria
+(pass) montagem conserva raiz, matriz, propriedades e revisão sem duplicar a procedência [16.00ms]
+(pass) template mantém coordenadas locais e tonalidade, sem alterar material/transformação originais
+(pass) espelho conserva faces e UV métrico incorpora a escala sem assar a transformação do mundo [16.00ms]
+(pass) acabamento pendente não é substituído silenciosamente por material de reserva
+(pass) modelo com clipe não pode ser assado pelo caminho estático
+(pass) rio extenso é recortado da mesma malha em áreas de até 64 m, preservando cotas e UVs
+(pass) oceano é a mesma lâmina, sem sobreposição: perto do relevo e cinco faixas uniformes
+(pass) passo maior divide apenas a região com alturas em partes de até 64 m
+(pass) oceano sem alturas próprias não cria mapas nem subdivisão ociosa
+(pass) pintura interpola pesos reais em luz linear, conserva regiões e gera UVs próprios
+(pass) textura conserva padrão repetido e origem global inclusive em coordenadas negativas
+(pass) falta de textura, pesos inválidos, resolução excessiva e cancelamento recusam a pintura
+(pass) UV do ator usa a mesma projeção métrica do palco sem assar pele ou morph [16.00ms]
+(pass) face colapsada pela pose continua exportada para poder voltar a abrir
+(pass) projeção recusa expansão excessiva antes de desindexar
+(pass) transformação interna de pele sem representação fiel em glTF não é achatada silenciosamente
+(pass) escala animada de ancestral da pele precisa continuar uniforme
+(pass) raiz dividida anima corpo, ossos e morphs como o original, inclusive no segundo pedaço [125.00ms]
+(pass) decals viram recortes visuais contínuos sem abrir buracos no chão físico
+(pass) peça elevada e material estrutural não removem terreno sob uma ponte
+(pass) piso plano só cede a faces sólidas opacas visíveis; transparência conserva o chão
+(pass) piso XY rotacionado no nó é recortado no mundo sem perder origem distante ou colisão
+(pass) carregamento usa portas por referência, confere conteúdo e compartilha somente dentro da execução
+(pass) hash trocado e falha de conteúdo não entregam um conjunto parcial [16.00ms]
+(pass) licença restrita é recusada antes de ler modelos e cancelamento após a porta impede decoder
+(pass) formas existentes não criam leituras de arquivo nem um segundo gerador
+(pass) nado de catálogo usa só o fundo do próprio lago; UV/profundidade são restaurados sem alterar a fonte
+(pass) água estática conserva a física e o material portátil; fundo ausente usa profundidade declarada
+(pass) perfil de jogo conserva céu e iluminação globais e instala as luzes locais do cenário [16.00ms]
+(pass) runtime funciona sem Palco/renderer, preserva matrizes, física, dados e descarte [16.00ms]
+(pass) runtime recusa inventário adulterado antes de carregar e cancela entre recursos [15.00ms]
+(pass) arquivo pequeno repetido não contorna o orçamento das cópias de nós e extras [188.00ms]
+(pass) instâncias compartilham material/geometria, isolam pele/morph/clipes e liberam só seus ossos
+(pass) carregamento HTTP usa somente arquivos do pacote e recusa excesso, truncamento e redirecionamento [31.00ms]
+(pass) setores conservam triângulos/atributos do piso simplificado de quatro peças [15.00ms]
+(pass) setores conservam triângulos/atributos do terreno detalhado e piso [953.00ms]
+(pass) triângulo que cruza setores é recusado em vez de alterar silenciosamente o relevo
+(pass) solo sem camadas mantém cores autorais e descarte não altera o material original
+(pass) pixels RGBA já decodificados são próprios e mantêm a orientação do sampler
+(pass) materialização usa todo o relevo e a mesma física, caminhos e água sem câmera [31.00ms]
+(pass) recurso ausente recusa a compilação inteira, sem publicar terreno plano de reserva
+(pass) caminho invisível não exige um GLB ocioso e falha de caminho visível é explícita [16.00ms]
+(pass) artefatos preservam referência espacial, fundo e alturas físicas; PNG16 é intercâmbio [47.00ms]
+(pass) buracos exportam um byte por célula, sem reutilizar o bitset autoral de cada peça [31.00ms]
+(pass) cancelamento e altura inválida não entregam metadados de terreno [16.00ms]
+(pass) inventário possui bytes próprios, recusa colisão de nomes e não revive após descarte [15.00ms]
+(pass) repetição circular gira uma peça inclinada em torno da vertical do mundo, inclusive no limite Euler [16.00ms]
+(pass) variação de giro preserva a inclinação em relação à vertical, não a recompõe em eixos locais [31.00ms]
+(pass) expansão rígida confere com matrizes Three em XYZ, escala por eixo e singularidades de Euler [16.00ms]
+(pass) o renderer recusa arquivo inválido e conteúdo trocado antes de decodificar o modelo
+(pass) tonalidades de várias cópias usam uma malha e preservam material e geometria originais
+(pass) cópias sem tonalidade não alocam um atributo de cor desnecessário
+(pass) transformação pura e inversa correspondem à matriz Three com inclinação e escala por eixo
+(pass) superfície consulta a rampa real, respeita exclusões e não muda a geometria de renderização
+(pass) grade visível acompanha origem, andar e relevo, com orçamento limitado em territórios grandes [16.00ms]
+(pass) reflexão indexada conserva a frente das faces, normais e tangente sem tocar na origem
+(pass) reflexão sem índice mantém UVs intercaladas e acessores compartilhados correspondentes
+(pass) posição quantizada é materializada em float antes de receber translação e reflexão
+(pass) variantes compartilham somente materiais, mantêm o pivô e descartam recursos ao sair de uso
+(pass) espelho de nós refletidos do GLB continua com matrizes de instância positivas
+(pass) colisão de rampa e escada usa a mesma malha desenhada, com altura local correta
+(pass) definições iguais compartilham a chave geométrica sem misturar parâmetros diferentes
+(pass) margem de seleção amplia apenas a consulta, sem mover caixas ou alterar a física padrão
+(pass) índice e refit concordam com a varredura em 20 mil caixas sem alterar suas fontes [156.00ms]
+(pass) vazio, caixas coincidentes, raio interno e refit para vazio conservam a ordem
+(pass) leitura compilada mantém limite e não envia sessão ao armazenamento
+(pass) limite inválido ou endereço com credenciais é recusado antes de acessar a rede
+(pass) stream excedente é cancelado antes de produzir o pacote
+(pass) cancelamento enquanto a resposta chega encerra o corpo sem o ler
+(pass) cancelamento fecha leitura pendente mesmo quando o transporte não escuta o sinal [16.00ms]
+(pass) mover uma entre 20 mil instâncias transfere só sua matriz e mantém volumes corretos [78.00ms]
+(pass) reconstrução inalterada não envia buffers; alteração de índice, cor e ordem gera faixas corretas
+(pass) helpers das oito funções produzem segmentos finitos com orçamento previsível
+(pass) desenho da rota usa a mesma elevação e distância do núcleo, sem aplicar a raiz duas vezes
+(pass) câmera vertical e foco vertical conservam vértices finitos; escala usa a altura autoral [15.00ms]
+(pass) prévia da rota acompanha relevo não linear ao mover e escalar, sem escalar o terreno
+(pass) guia compartilha buffers, picking segue os segmentos e ocultar retira a escolha
+(pass) alvo de edição atualiza guia e volume sem alterar marcador autoral
+(pass) aguardar relevo não desenha chão falso; reentrada respeita a mesma altura e a camada
+(pass) pintura e alturas distantes não reamostram rotas; altura sobre o percurso atualiza a guia
+(pass) escultura na raiz distante dos controles invalida a compensação de altura da rota
+(pass) guias respeitam o orçamento agregado e descarte libera os buffers sem recriá-los [172.00ms]
+(pass) palco usa a camada própria e a das pastas para ocultar e trancar objetos
+(pass) matriz do objeto > quem pisa no chão fica na altura do chão mais o deslocamento, não na altura gravada
+(pass) matriz do objeto > quem está solto fica na altura gravada
+(pass) matriz do objeto > ida e volta: a matriz devolve a mesma transformação, com escala por eixo
+(pass) matriz do objeto > girar em volta de um ponto leva a posição junto
+(pass) encaixe e tamanho > encaixa na grade e deixa livre sem grade
+(pass) encaixe e tamanho > com vários objetos, vale o eixo que mais mudou
+(pass) luz da hora > meio-dia é o mais claro e a noite o mais escuro, sempre com a luz vindo de cima
+(pass) luz da hora > a hora dá a volta: 24 é 0 e 30 é 6
+(pass) escondidos > some o objeto escondido e tudo o que está num grupo escondido, em qualquer nível
+(pass) morphs da pose inicial são incorporados sem alterar a raiz animável nem seus buffers
+(pass) pele preserva a pose e normais, incluindo translação do osso sem deslocar a normal
+(pass) malha estática sem deformações mantém o compartilhamento original
+(pass) prévia usa contato e proporção reais, compartilha conteúdo e descarta somente seus recursos
+(pass) cena de 8192 m cabe em retrato/paisagem sem limite fixo de 2500 m ou far de 6000 m
+(pass) zoom próximo e fotografia pequena conservam near apropriado e far finito
+(pass) carregamento confere hash, formato e intervalo; arquivos repetidos são lidos uma vez
+(pass) carrega pintura e buracos uma vez por hash e recusa papel ou quantidade de camadas divergente
+(pass) leituras são limitadas a quatro e cancelamento interrompe a fila [46.00ms]
+(pass) retângulo escolhe centros projetados sem alterar posições; respeita bloqueio, ocultação e recorte
+(pass) laço usa o contorno real e funciona em câmera de perspectiva, inclusive após girar
+(pass) consulta espacial de vinte mil instâncias visita só a região do raio e acompanha a prévia [79.00ms]
+(pass) escolher aceita referência pendente, encaixar exige geometria real e raízes mantêm a ordem
+(pass) a alça da raiz e sua pilha usam o terreno novo de escultura, sem prender a prévia à altura anterior
+(pass) a alça da raiz e sua pilha usam o terreno novo de estrada, sem prender a prévia à altura anterior [16.00ms]
+(pass) prévia muda só as peças atingidas, consulta a altura nova e cancela sem alterar os recursos [47.00ms]
+(pass) consulta de edição encontra o campo sob uma abertura sem acrescentar piso físico
+(pass) a consulta de edição coincide com os triângulos vistos em raios oblíquos e nas divisas [15.00ms]
+(pass) pintar uma peça de fundo não importa a altura da peça vizinha [32.00ms]
+(pass) máscara e recorte retiram as mesmas faces da vista, seleção, cápsula e câmera [109.00ms]
+(pass) uma peça inteiramente aberta não cria malha vazia nem piso sob o buraco
+(pass) pintura em área sem peça de altura cria superfície própria, sem plano duplicado [16.00ms]
+(pass) recortes importados retiram a superfície da seleção, sem plano invisível por baixo [78.00ms]
+(pass) seleção usa o relevo real, incluindo origem, interior e borda entre peças [31.00ms]
+(pass) normais de borda coincidem e o BVH não altera os buffers desenhados
+(pass) área omitida recebe apenas o piso e o descarte é completo e idempotente [16.00ms]
+(pass) cobertura do lago respeita contorno local, giro, escala, borda e visibilidade
+(pass) água funda sustenta o nado sem virar piso nem entrar no medidor de caminhada
+(pass) rio supera o mar apenas na sua faixa, considera profundidade real e respeita a opção de nado
+(pass) animação transporta articulações, mas o corpo não caminha para fora da cápsula
+(pass) extração conserva o balanço da passada e mede a velocidade autoral em metros
+(pass) consultas de setores vizinhos identificam o mesmo triângulo sem confundir instâncias
+(pass) consulta regional de triângulos respeita drawRange, transformação e orçamento sem alterar a fonte
+(pass) cápsula encontra piso real e parede fina sem modificar o índice da malha
+(pass) abismo permanece sem piso, broad phase compartilha árvores e câmera não atravessa parede
+(pass) o recorte real do terreno permanece um furo para cápsula e câmera
+(pass) cápsula resolve no mundo mesmo com escala não uniforme, rotação e fontes invertidas
+(pass) tipos de colisão, peças pendentes e partes duplicadas conservam sua intenção
+(pass) avatar respeita altura nativa, pivô deslocado, frente escolhida e clipes originais
+(pass) boneco genérico tem a altura declarada e invalidez é recusada antes de montar [16.00ms]
+(pass) quadros lentos preservam o tempo ativo e a distância do passo fixo
+(pass) lajes baixas separadas por juntas não prendem a cápsula entre duas bordas [31.00ms]
+(pass) correnteza move só quem nada, permite controle contrário e respeita a parede física [16.00ms]
+(pass) gravidade, parede fina, pulo e tempo suspenso não atravessam o cenário [15.00ms]
+(pass) degrau baixo é transposto, degrau alto bloqueia e queda não ganha piso invisível [32.00ms]
+(pass) pausa, voo e reposição não alteram a caminhada medida; modos mantêm a posição
+(pass) rampa caminhável permite subir, encosta íngreme não vira escada e teto limita o salto [62.00ms]
+(pass) cápsula pequena em queda rápida não atravessa piso fino
+(pass) início junto ao piso já está apoiado; início no vazio permanece em queda
+(pass) descida maior que cem metros só termina se passar do fundo real do cenário
+(pass) subir degraus continua sendo caminhada no medidor, sem registrar como salto [16.00ms]
+(pass) percurso soma curvas ativas e não une voo, pausa ou retomada à caminhada
+(pass) textura só é decodificada depois de conferir formato, tamanho e digest; descarte é idempotente [16.00ms]
+(pass) cache limita quatro leituras, compartilha conteúdo, cancela fila e descarta respostas antigas [16.00ms]
+(pass) erro explícito pode ser repetido sem recarregar as texturas já prontas [15.00ms]
+(pass) UV física mede distâncias na face inclinada, com escala não uniforme e repetição em metros
+(pass) projeção respeita drawRange, matriz interna, winding espelhado e continuidade entre faces coplanares
+(pass) variantes compartilham geometrias e materiais por uso; restauração não altera o GLB original
+ 262 pass
+ 0 fail
+ 5262 expect() calls
+Ran 262 tests across 70 files. [4.59s]

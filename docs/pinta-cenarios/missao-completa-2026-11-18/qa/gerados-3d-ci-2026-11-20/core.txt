@@ -1,0 +1,374 @@
+(pass) apoio antigo resolve posição, nível, giro e escala locais do lago sem alterar autoria [16.00ms]
+(pass) gesto conserva pose XYZ e escala não uniforme, acompanha água e copia o resultado visível [31.00ms]
+(pass) mar e rio admitem apoio; queda não inventa superfície horizontal
+(pass) mudar o nível leva a pilha inteira e desfaz exatamente; água com dependente não é apagada [16.00ms]
+(pass) validar milhares de objetos no mesmo rio calcula a superfície uma vez só [1266.00ms]
+(pass) lago transformado exclui suas ilhas e limita a profundidade pelo relevo disponível [15.00ms]
+(pass) o fundo físico do modelo define a coluna de água, independentemente do terreno recortado
+(pass) rio usa as faces da mesma faixa que será desenhada e correnteza vai da nascente para a foz
+(pass) mar usa o nível mundial; cachoeira não inventa uma área horizontal para nadar
+(pass) água conserva o lago importado e valida ilhas, material e participação no nado
+(pass) rio registra perfil descendente, largura e correnteza; cachoeira precisa cair
+(pass) represa tem dados verificáveis da barragem, sem aceitar uma crista abaixo da água
+(pass) aparência, encaixe do GLB e orçamento de anéis recusam valores indevidos [16.00ms]
+(pass) o documento recusa ilha fora do contorno, água cruzada, referência ausente e dois mares
+(pass) as variantes e o material percorrem os comandos existentes e desfazem sem deixar dados extras
+(pass) fragmento copia água, GLB e apoio interno; colagem move o conjunto sem copiar relevo
+(pass) água sozinha é fragmento válido e conta como raiz determinística
+(pass) apoio de rio muda coordenadas mundiais uma vez e conserva pose completa na colagem [15.00ms]
+(pass) colagem desloca perfil/controles do rio e cotas da queda e barragem
+(pass) mar permanece único; vínculo externo é recusado e conjunto de objetos não perde água silenciosamente
+(pass) encher uma baixada produz lago e teto de transbordo sem cavar nem alterar o estado de origem [16.00ms]
+(pass) rio cava uma cópia, retorna regiões para o mesmo histórico e preserva o perfil descendente [15.00ms]
+(pass) represa só levanta terreno e comunica vazamento; mar e cachoeira não exigem escultura [16.00ms]
+(pass) cavar rio não preenche uma vala existente nem esconde o limite inferior da grade
+(pass) lago com ilha conserva topologia, coordenadas locais e resultado determinístico
+(pass) limites de trabalho recusam rio excessivo antes de escavar a origem [16.00ms]
+(pass) preenchimento usa a altura real do clique entre vértices, sem alagar um ponto seco por arredondamento
+(pass) o teto da bacia preserva a precisão das alturas carregadas, inclusive próximo de 10 km
+(pass) o orçamento da busca de transbordo recusa NaN, infinito e valores não inteiros
+(pass) saída de transbordo pertence ao caminho vencedor, não a uma elevação de um ramal sem saída
+(pass) transbordo conserva o clique entre vértices quando ele próprio limita a descida até a borda
+(pass) guardar e restaurar câmera conserva giro, alvo mundial, campo de visão e relevo
+(pass) câmera rejeita alvo coincidente, parâmetros não finitos e marcadores sem câmera
+(pass) apoio no tabuleiro acompanha cabeceiras, largura e deslocamento pelo contrato de objeto existente
+(pass) apoio em muro conformado mede contato relativo ao chão no ponto, não no pivô
+(pass) gesto mantém a parte e atualiza o contato; replay, undo e remoção respeitam o apoio [16.00ms]
+(pass) copiar ponte e dependente remapeia parte e contato; copiar só dependente resolve posição mundial
+(pass) validação recusa parte ausente, papel errado e parte aplicada em objeto comum
+(pass) apoio em pilar GLB lê a mesma parte real da consulta de superfícies e conserva projeção sem bytes
+(pass) parte indisponível ou transformação inválida não inventa uma superfície de apoio
+(pass) contato que ultrapassa o mundo é recusado antes de gravar uma revisão [15.00ms]
+(pass) contrato preserva trilha/praça existentes e admite as seis ferramentas com parâmetros limitados
+(pass) parâmetros autorais de material, módulos, estrada e ponte são dados explícitos
+(pass) material referencia a tabela de texturas e encaixe não existe sem modelo
+(pass) textura de caminho respeita uso e trava ao remover ou substituir a referência
+(pass) ponte tem duas cabeceiras; praça tem contorno; medidas não finitas e campos de outro tipo são recusados
+(pass) ponte de GLB exige medida explícita do piso local e referências continuam verificadas
+(pass) praça suavizada que a curva recusa não passa na validação do documento [16.00ms]
+(pass) estações e módulos recusam passos infinitos em vez de produzir escala zero
+(pass) área e triangulação conservam precisão após transladar uma praça pequena
+(pass) alturas não finitas são recusadas antes de publicar piso ou perfil da ponte
+(pass) praça que se cruza é recusada mesmo quando sua área assinada não é zero
+(pass) praça recebe a trilha independentemente da ordem e ocultar remove sua precedência
+(pass) circuito fechado não transforma o interior vazio em recorte de outra trilha
+(pass) curva inválida gera falha individual e não elimina a geometria dos outros caminhos
+(pass) arredondamento das cabeceiras não acrescenta um par de pilares no fim da ponte
+(pass) afastamento medido posiciona os apoios sob o piso sem mudar os identificadores
+(pass) tabuleiro nativo encontra as duas cabeceiras e deixa o vão livre
+(pass) ponte de catálogo respeita pivô, piso local, eixo e inclinação sem modificar suas medidas
+(pass) guarda e pilares têm peças reais; pilares param sob o tabuleiro e não nascem no vazio
+(pass) cerca fechada não duplica o poste da emenda e exige fechamento explícito
+(pass) cerca conserva os controles de esquina e apoia postes; muro fecha cada lance
+(pass) modelo modular usa eixo e base medidos; fonte ruim ou orçamento excessivo não produz peças
+(pass) encaixe próximo ao eixo mantém cabeceiras exatas em uma ponte longa
+(pass) pilares de ponte GLB usam sua geometria inferior real, inclusive em tabuleiro arqueado
+(pass) cabeceiras medidas conservam sobras do modelo fora do lance útil sem escolher pelo nome
+(pass) consulta do tabuleiro usa só seu referencial e não amostra o relevo distante
+(pass) medidas que multiplicariam sobras do modelo além do mundo são recusadas antes de desenhar
+(pass) caminho isolado é raiz válida com seus recursos e ancestrais, sem copiar vizinhos
+(pass) pasta com seis variantes cola em uma revisão com aliases e desfaz sem alterar origem ou relevo [16.00ms]
+(pass) colar ponte de cabeceiras automáticas conserva seu vínculo ao chão do destino
+(pass) fragmento não descarta caminhos ao salvar conjunto nem aceita recursos ou raízes ausentes
+(pass) preparar as seis variantes conserva dados de origem e só estrada devolve terreno [16.00ms]
+(pass) estrada nivela o leito transversal, conserva o exterior e retorna regiões para uma transação
+(pass) ponte mede o vão e avisa quando o terreno invade; não modifica o campo
+(pass) estrada exige campo carregado, controles na cobertura e orçamento antes de copiar [62.00ms]
+(pass) controle inválido, praça cruzada e número excessivo de módulos não publicam um resultado
+(pass) estrada fechada molda também o lance de fechamento sem alterar pintura ou buracos
+(pass) prévia informa limite de altura e preserva os controles de uma curva suave
+(pass) praça pequena longe da origem conserva uma área utilizável [16.00ms]
+(pass) piso usa os mesmos triângulos do terreno, inclusive no interior de cada face [15.00ms]
+(pass) buracos de célula e recorte do lago retiram a superfície em vez de criar piso invisível
+(pass) praça côncava conserva área, UV métrica e winding para cima sem preencher a concavidade
+(pass) piso recorta limites do plano e não cobre peças ausentes do terreno esparso [16.00ms]
+(pass) origem local conserva encaixe próximo de cem quilômetros sem elevação artificial
+(pass) orçamento de recorte e falta de terreno carregado produzem erro antes de uma malha parcial
+(pass) circuito fechado mantém juntas e faixa de largura real com faces para cima
+(pass) trilha diagonal longa tem recorte limitado sem preencher seu retângulo inteiro [62.00ms]
+(pass) malha recusa campo ou máscara incompatível e alturas não finitas
+(pass) curva apertada demais para a largura é recusada em vez de desenhar a faixa dobrada
+(pass) transações de cenário > recusa hierarquias e carimbos que excedem o orçamento de processamento [16.00ms]
+(pass) transações de cenário > altera uma instância sem mutar a entrada e incrementa uma revisão por lote
+(pass) transações de cenário > recusa revisão vencida
+(pass) transações de cenário > lote inválido não aplica parcialmente
+(pass) transações de cenário > permite criar grupo e vincular instância na mesma transação
+(pass) transações de cenário > bloqueio herdado protege descendentes
+(pass) transações de cenário > desbloqueio explícito permite editar
+(pass) transações de cenário > apoio removido causa rejeição de todo lote
+(pass) transações de cenário > recusa dados desconhecidos, escala negativa e números inválidos
+(pass) transações de cenário > recusa ciclos de apoio e grupo e identificadores duplicados
+(pass) transações de cenário > valida polígonos côncavos e rejeita cruzamentos e tangências
+(pass) transações de cenário > catálogo desconhecido não é substituído silenciosamente
+(pass) consulta compilada preserva interpolação, peças ausentes, bordas e fundo externo [16.00ms]
+(pass) piso de grade, recortes e buracos mantêm a mesma diferença entre altura e chão disponível
+(pass) interpolação é triangular, sem substituir pela bilinear
+(pass) terreno compilado conserva limites e domínio da autoria
+(pass) piso plano declara a colisão finita e não pode coexistir com relevo [16.00ms]
+(pass) faixas mantêm picking por entidade e recusam lacunas, sobreposição e entidade ausente
+(pass) restauração de efeito só pode apontar para água com parâmetros e arquivo correspondentes
+(pass) leitor portátil conserva revisão, matrizes e propriedades sem interpretar código
+(pass) entidades conservam âncoras e organização, mas ocultas não criam desenho ou colisão [15.00ms]
+(pass) referência ausente ou arquivo/entidade repetidos não geram uma cena parcialmente válida
+(pass) caminhos hostis, limites de malha, matrizes inválidas e dados não finitos são recusados
+(pass) origens e licenças são coerentes e céu exige uma textura de imagem presente
+(pass) terreno fixa dimensões e arquivos de altura corretos; não trata bytes faltando como chão plano
+(pass) ciclos organizacionais e associações de metadados não apontam para entidades perdidas
+(pass) trajetos e câmeras não têm dados derivados contraditórios
+(pass) rota fechada termina no ponto inicial, como a amostragem compartilhada
+(pass) hash da fonte preserva autoria e independe da ordem de chaves usada por JSONB/HTTP
+(pass) inventário confere presença, tamanho e hash antes de entregar arquivos a um decoder
+(pass) arquivo ausente, extra, alterado ou truncado impede o pacote inteiro
+(pass) cancelamento não entrega um inventário incompleto como aprovado
+(pass) somente bibliotecas usadas participam da conferência; resultado é único e determinístico
+(pass) pessoa sem equipe não exporta recurso restrito; equipe recebe identificação nominal
+(pass) biblioteca ausente, duplicada ou com licença desconhecida é recusada
+(pass) partição por região usa a mesma divisão e não mistura triângulos entre setores
+(pass) divisão conserva triângulos, winding e todos os atributos sem alterar a origem
+(pass) 65000 vértices respeitam o teto de 65 mil sem perder índices [47.00ms]
+(pass) 65001 vértices respeitam o teto de 65 mil sem perder índices [32.00ms]
+(pass) malha não indexada e malha vazia têm saídas próprias e limitadas
+(pass) triângulos muito densos também limitam os índices de cada parte [62.00ms]
+(pass) medidas, atributos e índices inválidos não produzem partes utilizáveis
+(pass) orçamento é recusado antes de percorrer uma fonte enorme
+(pass) o orçamento de saída inclui vértices duplicados nas juntas das partes
+(pass) Estúdio mede malhas reais e os limites por modelo/projeto sem confundi-los com objetos
+(pass) recursos existentes do projeto são somados antes de oferecer uma importação
+(pass) exceder o Estúdio não bloqueia um pacote externo dentro de seu orçamento
+(pass) fontes inválidas e caminhos repetidos não viram medidas enganosas
+(pass) preparação resolve apoio no terreno sem mutar autoria nem baixar modelos não usados
+(pass) apoio em objeto usa contato/escala e ocultação herdada não exporta a construção escondida
+(pass) apoio na água conserva pose completa no mundo
+(pass) rotas/câmeras têm coordenadas finais e marcadores ocultos não viram dependência
+(pass) dependências de aparência, céu e pintura são selecionadas sem incluir imagens ociosas
+(pass) conjunto é expandido uma vez, conserva procedência e confere a licença da biblioteca da composição [15.00ms]
+(pass) seleção autorizável dispensa alturas e concorda com a expansão de conjuntos e suas camadas
+(pass) perfil sem conversão, alturas ausentes e identificação/revisão inconsistentes impedem compilação
+(pass) preparo de exportação confere cenário, revisão e digest dos dados salvos
+(pass) envelope preserva IDs opacos, procedência e bytes do documento original
+(pass) recursos cobrem exatamente o inventário; não aceitam falta, repetição ou caminhos extras
+(pass) um ID pode compartilhar conteúdo idêntico, mas não conteúdos incompatíveis
+(pass) papéis binários diferentes não compartilham um ID, mesmo com digest igual
+(pass) versão, campos desconhecidos e IDs inválidos são recusados sem normalização
+(pass) teto é medido em bytes UTF-8 e também vale para a entrada direta pelo schema [47.00ms]
+(pass) a raiz apoiada e sua pilha acompanham alturas novas; o conjunto livre e as relações internas permanecem
+(pass) copiar e guardar a composição usam a altura carregada; separar exige posição atual e desfaz por inteiro [16.00ms]
+(pass) copiar montagem e objeto apoiado remapeia o vínculo para a nova raiz [15.00ms]
+(pass) montagem fixa revisão e preserva a composição sem gravar clones na origem
+(pass) objeto sobre a montagem usa seu espaço local e conserva o contato na expansão e ao mover a raiz
+(pass) pincel considera a ocupação e o orçamento das peças internas de conjuntos [32.00ms]
+(pass) organizar trata montagens como unidades e mede os volumes de suas peças com giros XYZ [15.00ms]
+(pass) pasta e camada conservam seleção, nomes e flags de montagens
+(pass) giro fora do Y move posições e contatos como um corpo, sem reassentar as peças separadamente
+(pass) recursos equivalentes são compartilhados; IDs conflitantes não mudam objetos fora da montagem
+(pass) uma referência fixada não aceita fonte vazia, deformação ou versão não positiva [47.00ms]
+(pass) definição ausente, IDs de expansão em uso e orçamento não são aceitos parcialmente [188.00ms]
+(pass) contato da fonte permanece resolvível na revisão fixada
+(pass) comandos mantêm definição imutável e inversão granular das montagens [31.00ms]
+(pass) raízes respeitam bloqueios e seu conteúdo fixado participa da validação e da proteção de arquivos
+(pass) atualizar definição troca cópias atuais, conserva transformações e permite voltar à revisão antiga [15.00ms]
+(pass) duplicação conserva a definição, os vínculos internos e um desfazer granular [32.00ms]
+(pass) clipboard mantém cópias vivas; salvar uma composição com conjuntos fixa sua expansão [15.00ms]
+(pass) muitas montagens de uma definição cheia de grupos são recusadas antes de expandir [63.00ms]
+(pass) desfazer com pastas trancadas uma dentro da outra abre os pais antes dos filhos
+(pass) separar conjunto com marcador associado solta o marcador em vez de falhar
+(pass) medir, percorrer e reamostrar uma linha
+(pass) curva suave passa pelos pontos de controle, sem laço nem salto
+(pass) peças soltas e módulos de cerca ao longo da curva
+(pass) faixa da trilha: largura, faces para cima e apoio no relevo [16.00ms]
+(pass) praça: triângulos de polígono côncavo cobrem a área, voltados para cima
+(pass) editar pontos na cena: trecho mais próximo, inserir e remover
+(pass) estrada molda o terreno: leito plano de través, taludes suaves, sem dobrar na emenda [31.00ms]
+(pass) ponte: tabuleiro reto, vãos e aviso quando o morro atravessa
+(pass) encher de água: lago numa cratera, com margem, área, volume e ilha [16.00ms]
+(pass) lago que encosta na borda do terreno fecha a margem e avisa que vaza
+(pass) simplificar anel respeita o limite e mantém a forma
+(pass) nível de transbordo: a passagem mais baixa da borda da bacia
+(pass) rio: cava o leito, a água nunca sobe e as quedas aparecem [16.00ms]
+(pass) represa: a barragem fecha o vale e o lago para nela [15.00ms]
+(pass) rascunho usa a mesma composição em coordenadas locais e conserva vínculos internos
+(pass) publicar uma borda nova mantém o pivô e a posição das peças anteriores
+(pass) rascunho não perde sistemas fora do conteúdo de objetos nem publica vazio ou outro espaço
+(pass) grade considera origem modular, valores negativos e recusa preferências inválidas
+(pass) contato local acompanha posição, giro, escala e espelho do suporte, sem alterar o documento
+(pass) giro de 90° e andar preservam proporções, usam a base do volume e podem ser desfeitos [16.00ms]
+(pass) apoios legados mantêm posição resolvida; ciclos e suporte ausente falham explicitamente
+(pass) terreno nativo plano recebe objetos sem peças de altura, e o pincel respeita buracos carregados
+(pass) PRNG inteiro conserva a sequência e não usa o relógio; pincel determinístico conserva a origem
+(pass) prévia e aplicação preservam proporção, aparência, giro, espelho e contato no chão real [15.00ms]
+(pass) mistura protótipos da mesma fonte com aparências diferentes sem ultrapassar os limites
+(pass) ocupação existente usa os volumes reais; novos modelos não atravessam a construção
+(pass) terreno exige alturas carregadas; recortes, peças ausentes e bordas não viram piso
+(pass) traço, densidade e tentativas têm teto; não cria trabalho ilimitado numa área saturada [157.00ms]
+(pass) uma pincelada é atômica, com dados e IDs limitados; cadeados próprios e herdados não são contornados [15.00ms]
+(pass) sobrepor o traço não multiplica a densidade nem desloca a prévia; anexar áreas conserva o prefixo
+(pass) aplainar usa a altura capturada no início e nivelar usa a altura digitada [16.00ms]
+(pass) rampa lê as duas alturas originais; ponto único é uma prévia sem alteração [16.00ms]
+(pass) pintura e abertura são dados separados das alturas, e fechar restaura as células
+(pass) ruído conserva a semente no mesmo pipeline usado pelo gesto e valores inválidos são recusados
+(pass) formas são superfícies fechadas, orientadas para fora, com medidas e volumes corretos [15.00ms]
+(pass) resoluções extremas são limitadas e não produzem faces degeneradas
+(pass) definições autorais não exigem biblioteca e participam dos volumes, bloqueios e undo
+(pass) fragmento é independente, limitado e conserva só os recursos e ancestrais necessários [16.00ms]
+(pass) colagem é determinística, conserva aparência e hierarquia e não altera a origem ou o destino
+(pass) apoios internos com contato ou legados são remapeados sem deslocar a pilha duas vezes
+(pass) apoio externo e terreno são resolvidos antes de sair da cena; falta de medidas é recusa clara
+(pass) recursos com IDs colidentes recebem aliases; recursos idênticos são reutilizados
+(pass) pastas vazias e conteúdo bloqueado podem ser copiados; colagem não contorna camada de destino [15.00ms]
+(pass) colagem grande é uma única intenção, com orçamento e inversão atômicos [94.00ms]
+(pass) fragmentos recusam vínculos externos e ciclos, conservando marcadores de pastas mistas
+(pass) recorte puro conserva UVs e não modifica os buffers de entrada
+(pass) furo preserva a área externa e exclusões fora da malha não a alteram
+(pass) atributos e índices inconsistentes são recusados antes de produzir uma malha parcial
+(pass) aresta quase coincidente não extrapola vértices nem atributos ao recortar
+(pass) a conferência do stream precisa só do prefixo e mantém o tamanho real do arquivo
+(pass) recusa metadados grandes antes da alocação, tabelas inválidas e referências externas
+(pass) conferência completa recusa o BIN truncado, tipo duplicado e bytes extras
+(pass) hora continua válida e os overrides de ambiente são guardados e desfeitos juntos
+(pass) sol sem direção, névoa invertida e céu sem referência autorizada são recusados
+(pass) panorama e textura são publicados e desfeitos na ordem de suas referências
+(pass) restaurar acabamento do objeto não elimina a textura compartilhada com o céu
+(pass) marcadores antigos e configurações de jogo coexistem sem reescrever pontos antigos [15.00ms]
+(pass) configurações de jogo inválidas são recusadas antes de uma revisão
+(pass) início principal e orçamento de luzes são conferidos no conjunto do documento
+(pass) contornos distantes não consomem o orçamento de recorte de uma pequena peça
+(pass) encontros recortam só o acabamento, preservando a base, UVs e faces de margem
+(pass) recorte comum conserva parede vertical sobre a diagonal sem duplicar faces das duas células
+(pass) parede na divisa permanece quando um dos lados tem chão e some quando ambos são buraco
+(pass) recorte não achata a altura original do catálogo nem altera cor e UV
+(pass) malhas com atributos incompatíveis ou índices inválidos são recusadas antes de recortar
+(pass) face vertical na diagonal interna de um recorte não permanece dentro do lago
+(pass) face de borda do modelo continua fechando sua margem quando há chão de um lado
+(pass) paredes com alturas e trechos desiguais conservam a área em várias linhas da grade [16.00ms]
+(pass) pasta com objeto e câmera copia referências, propriedades e alvo local sem dupla translação [16.00ms]
+(pass) copiar só o marcador desliga a associação externa e conserva a posição resolvida do chão
+(pass) colagem de marcador usa o mesmo lote atômico e o mesmo undo; conjunto recusa metadados de jogo
+(pass) régua e rota medem metros no mundo, com trechos e total sem somar o giro ou a posição
+(pass) pose de marcador e câmera giram o alvo local uma vez; ida e volta conservam o ponto
+(pass) zona rotacionada inclui bordas e altura, respeitando a concavidade do polígono
+(pass) rota com relevo amostra os mesmos pontos do campo, mede comprimento 3D e conserva controles
+(pass) início principal oculto por camada é ignorado; marcador antigo não vira início por seu nome
+(pass) orçamento de rota é conferido antes de consultar o terreno, incluindo o total do documento
+(pass) giro de gizmo conserva a orientação além de 90 graus e rejeita inclinação
+(pass) gizmo grava deslocamento relativo ao relevo sem incorporar a altura do chão
+(pass) tamanho altera medidas e pontos locais uma vez, sem deformar esferas ou humanos
+(pass) gizmo protege parâmetros de câmera/luz e limita dimensões autorais
+(pass) alças de rota girada fazem ida e volta com raiz livre ou no chão e controles elevados
+(pass) polígono conserva o plano, rejeita controles fora dele e a mesma validação recusa auto-interseções
+(pass) apagar um objeto desassocia o marcador que permanece sem apagar propriedades ou pose; undo restaura o vínculo
+(pass) marcador pode associar a raiz de conjunto e a colagem remapeia esse vínculo
+(pass) centenas de associações são soltas em um comando; trava de qualquer marcador recusa o lote inteiro [32.00ms]
+(pass) escolha de uma pasta inclui caminhos sem promovê-los a objetos transformáveis
+(pass) referências de modelos em caminhos e lagos também respeitam cadeados próprios e herdados e o undo
+(pass) documentos antigos continuam válidos; camada autoral exige identificadores e vínculos íntegros
+(pass) flags acumulam camadas e ancestrais; descendentes são indexados sem perder a relação da árvore
+(pass) cadeado herdado não pode ser contornado por trocar camada, grupo, definição ou destrancar o filho [15.00ms]
+(pass) movimento para destinos bloqueados e ciclos é atômico; organizar não desloca o mundo
+(pass) remover camada usada requer transferência explícita e verifica cada membro antes de alterar
+(pass) desagrupar transfere filhos para a pasta pai, preserva medidas e desfaz pelo mesmo histórico
+(pass) inversão restaura camada e flags mesmo com grupos e objetos bloqueados sem mudança própria
+(pass) agrupar não achata pastas selecionadas e uma organização grande permanece uma ação atômica [31.00ms]
+(pass) índices de escrita acompanham alterações de grupo, camada e restauração durante o lote [16.00ms]
+(pass) apagar pasta inclui os descendentes e recusa filhos bloqueados ou apoios externos sem remover parcialmente
+(pass) redefinir GLB compartilhado também respeita camadas trancadas; undo restaura a definição e os cadeados
+(pass) espelho alterna cada eixo sem alterar posição, apoio ou volume; desfazer é exato
+(pass) troca conserva base visual, proporções, espelho e vínculos com pivôs e apoios distintos [16.00ms]
+(pass) troca em relevo real exige a fonte e conserva base acima dele
+(pass) referências de outra revisão ou outro volume não sobrescrevem peças fora da seleção
+(pass) volume usa giro, escala e pivô real; mudar a escala mantém o contato com o chão
+(pass) alinhamento e vãos usam faces de volumes diferentes e podem ser desfeitos
+(pass) repetição em fila e círculo mantém proporções e não duplica o início do círculo
+(pass) variação tem semente, preserva proporções e não modifica entrada; cadeados continuam atômicos
+(pass) tampa segue as duas faces do arco no interior, não só os cantos do pilar [15.00ms]
+(pass) salto na face inferior de uma viga fecha o espelho interno do sólido
+(pass) viga sobreposta escolhe a face mais baixa e conserva o volume sem tampas duplicadas
+(pass) junta entre tábuas fecha só a madeira do próprio pilar e informa a área de contato real
+(pass) base segue as células reais em desnível e falta de superfície não inventa apoio [16.00ms]
+(pass) a grade decide igual ao teste exato em polígonos grandes, simples ou não [62.00ms]
+(pass) contorno de 16 mil pontos e ilha grande são conferidos em pouco tempo [94.00ms]
+(pass) chave reservada é recusada na entrada, sem desaparecer silenciosamente da autoria ou compilação
+(pass) propriedades comuns preservam nomes e valores como dados, inclusive nomes de métodos sem função
+(pass) publicação fixa fonte, perfil e bytes exatos do manifesto, sem alterar a entrada [16.00ms]
+(pass) somente os sete territórios são alvos, sem perfil genérico ou campos de autoridade
+(pass) fonte divergente, manifesto adulterado, truncado ou com bytes UTF-8 inválidos é recusado
+(pass) captura pedido e manifesto antes de awaits; alterações do chamador não mudam a versão
+(pass) inventário deduplica conteúdo e recusa metadados incompatíveis para o mesmo hash
+(pass) resultado e repetição precisam corresponder à fonte, ao manifesto, à versão e à ilha pedida
+(pass) o resumo leva inventário e procedência, nunca o manifesto, e confere o manifesto do pedido
+(pass) a base guarda pintura e buracos por peça sem confundir camadas de organização
+(pass) identidade da base inclui solo e buracos e independe da ordem das propriedades recebidas
+(pass) edição serializa as duas bordas tocadas, conserva outros hashes e devolve fundo sem arquivo
+(pass) reamostragem conserva metros, pesos e pequenos buracos ao reduzir a resolução [16.00ms]
+(pass) campos recusam medidas não finitas e regravar hashes iguais conserva a base original
+(pass) o formato canônico distingue altura, pintura e buracos mesmo com tamanho semelhante
+(pass) abrir e regravar uma peça conserva Uint16 mesmo em faixa estreita e altura elevada
+(pass) cabeça, comandos e inversos preservam referências e texturas do solo
+(pass) camadas e referências do terreno têm identidades, limites e posições válidas
+(pass) a textura de uma camada precisa pertencer à tabela do cenário
+(pass) o campo confere a forma e lê com a mesma interpolação da fonte das peças
+(pass) reabrir e regravar sem esculpir conserva os bytes de todas as peças
+(pass) uma pincelada só muda as peças que toca e mantém as bordas coincidentes
+(pass) regiões: recorte ao campo, união e pincel fora do terreno
+(pass) elevar e abaixar: efeito cheio no miolo, zero na borda, limites respeitados
+(pass) aplainar, platô e suavizar [15.00ms]
+(pass) morro e cratera
+(pass) rampa: piso reto entre as pontas, taludes suaves e pontas no chão existente
+(pass) ruído: repetível pela semente, contínuo e dentro da amplitude
+(pass) erosão: reduz o declive máximo e conserva o volume
+(pass) receitas: plano, ilha, colinas e vale saem iguais para a mesma semente [16.00ms]
+(pass) pintura de chão: os pesos somam sempre 255 e a pincelada é exata
+(pass) pintura automática por altura e declive [16.00ms]
+(pass) buracos: células abertas pelo pincel, consulta e mapa de bits por peça
+(pass) PNG de alturas: ida e volta em 16 bits e recusas [31.00ms]
+(pass) PNG de alturas: lê 8 bits colorido com filtros de linha
+(pass) identidade da base ignora a ordem de chaves do JSONB e das referências de peças
+(pass) documento, apoio e gestos usam a fonte explícita; a falta do relevo não vira altura zero
+(pass) peça Uint16 tem formato canônico, intervalo e erro de quantização limitado
+(pass) altura respeita origem e passo; bordas e vértices das peças vizinhas coincidem
+(pass) interpolação usa os dois triângulos da célula, com a diagonal entre os outros dois cantos
+(pass) peça omitida é fundo; arquivo ausente, intervalo errado ou borda inconsistente não viram terreno plano
+(pass) bytes truncados, versão desconhecida e amostras fora do intervalo são recusados
+(pass) descritor limita extensão e quantidade, recusa posições repetidas e mantém fontes isoladas
+(pass) malha usa vértices locais, Uint16 e os mesmos triângulos da consulta de altura
+(pass) referência fixada e repetição física entram no mesmo lote, preservando cor, origem e undo
+(pass) texturas ausentes, repetidas, sem autorização ou repetição inválida não são aplicadas parcialmente
+(pass) redefinir material de objeto bloqueado é recusado; inversão conserva os cadeados herdados
+(pass) busca de arquivos inclui a tabela e os comandos que sobrevivem no histórico
+(pass) escolha substitui apenas a seleção, resolve colisão de IDs e desfaz a remoção de referências sem uso
+(pass) restaurar o material de um objeto conserva a textura ainda usada por um caminho
+(pass) desfazer (inverso de um lote) > uma restauração conserva a identidade e não altera a entrada [16.00ms]
+(pass) desfazer (inverso de um lote) > um lote de 500 objetos bloqueados continua podendo ser desfeito atomicamente [16.00ms]
+(pass) desfazer (inverso de um lote) > nada mudou, nada a desfazer
+(pass) desfazer (inverso de um lote) > mover, criar e apagar objetos
+(pass) desfazer (inverso de um lote) > uma propriedade acrescentada some de novo ao desfazer
+(pass) desfazer (inverso de um lote) > modelo novo com objeto, e a troca de base, hora e nome
+(pass) desfazer (inverso de um lote) > apagar um grupo inteiro com o que tem dentro
+(pass) desfazer (inverso de um lote) > agrupar: grupo novo, objeto dentro, e desfazer tira os dois
+(pass) desfazer (inverso de um lote) > mexer e trancar no mesmo lote: o desfazer destranca antes de devolver
+(pass) desfazer (inverso de um lote) > mexer dentro de um grupo e trancar o grupo depois
+(pass) desfazer (inverso de um lote) > destrancar o grupo, mexer dentro e trancar de novo
+(pass) desfazer (inverso de um lote) > um objeto trancado que foi destrancado e apagado volta trancado
+(pass) desfazer (inverso de um lote) > o mesmo identificador trocando de tipo
+(pass) desfazer (inverso de um lote) > refazer é desfazer o desfazer
+(pass) documento v2 > um cenário vazio sobre chão plano é válido e não pressupõe jogo nenhum
+(pass) documento v2 > aceita escala por eixo e propriedades personalizadas [15.00ms]
+(pass) documento v2 > recusa objeto cujo modelo não está na tabela do cenário
+(pass) documento v2 > quem valida pode conferir os modelos contra o próprio acervo
+(pass) documento v2 > recusa dois mares e marcador preso a objeto inexistente
+(pass) comandos v2 > um lote registra o modelo e põe o objeto; a entrada não é alterada
+(pass) comandos v2 > o lote é atômico: um comando inválido desfaz os anteriores
+(pass) comandos v2 > revisão diferente da esperada é conflito
+(pass) comandos v2 > não remove da tabela um modelo que ainda está em uso
+(pass) comandos v2 > elemento trancado só aceita ser destrancado, e sozinho
+(pass) comandos v2 > troca a base e a hora do dia
+(pass) migração do piloto (v1) > leva tudo para o formato genérico sem perder informação
+(pass) migração do piloto (v1) > recusa quando um modelo não tem biblioteca de destino
+(pass) migração do piloto (v1) > abrir aceita as duas versões e devolve sempre a atual
+(pass) modelo GLB e apoio no chão > aceita o modelo completo e conta o que ele traz
+(pass) modelo GLB e apoio no chão > recusa o que os jogos não abrem, com o motivo
+(pass) modelo GLB e apoio no chão > o endereço do arquivo é o SHA-256 do conteúdo
+(pass) modelo GLB e apoio no chão > quem pisa no chão guarda a distância até ele
+ 370 pass
+ 0 fail
+ 10744 expect() calls
+Ran 370 tests across 57 files. [3.90s]

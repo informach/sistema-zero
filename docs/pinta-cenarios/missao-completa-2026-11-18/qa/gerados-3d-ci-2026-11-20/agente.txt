@@ -1,0 +1,12 @@
+(pass) cliente recusa token ausente, HTTP remoto e URL com credenciais
+(pass) MCP real via stdio publica o contrato e valida comandos antes de tocar o serviço [391.00ms]
+(pass) o cliente recusa HTTP remoto, URL com credenciais e acesso sem token nem senha
+(pass) entra uma vez, fala nas rotas da oficina e renova quando o acesso vence
+(pass) senha errada e token vencido sem senha dizem o que fazer
+(pass) editar manda o lote como a edição à mão; comando inválido nem sai da máquina
+(pass) as ferramentas conferem a entrada antes do serviço e devolvem a revisão atual na recusa
+(pass) MCP de verdade por stdio publica as ferramentas e os comandos do documento [406.00ms]
+ 8 pass
+ 0 fail
+ 40 expect() calls
+Ran 8 tests across 2 files. [1102.00ms]

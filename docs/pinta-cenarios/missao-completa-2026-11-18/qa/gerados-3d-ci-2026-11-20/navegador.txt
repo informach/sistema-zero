@@ -1,0 +1,3 @@
+  ✓  1 [chromium] › e2e\scene3d-document.flow.ts:33:5 › preview › preview: cena pública usa os canais reais, desenha e libera recursos em três ciclos (823ms)
+  ✓  2 [chromium] › e2e\scene3d-document.flow.ts:33:5 › export › export: cena pública usa os canais reais, desenha e libera recursos em três ciclos (634ms)
+  2 passed (5.9s)
