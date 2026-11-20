@@ -1,0 +1,7 @@
+(pass) Canvas 3D — limites, lifecycle e carregamento > inclui a biblioteca 3D quando um facilitador gera código que depende dela
+(pass) Canvas 3D — limites, lifecycle e carregamento > gera callback de erro para loaders e o parser o preserva
+
+ 84 pass
+ 0 fail
+ 94856 expect() calls
+Ran 84 tests across 6 files. [1023.00ms]

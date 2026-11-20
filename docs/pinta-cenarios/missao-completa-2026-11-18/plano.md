@@ -57,8 +57,13 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   na qualificação Linux e na execução real em staging; módulo e ambos os contêineres
   foram conferidos em `qa/leitor-a-runtime-staging-2026-11-19/continuidade-4daf-2026-11-20/`.
   A CI 44749541850 parou na formatação de um JSON remoto de QA; o ajuste preserva
-  seus dados, e a nova CI 44752366629 está em execução. Nenhuma ativação de Python,
-  política nova ou gravador foi feita por essas provas.
+  seus dados. A CI 44752366629 aprovou os demais jobs e falhou no typecheck de Members:
+  a coleção de nomes do Estúdio declarava um ReadonlySet incompleto sob ESNext.
+  O contrato foi corrigido somente nos tipos, com JavaScript gerado idêntico nos
+  quatro arquivos envolvidos. Members e Estúdio passaram na checagem completa;
+  84 regressões, perfil oficial e Biome de 16.635 arquivos também passaram.
+  Evidências em `qa/contrato-de-nomes-ci-2026-11-20/`. É necessária nova qualificação
+  remota; nenhuma ativação de Python, política nova ou gravador foi feita por essas provas.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.
@@ -90,6 +95,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   O foco foi emulado no Chrome headless. São duas camadas, sem publicação ou nuvem 6;
   a prova não encerra a Vila nem o fechamento Python. Ver
   `qa/jogar-atualizar-autenticado-2026-11-20/README.md`.
+  A própria Vila também percorreu Vila → Cabana → Vila, com colisão, água animada,
+  primeiro plano e seis documentos nativos iguais após reabertura. Código, IR e
+  blocos foram preservados depois de editar o Chão e reabrir o jogo. A atualização
+  exigiu foco após a biblioteca estar pronta: o intervalo anterior ao commit da
+  ponte ainda precisa ser corrigido. Provas em `qa/vila-autenticada-piloto-2026-11-20/`
+  e `qa/vila-atualizacao-autenticada-2026-11-20/`; isso não encerra publicação/Python/nuvem.
 - [ ] 2b. Geometria física comum para formas, transformações livres e colisões de conjuntos;
   integrar os consumidores e seus testes, sem programação dentro do Pinta.
   O primeiro lote corrige peças reduzidas que caíam entre as amostras do corpo no
@@ -156,6 +167,12 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   `qa/motores-externos-2026-11-19/README.md`. O comando oficial agora pode exigir
   os três programas instalados. Projeções e chunks expansíveis pertencem à etapa 8;
   publicação e atualização autenticadas continuam nas etapas 0b/9.
+  O piloto encontrou uma omissão no arquivo editável: a cabana ligada por porta
+  não acompanhava a Vila. A correção compartilha a resolução de portas e restaura
+  mundos completos atomicamente, sem mudar formatos nem visual. Passaram 53 testes
+  focados, 2.269 da suíte (três Pygame reexecutados em rodada separada com o motor real)
+  e dois ensaios Chrome desktop/toque. Ver `exportacao-nativa-de-mundos.md` e
+  `qa/mundo-editavel-local-2026-11-20/`. A prova verde autenticada espera o frontend corrigido.
 - [ ] 8a. Documento e persistência incremental por chunks, cache/culling estritamente orçados,
   navegação, mapas expansíveis e recuperação; medir heap, buffers e tempo, sem prometer hardware.
   Lote 8a1 implementado: envelope físico local 2 com blocos 32 × 32, transação
