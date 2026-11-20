@@ -7,6 +7,7 @@ import { Droplets, Eye, EyeOff, Trash2, Waves } from 'lucide-react'
 import { useState } from 'react'
 import { NOMES_AGUA } from '../agua-formulario'
 import { comandosParaRemoverAgua } from '../agua-remocao'
+import { useFerramentas } from '../faixas'
 import { DialogoDeApagar } from '../pecas'
 import type { useAgua } from '../useAgua'
 import { AguaMaterial } from './AguaMaterial'
@@ -35,6 +36,7 @@ export function Agua({
   aoCapturar(): void
   aoCopiar(): void
 }) {
+  const { pode } = useFerramentas()
   const f = t.formulario,
     existente = t.agua,
     [apagando, setApagando] = useState<string | null>(null),
@@ -209,7 +211,7 @@ export function Agua({
               : null}
             {f.tipo === 'cachoeira' ? (
               numero('giro', 'Orientação', -360, 360, false, '°')
-            ) : (
+            ) : !pode('agua.aparencia') ? null : (
               <label className="mcn-opcao-encaixe">
                 Permitir nado
                 <input
@@ -270,7 +272,9 @@ export function Agua({
                 <AguaPontos formulario={f} mudar={(pontos) => t.mudar('pontos', pontos)} />
               </>
             ) : null}
-            <AguaMaterial valor={f.aparencia} mudar={(a) => t.mudar('aparencia', a)} />
+            {pode('agua.aparencia') ? (
+              <AguaMaterial valor={f.aparencia} mudar={(a) => t.mudar('aparencia', a)} />
+            ) : null}
             <button
               type="button"
               className="sz-tool-btn"

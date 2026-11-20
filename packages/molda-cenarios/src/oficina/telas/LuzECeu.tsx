@@ -1,6 +1,7 @@
 import type { IluminacaoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
 import type { EstadoDoAmbiente } from '@sistemazero/molda-cenarios-motor'
 import { useState } from 'react'
+import { useFerramentas } from '../faixas'
 import type { Biblioteca, CenariosHost } from '../portas'
 import type { SecaoDoAmbiente, useAmbiente } from '../useAmbiente'
 import { CampoCor, CampoVetor } from './CamposDoJogo'
@@ -23,6 +24,7 @@ export function LuzECeu({
 }) {
   const [escolhendo, setEscolhendo] = useState(false),
     i = t.rascunho?.iluminacao
+  const { pode } = useFerramentas()
   const mudar = (v: IluminacaoDeCenario) => {
     t.mudar(v)
   }
@@ -82,155 +84,173 @@ export function LuzECeu({
               sufixo="h"
               aoMudar={(hora) => mudar({ ...i, hora })}
             />
-            <details
-              className="mcn-grupo"
-              open={t.secao === 'sol'}
-              onToggle={(e) => {
-                alternarSecao('sol', e.currentTarget.open)
-              }}
-            >
-              <summary>Sol e sombras</summary>
-              {!i.sol ? (
-                <button
-                  type="button"
-                  className="sz-tool-btn"
-                  onClick={() =>
-                    mudar({
-                      ...i,
-                      sol: {
-                        direcao: { x: -1, y: 2, z: 1 },
-                        cor: '#fff1d8',
-                        intensidade: 1.8,
-                        sombra: true,
-                      },
-                    })
-                  }
-                >
-                  Personalizar o sol
-                </button>
-              ) : (
-                <>
-                  <CampoCor
-                    rotulo="Cor do sol"
-                    valor={i.sol.cor}
-                    aoMudar={(cor) => mudar({ ...i, sol: { ...i.sol!, cor } })}
-                  />
-                  <CampoNumero
-                    rotulo="Força do sol"
-                    valor={i.sol.intensidade}
-                    min={0}
-                    max={100}
-                    passo={0.1}
-                    aoMudar={(intensidade) => mudar({ ...i, sol: { ...i.sol!, intensidade } })}
-                  />
-                  <CampoVetor
-                    rotulo="Direção para o sol"
-                    valor={i.sol.direcao}
-                    unidade=""
-                    aoMudar={(direcao) => mudar({ ...i, sol: { ...i.sol!, direcao } })}
-                  />
-                  <label className="mcn-opcao">
-                    <input
-                      type="checkbox"
-                      checked={i.sol.sombra}
-                      onChange={(e) =>
-                        mudar({ ...i, sol: { ...i.sol!, sombra: e.target.checked } })
-                      }
-                    />
-                    Projetar sombra do sol
-                  </label>
-                  <button type="button" className="sz-tool-btn" onClick={() => retirar('sol')}>
-                    Usar sol da hora
-                  </button>
-                </>
-              )}
-              <details className="mcn-grupo">
-                <summary>Qualidade das sombras</summary>
-                <label className="mcn-campo">
-                  Resolução da sombra do sol
-                  <select
-                    value={i.sombras?.resolucao ?? 1024}
-                    onChange={(e) =>
+            {pode('luz.sol-e-ambiente') ? (
+              <details
+                className="mcn-grupo"
+                open={t.secao === 'sol'}
+                onToggle={(e) => {
+                  alternarSecao('sol', e.currentTarget.open)
+                }}
+              >
+                <summary>Sol e sombras</summary>
+                {!i.sol ? (
+                  <button
+                    type="button"
+                    className="sz-tool-btn"
+                    onClick={() =>
                       mudar({
                         ...i,
-                        sombras: {
-                          alcance: i.sombras?.alcance ?? 80,
-                          resolucao: Number(e.target.value) as 512 | 1024 | 2048,
+                        sol: {
+                          direcao: { x: -1, y: 2, z: 1 },
+                          cor: '#fff1d8',
+                          intensidade: 1.8,
+                          sombra: true,
                         },
                       })
                     }
                   >
-                    {[512, 1024, 2048].map((r) => (
-                      <option key={r} value={r}>
-                        {r} px
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <CampoNumero
-                  rotulo="Alcance das sombras"
-                  valor={i.sombras?.alcance ?? 80}
-                  min={8}
-                  max={512}
-                  sufixo="m"
-                  aoMudar={(alcance) =>
-                    mudar({ ...i, sombras: { resolucao: i.sombras?.resolucao ?? 1024, alcance } })
-                  }
-                />
-                <p className="text-sm text-mld-muted">
-                  O hardware pode limitar a resolução. Aumentar alcance e resolução custa recursos.
-                </p>
-                <button type="button" className="sz-tool-btn" onClick={() => retirar('sombras')}>
-                  Restaurar sombras padrão
-                </button>
-              </details>
-            </details>
-            <details
-              className="mcn-grupo"
-              open={t.secao === 'ambiente'}
-              onToggle={(e) => {
-                alternarSecao('ambiente', e.currentTarget.open)
-              }}
-            >
-              <summary>Luz ambiente</summary>
-              {!i.ambiente ? (
-                <button
-                  type="button"
-                  className="sz-tool-btn"
-                  onClick={() =>
-                    mudar({ ...i, ambiente: { ceu: '#c9e4ff', chao: '#5c654a', intensidade: 1 } })
-                  }
-                >
-                  Personalizar luz ambiente
-                </button>
-              ) : (
-                <>
-                  <CampoCor
-                    rotulo="Luz vinda do céu"
-                    valor={i.ambiente.ceu}
-                    aoMudar={(ceu) => mudar({ ...i, ambiente: { ...i.ambiente!, ceu } })}
-                  />
-                  <CampoCor
-                    rotulo="Luz refletida pelo chão"
-                    valor={i.ambiente.chao}
-                    aoMudar={(chao) => mudar({ ...i, ambiente: { ...i.ambiente!, chao } })}
-                  />
-                  <CampoNumero
-                    rotulo="Força da luz ambiente"
-                    valor={i.ambiente.intensidade}
-                    min={0}
-                    max={100}
-                    passo={0.1}
-                    aoMudar={(intensidade) =>
-                      mudar({ ...i, ambiente: { ...i.ambiente!, intensidade } })
-                    }
-                  />
-                  <button type="button" className="sz-tool-btn" onClick={() => retirar('ambiente')}>
-                    Usar ambiente da hora
+                    Personalizar o sol
                   </button>
-                </>
-              )}
-            </details>
+                ) : (
+                  <>
+                    <CampoCor
+                      rotulo="Cor do sol"
+                      valor={i.sol.cor}
+                      aoMudar={(cor) => mudar({ ...i, sol: { ...i.sol!, cor } })}
+                    />
+                    <CampoNumero
+                      rotulo="Força do sol"
+                      valor={i.sol.intensidade}
+                      min={0}
+                      max={100}
+                      passo={0.1}
+                      aoMudar={(intensidade) => mudar({ ...i, sol: { ...i.sol!, intensidade } })}
+                    />
+                    <CampoVetor
+                      rotulo="Direção para o sol"
+                      valor={i.sol.direcao}
+                      unidade=""
+                      aoMudar={(direcao) => mudar({ ...i, sol: { ...i.sol!, direcao } })}
+                    />
+                    <label className="mcn-opcao">
+                      <input
+                        type="checkbox"
+                        checked={i.sol.sombra}
+                        onChange={(e) =>
+                          mudar({ ...i, sol: { ...i.sol!, sombra: e.target.checked } })
+                        }
+                      />
+                      Projetar sombra do sol
+                    </label>
+                    <button type="button" className="sz-tool-btn" onClick={() => retirar('sol')}>
+                      Usar sol da hora
+                    </button>
+                  </>
+                )}
+                {pode('luz.luzes-e-sombra') ? (
+                  <details className="mcn-grupo">
+                    <summary>Qualidade das sombras</summary>
+                    <label className="mcn-campo">
+                      Resolução da sombra do sol
+                      <select
+                        value={i.sombras?.resolucao ?? 1024}
+                        onChange={(e) =>
+                          mudar({
+                            ...i,
+                            sombras: {
+                              alcance: i.sombras?.alcance ?? 80,
+                              resolucao: Number(e.target.value) as 512 | 1024 | 2048,
+                            },
+                          })
+                        }
+                      >
+                        {[512, 1024, 2048].map((r) => (
+                          <option key={r} value={r}>
+                            {r} px
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <CampoNumero
+                      rotulo="Alcance das sombras"
+                      valor={i.sombras?.alcance ?? 80}
+                      min={8}
+                      max={512}
+                      sufixo="m"
+                      aoMudar={(alcance) =>
+                        mudar({
+                          ...i,
+                          sombras: { resolucao: i.sombras?.resolucao ?? 1024, alcance },
+                        })
+                      }
+                    />
+                    <p className="text-sm text-mld-muted">
+                      O hardware pode limitar a resolução. Aumentar alcance e resolução custa
+                      recursos.
+                    </p>
+                    <button
+                      type="button"
+                      className="sz-tool-btn"
+                      onClick={() => retirar('sombras')}
+                    >
+                      Restaurar sombras padrão
+                    </button>
+                  </details>
+                ) : null}
+              </details>
+            ) : null}
+            {pode('luz.sol-e-ambiente') ? (
+              <details
+                className="mcn-grupo"
+                open={t.secao === 'ambiente'}
+                onToggle={(e) => {
+                  alternarSecao('ambiente', e.currentTarget.open)
+                }}
+              >
+                <summary>Luz ambiente</summary>
+                {!i.ambiente ? (
+                  <button
+                    type="button"
+                    className="sz-tool-btn"
+                    onClick={() =>
+                      mudar({ ...i, ambiente: { ceu: '#c9e4ff', chao: '#5c654a', intensidade: 1 } })
+                    }
+                  >
+                    Personalizar luz ambiente
+                  </button>
+                ) : (
+                  <>
+                    <CampoCor
+                      rotulo="Luz vinda do céu"
+                      valor={i.ambiente.ceu}
+                      aoMudar={(ceu) => mudar({ ...i, ambiente: { ...i.ambiente!, ceu } })}
+                    />
+                    <CampoCor
+                      rotulo="Luz refletida pelo chão"
+                      valor={i.ambiente.chao}
+                      aoMudar={(chao) => mudar({ ...i, ambiente: { ...i.ambiente!, chao } })}
+                    />
+                    <CampoNumero
+                      rotulo="Força da luz ambiente"
+                      valor={i.ambiente.intensidade}
+                      min={0}
+                      max={100}
+                      passo={0.1}
+                      aoMudar={(intensidade) =>
+                        mudar({ ...i, ambiente: { ...i.ambiente!, intensidade } })
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="sz-tool-btn"
+                      onClick={() => retirar('ambiente')}
+                    >
+                      Usar ambiente da hora
+                    </button>
+                  </>
+                )}
+              </details>
+            ) : null}
             <details
               className="mcn-grupo"
               open={t.secao === 'ceu'}

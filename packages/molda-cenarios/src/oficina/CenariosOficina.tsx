@@ -1,4 +1,5 @@
 import { type JSX, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import { type AcessoAsFerramentas, FerramentasDaOficina } from './faixas'
 import { BIBLIOTECA_MOLDA_ID } from './moldes'
 import { Chegando, Falhou, useCarga } from './pecas'
 import type { CenariosHost } from './portas'
@@ -31,6 +32,8 @@ export interface CenariosOficinaProps {
   aoNavegar?(rota: RotaDosCenarios, espacoId: string): void
   /** Botões do host no cabeçalho das telas de lista (menu, voltar). */
   cabecalho?: ReactNode
+  /** As faixas de ferramentas liberadas (a jornada de quem usa). Ausente = todas (a equipe). */
+  ferramentas?: AcessoAsFerramentas
 }
 
 /**
@@ -44,6 +47,7 @@ export function CenariosOficina({
   espacoInicial,
   aoNavegar,
   cabecalho,
+  ferramentas,
 }: CenariosOficinaProps): JSX.Element {
   const espacos = useCarga(() => host.espacos(), [host])
   const [rota, setRota] = useState<RotaDosCenarios>(rotaInicial)
@@ -101,7 +105,7 @@ export function CenariosOficina({
       data-molda-theme={tema}
       className="mcn-raiz flex min-h-0 flex-1 flex-col bg-mld-bg text-mld-text"
     >
-      {conteudo}
+      <FerramentasDaOficina acesso={ferramentas}>{conteudo}</FerramentasDaOficina>
     </div>
   )
 

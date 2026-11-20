@@ -4,6 +4,7 @@ import {
   BaseDeTerrenoSchema,
   type CamadaDeSolo,
   type DocumentoDeCenario,
+  FAMILIA_DA_FERRAMENTA,
   FERRAMENTAS_DE_TERRENO,
   type ParametrosDeTerreno,
   type ReceitaDeTerreno,
@@ -19,6 +20,7 @@ import {
   Waves,
 } from 'lucide-react'
 import { type JSX, useState } from 'react'
+import { useFerramentas } from '../faixas'
 import { Dialogo } from '../pecas'
 import type { Biblioteca, CenariosHost, TexturaDeBiblioteca } from '../portas'
 import type { useTerreno } from '../useTerreno'
@@ -66,6 +68,7 @@ export function Terreno({
   indisponivel,
   aoPintar,
 }: Props): JSX.Element {
+  const { pode } = useFerramentas()
   const p = t.parametros,
     base = documento.base.tipo === 'terreno' ? documento.base : null,
     [confirmar, setConfirmar] = useState<ReceitaDeTerreno | null>(null),
@@ -112,11 +115,13 @@ export function Terreno({
                 value={p.ferramenta}
                 onChange={(e) => t.mudar('ferramenta', e.target.value as Ferramenta)}
               >
-                {FERRAMENTAS_DE_TERRENO.map((f) => (
-                  <option key={f} value={f}>
-                    {NOMES_TERRENO[f]}
-                  </option>
-                ))}
+                {FERRAMENTAS_DE_TERRENO.filter((f) => pode(FAMILIA_DA_FERRAMENTA.terreno[f]!)).map(
+                  (f) => (
+                    <option key={f} value={f}>
+                      {NOMES_TERRENO[f]}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
             <button type="button" className="sz-tool-btn" onClick={aoPintar}>
@@ -245,23 +250,25 @@ export function Terreno({
             bibliotecas={bibliotecas}
             indisponivel={indisponivel}
           />
-          <details className="mcn-grupo">
-            <summary>Avançado: tamanho e resolução</summary>
-            <Medidas
-              key={JSON.stringify([
-                base.origem,
-                base.colunas,
-                base.linhas,
-                base.passo,
-                base.min,
-                base.max,
-                base.fundo,
-              ])}
-              base={base}
-              t={t}
-              indisponivel={indisponivel}
-            />
-          </details>
+          {pode('terreno.tamanho') ? (
+            <details className="mcn-grupo">
+              <summary>Avançado: tamanho e resolução</summary>
+              <Medidas
+                key={JSON.stringify([
+                  base.origem,
+                  base.colunas,
+                  base.linhas,
+                  base.passo,
+                  base.min,
+                  base.max,
+                  base.fundo,
+                ])}
+                base={base}
+                t={t}
+                indisponivel={indisponivel}
+              />
+            </details>
+          ) : null}
           {base.recortes?.length ? (
             <fieldset className="mcn-grupo" disabled={t.ocupado || indisponivel}>
               <legend>Recortes importados</legend>
@@ -274,51 +281,53 @@ export function Terreno({
           ) : null}
         </>
       ) : null}
-      <fieldset className="mcn-grupo" disabled={indisponivel || t.ocupado}>
-        <legend>Mapa de alturas PNG</legend>
-        <p className="text-sm text-mld-muted">
-          PNG cinza ou colorido, 8 ou 16 bits, sem entrelaçamento. A imagem ocupa toda a cobertura
-          atual. Exportação sempre em cinza de 16 bits, sem alterar o cenário.
-        </p>
-        <CampoNumero
-          rotulo="Preto corresponde a"
-          valor={preto}
-          min={base?.min ?? -50}
-          max={base?.max ?? 150}
-          passo={1}
-          sufixo="m"
-          aoMudar={setPreto}
-        />
-        <CampoNumero
-          rotulo="Branco corresponde a"
-          valor={branco}
-          min={base?.min ?? -50}
-          max={base?.max ?? 150}
-          passo={1}
-          sufixo="m"
-          aoMudar={setBranco}
-        />
-        <label className="mcn-campo">
-          Importar PNG de alturas
-          <input
-            type="file"
-            accept="image/png,.png"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              e.target.value = ''
-              if (f) void t.importar(f, preto, branco)
-            }}
+      {pode('terreno.tamanho') ? (
+        <fieldset className="mcn-grupo" disabled={indisponivel || t.ocupado}>
+          <legend>Mapa de alturas PNG</legend>
+          <p className="text-sm text-mld-muted">
+            PNG cinza ou colorido, 8 ou 16 bits, sem entrelaçamento. A imagem ocupa toda a cobertura
+            atual. Exportação sempre em cinza de 16 bits, sem alterar o cenário.
+          </p>
+          <CampoNumero
+            rotulo="Preto corresponde a"
+            valor={preto}
+            min={base?.min ?? -50}
+            max={base?.max ?? 150}
+            passo={1}
+            sufixo="m"
+            aoMudar={setPreto}
           />
-        </label>
-        <button
-          type="button"
-          className="sz-tool-btn"
-          disabled={!base}
-          onClick={() => void t.exportar()}
-        >
-          Exportar alturas em PNG 16 bits
-        </button>
-      </fieldset>
+          <CampoNumero
+            rotulo="Branco corresponde a"
+            valor={branco}
+            min={base?.min ?? -50}
+            max={base?.max ?? 150}
+            passo={1}
+            sufixo="m"
+            aoMudar={setBranco}
+          />
+          <label className="mcn-campo">
+            Importar PNG de alturas
+            <input
+              type="file"
+              accept="image/png,.png"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (f) void t.importar(f, preto, branco)
+              }}
+            />
+          </label>
+          <button
+            type="button"
+            className="sz-tool-btn"
+            disabled={!base}
+            onClick={() => void t.exportar()}
+          >
+            Exportar alturas em PNG 16 bits
+          </button>
+        </fieldset>
+      ) : null}
       {confirmar ? (
         <Dialogo titulo="Substituir o relevo?" aoFechar={() => setConfirmar(null)}>
           <p className="text-sm text-mld-muted">
@@ -478,6 +487,9 @@ function CamadasDeTerreno({
   bibliotecas: readonly Biblioteca[]
   indisponivel: boolean
 }): JSX.Element {
+  const { pode } = useFerramentas()
+  // No básico, até cinco chãos (grama, terra, areia, pedra e neve); mais é do intermediário.
+  const maximo = pode('terreno.camadas') ? 8 : 5
   const [camadas, setCamadas] = useState<CamadaDeSolo[]>(
       base.solo?.camadas ?? [{ id: 'grama', nome: 'Grama', cor: '#80a568' }],
     ),
@@ -576,7 +588,7 @@ function CamadasDeTerreno({
         <button
           type="button"
           className="sz-tool-btn"
-          disabled={camadas.length >= 8}
+          disabled={camadas.length >= maximo}
           onClick={() =>
             setCamadas((cs) => [
               ...cs,
@@ -614,7 +626,7 @@ function CamadasDeTerreno({
           </label>
         ) : null}
       </fieldset>
-      {reais.length ? (
+      {reais.length && pode('terreno.camadas') ? (
         <details className="mcn-grupo">
           <summary>Pintura automática por altura e inclinação</summary>
           <fieldset className="mcn-grupo" disabled={indisponivel || t.ocupado}>

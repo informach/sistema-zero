@@ -1,4 +1,5 @@
 import type { DocumentoDeCenario } from './documento'
+import { AparenciaDaAguaSchema } from './parametros-de-agua'
 
 /**
  * As FAMÍLIAS de ferramentas da oficina de cenários e as faixas em que elas se liberam, no mesmo
@@ -301,6 +302,7 @@ function estavel(valor: unknown): string {
 }
 
 const CAMADAS_DO_BASICO = 5
+const APARENCIA_PADRAO = estavel(AparenciaDaAguaSchema.parse({}))
 const AGUAS_AVANCADAS = new Set(['rio', 'represa', 'cachoeira'])
 const CAMINHOS_AVANCADOS = new Set(['estrada', 'cerca', 'muro', 'ponte'])
 
@@ -324,8 +326,11 @@ function marcas(doc: DocumentoDeCenario): Map<string, string> {
 
   for (const agua of doc.aguas) {
     if (AGUAS_AVANCADAS.has(agua.tipo)) marcar('agua.rio-represa-cachoeira', agua.id, agua)
-    if (agua.aparencia !== undefined || agua.nado !== undefined)
-      marcar('agua.aparencia', agua.id, [agua.aparencia ?? null, agua.nado ?? null])
+    // A água nova já nasce com a aparência padrão e com nado: só o que foge disso é autoria.
+    const aparencia =
+      agua.aparencia && estavel(agua.aparencia) !== APARENCIA_PADRAO ? agua.aparencia : null
+    const semNado = agua.tipo !== 'cachoeira' && agua.nado === false
+    if (aparencia || semNado) marcar('agua.aparencia', agua.id, [aparencia, semNado])
   }
 
   for (const c of doc.caminhos) {

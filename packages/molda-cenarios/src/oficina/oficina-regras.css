@@ -1371,4 +1371,29 @@
     border-top: 1px solid var(--color-mld-border);
     z-index: 1;
   }
+
+  /* "Ferramentas que vêm por aí": o que abre depois, no fim do painel da aba (faixas). */
+  .mcn-por-vir {
+    border: 1px dashed var(--color-mld-border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+  .mcn-por-vir > summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--color-mld-muted);
+  }
+  .mcn-por-vir-quando {
+    margin-top: 4px;
+    font-weight: 700;
+  }
+  .mcn-por-vir ul {
+    margin: 2px 0 6px;
+    padding-left: 20px;
+    list-style: disc;
+    color: var(--color-mld-text-soft);
+  }
 }

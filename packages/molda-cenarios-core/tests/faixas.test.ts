@@ -10,6 +10,7 @@ import {
   familiasTrancadas,
   type InstanciaDeCenario,
 } from '../src/v2'
+import { AparenciaDaAguaSchema } from '../src/v2/parametros-de-agua'
 
 const vazio = () => criarDocumentoVazio('c', 'Ilha')
 const objeto = (id: string, extra: Partial<InstanciaDeCenario> = {}): InstanciaDeCenario => ({
@@ -64,7 +65,14 @@ describe('o que o lote criou ou mudou', () => {
         }),
       )
       d.iluminacao.hora = 18
-      d.aguas.push({ id: 'mar', nome: 'Mar', tipo: 'mar', nivel: 0 } as never)
+      d.aguas.push({
+        id: 'mar',
+        nome: 'Mar',
+        tipo: 'mar',
+        nivel: 0,
+        nado: true,
+        aparencia: AparenciaDaAguaSchema.parse({}),
+      } as never)
       d.caminhos.push({ id: 't', nome: 'Trilha', tipo: 'trilha' } as never)
       d.marcadores.push({ id: 'i', configuracao: { tipo: 'inicio', principal: true } } as never)
     })
@@ -193,6 +201,24 @@ describe('o que o lote criou ou mudou', () => {
       'terreno.buraco',
       'jogo.propriedades',
     ])
+  })
+
+  test('a aparência da água só conta quando foge do padrão, e tirar o nado conta', () => {
+    const antes = vazio()
+    const com = (extra: object) =>
+      mudar(antes, (d) => {
+        d.aguas.push({ id: 'l', nome: 'Lago', tipo: 'lago', ...extra } as never)
+      })
+    expect(
+      familiasMudadas(antes, com({ nado: true, aparencia: AparenciaDaAguaSchema.parse({}) })),
+    ).toEqual([])
+    expect(familiasMudadas(antes, com({ nado: false }))).toEqual(['agua.aparencia'])
+    expect(
+      familiasMudadas(
+        antes,
+        com({ aparencia: AparenciaDaAguaSchema.parse({ corRasa: '#ff0000' }) }),
+      ),
+    ).toEqual(['agua.aparencia'])
   })
 
   test('as trancadas são as mudadas fora das faixas de quem pede', () => {

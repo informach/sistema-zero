@@ -6,6 +6,7 @@ import {
   type EncaixeDeComposicao,
   entidadesSelecionaveis,
   entidadesTransformaveis,
+  FAMILIA_DA_FERRAMENTA,
   indiceDaOrganizacao,
   type ModeloDoCenario,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -104,6 +105,7 @@ import { comandosParaRemoverCaminho } from '../caminho-remocao'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
 import { useEdicaoAoVivo } from '../edicao-ao-vivo'
+import { FerramentasPorVir, useFerramentas } from '../faixas'
 import { encerrarPreparacao } from '../importar'
 import { NOMES_JOGO } from '../jogo-formulario'
 import { Chegando, Dialogo, Falhou, useCarga } from '../pecas'
@@ -281,6 +283,12 @@ function OficinaAberta({
 }): JSX.Element {
   const controlador = useMemo(() => criarControlador(host, aberto), [host, aberto])
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
+  // As faixas do posto: a ferramenta trancada some do trilho e dos painéis.
+  const ferramentas = useFerramentas()
+  const liberada = (aba: keyof typeof FAMILIA_DA_FERRAMENTA, ferramenta: string) => {
+    const familia = FAMILIA_DA_FERRAMENTA[aba][ferramenta]
+    return !familia || ferramentas.pode(familia)
+  }
   // Fechar a aba ou recarregar com algo ainda não guardado pede confirmação; ao sair da tela por
   // outro caminho (menu, voltar do navegador), a fila que estava guardando termina de enviar.
   useEffect(() => {
@@ -1708,12 +1716,14 @@ function OficinaAberta({
                 aoTocar={apagar}
               />
               <hr className="mcn-fio" />
-              <Ladrilho
-                icone={Blocks}
-                rotulo="Blocos"
-                desligado={!relevoPronto || estado.ocupado}
-                aoTocar={() => setFormasAbertas(true)}
-              />
+              {ferramentas.pode('objetos.formas') ? (
+                <Ladrilho
+                  icone={Blocks}
+                  rotulo="Blocos"
+                  desligado={!relevoPronto || estado.ocupado}
+                  aoTocar={() => setFormasAbertas(true)}
+                />
+              ) : null}
               <Ladrilho
                 icone={Magnet}
                 rotulo={COPY.oficina.grade}
@@ -1723,7 +1733,7 @@ function OficinaAberta({
               />
             </>
           ) : aba === 'terreno' ? (
-            FERRAMENTAS_TERRENO_RAIL.map(([f, Icone]) => (
+            FERRAMENTAS_TERRENO_RAIL.filter(([f]) => liberada('terreno', f)).map(([f, Icone]) => (
               <Ladrilho
                 key={f}
                 icone={Icone}
@@ -1738,7 +1748,7 @@ function OficinaAberta({
               />
             ))
           ) : aba === 'agua' ? (
-            FERRAMENTAS_AGUA.map(([tipo, Icone]) => (
+            FERRAMENTAS_AGUA.filter(([tipo]) => liberada('agua', tipo)).map(([tipo, Icone]) => (
               <Ladrilho
                 key={tipo}
                 icone={Icone}
@@ -1753,24 +1763,28 @@ function OficinaAberta({
               />
             ))
           ) : aba === 'caminhos' ? (
-            FERRAMENTAS_CAMINHOS.map(([tipo, Icone]) => (
-              <Ladrilho
-                key={tipo}
-                icone={Icone}
-                rotulo={NOMES_CAMINHO[tipo]}
-                ligado={caminhos.rascunho?.tipo === tipo}
-                desligado={caminhos.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
-                aoTocar={() => {
-                  caminhos.iniciar(tipo)
-                  setGavetaAberta(false)
-                  setModoPainel('escolha')
-                  setPainelAberto(true)
-                }}
-              />
-            ))
+            FERRAMENTAS_CAMINHOS.filter(([tipo]) => liberada('caminhos', tipo)).map(
+              ([tipo, Icone]) => (
+                <Ladrilho
+                  key={tipo}
+                  icone={Icone}
+                  rotulo={NOMES_CAMINHO[tipo]}
+                  ligado={caminhos.rascunho?.tipo === tipo}
+                  desligado={
+                    caminhos.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado
+                  }
+                  aoTocar={() => {
+                    caminhos.iniciar(tipo)
+                    setGavetaAberta(false)
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ),
+            )
           ) : aba === 'jogo' ? (
             <>
-              {FERRAMENTAS_JOGO.map(([tipo, Icone]) => (
+              {FERRAMENTAS_JOGO.filter(([tipo]) => liberada('jogo', tipo)).map(([tipo, Icone]) => (
                 <Ladrilho
                   key={tipo}
                   icone={Icone}
@@ -1848,24 +1862,32 @@ function OficinaAberta({
                   ['ceu', Cloud, 'Céu'],
                   ['nevoa', Haze, 'Névoa'],
                 ] as const
-              ).map(([secao, Icone, rotulo]) => (
-                <Ladrilho
-                  key={secao}
-                  icone={Icone}
-                  rotulo={rotulo}
-                  ligado={Boolean(ambiente.rascunho) && ambiente.secao === secao}
-                  desligado={
-                    jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
-                  }
-                  aoTocar={() => {
-                    jogo.cancelar()
-                    ambiente.abrir(secao)
-                    setModoPainel('escolha')
-                    setPainelAberto(true)
-                  }}
-                />
-              ))}
-              {FERRAMENTAS_LUZ.map(([tipo, Icone]) => (
+              )
+                // A hora mora na seção do sol: sem o sol liberado, o ladrilho dele some, mas as
+                // horas do topo seguem abrindo só a hora.
+                .filter(([secao]) =>
+                  secao === 'sol' || secao === 'ambiente'
+                    ? ferramentas.pode('luz.sol-e-ambiente')
+                    : true,
+                )
+                .map(([secao, Icone, rotulo]) => (
+                  <Ladrilho
+                    key={secao}
+                    icone={Icone}
+                    rotulo={rotulo}
+                    ligado={Boolean(ambiente.rascunho) && ambiente.secao === secao}
+                    desligado={
+                      jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
+                    }
+                    aoTocar={() => {
+                      jogo.cancelar()
+                      ambiente.abrir(secao)
+                      setModoPainel('escolha')
+                      setPainelAberto(true)
+                    }}
+                  />
+                ))}
+              {FERRAMENTAS_LUZ.filter(([tipo]) => liberada('luzes', tipo)).map(([tipo, Icone]) => (
                 <Ladrilho
                   key={tipo}
                   icone={Icone}
@@ -2279,7 +2301,7 @@ function OficinaAberta({
                     executar={executar}
                     fonte={fonte}
                     aoEditarConjunto={
-                      aoEditarConjunto
+                      aoEditarConjunto && ferramentas.pode('objetos.conjuntos')
                         ? (id) => {
                             void controlador
                               .terminar()
@@ -2300,7 +2322,8 @@ function OficinaAberta({
                 ) : null}
                 {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
                   <>
-                    {!documento.montagens?.some((m) => selecao.includes(m.id)) ? (
+                    {!documento.montagens?.some((m) => selecao.includes(m.id)) &&
+                    ferramentas.pode('objetos.aparencia') ? (
                       <Aparencia
                         documento={documento}
                         selecao={selecao}
@@ -2309,25 +2332,27 @@ function OficinaAberta({
                         bibliotecas={bibliotecas}
                       />
                     ) : null}
-                    <Organizar
-                      documento={documento}
-                      selecao={selecao}
-                      executar={executar}
-                      medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
-                      fonte={fonte}
-                      aoTrocar={() => {
-                        if (!preparandoMolde) {
-                          troca.current = [...selecao]
-                          setTrocando(selecao.length)
-                          setErroDoMolde(null)
-                          if (globalThis.matchMedia?.('(max-width: 899px)').matches)
-                            setPainelAberto(false)
-                        }
-                      }}
-                    />
+                    {ferramentas.pode('objetos.precisao') ? (
+                      <Organizar
+                        documento={documento}
+                        selecao={selecao}
+                        executar={executar}
+                        medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                        fonte={fonte}
+                        aoTrocar={() => {
+                          if (!preparandoMolde) {
+                            troca.current = [...selecao]
+                            setTrocando(selecao.length)
+                            setErroDoMolde(null)
+                            if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                              setPainelAberto(false)
+                          }
+                        }}
+                      />
+                    ) : null}
                   </>
                 ) : null}
-                {relevoPronto && aba === 'objetos' ? (
+                {relevoPronto && aba === 'objetos' && ferramentas.pode('objetos.precisao') ? (
                   <Encaixes
                     documento={documento}
                     selecao={selecao}
@@ -2342,7 +2367,7 @@ function OficinaAberta({
                 ) : null}
               </>
             )}
-            {!edicaoAberta && escolha.length === 1
+            {!edicaoAberta && escolha.length === 1 && ferramentas.pode('jogo.propriedades')
               ? (() => {
                   const entidade = entidadesSelecionaveis(documento).find(
                     (e) => e.id === escolha[0],
@@ -2371,6 +2396,7 @@ function OficinaAberta({
                   ) : null
                 })()
               : null}
+            {modoPainel !== 'organizacao' ? <FerramentasPorVir aba={aba} /> : null}
           </aside>
         ) : null}
       </div>
