@@ -29,6 +29,7 @@ import {
   type Mundo,
   normalizarBusca,
   podeNoEspaco,
+  podeNoMundo,
   podeUsarCenarios,
   type ResumoDeCenario,
   TETO_DO_BLOB,
@@ -201,6 +202,8 @@ export class CenariosService {
     const mundo = await this.repo.mundo(id)
     if (!mundo) throw new CenarioNaoEncontradoError('O mundo')
     const espaco = await this.espacoDe(ator, mundo.espacoId, 'O mundo')
+    // O mundo de um irmão responde "não existe", como o de outra conta.
+    if (!podeNoMundo(mundo, espaco, ator)) throw new CenarioNaoEncontradoError('O mundo')
     return { mundo, espaco }
   }
   private async cenarioDe(ator: Ator, id: string) {
@@ -727,8 +730,10 @@ export class CenariosService {
   // ---- mundos -------------------------------------------------------------
 
   async mundos(ator: Ator, espacoId: string): Promise<MundoView[]> {
-    await this.espacoDe(ator, espacoId)
-    return (await this.repo.mundos(espacoId)).map(mundoView)
+    const espaco = await this.espacoDe(ator, espacoId)
+    return (await this.repo.mundos(espacoId))
+      .filter((mundo) => podeNoMundo(mundo, espaco, ator))
+      .map(mundoView)
   }
 
   async criarMundo(ator: Ator, espacoId: string, nome: string): Promise<MundoView> {

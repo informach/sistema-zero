@@ -15,7 +15,9 @@ import {
   type AberturaDosCenarios,
   type Ator,
   chaveDoBlob,
+  type Espaco,
   type ModoDosCenarios,
+  podeNoMundo,
 } from '../../src/domain/cenarios/cenarios'
 import {
   BibliotecaRestritaError,
@@ -391,6 +393,71 @@ describe('trazer modelos', () => {
       apagar: [chaveDoBlob(base.espaco.id, digest('b'))],
     })
     expect((await base.servico.espacos(ana))[0]!.usadoBytes).toBe(1000)
+  })
+})
+
+describe('mundos de cada criança no Kids', () => {
+  const PERFIL_A = '44444444-4444-4444-8444-444444444444'
+  const PERFIL_B = '55555555-5555-4555-8555-555555555555'
+  const irmaA: Ator = {
+    usuarioId: PERFIL_A,
+    contaId: OUTRA,
+    equipe: false,
+    suporte: false,
+    perfil: true,
+  }
+  const irmaoB: Ator = { ...irmaA, usuarioId: PERFIL_B }
+  const responsavel: Ator = { ...cliente, perfil: false }
+
+  test('cada perfil vê e abre só os mundos que criou; as bibliotecas seguem da família', async () => {
+    const { servico } = montar('aberto')
+    const [espaco] = await servico.espacos(irmaA)
+    const dela = await servico.criarMundo(irmaA, espaco!.id, 'Ilha da Ana')
+    const cenario = await servico.criarCenario(irmaA, dela.id, 'Praia')
+    const dele = await servico.criarMundo(irmaoB, espaco!.id, 'Vulcão do Beto')
+    const biblioteca = await servico.criarBiblioteca(irmaA, espaco!.id, {
+      nome: 'Árvores',
+      licenca: 'propria',
+    })
+
+    expect((await servico.mundos(irmaA, espaco!.id)).map((m) => m.nome)).toEqual(['Ilha da Ana'])
+    expect((await servico.mundos(irmaoB, espaco!.id)).map((m) => m.nome)).toEqual([
+      'Vulcão do Beto',
+    ])
+    for (const pedir of [
+      () => servico.abrirMundo(irmaoB, dela.id),
+      () => servico.cenarios(irmaoB, dela.id),
+      () => servico.abrirCenario(irmaoB, cenario.id),
+      () => servico.criarCenario(irmaoB, dela.id, 'Invasão'),
+      () => servico.apagarMundo(irmaoB, dela.id),
+    ])
+      await expect(pedir()).rejects.toBeInstanceOf(CenarioNaoEncontradoError)
+    expect((await servico.abrirMundo(irmaoB, dele.id)).nome).toBe('Vulcão do Beto')
+    expect((await servico.bibliotecas(irmaoB, espaco!.id)).map((b) => b.id)).toContain(
+      biblioteca.id,
+    )
+    // Fora de uma sessão de perfil, a conta vê todos.
+    expect((await servico.mundos(responsavel, espaco!.id)).map((m) => m.nome).sort()).toEqual([
+      'Ilha da Ana',
+      'Vulcão do Beto',
+    ])
+  })
+
+  test('os rascunhos de conjunto seguem a biblioteca da família, e o espaço da equipe não filtra', () => {
+    const mundo = {
+      id: 'm',
+      espacoId: 'e',
+      nome: 'Rascunhos',
+      cenarios: 0,
+      bibliotecas: [],
+      capa: null,
+      criadoPor: PERFIL_A,
+      atualizadoEm: AGORA,
+    }
+    const conta = { tipo: 'conta' } as Espaco
+    expect(podeNoMundo(mundo, conta, irmaoB)).toBe(false)
+    expect(podeNoMundo({ ...mundo, bibliotecaConjuntosId: 'b' }, conta, irmaoB)).toBe(true)
+    expect(podeNoMundo(mundo, { tipo: 'equipe' } as Espaco, irmaoB)).toBe(true)
   })
 })
 

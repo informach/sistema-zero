@@ -298,6 +298,17 @@ export function equipeNaPropriaConta(ator: Ator): boolean {
   return ator.equipe && !ator.suporte && !perfil
 }
 
+/**
+ * No Kids, cada criança tem os PRÓPRIOS mundos (os que o perfil dela criou); as bibliotecas, e
+ * os rascunhos de conjunto delas, seguem da família. Fora de uma sessão de perfil (o adulto, a
+ * equipe na própria conta) a conta vê todos. O espaço já foi conferido por `podeNoEspaco`.
+ */
+export function podeNoMundo(mundo: Mundo, espaco: Espaco, ator: Ator): boolean {
+  if (espaco.tipo !== 'conta' || mundo.bibliotecaConjuntosId) return true
+  const perfil = ator.perfil ?? ator.usuarioId !== ator.contaId
+  return !perfil || mundo.criadoPor === ator.usuarioId
+}
+
 /** Este ator pode mexer neste espaço? */
 export function podeNoEspaco(espaco: Espaco, ator: Ator): boolean {
   if (espaco.tipo === 'equipe') return equipeNaPropriaConta(ator)
