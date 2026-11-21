@@ -1127,10 +1127,14 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       -0.5, 1, 0.5,    0.5, 1, 0.5
     ];
     var idx = [
-      0, 2, 1,  0, 3, 2,          // base
-      3, 4, 2,  2, 4, 5,          // topo (a rampa em si)
-      0, 1, 5,  0, 5, 4,          // ré (parede alta, z=+0.5)...
-      1, 2, 5,                    // lateral direita
+      // base
+      0, 2, 1,  0, 3, 2,
+      // topo (a rampa em si)
+      3, 4, 2,  2, 4, 5,
+      // ré (parede alta, z=+0.5)...
+      0, 1, 5,  0, 5, 4,
+      // lateral direita
+      1, 2, 5,
       0, 4, 3                     // lateral esquerda
     ];
     g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
@@ -1218,11 +1222,13 @@ const gameKit3DRuntimeAfterModelSource = `
       // w=1 vira 4.5..5.5, e não ±5.5 para cada lado) e peça ABAIXO de y=0 entra
       // na caixa (antes o fundo era grampeado em 0 e a peça ficava sem colisão).
       col: {
-        kind: 0,                          // 0 caixa · 1 bola · 2 cápsula · 3 rampa
+        // 0 caixa · 1 bola · 2 cápsula · 3 rampa
+        kind: 0,
         minX: 0, maxX: 0,
         minY: 0, maxY: 0,
         minZ: 0, maxZ: 0,
-        r: 0.5,                           // bola/cápsula: raio
+        // bola/cápsula: raio
+        r: 0.5,
         rampAxis: 2, rampY0: 0, rampY1: 0 // rampa: sobe ao longo de Z (2) ou X (0)
       },
       // DERIVADOS da caixa (finishMoldBox) — mantidos porque a grade e o resto do
@@ -1292,7 +1298,8 @@ const gameKit3DRuntimeAfterModelSource = `
     cone:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     pyramid:  { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     rampa:    { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
-    torus:    { x: 0.5, y: 0.5, z: 0.15, rot: 0 },  // raio 0.35 + tubo 0.15
+    // raio 0.35 + tubo 0.15
+    torus:    { x: 0.5, y: 0.5, z: 0.15, rot: 0 },
     plane:    { x: 0.5, y: 0.5, z: 0,    rot: 1 },
     modelo:   { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     rock:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
@@ -1309,8 +1316,10 @@ const gameKit3DRuntimeAfterModelSource = `
     var u = UNIT_HALF[shape] || UNIT_HALF.box;
     if (u.rot) {
       out.x = u.x * w;
-      out.y = u.z * d;   // espessura da folha (≈0) vira o eixo vertical
-      out.z = u.y * h;   // a altura da folha vira PROFUNDIDADE
+      // espessura da folha (≈0) vira o eixo vertical
+      out.y = u.z * d;
+      // a altura da folha vira PROFUNDIDADE
+      out.z = u.y * h;
     } else {
       out.x = u.x * w;
       out.y = u.y * h;
@@ -1755,7 +1764,8 @@ const gameKit3DRuntimeAfterModelSource = `
     if (!isEntity(from)) return;
     var n = Math.floor(num(count, 8));
     if (n < 1) n = 1;
-    if (n > 60) n = 60; // teto de bom senso por anel (o pool ainda tem o teto global)
+    // teto de bom senso por anel (o pool ainda tem o teto global)
+    if (n > 60) n = 60;
     var sp = num(speed, 6);
     var cx = posAxis(from, 'x');
     var cy = posAxis(from, 'y');
@@ -1763,7 +1773,8 @@ const gameKit3DRuntimeAfterModelSource = `
     for (var i = 0; i < n; i++) {
       var ang = (i / n) * Math.PI * 2;
       var e = spawn(mold, cx, cy, cz);
-      if (!e) break; // bateu o teto global de entidades
+      // bateu o teto global de entidades
+      if (!e) break;
       // +Z é a frente do curso; o vetor unitário girado por ang dá (sin, 0, cos).
       e.vx = Math.sin(ang) * sp;
       e.vz = Math.cos(ang) * sp;
@@ -2334,7 +2345,8 @@ const gameKit3DRuntimeAfterModelSource = `
     if (!isEntity(e)) return;
     var next = num(e.health, 0) + Math.max(0, num(amount, 10));
     var max = num(e.maxHealth, 0);
-    e.health = max > 0 ? Math.min(max, next) : next; // não passa do máximo de nascença
+    // não passa do máximo de nascença
+    e.health = max > 0 ? Math.min(max, next) : next;
   }
 
   // ---- 💥 Faíscas 3D (partículas data-driven do curso, simplificadas) ----
@@ -2585,8 +2597,10 @@ const gameKit3DRuntimeAfterModelSource = `
       lifeVar: cfg.lifeVar,
       speed: cfg.speed,
       speedVar: cfg.speedVar,
-      cone: cfg.cone,               // meia-abertura do cone em radianos (π = esfera)
-      volume: cfg.volume,           // raio de nascimento (positionRadiusVariance)
+      // meia-abertura do cone em radianos (π = esfera)
+      cone: cfg.cone,
+      // raio de nascimento (positionRadiusVariance)
+      volume: cfg.volume,
       gravity: cfg.gravity,
       gravityStrength: cfg.gravityStrength,
       drag: cfg.drag,
@@ -2728,7 +2742,7 @@ const gameKit3DRuntimeAfterModelSource = `
   // nascimento. É o emitParticle do curso — compartilhado por burst e emissor.
   function emitOne(fx, ox, oy, oz) {
     if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) {
-      warnOnce('faiscas-300', 'um efeito chegou a 300 faíscas ao mesmo tempo e as novas não apareceram.');
+      warnOnce('faiscas-300', 'um efeito chegou a 300 faíscas ao mesmo tempo e as novas não apareceram. Diminua a quantidade ou a vida delas.');
       return;
     }
     var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, id: 0 };
@@ -3144,7 +3158,8 @@ const gameKit3DRuntimeAfterModelSource = `
   var says = [];
   function say(e, textValue, seconds) {
     if (!isEntity(e) || !ensureShell()) return;
-    hideSay(e); // uma fala por entidade: a nova troca a antiga
+    // uma fala por entidade: a nova troca a antiga
+    hideSay(e);
     var el = document.createElement('div');
     el.className = 'szg3k-say';
     el.textContent = text(textValue, '');
@@ -3365,7 +3380,8 @@ const gameKit3DRuntimeAfterModelSource = `
     var k = text(name, '');
     var src = sounds[k];
     if (!src) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto. Importe em "Sons", no menu ⋯'); return; }
-    if (_musicName === k && _music) return; // já é esta: não recomeça do zero
+    // já é esta: não recomeça do zero
+    if (_musicName === k && _music) return;
     stopMusic();
     // ⭐ Audio PRÓPRIO, não o do sounds[]. O mapa sounds[] é dividido com o
     // playSound (efeito): reusar o MESMO elemento fazia o efeito de moeda que

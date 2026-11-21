@@ -322,14 +322,16 @@ const BUDGETS: readonly {
   // 20/11 (decisão acima): este é o completo, com cenário; o texto não mudou (220_689).
   // 21/11 (lote 4 da missão, seção 8.4): os tetos de faíscas e enfeites passaram a avisar, e os
   // comentários no fim das linhas de `var` foram para uma linha própria (o compactar só tira a
-  // linha inteira; no fim da linha eles iam para o jogo). Medido no Windows: 218_501 caracteres,
-  // 63_889 gzip (antes 220_689 / 64_974). O gzip do Linux sai do log do CI; até lá, o teto dele
-  // desceu pela mesma proporção (o Linux mediu 96,3% do Windows em 19/11), com folga pequena.
+  // linha inteira; no fim da linha eles iam para o jogo). Medido: 218_501 caracteres, gzip
+  // Windows 63_889 e Linux 61_465 (CI 44932070234; antes 220_689 / 64_974 / 62_564).
+  // Revisão do lote 4 (mesmo dia): os outros comentários no fim de linha de código também foram
+  // para linha própria, e o recado das faíscas diz o que fazer. Medido no Windows: 217_833
+  // caracteres, 63_490 gzip; o Linux estimado pela razão medida no CI (0,962): ~61_080.
   {
     extension: gameKit3DExtension,
-    maxChars: 218_600,
-    maxGzipBytes: 61_750,
-    maxGzipBytesWindows: 64_000,
+    maxChars: 217_950,
+    maxGzipBytes: 61_250,
+    maxGzipBytesWindows: 63_600,
   },
   // Sem cenário. Medido: 213_058 caracteres; gzip Windows 62_755. Antes de 19/11 (81dfb3d8d):
   // 210_644 / Windows 62_048 (teto 210_700). Mesma natureza: ganchos do cenário na física, na
@@ -338,10 +340,11 @@ const BUDGETS: readonly {
     extension: gameKit3DExtension,
     variant: 'sem cenário',
     context: { code: 'SZGameKit3D.setup({ width: 640, height: 360 })' },
-    // 21/11 (lote 4): 210_870 caracteres, 61_667 gzip no Windows (antes 213_058 / 62_755).
-    maxChars: 210_950,
-    maxGzipBytes: 59_600, // Linux medido em 20/11: 60_422; estimado em 21/11: ~59_380
-    maxGzipBytesWindows: 61_800,
+    // 21/11 (lote 4): 210_870 caracteres, gzip Windows 61_667 e Linux 59_316 (CI 44932070234;
+    // antes 213_058 / 62_755). Revisão do lote 4: 210_202 / Windows 61_269 (Linux ~58_940).
+    maxChars: 210_300,
+    maxGzipBytes: 59_100,
+    maxGzipBytesWindows: 61_400,
   },
 ]
 

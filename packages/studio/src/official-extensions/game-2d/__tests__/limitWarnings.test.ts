@@ -40,7 +40,7 @@ function withWarnings(run: (api: Api, warnings: () => string[]) => void) {
   }
 }
 
-const cheio = (lista: string[]) => lista.filter((texto) => texto.includes('chegou a 400 sprites'))
+const cheio = (lista: string[]) => lista.filter((texto) => texto.includes('até 400 sprites'))
 
 describe('os tetos do Jogo 2D avisam a criança', () => {
   it('o 401º sprite de um grupo não entra e avisa uma vez', () => {

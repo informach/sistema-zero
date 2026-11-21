@@ -41,6 +41,28 @@ export function compactOfficialRuntimeSource(
  * `*\/`. As quebras de linha entre os códigos que ficam não mudam (a inserção de ponto e vírgula
  * continua igual).
  */
+/**
+ * A linha termina DENTRO de um comentário de bloco? Começa no estado dado (aberto ou não) e anda
+ * a linha como a linguagem: `/*` abre só fora de comentário, `*\/` fecha só dentro. Não conhece
+ * strings: um `/*` dentro de um texto conta como aberto, o que só deixa a função mais cautelosa.
+ * Revisão do lote 4: comparar a última abertura com o último fechamento errava com `/*\/` (o
+ * fechamento se sobrepunha à abertura) e quando o modo cauteloso terminava numa linha que abria
+ * outro comentário.
+ */
+function endsInsideComment(text: string, open: boolean): boolean {
+  let inside = open
+  for (let index = 0; index < text.length; ) {
+    if (!inside && text.startsWith('/*', index)) {
+      inside = true
+      index += 2
+    } else if (inside && text.startsWith('*/', index)) {
+      inside = false
+      index += 2
+    } else index++
+  }
+  return inside
+}
+
 function stripLeadingBlockComments(lines: readonly string[]): string[] {
   const kept: string[] = []
   let inComment = false
@@ -57,8 +79,9 @@ function stripLeadingBlockComments(lines: readonly string[]): string[] {
       inComment = false
     }
     if (cautious) {
-      if (rest.includes('*/')) cautious = false
+      // Cauteloso: a linha fica inteira, e só sai do modo quando ela terminar fora de comentário.
       kept.push(rest)
+      cautious = endsInsideComment(rest, true)
       continue
     }
     while (rest.trimStart().startsWith('/*')) {
@@ -72,7 +95,7 @@ function stripLeadingBlockComments(lines: readonly string[]): string[] {
       rest = ` ${rest.slice(end + 2)}`
     }
     if (rest.trim() === '') continue
-    if (rest.lastIndexOf('/*') > rest.lastIndexOf('*/')) cautious = true
+    if (endsInsideComment(rest, false)) cautious = true
     kept.push(rest)
   }
   if (inComment) throw new Error('stripBlockComments: comentário de bloco sem fim')

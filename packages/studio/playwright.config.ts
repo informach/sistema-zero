@@ -30,6 +30,9 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      // As medidas dos motores (lote 4) têm config e workflow próprios: esperas fixas sobre a GPU
+      // emulada não entram na suíte que barra o merge (`playwright.engines.config.ts`).
+      testIgnore: [/engine-gpu-cycles\.spec\.ts/, /engine-2d-offscreen\.spec\.ts/],
       use: {
         ...devices['Desktop Chrome'],
         permissions: ['clipboard-read', 'clipboard-write'],

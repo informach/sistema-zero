@@ -2193,6 +2193,11 @@ describe('SZGameKit3D — os tetos avisam (lote 4 da missão, seção 8.4, 21/11
       expect(quantos('no máximo 64')).toBe(0)
       api.scatterDecor(100)
       expect(quantos('no máximo 64')).toBe(1)
+      // Revisão do lote 4: uma vez por PARTIDA. A partida nova volta a avisar.
+      api.setState('menu')
+      api.setState('jogando')
+      api.scatterDecor(100)
+      expect(quantos('no máximo 64')).toBe(2)
     } finally {
       console.warn = originalWarn
     }

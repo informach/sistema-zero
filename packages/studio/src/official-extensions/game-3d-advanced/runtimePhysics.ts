@@ -46,7 +46,8 @@ export const gameKit3DPhysicsRuntimeSource = `
   function setEntityState(e, stateName) {
     if (!isEntity(e)) return;
     var next = text(stateName, '');
-    if (!next || e.state === next) return; // idempotente, como no curso
+    // idempotente, como no curso
+    if (!next || e.state === next) return;
     var queue = e._stateQueue;
     if (!queue) queue = e._stateQueue = [];
     queue.push(next);
@@ -326,7 +327,8 @@ export const gameKit3DPhysicsRuntimeSource = `
     // Caixa (yaw-aware): resolve no frame LOCAL do sólido e devolve a correção.
     var ehw = (_boxA.maxX - _boxA.minX) / 2;
     var ehd = (_boxA.maxZ - _boxA.minZ) / 2;
-    if (yaw2) { var big = Math.max(ehw, ehd); ehw = big; ehd = big; }  // AABB do movedor não gira
+    // AABB do movedor não gira
+    if (yaw2) { var big = Math.max(ehw, ehd); ehw = big; ehd = big; }
     var ox = Math.min(_loc.x + ehw, c.maxX) - Math.max(_loc.x - ehw, c.minX);
     var oz = Math.min(_loc.z + ehd, c.maxZ) - Math.max(_loc.z - ehd, c.minZ);
     var sMinY = s.mesh.position.y + c.minY;
@@ -662,7 +664,8 @@ export const gameKit3DPhysicsRuntimeSource = `
       var bucket = perMold[e.state];
       if (bucket) runEntityHooks(bucket.step, e, 'enquanto estiver no estado ' + e.state);
     }
-    if (!e._alive) return; // o gancho pode ter recolhido a entidade
+    // o gancho pode ter recolhido a entidade
+    if (!e._alive) return;
     // 1b. O boneco anima. Só quem TEM mixer paga (o curso roda o mixer.update com
     // o mesmo dt clampado). Vem antes do split estático/dinâmico logo abaixo: um
     // boneco parado no lugar ainda respira.

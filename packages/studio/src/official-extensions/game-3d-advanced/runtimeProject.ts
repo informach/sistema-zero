@@ -20,6 +20,9 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
       resetLevels();
       playTime = 0;
       entityLimitWarned = false;
+      delete _warned['faiscas-120'];
+      delete _warned['faiscas-300'];
+      delete _warned['enfeites-64'];
       for (var pk in pools) releaseAll(pools[pk]);
       for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
       resetParticles();

@@ -70,7 +70,7 @@ export const gameKitVisualEffectsRuntime = `
     for (var i = 0; i < e.count; i++) {
       if (particles.active.length >= MAX_PARTICLES) {
         // O teto avisa (lote 4 da missão, seção 8.4), uma vez por partida, em vez de cortar calado.
-        warnOnce('particulas-1000', 'chegou a 1000 partículas ao mesmo tempo e as novas não apareceram. Use menos partículas no "Criar o efeito".');
+        warnOnce('particulas-1000', 'chegou a 1000 faíscas ao mesmo tempo e as novas não apareceram. Use menos faíscas no "Criar o efeito".');
         break;
       }
       var p = particles.free.pop() || {};
@@ -209,7 +209,11 @@ export const gameKitVisualEffectsRuntime = `
       e._trailAcc = num(e._trailAcc, 0) + e._trailRate * dt;
       while (e._trailAcc >= 1) {
         e._trailAcc -= 1;
-        if (particles.active.length >= MAX_PARTICLES) { e._trailAcc = 0; break; }
+        if (particles.active.length >= MAX_PARTICLES) {
+          warnOnce('rastro-1000', 'o rastro chegou a 1000 faíscas ao mesmo tempo e as novas não apareceram. Deixe o rastro em menos objetos.');
+          e._trailAcc = 0;
+          break;
+        }
         var p = particles.free.pop() || {};
         p.x = centerX(e) + (gameRandom() - 0.5) * e.w * 0.3;
         p.y = centerY(e) + (gameRandom() - 0.5) * e.h * 0.3;
