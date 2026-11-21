@@ -87,7 +87,9 @@ não ocupa a vaga do presente Kids no serviço de presentes.
 
 ## Estado desta entrega
 
-Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Em 21/11, foram enviados e vinculados 22 vídeos finalizados, com suas capas, em staging e produção. Falta o arquivo da Aula 2, Parte 4, **Mais tempo de tela?**; o responsável está localizando a gravação. O curso permanece em rascunho nos dois ambientes até a entrega dessa parte. As outras seis aulas passaram na validação de publicação. Os manifestos locais mantêm as chaves de autoria; as fontes Vimeo e os arquivos privados são próprios de cada ambiente. Ver [registro da publicação](../../../operations/publicacao-vilao-em-aliado-2026-11-21.md).
+Roteiros, resumos de aula e manifestos refeitos em 18/11/2026. Curso publicado em staging e produção em 21/11: sete aulas, 23 vídeos finalizados, incluindo a Aula 2 Parte 4, com as capas fornecidas. As sete aulas passaram na validação do serviço de autoria nos dois ambientes. As fontes Vimeo e os materiais privados são próprios de cada ambiente; os manifestos locais mantêm as chaves de autoria.
+
+A página `/kids/vilao-em-aliado` está publicada nos dois funis, com campanha Kids `vilao-em-aliado`, entrega sem prazo somente do curso para pais e sem checkout. O endereço da página foi vinculado ao curso. A oferta operacional fica pausada para compra; o cadastro é gratuito pela campanha. Ver [registro da publicação](../../../operations/publicacao-vilao-em-aliado-2026-11-21.md).
 
 **Tema visual (18/11/2026):** a ilustração da capa (a menina com o tablet e a sombra que aponta para os blocos e o jogo) define as cores do curso: roxo, lilás, rosa e amarelo, com o painel azul-marinho. A arte fica em `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-transformando-o-vilao-em-aliado.jpg`, recortada da capa enviada pela dona (1049 px de largura; se houver o original maior, basta trocar o arquivo e gerar de novo).
 
