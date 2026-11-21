@@ -16,7 +16,9 @@ import {
   isTileLayer,
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
+  type RegionTilemapAsset,
   type TilemapAsset,
+  type TilemapCells,
   type TilemapLayer,
   type TilemapObjectLayer,
   type TilemapTileLayer,
@@ -24,21 +26,56 @@ import {
   tilemapTilesetIds,
 } from '../core/project'
 import { cellTile } from './cell'
-import { readDenseTileCell } from './mapCells'
+import { createTileCellReader, readDenseTileCell, type TileCellReader } from './mapCells'
+import { regionCellAt } from './regionCells'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
 export type TileLayerFilter = (layer: TilemapTileLayer) => boolean
 
 /** A camada de PEÇAS com este id (`null` para objetos ou id desconhecido). */
-export function tileLayerById(tilemap: TilemapAsset, layerId: string): TilemapTileLayer | null {
+export function tileLayerById<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+  layerId: string,
+): TilemapTileLayer<Cells> | null {
   const layer = tilemap.layers.find((l) => l.id === layerId)
   return layer && isTileLayer(layer) ? layer : null
 }
 
-export function cellAt(tilemap: TilemapAsset, layerId: string, col: number, row: number): number {
-  const layer = tileLayerById(tilemap, layerId)
+export function cellAt(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  layerId: string,
+  col: number,
+  row: number,
+): number {
+  const layer = tileLayerById<TilemapCells>(tilemap, layerId)
   if (!layer) return -1
-  return readDenseTileCell(layer.cells, tilemap.cols, tilemap.rows, col, row)
+  if (layer.cells instanceof Int16Array)
+    return readDenseTileCell(layer.cells, tilemap.cols, tilemap.rows, col, row)
+  if (!('origin' in tilemap)) throw new RangeError('Region map requires its logical origin')
+  const { origin } = tilemap
+  if (
+    !Number.isInteger(col) ||
+    !Number.isInteger(row) ||
+    col < origin.col ||
+    row < origin.row ||
+    col >= origin.col + tilemap.cols ||
+    row >= origin.row + tilemap.rows
+  )
+    return -1
+  return regionCellAt(layer.cells, col, row)
+}
+
+/** Keep one immutable layer reader for each gesture/frame. */
+export function createMapLayerCellReader(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  layerId: string,
+): TileCellReader | null {
+  const layer = tileLayerById<TilemapCells>(tilemap, layerId)
+  if (!layer) return null
+  if (!(layer.cells instanceof Int16Array) && !('origin' in tilemap))
+    throw new RangeError('Region map requires its logical origin')
+  const origin = 'origin' in tilemap ? tilemap.origin : { col: 0, row: 0 }
+  return createTileCellReader(layer.cells, { ...origin, cols: tilemap.cols, rows: tilemap.rows })
 }
 
 /** Troca UMA camada (qualquer tipo). Mesmo asset quando o `update` não muda nada. */

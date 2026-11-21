@@ -1,0 +1,30 @@
+[
+  {
+    "name": "studio-types",
+    "started": "2026-11-21T05:16:44.161Z",
+    "finished": "2026-11-21T05:19:55.610Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-access-studio-types.log"
+  },
+  {
+    "name": "native",
+    "started": "2026-11-21T05:19:55.611Z",
+    "finished": "2026-11-21T05:19:57.298Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-access-native.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T05:19:57.299Z",
+    "finished": "2026-11-21T05:19:57.435Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-access-biome.log"
+  },
+  {
+    "name": "integration",
+    "started": "2026-11-21T05:19:57.436Z",
+    "finished": "2026-11-21T05:22:02.569Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-access-integration.log"
+  }
+]

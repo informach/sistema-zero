@@ -28,6 +28,29 @@ const validBudget = (value: number) =>
 const indexOf = (grid: PintaRegionCells) =>
   new Map(grid.chunks.map((chunk) => [keyOf(chunk.col, chunk.row), chunk]))
 
+function readChunkCell(chunk: RegionChunk | undefined, col: number, row: number): number {
+  if (!chunk) return EMPTY_CELL
+  return (
+    chunk.cells[
+      (row - chunk.row * PINTA_REGION_SIDE) * PINTA_REGION_SIDE +
+        col -
+        chunk.col * PINTA_REGION_SIDE
+    ] ?? EMPTY_CELL
+  )
+}
+
+/** Allocation-free point lookup. Reuse an indexed reader for a gesture/frame. */
+export function regionCellAt(grid: PintaRegionCells, col: number, row: number): number {
+  if (!Number.isInteger(col) || !Number.isInteger(row)) return EMPTY_CELL
+  const chunkCol = Math.floor(col / PINTA_REGION_SIDE),
+    chunkRow = Math.floor(row / PINTA_REGION_SIDE)
+  return readChunkCell(
+    grid.chunks.find((chunk) => chunk.col === chunkCol && chunk.row === chunkRow),
+    col,
+    row,
+  )
+}
+
 /**
  * Reuse this reader throughout a gesture/frame. Its bounded index belongs to
  * the caller; no global cache retains documents or their undo history.
@@ -41,13 +64,7 @@ export function createRegionCellReader(grid: PintaRegionCells) {
       const chunkCol = Math.floor(col / PINTA_REGION_SIDE),
         chunkRow = Math.floor(row / PINTA_REGION_SIDE)
       const chunk = chunks.get(keyOf(chunkCol, chunkRow))
-      return (
-        chunk?.cells[
-          (row - chunkRow * PINTA_REGION_SIDE) * PINTA_REGION_SIDE +
-            col -
-            chunkCol * PINTA_REGION_SIDE
-        ] ?? EMPTY_CELL
-      )
+      return readChunkCell(chunk, col, row)
     },
     /** Visits occupied cells in deterministic chunk order; never scans world gaps. */
     visitOccupied(

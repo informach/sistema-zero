@@ -63,6 +63,13 @@ completar os leitores: não ativa arquivo 8 nem armazenamento 3. Os dois módulo
 preexistentes emitem JavaScript idêntico; passaram 46 testes focados, os tipos
 de Pinta/Estúdio e o lint. Ver `qa/modelo-de-regioes-2026-11-21/`. O item 2 permanece aberto.
 
+Os acessos existentes `cellAt`/`tileLayerById` aceitam agora o modelo de regiões,
+com origem lógica, consulta pontual sem índice e leitor reutilizável por gesto.
+Passaram 48 casos focados, 2.297 da suíte completa, os três controles nativos
+Pygame separados e doze fluxos locais Pinta → Estúdio, além dos tipos e lint.
+Ver `qa/acesso-do-mapa-por-regioes-2026-11-21/`. Isso não ativa schema 8, protocolo
+físico 3 nem a oficina; os consumidores restantes continuam pendentes.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles
