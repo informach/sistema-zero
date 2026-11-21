@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-21T05:58:57.082Z",
+  "baselineSource": "59c562ac8ed2fbfa519ab19f80976e0a25fdaadc",
+  "scope": "direct existing bucket called with fractional seed on a real dense 3x2 map",
+  "sourceModulesUnmodified": true,
+  "receipts": [
+    {
+      "phase": "baseline",
+      "started": "2026-11-21T05:58:54.930Z",
+      "finished": "2026-11-21T05:58:56.981Z",
+      "status": null,
+      "signal": "SIGKILL",
+      "errorCode": "ETIMEDOUT",
+      "timeoutMs": 2000,
+      "log": ".cache/pinta-bucket-boundary-baseline.log"
+    },
+    {
+      "phase": "current",
+      "started": "2026-11-21T05:58:56.981Z",
+      "finished": "2026-11-21T05:58:57.082Z",
+      "status": 0,
+      "signal": null,
+      "errorCode": null,
+      "timeoutMs": 2000,
+      "log": ".cache/pinta-bucket-boundary-current.log"
+    }
+  ]
+}

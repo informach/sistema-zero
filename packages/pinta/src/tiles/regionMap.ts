@@ -14,6 +14,8 @@ import {
   type TilemapLayer,
 } from '../core/project'
 import { isValidCell } from './cell'
+import { collectTileFloodFill } from './floodFill'
+import { createTileCellReader } from './mapCells'
 import {
   denseToRegionCells,
   editRegionCells,
@@ -72,6 +74,28 @@ export function prepareMapRegions(map: TilemapAsset): RegionMapResult {
 
 export function regionMapBounds(map: RegionTilemapAsset): PintaRegionBounds {
   return { col: map.origin.col, row: map.origin.row, cols: map.cols, rows: map.rows }
+}
+
+/** Bounded connected fill, committed through the same atomic editing path. */
+export function fillRegionMapCells(
+  map: RegionTilemapAsset,
+  layerId: string,
+  col: number,
+  row: number,
+  cell: number,
+): RegionMapResult {
+  const layer = map.layers.find((candidate) => candidate.id === layerId)
+  if (!layer || !isTileLayer(layer)) return { ok: false, reason: 'invalid-layer' }
+  if (effectiveLayer(map, layer).locked) return { ok: false, reason: 'locked' }
+  const bounds = regionMapBounds(map)
+  const result = collectTileFloodFill(
+    createTileCellReader(layer.cells, bounds),
+    bounds,
+    col,
+    row,
+    cell,
+  )
+  return result.ok ? editRegionMapCells(map, layerId, result.edits) : result
 }
 
 /** Expanding never moves cells, offsets, objects, IDs or door destinations. */

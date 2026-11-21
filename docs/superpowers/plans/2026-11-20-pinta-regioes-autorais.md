@@ -70,6 +70,14 @@ Pygame separados e doze fluxos locais Pinta → Estúdio, além dos tipos e lint
 Ver `qa/acesso-do-mapa-por-regioes-2026-11-21/`. Isso não ativa schema 8, protocolo
 físico 3 nem a oficina; os consumidores restantes continuam pendentes.
 
+Lápis, borracha, lote e balde existentes foram adaptados às regiões. O balde comum
+recusa gestos extensos integralmente e corrige a entrada fracionária que podia
+congelar o caminho denso. Passaram 2.305 casos completos, 56 focados, tipos,
+três controles nativos e doze fluxos locais de navegador. A medição isolada
+reproduzível comparou 30 execuções por versão com dados idênticos; o caso denso
+máximo registrou medianas de 2,96/2,15 ms. Ver `qa/pintura-e-balde-por-regioes-2026-11-21/`.
+Não se anuncia UI expansível nem suporte de arquivo 8/persistência 3 neste lote.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles

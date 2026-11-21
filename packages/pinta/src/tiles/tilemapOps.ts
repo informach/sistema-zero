@@ -25,9 +25,11 @@ import {
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'
-import { cellTile } from './cell'
+import { cellTile, isValidCell } from './cell'
+import { collectTileFloodFill } from './floodFill'
 import { createTileCellReader, readDenseTileCell, type TileCellReader } from './mapCells'
-import { regionCellAt } from './regionCells'
+import { REGION_EDIT_LIMIT, regionCellAt } from './regionCells'
+import { editRegionMapCells, fillRegionMapCells } from './regionMap'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
 export type TileLayerFilter = (layer: TilemapTileLayer) => boolean
@@ -105,12 +107,31 @@ export function withTileLayer(
 
 /** Carimba UM índice de tile (-1 = borracha) na célula. */
 export function setCell(
+  tilemap: RegionTilemapAsset,
+  layerId: string,
+  col: number,
+  row: number,
+  tile: number,
+): RegionTilemapAsset
+export function setCell(
   tilemap: TilemapAsset,
   layerId: string,
   col: number,
   row: number,
   tile: number,
-): TilemapAsset {
+): TilemapAsset
+export function setCell(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  layerId: string,
+  col: number,
+  row: number,
+  tile: number,
+): TilemapAsset | RegionTilemapAsset {
+  if (!Number.isInteger(col) || !Number.isInteger(row) || !isValidCell(tile)) return tilemap
+  if ('origin' in tilemap) {
+    const result = editRegionMapCells(tilemap, layerId, [{ col, row, cell: tile }])
+    return result.ok ? result.map : tilemap
+  }
   if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) return tilemap
   return withTileLayer(tilemap, layerId, (layer) => {
     const at = row * tilemap.cols + col
@@ -127,14 +148,45 @@ export function setCell(
  * carimbo. Fora da grade é ignorado. Mesmo asset quando nada muda.
  */
 export function setCells(
+  tilemap: RegionTilemapAsset,
+  layerId: string,
+  cells: ReadonlyArray<{ col: number; row: number }>,
+  tile: number,
+): RegionTilemapAsset
+export function setCells(
   tilemap: TilemapAsset,
   layerId: string,
   cells: ReadonlyArray<{ col: number; row: number }>,
   tile: number,
-): TilemapAsset {
+): TilemapAsset
+export function setCells(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  layerId: string,
+  cells: ReadonlyArray<{ col: number; row: number }>,
+  tile: number,
+): TilemapAsset | RegionTilemapAsset {
+  if (!isValidCell(tile)) return tilemap
+  if ('origin' in tilemap) {
+    if (cells.length > REGION_EDIT_LIMIT) return tilemap
+    const { origin, cols, rows } = tilemap
+    const edits = cells
+      .filter(
+        ({ col, row }) =>
+          Number.isInteger(col) &&
+          Number.isInteger(row) &&
+          col >= origin.col &&
+          row >= origin.row &&
+          col < origin.col + cols &&
+          row < origin.row + rows,
+      )
+      .map(({ col, row }) => ({ col, row, cell: tile }))
+    const result = editRegionMapCells(tilemap, layerId, edits)
+    return result.ok ? result.map : tilemap
+  }
   return withTileLayer(tilemap, layerId, (layer) => {
     let next: Int16Array | null = null
     for (const { col, row } of cells) {
+      if (!Number.isInteger(col) || !Number.isInteger(row)) continue
       if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) continue
       const at = row * tilemap.cols + col
       if ((next ?? layer.cells)[at] === tile) continue
@@ -205,29 +257,45 @@ export function shiftObjectLayer(
 
 /** Balde: preenche a região contígua (conectividade-4) do índice sob o clique. */
 export function floodFillCells(
+  tilemap: RegionTilemapAsset,
+  layerId: string,
+  col: number,
+  row: number,
+  tile: number,
+): RegionTilemapAsset
+export function floodFillCells(
   tilemap: TilemapAsset,
   layerId: string,
   col: number,
   row: number,
   tile: number,
-): TilemapAsset {
+): TilemapAsset
+export function floodFillCells(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  layerId: string,
+  col: number,
+  row: number,
+  tile: number,
+): TilemapAsset | RegionTilemapAsset {
+  if (!Number.isInteger(col) || !Number.isInteger(row) || !isValidCell(tile)) return tilemap
+  if ('origin' in tilemap) {
+    const result = fillRegionMapCells(tilemap, layerId, col, row, tile)
+    return result.ok ? result.map : tilemap
+  }
   if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) return tilemap
   return withTileLayer(tilemap, layerId, (layer) => {
     const { cols, rows } = tilemap
-    const target = layer.cells[row * cols + col] ?? -1
-    if (target === tile) return layer
-    const cells = new Int16Array(layer.cells)
-    const stack: Array<[number, number]> = [[col, row]]
-    while (stack.length > 0) {
-      const item = stack.pop()
-      if (!item) break
-      const [cx, cy] = item
-      if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) continue
-      const at = cy * cols + cx
-      if ((cells[at] ?? -1) !== target) continue
-      cells[at] = tile
-      stack.push([cx - 1, cy], [cx + 1, cy], [cx, cy - 1], [cx, cy + 1])
-    }
+    const bounds = { col: 0, row: 0, cols, rows }
+    const result = collectTileFloodFill(
+      createTileCellReader(layer.cells, bounds),
+      bounds,
+      col,
+      row,
+      tile,
+    )
+    if (!result.ok || !result.edits.length) return layer
+    const cells = layer.cells.slice()
+    for (const edit of result.edits) cells[edit.row * cols + edit.col] = edit.cell
     return { ...layer, cells }
   })
 }

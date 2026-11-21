@@ -1,0 +1,126 @@
+{
+  "at": "2026-11-21T06:01:14.852Z",
+  "scope": "local dense/region operations, native Pygame controls, Chromium flows and isolated bucket benchmark; no staging rollout",
+  "files": [
+    {
+      "file": "benchmark-reproducible.json",
+      "bytes": 5618,
+      "sha256": "62c08cda6113aaf52e705f92f9871727759902cd22dbf0639cfaf7a8915c60e9"
+    },
+    {
+      "file": "pinta-bucket-benchmark-r3.json",
+      "bytes": 5653,
+      "sha256": "17e67503214fbf0fbbb85af114bd8ca6300f328355400e6454b15ca1bd4648e9"
+    },
+    {
+      "file": "pinta-bucket-benchmark.json",
+      "bytes": 5650,
+      "sha256": "9083c245d9e1a4e085cbc3a265e103ed4621260563e8e3e90cfaaa45d4b54884"
+    },
+    {
+      "file": "pinta-bucket-boundary-baseline.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-bucket-boundary-current.log",
+      "bytes": 55,
+      "sha256": "10b0d3a3ca047422a96b73423babfeb45f3acaa47312a37b15dd627fb34eb25a"
+    },
+    {
+      "file": "pinta-bucket-boundary-proof.json",
+      "bytes": 818,
+      "sha256": "6f2b47145e033000a208b9e9efa20965a8f4bd81921ef71e23bac177d12088b0"
+    },
+    {
+      "file": "pinta-region-editing-gates.json",
+      "bytes": 381,
+      "sha256": "d34bc7229cbbddb7d3c4547c747ca55ffb66344742975b71fb247619799a5bdd"
+    },
+    {
+      "file": "pinta-region-editing-pinta-types.log",
+      "bytes": 19342,
+      "sha256": "f805567936b5dc94cc1d539995fd10549238ef08c8d033d2bdb9325123112edc"
+    },
+    {
+      "file": "pinta-region-editing-r2-gates.json",
+      "bytes": 1163,
+      "sha256": "9db9cd79b64cbf24f6b55d688d58e6019bd2c32777e8bc50998182c0bb0d3093"
+    },
+    {
+      "file": "pinta-region-editing-r3-biome.log",
+      "bytes": 43,
+      "sha256": "2717d81803c3dac8489bc6d69738003c6272ef507b5fb46012a0b88b911decfc"
+    },
+    {
+      "file": "pinta-region-editing-r3-focused.log",
+      "bytes": 5304,
+      "sha256": "3c207b58fd2e5b03d95fc3e304cd003127e594e5a7763319e6399bff693e3aa0"
+    },
+    {
+      "file": "pinta-region-editing-r3-freeze.json",
+      "bytes": 673,
+      "sha256": "45de82dc24d9ff19c7cf47451eb9672a9536e5424589f927edb42fa336fd1274"
+    },
+    {
+      "file": "pinta-region-editing-r3-gates.json",
+      "bytes": 1159,
+      "sha256": "b374cbed37a23cb1031e680628ee097f6724728a8eed9434d22a9b7098e1352e"
+    },
+    {
+      "file": "pinta-region-editing-r3-integration-report.json",
+      "bytes": 1287741,
+      "sha256": "16c300ade7802fc7b649c86e406b898578ff3ca2ccc2122179250cebdefe341b"
+    },
+    {
+      "file": "pinta-region-editing-r3-integration.log",
+      "bytes": 7566,
+      "sha256": "12eeebc8febe60cde242aad7e9b1495a7c2453d0db7fccf25887649c31a7c6c1"
+    },
+    {
+      "file": "pinta-region-editing-r3-native.log",
+      "bytes": 497,
+      "sha256": "982c5c78a20e3deb15eb8af1c80bc3c0b942d3180f227c4ae12cff490b6c298c"
+    },
+    {
+      "file": "pinta-region-editing-r3-pinta-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-region-editing-r3-pinta.log",
+      "bytes": 258978,
+      "sha256": "224608df3dac0f9c91eaab93c68a3cca87e47dedae943bceb1e07a79b61ab34c"
+    },
+    {
+      "file": "pinta-region-editing-r3-studio-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-region-editing-red.log",
+      "bytes": 4892,
+      "sha256": "d9945c922b0803fdd96e36a2613155f020163d0385eb1fb4b0384c0b869dd1e1"
+    },
+    {
+      "file": "pinta-region-editing-test-types-proof.json",
+      "bytes": 217,
+      "sha256": "b6bb448111e936be52f9d1a5189a45c3783f721d46399db50decf4c45b864bbe"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2852,
+      "sha256": "0fec98f896c4c2b9b01285940ce828ce5a784e824d1f246d83a15d8a484b1201"
+    },
+    {
+      "file": "verified-source.json",
+      "bytes": 830,
+      "sha256": "78a5a4b6fd8609aa06336d329884d105728718817a2b44076e9df3a9b8cf0fad"
+    },
+    {
+      "file": "final-biome.log",
+      "bytes": 47,
+      "sha256": "4f328747c059edeca9a40dcce964eb9a5b1afccd644b172546427f2eb5d13053"
+    }
+  ]
+}
