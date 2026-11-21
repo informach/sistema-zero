@@ -99,6 +99,15 @@ pendentes. O formato ativo continua em 7; não há oficina expansível publicada
 
 ## 3. Oficina e consumidores
 
+Antes de ampliar os consumidores, lápis, lote, balde e preparação para regiões
+passaram a recusar índices de peças que o formato do editor não aceita. O
+armazenamento genérico manteve os 12 bits e todas as transformações. Passaram
+2.325 casos completos, 68 focados, tipos, três controles Pygame reais e doze
+fluxos locais de navegador. As quatro fixtures inconsistentes encontradas na
+primeira rodada foram corrigidas sem retirar sua cobertura. Ver
+`qa/indices-de-pecas-2026-11-21/`. Seleção/carimbos e os demais consumidores
+continuam pendentes; o formato público permanece em 7.
+
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles
   existentes; verificar máximo de extensão/zoom e interação infantil.
 - [ ] Evoluir contratos da cena/PNG e capacidade dos leitores, preservando

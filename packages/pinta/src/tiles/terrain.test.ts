@@ -6,8 +6,8 @@ import { updateMapLayer } from './layerTree'
 import { paintTerrain, terrainRegion } from './terrain'
 import { setCell } from './tilemapOps'
 
-/** Peça de fora do terreno (uma árvore, por exemplo). */
-const DE_FORA = 300
+/** Peça válida de fora do terreno; zero é uma peça, enquanto vazio é -1. */
+const DE_FORA = 0
 const SLOTS = { corner: [1, 3, 5, 7], edge: [0, 2, 4, 6], mixed: [0, 1, 2, 3, 4, 5, 6, 7] }
 
 /** Um terreno completo: uma peça para cada combinação dos encaixes do modo. */

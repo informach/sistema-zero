@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { PintaRegionCells } from '@sistemazero/core/creations'
 import { createTilemapAsset } from '../core/project'
-import { CELL_FLIP_D, CELL_FLIP_H, makeCell } from './cell'
+import { CELL_FLIP_D, CELL_FLIP_H, cellFlags, makeCell } from './cell'
 import {
   createRegionCellReader,
   denseToRegionCells,
@@ -20,6 +20,14 @@ function changed(grid: PintaRegionCells, edits: ReturnType<typeof edit>[], maxCh
   if (!result.ok) throw Error(result.reason)
   return result.cells
 }
+
+test('a grade genérica conserva o índice 4095 e seus flags sem adotar o teto do editor Pinta', () => {
+  const original = empty(),
+    value = makeCell(4095, CELL_FLIP_D | CELL_FLIP_H)
+  const source = changed(original, [edit(-1, -1, value)])
+  expect(createRegionCellReader(source).at(-1, -1)).toBe(value)
+  expect(original.chunks).toEqual([])
+})
 
 test('lê células negativas e lacunas sem alocar a extensão vazia', () => {
   const source = changed(empty(), [edit(-1, -1, 12), edit(32, 0, 7)])
@@ -172,9 +180,14 @@ test('sequência determinística de gestos mantém o resultado das operações d
   }
   const history = [regions]
   for (let gesture = 0; gesture < 30; gesture++) {
-    const points = Array.from({ length: 64 }, () =>
-      edit(next() % 64, next() % 64, next() % 5 === 0 ? -1 : next() % 32768),
-    )
+    const points = Array.from({ length: 64 }, () => {
+      const col = next() % 64,
+        row = next() % 64,
+        cell = next() % 5 === 0 ? -1 : next() % 32768
+      // The oracle is the Pinta editor: references must fit its 256-tile format.
+      // Preserve the same deterministic coordinates and all original transform bits.
+      return edit(col, row, cell < 0 ? -1 : makeCell(cell % 256, cellFlags(cell)))
+    })
     for (const point of points) legacy = setCell(legacy, layerId, point.col, point.row, point.cell)
     const result = editRegionCells(regions, area, points)
     expect(result.ok).toBe(true)

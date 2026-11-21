@@ -62,3 +62,11 @@ export const isValidCell = (value: unknown): value is number =>
   Number.isInteger(value) &&
   value >= EMPTY_CELL &&
   value <= CELL_MAX_VALUE
+
+/** The bit layout can address more tiles than a particular map format permits. */
+export const isValidCellForTiles = (value: unknown, tileCount: number): value is number =>
+  Number.isSafeInteger(tileCount) &&
+  tileCount >= 0 &&
+  tileCount <= CELL_MAX_TILES &&
+  isValidCell(value) &&
+  cellTile(value) < tileCount

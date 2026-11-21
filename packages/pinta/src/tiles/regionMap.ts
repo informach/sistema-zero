@@ -13,12 +13,13 @@ import {
   type TilemapAsset,
   type TilemapLayer,
 } from '../core/project'
-import { isValidCell } from './cell'
+import { isValidCellForTiles } from './cell'
 import { collectTileFloodFill } from './floodFill'
 import { createTileCellReader } from './mapCells'
 import {
   denseToRegionCells,
   editRegionCells,
+  REGION_EDIT_LIMIT,
   type RegionCellEdit,
   type RegionEditResult,
 } from './regionCells'
@@ -57,7 +58,8 @@ export function prepareMapRegions(map: TilemapAsset): RegionMapResult {
   for (const layer of tiles) {
     if (layer.cells.length !== cellCount) return { ok: false, reason: 'invalid-map' }
     for (const cell of layer.cells)
-      if (!isValidCell(cell)) return { ok: false, reason: 'invalid-map' }
+      if (!isValidCellForTiles(cell, PINTA_MAP_FORMAT_LIMITS.maxTiles))
+        return { ok: false, reason: 'invalid-map' }
   }
   const layers: TilemapLayer<PintaRegionCells>[] = []
   for (const layer of map.layers) {
@@ -87,6 +89,8 @@ export function fillRegionMapCells(
   const layer = map.layers.find((candidate) => candidate.id === layerId)
   if (!layer || !isTileLayer(layer)) return { ok: false, reason: 'invalid-layer' }
   if (effectiveLayer(map, layer).locked) return { ok: false, reason: 'locked' }
+  if (!isValidCellForTiles(cell, PINTA_MAP_FORMAT_LIMITS.maxTiles))
+    return { ok: false, reason: 'invalid-edit' }
   const bounds = regionMapBounds(map)
   const result = collectTileFloodFill(
     createTileCellReader(layer.cells, bounds),
@@ -140,6 +144,11 @@ export function editRegionMapCells(
   const layer = map.layers.find((candidate) => candidate.id === layerId)
   if (!layer || !isTileLayer(layer)) return { ok: false, reason: 'invalid-layer' }
   if (effectiveLayer(map, layer).locked) return { ok: false, reason: 'locked' }
+  if (edits.length > REGION_EDIT_LIMIT) return { ok: false, reason: 'work-budget' }
+  if (
+    edits.some((edit) => !edit || !isValidCellForTiles(edit.cell, PINTA_MAP_FORMAT_LIMITS.maxTiles))
+  )
+    return { ok: false, reason: 'invalid-edit' }
   const occupied = map.layers
     .filter(isTileLayer)
     .reduce((sum, item) => sum + item.cells.chunks.length, 0)

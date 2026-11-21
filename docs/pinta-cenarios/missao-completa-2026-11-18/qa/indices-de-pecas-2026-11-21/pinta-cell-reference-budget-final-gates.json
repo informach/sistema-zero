@@ -1,0 +1,16 @@
+[
+  {
+    "name": "focused",
+    "started": "2026-11-21T07:59:35.080Z",
+    "finished": "2026-11-21T07:59:35.490Z",
+    "exit": 0,
+    "log": ".cache/pinta-cell-reference-budget-final-focused.log"
+  },
+  {
+    "name": "pinta",
+    "started": "2026-11-21T07:59:35.491Z",
+    "finished": "2026-11-21T08:02:44.184Z",
+    "exit": 1,
+    "log": ".cache/pinta-cell-reference-budget-final-pinta.log"
+  }
+]

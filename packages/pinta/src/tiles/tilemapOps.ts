@@ -25,7 +25,7 @@ import {
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'
-import { cellTile, isValidCell } from './cell'
+import { cellTile, isValidCellForTiles } from './cell'
 import { collectTileFloodFill } from './floodFill'
 import { createTileCellReader, readDenseTileCell, type TileCellReader } from './mapCells'
 import { REGION_EDIT_LIMIT, regionCellAt } from './regionCells'
@@ -127,7 +127,12 @@ export function setCell(
   row: number,
   tile: number,
 ): TilemapAsset | RegionTilemapAsset {
-  if (!Number.isInteger(col) || !Number.isInteger(row) || !isValidCell(tile)) return tilemap
+  if (
+    !Number.isInteger(col) ||
+    !Number.isInteger(row) ||
+    !isValidCellForTiles(tile, PINTA_MAP_FORMAT_LIMITS.maxTiles)
+  )
+    return tilemap
   if ('origin' in tilemap) {
     const result = editRegionMapCells(tilemap, layerId, [{ col, row, cell: tile }])
     return result.ok ? result.map : tilemap
@@ -165,7 +170,7 @@ export function setCells(
   cells: ReadonlyArray<{ col: number; row: number }>,
   tile: number,
 ): TilemapAsset | RegionTilemapAsset {
-  if (!isValidCell(tile)) return tilemap
+  if (!isValidCellForTiles(tile, PINTA_MAP_FORMAT_LIMITS.maxTiles)) return tilemap
   if ('origin' in tilemap) {
     if (cells.length > REGION_EDIT_LIMIT) return tilemap
     const { origin, cols, rows } = tilemap
@@ -277,7 +282,12 @@ export function floodFillCells(
   row: number,
   tile: number,
 ): TilemapAsset | RegionTilemapAsset {
-  if (!Number.isInteger(col) || !Number.isInteger(row) || !isValidCell(tile)) return tilemap
+  if (
+    !Number.isInteger(col) ||
+    !Number.isInteger(row) ||
+    !isValidCellForTiles(tile, PINTA_MAP_FORMAT_LIMITS.maxTiles)
+  )
+    return tilemap
   if ('origin' in tilemap) {
     const result = fillRegionMapCells(tilemap, layerId, col, row, tile)
     return result.ok ? result.map : tilemap
