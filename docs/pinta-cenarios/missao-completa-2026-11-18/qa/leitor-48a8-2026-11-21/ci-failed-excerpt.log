@@ -1,0 +1,40 @@
+2026-11-21T03:34:11.9151279Z ##[group]src/components/editor/scene/SceneWorkshop.accessRevocation.test.tsx:
+2026-11-21T03:34:12.0153207Z (pass) revoking bones discards the guide and retained marking or start actions cannot restore it [99.23ms]
+2026-11-21T03:34:12.1066453Z 32 |   // throw errors w/ suggestions for better queries. Opt in so off by default.
+2026-11-21T03:34:12.1067070Z 33 |   throwSuggestions: false,
+2026-11-21T03:34:12.1067562Z 34 |   // called when getBy* queries fail. (message, container) => Error
+2026-11-21T03:34:12.1068053Z 35 |   getElementError(message, container) {
+2026-11-21T03:34:12.1068591Z 36 |     const prettifiedDOM = (0, _prettyDom.prettyDOM)(container);
+2026-11-21T03:34:12.1069693Z 37 |     const error = new Error([message, `Ignored nodes: comments, ${config.defaultIgnore}\n${prettifiedDOM}`].filter(Boolean).join('\n\n'));
+2026-11-21T03:34:12.1070387Z                            ^
+2026-11-21T03:34:12.1071117Z TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Reproduzir movimento"
+2026-11-21T03:34:12.1071569Z 
+2026-11-21T03:34:12.1071719Z Here are the accessible roles:
+2026-11-21T03:34:12.1071895Z 
+2026-11-21T03:34:12.1072001Z   region:
+2026-11-21T03:34:12.1072123Z 
+2026-11-21T03:34:12.1072234Z   Name "Minha oficina 3D":
+2026-11-21T03:34:12.1072735Z   [36m<section[39m
+2026-11-21T03:34:12.1073023Z     [33maria-label[39m=[32m"Minha oficina 3D"[39m
+2026-11-21T03:34:12.1073526Z     [33mclass[39m=[32m"mld-workshop flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"[39m
+2026-11-21T03:34:12.1073955Z     [33mdata-molda-theme[39m=[32m"light"[39m
+2026-11-21T03:34:12.1074202Z   [36m/>[39m
+2026-11-21T03:34:12.1309878Z       at getElementError (/home/runner/work/sistema-zero/sistema-zero/node_modules/.bun/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/config.js:37:23)
+2026-11-21T03:34:12.1310732Z       at <anonymous> (/home/runner/work/sistema-zero/sistema-zero/node_modules/.bun/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:76:38)
+2026-11-21T03:34:12.1311727Z       at <anonymous> (/home/runner/work/sistema-zero/sistema-zero/node_modules/.bun/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:52:17)
+2026-11-21T03:34:12.1312877Z       at <anonymous> (/home/runner/work/sistema-zero/sistema-zero/node_modules/.bun/@testing-library+dom@10.4.1/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+2026-11-21T03:34:12.1313864Z       at <anonymous> (/home/runner/work/sistema-zero/sistema-zero/packages/molda/src/components/editor/scene/SceneWorkshop.accessRevocation.test.tsx:94:19)
+2026-11-21T03:34:12.1314263Z 
+2026-11-21T03:34:12.1383323Z ##[error]Here are the accessible roles:
+2026-11-21T03:35:07.0600381Z 
+2026-11-21T03:35:07.0600548Z 1 tests failed:
+2026-11-21T03:35:07.0601036Z (fail) revoking animation creation closes rename and regranting cannot resurrect its draft [92.23ms]
+2026-11-21T03:35:07.0601416Z 
+2026-11-21T03:35:07.0601503Z  1391 pass
+2026-11-21T03:35:07.0601685Z  1 fail
+2026-11-21T03:35:07.0601884Z  135542 expect() calls
+2026-11-21T03:35:07.0602150Z Ran 1392 tests across 229 files. [73.12s]
+2026-11-21T03:35:07.1141557Z error: script "test:2" exited with code 1
+2026-11-21T03:35:07.1148224Z error: script "test" exited with code 1
+2026-11-21T03:35:07.1159488Z ##[error]Process completed with exit code 1.
+2026-11-21T03:35:07.1295341Z ##[group]Run actions/upload-artifact@v4
