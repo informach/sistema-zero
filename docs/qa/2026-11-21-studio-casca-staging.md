@@ -72,3 +72,17 @@ por segundo, e a pausa, que espera a resposta do próximo quadro, não chega. As
 | Continuar e teclas | o jogo volta a correr; clicando no palco, a tecla "a" chega ("tecla 97" nas Mensagens do programa) |
 
 Conclusão: os painéis do Python funcionam no staging com a distribuição nova, num projeto novo.
+
+## Projetos Python antigos de teste e de QA apagados
+
+Decisão da dona (21/11): o Python não tem compatibilidade com projetos antigos, porque ninguém usa
+ainda. Ela confirmou a lista antes. Cada um foi excluído pela interface ("Esta ação não pode ser
+desfeita"):
+- no Kids, perfil Criador(a): "QA staging 2026-10-22 Pac-Man Python", "Remix de QA staging
+  2026-10-22 Pac-Man Python", "QA staging 2026-10-22 Space Arena Python" e "QA staging 2026-10-22
+  Python Pro Pinta";
+- na conta adulta: "qa-vila-python-20261121".
+
+Fica o "QA paineis python 21-11", criado hoje na distribuição nova, como evidência desta
+conferência. O outro perfil do Kids não foi aberto (precisa de autorização própria neste
+navegador).
