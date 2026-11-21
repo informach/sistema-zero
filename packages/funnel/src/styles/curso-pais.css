@@ -1,0 +1,110 @@
+/*
+ * Página do minicurso para pais "Transformando o vilão em aliado" (18/11/2026). Veste o layout
+ * `.c917` do presente Kids; aqui ficam só as peças próprias, sempre por tokens. O tema do curso
+ * (roxo, rosa e amarelo da ilustração) entra pelas classes de cor que o layout já tem.
+ */
+.c917 .cpv-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.c917 .cpv-lista li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 700;
+}
+.c917 .cpv-lista li::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 0.5em;
+  border: var(--c9-borda);
+  border-radius: 50%;
+  background: var(--c9-cor, var(--kof-carta));
+}
+.c917 .cpv-aulas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: cpv-aula;
+}
+.c917 .cpv-aula {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 14px;
+  align-items: start;
+  padding: 18px;
+  border: var(--c9-borda);
+  border-radius: 18px;
+  background: var(--kof-carta);
+  counter-increment: cpv-aula;
+}
+.c917 .cpv-aula::before {
+  content: counter(cpv-aula);
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  background: var(--c9-cor, var(--kof-amarelo-fundo));
+  color: var(--c9-tinta);
+  font-family: var(--kof-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+.c917 .cpv-aula h3 {
+  margin: 0;
+  color: var(--c9-tinta);
+  font-family: var(--kof-display);
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+.c917 .cpv-aula p {
+  margin: 0;
+  color: var(--c9-suave);
+}
+.c917 .cpv-citacao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 20px 22px;
+  border: var(--c9-borda);
+  border-radius: 18px;
+  background: var(--kof-amarelo-fundo);
+}
+.c917 .cpv-citacao blockquote {
+  margin: 0;
+  color: var(--c9-tinta);
+  font-family: var(--kof-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.c917 .cpv-citacao figcaption {
+  color: var(--c9-suave);
+  font-weight: 700;
+}
+.c917 .cpv-retrato {
+  flex: 0 1 300px;
+  min-width: 0;
+  margin: 0 auto;
+}
+.c917 .cpv-retrato img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: var(--c9-borda);
+  border-radius: 50%;
+  background: var(--kof-amarelo-fundo);
+}
