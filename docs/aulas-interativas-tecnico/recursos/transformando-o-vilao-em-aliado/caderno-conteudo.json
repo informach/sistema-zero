@@ -615,6 +615,22 @@
     "theme": "ambar"
   },
   {
+    "id": "certificado",
+    "kicker": "Ao concluir o curso",
+    "title": "Seu certificado",
+    "subtitle": "Um registro do caminho que você percorreu como responsável.",
+    "items": [
+      {
+        "kind": "certificate-preview"
+      },
+      {
+        "kind": "note",
+        "text": "Este é o modelo do certificado. Ao concluir as aulas, emita o seu na Aula 7, com seu nome e a data de conclusão. A ativação do presente é opcional e não é necessária para emitir o certificado."
+      }
+    ],
+    "theme": "azul"
+  },
+  {
     "id": "referencias",
     "kicker": "Para consultar depois",
     "title": "Referências",

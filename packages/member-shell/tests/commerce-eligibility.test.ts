@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { CommerceCatalogOfferSchema } from '@sistemazero/core/commerce'
-import { commerceEligibility, hasOngoingSubscription } from '../src/lib/commerce-eligibility'
+import {
+  commerceEligibility,
+  giftAlreadyIncluded,
+  hasOngoingSubscription,
+} from '../src/lib/commerce-eligibility'
 import type { MySubscriptionView } from '../src/lib/subscription-card'
 
 const offer = CommerceCatalogOfferSchema.parse({
@@ -27,6 +31,27 @@ const offer = CommerceCatalogOfferSchema.parse({
   includes: [],
 })
 describe('ofertas para a família', () => {
+  test.each([
+    'paid',
+    'manual',
+    'gift',
+  ] as const)('a chave mestra Kids inclui o presente, origem %s', (kind) => {
+    expect(
+      giftAlreadyIncluded(
+        [
+          {
+            productId: 'comunidade',
+            offerId: null,
+            expiresAt: null,
+            kind,
+            accessType: 'all_kids_courses',
+          },
+        ],
+        'cade-todo-mundo',
+        'kids',
+      ),
+    ).toBe(true)
+  })
   test('assinatura cancelada sem período pago não bloqueia nova oferta; pendência e período pago permanecem protegidos', () => {
     const subscription: MySubscriptionView = {
       id: 'legacy',

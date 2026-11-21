@@ -2,6 +2,16 @@ import { describe, expect, test } from 'bun:test'
 import type { KidsSessionClaim } from '@sistemazero/core/security'
 import { kidsMayAccess } from '../../src/application/auth/kids-access-policy'
 
+test('responsável confere presentes e ofertas por leituras comerciais explícitas', () => {
+  const parent: KidsSessionClaim = { kind: 'parent', sessionId: 'qa', authenticatedAt: 123 }
+  for (const path of ['/catalog/member-promotions', '/members/commerce/access']) {
+    expect(kidsMayAccess(parent, path, 'GET', 'responsavel')).toBe(true)
+    expect(kidsMayAccess(parent, path, 'POST', 'responsavel')).toBe(false)
+  }
+  for (const path of ['/catalog/products', '/catalog/coupons', '/members/commerce/accessx'])
+    expect(kidsMayAccess(parent, path, 'GET', 'responsavel')).toBe(false)
+})
+
 const parent: KidsSessionClaim = {
   kind: 'parent',
   sessionId: crypto.randomUUID(),

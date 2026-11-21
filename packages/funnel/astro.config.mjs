@@ -44,6 +44,7 @@ export default defineConfig({
         `${site}/kids/comunidade-dos-criadores/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
+        `${site}/kids/vilao-em-aliado`,
         // Páginas legais (SSR, não enumeradas sozinhas): o índice dos Termos, a Política única e
         // o Termo de cada oferta.
         `${site}/termos`,

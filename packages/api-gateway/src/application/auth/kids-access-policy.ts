@@ -69,7 +69,10 @@ export function kidsMayAccess(
       (method === 'GET' &&
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,
-        ))
+        )) ||
+      // Leituras comerciais da própria conta na Área dos pais.
+      (method === 'GET' &&
+        ['/catalog/member-promotions', '/members/commerce/access'].includes(pathname))
     )
   }
   if (pathname.toLowerCase().startsWith('/members/parents/')) return false

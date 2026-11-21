@@ -32,6 +32,8 @@ export class AccessCheckService {
         offerId: e.offerId,
         subscriptionId: e.subscriptionId,
         expiresAt: e.expiresAt?.toISOString() ?? null,
+        accessType: e.accessType,
+        courseRef: e.courseRef,
         kind: e.sourceId.startsWith('scholarship:')
           ? ('gift' as const)
           : e.sourceKind === 'manual'

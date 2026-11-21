@@ -7,6 +7,20 @@ export interface CommerceAccess {
   subscriptionId?: string | null
   expiresAt: string | null
   kind: 'gift' | 'manual' | 'paid'
+  accessType?: string
+  courseRef?: string | null
+}
+export function giftAlreadyIncluded(
+  access: CommerceAccess[],
+  courseSlug: string,
+  audience: 'kids' | 'adult',
+) {
+  const master = audience === 'kids' ? 'all_kids_courses' : 'all_courses'
+  return access.some(
+    (entry) =>
+      entry.accessType === master ||
+      (entry.kind !== 'gift' && entry.accessType === 'course' && entry.courseRef === courseSlug),
+  )
 }
 export function hasOngoingSubscription(subscription: MySubscriptionView, now = new Date()) {
   return (
