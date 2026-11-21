@@ -19,7 +19,8 @@ export interface WebhookDeliveryWorkerOptions {
 /**
  * Entrega os webhooks de saída aos consumidores. Assina o corpo com HMAC (mesmo
  * esquema das requisições de entrada) e faz retry com backoff exponencial;
- * após `maxAttempts`, marca como DEAD. Entrega at-least-once → o consumidor deve
+ * após `maxAttempts`, marca como DEAD, exceto renovação paga: ela continua
+ * pendente até a comunicação se recuperar. Entrega at-least-once → o consumidor deve
  * deduplicar (pelo `data.paymentId` ou pelo header `X-Delivery-Id`).
  */
 export class WebhookDeliveryWorker {
@@ -144,12 +145,25 @@ export class WebhookDeliveryWorker {
       // meio do processamento) → usamos o valor como veio, sem +1.
       const attempts = delivery.attempts
       const message = error instanceof Error ? error.message : String(error)
-      if (attempts >= this.options.maxAttempts) {
+      const renewal =
+        delivery.eventName === 'payment.subscription_period_confirmed' ||
+        (delivery.eventName === 'payment.paid' &&
+          typeof delivery.payload.subscriptionId === 'string' &&
+          delivery.payload.subscriptionId.length > 0)
+      if (attempts >= this.options.maxAttempts && !renewal) {
         await this.deliveries.markDead(delivery.id, message)
         this.logger.warn('webhook.dead', { id: delivery.id, attempts })
         return
       }
-      const delaySeconds = Math.min(30 * 2 ** (attempts - 1), 3600)
+      if (attempts >= this.options.maxAttempts) {
+        this.logger.error('webhook.renewal_delivery_pending', {
+          id: delivery.id,
+          consumerId: delivery.consumerId,
+          attempts,
+          statusCode,
+        })
+      }
+      const delaySeconds = Math.min(30 * 2 ** Math.min(attempts - 1, 7), 3600)
       await this.deliveries.reschedule(
         delivery.id,
         attempts,

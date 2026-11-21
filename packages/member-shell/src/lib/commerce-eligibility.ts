@@ -18,9 +18,8 @@ export function giftAlreadyIncluded(
   const master = audience === 'kids' ? 'all_kids_courses' : 'all_courses'
   return access.some(
     (entry) =>
-      entry.kind !== 'gift' &&
-      (entry.accessType === master ||
-        (entry.accessType === 'course' && entry.courseRef === courseSlug)),
+      entry.accessType === master ||
+      (entry.kind !== 'gift' && entry.accessType === 'course' && entry.courseRef === courseSlug),
   )
 }
 export function hasOngoingSubscription(subscription: MySubscriptionView, now = new Date()) {

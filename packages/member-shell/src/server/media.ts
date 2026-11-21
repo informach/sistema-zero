@@ -42,7 +42,10 @@ export type MediaModule = ReturnType<typeof createMediaModule>
  * checagem não se aplica, e abrir a URL direto na barra continua funcionando).
  */
 export function createMediaModule(deps: { session: SessionModule; gateway: GatewayModule }) {
-  async function requireUploadSession(req: Request): Promise<SessionUser | NextResponse> {
+  async function requireUploadSession(
+    req: Request,
+    options: { parentCourseDownload?: boolean } = {},
+  ): Promise<SessionUser | NextResponse> {
     if (
       requiresOriginCheck(req.method) &&
       !isSameOriginRequest({
@@ -76,7 +79,14 @@ export function createMediaModule(deps: { session: SessionModule; gateway: Gatew
       )
     }
     if (verdict.user.kids) {
-      if (verdict.user.kids.kind !== 'student') {
+      if (
+        verdict.user.kids.kind !== 'student' &&
+        !(
+          options.parentCourseDownload &&
+          req.method === 'GET' &&
+          verdict.user.kids.kind === 'parent'
+        )
+      ) {
         return NextResponse.json({ error: { code: 'STUDENT_SESSION_REQUIRED' } }, { status: 403 })
       }
       if (
