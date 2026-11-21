@@ -1,0 +1,30 @@
+[
+  {
+    "name": "world3d",
+    "started": "2026-11-21T05:30:50.917Z",
+    "finished": "2026-11-21T05:31:04.848Z",
+    "exit": 0,
+    "log": ".cache/pinta-reader-qa-world3d.log"
+  },
+  {
+    "name": "browser",
+    "started": "2026-11-21T05:31:04.849Z",
+    "finished": "2026-11-21T05:31:39.697Z",
+    "exit": 0,
+    "log": ".cache/pinta-reader-qa-browser.log"
+  },
+  {
+    "name": "types",
+    "started": "2026-11-21T05:31:39.698Z",
+    "finished": "2026-11-21T05:34:41.379Z",
+    "exit": 0,
+    "log": ".cache/pinta-reader-qa-types.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T05:34:41.381Z",
+    "finished": "2026-11-21T05:35:12.278Z",
+    "exit": 0,
+    "log": ".cache/pinta-reader-qa-biome.log"
+  }
+]

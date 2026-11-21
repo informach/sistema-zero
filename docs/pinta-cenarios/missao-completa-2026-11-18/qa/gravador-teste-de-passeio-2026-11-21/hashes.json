@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 1121,
+      "sha256": "81e54487ac21cedd416e05558637fd33a30092fda8cb35d74441c19d9e36ffdc"
+    },
+    {
+      "file": "ci-failed-excerpt.log",
+      "bytes": 2424,
+      "sha256": "5cb0d9bd44a0be6851a0d6573899ae3ca9a5dcdbb036f87861bb07c878fa0eb9"
+    },
+    {
+      "file": "pinta-writer-691-ci-final.json",
+      "bytes": 2279,
+      "sha256": "1939a60fa09ae0f2c28ec8f66e41b34d225abf3e95e8ea332d654f828466bea6"
+    },
+    {
+      "file": "pinta-writer-world-wander-disabled-red.log",
+      "bytes": 1059,
+      "sha256": "db925ee4c04fa74694fe5f26c1df2c4e3e06a644739afc82dc82e6d0905da1f6"
+    },
+    {
+      "file": "pinta-writer-world-wander-file-green.log",
+      "bytes": 2954,
+      "sha256": "0c90605b29131fbbe9dc9079621e2defd1b9f2003d5ba51e955f726895d8e12b"
+    },
+    {
+      "file": "pinta-writer-world-wander-near-target-red.log",
+      "bytes": 1048,
+      "sha256": "b89be479e8edf4eafb57b3c4ea269d940a46234491f00900d33c8f501339913b"
+    },
+    {
+      "file": "pinta-writer-world-wander-suite-green.log",
+      "bytes": 52571,
+      "sha256": "103b328eebed1d140222eaafc776463ca18f90a8d0b2a14dc26c140ac3c39cc9"
+    },
+    {
+      "file": "source.json",
+      "bytes": 738,
+      "sha256": "c66f340d060df578ce51d666853ce42b44150e3d4ac95b21f8b4f5fcbaea366a"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-21T05:38:02.000Z",
+  "head": "67e2765a984dd8a4484c3a3eee15f5c0d3c32aad",
+  "originalCommits": [
+    "495e90eab39bdb57048ea683d3da5dd76372d1e9",
+    "4ea837778dd998eadb54824adebf3e5f01e1681b"
+  ],
+  "files": [
+    {
+      "file": "packages/studio/e2e/examples-gallery.spec.ts",
+      "sha256": "f2d38b441cd42001e41a5f816b612017b4a42c5689eebe7617fa17eda2b350e7"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/threeAssetDiagnostics.ts",
+      "sha256": "0f7cc7ee349635c268068050506acbd4eacb4d292778569e18f10e8e35f934e6"
+    },
+    {
+      "file": "packages/studio/e2e/three-asset-diagnostics.spec.ts",
+      "sha256": "0b2de2ce4d2fce04875f7d005b046a793c50149d00df06594d21db8e1eca98e3"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/world-3d/__tests__/reviewFindings.test.ts",
+      "sha256": "741ebbd74cb826408566823e74f2493f2001f3096209dd42e9dc93f8cb84e86a"
+    }
+  ],
+  "productionUnchanged": true,
+  "restoredHistoricalEvidence": [
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-aviso-adaptativo-2026-11-21/ci-failed-excerpt.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-aviso-adaptativo-2026-11-21/pinta-writer-asset-diagnostics-baseline.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-aviso-adaptativo-2026-11-21/pinta-writer-asset-diagnostics-green.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-teste-de-passeio-2026-11-21/ci-failed-excerpt.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-teste-de-passeio-2026-11-21/pinta-writer-world-wander-disabled-red.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-teste-de-passeio-2026-11-21/pinta-writer-world-wander-file-green.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-teste-de-passeio-2026-11-21/pinta-writer-world-wander-near-target-red.log",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-teste-de-passeio-2026-11-21/pinta-writer-world-wander-suite-green.log"
+  ]
+}
