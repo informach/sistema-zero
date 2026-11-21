@@ -85,6 +85,7 @@ import {
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import { criarPlanoDoCenario } from './plano'
 import { PontosDeAutoria } from './pontos-de-autoria'
+import { PreviaDeArrasto } from './previa-de-arrasto'
 import { prepararPreviaDosApoios } from './previa-dos-apoios'
 import { limitesDaBase, recorteDaCamera } from './recorte-da-camera'
 import { carregarPecasDeTerreno } from './recursos-terreno'
@@ -175,6 +176,11 @@ class PalcoThree implements Palco {
   private aspectoDasGuias = 0
   private readonly contornos: Contornos
   private readonly fantasma = criarPartesDoFantasma()
+  /** O modelo arrastado da gaveta, translúcido onde vai pousar. */
+  private readonly previaDeArrasto = new PreviaDeArrasto(
+    (modelo, sinal) => this.opcoes.carregarModelo(modelo, sinal),
+    () => this.pedirQuadro(),
+  )
   private readonly loteFantasma: LoteDoModelo
   private readonly raio = new Raycaster()
   private readonly raioDoEncaixe = new Raycaster()
@@ -317,7 +323,7 @@ class PalcoThree implements Palco {
       opcoes.fotografia,
       this.renderer.capabilities.maxTextureSize,
     )
-    this.cena.add(this.chao, this.objetos, this.pivo, this.grade)
+    this.cena.add(this.chao, this.objetos, this.pivo, this.grade, this.previaDeArrasto.grupo)
 
     this.loteFantasma = new LoteDoModelo(this.objetos, this.fantasma.partes)
     this.contornos = new Contornos(this.cena, COR_DA_SELECAO)
@@ -688,6 +694,18 @@ class PalcoThree implements Palco {
     this.camera.lookAt(alvo)
     this.orbita.update()
     this.pedirQuadro()
+  }
+
+  /** Mostra o modelo arrastado da gaveta onde ele vai pousar, com a regra do soltar. */
+  mostrarPreviaDeModelo(modelo: ModeloDoCenario, clientX: number, clientY: number): void {
+    const ponto = this.pontoNoChao(clientX, clientY)
+    this.previaDeArrasto.mostrar(modelo, ponto ? { x: ponto.x, y: ponto.y ?? 0, z: ponto.z } : null)
+  }
+
+  /** Esconde a prévia (o arraste saiu do palco); `soltar` também esquece o modelo. */
+  esconderPreviaDeModelo(soltar = false): void {
+    if (soltar) this.previaDeArrasto.soltar()
+    else this.previaDeArrasto.esconder()
   }
 
   pontoNoChao(clientX: number, clientY: number): Ponto3 | null {
@@ -1289,6 +1307,7 @@ class PalcoThree implements Palco {
       if (estado.estado === 'carregando') estado.controle.abort()
     if (this.reconstrucaoAgendada) clearTimeout(this.reconstrucaoAgendada)
     this.laco.dispose()
+    this.previaDeArrasto.descartar()
     this.espalhamento.descartar()
     this.escultura.descartar()
     this.pontosDoCaminho.descartar()

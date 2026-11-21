@@ -17,6 +17,21 @@ export const ARRASTO_DE_MODELO = 'application/x-sz-modelo'
 
 const PAGINA = 40
 
+/** Os pacotes que vêm primeiro quando servem: a regra de preferência da montagem das ilhas. */
+const PACOTES_PRIMEIRO = ['adventure land']
+
+/** As bibliotecas na ordem da gaveta: as preferidas primeiro, as outras como o mundo guarda. */
+export function ordenarBibliotecas(bibliotecas: readonly Biblioteca[]): Biblioteca[] {
+  const posicao = (b: Biblioteca) => {
+    const i = PACOTES_PRIMEIRO.indexOf(b.nome.trim().toLocaleLowerCase('pt-BR'))
+    return i < 0 ? PACOTES_PRIMEIRO.length : i
+  }
+  return bibliotecas
+    .map((b, i) => ({ b, i }))
+    .sort((x, y) => posicao(x.b) - posicao(y.b) || x.i - y.i)
+    .map((x) => x.b)
+}
+
 /**
  * A caixa de brinquedos: os modelos das bibliotecas do mundo, para tocar e pôr no cenário ou
  * arrastar até o lugar.
@@ -50,10 +65,13 @@ export function Gaveta({
   conjuntoEmEdicao?: string
   atualizacaoDosConjuntos?: number
 }): JSX.Element {
+  const ordenadas = ordenarBibliotecas(bibliotecas)
   const [ativa, setAtiva] = useState<string | null>(
-    bibliotecas[0]?.id ?? (moldesDisponiveis ? BIBLIOTECA_MOLDA_ID : null),
+    ordenadas[0]?.id ?? (moldesDisponiveis ? BIBLIOTECA_MOLDA_ID : null),
   )
   const [busca, setBusca] = useState('')
+  const [categoria, setCategoria] = useState('')
+  const [categorias, setCategorias] = useState<string[]>([])
   const [tipo, setTipo] = useState<'modelos' | 'conjuntos'>('modelos')
   const [buscaAplicada, setBuscaAplicada] = useState('')
   const [modelos, setModelos] = useState<ModeloDeBiblioteca[]>([])
@@ -63,7 +81,8 @@ export function Gaveta({
   const noMolda = moldesDisponiveis && ativa === BIBLIOTECA_MOLDA_ID
   const biblioteca = noMolda
     ? null
-    : (bibliotecas.find((b) => b.id === ativa) ?? bibliotecas[0] ?? null)
+    : (ordenadas.find((b) => b.id === ativa) ?? ordenadas[0] ?? null)
+  const nomeDoPacote = noMolda ? 'Meus moldes' : (biblioteca?.nome ?? '')
   const bibliotecaId = noMolda ? BIBLIOTECA_MOLDA_ID : (biblioteca?.id ?? null)
   const moldes = useMoldes(host.molda, noMolda)
   const normal = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('pt-BR')
@@ -83,34 +102,56 @@ export function Gaveta({
     return () => clearTimeout(espera)
   }, [busca])
 
+  // As categorias são as pastas da biblioteca; trocar de biblioteca volta para todas.
   useEffect(() => {
+    setCategoria('')
+    setCategorias([])
     if (!bibliotecaId || noMolda) return
     let vivo = true
-    setEstado('chegando')
-    host.listarModelos(bibliotecaId, { busca: buscaAplicada, limite: PAGINA }).then(
-      (pagina) => {
-        if (!vivo) return
-        setModelos(pagina.itens)
-        setProximo(pagina.proximo)
-        setEstado('pronto')
-      },
-      () => vivo && setEstado('falhou'),
+    host.organizacaoDaBiblioteca(bibliotecaId).then(
+      (o) => vivo && setCategorias(o.pastas.filter((p) => p.trim())),
+      () => {},
     )
     return () => {
       vivo = false
     }
-  }, [host, bibliotecaId, buscaAplicada, noMolda])
+  }, [host, bibliotecaId, noMolda])
+
+  const filtro = { busca: buscaAplicada, ...(categoria ? { pasta: categoria } : {}) }
+  useEffect(() => {
+    if (!bibliotecaId || noMolda) return
+    let vivo = true
+    setEstado('chegando')
+    host
+      .listarModelos(bibliotecaId, {
+        busca: buscaAplicada,
+        ...(categoria ? { pasta: categoria } : {}),
+        limite: PAGINA,
+      })
+      .then(
+        (pagina) => {
+          if (!vivo) return
+          setModelos(pagina.itens)
+          setProximo(pagina.proximo)
+          setEstado('pronto')
+        },
+        () => vivo && setEstado('falhou'),
+      )
+    return () => {
+      vivo = false
+    }
+  }, [host, bibliotecaId, buscaAplicada, categoria, noMolda])
 
   const pedindoMais = useRef<string | null>(null)
   const mostrarMais = async () => {
     if (!bibliotecaId || !proximo || noMolda) return
-    // Um pedido de cada vez, e só vale para a mesma biblioteca e busca de quando saiu.
-    const consulta = `${bibliotecaId}|${buscaAplicada}|${proximo}`
+    // Um pedido de cada vez, e só vale para a mesma biblioteca, busca e categoria de quando saiu.
+    const consulta = `${bibliotecaId}|${buscaAplicada}|${categoria}|${proximo}`
     if (pedindoMais.current) return
     pedindoMais.current = consulta
     try {
       const pagina = await host.listarModelos(bibliotecaId, {
-        busca: buscaAplicada,
+        ...filtro,
         limite: PAGINA,
         cursor: proximo,
       })
@@ -126,11 +167,11 @@ export function Gaveta({
       if (pedindoMais.current === consulta) pedindoMais.current = null
     }
   }
-  // Trocar de biblioteca ou de busca esquece o pedido que estava no caminho.
+  // Trocar de biblioteca, de busca ou de categoria esquece o pedido que estava no caminho.
   // biome-ignore lint/correctness/useExhaustiveDependencies: só a troca de consulta importa
   useEffect(() => {
     pedindoMais.current = null
-  }, [bibliotecaId, buscaAplicada])
+  }, [bibliotecaId, buscaAplicada, categoria])
 
   return (
     <section className="mcn-gaveta mld-bar" aria-label={COPY.gaveta.titulo} data-aberta={aberta}>
@@ -174,7 +215,7 @@ export function Gaveta({
         </button>
         <fieldset className="sz-tool-chips mcn-gaveta-chips">
           <legend className="sr-only">{COPY.inicio.abaBibliotecas}</legend>
-          {bibliotecas.map((b) => (
+          {ordenadas.map((b) => (
             <button
               key={b.id}
               type="button"
@@ -222,6 +263,27 @@ export function Gaveta({
             />
           </label>
         ) : null}
+        {bibliotecaId && !noMolda && categorias.length > 0 ? (
+          <label className="mcn-gaveta-categoria">
+            <span className="sr-only">{COPY.gaveta.categoria}</span>
+            <select
+              value={categoria}
+              onChange={(evento) => {
+                setCategoria(evento.target.value)
+                aoMudarAbertura(true)
+              }}
+              aria-label={COPY.gaveta.categoria}
+              className="mcn-select"
+            >
+              <option value="">{COPY.gaveta.todasAsCategorias}</option>
+              {categorias.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
 
       {aberta ? (
@@ -242,7 +304,11 @@ export function Gaveta({
             <p className="mcn-gaveta-aviso">{COPY.inicio.falhou}</p>
           ) : estadoAtual === 'pronto' && visiveis.length === 0 ? (
             <p className="mcn-gaveta-aviso">
-              {buscaAplicada ? COPY.gaveta.semResultado : COPY.gaveta.vazia}
+              {buscaAplicada
+                ? COPY.gaveta.semResultado
+                : categoria
+                  ? COPY.gaveta.semNaCategoria
+                  : COPY.gaveta.vazia}
             </p>
           ) : (
             <ul className="mcn-gaveta-lista" aria-busy={estadoAtual === 'chegando'}>
@@ -262,7 +328,7 @@ export function Gaveta({
                             ? `Usar ${modelo.nome} como personagem`
                             : COPY.gaveta.por(modelo.nome)
                     }
-                    title={modelo.nome}
+                    title={nomeDoPacote ? `${modelo.nome} · ${nomeDoPacote}` : modelo.nome}
                     onClick={() => aoPor(modelo)}
                     onDragStart={(evento) => {
                       evento.dataTransfer.setData(ARRASTO_DE_MODELO, modelo.id)
@@ -275,6 +341,12 @@ export function Gaveta({
                       <Capa endereco={modelo.miniatura} reserva={<Box />} />
                     </span>
                     <span className="mcn-brinquedo-nome">{modelo.nome}</span>
+                    {nomeDoPacote ? (
+                      <span className="mcn-brinquedo-pacote">
+                        <span className="sr-only">{COPY.gaveta.pacote(nomeDoPacote)}</span>
+                        <span aria-hidden="true">{nomeDoPacote}</span>
+                      </span>
+                    ) : null}
                   </button>
                 </li>
               ))}

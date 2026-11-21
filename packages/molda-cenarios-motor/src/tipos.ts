@@ -182,6 +182,10 @@ export interface Palco {
   definirVista(vista: Vista): void
   /** O ponto do chão debaixo de uma posição da tela, já no encaixe da grade. */
   pontoNoChao(clientX: number, clientY: number): Ponto3 | null
+  /** A cópia translúcida do modelo arrastado da gaveta, onde ele vai pousar. */
+  mostrarPreviaDeModelo(modelo: ModeloDoCenario, clientX: number, clientY: number): void
+  /** Esconde a prévia do arraste; `soltar` também esquece o modelo carregado para ela. */
+  esconderPreviaDeModelo(soltar?: boolean): void
   /** Volume medido do GLB já carregado, sem expor objetos do Three ao host. */
   volumeDoModelo(id: string): VolumeDeComposicao | null
   /** Ausente enquanto os bytes do relevo não estão prontos; não substitui altura por zero. */

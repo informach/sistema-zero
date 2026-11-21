@@ -6,6 +6,7 @@ import {
   posicaoDaMontagem,
   posicaoNoMundo,
   transformacaoResolvida,
+  transformacaoSemEncosta,
 } from './chao'
 import type { ComandoDeCenario } from './comandos'
 import { quantidadeDeObjetosDoCenario, volumeDaMontagem } from './conjuntos'
@@ -102,8 +103,14 @@ export function trocarModeloDosObjetos(
         referencia: 'volume' as const,
         deslocamento: base - alturaDoChao(doc.base, mundo.posicao.x, mundo.posicao.z, fonte),
       }
-      mundo.posicao.y = posicaoNoMundo(novo, { ...copia, transformacao: mundo, apoio }, fonte).y
-      alteracoes = { transformacao: mundo, apoio }
+      // O documento guarda o giro sem a encosta: a encosta volta ao resolver.
+      const guardado = transformacaoSemEncosta(novo, { ...copia, apoio }, mundo, fonte)
+      guardado.posicao.y = posicaoNoMundo(
+        novo,
+        { ...copia, transformacao: guardado, apoio },
+        fonte,
+      ).y
+      alteracoes = { transformacao: guardado, apoio }
     } else if (o.apoio.tipo === 'objeto') {
       alteracoes.apoio = {
         ...o.apoio,

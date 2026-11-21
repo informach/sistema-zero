@@ -7,6 +7,7 @@ import type {
   InstanciaDeCenario,
   Transformacao,
 } from './documento'
+import { comEncosta, giroDaNormal, normalDaEncosta, raioDaEncosta, semEncosta } from './encosta'
 import { estruturaDoCaminho } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
 import { lembrar } from './memoria-da-validacao'
@@ -54,6 +55,80 @@ export function alteracoesDoGestoDaMontagem(
   }
 }
 
+/**
+ * A inclinação do relevo debaixo do objeto apoiado com `inclinar`, ou nulo (chão plano, sem a
+ * opção, ou relevo ainda sem bytes: a projeção autoral não inventa encosta).
+ */
+function encostaDe(
+  doc: BaseComModelos,
+  o: ObjetoComModelo,
+  fonte?: FonteDeAlturas,
+): Transformacao['rotacao'] | null {
+  if (o.apoio.tipo !== 'terreno' || !o.apoio.inclinar || doc.base.tipo !== 'terreno' || !fonte)
+    return null
+  const p = o.transformacao.posicao
+  const raio = raioDaEncosta(volumeDaReferencia(doc, o.modelo), o.transformacao.escala)
+  const encosta = giroDaNormal(normalDaEncosta((x, z) => fonte(x, z), p.x, p.z, raio))
+  // Chão plano: nenhuma conta a mais, e o giro guardado sai exatamente como está.
+  return Math.abs(encosta.x) < 1e-12 && Math.abs(encosta.z) < 1e-12 ? null : encosta
+}
+
+/** O giro resolvido de quem se apoia no relevo: o do objeto, mais a encosta quando inclina. */
+function giroResolvido(
+  doc: BaseComModelos,
+  o: ObjetoComModelo,
+  fonte?: FonteDeAlturas,
+): Transformacao['rotacao'] {
+  const encosta = encostaDe(doc, o, fonte)
+  return encosta ? comEncosta(o.transformacao.rotacao, encosta) : { ...o.transformacao.rotacao }
+}
+
+/**
+ * Na encosta, o centro da base pousa no chão (não o canto mais baixo do volume girado: esse
+ * deixaria o lado de baixo flutuando).
+ */
+function elevacaoNaEncosta(
+  doc: BaseComModelos,
+  o: ObjetoComModelo,
+  giro: Transformacao['rotacao'],
+): number {
+  if (!(o.apoio.tipo === 'terreno' && o.apoio.referencia === 'volume')) return 0
+  const volume = volumeDaReferencia(doc, o.modelo)
+  if (!volume) return 0
+  const base = {
+    x: (volume.min.x + volume.max.x) / 2,
+    y: volume.min.y,
+    z: (volume.min.z + volume.max.z) / 2,
+  }
+  return -transformarPonto(base, {
+    posicao: { x: 0, y: 0, z: 0 },
+    rotacao: giro,
+    escala: o.transformacao.escala,
+  }).y
+}
+
+/** Elevação de quem se apoia no relevo, contando a encosta quando o objeto inclina. */
+function elevacaoNoRelevo(doc: BaseComModelos, o: ObjetoComModelo, fonte?: FonteDeAlturas) {
+  const encosta = encostaDe(doc, o, fonte)
+  return encosta
+    ? elevacaoNaEncosta(doc, o, comEncosta(o.transformacao.rotacao, encosta))
+    : elevacaoDoVolume(doc, o)
+}
+
+/**
+ * Do que o palco mostra (giro já inclinado) ao que o documento guarda: tira a encosta do lugar
+ * novo. Sem `inclinar`, devolve a mesma transformação.
+ */
+export function transformacaoSemEncosta(
+  doc: BaseComModelos,
+  o: ObjetoComModelo,
+  mundo: Transformacao,
+  fonte?: FonteDeAlturas,
+): Transformacao {
+  const encosta = encostaDe(doc, { ...o, transformacao: mundo }, fonte)
+  return encosta ? { ...mundo, rotacao: semEncosta(mundo.rotacao, encosta) } : mundo
+}
+
 function elevacaoDoVolume(doc: BaseComModelos, o: ObjetoComModelo): number {
   if (
     !(o.apoio.tipo === 'terreno' && o.apoio.referencia === 'volume') &&
@@ -95,7 +170,10 @@ export function posicaoNoMundo(
   if (o.apoio.tipo === 'terreno')
     return {
       x: p.x,
-      y: alturaDoChao(doc.base, p.x, p.z, fonte) + o.apoio.deslocamento + elevacaoDoVolume(doc, o),
+      y:
+        alturaDoChao(doc.base, p.x, p.z, fonte) +
+        o.apoio.deslocamento +
+        elevacaoNoRelevo(doc, o, fonte),
       z: p.z,
     }
   if (o.apoio.tipo === 'objeto' && o.apoio.contato) {
@@ -139,7 +217,7 @@ export function transformacaoResolvida(
   if (o.apoio.tipo === 'agua') return transformacaoDoApoioNaAgua(doc, o.apoio)
   return {
     posicao: posicaoNoMundo(doc, o, fonte, cadeia),
-    rotacao: { ...o.transformacao.rotacao },
+    rotacao: giroResolvido(doc, o, fonte),
     escala: { ...o.transformacao.escala },
   }
 }
@@ -315,13 +393,23 @@ export function alteracoesDoGesto(
     Math.abs(
       posicaoNoMundo(doc, { ...o, transformacao: o.transformacao }, fonte).y - mundo.posicao.y,
     ) < 1e-6
+  // O palco entrega o giro já inclinado; o documento guarda o do objeto, sem a encosta.
+  const guardado = transformacaoSemEncosta(
+    doc,
+    { ...o, transformacao: mundo } as ObjetoComModelo,
+    mundo,
+    fonte,
+  )
   const deslocamento = mantemApoio
     ? o.apoio.deslocamento
     : Math.round(
-        (mundo.posicao.y - chao - elevacaoDoVolume(doc, { ...o, transformacao: mundo })) * 1000,
+        (guardado.posicao.y -
+          chao -
+          elevacaoNoRelevo(doc, { ...o, transformacao: guardado }, fonte)) *
+          1000,
       ) / 1000
   return {
-    transformacao: { ...mundo, posicao: { ...mundo.posicao, y: chao + deslocamento } },
+    transformacao: { ...guardado, posicao: { ...guardado.posicao, y: chao + deslocamento } },
     apoio: { ...o.apoio, deslocamento },
   }
 }

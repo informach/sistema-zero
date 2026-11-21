@@ -267,7 +267,12 @@ export function instanciaDoEspalhamento(
     camada: r.camada,
     bloqueado: false,
     oculto: false,
-    apoio: { tipo: 'terreno', deslocamento: 0, referencia: 'volume', inclinar: false },
+    apoio: {
+      tipo: 'terreno',
+      deslocamento: 0,
+      referencia: 'volume',
+      inclinar: r.inclinar ?? false,
+    },
     transformacao: transformacao(p!, a),
   }
 }

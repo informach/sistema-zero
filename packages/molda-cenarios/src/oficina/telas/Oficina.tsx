@@ -91,6 +91,7 @@ import {
   comMedidasConferidas,
   type LocalDeColocacao,
   novoIdAleatorio,
+  referenciaDeBiblioteca,
 } from '../acoes'
 import { NOMES_AGUA } from '../agua-formulario'
 import { comandosParaRemoverAgua } from '../agua-remocao'
@@ -372,6 +373,10 @@ function OficinaAberta({
   const [medidas, setMedidas] = useState<Estatisticas | null>(null)
   const [gestoAtivo, setGestoAtivo] = useState(false)
   const [texturas, setTexturas] = useState<EstadoDasTexturas>({ carregando: 0, falhas: [] })
+  // Modelos que o palco não conseguiu carregar: um aviso por hash, até tentar de novo.
+  const [modelosQueFalharam, setModelosQueFalharam] = useState<
+    { digest: string; nome: string; mensagem: string }[]
+  >([])
   const [aguas, setAguas] = useState<EstadoDasAguas>({ carregando: 0, falhas: [] })
   const [caminhosRender, setCaminhosRender] = useState<EstadoDosCaminhos>({
     carregando: 0,
@@ -678,6 +683,19 @@ function OficinaAberta({
       carregarTextura: (ref, sinal) =>
         host.conteudoDaTextura({ ...ref, espacoId: mundo.espacoId }, sinal),
       aoTexturas: setTexturas,
+      aoFalhar: (modelo, erro) =>
+        setModelosQueFalharam((atuais) =>
+          atuais.some((m) => m.digest === modelo.digest)
+            ? atuais
+            : [
+                ...atuais,
+                {
+                  digest: modelo.digest,
+                  nome: modelo.nome ?? modelo.id,
+                  mensagem: erro instanceof Error ? erro.message : 'O arquivo não abriu.',
+                },
+              ],
+        ),
       aoAguas: setAguas,
       aoCaminhos: setCaminhosRender,
       aoAmbiente: setAmbienteRender,
@@ -1940,8 +1958,22 @@ function OficinaAberta({
             if (!evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
             evento.preventDefault()
             evento.dataTransfer.dropEffect = 'copy'
+            // A prévia mostra onde o modelo vai pousar; moldes ainda sem arquivo não têm prévia.
+            const modelo = arrastado.current
+            if (modelo && 'digest' in modelo && 'bibliotecaId' in modelo)
+              palco.current?.mostrarPreviaDeModelo(
+                referenciaDeBiblioteca(modelo),
+                evento.clientX,
+                evento.clientY,
+              )
+          }}
+          onDragLeave={(evento) => {
+            // Só sair da área do palco esconde; passar por cima de um filho dela não conta.
+            if (!evento.currentTarget.contains(evento.relatedTarget as Node | null))
+              palco.current?.esconderPreviaDeModelo()
           }}
           onDrop={(evento) => {
+            palco.current?.esconderPreviaDeModelo(true)
             if (!emEnsaio && !agua.ocupado && !jogo.ocupado && !ambiente.ocupado)
               aoSoltarNoPalco(evento)
           }}
@@ -1974,6 +2006,28 @@ function OficinaAberta({
               style={emEnsaio ? { display: 'none' } : undefined}
               inert={emEnsaio}
             >
+              {modelosQueFalharam.length ? (
+                <div role="alert" className="mld-float mcn-andamento">
+                  <span>
+                    {modelosQueFalharam.length === 1
+                      ? `Não consegui carregar o modelo ${modelosQueFalharam[0]!.nome}. ${modelosQueFalharam[0]!.mensagem}`
+                      : `Não consegui carregar ${modelosQueFalharam.length} modelos: ${modelosQueFalharam
+                          .slice(0, 3)
+                          .map((m) => m.nome)
+                          .join(', ')}${modelosQueFalharam.length > 3 ? ' e outros' : ''}.`}
+                  </span>
+                  <button
+                    type="button"
+                    className="sz-tool-btn"
+                    onClick={() => {
+                      setModelosQueFalharam([])
+                      palco.current?.recarregarModelos()
+                    }}
+                  >
+                    Tentar carregar de novo
+                  </button>
+                </div>
+              ) : null}
               {aguas.carregando > 0 ? (
                 <p role="status" className="mld-float">
                   Carregando água e margens…
@@ -2130,6 +2184,7 @@ function OficinaAberta({
               aoPor={(modelo) => void escolherModelo(modelo, null)}
               aoArrastar={(modelo) => {
                 arrastado.current = modelo
+                if (!modelo) palco.current?.esconderPreviaDeModelo(true)
               }}
               aoEscolherBibliotecas={() => setEscolhendo(true)}
             />
