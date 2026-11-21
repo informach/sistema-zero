@@ -77,12 +77,21 @@ O mesmo ciclo passou pelos sete primeiros scripts de browser do Molda e perdeu o
 na importação dinâmica do compilador integrado. As entradas do scanner do Vite agora incluem
 compilador e colisões usados por URLs calculadas, conforme a documentação de
 [`optimizeDeps.entries`](https://github.com/vitejs/vite/blob/main/docs/config/dep-optimization-options.md).
-A confirmação dessa hipótese fica com a próxima rodada remota. O artefato passa a incluir
+Os jobs `136977299279` e `136981107892` passaram nas duas rodadas seguintes com os oito
+ensaios completos, confirmando a correção. O artefato passa a incluir
 o log oculto do servidor e o ensaio registra mensagens do Vite para permitir diagnóstico.
 
 O ciclo `44947262460` apontou o fingerprint anterior à alteração recente do Pinta
 (`719fade30`). O gerador oficial atualizou apenas `validation-profile.json`; geração e
 conferência passaram em 760 ms. A construção da imagem continua exclusivamente remota.
+
+A qualificação remota de imagem `44947539705`, no commit `913b0d158`, passou. O CI
+`44947539726` já aprovou a barreira de manutenção (incluindo a regressão CLI do acervo),
+a imagem, o lint global, os objetivos Python e Three reais e os quatro pacotes de cenários.
+A suíte geral e a implantação ainda estavam em andamento ao registrar essas evidências.
+Os commits posteriores do Pro (`bf96c7a56` e `d2f238b62`) entraram na fila sem cancelar
+a execução ativa. Seus 32 arquivos de código passaram no lint direcionado em 114 ms,
+e a conferência do perfil atualizado passou. As provas completas desses commits são remotas.
 
 Merge local em staging, push de todos os commits dessa branch, todos os jobs obrigatórios
 verdes e `deploy-staging` concluído pelo fluxo normal. Falhas novas devem ser corrigidas e
