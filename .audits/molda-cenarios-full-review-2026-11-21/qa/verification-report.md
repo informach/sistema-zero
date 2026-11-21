@@ -47,9 +47,11 @@ FBX, ZIP com OBJ/MTL/PNG, dependência ausente, endereço externo recusado e can
 - O CLI `agent-browser` não estava disponível. A prova de interface veio dos ensaios Playwright
   já existentes do projeto, incluindo o novo caso de abertura; não houve QA manual por esse CLI.
 - Ensaios com acervo privado inicialmente falharam por arquivos ausentes num checkout novo.
-  A preparação foi corrigida para materializar as peças iniciais e reaplicar o acabamento
-  aprovado da ponte. A revalidação completa desse acervo ficou pendente após a interrupção
-  local solicitada; os ensaios sem acervo privado passam a ser obrigatórios no GitHub.
+  A preparação só cataloga peças depois de materializar e conferir os bytes. A ponte reaplica
+  seu acabamento aprovado; a Morada lê exclusivamente o binário preparado pelo exportador
+  aprovado. Ausência vira dependência explícita, sem modelo fantasma. Uma regressão com um
+  repositório Git mínimo real prova esse comportamento no GitHub, sem acervo privado nem GPU.
+  A revalidação completa do acervo privado ficou pendente após a interrupção local solicitada.
 - Os 3 TODOs do contrato completo já existiam: streaming genérico e duas limitações do DOM
   simulado. A prova real de imagem e descarte é de navegador; não foram criados novos skips.
 - CI 44940467474 falhou no build Kids com TS2322; 44941673601 repetiu a falha e ainda executava
