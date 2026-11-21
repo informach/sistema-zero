@@ -1,11 +1,12 @@
 /**
  * Run after `bun run build`: node --import tsx tests/browser/curso-pais-vilao.ts
  *
- * Página pública do minicurso para pais (`/kids/vilao-em-aliado`, 18/11/2026). Sobe o build com um
- * referrals falso (pelo gateway falso, que não confere o HMAC) e confere, a 320, 390, 768 e 1440 px:
- * um h1, tema Kids, página indexável, sem rolagem lateral, imagens carregadas, as seções e o
- * presente em segredo. Depois os estados (campanha ainda não criada, pausada) e o cadastro até o
- * concluído, com o link do curso na área dos pais. Capturas em `QA_OUTPUT` (padrão
+ * Página pública do guia gratuito para pais (`/kids/vilao-em-aliado`, 18/11/2026; texto e layout
+ * novos em 21/11/2026). Sobe o build com um referrals falso (pelo gateway falso, que não confere o
+ * HMAC) e confere, a 320, 390, 768 e 1440 px: um h1, tema Kids, página indexável, sem rolagem
+ * lateral, imagens carregadas, o formulário no topo, as seções curtas, "guia" no lugar de "curso" e
+ * o presente em segredo. Depois os estados (campanha ainda não criada, pausada) e o cadastro até o
+ * concluído, com o link do guia na área dos pais. Capturas em `QA_OUTPUT` (padrão
  * `tmp/curso-pais-review` na raiz). `QA_CHROMIUM_PATH` usa um Chromium já baixado.
  */
 
@@ -184,26 +185,31 @@ try {
         .map((img) => img.src),
     )
     assert.deepEqual(quebradas, [], `${largura}: imagens`)
-    for (const id of [
-      'por-que',
-      'para-quem',
-      'aulas',
-      'quem-conduz',
-      'como-funciona',
-      'duvidas',
-      'resgatar',
-    ])
+    for (const id of ['o-que-muda', 'quem-conduz', 'duvidas'])
       assert.equal(await page.locator(`section#${id}`).count(), 1, `${largura}: seção ${id}`)
-    assert.equal(await page.locator('.cpv-aula').count(), 7, `${largura}: sete aulas`)
-    assert.equal(await page.locator('section#depoimentos').count(), 0, `${largura}: depoimentos`)
+    for (const id of ['por-que', 'para-quem', 'aulas', 'como-funciona', 'depoimentos'])
+      assert.equal(await page.locator(`#${id}`).count(), 0, `${largura}: sem a seção ${id}`)
+    assert.equal(await page.locator('.c9-etapa').count(), 3, `${largura}: o que muda`)
+    assert.equal(await page.locator('.c9-duvida').count(), 6, `${largura}: dúvidas`)
     assert.equal(
-      await page.locator('#resgatar input[name="email"]').count(),
+      await page.locator('section.c9-heroi #resgatar input[name="email"]').count(),
       1,
-      `${largura}: formulário`,
+      `${largura}: formulário no topo`,
     )
+    assert.equal(await page.locator('section.c9-fim a[href="#resgatar"]').count(), 1)
     const corpo = await page.locator('body').innerText()
-    assert.match(corpo, /Transforme o maior vilão da sua casa\s+em aliado\./, `${largura}: título`)
+    assert.match(
+      corpo,
+      /A tela que hoje vira briga em casa pode ser\s+sua aliada\s+no desenvolvimento do seu filho\./,
+      `${largura}: título`,
+    )
     assert.match(corpo, /Estes dados são seus/, `${largura}: aviso do formulário`)
+    assert.match(corpo, /Liberar o meu guia/, `${largura}: botão do formulário`)
+    assert.doesNotMatch(
+      await page.locator('main').innerText(),
+      /\bcursos?\b(?! para pais)|minicurso|presente/i,
+      `${largura}: guia, não curso`,
+    )
     assert.doesNotMatch(
       corpo,
       /Cadê Todo Mundo|7 dias|Desafio do Primeiro Jogo/,
@@ -213,21 +219,35 @@ try {
   }
 
   // O título e a imagem de compartilhamento.
-  assert.match(await page.title(), /minicurso gratuito para pais \| Sistema Zero$/)
+  assert.match(await page.title(), /guia gratuito para pais \| Sistema Zero$/)
   assert.match(
     (await page.locator('meta[property="og:image"]').getAttribute('content')) ?? '',
     /\/img\/transformando-o-vilao-em-aliado\/compartilhar\.jpg$/,
   )
 
-  // Cadastro até o concluído: o curso abre na área dos pais do app Kids.
+  // A barra fixa do celular, depois da primeira dobra, cabe numa linha.
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(url)
+  await page.evaluate(() => window.scrollTo(0, 1900))
+  const barra = page.locator('[data-presente-barra]')
+  await barra.locator('a').waitFor({ state: 'visible' })
+  assert.match(await barra.innerText(), /Guia gratuito\s+Sem cartão\s+Quero assistir de graça/)
+  assert.ok(
+    await barra.evaluate((el) => el.scrollWidth <= el.clientWidth),
+    'barra sem rolagem lateral',
+  )
+  await page.screenshot({ path: resolve(output, 'barra-390.png') })
+
+  // Cadastro até o concluído: o guia abre na área dos pais do app Kids.
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto(url)
   await page.locator('#resgatar input[name="nome"]').fill('Paula Prado')
   await page.locator('#resgatar input[name="email"]').fill('paula@example.com')
   await page.locator('#resgatar button[type="submit"]').click()
-  await page.getByRole('link', { name: 'Abrir o curso' }).waitFor()
+  await page.getByRole('link', { name: 'Abrir o guia' }).waitFor()
+  assert.match(await page.locator('#resgatar').innerText(), /O seu guia está liberado/)
   assert.equal(
-    await page.getByRole('link', { name: 'Abrir o curso' }).getAttribute('href'),
+    await page.getByRole('link', { name: 'Abrir o guia' }).getAttribute('href'),
     `https://kids.qa.local/pais/cursos/${SLUG}`,
   )
   assert.equal(resgates.length, 1, 'um resgate enviado')
@@ -247,8 +267,16 @@ try {
       0,
       `em breve ${largura}: sem formulário`,
     )
-    assert.match(await page.locator('body').innerText(), /As inscrições abrem em breve/)
-    assert.equal(await page.locator('.cpv-aula').count(), 7)
+    assert.match(
+      await page.locator('section.c9-heroi #resgatar').innerText(),
+      /As inscrições abrem em breve/,
+    )
+    assert.equal(await page.locator('.c9-etapa').count(), 3)
+    assert.equal(
+      await page.locator('section.c9-fim').count(),
+      0,
+      `em breve ${largura}: sem a faixa`,
+    )
     await page.screenshot({ path: resolve(output, `em-breve-${largura}.png`), fullPage: true })
   }
 
@@ -260,7 +288,7 @@ try {
 
   assert.deepEqual(errors, [], 'page errors')
   console.log(
-    `OK: página do curso para pais em 4 larguras, cadastro e estados. Capturas em ${output}`,
+    `OK: página do guia para pais em 4 larguras, barra do celular, cadastro e estados. Capturas em ${output}`,
   )
 } finally {
   await browser?.close()
