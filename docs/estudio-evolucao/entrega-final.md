@@ -102,6 +102,15 @@ de conserto barato foram consertados, cada um com teste vermelho antes:
 - os documentos foram conferidos contra o código (nomes de tela, menus, atalhos, constantes, SHAs)
   e corrigidos.
 
+A conferência logada no staging (apps em `7b00717b6`,
+[`../qa/2026-11-21-studio-lote8-staging.md`](../qa/2026-11-21-studio-lote8-staging.md)) confirmou as
+três propostas na tela (origem do Pro, Histórico do projeto, Procurar no programa) e achou mais
+três defeitos, consertados com teste e implantados em `1750d5881`:
+- o Pro recém-convertido abria com 42 problemas nos arquivos de apoio da plataforma (`10b267b0b`);
+- "Ver mudanças" não contava um arquivo novo vazio (`51bef14ec`);
+- "Mostrar o bloco" abria todas as funções recolhidas acima do alvo e mudava o projeto salvo; no
+  Reino Zero Ultra a aba do Chrome conectado travou por cerca de três minutos (`1750d5881`).
+
 ## Pendências
 
 | Pendência | Por que ficou | O que destrava |
@@ -119,6 +128,7 @@ de conserto barato foram consertados, cada um com teste vermelho antes:
 | A textura de biblioteca e a carga no Three do cenário completo do Molda; a memória da prova 2D em ciclos | não feitos no navegador | um lote de integração |
 | Relatório consolidado de p50 e p95 por máquina e fixture; custos medidos dos dez runtimes | os números estão espalhados pelos documentos | um lote de medição |
 | G: Raylib e os custos do Python medidos à parte; H: três falhas sem prova no navegador | não feitos | um lote de homologação |
+| Dois testes intermitentes na homologação: `css-learning.spec.ts` (shard 1 do Chromium) e um caso do `ProjectList.creationScope` (a opção "Com código" da janela de projeto novo na abertura) | passam localmente e em outras rodadas; a causa não foi investigada | uma investigação de cada um |
 | Aparelhos físicos | decisão da dona: só emulação no CI | nada: decisão dela |
 | Produção | decisão da dona: só staging | a dona pedir a release |
 

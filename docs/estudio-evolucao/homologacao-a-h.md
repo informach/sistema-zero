@@ -34,8 +34,13 @@ atualizado no fim do lote 8, depois da homologação integral em `d2f238b62` e d
   inclusive as cinco aulas protegidas (66 de 66 objetivos, capturas abaixo), o Firefox, o WebKit, o
   Windows e o Python. O job `contracts` do Linux reprovou num teste do Estúdio que passava por sorte
   de tempo ("o resultado acompanha o programa", que esperava só um `setTimeout(0)` pelo evento do
-  Blockly), consertado em `b182d1313`. Os consertos do full review final (de `efd8a4d12` a
-  `b182d1313`) têm as provas de cada commit e entram na próxima homologação.
+  Blockly), consertado em `b182d1313`. Homologação seguinte, **44954172658 em `7b00717b6`**
+  (todos os consertos do full review): 10 de 12 verdes; reprovaram o `css-learning.spec.ts` no
+  shard 1 do Chromium (o intermitente que já tinha reprovado em `1dd1f51c6` e passou em
+  `d2f238b62`) e, no `contracts` do Linux, um caso do `ProjectList.creationScope` (a janela de
+  projeto novo sem a opção "Com código" na abertura; passa 3 de 3 localmente e não tinha falhado
+  antes). Os dois ficam como intermitentes observados, pendentes de investigação. O CI do
+  `7b00717b6` passou no lint, nos testes do Estúdio e no typecheck de todos os pacotes.
 - **CI do monorepo (`.github/workflows/ci.yml`, a cada push na staging).** Desde `61ef65f2d`
   nenhuma rodada terminou inteira: as seguintes foram canceladas por pushes novos ou ainda estavam
   rodando. O job `ci` reprova no lint (`biome ci`) por arquivos de outras frentes
