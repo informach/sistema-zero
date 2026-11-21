@@ -342,3 +342,18 @@ cancelamento por mudança do contexto geométrico, sem restaurar revisão extern
 O SVG regional foi exercitado apenas em leitura; não fecha a etapa macro.
 - [ ] Prosseguir ao perfil de render estabilizado e aos adaptadores/IO, conforme
   os itens anteriores. O contrato público e as etapas macro continuam abertos.
+
+Lote verificado: confirmação de prévias e coleta do espalhamento. Extrair a
+amostragem por limites assinados, com admissão antes de expandir segmentos e teto
+acumulado atômico; conservar círculo, ordem e revisitas legados. Compartilhar o
+SVG da prévia da biblioteca com origem lógica, sem novas classes. Confirmar
+biblioteca/espalhamento pela sessão condicional: adoção por assinante durante a
+escrita não pode criar histórico alheio ou anunciar a inserção como própria.
+Reproduzir com mapas/conjuntos e testar mouse/toque, zoom, cancelar e reabrir.
+O formato 8 permanece interno; a prova de SVG regional é somente de leitura.
+Recibos em `qa/confirmacao-de-previas-2026-11-21/`: suíte 2.570, 24 focados e
+96 ensaios de navegador aprovados. Os hooks anteriores reproduzem 12 falhas de
+adoção durante a confirmação, com 12 controles positivos. A revisão incluiu a
+auditoria do novo coletor e repetição da suíte sem aumentar o timeout do percurso
+que o havia atingido sob carga concorrente. Seguir ao perfil de render/culling;
+as etapas macro, IO e a promoção pública continuam abertas.

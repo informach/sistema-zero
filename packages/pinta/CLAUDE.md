@@ -114,6 +114,15 @@ válido, o gesto é cancelado; mudar zoom, anel, snap, ferramenta, camada ou sto
 também cancela somente a própria revisão. Não simular edição 8 por casts.
 Provas em `qa/espaco-de-objetos-2026-11-21/`, no diretório da missão.
 
+`ObjectScatterStroke` coleta posições do mundo com limites assinados e teto de
+65.536 destinos distintos; segmentos excessivos são recusados antes da linha.
+Uma recusa é terminal e não admite parte do segmento. A prévia da biblioteca
+usa `MapLibraryPreview`, conservando estilos e compensando a origem no SVG.
+Biblioteca/espalhamento confirmam pela sessão condicional, sem registrar histórico
+se um assinante adotar outra revisão durante a escrita. As geometrias dos hooks
+são conferidas também nos eventos, antes da limpeza dos efeitos. Preparação interna;
+o store público continua denso. Provas em `qa/confirmacao-de-previas-2026-11-21/`.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

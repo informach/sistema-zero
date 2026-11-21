@@ -17,6 +17,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'tiles/objectScatterStroke.ts':
+    'percorre posições distintas de amostragem, não valores de peças; limites vêm do leitor comum, sem acessar os buffers autorais ou decodificar bits',
   'tiles/regionMap.ts':
     'valida células densas inteiras antes de converter e soma chunks por camada; delega conversão e edição às operações comuns preservando flags',
   'tiles/mapCells.ts':

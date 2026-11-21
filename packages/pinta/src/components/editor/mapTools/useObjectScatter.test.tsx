@@ -10,8 +10,10 @@ import {
 } from '../../../core/project'
 import { PINTA_RESOURCE_LIMITS } from '../../../core/projectConfig'
 import { createEditorStore } from '../../../state/editorStore'
+import { createMapSetEditorStore } from '../../../state/mapSetEditorStore'
 import { addMapObject, createMapObject } from '../../../tiles/mapObjects'
 import { DEFAULT_OBJECT_SCATTER } from '../../../tiles/objectScatter'
+import { createMapSet } from '../../../tiles/sets'
 import { addObjectLayer } from '../../../tiles/tilemapOps'
 import { useLibraryPlacement } from './useLibraryPlacement'
 import { useObjectScatter } from './useObjectScatter'
@@ -43,6 +45,107 @@ function geometry(container: HTMLElement): void {
     })
 }
 const at = { button: 0, isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 }
+
+for (const operation of ['library', 'scatter'] as const)
+  for (const set of [false, true])
+    for (const adoption of ['host', 'subscriber'] as const)
+      it(`${operation} não confirma nem guarda histórico alheio durante adoção ${adoption}, conjunto=${set}`, () => {
+        const map = scene(),
+          source = createPixelSpriteAsset({ name: 'arvore', frameSize: 16 }),
+          initial = set
+            ? createMapSet(map, { col: 0, row: 0, cols: 8, rows: 6 }, 16, 'conjunto')
+            : map
+        let armed = true,
+          selected = 0
+        const outer = createEditorStore({
+          asset: initial,
+          persist: async () => {},
+          acceptEdit: () => {
+            if (armed && adoption === 'host') {
+              armed = false
+              outer.getState().replace({ ...initial, name: 'revisao-externa' })
+            }
+            return true
+          },
+        })
+        outer.subscribe((state) => {
+          if (armed && adoption === 'subscriber' && state.asset !== initial) {
+            armed = false
+            outer.getState().replace({ ...state.asset, name: 'revisao-externa' })
+          }
+        })
+        const facade = set ? createMapSetEditorStore(outer) : null,
+          editor = facade?.store ?? outer
+        const unsub = facade
+          ? outer.subscribe(() => facade.store.setState(facade.read(), true))
+          : () => {}
+        const loaded = editor.getState().asset
+        if (loaded.kind !== 'tilemap') throw Error('Mapa esperado')
+        const current = loaded
+        function Host() {
+          const paperRef = useRef<HTMLDivElement>(null),
+            stageRef = useRef<HTMLDivElement>(null),
+            common = {
+              editor,
+              map: current,
+              layerId: current.layers.at(-1)!.id,
+              tileSize: 16,
+              cellPx: 32,
+              pad: 0,
+              paperRef,
+              stageRef,
+              showToast: () => {},
+            },
+            library = useLibraryPlacement({
+              ...common,
+              assets: [source],
+              snap: true,
+              position: () => ({ x: 40, y: 40 }),
+              onSelect: () => {
+                selected++
+              },
+            }),
+            scatter = useObjectScatter({
+              ...common,
+              source: current.layers.find(isObjectLayer)!.objects[0]!,
+              active: true,
+              settings,
+            })
+          return (
+            <div ref={stageRef}>
+              <div ref={paperRef}>
+                <button type="button" onPointerDown={(e) => library.down(source, e)}>
+                  Árvore
+                </button>
+                <canvas role="img" aria-label="Pintar" onPointerDown={scatter.down} />
+              </div>
+              <output>{operation === 'library' ? library.message : scatter.message}</output>
+            </div>
+          )
+        }
+        const view = render(<Host />)
+        geometry(view.container)
+        if (operation === 'library') {
+          fireEvent.pointerDown(screen.getByRole('button', { name: 'Árvore' }), {
+            ...at,
+            clientX: 300,
+          })
+          fireEvent.pointerMove(document, at)
+        } else fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), at)
+        fireEvent.pointerUp(document, at)
+        expect(outer.getState().asset.name).toBe('revisao-externa')
+        expect(outer.getState().canUndo).toBe(false)
+        expect(editor.getState().canUndo).toBe(false)
+        expect(selected).toBe(0)
+        expect(screen.getByRole('status').textContent).not.toContain(
+          COPY.scene.libraryPlaced(source.name),
+        )
+        expect(screen.getByRole('status').textContent).not.toContain(
+          COPY.scene.scatterPlacedCount(1),
+        )
+        view.unmount()
+        unsub()
+      })
 
 it('recusa de versões privadas avisa o motivo e não grava objetos ou histórico parciais', () => {
   const base = scene(),

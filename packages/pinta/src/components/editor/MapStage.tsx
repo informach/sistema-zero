@@ -9,7 +9,7 @@ import { isMapObjectTool } from '../../state/sessionStore'
 import { normalizeCellRect } from '../../tiles/cellGeometry'
 import { mapCellBounds } from '../../tiles/mapCells'
 import { Button } from '../ui/Button'
-import { MapObjectArtwork } from './MapObjectArtwork'
+import { MapLibraryPreview } from './MapLibraryPreview'
 import { MapObjectsOverlay } from './MapObjectsOverlay'
 import { keyboardCellBounds, keyboardRegionBounds } from './mapTools/keyboardPainting'
 import { mapPointToPaper } from './mapTools/mapViewport'
@@ -149,33 +149,13 @@ export function MapStage({
             previewIds={c.objectScatter.preview?.addedIds}
           />
           {c.libraryPlacement.preview ? (
-            <svg
-              data-pin-library-preview
-              aria-label={COPY.scene.libraryPreview}
-              role="img"
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              viewBox={`0 0 ${(tilemap.cols + 2 * c.pad) * c.tileSize} ${(tilemap.rows + 2 * c.pad) * c.tileSize}`}
-            >
-              <title>{COPY.scene.libraryPreview}</title>
-              <g
-                transform={`translate(${c.libraryPlacement.preview.offsetX + c.pad * c.tileSize} ${c.libraryPlacement.preview.offsetY + c.pad * c.tileSize})`}
-                opacity={0.65}
-              >
-                <MapObjectArtwork
-                  object={c.libraryPlacement.preview.object}
-                  source={c.libraryPlacement.preview.source}
-                />
-                <rect
-                  x={c.libraryPlacement.preview.object.x}
-                  y={c.libraryPlacement.preview.object.y}
-                  width={c.libraryPlacement.preview.object.width}
-                  height={c.libraryPlacement.preview.object.height}
-                  fill="none"
-                  stroke="var(--color-pin-accent)"
-                  strokeWidth={(2 * c.tileSize) / c.cellPx}
-                />
-              </g>
-            </svg>
+            <MapLibraryPreview
+              map={tilemap}
+              preview={c.libraryPlacement.preview}
+              tileSize={c.tileSize}
+              pad={c.pad}
+              cellPx={c.cellPx}
+            />
           ) : null}
         </div>
       </div>

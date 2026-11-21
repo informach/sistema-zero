@@ -6,7 +6,8 @@ import { build, type Plugin, preview } from 'vite'
 const root = resolve(import.meta.dirname, '..'),
   port = Number(process.env.PINTA_BRUSH_PORT ?? 5533)
 const objectLab = process.env.PINTA_GESTURE_LAB === 'objects',
-  entry = objectLab ? 'objectGestures' : 'brushGestures'
+  previewLab = process.env.PINTA_GESTURE_LAB === 'previews',
+  entry = objectLab ? 'objectGestures' : previewLab ? 'previewGestures' : 'brushGestures'
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('Porta inválida')
 const lab = resolve(root, `.cache/brush-host-${port}`),
   configFile = resolve(root, 'playground/vite.config.ts'),
@@ -22,7 +23,12 @@ if (baseline) {
   if (!/^[a-f0-9]{40}$/.test(baseline)) throw Error('Baseline deve ser SHA completo')
   const paths = objectLab
     ? ['MapObjectsOverlay.tsx', 'MapLayerPanel.tsx'].map((file) => `components/editor/${file}`)
-    : ['components/editor/mapTools/tileGestures.ts']
+    : previewLab
+      ? [
+          'components/editor/mapTools/useLibraryPlacement.ts',
+          'components/editor/mapTools/useObjectScatter.ts',
+        ]
+      : ['components/editor/mapTools/tileGestures.ts']
   const sources = new Map(
     paths.map((path) => [
       path,
