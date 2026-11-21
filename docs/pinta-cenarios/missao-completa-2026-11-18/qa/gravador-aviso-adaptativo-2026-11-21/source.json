@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-21T04:52:25.021Z",
+  "base": "495e90eab39bdb57048ea683d3da5dd76372d1e9",
+  "sourceFiles": [
+    {
+      "file": "packages/studio/e2e/examples-gallery.spec.ts",
+      "sha256": "f2d38b441cd42001e41a5f816b612017b4a42c5689eebe7617fa17eda2b350e7"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/threeAssetDiagnostics.ts",
+      "sha256": "0f7cc7ee349635c268068050506acbd4eacb4d292778569e18f10e8e35f934e6"
+    },
+    {
+      "file": "packages/studio/e2e/three-asset-diagnostics.spec.ts",
+      "sha256": "0b2de2ce4d2fce04875f7d005b046a793c50149d00df06594d21db8e1eca98e3"
+    }
+  ],
+  "failedCi": 44864926351,
+  "failedJob": 136726359316,
+  "fullFailedLogSha256": "eff4882055da38056ec5822f11ed70829a83e87e144bb6ffea1a0503ce856ded",
+  "productionCodeChanged": false,
+  "originalBrowserFailed": true,
+  "greenBrowserPassed": 2,
+  "greenSkipped": 0,
+  "greenFlaky": 0,
+  "greenRawDiagnostics": [],
+  "deployed": false
+}

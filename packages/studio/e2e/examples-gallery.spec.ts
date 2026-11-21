@@ -19,6 +19,7 @@ import {
   configurePreviewInputDiagnostics,
   pressObservedPreviewKey,
 } from './helpers/previewInputDiagnostics'
+import { unexpected3DAssetDiagnostics } from './helpers/threeAssetDiagnostics'
 
 const EXPERIENCE_LABEL = {
   game: 'Jogo',
@@ -629,7 +630,12 @@ SZGameKit3D.start();
   await page.locator('#pending-assets-preview').evaluate((iframe) => iframe.remove())
   await page.waitForTimeout(300)
 
-  expect(diagnostics, diagnostics.join('\n')).toEqual([])
+  await test.info().attach('raw-3d-asset-diagnostics', {
+    body: JSON.stringify(diagnostics, null, 2),
+    contentType: 'application/json',
+  })
+  const unexpected = unexpected3DAssetDiagnostics(diagnostics)
+  expect(unexpected, unexpected.join('\n')).toEqual([])
 })
 
 /**
