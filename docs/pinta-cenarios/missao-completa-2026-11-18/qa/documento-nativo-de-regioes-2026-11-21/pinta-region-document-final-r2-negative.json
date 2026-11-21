@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-21T07:32:07.734Z",
+  "expectedFailures": 1,
+  "exit": 1,
+  "restoredSha256": "eaa9cd94d22ceb63ea0db646e984ec5dc044357ee56b97527a50bb9cc4845cdb",
+  "scope": "temporary local metadata guard bypass; restored before all gates"
+}

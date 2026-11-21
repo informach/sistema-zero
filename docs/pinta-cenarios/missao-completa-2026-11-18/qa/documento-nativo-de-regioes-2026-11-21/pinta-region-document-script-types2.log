@@ -1,0 +1,5 @@
+scripts/qa/region-document.ts(47,7): error TS2322: Type '{ opacity: number; front: false; offsetX: number; kind: "objects"; objects: TilemapObject[]; cells?: undefined; tilesetId?: undefined; id: string; name: string; visible: boolean; parentId?: string | undefined; ... 4 more ...; properties?: Record<...> | undefined; } | { ...; } | { ...; }' is not assignable to type 'TilemapLayer<PintaRegionCells>'.
+  Type '{ opacity: number; front: false; offsetX: number; kind: "objects"; objects: TilemapObject[]; cells?: never; tilesetId?: never; id: string; name: string; visible: boolean; ... 5 more ...; properties?: Record<string, TilemapObjectPropertyValue>; }' is not assignable to type 'TilemapLayer<PintaRegionCells>'.
+    Type '{ opacity: number; front: false; offsetX: number; kind: "objects"; objects: TilemapObject[]; cells?: never; tilesetId?: never; id: string; name: string; visible: boolean; ... 5 more ...; properties?: Record<string, TilemapObjectPropertyValue>; }' is not assignable to type 'TilemapTileLayer<PintaRegionCells>'.
+      Types of property 'kind' are incompatible.
+        Type '"objects"' is not assignable to type '"tiles"'.

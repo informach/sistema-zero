@@ -85,6 +85,18 @@ tipos completos do Estúdio, perfil e lint. Ver `qa/regioes-base85-2026-11-21/`.
 O próximo lote precisa implementar o leitor nativo e os metadados assinados,
 reutilizando a validação existente sem alterar os formatos anteriores.
 
+O codec interno `core/regionDocument.ts` implementou essa leitura e a escrita
+JSON, com geometria assinada/fracionária, padrões explícitos, recursos embutidos
+e recusa integral de metadados que seriam alterados. Reutiliza os validadores
+existentes com política por formato e o serializador de artes. Passaram 2.319
+casos completos, os três controles nativos, 14 focados, tipos e doze fluxos locais
+de navegador. O ensaio reproduzível de cem documentos conservou dados e
+snapshots; oito fixtures antigas mantiveram valores e bytes. Ver
+`qa/documento-nativo-de-regioes-2026-11-21/`. As falhas intermediárias de giro,
+JSON com recursos e tipos do script estão registradas com suas correções.
+Isso não conclui o item 2: união pública, consumidores e persistência 3 seguem
+pendentes. O formato ativo continua em 7; não há oficina expansível publicada.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles

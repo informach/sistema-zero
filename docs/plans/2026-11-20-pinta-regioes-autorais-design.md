@@ -55,7 +55,7 @@ Cena estruturada **4**, PNG de dados **5** e capacidade explícita para regiões
 impedem que um runtime antigo receba dados que não consegue executar. Jogos e
 receitas anteriores preservam seus contratos e comportamento.
 
-### Coordenadas e metadados na próxima fronteira
+### Coordenadas e metadados do leitor interno
 
 A origem lógica usa células; posições e geometrias de objetos usam pixels
 globais do mapa. Expandir à esquerda ou acima não desloca objetos, caminhos,
@@ -68,9 +68,28 @@ O leitor novo deve reutilizar a validação de metadados existente com limites
 explícitos por formato. Descritores e orçamento global são conferidos antes
 dos buffers. Uma camada, referência ou propriedade que não possa ser conservada
 deve recusar o documento inteiro: não descartar a parte e autorizar uma gravação
-parcial. Isso ainda é critério do próximo lote, não suporte já implementado.
+parcial. O codec interno em `core/regionDocument.ts` aplica essa regra sem
+ativar a união pública, o arquivo de galeria, a persistência ou o escritor.
 O formato 8 aqui continua ortogonal; isometria e hexágonos exigem seus próprios
 contratos e consumidores antes de qualquer opção aparecer na oficina.
+
+A validação reutiliza os sanitizadores de objetos, grupos, propriedades e
+recursos. Somente a política interna 8 conserva posições assinadas, medidas
+fracionárias, giros já dentro de `[0, 360)` e padrões explícitos válidos. Os
+limites geométricos derivam de 10.000 células × 48 pixels; a comparação final
+recusa qualquer normalização que alteraria o documento. Os caminhos 0–7
+continuam aplicando sua política histórica.
+
+Metadados têm orçamento próprio: 500.000 nós, profundidade 64, 8 MiB de buffers
+de arte e 8 Mi de unidades UTF-16 de texto/chaves. Esses limites são cumulativos
+e independentes dos 4 MiB de índices das regiões. A comparação não executa
+getters nem aceita perda de campos desconhecidos; buffers de arte e seus arrays
+JSON equivalem pelos valores. Propriedades opcionais `undefined` equivalem à
+ausência no JSON. A validação de células e seu orçamento global continuam no
+contrato compartilhado do Core, antes da decodificação dos chunks.
+O encoder reutiliza `pintaAssetToWire` para as versões de arte, permitindo
+`JSON.stringify` comum sem um replacer externo. O contêiner de backup e seus
+tetos totais ainda precisam ser integrados ao novo documento antes da ativação.
 
 ## Fluxo e consumidores
 

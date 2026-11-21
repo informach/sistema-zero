@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-21T07:41:08.226Z",
+  "seed": 20261121,
+  "cases": 100,
+  "resourceCases": 10,
+  "maximumExtentCases": 34,
+  "ordinaryJsonRoundTrips": 100,
+  "historicalReaderRefusals": 100,
+  "unchangedSnapshots": 200,
+  "scope": "Synthetic internal codec/migration checks on this machine; no editor UI, staging, engine or performance qualification"
+}

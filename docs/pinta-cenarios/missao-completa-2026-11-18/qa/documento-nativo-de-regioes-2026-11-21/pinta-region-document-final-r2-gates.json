@@ -1,0 +1,51 @@
+[
+  {
+    "name": "focused",
+    "started": "2026-11-21T07:32:07.737Z",
+    "finished": "2026-11-21T07:32:08.094Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-focused.log"
+  },
+  {
+    "name": "pinta",
+    "started": "2026-11-21T07:32:08.095Z",
+    "finished": "2026-11-21T07:35:12.632Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-pinta.log"
+  },
+  {
+    "name": "pinta-types",
+    "started": "2026-11-21T07:35:12.633Z",
+    "finished": "2026-11-21T07:35:21.851Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-pinta-types.log"
+  },
+  {
+    "name": "studio-types",
+    "started": "2026-11-21T07:35:21.852Z",
+    "finished": "2026-11-21T07:38:17.638Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-studio-types.log"
+  },
+  {
+    "name": "native",
+    "started": "2026-11-21T07:38:17.640Z",
+    "finished": "2026-11-21T07:38:19.789Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-native.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T07:38:19.790Z",
+    "finished": "2026-11-21T07:38:19.972Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-biome.log"
+  },
+  {
+    "name": "integration",
+    "started": "2026-11-21T07:38:19.972Z",
+    "finished": "2026-11-21T07:40:24.982Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-document-final-r2-integration.log"
+  }
+]
