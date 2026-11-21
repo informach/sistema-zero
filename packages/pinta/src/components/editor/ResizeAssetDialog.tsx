@@ -17,6 +17,7 @@ import { CustomSizeFields } from '../gallery/CustomSizeFields'
 import { type CustomSizeValues, EMPTY_CUSTOM_VALUES, parseCustomInt } from '../gallery/customSize'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { useToast } from '../ui/Toast'
 
 export function ResizeAssetDialog({
   open,
@@ -29,8 +30,9 @@ export function ResizeAssetDialog({
   onClose: () => void
   asset: PintaAsset
   target: ResizeTarget
-  onResize: (next: PintaAsset) => void
+  onResize: (next: PintaAsset) => boolean
 }): JSX.Element {
+  const { showToast } = useToast()
   const [values, setValues] = useState<CustomSizeValues>(() => ({
     ...EMPTY_CUSTOM_VALUES,
     width: String(target.width),
@@ -53,8 +55,11 @@ export function ResizeAssetDialog({
   function aplicar(): void {
     if (!mudou || largura === null || altura === null) return
     const proximo = resizeAsset(asset, largura, altura, 'center', { tileSize })
-    if (!proximo || proximo === asset) return
-    onResize(proximo)
+    if (proximo === asset) return
+    if (!proximo || !onResize(proximo)) {
+      showToast(COPY.editor.resize.refused)
+      return
+    }
     onClose()
   }
 

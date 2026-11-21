@@ -41,7 +41,7 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Metadados passam a participar da estimativa de edição/captura, preservando a
    métrica do leitor legado e seu backup. Suíte 2.600, 62 testes focados e dez
    ensaios de navegador; tipos completos dos dois pacotes aprovados.
-3. Completar operações de árvore de camadas, remapeamento de peças e dependentes
+3. [x] Completar operações de árvore de camadas, remapeamento de peças e dependentes
    pelo contrato comum antes de ampliar store, protocolo físico e adaptadores.
    Camadas verificadas em `qa/camadas-por-regioes-2026-11-21/`: suíte 2.608,
    45 testes focados, 39 ensaios e tipos completos dos dois pacotes. Camada
@@ -61,6 +61,20 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    192 comparações JSON densas idênticas no Chromium. Suíte 2.629 e 13 ensaios
    de navegador, incluindo controles anteriores do laboratório e oficina real.
    Prosseguir a crescimento/redimensionamento, curadoria, IO e adaptadores.
+   Crescimento, recorte e curadoria verificados em
+   `qa/tamanho-por-regioes-2026-11-21/`: expansão compartilha buffers e conserva
+   coordenadas globais; recorte preserva objetos e restaura peças por undo/redo.
+   Inclui correção pública da confirmação do diálogo. Suíte 2.638, 54 testes
+   focados e matriz Chromium de 24 verificações (três reproduções históricas
+   esperadas), com 192 comparações JSON densas exatas. Fecha este conjunto de
+   operações internas, não a etapa macro 1 ou a ativação da oficina regional.
+   Consulta oficial em 21/11 para o adaptador Phaser 3.90.0: o ramo `infinite`
+   de `ParseTileLayers.js` ainda preenche uma matriz `width × height` antes de
+   aplicar chunks. O pacote atual chama `make.tilemap` mesmo usando o compositor
+   próprio para a imagem. Antes de admitir mundos regionais grandes, retirar
+   essa materialização do caminho novo ou carregá-la por janelas limitadas;
+   conservar os pacotes antigos e provar o orçamento no motor real. Fonte:
+   https://github.com/phaserjs/phaser/blob/v3.90.0/src/tilemaps/parsers/tiled/ParseTileLayers.js
    Na promoção, exercitar também a edição de uma folha viva por um leitor que
    não entende um mapa consumidor futuro, inclusive com inventário parcial de
    nuvem. Verificar os guardas existentes e a recuperação antes de escolher a
@@ -73,6 +87,11 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    metadados ao alterar um cabeçalho. Depois remapear índices/flags nos chunks
    armazenados e nos objetos, compartilhando regiões intactas e recusando lotes
    inválidos integralmente. Manter a política densa e provar ambas no navegador.
+4. [ ] Completar admissão global de metadados, modelos do store, protocolo físico
+   3, backup/transporte 8 e adaptadores de cena 4/PNG 5 antes da promoção pública.
+   Preservar recuperação, conflitos, clientes anteriores e programação do Estúdio.
+   Integrar primeiro a staging atualizada, revisar a fronteira/runtime afetados
+   e repetir os controles correspondentes. Novos leitores precedem a escrita.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

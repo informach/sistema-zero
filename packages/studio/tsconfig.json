@@ -54,6 +54,8 @@
     "playwright.pinta-layers-regions.config.ts",
     "playwright.pinta-remap.config.ts",
     "playwright.pinta-queries.config.ts",
+    "playwright.pinta-resize.config.ts",
+    "playwright.pinta-resize-workshop.config.ts",
     "playwright.pinta-authority.config.ts",
     "playwright.pinta-chunks.config.ts",
     "playwright.pinta-render.config.ts",

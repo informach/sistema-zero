@@ -12,6 +12,7 @@ import {
   isObjectLayer,
   isTileLayer,
   type TilemapAsset,
+  type TilemapCells,
 } from '../../../core/project'
 import { isToolAllowed } from '../../../core/toolCuration'
 import { cellFlags } from '../../../tiles/cell'
@@ -103,7 +104,7 @@ const FEATURE_LEVEL: Record<keyof MapFeatures, MapLevel> = {
 
 /** O que o mapa (e as peças dele) já usa: isso aparece em qualquer nível. */
 export function mapFeaturesInUse(
-  map: TilemapAsset,
+  map: TilemapAsset<TilemapCells>,
   tilesets: readonly AnyTilesetAsset[],
 ): Partial<Record<keyof MapFeatures, true>> {
   const used: Partial<Record<keyof MapFeatures, true>> = {}
@@ -131,7 +132,14 @@ export function mapFeaturesInUse(
     if (isTileLayer(layer)) {
       if (layer.collision) used.layerCollision = true
       if (layer.tilesetId && layer.tilesetId !== map.tilesetId) used.layerOrder = true
-      if (!used.transform && layer.cells.some((cell) => cell >= 0 && cellFlags(cell) !== 0))
+      if (
+        !used.transform &&
+        (layer.cells instanceof Int16Array
+          ? layer.cells.some((cell) => cell >= 0 && cellFlags(cell) !== 0)
+          : layer.cells.chunks.some((chunk) =>
+              chunk.cells.some((cell) => cell >= 0 && cellFlags(cell) !== 0),
+            ))
+      )
         used.transform = true
     }
     if (isObjectLayer(layer))

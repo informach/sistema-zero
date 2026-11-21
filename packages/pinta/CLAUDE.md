@@ -189,7 +189,16 @@ aceitam a origem lógica, com recusa antes do payload acima de 65.536 casas;
 esse teto ao ampliar o mundo autoral. A grade contém índices/folhas e não é cena
 estruturada nem substituto do documento. O ramo denso conserva os resultados
 anteriores. Provas em `qa/consultas-por-regioes-2026-11-21/`; promoção pública,
-crescimento/redimensionamento, curadoria, IO e adaptadores continuam no plano.
+IO e adaptadores continuam no plano.
+
+Crescimento/redimensionamento regional usa limites globais: expandir não move
+portas, caminhos ou células. Recortar conserva objetos nas coordenadas globais,
+inclusive fora da área visível, e só copia chunks com peças retiradas. Objetos
+fora da tela continuam no documento; peças recortadas voltam pelo desfazer.
+O ramo denso conserva âncora/deslocamento anteriores. A curadoria lê os chunks.
+O diálogo de tamanho só fecha/anuncia sucesso quando a edição é aceita, e o topo
+confere a própria revisão antes de gravar. Provas e distinção entre React agrupado,
+Chromium e oficina real em `qa/tamanho-por-regioes-2026-11-21/`. Não promove formato 8.
 
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 

@@ -1,4 +1,5 @@
 import {
+  PINTA_REGION_CELL_COUNT,
   PINTA_REGION_LIMITS,
   PINTA_REGION_SIDE,
   type PintaRegionBounds,
@@ -147,6 +148,94 @@ export function expandRegionMap(
       cols: bounds.cols,
       rows: bounds.rows,
       origin: { col: bounds.col, row: bounds.row },
+    },
+  }
+}
+
+/** Canvas bounds in world space: clip tile cells, keep objects and their relationships intact. */
+export function resizeRegionMap(
+  map: RegionTilemapAsset,
+  rawBounds: PintaRegionBounds,
+): RegionMapResult {
+  const bounds = parsePintaRegionBounds(rawBounds),
+    old = regionMapBounds(map)
+  if (!bounds) return { ok: false, reason: 'invalid-bounds' }
+  if (
+    bounds.col <= old.col &&
+    bounds.row <= old.row &&
+    bounds.col + bounds.cols >= old.col + old.cols &&
+    bounds.row + bounds.rows >= old.row + old.rows
+  )
+    return expandRegionMap(map, bounds)
+  const tileLayers = map.layers.filter(isTileLayer)
+  if (
+    map.layers.length > PINTA_REGION_LIMITS.maxLayers ||
+    tileLayers.reduce((sum, layer) => sum + layer.cells.chunks.length, 0) >
+      PINTA_REGION_LIMITS.maxChunks
+  )
+    return { ok: false, reason: 'cell-budget' }
+  // Document maintenance is bounded by allocated storage (4 MiB), not logical extent.
+  for (const layer of tileLayers)
+    for (const chunk of layer.cells.chunks)
+      if (!(chunk.cells instanceof Int16Array) || chunk.cells.length !== PINTA_REGION_CELL_COUNT)
+        return { ok: false, reason: 'invalid-map' }
+  let changed = false
+  const layers = map.layers.map((layer) => {
+    if (!isTileLayer(layer)) return layer
+    let touched = false
+    const chunks: PintaRegionCells['chunks'] = []
+    for (const chunk of layer.cells.chunks) {
+      const col = chunk.col * PINTA_REGION_SIDE,
+        row = chunk.row * PINTA_REGION_SIDE
+      if (
+        col + PINTA_REGION_SIDE <= bounds.col ||
+        row + PINTA_REGION_SIDE <= bounds.row ||
+        col >= bounds.col + bounds.cols ||
+        row >= bounds.row + bounds.rows
+      ) {
+        touched = true
+        continue
+      }
+      if (
+        col >= bounds.col &&
+        row >= bounds.row &&
+        col + PINTA_REGION_SIDE <= bounds.col + bounds.cols &&
+        row + PINTA_REGION_SIDE <= bounds.row + bounds.rows
+      ) {
+        chunks.push(chunk)
+        continue
+      }
+      let cells = chunk.cells,
+        occupied = false
+      for (let index = 0; index < PINTA_REGION_CELL_COUNT; index++) {
+        const x = col + (index % PINTA_REGION_SIDE),
+          y = row + Math.floor(index / PINTA_REGION_SIDE)
+        const value =
+          x < bounds.col ||
+          y < bounds.row ||
+          x >= bounds.col + bounds.cols ||
+          y >= bounds.row + bounds.rows
+            ? -1
+            : chunk.cells[index]!
+        if (value !== chunk.cells[index] && cells === chunk.cells) cells = chunk.cells.slice()
+        if (cells !== chunk.cells) cells[index] = value
+        if (value >= 0) occupied = true
+      }
+      if (cells !== chunk.cells || !occupied) touched = true
+      if (occupied) chunks.push(cells === chunk.cells ? chunk : { ...chunk, cells })
+    }
+    if (!touched) return layer
+    changed = true
+    return { ...layer, cells: { ...layer.cells, chunks } }
+  })
+  return {
+    ok: true,
+    map: {
+      ...map,
+      cols: bounds.cols,
+      rows: bounds.rows,
+      origin: { col: bounds.col, row: bounds.row },
+      layers: changed ? layers : map.layers,
     },
   }
 }

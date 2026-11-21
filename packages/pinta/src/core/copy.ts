@@ -587,6 +587,7 @@ export const COPY = {
       apply: 'Mudar o tamanho',
       cancel: 'Agora não',
       done: 'Pronto, o tamanho mudou',
+      refused: 'Não consegui mudar o tamanho. Seus desenhos foram mantidos.',
     },
   },
   /** Painel do brief da tarefa do Pensa (galeria e editor). */

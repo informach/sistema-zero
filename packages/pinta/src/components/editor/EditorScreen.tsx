@@ -67,7 +67,13 @@ import {
 import { PanelLook } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
-import { PintaEditorProvider, useEditor, useSession, useToolCuration } from './editorContext'
+import {
+  PintaEditorProvider,
+  useEditor,
+  useEditorStores,
+  useSession,
+  useToolCuration,
+} from './editorContext'
 import { LayerPanel } from './LayerPanel'
 import { MapSetEditor } from './MapSetEditor'
 import { PaletteBar } from './PaletteBar'
@@ -361,6 +367,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
 }
 
 function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolean }): JSX.Element {
+  const { editor } = useEditorStores()
   const { adapter, gallery, lesson } = usePintaApp()
   const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
@@ -567,8 +574,10 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           target={resizeTarget}
           onResize={(next) => {
             // UM commit: o tamanho é uma edição comum e o Ctrl+Z devolve tudo.
-            editorState.commit(next)
+            const current = editor.getState()
+            if (current.asset !== asset || !current.commit(next)) return false
             showToast(COPY.editor.resize.done)
+            return true
           }}
         />
       ) : null}

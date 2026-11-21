@@ -35,7 +35,7 @@ import {
 } from './mapCells'
 import { flattenWholeRegionMap } from './mapFlatten'
 import { REGION_EDIT_LIMIT, regionCellAt } from './regionCells'
-import { editRegionMapCells, fillRegionMapCells } from './regionMap'
+import { editRegionMapCells, expandRegionMap, fillRegionMapCells } from './regionMap'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
 export type TileLayerFilter<Cells extends TilemapCells = Int16Array> = (
@@ -215,13 +215,38 @@ export function setCells(
  * copiando TODAS as camadas com o deslocamento certo. Respeita os tetos
  * `maxTilemapCols/Rows` — no teto devolve o MESMO asset. Crescer à esquerda ou
  * em cima empurra os OBJETOS uma peça junto (`tileSize`, em pixels do mapa;
- * sem ele os objetos ficam onde estão).
+ * sem ele os objetos ficam onde estão). Em regiões, amplia os limites globais
+ * e conserva posições/buffers; o teto vem do contrato regional.
  */
 export function growTilemap(
   tilemap: TilemapAsset,
   side: 'left' | 'right' | 'top' | 'bottom',
   tileSize?: number,
-): TilemapAsset {
+): TilemapAsset
+export function growTilemap(
+  tilemap: RegionTilemapAsset,
+  side: 'left' | 'right' | 'top' | 'bottom',
+  tileSize?: number,
+): RegionTilemapAsset
+export function growTilemap(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  side: 'left' | 'right' | 'top' | 'bottom',
+  tileSize?: number,
+): TilemapAsset | RegionTilemapAsset
+export function growTilemap(
+  tilemap: TilemapAsset | RegionTilemapAsset,
+  side: 'left' | 'right' | 'top' | 'bottom',
+  tileSize?: number,
+): TilemapAsset | RegionTilemapAsset {
+  if ('origin' in tilemap) {
+    const result = expandRegionMap(tilemap, {
+      col: tilemap.origin.col - (side === 'left' ? 1 : 0),
+      row: tilemap.origin.row - (side === 'top' ? 1 : 0),
+      cols: tilemap.cols + (side === 'left' || side === 'right' ? 1 : 0),
+      rows: tilemap.rows + (side === 'top' || side === 'bottom' ? 1 : 0),
+    })
+    return result.ok ? result.map : tilemap
+  }
   const horizontal = side === 'left' || side === 'right'
   if (horizontal && tilemap.cols >= PINTA_LIMITS.maxTilemapCols) return tilemap
   if (!horizontal && tilemap.rows >= PINTA_LIMITS.maxTilemapRows) return tilemap
