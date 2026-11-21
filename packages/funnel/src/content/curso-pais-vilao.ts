@@ -1,8 +1,10 @@
-// Página pública do minicurso gratuito para pais "Transformando o vilão em aliado"
-// (`/kids/vilao-em-aliado`, 18/11/2026). O texto sai dos roteiros do curso
-// (docs/aulas-interativas/pais/transformando-o-vilao-em-aliado). O presente do fim do curso é
-// surpresa: nada aqui diz o que ele é. O cadastro reaproveita o fluxo do presente: a página lê a
-// campanha `CODIGO_DA_CAMPANHA` no referrals e mostra o formulário `BolsaResgate` na variante `pais`.
+// Página pública do guia gratuito para pais "Transformando o vilão em aliado"
+// (`/kids/vilao-em-aliado`; proposta do Canvas aprovada em 21/11/2026). A página é curta e desperta
+// curiosidade: não resume aula nem conta o que o guia ensina (as respostas, as cenas da casa e a
+// história do André ficam nas aulas), e as dúvidas falam só de como fazer o guia. O presente do fim
+// é surpresa: nada aqui diz o que ele é. O cadastro reaproveita o fluxo do presente: a página lê a
+// campanha `CODIGO_DA_CAMPANHA` no referrals e mostra o formulário `BolsaResgate` na variante `guia`
+// (a `pais` com "guia" no lugar de "curso"), já no topo, ao lado do título.
 import type { EstadoPresente, ImagemPresente } from './presente'
 
 /** O curso que a campanha precisa entregar para a página abrir o cadastro. */
@@ -33,228 +35,126 @@ const ilustracao: ImagemPresente = {
 }
 
 export const CURSO_PAIS_VILAO = {
-  seoTitle: 'Transformando o vilão em aliado: minicurso gratuito para pais | Sistema Zero',
+  seoTitle: 'Transformando o vilão em aliado: guia gratuito para pais | Sistema Zero',
   description:
-    'Minicurso gratuito para pais, em 7 aulas gravadas. Veja como usar o tempo de tela que o seu filho já tem para desenvolver foco, planejamento e autonomia.',
+    'Guia gratuito para pais, em 7 aulas curtas em vídeo. A Helena, mãe e profissional de tecnologia, mostra como a tela que hoje vira briga em casa pode ser sua aliada no desenvolvimento do seu filho.',
   ogImage: `${IMAGENS}/compartilhar.jpg`,
   topo: {
     links: [
-      { href: '#para-quem', label: 'Para quem é' },
-      { href: '#aulas', label: 'As aulas' },
+      { href: '#o-que-muda', label: 'O que muda' },
       { href: '#quem-conduz', label: 'Quem conduz' },
       { href: '#duvidas', label: 'Dúvidas' },
     ],
-    cta: 'Quero o meu curso',
+    cta: 'Quero assistir de graça',
   },
-  barra: { titulo: 'Minicurso gratuito', texto: 'Sem cartão', cta: 'Quero o meu curso' },
+  barra: { titulo: 'Guia gratuito', texto: 'Sem cartão', cta: 'Quero assistir de graça' },
   hero: {
-    selo: 'Minicurso gratuito para pais',
-    titulo: { antes: 'Transforme o maior vilão da sua casa ', destaque: 'em aliado.' },
-    texto:
-      'Tirar a tela da vida do seu filho, ninguém consegue. Em 7 aulas, a Helena mostra como usar o tempo de tela que ele já tem para desenvolver foco, planejamento e autonomia.',
-    beneficios: [
-      '7 aulas gravadas, para assistir quando puder',
-      'Gratuito, sem cartão e sem assinatura',
-      'Apostila, certificado e um presente no final',
-    ],
-    cta: 'Quero o meu curso',
-    link: 'Ver o que você vai aprender',
-    requisitos: 'Para pais e responsáveis de crianças e adolescentes de 5 a 17 anos.',
-    figura: {
-      rotulo: 'Transformando o vilão em aliado',
-      imagem: ilustracao,
-      destaque: 'A mesma tela, outro uso. ',
-      legenda: 'O tempo é o mesmo. O papel da tela é que muda.',
+    selo: 'Guia gratuito para pais',
+    titulo: {
+      antes: 'A tela que hoje vira briga em casa pode ser ',
+      destaque: 'sua aliada',
+      depois: ' no desenvolvimento do seu filho.',
     },
-  },
-  porQue: {
-    etiqueta: 'O ponto de partida',
-    titulo: 'A pergunta deixa de ser como tirar a tela.',
-    paragrafos: [
-      'As crianças já nasceram no mundo digital, e até a escola usa tela. Brigar para desligar todos os dias cansa a família e muda pouco.',
-      'O curso parte de outra pergunta: o que eu posso oferecer dentro dessa tela para desenvolver o meu filho?',
-      'A proposta usa o tempo de tela que ele já tem. Se são trinta minutos por dia, a ideia é tornar esses trinta minutos produtivos.',
+    texto: {
+      antes: 'No guia ',
+      nome: 'Transformando o vilão em aliado',
+      depois:
+        ', a Helena, mãe e profissional de tecnologia, mostra como usar o tempo de tela que o seu filho já tem para ele aprender a planejar, seguir um passo a passo e lidar com o erro.',
+    },
+    beneficios: [
+      '7 aulas curtas em vídeo, para assistir quando der',
+      'Gratuito, sem cartão e sem assinatura',
+      'Apostila para consultar e certificado no final',
     ],
-    comparacao: [
-      {
-        titulo: 'A tela que só entretém',
-        itens: [
-          'Tudo chega pronto',
-          'A criança fica no automático',
-          'Briga na hora de desligar',
-          'Cada vez menos paciência para tentar de novo',
-        ],
-      },
-      {
-        titulo: 'A tela que faz pensar',
-        itens: [
-          'Raciocínio lógico',
-          'Resolução de problemas',
-          'Foco e planejamento',
-          'Aprender a lidar com o erro',
-        ],
-      },
-    ],
+    requisitos:
+      'Para pais e responsáveis de filhos de 5 a 17 anos. Quem assiste às aulas é o adulto.',
+    surpresa: 'Uma surpresa na última aula',
   },
-  paraQuem: {
-    etiqueta: 'Para quem é',
-    titulo: 'Você reconhece o seu filho em alguma destas situações?',
+  oQueMuda: {
+    titulo: 'O que muda na sua casa quando você coloca o guia em prática.',
     texto:
-      'Cada jeito de ser pode virar uma porta de entrada. No curso, você vê como usar cada uma a favor do seu filho.',
-    cartoes: [
-      {
-        titulo: 'Ele sabe tudo sobre um assunto',
-        texto: 'Dinossauros, espaço: o tema preferido vira o ponto de partida.',
-      },
-      {
-        titulo: 'Ele precisa saber o que vai acontecer',
-        texto: 'Existe um jeito de usar a tela em que a mesma regra dá sempre o mesmo resultado.',
-      },
-      {
-        titulo: 'Ele se frustra quando perde',
-        texto: 'Quando a ideia é dele, a criança fica mais disposta a errar e a tentar de novo.',
-      },
-      {
-        titulo: 'Ele gosta de organizar tudo em sequência',
-        texto: 'Seguir uma ordem para chegar a um objetivo é uma habilidade que dá para treinar.',
-      },
-      {
-        titulo: 'Ele não larga a tela',
-        texto: 'É o caso da maioria. O tempo continua o mesmo, e o uso passa a ser outro.',
-      },
-      {
-        titulo: 'Ele mostra mais do que fala',
-        texto: 'Há formas de a criança colocar as ideias e o que sente de um jeito concreto.',
-      },
-    ],
-  },
-  aulas: {
-    etiqueta: 'O que você vai ver',
-    titulo: 'Sete aulas, do problema à prática.',
-    texto:
-      'As aulas são gravadas e divididas em partes curtas. Você assiste quando puder e volta a qualquer uma delas.',
+      'A mudança vem aos poucos, conforme a família leva para o dia a dia o que viu nas aulas.',
+    figura: { rotulo: 'Transformando o vilão em aliado', imagem: ilustracao },
     itens: [
       {
-        titulo: 'O vilão que não dá para tirar',
-        texto: 'Por que proibir resolve pouco e qual pergunta muda a conversa em casa.',
+        icone: 'conversa',
+        titulo: 'Desligar deixa de ser o único assunto',
+        texto:
+          'Com o tempo, o que ele faz na tela vira conversa em casa, e essa conversa abre espaço para outras.',
       },
       {
-        titulo: 'Assistir, jogar ou criar',
-        texto: 'Os três usos da tela, o que é função executiva e qual uso desenvolve mais.',
+        icone: 'recomecar',
+        titulo: 'O erro pesa menos',
+        texto: 'Quando algo dá errado, ele vai aprendendo a mudar o plano e tentar de novo.',
       },
       {
-        titulo: 'De onde veio essa ideia e por onde começar',
-        texto: 'A história da nossa família e seis portas de entrada para o seu filho.',
-      },
-      {
-        titulo: 'Programar deixou de ser um bicho de sete cabeças',
-        texto: 'Com blocos coloridos, programar é seguir um passo a passo até um objetivo.',
-      },
-      {
-        titulo: 'Será que meu filho consegue?',
-        texto: 'Foco, dificuldade, o apoio que diminui aos poucos e o que isso leva para a escola.',
-      },
-      {
-        titulo: 'Como nasce um jogo',
-        texto: 'O ciclo de criação, uma regra sendo construída e a conversa que isso abre em casa.',
-      },
-      {
-        titulo: 'Um presente para vocês experimentarem',
-        texto: 'O ambiente seguro em que a criança cria e uma surpresa para a família.',
+        icone: 'estrela',
+        titulo: 'Ele percebe que é capaz',
+        texto:
+          'Ele começa a ver que as escolhas dele fazem diferença e sente orgulho do que construiu.',
       },
     ],
   },
   quemConduz: {
     etiqueta: 'Quem conduz',
-    titulo: 'A Helena, mãe e profissional de tecnologia.',
-    paragrafos: [
-      'Eu sou da área de tecnologia, assim como o meu marido, o Júlio. O nosso filho mais velho, o André, sempre gostou muito de jogar.',
-      'A tela era, muitas vezes, o jeito de ele ficar calmo, e desligar era motivo de briga. Em vez de continuar brigando, decidimos unir as duas coisas: o gosto dele pelas telas e o nosso trabalho.',
-      'O André deixou de só consumir e passou a criar os próprios jogos. Tempos depois, ensinou uma turma de faculdade a fazer o mesmo. O que vimos mudar dentro de casa virou este curso.',
-    ],
+    titulo: 'Eu sou a Helena, e essa briga também acontecia aqui em casa.',
+    texto:
+      'Eu e o meu marido, o Júlio, somos da área de tecnologia, e mesmo assim era difícil tirar a tela do nosso filho mais velho, o André, na hora que eu queria. Até que a gente resolveu fazer outra coisa com essa tela. O que aconteceu depois com ele, eu conto no guia.',
     foto: {
       src: '/img/comunidade-dos-criadores/helena-julio-perfil.webp',
       width: 360,
       height: 360,
       alt: 'Helena e Júlio',
     } satisfies ImagemPresente,
-    citacao: {
-      texto: 'Eu já jogava um monte. Agora eu faço os meus jogos, e esse foi o primeiro.',
-      autor: 'André',
-    },
   },
   depoimentos: {
     etiqueta: 'Quem já viveu isso',
     titulo: 'O que os pais contam',
   },
-  comoFunciona: {
-    etiqueta: 'Como funciona',
-    titulo: 'Você se cadastra hoje e assiste no seu ritmo.',
-    passos: [
-      {
-        titulo: 'Faça o cadastro',
-        texto: 'Preencha os seus dados no fim desta página. É gratuito e não pede cartão.',
-      },
-      {
-        titulo: 'Entre na área dos pais',
-        texto: 'Você recebe um e-mail para criar a senha. O curso fica em Cursos para pais.',
-      },
-      {
-        titulo: 'Assista quando puder',
-        texto: 'Uma apostila acompanha as aulas, para você consultar sempre que quiser.',
-      },
-      {
-        titulo: 'Certificado e presente',
-        texto:
-          'Ao concluir, você emite o certificado. Na última aula, um presente espera por você e pelo seu filho.',
-      },
-    ],
-  },
   duvidas: {
     titulo: 'Dúvidas frequentes',
     itens: [
       {
-        pergunta: 'O curso é pago?',
-        resposta: 'O curso é gratuito. O cadastro não pede cartão e nenhuma assinatura começa.',
+        pergunta: 'Para quem é o guia?',
+        resposta:
+          'Para mães, pais e responsáveis de crianças e adolescentes de 5 a 17 anos. Quem assiste às aulas é o adulto, e nenhuma delas pede conhecimento de tecnologia.',
       },
       {
-        pergunta: 'Para quem é o curso?',
-        resposta:
-          'Para pais e responsáveis de crianças e adolescentes de 5 a 17 anos. Quem assiste às aulas é o adulto.',
+        pergunta: 'Tem que pagar alguma coisa?',
+        resposta: 'O guia é gratuito. O cadastro não pede cartão e nenhuma assinatura começa.',
       },
       {
-        pergunta: 'Meu filho precisa participar das aulas?',
+        pergunta: 'Onde eu assisto?',
         resposta:
-          'As aulas são para você. No final do curso, há uma experiência para vocês fazerem juntos.',
+          'Na área dos pais da sua conta do Sistema Zero Kids, no menu Cursos para pais. Se a conta é nova, você recebe um e-mail para criar a senha. Dá para assistir no computador ou no celular.',
       },
       {
         pergunta: 'Quanto tempo leva?',
         resposta:
-          'São 7 aulas gravadas, divididas em partes curtas. Você assiste quando puder, no computador ou no celular.',
+          'As 7 aulas somam pouco mais de uma hora de vídeo, em 23 partes de até 6 minutos. Você assiste no seu ritmo e pode voltar a qualquer parte.',
       },
       {
-        pergunta: 'Preciso entender de tecnologia?',
+        pergunta: 'Já tenho conta no Sistema Zero Kids. Preciso de outra?',
         resposta:
-          'O curso explica tudo com exemplos do dia a dia, como a rotina da manhã e um brinquedo de montar.',
+          'Use no cadastro o mesmo e-mail da sua conta, e o guia aparece na área dos pais que você já usa.',
       },
       {
-        pergunta: 'O que é o presente do final?',
+        pergunta: 'Por quanto tempo fico com o guia?',
         resposta:
-          'É uma surpresa para você e o seu filho colocarem em prática o que o curso mostra. Você descobre na última aula.',
+          'O guia fica na sua conta sem prazo. Você pode rever as aulas e consultar a apostila sempre que quiser.',
       },
     ],
   },
-  resgatar: {
-    etiqueta: 'Seu cadastro',
-    titulo: 'Comece o curso agora',
-    texto:
-      'Cadastre a conta com os seus dados. Depois, entre na área dos pais e abra o curso em Cursos para pais.',
+  fim: {
+    titulo: 'Comece pela primeira aula ainda hoje.',
+    cta: 'Quero assistir de graça',
+    nota: 'Gratuito, sem cartão e sem assinatura.',
   },
   estados: {
     emBreve: {
       etiqueta: 'Em breve',
       titulo: 'As inscrições abrem em breve',
-      texto: 'Estamos finalizando o curso. Guarde esta página e volte em alguns dias.',
+      texto: 'Estamos finalizando o guia. Guarde esta página e volte em alguns dias.',
     },
     fechado: {
       etiqueta: 'Inscrições fechadas',
