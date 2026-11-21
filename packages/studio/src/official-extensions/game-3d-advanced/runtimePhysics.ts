@@ -137,20 +137,28 @@ export const gameKit3DPhysicsRuntimeSource = `
   // a NORMAL do contato — não o desempate de eixo, que empurrava de lado num
   // pouso raso.
 
-  var anySolid = false;      // liga a resolução de sólidos só quando há algum
-  var anyTrigger = false;    // idem para as zonas
-  var anyCarrier = false;    // algum molde sólido que se MOVE (plataforma)
-  var _minSolidThin = 1e9;   // o sólido mais FINO do mundo (critério do substep)
+  // liga a resolução de sólidos só quando há algum
+  var anySolid = false;
+  // idem para as zonas
+  var anyTrigger = false;
+  // algum molde sólido que se MOVE (plataforma)
+  var anyCarrier = false;
+  // o sólido mais FINO do mundo (critério do substep)
+  var _minSolidThin = 1e9;
   var MAX_SUBSTEPS = 4;
-  var MIN_GROUND_Y = 0.64;   // ~50°: mais íngreme que isso é PAREDE, escorrega
-  var SNAP_DIST = 0.3;       // grude no chão ao descer rampa (senão vira trampolim)
+  // ~50°: mais íngreme que isso é PAREDE, escorrega
+  var MIN_GROUND_Y = 0.64;
+  // grude no chão ao descer rampa (senão vira trampolim)
+  var SNAP_DIST = 0.3;
   var SKIN = 0.02;
-  var BOUNCE_MIN = 1.2;      // quique morto abaixo disso: não fica tremendo
+  // quique morto abaixo disso: não fica tremendo
+  var BOUNCE_MIN = 1.2;
   var _boxA = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
   var _boxB = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
   var _sweepHit = { t: 1, nx: 0, ny: 0, nz: 0, solid: null };
   var _sweepCandidate = { t: 1, nx: 0, ny: 0, nz: 0, solid: null };
-  var _cand = [];            // candidatos do broadphase (buffer PRÓPRIO — ver nota)
+  // candidatos do broadphase (buffer PRÓPRIO — ver nota)
+  var _cand = [];
   var _candN = 0;
 
   // Caixa MUNDO da entidade a partir da caixa local do molde.

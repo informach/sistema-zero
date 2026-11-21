@@ -130,4 +130,4 @@ export const gameTwoDRuntimeSource = buildProjectRunContextRuntime() + '\n' + ga
 export const gameTwoDRuntime =
   buildProjectRunContextRuntime() +
   '\n' +
-  compactOfficialRuntimeSource(gameTwoDEngineSource, { trimIndent: true })
+  compactOfficialRuntimeSource(gameTwoDEngineSource, { trimIndent: true, stripBlockComments: true })

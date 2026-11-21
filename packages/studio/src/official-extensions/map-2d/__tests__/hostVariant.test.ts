@@ -93,7 +93,8 @@ describe('variante do cenário pelo caminho do host', () => {
       medidas[`${alvo} com`] = (await loadExtensionBootstrapScript(extensao, COM_CENARIO)).length
     }
     // Os tetos de sempre valem para o motor sem cenário (bundle.test.ts e runtimePayload.test.ts).
-    expect(medidas['g2d sem'] ?? 0).toBeLessThan(422_500)
+    // 21/11/2026: sem os comentários de bloco no Jogo 2D (lote 4), o teto do bundle.test desceu.
+    expect(medidas['g2d sem'] ?? 0).toBeLessThan(369_500)
     expect(medidas['gk sem'] ?? 0).toBeLessThan(415_000)
     expect((medidas['g2d com'] ?? 0) - (medidas['g2d sem'] ?? 0)).toBeLessThan(
       MAP_TWO_D_FRAGMENT_MAX_CHARS,

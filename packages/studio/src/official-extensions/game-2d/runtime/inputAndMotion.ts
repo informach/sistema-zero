@@ -538,10 +538,16 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   var _particlesDrawnThisFrame = false;
   /** Explosão de N partículas no ponto x/y, espalhando em todas as direções. */
   function emitParticles(x, y, count, color) {
-    var n = Math.max(0, Math.min(Math.floor(_finiteNumber(count, 12)), 80));
+    var asked = Math.floor(_finiteNumber(count, 12));
+    // Os tetos das partículas avisam (lote 4, seção 8.4), uma vez por partida.
+    if (asked > 80) warnOnce('particulas-80', '"Soltar partículas" solta no máximo 80 de cada vez: soltei 80.');
+    var n = Math.max(0, Math.min(asked, 80));
     var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
     for (var i = 0; i < n; i++) {
-      if (particles.length >= MAX_PARTICLES) break;
+      if (particles.length >= MAX_PARTICLES) {
+        warnOnce('particulas-400', 'chegou a 400 partículas ao mesmo tempo e as novas não apareceram. Solte menos de cada vez.');
+        break;
+      }
       var angle = Math.random() * Math.PI * 2;
       var speed = Math.random() * 3 + 1;
       particles.push({

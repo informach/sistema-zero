@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import ts from 'typescript'
 import { BASIC_SPRITE_SCENE_API_KEYS as SCENE_API_KEYS } from '../../scene-2d/spriteContract'
-import { gameTwoDRuntime } from '../runtime'
+import { gameTwoDRuntime, gameTwoDRuntimeSource } from '../runtime'
 
 const RUNTIME_FILE = 'game-2d-runtime.generated.js'
 const BROKEN_RUNTIME_FILE = 'game-2d-runtime.broken.generated.js'
@@ -266,10 +266,13 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
 
 let cachedRuntimeTypeErrors: Map<string, string[]> | undefined
 function runtimeTypeErrors(fileName: string): string[] {
+  // Desde 21/11/2026 (lote 4 da missão) o runtime injetado sai sem os comentários de bloco, e
+  // os tipos JSDoc moram neles. O typecheck lê a FONTE, que é o mesmo programa: o
+  // `bundle.test.ts` prova, com um parser de verdade, que tirar os comentários não muda o código.
   cachedRuntimeTypeErrors ??= compileRuntimeVariants(
     new Map([
-      [RUNTIME_FILE, gameTwoDRuntime],
-      [BROKEN_RUNTIME_FILE, gameTwoDRuntime.replace('_hitboxOf(a)', '_missingHitboxOf(a)')],
+      [RUNTIME_FILE, gameTwoDRuntimeSource],
+      [BROKEN_RUNTIME_FILE, gameTwoDRuntimeSource.replace('_hitboxOf(a)', '_missingHitboxOf(a)')],
     ]),
   )
   return cachedRuntimeTypeErrors.get(fileName) ?? [`resultado ausente para ${fileName}`]

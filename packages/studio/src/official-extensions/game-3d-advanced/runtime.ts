@@ -70,12 +70,16 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   };
 
   // ---- Tetos (higiene de GPU/CPU) ----
-  var MAX_ENTITIES = 200;   // cada entidade é um Group multi-peça com sombra
-  var MAX_PARTS = 20;       // peças por molde
-  var MAX_MOLDS = 64;       // cada molde mantém template/material próprios
-  var MAX_EFFECTS = 32;     // cada efeito pré-aloca buffers para 300 partículas
-  var MAX_DECOR = 64;       // enfeites do cenário
-  var MAX_EXTRA_LIGHTS = 8; // luz pontual multiplica o custo de cada material
+  // Cada entidade é um Group multi-peça com sombra; um molde tem até 20 peças e mantém
+  // template/material próprios; cada efeito pré-aloca buffers para 300 partículas; enfeites do
+  // cenário; a luz pontual multiplica o custo de cada material. Os comentários ficam em linha
+  // própria: no fim da linha eles iam para o jogo (o compactar só tira a linha inteira).
+  var MAX_ENTITIES = 200;
+  var MAX_PARTS = 20;
+  var MAX_MOLDS = 64;
+  var MAX_EFFECTS = 32;
+  var MAX_DECOR = 64;
+  var MAX_EXTRA_LIGHTS = 8;
   var MAX_ATTRACTORS_PER_EFFECT = 16;
   var MAX_RENDER_PIXELS = 1920 * 1080;
   // O teto POR MODELO (MAX_MODEL_*) é do carregador compartilhado; aqui, o do quadro.
@@ -101,34 +105,54 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var worldReady = false;
   var keys = {};
   var justPressed = {};
-  var pending = [];                      // promessas de carregamento (sons)
+  // promessas de carregamento (sons)
+  var pending = [];
   var updateHooks = [];
-  var enterStateHooks = Object.create(null); // estado do JOGO -> [fn]
-  var listeners = Object.create(null);   // aviso -> [fn]  (event bus)
+  // estado do JOGO -> [fn]
+  var enterStateHooks = Object.create(null);
+  // aviso -> [fn]  (event bus)
+  var listeners = Object.create(null);
   var projectFactory = null;
   var runningProjectFactory = false;
-  var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
-  var projectButtons = [];               // botões extras criados pela fábrica do aluno
-  var sounds = Object.create(null);      // nome -> HTMLAudioElement
-  var soundSources = Object.create(null); // nome -> data URL usada pelo Audio
-  var soundLoadCleanups = Object.create(null); // nome -> encerra timer/listeners pendentes
-  var molds = Object.create(null);       // nome -> { health, speed, template, radius }
+  // nome -> { el, title, text, mainBtn }
+  var screens = Object.create(null);
+  // botões extras criados pela fábrica do aluno
+  var projectButtons = [];
+  // nome -> HTMLAudioElement
+  var sounds = Object.create(null);
+  // nome -> data URL usada pelo Audio
+  var soundSources = Object.create(null);
+  // nome -> encerra timer/listeners pendentes
+  var soundLoadCleanups = Object.create(null);
+  // nome -> { health, speed, template, radius }
+  var molds = Object.create(null);
   var moldCount = 0;
-  var pools = Object.create(null);       // nome -> { active:[], free:[], _sweeping } (contador de profundidade)
-  var spawners = [];                     // { mold, interval, timer, where }
-  var fsmHooks = Object.create(null);    // mold -> estado -> { enter:[], step:[], exit:[] }
-  var stateTimers = [];                  // { mold, state, sec, next }
-  var deathHooks = Object.create(null);  // mold -> [fn]
-  var hurtHooks = Object.create(null);   // mold -> [fn] (roda a cada dano levado)
-  var animEndHooks = Object.create(null); // mold -> clipe -> [fn(quem terminou)]
-  var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
-  var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
+  // nome -> { active:[], free:[], _sweeping } (contador de profundidade)
+  var pools = Object.create(null);
+  // { mold, interval, timer, where }
+  var spawners = [];
+  // mold -> estado -> { enter:[], step:[], exit:[] }
+  var fsmHooks = Object.create(null);
+  // { mold, state, sec, next }
+  var stateTimers = [];
+  // mold -> [fn]
+  var deathHooks = Object.create(null);
+  // mold -> [fn] (roda a cada dano levado)
+  var hurtHooks = Object.create(null);
+  // mold -> clipe -> [fn(quem terminou)]
+  var animEndHooks = Object.create(null);
+  // mold da ZONA -> [fn(zona, quem)]
+  var overlapHooks = Object.create(null);
+  // nome -> receita + Points + buffers (faíscas)
+  var effects = Object.create(null);
   var effectCount = 0;
   // Jorros contínuos VIVOS (lista, não mapa por efeito: várias tochas da mesma
   // receita convivem — o mapa antigo fazia o 2º jorro apagar o 1º em silêncio).
   var jets = [];
-  var composer = null;                   // mini-composer próprio (bloom + vinheta + ACES)
-  var composerFailed = false;            // WebGL/targets falharam -> render direto p/ sempre
+  // mini-composer próprio (bloom + vinheta + ACES)
+  var composer = null;
+  // WebGL/targets falharam -> render direto p/ sempre
+  var composerFailed = false;
   // Orçamento de desenho COMPARTILHADO: resolução pelo canvas real, sombra, efeitos e MSAA
   // por nível ('alta' | 'leve', este medido pela sonda de FPS). config.w/h seguem a régua.
   var renderBudget = null;
@@ -146,7 +170,8 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       if (sunLight) try { renderBudget.applyShadow(sunLight); } catch (e) {}
     }
   });
-  var spriteTex = null;                  // círculo suave compartilhado (CanvasTexture)
+  // círculo suave compartilhado (CanvasTexture)
+  var spriteTex = null;
   var stageEl = null;
   var canvasEl = null;
   var styleEl = null;
@@ -161,21 +186,28 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var scene = null;
   var camera = null;
   var groundMesh = null;
-  var ambientLight = null;                // luz do ambiente (setAmbient muda a força)
-  var sunLight = null;                    // o sol (o orçamento ajusta o mapa de sombra)
-  var extraLights = [];                 // luzes pontuais adicionadas (addLight)
-  var pendingLights = [];                 // luzes declaradas antes de o mundo nascer
+  // luz do ambiente (setAmbient muda a força)
+  var ambientLight = null;
+  // o sol (o orçamento ajusta o mapa de sombra)
+  var sunLight = null;
+  // luzes pontuais adicionadas (addLight)
+  var extraLights = [];
+  // luzes declaradas antes de o mundo nascer
+  var pendingLights = [];
   var decor = [];
   var currentDt = 0;
   var playTime = 0;
-  var totalAlive = 0;                    // entidades vivas (todos os moldes)
+  // entidades vivas (todos os moldes)
+  var totalAlive = 0;
   var activeModelCost = { triangles: 0, meshes: 0, bones: 0, materials: 0, drawCalls: 0 };
   var entityLimitWarned = false;
-  var _currentMold = null;               // contexto de montagem do defineMold
+  // contexto de montagem do defineMold
+  var _currentMold = null;
   // Câmera viva: um MODO por vez (órbita arrastável / seguir / topo).
   var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null, pivotGen: 0, targetGen: 0 };
   var orbit = null;
-  var camSmooth = 3;   // suavidade do seguir (era literal); maior = mais colada
+  // suavidade do seguir (era literal); maior = mais colada
+  var camSmooth = 3;
   // Vetores/quaternions temporários (alocados no initWorld — nunca no top-level).
   var _tv1 = null;
   var _tv2 = null;
@@ -229,13 +261,20 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var _texCache = null;
   // Raycast (mira/clique no mundo) e câmera 1ª pessoa — tudo LAZY (o Raycaster
   // só nasce ao usar; ambientes de teste sem ele seguem sem quebrar).
-  var _ray = null;                       // THREE.Raycaster (mira pelo mouse)
-  var _mouse = null;                     // { x, y } em coords normalizadas (-1..1)
-  var mouseHeld = false;                 // botão/dedo apertado agora
-  var mouseJust = false;                 // apertou NESTE quadro (limpa com justPressed)
-  var _pickWired = false;                // rastreio do ponteiro já ligado?
-  var _fpsWired = false;                 // pointer-lock/olhar do FPS já ligado?
-  var _fpsTouchId = null;                // gesto de arrasto que controla o olhar no toque
+  // THREE.Raycaster (mira pelo mouse)
+  var _ray = null;
+  // { x, y } em coords normalizadas (-1..1)
+  var _mouse = null;
+  // botão/dedo apertado agora
+  var mouseHeld = false;
+  // apertou NESTE quadro (limpa com justPressed)
+  var mouseJust = false;
+  // rastreio do ponteiro já ligado?
+  var _pickWired = false;
+  // pointer-lock/olhar do FPS já ligado?
+  var _fpsWired = false;
+  // gesto de arrasto que controla o olhar no toque
+  var _fpsTouchId = null;
   var _fpsTouchX = 0;
   var _fpsTouchY = 0;
   var _stepSystemsWarned = false;
@@ -877,7 +916,9 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   // Enfeites procedurais (pedras cinzas + cristais na cor de destaque).
   function scatterDecor(count) {
     if (!worldReady && !initWorldLater('Espalhar enfeites')) return;
-    var n = Math.max(0, Math.min(MAX_DECOR, Math.floor(num(count, 16))));
+    var asked = Math.floor(num(count, 16));
+    if (asked > MAX_DECOR) warnOnce('enfeites-64', 'espalhar enfeites usa no máximo 64: espalhei 64.');
+    var n = Math.max(0, Math.min(MAX_DECOR, asked));
     clearDecor();
     var radius = config.world * 0.45;
     // Geometrias-unidade COMPARTILHADAS pelos enfeites (antes cada um alocava a
@@ -2305,6 +2346,12 @@ const gameKit3DRuntimeAfterModelSource = `
   // string não precisa de barra-n nem de diretivas.
   var MAX_PARTICLES_PER_EFFECT = 300;
   var MAX_BURST = 120;
+  // Os tetos das faíscas avisam (lote 4 da missão, seção 8.4), uma vez por partida.
+  function burstCount(value) {
+    var asked = Math.floor(num(value, 24));
+    if (asked > MAX_BURST) warnOnce('faiscas-120', 'um efeito 3D solta no máximo 120 faíscas de cada vez: usei 120.');
+    return asked;
+  }
 
   // particleData = (fração da vida 0→1, id aleatório do grão). O id + o tempo +
   // spinSpeed giram o sprite (o "Data-Driven Particles" do curso). O ramo aditivo
@@ -2428,13 +2475,15 @@ const gameKit3DRuntimeAfterModelSource = `
         var tint = Math.max(0, Math.min(1, sampleKeys(c.tint, t)));
         var shape = Math.max(0, Math.min(1, sampleKeys(c.shape, t)));
         var fade = Math.max(0, Math.min(1, sampleKeys(c.fade, t)));
-        var row0 = x * 4;                  // linha 0: COR
+        // linha 0: COR
+        var row0 = x * 4;
         data[row0] = Math.round(tint * 255);
         data[row0 + 1] = Math.round(tint * 255);
         data[row0 + 2] = Math.round(tint * 255);
         data[row0 + 3] = 255;
         var add = Math.max(0, Math.min(1, sampleKeys(c.add, t)));
-        var row1 = (CURVE_W + x) * 4;      // linha 1: TAMANHO (R) + OPACIDADE (G) + LUZ-PURA (B)
+        // linha 1: TAMANHO (R) + OPACIDADE (G) + LUZ-PURA (B)
+        var row1 = (CURVE_W + x) * 4;
         data[row1] = Math.round(shape * 255);
         data[row1 + 1] = Math.round(fade * 255);
         data[row1 + 2] = Math.round(add * 255);
@@ -2572,7 +2621,7 @@ const gameKit3DRuntimeAfterModelSource = `
     try {
       // Explosão: esfera cheia, aditivo (glow), sem emissão contínua, sem giro.
       effects[k] = buildEffect({
-        count: Math.max(1, Math.min(MAX_BURST, Math.floor(num(o.count, 24)))),
+        count: Math.max(1, Math.min(MAX_BURST, burstCount(o.count))),
         emissionRate: 0,
         colorFrom: text(o.colorFrom, '#fb923c'),
         colorTo: text(o.colorTo, '#451a03'),
@@ -2678,7 +2727,10 @@ const gameKit3DRuntimeAfterModelSource = `
   // π = esfera cheia do burst), com variâncias de vida/velocidade e volume de
   // nascimento. É o emitParticle do curso — compartilhado por burst e emissor.
   function emitOne(fx, ox, oy, oz) {
-    if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) return;
+    if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) {
+      warnOnce('faiscas-300', 'um efeito chegou a 300 faíscas ao mesmo tempo e as novas não apareceram.');
+      return;
+    }
     var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, id: 0 };
     // Posição no volume (positionRadiusVariance) — grãos não saem de um ponto só.
     var pphi = rand() * Math.PI * 2;

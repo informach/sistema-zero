@@ -68,7 +68,11 @@ export const gameKitVisualEffectsRuntime = `
     var e = effects[text(name, '')];
     if (!e) { warnOnce('effect:' + text(name, ''), 'efeito "' + text(name, '') + '" não existe — crie com "Criar o efeito"'); return; }
     for (var i = 0; i < e.count; i++) {
-      if (particles.active.length >= MAX_PARTICLES) break;
+      if (particles.active.length >= MAX_PARTICLES) {
+        // O teto avisa (lote 4 da missão, seção 8.4), uma vez por partida, em vez de cortar calado.
+        warnOnce('particulas-1000', 'chegou a 1000 partículas ao mesmo tempo e as novas não apareceram. Use menos partículas no "Criar o efeito".');
+        break;
+      }
       var p = particles.free.pop() || {};
       var ang = gameRandom() * Math.PI * 2;
       var sp = e.speed * (0.4 + gameRandom() * 0.6);

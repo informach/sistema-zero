@@ -112,8 +112,12 @@ describe('bundle inicial do Jogo 2D', () => {
 // serialized run context. Measured: 415,166 chars / 119,134 bytes gzip.
 // 29/10/2026: +1,6 KB do evento "Quando começar a encostar em algum do grupo"
 // (decisão da dona, Poder Moedas no caminho). Medido: 421,1 mil chars / 116,8 mil gzip.
-const RUNTIME_TETO_CRU = 422_500
-const RUNTIME_TETO_GZIP = 121_500
+// 21/11/2026 (lote 4 da missão): os comentários de bloco (`/** … */`) deixaram de ir ao jogo
+// (`stripBlockComments`, 54,7 KB a menos) e os tetos que cortavam em silêncio passaram a avisar
+// (+0,7 KB). Medido no Windows (Bun 1.3.11): 368.493 bytes / 95.233 bytes gzip. Antes: 423.180 /
+// 120.879 com os avisos, 422.457 / 120.628 sem eles. Os tetos desceram junto.
+const RUNTIME_TETO_CRU = 369_500
+const RUNTIME_TETO_GZIP = 96_000
 
 /**
  * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do
@@ -176,6 +180,25 @@ describe('payload do runtime do Jogo 2D', () => {
     // biome-ignore lint/suspicious/noTemplateCurlyInString: a string COM `${}` é o caso contado.
     expect(templates('var c = `y${a}z`;')).toBeGreaterThan(0)
     expect(templates(gameTwoDRuntimeSource)).toBe(0)
+  })
+  // Lote 4 (21/11/2026): sem os comentários de bloco, o programa é o MESMO. Lido por um parser de
+  // verdade (que sabe onde começa uma expressão regular), impresso sem comentários e comparado.
+  it('tirar os comentários de bloco não muda o programa', () => {
+    const imprimir = (source: string) => {
+      const arquivo = ts.createSourceFile(
+        'runtime.js',
+        source,
+        ts.ScriptTarget.ES2022,
+        false,
+        ts.ScriptKind.JS,
+      )
+      const erros = (arquivo as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics
+      expect(erros).toHaveLength(0)
+      return ts.createPrinter({ removeComments: true }).printFile(arquivo)
+    }
+    expect(imprimir(gameTwoDRuntime)).toBe(imprimir(gameTwoDRuntimeSource))
+    // Anti-vácuo: os comentários de bloco saíram mesmo.
+    expect(gameTwoDRuntime).not.toMatch(/^\s*\/\*\*/m)
   })
   it('não cresce sem alguém decidir', async () => {
     const { gameTwoDRuntime } = await import('../runtime')

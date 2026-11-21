@@ -182,7 +182,11 @@ beforeAll(async () => {
 describe('Auditoria Jogo 2D — inventário', () => {
   it('monta o objeto público a partir do mesmo inventário do contrato', () => {
     expect(gameTwoDRuntime).toContain(
-      compactOfficialRuntimeSource(buildGameTwoDRuntimeApiSource(), { trimIndent: true }),
+      // O mesmo compactar do runtime (`game-2d/runtime.ts`), sem os comentários de bloco desde 21/11.
+      compactOfficialRuntimeSource(buildGameTwoDRuntimeApiSource(), {
+        trimIndent: true,
+        stripBlockComments: true,
+      }),
     )
   })
 

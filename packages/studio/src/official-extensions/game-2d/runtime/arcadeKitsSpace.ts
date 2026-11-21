@@ -81,7 +81,7 @@ export const gameTwoDArcadeSpaceRuntime = `  // ---- Kit "Nave & Asteroides" (v0
   /** Coloca no grupo um asteroide (polígono irregular que gira), com forma única. */
   function spawnAsteroid(group, options) {
     if (!group || !group.items) return null;
-    if (group.items.length >= MAX_GROUP) return null;
+    if (group.items.length >= MAX_GROUP) { _warnGroupFull(); return null; }
     options = options || {};
     var base = _positiveFiniteNumber(options.size, 36);
     // Cada asteroide nasce com um tamanho um pouco diferente (variedade automática).

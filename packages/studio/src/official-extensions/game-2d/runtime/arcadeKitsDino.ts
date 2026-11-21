@@ -194,7 +194,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
   /** Coloca no grupo um obstáculo desenhado (cacto/pedra no chão; pássaro no alto). */
   function spawnObstacle(group, ctx, options) {
     if (!group || !group.items) return null;
-    if (group.items.length >= MAX_GROUP) return null;
+    if (group.items.length >= MAX_GROUP) { _warnGroupFull(); return null; }
     options = options || {};
     var type = options.type || 'cactus';
     if (type === 'random' || type === 'surpresa') {
@@ -295,7 +295,7 @@ export const gameTwoDArcadeDinoRuntime = `  // ---- Pulo no chão (genérico) + 
   /** Coloca no grupo um OVO (item de bônus para coletar). */
   function spawnEgg(group, options) {
     if (!group || !group.items) return null;
-    if (group.items.length >= MAX_GROUP) return null;
+    if (group.items.length >= MAX_GROUP) { _warnGroupFull(); return null; }
     options = options || {};
     var s = createSprite({ x: options.x, y: options.y, w: 30, h: 38, color: '#fff3c4', vx: options.vx, vy: 0 });
     s.skin = { kind: 'egg', bob: Math.random() * Math.PI * 2 };
