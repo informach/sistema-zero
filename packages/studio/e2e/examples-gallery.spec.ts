@@ -243,6 +243,18 @@ async function applyInteraction(
   for (const key of keys[interaction]) await pressObservedPreviewKey(page, key)
 }
 
+/**
+ * Avisos esperados, que não vêm de defeito do projeto:
+ * - o do driver ANGLE quando o Playwright tira foto ou lê pixels;
+ * - o do modo leve do Jogo 3D Avançado: o orçamento de desenho mede os quadros e, numa máquina
+ *   lenta (o Windows do CI, sem placa de vídeo), reduz sombra e efeitos e avisa a criança. No
+ *   diagnóstico de entrada de 21/11/2026 (rodada 44910663160), 1 das 4 falhas do Windows era ele.
+ */
+function isExpectedNotice(text: string): boolean {
+  if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return true
+  return text.startsWith('SZGameKit3D: modo leve ligado:')
+}
+
 async function openAndExercise(page: Page, contract: ExampleQAContract): Promise<FrameLocator> {
   const diagnostics: string[] = []
   const successfulRequests = new Set<string>()
@@ -253,9 +265,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
       const text = message.text()
-      // Diagnóstico emitido pelo driver ANGLE ao Playwright fazer screenshots/
-      // readback. Não vem do projeto nem do runtime do Estúdio.
-      if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+      if (isExpectedNotice(text)) return
       const location = message.location()
       const source = location.url ? ` (${location.url}:${location.lineNumber ?? 0})` : ''
       diagnostics.push(`${message.type()}: ${text}${source}`)
@@ -465,7 +475,7 @@ test('game-3d-advanced: GLB animado e HDR percorrem o preview real e toleram tea
   page.on('console', (message) => {
     if (message.type() !== 'warning' && message.type() !== 'error') return
     const text = message.text()
-    if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+    if (isExpectedNotice(text)) return
     diagnostics.push(`${message.type()}: ${text}`)
   })
 
@@ -650,7 +660,7 @@ function collect3DDiagnostics(page: Page): string[] {
   page.on('console', (message) => {
     if (message.type() !== 'warning' && message.type() !== 'error') return
     const text = message.text()
-    if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+    if (isExpectedNotice(text)) return
     diagnostics.push(`${message.type()}: ${text}`)
   })
   return diagnostics
@@ -1084,7 +1094,7 @@ test('game-2d-advanced: Vila do Dragão — fluxo visual completo no Chromium', 
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
       const text = message.text()
-      if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+      if (isExpectedNotice(text)) return
       diagnostics.push(`${message.type()}: ${text}`)
     }
   })

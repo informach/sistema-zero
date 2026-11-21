@@ -3,6 +3,7 @@ import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
+import { jsonPlainCopy } from '../../blockly/jsonPlainCopy'
 import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import {
   MORE_BLOCKS_KIND,
@@ -1044,7 +1045,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
               ? 'ready'
               : 'unavailable',
         // A parse still in flight must not describe old blocks as current source.
-        ...(sameSource ? { workspace: Blockly.serialization.workspaces.save(workspace) } : {}),
+        // Em objetos comuns: o `save` cru do Blockly é sem protótipo, e o JSON.stringify do V8 recursa
+        // nele a partir de ~800 blocos numa cadeia (lote 3 da missão, 21/11/2026).
+        ...(sameSource
+          ? { workspace: jsonPlainCopy(Blockly.serialization.workspaces.save(workspace)) }
+          : {}),
       }
     }
     classicCapture.current = capture
