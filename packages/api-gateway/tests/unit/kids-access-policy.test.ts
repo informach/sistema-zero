@@ -132,6 +132,16 @@ describe('áreas separadas no servidor', () => {
     for (const path of ['/members/room', '/members/gamification/me', '/members/coursesx'])
       expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(false)
   })
+  // Retorno da Helena de 21/11/2026: o gateway recusava as duas leituras (KIDS_CONTEXT_FORBIDDEN)
+  // e o Início da área dos pais mostrava "Não foi possível conferir as ofertas agora".
+  test('responsável lê as ofertas do Início e o que a conta já comprou, só lendo', () => {
+    for (const path of ['/catalog/member-promotions', '/members/commerce/access']) {
+      expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(true)
+      expect(kidsMayAccess(parent, path, 'POST', 'pai')).toBe(false)
+    }
+    for (const path of ['/catalog/products', '/catalog/coupons', '/members/commerce/accessx'])
+      expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(false)
+  })
 })
 
 describe('Arquipélago Vagalume', () => {

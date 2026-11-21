@@ -110,6 +110,10 @@ Rotas explícitas novas das oficinas (o resto continua nos curingas `members-liv
   compara o caminho canônico (`normalizePolicyPath` do core: junta `//`, decodifica, NEGA `..`, barra
   codificada e controle). O papel não entra: aluno da equipe (admin) segue sem admin/interno/financeiro/
   pais.
+- O responsável (21/11/2026) lê, só em GET, `/catalog/member-promotions` e `/members/commerce/access`:
+  são as ofertas do Início da área dos pais e a conferência do que a conta já comprou. Antes o
+  gateway recusava com `KIDS_CONTEXT_FORBIDDEN`, e o Início mostrava "Não foi possível conferir as
+  ofertas agora". `GET /catalog/offers/:slug` é público e não passa por aqui.
 - Aluno resolve sem `email`/nome (token mínimo); os headers `x-auth-user-email`/`-name` somem em vez
   de irem vazios. Headers de identidade novos: `x-auth-kids-context` (`parent`|`student`) e
   `x-auth-kids-auth-time` (só responsável) — stripados da entrada como os demais.

@@ -73,7 +73,12 @@ export function kidsMayAccess(
       (method === 'GET' &&
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,
-        ))
+        )) ||
+      // As ofertas no Início da área dos pais (21/11/2026): o cartão lê as promoções do catálogo
+      // e confere o que a conta já comprou. Sem estas duas leituras o gateway recusava, e o
+      // Início dizia "Não foi possível conferir as ofertas agora" mesmo sem nada quebrado.
+      (method === 'GET' &&
+        ['/catalog/member-promotions', '/members/commerce/access'].includes(pathname))
     )
   }
   if (pathname.toLowerCase().startsWith('/members/parents/')) return false
