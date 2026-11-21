@@ -296,3 +296,38 @@ no editor aberto, todos `running` no Playwright, que libera áudio sem gesto). N
 um contexto criado antes de um gesto nasce suspenso; depois do primeiro som do Blockly ele fica
 ligado enquanto o editor estiver aberto. Não é recurso do jogo; fica registrado para o relatório de
 eficiência do editor (lote 8).
+
+### B4 no WebKit: decisão (lote 2, 21/11/2026)
+
+**Fica a proteção de hoje; a janela própria não é implementada.** Recomendação minha, registrada
+para a dona confirmar ou reverter no relatório do lote.
+
+Pelos números de 20/11, a janela de outro site aberta com `noopener` isola no WebKit (relógio do
+editor 44 a 82 ms, contra 5 s do iframe). O custo é alto: no iPad o jogo sai do editor para outra
+aba, a página perde o console, o erro com o bloco e o Parar, e o documento precisa morar num
+endereço de outro site (peça de servidor nova). O que sobra de risco no WebKit sem ela é pequeno:
+- laços (`for`, `while`, `do`) são cortados pela guarda em ~4 s, com o aviso "laço interrompido";
+- recursão sem fim vira erro em milissegundos ("Opa, a página parou");
+- o que prende a aba é trabalho síncrono pesado que não é laço (uma ordenação de milhões de itens,
+  uma lista gigante), raro nos programas das crianças;
+- se a aba congelar, a marca de execução faz a próxima abertura esperar o Rodar, e o projeto não
+  prende de novo;
+- a renderização pesada deixa o editor lento, mas o Parar responde entre um quadro e outro.
+
+Se um dia o WebKit ganhar `OffscreenCanvas` 2D com `requestAnimationFrame` em Worker, o Jogo 2D em
+Worker volta a ser o caminho (estudo B4 original).
+
+### Teclado preso no 3D do Windows: medido de novo (lote 2, 21/11/2026)
+
+Diagnóstico de entrada no HEAD `756ce2cfa` (rodada 44910663160, os jogos 3D e 2D pesados da
+galeria repetidos 10 vezes, Chromium completo, runners sem placa de vídeo): Linux 100 de 100;
+Windows 4 falhas em ~100, todas nos dois jogos Patrulha Espacial (20/11: 2 de 50).
+
+| Falha | Causa | O que foi feito |
+|---|---|---|
+| 1 | o teste tratava como defeito o aviso "modo leve ligado" do Jogo 3D Avançado, que o orçamento de desenho dá de propósito numa máquina lenta | os coletores de diagnóstico da galeria passam por `isExpectedNotice`, que aceita esse aviso e o do driver ANGLE |
+| 3 | o primeiro quadro ou a resposta às teclas passou de 15 s: o 3D desenhado por software (sem GPU) num runner Windows de 2 núcleos | registrado; não é o editor (os programas hostis e a liberação de recursos mostram o editor responsivo) e entra no lote 4 (motores), que mede o primeiro quadro do 3D sem placa de vídeo |
+
+O que o diagnóstico de 20/11 atribuiu ao `srcdoc` no mesmo processo do editor não se confirma
+no Chromium completo: a prévia roda em outro processo. O gargalo é a GPU por software, que todos
+os processos dividem.

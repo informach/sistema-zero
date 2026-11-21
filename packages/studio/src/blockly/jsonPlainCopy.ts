@@ -28,9 +28,9 @@ type Work = { value: unknown; target: Container; key: string; inArray: boolean }
 const objectToString = Object.prototype.toString
 
 /** O slot interno existe se o `valueOf` do protótipo nativo aceita o valor (a régua da especificação). */
-function hasSlot(valueOf: (this: unknown) => unknown, value: object): boolean {
+function hasSlot(nativeValueOf: (this: unknown) => unknown, value: object): boolean {
   try {
-    valueOf.call(value)
+    nativeValueOf.call(value)
     return true
   } catch {
     return false
