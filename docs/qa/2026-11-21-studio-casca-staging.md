@@ -33,14 +33,15 @@ Curso "Cadê Todo Mundo?" (adulto), aula 2. Em 20/11 esta conferência tinha fic
 | Experiência da parte 2 | carrega ao lado do vídeo |
 | Estúdio da aula, parte 3 | a prévia "Pré-visualização" está na casca (sem `srcdoc`); na aba Jogo, "Rodando", com o jardim desenhado e "Achados: 0" |
 
-## O que ficou para conferir
+## Casca no app Kids
 
-- **A casca no app Kids.** A área da criança pede um código de acesso do responsável para este
-  navegador, porque a autorização de 20/11 venceu. Gerar um código novo é criar uma chave de acesso
-  e depende da dona. A página da casca é a mesma do Worker nos dois apps; em 20/11 o Kids rodou nela
-  o 3D da Ilha do Farol.
-- **O Python novo com projeto novo** (ver abaixo): o que depende de quadros não deu para conferir
-  neste Chrome.
+Com a autorização da dona, o acesso deste navegador ("QA casca 20-11") ao perfil Criador(a) foi
+renovado só por hoje ("Somente hoje": "Pode entrar até 21 de nov. de 2026, à meia-noite").
+
+| Conferência | Resultado |
+|---|---|
+| A prévia está na casca | sim, no projeto "QA staging 2026-10-22 JavaScript moeda" (Pegue a moeda): iframe na casca, sem `srcdoc` |
+| Teclas depois de Rodar, sem clicar no palco | chegam: o Enter começa a partida ("Moedas: 0"), e as setas movem o herói |
 
 ## Python novo no staging (app adulto)
 
@@ -61,5 +62,13 @@ minimizada. Nesse estado, tudo o que depende de quadros sai errado: o jogo anda 
 por segundo, e a pausa, que espera a resposta do próximo quadro, não chega. As conferências da casca
 (teclas, foco, programa hostil, Parar) dependem de eventos e relógios e valem.
 
-A pausa, o avanço de 1 quadro e a medida do Python passam no CI com a distribuição hermética
-(lotes 6 e 11 dos painéis). No staging, faltam numa janela do Chrome visível na tela.
+**Refeito com a janela visível** (a página passou a receber 121 quadros em 2 segundos):
+
+| Conferência | Resultado |
+|---|---|
+| Desempenho | 59 quadros por segundo, 17 ms por quadro; memória "indisponível", como a tabela aprovada declara para este navegador |
+| Pausar | o jogo pausa: "O jogo está pausado, Quadro 355", com Continuar e Avançar 1 quadro |
+| Avançar 1 quadro | anda exatamente um: Quadro 356, e `pos` de [308] para [310] (o jogo soma 2 por quadro) |
+| Continuar e teclas | o jogo volta a correr; clicando no palco, a tecla "a" chega ("tecla 97" nas Mensagens do programa) |
+
+Conclusão: os painéis do Python funcionam no staging com a distribuição nova, num projeto novo.
