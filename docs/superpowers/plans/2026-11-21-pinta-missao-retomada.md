@@ -130,7 +130,7 @@ As etapas 1/4 continuam abertas até o formato público e seus consumidores.
 
 ## Próximos lotes: consumidores visuais e renderização
 
-1. Adaptar `tiles/chunks.ts` ao leitor comum, com chunks assinados, recorte dos
+1. [x] Adaptar `tiles/chunks.ts` ao leitor comum, com chunks assinados, recorte dos
    chunks ocupados e orçamento constante do viewport/cache. Comparar pixels do
    legado e regiões deslocadas, transformações, offsets e animações reais.
 2. Adaptar renderizadores de miniatura/imagem e minimapa com dimensões limitadas,
@@ -146,3 +146,24 @@ As etapas 1/4 continuam abertas até o formato público e seus consumidores.
 
 Cada item será um lote revisado e verificado. A promoção pública e o IO 3 seguem
 condicionados à integração de todos os consumidores e às provas dos adaptadores.
+
+O primeiro item foi verificado em `qa/renderizacao-por-regioes-2026-11-21/`, no
+diretório da missão: 84 testes focados, suíte completa, 168 comparações de imagens
+e 12 ensaios da oficina. A referência conserva os mesmos chunks globais e o mesmo
+orçamento. Isso não fecha os demais consumidores visuais nem o formato público.
+
+### Lote imediato da revisão: composição com opacidade
+
+- [ ] Corrigir a condição de equivalência do caminho direto sob pressão quando
+  há opacidade de camada, sem alterar o caminho rápido nas condições qualificadas.
+- [ ] Reproduzir o achado no renderer anterior, isolar fonte/camada e conservar
+  os recibos; comparar contra o cache canônico no Chromium, além do motor nativo.
+- [ ] Acrescentar provas de caminho rápido com opacidade total e de fallback com
+  opacidade composta, sem retirar a comparação rigorosa de pixels.
+- [ ] Repetir suíte, navegador e revisão; registrar o custo/limites da guarda e
+  commitar separadamente antes de prosseguir às miniaturas e ao minimapa.
+
+A reprodução densa de `8d40b4b1b` já confirmou 36.061 canais diferentes (delta
+máximo 2) na escala 1. Fonte opaca não bastou; camadas opacas eliminaram a
+diferença nos quatro zooms ensaiados. A correção fica em commit próprio para
+separar mudança de armazenamento e condição de composição.

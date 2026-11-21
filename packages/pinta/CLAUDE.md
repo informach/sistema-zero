@@ -43,6 +43,14 @@ e não apenas no editor salvo. O formato 8 ainda não está ativo na oficina.
 Provas, comparação com 48 composições legadas e retificação do hook de CPU em
 `qa/espalhamento-de-objetos-por-regioes-2026-11-21/`, no diretório da missão.
 
+O render de chunks também usa o leitor comum e `mapCellBounds`, com coordenadas
+globais assinadas. O recorte esparso visita apenas chunks armazenados; leitor por
+camada/frame e cache de 32 MiB. A referência densa de QA mantém o alinhamento
+global e o mesmo orçamento. O lote não ativa a oficina 8. Provas e achado de
+precisão entre composição direta/cache com opacidade de camada estão em
+`qa/renderizacao-por-regioes-2026-11-21/`, no diretório da missão. Esse achado,
+reproduzido no renderer anterior, será corrigido antes dos próximos consumidores.
+
 O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
 aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
 herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.

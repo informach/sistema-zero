@@ -3,10 +3,12 @@ import {
   effectiveLayer,
   isTileLayer,
   type TilemapAsset,
+  type TilemapCells,
   type TilemapTileLayer,
   tileLayerTilesetId,
 } from '../core/project'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile } from './cell'
+import { createTileCellReader, mapCellBounds, type TileCellReader } from './mapCells'
 
 export const MAP_CHUNK_SIDE = 32
 export interface MapViewport {
@@ -20,21 +22,65 @@ export function visibleChunks(
   tileSize: number,
   cols: number,
   rows: number,
+  origin = { col: 0, row: 0 },
 ): Array<{ col: number; row: number }> {
-  const size = tileSize * MAP_CHUNK_SIDE
-  const out: Array<{ col: number; row: number }> = []
-  for (
-    let row = Math.max(0, Math.floor(view.y / size));
-    row < Math.min(Math.ceil(rows / MAP_CHUNK_SIDE), Math.ceil((view.y + view.height) / size));
-    row++
+  if (
+    !validView(view) ||
+    !Number.isFinite(tileSize) ||
+    tileSize <= 0 ||
+    ![cols, rows, origin.col, origin.row].every(Number.isSafeInteger) ||
+    cols < 1 ||
+    rows < 1
   )
-    for (
-      let col = Math.max(0, Math.floor(view.x / size));
-      col < Math.min(Math.ceil(cols / MAP_CHUNK_SIDE), Math.ceil((view.x + view.width) / size));
-      col++
-    )
+    return []
+  const size = tileSize * MAP_CHUNK_SIDE
+  const left = Math.max(origin.col * tileSize, view.x),
+    top = Math.max(origin.row * tileSize, view.y),
+    right = Math.min((origin.col + cols) * tileSize, view.x + view.width),
+    bottom = Math.min((origin.row + rows) * tileSize, view.y + view.height)
+  if (left >= right || top >= bottom) return []
+  const out: Array<{ col: number; row: number }> = []
+  for (let row = Math.floor(top / size); row < Math.ceil(bottom / size); row++)
+    for (let col = Math.floor(left / size); col < Math.ceil(right / size); col++)
       out.push({ col, row })
   return out
+}
+
+function validView(view: MapViewport): boolean {
+  return (
+    [view.x, view.y, view.width, view.height, view.x + view.width, view.y + view.height].every(
+      Number.isFinite,
+    ) &&
+    view.width > 0 &&
+    view.height > 0
+  )
+}
+
+/** A sparse world never enumerates empty logical chunks, including when zoomed out. */
+function occupiedChunks(
+  cells: Exclude<TilemapCells, Int16Array>,
+  map: TilemapAsset<TilemapCells>,
+  view: MapViewport,
+  tileSize: number,
+): Array<{ col: number; row: number }> {
+  if (!validView(view) || !Number.isFinite(tileSize) || tileSize <= 0) return []
+  const bounds = mapCellBounds(map),
+    size = tileSize * MAP_CHUNK_SIDE,
+    left = Math.max(bounds.col * tileSize, view.x),
+    top = Math.max(bounds.row * tileSize, view.y),
+    right = Math.min((bounds.col + bounds.cols) * tileSize, view.x + view.width),
+    bottom = Math.min((bounds.row + bounds.rows) * tileSize, view.y + view.height)
+  if (left >= right || top >= bottom) return []
+  return cells.chunks
+    .filter(
+      ({ col, row }) =>
+        col * size < right &&
+        (col + 1) * size > left &&
+        row * size < bottom &&
+        (row + 1) * size > top,
+    )
+    .map(({ col, row }) => ({ col, row }))
+    .sort((a, b) => a.row - b.row || a.col - b.col)
 }
 
 /** Matriz Tiled: troca x/y primeiro, depois espelha horizontal e verticalmente. */
@@ -149,15 +195,17 @@ export class TileChunkCache {
     if (!recycle) this.release(entry.canvas)
   }
   get(
-    map: TilemapAsset,
-    layer: TilemapTileLayer,
+    map: TilemapAsset<TilemapCells>,
+    layer: TilemapTileLayer<TilemapCells>,
     ts: AnyTilesetAsset,
     sheet: HTMLCanvasElement,
     col: number,
     row: number,
     time = 0,
+    reader = createTileCellReader(layer.cells, mapCellBounds(map)),
   ): HTMLCanvasElement | null {
-    const key = `${layer.id}:${col}:${row}:${map.cols}:${map.rows}`
+    const bounds = mapCellBounds(map)
+    const key = `${layer.id}:${col}:${row}:${map.cols}:${map.rows}:${bounds.col}:${bounds.row}`
     const values = new Int16Array(MAP_CHUNK_SIDE * MAP_CHUNK_SIDE).fill(-1)
     let filled = false
     // Só as peças animadas que aparecem NESTE bloco entram na chave da animação.
@@ -166,8 +214,7 @@ export class TileChunkCache {
       for (let c = 0; c < MAP_CHUNK_SIDE; c++) {
         const x = col * MAP_CHUNK_SIDE + c,
           y = row * MAP_CHUNK_SIDE + r
-        if (x >= map.cols || y >= map.rows) continue
-        const cell = layer.cells[y * map.cols + x] ?? -1
+        const cell = reader.at(x, y)
         values[r * MAP_CHUNK_SIDE + c] = cell
         const tile = cellTile(cell)
         if (tile < 0 || tile >= ts.tiles.length) continue
@@ -257,38 +304,37 @@ export class TileChunkCache {
 }
 
 /** As camadas de peças que entram na pintura, com o recorte de blocos de cada uma. */
-export function visibleLayerChunks(
-  map: TilemapAsset,
+export function visibleLayerChunks<Cells extends TilemapCells>(
+  map: TilemapAsset<Cells>,
   tilesets: ReadonlyMap<string, AnyTilesetAsset>,
   view: MapViewport,
   includeCollision = false,
 ): Array<{
-  layer: TilemapTileLayer
+  layer: TilemapTileLayer<Cells>
   tileset: AnyTilesetAsset
   opacity: number
   offsetX: number
   offsetY: number
   chunks: Array<{ col: number; row: number }>
 }> {
-  const out: ReturnType<typeof visibleLayerChunks> = []
+  const out: ReturnType<typeof visibleLayerChunks<Cells>> = []
   for (const layer of map.layers) {
     if (!isTileLayer(layer) || (layer.collision && !includeCollision)) continue
     const e = effectiveLayer(map, layer)
     if (!e.visible || !e.opacity) continue
     const tileset = tilesets.get(tileLayerTilesetId(map, layer))
     if (!tileset) continue
+    const layerView = { ...view, x: view.x - e.offsetX, y: view.y - e.offsetY }
     out.push({
       layer,
       tileset,
       opacity: e.opacity,
       offsetX: e.offsetX,
       offsetY: e.offsetY,
-      chunks: visibleChunks(
-        { ...view, x: view.x - e.offsetX, y: view.y - e.offsetY },
-        tileset.tileSize,
-        map.cols,
-        map.rows,
-      ),
+      chunks:
+        layer.cells instanceof Int16Array
+          ? visibleChunks(layerView, tileset.tileSize, map.cols, map.rows, mapCellBounds(map))
+          : occupiedChunks(layer.cells, map, layerView, tileset.tileSize),
     })
   }
   return out
@@ -317,25 +363,19 @@ function directPixels(ctx: CanvasRenderingContext2D, size: number): boolean {
 }
 
 function untransformedChunks(
-  map: TilemapAsset,
-  layer: TilemapTileLayer,
+  reader: TileCellReader,
   chunks: Array<{ col: number; row: number }>,
 ): boolean {
   for (const { col, row } of chunks)
-    for (let r = 0; r < MAP_CHUNK_SIDE && row * MAP_CHUNK_SIDE + r < map.rows; r++)
-      for (let c = 0; c < MAP_CHUNK_SIDE && col * MAP_CHUNK_SIDE + c < map.cols; c++)
-        if (
-          cellFlags(
-            layer.cells[(row * MAP_CHUNK_SIDE + r) * map.cols + col * MAP_CHUNK_SIDE + c] ?? -1,
-          )
-        )
-          return false
+    for (let r = 0; r < MAP_CHUNK_SIDE; r++)
+      for (let c = 0; c < MAP_CHUNK_SIDE; c++)
+        if (cellFlags(reader.at(col * MAP_CHUNK_SIDE + c, row * MAP_CHUNK_SIDE + r))) return false
   return true
 }
 
 export function paintTilemapLayers(
   ctx: CanvasRenderingContext2D,
-  map: TilemapAsset,
+  map: TilemapAsset<TilemapCells>,
   tilesets: ReadonlyMap<string, AnyTilesetAsset>,
   sheetOf: (id: string) => HTMLCanvasElement | null,
   cache: TileChunkCache,
@@ -345,6 +385,7 @@ export function paintTilemapLayers(
   includeCollision = false,
 ): void {
   const layers = visibleLayerChunks(map, tilesets, view, includeCollision)
+  const bounds = mapCellBounds(map)
   // Mede a pressão da tela; o cache mantém o teto mesmo quando ela é maior.
   cache.beginFrame(
     layers.reduce((sum, l) => sum + l.chunks.length * chunkBytes(l.tileset.tileSize), 0),
@@ -355,11 +396,12 @@ export function paintTilemapLayers(
     ctx.save()
     ctx.globalAlpha *= opacity
     const size = ts.tileSize * scale
+    const reader = createTileCellReader(layer.cells, bounds)
     const direct =
       cache.underPressure &&
       directPixels(ctx, size) &&
       // Flipping before downsampling and flipping the destination choose different samples.
-      (Number.isInteger(scale) || untransformedChunks(map, layer, chunks)) &&
+      (Number.isInteger(scale) || untransformedChunks(reader, chunks)) &&
       chunks.every(
         ({ col, row }) =>
           Number.isSafeInteger((col * MAP_CHUNK_SIDE * ts.tileSize + offsetX) * scale) &&
@@ -372,22 +414,29 @@ export function paintTilemapLayers(
       for (const { col, row } of chunks) {
         const left = (col * MAP_CHUNK_SIDE * ts.tileSize + offsetX) * scale,
           top = (row * MAP_CHUNK_SIDE * ts.tileSize + offsetY) * scale,
-          firstCol = Math.max(0, Math.floor((-transform.e - left) / size)),
-          firstRow = Math.max(0, Math.floor((-transform.f - top) / size)),
+          firstCol = Math.max(
+            0,
+            bounds.col - col * MAP_CHUNK_SIDE,
+            Math.floor((-transform.e - left) / size),
+          ),
+          firstRow = Math.max(
+            0,
+            bounds.row - row * MAP_CHUNK_SIDE,
+            Math.floor((-transform.f - top) / size),
+          ),
           endCol = Math.min(
             MAP_CHUNK_SIDE,
-            map.cols - col * MAP_CHUNK_SIDE,
+            bounds.col + map.cols - col * MAP_CHUNK_SIDE,
             Math.ceil((ctx.canvas.width - transform.e - left) / size),
           ),
           endRow = Math.min(
             MAP_CHUNK_SIDE,
-            map.rows - row * MAP_CHUNK_SIDE,
+            bounds.row + map.rows - row * MAP_CHUNK_SIDE,
             Math.ceil((ctx.canvas.height - transform.f - top) / size),
           )
         for (let r = firstRow; r < endRow; r++)
           for (let c = firstCol; c < endCol; c++) {
-            const cell =
-                layer.cells[(row * MAP_CHUNK_SIDE + r) * map.cols + col * MAP_CHUNK_SIDE + c] ?? -1,
+            const cell = reader.at(col * MAP_CHUNK_SIDE + c, row * MAP_CHUNK_SIDE + r),
               tile = cellTile(cell)
             if (tile < 0 || tile >= ts.tiles.length) continue
             let frame = frames.get(tile)
@@ -412,7 +461,7 @@ export function paintTilemapLayers(
       continue
     }
     for (const { col, row } of chunks) {
-      const chunk = cache.get(map, layer, ts, sheet, col, row, time)
+      const chunk = cache.get(map, layer, ts, sheet, col, row, time, reader)
       if (chunk)
         ctx.drawImage(
           chunk,

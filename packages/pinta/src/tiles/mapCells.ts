@@ -18,6 +18,15 @@ export interface TileCellReader {
   ): void
 }
 
+/** Logical world bounds of an admitted dense or region map, independent of storage. */
+export function mapCellBounds(map: {
+  cols: number
+  rows: number
+  origin?: { col: number; row: number }
+}): PintaRegionBounds {
+  return { col: map.origin?.col ?? 0, row: map.origin?.row ?? 0, cols: map.cols, rows: map.rows }
+}
+
 function inside(bounds: PintaRegionBounds, col: number, row: number): boolean {
   return (
     Number.isInteger(col) &&

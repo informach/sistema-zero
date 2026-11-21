@@ -29,7 +29,6 @@ const CONFERIDOS: Record<string, string> = {
     'GDScript usa a máscara de CELL_MAX_TILES para consultar sólidos; o contorno retangular da peça é simétrico aos flips e recebe a base afim da camada/conjunto',
   'export/godot/project.ts':
     'o projeto GDScript extrai a peça com máscara 4095 e conserva os três bits nos flags nativos do TileMapLayer',
-  'tiles/chunks.ts': 'blocos guardam células inteiras; desenhar lê cellTile e cellMatrix',
   'tiles/sets.ts': 'recorta e expande células inteiras, conservando os bits de giro',
   'tiles/tilemapOps.ts':
     'pinta, apaga, preenche e cresce movendo células inteiras; achatar e a peça do topo leem por cellTile',
