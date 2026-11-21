@@ -6,11 +6,13 @@ import {
   girarObjetosNaVertical,
   indiceDaOrganizacao,
   levarObjetosAoAndar,
+  type PontoDeEncaixe,
   type VolumeDeComposicao,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { type JSX, useMemo, useState } from 'react'
 import { comMedidasConferidas } from '../acoes'
 import { CampoNumero } from './Painel'
+import { PontosDeEncaixe } from './PontosDeEncaixe'
 
 /** Preferências da vista; só os botões de aplicar à seleção geram edição autoral. */
 export function Encaixes({
@@ -23,6 +25,8 @@ export function Encaixes({
   executar,
   medir,
   fonte,
+  pontosDaGeometria,
+  aoRealcar,
 }: {
   documento: DocumentoDeCenario
   selecao: readonly string[]
@@ -33,6 +37,10 @@ export function Encaixes({
   executar(comandos: ComandoDeCenario[]): void
   medir(id: string): VolumeDeComposicao | null
   fonte?: FonteDeAlturas
+  /** Os pontos que a geometria do modelo dá (o palco os acha ao carregar o arquivo). */
+  pontosDaGeometria?(modeloId: string): PontoDeEncaixe[] | null
+  /** Mostra no palco as bolinhas dos pontos da peça (nulo apaga). */
+  aoRealcar?(id: string | null): void
 }): JSX.Element {
   const [erro, setErro] = useState<string | null>(null)
   const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
@@ -188,6 +196,21 @@ export function Encaixes({
           outra: as bolinhas mostram os pontos, e a verde é onde encaixou. Segure Shift para mover
           sem encaixar.
         </p>
+        {selecao.length === 1 &&
+        pontosDaGeometria &&
+        aoRealcar &&
+        documento.instancias.some((o) => o.id === selecao[0]) ? (
+          <PontosDeEncaixe
+            key={selecao[0]}
+            documento={documento}
+            id={selecao[0]!}
+            executar={executar}
+            {...(fonte ? { fonte } : {})}
+            pontosDaGeometria={pontosDaGeometria}
+            aoRealcar={aoRealcar}
+            desligado={trancado}
+          />
+        ) : null}
         <button
           type="button"
           className="sz-tool-pill sz-tool-pill--outline"

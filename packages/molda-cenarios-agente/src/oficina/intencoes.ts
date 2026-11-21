@@ -26,6 +26,7 @@ import {
   type DocumentoDeCenario,
   dominioDoChao,
   type EstadoDoTerreno,
+  encaixarNaVizinha,
   executarLote,
   type FonteDeAlturas,
   type IntencaoDeAguaSchema,
@@ -33,6 +34,7 @@ import {
   type ParametrosDeTerreno,
   ParametrosDeTerrenoSchema,
   type PontoDaEscultura,
+  type PontoDeEncaixe,
   prepararConsultaDaAgua,
   prepararOperacaoDeAgua,
   prepararOperacaoDeCaminho,
@@ -43,6 +45,7 @@ import {
   resolverConjuntos,
   unirRegioes,
 } from '@sistemazero/molda-cenarios-core/v2'
+import { pontosDeEncaixeDoGlb } from '@sistemazero/molda-cenarios-motor/encaixes'
 import type { z } from 'zod'
 
 /**
@@ -457,6 +460,73 @@ export function criarIntencoes(host: CenariosHost) {
         })
       }
       return gravar(aberto, cenarioId, comandos, null, opcoes, [], avisos)
+    },
+
+    /**
+     * Encaixa cada peça na vizinha mais perto pelos pontos de encaixe, como o botão "Encaixar na
+     * vizinha" da oficina: os pontos escritos à mão no modelo ou os da geometria do arquivo. As
+     * peças são encaixadas em ordem (a segunda pode encaixar na primeira já movida), num passo só.
+     */
+    async encaixarPecas(
+      cenarioId: string,
+      pedido: { pecas: readonly string[]; vizinha?: string; alcance?: number },
+      opcoes: OpcoesDoLote = {},
+    ): Promise<
+      ResultadoDoLote & { encaixes: { peca: string; vizinha: string; distancia: number }[] }
+    > {
+      const aberto = await abrir(cenarioId, opcoes)
+      const doc = { ...aberto.documento, instancias: [...aberto.documento.instancias] }
+      const fonte = aberto.terreno?.fonte
+      // Só os modelos das peças pedidas e das vizinhas que estão ao alcance da procura (25 m).
+      const centros = pedido.pecas
+        .map((id) => doc.instancias.find((o) => o.id === id)?.transformacao.posicao)
+        .filter((p) => p !== undefined)
+      const precisa = new Set<string>()
+      for (const o of doc.instancias)
+        if (
+          centros.some(
+            (c) =>
+              Math.hypot(c.x - o.transformacao.posicao.x, c.z - o.transformacao.posicao.z) < 30,
+          )
+        )
+          precisa.add(o.modelo)
+      const pontos = new Map<string, PontoDeEncaixe[]>()
+      for (const m of doc.modelos)
+        if (precisa.has(m.id) && !m.encaixes && !pontos.has(m.digest))
+          pontos.set(
+            m.digest,
+            pontosDeEncaixeDoGlb(
+              new Uint8Array(
+                await host.conteudoDoModelo({ biblioteca: m.biblioteca, digest: m.digest }),
+              ),
+            ),
+          )
+      const comandos: ComandoDeCenario[] = [],
+        avisos: string[] = [],
+        encaixes: { peca: string; vizinha: string; distancia: number }[] = []
+      for (const id of pedido.pecas) {
+        const i = doc.instancias.findIndex((o) => o.id === id)
+        if (i < 0) {
+          avisos.push(`${id} não é um objeto deste cenário.`)
+          continue
+        }
+        const r = encaixarNaVizinha(doc, id, (m) => pontos.get(m.digest) ?? null, fonte, {
+          ...(pedido.vizinha ? { vizinha: pedido.vizinha } : {}),
+          ...(pedido.alcance ? { alcance: pedido.alcance } : {}),
+        })
+        if (!r) {
+          avisos.push(`${id}: nenhuma vizinha com ponto de encaixe compatível ao alcance.`)
+          continue
+        }
+        doc.instancias[i] = { ...doc.instancias[i]!, ...r.alteracoes }
+        comandos.push({ tipo: 'instancia.atualizar', id, alteracoes: r.alteracoes })
+        encaixes.push({
+          peca: id,
+          vizinha: r.vizinha,
+          distancia: Math.round(r.distancia * 1000) / 1000,
+        })
+      }
+      return { ...(await gravar(aberto, cenarioId, comandos, null, opcoes, [], avisos)), encaixes }
     },
 
     /** Desfaz ou refaz o último passo, como os botões da oficina. */

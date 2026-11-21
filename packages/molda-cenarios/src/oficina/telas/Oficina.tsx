@@ -634,6 +634,15 @@ function OficinaAberta({
   const terrenoOcupado = useRef(false)
   terrenoOcupado.current = terreno.ocupado
   const fonte = relevoPronto ? palco.current?.fonteDeAlturas?.() : undefined
+  // Estáveis: o realce dos pontos de encaixe roda num efeito que depende delas.
+  const pontosDaGeometria = useCallback(
+    (modeloId: string) => palco.current?.pontosDeEncaixeDaGeometria(modeloId) ?? null,
+    [],
+  )
+  const realcarEncaixes = useCallback(
+    (id: string | null) => palco.current?.realcarPontosDeEncaixe(id),
+    [],
+  )
   const retratos = useRetratos({
     host,
     controlador,
@@ -2460,6 +2469,8 @@ function OficinaAberta({
                     executar={executar}
                     medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
                     fonte={fonte}
+                    pontosDaGeometria={pontosDaGeometria}
+                    aoRealcar={realcarEncaixes}
                   />
                 ) : null}
               </>

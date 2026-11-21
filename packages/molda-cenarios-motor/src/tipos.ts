@@ -9,6 +9,7 @@ import type {
   ModeloDoCenario,
   OperacaoDeAguaPreparada,
   OperacaoDeCaminhoPreparada,
+  PontoDeEncaixe,
   ReceitaDeEspalhamento,
   TexturaDoCenario,
   Transformacao,
@@ -186,6 +187,10 @@ export interface Palco {
   mostrarPreviaDeModelo(modelo: ModeloDoCenario, clientX: number, clientY: number): void
   /** Esconde a prévia do arraste; `soltar` também esquece o modelo carregado para ela. */
   esconderPreviaDeModelo(soltar?: boolean): void
+  /** Os pontos de encaixe que a geometria do modelo dá (sem os escritos à mão); nulo antes de carregar. */
+  pontosDeEncaixeDaGeometria(modeloId: string): PontoDeEncaixe[] | null
+  /** Mostra as bolinhas dos pontos de encaixe de uma peça posta e as acompanha (nulo apaga). */
+  realcarPontosDeEncaixe(id: string | null): void
   /** Volume medido do GLB já carregado, sem expor objetos do Three ao host. */
   volumeDoModelo(id: string): VolumeDeComposicao | null
   /** Ausente enquanto os bytes do relevo não estão prontos; não substitui altura por zero. */

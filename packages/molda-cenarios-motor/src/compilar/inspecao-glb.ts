@@ -12,7 +12,7 @@ import {
 
 // Apenas extensões materiais que o GLTFLoader instalado decodifica. Não aceitamos
 // extensões que introduzam buffers, topologia comprimida ou instâncias adicionais.
-const EXTENSOES_MATERIAIS = [
+export const EXTENSOES_MATERIAIS = [
   'EXT_texture_webp',
   'KHR_texture_transform',
   'KHR_materials_unlit',

@@ -433,6 +433,46 @@
     outline: 2px solid var(--color-mld-accent);
     outline-offset: 3px;
   }
+  .mcn-encaixe-pontos {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border: 2px solid var(--color-mld-border);
+    border-radius: 14px;
+    background: color-mix(in oklab, var(--color-mld-accent) 6%, transparent);
+  }
+  .mcn-encaixe-pontos-resumo {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .mcn-encaixe-ponto {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 8px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+  }
+  .mcn-encaixe-ponto-titulo {
+    padding: 0 4px;
+    font-size: 0.8125rem;
+    font-weight: 800;
+  }
+  .mcn-encaixe-ponto-tirar {
+    grid-column: 1 / -1;
+  }
+  .mcn-encaixe-pontos-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
   .mcn-campo > input,
   .mcn-campo > textarea {
     min-height: 44px;

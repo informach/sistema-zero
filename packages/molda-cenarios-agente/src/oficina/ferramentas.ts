@@ -419,6 +419,29 @@ export const FERRAMENTAS = [
     executar: (c, a) => c.intencoes.alinharAoChao(a.cenarioId, a.ids, opcoesDoLote(a)),
   }),
   ferramenta({
+    name: 'encaixar_pecas',
+    description:
+      'Encaixa peças modulares (caminhos, pontes, rampas, escadas, plataformas, cercas) na vizinha mais perto pelos pontos de encaixe: a peça gira no próprio eixo vertical e anda até as pontas coincidirem, e fica solta do relevo. Os pontos são os escritos à mão no modelo (`encaixes`) ou os da geometria do arquivo. `vizinha` limita a uma peça; `alcance` (metros, padrão 3) é até onde procurar. Devolve o par usado em cada peça.',
+    schema: z
+      .object({
+        ...lote,
+        pecas: z.array(idDoDocumento).min(1).max(100),
+        vizinha: idDoDocumento.optional(),
+        alcance: z.number().positive().max(20).optional(),
+      })
+      .strict(),
+    executar: (c, a) =>
+      c.intencoes.encaixarPecas(
+        a.cenarioId,
+        {
+          pecas: a.pecas,
+          ...(a.vizinha ? { vizinha: a.vizinha } : {}),
+          ...(a.alcance ? { alcance: a.alcance } : {}),
+        },
+        opcoesDoLote(a),
+      ),
+  }),
+  ferramenta({
     name: 'desfazer',
     description: 'Desfaz o último passo do cenário (o mesmo botão da oficina).',
     schema: z.object(lote).strict(),

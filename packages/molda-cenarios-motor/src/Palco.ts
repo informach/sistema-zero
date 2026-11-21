@@ -190,6 +190,8 @@ class PalcoThree implements Palco {
   private readonly fantasma = criarPartesDoFantasma()
   /** Os pontos de encaixe achados na geometria, pelo hash do modelo. */
   private readonly encaixesPorDigest = new Map<string, PontoDeEncaixe[]>()
+  /** A peça cujos pontos de encaixe ficam à vista (o painel de encaixe com uma peça escolhida). */
+  private realcado: string | null = null
   /** Shift segurado durante o arraste: mover sem encaixar. */
   private shiftApertado = false
   private readonly marcasDeEncaixe = new Group()
@@ -1922,6 +1924,7 @@ class PalcoThree implements Palco {
     })
 
     this.atualizarSelecao()
+    if (this.realcado) this.desenharRealce()
     this.pedirQuadro()
   }
 
@@ -2237,7 +2240,38 @@ class PalcoThree implements Palco {
   /** Os pontos de encaixe de um modelo do cenário: os escritos à mão ou os da geometria. */
   private encaixesDoModelo(ref: ModeloDoCenario | undefined): PontoDeEncaixe[] | null {
     if (!ref) return null
-    if (ref.encaixes) return ref.encaixes
+    return ref.encaixes ?? this.encaixesDaGeometria(ref)
+  }
+
+  /** Os pontos que a geometria do modelo dá (sem os escritos à mão); nulo antes de carregar. */
+  pontosDeEncaixeDaGeometria(modeloId: string): PontoDeEncaixe[] | null {
+    const ref = this.documento?.modelos.find((m) => m.id === modeloId)
+    return ref ? this.encaixesDaGeometria(ref) : null
+  }
+
+  /**
+   * Mostra as bolinhas dos pontos de encaixe de uma peça posta (nulo apaga). O realce acompanha a
+   * peça: cada reconstrução (documento novo, modelo que terminou de carregar) o desenha de novo.
+   */
+  realcarPontosDeEncaixe(id: string | null): void {
+    this.realcado = id
+    this.desenharRealce()
+  }
+
+  private desenharRealce() {
+    if (this.gesto) return
+    this.marcasDeEncaixe.clear()
+    const doc = this.documento,
+      id = this.realcado,
+      alvo = id ? this.alvos.get(id) : undefined
+    const o = id ? doc?.instancias.find((i) => i.id === id) : undefined
+    const pontos = o ? this.encaixesDoModelo(doc?.modelos.find((m) => m.id === o.modelo)) : null
+    if (alvo && pontos?.length)
+      this.mostrarMarcasDeEncaixe(pontosNoMundo(pontos, alvo.matriz.elements), -1)
+    this.pedirQuadro()
+  }
+
+  private encaixesDaGeometria(ref: ModeloDoCenario): PontoDeEncaixe[] | null {
     const guardado = this.encaixesPorDigest.get(ref.digest)
     if (guardado) return guardado
     const estado = this.modelos.get(ref.digest)
