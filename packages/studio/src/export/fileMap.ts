@@ -389,6 +389,16 @@ export async function buildProFileMap(
 
   const pkgRaw =
     typeof files['package.json'] === 'string' ? (files['package.json'] as string) : null
+  // Lote 7 (builds reproduzíveis): sem trava no projeto, a exportação leva a do grafo aprovado,
+  // quando todas as dependências estão nele com as versões exatas (`approvedDependencyLock.ts`).
+  const anyLock = ['package-lock.json', 'npm-shrinkwrap.json', 'pnpm-lock.yaml', 'yarn.lock']
+    .concat(['bun.lock', 'bun.lockb'])
+    .some((path) => path in files)
+  if (pkgRaw && !anyLock) {
+    const { approvedLockFor } = await import('./approvedDependencyLock')
+    const lock = approvedLockFor(pkgRaw)
+    if (lock) files['package-lock.json'] = lock
+  }
   if (options.purpose === 'source') return { files, warnings }
   if (!pkgRaw) {
     warnings.push('Este projeto nao tem package.json; o deploy precisa de um build que gere dist/.')

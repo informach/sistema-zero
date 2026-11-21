@@ -1,0 +1,90 @@
+name: Studio export (outside the Studio, reproducible)
+
+# Lote 7 da evolução do Estúdio (seção 14 da missão, 21/11/2026): a exportação do Pro conferida
+# fora do Estúdio. Os 14 modelos e um projeto com biblioteca fora do grafo aprovado são exportados
+# pelo mesmo "Baixar o código", instalados numa pasta limpa (`npm ci` com a trava que a exportação
+# leva, `npm install` sem ela) e construídos duas vezes (`scripts/verify-exports.ts`). No Linux e no
+# Windows; o último passo compara os builds das duas máquinas. A evidência vai nos artefatos.
+on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-export.yml'
+      - 'packages/studio/scripts/verify-exports.ts'
+      - 'packages/studio/src/export/**'
+      - 'packages/studio/src/components/code/pro-templates/**'
+      - 'packages/studio/pro-kits/**'
+      - 'packages/studio-runtime/runtime/package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-export-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  export:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+        working-directory: packages/studio
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Prepare signed Ubuntu sources
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - working-directory: .
+        run: bun install --frozen-lockfile
+      - name: Export, install and build twice outside the Studio
+        timeout-minutes: 35
+        run: |
+          mkdir -p .cache
+          bun scripts/verify-exports.ts --output=.cache/export-proof-${{ runner.os }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-export-${{ runner.os }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: packages/studio/.cache/export-proof-${{ runner.os }}.json
+
+  compare:
+    needs: export
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: studio-export-*
+          merge-multiple: true
+      - name: Same build on Linux and Windows
+        run: |
+          node -e '
+            const read = (os) => require(`./export-proof-${os}.json`).results
+            const linux = read("Linux"), windows = read("Windows")
+            const rows = linux.map((row) => {
+              const other = windows.find((item) => item.project === row.project)
+              return { project: row.project, lockfile: row.lockfile, linux: row.dist.sha256, windows: other?.dist.sha256, same: row.dist.sha256 === other?.dist.sha256 }
+            })
+            console.table(rows)
+            const locked = rows.filter((row) => row.lockfile)
+            if (locked.some((row) => !row.same)) {
+              console.error("Um projeto com a trava saiu diferente entre as máquinas.")
+              process.exit(1)
+            }
+          '
