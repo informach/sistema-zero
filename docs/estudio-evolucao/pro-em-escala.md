@@ -1,0 +1,80 @@
+# Pro em escala: evidência da etapa 3 (20/11/2026)
+
+A régua é a linha "3. Pro em escala" da tabela de critérios do
+[`plano-execucao.md`](plano-execucao.md). Cada critério com a prova versionada e o que ainda falta.
+
+## Projeto modular de 60 arquivos
+
+`e2e/fixtures/pro-workspace/modularProject.ts` (`?modular` no fixture do Pro): 60 arquivos
+TypeScript que se importam em cinco camadas (10 do núcleo, a classe base e 20 entidades, 15
+sistemas, 9 cenas, 4 de interface e o `main.ts`). O laboratório antigo tinha 78 arquivos soltos,
+sem nenhuma importação entre eles. A análise passa pelos 60 e não acha problema.
+
+`e2e/pro-workspace-performance.spec.ts`, caso "modular 60-file project", mede DENTRO da página
+(do clique ou do evento de entrada até o quadro seguinte ao alvo aparecer), no Monaco e no worker
+de linguagem de verdade:
+
+| Medida | Critério | Windows local, Chromium do Playwright (20/11) |
+| --- | --- | --- |
+| Digitar: tecla até o segundo quadro, p95 | < 50 ms | 33 ms |
+| Abrir painel do trilho (Procurar ⇄ Arquivos), p95 | < 150 ms | 26 ms |
+| Abrir a gaveta (Problemas), p95 | < 150 ms | 28 ms |
+| Primeira resposta da busca no projeto, p95 | < 200 ms | 10 ms |
+
+O teste reprova acima dos critérios. O relatório de cada rodada (com SHA, data, navegador e as
+amostras) vai para `pro-modular-current.json` ao lado da medição antiga; no `studio-mission.yml`,
+em `.cache/mission/` do artefato da rodada, no Linux e no Windows.
+
+## Nenhum resultado de análise de versão antiga
+
+O mesmo caso troca o tipo de um método da classe base (`points(): number` para `string`): a gaveta
+acusa as entidades e os sistemas FECHADOS que dependem dela (0,4 s depois da última tecla) e, ao
+voltar o tipo, os problemas somem (0,4 s). Por trás, dois cortes: o laço da análise abandona a
+rodada quando a geração muda ou quando o modelo mudou de versão no meio
+(`monaco/pro/session.ts`, `diagnose`), e a gaveta só mostra o diagnóstico cujo hash de origem é o
+do texto de agora (`modes/pro/workspace/diagnostics.ts`, `currentProDiagnostics`).
+
+## Fila de arquivos
+
+Já coberta antes desta etapa, conferida aqui:
+- `src/modes/pro/proFsSync.test.ts`: ordem entre terminal e editor nas duas direções,
+  editores concorrentes, escrita tardia do terminal detectada antes de sobrescrever, escrita
+  parcial repetida sem duplicar recuperação, troca de projeto cancelando o que estava pendente,
+  arquivo que o terminal criou e o Estúdio não suporta;
+- `src/modes/pro/useWebContainerSync.test.tsx`: posse do filesystem no StrictMode, montagem em voo
+  da instância desmontada e troca de projeto esperando a montagem antiga.
+
+## Escolha da execução
+
+Documentada em [`pro-execucao.md`](pro-execucao.md): leve (no navegador, quando o projeto cabe),
+hospedada (o Vite no servidor) e completa (WebContainer, quando o host não entrega o compilador).
+
+## Mapa de símbolos: o índice inteiro, decidido com medida
+
+O plano de 20/11 previa mandar o mapa em partes. Medido no pior caso possível, um arquivo no teto
+de 256 mil caracteres só de declarações (TypeScript 5.9.3, Windows local, sete rodadas):
+
+| Parte | Tempo |
+| --- | --- |
+| Árvore de navegação do TypeScript | 9 a 23 ms (180 ms na primeira, fria) |
+| Achatar o índice | 1 a 5 ms |
+| Copiar os 9.527 símbolos (642 KB) entre worker e página | 5 a 7 ms |
+
+Mandar em partes economizaria só a cópia, uns 6 ms no pior caso. A árvore do TypeScript é
+montada inteira de qualquer jeito, e a tela já monta 100 itens por vez (com a busca sobre o índice
+inteiro, `docs/qa/2026-11-19-studio-pro-file-map.md`). Fica o índice inteiro.
+
+## Limites
+
+As cotas do compilador (`STUDIO_PRO_BUILD_LIMITS`: 80 arquivos, 256 mil caracteres por arquivo,
+1,5 milhão no total) são as mesmas no editor (quando o host as declara), no BFF, no Worker e
+agora na execução leve. As do artefato (`STUDIO_PRO_ARTIFACT_LIMITS`: 338 arquivos, 2,5 MB)
+somam aos 80 fontes os materiais e o manifesto. Nenhuma foi aumentada.
+
+## O que falta
+
+- Os números do `studio-mission.yml` no Linux e no Windows versionados aqui (a primeira rodada
+  com o caso novo é a do `a674e4c16`).
+- O ensaio com tudo ligado ao mesmo tempo (editor, linguagem, jogo, filesystem e Zappy), pedido
+  do relatório de 20/11: a medição atual liga editor, linguagem, jogo (fixture) e Zappy, sem o
+  WebContainer, que precisa de rede para fora.

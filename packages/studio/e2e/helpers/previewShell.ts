@@ -109,13 +109,17 @@ export async function replaceBridgeScript(page: Page, code: string): Promise<voi
     // perto do cursor (inclusive no Chromium Linux da CI).
     // Copiar a seleção pelo teclado lê o programa real, inclusive as linhas fora
     // dessa janela. Limpar antes evita confundir a colagem anterior com a cópia.
-    await page.evaluate(() => navigator.clipboard.writeText('conferencia-da-copia'))
-    await page.keyboard.press(`${modifier}+A`)
-    await page.keyboard.press(`${modifier}+C`)
+    // A cópia vai DENTRO de cada leitura: logo depois da colagem a Ponte ainda
+    // sincroniza o código, e uma seleção feita no meio dessa troca copiou só um
+    // trecho (Windows da homologação 44854588851). Reler a mesma cópia tirada uma
+    // vez conferia um retrato velho; o que se confere é o texto de agora do editor.
     await expect
-      .poll(async () =>
-        (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n'),
-      )
+      .poll(async () => {
+        await page.evaluate(() => navigator.clipboard.writeText('conferencia-da-copia'))
+        await page.keyboard.press(`${modifier}+A`)
+        await page.keyboard.press(`${modifier}+C`)
+        return (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n')
+      })
       .toBe(code.replace(/\r\n/g, '\n'))
     await page.keyboard.press('ArrowRight')
   } else {

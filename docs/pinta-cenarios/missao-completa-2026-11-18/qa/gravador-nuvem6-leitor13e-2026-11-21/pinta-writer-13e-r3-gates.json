@@ -1,0 +1,16 @@
+[
+  {
+    "name": "community-cloud",
+    "exit": 0,
+    "started": "2026-11-21T04:08:18.080Z",
+    "finished": "2026-11-21T04:08:19.969Z",
+    "log": ".cache/pinta-writer-13e-r3-community-cloud.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T04:08:19.972Z",
+    "finished": "2026-11-21T04:08:48.589Z",
+    "log": ".cache/pinta-writer-13e-r3-biome.log"
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-21T03:48:33.129Z",
+  "head": "24226bb3f0ab10e96174d80dcbbcafe1f37653ff",
+  "mergeHead": "48a8d0f0561ec7e5b24d7c1071c7209a4c40253b",
+  "files": [
+    {
+      "file": "packages/molda/src/components/editor/scene/SceneWorkshop.accessRevocation.test.tsx",
+      "sha256": "f3941e455b714390f64ee3734446401a44ebcc51397db834672f1ca122db5ac7"
+    },
+    {
+      "file": "packages/studio/e2e/engine-baseline.spec.ts",
+      "sha256": "6a2679f00a75b914e714ccd3dc6078fd173ba6f928decfa676a79fe039cee373"
+    },
+    {
+      "file": "packages/studio/e2e/fixtures/pro-workspace/main.tsx",
+      "sha256": "65f6ae592a2190d6dbf7768b107dc0435e594abb649cbab542b3ee5098dfeba0"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/previewShell.ts",
+      "sha256": "f600c9a40f39df6a5c997f157cbcdd73595ebc6260cee361b79c52c21f6d392f"
+    },
+    {
+      "file": "packages/studio/e2e/pro-light-runtime.spec.ts",
+      "sha256": "2ab6101a4cb0d2e45e8bb2d5c3de182a7b3e043c7f891369395224e0e1c8028c"
+    },
+    {
+      "file": "packages/studio/e2e/pro-workspace.config.ts",
+      "sha256": "011a3cd8fb68e2f3a5f4660a55a72dfcdd2b22dd88994ccc3e5e220819b1aa1d"
+    },
+    {
+      "file": "packages/studio/playwright.config.ts",
+      "sha256": "20f10037518ca1544fbead807ecfd3e029dcd71487ae4b9f054ac31e77e19193"
+    },
+    {
+      "file": "packages/studio/src/components/code/pro-templates/base.ts",
+      "sha256": "89bfb50796b97d78d55a66175a5e7ef3d454afb9d1c712ea82405178d0ec6158"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProPreview.tsx",
+      "sha256": "a2f01876ebff49c583f466e6fbc05a6f862f9135c8d0fd7c0a7322e41e8cb18a"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/lightProBuild.test.ts",
+      "sha256": "9945c8c24c38e83ff157f84ad6d45afccc9990688ea9eec6f468bf35b066bd8e"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/lightProBuild.ts",
+      "sha256": "925236135339db7c5c6b88e1bf026c7276a0c9649512ec204a8eae518f785d9c"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/lightProRuntime.ts",
+      "sha256": "4f5001caa4017e579b3ce6b33da5f0ae0191257393ea8b384a7319d0b84894c0"
+    }
+  ]
+}

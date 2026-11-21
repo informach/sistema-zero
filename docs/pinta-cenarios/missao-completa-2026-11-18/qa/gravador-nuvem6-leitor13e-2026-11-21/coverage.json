@@ -1,0 +1,91 @@
+{
+  "at": "2026-11-21T04:10:14.466Z",
+  "reader": "13e88e9c86fb730255a7809454ce3dabd41fd49f",
+  "base": "c70e93ba0e6000859d7b4a5474d01e8c0ec1d144",
+  "categories": [
+    {
+      "name": "community-cloud",
+      "exit": 0,
+      "started": "2026-11-21T04:08:18.080Z",
+      "finished": "2026-11-21T04:08:19.969Z",
+      "log": ".cache/pinta-writer-13e-r3-community-cloud.log"
+    },
+    {
+      "name": "core",
+      "exit": 0,
+      "started": "2026-11-21T04:02:59.107Z",
+      "finished": "2026-11-21T04:03:10.149Z",
+      "log": ".cache/pinta-writer-13e-core.log"
+    },
+    {
+      "name": "core-types",
+      "exit": 0,
+      "started": "2026-11-21T04:03:10.804Z",
+      "finished": "2026-11-21T04:03:19.356Z",
+      "log": ".cache/pinta-writer-13e-core-types.log"
+    },
+    {
+      "name": "shell",
+      "exit": 0,
+      "started": "2026-11-21T04:03:20.030Z",
+      "finished": "2026-11-21T04:03:27.644Z",
+      "log": ".cache/pinta-writer-13e-shell.log"
+    },
+    {
+      "name": "members-format",
+      "exit": 0,
+      "started": "2026-11-21T04:03:28.279Z",
+      "finished": "2026-11-21T04:03:33.587Z",
+      "log": ".cache/pinta-writer-13e-members-format.log"
+    },
+    {
+      "name": "shell-types",
+      "exit": 0,
+      "started": "2026-11-21T04:03:34.270Z",
+      "finished": "2026-11-21T04:06:09.400Z",
+      "log": ".cache/pinta-writer-13e-shell-types.log"
+    },
+    {
+      "name": "python-closure",
+      "exit": 0,
+      "started": "2026-11-21T04:06:10.088Z",
+      "finished": "2026-11-21T04:06:11.606Z",
+      "log": ".cache/pinta-writer-13e-python-closure.log"
+    },
+    {
+      "name": "runtime-closure",
+      "exit": 0,
+      "started": "2026-11-21T04:07:08.196Z",
+      "finished": "2026-11-21T04:07:11.605Z",
+      "log": ".cache/pinta-writer-13e-r2-gate-runtime-closure.log"
+    },
+    {
+      "name": "profile",
+      "exit": 0,
+      "started": "2026-11-21T04:07:12.258Z",
+      "finished": "2026-11-21T04:07:13.134Z",
+      "log": ".cache/pinta-writer-13e-r2-gate-profile.log"
+    },
+    {
+      "name": "biome",
+      "exit": 0,
+      "started": "2026-11-21T04:08:19.972Z",
+      "finished": "2026-11-21T04:08:48.589Z",
+      "log": ".cache/pinta-writer-13e-r3-biome.log"
+    }
+  ],
+  "successfulCategories": 10,
+  "oneAllGreenOriginalRun": false,
+  "originalFailuresPreserved": true,
+  "writerPackageDelta": [
+    "packages/community-kids/tests/pinta-cloud-persistence.test.ts",
+    "packages/core/src/creations/pinta-format.test.ts",
+    "packages/core/src/creations/pinta-format.ts",
+    "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+    "packages/member-shell/tests/pinta-local-authority.test.ts"
+  ],
+  "cloudWrite": 6,
+  "cloudRead": 6,
+  "nativeRead": 7,
+  "activated": false
+}

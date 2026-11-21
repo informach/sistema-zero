@@ -54,3 +54,15 @@ incluindo a política `12220f13…`. Os sete controles e a igualdade dos artefat
 foram repetidos; ver `qa/gravador-nuvem6-leitor24226-2026-11-21/` no diretório
 da missão. A escrita continua inativa até a qualificação e o rollout do leitor,
 seguidos dos ensaios autenticados e do rollback previstos neste plano.
+
+O leitor `13e88e9c8` foi integrado depois, incluindo os commits públicos até
+48a8 e a precondição de QA da linha do tempo. A CI anterior de c70 revelou
+nove expectativas fixas de capacidade 4 no espelho Kids. A reprodução e as
+correções preservaram schemas nativos, metadados históricos e verificações de
+perda; passaram os 72 casos finais. Foram aprovadas dez categorias locais em
+três rodadas registradas, com as duas falhas operacionais/formatadoras
+preservadas: não se declara um único lote original verde. Worker e os 126
+arquivos Python são idênticos ao leitor. Evidências em
+`qa/gravador-nuvem6-leitor13e-2026-11-21/`, no diretório da missão.
+Esta preparação exige CI própria e continua sem deploy até completar o leitor,
+sua ativação e a homologação autenticada dos critérios 6 e 7.
