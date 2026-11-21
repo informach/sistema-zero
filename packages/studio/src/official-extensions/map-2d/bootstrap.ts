@@ -24,10 +24,12 @@ export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): st
  * caracteres ao lote de sólidos, apenas no chunk lazy de cenário; inclui o
  * percurso compartilhado de peças, sem conservar outra grade para plataformas.
  * A folga é menor que 1%: o bastante para um ajuste pequeno, pouco demais para outro
- * recurso entrar sem alguém medir e decidir. O motor sem cenário segue nos tetos de sempre
- * (422.500 no Jogo 2D e 415.000 no Avançado).
+ * recurso entrar sem alguém medir e decidir. O motor sem cenário segue nos tetos do
+ * `bundle.test.ts` (369.500 no Jogo 2D desde 21/11) e 415.000 no Avançado.
+ * 21/11/2026 (lote 4 da missão): o Jogo 2D com cenário também sai sem os comentários de bloco;
+ * medido 394.352 caracteres (antes 447.878), e o teto desceu junto.
  */
-export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 449_000, gk: 437_000 } as const
+export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 397_000, gk: 437_000 } as const
 // Medidos 26.410 / 26.406 caracteres sobre o legado. Folga inferior a 1%; motores
 // sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
 // Reproduzir: bun packages/studio/scripts/measure-pinta-runtime.ts.
@@ -93,7 +95,8 @@ export async function mapTwoDBootstrap(
       prefix +
       compactOfficialRuntimeSource(
         withMapTwoD(runtime.gameTwoDRuntimeSource.slice(prefix.length), target, fragment),
-        { trimIndent: true },
+        // O mesmo compactar do Jogo 2D sem cenário (`game-2d/runtime.ts`): sem os comentários de bloco.
+        { trimIndent: true, stripBlockComments: true },
       )
     )
   }

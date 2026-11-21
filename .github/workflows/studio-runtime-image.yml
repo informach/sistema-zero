@@ -4,13 +4,23 @@ name: Qualificar imagem Linux de staging do studio-runtime
 # mais no branch próprio da frente do Pinta (`pinta-runtime-image-20261119.yml`, de onde este
 # workflow foi copiado sem mudar os passos). A fonte é o próprio commit do push: cada mudança no
 # motor dos cenários ou no core do Estúdio que muda o perfil de validação pede uma imagem nova.
+# O gatilho é o próprio `validation-profile.json`: tudo o que compõe o perfil
+# (`scripts/validation-profile.ts`) obriga a regerá-lo, e o job `hosted-runtime` da homologação
+# reprova quando ele fica para trás. Antes o gatilho era só este arquivo, e o `workflow_dispatch`
+# não funciona para workflow que ainda não está na `main` (revisão do lote 1, 21/11/2026).
 # O artefato leva a imagem salva, o perfil, o SHA da fonte e a distribuição Python hermética;
 # nenhuma credencial de implantação é usada aqui.
 on:
   push:
     branches: ['staging']
-    paths: ['.github/workflows/studio-runtime-image.yml']
+    paths:
+      - '.github/workflows/studio-runtime-image.yml'
+      - 'packages/studio-runtime/runtime/validation-profile.json'
   workflow_dispatch:
+
+concurrency:
+  group: studio-runtime-image-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -32,10 +42,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Conferir fonte e instalar dependências
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          bun install --frozen-lockfile
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
       - name: Conferir SDKs gerados sem alterar seus bytes
         run: bun run --cwd packages/studio check:scene3d-runtime
       - name: Conferir perfil e construir imagem sem credenciais de implantação

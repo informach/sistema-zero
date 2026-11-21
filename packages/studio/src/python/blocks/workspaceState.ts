@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
 import type { PythonNode, PythonValue } from '../language/types'
 import type { PythonBlocklyBlock } from './blockly'
 import { isNode, pythonSemanticTree } from './nodes'
@@ -11,40 +12,45 @@ export function samePythonWorkspaceProgram(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
 ): boolean {
+  // Sem recursão: uma sequência longa no mesmo corpo é uma cadeia `next` tão funda quanto ela
+  // (lote 3 da missão, 21/11/2026). A cópia em objetos comuns e o laço com pilha explícita tiram a
+  // apresentação de cada bloco e sombra, mantendo a ordem das chaves.
   const executable = (state: Record<string, unknown>) => {
     const saved = state as ReturnType<typeof Blockly.serialization.workspaces.save>
     const roots = saved.blocks?.blocks as Blockly.serialization.blocks.State[] | undefined
-    if (!roots) return state
+    if (!roots) return jsonPlainCopy(state)
     const areas = roots.filter((block) => block.type === PYTHON_PROGRAM)
     const selected = areas.length === 1 ? areas : roots
-    const clean = (block: Blockly.serialization.blocks.State): unknown => {
-      const { x: _x, y: _y, collapsed: _collapsed, icons: _icons, ...rest } = block
-      const connection = (value: Blockly.serialization.blocks.ConnectionState) => ({
-        ...value,
-        ...(value.block ? { block: clean(value.block) } : {}),
-        ...(value.shadow ? { shadow: clean(value.shadow) } : {}),
-      })
-      return {
-        ...rest,
-        ...(block.inputs
-          ? {
-              inputs: Object.fromEntries(
-                Object.entries(block.inputs).map(([key, value]) => [key, connection(value)]),
-              ),
-            }
-          : {}),
-        ...(block.next ? { next: connection(block.next) } : {}),
+    const copy = jsonPlainCopy({ blocks: { ...saved.blocks, blocks: selected } }) as {
+      blocks: { blocks: Record<string, unknown>[] }
+    }
+    const pending = [...copy.blocks.blocks]
+    while (pending.length) {
+      const block = pending.pop() as Record<string, unknown>
+      delete block.x
+      delete block.y
+      delete block.collapsed
+      delete block.icons
+      const connections = [
+        ...Object.values((block.inputs ?? {}) as Record<string, Record<string, unknown>>),
+        ...(block.next ? [block.next as Record<string, unknown>] : []),
+      ]
+      for (const connection of connections) {
+        if (connection.block) pending.push(connection.block as Record<string, unknown>)
+        if (connection.shadow) pending.push(connection.shadow as Record<string, unknown>)
       }
     }
-    return { blocks: { ...saved.blocks, blocks: selected.map(clean) } }
+    return copy
   }
-  return JSON.stringify(executable(before)) === JSON.stringify(executable(after))
+  // Pilha explícita também no texto: o `JSON.stringify` do Firefox recursa a partir de ~2 mil elos
+  // (revisão do lote 3, achado 5).
+  return jsonStringify(executable(before)) === jsonStringify(executable(after))
 }
 
 function sourceWithCurrentOrigin(value: PythonOpaqueBlock, parsed?: PythonNode): PythonOpaqueBlock {
   const node =
     parsed &&
-    JSON.stringify(pythonSemanticTree(value.node)) === JSON.stringify(pythonSemanticTree(parsed))
+    jsonStringify(pythonSemanticTree(value.node)) === jsonStringify(pythonSemanticTree(parsed))
       ? structuredClone(parsed)
       : withoutPythonOrigins(value.node)
   return { ...value, node, origin: { nodeId: node.id, range: node.range } }
@@ -63,7 +69,9 @@ export function rebasePythonWorkspaceState(
   state: Record<string, unknown>,
   origins: PythonWorkspaceOrigins,
 ): Record<string, unknown> {
-  const saved = structuredClone(state) as ReturnType<typeof Blockly.serialization.workspaces.save>
+  // Cópia em objetos comuns e sem recursão (`structuredClone` estoura com 859 blocos numa cadeia
+  // no Chromium 159; o estado do Blockly é JSON, então a cópia pelas regras do JSON é exata).
+  const saved = jsonPlainCopy(state) as ReturnType<typeof Blockly.serialization.workspaces.save>
   const roots = saved.blocks?.blocks as Blockly.serialization.blocks.State[] | undefined
   const queue = [...(roots ?? [])]
   while (queue.length) {

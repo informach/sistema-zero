@@ -33,7 +33,9 @@ cenário"...) serve ao Jogo 2D e ao Jogo 2D Avançado. O que vale desde esta dat
   jogo 2D levava os ~11 mil caracteres do cenário. O teste que vale é o do caminho do host
   (`map-2d/__tests__/hostVariant.test.ts`), não o do fragmento chamado na mão.
 - **Tetos**: motor sem cenário nos tetos de sempre (422.500 e 415.000); com cenário, teto
-  absoluto em `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` (medido 431.468 e 419.766).
+  absoluto em `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` (medido 431.468 e 419.766). Desde 21/11/2026 o Jogo 2D sai
+  sem os comentários de bloco (`stripBlockComments`): tetos 369.500 bytes sem cenário e 397.000
+  caracteres com cenário (`docs/estudio-evolucao/motores-inventario.md`).
 - **A pergunta "usa cenário?" é uma só** (`codeUsesPintaScenePlayer`, em
   `@sistemazero/core/studio/pinta-limits`, sem dependências porque entra no pedaço inicial):
   decide o motor E se a cena vai nos metadados do documento. `assetMetaManifest(assets,

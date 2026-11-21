@@ -335,6 +335,214 @@ describe('PreviewIframe', () => {
     }, 10_000)
   }
 
+  // Lote 2 da missão (21/11/2026): o programa que prende a si mesmo logo no começo (um laço no topo)
+  // não dá o batimento imediato a tempo no Chromium: a mensagem fica presa até a tarefa acabar.
+  // Com o documento ANTERIOR vivo na hora do pedido, nada o impedia de entrar; trocar o iframe
+  // não adianta, só roda o programa de novo e atrasa a guarda de laços (medido: três trocas e o
+  // aviso "laço interrompido" ~15 s depois, com a prévia dizendo "Rodando").
+  it('documento novo calado com o anterior vivo no pedido não é trocado', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    antes.addEventListener(
+      'load',
+      (event) => {
+        if (antes.getAttribute('srcdoc')?.includes('Documento B')) event.stopImmediatePropagation()
+      },
+      true,
+    )
+    const contentWindow = antes.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    // O documento A está vivo: o batimento dele chega logo antes do pedido do B.
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: contentWindow,
+          origin: 'null',
+          data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+        }),
+      )
+    })
+    act(() =>
+      useProjectStore.setState({
+        project: {
+          ...project,
+          files: {
+            ...project.files,
+            'index.html': project.files['index.html'].replace('Preview automático', 'Documento B'),
+          },
+        },
+        isDirty: false,
+      }),
+    )
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Documento B'), { timeout: 3000 })
+    // O B prende a si mesmo: nem batimento nem load.
+    await act(async () => Bun.sleep(3_600))
+    expect(document.querySelector('[data-sz-preview-gap]')).toBeNull()
+    expect(screen.queryByTitle('Pré-visualização')).toBe(antes)
+  }, 10_000)
+
+  // Revisão do lote 2 (21/11/2026): o caso real do resgate é o anterior que FALOU e calou (preso),
+  // não um que nunca falou. Com 1,5 s de silêncio (o batimento é de 1 por segundo) ele já conta
+  // como preso; a primeira versão do conserto esperava 2,5 s e deixava o documento novo na fila.
+  for (const silencio of [1500, 3000] as const) {
+    it(`anterior calado há ${silencio} ms no pedido: o documento novo que não entra é trocado`, async () => {
+      const project = createPreviewProject()
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
+      render(<PreviewIframe />)
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+      antes.addEventListener(
+        'load',
+        (event) => {
+          if (antes.getAttribute('srcdoc')?.includes('Documento B'))
+            event.stopImmediatePropagation()
+        },
+        true,
+      )
+      const contentWindow = antes.contentWindow
+      if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source: contentWindow,
+            origin: 'null',
+            data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+          }),
+        )
+      })
+      await act(async () => Bun.sleep(silencio))
+      act(() =>
+        useProjectStore.setState({
+          project: {
+            ...project,
+            files: {
+              ...project.files,
+              'index.html': project.files['index.html'].replace(
+                'Preview automático',
+                'Documento B',
+              ),
+            },
+          },
+          isDirty: false,
+        }),
+      )
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Documento B'), { timeout: 3000 })
+      await act(async () => Bun.sleep(3_600))
+      const depois = screen.queryByTitle('Pré-visualização')
+      expect(depois === antes && !document.querySelector('[data-sz-preview-gap]')).toBe(false)
+    }, 15_000)
+  }
+
+  // Revisão do lote 2 (21/11/2026): trocar o iframe a cada Parar deixava o quadro descartado preso
+  // no processo da prévia (medido no Chromium 159: 8 Parar e Rodar, 8 documentos a mais, mesmo com
+  // um programa vazio; 8 edições no mesmo iframe, nenhum). Com o jogo vivo, o Parar leva o próprio
+  // iframe ao documento em branco.
+  it('Parar com o jogo vivo leva o mesmo iframe ao documento em branco', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    fireEvent.load(antes)
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    fireEvent.load(antes)
+    const contentWindow = antes.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: contentWindow,
+          origin: 'null',
+          data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+        }),
+      )
+    })
+    await act(async () => {
+      useProRun.getState().actions?.stop()
+    })
+    await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    await act(async () => Bun.sleep(2_400))
+    expect(document.querySelector('[data-sz-preview-gap]')).toBeNull()
+    expect(screen.queryByTitle('Pré-visualização')).toBe(antes)
+  }, 10_000)
+
+  // A rede de segurança: o jogo que prendeu há pouco (ainda com batimento recente) não deixa o
+  // documento em branco entrar no mesmo iframe; depois de um instante, o Parar troca como preso.
+  it('Parar com o jogo que acabou de prender troca o iframe logo depois', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    fireEvent.load(antes)
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    fireEvent.load(antes)
+    const contentWindow = antes.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: contentWindow,
+          origin: 'null',
+          data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+        }),
+      )
+    })
+    // O processo preso não deixa o documento em branco carregar.
+    antes.addEventListener(
+      'load',
+      (event) => {
+        if (antes.getAttribute('srcdoc') === PAUSED_PREVIEW_DOC) event.stopImmediatePropagation()
+      },
+      true,
+    )
+    await act(async () => {
+      useProRun.getState().actions?.stop()
+    })
+    await act(async () => Bun.sleep(2_400))
+    const depois = screen.queryByTitle('Pré-visualização')
+    expect(depois === antes && !document.querySelector('[data-sz-preview-gap]')).toBe(false)
+  }, 10_000)
+
+  // Revisão do lote 2 (21/11/2026): o documento em branco (depois do Parar, na abertura, com a
+  // marca de execução) não tem programa nenhum e não segura processo. O novo que não entra a
+  // partir dele está preso em si mesmo; trocá-lo só rodaria o programa de novo.
+  it('começar do parado: o documento novo preso em si mesmo não é trocado', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    await act(async () => {
+      useProRun.getState().actions?.stop()
+    })
+    await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC), { timeout: 3000 })
+    const parado = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    fireEvent.load(parado)
+    parado.addEventListener(
+      'load',
+      (event) => {
+        if (parado.getAttribute('srcdoc') !== PAUSED_PREVIEW_DOC) event.stopImmediatePropagation()
+      },
+      true,
+    )
+    // Mais tempo que qualquer janela de silêncio: o documento em branco nunca fala.
+    await act(async () => Bun.sleep(3_000))
+    await act(async () => {
+      useProRun.getState().actions?.run()
+    })
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'), {
+      timeout: 3000,
+    })
+    await act(async () => Bun.sleep(3_600))
+    expect(document.querySelector('[data-sz-preview-gap]')).toBeNull()
+    expect(screen.queryByTitle('Pré-visualização')).toBe(parado)
+  }, 15_000)
+
   // Lote 3.1 (19/11/2026): com a prévia em outra origem o iframe usa `src`, e o `srcdoc` lido do
   // DOM era nulo. Resultado: o Parar nunca reconhecia o jogo preso e não abria o intervalo sem
   // iframe que libera o processo travado.
@@ -511,7 +719,10 @@ describe('PreviewIframe', () => {
   // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo
   // iframe espera o cálculo, um iframe novo roda na hora (medido no navegador, ver
   // `e2e/preview-hostile-programs.spec.ts`). No caminho normal o iframe NÃO pode ser trocado.
-  it('Rodar de novo mantém o mesmo iframe; Parar põe um iframe novo no lugar', async () => {
+  // Desde a revisão do lote 2 (21/11/2026) o Parar com o jogo vivo também mantém o iframe (o
+  // descartado ficava preso no processo da prévia); o jogo preso segue trocado, com o intervalo
+  // sem iframe (testes "libera uma primeira execução sem load" e "acabou de prender").
+  it('Rodar de novo e Parar com o jogo vivo mantêm o mesmo iframe', async () => {
     useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
     render(<PreviewIframe />)
     fireEvent.load(screen.getByTitle('Pré-visualização'))
@@ -530,7 +741,7 @@ describe('PreviewIframe', () => {
     act(() => useProRun.getState().actions?.stop())
     await waitFor(() => expect(getPreviewSrcDoc()).toBe(PAUSED_PREVIEW_DOC))
     const depoisDeParar = screen.getByTitle('Pré-visualização')
-    expect(depoisDeParar === primeiro).toBe(false)
+    expect(depoisDeParar === primeiro).toBe(true)
     expect(depoisDeParar.getAttribute('sandbox')).toBe(
       'allow-scripts allow-modals allow-pointer-lock',
     )

@@ -11,7 +11,8 @@
     "./runtime": "./src/compilar/runtime-three.ts",
     "./leitura": "./src/compilar/leitura-http.ts",
     "./instalar": "./src/compilar/instalar-three.ts",
-    "./raylib": "./src/compilar/raylib.ts"
+    "./raylib": "./src/compilar/raylib.ts",
+    "./encaixes": "./src/encaixes-do-glb.ts"
   },
   "scripts": {
     "test": "bun test",

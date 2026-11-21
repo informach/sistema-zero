@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from '../blocksStateVersion'
-import { jsonPlainCopy } from '../jsonPlainCopy'
+import { jsonPlainCopy, jsonStringify } from '../jsonPlainCopy'
 import { saveWorkspaceState } from '../savedWorkspaceState'
 import { ensureBlocklyInitialized } from '../setup'
 
@@ -62,7 +62,88 @@ describe('o estado que sai do Blockly', () => {
   })
 })
 
+/**
+ * Igualdade EXATA com o resultado do JSON: as mesmas chaves próprias na mesma ordem (o `toEqual`
+ * ignora propriedade `undefined`, e foi por isso que a primeira versão do teste não mordia),
+ * `Object.is` nas folhas (distingue `-0`) e o mesmo protótipo.
+ */
+function sameAsJson(copy: unknown, expected: unknown, path = '$'): void {
+  if (expected === null || typeof expected !== 'object') {
+    expect({ path, value: copy }).toEqual({ path, value: expected })
+    expect(Object.is(copy, expected), `${path}: ${String(copy)} contra ${String(expected)}`).toBe(
+      true,
+    )
+    return
+  }
+  expect(typeof copy, path).toBe('object')
+  expect(Object.getPrototypeOf(copy), path).toBe(Object.getPrototypeOf(expected))
+  expect(Reflect.ownKeys(copy as object), path).toEqual(Reflect.ownKeys(expected))
+  for (const key of Object.keys(expected))
+    sameAsJson(
+      (copy as Record<string, unknown>)[key],
+      (expected as Record<string, unknown>)[key],
+      `${path}.${key}`,
+    )
+}
+
+function viaJson(value: unknown): unknown {
+  return JSON.parse(JSON.stringify(value) as string)
+}
+
 describe('jsonPlainCopy', () => {
+  test('o comparador morde: propriedade undefined não é propriedade ausente', () => {
+    expect(() => sameAsJson({ a: undefined }, {})).toThrow()
+    expect(() => sameAsJson({ a: -0 }, { a: 0 })).toThrow()
+  })
+
+  test('igual ao JSON nos casos difíceis, chave a chave', () => {
+    const sample = {
+      missing: undefined,
+      fn: () => 1,
+      sym: Symbol('x'),
+      list: [undefined, () => 2, Symbol('y'), -0, Number.NaN],
+      negativeZero: -0,
+      boxedNumber: new Number(5),
+      boxedString: new String('ab'),
+      boxedBoolean: new Boolean(false),
+      numberWithSwappedProto: Object.setPrototypeOf(new Number(7), Object.prototype),
+      fnWithToJson: Object.assign(() => 1, { toJSON: () => 'função' }),
+      withJson: { toJSON: (key: string) => `chave:${key}` },
+      map: new Map([['a', 1]]),
+      typed: new Uint8Array([1, 2]),
+      date: new Date(0),
+      faker: { [Symbol.toStringTag]: 'Number', n: 1 },
+    }
+    sameAsJson(jsonPlainCopy(sample), viaJson(sample))
+  })
+
+  test('na raiz, o toJSON recebe a chave vazia e o -0 vira 0', () => {
+    const root = { toJSON: (key: string) => ({ key }) }
+    sameAsJson(jsonPlainCopy(root), viaJson(root))
+    sameAsJson(jsonPlainCopy(-0), 0)
+  })
+
+  test('raiz que o JSON não escreve lança como o JSON.parse', () => {
+    for (const value of [undefined, () => 1, Symbol('z')]) {
+      expect(() => viaJson(value)).toThrow(SyntaxError)
+      expect(() => jsonPlainCopy(value)).toThrow(SyntaxError)
+    }
+  })
+
+  test('BigInt lança sem toJSON e usa o toJSON do protótipo quando existe', () => {
+    expect(() => jsonPlainCopy({ big: 10n })).toThrow(TypeError)
+    const proto = BigInt.prototype as unknown as { toJSON?: () => string }
+    proto.toJSON = function (this: bigint) {
+      return `${this.toString()}n`
+    }
+    try {
+      const sample = { big: 10n, boxed: Object(11n) }
+      sameAsJson(jsonPlainCopy(sample), viaJson(sample))
+    } finally {
+      delete proto.toJSON
+    }
+  })
+
   test('devolve o mesmo que JSON.parse(JSON.stringify(...))', () => {
     const nullProto = Object.assign(Object.create(null), { a: 1, b: [1, Number.NaN, undefined] })
     const sample = {
@@ -77,7 +158,7 @@ describe('jsonPlainCopy', () => {
       date: new Date(0),
       withJson: { toJSON: (key: string) => `chave:${key}` },
     }
-    expect(jsonPlainCopy(sample)).toEqual(JSON.parse(JSON.stringify(sample)))
+    sameAsJson(jsonPlainCopy(sample), viaJson(sample))
     expect(JSON.stringify(jsonPlainCopy(sample))).toBe(JSON.stringify(sample))
   })
 
@@ -113,5 +194,51 @@ describe('jsonPlainCopy', () => {
       depth++
     }
     expect(depth).toBe(200_000)
+  })
+})
+
+describe('jsonStringify', () => {
+  const casos: Record<string, unknown> = {
+    objeto: { a: 1, b: 'x', c: [1, 'dois', null], d: { e: true } },
+    vazios: { a: {}, b: [], c: '' },
+    omitidos: { a: undefined, b: () => 1, c: Symbol('s'), d: [undefined, () => 2, Symbol('t')] },
+    numeros: { a: -0, b: Number.NaN, c: Number.POSITIVE_INFINITY, d: 1e21, e: 0.1 },
+    textos: { 'chave "com" aspas': 'linha\nnova', unicode: 'olá 🌟  ', solto: '\ud800' },
+    embrulhos: { n: new Number(5), s: new String('ab'), b: new Boolean(true) },
+    toJSON: { data: new Date(0), proprio: { toJSON: (key: string) => `k:${key}` } },
+    lista: [1, [2, [3, [4]]], { x: [] }],
+    raiz: 'só texto',
+    nulo: null,
+    protoNulo: Object.assign(Object.create(null), { a: 1, b: [2] }),
+  }
+  for (const [nome, valor] of Object.entries(casos))
+    test(`igual ao JSON.stringify: ${nome}`, () => {
+      expect(jsonStringify(valor)).toBe(JSON.stringify(valor))
+    })
+
+  test('raiz que o JSON não escreve devolve undefined, como o JSON.stringify', () => {
+    for (const valor of [undefined, () => 1, Symbol('z')])
+      expect(jsonStringify(valor)).toBe(JSON.stringify(valor))
+  })
+
+  test('ciclo lança, referência repetida não', () => {
+    const shared = { n: 1 }
+    expect(jsonStringify({ a: shared, b: shared })).toBe('{"a":{"n":1},"b":{"n":1}}')
+    const loop: Record<string, unknown> = {}
+    loop.self = loop
+    expect(() => jsonStringify(loop)).toThrow(TypeError)
+  })
+
+  test('uma cadeia muito mais funda que a pilha vira texto', () => {
+    const root: Record<string, unknown> = Object.create(null)
+    let cursor = root
+    for (let index = 0; index < 200_000; index++) {
+      const next: Record<string, unknown> = Object.create(null)
+      cursor.next = { block: next }
+      cursor = next
+    }
+    const text = jsonStringify(root) as string
+    expect(text.startsWith('{"next":{"block":{"next":')).toBe(true)
+    expect(text.length).toBe('{"next":{"block":'.length * 200_000 + 2 + '}}'.length * 200_000)
   })
 })

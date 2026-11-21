@@ -60,6 +60,7 @@ Intenções (um passo de desfazer cada):
 | `montar_conjunto` | Monta um conjunto da biblioteca, na versão publicada dele. |
 | `espalhar` | Espalha modelos numa área redonda, sem encostar nos objetos e fora da água. `densidade` é quantos por 100 m². |
 | `alinhar_ao_chao` | Faz objetos pisarem no relevo. |
+| `encaixar_pecas` | Encaixa peças modulares (caminhos, pontes, rampas, escadas, plataformas, cercas) na vizinha mais perto pelos pontos de encaixe: gira no próprio eixo e encosta ponta com ponta, solta do relevo. Os pontos são os escritos à mão no modelo (`encaixes`) ou os da geometria do arquivo. `vizinha` limita a uma peça; `alcance` (padrão 3 m). |
 | `desfazer`, `refazer` | O histórico da oficina. |
 
 Consultas (não gravam nada): `consultar_pontos` (há chão? altura? água?), `consultar_regiao`

@@ -26,7 +26,7 @@ conferido em aparelho físico**.
 
 As metas da etapa 2 (com 5 mil, abrir em menos de 8 s, mover sem tarefa acima de 500 ms e editar
 sem tarefa acima de 200 ms) foram escritas para a máquina do teste, não para o aparelho emulado. A
-4x, o 5 mil passa no mover e não passa no abrir nem no editar. A 6x, só o 2 mil fica dentro das três.
+4x, o 5 mil passa no mover e não passa no abrir nem no editar. A 6x, nenhum tamanho fica dentro das três: o 2 mil passa no abrir e no mover, mas a maior tarefa ao editar um campo foi 254 ms, acima dos 200 ms (a primeira versão deste texto dizia que o 2 mil passava nas três; a revisão do lote 1 conferiu contra o `classico-cpu6.json`).
 
 ## Pro modular de 60 arquivos (`e2e/pro-workspace-performance.spec.ts`)
 

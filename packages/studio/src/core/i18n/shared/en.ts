@@ -86,6 +86,11 @@ export const en: Record<string, string> = {
   'stage.bigger': 'Bigger game',
   'stage.smaller': 'Smaller game',
   'stage.errorMark': 'The game stopped at this block.',
+  'blocks.restoreFailed.title': "These blocks couldn't be opened",
+  'blocks.restoreFailed.body':
+    'Nothing was lost: the project is as it was. The block editor could not show this program, which happens, for example, with a block sequence that is too long. Keep going in the code, in Bridge mode.',
+  'blocks.restoreFailed.bodyNoBridge':
+    'Nothing was lost: the project is as it was. The block editor could not show this program, which happens, for example, with a block sequence that is too long. Ask an adult for help to keep going.',
   'blocks.dropToDelete': 'Drop here to delete',
   'blocks.moreBlocks': 'More blocks',
   'tour.title': 'First steps',

@@ -529,8 +529,187 @@ Antes do conserto, o mesmo teste reprovava no Chromium: a edição não chegava 
   elos). Resolver isso pede o formato plano das cadeias e carregar, salvar e descartar elo a elo
   (o conserto B do plano, autorizado por ela se a medição pedisse). No formato dos jogos (eventos
   com corpo) o Blockly aguenta 12 mil blocos nos três.
-- **"O mesmo código do caminho sem montagem sob demanda" com 10 mil** ainda não foi comparado: a
-  comparação de dois braços (`scripts/measure-classic-opening.mjs`) é pesada e vai para um job do
-  CI.
+- **"O mesmo código do caminho sem montagem sob demanda" com 10 mil**: comparado no lote 3 (abaixo,
+  "Os dois caminhos dão o mesmo projeto").
 - O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo; com o formato dos jogos
   ele não estoura, e mexer nele muda bytes que a nuvem confere. Fica para o conserto B.
+
+### O Python ainda não passa pela cópia segura (medido em 21/11/2026, revisão do lote 1)
+
+O editor de blocos do Python salva por outro caminho (`python/blocks/workspaceState.ts`,
+`savePythonWorkspace` e `rebasePythonWorkspaceState`): copia o `save` cru do Blockly com
+`structuredClone`, que também recursa. Medido com uma cadeia no formato do estado do Python
+(script `sc-browsers.mjs` da sessão, `structuredClone` direto na página):
+
+| Navegador | Objetos sem protótipo (o que o Blockly devolve) | Objetos comuns |
+|---|---|---|
+| Chromium 159 completo | **859 blocos** | 1.628 blocos |
+| Firefox do Playwright | mais de 400 mil | mais de 400 mil |
+| WebKit do Playwright | 19.998 | 19.998 |
+
+Uma sequência de ~860 instruções no mesmo corpo derruba o salvar do Python no Chromium. A
+comparação `samePythonWorkspaceProgram` também recursa bloco a bloco. Fica para o lote 3, com a
+medição no editor de verdade, e o comentário de `savedWorkspaceState.ts` deixou de dizer que todo
+estado passa por ali.
+
+## Conserto B: a sequência única de 10 mil blocos (lote 3, 21/11/2026)
+
+**O Python primeiro** (`fce7540e4`): o `rebasePythonWorkspaceState` copia o estado com a
+`jsonPlainCopy` e o `samePythonWorkspaceProgram` tira a apresentação com pilha explícita; o estado
+que vai ao Zappy sai em objetos comuns. Testes de 30 mil e 18 mil blocos reprovam na versão antiga.
+
+**A sequência única no Clássico, medida no navegador.** Para medir, o playground ganhou
+`&forma=sequencia` (`playground/lessonHarness.tsx`): em vez de repetir eventos curtos, completa o
+projeto até N blocos com instruções seguidas ("Código avançado JavaScript") no corpo do primeiro
+evento. Com 10 mil blocos no Chromium 159:
+
+1. **O editor quebrava inteiro** ("A IDE encontrou um erro inesperado"): o seletor da barra que
+   procura blocos 3D (`projectHas3DConsumer`) fazia `JSON.stringify` do estado a cada mudança, e o
+   nativo estoura numa cadeia de 20 mil níveis. Conserto: `jsonStringify` (`blockly/jsonPlainCopy.ts`),
+   o mesmo texto do `JSON.stringify`, sem recursão, com testes diferenciais (embrulhos, `-0`,
+   omitidos, texto com surrogates, ciclos, cadeia de 200 mil níveis). Usado no seletor e nas sete
+   impressões digitais do estado no `BlocklyPanel`.
+2. **Com o editor de pé, apareceu perda de dados calada.** O `load` do Blockly 12 parava no meio: o
+   desenho recursa na cadeia de pais (`queueRender` no gerenciador de desenho) e estoura por volta de
+   2 mil blocos seguidos. O erro virava só um aviso no console, e a regeneração seguinte gravava o
+   workspace parcial: o projeto passava de 10.000 para ~2.150 blocos, sem nada na tela. Conserto
+   (`BlocklyPanel.tsx`): uma restauração que falha trava a gravação do estado dos blocos até uma
+   carga dar certo, limpa o workspace sem gerar eventos e mostra na área de blocos "Não deu para
+   abrir estes blocos. Nada foi perdido...". O código continua editável pela Ponte. Teste:
+   `e2e/classic-long-sequence.spec.ts` (o recado aparece e o projeto continua com os 10.000 blocos;
+   vermelho com o `BlocklyPanel` anterior). A trava vale para qualquer falha de carga, não só para
+   esta.
+
+**Os 10 mil no formato dos jogos seguem abrindo** (eventos com corpo): `classic-scale` com 10.000,
+Chromium 159, abrir 17,7 s, edição de campo chega ao código (`setupStage(500, 360,`), projeto com
+os 10.000 blocos. As cinco aulas protegidas passam.
+
+**O que falta do conserto B, sem enfeite.**
+- Abrir a sequência única no editor de blocos: a cauda adiada (`deferredTail.ts`) solta da cadeia
+  os eventos distantes durante a carga, e por isso o formato dos jogos não esbarra no desenho
+  recursivo; uma sequência dentro de UM corpo não é dividida. Estender a divisão para dentro dos
+  corpos mexe nos ganchos do Blockly que o módulo já adapta, com a guarda de atualização.
+- As migrações antigas (`migrateIfElse`, `migrateValueFields`) clonam por `JSON.parse(JSON.stringify())`
+  e andam o estado com recursão; só rodam em projeto de formato antigo.
+- O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo.
+
+## Procurar no programa (lote 3, 21/11/2026)
+
+Seção 6 da missão: "pesquisa e localização em projetos grandes". Até aqui o Clássico só tinha a
+busca da paleta (blocos para pôr no programa).
+
+- **Onde:** um botão "Procurar no programa" no canto de cima da área de blocos e o atalho Ctrl+F
+  nela. Só em projeto com 300 blocos ou mais (`WORKSPACE_SEARCH_MIN_BLOCKS`): os jogos dos cursos
+  têm de 70 a 80, e a tela das aulas gravadas não muda (o teste confere que a busca não aparece na
+  aula). O componente (`components/blocks/WorkspaceSearch.tsx`) é baixado sob demanda, com os
+  próprios textos: o pacote de abertura do modo Blocos e o dicionário da carga inicial não mudam
+  (o teste de orçamento dos pacotes passa).
+- **Como acha:** pelo MODELO (`blockly/workspaceSearch.ts`), não pelo desenho: num projeto grande
+  a cauda nasce sem desenho e o texto dela não está na página. O texto de um bloco é o que a
+  criança lê nele (rótulos e campos, mais o valor das sombras encaixadas), sem acento e com todas
+  as palavras procuradas. O percurso na ordem do programa usa pilha explícita (o `getAllBlocks(true)`
+  do Blockly 12 recursa na cadeia). Até 30 resultados na lista, com o total; Enter anda pelos
+  resultados; cada um diz a área ("Ao iniciar", "Quando acontecer"...) ou "Fora das áreas".
+- **Mostrar:** cada resultado usa o "Mostrar o bloco" de sempre (`highlightStore.revealBlock`),
+  que desenha a cauda adiada até o bloco e o centraliza.
+- **Testes:** `src/blockly/__tests__/workspaceSearch.test.ts` (texto, ordem, limite, 1.500 blocos
+  seguidos) e `e2e/classic-workspace-search.spec.ts` (2 mil blocos, um "marca do fim" no último
+  evento, fora do desenho na abertura: a busca o acha e o põe à vista; na aula, nada aparece).
+- **Para a dona ver:** é tela nova; vai com as fotos no relatório do lote para aprovação ou ajuste.
+
+## Os dois caminhos dão o mesmo projeto, e quanto custa cada gesto (lote 3, 21/11/2026)
+
+Seção 6 da missão: "preservação do modelo completo para geração" e "salvamento sem serialização
+completa desnecessária a cada gesto".
+
+**Os dois braços num build só.** Comparar com e sem montagem sob demanda pedia dois builds (o de
+19/11 trocou arquivos à mão). Agora o mesmo build abre pelos dois caminhos:
+`setOnDemandMountingForTests(false)` (`blockly/offscreenThreshold.ts`, ligado pelo
+`?montagem=inteira` do playground) desliga a abertura adiada e a montagem sob demanda, e o projeto
+grande abre como abrem os pequenos. Fora do teste, nada muda (o interruptor nasce ligado).
+
+**O que o script confere** (`scripts/measure-classic-opening.mjs`, com `SZ_CLASSIC_OPEN_EDIT=1` e
+`SZ_CLASSIC_OPEN_ASSERT=1`), por tamanho:
+- o estado salvo e o código gerado depois de abrir são iguais em todas as amostras dos dois
+  braços (ids canonizados pela ordem; o estado é lido com pilha explícita, porque o
+  `JSON.stringify` do V8 recursa na cadeia de ~1.660 eventos);
+- depois de editar a largura do palco (480 para 500), a edição chega ao código nos dois braços e o
+  estado e o código continuam iguais entre eles;
+- depois disso (revisão do lote 3), "Procurar no programa" leva ao bloco do fim da cauda (o
+  `&marca=1`, que toma o lugar da última instrução do último evento), o que desenha a cauda adiada
+  até ele e liga a montagem sob demanda no braço adiado; um campo desse bloco é editado e a
+  edição tem de chegar ao código, com o estado e o código iguais nos dois braços. O braço adiado
+  tem de ter corpos montados sob demanda depois disso (`afterTailEdit.offscreenBodies`);
+- nenhuma amostra com erro na página;
+- os braços seguiram caminhos diferentes de verdade (um abriu com blocos adiados, o outro sem
+  nenhum): dois braços iguais não provariam nada.
+
+**Job do CI:** `.github/workflows/studio-classic-equivalence.yml` (Chromium COMPLETO, 2 mil e 10
+mil blocos, um par por tamanho), a cada push na staging que mexa na abertura, na montagem, no
+salvar ou no script. O JSON bruto vai nos artefatos.
+
+**Medido nesta máquina** (Windows 11, Ryzen 5 5600G, Chromium 159 completo, estação compartilhada;
+evidência bruta em `evidencias/classico-equivalencia-2026-11-21/windows-local.json`): 12 amostras,
+`{"ok":true}`.
+
+| Blocos | Abrir, adiado | Abrir, inteiro | Desenhados | Gesto: maior tarefa, adiado | Gesto: maior tarefa, inteiro | Resumo do estado e do código (iguais nos dois) |
+|---|---|---|---|---|---|---|
+| 2 002 | 2,1 · 1,9 s | 3,4 · 3,1 s | 106 · 2 002 | nenhuma | 75 ms · nenhuma | `12c51686…` · `30ea420a…` |
+| 5 002 | 3,8 · 5,9 s | 10,2 · 8,8 s | 106 · 5 002 | 95 · 174 ms | 100 · 106 ms (5 tarefas) | `95bb441a…` · `45ddb464…` |
+| 10 000 | 13,3 · 18,8 s | 35,9 · 58,3 s | 106 · 10 000 | 220 · 354 ms | 243 · 322 ms (5 tarefas) | `85811b5a…` · `fe45032c…` |
+
+Os resumos de 2 002 e 5 002 são os mesmos de 20/11 (base contra candidato, dois builds): a leitura
+nova canoniza igual à antiga.
+
+**No CI** (run 44925989770, Linux, Xeon 6975P-C com 4 processadores lógicos, Chromium 159 completo;
+`evidencias/classico-equivalencia-2026-11-21/linux-ci-44925989770.json`): `{"ok":true}`, com os
+MESMOS resumos desta máquina Windows nos dois tamanhos, depois de abrir e depois de editar. Abrir
+10 mil: 11,9 s adiado e 36,1 s inteiro; o gesto: uma tarefa de 176 ms adiado e cinco (a maior de
+386 ms) inteiro. Do clique ao código novo: ~0,3 s adiado (com os 120 ms do agrupador
+do Blockly) e 1,3 a 4,7 s inteiro.
+
+**Com a edição dentro da cauda** (revisão do lote 3; `evidencias/classico-equivalencia-2026-11-21/windows-local-cauda.json`,
+mesma máquina): `{"ok":true}`. Com 2 mil blocos, revelar o fim montou 319 corpos sob demanda no
+braço adiado (389 blocos desenhados, contra 2 001 no inteiro); com 10 mil, 1.652 corpos (1.722
+desenhados, contra 9 999). O estado e o código ficaram iguais nos dois braços depois de abrir,
+depois da edição no alto e depois da edição na cauda. Os resumos mudaram em relação à tabela
+acima porque a fixture agora leva a marca no lugar da última instrução.
+
+**De que é feito o gesto com 10 mil blocos.** Perfil de CPU só da janela do gesto
+(`SZ_CLASSIC_OPEN_EDIT_PROFILE=1`, build sem minificar, braço adiado; resumos em
+`evidencias/classico-equivalencia-2026-11-21/perfil-do-gesto-10mil-*.txt`). A tarefa é uma só,
+de 220 a 290 ms conforme a rodada:
+
+| Etapa | Antes | Depois |
+|---|---|---|
+| Avisos semânticos (`applySemanticDiagnostics`: o zod com as regras de referência) | 72 ms | 72 a 100 ms |
+| Ler a IR do workspace (`buildIRFromWorkspace`) | 31 ms | 31 a 45 ms |
+| Gerar os três arquivos (`generateProjectFilesWithMap`) | 35 ms | 35 a 44 ms |
+| Salvar o workspace (`saveWorkspaceState`, o `save` do Blockly) | ~11 ms | ~17 ms |
+| Serializar o estado inteiro em texto (`jsonStringify`) | **41 ms, três vezes** | **19 ms, uma vez** |
+| A régua do 3D da barra (`projectHas3DConsumer`) | **13 ms** | **6 ms** |
+| React (commit e efeitos) | ~27 ms | ~27 ms |
+
+As duas linhas em negrito foram consertadas aqui (a variação das outras é a máquina compartilhada):
+- **O painel serializava de novo o estado que ele mesmo tinha acabado de gravar.** O efeito de
+  restauração compara o estado que chega da store com o último aplicado, e fazia isso pelo texto.
+  A store guarda o objeto sem copiar e nunca o altera, então agora a volta do estado que o painel
+  gravou é reconhecida pela identidade (`lastAppliedBlocksStateObjectRef`, sempre em par com o
+  texto; `null` quando o texto veio de um estado que não foi à store).
+- **A régua do 3D serializava o estado inteiro para procurar `sz_t3d_`.** O cache por identidade
+  não ajuda num gesto (cada edição traz um estado novo). Agora anda o estado com pilha explícita e
+  para no primeiro bloco: só o TIPO conta (um campo de texto com "sz_t3d_" deixou de contar; teste
+  em `has3DConsumer.test.ts`, vermelho na versão antiga).
+- A serialização que sobrou é o resumo que evita gerar de novo quando nada mudou, e o texto que o
+  efeito de restauração usa para estados vindos de fora (a Ponte, outro aparelho).
+
+**O que fica, com os números.** "Processamento semântico incremental", "cache correto da IR" e
+"atualização localizada de blocos e código" pedem que a IR, os avisos e o código de cada evento
+sejam guardados e só o evento mexido seja refeito. É a mudança do caminho inteiro de geração (os
+avisos de referência dependem da tabela de símbolos do programa todo), e não entrou neste lote.
+Hoje, numa máquina de mesa: até 2 mil blocos o gesto não faz tarefa longa; com 5 mil, uma de 95 a
+174 ms; com 10 mil, uma de 220 a 354 ms. A meta de 50 ms da seção 16 vale até ~2 mil blocos.
+Mover só a organização visual (arrastar uma área sem mudar encaixes) já não refaz a análise
+(`persistWorkspaceLayout`): grava só o estado. A gravação no IndexedDB do Estúdio livre sai no
+autosave (1 s depois da última edição, no máximo 5 s), não a cada gesto, e não foi medida aqui com
+10 mil blocos.

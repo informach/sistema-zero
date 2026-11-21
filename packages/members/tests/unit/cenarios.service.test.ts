@@ -893,3 +893,58 @@ test('equipe num perfil de criança usa a ferramenta, mas sem o espaço da equip
   const antigo: Ator = { usuarioId: OUTRA, contaId: CONTA, equipe: true, suporte: false }
   expect((await servico.espacos(antigo)).map((e) => e.tipo)).toEqual(['conta'])
 })
+
+describe('o Arquipélago é só da equipe', () => {
+  const comCampo = (id: string, propriedades: Record<string, string>): ComandoDeCenario => ({
+    tipo: 'marcador.definir',
+    marcador: {
+      id,
+      nome: 'Placa',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      posicao: { x: 0, y: 0, z: 0 },
+      giro: 0,
+      noChao: true,
+      objeto: null,
+      propriedades,
+    },
+  })
+
+  test('fora do espaço da equipe, um lote não cria campo arquipelago.*; os outros passam', async () => {
+    const { servico } = montar('aberto')
+    const [espaco] = await servico.espacos(cliente)
+    const mundo = await servico.criarMundo(cliente, espaco!.id, 'Ilha')
+    const c = await servico.criarCenario(cliente, mundo.id, 'Praia')
+    const recusa = await servico
+      .editarCenario(cliente, c.id, {
+        revisaoEsperada: 0,
+        operacaoId: 'arq-00001',
+        comandos: [comCampo('placa', { 'arquipelago.sinal.texto': 'Horta' })],
+      })
+      .catch((e) => e)
+    expect(recusa).toBeInstanceOf(CenarioInvalidoError)
+    expect(recusa.message + JSON.stringify(recusa.problemas ?? [])).toContain('arquipelago.')
+    expect(
+      await servico.editarCenario(cliente, c.id, {
+        revisaoEsperada: 0,
+        operacaoId: 'arq-00002',
+        comandos: [comCampo('placa', { texto: 'Horta' })],
+      }),
+    ).toEqual({ revisao: 1 })
+  })
+
+  test('no espaço da equipe os campos do Arquipélago entram', async () => {
+    const { servico } = montar('aberto')
+    const [, equipe] = await servico.espacos(ana)
+    const mundo = await servico.criarMundo(ana, equipe!.id, 'Arquipélago')
+    const c = await servico.criarCenario(ana, mundo.id, 'Faísca')
+    expect(
+      await servico.editarCenario(ana, c.id, {
+        revisaoEsperada: 0,
+        operacaoId: 'arq-00003',
+        comandos: [comCampo('placa', { 'arquipelago.sinal.texto': 'Horta' })],
+      }),
+    ).toEqual({ revisao: 1 })
+  })
+})

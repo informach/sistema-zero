@@ -1088,13 +1088,32 @@ export function PreviewIframe(): JSX.Element {
   // batimento assim que o começo dele roda. Um documento que só demora (módulos 3D chegando,
   // tablet) já falou; o processo preso pelo jogo anterior não fala. Trocar o lento derrubava o
   // download e a execução e repetia o código de topo até três vezes.
+  // E só quando o documento ANTERIOR pode estar segurando o processo (lote 2 da missão e a revisão
+  // dele, 21/11/2026). Um programa que prende a si mesmo logo no começo (um laço no topo) não dá o
+  // batimento imediato a tempo no Chromium: a mensagem entre processos só sai quando a tarefa acaba.
+  // Trocar o iframe não adianta: o novo roda o mesmo programa e prende de novo, e as três trocas
+  // atrasavam o aviso da guarda de laços em ~15 s. Por isso a primeira troca não arma quando:
+  // - o que está carregado é o documento em branco (depois do Parar, na abertura, com a marca de
+  //   execução): ele não tem programa e não segura processo nenhum;
+  // - o documento anterior falou há menos de `RESCUE_PREVIOUS_SILENT_MS` (o batimento é de 1 por
+  //   segundo): ele estava vivo no pedido.
+  // O que prende a si mesmo fica com o vigia de batimentos ("O preview parece travado") e o Parar.
   const swapRescueRef = useRef<{ doc: string; count: number } | null>(null)
   const lastFrameSignalRef = useRef(0)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `frameGeneration` e `frameAbsent` são gatilhos (iframe novo que também não entra pede outra tentativa)
+  // A geração do iframe em que o `loadedSrcDoc` entrou. O documento em branco só prova o processo
+  // livre se entrou NESTE iframe: depois de uma troca, o iframe novo pode ter caído no processo
+  // ainda preso e não ter carregado nada (e2e `preview-startup`: o primeiro arranque preso).
+  const loadedGenerationRef = useRef(-1)
   useEffect(() => {
     if (isolatedUrl || frameAbsent || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
     const rescued = swapRescueRef.current?.doc === effectiveDoc ? swapRescueRef.current.count : 0
     if (rescued >= FRAME_GAPS_MS.length) return
+    if (
+      rescued === 0 &&
+      ((loadedSrcDoc === PAUSED_PREVIEW_DOC && loadedGenerationRef.current === frameGeneration) ||
+        Date.now() - lastFrameSignalRef.current <= RESCUE_PREVIOUS_SILENT_MS)
+    )
+      return
     const requestedAt = Date.now()
     const timer = setTimeout(() => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
@@ -1105,12 +1124,31 @@ export function PreviewIframe(): JSX.Element {
     return () => clearTimeout(timer)
   }, [effectiveDoc, loadedSrcDoc, isolatedUrl, frameGeneration, frameAbsent, swapFrame])
 
-  // PARAR troca o iframe por um novo (ver `frameGeneration`): é o que tira da frente um jogo
-  // preso, por qualquer caminho que o Parar tenha vindo (a barra, o cartão de travado, o host).
+  // PARAR com o jogo preso troca o iframe por um novo (ver `frameGeneration`): é o que tira da
+  // frente um jogo preso, por qualquer caminho que o Parar tenha vindo (a barra, o cartão de
+  // travado, o host). Com o jogo VIVO, o próprio iframe vai ao documento em branco: trocar o
+  // iframe a cada Parar deixava o quadro descartado preso no processo da prévia (revisão do lote
+  // 2, 21/11/2026: no Chromium 159, 8 Parar e Rodar deixaram 8 documentos a mais, mesmo com um
+  // programa vazio; 8 edições no mesmo iframe, nenhum). A rede de segurança é o jogo que prendeu
+  // há pouco, ainda com batimento recente: se o documento em branco não entra em
+  // `STOP_SWAP_AFTER_MS`, o Parar troca como preso.
   // ⚠️ Este efeito precisa ficar ANTES do que zera o relógio dos batimentos (logo abaixo): é o
   // relógio do jogo que acabou de parar que diz se ele estava preso.
+  const stopSwapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const loadedSrcDocRef = useRef(loadedSrcDoc)
+  loadedSrcDocRef.current = loadedSrcDoc
+  useEffect(
+    () => () => {
+      if (stopSwapTimerRef.current) clearTimeout(stopSwapTimerRef.current)
+    },
+    [],
+  )
   // biome-ignore lint/correctness/useExhaustiveDependencies: só a virada de `previewRunning` dispara; o resto é lido na hora
   useEffect(() => {
+    if (stopSwapTimerRef.current) {
+      clearTimeout(stopSwapTimerRef.current)
+      stopSwapTimerRef.current = null
+    }
     if (wasRunningRef.current && !previewRunning) {
       const visible = typeof document === 'undefined' || document.visibilityState === 'visible'
       const attempt = attemptedDocumentRef.current
@@ -1119,7 +1157,12 @@ export function PreviewIframe(): JSX.Element {
         (loadedSrcDoc !== attempt ||
           (visible &&
             (previewStalled || Date.now() - lastHeartbeatRef.current > UNRESPONSIVE_AFTER_MS)))
-      swapFrame(stuck)
+      if (stuck || isolatedUrl) swapFrame(stuck)
+      else
+        stopSwapTimerRef.current = setTimeout(() => {
+          stopSwapTimerRef.current = null
+          if (loadedSrcDocRef.current !== PAUSED_PREVIEW_DOC) swapFrame(true)
+        }, STOP_SWAP_AFTER_MS)
       recordDocumentAttempt(null)
     }
     wasRunningRef.current = previewRunning
@@ -1199,10 +1242,11 @@ export function PreviewIframe(): JSX.Element {
       // própria origem caso o navegador a reporte.
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
-      // Qualquer mensagem autenticada do iframe é sinal de que o processo dele está vivo.
-      lastFrameSignalRef.current = Date.now()
       if (shell && ev.origin === shell.origin) {
-        // Os avisos da própria casca (o jogo não consegue mandá-los: a casca os barra).
+        // Os avisos da própria casca (o jogo não consegue mandá-los: a casca os barra). Eles NÃO
+        // contam como sinal de vida do jogo: a casca mora em outro site e fala mesmo com o jogo
+        // preso, e o pronto da casca nova parava a cadeia de trocas na primeira tentativa
+        // (revisão do lote 2, 21/11/2026).
         if (isClassicShellReady(ev.data)) {
           setShellReadyGeneration(frameGenerationRef.current)
           return
@@ -1214,6 +1258,8 @@ export function PreviewIframe(): JSX.Element {
           return
         }
       } else if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
+      // Qualquer outra mensagem autenticada do iframe é sinal de que o processo do jogo está vivo.
+      lastFrameSignalRef.current = Date.now()
       // Cap de taxa: depois da autenticação barata (referência + origem) e ANTES
       // da validação/structured-clone caras. Conta mensagens por janela de 1s e
       // descarta o excedente — uma rajada (Worker/microtask) não derruba o host.
@@ -1388,6 +1434,7 @@ export function PreviewIframe(): JSX.Element {
   const frameLoadedRef = useRef(() => {})
   frameLoadedRef.current = () => {
     if (frameDocumentRef.current === PAUSED_PREVIEW_DOC) recordDocumentAttempt(null)
+    loadedGenerationRef.current = frameGenerationRef.current
     setLoadedSrcDoc(frameDocumentRef.current)
     frameGapStepRef.current = 0
     lastHeartbeatRef.current = Date.now()
@@ -1567,6 +1614,17 @@ const STORAGE_FLUSH_MS = 500
 const UNRESPONSIVE_AFTER_MS = 2500
 /** Um documento novo que não carregou neste tempo está esperando um jogo preso. */
 const SWAP_STUCK_AFTER_MS = 3000
+/**
+ * Depois do Parar com o jogo vivo, o documento em branco tem este tempo para entrar no iframe. Com
+ * 800 ms, um jogo 3D pesado numa máquina carregada às vezes não soltava a tempo, e a troca deixava
+ * um quadro preso; 2 s ainda deixam o Parar bem abaixo dos 5 s do critério da missão.
+ */
+const STOP_SWAP_AFTER_MS = 2000
+/**
+ * Sem sinal há mais que isto, o documento de antes conta como calado no pedido do novo: o
+ * batimento é de 1 por segundo, e um documento vivo sempre falou dentro desta janela.
+ */
+const RESCUE_PREVIOUS_SILENT_MS = 1200
 /** Quanto a casca em outro site tem para avisar que está pronta antes do recuo ao documento direto. */
 const SHELL_READY_TIMEOUT_MS = 4000
 /** Intervalos sem iframe na troca de um jogo preso; cada nova tentativa espera mais. */

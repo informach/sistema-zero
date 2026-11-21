@@ -1,4 +1,4 @@
-import type { Propriedades } from './documento'
+import type { DocumentoDeCenario, Propriedades } from './documento'
 import { PREFIXO_ARQUIPELAGO } from './migrar'
 
 /**
@@ -456,4 +456,40 @@ export function validarCamposDoArquipelago(propriedades?: Leitura | null): Aviso
       }
   }
   return avisos
+}
+
+/** Os pares `arquipelago.*` de cada entidade que tem algum (id → os pares, em texto ordenado). */
+function camposDoArquipelagoPorEntidade(doc: DocumentoDeCenario): Map<string, string> {
+  const saida = new Map<string, string>()
+  const listas: readonly (readonly { id: string; propriedades?: Propriedades }[] | undefined)[] = [
+    doc.instancias,
+    doc.marcadores,
+    doc.montagens,
+    doc.caminhos,
+    doc.aguas,
+    doc.grupos,
+  ]
+  for (const lista of listas)
+    for (const e of lista ?? []) {
+      const pares = Object.entries(e.propriedades ?? {})
+        .filter(([chave]) => chave.startsWith(PREFIXO_ARQUIPELAGO))
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      if (pares.length) saida.set(e.id, JSON.stringify(pares))
+    }
+  return saida
+}
+
+/**
+ * As entidades em que `depois` cria ou muda um campo do Arquipélago em relação a `antes`. Os
+ * campos são só da equipe (é ela quem publica no jogo): fora do espaço da equipe, um lote que
+ * cria ou muda algum é recusado. Tirar um campo que já estava lá continua valendo.
+ */
+export function camposDoArquipelagoMudados(
+  antes: DocumentoDeCenario,
+  depois: DocumentoDeCenario,
+): string[] {
+  const eram = camposDoArquipelagoPorEntidade(antes)
+  return [...camposDoArquipelagoPorEntidade(depois)]
+    .filter(([id, pares]) => eram.get(id) !== pares)
+    .map(([id]) => id)
 }

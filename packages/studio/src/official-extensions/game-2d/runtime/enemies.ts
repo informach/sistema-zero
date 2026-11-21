@@ -296,7 +296,7 @@ export const gameTwoDEnemiesRuntime = `  // ---- Tipos de inimigo (v0.22.0) ----
   /** Solta um inimigo do tipo em x/y (aplica vida, dano e animações do tipo). */
   function spawnEnemy(type, x, y) {
     if (!type || !type.items || !type.config) return null;
-    if (type.items.length >= MAX_GROUP) return null;
+    if (type.items.length >= MAX_GROUP) { _warnGroupFull(); return null; }
     var c = type.config;
     var s = createSprite({
       x: _finiteNumber(x, 0),

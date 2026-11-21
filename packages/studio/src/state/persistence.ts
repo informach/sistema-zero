@@ -482,10 +482,10 @@ export async function deleteProject(
     const meta = await readValue(scope.store, projectMetaKey(id))
     if (!meta) await loadHistoricalProject(id, scope)
     // As cópias de segurança (migração e arquivo das cópias de saída) saem com o projeto, na mesma
-    // transação (P3, decisão da dona em 21/11/2026). Só as que o próprio registro diz serem deste
-    // projeto: o prefixo da chave também pega `id:outro`.
-    const { listLocalProjectBackups } = await import('../project-migrations/localBackups')
-    const backups = await listLocalProjectBackups(id, scope)
+    // transação (P3, decisão da dona em 21/11/2026). Decididas pela chave inteira (o resto depois
+    // do id é o hash), sem ler o conteúdo: o prefixo sozinho também pegaria `id:outro`.
+    const { localProjectBackupKeys } = await import('../project-migrations/localBackups')
+    const backupKeys = await localProjectBackupKeys(id, scope)
     const done = conditionalWrite(
       scope.store,
       scope.identity,
@@ -532,7 +532,7 @@ export async function deleteProject(
               projectApplicationsKey(id),
               // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
               gameStorageKey(id),
-              ...backups.map((backup) => backup.key),
+              ...backupKeys,
             ],
           },
         }

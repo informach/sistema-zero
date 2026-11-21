@@ -8,17 +8,26 @@ import {
 } from '../propriedades-formulario'
 
 type Linha = LinhaDePropriedade & { id: string }
+/** Se `depois` cria ou muda uma chave com o prefixo da equipe (tirar uma que já existia vale). */
+export function mudaChaveDaEquipe(antes: Dados, depois: Dados, prefixo: string): boolean {
+  return Object.entries(depois).some(
+    ([chave, v]) => chave.startsWith(prefixo) && antes[chave] !== v,
+  )
+}
 /** Pares tipados, guardados juntos. A chave React vem do formulário, não do texto que está sendo editado. */
 export function Propriedades({
   valor = {},
   aoGuardar,
   desligado = false,
   rotuloAcao = 'Guardar propriedades',
+  chavesDaEquipe,
 }: {
   valor?: Dados
   aoGuardar(valor: Dados): boolean
   desligado?: boolean
   rotuloAcao?: string
+  /** Prefixo das chaves que só a equipe cria ou muda (os campos do Arquipélago). */
+  chavesDaEquipe?: string
 }) {
   const prefixo = useId(),
     contador = useRef(0),
@@ -61,6 +70,10 @@ export function Propriedades({
     if (conflito || desligado) return
     if (!dados.valor) {
       setErro(dados.erro)
+      return
+    }
+    if (chavesDaEquipe && mudaChaveDaEquipe(valor, dados.valor, chavesDaEquipe)) {
+      setErro(`Os campos que começam com "${chavesDaEquipe}" são só da equipe.`)
       return
     }
     try {

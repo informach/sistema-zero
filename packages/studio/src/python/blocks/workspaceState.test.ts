@@ -9,10 +9,34 @@ import { expression, integer, moduleNode } from './nodes'
 import { pythonASTToVisual, pythonVisualToAST } from './projection'
 import { bindPythonVisualOrigins } from './provenance'
 import {
+  rebasePythonWorkspaceState,
   recoverPythonWorkspaceOrigins,
   samePythonWorkspaceProgram,
   savePythonWorkspace,
 } from './workspaceState'
+
+/**
+ * Uma sequência longa de instruções no mesmo corpo, no formato do `save` do Blockly: objetos sem
+ * protótipo e uma cadeia `next`. Lote 3 da missão (21/11/2026): o `structuredClone` desse estado
+ * estoura com 859 blocos no Chromium 159 e com 20 mil no JavaScriptCore; a comparação recursiva,
+ * com 40 mil aqui.
+ */
+function longPythonChain(length: number, x = 0) {
+  const block = (index: number) =>
+    Object.assign(Object.create(null), {
+      type: 'sz_py_expression',
+      id: `b${index}`,
+      extraState: { origin: { nodeId: `n${index}` } },
+    })
+  const root = Object.assign(block(0), { x, y: 0 })
+  let cursor = root
+  for (let index = 1; index < length; index++) {
+    const next = block(index)
+    cursor.next = Object.assign(Object.create(null), { block: next })
+    cursor = next
+  }
+  return { blocks: { languageVersion: 0, blocks: [root] } } as Record<string, unknown>
+}
 
 test('moving roots preserves the program; editing a field or connection does not', () => {
   const workspace = new Blockly.Workspace()
@@ -67,4 +91,29 @@ test('saved draft receives current provenance while the live undo metadata stays
     workspace.dispose()
     restored.dispose()
   }
+})
+
+test('uma sequência muito mais longa que a pilha guarda e compara sem recursão', () => {
+  const state = longPythonChain(30_000)
+  const saved = rebasePythonWorkspaceState(state, new Map())
+  // Objetos comuns na saída: o JSON.stringify do V8 só anda sem recursão neles.
+  expect(Object.getPrototypeOf(saved)).toBe(Object.prototype)
+  let depth = 0
+  let cursor = (saved.blocks as { blocks: Record<string, unknown>[] }).blocks[0]
+  while (cursor?.next) {
+    expect(Object.getPrototypeOf(cursor)).toBe(Object.prototype)
+    cursor = (cursor.next as { block: Record<string, unknown> }).block
+    depth++
+  }
+  expect(depth).toBe(29_999)
+  // A origem é a do mapa de agora: nenhuma neste mapa vazio.
+  expect((cursor?.extraState as { origin?: unknown }).origin).toBeUndefined()
+})
+
+test('mover a sequência longa não muda o programa, e a comparação não recursa', () => {
+  // 18 mil: a comparação recursiva antiga estoura acima de ~15 mil no Bun do Windows, e o próprio
+  // JSON.stringify do JavaScriptCore (o motor do Bun e do Safari) vai até 20 mil de profundidade.
+  expect(samePythonWorkspaceProgram(longPythonChain(18_000), longPythonChain(18_000, 300))).toBe(
+    true,
+  )
 })

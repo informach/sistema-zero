@@ -1,0 +1,97 @@
+total sampled: 434.2 ms
+
+== self by module ==
+   160.0 ms  studio-editor-shared-DrhU3VbO.js
+   144.1 ms  (idle)
+    49.7 ms  blockly-D0u--DT0.js
+    18.3 ms  (program)
+    13.9 ms  LazyPreviewIframe-CJ_mQ7Rx.js
+    12.0 ms  (garbage collector)
+     8.8 ms  blockly-BcfUbqZW.js
+     8.1 ms  index-DQFv4232.js
+     4.7 ms  
+     4.3 ms  focus
+     2.2 ms  studio-editor-contracts-DtYQB4RW.js
+     1.1 ms  periodicCodec-CSPdRsxj.js
+     1.1 ms  elementsFromPoint
+     0.7 ms  measureText
+     0.6 ms  query
+
+== self by function ==
+   144.1 ms  (idle) :0
+    41.4 ms  jsonStringify studio-editor-shared-DrhU3VbO.js:70426
+    18.3 ms  (program) :0
+    15.4 ms  childStatementBodies$1 studio-editor-shared-DrhU3VbO.js:13365
+    12.0 ms  (garbage collector) :0
+    11.2 ms  readBlock studio-editor-shared-DrhU3VbO.js:71985
+    10.5 ms  saveWorkspaceState LazyPreviewIframe-CJ_mQ7Rx.js:87
+    10.5 ms  getAllBlocks blockly-D0u--DT0.js:15373
+    10.2 ms  getFields blockly-D0u--DT0.js:10267
+     7.7 ms  validateValue studio-editor-shared-DrhU3VbO.js:18201
+     5.6 ms  visit studio-editor-shared-DrhU3VbO.js:14449
+     5.4 ms  getAllBlocks blockly-D0u--DT0.js:16193
+     4.4 ms  programmingChildBodyEntries studio-editor-shared-DrhU3VbO.js:13524
+     4.3 ms  focus :0
+     3.3 ms  programmingEmbeddedBodyEntries studio-editor-shared-DrhU3VbO.js:13542
+     3.3 ms  visitStatement studio-editor-shared-DrhU3VbO.js:13927
+     3.3 ms  getIcons blockly-D0u--DT0.js:10627
+     3.2 ms  buildIRFromWorkspace blockly-BcfUbqZW.js:7067
+     3.0 ms  (anon) :3
+     2.8 ms  build studio-editor-shared-DrhU3VbO.js:71282
+     2.8 ms  cloneSymbols studio-editor-shared-DrhU3VbO.js:17992
+     2.7 ms  saveFields$$module$build$src$core$serialization$blocks blockly-D0u--DT0.js:1218
+     2.7 ms  validateG2DReferenceValue studio-editor-shared-DrhU3VbO.js:19077
+     2.7 ms  compileStatement studio-editor-shared-DrhU3VbO.js:77315
+     2.6 ms  reverseSourceMap studio-editor-shared-DrhU3VbO.js:71095
+     2.6 ms  cloneCanvas3DSymbols studio-editor-shared-DrhU3VbO.js:18079
+     2.5 ms  wrapped studio-editor-shared-DrhU3VbO.js:7603
+     2.3 ms  generateBehaviorJSWithMap studio-editor-shared-DrhU3VbO.js:77065
+     2.3 ms  functionScopedVariableNames studio-editor-shared-DrhU3VbO.js:13333
+     2.3 ms  saveInputBlocks$$module$build$src$core$serialization$blocks blockly-D0u--DT0.js:1223
+
+== inclusive by function name ==
+   434.2 ms  (root)
+   144.1 ms  (idle)
+    72.3 ms  applySemanticDiagnostics
+    58.6 ms  inst._zod.parse
+    58.6 ms  inst._zod.run
+    58.6 ms  safeParse
+    53.7 ms  runChecks
+    41.4 ms  jsonStringify
+    34.7 ms  generateProjectFilesWithMap
+    30.8 ms  buildIRFromWorkspace
+    29.9 ms  generateBehaviorJSWithMap
+    29.9 ms  generateJSWithMap
+    27.4 ms  blockToIR
+    27.4 ms  getStatementChildren
+    27.0 ms  performWorkOnRoot
+    27.0 ms  performSyncWorkOnRoot
+    27.0 ms  flushSyncWorkAcrossRoots_impl
+    27.0 ms  processRootScheduleInMicrotask
+    26.9 ms  g
+    26.9 ms  gameTwoDBlockToIR
+    23.6 ms  validateStatements
+    23.6 ms  validateProgrammingReferences
+    18.3 ms  (program)
+    17.6 ms  onMouseDown
+    17.0 ms  setTargetBlock
+    17.0 ms  setStartBlock
+    17.0 ms  handleBlockStart
+    16.9 ms  applyProjectState
+    16.9 ms  commitRoot
+    16.9 ms  commitRootWhenReady
+    16.4 ms  findFocusableNodeFor
+    16.1 ms  focusNode
+    15.9 ms  getAllBlocks
+    15.6 ms  setState
+    15.6 ms  set
+    15.4 ms  childStatementBodies$1
+    15.0 ms  checkIfSnapshotChanged
+    14.8 ms  commitHookEffectListMount
+    14.8 ms  commitPassiveMountOnFiber
+    14.8 ms  recursivelyTraversePassiveMountEffects
+    14.8 ms  flushPassiveEffects
+    14.8 ms  flushPendingEffects
+    14.8 ms  flushSpawnedWork
+    14.8 ms  programmingChildBodyEntries
+    14.6 ms  programmingBlockToStatement

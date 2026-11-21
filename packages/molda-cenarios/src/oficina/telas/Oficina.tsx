@@ -9,6 +9,7 @@ import {
   FAMILIA_DA_FERRAMENTA,
   indiceDaOrganizacao,
   type ModeloDoCenario,
+  PREFIXO_ARQUIPELAGO,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type ConfiguracaoDoTeste,
@@ -634,6 +635,15 @@ function OficinaAberta({
   const terrenoOcupado = useRef(false)
   terrenoOcupado.current = terreno.ocupado
   const fonte = relevoPronto ? palco.current?.fonteDeAlturas?.() : undefined
+  // Estáveis: o realce dos pontos de encaixe roda num efeito que depende delas.
+  const pontosDaGeometria = useCallback(
+    (modeloId: string) => palco.current?.pontosDeEncaixeDaGeometria(modeloId) ?? null,
+    [],
+  )
+  const realcarEncaixes = useCallback(
+    (id: string | null) => palco.current?.realcarPontosDeEncaixe(id),
+    [],
+  )
   const retratos = useRetratos({
     host,
     controlador,
@@ -2304,6 +2314,7 @@ function OficinaAberta({
                     palco={palco.current}
                     apenasLuzes={aba === 'luz'}
                     alturaDoAvatar={alturaDoAvatar}
+                    {...(naEquipe ? {} : { chavesDaEquipe: PREFIXO_ARQUIPELAGO })}
                     aoSelecionar={aoSelecionarMarcador}
                     indisponivel={
                       !relevoPronto ||
@@ -2460,6 +2471,8 @@ function OficinaAberta({
                     executar={executar}
                     medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
                     fonte={fonte}
+                    pontosDaGeometria={pontosDaGeometria}
+                    aoRealcar={realcarEncaixes}
                   />
                 ) : null}
               </>
@@ -2474,6 +2487,7 @@ function OficinaAberta({
                       <Propriedades
                         key={entidade.id}
                         valor={entidade.propriedades}
+                        {...(naEquipe ? {} : { chavesDaEquipe: PREFIXO_ARQUIPELAGO })}
                         desligado={
                           estado.ocupado ||
                           !relevoPronto ||

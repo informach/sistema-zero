@@ -55,6 +55,8 @@ test('consulta comercial usa direitos ativos da conta, sem bypass de equipe e se
       subscriptionId: null,
       expiresAt: null,
       kind: 'manual',
+      accessType: 'course',
+      courseRef: 'curso-manual',
     },
     {
       productId: gift.toSnapshot().productId,
@@ -62,6 +64,8 @@ test('consulta comercial usa direitos ativos da conta, sem bypass de equipe e se
       subscriptionId: null,
       expiresAt: null,
       kind: 'gift',
+      accessType: 'course',
+      courseRef: 'curso-presente',
     },
   ])
   expect(

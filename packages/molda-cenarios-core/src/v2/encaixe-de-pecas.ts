@@ -1,3 +1,5 @@
+import type { Transformacao } from './documento'
+import { comEncosta, quaternionDoGiro } from './encosta'
 import type { PontoDeEncaixe } from './entidades-schema'
 
 /**
@@ -84,4 +86,74 @@ export function acharEncaixe(
     }
   }
   return melhor
+}
+
+/** A matriz (16 números, coluna a coluna) de uma pose do documento (giro em Euler XYZ). */
+export function matrizDaPose(t: Transformacao): number[] {
+  const [x, y, z, w] = quaternionDoGiro(t.rotacao),
+    { x: sx, y: sy, z: sz } = t.escala
+  const x2 = x + x,
+    y2 = y + y,
+    z2 = z + z
+  const xx = x * x2,
+    xy = x * y2,
+    xz = x * z2,
+    yy = y * y2,
+    yz = y * z2,
+    zz = z * z2,
+    wx = w * x2,
+    wy = w * y2,
+    wz = w * z2
+  return [
+    (1 - (yy + zz)) * sx,
+    (xy + wz) * sx,
+    (xz - wy) * sx,
+    0,
+    (xy - wz) * sy,
+    (1 - (xx + zz)) * sy,
+    (yz + wx) * sy,
+    0,
+    (xz + wy) * sz,
+    (yz - wx) * sz,
+    (1 - (xx + yy)) * sz,
+    0,
+    t.posicao.x,
+    t.posicao.y,
+    t.posicao.z,
+    1,
+  ]
+}
+
+/**
+ * A pose (no mundo) da peça depois de encaixar pelo par mais perto: gira em volta do próprio
+ * eixo vertical e anda até os dois pontos coincidirem. Nulo quando nenhum par encaixa.
+ */
+export function encaixarPose(
+  pontos: readonly PontoDeEncaixe[],
+  pose: Transformacao,
+  vizinhos: readonly PontoNoMundo[],
+  alcance = ALCANCE_DO_ENCAIXE,
+): { pose: Transformacao; achado: EncaixeAchado } | null {
+  const achado = acharEncaixe(pontosNoMundo(pontos, matrizDaPose(pose)), vizinhos, alcance)
+  if (!achado) return null
+  const girada: Transformacao = {
+    ...pose,
+    rotacao:
+      Math.abs(achado.giro) > 1e-9
+        ? comEncosta(pose.rotacao, { x: 0, y: achado.giro, z: 0 })
+        : { ...pose.rotacao },
+  }
+  const a = pontosNoMundo([pontos[achado.de]!], matrizDaPose(girada))[0]!.posicao,
+    b = vizinhos[achado.para]!.posicao
+  return {
+    pose: {
+      ...girada,
+      posicao: {
+        x: pose.posicao.x + b.x - a.x,
+        y: pose.posicao.y + b.y - a.y,
+        z: pose.posicao.z + b.z - a.z,
+      },
+    },
+    achado,
+  }
 }

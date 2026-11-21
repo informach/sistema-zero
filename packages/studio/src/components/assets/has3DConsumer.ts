@@ -43,9 +43,38 @@ function blocksStateUsesCanvas3D(blocksState: Project['blocksState']): boolean {
   if (!blocksState || typeof blocksState !== 'object') return false
   const cached = canvas3DByBlocksState.get(blocksState)
   if (cached !== undefined) return cached
-  const usa = JSON.stringify(blocksState).includes('sz_t3d_')
+  const usa = hasBlockTypeWithPrefix(blocksState, 'sz_t3d_')
   canvas3DByBlocksState.set(blocksState, usa)
   return usa
+}
+
+/**
+ * Algum bloco do estado tem o tipo com este prefixo? Anda o estado com pilha explícita (numa
+ * sequência única de 10 mil blocos o `JSON.stringify` nativo estourava a pilha, lote 3, conserto
+ * B) e para no primeiro achado. Cada edição traz um `blocksState` novo e o cache acima não ajuda:
+ * medido com 10 mil blocos (lote 3, 21/11/2026), serializar o estado inteiro só para procurar o
+ * texto custava 13 ms de cada gesto. Só o TIPO conta: um campo de texto com "sz_t3d_" não é um
+ * bloco de Canvas 3D.
+ */
+function hasBlockTypeWithPrefix(state: object, prefix: string): boolean {
+  const pending: unknown[] = [state]
+  const seen = new WeakSet<object>()
+  while (pending.length > 0) {
+    const node = pending.pop()
+    if (!node || typeof node !== 'object' || seen.has(node)) continue
+    seen.add(node)
+    if (Array.isArray(node)) {
+      for (const item of node) pending.push(item)
+      continue
+    }
+    const record = node as Record<string, unknown>
+    if (typeof record.type === 'string' && record.type.startsWith(prefix)) return true
+    for (const key in record) {
+      const value = record[key]
+      if (value && typeof value === 'object') pending.push(value)
+    }
+  }
+  return false
 }
 
 export function projectHas3DConsumer(

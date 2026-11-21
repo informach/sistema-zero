@@ -82,9 +82,18 @@ for (const tamanho of TAMANHOS) {
             __aula: { projeto(): { files: Record<string, string>; blocksState: unknown } }
           }
         ).__aula.projeto()
-        return qual === 'script'
-          ? (projeto.files['script.js'] ?? '')
-          : String(JSON.stringify(projeto.blocksState).split('"type":"sz_').length - 1)
+        if (qual === 'script') return projeto.files['script.js'] ?? ''
+        // Sem JSON.stringify: o do Firefox recursa a partir de ~2 mil elos de uma cadeia.
+        let blocos = 0
+        const pendentes: unknown[] = [projeto.blocksState]
+        while (pendentes.length > 0) {
+          const atual = pendentes.pop()
+          if (!atual || typeof atual !== 'object') continue
+          const tipo = (atual as { type?: unknown }).type
+          if (typeof tipo === 'string' && tipo.startsWith('sz_')) blocos++
+          for (const valor of Object.values(atual)) pendentes.push(valor)
+        }
+        return String(blocos)
       }, o)
     const antesDaEdicao = await lerDoProjeto('script')
     const blocosNoProjeto = Number(await lerDoProjeto('blocos'))
@@ -100,7 +109,13 @@ for (const tamanho of TAMANHOS) {
       await page.locator('input.blocklyHtmlInput').fill('500')
       await page.keyboard.press('Enter')
     })
-    await expect.poll(() => lerDoProjeto('script'), { timeout: 60_000 }).not.toBe(antesDaEdicao)
+    // A edição chega ao código como ELA: o palco passa de 480 a 500 de largura. Conferir só que o
+    // texto mudou deixava passar qualquer outra mudança (revisão do lote 1, 21/11/2026).
+    expect(antesDaEdicao).toContain('SZGame2D.setupStage(480, 360,')
+    await expect
+      .poll(() => lerDoProjeto('script'), { timeout: 60_000 })
+      .toContain('SZGame2D.setupStage(500, 360,')
+    expect(await lerDoProjeto('script')).not.toContain('SZGame2D.setupStage(480, 360,')
 
     // Mover a área "Ao iniciar" (uma pilha inteira) alguns pixels.
     const area = page.locator('svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable').first()

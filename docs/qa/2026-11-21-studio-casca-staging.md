@@ -86,3 +86,31 @@ desfeita"):
 Fica o "QA paineis python 21-11", criado hoje na distribuição nova, como evidência desta
 conferência. O outro perfil do Kids não foi aberto (precisa de autorização própria neste
 navegador).
+
+## Troca de perfil com gravação em voo, no app Kids (lote 2)
+
+Critério da etapa 1 do plano: "troca de perfil com gravação em voo conferida no app". Com a
+autorização da dona para criar chave de acesso, este navegador foi liberado também para o segundo
+perfil Criador(a) ("QA troca de perfil 21-11", "Somente hoje", até a meia-noite de 21/11).
+
+| Passo | Resultado |
+|---|---|
+| Perfil A: projeto novo "QA troca de perfil A 21-11", duas linhas digitadas na Ponte | gravadas; uma recarga da página com a gravação na conta pendente é barrada pelo aviso de alterações não salvas do navegador |
+| Trocar para o B pelo menu da conta com "Guardando na sua conta…" | o B não tem projeto nenhum: nada do A vazou |
+| Perfil B: projeto novo "QA troca de perfil B 21-11", duas linhas digitadas (a segunda logo antes da troca) e, 123 ms depois dela, "Trocar de perfil" pelo menu da conta (por script, para caber no intervalo do salvamento automático) | no instante da troca o selo dizia **"Alterações não salvas"** |
+| Perfil A depois da troca | a lista só tem o projeto do A; o projeto do A tem as duas marcas dele e nenhuma do B |
+| De volta ao B | o projeto do B tem as duas marcas, inclusive a digitada logo antes da troca, e está guardado na conta do B ("1 projeto guardado na sua conta") |
+
+Conclusão: a gravação pendente vai para o perfil em que nasceu, inteira, e não aparece no outro.
+Os dois projetos ficam como evidência. Precisão (revisão do lote 2): só a troca do B para o A
+saiu com a gravação local pendente ("Alterações não salvas"); na do A para o B a gravação local já
+tinha terminado e só a subida para a conta estava em voo.
+
+**Observação para o lote 3:** uma linha escrita na Ponte fora da função do programa (no topo do
+`script.js`) aparece nos blocos como "Código avançado" dentro da área "Enquanto estiver rodando ·
+repete sem parar". O código salvo continua no topo (o aviso "Só no Código" diz que o código manda),
+mas faltava conferir o que acontece se a criança mexer nos blocos. **Conferido no mesmo dia:** não
+repete. O gerador (`generators/js.ts`, `compileBehaviorLoopRoot`) só põe laço nas raízes de tempo
+dos motores (Jogo 2D e Jogo 2D Avançado); o código avançado na área roda uma vez, no fim do
+programa, e numa regeração entra no envelope da partida com o mesmo efeito (sonda local: o
+contador da página ficou em 1).

@@ -276,6 +276,13 @@ positivo continua passando. Versão atual: 51 ensaios de navegador aprovados,
 
 ### Continuação do item 3
 
+Integração intermediária do remoto em 21/11: `33cd419d8`, depois do lote
+`2fb2f58de`. Entrada sem conflitos, preservando os arquivos concorrentes do Molda
+idênticos ao remoto. Os 84 testes de fronteira/runtime e 12 percursos locais
+Pinta → Estúdio passaram. Recibos e limites em
+`qa/integracao-remota-2026-11-21/`, no diretório da missão. Isso não é merge da
+feature em staging, nem implantação. Não altera a ordem ou fecha etapas macro.
+
 Lote em execução: propriedade dos gestos contínuos. A reprodução com o overlay
 real encontrou nove falhas: movimento/soltura/cancelamento após revisão do mesmo
 ID, em mapa e conjunto, cancelamento nativo e recusa do host no meio do gesto.
