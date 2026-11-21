@@ -660,6 +660,10 @@ test('tudo ligado ao mesmo tempo: jogo rodando, análise, Zappy em voo e arquivo
   expect(report.panelOpenWhileGame.p95).toBeLessThan(150)
   expect(report.firstSearchAnswerWhileGame.p95).toBeLessThan(200)
   expect(intervals.length).toBeGreaterThan(10)
+  // O jogo segue desenhando enquanto a criança digita: no p95, no máximo um quadro perdido a
+  // 60 por segundo. A revisão do lote 1 (21/11/2026) achou o critério só no documento; a
+  // homologação de 1dd1f51c6 mediu 16,7 ms no Linux e 16,8 ms no Windows.
+  expect(report.gameFrameIntervalWhileTyping.p95).toBeLessThan(34)
   // Dez ciclos de Parar e Rodar não deixam a memória do editor crescer além de 20%.
   expect(report.editorHeap.growth).toBeLessThan(1.2)
 })

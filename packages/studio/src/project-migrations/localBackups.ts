@@ -53,6 +53,33 @@ function backupPrefixes(projectId: string): string[] {
   return [projectBackupKey(projectId, '', 4), `${LEGACY_BACKUP_PREFIX}${projectId}:`]
 }
 
+/**
+ * O resto da chave depois de `<família>:<id>:`: o SHA-256 em hexadecimal, com `recovery-` ou
+ * `v3-recovery-` na frente nas cópias de saída. Todo produtor de cópia monta a chave assim
+ * (`localProjects.ts`, `localV3.ts`, `localV3RecoveryArchive.ts`, `projectRecoverySources.ts`).
+ * Um resto com dois-pontos é de outro projeto cujo id começa com este (`jogo:outro`).
+ */
+const BACKUP_KEY_SUFFIX = /^(?:recovery-|v3-recovery-)?[0-9a-f]{64}$/
+
+/**
+ * As chaves das cópias de segurança deste projeto, decididas só pela chave, sem ler o conteúdo.
+ * É o que o apagar usa (P3): ler cada cópia inteira (com as imagens) só para conferir de quem era
+ * pesava no apagar, e uma cópia ilegível fazia o apagar falhar (revisão do lote 1, 21/11/2026).
+ */
+export async function localProjectBackupKeys(
+  projectId: string,
+  scope: ProjectStorageScope = captureProjectStorageScope(),
+): Promise<string[]> {
+  const prefixes = backupPrefixes(projectId)
+  return (await readAllKeys(scope.store)).filter(
+    (key): key is string =>
+      typeof key === 'string' &&
+      prefixes.some(
+        (prefix) => key.startsWith(prefix) && BACKUP_KEY_SUFFIX.test(key.slice(prefix.length)),
+      ),
+  )
+}
+
 /** O id do registro decide; o prefixo sozinho não basta quando ids contêm dois-pontos. */
 function describeBackup(key: string, projectId: string, value: unknown): LocalProjectBackup | null {
   if (!isDocumentRecord(value)) return null

@@ -57,7 +57,7 @@ test('apagar o projeto leva junto as cópias de segurança dele, e só as dele',
     await writeInOneTransaction(f.scope.store, {
       puts: [
         [
-          'sz:project-backup:jogo:antigo',
+          `sz:project-backup:jogo:${'a'.repeat(64)}`,
           {
             version: 1,
             sourceId: 'jogo',
@@ -82,11 +82,11 @@ test('apagar o projeto leva junto as cópias de segurança dele, e só as dele',
   }
 })
 
-test('um registro na família das cópias que não se identifica como deste projeto fica', async () => {
+test('uma chave da família das cópias sem o hash no fim não é deste projeto e fica', async () => {
   const f = await fixture()
   try {
     await f.migrated('jogo')
-    // Formato que esta versão não reconhece: sem prova de que é deste projeto, nada é apagado.
+    // Nenhum produtor de cópia escreve uma chave assim: sem prova de que é deste projeto, fica.
     const unknown = 'sz:v4:project-backup:jogo:formato-futuro'
     await writeInOneTransaction(f.scope.store, {
       puts: [[unknown, { version: 9, sourceId: 'jogo', futuro: true }]],
@@ -96,6 +96,23 @@ test('um registro na família das cópias que não se identifica como deste proj
 
     expect(await listLocalProjectBackups('jogo', f.scope)).toEqual([])
     expect((await readAllKeys(f.scope.store)).map(String)).toContain(unknown)
+  } finally {
+    f.close()
+  }
+})
+
+test('uma cópia ilegível não segura o apagar: ela sai junto, decidida pela chave', async () => {
+  const f = await fixture()
+  try {
+    await f.migrated('jogo')
+    // Conteúdo que nenhum leitor reconhece, na chave de cópia deste projeto (hash no fim).
+    const ilegivel = `sz:v4:project-backup:jogo:recovery-${'b'.repeat(64)}`
+    await writeInOneTransaction(f.scope.store, { puts: [[ilegivel, 'lixo']] })
+
+    await deleteProject('jogo', f.scope)
+
+    const keys = (await readAllKeys(f.scope.store)).map(String)
+    expect(keys.filter((key) => key.startsWith('sz:v4:project-backup:jogo:'))).toEqual([])
   } finally {
     f.close()
   }

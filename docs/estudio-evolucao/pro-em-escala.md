@@ -104,8 +104,23 @@ Pedido dos relatórios de 20 e 21/11. Teste `tudo ligado ao mesmo tempo` em
 | Digitar com o jogo rodando à vista | 32,0 ms | 31,7 ms | < 50 |
 | Abrir painel com o jogo rodando | 27,4 ms | 26,5 ms | < 150 |
 | Primeira resposta da busca com o jogo rodando | 22,3 ms | 20,1 ms | < 200 |
-| Intervalo entre quadros do jogo enquanto se digita | 16,8 ms | 16,8 ms | o jogo segue a 60 quadros |
+| Intervalo entre quadros do jogo enquanto se digita | 16,8 ms | 16,8 ms | < 34 (no máximo um quadro perdido) |
 | Memória do editor depois de 10 Parar e Rodar | +1,6% | +2,0% | < 20% |
+
+**Na homologação de `1dd1f51c6`** (Chromium 159 completo, CPU sem desaceleração), os relatórios
+brutos estão em [`evidencias/pro-ensaio-2026-11-21/`](evidencias/pro-ensaio-2026-11-21/):
+
+| Medida (p95) | Linux | Windows |
+|---|---|---|
+| Digitar com a pergunta do Zappy em voo | 32,0 ms | 31,2 ms |
+| Digitar com o jogo rodando à vista | 31,6 ms | 31,3 ms |
+| Abrir painel com o jogo rodando | 24,0 ms | 21,1 ms |
+| Primeira resposta da busca com o jogo rodando | 21,0 ms | 17,1 ms |
+| Intervalo entre quadros do jogo enquanto se digita | 16,7 ms | 16,8 ms |
+| Memória do editor depois de 10 Parar e Rodar | +1,5% | +1,5% |
+
+O critério dos quadros do jogo só existia neste documento até a revisão do lote 1 (21/11): o
+teste conferia que o jogo desenhava, sem limite. Agora ele exige o p95 abaixo de 34 ms.
 
 **O que o ensaio mostrou:** na largura do computador, o painel do Zappy ocupa o lugar do palco.
 Enquanto ele está aberto, o jogo fica atrás dele, e o navegador pausa os quadros de um quadro que

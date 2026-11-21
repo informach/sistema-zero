@@ -534,3 +534,21 @@ Antes do conserto, o mesmo teste reprovava no Chromium: a edição não chegava 
   CI.
 - O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo; com o formato dos jogos
   ele não estoura, e mexer nele muda bytes que a nuvem confere. Fica para o conserto B.
+
+### O Python ainda não passa pela cópia segura (medido em 21/11/2026, revisão do lote 1)
+
+O editor de blocos do Python salva por outro caminho (`python/blocks/workspaceState.ts`,
+`savePythonWorkspace` e `rebasePythonWorkspaceState`): copia o `save` cru do Blockly com
+`structuredClone`, que também recursa. Medido com uma cadeia no formato do estado do Python
+(script `sc-browsers.mjs` da sessão, `structuredClone` direto na página):
+
+| Navegador | Objetos sem protótipo (o que o Blockly devolve) | Objetos comuns |
+|---|---|---|
+| Chromium 159 completo | **859 blocos** | 1.628 blocos |
+| Firefox do Playwright | mais de 400 mil | mais de 400 mil |
+| WebKit do Playwright | 19.998 | 19.998 |
+
+Uma sequência de ~860 instruções no mesmo corpo derruba o salvar do Python no Chromium. A
+comparação `samePythonWorkspaceProgram` também recursa bloco a bloco. Fica para o lote 3, com a
+medição no editor de verdade, e o comentário de `savedWorkspaceState.ts` deixou de dizer que todo
+estado passa por ali.

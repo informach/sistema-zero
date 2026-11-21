@@ -100,7 +100,13 @@ for (const tamanho of TAMANHOS) {
       await page.locator('input.blocklyHtmlInput').fill('500')
       await page.keyboard.press('Enter')
     })
-    await expect.poll(() => lerDoProjeto('script'), { timeout: 60_000 }).not.toBe(antesDaEdicao)
+    // A edição chega ao código como ELA: o palco passa de 480 a 500 de largura. Conferir só que o
+    // texto mudou deixava passar qualquer outra mudança (revisão do lote 1, 21/11/2026).
+    expect(antesDaEdicao).toContain('SZGame2D.setupStage(480, 360,')
+    await expect
+      .poll(() => lerDoProjeto('script'), { timeout: 60_000 })
+      .toContain('SZGame2D.setupStage(500, 360,')
+    expect(await lerDoProjeto('script')).not.toContain('SZGame2D.setupStage(480, 360,')
 
     // Mover a área "Ao iniciar" (uma pilha inteira) alguns pixels.
     const area = page.locator('svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable').first()

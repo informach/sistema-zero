@@ -48,7 +48,11 @@ jobs:
         working-directory: packages/studio
         env:
           CLASSIC_SCALE_SIZES: '2000,5000'
-        run: bunx playwright test e2e/classic-scale.spec.ts --project=chromium --retries=0 --trace=off 2>&1 | tee .cache/modest-classic.txt
+        # O `.cache` ainda não existe neste passo: sem o mkdir o `tee` falhava e o passo saía com 1
+        # mesmo com os testes verdes (achado da revisão do lote 1, run 44896882655).
+        run: |
+          mkdir -p .cache
+          bunx playwright test e2e/classic-scale.spec.ts --project=chromium --retries=0 --trace=off 2>&1 | tee .cache/modest-classic.txt
       - name: Pro modular 60-file project
         continue-on-error: true
         working-directory: packages/studio

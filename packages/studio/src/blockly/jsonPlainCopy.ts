@@ -8,9 +8,16 @@
  * 2 milhões com objetos comuns (`docs/estudio-evolucao/classico-em-escala.md`). Com 10 mil blocos o
  * estado não virava texto e nenhuma edição chegava ao código.
  *
- * Regras do JSON mantidas: número não finito vira `null`; `undefined`, função e símbolo somem de
- * objeto e viram `null` em lista; `toJSON` é chamado; referência circular lança `TypeError`. A
- * chave `__proto__` vira propriedade própria, como no `JSON.parse`.
+ * Segue o `SerializeJSONProperty` da especificação, passo a passo (revisão do lote 1, 21/11/2026,
+ * achou os desvios da primeira versão):
+ * - `toJSON` é chamado em objeto, função e BigInt, com a chave como argumento (`''` na raiz);
+ * - número, texto e booleano embrulhados (`new Number(5)`) viram o primitivo, pelo slot interno;
+ * - número não finito vira `null` e `-0` vira `0`;
+ * - BigInt sem `toJSON` lança `TypeError`;
+ * - `undefined`, função e símbolo somem de objeto e viram `null` em lista; na raiz, o
+ *   `JSON.stringify` devolve `undefined` e o `JSON.parse` lança `SyntaxError`, e aqui também;
+ * - referência circular lança `TypeError`;
+ * - a chave `__proto__` vira propriedade própria, como no `JSON.parse`.
  */
 
 const OMIT = Symbol('omit')
@@ -18,10 +25,64 @@ const OMIT = Symbol('omit')
 type Container = Record<string, unknown> | unknown[]
 type Work = { value: unknown; target: Container; key: string; inArray: boolean } | { leave: object }
 
-function leaf(value: unknown): unknown {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') return value
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null
-  if (typeof value === 'bigint') throw new TypeError('Do not know how to serialize a BigInt')
+const objectToString = Object.prototype.toString
+
+/** O slot interno existe se o `valueOf` do protótipo nativo aceita o valor (a régua da especificação). */
+function hasSlot(valueOf: (this: unknown) => unknown, value: object): boolean {
+  try {
+    valueOf.call(value)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Número, texto, booleano e BigInt embrulhados viram o primitivo. Sem `Symbol.toStringTag`, o
+ * `Object.prototype.toString` diz o slot interno sem lançar nada: é o caminho dos objetos comuns
+ * (todo o estado do Blockly). Com a marca (BigInt embrulhado, Map, lista tipada, ou alguém
+ * fingindo), confere o slot pelo `valueOf` nativo.
+ */
+function unwrapPrimitive(value: object): unknown {
+  if (Symbol.toStringTag in value) {
+    if (hasSlot(Number.prototype.valueOf, value)) return Number(value)
+    if (hasSlot(String.prototype.valueOf, value)) return String(value)
+    if (hasSlot(Boolean.prototype.valueOf, value)) return Boolean.prototype.valueOf.call(value)
+    if (hasSlot(BigInt.prototype.valueOf, value)) return BigInt.prototype.valueOf.call(value)
+    return value
+  }
+  switch (objectToString.call(value)) {
+    case '[object Number]':
+      return Number(value)
+    case '[object String]':
+      return String(value)
+    case '[object Boolean]':
+      return Boolean.prototype.valueOf.call(value)
+    default:
+      return value
+  }
+}
+
+/** O valor depois do `toJSON` e dos embrulhos: um primitivo do JSON, `OMIT` ou um objeto a copiar. */
+function resolve(value: unknown, key: string): unknown {
+  let current = value
+  if (
+    (typeof current === 'object' && current !== null) ||
+    typeof current === 'function' ||
+    typeof current === 'bigint'
+  ) {
+    const toJSON = (current as { toJSON?: unknown }).toJSON
+    if (typeof toJSON === 'function') current = toJSON.call(current, key)
+  }
+  if (typeof current === 'object' && current !== null) current = unwrapPrimitive(current)
+  if (current === null || typeof current === 'string' || typeof current === 'boolean')
+    return current
+  if (typeof current === 'number') {
+    if (!Number.isFinite(current)) return null
+    return current === 0 ? 0 : current
+  }
+  if (typeof current === 'bigint') throw new TypeError('Do not know how to serialize a BigInt')
+  if (typeof current === 'object') return current
   return OMIT
 }
 
@@ -42,7 +103,7 @@ function place(target: Container, key: string, value: unknown, inArray: boolean)
 
 export function jsonPlainCopy(input: unknown): unknown {
   const holder: Record<string, unknown> = {}
-  const pending: Work[] = [{ value: input, target: holder, key: 'value', inArray: false }]
+  const pending: Work[] = [{ value: input, target: holder, key: '', inArray: false }]
   const ancestors = new Set<object>()
   while (pending.length > 0) {
     const work = pending.pop() as Work
@@ -50,15 +111,9 @@ export function jsonPlainCopy(input: unknown): unknown {
       ancestors.delete(work.leave)
       continue
     }
-    let value = work.value
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      typeof (value as { toJSON?: unknown }).toJSON === 'function'
-    )
-      value = (value as { toJSON(key: string): unknown }).toJSON(work.key)
+    const value = resolve(work.value, work.key)
     if (value === null || typeof value !== 'object') {
-      place(work.target, work.key, leaf(value), work.inArray)
+      place(work.target, work.key, value, work.inArray)
       continue
     }
     if (ancestors.has(value)) throw new TypeError('Converting circular structure to JSON')
@@ -79,5 +134,6 @@ export function jsonPlainCopy(input: unknown): unknown {
       }
     }
   }
-  return holder.value
+  if (!Object.hasOwn(holder, '')) throw new SyntaxError('"undefined" is not valid JSON')
+  return holder['']
 }

@@ -2,10 +2,11 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { readPintaScene } from '@sistemazero/core/studio/pinta-scene'
-import { type ProjectAsset, sanitizeProjectAssets } from '../../core/projectAssets'
+import type { ProjectAsset } from '../../core/projectAssets'
 import { ProjectDocumentError } from '../../core/projectDocument'
-import { assertProjectContentPreserved } from '../../core/projectDocumentGuards'
+import { createEmptyProject } from '../../core/project'
 import { isValidScene3DDataUrl } from '../../core/scene3d/assets'
+import { sanitizeStoredProject } from '../../state/projectValidation'
 
 /**
  * Contratos que o Estúdio lê do Pinta e do Molda Cenários, com as fixtures CONGELADAS de cada
@@ -35,11 +36,18 @@ function drawingWithScene(scene: unknown): ProjectAsset {
   } as ProjectAsset
 }
 
-/** Abre os materiais como o Estúdio abre: limpar e exigir que nada do disco tenha sumido. */
+/**
+ * Abre os materiais pela abertura completa de produção (`sanitizeStoredProject`, a mesma do
+ * projeto lido do disco). A primeira versão montava a limpeza e a trava à mão, e o teste seguia
+ * verde se a trava saísse da abertura de verdade (revisão do lote 1, 21/11/2026).
+ */
 function open(assets: unknown[]): ProjectAsset[] {
-  const sanitized = sanitizeProjectAssets(assets)
-  assertProjectContentPreserved({ assets }, { assets: sanitized })
-  return sanitized
+  const project = sanitizeStoredProject(
+    { ...createEmptyProject('contrato', 'Contrato'), assets },
+    'contrato',
+  )
+  if (!project) throw new Error('A abertura recusou o projeto sem dizer por quê.')
+  return project.assets
 }
 
 describe('cena do Pinta: cada versão congelada abre e volta igual', () => {
