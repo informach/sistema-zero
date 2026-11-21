@@ -88,7 +88,7 @@ A medição só deixa a CPU mais lenta; a placa de vídeo era dedicada.
 | "Usar o cenário" no Estúdio | ok: a "Praia" cabe com "juntar peças" e aparece no jogo |
 | Agente com login na staging (21/11) | ok: levou a Faísca ao espaço da equipe (ver item 4) |
 | Publicar a Faísca em staging (21/11) | ok: "Versão 1 publicada" na ilha Faísca, pela tela |
-| Andar na Faísca no jogo da staging | **pendente**: a ilha só abre para quem já chegou ao posto Faísca |
+| Andar na Faísca publicada | **pendente**: o jogo integrado ainda não lê publicações; o lugar de jogar é o `/macro` (ver item 4) |
 
 Fotos (fora do Git, em `output/cenarios-reforma/etapa7/`): a oficina em staging, e no playground
 1440, 1024, celular e tema escuro. As medições de desempenho estão na mesma pasta.
@@ -109,10 +109,12 @@ Na oficina da staging, pela tela, a Faísca abriu com 523 objetos, e a publicaç
 terminou em "Versão 1 publicada" na ilha Faísca. Fotos em `output/cenarios-reforma/etapa7/`
 (`faisca-staging-*`).
 
-**Falta andar na Faísca no jogo da staging.** A ilha abre pela jornada (`ilhaAberta`, posto
-Faísca), e a conta da equipe ainda está no começo: o mapa mostra 1 ilha aberta. O passeio com o
-personagem já foi provado no `/macro`; na staging ele precisa de uma conta que já chegou ao posto
-Faísca.
+**Falta andar na Faísca publicada (corrigido em 21/11).** Em 21/11 escrevi que a ilha não abria
+porque a conta não tinha chegado ao posto Faísca. Estava errado. A Faísca é a `sua-ilha`, posto 1,
+sempre aberta. O motivo real é outro: o jogo integrado da staging ainda roda o mundo antigo, menor
+(`src/jogo.tsx` → `src/mundo/cena.tsx`), e não lê cenário publicado nenhum. O mundo V2, com as
+dimensões novas e as publicações, só existe no `/macro`, o playground local. É ali que se anda na
+Faísca publicada. Levar o V2 para o jogo integrado é a estreia do Arquipélago V2, outra frente.
 
 **O agente agora também traz modelos e exporta** (`trazer_modelos` e `exportar_cenario`), pelo
 mesmo código da oficina, num Chrome sem tela neste computador. Provado localmente com o Chrome de
