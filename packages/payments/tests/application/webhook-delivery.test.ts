@@ -75,6 +75,43 @@ afterEach(() => {
 })
 
 describe('WebhookDeliveryWorker', () => {
+  test.each([401, 500])('renovação paga continua pendente após o teto, HTTP %s', async (status) => {
+    mockFetch(status)
+    const repo = new StubDeliveryRepo([
+      delivery({ attempts: 8, payload: { paymentId: 'p1', subscriptionId: 'subscription-1' } }),
+    ])
+    const worker = new WebhookDeliveryWorker(repo, consumers, silentLogger, {
+      intervalMs: 1000,
+      batchSize: 10,
+      maxAttempts: 8,
+    })
+    await worker.tick()
+    expect(repo.dead).toHaveLength(0)
+    expect(repo.rescheduled).toHaveLength(1)
+  })
+  test('período confirmado volta a ser entregue após falha prolongada, com o mesmo evento', async () => {
+    const item = delivery({
+      attempts: 1000,
+      eventName: 'payment.subscription_period_confirmed',
+      payload: { paymentId: 'p1', subscriptionId: 's1' },
+    })
+    const failed = new StubDeliveryRepo([item])
+    mockFetch(401)
+    const options = { intervalMs: 1000, batchSize: 10, maxAttempts: 8 }
+    const before = Date.now()
+    await new WebhookDeliveryWorker(failed, consumers, silentLogger, options).tick()
+    const scheduled = failed.rescheduled[0]
+    if (!scheduled) throw new Error('Renovação não ficou pendente')
+    expect(scheduled.nextAttemptAt.getTime() - before).toBeGreaterThanOrEqual(3600000)
+    expect(scheduled.nextAttemptAt.getTime() - before).toBeLessThan(3601000)
+    const originalBody = String(lastCall?.init.body)
+    mockFetch(200)
+    const recovered = new StubDeliveryRepo([{ ...item, attempts: 1001 }])
+    await new WebhookDeliveryWorker(recovered, consumers, silentLogger, options).tick()
+    expect(recovered.succeeded).toEqual([{ id: 'd1', statusCode: 200 }])
+    expect(String(lastCall?.init.body)).toBe(originalBody)
+    expect(recovered.dead).toHaveLength(0)
+  })
   test('entrega assinada com sucesso → markSucceeded', async () => {
     mockFetch(200)
     const repo = new StubDeliveryRepo([delivery()])
