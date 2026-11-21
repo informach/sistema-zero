@@ -3,7 +3,7 @@ import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
-import { jsonPlainCopy } from '../../blockly/jsonPlainCopy'
+import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
 import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import {
   MORE_BLOCKS_KIND,
@@ -589,7 +589,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         // Give them the same compact initial view as a freshly projected file.
         void navigation.initialize(!restored || !hadProgramArea)
         const saved = savePythonWorkspace(workspace, origins)
-        fingerprint = JSON.stringify(saved)
+        fingerprint = jsonStringify(saved) ?? ''
         loadedSource = document.source
         // Gallery examples start as Python files. Save their initial Program
         // area as soon as projection succeeds, without requiring a user gesture.
@@ -708,7 +708,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         return
       try {
         const saved = savePythonWorkspace(workspace, origins)
-        const nextFingerprint = JSON.stringify(saved)
+        const nextFingerprint = jsonStringify(saved) ?? ''
         if (nextFingerprint === fingerprint) return
         // Layout, collapsed definitions and scratch pieces do not change source.
         // Persist them without parsing/projecting the entire file. Pending
@@ -782,7 +782,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             if (modulesStale) schedule()
             // Only the captured gesture was committed. A later live edit can
             // precede delivery of its Blockly event (RAF followed by a timer).
-            fingerprint = JSON.stringify(rebasePythonWorkspaceState(saved, origins))
+            fingerprint = jsonStringify(rebasePythonWorkspaceState(saved, origins)) ?? ''
             surface.current?.selectCursor()
             report('ready')
             flush()

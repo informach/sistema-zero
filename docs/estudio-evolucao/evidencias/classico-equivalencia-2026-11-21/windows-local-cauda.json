@@ -1,0 +1,196 @@
+{
+  "environment": {
+    "platform": "win32",
+    "node": "v24.15.0",
+    "browser": "159.0.8154.6",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryBytes": 34142584832,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "arms": [
+    {
+      "name": "adiado",
+      "url": "http://127.0.0.1:5197/"
+    },
+    {
+      "name": "inteiro",
+      "url": "http://127.0.0.1:5197/?montagem=inteira"
+    }
+  ],
+  "method": "Fresh context per sample; alternating arm order; same Farol stress fixture. Timer intervals are scheduling observations, not input latency or FPS. No game profiler. Digests: block ids canonicalized by order of appearance, state serialized with an explicit stack.",
+  "editAfterOpening": true,
+  "samples": [
+    {
+      "arm": "adiado",
+      "size": 2000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 2113.020000010729,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.075000002980232,
+        "p95": 141.38500000536442,
+        "max": 512.234999999404,
+        "total": 2090.0349999964237
+      },
+      "longTasksMs": {
+        "count": 6,
+        "p50": 97,
+        "p95": 486,
+        "max": 486,
+        "total": 956
+      },
+      "settledMs": 2115.6950000077486,
+      "drawnBlocks": 101,
+      "deferredBlocks": 1895,
+      "offscreenBodies": 1,
+      "blocksStateDigest": "b71654f9f04d4df2",
+      "filesDigest": "5ef4ddd21b7ad59e",
+      "editReachedCodeMs": 322,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 53,
+        "total": 53
+      },
+      "afterTailEdit": {
+        "deferredBlocks": 0,
+        "offscreenBodies": 319,
+        "drawnBlocks": 389
+      },
+      "editedBlocksStateDigest": "15f9b349a042e2bd",
+      "editedFilesDigest": "52dcbce811574a73",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 2000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 3646.219999998808,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.07999999821186,
+        "p95": 220.62000000476837,
+        "max": 1118.0600000023842,
+        "total": 3628.015000000596
+      },
+      "longTasksMs": {
+        "count": 10,
+        "p50": 115,
+        "p95": 905,
+        "max": 905,
+        "total": 2353
+      },
+      "settledMs": 3648.8949999958277,
+      "drawnBlocks": 2001,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "b71654f9f04d4df2",
+      "filesDigest": "5ef4ddd21b7ad59e",
+      "editReachedCodeMs": 367,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 62,
+        "total": 62
+      },
+      "afterTailEdit": {
+        "deferredBlocks": 0,
+        "offscreenBodies": 0,
+        "drawnBlocks": 2001
+      },
+      "editedBlocksStateDigest": "15f9b349a042e2bd",
+      "editedFilesDigest": "52dcbce811574a73",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 10000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 11549.469999998808,
+      "timerGapsMs": {
+        "count": 55,
+        "p50": 20.125,
+        "p95": 750.3499999940395,
+        "max": 7463.739999994636,
+        "total": 11533.239999994636
+      },
+      "longTasksMs": {
+        "count": 7,
+        "p50": 231,
+        "p95": 7436,
+        "max": 7436,
+        "total": 10377
+      },
+      "settledMs": 11550.95000000298,
+      "drawnBlocks": 101,
+      "deferredBlocks": 9893,
+      "offscreenBodies": 1,
+      "blocksStateDigest": "571408454a558e94",
+      "filesDigest": "4ff5bfaf10a6dd37",
+      "editReachedCodeMs": 265,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 208,
+        "total": 208
+      },
+      "afterTailEdit": {
+        "deferredBlocks": 0,
+        "offscreenBodies": 1652,
+        "drawnBlocks": 1722
+      },
+      "editedBlocksStateDigest": "ab0e1c5d7255025a",
+      "editedFilesDigest": "b48f45b7242c351f",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 10000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 40701.875,
+      "timerGapsMs": {
+        "count": 59,
+        "p50": 20.025000005960464,
+        "p95": 2269.4000000059605,
+        "max": 19232.839999988675,
+        "total": 40684.539999991655
+      },
+      "longTasksMs": {
+        "count": 10,
+        "p50": 1735,
+        "p95": 15891,
+        "max": 15891,
+        "total": 35693
+      },
+      "settledMs": 40707.035000011325,
+      "drawnBlocks": 9999,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "571408454a558e94",
+      "filesDigest": "4ff5bfaf10a6dd37",
+      "editReachedCodeMs": 4401,
+      "editLongTasksMs": {
+        "count": 5,
+        "max": 358,
+        "total": 1371
+      },
+      "afterTailEdit": {
+        "deferredBlocks": 0,
+        "offscreenBodies": 0,
+        "drawnBlocks": 9999
+      },
+      "editedBlocksStateDigest": "ab0e1c5d7255025a",
+      "editedFilesDigest": "b48f45b7242c351f",
+      "pageErrors": []
+    }
+  ],
+  "equivalence": {
+    "ok": true,
+    "failures": []
+  }
+}

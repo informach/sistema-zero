@@ -36,9 +36,22 @@ test('a sequência que o editor de blocos não abre não perde nenhum bloco', as
   const recado = page.locator('[data-sz-blocks-restore-failed]')
   await expect(recado).toBeVisible({ timeout: 120_000 })
   await expect(recado.getByRole('alert')).toContainText('Nada foi perdido')
+  // A aula só tem o modo Blocos: o recado não manda a criança para a Ponte, que ali não existe.
+  await expect(recado.getByRole('alert')).toContainText('Peça ajuda a um adulto')
+  await expect(recado.getByRole('alert')).not.toContainText('Ponte')
   // Os eventos da carga parcial chegam depois do recado: espera passarem e confere o projeto.
   await page.waitForTimeout(3000)
   expect(await page.evaluate(contarBlocos)).toBe(10_000)
   // Nenhum bloco parcial fica à vista para ser editado como se fosse o projeto.
   await expect(page.locator('svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable')).toHaveCount(0)
+  // Revisão do lote 3 (achado 2): o recado fica POR CIMA da paleta (nada arrastado dela para o
+  // canvas escondido) e o canvas limpo é só de leitura (nada colado ali se perde calado).
+  const recadoCobreAPaleta = await page.evaluate(() => {
+    const paleta = document.querySelector('.blocklyToolbox')?.getBoundingClientRect()
+    if (!paleta) return false
+    const ponto = document.elementFromPoint(paleta.left + paleta.width / 2, paleta.top + 24)
+    return Boolean(ponto?.closest('[data-sz-blocks-restore-failed]'))
+  })
+  expect(recadoCobreAPaleta).toBe(true)
+  await expect(page.locator('.blocklyReadOnly').first()).toBeAttached()
 })

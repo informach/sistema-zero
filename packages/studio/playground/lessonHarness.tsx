@@ -110,13 +110,24 @@ function ampliar(projeto: Project, alvo: number, marca = false): Project {
     while (fim.next) fim = fim.next.block
   }
   if (marca) {
+    // A marca TOMA O LUGAR da última instrução do último evento, em vez de entrar depois dela: com
+    // 10 mil blocos, um bloco a mais passava do teto do projeto e nada abria.
     const corpo = Object.entries(fim.inputs ?? {}).find(([, entrada]) => entrada.block)?.[0]
-    let ultimo = corpo ? (fim.inputs?.[corpo]?.block as BlocoSalvo) : undefined
-    if (!ultimo) throw new Error('O último evento não tem corpo para receber a marca.')
-    while (ultimo.next) ultimo = ultimo.next.block
-    ultimo.next = {
-      block: { type: 'sz_adv_raw_js', id: 'marca-do-fim', fields: { CODE: '// marca do fim' } },
+    const entrada = corpo ? fim.inputs?.[corpo] : undefined
+    if (!entrada?.block) throw new Error('O último evento não tem corpo para receber a marca.')
+    const marcaDoFim: BlocoSalvo = {
+      type: 'sz_adv_raw_js',
+      id: 'marca-do-fim',
+      fields: { CODE: '// marca do fim' },
     }
+    let anterior: BlocoSalvo | null = null
+    let ultimo = entrada.block
+    while (ultimo.next) {
+      anterior = ultimo
+      ultimo = ultimo.next.block
+    }
+    if (anterior) anterior.next = { block: marcaDoFim }
+    else entrada.block = marcaDoFim
   }
   return copia
 }

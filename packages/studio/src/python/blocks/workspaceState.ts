@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly/core'
-import { jsonPlainCopy } from '../../blockly/jsonPlainCopy'
+import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
 import type { PythonNode, PythonValue } from '../language/types'
 import type { PythonBlocklyBlock } from './blockly'
 import { isNode, pythonSemanticTree } from './nodes'
@@ -42,13 +42,15 @@ export function samePythonWorkspaceProgram(
     }
     return copy
   }
-  return JSON.stringify(executable(before)) === JSON.stringify(executable(after))
+  // Pilha explícita também no texto: o `JSON.stringify` do Firefox recursa a partir de ~2 mil elos
+  // (revisão do lote 3, achado 5).
+  return jsonStringify(executable(before)) === jsonStringify(executable(after))
 }
 
 function sourceWithCurrentOrigin(value: PythonOpaqueBlock, parsed?: PythonNode): PythonOpaqueBlock {
   const node =
     parsed &&
-    JSON.stringify(pythonSemanticTree(value.node)) === JSON.stringify(pythonSemanticTree(parsed))
+    jsonStringify(pythonSemanticTree(value.node)) === jsonStringify(pythonSemanticTree(parsed))
       ? structuredClone(parsed)
       : withoutPythonOrigins(value.node)
   return { ...value, node, origin: { nodeId: node.id, range: node.range } }

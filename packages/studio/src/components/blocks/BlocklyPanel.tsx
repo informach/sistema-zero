@@ -44,6 +44,7 @@ import {
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
 import { jsonStringify } from '../../blockly/jsonPlainCopy'
+import { loadWorkspaceState } from '../../blockly/loadWorkspaceState'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
 import type { OffscreenBodies } from '../../blockly/offscreenBodies'
 import {
@@ -391,7 +392,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const [restoreFailed, setRestoreFailed] = useState(false)
   const restoreFailedRef = useRef(false)
   const [searchAvailable, setSearchAvailable] = useState(false)
-  const [searchOpenRequest, setSearchOpenRequest] = useState(0)
+  // A paleta horizontal (painel estreito na injeção) ocupa o alto: a busca vai para baixo.
+  const [toolboxHorizontal, setToolboxHorizontal] = useState(false)
+  // A limpeza da falha não conseguiu esvaziar o canvas: descartá-lo também pode lançar.
+  const restoreClearFailedRef = useRef(false)
+  const [searchOpenPending, setSearchOpenPending] = useState(false)
+  const handleSearchOpened = useCallback(() => setSearchOpenPending(false), [])
 
   const blocklyRef = useRef<HTMLDivElement>(null)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
@@ -1212,6 +1218,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
+      // O canvas vazio é o próprio projeto: uma falha de restauração anterior não vale mais.
+      if (restoreFailedRef.current) workspace.setIsReadOnly(false)
+      restoreFailedRef.current = false
+      setRestoreFailed(false)
       // O canvas foi trocado POR FORA: a pilha de desfazer de antes não vale mais.
       forgetBlocklyHistory(workspace)
       lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
@@ -1265,12 +1275,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // final. A cerca faz os blocos-mutador ignorarem os eventos
         // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
         // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
+        // Se o `load` lançar, `loadWorkspaceState` devolve o que ele mudou no Blockly (o desfazer,
+        // o grupo de eventos, o cache de texto e o redimensionar) antes de o erro chegar aqui.
         withWorkspaceLoad(() =>
-          Blockly.serialization.workspaces.load(
+          loadWorkspaceState(
             (deferredLoad?.state ?? stateToLoad) as Record<string, unknown>,
             workspace,
           ),
         )
+        if (restoreFailedRef.current) workspace.setIsReadOnly(false)
         restoreFailedRef.current = false
         setRestoreFailed(false)
         // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
@@ -1330,11 +1343,17 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         Blockly.Events.disable()
         try {
           workspace.clear()
-        } catch {
-          // O workspace pode ter ficado inconsistente no meio da carga; a trava já protege o projeto.
+        } catch (clearError) {
+          // A cadeia parcial pode ser funda demais até para limpar: a trava já protege o projeto, e
+          // o descarte do canvas, na saída, passa a esperar o mesmo erro.
+          restoreClearFailedRef.current = true
+          console.warn('Não foi possível limpar o canvas da restauração que falhou:', clearError)
         } finally {
           Blockly.Events.enable()
         }
+        // O canvas limpo fica só para ler: nada colado ou arrastado ali, embaixo do recado, se
+        // perderia calado (revisão do lote 3, achado 2).
+        workspace.setIsReadOnly(true)
         console.warn('Não foi possível restaurar blocksState:', e)
       } finally {
         deferredLoad?.finish()
@@ -1451,6 +1470,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           // Fontes bloqueadas/indisponíveis: segue com a fonte de fallback.
         })
     }
+    setToolboxHorizontal(horizontalToolbox)
     setWorkspace(injected)
     onWorkspaceReadyRef.current?.(injected)
 
@@ -1503,7 +1523,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       injected.removeChangeListener(offscreenGate)
       offscreenBodies?.dispose()
       disposeDeferredDrawing(injected)
-      injected.dispose()
+      if (restoreClearFailedRef.current) {
+        try {
+          injected.dispose()
+        } catch (error) {
+          // Os blocos parciais da restauração que falhou recursam no descarte do Blockly; o projeto
+          // não depende deste canvas (a trava impediu qualquer gravação a partir dele).
+          console.warn('Não foi possível descartar o canvas da restauração que falhou:', error)
+        }
+      } else injected.dispose()
       appliedToolboxRef.current = null
     }
   }, [projectStoreApi, notifyPaste])
@@ -1534,17 +1562,25 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         if (!searchAvailable || restoreFailed) return
         if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'f') {
           event.preventDefault()
-          setSearchOpenRequest((n) => n + 1)
+          setSearchOpenPending(true)
         }
       }}
     >
       <div ref={blocklyRef} className="h-full w-full" />
       {searchAvailable && !restoreFailed && workspace && (
-        <div className="pointer-events-none absolute top-3 right-3 z-20 flex justify-end">
+        <div
+          className={[
+            // Acima da paleta (`.blocklyToolbox` tem z-index 70); com a paleta horizontal no alto,
+            // embaixo à esquerda, longe da lixeira e do zoom.
+            'pointer-events-none absolute z-[80] flex',
+            toolboxHorizontal ? 'bottom-3 left-3 justify-start' : 'top-3 right-3 justify-end',
+          ].join(' ')}
+        >
           <Suspense fallback={null}>
             <WorkspaceSearch
               workspace={workspace}
-              openRequest={searchOpenRequest}
+              openPending={searchOpenPending}
+              onOpenHandled={handleSearchOpened}
               onReveal={(blockId) =>
                 highlightApi.getState().revealBlock({ kind: 'block', blockId })
               }
@@ -1569,14 +1605,21 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       {restoreFailed && !isLoadingWorkspace && (
         <div
           data-sz-blocks-restore-failed=""
-          className="absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/80 p-6"
+          className="absolute inset-0 z-[80] flex items-center justify-center bg-sz-bg/80 p-6"
         >
           <div
             role="alert"
             className="max-w-md rounded-2xl border-2 border-sz-border bg-sz-panel px-5 py-4 text-center text-sz-fg shadow-lg"
           >
             <p className="font-bold">{t('blocks.restoreFailed.title')}</p>
-            <p className="mt-2 text-sm">{t('blocks.restoreFailed.body')}</p>
+            <p className="mt-2 text-sm">
+              {/* Só aponta a Ponte onde ela existe: a aula gravada, por exemplo, só tem Blocos. */}
+              {t(
+                studioConfig.allowedModes.includes('bridge')
+                  ? 'blocks.restoreFailed.body'
+                  : 'blocks.restoreFailed.bodyNoBridge',
+              )}
+            </p>
           </div>
         </div>
       )}

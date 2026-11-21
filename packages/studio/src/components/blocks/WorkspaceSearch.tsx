@@ -1,7 +1,11 @@
-import type * as Blockly from 'blockly/core'
+import * as Blockly from 'blockly/core'
 import type { JSX } from 'react'
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { searchWorkspaceBlocks, type WorkspaceSearchResult } from '../../blockly/workspaceSearch'
+import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react'
+import {
+  buildWorkspaceSearchIndex,
+  filterWorkspaceSearchIndex,
+  type WorkspaceSearchResult,
+} from '../../blockly/workspaceSearch'
 import { createDictionaryTranslator } from '../../core/i18n/translator'
 import { useT } from '../../studio/i18n'
 import { IconSearch } from '../../ui-internal/icons'
@@ -16,8 +20,12 @@ import { IconSearch } from '../../ui-internal/icons'
 export interface WorkspaceSearchProps {
   workspace: Blockly.Workspace
   onReveal: (blockId: string) => void
-  /** Pedido de abrir vindo do atalho (Ctrl+F na área de blocos); muda a cada pedido. */
-  openRequest: number
+  /**
+   * Há um pedido de abrir vindo do atalho (Ctrl+F na área de blocos) que a busca ainda não
+   * atendeu. A busca abre (ou devolve o foco ao campo) e avisa por `onOpenHandled`.
+   */
+  openPending: boolean
+  onOpenHandled: () => void
 }
 
 const COPY = {
@@ -48,7 +56,8 @@ const EMPTY: WorkspaceSearchResult = { hits: [], total: 0 }
 export default function WorkspaceSearch({
   workspace,
   onReveal,
-  openRequest,
+  openPending,
+  onOpenHandled,
 }: WorkspaceSearchProps): JSX.Element {
   const studioT = useT()
   const t = useMemo(
@@ -58,21 +67,65 @@ export default function WorkspaceSearch({
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [active, setActive] = useState<string | null>(null)
+  // Muda quando o programa muda com a busca aberta: o índice é lido de novo.
+  const [revision, setRevision] = useState(0)
   const input = useRef<HTMLInputElement>(null)
+  const toggle = useRef<HTMLButtonElement>(null)
+  // Fechar pela própria busca devolve o foco ao botão (sem isso ele caía no `body`).
+  const returnFocus = useRef(false)
   const listId = useId()
 
+  // O pedido mora no painel até a busca atendê-lo (revisão do lote 3, achado 8): remontar a busca
+  // (o projeto cruzou os 300 blocos de novo, por exemplo) não a reabre sozinha nem tira o foco de
+  // quem está editando, e o Ctrl+F apertado antes de o componente chegar (ele é baixado sob
+  // demanda) continua valendo quando ele monta.
   useEffect(() => {
-    if (openRequest > 0) setOpen(true)
-  }, [openRequest])
+    if (!openPending) return
+    onOpenHandled()
+    if (open) input.current?.focus()
+    else setOpen(true)
+  }, [openPending, onOpenHandled, open])
   useEffect(() => {
     if (open) input.current?.focus()
+    else if (returnFocus.current) {
+      returnFocus.current = false
+      toggle.current?.focus()
+    }
   }, [open])
 
-  // Procura no modelo vivo a cada texto novo.
-  const result = useMemo(
-    () => (open && query.trim() ? searchWorkspaceBlocks(workspace, query) : EMPTY),
-    [open, query, workspace],
+  // Blocos que nascem, somem, mudam de texto ou de lugar com a busca aberta: o resultado não pode
+  // apontar para um bloco que já não existe (revisão do lote 3, achado 7).
+  useEffect(() => {
+    if (!open) return
+    const listener = (event: Blockly.Events.Abstract) => {
+      if (event.isUiEvent) return
+      if (
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE ||
+        event.type === Blockly.Events.BLOCK_CHANGE ||
+        event.type === Blockly.Events.BLOCK_MOVE
+      )
+        setRevision((value) => value + 1)
+    }
+    workspace.addChangeListener(listener)
+    return () => workspace.removeChangeListener(listener)
+  }, [open, workspace])
+
+  // O programa é lido uma vez por mudança; cada tecla só filtra, sem segurar a digitação.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `revision` é o sinal de que o programa mudou (o workspace é o mesmo objeto).
+  const index = useMemo(
+    () => (open ? buildWorkspaceSearchIndex(workspace) : []),
+    [open, workspace, revision],
   )
+  const deferredQuery = useDeferredValue(query)
+  const result = useMemo(
+    () => (deferredQuery.trim() ? filterWorkspaceSearchIndex(index, deferredQuery) : EMPTY),
+    [index, deferredQuery],
+  )
+  const close = () => {
+    returnFocus.current = true
+    setOpen(false)
+  }
 
   const reveal = (id: string) => {
     setActive(id)
@@ -82,6 +135,7 @@ export default function WorkspaceSearch({
   if (!open)
     return (
       <button
+        ref={toggle}
         type="button"
         data-sz-workspace-search=""
         className="pointer-events-auto flex items-center gap-1.5 rounded-full border-2 border-sz-border bg-sz-panel px-3 py-1.5 font-semibold text-sm text-sz-fg shadow-sm hover:bg-sz-panel-soft"
@@ -105,8 +159,11 @@ export default function WorkspaceSearch({
           value={query}
           placeholder={t('placeholder')}
           aria-label={t('placeholder')}
-          aria-controls={listId}
-          className="min-w-0 flex-1 bg-transparent py-2 text-sm text-sz-fg outline-none"
+          // Só aponta a lista quando ela existe (referência pendurada é ARIA inválida).
+          aria-controls={result.hits.length > 0 ? listId : undefined}
+          // Sem o "×" do próprio navegador no campo de busca: o fechar ao lado já é um "×", e dois
+          // juntos confundem (visto na foto do lote 3).
+          className="min-w-0 flex-1 bg-transparent py-2 text-sm text-sz-fg outline-none [&::-webkit-search-cancel-button]:appearance-none"
           onChange={(event) => {
             setQuery(event.target.value)
             setActive(null)
@@ -114,7 +171,7 @@ export default function WorkspaceSearch({
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
               event.preventDefault()
-              setOpen(false)
+              close()
             } else if (event.key === 'Enter' && result.hits.length > 0) {
               // Enter anda pelos resultados, um de cada vez.
               event.preventDefault()
@@ -128,7 +185,7 @@ export default function WorkspaceSearch({
           type="button"
           aria-label={t('close')}
           className="rounded-full px-2 py-1 text-sz-fg-soft hover:text-sz-fg"
-          onClick={() => setOpen(false)}
+          onClick={close}
         >
           ×
         </button>

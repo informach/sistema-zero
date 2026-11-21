@@ -106,12 +106,25 @@ function readCanonicalProject() {
   }
 }
 
+// O relatório vai ao disco depois de cada amostra (o job do CI pode ser morto pelo prazo).
+async function writeReport() {
+  const folder = output.slice(0, Math.max(output.lastIndexOf('/'), output.lastIndexOf('\\')))
+  if (folder) await mkdir(folder, { recursive: true })
+  await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
+}
+
 const digest = (text) => createHash('sha256').update(text).digest('hex').slice(0, 16)
 function digestsOf(project) {
-  let files = project.files
-  project.ids.forEach((id, index) => {
-    files = files.split(id).join(`#${index}`)
-  })
+  // Uma passada só, com os ids do mais longo para o mais curto: trocar um por um, na ordem de
+  // aparição, corrompia um id que contém outro (`escala1` dentro de `escala10`).
+  const canonical = new Map(project.ids.map((id, index) => [id, `#${index}`]))
+  const pattern = [...canonical.keys()]
+    .sort((a, b) => b.length - a.length)
+    .map((id) => id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|')
+  const files = pattern
+    ? project.files.replace(new RegExp(pattern, 'g'), (id) => canonical.get(id))
+    : project.files
   return { blocksStateDigest: digest(project.state), filesDigest: digest(files) }
 }
 
@@ -190,6 +203,9 @@ try {
           for (const [name, value] of arm.url.searchParams) url.searchParams.set(name, value)
           url.searchParams.set('aula', 'desafio-primeiro-jogo/desafio-dia-3')
           url.searchParams.set('escala', String(size))
+          // Um bloco "marca do fim" no último evento, lá na cauda que nasce sem desenho: a edição
+          // de dentro da cauda passa por ele (revisão do lote 3, achado 3).
+          if (editAfterOpening) url.searchParams.set('marca', '1')
           await page.goto(url.href)
           const stageWidth = page
             .locator('.blocklyBlockCanvas .blocklyEditableField')
@@ -290,9 +306,57 @@ try {
             }
             // Antes de ler o projeto: a leitura canônica é uma tarefa longa da própria medição.
             sample.editLongTasksMs = await page.evaluate(() => window.__editLongTasks())
+            // Dentro da cauda (revisão do lote 3, achado 3): "Procurar no programa" leva ao bloco do
+            // fim, o que desenha a cauda adiada até ele e liga a montagem sob demanda no braço
+            // adiado; a edição de um campo desse bloco tem de chegar ao código nos dois braços.
+            await page
+              .locator('svg.blocklySvg')
+              .first()
+              .click({ position: { x: 40, y: 40 }, force: true, timeout: openTimeoutMs })
+            await page.keyboard.press('Control+f')
+            const search = page.getByRole('searchbox', { name: 'Procurar nos blocos do programa' })
+            // No braço inteiro, com os 10 mil blocos desenhados, cada gesto espera a página: os
+            // prazos são os da abertura, não os 30 s padrão de uma ação.
+            await search.fill('marca do fim', { timeout: openTimeoutMs })
+            await page
+              .locator('[data-sz-workspace-search]')
+              .getByRole('button', { name: /marca do fim/ })
+              .click({ timeout: openTimeoutMs })
+            const tailMark = page.locator('.blocklyBlockCanvas [data-id="marca-do-fim"]')
+            await tailMark.waitFor({ state: 'visible', timeout: openTimeoutMs })
+            await search.press('Escape', { timeout: openTimeoutMs })
+            await tailMark
+              .locator('.blocklyEditableField')
+              .first()
+              .click({ force: true, timeout: openTimeoutMs })
+            await page
+              .locator('input.blocklyHtmlInput')
+              .fill('// marca editada', { timeout: openTimeoutMs })
+            await page.keyboard.press('Enter')
+            await page.waitForFunction(
+              () =>
+                String(window.__aula.projeto().files?.['script.js'] ?? '').includes(
+                  'marca editada',
+                ),
+              undefined,
+              { timeout: openTimeoutMs, polling: 250 },
+            )
+            const afterTail = await page.evaluate(() => ({
+              deferredBlocks: Number(
+                document.querySelector('[data-sz-deferred-blocks]')?.dataset.szDeferredBlocks ?? 0,
+              ),
+              offscreenBodies: Number(
+                document.querySelector('[data-sz-offscreen-bodies]')?.dataset.szOffscreenBodies ??
+                  0,
+              ),
+              drawnBlocks: document.querySelectorAll('.blocklyDraggable').length,
+            }))
+            sample.afterTailEdit = afterTail
             const edited = await page.evaluate(readCanonicalProject)
             if (edited.script.includes('SZGame2D.setupStage(480, 360,'))
               throw new Error('The edited project still sets up a 480 × 360 stage')
+            if (edited.script.includes('marca do fim'))
+              throw new Error('The edited project still has the old tail mark')
             const editedDigests = digestsOf(edited)
             sample.editedBlocksStateDigest = editedDigests.blocksStateDigest
             sample.editedFilesDigest = editedDigests.filesDigest
@@ -315,6 +379,7 @@ try {
             await profiler.detach()
           }
           await context.close()
+          await writeReport()
         }
       }
     }
@@ -322,9 +387,7 @@ try {
 } finally {
   await browser.close()
   if (assertEquivalence) report.equivalence = equivalenceOf(report.samples)
-  const folder = output.slice(0, Math.max(output.lastIndexOf('/'), output.lastIndexOf('\\')))
-  if (folder) await mkdir(folder, { recursive: true })
-  await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
+  await writeReport()
 }
 if (report.equivalence) {
   console.log(JSON.stringify(report.equivalence))
@@ -361,6 +424,12 @@ function equivalenceOf(samples) {
         failures.push(`${size}: no arm opened with deferred blocks`)
       if (!measured.some((sample) => sample.deferredBlocks === 0 && sample.offscreenBodies === 0))
         failures.push(`${size}: no arm opened through the regular path`)
+      if (
+        editAfterOpening &&
+        size >= 1500 &&
+        !measured.some((sample) => (sample.afterTailEdit?.offscreenBodies ?? 0) > 0)
+      )
+        failures.push(`${size}: no arm mounted bodies on demand after revealing the tail`)
     }
   }
   return { ok: failures.length === 0, failures }

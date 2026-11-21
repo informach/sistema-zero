@@ -635,6 +635,11 @@ grande abre como abrem os pequenos. Fora do teste, nada muda (o interruptor nasc
   `JSON.stringify` do V8 recursa na cadeia de ~1.660 eventos);
 - depois de editar a largura do palco (480 para 500), a edição chega ao código nos dois braços e o
   estado e o código continuam iguais entre eles;
+- depois disso (revisão do lote 3), "Procurar no programa" leva ao bloco do fim da cauda (o
+  `&marca=1`, que toma o lugar da última instrução do último evento), o que desenha a cauda adiada
+  até ele e liga a montagem sob demanda no braço adiado; um campo desse bloco é editado e a
+  edição tem de chegar ao código, com o estado e o código iguais nos dois braços. O braço adiado
+  tem de ter corpos montados sob demanda depois disso (`afterTailEdit.offscreenBodies`);
 - nenhuma amostra com erro na página;
 - os braços seguiram caminhos diferentes de verdade (um abriu com blocos adiados, o outro sem
   nenhum): dois braços iguais não provariam nada.
@@ -654,8 +659,21 @@ evidência bruta em `evidencias/classico-equivalencia-2026-11-21/windows-local.j
 | 10 000 | 13,3 · 18,8 s | 35,9 · 58,3 s | 106 · 10 000 | 220 · 354 ms | 243 · 322 ms (5 tarefas) | `85811b5a…` · `fe45032c…` |
 
 Os resumos de 2 002 e 5 002 são os mesmos de 20/11 (base contra candidato, dois builds): a leitura
-nova canoniza igual à antiga. Do clique ao código novo: ~0,3 s adiado (com os 120 ms do agrupador
+nova canoniza igual à antiga.
+
+**No CI** (run 44925989770, Linux, Xeon 6975P-C com 4 processadores lógicos, Chromium 159 completo;
+`evidencias/classico-equivalencia-2026-11-21/linux-ci-44925989770.json`): `{"ok":true}`, com os
+MESMOS resumos desta máquina Windows nos dois tamanhos, depois de abrir e depois de editar. Abrir
+10 mil: 11,9 s adiado e 36,1 s inteiro; o gesto: uma tarefa de 176 ms adiado e cinco (a maior de
+386 ms) inteiro. Do clique ao código novo: ~0,3 s adiado (com os 120 ms do agrupador
 do Blockly) e 1,3 a 4,7 s inteiro.
+
+**Com a edição dentro da cauda** (revisão do lote 3; `evidencias/classico-equivalencia-2026-11-21/windows-local-cauda.json`,
+mesma máquina): `{"ok":true}`. Com 2 mil blocos, revelar o fim montou 319 corpos sob demanda no
+braço adiado (389 blocos desenhados, contra 2 001 no inteiro); com 10 mil, 1.652 corpos (1.722
+desenhados, contra 9 999). O estado e o código ficaram iguais nos dois braços depois de abrir,
+depois da edição no alto e depois da edição na cauda. Os resumos mudaram em relação à tabela
+acima porque a fixture agora leva a marca no lugar da última instrução.
 
 **De que é feito o gesto com 10 mil blocos.** Perfil de CPU só da janela do gesto
 (`SZ_CLASSIC_OPEN_EDIT_PROFILE=1`, build sem minificar, braço adiado; resumos em

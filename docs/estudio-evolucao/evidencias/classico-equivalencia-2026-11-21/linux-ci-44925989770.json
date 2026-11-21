@@ -1,0 +1,176 @@
+{
+  "environment": {
+    "platform": "linux",
+    "node": "v24.22.3",
+    "browser": "159.0.8154.6",
+    "cpu": "Intel(R) Xeon(R) 6975P-C",
+    "logicalCpus": 4,
+    "memoryBytes": 16464306176,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "arms": [
+    {
+      "name": "adiado",
+      "url": "http://127.0.0.1:5195/"
+    },
+    {
+      "name": "inteiro",
+      "url": "http://127.0.0.1:5195/?montagem=inteira"
+    }
+  ],
+  "method": "Fresh context per sample; alternating arm order; same Farol stress fixture. Timer intervals are scheduling observations, not input latency or FPS. No game profiler. Digests: block ids canonicalized by order of appearance, state serialized with an explicit stack.",
+  "editAfterOpening": true,
+  "samples": [
+    {
+      "arm": "adiado",
+      "size": 2000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 1989.844999999972,
+      "timerGapsMs": {
+        "count": 55,
+        "p50": 20.005000000004657,
+        "p95": 142.27500000002328,
+        "max": 423.0349999999744,
+        "total": 1963.484999999986
+      },
+      "longTasksMs": {
+        "count": 6,
+        "p50": 110,
+        "p95": 404,
+        "max": 404,
+        "total": 852
+      },
+      "settledMs": 1992.7249999999767,
+      "drawnBlocks": 106,
+      "deferredBlocks": 1896,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "12c51686df734030",
+      "filesDigest": "30ea420adff9208e",
+      "editReachedCodeMs": 314,
+      "editLongTasksMs": {
+        "count": 0,
+        "max": 0,
+        "total": 0
+      },
+      "editedBlocksStateDigest": "70aa836081680f04",
+      "editedFilesDigest": "2ee6efb74de58b12",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 2000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 2999.5650000000023,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.014999999955762,
+        "p95": 93.76000000000931,
+        "max": 1144.3000000000466,
+        "total": 2982.804999999993
+      },
+      "longTasksMs": {
+        "count": 8,
+        "p50": 82,
+        "p95": 864,
+        "max": 864,
+        "total": 1682
+      },
+      "settledMs": 3014.445000000007,
+      "drawnBlocks": 2002,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "12c51686df734030",
+      "filesDigest": "30ea420adff9208e",
+      "editReachedCodeMs": 406,
+      "editLongTasksMs": {
+        "count": 0,
+        "max": 0,
+        "total": 0
+      },
+      "editedBlocksStateDigest": "70aa836081680f04",
+      "editedFilesDigest": "2ee6efb74de58b12",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 10000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 11910.335000000021,
+      "timerGapsMs": {
+        "count": 55,
+        "p50": 20,
+        "p95": 699.1900000000023,
+        "max": 8035.895000000019,
+        "total": 11893.924999999988
+      },
+      "longTasksMs": {
+        "count": 8,
+        "p50": 202,
+        "p95": 8003,
+        "max": 8003,
+        "total": 10849
+      },
+      "settledMs": 11911.729999999981,
+      "drawnBlocks": 106,
+      "deferredBlocks": 9894,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "85811b5a2d0cfe8c",
+      "filesDigest": "fe45032ca99ea31e",
+      "editReachedCodeMs": 386,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 176,
+        "total": 176
+      },
+      "editedBlocksStateDigest": "09ac2536bbad05c3",
+      "editedFilesDigest": "cb313160805e1f60",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 10000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 36139.484999999986,
+      "timerGapsMs": {
+        "count": 54,
+        "p50": 20.010000000009313,
+        "p95": 1847.9400000000023,
+        "max": 22444.455000000016,
+        "total": 36119.21999999997
+      },
+      "longTasksMs": {
+        "count": 12,
+        "p50": 507,
+        "p95": 19114,
+        "max": 19114,
+        "total": 32068
+      },
+      "settledMs": 36145.51000000001,
+      "drawnBlocks": 10000,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "85811b5a2d0cfe8c",
+      "filesDigest": "fe45032ca99ea31e",
+      "editReachedCodeMs": 4481,
+      "editLongTasksMs": {
+        "count": 5,
+        "max": 386,
+        "total": 1440
+      },
+      "editedBlocksStateDigest": "09ac2536bbad05c3",
+      "editedFilesDigest": "cb313160805e1f60",
+      "pageErrors": []
+    }
+  ],
+  "equivalence": {
+    "ok": true,
+    "failures": []
+  }
+}

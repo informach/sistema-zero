@@ -81,9 +81,29 @@ export function blocksInProgramOrder(workspace: Blockly.Workspace): Blockly.Bloc
   return ordered
 }
 
-/** Os blocos cujo texto tem TODAS as palavras procuradas, na ordem do programa. */
-export function searchWorkspaceBlocks(
-  workspace: Blockly.Workspace,
+/** Um bloco já lido para a busca: o texto como aparece e o texto sem acento para comparar. */
+export interface WorkspaceSearchEntry extends WorkspaceSearchHit {
+  normalized: string
+}
+
+/**
+ * Lê o programa uma vez (revisão do lote 3, achado 7): a busca procurava no workspace a cada tecla
+ * (cerca de 15 ms com 10 mil blocos numa máquina de mesa, na renderização). O índice é refeito
+ * só quando o programa muda; cada tecla só filtra.
+ */
+export function buildWorkspaceSearchIndex(workspace: Blockly.Workspace): WorkspaceSearchEntry[] {
+  const entries: WorkspaceSearchEntry[] = []
+  for (const block of blocksInProgramOrder(workspace)) {
+    if (block.isShadow() || block.type.startsWith('sz_frame_')) continue
+    const text = blockOwnText(block)
+    entries.push({ id: block.id, text, area: areaOf(block), normalized: normalizeSearchText(text) })
+  }
+  return entries
+}
+
+/** Os blocos do índice cujo texto tem TODAS as palavras procuradas, na ordem do programa. */
+export function filterWorkspaceSearchIndex(
+  index: readonly WorkspaceSearchEntry[],
   query: string,
   limit = 30,
 ): WorkspaceSearchResult {
@@ -91,13 +111,20 @@ export function searchWorkspaceBlocks(
   if (terms.length === 0) return { hits: [], total: 0 }
   const hits: WorkspaceSearchHit[] = []
   let total = 0
-  for (const block of blocksInProgramOrder(workspace)) {
-    if (block.isShadow() || block.type.startsWith('sz_frame_')) continue
-    const text = blockOwnText(block)
-    const normalized = normalizeSearchText(text)
-    if (!terms.every((term) => normalized.includes(term))) continue
+  for (const entry of index) {
+    if (!terms.every((term) => entry.normalized.includes(term))) continue
     total++
-    if (hits.length < limit) hits.push({ id: block.id, text, area: areaOf(block) })
+    if (hits.length < limit) hits.push({ id: entry.id, text: entry.text, area: entry.area })
   }
   return { hits, total }
+}
+
+/** Os blocos cujo texto tem TODAS as palavras procuradas, na ordem do programa. */
+export function searchWorkspaceBlocks(
+  workspace: Blockly.Workspace,
+  query: string,
+  limit = 30,
+): WorkspaceSearchResult {
+  if (!normalizeSearchText(query)) return { hits: [], total: 0 }
+  return filterWorkspaceSearchIndex(buildWorkspaceSearchIndex(workspace), query, limit)
 }
