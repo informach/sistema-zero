@@ -123,12 +123,15 @@ Arquivos: `components/preview/PreviewIframe.tsx`, `runTripwire.ts`,
 - [ ] Auditar Monaco e serviços por arquivo; medir digitação, referências, rename,
   busca, imports, mapa, formatação, diff e navegação de erros sem remover diagnósticos.
 - [ ] Testar e corrigir versões, patches, resultados obsoletos e dependências.
-- [ ] Auditar fila do filesystem: ordem, conflitos, buffers, alterações externas,
-  mutações em voo, troca de projeto/perfil e recuperação.
-- [ ] Selecionar execução leve/completa/hospedada por capacidade real; evitar boot
-  Node em Canvas sem dependências; manter terminal e HMR quando aplicáveis.
-- [ ] Reconciliar limites editor/build/artefatos sem ampliá-los por conveniência;
-  medir cópias e fontes/binários e validar referências de conteúdo.
+- [x] Auditar fila do filesystem: ordem, conflitos, buffers, alterações externas,
+  mutações em voo, troca de projeto/perfil e recuperação (conferida em 20/11:
+  `proFsSync.test.ts` e `useWebContainerSync.test.tsx`, ver `pro-em-escala.md`).
+- [x] Selecionar execução leve/completa/hospedada por capacidade real; evitar boot
+  Node em Canvas sem dependências; manter terminal e HMR quando aplicáveis (20/11:
+  execução leve no navegador, `pro-execucao.md`).
+- [x] Reconciliar limites editor/build/artefatos sem ampliá-los por conveniência;
+  medir cópias e fontes/binários e validar referências de conteúdo (20/11: as cotas do
+  compilador valem também na execução leve; nenhuma aumentada, `pro-em-escala.md`).
 - [ ] Integrar ferramentas nos painéis existentes, responsivos e com mesmas receitas.
 
 ### 4. Motores e streaming — pendente

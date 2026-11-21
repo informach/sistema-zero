@@ -1,0 +1,66 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personalSync.test.ts:
+Isolated ./src/asset-library/__tests__/personalSync.cases.ts: 91 pass, 0 fail, 422 expect() calls
+(pass) personalSync.test.ts mock cases own an isolated module realm [7687.00ms]
+
+src\state\projectStorageBrowser.test.ts:
+(pass) actual pagehide: large pending CAS + latest draft survive reload; two tabs conflict [26422.00ms]
+
+src\state\projectStorageCoordinator.test.ts:
+(pass) local revision transactions on IndexedDB > keeps a deleted material and its inverse atomic through failure, retry and reload [47.00ms]
+(pass) local revision transactions on IndexedDB > publishes inverse before subscribers autosave or switch projects in a microtask [16.00ms]
+(pass) local revision transactions on IndexedDB > reopened quota draft supersedes its exact staged ancestor on recovery, without inventing a conflict [15.00ms]
+(pass) local revision transactions on IndexedDB > an autosave ACK survives rehydrating the same store before reopening the panel
+(pass) local revision transactions on IndexedDB > quota recovery does not block the profile; editor reopens dirty draft with inverse while cloud reads committed data [16.00ms]
+(pass) local revision transactions on IndexedDB > pending undo works in memory and an ordinary autosave acknowledges session receipts
+(pass) local revision transactions on IndexedDB > profile A→B→A during the initial journal read cannot apply to a reopened editor [16.00ms]
+(pass) local revision transactions on IndexedDB > a transaction cannot evict its newly added inverses and report them as saved
+(pass) local revision transactions on IndexedDB > commits document and inverse together, reopens and undoes exactly once [31.00ms]
+(pass) local revision transactions on IndexedDB > abort preserves both durable halves and dirty memory; same operation retries without patching again
+(pass) local revision transactions on IndexedDB > two independent editors cannot overwrite the winning head; stale undo also fails [16.00ms]
+(pass) local revision transactions on IndexedDB > exit recovery promotes the latest snapshot and preserves another writer on conflict
+(pass) local revision transactions on IndexedDB > deletion leaves a durable tombstone that rejects stale autosaves
+(pass) local revision transactions on IndexedDB > retains the latest 20 durable inverses and resets them with an explicit complete replacement [31.00ms]
+(pass) local revision transactions on IndexedDB > migrates v2 with backup and isolates a later v2 writer as a recovered copy [78.00ms]
+(pass) assistance reader > preserves provenance and questions; order-independent digest does not alter source revision
+
+src\state\projectStorageDocuments.test.ts:
+(pass) language-independent project partitions and transaction coordinator > javascript/classic: the public writer and language reader preserve a complete revision [15.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/pro: the public writer and language reader preserve a complete revision [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > python/classic: the public writer and language reader preserve a complete revision [15.00ms]
+(pass) language-independent project partitions and transaction coordinator > python/pro: the public writer and language reader preserve a complete revision [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > Python classic: pending requirements remain editable after saving and reopening
+(pass) language-independent project partitions and transaction coordinator > Python pro: pending requirements remain editable after saving and reopening [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > closed Python materials keep their own audio budget during a Pinta synchronization read [31.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/classic: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > javascript/pro: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > python/classic: full document, shell, JSON and fingerprint survive storage [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > python/pro: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > recovery commits Python source and environment together after exit
+(pass) language-independent project partitions and transaction coordinator > a stale writer cannot overwrite a configuration-only Python change [15.00ms]
+(pass) language-independent project partitions and transaction coordinator > a failed partition write preserves the complete previous Python revision
+(pass) language-independent project partitions and transaction coordinator > listing a Python project reads only lightweight metadata, never the dependency lock
+
+src\state\projectStorageRecords.test.ts:
+(pass) a migration chooses one namespace for every partition without changing the portable version
+(pass) legacy host validation keeps unknown metadata before it reaches local storage
+(pass) javascript/classic: unknown document metadata survives partition round-trip
+(pass) javascript/pro: unknown document metadata survives partition round-trip
+(pass) python/classic: unknown document metadata survives partition round-trip
+(pass) python/pro: unknown document metadata survives partition round-trip
+(pass) partitioning never invokes executable unknown metadata
+(pass) nested executable metadata is rejected and local symbols never become document fields
+(pass) partition round-trip preserves unknown root undefined and signed zero [16.00ms]
+
+src\state\projectStorageTransport.test.ts:
+(pass) ten thousand editable nodes use a shallow native-clone envelope and retain all IDs [140.00ms]
+(pass) shallow existing values and every non-v4-project namespace keep their native representation
+(pass) a shared subtree reached by a deeper path cannot evade the native-depth policy
+(pass) future and malformed envelopes cannot be read or authorized for replacement
+(pass) getters are rejected before native cloning and prepared envelopes are immutable
+
+ 47 pass
+ 0 fail
+ 281 expect() calls
+Ran 47 tests across 6 files. [35.42s]

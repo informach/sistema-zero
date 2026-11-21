@@ -1,0 +1,100 @@
+{
+  "at": "2026-11-21T05:21:55.930Z",
+  "source": "13e88e9c86fb730255a7809454ce3dabd41fd49f",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/informach/sistema-zero/actions/runs/44863963656",
+  "jobs": [
+    {
+      "name": "ci",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T05:17:09Z"
+    },
+    {
+      "name": "studio-e2e-chromium-3",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:59Z",
+      "completedAt": "2026-11-21T04:21:31Z"
+    },
+    {
+      "name": "studio-python-extensions",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:02:38Z"
+    },
+    {
+      "name": "community-kids-e2e",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:21:20Z"
+    },
+    {
+      "name": "desktop-windows",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:07:17Z"
+    },
+    {
+      "name": "studio-e2e-firefox",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:05:04Z"
+    },
+    {
+      "name": "members-image",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:02:17Z"
+    },
+    {
+      "name": "studio-storage-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:59Z",
+      "completedAt": "2026-11-21T04:03:49Z"
+    },
+    {
+      "name": "studio-e2e-webkit",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:59Z",
+      "completedAt": "2026-11-21T04:05:51Z"
+    },
+    {
+      "name": "arquipelago",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:05:53Z"
+    },
+    {
+      "name": "studio-e2e-chromium-2",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:58Z",
+      "completedAt": "2026-11-21T04:14:50Z"
+    },
+    {
+      "name": "studio-e2e-chromium-1",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-11-21T04:00:59Z",
+      "completedAt": "2026-11-21T04:18:54Z"
+    },
+    {
+      "name": "deploy-staging",
+      "status": "completed",
+      "conclusion": "skipped",
+      "startedAt": "2026-11-21T05:17:09Z",
+      "completedAt": "2026-11-21T05:17:09Z"
+    }
+  ]
+}

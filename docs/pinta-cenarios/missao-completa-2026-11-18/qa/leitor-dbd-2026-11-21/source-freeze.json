@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-21T05:21:56.470Z",
+  "head": "13e88e9c86fb730255a7809454ce3dabd41fd49f",
+  "mergeHead": "dbd7368653a4d232084c0da882e6f63500c0e6cf",
+  "files": [
+    {
+      "file": "packages/studio/src/asset-library/__tests__/personalSync.cases.ts",
+      "sha256": "6203af4a5334aac0c614b3c7d06b2300f0f383fe2a66451e47a4be2ad2337003"
+    },
+    {
+      "file": "packages/studio/src/state/projectStorageRead.ts",
+      "sha256": "526708052d52a4379210e75ff933561bfe8434396b1c1017b0f9375f81211d92"
+    }
+  ],
+  "corePintaWorkerPythonUnchanged": true
+}

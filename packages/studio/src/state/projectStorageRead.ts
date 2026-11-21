@@ -173,6 +173,11 @@ export async function readProjectAssetsSnapshot(
     isRecord(meta) && meta.programmingLanguage === 'python'
       ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
       : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
+  // A mesma trava da abertura completa: a limpeza não pode tirar nada do que está no disco. Sem
+  // ela, uma cena que esta versão não lê (gravada por um Estúdio mais novo) ou que passou do
+  // orçamento saía calada aqui, e a varredura dos desenhos regravava a lista inteira sem ela.
+  const { assertProjectContentPreserved } = await import('../core/projectDocumentGuards')
+  assertProjectContentPreserved({ assets: record.assets }, { assets })
   return {
     assets,
     environment,
