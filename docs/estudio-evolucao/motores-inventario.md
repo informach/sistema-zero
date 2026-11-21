@@ -105,15 +105,19 @@ jogando), e a API tem de existir. Critério:
 | Jogo 3D, Cubo girando | 4/7/2/4/2 | 4/7/2/4/2 | 4/7/2/4/2 | 8 → 44 |
 | Jogo 3D, Meu herói do Molda (modelo .glb) | 17/11/6/4/8 | 16/11/7/4/7 | 16/11/7/4/7 | 33 → 177 |
 | Mundo 3D, Meu Mundo, qualidade fixa em alta | 92/21/16/15/109 | igual | igual | 92 → 92 |
-| Mundo 3D, Meu Mundo, qualidade fixa em leve | 92/21/16/15/109 | igual | 88/11/18/4/133 | 92 → 97 |
+| Mundo 3D, Meu Mundo, qualidade fixa em desempenho (CI Linux, run 44944417041) | 88/11/18/4/133 | igual | igual | 97 → 97 |
 | Jogo 3D Avançado, Defesa da Torre | 11/10/6/4/8 | 29/10/6/4/14 (os caches se enchem) | 29/10/6/4/14 | 37 → 73 |
 
 - **O Mundo 3D recomeça "leve", no lugar**: reposiciona corpos e moedas sem criar nem apagar objetos
-  do WebGL (os criados não sobem em "alta"). Ele prova só esse recomeço, não um descarte. Em "leve",
-  o nível pedido entrou durante os ciclos: o pós-processamento saiu (framebuffers 15 para 4,
-  texturas 21 para 11) e entraram as variantes leves dos materiais (+2 programas, +24 VAOs), uma
-  troca única, estável depois. Uma rodada anterior, sem fixar a qualidade, viu a mesma troca no 8º
-  recomeço (a sonda de quadros por segundo, sem placa de vídeo); essa rodada não foi guardada.
+  do WebGL (os criados não sobem, em "alta" e em "desempenho"). Ele prova só esse recomeço, não um
+  descarte. Em "desempenho" (o nível mais leve da seleção pública), o pós-processamento já sai na
+  abertura (framebuffers 15 para 4, texturas 21 para 11) e entram as variantes leves dos materiais
+  (+2 programas, +24 VAOs); depois, nada muda nos 10 recomeços.
+- **Correção de 21/11/2026:** a primeira versão desta tabela tinha uma linha "qualidade fixa em
+  leve", medida com um nome de nível que a seleção pública não reconhece. A troca que ela mostrava
+  no 10º recomeço era a qualidade adaptativa caindo sozinha (a sonda de quadros por segundo, sem
+  placa de vídeo), não o nível pedido. Outra frente corrigiu o teste para "desempenho" (`d2b6ef238`)
+  e a linha acima é a do CI com ele; a linha antiga do `windows-local.json` desta pasta não vale.
 - **Sabotagem**: tirar o descarte dos efeitos e dos moldes do 3D Avançado reprova (os vivos crescem
   4 buffers e 2 VAOs por recomeço). Revisão do lote 4: a primeira versão desta evidência tinha sido
   gravada DEPOIS da rodada de sabotagem e mostrava esse crescimento; o arquivo foi refeito, e agora

@@ -621,6 +621,57 @@ it('scene 2 animates the selected sequence in both JavaScript game engines', () 
   }
 })
 
+// Proposta aprovada em 21/11/2026 (regiões, parte 2D): o tocador desenha só os objetos perto da
+// câmera, como já fazia com as peças. Só o desenho muda: áreas, colisão e animação seguem iguais.
+it('objects far from the camera are not drawn, and a rotation that brings one into view keeps it', () => {
+  const tree = (id: string, x: number, rotation = 0) => ({
+    id,
+    name: id,
+    type: '',
+    x,
+    y: 0,
+    width: 16,
+    height: 16,
+    rotation,
+    properties: {},
+    art: { assetId: 'tree' },
+  })
+  const sample = PintaSceneSchema.parse({
+    ...scene,
+    version: 2,
+    art: [{ id: 'tree', image: 'tree', width: 16, height: 16 }],
+    layers: [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'Árvores',
+        visible: true,
+        objects: [
+          tree('na-tela', 0),
+          tree('longe-a-direita', 500),
+          tree('longe-a-esquerda', -100),
+          // Girada 180° em volta da origem: a caixa cobre x de 24 a 40, e a tela tem 32.
+          tree('girada-para-dentro', 40, 180),
+        ],
+      },
+    ],
+  })
+  const drawn = (camera: { x: number; y: number }) => {
+    const ctx = contextoDeMentira()
+    const { api } = tocador(
+      ctx,
+      { complete: true, naturalWidth: 16 },
+      { meta: () => ({ scene: sample }), camera: () => camera },
+    )
+    api.createMapScene('map', 'asset')
+    api.drawMapScene('map', 'back')
+    return ctx.desenhos.length
+  }
+  expect(drawn({ x: 0, y: 0 })).toBe(2)
+  // A câmera andou até o objeto da direita: agora só ele está perto.
+  expect(drawn({ x: 480, y: 0 })).toBe(1)
+})
+
 it('tile objects animate in scene 2 while published scene 1 keeps its static behavior', () => {
   for (const version of [1, 2]) {
     const sample = PintaSceneSchema.parse({
