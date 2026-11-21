@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      PINTA_SOURCE_SHA: fb973c50fbf61fbca2cb955321e8aafca46c459c
+      PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
       STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: fb973c50fbf61fbca2cb955321e8aafca46c459c
+          ref: 598824bd1403fbb4723b77d5662d996a584aa0ea
           persist-credentials: false
       - uses: oven-sh/setup-bun@v2
         with:
@@ -67,7 +67,7 @@ jobs:
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: pinta-staging-runtime-image-fb973c50f
+          name: pinta-staging-runtime-image-598824bd1
           path: .cache/pinta-runtime-image/
           include-hidden-files: true
           if-no-files-found: error
