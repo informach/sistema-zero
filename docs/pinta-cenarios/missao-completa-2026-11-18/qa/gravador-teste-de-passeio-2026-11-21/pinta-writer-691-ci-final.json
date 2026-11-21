@@ -1,0 +1,98 @@
+{
+  "at": "2026-11-21T04:43:02.122Z",
+  "run": 44864926351,
+  "source": "691fb7f7fae34fcd9d9efbbec2f470af6d10b7f5",
+  "jobs": [
+    {
+      "id": 136726359131,
+      "name": "arquipelago",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359204,
+      "name": "members-image",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359242,
+      "name": "studio-e2e-firefox",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359251,
+      "name": "desktop-windows",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359253,
+      "name": "studio-python-extensions",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359285,
+      "name": "ci",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": ["Testes do Studio com CPU disponível para os projetos grandes"]
+    },
+    {
+      "id": 136726359302,
+      "name": "studio-storage-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359310,
+      "name": "studio-e2e-chromium-1",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359313,
+      "name": "studio-e2e-webkit",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359316,
+      "name": "studio-e2e-chromium-2",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": ["E2E Chromium completo (shard 2/3)"]
+    },
+    {
+      "id": 136726359331,
+      "name": "studio-e2e-chromium-3",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136726359363,
+      "name": "community-kids-e2e",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136732524963,
+      "name": "deploy-staging",
+      "status": "completed",
+      "conclusion": "skipped",
+      "failedSteps": []
+    }
+  ]
+}

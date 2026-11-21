@@ -537,9 +537,16 @@ describe('Mundo 3D — amigos, mapa, céu e chão', () => {
     w.npc('Bia', 20, 20, '#f97316', 'nenhum')
     const body = scene.children.find((c) => !known.has(c))
     if (!body) throw new Error('o amigo não entrou na cena')
-    step(300)
-    const moved = Math.hypot(body.position.x - 20, body.position.z - 20)
-    expect(moved).toBeGreaterThan(0.5)
+    // A valid random destination may already be within arrival distance.
+    // Choose a distant target so this assertion tests inherited wandering.
+    const random = spyOn(Math, 'random').mockReturnValue(0.5)
+    try {
+      step(300)
+      const moved = Math.hypot(body.position.x - 20, body.position.z - 20)
+      expect(moved).toBeGreaterThan(0.5)
+    } finally {
+      random.mockRestore()
+    }
   })
 
   it('tirar o amigo fecha a pergunta dele (e o próximo amigo consegue perguntar)', async () => {
