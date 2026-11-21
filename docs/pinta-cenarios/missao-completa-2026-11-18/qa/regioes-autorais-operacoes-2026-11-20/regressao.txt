@@ -1,0 +1,118 @@
+bun test v1.3.11 (af24e281)
+
+packages\core\src\creations\object-deletion.test.ts:
+(pass) exclusão resiliente de objetos > falha total ou parcial do lote cai para exclusões unitárias
+(pass) exclusão resiliente de objetos > prefixo relê a primeira página até esvaziar e herda o fallback do lote
+
+packages\core\src\creations\pinta-format.test.ts:
+(pass) o rollout só do leitor nunca envia documento 6 declarando nuvem 4
+(pass) a versão declarada depende só do tipo do desenho
+(pass) nunca se declara uma versão que este código não lê
+(pass) a capacidade 4 protege documentos nativos 5 do cliente completo que declara 3
+(pass) o gravador completo supera o cliente intermediário que só entende camadas
+(pass) item sem versão conta como 1; acima do teto não é lido
+(pass) os números de hoje estão travados: mudar é seguir o procedimento do pinta-format.ts
+
+packages\core\src\creations\pinta-palette-library.test.ts:
+(pass) identidade reservada da biblioteca de paletas do Pinta > só a combinação exata é a biblioteca
+(pass) identidade reservada da biblioteca de paletas do Pinta > qualquer marcador isolado ou combinação incompleta é inválida
+(pass) identidade reservada da biblioteca de paletas do Pinta > criação comum sem marcador reservado permanece comum
+
+packages\core\src\creations\pinta-regions.test.ts:
+(pass) preserva todos os valores de célula, endian e representação JSON canônica
+(pass) região vazia não aloca células e pode cobrir uma extensão lógica grande
+(pass) mantém buffers em memória e não compartilha buffers entre chunks decodificados
+(pass) coordenadas negativas e bordas não alinhadas preservam as células
+(pass) rejeita chunks vazios, duplicados, malformados e células inválidas sem cortar dados
+(pass) barreira de formato rejeita versões, campos e codificações desconhecidos
+(pass) rejeita limites inválidos antes de ler dados de chunks
+(pass) orçamento é global e precede decodificação e alocação de buffers
+(pass) base64 deve ser exato e canônico, sem payload truncado, lixo ou células negativas
+(pass) teto real de 2048 regiões conserva 4 MiB sem alocar as áreas vazias do mundo [47.00ms]
+(pass) codificação ordena os chunks por linha e coluna sem reordenar o documento
+(pass) o gravador também confere o orçamento global antes de acessar os buffers
+(pass) preserva todos os 32769 valores históricos sem interpretar as flags das peças [16.00ms]
+(pass) payload não-JSON ou futuro falha fechado e nunca lança ao chamador
+(pass) validador de extensão compartilhado é estrito e protege também acessores defeituosos
+
+packages\core\src\creations\storage-keys.test.ts:
+(pass) chaves das criações no R2 (compartilhadas entre members e member-shell) > adulto isola blobs e licenças; referências Kids permanecem iguais
+(pass) chaves das criações no R2 (compartilhadas entre members e member-shell) > blob por revisão e parte por hash + revisão de subida, sob o prefixo do perfil
+
+packages\pinta\src\tiles\cell.test.ts:
+(pass) célula do mapa: peça + como ela está virada > sem peça virada, a célula É o índice da peça (mapas antigos não migram)
+(pass) célula do mapa: peça + como ela está virada > a célula vazia é -1 e não carrega bits
+(pass) célula do mapa: peça + como ela está virada > ida e volta de todas as combinações de bits, nos extremos do índice
+(pass) célula do mapa: peça + como ela está virada > cabe no Int16Array sem virar número negativo
+(pass) célula do mapa: peça + como ela está virada > trocar a peça conserva o giro; trocar o giro conserva a peça
+(pass) célula do mapa: peça + como ela está virada > valida o que vem de fora
+
+packages\pinta\src\tiles\cellAccess.test.ts:
+(pass) acesso cru às células do mapa > a varredura leu arquivos de verdade
+(pass) acesso cru às células do mapa > todo arquivo que lê células está na lista dos conferidos
+(pass) acesso cru às células do mapa > a lista não guarda arquivo que já não lê células
+(pass) acesso cru às células do mapa > a varredura pega o acesso sem colchete e a máscara escrita na mão
+(pass) acesso cru às células do mapa > não há pendência: quem decodifica a célula na mão é corrigido, não listado
+(pass) acesso cru às células do mapa > quem lê o índice da peça importa o cell.ts
+
+packages\pinta\src\tiles\cellGeometry.test.ts:
+(pass) normalizeCellRect > ordena os cantos e clampa à grade
+(pass) normalizeCellRect > clampa cantos negativos e além do limite
+(pass) normalizeCellRect > grade vazia devolve null
+(pass) lineCells (Bresenham) > linha horizontal
+(pass) lineCells (Bresenham) > diagonal perfeita
+(pass) lineCells (Bresenham) > invertida termina no destino
+(pass) lineCells (Bresenham) > ponto único
+(pass) rectCells / cellInRect > lista as células row-major
+(pass) rectCells / cellInRect > cellInRect
+
+packages\pinta\src\tiles\mapSelection.test.ts:
+(pass) copyRegion / clearRegion > copia a região (vazios viram buraco -1) [15.00ms]
+(pass) copyRegion / clearRegion > região só de grade vazia não conta como pedaço selecionável
+(pass) copyRegion / clearRegion > clearRegion apaga só a região; nada muda = mesma ref
+(pass) extractRegion + stampRegionAt (round-trip) > extrair e colar na MESMA posição reconstrói o original
+(pass) extractRegion + stampRegionAt (round-trip) > cola clipando nas bordas e pulando buraco (-1)
+
+packages\pinta\src\tiles\regionCells.test.ts:
+(pass) lê células negativas e lacunas sem alocar a extensão vazia
+(pass) um lote conserva flags e copia apenas os chunks alterados para o histórico
+(pass) última escrita vence e gesto que volta ao valor original não cria histórico
+(pass) apagar o último conteúdo remove o chunk, sem manter regiões vazias
+(pass) admissão usa o custo final do gesto, independentemente da ordem de apagar e pintar
+(pass) recusa atômica não conserva nem a primeira mudança de um lote inválido
+(pass) limite de trabalho é conferido antes de acessar os pontos do gesto
+(pass) conversão densa respeita origem parcial e conserva todos os valores e flags [16.00ms]
+(pass) conversão vazia não materializa chunks e recusa dimensões ou dados inconsistentes
+(pass) gesto espalhado sobre muitas regiões vazias é recusado pelo orçamento ocupado
+(pass) sequência determinística de gestos mantém o resultado das operações densas existentes [15.00ms]
+
+packages\pinta\src\tiles\stamp.test.ts:
+(pass) stampFromTileset > recorta um retângulo da grade da folha (columns=8)
+(pass) stampFromTileset > posições além do tileCount viram buraco (-1)
+(pass) stampTileAt (padrão módulo ancorado) > repete o padrão em módulo, inclusive à frente da âncora (módulo negativo)
+(pass) blockCells > o bloco encaixado que contém a célula visitada
+(pass) blockCells > encaixa em direção negativa (célula antes da âncora)
+(pass) stampCells > aplica o padrão, pula buraco (-1) e índice ≥ tileCount
+(pass) stampCells > índice ≥ tileCount é pulado (carimbo obsoleto após remap)
+(pass) stampCells > mesmo conteúdo devolve a mesma ref
+
+packages\pinta\src\tiles\tilemapOps.test.ts:
+(pass) setCell / cellAt > carimba e lê; fora dos limites é no-op
+(pass) floodFillCells > preenche a região contígua (conectividade-4)
+(pass) floodFillCells > mapa vazio inteiro é preenchido
+(pass) setCells (lote) > carimba várias células com um índice; mesmo conteúdo = mesma ref
+(pass) growTilemap > cresce um lado preservando o conteúdo com o offset certo
+(pass) growTilemap > cresce TODAS as camadas
+(pass) growTilemap > no teto devolve a mesma ref
+(pass) growTilemap > mapa 128×128 (novo teto) sobrevive ao sanitize
+(pass) camada da frente (F4) > flattenBackground/flattenFront separam pelas camadas marcadas; hasFrontLayer
+(pass) camada da frente (F4) > toggleLayerFront alterna e sanitize preserva o flag
+(pass) camadas > addLayer respeita a quota; removeLayer nunca deixa zero [16.00ms]
+(pass) camadas > remove só uma camada mesmo se receber ids duplicados de uma entrada não saneada
+(pass) camadas > flattenLayers: a camada de CIMA vence; invisível não conta
+(pass) camadas > flattenCellAt: a mesma resposta de flattenLayers célula a célula (e -1 fora do mapa)
+
+ 88 pass
+ 0 fail
+ 584 expect() calls
+Ran 88 tests across 12 files. [777.00ms]

@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-21T06:52:20.094Z",
+  "verifiedMerge": "92c0804cc03a711b10c4d0ba991418c4d14c9798",
+  "reader": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "packagesBefore": "96f8e9ee46bb5b65b6d7ef8cf57e73646e6f4e9d",
+  "packagesAfter": "96f8e9ee46bb5b65b6d7ef8cf57e73646e6f4e9d",
+  "allPackageBytesUnchanged": true,
+  "ownPackageFilesPreserved": 16,
+  "secondMergeCommitted": false,
+  "regionPersistenceAndUiActivated": false
+}

@@ -1,0 +1,69 @@
+{
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 1856,
+      "sha256": "711f92fe611cab68e288a6f08af03e7bb21629bcdc686116dd9769644210b5cf"
+    },
+    {
+      "file": "pinta-map-cell-reader-alias-red.log",
+      "bytes": 1413,
+      "sha256": "e06429ca1a89240e5da472de93d9e351a39a659e9e76b497a8ae80b1d9f9277b"
+    },
+    {
+      "file": "pinta-map-cell-reader-api-red.log",
+      "bytes": 381,
+      "sha256": "e7f9760fb67e02d1524ef6c699bc947ead22a3b22e975e308e13d74c6f7d32e8"
+    },
+    {
+      "file": "pinta-map-cell-reader-biome.log",
+      "bytes": 43,
+      "sha256": "c645b603bd1c44acdeb5420fcdb81d0c5b1b8aaa2956743de293ff3a4ed42073"
+    },
+    {
+      "file": "pinta-map-cell-reader-freeze.json",
+      "bytes": 724,
+      "sha256": "8126fb5adbb5ebb8d08f9fa0a12e664072fe55da007d62e20fa6da9b40aea537"
+    },
+    {
+      "file": "pinta-map-cell-reader-gates.json",
+      "bytes": 567,
+      "sha256": "dddb15c24ee9f1a9f6acf807b387372238ae8aa93e97538d972d0dd47e31d8eb"
+    },
+    {
+      "file": "pinta-map-cell-reader-green.log",
+      "bytes": 3522,
+      "sha256": "72f43a579ff03a93915ce9c9f669b59173addc2c58ea01e73a23a387092d96a5"
+    },
+    {
+      "file": "pinta-map-cell-reader-integration-report.json",
+      "bytes": 1286863,
+      "sha256": "91db8202da23dcb685b15275edad19d94ad3b485832bf3e22c4e59c6891f5d07"
+    },
+    {
+      "file": "pinta-map-cell-reader-integration.json",
+      "bytes": 182,
+      "sha256": "ce53f99e303443ff9728af96385cab398979af4322989f0fad4a13062121c7d2"
+    },
+    {
+      "file": "pinta-map-cell-reader-integration.log",
+      "bytes": 7566,
+      "sha256": "1375626eebc1dd56bd9b2667baac10ca6b5458212915b0963064b09645f6dcc3"
+    },
+    {
+      "file": "pinta-map-cell-reader-native-controls.log",
+      "bytes": 507,
+      "sha256": "4a8c3804bdca55263db70ccc776998db182181e34b5a3d6e4882269e9222f0e1"
+    },
+    {
+      "file": "pinta-map-cell-reader-pinta-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-cell-reader-pinta.log",
+      "bytes": 257325,
+      "sha256": "5d352d59b20c714906ba6c696e930ef91e42640d273cfca6a32665ad1880a473"
+    }
+  ]
+}

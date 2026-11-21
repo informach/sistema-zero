@@ -1,0 +1,21 @@
+import { strict as assert } from 'node:assert'
+import { createHash } from 'node:crypto'
+import { writeFileSync } from 'node:fs'
+import * as baseline from '../../sistema-zero-pinta-integracao-20261120/packages/pinta/src/core/project'
+import * as current from '../packages/pinta/src/core/project'
+const hash=(value:string)=>createHash('sha256').update(value).digest('hex')
+const sprite=current.createPixelSpriteAsset({name:'arvore',frameSize:16,now:100})
+sprite.id='arvore-snapshot'
+const results=[]
+for(let schema=0;schema<=7;schema++){
+ const layers:Record<string,unknown>[]=[{id:'floor',name:'Chão',visible:true,cells:new Int16Array([-1,1,2,3]),...(schema>=3?{opacity:0.25,offsetX:schema>=5?0.25:2}:{}),...(schema>=2?{tilesetId:'other-ground'}:{})}]
+ if(schema>=1) layers.push({kind:'objects',id:'doors',name:'Portas',visible:true,objects:[{id:'door',name:' Cabana ',type:'door',x:-1.5,y:1.5,width:16.5,height:32,properties:{active:false,count:{type:'int',value:1.5},color:{type:'color',value:'#AaBbCc'}},...(schema>=4?{shape:'polygon',points:[{x:-20000,y:1.25},{x:0,y:0}],rotation:361.1,flipX:true,role:'door'}:{}),...(schema>=7?{collision:true}:{})}]})
+ const raw={id:'map',kind:'tilemap',name:' Vila ',createdAt:100,updatedAt:200,tilesetId:'ground',cols:2,rows:2,layers,...(schema?{schema}:{}),...(schema>=6?{resources:[{sourceId:'arvore-original',capturedAt:200,asset:sprite}]}:{}),...(schema>=7?{physics:'precise'}:{})}
+ const previous=baseline.sanitizePintaAsset(raw),next=current.sanitizePintaAsset(raw)
+ assert(previous);assert(next);assert.deepEqual(next,previous)
+ const a=JSON.stringify(previous),b=JSON.stringify(next);assert.equal(a,b)
+ results.push({inputSchema:schema,effectiveSchema:next.schema??0,bytes:Buffer.byteLength(b),sha256:hash(b)})
+}
+const report={at:new Date().toISOString(),baseline:'85d16fcd99efe2a72a8350181542cf475a55db37',scope:'8 synthetic legacy metadata fixtures; exact JSON and values; not a browser or performance proof',results}
+writeFileSync('.cache/pinta-region-document-legacy-proof.json',JSON.stringify(report,null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify({fixtures:results.length,exact:true,baseline:report.baseline}))

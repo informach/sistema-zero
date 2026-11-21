@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 819,
+      "sha256": "04af92dd3eee4854646e5565c11100e2c4be5ee3082edc19f8708c75f1ddca99"
+    },
+    {
+      "file": "core-all.log",
+      "bytes": 334518,
+      "sha256": "43df189cc9ef42db0316de394ab7325e7a964c1ecee007da7b9ce98c315c361d"
+    },
+    {
+      "file": "core-focused.log",
+      "bytes": 1424,
+      "sha256": "344b1bf5f0eadd40cd378e6111a8a2bb9d46b9e3cf2a33256a3327829eb9085e"
+    },
+    {
+      "file": "core-tests-dir.log",
+      "bytes": 45816,
+      "sha256": "32d247b05f8af198380c60b73f01b17c0ae6caa25bc6016007442e75bcc735ce"
+    },
+    {
+      "file": "core-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-focused.log",
+      "bytes": 1723,
+      "sha256": "729f1800902ce4febc062d7ded4a53aa7cb00e86e5212220401bea7dd3002d9d"
+    },
+    {
+      "file": "pinta-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "source.json",
+      "bytes": 1338,
+      "sha256": "b19b47cf8485c9bdc886e53cb454afcb9f5c6acaf501940dfb197f613dd34dab"
+    }
+  ]
+}

@@ -1,112 +1,70 @@
-/**
- * Seleção RETANGULAR de células do mapa (espelho de `pixel/selection.ts`):
- * copiar/extrair uma região vira um `TileStamp` flutuante que a criança
- * arrasta; soltar carimba 1:1 (SEM repetição de padrão). Célula vazia (`-1`)
- * do recorte é buraco — não apaga o que está por baixo. Tudo puro.
- */
-import type { TilemapAsset, TilemapTileLayer } from '../core/project'
+/** Rectangular selection shared by the existing dense workshop and region documents. */
 import type { CellPos, CellRect } from './cellGeometry'
-import type { TileStamp } from './stamp'
-import { tileLayerById, withTileLayer } from './tilemapOps'
+import { type AuthorMap, editMapCellBatch, isBoundedCellRect, isCellPosition } from './mapCellEdits'
+import type { RegionCellEdit } from './regionCells'
+import { emptyTileStamp, isValidTileStamp, type TileStamp } from './stamp'
+import { createMapLayerCellReader } from './tilemapOps'
 
-const layerOf = tileLayerById
-
-function cellsAt(layer: TilemapTileLayer, cols: number, rect: CellRect): Int16Array {
-  const out = new Int16Array(rect.cols * rect.rows).fill(-1)
-  for (let r = 0; r < rect.rows; r += 1) {
-    for (let c = 0; c < rect.cols; c += 1) {
-      out[r * rect.cols + c] = layer.cells[(rect.row + r) * cols + (rect.col + c)] ?? -1
-    }
-  }
-  return out
-}
-
-/**
- * Há alguma célula PREENCHIDA na região? Marcar um pedaço só de grade vazia não
- * é selecionar nada — a criança quer pegar o que ela pintou (espelho do
- * `hasPaintedPixel` do pixel).
- */
-export function hasFilledCell(tilemap: TilemapAsset, layerId: string, rect: CellRect): boolean {
-  const layer = layerOf(tilemap, layerId)
-  if (!layer) return false
-  for (let r = 0; r < rect.rows; r += 1) {
-    for (let c = 0; c < rect.cols; c += 1) {
-      if ((layer.cells[(rect.row + r) * tilemap.cols + (rect.col + c)] ?? -1) >= 0) return true
-    }
-  }
+export function hasFilledCell(tilemap: AuthorMap, layerId: string, rect: CellRect): boolean {
+  if (!isBoundedCellRect(rect)) return false
+  const read = createMapLayerCellReader(tilemap, layerId)
+  if (!read) return false
+  for (let r = 0; r < rect.rows; r += 1)
+    for (let c = 0; c < rect.cols; c += 1) if (read.at(rect.col + c, rect.row + r) >= 0) return true
   return false
 }
 
-/** Copia a região da camada num carimbo (os vazios viram buraco `-1`). */
-export function copyRegion(tilemap: TilemapAsset, layerId: string, rect: CellRect): TileStamp {
-  const layer = layerOf(tilemap, layerId)
-  if (!layer)
-    return {
-      cols: rect.cols,
-      rows: rect.rows,
-      tiles: new Int16Array(rect.cols * rect.rows).fill(-1),
-    }
-  return { cols: rect.cols, rows: rect.rows, tiles: cellsAt(layer, tilemap.cols, rect) }
+/** Outside-map cells become holes; invalid/over-budget selections return an empty stamp. */
+export function copyRegion(tilemap: AuthorMap, layerId: string, rect: CellRect): TileStamp {
+  if (!isBoundedCellRect(rect)) return emptyTileStamp()
+  const read = createMapLayerCellReader(tilemap, layerId)
+  const tiles = new Int16Array(rect.cols * rect.rows).fill(-1)
+  if (read)
+    for (let r = 0; r < rect.rows; r += 1)
+      for (let c = 0; c < rect.cols; c += 1)
+        tiles[r * rect.cols + c] = read.at(rect.col + c, rect.row + r)
+  return { cols: rect.cols, rows: rect.rows, tiles }
 }
 
-/** Apaga a região (tudo vira `-1`). Devolve o MESMO asset quando nada muda. */
-export function clearRegion(tilemap: TilemapAsset, layerId: string, rect: CellRect): TilemapAsset {
-  return withTileLayer(tilemap, layerId, (layer) => {
-    let cells: Int16Array | null = null
-    for (let r = 0; r < rect.rows; r += 1) {
-      for (let c = 0; c < rect.cols; c += 1) {
-        const at = (rect.row + r) * tilemap.cols + (rect.col + c)
-        if ((cells ?? layer.cells)[at] === -1) continue
-        if (!cells) cells = new Int16Array(layer.cells)
-        cells[at] = -1
-      }
-    }
-    return cells ? { ...layer, cells } : layer
-  })
-}
-
-/**
- * Recorta a região: devolve o mapa com o buraco (`-1`) no lugar e o recorte
- * flutuante (carimbo). Espelho de `extractSelection` do pixel.
- */
-export function extractRegion(
-  tilemap: TilemapAsset,
+/** One history value, preserving the same asset on an unchanged or refused gesture. */
+export function clearRegion<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   rect: CellRect,
-): { remaining: TilemapAsset; floating: TileStamp } {
+): Map {
+  if (!isBoundedCellRect(rect)) return tilemap
+  const edits: RegionCellEdit[] = []
+  for (let r = 0; r < rect.rows; r += 1)
+    for (let c = 0; c < rect.cols; c += 1)
+      edits.push({ col: rect.col + c, row: rect.row + r, cell: -1 })
+  return editMapCellBatch(tilemap, layerId, edits)
+}
+
+export function extractRegion<Map extends AuthorMap>(
+  tilemap: Map,
+  layerId: string,
+  rect: CellRect,
+): { remaining: Map; floating: TileStamp } {
+  const floating = copyRegion(tilemap, layerId, rect)
   return {
-    remaining: clearRegion(tilemap, layerId, rect),
-    floating: copyRegion(tilemap, layerId, rect),
+    remaining: floating.tiles.length ? clearRegion(tilemap, layerId, rect) : tilemap,
+    floating,
   }
 }
 
-/**
- * Cola o carimbo flutuante 1:1 com o canto em `at` (SEM repetição de padrão);
- * buraco (`-1`) não apaga o que está por baixo; posições fora da grade são
- * cortadas. Devolve o MESMO asset quando nada muda.
- */
-export function stampRegionAt(
-  tilemap: TilemapAsset,
+/** Paste once, preserving holes and clipping at logical bounds without moving the origin. */
+export function stampRegionAt<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   at: CellPos,
   stamp: TileStamp,
-): TilemapAsset {
-  return withTileLayer(tilemap, layerId, (layer) => {
-    let cells: Int16Array | null = null
-    for (let r = 0; r < stamp.rows; r += 1) {
-      const row = at.row + r
-      if (row < 0 || row >= tilemap.rows) continue
-      for (let c = 0; c < stamp.cols; c += 1) {
-        const col = at.col + c
-        if (col < 0 || col >= tilemap.cols) continue
-        const value = stamp.tiles[r * stamp.cols + c] ?? -1
-        if (value < 0) continue
-        const idx = row * tilemap.cols + col
-        if ((cells ?? layer.cells)[idx] === value) continue
-        if (!cells) cells = new Int16Array(layer.cells)
-        cells[idx] = value
-      }
+): Map {
+  if (!isCellPosition(at) || !isValidTileStamp(stamp)) return tilemap
+  const edits: RegionCellEdit[] = []
+  for (let r = 0; r < stamp.rows; r += 1)
+    for (let c = 0; c < stamp.cols; c += 1) {
+      const cell = stamp.tiles[r * stamp.cols + c]!
+      if (cell >= 0) edits.push({ col: at.col + c, row: at.row + r, cell })
     }
-    return cells ? { ...layer, cells } : layer
-  })
+  return editMapCellBatch(tilemap, layerId, edits)
 }

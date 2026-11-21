@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-21T05:16:44.158Z",
+  "files": [
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "sha256": "8020a8b7bb08b6f2af99733d9630d1706d624bfdac93c05824bae985b8afb9d9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "3e1e6e2054501716d085b74f9a5148714518022d5fae947f81e6fb55705c0706"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMapAccess.test.ts",
+      "sha256": "d694837dcda984938b0f38500648f7ba864658ccbce88c7488c94d64d7f32e24"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+src\export\scenePackage.test.ts:
+(pass) the portable Pygame package actually renders the sheared child footprint [312.00ms]
+
+src\export\setAdapters.test.ts:
+(pass) real Pygame expansion and queries match the canonical affine geometry and reference namespaces [266.00ms]
+(pass) Pygame movement tests the rotated tile polygon rather than its expanded bounding box [125.00ms]
+
+ 3 pass
+ 15 filtered out
+ 0 fail
+ 4372 expect() calls
+Ran 3 tests across 2 files. [1.64s]

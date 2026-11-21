@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-21T05:23:00.247Z",
+  "scope": "local unit, types, real native Pygame and local Chromium; no staging deployment",
+  "files": [
+    {
+      "file": "red.log",
+      "bytes": 464,
+      "sha256": "0721f0fcc09d1c2fa034ee5388237607cf755bfd1eb48e41288215db780aaf5b"
+    },
+    {
+      "file": "focused.log",
+      "bytes": 4375,
+      "sha256": "35d0bb37e183b8dc8a5fa0eb6da57d3cd9afd98a3798eab21b944fe18dcf5977"
+    },
+    {
+      "file": "full.log",
+      "bytes": 260912,
+      "sha256": "ae35971d6dc5db784b385d25891ca5482a02f2d944e33f43ccffbdedbc476930"
+    },
+    {
+      "file": "typecheck.log",
+      "bytes": 16,
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "file": "studio-types.log",
+      "bytes": 54,
+      "sha256": "d8c7ff03c12f4026e52705ab9df4e54801946bac7eea6edcfd0859a24ef07afc"
+    },
+    {
+      "file": "native.log",
+      "bytes": 493,
+      "sha256": "6ec115456809633e9367ca4bd77956867ffcc225985ee66b244ebc9237c18ee5"
+    },
+    {
+      "file": "biome.log",
+      "bytes": 43,
+      "sha256": "2ebf166ff6d91877249b52a7c77d8c7582ae60f93599f6109808f497794d05a4"
+    },
+    {
+      "file": "integration.log",
+      "bytes": 7566,
+      "sha256": "9ecb2cb01b9d7b5ebc69085de6c95c4f2a4d3fd2458095dbd786075e406fc7c0"
+    },
+    {
+      "file": "integration-report.json",
+      "bytes": 1287421,
+      "sha256": "fd9305c5c9c0a199bcce51ccff630818d6eca533faf3bd48629e43426b1548f5"
+    },
+    {
+      "file": "freeze.json",
+      "bytes": 523,
+      "sha256": "abfcd776b5584b9da77a6049733dcf4c7949f905b69411554089b65f427fb8bf"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 759,
+      "sha256": "433b0ab11d7801d789911916e6805845db9e75bb20fa8162bbd3d37f35b53fcd"
+    }
+  ],
+  "formattedReportPreservesOriginalStats": true
+}

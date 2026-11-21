@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-21T07:29:03.968Z",
+  "baseline": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "scope": "8 synthetic legacy metadata fixtures; exact JSON and values; not a browser or performance proof",
+  "results": [
+    {
+      "inputSchema": 0,
+      "effectiveSchema": 0,
+      "bytes": 205,
+      "sha256": "11c07414334eb1e281e7e52e1fa2b0a78e8996ce2e1517de2471aa12db043d51"
+    },
+    {
+      "inputSchema": 1,
+      "effectiveSchema": 4,
+      "bytes": 476,
+      "sha256": "c9c406a62af10a9a690120a9b58475a934b3e87efcb48a86abee3f54dd4c1a66"
+    },
+    {
+      "inputSchema": 2,
+      "effectiveSchema": 4,
+      "bytes": 503,
+      "sha256": "6e7c726f9629c7aa8ecdd7dad8469b3abfd278db7d96b0561f5f6b7e5bccb2a5"
+    },
+    {
+      "inputSchema": 3,
+      "effectiveSchema": 4,
+      "bytes": 530,
+      "sha256": "0011cf53e6b96d4e46ffc720c6311ea23677df3f9fd4f3429d106743a023190b"
+    },
+    {
+      "inputSchema": 4,
+      "effectiveSchema": 4,
+      "bytes": 652,
+      "sha256": "fd351b5cdb869fe7a9793fff6119667056eba9195f0305684b86003205eac945"
+    },
+    {
+      "inputSchema": 5,
+      "effectiveSchema": 5,
+      "bytes": 655,
+      "sha256": "c3e8624c2dac3ee94a74ea0d974da5fe252244c05949f21da0b8e9afa0c23a38"
+    },
+    {
+      "inputSchema": 6,
+      "effectiveSchema": 6,
+      "bytes": 3046,
+      "sha256": "be9a4209a092099831dda6f813ad15da661cd7480cb208b06b1f837767bddfa6"
+    },
+    {
+      "inputSchema": 7,
+      "effectiveSchema": 7,
+      "bytes": 3083,
+      "sha256": "4d28c2a5fdcf45e39725b67f623962ebe6b08bdbdae01d248b24c8211bc49a99"
+    }
+  ]
+}

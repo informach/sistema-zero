@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-21T05:49:07.755Z",
+  "files": [
+    {
+      "file": "packages/pinta/src/tiles/floodFill.ts",
+      "sha256": "aee6f9f4f3ded073baf40cf8af9afaa69efc27b07dfdf97c8683aa81e95688c2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "sha256": "4afd8d73eaa0e856ec2400e250b733c41883272da01cef94d475bd335fca8116"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "ec6243c54ae5bf7eb2a6cde42e7f0384070118fa153c79b9ffdeffaf7c93ebf1"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMapEditing.test.ts",
+      "sha256": "5339d3d518f413fb0cd606d7a3b7017d310a49a38a3162247cf23408008ccbee"
+    }
+  ]
+}

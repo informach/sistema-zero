@@ -1,0 +1,60 @@
+{
+  "at": "2026-11-21T06:55:22.462Z",
+  "files": [
+    {
+      "file": "pinta-preservation-fixture-propagated.json",
+      "bytes": 404,
+      "sha256": "169e4c0c33daf8b127fe02c430c4046ce817afc69254313bec0ea086f52c3125"
+    },
+    {
+      "file": "pinta-sparse-preservation-followup-biome.log",
+      "bytes": 46,
+      "sha256": "0093c93e584ad51b8dfacaeb109964b32cd572c784e984a258f7107932bd4f53"
+    },
+    {
+      "file": "pinta-sparse-preservation-followup-gates.json",
+      "bytes": 612,
+      "sha256": "1d800856a0f64183a8dc23b11d51062ed2987b0227237deffd4ff925dafc1945"
+    },
+    {
+      "file": "pinta-sparse-preservation-followup-persistence.log",
+      "bytes": 291,
+      "sha256": "c80a662817bb0ebff6a27511456cf9e2455b7b82deadb73f423bd30595aa8d77"
+    },
+    {
+      "file": "pinta-sparse-preservation-followup-profile.log",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "pinta-sparse-preservation-followup-studio-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-sparse-reader66-source-before.json",
+      "bytes": 2650,
+      "sha256": "2293d624076f06c3dd310df86ee5a8f60be40d8fc9f89f04446abac75aba3388"
+    },
+    {
+      "file": "pinta-sparse-reader66-storage.log",
+      "bytes": 6541,
+      "sha256": "61cb7fe796a2492d10743ec42e9bdec5321113d58e9cb460f78b36dbe968e719"
+    },
+    {
+      "file": "pinta-sparse-reader85-merge.json",
+      "bytes": 432,
+      "sha256": "bd5dfc210e096e01b2a83ce4fcb7d32ec3bdcd6f76f9bb584e06057d97252227"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1226,
+      "sha256": "ff6949f6681ee7bb076afd8dc653ed5124b379bd065b58e61dc1399dc6d49150"
+    },
+    {
+      "file": "final-biome.log",
+      "bytes": 47,
+      "sha256": "9ac1cdfef5ffac06955d6ec3433bab4efb32e2289f3311009024d7b4e72bf75b"
+    }
+  ]
+}

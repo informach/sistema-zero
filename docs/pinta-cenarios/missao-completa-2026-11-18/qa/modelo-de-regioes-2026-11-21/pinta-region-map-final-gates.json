@@ -1,0 +1,16 @@
+[
+  {
+    "name": "focused",
+    "exit": 0,
+    "started": "2026-11-21T04:34:21.522Z",
+    "finished": "2026-11-21T04:34:22.010Z",
+    "log": ".cache/pinta-region-map-final-focused.log"
+  },
+  {
+    "name": "pinta-types",
+    "exit": 2,
+    "started": "2026-11-21T04:34:22.012Z",
+    "finished": "2026-11-21T04:34:31.294Z",
+    "log": ".cache/pinta-region-map-final-pinta-types.log"
+  }
+]

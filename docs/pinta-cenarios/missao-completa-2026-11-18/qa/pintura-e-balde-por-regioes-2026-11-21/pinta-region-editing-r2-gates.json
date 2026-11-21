@@ -1,0 +1,44 @@
+[
+  {
+    "name": "focused",
+    "started": "2026-11-21T05:42:40.384Z",
+    "finished": "2026-11-21T05:42:40.924Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-r2-focused.log"
+  },
+  {
+    "name": "pinta-types",
+    "started": "2026-11-21T05:42:40.925Z",
+    "finished": "2026-11-21T05:42:50.303Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-r2-pinta-types.log"
+  },
+  {
+    "name": "studio-types",
+    "started": "2026-11-21T05:42:50.304Z",
+    "finished": "2026-11-21T05:45:39.825Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-r2-studio-types.log"
+  },
+  {
+    "name": "native",
+    "started": "2026-11-21T05:45:39.825Z",
+    "finished": "2026-11-21T05:45:41.473Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-r2-native.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T05:45:41.474Z",
+    "finished": "2026-11-21T05:45:41.612Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-r2-biome.log"
+  },
+  {
+    "name": "integration",
+    "started": "2026-11-21T05:45:41.613Z",
+    "finished": "2026-11-21T05:47:42.549Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-r2-integration.log"
+  }
+]

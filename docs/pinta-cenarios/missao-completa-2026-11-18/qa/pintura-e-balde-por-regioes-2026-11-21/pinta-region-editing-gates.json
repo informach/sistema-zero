@@ -1,0 +1,16 @@
+[
+  {
+    "name": "pinta",
+    "started": "2026-11-21T05:37:02.791Z",
+    "finished": "2026-11-21T05:40:10.544Z",
+    "exit": 0,
+    "log": ".cache/pinta-region-editing-pinta.log"
+  },
+  {
+    "name": "pinta-types",
+    "started": "2026-11-21T05:40:10.546Z",
+    "finished": "2026-11-21T05:40:20.429Z",
+    "exit": 2,
+    "log": ".cache/pinta-region-editing-pinta-types.log"
+  }
+]

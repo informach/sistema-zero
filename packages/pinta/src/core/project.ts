@@ -8,6 +8,11 @@
  * operações puras testáveis sem canvas.
  */
 
+import {
+  PINTA_REGION_LIMITS,
+  type PintaRegionCells,
+  parsePintaRegionLayers,
+} from '@sistemazero/core/creations'
 import { PINTA_SOURCE_REF_PATTERN } from '@sistemazero/core/studio/pinta-source-ref'
 import { cellTile, isValidCell } from '../tiles/cell'
 import { unpackCells } from '../tiles/cellCodec'
@@ -16,6 +21,7 @@ import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
+import { sameMapDocumentMetadata } from './mapDocumentBoundary'
 import { sanitizeMapResourceVersions } from './mapResourceVersions'
 import {
   DEFAULT_PALETTE_ID,
@@ -437,10 +443,13 @@ export interface TilemapLayerCommon {
   properties?: Record<string, TilemapObjectPropertyValue>
 }
 
-export interface TilemapTileLayer extends TilemapLayerCommon {
+export type TilemapCells = Int16Array | PintaRegionCells
+
+export interface TilemapTileLayer<Cells extends TilemapCells = Int16Array>
+  extends TilemapLayerCommon {
   kind?: 'tiles'
   /** Uma célula por posição, linha a linha; -1 = vazia. Leia a peça por `cellTile` (`tiles/cell`). */
-  cells: Int16Array
+  cells: Cells
   /**
    * Camada de COLISÃO: onde há peça, o jogo não deixa passar; ela não é desenhada no jogo.
    * Serve para barreiras que não coincidem com as peças do cenário. Ausente = camada comum.
@@ -545,9 +554,12 @@ export interface TilemapGroupLayer extends TilemapLayerCommon {
   collision?: never
 }
 
-export type TilemapLayer = TilemapTileLayer | TilemapObjectLayer | TilemapGroupLayer
+export type TilemapLayer<Cells extends TilemapCells = Int16Array> =
+  | TilemapTileLayer<Cells>
+  | TilemapObjectLayer
+  | TilemapGroupLayer
 
-export interface TilemapAsset extends PintaAssetBase {
+export interface TilemapAsset<Cells extends TilemapCells = Int16Array> extends PintaAssetBase {
   kind: 'tilemap'
   /** Explicit opt-in for existing maps; scene 1/2 games keep their previous tile-grid physics. */
   physics?: 'precise'
@@ -560,7 +572,7 @@ export interface TilemapAsset extends PintaAssetBase {
   cols: number
   rows: number
   /** Nasce com 1 camada ("Chão"); peças, objetos e grupos dividem o teto de camadas. */
-  layers: TilemapLayer[]
+  layers: TilemapLayer<Cells>[]
   /** Versões de arte com ID próprio: editar a biblioteca não altera uma versão guardada. */
   resources?: TilemapResourceVersion[]
   /**
@@ -571,6 +583,12 @@ export interface TilemapAsset extends PintaAssetBase {
    * regravar), em vez de cortar o que não entende.
    */
   schema?: number
+}
+
+/** In-memory preparation only; not part of PintaAsset/persistence until all format-8 readers exist. */
+export interface RegionTilemapAsset extends TilemapAsset<PintaRegionCells> {
+  schema: 8
+  origin: { col: number; row: number }
 }
 
 /** Um pedaço reutilizável do mapa; uma instância aponta para o id deste desenho. */
@@ -584,16 +602,21 @@ export interface MapSetAsset extends PintaAssetBase {
   map: TilemapAsset
 }
 
-export function isTileLayer(layer: TilemapLayer): layer is TilemapTileLayer {
+export function isTileLayer<Cells extends TilemapCells>(
+  layer: TilemapLayer<Cells>,
+): layer is TilemapTileLayer<Cells> {
   return layer.kind === undefined || layer.kind === 'tiles'
 }
 
-export function isGroupLayer(layer: TilemapLayer): layer is TilemapGroupLayer {
+export function isGroupLayer(layer: TilemapLayer<TilemapCells>): layer is TilemapGroupLayer {
   return layer.kind === 'group'
 }
 
 /** Os grupos que contêm a camada, do mais próximo ao mais de fora. */
-export function layerAncestors(tilemap: TilemapAsset, layer: TilemapLayer): TilemapGroupLayer[] {
+export function layerAncestors(
+  tilemap: TilemapAsset<TilemapCells>,
+  layer: TilemapLayer<TilemapCells>,
+): TilemapGroupLayer[] {
   const out: TilemapGroupLayer[] = []
   let parentId = layer.parentId
   // O sanitizador garante que não há ciclo; o teto é só o cinto.
@@ -617,7 +640,10 @@ export interface EffectiveLayer {
   parallaxY: number
 }
 
-export function effectiveLayer(tilemap: TilemapAsset, layer: TilemapLayer): EffectiveLayer {
+export function effectiveLayer(
+  tilemap: TilemapAsset<TilemapCells>,
+  layer: TilemapLayer<TilemapCells>,
+): EffectiveLayer {
   const out: EffectiveLayer = {
     visible: layer.visible,
     locked: layer.locked === true,
@@ -640,27 +666,35 @@ export function effectiveLayer(tilemap: TilemapAsset, layer: TilemapLayer): Effe
 }
 
 /** A camada aparece? (ela e todos os grupos em volta estão visíveis). */
-export function isLayerShown(tilemap: TilemapAsset, layer: TilemapLayer): boolean {
+export function isLayerShown(
+  tilemap: TilemapAsset<TilemapCells>,
+  layer: TilemapLayer<TilemapCells>,
+): boolean {
   if (!layer.visible) return false
   return layer.parentId === undefined || effectiveLayer(tilemap, layer).visible
 }
 
-export function isObjectLayer(layer: TilemapLayer): layer is TilemapObjectLayer {
+export function isObjectLayer(layer: TilemapLayer<TilemapCells>): layer is TilemapObjectLayer {
   return layer.kind === 'objects'
 }
 
 /** As camadas de PEÇAS, na ordem do mapa (fundo primeiro). */
-export function tileLayersOf(tilemap: TilemapAsset): TilemapTileLayer[] {
+export function tileLayersOf<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+): TilemapTileLayer<Cells>[] {
   return tilemap.layers.filter(isTileLayer)
 }
 
 /** O tileset que uma camada de peças usa (o próprio ou o padrão do mapa). */
-export function tileLayerTilesetId(tilemap: TilemapAsset, layer: TilemapTileLayer): string {
+export function tileLayerTilesetId(
+  tilemap: Pick<TilemapAsset, 'tilesetId'>,
+  layer: Pick<TilemapTileLayer, 'tilesetId'>,
+): string {
   return layer.tilesetId ?? tilemap.tilesetId
 }
 
 /** Todos os tilesets que o mapa referencia, sem repetir: o PADRÃO primeiro. */
-export function tilemapTilesetIds(tilemap: TilemapAsset): string[] {
+export function tilemapTilesetIds(tilemap: TilemapAsset<TilemapCells>): string[] {
   const ids = [tilemap.tilesetId]
   for (const layer of tilemap.layers) {
     if (!isTileLayer(layer)) continue
@@ -671,7 +705,10 @@ export function tilemapTilesetIds(tilemap: TilemapAsset): string[] {
 }
 
 /** O mapa usa este tileset (como padrão ou em alguma camada)? */
-export function tilemapUsesTileset(tilemap: TilemapAsset, tilesetId: string): boolean {
+export function tilemapUsesTileset(
+  tilemap: TilemapAsset<TilemapCells>,
+  tilesetId: string,
+): boolean {
   return (
     tilemapTilesetIds(tilemap).includes(tilesetId) ||
     tilemap.layers.some(
@@ -1370,9 +1407,10 @@ function numberIn(value: unknown, min: number, max: number): number | undefined 
  */
 function sanitizeLayerCommon(
   l: Record<string, unknown>,
+  regions = false,
 ): Omit<TilemapLayerCommon, 'id' | 'name' | 'visible'> {
   const opacity = numberIn(l.opacity, 0, 1)
-  const offset = PINTA_MAP_FORMAT_LIMITS.maxLayerOffset
+  const offset = regions ? REGION_PIXEL_LIMIT : PINTA_MAP_FORMAT_LIMITS.maxLayerOffset
   const offsetX = numberIn(l.offsetX, -offset, offset)
   const offsetY = numberIn(l.offsetY, -offset, offset)
   const parallaxX = numberIn(l.parallaxX, 0, 4)
@@ -1381,12 +1419,14 @@ function sanitizeLayerCommon(
   return {
     ...(typeof l.parentId === 'string' && l.parentId ? { parentId: l.parentId } : {}),
     ...(l.locked === true ? { locked: true as const } : {}),
-    ...(opacity !== undefined && opacity !== 1 ? { opacity } : {}),
-    ...(offsetX !== undefined && offsetX !== 0 ? { offsetX } : {}),
-    ...(offsetY !== undefined && offsetY !== 0 ? { offsetY } : {}),
-    ...(parallaxX !== undefined && parallaxX !== 1 ? { parallaxX } : {}),
-    ...(parallaxY !== undefined && parallaxY !== 1 ? { parallaxY } : {}),
-    ...(Object.keys(properties).length > 0 ? { properties } : {}),
+    ...(opacity !== undefined && (regions || opacity !== 1) ? { opacity } : {}),
+    ...(offsetX !== undefined && (regions || offsetX !== 0) ? { offsetX } : {}),
+    ...(offsetY !== undefined && (regions || offsetY !== 0) ? { offsetY } : {}),
+    ...(parallaxX !== undefined && (regions || parallaxX !== 1) ? { parallaxX } : {}),
+    ...(parallaxY !== undefined && (regions || parallaxY !== 1) ? { parallaxY } : {}),
+    ...(Object.keys(properties).length > 0 || (regions && l.properties !== undefined)
+      ? { properties }
+      : {}),
   }
 }
 
@@ -1394,7 +1434,9 @@ function sanitizeLayerCommon(
  * Confere a árvore de grupos: o pai precisa existir, ser um grupo, vir ANTES na lista e não
  * passar da profundidade. Camada com pai inválido sai do grupo (vai para a raiz); nunca some.
  */
-function sanitizeLayerTree(layers: TilemapLayer[]): TilemapLayer[] {
+function sanitizeLayerTree<Cells extends TilemapCells>(
+  layers: TilemapLayer<Cells>[],
+): TilemapLayer<Cells>[] {
   const depthById = new Map<string, number>()
   return layers.map((layer) => {
     let next = layer
@@ -1403,7 +1445,7 @@ function sanitizeLayerTree(layers: TilemapLayer[]): TilemapLayer[] {
       const parentDepth = depthById.get(layer.parentId)
       if (parentDepth === undefined || parentDepth + 1 > PINTA_MAP_FORMAT_LIMITS.maxGroupDepth) {
         const { parentId: _orphan, ...rest } = layer
-        next = rest as TilemapLayer
+        next = rest as TilemapLayer<Cells>
       } else depth = parentDepth + 1
     }
     // Só grupo já visto pode ser pai: é o que impede ciclo e pai que vem depois.
@@ -1493,6 +1535,15 @@ export function objectNeedsV4(o: TilemapObject): boolean {
 }
 
 export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<TilemapObject> {
+  return sanitizeObjectExtrasFor(o, false)
+}
+
+const REGION_PIXEL_LIMIT = PINTA_REGION_LIMITS.maxCoordinateExclusive * Math.max(...TILE_SIZES)
+
+function sanitizeObjectExtrasFor(
+  o: Record<string, unknown>,
+  regions: boolean,
+): Partial<TilemapObject> {
   const out: Partial<TilemapObject> = {}
   if (o.collision === true) out.collision = true
   if (typeof o.shape === 'string' && (MAP_OBJECT_SHAPES as readonly string[]).includes(o.shape))
@@ -1509,13 +1560,17 @@ export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<Tilema
           !Number.isFinite(p.y)
         )
           return []
-        const max = PINTA_MAP_FORMAT_LIMITS.maxObjectCoord
+        const max = regions ? REGION_PIXEL_LIMIT : PINTA_MAP_FORMAT_LIMITS.maxObjectCoord
         return [{ x: Math.max(-max, Math.min(max, p.x)), y: Math.max(-max, Math.min(max, p.y)) }]
       })
   }
   if (typeof o.rotation === 'number' && Number.isFinite(o.rotation)) {
-    const angle = ((o.rotation % 360) + 360) % 360
-    if (angle) out.rotation = angle
+    if (regions) {
+      if (o.rotation >= 0 && o.rotation < 360) out.rotation = o.rotation
+    } else {
+      const angle = ((o.rotation % 360) + 360) % 360
+      if (angle) out.rotation = angle
+    }
   }
   if (o.flipX === true) out.flipX = true
   if (o.flipY === true) out.flipY = true
@@ -1541,16 +1596,28 @@ export function sanitizeObjectExtras(o: Record<string, unknown>): Partial<Tilema
 
 /** Os objetos de uma camada: objeto sem id ou com medida inválida é DESCARTADO. */
 export function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
+  return sanitizeTilemapObjectsFor(raw, false)
+}
+
+function sanitizeTilemapObjectsFor(raw: unknown, regions: boolean): TilemapObject[] {
   if (!Array.isArray(raw)) return []
   const objects: TilemapObject[] = []
   for (const item of raw.slice(0, PINTA_LIMITS.maxTilemapObjects)) {
     if (!item || typeof item !== 'object') continue
     const o = item as Record<string, unknown>
     if (typeof o.id !== 'string' || !o.id) continue
-    const x = sanitizeObjectMeasure(o.x)
-    const y = sanitizeObjectMeasure(o.y)
-    const width = sanitizeObjectMeasure(o.width)
-    const height = sanitizeObjectMeasure(o.height)
+    const x = regions
+      ? (numberIn(o.x, -REGION_PIXEL_LIMIT, REGION_PIXEL_LIMIT) ?? null)
+      : sanitizeObjectMeasure(o.x)
+    const y = regions
+      ? (numberIn(o.y, -REGION_PIXEL_LIMIT, REGION_PIXEL_LIMIT) ?? null)
+      : sanitizeObjectMeasure(o.y)
+    const width = regions
+      ? (numberIn(o.width, 0, REGION_PIXEL_LIMIT) ?? null)
+      : sanitizeObjectMeasure(o.width)
+    const height = regions
+      ? (numberIn(o.height, 0, REGION_PIXEL_LIMIT) ?? null)
+      : sanitizeObjectMeasure(o.height)
     if (x === null || y === null || width === null || height === null) continue
     objects.push({
       id: o.id,
@@ -1561,10 +1628,133 @@ export function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
       width,
       height,
       properties: sanitizeObjectProperties(o.properties),
-      ...sanitizeObjectExtras(o),
+      ...sanitizeObjectExtrasFor(o, regions),
     })
   }
   return ensureUniqueIds(objects)
+}
+
+/** Internal native-8 reader. Public persistence stays on formats 0–7 until all consumers exist. */
+export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | null {
+  try {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+    const record = raw as Record<string, unknown>
+    if (record.kind !== 'tilemap' || record.schema !== 8 || !isTilesetRef(record.tilesetId))
+      return null
+    const base = sanitizeBase(record)
+    // Native 8 validates names without renaming an already authored document.
+    if (
+      base &&
+      typeof record.name === 'string' &&
+      record.name.trim() &&
+      record.name.length <= PINTA_LIMITS.maxNameChars
+    )
+      base.name = record.name
+    if (
+      !base ||
+      !record.origin ||
+      typeof record.origin !== 'object' ||
+      Array.isArray(record.origin)
+    )
+      return null
+    const origin = record.origin as Record<string, unknown>
+    if (
+      typeof origin.col !== 'number' ||
+      typeof origin.row !== 'number' ||
+      typeof record.cols !== 'number' ||
+      typeof record.rows !== 'number'
+    )
+      return null
+    if (!Array.isArray(record.layers) || record.layers.length > PINTA_REGION_LIMITS.maxLayers)
+      return null
+    const resources = sanitizeMapResourceVersions(record.resources, sanitizePintaAsset)
+    if (!resources || resources.some((version) => version.asset.id === base.id)) return null
+    const layers: TilemapLayer<PintaRegionCells>[] = []
+    const rawCells: unknown[] = []
+    const layerIds = new Set<string>(),
+      objectIds = new Set<string>()
+    for (const item of record.layers) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null
+      const l = item as Record<string, unknown>
+      if (typeof l.id !== 'string' || !l.id || layerIds.has(l.id)) return null
+      layerIds.add(l.id)
+      const header = {
+        id: l.id,
+        name: typeof l.name === 'string' ? l.name.trim().slice(0, 30) : '',
+        visible: l.visible !== false,
+        ...sanitizeLayerCommon(l, true),
+      }
+      if (!header.name) return null
+      if (l.kind === 'objects') {
+        const objects = sanitizeTilemapObjectsFor(l.objects, true)
+        for (const object of objects) {
+          if (objectIds.has(object.id)) return null
+          objectIds.add(object.id)
+        }
+        layers.push({ kind: 'objects', ...header, objects })
+      } else if (l.kind === 'group') {
+        layers.push({ kind: 'group', ...header })
+      } else if (l.kind === undefined || l.kind === 'tiles') {
+        rawCells.push(l.cells)
+        layers.push({
+          ...header,
+          ...(l.kind === 'tiles' ? { kind: 'tiles' as const } : {}),
+          cells: { kind: 'regions', version: 1, side: 32, chunks: [] },
+          ...(typeof l.front === 'boolean' ? { front: l.front } : {}),
+          ...(isTilesetRef(l.tilesetId) ? { tilesetId: l.tilesetId } : {}),
+          ...(l.collision === true ? { collision: true as const } : {}),
+        })
+      } else return null
+    }
+    if (!rawCells.length) return null
+    const map: RegionTilemapAsset = {
+      ...base,
+      kind: 'tilemap',
+      schema: 8,
+      tilesetId: record.tilesetId,
+      origin: { col: origin.col, row: origin.row },
+      cols: record.cols,
+      rows: record.rows,
+      ...(record.physics === 'precise' ? { physics: 'precise' as const } : {}),
+      layers: sanitizeLayerTree(layers),
+      ...(record.resources !== undefined ? { resources } : {}),
+    }
+    // Check authorial fields before allocating decoded chunks; every normalization must
+    // be lossless. Cells have their own stricter, globally budgeted Core contract.
+    const metadata = (value: Record<string, unknown>) => ({
+      ...value,
+      layers: (value.layers as Record<string, unknown>[]).map((layer) => {
+        if (layer.kind !== undefined && layer.kind !== 'tiles') return layer
+        const { cells: _cells, ...rest } = layer
+        return rest
+      }),
+    })
+    if (
+      !sameMapDocumentMetadata(
+        metadata(record),
+        metadata(map as unknown as Record<string, unknown>),
+      )
+    )
+      return null
+    const grids = parsePintaRegionLayers(rawCells, {
+      ...map.origin,
+      cols: map.cols,
+      rows: map.rows,
+    })
+    if (!grids) return null
+    let index = 0
+    for (const layer of map.layers) {
+      if (!isTileLayer(layer)) continue
+      const cells = grids[index++]!
+      for (const chunk of cells.chunks)
+        for (const cell of chunk.cells)
+          if (cellTile(cell) >= PINTA_MAP_FORMAT_LIMITS.maxTiles) return null
+      layer.cells = cells
+    }
+    return map
+  } catch {
+    return null
+  }
 }
 
 function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {

@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-20T11:49:49.740Z",
+  "base": "d1f77134c1e69b182f514580c8532cb42d0965ac",
+  "logs": [
+    {
+      "file": "pinta-region-contract-red.log",
+      "sha256": "b5a2612dc3c4f1a63ea6a0e1d0e7b8a1cdc78f2830ac398014fa2815cc1f85c2",
+      "summary": "vermelho.txt"
+    },
+    {
+      "file": "pinta-region-contract-green.log",
+      "sha256": "a6edf7af3381db34618ad3d599fc12d42775e3f555662942a25136165d42dfe8",
+      "summary": "focado.txt"
+    },
+    {
+      "file": "pinta-region-core-full-final.log",
+      "sha256": "a42791636fdd9913ee00efce67dae687e672e99074d0fe6e414f1d030fd9616e",
+      "summary": "core-completo.txt"
+    },
+    {
+      "file": "pinta-region-core-types.log",
+      "sha256": "6e24ad38fb444a608d4146d5875932b0baad530299474772c3c5665b29817b1d",
+      "summary": "tipos-primeira-execucao.txt"
+    },
+    {
+      "file": "pinta-region-core-types-r2.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "tipos.txt"
+    },
+    {
+      "file": "pinta-region-contract-biome-final.log",
+      "sha256": "115360c87ebdfa6991c3d93b634171168742c12dc1962b264a86ddfd21bb9f55",
+      "summary": "biome.txt"
+    }
+  ],
+  "files": [
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "sha256": "3a7dd1d4399b7c1bb3676a76e232487283aed8a9b57226f87259edb88ce0acb7"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.test.ts",
+      "sha256": "9e47c3a89e2343bfc4af5e9505a96488cfd7cfae618cb95fb05cec24f74917bf"
+    },
+    {
+      "file": "packages/core/src/creations/index.ts",
+      "sha256": "0bc4ded213f2819bcf40075270702457d0962d53250f5cf1d71d206c7bef3ad3"
+    }
+  ],
+  "writerActivated": false,
+  "documentFormatChanged": false
+}

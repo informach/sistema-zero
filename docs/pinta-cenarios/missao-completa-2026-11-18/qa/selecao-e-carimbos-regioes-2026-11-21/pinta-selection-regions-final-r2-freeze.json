@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-21T09:20:17.818Z",
+  "base": "b51a70dfc06461d25b1d9818d207df565b836948",
+  "files": [
+    {
+      "file": "packages/pinta/src/tiles/mapSelection.ts",
+      "sha256": "a87d6628ea7d3d67a6870481a231c44d63cdb14d358543707dcd2c8969e408f8"
+    },
+    {
+      "file": "packages/pinta/src/tiles/stamp.ts",
+      "sha256": "babde65c090c690dc86a233a9f0d164821c8e37910e821c053f97cac0fd2ec07"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellEdits.ts",
+      "sha256": "1a045610b40123948143ced0c5b86c22d9491e94dc21ba21d7ed25f036fd981e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapSelectionBudget.test.ts",
+      "sha256": "8d23c1a3cfaa5422c03e467b156f5b5de7b3165666aa8e1f7750eb10600ca530"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "1d18db4f50fc2f1353ee0f4d297bf4eaa0282ebc9a4a02b18510db0ce9f3cc95"
+    }
+  ]
+}

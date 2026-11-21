@@ -1,0 +1,12 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\core\mapDocumentBoundary.test.ts:
+(pass) native map metadata preserves zero, false, signed fractions and JSON optional values
+(pass) native metadata compares wire arrays and bitmap buffers without changing their values
+(pass) unknown fields and accessors cannot run code during metadata comparison [16.00ms]
+(pass) metadata budgets reject before visiting oversized binary payloads and bound cycles
+
+ 4 pass
+ 0 fail
+ 21 expect() calls
+Ran 4 tests across 1 file. [330.00ms]

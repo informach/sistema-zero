@@ -1,0 +1,16 @@
+[
+  {
+    "name": "focused",
+    "started": "2026-11-21T09:15:33.637Z",
+    "finished": "2026-11-21T09:15:34.095Z",
+    "exit": 0,
+    "log": ".cache/pinta-selection-regions-final-focused.log"
+  },
+  {
+    "name": "pinta",
+    "started": "2026-11-21T09:15:34.097Z",
+    "finished": "2026-11-21T09:19:15.426Z",
+    "exit": 1,
+    "log": ".cache/pinta-selection-regions-final-pinta.log"
+  }
+]

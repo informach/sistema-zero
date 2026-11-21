@@ -1,0 +1,40 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\core\mapDocumentBoundary.test.ts:
+(pass) native map metadata preserves zero, false, signed fractions and JSON optional values
+(pass) native metadata compares wire arrays and bitmap buffers without changing their values
+(pass) unknown fields and accessors cannot run code during metadata comparison
+(pass) metadata budgets reject before visiting oversized binary payloads and bound cycles
+
+packages\pinta\src\core\regionDocument.test.ts:
+46 | }
+47 | 
+48 | test('region native round trip preserves global signed fractional metadata and explicit defaults', () => {
+49 |   const map = example()
+50 |   const wire = encodeRegionMapDocument(map)
+51 |   expect(wire).not.toBeNull()
+                        ^
+error: expect(received).not.toBeNull()
+
+Received: null
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\core\regionDocument.test.ts:51:20)
+(fail) region native round trip preserves global signed fractional metadata and explicit defaults [16.00ms]
+(pass) region native reader refuses unknown metadata at every level instead of dropping it
+(pass) region native reader refuses invalid metadata atomically without repairing ids or tree
+(pass) region native reader rejects malformed cells and references without touching the source
+102 | 
+103 | test('region native document stays sparse at the maximum extent and retains old formats unchanged', () => {
+104 |   const map = example()
+105 |   const wire = encodeRegionMapDocument(map)
+106 |   expect(JSON.stringify(wire).length).toBeLessThan(6000)
+107 |   expect(decodeRegionMapDocument(wire)!.cols).toBe(10000)
+                                           ^
+TypeError: null is not an object (evaluating 'decodeRegionMapDocument(wire).cols')
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\core\regionDocument.test.ts:107:38)
+(fail) region native document stays sparse at the maximum extent and retains old formats unchanged
+
+ 7 pass
+ 2 fail
+ 37 expect() calls
+Ran 9 tests across 2 files. [328.00ms]

@@ -1,0 +1,6 @@
+{
+  "capturedAt": "2026-11-21T07:44:40.992Z",
+  "exit": 0,
+  "command": "bun --no-env-file x --no-install tsc --noEmit --project ../../.cache/pinta-region-document-script-types.json",
+  "cwd": "packages/pinta"
+}

@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-21T04:04:33.156Z",
+  "base": "15876035511b11ce4ecf0a6d6dfa738417b565d9",
+  "reader": "24226bb3f0ab10e96174d80dcbbcafe1f37653ff",
+  "conflicts": 0,
+  "sourceTests": 2773,
+  "testsDirectoryTests": 432,
+  "totalCoreTests": 3205,
+  "pintaFocused": 17,
+  "coreFocusedIncludedInSourceSuite": 15,
+  "coreTypes": true,
+  "pintaTypes": true,
+  "featureActivated": false,
+  "files": [
+    {
+      "file": "packages/core/src/creations/index.ts",
+      "sha256": "0bc4ded213f2819bcf40075270702457d0962d53250f5cf1d71d206c7bef3ad3"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.test.ts",
+      "sha256": "ab9b5db09927665717822acaae23c9963c7c7e34cdbcd6b53bcb3348c83953a1"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "sha256": "8528820c101ff7c6c0547cf0e640268e3220daeb15ed7507a7cab6cf461a163e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "63086e37918131fb641904ad90b0b5d3881a6e5a2b1371a9c4d14042c9d4e615"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.test.ts",
+      "sha256": "13e5ee5a3493979685161c7d56a8f8fb8128010699367572081f8de57496e50e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "sha256": "81790cc63e4180b132ae729ad0b06690f894550b7134a5b0df2ed424d24a69a2"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-11-21T08:07:34.856Z",
+  "base": "22b2bade551bb11e327be1b7116c66db8e6ca70d",
+  "files": [
+    {
+      "file": "packages/pinta/src/tiles/cell.ts",
+      "sha256": "163979810df7549e772a97e6d91d098d17329cbd65aa7f783e95804aac496091"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "eb1b19cf858312f9af941a7d01d496d05346aca984a95dda510df4dbe371b195"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "sha256": "393545c3d8028988922269bf3a622d541e3f3d20de9ef5be2f25907c8549cb0d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellBudget.test.ts",
+      "sha256": "56bc0de33b405be519573181de2811c339186022892b89e76a15fb3220a596e2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/terrain.test.ts",
+      "sha256": "03dcd543abf9b14291a7d82a5edee3e2c0d5d70b6f5f3616224f3d03606ab1ee"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.test.ts",
+      "sha256": "1a952fc387f9d3fb7e45ba611051276f54cde9a696949d746b366f30cf41c761"
+    }
+  ]
+}

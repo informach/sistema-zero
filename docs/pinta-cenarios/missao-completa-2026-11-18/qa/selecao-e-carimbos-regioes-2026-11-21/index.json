@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-21T09:31:52.004Z",
+  "base": "b51a70dfc06461d25b1d9818d207df565b836948",
+  "scope": "Selection and stamp consumers only; public format remains7",
+  "files": [
+    {
+      "file": "pinta-selection-regions-final-gates.json",
+      "bytes": 391,
+      "sha256": "67501ffebea25f36209816f327ee8691f01636a1a1b1970a398185c5a22ebe55"
+    },
+    {
+      "file": "pinta-selection-regions-final-pinta.log",
+      "bytes": 263463,
+      "sha256": "8bc9c01a099b714df711a61c2a5f3e50b03cf6054ad4e5d70040b44d1afceabe"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-biome.log",
+      "bytes": 43,
+      "sha256": "f871b70f8e3502f34125b5677e2585f74666aa95a38f5ab2662c551b4cd52596"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-focused.log",
+      "bytes": 4105,
+      "sha256": "9e32517a5a0cddf9545961f7f0cb6f5e6255de253c4a76119178c37691ad3a33"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-freeze.json",
+      "bytes": 887,
+      "sha256": "d7251e090a9b95d5b0690c5eb821c1bad404fb59a983098a79286276ea0bb401"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-gates.json",
+      "bytes": 1412,
+      "sha256": "c391d79d9d08cfbace626674a538a94d8040d3a0fe78446e42b86cfe6292d338"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-integration.log",
+      "bytes": 7566,
+      "sha256": "2cca3e8ef4cb4f87a66219feec1863d98e4e5761dd436ba3253c25f3d612d1a6"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-native.log",
+      "bytes": 493,
+      "sha256": "9649d74bf61a761554c8225d41c2025ccc62ba44828c41cdc2bf122dbcb97915"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-pinta-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-pinta.log",
+      "bytes": 261922,
+      "sha256": "21c2a701b4700409582a9cb9ad3894267f8e578433c3429ea93c31915ac826a0"
+    },
+    {
+      "file": "pinta-selection-regions-final-r2-studio-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-selection-regions-green.log",
+      "bytes": 6056,
+      "sha256": "cc72d267c804f20822486bb7659ea18a9f68a871912255bdecdaf60e384a7c5d"
+    },
+    {
+      "file": "pinta-selection-regions-green3.log",
+      "bytes": 2189,
+      "sha256": "5ca39bc7dc567350d26659c7519b89b0946e3f8ca75fc4ec57c2744dcc9e7c31"
+    },
+    {
+      "file": "pinta-selection-regions-r2-integration-report.json",
+      "bytes": 1286485,
+      "sha256": "10158449268a0c067199611a2d059dcc073a1ec536d59342463582975ea90bc1"
+    },
+    {
+      "file": "pinta-selection-regions-red.log",
+      "bytes": 5642,
+      "sha256": "a85e3f497071f67ba3516d7997026e215c649c0584ee54b0b7367d89cdfd71e9"
+    },
+    {
+      "file": "pinta-selection-regions-types.log",
+      "bytes": 93,
+      "sha256": "29f0a362265c58740d768a4f748fdee643b99aea5e9e967bcf1c603f00599321"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2382,
+      "sha256": "37d2c7cc2eda486e075640ee88a8a8ef84e09bc430221b086ea0d1299bea3571"
+    }
+  ]
+}
