@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { jsonPlainCopy } from './jsonPlainCopy'
 
 /**
  * Área de transferência de blocos ENTRE projetos (e entre abas) do Estúdio.
@@ -77,21 +78,55 @@ interface SerializedNode {
   next?: { block?: SerializedNode; shadow?: SerializedNode }
 }
 
-/** Visita o `type` de TODOS os blocos da subárvore (inputs.block/shadow + next.block/shadow). */
-function walkBlockTypes(state: unknown, visit: (type: string) => void): void {
-  const node = state as SerializedNode | null
-  if (!node || typeof node !== 'object') return
-  if (typeof node.type === 'string') visit(node.type)
-  if (node.inputs) {
-    for (const wrapper of Object.values(node.inputs)) {
-      if (wrapper?.block) walkBlockTypes(wrapper.block, visit)
-      if (wrapper?.shadow) walkBlockTypes(wrapper.shadow, visit)
+/** Onde um bloco salvo mora: o encaixe (ou o `next`) que o guarda e em qual posição. */
+interface SerializedSlot {
+  holder: { block?: SerializedNode; shadow?: SerializedNode }
+  slot: 'block' | 'shadow'
+}
+
+/**
+ * Os filhos diretos de um bloco salvo, na ordem do Blockly: cada encaixe (bloco, depois sombra) e
+ * por fim o `next` (bloco, depois sombra).
+ */
+function childEntries(node: SerializedNode): Array<SerializedSlot & { child: SerializedNode }> {
+  const entries: Array<SerializedSlot & { child: SerializedNode }> = []
+  const add = (holder: SerializedSlot['holder'] | undefined) => {
+    if (holder?.block) entries.push({ child: holder.block, holder, slot: 'block' })
+    if (holder?.shadow) entries.push({ child: holder.shadow, holder, slot: 'shadow' })
+  }
+  for (const wrapper of Object.values(node.inputs ?? {})) add(wrapper)
+  add(node.next)
+  return entries
+}
+
+/**
+ * Visita TODOS os blocos da subárvore em pré-ordem, sem recursão: a cauda `next` de uma cópia
+ * pode ter milhares de blocos (copiar o primeiro evento leva todos os de baixo).
+ */
+function walkSerialized(
+  state: unknown,
+  visit: (node: SerializedNode, from?: SerializedSlot) => void,
+): void {
+  if (!state || typeof state !== 'object') return
+  const pending: Array<{ node: SerializedNode; from?: SerializedSlot }> = [
+    { node: state as SerializedNode },
+  ]
+  while (pending.length > 0) {
+    const { node, from } = pending.pop() as { node: SerializedNode; from?: SerializedSlot }
+    visit(node, from)
+    const children = childEntries(node)
+    for (let index = children.length - 1; index >= 0; index--) {
+      const { child, holder, slot } = children[index] as SerializedSlot & { child: SerializedNode }
+      if (typeof child === 'object') pending.push({ node: child, from: { holder, slot } })
     }
   }
-  if (node.next) {
-    if (node.next.block) walkBlockTypes(node.next.block, visit)
-    if (node.next.shadow) walkBlockTypes(node.next.shadow, visit)
-  }
+}
+
+/** Visita o `type` de TODOS os blocos da subárvore (inputs.block/shadow + next.block/shadow). */
+function walkBlockTypes(state: unknown, visit: (type: string) => void): void {
+  walkSerialized(state, (node) => {
+    if (typeof node.type === 'string') visit(node.type)
+  })
 }
 
 /** Ids de extensões oficiais que a subárvore usa (ex.: `['game-2d']`). */
@@ -132,68 +167,26 @@ function regenerateBlockIds(
     assigned.add(id)
     return id
   }
-  const visit = (node: SerializedNode, location?: SerializedLocation): void => {
+  walkSerialized(state, (node, from) => {
     node.id = freshId()
-    if (location) locations.set(node.id, location)
-    for (const wrapper of Object.values(node.inputs ?? {})) {
-      if (wrapper.block) {
-        const child = wrapper.block
-        visit(child, {
-          detach: () => {
-            delete wrapper.block
-            return child
-          },
-          preserveAsDraft: true,
-        })
-      }
-      if (wrapper.shadow) {
-        const shadow = wrapper.shadow
-        visit(shadow, {
-          detach: () => {
-            delete wrapper.shadow
-            return shadow
-          },
-          preserveAsDraft: false,
-        })
-      }
-    }
-    if (node.next?.block) {
-      const next = node.next.block
-      visit(next, {
-        detach: () => {
-          if (node.next) delete node.next.block
-          return next
-        },
-        preserveAsDraft: true,
-      })
-    }
-    if (node.next?.shadow) {
-      const shadow = node.next.shadow
-      visit(shadow, {
-        detach: () => {
-          if (node.next) delete node.next.shadow
-          return shadow
-        },
-        preserveAsDraft: false,
-      })
-    }
-  }
-  visit(state)
+    if (!from) return
+    const { holder, slot } = from
+    locations.set(node.id, {
+      detach: () => {
+        delete holder[slot]
+        return node
+      },
+      preserveAsDraft: slot === 'block',
+    })
+  })
   return locations
 }
 
 function serializedBlockIds(state: SerializedNode): Set<string> {
   const ids = new Set<string>()
-  const visit = (node: SerializedNode): void => {
+  walkSerialized(state, (node) => {
     if (node.id) ids.add(node.id)
-    for (const wrapper of Object.values(node.inputs ?? {})) {
-      if (wrapper.block) visit(wrapper.block)
-      if (wrapper.shadow) visit(wrapper.shadow)
-    }
-    if (node.next?.block) visit(node.next.block)
-    if (node.next?.shadow) visit(node.next.shadow)
-  }
-  visit(state)
+  })
   return ids
 }
 
@@ -306,8 +299,11 @@ export function copyBlockToClipboard(block: Blockly.Block, sourceTitle?: string)
   try {
     // Padrão de `save`: addInputBlocks + addNextBlocks = true, addCoordinates = false
     // (sem x/y — quem posiciona é o colar, no viewport do projeto destino).
-    const saved = Blockly.serialization.blocks.save(block)
-    if (!saved) return false
+    // Em objetos comuns: o `save` do Blockly devolve objetos sem protótipo, e o `JSON.stringify`
+    // do V8 só os lê com recursão (uma cauda longa estourava a pilha e a cópia sumia calada).
+    const raw = Blockly.serialization.blocks.save(block)
+    if (!raw) return false
+    const saved = jsonPlainCopy(raw) as typeof raw
     const payload: BlockClipboardPayload = {
       version: CLIPBOARD_VERSION,
       block: saved,
@@ -440,7 +436,8 @@ export function runPasteBlocks(workspace: Blockly.WorkspaceSvg): void {
   //    criança arrastá-lo para dentro de uma área. Ids regenerados fazem a mesma cópia
   //    colar várias vezes sem colisão. Se uma conexão interna envelheceu, somente o
   //    ramo incompatível é preservado como um segundo rascunho top-level.
-  const blockState = structuredClone(payload.block) as SerializedNode
+  // `structuredClone` também recursa no V8; o payload já é JSON.
+  const blockState = jsonPlainCopy(payload.block) as SerializedNode
   const locations = regenerateBlockIds(blockState, workspace)
   try {
     const prepared = preparePaste(blockState, workspace, locations)

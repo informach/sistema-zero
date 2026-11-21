@@ -155,23 +155,28 @@ export function resolveSpriteVisual(
 /** Campos dos DECLARADORES que mudam nome/visual do sprite (invalidam miniaturas). */
 const SPRITE_VISUAL_FIELDS = new Set(['NAME', 'COLOR', 'IMAGE', 'BODY'])
 
-/** Tipos de bloco presentes num JSON serializado (top + inputs/next, recursivo). */
-function jsonBlockTypes(json: unknown, out: string[] = []): string[] {
-  if (!json || typeof json !== 'object') return out
-  const node = json as {
-    type?: unknown
-    inputs?: Record<string, { block?: unknown; shadow?: unknown }>
-    next?: { block?: unknown; shadow?: unknown }
-  }
-  if (typeof node.type === 'string') out.push(node.type)
-  if (node.inputs && typeof node.inputs === 'object') {
-    for (const input of Object.values(node.inputs)) {
-      jsonBlockTypes(input?.block, out)
-      jsonBlockTypes(input?.shadow, out)
+/**
+ * Tipos de bloco presentes num JSON serializado (top + inputs/next), em pré-ordem e sem recursão:
+ * o evento de criar uma cópia longa traz a cauda `next` inteira.
+ */
+function jsonBlockTypes(json: unknown): string[] {
+  const out: string[] = []
+  const pending: unknown[] = [json]
+  while (pending.length > 0) {
+    const current = pending.pop()
+    if (!current || typeof current !== 'object') continue
+    const node = current as {
+      type?: unknown
+      inputs?: Record<string, { block?: unknown; shadow?: unknown }>
+      next?: { block?: unknown; shadow?: unknown }
     }
+    if (typeof node.type === 'string') out.push(node.type)
+    const children: unknown[] = []
+    if (node.inputs && typeof node.inputs === 'object')
+      for (const input of Object.values(node.inputs)) children.push(input?.block, input?.shadow)
+    children.push(node.next?.block, node.next?.shadow)
+    for (let index = children.length - 1; index >= 0; index--) pending.push(children[index])
   }
-  jsonBlockTypes(node.next?.block, out)
-  jsonBlockTypes(node.next?.shadow, out)
   return out
 }
 

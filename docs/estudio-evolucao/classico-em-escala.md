@@ -159,6 +159,7 @@ na tela.
 | C5 perfil no navegador | **feito** (sem placa de vídeo) |
 | Montagem sob demanda no JavaScript (fora das aulas) | **feita em 18/11/2026** (ver abaixo); abrir projeto enorme continua lento |
 | Abertura sem desenhar a cauda distante | **feita em 20/11/2026** (etapa 3, ver o fim); 5 mil abre em ~5 s; 10 mil abre, mas não gera código (teto da serialização, anterior a isto) |
+| 10 mil blocos geram código | **feito em 21/11/2026** no formato dos jogos, nos três navegadores (ver o fim); a sequência única de 10 mil depende do formato plano |
 
 ## Montagem sob demanda (18/11/2026)
 
@@ -476,3 +477,60 @@ chamada nova da paleta, que continua ganhando os espaços), e o teste de ida e v
 (`reinoZeroUltraExample.test.ts`) agora abre como o editor abre, com a cerca de carga e os eventos
 processados (antes ele nunca rodava o ajuste); os dois primeiros e o do Ultra reprovam com o
 mutador anterior. `e2e/reino-zero-ultra.spec.ts` e `e2e/offscreen-lifecycle.spec.ts` passam.
+
+## Os 10 mil blocos geram código (21/11/2026, prioridade crítica do relatório de 21/11)
+
+**A causa, medida.** O teto não é da profundidade em si: é a forma dos objetos. O Blockly monta o
+estado salvo com `Object.create(null)`. O `JSON.stringify` do V8 anda sem recursão em objetos
+comuns, mas nos sem protótipo cai no caminho recursivo. Maior cadeia `next` (elo = bloco → `next`)
+que o `JSON.stringify` aguenta, por motor (script de medida no scratchpad desta sessão, o mesmo
+formato do estado do Blockly):
+
+| Motor | Objetos comuns | Sem protótipo (o que o Blockly devolve) |
+|---|---|---|
+| Chromium 156 | mais de 2 milhões | 811 |
+| Firefox 157 | 2.021 | 2.021 |
+| WebKit 27.2 | 19.999 | 19.999 |
+| Node 24 (o BFF) | 2.385 | 1.069 |
+| Bun (JSC) | 19.999 | 19.999 |
+
+A fixture de 10 mil é uma cadeia de cerca de 1.660 eventos: passa de 811, por isso de 7 mil em
+diante nenhuma edição chegava ao código no Chromium.
+
+**O conserto (sem mudar o formato salvo).**
+- `blockly/savedWorkspaceState.ts`: todo estado que sai do Blockly para o projeto passa pela
+  `jsonPlainCopy` (`blockly/jsonPlainCopy.ts`), uma cópia iterativa com a semântica exata do JSON
+  (não finito vira `null`, `undefined` some, `toJSON`, ciclo lança). Os cinco `workspaces.save` do
+  `BlocklyPanel` usam o helper; nada sem protótipo chega ao store, à Ponte, à nuvem ou à exportação.
+- Caminhadores que recursavam no `next`, agora com pilha explícita: a área de transferência
+  (`blockClipboard.ts`: ler os tipos, ids novos ao colar; o copiar engolia o erro e a cópia sumia
+  calada; o colar usava `structuredClone`, que também recursa no V8), os campos de sprite e de
+  animação, o `retypeParamsAsArgs` da Ponte e a explicação de uma recusa
+  (`describeBlockFailure`, que além disso copiava o caminho a cada nível: trabalho quadrático).
+- Testes vermelhos antes e verdes depois: `savedWorkspaceState.test.ts`, a cauda de 100 mil em
+  `blockClipboard.test.ts` e a recusa no fim de 20 mil em `projectValidation.test.ts`.
+
+**Resultado, `e2e/classic-scale.spec.ts` com `CLASSIC_SCALE_SIZES=10000` (Windows, local, 10.000
+blocos no projeto):**
+
+| Navegador | Abrir | Editar um campo (maior tarefa) | Mover a área (maior tarefa) | Edição chega ao código |
+|---|---|---|---|---|
+| Chromium 156 | 14,8 s | 220 ms | 643 ms | sim |
+| Firefox 157 | 33,9 s | sem a API de tarefas longas | sem a API | sim |
+| WebKit 27.2 | 19,5 s | sem a API | sem a API | sim |
+
+Antes do conserto, o mesmo teste reprovava no Chromium: a edição não chegava ao código em 60 s.
+
+**O que ainda falta, sem enfeite.**
+- **Uma sequência única de 10 mil blocos** (um bloco por elo, sem corpo) esbarra no próprio
+  Blockly 12, que recursa no `next` ao carregar, salvar e descartar. Medido num workspace sem tela:
+  5.000 passa nos três; 10.000 estoura o load no Chromium e o save no Firefox (o WebKit passa). E o
+  `JSON.stringify` do Firefox e do Node (BFF) recursa mesmo com objetos comuns (2.021 e 2.385
+  elos). Resolver isso pede o formato plano das cadeias e carregar, salvar e descartar elo a elo
+  (o conserto B do plano, autorizado por ela se a medição pedisse). No formato dos jogos (eventos
+  com corpo) o Blockly aguenta 12 mil blocos nos três.
+- **"O mesmo código do caminho sem montagem sob demanda" com 10 mil** ainda não foi comparado: a
+  comparação de dois braços (`scripts/measure-classic-opening.mjs`) é pesada e vai para um job do
+  CI.
+- O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo; com o formato dos jogos
+  ele não estoura, e mexer nele muda bytes que a nuvem confere. Fica para o conserto B.

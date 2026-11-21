@@ -773,13 +773,54 @@ function describeBlocklyValidationFailure(
   return describeBlockListFailure(blocksSection.blocks, allowedTypes, [])
 }
 
+/** Um nó da descrição: o bloco e o trecho do caminho até ele, montado só quando falha. */
+interface FailureFrame {
+  segment: string
+  parent: FailureFrame | null
+}
+
+function failurePath(frame: FailureFrame): string {
+  const parts: string[] = []
+  for (let current: FailureFrame | null = frame; current; current = current.parent)
+    parts.push(current.segment)
+  return parts.reverse().join('') || '(raiz)'
+}
+
+type FailureTask =
+  | { block: unknown; frame: FailureFrame }
+  | { wrapper: unknown; frame: FailureFrame; label: string; type: string }
+
+/** Empilha uma lista de blocos para sair na ordem dela (`[0]` primeiro). */
+function pushFailureList(pending: FailureTask[], blocks: unknown[], parent: FailureFrame): void {
+  for (let i = blocks.length - 1; i >= 0; i--)
+    pending.push({ block: blocks[i], frame: { segment: `[${i}]`, parent } })
+}
+
+/**
+ * A primeira falha, na mesma ordem da validação (o bloco, cada encaixe e depois o `next`), sem
+ * recursão e sem copiar o caminho a cada nível: a cadeia `next` de um projeto grande tem
+ * milhares de blocos, e a recusa virava um estouro de pilha em vez da explicação.
+ */
 function describeBlockListFailure(
   blocks: unknown[],
   allowedTypes: ReadonlySet<string>,
   pathSoFar: string[],
 ): string | null {
-  for (let i = 0; i < blocks.length; i++) {
-    const reason = describeBlockFailure(blocks[i], allowedTypes, [...pathSoFar, `[${i}]`])
+  const pending: FailureTask[] = []
+  pushFailureList(pending, blocks, { segment: pathSoFar.join(''), parent: null })
+  while (pending.length > 0) {
+    const task = pending.pop() as FailureTask
+    if ('wrapper' in task) {
+      const children = getSerializedBlockWrapperChildren(task.wrapper)
+      if (!children)
+        return `${failurePath(task.frame)}(${task.type})${task.label}: wrapper inválido`
+      pushFailureList(pending, children, {
+        segment: `(${task.type})${task.label}`,
+        parent: task.frame,
+      })
+      continue
+    }
+    const reason = describeBlockFailure(task.block, allowedTypes, task.frame, pending)
     if (reason) return reason
   }
   return null
@@ -788,11 +829,12 @@ function describeBlockListFailure(
 function describeBlockFailure(
   block: unknown,
   allowedTypes: ReadonlySet<string>,
-  path: string[],
+  frame: FailureFrame,
+  pending: FailureTask[],
 ): string | null {
-  const pathStr = path.join('') || '(raiz)'
+  const at = () => failurePath(frame)
   if (!block || typeof block !== 'object' || Array.isArray(block) || !isPlainRecord(block)) {
-    return `${pathStr}: não é objeto plano`
+    return `${at()}: não é objeto plano`
   }
   const allowedKeys = new Set([
     'collapsed',
@@ -814,49 +856,36 @@ function describeBlockFailure(
     'y',
   ])
   for (const key of Object.keys(block)) {
-    if (!allowedKeys.has(key)) return `${pathStr}: chave inesperada "${key}"`
+    if (!allowedKeys.has(key)) return `${at()}: chave inesperada "${key}"`
   }
   const type = (block as { type?: unknown }).type
-  if (typeof type !== 'string') return `${pathStr}: type ausente ou não-string`
-  if (!allowedTypes.has(type)) return `${pathStr}: tipo "${type}" fora da allowlist`
+  if (typeof type !== 'string') return `${at()}: type ausente ou não-string`
+  if (!allowedTypes.has(type)) return `${at()}: tipo "${type}" fora da allowlist`
   if (!isSupportedBlocklyBlockExtraState(type, (block as { extraState?: unknown }).extraState)) {
-    return `${pathStr}(${type}): extraState inválido`
+    return `${at()}(${type}): extraState inválido`
   }
   if (!isSupportedDisabledReasons((block as { disabledReasons?: unknown }).disabledReasons)) {
-    return `${pathStr}(${type}): disabledReasons inválido`
+    return `${at()}(${type}): disabledReasons inválido`
   }
   if (!isSupportedBlocklyIcons((block as { icons?: unknown }).icons)) {
-    return `${pathStr}(${type}): icons inválido`
+    return `${at()}(${type}): icons inválido`
   }
   if (!isSupportedBlocklyFields((block as { fields?: unknown }).fields)) {
-    return `${pathStr}(${type}): fields inválido`
+    return `${at()}(${type}): fields inválido`
   }
   if (!isSupportedBlocklyInputs((block as { inputs?: unknown }).inputs)) {
-    return `${pathStr}(${type}): inputs inválido`
+    return `${at()}(${type}): inputs inválido`
   }
-  // Recursão estrutural (mesmas regras de areSupportedBlocklyBlocks).
+  // Os filhos (mesmas regras de areSupportedBlocklyBlocks), na ordem: cada encaixe, depois o next.
+  const tasks: FailureTask[] = []
   const inputs = (block as { inputs?: unknown }).inputs
   if (inputs && isPlainUnknownRecord(inputs)) {
-    for (const [name, wrapper] of Object.entries(inputs)) {
-      const children = getSerializedBlockWrapperChildren(wrapper)
-      if (!children) return `${pathStr}(${type}).inputs.${name}: wrapper inválido`
-      const childReason = describeBlockListFailure(children, allowedTypes, [
-        ...path,
-        `(${type}).inputs.${name}`,
-      ])
-      if (childReason) return childReason
-    }
+    for (const [name, wrapper] of Object.entries(inputs))
+      tasks.push({ wrapper, frame, label: `.inputs.${name}`, type })
   }
   const next = (block as { next?: unknown }).next
-  if (next != null) {
-    const children = getSerializedBlockWrapperChildren(next)
-    if (!children) return `${pathStr}(${type}).next: wrapper inválido`
-    const childReason = describeBlockListFailure(children, allowedTypes, [
-      ...path,
-      `(${type}).next`,
-    ])
-    if (childReason) return childReason
-  }
+  if (next != null) tasks.push({ wrapper: next, frame, label: '.next', type })
+  for (let i = tasks.length - 1; i >= 0; i--) pending.push(tasks[i] as FailureTask)
   return null
 }
 

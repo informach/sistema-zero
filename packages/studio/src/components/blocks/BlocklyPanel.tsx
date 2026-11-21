@@ -13,7 +13,6 @@ import {
   buildIRFromWorkspace,
   ensureBlocklyInitialized,
   HTMLConnectionChecker,
-  markLifecycleBlocksState,
   type PasteTargetHandlers,
   registerClassesFlyout,
   registerFunctionsFlyout,
@@ -57,6 +56,7 @@ import {
   runtimeErrorBlockId,
   setRuntimeErrorBlock,
 } from '../../blockly/runtimeMark'
+import { saveWorkspaceState } from '../../blockly/savedWorkspaceState'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
 import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
@@ -546,7 +546,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         )
           return
       }
-      const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace))
+      const state = saveWorkspaceState(workspace)
       const serialized = JSON.stringify(state)
       if (!options.force && serialized === lastRegeneratedBlocksStateRef.current) return
       lastAppliedBlocksStateRef.current = serialized
@@ -757,7 +757,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // sintoma era mudo: os blocos apareciam e ficavam salvos, mas preview,
       // arquivos e avisos do bloco continuavam no estado anterior.
       if (regenerationTimerRef.current || pendingRegenerationWorkspaceRef.current) return
-      const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(targetWorkspace))
+      const state = saveWorkspaceState(targetWorkspace)
       const serialized = JSON.stringify(state)
       if (serialized === lastAppliedBlocksStateRef.current) return
       // Isto evita que o efeito de restore recarregue o workspace, mas NÃO marca
@@ -845,9 +845,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
             Blockly.Events.enable()
           }
         }
-        lastAppliedBlocksStateRef.current = JSON.stringify(
-          markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
-        )
+        lastAppliedBlocksStateRef.current = JSON.stringify(saveWorkspaceState(workspace))
         // Regenera o IR/sourcemap a partir dos blocos recém-carregados também
         // em modo Ponte. Sem isso, um projeto salvo antes da introdução de
         // `ctorId`/`__declIds` no IR continuaria com o sourcemap incompleto
@@ -1162,9 +1160,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       withWorkspaceLoad(() => workspace.clear())
       // O canvas foi trocado POR FORA: a pilha de desfazer de antes não vale mais.
       forgetBlocklyHistory(workspace)
-      lastAppliedBlocksStateRef.current = JSON.stringify(
-        markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
-      )
+      lastAppliedBlocksStateRef.current = JSON.stringify(saveWorkspaceState(workspace))
       scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
       queueMicrotask(() => {
         isApplyingStateRef.current = false
@@ -1250,9 +1246,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
               Blockly.Events.enable()
             }
           }
-          lastAppliedBlocksStateRef.current = JSON.stringify(
-            markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
-          )
+          lastAppliedBlocksStateRef.current = JSON.stringify(saveWorkspaceState(workspace))
           // Idem ao listener de FINISHED_LOADING: regenerar também em modo
           // Ponte garante que o IR no store contenha os ids do construtor,
           // métodos e declarações CSS — sem isso o sourcemap ficaria incompleto
