@@ -48,13 +48,15 @@ export function zappyObservationRule(tabs: 'investigate-and-performance' | 'perf
     'Nunca invente valores, medidas ou números que não estejam nesses campos. O campo "abasLigadas" diz quais abas a criança ligou: aba ligada cujo campo não veio ainda não tem leitura (o jogo não está rodando, acabou de começar ou a medida não vale para este programa), então peça para rodar o jogo e perguntar de novo.'
   if (tabs === 'performance')
     return `${performance} ${missing} Só peça para ligar a aba Desempenho quando ela não estiver ligada.`
-  return `O campo "oQueOJogoMostra", quando existe, traz os valores que a aba Investigar mostra AGORA, do jeito que a criança vê (nome e valor), e "parouComErro" os valores do momento em que o jogo parou com erro (com "iguaisAosDeAgora", eram os mesmos de agora). Use esses valores para explicar o que está acontecendo na execução. ${performance} ${missing} Só peça para ligar a aba Investigar ou Desempenho quando ela não estiver ligada.`
+  return `O campo "oQueOJogoMostra", quando existe, traz os valores que a aba Investigar mostra AGORA, do jeito que a criança vê (nome e valor), e "parouComErro" os valores do momento em que o jogo parou com erro (com "iguaisAosDeAgora", eram os mesmos de agora). Use esses valores para explicar o que está acontecendo na execução. Com "valores" vazio e sem "parouComErro", o jogo está rodando mas não tem variáveis para mostrar: não peça para rodar de novo. ${performance} ${missing} Só peça para ligar a aba Investigar ou Desempenho quando ela não estiver ligada.`
 }
 
 /**
- * O teto da observação no pedido ao modelo: ela cede antes do código-fonte. Sem ele, 40 valores
- * de até 160 caracteres (≈13 KB em UTF-8) comiam o orçamento do código e, no Python, chegavam a
- * derrubar uma pergunta válida (revisão do lote 5).
+ * O teto da observação no pedido ao modelo. Sem ele, 40 valores de até 160 caracteres (≈13 KB em
+ * UTF-8) comiam o orçamento do código (revisão do lote 5). Dentro do orçamento do pedido, ela cede
+ * depois que os trechos de código encolhem até 600 caracteres e antes de sair a conversa, o
+ * conhecimento ou um arquivo de código; no Python, também antes de a pergunta ser recusada
+ * (`observationCanYield`, full review final de 21/11/2026).
  */
 export const ZAPPY_OBSERVATION_MAX_CHARS = 3000
 
@@ -62,7 +64,8 @@ type ObservedValues = Array<{ nome: string; valor: string }>
 
 function values(list: readonly ZappyObservedValue[]): ObservedValues {
   return list.map((value) => ({
-    nome: value.name,
+    // O nome vem da página do jogo, como o valor: passa pela mesma limpeza (full review final).
+    nome: redactZappySensitiveText(value.name).text,
     // O valor pode ser um texto que a criança digitou no jogo.
     valor: redactZappySensitiveText(value.text).text,
   }))
@@ -92,6 +95,11 @@ export interface ZappyObservedRuntime {
     desenhos: number | null
   }
   abasLigadas?: { investigar: boolean; desempenho: boolean }
+}
+
+/** Há observação no pedido que ainda pode sair para caber no orçamento? */
+export function observationCanYield(observed: ZappyObservedRuntime): boolean {
+  return Object.keys(observed).length > 0
 }
 
 /** Os campos do projeto no pedido ao modelo (vazio quando a criança não ligou as abas). */
@@ -128,7 +136,7 @@ export function zappyObservedRuntime(context: {
               quadro: investigation.stopped.frame,
               // Os mesmos valores duas vezes não dizem nada a mais: vão uma vez só, com a marca de
               // que são iguais (uma lista vazia sozinha pareceria "não havia valores no erro").
-              ...(stopped && sameValues(stopped, now)
+              ...(stopped && now.length > 0 && sameValues(stopped, now)
                 ? { valores: [], iguaisAosDeAgora: true as const }
                 : { valores: stopped ?? [] }),
             },

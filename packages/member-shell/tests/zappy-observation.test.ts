@@ -62,6 +62,27 @@ describe('a observação das abas no pedido ao Zappy', () => {
     expect(zappyObservedRuntime({})).toEqual({})
   })
 
+  // Full review final (21/11/2026).
+  test('o nome do valor também passa pela limpeza de segredos', () => {
+    const result = zappyObservedRuntime({
+      investigation: { frame: 1, paused: false, values: [value('mae@exemplo.com', '1')] },
+    })
+    expect(JSON.stringify(result)).not.toContain('mae@exemplo.com')
+  })
+
+  test('sem valores agora, os do erro não são marcados como iguais', () => {
+    const result = zappyObservedRuntime({
+      investigation: { frame: 9, paused: false, values: [], stopped: { frame: 9, values: [] } },
+    })
+    expect(result.oQueOJogoMostra?.parouComErro).toEqual({ quadro: 9, valores: [] })
+  })
+
+  test('jogo rodando sem variáveis: a regra diz para não pedir para rodar de novo', () => {
+    expect(zappyObservationRule('investigate-and-performance')).toContain(
+      'não tem variáveis para mostrar',
+    )
+  })
+
   test('a regra do Pro não fala da aba Investigar', () => {
     expect(zappyObservationRule('performance')).not.toContain('Investigar')
     expect(zappyObservationRule('performance')).toContain('abasLigadas')

@@ -27,11 +27,18 @@ ativada a cada tecla nem competir com a renderização e a execução do jogo".
     aba", e sim "rode o jogo e pergunte de novo".
 - **Tetos.** O Estúdio corta cada número e cada valor nos tetos do esquema do servidor; no
   servidor, uma observação fora deles é DESCARTADA (`.catch`), nunca recusa a pergunta. No pedido
-  ao modelo a observação tem teto de 3.000 caracteres (`ZAPPY_OBSERVATION_MAX_CHARS`) e cede antes
-  do código-fonte; os valores do erro iguais aos de agora vão uma vez só.
+  ao modelo a observação tem teto de 3.000 caracteres (`ZAPPY_OBSERVATION_MAX_CHARS`). Quando o
+  pedido inteiro não cabe no orçamento, os trechos de código encolhem até 600 caracteres e depois a
+  observação sai inteira, antes da conversa, do conhecimento e dos arquivos de código; no Python,
+  também antes de a pergunta ser recusada (`observationCanYield`). Os valores do erro iguais aos de
+  agora vão uma vez só.
 - **Limpeza.** Os valores podem ser texto que a criança digitou no jogo: passam pela mesma limpeza
   de segredos do erro, no Estúdio (`redactStudioTutorSecrets`) e de novo no servidor
-  (`redactZappySensitiveText`).
+  (`redactZappySensitiveText`), que limpa também o nome. `oQueOJogoMostra` e `desempenhoMedido`
+  estão na lista de dados não confiáveis das regras dos três modos.
+- **Rodando sem variáveis.** Com o jogo rodando e a aba pronta, a lista de valores vai vazia, e a
+  regra diz que é um jogo rodando sem variáveis para mostrar (antes o modelo lia "aba ligada sem
+  leitura" e mandava rodar de novo).
 - **No servidor** (`member-shell`): `server/zappy-observation.ts` põe no pedido ao modelo
   `oQueOJogoMostra`, `desempenhoMedido` e `abasLigadas`, nos blocos, no Pro em JavaScript e no
   Python (clássico e Pro), com a regra do modo (`zappyObservationRule`): usar esses valores para
@@ -49,6 +56,21 @@ programa sem tela e de página sem canvas; valores guardados depois de Parar e o
 no Python; o pedaço da observação que, sem baixar, travava a pergunta; um valor fora dos tetos que
 recusava a pergunta inteira; a observação sem teto no pedido; a regra incoerente com a aba ligada e
 sem leitura.
+
+## Full review final (21/11/2026)
+
+- A observação não cedia no orçamento do pedido (o texto acima dizia que cedia); no Python, ligar a
+  aba podia fazer a mesma pergunta ser recusada.
+- A fase do jogo era lida antes de baixar o módulo da observação: um Parar durante o download
+  mandava os valores do jogo parado como "agora". Agora é lida depois.
+- O nome do valor não passava pela limpeza de segredos, e os campos das abas não estavam na lista
+  de dados não confiáveis.
+- O jogo rodando sem variáveis de topo virava "aba ligada sem leitura".
+- No Pro, o erro de uma página anterior (o jogo já consertado e recarregado) ainda ia ao Zappy e
+  aparecia no Investigar, embora já não contasse na aba Problemas (`isCurrentPageError` no
+  `logsStore`, a mesma régua nos três).
+- Fica como está: a observação é do jogo que roda, e o código vai como está no editor; com a prévia
+  defasada (código editado depois de rodar) o modelo não é avisado.
 
 ## Testes
 
@@ -72,7 +94,3 @@ sem leitura.
 - O Zappy não pede sozinho para ligar uma aba nem lê o jogo continuamente: é de propósito (seção 15).
 - "Sugerir testes" e "orientar refatorações" com o estado real seguem pelo contexto de código que o
   Zappy já recebe; não há painel novo para eles.
-- O teste do contrato do Molda importa arquivos de outros pacotes pelo caminho relativo (padrão que
-  já existia nos fixtures do Molda) e troca o Canvas 2D pelo nativo durante a compilação, num
-  processo que o `test-isolated.mjs` compartilha com outros arquivos de `src/core`; a troca é
-  desfeita no fim e conferida pelo próprio teste.

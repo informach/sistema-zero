@@ -49,6 +49,16 @@ describe('readZappyObservation', () => {
     })
   })
 
+  // Full review final (21/11/2026): sem a lista vazia, o modelo lia "aba ligada sem leitura" e
+  // mandava rodar de novo um jogo que já rodava.
+  it('o jogo rodando sem variáveis manda a lista vazia, não "sem leitura"', () => {
+    const ui = {}
+    investigationWindowFor(ui).getState().receive(reading(12, []))
+    expect(
+      readZappyObservation(ui, { measuring: false, investigating: true }, running).investigation,
+    ).toEqual({ frame: 12, paused: false, values: [] })
+  })
+
   it('depois de Parar, a aba diz "não está rodando" e os valores guardados não vão', () => {
     const ui = {}
     investigationWindowFor(ui)

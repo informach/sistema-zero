@@ -2113,6 +2113,33 @@ describe('lote 5 da missão (seção 15): as abas Investigar e Desempenho chegam
     expect(result.systemPrompt).not.toContain('aba Investigar')
   })
 
+  // Full review final (21/11/2026): a observação ocupava um lugar fixo no orçamento do pedido e só
+  // o código cedia. Agora ela sai depois de os trechos de código encolherem até 600 caracteres.
+  test('num projeto que não cabe no orçamento, a observação cede antes dos arquivos de código', async () => {
+    const code = Array.from({ length: 18 }, (_, index) => ({
+      path: `src/parte${Math.floor(index / 3)}.ts`,
+      content: `// trecho ${index}
+${'ã'.repeat(1300)}`,
+    }))
+    const result = await askWithContext({
+      kind: 'pro',
+      mode: 'code',
+      blocks: [],
+      installedExtensions: [],
+      selectedBlockId: null,
+      lastError: null,
+      code,
+      performance: measured,
+      observing: { investigate: false, performance: true },
+    })
+    expect(result.status).toBe(200)
+    expect(result.userPrompt).not.toContain('desempenhoMedido')
+    expect(result.userPrompt).not.toContain('abasLigadas')
+    // O código continua lá (encolhido), e o pedido cabe no orçamento.
+    expect(result.userPrompt).toContain('src/parte0.ts')
+    expect(Buffer.byteLength(result.userPrompt, 'utf8')).toBeLessThanOrEqual(20_000)
+  })
+
   test('aba ligada sem leitura não vira "ligue a aba", e observação fora dos tetos não recusa a pergunta', async () => {
     const result = await askWithContext({
       mode: 'blocks',

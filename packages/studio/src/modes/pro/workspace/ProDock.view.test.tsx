@@ -225,6 +225,12 @@ describe('Investigar e Desempenho no Pro (proposta aprovada em 20/11/2026)', () 
     expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
     act(() => stores.proRun.getState().markPageLoaded(2_000))
     expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).not.toMatch(/\d/)
+    // Full review final: a aba Investigar da mesma gaveta também esquece o erro velho (antes ela
+    // seguia mostrando "O jogo parou…" com a pilha da página anterior).
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    const investigar = screen.getByRole('tabpanel', { name: 'Investigar' })
+    expect(within(investigar).getByText(/Quando o jogo parar com um erro/)).toBeTruthy()
+    expect(within(investigar).queryByText(/nanoid is not a function/)).toBeNull()
     act(() => erro(3_000, 'TypeError: outra coisa'))
     expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
     // Um aviso de começo mais antigo que o último não volta a mostrar o erro velho.

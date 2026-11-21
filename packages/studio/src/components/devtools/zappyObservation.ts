@@ -54,7 +54,9 @@ export function readZappyObservation(
         values: [],
         stopped: { frame: reading.stopped.frame, values: plain(reading.stopped.values) },
       }
-    } else if ((running || done) && reading.ready && reading.values.length > 0) {
+    } else if ((running || done) && reading.ready) {
+      // Rodando sem variáveis de topo, a lista vai vazia: sem ela, o modelo lia "aba ligada sem
+      // leitura" e mandava rodar de novo um jogo que já roda (full review final de 21/11/2026).
       observation.investigation = {
         frame: reading.frame,
         paused: reading.paused,

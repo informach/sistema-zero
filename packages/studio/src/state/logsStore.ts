@@ -29,6 +29,16 @@ export const ERROR_LOG_KINDS: ReadonlySet<LogKind> = new Set([
   'unhandledRejection',
 ])
 
+/**
+ * Um erro da página de AGORA. No Pro, o que chegou antes de a página recomeçar (`pageLoadedAt`,
+ * marcado pela ponte da prévia) é de um jogo que já foi consertado ou recarregado: não conta em
+ * Problemas, no Investigar nem no que vai ao Zappy (full review final de 21/11/2026; antes só a aba
+ * Problemas filtrava). No Clássico a marca fica em 0 e todo erro vale.
+ */
+export function isCurrentPageError(entry: LogEntry, pageLoadedAt: number): boolean {
+  return ERROR_LOG_KINDS.has(entry.kind) && entry.timestamp >= pageLoadedAt
+}
+
 export interface LogEntry {
   id: number
   kind: LogKind

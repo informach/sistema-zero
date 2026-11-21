@@ -7,7 +7,7 @@ import { SectionErrorFallback } from '../../../components/layout/ErrorViews'
 import type { ProjectTree } from '../../../core/proProject'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
-import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
+import { isCurrentPageError, useLogsStore } from '../../../state/logsStore'
 import { useProRun } from '../../../state/proRun'
 import { StudioStoresContext } from '../../../state/storesContext'
 import { useUIStore, useUIStoreApi } from '../../../state/uiStore'
@@ -100,7 +100,7 @@ export function ProDock({
       [
         ...new Map(
           entries
-            .filter((entry) => ERROR_LOG_KINDS.has(entry.kind) && entry.timestamp >= pageLoadedAt)
+            .filter((entry) => isCurrentPageError(entry, pageLoadedAt))
             .map((entry) => [entry.text, entry]),
         ).values(),
       ].slice(-50),
