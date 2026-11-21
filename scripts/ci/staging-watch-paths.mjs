@@ -5,13 +5,15 @@ import { railwayEnvironments, validatePinnedPlan } from './railway-config.mjs'
 
 // IDs fixos pertencem ao mesmo projeto e ao staging já conferido pelo pipeline.
 const serviceIds = {
+  'service.api-gateway': '2b7748bc-d3e3-4aff-bd94-3f514b53c44f',
+  'service.arquipelago-api': 'ee19a264-7708-471a-adf9-c9db1cfdb9a2',
   'service.admin': 'e00eca0b-5323-4424-9b58-fdb073cfce82',
   'service.community': '9df1b493-4cea-4b36-bec8-7299f054c17d',
   'service.community-kids': 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f',
 }
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
-/** Somente listas de caminhos dos três aplicativos; nunca inclui source, segredos ou deploy. */
+/** Somente caminhos dos consumidores conhecidos; nunca inclui source, segredos ou deploy. */
 export function watchPathsPatch(plan, config, tree) {
   validatePinnedPlan(plan, 'staging', tree)
   const services = {}

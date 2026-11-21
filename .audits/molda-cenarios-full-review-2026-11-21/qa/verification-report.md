@@ -93,6 +93,14 @@ Os commits posteriores do Pro (`bf96c7a56` e `d2f238b62`) entraram na fila sem c
 a execução ativa. Seus 32 arquivos de código passaram no lint direcionado em 114 ms,
 e a conferência do perfil atualizado passou. As provas completas desses commits são remotas.
 
+O CI `44947539726` concluiu os treze jobs obrigatórios com sucesso, incluindo todos
+os testes gerais, Estúdio, bancos PostgreSQL e tipos de todos os workspaces. O
+`deploy-staging` chegou à aplicação da configuração e identificou o BUG-014: dois
+caminhos de build restantes dispararam deployments pela CLI antes da onda explícita.
+Esses consumidores foram incluídos no helper que usa `skipDeploys: true`; a
+regressão falhou antes da correção e os 42 contratos leves passaram depois.
+Isso ainda não constitui implantação concluída: a execução remota final deve terminar.
+
 Merge local em staging, push de todos os commits dessa branch, todos os jobs obrigatórios
 verdes e `deploy-staging` concluído pelo fluxo normal. Falhas novas devem ser corrigidas e
 verificadas no GitHub; não se executam novamente testes pesados na máquina do usuário.
