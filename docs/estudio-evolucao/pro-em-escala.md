@@ -14,12 +14,18 @@ sem nenhuma importação entre eles. A análise passa pelos 60 e não acha probl
 (do clique ou do evento de entrada até o quadro seguinte ao alvo aparecer), no Monaco e no worker
 de linguagem de verdade:
 
-| Medida | Critério | Windows local, Chromium do Playwright (20/11) |
-| --- | --- | --- |
-| Digitar: tecla até o segundo quadro, p95 | < 50 ms | 33 ms |
-| Abrir painel do trilho (Procurar ⇄ Arquivos), p95 | < 150 ms | 26 ms |
-| Abrir a gaveta (Problemas), p95 | < 150 ms | 28 ms |
-| Primeira resposta da busca no projeto, p95 | < 200 ms | 10 ms |
+| Medida (p95) | Critério | Linux, homologação | Windows, homologação | Windows local |
+| --- | --- | --- | --- | --- |
+| Digitar: tecla até o segundo quadro | < 50 ms | 32,9 ms | 33,9 ms | 33 ms |
+| Abrir painel do trilho (Procurar ⇄ Arquivos) | < 150 ms | 28,9 ms | 30,4 ms | 26 ms |
+| Abrir a gaveta (Problemas) | < 150 ms | 24,5 ms | 32,3 ms | 28 ms |
+| Primeira resposta da busca no projeto | < 200 ms | 18,4 ms | 12,4 ms | 10 ms |
+| Problemas dos arquivos fechados depois de quebrar a base (registro) | | 432 ms | 452 ms | 389 ms |
+| Problemas somem depois de consertar (registro) | | 443 ms | 514 ms | 384 ms |
+
+Homologação 44854588851 em `a674e4c16`, Chrome 156.0.8078.4 dos runners do GitHub (Ubuntu 24.04
+e Windows Server 2025, sem placa de vídeo), 21/11/2026 02:21 e 02:24 UTC. Os relatórios inteiros,
+com as amostras, estão em [`evidencias/pro-modular-2026-11-20/`](evidencias/pro-modular-2026-11-20/).
 
 O teste reprova acima dos critérios. O relatório de cada rodada (com SHA, data, navegador e as
 amostras) vai para `pro-modular-current.json` ao lado da medição antiga; no `studio-mission.yml`,
@@ -73,8 +79,6 @@ somam aos 80 fontes os materiais e o manifesto. Nenhuma foi aumentada.
 
 ## O que falta
 
-- Os números do `studio-mission.yml` no Linux e no Windows versionados aqui (a primeira rodada
-  com o caso novo é a do `a674e4c16`).
 - O ensaio com tudo ligado ao mesmo tempo (editor, linguagem, jogo, filesystem e Zappy), pedido
   do relatório de 20/11: a medição atual liga editor, linguagem, jogo (fixture) e Zappy, sem o
   WebContainer, que precisa de rede para fora.
