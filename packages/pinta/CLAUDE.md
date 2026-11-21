@@ -58,6 +58,14 @@ O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição n
 aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
 herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.
 
+O LRU de chunks reutiliza composições canônicas por conteúdo, com um único dono
+por entrada: posição/camada não gera aliases retidos. Fingerprint é só índice;
+atlas, tamanho, contagem de peças, fase e todas as células precisam coincidir.
+Há uma colisão real nos testes e prova de mutação da comparação integral.
+Expulsão/clear limpam o índice; bytes/scratch e estimativa de pressão não mudam.
+O atlas continua imutável por identidade. Não inferir fluidez global desse lote:
+provas, controles sem repetição e medições em `qa/cache-por-conteudo-2026-11-21/`.
+
 O minimapa aceita o contrato interno de regiões com visão geral de no máximo
 256 × 256 pixels e desempate global, visitando células armazenadas. O painel
 existente usa a origem lógica nos destinos e conta buffers no orçamento; as cores

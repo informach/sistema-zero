@@ -5,11 +5,11 @@ import type {
 } from '../../pinta/scripts/map-geometry-probe'
 import type { runGridEdgeProbe } from '../../pinta/scripts/map-grid-edge-probe'
 
-type Probe = {
+export type Probe = {
   runGridEdgeProbe: typeof runGridEdgeProbe
   runMapGeometryLegacyProbe: typeof runMapGeometryLegacyProbe
   runMapGeometryRegionProbe: typeof runMapGeometryRegionProbe
-}
+} & typeof import('../../pinta/scripts/map-grid-probe')
 declare global {
   interface Window {
     mapGridCurrent: Probe

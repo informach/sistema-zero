@@ -14,7 +14,7 @@ const canvasOf = (width: number, height: number) => {
   return canvas
 }
 let active: ReturnType<typeof fixture> | null = null
-function fixture(kind: 'sparse' | 'dense') {
+function fixture(kind: 'sparse' | 'dense' | 'dense-unique') {
   const data = makeRegionRenderFixture(canvasOf)
   let map: AuthorMap
   if (kind === 'sparse') {
@@ -39,13 +39,22 @@ function fixture(kind: 'sparse' | 'dense') {
     })
     const dense: TilemapAsset = {
       ...seed,
-      layers: Array.from({ length: 32 }, (_, index) => ({
-        id: `layer-${index}`,
-        name: `camada-${index}`,
-        visible: true,
-        opacity: index % 2 ? 0.75 : 1,
-        cells: Int16Array.from({ length: 256 * 256 }, (_, i) => (i + index) % 4),
-      })),
+      layers: Array.from({ length: 32 }, (_, index) => {
+        let state = Math.imul(index + 1, 0x9e3779b9) >>> 0
+        return {
+          id: `layer-${index}`,
+          name: `camada-${index}`,
+          visible: true,
+          opacity: index % 2 ? 0.75 : 1,
+          cells: Int16Array.from({ length: 256 * 256 }, (_, i) => {
+            if (kind === 'dense') return (i + index) % 4
+            state ^= state << 13
+            state ^= state >>> 17
+            state ^= state << 5
+            return state >>> 30
+          }),
+        }
+      }),
     }
     map = dense
   }
@@ -89,7 +98,7 @@ function fixture(kind: 'sparse' | 'dense') {
     logicalCells: map.cols * map.rows,
   }
 }
-export function prepareGridBench(kind: 'sparse' | 'dense') {
+export function prepareGridBench(kind: 'sparse' | 'dense' | 'dense-unique') {
   disposeGridBench()
   active = fixture(kind)
   return {
@@ -146,5 +155,16 @@ export function disposeGridBench() {
     active.stage.remove()
     active.cache.clear()
     active = null
+  }
+}
+
+/** Existing public cache counters, exposed only by this QA host. */
+export function gridCacheStatus() {
+  if (!active) throw Error('Lab ausente')
+  return {
+    rebuilds: active.cache.rebuilds,
+    entries: active.cache.size,
+    bytes: active.cache.usedBytes,
+    workingSetBytes: active.cache.workingSetBytes,
   }
 }

@@ -132,7 +132,8 @@ describe('TileChunkCache', () => {
       sheet = folha()
     let m = mapaGrande(96, 32)
     const id = tileLayerAt(m).id
-    for (const col of [0, 32, 64]) m = setCell(m, id, col, 0, 0)
+    // Different canonical content is required to fill/evict the LRU.
+    for (const col of [0, 32, 64]) m = setCell(m, id, col, 0, col / 32)
     const layer = tileLayerAt(m)
     cache.beginFrame()
     const a = cache.get(m, layer, ts, sheet, 0, 0)
@@ -161,11 +162,17 @@ describe('TileChunkCache', () => {
       sheet = folha()
     sheet.getContext('2d')!.fillStyle = 'red'
     sheet.getContext('2d')!.fillRect(0, 0, 16, 16)
+    sheet.getContext('2d')!.fillStyle = 'green'
+    sheet.getContext('2d')!.fillRect(16, 0, 16, 16)
     let m = mapaGrande(128, 96)
     for (let i = 0; i < 3; i++) m = addLayer(m, `c${i}`)
-    for (const layer of m.layers)
+    for (const [index, layer] of m.layers.entries())
       for (let r = 0; r < 96; r += 32)
-        for (let c = 0; c < 128; c += 32) m = setCell(m, layer.id, c, r, 0)
+        for (let c = 0; c < 128; c += 32) {
+          m = setCell(m, layer.id, c, r, 0)
+          const serial = index * 12 + (r / 32) * 4 + c / 32
+          m = setCell(m, layer.id, c + 1 + (serial % 31), r + 1 + Math.floor(serial / 31), 1)
+        }
     const tilesets = new Map([['ts', ts]]),
       ctx = createCanvas(128, 96).getContext('2d') as unknown as CanvasRenderingContext2D
     const view = { x: 0, y: 0, width: 128 * 16, height: 96 * 16 }

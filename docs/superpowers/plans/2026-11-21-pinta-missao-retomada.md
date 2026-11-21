@@ -378,3 +378,24 @@ maior com CPU 4×. A causalidade dessa variação e a latência global não fora
 qualificadas. Não declarar fluidez de mapas cheios: seguir ao cache/composição,
 com novo perfil, orçamento igual e conservação exata de pixels. A suíte completa
 2.570 pertence à base anterior; neste lote foi executada a regressão de render.
+
+Lote verificado: reutilizar canvases canônicos com células, atlas, tamanho,
+contagem de peças e fase de animação idênticos. O perfil denso anterior aponta
+mais de 95% das amostras em desenho. Matriz: impacto 4 × confiança 4 ÷ esforço 2
+= 8. Uma alavanca: reaproveitamento por conteúdo dentro do mesmo LRU/orçamento.
+Fingerprint serve apenas para buscar candidatos; igualdade integral continua
+obrigatória, inclusive numa colisão real reproduzida. Não criar aliases por cada
+posição do mundo. Manter a estimativa de pressão e a guarda de alpha inalteradas
+neste lote; sua eventual evolução será separada, depois de novo perfil.
+Revisão: o contrato do hit também precisa incluir contagem de peças quando o
+canvas de atlas é compartilhado. Fixtures de LRU devem conter conteúdos distintos
+para realmente exercer expulsão; duplicatas têm prova própria de reutilização.
+Conservar pixels, validar limpeza/reciclagem e animação, medir antes de commitar.
+Provas em `qa/cache-por-conteudo-2026-11-21/`: suíte completa 2.576, 87 testes do
+renderer/cache, nove ensaios e 612 comparações RGBA aprovados, tipos e lint.
+ABBA: periódico CPU normal p50 291,8 → 133,4 ms, retenção 32 → 2 MiB. O cenário
+sem repetições mantém a reconstrução e apresenta cauda maior na amostra, sem
+qualificação de latência. O perfil ainda aponta desenho direto; a estimativa de
+pressão nominal permanece 128 MiB. Próximo lote: estimar pressão por composições
+distintas, reutilizando a mesma identidade completa, sem ampliar orçamento ou
+alterar guardas de alpha/pixels. Não fecha a fluidez densa ou as etapas macro.

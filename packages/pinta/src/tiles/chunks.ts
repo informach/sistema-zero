@@ -133,6 +133,14 @@ interface ChunkEntry {
   source: CanvasImageSource
   animation: string
   bytes: number
+  tileCount: number
+  fingerprint: number
+}
+/** Lookup accelerator only: collisions must still compare every cell and atlas contract. */
+export function chunkFingerprint(values: Int16Array): number {
+  let hash = 0x811c9dc5
+  for (const value of values) hash = Math.imul(hash ^ (value + 1), 0x01000193)
+  return hash >>> 0
 }
 /** Bytes de um bloco pintado (RGBA) para peças deste tamanho. */
 export function chunkBytes(tileSize: number): number {
@@ -153,6 +161,7 @@ export function chunkBytes(tileSize: number): number {
  */
 export class TileChunkCache {
   private entries = new Map<string, ChunkEntry>()
+  private byFingerprint = new Map<number, Set<string>>()
   private bytes = 0
   private scratch: HTMLCanvasElement | null = null
   /** Estimativa do conjunto visível, sem ampliar o orçamento de retenção. */
@@ -175,6 +184,7 @@ export class TileChunkCache {
   clear(): void {
     for (const entry of this.entries.values()) this.release(entry.canvas)
     this.entries.clear()
+    this.byFingerprint.clear()
     this.bytes = 0
     if (this.scratch) this.release(this.scratch)
     this.scratch = null
@@ -191,6 +201,9 @@ export class TileChunkCache {
   }
   private drop(key: string, entry: ChunkEntry, recycle = false): void {
     this.entries.delete(key)
+    const bucket = this.byFingerprint.get(entry.fingerprint)
+    bucket?.delete(key)
+    if (!bucket?.size) this.byFingerprint.delete(entry.fingerprint)
     this.bytes -= entry.bytes
     if (!recycle) this.release(entry.canvas)
   }
@@ -235,6 +248,7 @@ export class TileChunkCache {
       hit &&
       hit.source === sheet &&
       hit.bytes === chunkBytes(ts.tileSize) &&
+      hit.tileCount === ts.tiles.length &&
       hit.animation === animation &&
       hit.values.every((v, i) => v === values[i])
     ) {
@@ -244,7 +258,25 @@ export class TileChunkCache {
     }
     if (hit) this.drop(key, hit)
     const bytes = chunkBytes(ts.tileSize),
-      size = MAP_CHUNK_SIDE * ts.tileSize
+      size = MAP_CHUNK_SIDE * ts.tileSize,
+      fingerprint = chunkFingerprint(values)
+    // A canonical canvas has one LRU owner. Other positions borrow it without
+    // storing aliases, so metadata and pixel retention remain bounded together.
+    for (const candidate of this.byFingerprint.get(fingerprint) ?? []) {
+      const entry = this.entries.get(candidate)
+      if (
+        entry &&
+        entry.source === sheet &&
+        entry.bytes === bytes &&
+        entry.tileCount === ts.tiles.length &&
+        entry.animation === animation &&
+        entry.values.every((value, i) => value === values[i])
+      ) {
+        this.entries.delete(candidate)
+        this.entries.set(candidate, entry)
+        return entry.canvas
+      }
+    }
     let recycled: HTMLCanvasElement | null = null
     while (this.bytes + bytes > this.budget && this.entries.size) {
       const first = this.entries.entries().next().value
@@ -296,7 +328,12 @@ export class TileChunkCache {
         values,
         animation,
         bytes,
+        tileCount: ts.tiles.length,
+        fingerprint,
       })
+      const bucket = this.byFingerprint.get(fingerprint) ?? new Set<string>()
+      bucket.add(key)
+      this.byFingerprint.set(fingerprint, bucket)
       this.bytes += bytes
     }
     return canvas

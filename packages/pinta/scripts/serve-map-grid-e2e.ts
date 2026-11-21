@@ -2,15 +2,23 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 
 const port = Number(process.env.PINTA_MAP_GRID_PORT ?? 5560),
-  baseline = '0e377ac1b25f7fa1073e02dca048f12de4a278a7',
+  baseline = process.env.PINTA_MAP_GRID_BASELINE ?? '0e377ac1b25f7fa1073e02dca048f12de4a278a7',
+  module = process.env.PINTA_MAP_GRID_MODULE ?? 'canvas',
   directory = resolve(import.meta.dir, `../.cache/map-grid-${port}`)
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('Porta inválida')
+if (!/^[a-f0-9]{40}$/.test(baseline) || !['canvas', 'cache'].includes(module))
+  throw Error('Fonte anterior inválida')
 await mkdir(directory, { recursive: true })
 const published: Bun.BunPlugin = {
   name: 'previous-map-canvas',
   setup(build) {
     build.onLoad(
-      { filter: /[\\/]src[\\/]components[\\/]editor[\\/]mapTools[\\/]mapCanvas\.ts$/ },
+      {
+        filter:
+          module === 'cache'
+            ? /[\\/]src[\\/]tiles[\\/]chunks\.ts$/
+            : /[\\/]src[\\/]components[\\/]editor[\\/]mapTools[\\/]mapCanvas\.ts$/,
+      },
       (args) => {
         const file = args.path.replaceAll('\\', '/').split('/packages/pinta/')[1],
           result = Bun.spawnSync(['git', 'show', `${baseline}:packages/pinta/${file}`], {
@@ -29,7 +37,7 @@ for (const historical of [false, true]) {
     entry = resolve(directory, `${name}.ts`)
   await writeFile(
     entry,
-    `import {runGridEdgeProbe} from '../../scripts/map-grid-edge-probe';import {runMapGeometryLegacyProbe,runMapGeometryRegionProbe} from '../../scripts/map-geometry-probe';Object.assign(window,{mapGrid${historical ? 'Reference' : 'Current'}:{runGridEdgeProbe,runMapGeometryLegacyProbe,runMapGeometryRegionProbe}});`,
+    `import * as bench from '../../scripts/map-grid-probe';import {runGridEdgeProbe} from '../../scripts/map-grid-edge-probe';import {runMapGeometryLegacyProbe,runMapGeometryRegionProbe} from '../../scripts/map-geometry-probe';Object.assign(window,{mapGrid${historical ? 'Reference' : 'Current'}:{...bench,runGridEdgeProbe,runMapGeometryLegacyProbe,runMapGeometryRegionProbe}});`,
   )
   const result = await Bun.build({
     entrypoints: [entry],
