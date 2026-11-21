@@ -156,7 +156,16 @@ a opção que falta conta como desligada. Hoje elas partem do padrão do própri
 (`PRO_FORMAT_SETTINGS` em `monaco/pro/languageService.ts`, usado também por "Organizar as
 importações"); o teste do serviço reprovava antes do conserto.
 
+## Ensaio com uma dependência de verdade (lote 6, 21/11/2026)
+
+`e2e-pro-full/pro-full-preview.spec.ts`, caso "Pro project with a real npm dependency" (sob
+demanda, `playwright.pro-full.config.ts`: WebContainer de verdade e rede para o npm): um projeto
+Pro novo, `npm install nanoid@5.0.9` digitado no terminal, o `package.json` que o npm reescreveu
+volta para o projeto (aparece na seção "Configuração" com a biblioteca), `src/main.js` importa a
+biblioteca e a prévia mostra o resultado, o editor lê as bibliotecas instaladas sem erro e não
+acusa a importação, `npm run build` passa e, depois de recarregar a página, a dependência continua
+no projeto e o jogo volta a rodar com ela. Verde no Windows local (Chrome do sistema), 21/11/2026.
+
 ## O que falta
 
-- O build hospedado com dependências reais e o WebContainer no mesmo ensaio. O WebContainer
-  precisa de rede para fora.
+- O build hospedado com dependências reais (o WebContainer com dependência já tem ensaio, acima).
