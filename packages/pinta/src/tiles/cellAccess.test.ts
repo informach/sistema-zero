@@ -38,8 +38,8 @@ const CONFERIDOS: Record<string, string> = {
   'tiles/tilemapOps.ts':
     'pinta, apaga, preenche e cresce movendo células inteiras; achatar e a peça do topo leem por cellTile',
   'tiles/tilesetOps.ts': 'remapeia o índice por cellTile e conserva os bits com withCellTile',
-  'tiles/mapSelection.ts': 'recorta, apaga e carimba células inteiras; vazio é comparado com -1',
-  'tiles/stamp.ts': 'carimba células inteiras',
+  'tiles/mapCellEdits.ts':
+    'valida o orçamento e referências pelo helper de cell.ts; copia e compara células densas inteiras e delega regiões ao escritor atômico, preservando flags',
   'core/assetResize.ts': 'copia células inteiras para a grade nova',
   'export/studioGrid.ts': 'lê o achatado, que já é índice de peça',
   'export/portableImageRender.ts': 'lê o índice por cellTile',

@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\mapSelection.test.ts:
+(pass) copyRegion / clearRegion > copia a região (vazios viram buraco -1)
+(pass) copyRegion / clearRegion > região só de grade vazia não conta como pedaço selecionável
+(pass) copyRegion / clearRegion > clearRegion apaga só a região; nada muda = mesma ref
+(pass) extractRegion + stampRegionAt (round-trip) > extrair e colar na MESMA posição reconstrói o original
+(pass) extractRegion + stampRegionAt (round-trip) > cola clipando nas bordas e pulando buraco (-1)
+
+packages\pinta\src\tiles\mapSelectionBudget.test.ts:
+(pass) selection clips logical columns instead of aliasing the following dense row
+(pass) invalid selection extents are refused without clearing or allocating a partial cut
+(pass) a heterogeneous paste refuses all cells if one reference is outside the native format
+(pass) malformed stamps and fractional anchors do not create a partial gesture
+(pass) selection and repeating stamps work at negative origins in a sparse maximum-extent map
+(pass) locked layers and no-op pastes preserve the original map and snapshots
+(pass) picker rectangles clip columns and never alias another tileset row
+(pass) an oversized repeating gesture is refused before applying its valid prefix [16.00ms]
+(pass) seeded dense and region selection gestures preserve identical cells and earlier snapshots [16.00ms]
+
+packages\pinta\src\tiles\stamp.test.ts:
+(pass) stampFromTileset > recorta um retângulo da grade da folha (columns=8)
+(pass) stampFromTileset > posições além do tileCount viram buraco (-1)
+(pass) stampTileAt (padrão módulo ancorado) > repete o padrão em módulo, inclusive à frente da âncora (módulo negativo)
+(pass) blockCells > o bloco encaixado que contém a célula visitada
+(pass) blockCells > encaixa em direção negativa (célula antes da âncora)
+(pass) stampCells > aplica o padrão, pula buraco (-1) e índice ≥ tileCount
+(pass) stampCells > índice ≥ tileCount é pulado (carimbo obsoleto após remap)
+(pass) stampCells > mesmo conteúdo devolve a mesma ref
+
+ 22 pass
+ 0 fail
+ 4225 expect() calls
+Ran 22 tests across 3 files. [345.00ms]

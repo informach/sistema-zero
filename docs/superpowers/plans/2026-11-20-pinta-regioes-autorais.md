@@ -99,6 +99,15 @@ pendentes. O formato ativo continua em 7; não há oficina expansível publicada
 
 ## 3. Oficina e consumidores
 
+Seleção, recorte, colagem e carimbos existentes passaram a usar leitura por
+origem e escrita heterogênea comum, com recusa atômica de dados inválidos e
+orçamento de 65.536 células por gesto. O caso de coluna fora da grade que
+alcançava a linha seguinte foi corrigido. Passaram 2.334 casos completos,
+32 comparações determinísticas de snapshots, tipos, três controles Pygame e
+doze fluxos locais no navegador. Ver `qa/selecao-e-carimbos-regioes-2026-11-21/`.
+O item permanece aberto: render, terreno, persistência e demais consumidores
+ainda não promovem a união pública nem ativam o formato 8.
+
 Antes de ampliar os consumidores, lápis, lote, balde e preparação para regiões
 passaram a recusar índices de peças que o formato do editor não aceita. O
 armazenamento genérico manteve os 12 bits e todas as transformações. Passaram

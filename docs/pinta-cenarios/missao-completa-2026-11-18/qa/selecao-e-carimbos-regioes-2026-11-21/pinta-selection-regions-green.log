@@ -1,0 +1,82 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\mapSelection.test.ts:
+20 |   const read = createMapLayerCellReader(tilemap, layerId)
+21 |   const tiles = new Int16Array(rect.cols * rect.rows).fill(-1)
+22 |   if (read)
+23 |     for (let r = 0; r < rect.rows; r += 1)
+24 |       for (let c = 0; c < rect.cols; c += 1)
+25 |         tiles[r * rect.cols + c] = read(rect.col + c, rect.row + r)
+                                        ^
+TypeError: read is not a function. (In 'read(rect.col + c, rect.row + r)', 'read' is an instance of Object)
+      at copyRegion (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.ts:25:36)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.test.ts:23:19)
+(fail) copyRegion / clearRegion > copia a região (vazios viram buraco -1)
+ 8 | export function hasFilledCell(tilemap: AuthorMap, layerId: string, rect: CellRect): boolean {
+ 9 |   if (!isBoundedCellRect(rect)) return false
+10 |   const read = createMapLayerCellReader(tilemap, layerId)
+11 |   if (!read) return false
+12 |   for (let r = 0; r < rect.rows; r += 1)
+13 |     for (let c = 0; c < rect.cols; c += 1) if (read(rect.col + c, rect.row + r) >= 0) return true
+                                                    ^
+TypeError: read is not a function. (In 'read(rect.col + c, rect.row + r)', 'read' is an instance of Object)
+      at hasFilledCell (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.ts:13:48)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.test.ts:30:12)
+(fail) copyRegion / clearRegion > região só de grade vazia não conta como pedaço selecionável
+(pass) copyRegion / clearRegion > clearRegion apaga só a região; nada muda = mesma ref [15.00ms]
+20 |   const read = createMapLayerCellReader(tilemap, layerId)
+21 |   const tiles = new Int16Array(rect.cols * rect.rows).fill(-1)
+22 |   if (read)
+23 |     for (let r = 0; r < rect.rows; r += 1)
+24 |       for (let c = 0; c < rect.cols; c += 1)
+25 |         tiles[r * rect.cols + c] = read(rect.col + c, rect.row + r)
+                                        ^
+TypeError: read is not a function. (In 'read(rect.col + c, rect.row + r)', 'read' is an instance of Object)
+      at copyRegion (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.ts:25:36)
+      at extractRegion (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.ts:48:20)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.test.ts:67:37)
+(fail) extractRegion + stampRegionAt (round-trip) > extrair e colar na MESMA posição reconstrói o original
+(pass) extractRegion + stampRegionAt (round-trip) > cola clipando nas bordas e pulando buraco (-1)
+
+packages\pinta\src\tiles\mapSelectionBudget.test.ts:
+ 8 | export function hasFilledCell(tilemap: AuthorMap, layerId: string, rect: CellRect): boolean {
+ 9 |   if (!isBoundedCellRect(rect)) return false
+10 |   const read = createMapLayerCellReader(tilemap, layerId)
+11 |   if (!read) return false
+12 |   for (let r = 0; r < rect.rows; r += 1)
+13 |     for (let c = 0; c < rect.cols; c += 1) if (read(rect.col + c, rect.row + r) >= 0) return true
+                                                    ^
+TypeError: read is not a function. (In 'read(rect.col + c, rect.row + r)', 'read' is an instance of Object)
+      at hasFilledCell (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.ts:13:48)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:24:10)
+(fail) selection clips logical columns instead of aliasing the following dense row
+(pass) invalid selection extents are refused without clearing or allocating a partial cut
+(pass) a heterogeneous paste refuses all cells if one reference is outside the native format
+(pass) malformed stamps and fractional anchors do not create a partial gesture
+ 8 | export function hasFilledCell(tilemap: AuthorMap, layerId: string, rect: CellRect): boolean {
+ 9 |   if (!isBoundedCellRect(rect)) return false
+10 |   const read = createMapLayerCellReader(tilemap, layerId)
+11 |   if (!read) return false
+12 |   for (let r = 0; r < rect.rows; r += 1)
+13 |     for (let c = 0; c < rect.cols; c += 1) if (read(rect.col + c, rect.row + r) >= 0) return true
+                                                    ^
+TypeError: read is not a function. (In 'read(rect.col + c, rect.row + r)', 'read' is an instance of Object)
+      at hasFilledCell (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelection.ts:13:48)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:90:10)
+(fail) selection and repeating stamps work at negative origins in a sparse maximum-extent map
+(pass) locked layers and no-op pastes preserve the original map and snapshots
+
+packages\pinta\src\tiles\stamp.test.ts:
+(pass) stampFromTileset > recorta um retângulo da grade da folha (columns=8)
+(pass) stampFromTileset > posições além do tileCount viram buraco (-1)
+(pass) stampTileAt (padrão módulo ancorado) > repete o padrão em módulo, inclusive à frente da âncora (módulo negativo)
+(pass) blockCells > o bloco encaixado que contém a célula visitada
+(pass) blockCells > encaixa em direção negativa (célula antes da âncora)
+(pass) stampCells > aplica o padrão, pula buraco (-1) e índice ≥ tileCount
+(pass) stampCells > índice ≥ tileCount é pulado (carimbo obsoleto após remap)
+(pass) stampCells > mesmo conteúdo devolve a mesma ref
+
+ 14 pass
+ 5 fail
+ 46 expect() calls
+Ran 19 tests across 3 files. [334.00ms]
