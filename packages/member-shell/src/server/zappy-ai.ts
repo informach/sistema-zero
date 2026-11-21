@@ -41,6 +41,12 @@ import {
 import { PENSA_CHILD_SAFETY_CLAUSE } from './child-safety'
 import { completePensaJson, type PensaJsonTransport } from './pensa-llm'
 import {
+  ZAPPY_OBSERVATION_RULE,
+  type ZappyInvestigationInput,
+  type ZappyPerformanceInput,
+  zappyObservedRuntime,
+} from './zappy-observation'
+import {
   buildBehaviorDigest,
   buildDraftSummary,
   buildProjectOutline,
@@ -114,6 +120,9 @@ export interface ZappyContextInput {
   draftBlockIds?: string[]
   /** Problemas que o editor já detectou, com frase pronta em PT-BR. */
   semanticIssues?: Array<{ blockId?: string; message: string }>
+  /** As abas Investigar e Desempenho, só quando a criança as ligou (seção 15). */
+  investigation?: ZappyInvestigationInput
+  performance?: ZappyPerformanceInput
   code?: StudioTutorCodeFile[]
   pro?: {
     revision: number
@@ -757,6 +766,7 @@ function systemPrompt(
     'O campo "blocosRelevantes" lista blocos do projeto dela com o id, para você citar a instância exata em blockReferences.',
     'O campo "rascunhosSoltos" lista pilhas que estão SALVAS mas NUNCA rodam, porque ficaram fora das Áreas do projeto. Se a criança reclama que algo não acontece e aquilo está aqui, ESSA é a causa: diga com carinho que a pilha precisa ser arrastada para dentro da Área certa.',
     'O campo "avisosDoEditor" traz problemas que o próprio editor já detectou, já escritos para a criança (ex.: um nome usado que nunca foi criado). Se houver algum relacionado à dúvida, use-o como a causa em vez de procurar outra.',
+    ZAPPY_OBSERVATION_RULE,
     'Pergunta de REVISÃO ("o que falta?", "o que posso melhorar?"): use scope "project-review" e responda em 3 partes curtas — ✅ o que já está pronto; 🔧 o que corrigir (UMA causa provável, apontando o bloco); ➡️ próximo passo (UMA mecânica nova do catálogo).',
     ...(diagnosis
       ? [
@@ -846,6 +856,7 @@ function proSystemPrompt(): string {
     COMMON_LEARNING_LANGUAGE,
     `Se precisar chamar a criança, use exatamente ${PROFILE_MARKER}.`,
     'Cite lessonReferences apenas de releasedLessonKnowledge e helpReferences apenas de ajudaComoFazer, somente se aplicáveis ao Pro. Nunca invente referências.',
+    ZAPPY_OBSERVATION_RULE,
     'Preencha suggestions com até 3 continuações curtas em primeira pessoa, compatíveis com código e terminal, ou [].',
   ].join('\n')
 }
@@ -964,6 +975,7 @@ function proProjectData(input: {
         ...(context.pro ? { editor: context.pro } : {}),
         lastError: context.lastError,
         ...(context.pensaMission ? { missaoDoPensa: context.pensaMission } : {}),
+        ...zappyObservedRuntime(context),
       },
       conversaRecente: recentTurns,
       releasedLessonKnowledge: knowledge
@@ -1075,6 +1087,7 @@ function projectData(
         installedExtensions: context.installedExtensions,
         selectedBlockId: context.selectedBlockId,
         lastError,
+        ...zappyObservedRuntime(context),
         ...(context.kind === 'pro' ? { code } : {}),
       },
       releasedLessonKnowledge,

@@ -11,6 +11,7 @@ import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useUIStoreApi } from '../../state/uiStore'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import {
@@ -148,6 +149,8 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
   // O editor já sabe o que nunca roda e o que está semanticamente errado.
   const draftBlockIds = useDiagnosticsStore((s) => s.draftBlockIds)
   const semanticIssues = useDiagnosticsStore((s) => s.semanticIssues)
+  // As abas Investigar e Desempenho desta instância (lidas só na hora da pergunta).
+  const uiStoreApi = useUIStoreApi()
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
@@ -447,9 +450,21 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
           }
         }
         if (!valid()) return
+        // Lote 5 (seção 15): com a aba Investigar ou Desempenho ligada, o Zappy recebe o que ela
+        // mostra agora. O módulo das abas só baixa nesse caso (sob demanda).
+        const { measuring, investigating } = uiStoreApi.getState()
+        const observation =
+          measuring || investigating
+            ? (await import('../devtools/zappyObservation')).readZappyObservation(uiStoreApi, {
+                measuring,
+                investigating,
+              })
+            : {}
+        if (!valid()) return
         const fresh = store.getState().project!
         const editor = proCapture.current?.() ?? proEditor.current
         const request = buildStudioTutorRequest({
+          ...observation,
           project: fresh,
           question: text,
           proEditor: editor

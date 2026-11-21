@@ -1942,6 +1942,97 @@ describe('review: o contexto do projeto atravessa a borda da rota', () => {
   })
 })
 
+describe('lote 5 da missão (seção 15): as abas Investigar e Desempenho chegam ao modelo', () => {
+  // A mesma borda do teste acima: campo que não está no esquema Zod some calado.
+  test('os valores do Investigar e as medidas do Desempenho vão no pedido, com a regra', async () => {
+    let systemPrompt = ''
+    let userPrompt = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as { messages?: { content: string }[] }
+      systemPrompt = body.messages?.[0]?.content ?? ''
+      userPrompt = body.messages?.[1]?.content ?? ''
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  text: 'Vamos conferir juntos.',
+                  scope: 'error',
+                  blockReferences: [],
+                  lessonReferences: [],
+                  suggestions: [],
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+
+    try {
+      const routes = createStudioZappyRoutes({
+        session: { getSession: async () => STAFF },
+        members: members(),
+      } as never)
+      const body = {
+        projectId: PROJECT_ID,
+        clientMessageId: MESSAGE_ID,
+        question: 'por que meu jogo esta lento e os pontos nao sobem?',
+        context: {
+          projectId: PROJECT_ID,
+          mode: 'blocks',
+          kind: 'classic',
+          blocks: [{ id: 'b1', type: 'sz_g2d_on_key', topLevel: true }],
+          installedExtensions: ['game-2d'],
+          selectedBlockId: null,
+          lastError: null,
+          investigation: {
+            frame: 412,
+            paused: true,
+            values: [
+              { name: 'pontos', text: '3' },
+              { name: 'recado', text: 'escreva para maria@exemplo.com' },
+            ],
+          },
+          performance: {
+            seconds: 12,
+            fpsNow: 18,
+            fpsMin: 11,
+            slowEpisodes: 2,
+            slowestFrameMs: 140,
+            sprites: 380,
+            objects: null,
+            draws: null,
+          },
+        },
+      }
+      await routes.studioZappyMessage.POST(
+        new Request('https://kids.test/api/studio/zappy/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      )
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+
+    expect(systemPrompt).toContain('oQueOJogoMostra')
+    expect(systemPrompt).toContain('Nunca invente valores, medidas ou números')
+    expect(userPrompt).toContain('"oQueOJogoMostra"')
+    expect(userPrompt).toContain('"nome":"pontos","valor":"3"')
+    expect(userPrompt).toContain('"quadro":412')
+    expect(userPrompt).toContain('"desempenhoMedido"')
+    expect(userPrompt).toContain('"quadrosPorSegundoAgora":18')
+    expect(userPrompt).toContain('"sprites":380')
+    // O valor que a criança digitou passa pela mesma limpeza do erro.
+    expect(userPrompt).not.toContain('maria@exemplo.com')
+  })
+})
+
 describe('review 2: a recusa por limite chega marcada como aviso', () => {
   /**
    * ⚠️ Achado do 2º full review: o `'quota'` passado ao `complete` é o OUTCOME
