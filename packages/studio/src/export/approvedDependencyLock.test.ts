@@ -71,6 +71,22 @@ describe('a trava tirada do grafo aprovado', () => {
     expect(approvedLockFor(manifest({}), graph)).toBeNull()
   })
 
+  // Revisão do lote 7: com estes campos o `npm ci` recusa a trava ("Missing … from lock file"), e
+  // a exportação levaria uma trava falsa com o LEIA-ME mandando `npm ci`.
+  it('campos que a trava não descreve fazem a exportação sair sem trava', () => {
+    for (const field of [
+      { optionalDependencies: { three: '0.184.0' } },
+      { peerDependencies: { three: '0.184.0' } },
+      { overrides: { rolldown: '1.0.0' } },
+      { bundleDependencies: ['three'] },
+      { bundledDependencies: ['three'] },
+      { workspaces: ['packages/*'] },
+    ])
+      expect(
+        approvedLockFor(manifest({ devDependencies: { vite: '8.1.6' }, ...field }), graph),
+      ).toBeNull()
+  })
+
   it('uma indireta obrigatória que falta no grafo derruba a trava inteira', () => {
     const missing = { ...graph }
     delete missing['node_modules/rolldown']

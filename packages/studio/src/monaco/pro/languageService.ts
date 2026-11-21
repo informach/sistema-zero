@@ -46,7 +46,6 @@ function matches(path: string, pattern: string): boolean {
   return new RegExp(`^${source}$`).test(path)
 }
 
-/** Pure virtual filesystem + official TS service. Each instance has its own options and cache. */
 /**
  * O jeito de arrumar o código do Pro. Parte do PADRÃO do TypeScript: opção que falta conta como
  * desligada, e uma lista só com tamanho de recuo e ponto e vírgula tirava os espaços em volta do
@@ -60,6 +59,7 @@ const PRO_FORMAT_SETTINGS: ts.FormatCodeSettings = {
   semicolons: ts.SemicolonPreference.Remove,
 }
 
+/** Pure virtual filesystem + official TS service. Each instance has its own options and cache. */
 export function createProLanguageService(defaultLibraries: Record<string, string>) {
   const files = new Map<string, { text: string; version: number }>()
   let availableFiles = new Set<string>()
@@ -376,6 +376,9 @@ export function createProLanguageService(defaultLibraries: Record<string, string
     organizeImports(path: string) {
       synchronize()
       const fileName = absolute(`/project/${path}`)
+      // Fora do programa TypeScript (CSS, HTML, configuração) não há importação para organizar; o
+      // serviço lançaria "Could not find source file" (revisão do lote 6).
+      if (!service.getProgram()?.getSourceFile(fileName)) return []
       return service
         .organizeImports({ type: 'file', fileName }, PRO_FORMAT_SETTINGS, {})
         .filter((change) => change.fileName === fileName)

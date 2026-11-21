@@ -51,6 +51,17 @@ export function approvedLockFor(
   }
   const declared = typeof manifest.packageManager === 'string' ? manifest.packageManager : ''
   if (declared && !declared.startsWith('npm@')) return null
+  // Campos que a trava daqui não descreve: com eles o `npm ci` recusa a trava ("Missing … from
+  // lock file"). Melhor sair sem trava, com `npm install` (revisão do lote 7).
+  for (const field of [
+    'optionalDependencies',
+    'peerDependencies',
+    'overrides',
+    'bundleDependencies',
+    'bundledDependencies',
+    'workspaces',
+  ])
+    if (manifest[field] !== undefined) return null
   const dependencies = record(manifest.dependencies)
   const devDependencies = record(manifest.devDependencies)
   const direct = { ...dependencies, ...devDependencies }

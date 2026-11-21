@@ -20,6 +20,11 @@ if (
   Object.keys(runtime.packages).some((path) => path.includes('/node_modules/'))
 )
   throw new Error('O lock do runtime mudou de estrutura; revise o gerador da trava aprovada.')
+// Um pacote preso a uma plataforma (`os`/`cpu`) que não é opcional quebraria a instalação nas
+// outras máquinas (`EBADPLATFORM`), e o recorte herda a marca `optional` do grafo (revisão do lote 7).
+for (const [path, entry] of Object.entries(runtime.packages))
+  if ((entry.os !== undefined || entry.cpu !== undefined) && entry.optional !== true)
+    throw new Error(`Pacote preso a uma plataforma sem ser opcional no grafo aprovado: ${path}`)
 const packages = Object.fromEntries(
   Object.entries(runtime.packages)
     .filter(([path]) => path !== '')

@@ -118,21 +118,27 @@ test('Pro project with a real npm dependency: install, import, build and reopen'
     timeout: 60_000,
   })
 
+  const valid =
+    "// @ts-check\nimport { nanoid } from 'nanoid'\nconst app = document.getElementById('app')\nif (app) app.textContent = `id com ${nanoid(6).length} letras`\n"
   await page.getByRole('treeitem', { name: 'src/main.js', exact: true }).dblclick()
-  await replaceActiveFile(
-    page,
-    "import { nanoid } from 'nanoid'\nconst app = document.getElementById('app')\nif (app) app.textContent = `id com ${nanoid(6).length} letras`\n",
-  )
+  await replaceActiveFile(page, valid)
   await waitForPreview(page, 'id com 6 letras')
-  // O editor leu as bibliotecas instaladas sem erro e não acusa a importação.
+  // Prova POSITIVA de que o editor leu os tipos da biblioteca instalada (revisão do lote 6): com
+  // `@ts-check`, `nanoid()` devolve texto, então `.toFixed` só vira problema se a declaração do
+  // nanoid foi lida. Sem ela, a importação ficaria sem tipo e nada seria acusado.
+  const problems = page.getByRole('tab', { name: /^Problemas/ })
+  await replaceActiveFile(page, `${valid}export const errado = nanoid(6).toFixed(2)\n`)
+  await expect(problems).toHaveAccessibleName(/^Problemas\s*\d+$/, { timeout: 60_000 })
+  await problems.click()
+  await expect(page.locator('.sz-pro-dock__body')).toContainText('toFixed')
+  // A linha também quebra o jogo de verdade ("toFixed is not a function"). Tirada a linha, o
+  // problema de tipo some E o erro de execução da página anterior também: a aba Problemas volta a
+  // "Nenhum problema" quando o jogo recomeça (achado deste ensaio, 21/11/2026: o erro velho ficava
+  // contado com o jogo já consertado e rodando).
+  await replaceActiveFile(page, valid)
+  await expect(problems).toHaveAccessibleName(/Nenhum problema/, { timeout: 60_000 })
   await expect(page.getByText('Não consegui ler as bibliotecas instaladas')).toHaveCount(0)
-  await expect(page.getByText('Reconhecendo bibliotecas instaladas…')).toHaveCount(0, {
-    timeout: 60_000,
-  })
-  await expect(page.getByRole('tab', { name: /^Problemas/ })).toHaveAccessibleName(
-    /Nenhum problema/,
-    { timeout: 60_000 },
-  )
+  await waitForPreview(page, 'id com 6 letras')
 
   // A aba Terminal já aberta fecha a gaveta se for clicada de novo: só abre se o terminal sumiu.
   if (!(await page.locator('.xterm').isVisible()))
@@ -148,5 +154,6 @@ test('Pro project with a real npm dependency: install, import, build and reopen'
   await openConfigFile(page, 'package.json')
   await expect(page.locator('.monaco-editor .view-lines').first()).toContainText('"nanoid"')
 
-  expect(errors).toEqual([])
+  // O único erro de página aceito é o que a linha de propósito provocou.
+  expect(errors.filter((message) => !message.includes('toFixed is not a function'))).toEqual([])
 })

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
-import { fakeUseStore, resetFakeIdb } from '../../testing/fakeIdbStore'
+import { failNextFakeIdbWrite, fakeUseStore, resetFakeIdb } from '../../testing/fakeIdbStore'
 
 // Proposta aprovada em 21/11/2026: o Histórico do projeto do Pro. Banco de mentira por Map (o
 // IndexedDB não existe no happy-dom), num processo próprio (`proProjectHistory.test.ts`).
@@ -161,5 +161,73 @@ describe('apagar o projeto leva o histórico junto', () => {
     expect(historyKeys()).toHaveLength(3)
     await deleteProject(ID, scope, { notifyCloudMirror: false })
     expect(historyKeys()).toEqual([])
+  })
+})
+
+// Revisão do lote 7 (21/11/2026).
+describe('o histórico depois da revisão', () => {
+  it('uma falha ao gravar chega ao chamador e não vira rejeição sem dono', async () => {
+    const soltas: unknown[] = []
+    const ouvir = (reason: unknown) => soltas.push(reason)
+    process.on('unhandledRejection', ouvir)
+    try {
+      failNextFakeIdbWrite(new Error('cota cheia'))
+      await expect(
+        history.recordProHistoryVersion(scope, 'pro-cota', tree({ 'a.ts': '1' }), 'operation'),
+      ).rejects.toThrow('cota cheia')
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      expect(soltas).toEqual([])
+    } finally {
+      process.off('unhandledRejection', ouvir)
+    }
+  })
+
+  it('um índice de formato desconhecido não é regravado, e entradas corrompidas ficam de fora', async () => {
+    const kv = kvOf({ name: 'historico' })
+    const futuro = { version: 2, versions: [], sizes: {}, novo: true }
+    kv.set(history.proHistoryIndexKey('pro-formato'), futuro)
+    expect(
+      await history.recordProHistoryVersion(
+        scope,
+        'pro-formato',
+        tree({ 'a.ts': '1' }),
+        'operation',
+      ),
+    ).toBeNull()
+    expect(kv.get(history.proHistoryIndexKey('pro-formato'))).toEqual(futuro)
+    kv.set(history.proHistoryIndexKey('pro-formato'), {
+      version: 1,
+      versions: [{ id: 'quebrada', createdAt: 1 }],
+      sizes: {},
+    })
+    expect(await history.listProHistory(scope, 'pro-formato')).toEqual([])
+    expect(
+      await history.recordProHistoryVersion(
+        scope,
+        'pro-formato',
+        tree({ 'a.ts': '1' }),
+        'operation',
+      ),
+    ).not.toBeNull()
+  })
+
+  it('a volta guarda a data da versão de destino, não um texto com "hoje"', async () => {
+    const saved = await history.recordProHistoryVersion(
+      scope,
+      'pro-volta',
+      tree({ 'a.ts': '1' }),
+      'restore',
+      { restoredFrom: 12_345 },
+    )
+    expect(saved?.restoredFrom).toBe(12_345)
+  })
+
+  it('depois de apagar, uma gravação atrasada não recria o histórico', async () => {
+    const other = 'pro-apagado'
+    await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '1' }), 'operation')
+    await history.quiesceProHistory(scope, other)
+    expect(
+      await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '2' }), 'operation'),
+    ).toBeNull()
   })
 })

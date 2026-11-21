@@ -38,6 +38,7 @@ export function ProEditorStrip({
   onQuickOpen,
   onCloseOthers,
   onReveal,
+  onHistory,
 }: {
   ctx: MonacoHeaderContext
   subject: ProStageSubject
@@ -52,6 +53,8 @@ export function ProEditorStrip({
   onCloseOthers: () => void
   /** Abre o painel Arquivos com o arquivo de agora à vista e em foco. */
   onReveal: () => void
+  /** Abre o Histórico do projeto (proposta aprovada em 21/11/2026: menu Mais e Todas as ações). */
+  onHistory?: () => void
 }): JSX.Element {
   const t = useT()
   const fontSize = useSettingsStore((s) => (s.codeFontSizeChosen ? s.codeFontSize : 16))
@@ -141,6 +144,9 @@ export function ProEditorStrip({
     {
       id: 'all',
       items: [
+        ...(onHistory
+          ? [{ id: 'history', label: t('pro.recoverCommand'), onSelect: onHistory }]
+          : []),
         {
           id: 'commands',
           label: `${t('pro.commands')}…`,

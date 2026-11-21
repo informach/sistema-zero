@@ -149,7 +149,7 @@ export function useProOperations(
      * mesmo caminho das operações: o ponto comum guarda a versão de agora antes, a volta fica no
      * registro e pode ser recuperada, e o editor, a análise e a prévia acompanham.
      */
-    restoreVersion: (tree: ProjectTree, summary: string) =>
+    restoreVersion: (tree: ProjectTree, summary: string, restoredFrom: number) =>
       run(async () => {
         const project = store.getState().project
         if (!project || project.id !== projectId || project.kind !== 'pro')
@@ -169,7 +169,11 @@ export function useProOperations(
         const receipt = await applyProEditorChange(
           store,
           projectId!,
-          { operationId: `editor:${crypto.randomUUID()}`, change },
+          {
+            operationId: `editor:${crypto.randomUUID()}`,
+            change,
+            history: { trigger: 'restore', restoredFrom },
+          },
           (next) => {
             language.current?.synchronizeDocument(next, {})
             onPublish.current(next, {})

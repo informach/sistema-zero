@@ -51,10 +51,14 @@ async function distDigest(root: string) {
     }
   }
   await walk(join(root, 'dist'))
-  files.sort()
+  // Ordena DEPOIS de normalizar a barra: com a barra de cada sistema, Linux e Windows ordenariam
+  // diferente (revisão do lote 7).
+  const entries = files
+    .map((file) => ({ file, path: relative(root, file).replaceAll('\\', '/') }))
+    .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
   const hash = createHash('sha256')
-  for (const file of files) {
-    hash.update(relative(root, file).replaceAll('\\', '/'))
+  for (const { file, path } of entries) {
+    hash.update(path)
     hash.update(await readFile(file))
   }
   return { files: files.length, sha256: hash.digest('hex') }

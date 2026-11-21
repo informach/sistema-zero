@@ -48,7 +48,7 @@ export function zappyObservationRule(tabs: 'investigate-and-performance' | 'perf
     'Nunca invente valores, medidas ou números que não estejam nesses campos. O campo "abasLigadas" diz quais abas a criança ligou: aba ligada cujo campo não veio ainda não tem leitura (o jogo não está rodando, acabou de começar ou a medida não vale para este programa), então peça para rodar o jogo e perguntar de novo.'
   if (tabs === 'performance')
     return `${performance} ${missing} Só peça para ligar a aba Desempenho quando ela não estiver ligada.`
-  return `O campo "oQueOJogoMostra", quando existe, traz os valores que a aba Investigar mostra AGORA, do jeito que a criança vê (nome e valor), e "parouComErro" os valores do momento em que o jogo parou com erro. Use esses valores para explicar o que está acontecendo na execução. ${performance} ${missing} Só peça para ligar a aba Investigar ou Desempenho quando ela não estiver ligada.`
+  return `O campo "oQueOJogoMostra", quando existe, traz os valores que a aba Investigar mostra AGORA, do jeito que a criança vê (nome e valor), e "parouComErro" os valores do momento em que o jogo parou com erro (com "iguaisAosDeAgora", eram os mesmos de agora). Use esses valores para explicar o que está acontecendo na execução. ${performance} ${missing} Só peça para ligar a aba Investigar ou Desempenho quando ela não estiver ligada.`
 }
 
 /**
@@ -79,7 +79,7 @@ export interface ZappyObservedRuntime {
     quadro: number | null
     pausado: boolean
     valores: ObservedValues
-    parouComErro?: { quadro: number | null; valores: ObservedValues }
+    parouComErro?: { quadro: number | null; valores: ObservedValues; iguaisAosDeAgora?: true }
   }
   desempenhoMedido?: {
     segundos: number
@@ -126,8 +126,11 @@ export function zappyObservedRuntime(context: {
         ? {
             parouComErro: {
               quadro: investigation.stopped.frame,
-              // Os mesmos valores duas vezes não dizem nada a mais: vão uma vez só.
-              valores: stopped && !sameValues(stopped, now) ? stopped : [],
+              // Os mesmos valores duas vezes não dizem nada a mais: vão uma vez só, com a marca de
+              // que são iguais (uma lista vazia sozinha pareceria "não havia valores no erro").
+              ...(stopped && sameValues(stopped, now)
+                ? { valores: [], iguaisAosDeAgora: true as const }
+                : { valores: stopped ?? [] }),
             },
           }
         : {}),

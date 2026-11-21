@@ -312,7 +312,8 @@ export function ProCodeTools({
           {
             id: 'organizeImports',
             label: t('pro.organizeImports'),
-            enabled: Boolean(path) && author && !busy,
+            // Só arquivos de código JavaScript e TypeScript têm importações para organizar.
+            enabled: /\.[cm]?[jt]sx?$/.test(path ?? '') && author && !busy,
             run: organizeImports,
           } satisfies ProCommand,
         ]

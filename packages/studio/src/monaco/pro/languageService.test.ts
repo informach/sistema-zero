@@ -241,6 +241,24 @@ describe('organizar as importações', () => {
     }
   })
 
+  // Revisão do lote 6: fora do programa TypeScript o serviço lançava "Could not find source file".
+  it('num arquivo fora do programa (CSS, HTML, configuração), não há o que organizar', () => {
+    const service = createProLanguageService(libraries)
+    try {
+      service.update({
+        'src/main.ts': "import { a } from './a'\nexport const b = a\n",
+        'src/a.ts': 'export const a = 1\n',
+        'src/style.css': 'body { color: red }\n',
+        'index.html': '<p>oi</p>\n',
+        'tsconfig.json': '{"include":["src"]}',
+      })
+      for (const path of ['src/style.css', 'index.html', 'tsconfig.json'])
+        expect(service.organizeImports(path)).toEqual([])
+    } finally {
+      service.dispose()
+    }
+  })
+
   it('um arquivo já organizado não muda', () => {
     const service = createProLanguageService(libraries)
     const main = "import { alfa } from './alfa'\n\nexport const total = alfa\n"

@@ -21,7 +21,7 @@ import { useStudioProDependencies, useStudioProRuntime } from '../../studio/pro-
 import { withLightProBuild } from './lightProRuntime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { useProWebContainer } from './ProWebContainerProvider'
-import { isProConsoleMessage } from './proConsoleBridge'
+import { isProConsoleMessage, proPageLoadedAt } from './proConsoleBridge'
 import { useProPreviewDevtools } from './proPreviewDevtools'
 import { RemoteProPreview } from './RemoteProPreview'
 import { useProGameStorage } from './useProGameStorage'
@@ -504,6 +504,8 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
       const allowed = previewOriginRef.current
       if (!allowed || event.origin !== allowed) return
       if (event.source !== iframeRef.current?.contentWindow) return
+      const loadedAt = proPageLoadedAt(event.data, Date.now())
+      if (loadedAt !== null) return proRun.getState().markPageLoaded(loadedAt)
       if (!isProConsoleMessage(event.data)) return
       pushLog({
         source: 'sz-preview',
@@ -514,7 +516,7 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [pushLog, active])
+  }, [pushLog, active, proRun])
 
   // As ações que a Topbar chama (Rodar / Parar / Atualizar). Estáveis: só leem refs e setters.
   const actions = useMemo<ProRunActions>(

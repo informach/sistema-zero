@@ -27,9 +27,11 @@ aconteceu:
   projeto e cada arquivo guardado uma vez pela impressão SHA-256. Ficam as últimas 50 versões ou
   até 20 MB por projeto; as mais antigas saem primeiro, com os arquivos que só elas usavam. O
   histórico sai junto quando o projeto é apagado, na mesma transação.
-- **Só com armazenamento local:** sem ele (aula com persistência do host, Admin) não há "este
-  computador" e o histórico fica vazio. Só a área de trabalho do Pro registra quem guarda as
-  versões (`useProHistory`); fora dela o banco não ganha leitura nenhuma.
+- **Só no Estúdio livre e com armazenamento local:** o recurso `StudioFeatures.projectHistory` é
+  ligado por padrão e a aula o desliga (o rascunho da aula nunca é apagado, e as versões ficariam
+  para sempre). Sem armazenamento local (Admin, persistência do host) não há "este computador".
+  Só a área de trabalho do Pro registra quem guarda as versões (`useProHistory`); fora dela o banco
+  não ganha leitura nenhuma.
 - **Voltar:** a versão vira uma mudança da árvore inteira (`describeProTreeChange`) aplicada pelo
   mesmo caminho das operações: o ponto comum guarda a versão de agora antes, a volta entra no
   registro de operações (e pode ser recuperada) e o editor, a análise e a prévia acompanham. A volta
@@ -37,6 +39,23 @@ aconteceu:
   janela pede para voltar antes a uma versão mais recente.
 - **Fora das versões:** os materiais (imagens, sons, modelos); as operações com materiais seguem no
   registro, com o Recuperar.
+
+## Revisão do lote 7 (21/11/2026)
+
+- A versão de antes é guardada só quando a aplicação passou pelas recusas e vai mesmo acontecer
+  (dentro do commit do `applyRevision`), com o gatilho certo: desfazer (`undoOf`) aparece como
+  "Antes de desfazer", e a volta a uma versão como "Antes de voltar para a versão de…", com a data
+  da versão de destino guardada como número e escrita só na tela (o nome da operação no registro
+  usa data absoluta, "21/11 às 14:32", nunca "hoje").
+- Uma falha ao gravar não vira mais rejeição sem dono no console.
+- Apagar o projeto espera a gravação em voo e cerca as próximas: nada recria o histórico de um
+  projeto apagado.
+- Um índice de formato desconhecido (outra versão do Estúdio noutra aba) não é regravado, e uma
+  entrada corrompida fica de fora da leitura.
+- Trocar de projeto na mesma instância zera a lista, e o que chega de outro projeto é ignorado.
+- Limitação conhecida: o "Abrir a versão em blocos" diz "A versão em blocos foi apagada" quando a
+  cópia não está NESTE computador. Num computador novo, se o Pro for aberto direto pelo endereço
+  antes de a lista descer da nuvem, a cópia pode existir só na nuvem.
 
 ## Testes
 

@@ -34,8 +34,11 @@ integridade de todas as plataformas); o Studio guarda uma cópia gerada
 dela o recorte que as dependências do projeto alcançam (`src/export/approvedDependencyLock.ts`).
 
 - Os 14 modelos do Pro saem com a trava, e o LEIA-ME manda `npm ci`.
-- Uma biblioteca que a criança instalou e o grafo não tem (ou outro gerenciador declarado) faz a
-  exportação sair sem trava, com `npm install` e a orientação de versionar a trava gerada.
+- Uma biblioteca que a criança instalou e o grafo não tem, outro gerenciador declarado ou um campo
+  que a trava daqui não descreve (`optionalDependencies`, `peerDependencies`, `overrides`,
+  `bundleDependencies`, `workspaces`) faz a exportação sair sem trava, com `npm install` e a
+  orientação de versionar a trava gerada. Com esses campos o `npm ci` recusaria a trava (achado da
+  revisão do lote 7, conferido com `npm ci --dry-run`).
 - Antes disto, só as dependências diretas tinham versão exata; as indiretas (as do Vite) mudavam
   com o tempo, e o mesmo ZIP instalava outra coisa meses depois.
 

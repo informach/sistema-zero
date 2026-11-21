@@ -18,11 +18,22 @@ function when(timestamp: number): string {
   return `${today ? 'Hoje' : DAY.format(date)}, ${TIME.format(date)}`
 }
 
+/** "21/11 às 14:32": o que fica gravado no registro, que não pode dizer "hoje" para sempre. */
+function absolute(timestamp: number): string {
+  const date = new Date(timestamp)
+  return `${DAY.format(date)} às ${TIME.format(date)}`
+}
+
 /** O que aconteceu no momento em que a versão foi guardada. */
 function versionTitle(version: ProHistoryVersion): string {
   if (version.trigger === 'run') return 'Você rodou o jogo'
   if (version.trigger === 'zappy') return 'Antes de o Zappy mudar o código'
-  if (version.trigger === 'restore') return 'Antes de voltar a uma versão'
+  if (version.trigger === 'restore')
+    return version.restoredFrom !== undefined
+      ? `Antes de voltar para a versão de ${when(version.restoredFrom)}`
+      : 'Antes de voltar a uma versão'
+  if (version.trigger === 'undo')
+    return version.label ? `Antes de desfazer: ${version.label}` : 'Antes de desfazer uma mudança'
   return version.label ? `Antes de: ${version.label}` : 'Antes de uma mudança nos arquivos'
 }
 
@@ -93,7 +104,11 @@ export function ProOperationReview({
     setHistoryError(null)
     try {
       const then = await history.treeOf(version.id)
-      await operations.restoreVersion(then, `Voltar para a versão de ${when(version.createdAt)}`)
+      await operations.restoreVersion(
+        then,
+        `Voltar para a versão de ${absolute(version.createdAt)}`,
+        version.createdAt,
+      )
       setComparing(null)
       history.refresh()
     } catch (cause) {

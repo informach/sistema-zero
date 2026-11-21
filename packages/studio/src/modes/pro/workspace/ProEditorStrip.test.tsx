@@ -202,3 +202,48 @@ describe('a faixa única sobre o código (redesenho do Pro, 11/2026)', () => {
     ])
   })
 })
+
+// Proposta aprovada em 21/11/2026: o Histórico do projeto mora no menu Mais e em Todas as ações.
+describe('o Histórico do projeto no menu Mais', () => {
+  it('com a área de trabalho ligando, o item fica logo antes de Todas as ações', () => {
+    const onHistory = mock(() => {})
+    render(
+      <ProEditorStrip
+        ctx={{
+          files: [{ name: 'src/main.js', value: '' }],
+          active: 'src/main.js',
+          setActive: () => {},
+          temporaryFile: null,
+          canClose: () => true,
+          closeFile: () => {},
+          pinFile: () => {},
+          format: () => {},
+          formatBusy: false,
+          canFormat: true,
+          compact: false,
+        }}
+        subject="game"
+        layout="split"
+        tools={{
+          openSymbols: () => {},
+          openCommands: () => {},
+          findReferences: () => {},
+          rename: () => {},
+        }}
+        editor={{ current: null }}
+        showWhitespace={false}
+        onToggleWhitespace={() => {}}
+        onShowStage={() => {}}
+        onQuickOpen={() => {}}
+        onCloseOthers={() => {}}
+        onReveal={() => {}}
+        onHistory={onHistory}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mais' }))
+    const names = screen.getAllByRole('menuitem').map((item) => item.textContent)
+    expect(names.slice(-2)).toEqual(['Histórico do projeto', 'Todas as ações…Ctrl+Shift+P'])
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Histórico do projeto' }))
+    expect(onHistory).toHaveBeenCalledTimes(1)
+  })
+})

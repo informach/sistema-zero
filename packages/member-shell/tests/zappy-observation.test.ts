@@ -15,7 +15,11 @@ describe('a observação das abas no pedido ao Zappy', () => {
       investigation: { frame: 40, paused: false, values, stopped: { frame: 40, values } },
     })
     expect(result.oQueOJogoMostra?.valores).toHaveLength(2)
-    expect(result.oQueOJogoMostra?.parouComErro).toEqual({ quadro: 40, valores: [] })
+    expect(result.oQueOJogoMostra?.parouComErro).toEqual({
+      quadro: 40,
+      valores: [],
+      iguaisAosDeAgora: true,
+    })
   })
 
   test('valores do erro diferentes dos de agora continuam', () => {

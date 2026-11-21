@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ProjectTree } from '../../../core/proProject'
-import { setProHistoryRecorder } from '../../../state/proHistoryRecorder'
+import { type ProHistoryRecorder, setProHistoryRecorder } from '../../../state/proHistoryRecorder'
 import { projectPersistence } from '../../../state/projectOperations'
 import { useProjectStoreApi } from '../../../state/projectStore'
 import type { ProHistoryTrigger, ProHistoryVersion } from '../../../state/proProjectHistory'
 import { useProRunApi } from '../../../state/proRun'
+import { useStudioConfig } from '../../../studio/config'
 
 /**
  * O Histórico do projeto na área de trabalho do Pro (proposta aprovada em 21/11/2026): registra
@@ -12,13 +13,23 @@ import { useProRunApi } from '../../../state/proRun'
  * com arquivos e de cada mudança do Zappy), guarda uma versão quando o jogo passa a rodar e lista
  * as versões. O módulo do histórico entra sob demanda. Guardar nunca atrapalha o que a criança
  * está fazendo: uma falha só deixa de guardar aquela versão.
+ *
+ * Só com o recurso ligado (`StudioFeatures.projectHistory`: o Estúdio livre liga, a aula não) e com
+ * armazenamento local. Trocar de projeto zera a lista, e o que chega de outro projeto (uma leitura
+ * atrasada, uma aplicação de outro id) é ignorado (revisão do lote 7).
  */
 export function useProHistory(projectId: string | undefined) {
   const store = useProjectStoreApi()
   const proRun = useProRunApi()
+  const enabled = useStudioConfig().projectHistory
   const [versions, setVersions] = useState<ProHistoryVersion[]>([])
+  const current = useRef(projectId)
+  current.current = projectId
   const epoch = useRef(0)
-  const scopeOf = useCallback(() => projectPersistence(store)?.localScope, [store])
+  const scopeOf = useCallback(
+    () => (enabled ? projectPersistence(store)?.localScope : undefined),
+    [store, enabled],
+  )
   const refresh = useCallback(() => {
     const scope = scopeOf()
     if (!scope || !projectId) return
@@ -26,17 +37,21 @@ export function useProHistory(projectId: string | undefined) {
     void import('../../../state/proProjectHistory')
       .then(({ listProHistory }) => listProHistory(scope, projectId))
       .then((list) => {
-        if (mine === epoch.current) setVersions(list)
+        if (mine === epoch.current && current.current === projectId) setVersions(list)
       })
       .catch(() => undefined)
   }, [scopeOf, projectId])
   const record = useCallback(
-    (tree: ProjectTree, trigger: ProHistoryTrigger, label?: string) => {
+    (
+      tree: ProjectTree,
+      trigger: ProHistoryTrigger,
+      options: { label?: string; restoredFrom?: number } = {},
+    ) => {
       const scope = scopeOf()
       if (!scope || !projectId) return
       void import('../../../state/proProjectHistory')
         .then(({ recordProHistoryVersion }) =>
-          recordProHistoryVersion(scope, projectId, tree, trigger, { label }),
+          recordProHistoryVersion(scope, projectId, tree, trigger, options),
         )
         .then((saved) => {
           if (saved) refresh()
@@ -45,15 +60,28 @@ export function useProHistory(projectId: string | undefined) {
     },
     [scopeOf, projectId, refresh],
   )
+  // Trocar de projeto (ou desligar o recurso) começa com a lista vazia.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o id e o recurso são os GATILHOS.
   useEffect(() => {
-    if (!projectId) return
-    setProHistoryRecorder(store, record)
+    setVersions([])
+  }, [projectId, enabled])
+  useEffect(() => {
+    if (!projectId || !enabled) return
+    const recorder: ProHistoryRecorder = (tree, trigger, info) => {
+      // Uma aplicação de outro projeto (troca no meio) não entra no histórico deste.
+      if (info.projectId !== projectId) return
+      record(tree, trigger, {
+        ...(info.label ? { label: info.label } : {}),
+        ...(info.restoredFrom !== undefined ? { restoredFrom: info.restoredFrom } : {}),
+      })
+    }
+    setProHistoryRecorder(store, recorder)
     return () => setProHistoryRecorder(store, null)
-  }, [store, projectId, record])
+  }, [store, projectId, enabled, record])
   // Ao Rodar: a árvore do momento em que o jogo passa a rodar (o histórico limita a uma versão de
   // Rodar a cada 2 minutos e não guarda o que não mudou).
   useEffect(() => {
-    if (!projectId) return
+    if (!projectId || !enabled) return
     let previous = proRun.getState().state?.phase ?? null
     return proRun.subscribe((state) => {
       const phase = state.state?.phase ?? null
@@ -69,7 +97,7 @@ export function useProHistory(projectId: string | undefined) {
       }
       previous = phase
     })
-  }, [proRun, store, projectId, record])
+  }, [proRun, store, projectId, enabled, record])
   useEffect(() => {
     refresh()
     return () => {

@@ -108,7 +108,12 @@ export function ProWorkspace({
     const session = proSessionRef.current
     if (!editor || !model || !session || !('query' in session)) return
     const version = model.getVersionId()
-    const edits = await session.query('organizeImports', model)
+    const edits = await session.query('organizeImports', model).catch(() => null)
+    if (!edits) {
+      // A análise caiu no meio: a criança vê o aviso, e nada muda no código (revisão do lote 6).
+      setEditError('Não consegui organizar as importações agora. Tente de novo daqui a pouco.')
+      return
+    }
     if (!edits.length || model.isDisposed() || editor.getModel() !== model) return
     // A criança digitou enquanto o serviço calculava: as posições já não valem.
     if (model.getVersionId() !== version) return
@@ -396,7 +401,8 @@ export function ProWorkspace({
         search={() => setQuickOpen({ query: '' })}
         searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
-        organizeImports={() => void organizeImports()}
+        // Só no JavaScript e no TypeScript: o Python Pro não tem o serviço que organiza.
+        organizeImports={python ? undefined : () => void organizeImports()}
         onToolsReady={setTools}
         mapContainer={mapSlot}
         path={activeFile}
@@ -496,6 +502,7 @@ export function ProWorkspace({
                   // celular, abre a aba do jogo.
                   onShowStage={() => proRun.getState().revealStage?.()}
                   onReveal={revealActiveFile}
+                  onHistory={() => operations.setHistoryOpen(true)}
                   onQuickOpen={() => setQuickOpen({ query: '' })}
                   onCloseOthers={() =>
                     changeWorkspace((previous) =>

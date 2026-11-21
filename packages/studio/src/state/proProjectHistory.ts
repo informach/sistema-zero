@@ -24,13 +24,15 @@ export const PRO_HISTORY_MAX_VERSIONS = 50
 export const PRO_HISTORY_MAX_BYTES = 20 * 1024 * 1024
 export const PRO_HISTORY_RUN_INTERVAL_MS = 2 * 60 * 1000
 
-export type ProHistoryTrigger = 'run' | 'zappy' | 'operation' | 'restore'
+export type ProHistoryTrigger = 'run' | 'zappy' | 'operation' | 'undo' | 'restore'
 
 export interface ProHistoryVersion {
   id: string
   trigger: ProHistoryTrigger
-  /** O nome da operação ("Arquivo renomeado") ou a hora da versão para a qual se voltou. */
+  /** O nome da operação ("Arquivo renomeado") ou do que foi desfeito. */
   label?: string
+  /** Ao voltar para uma versão: quando aquela versão foi guardada (a data é escrita só na tela). */
+  restoredFrom?: number
   createdAt: number
   /** Caminho → impressão do conteúdo. */
   files: Record<string, string>
@@ -54,24 +56,76 @@ export const proHistoryFileKey = (projectId: string, digest: string) =>
 
 const DIGEST = /^[a-f0-9]{64}$/
 
-function readIndex(value: unknown): ProHistoryIndex {
+const isVersion = (value: unknown): value is ProHistoryVersion => {
+  if (!value || typeof value !== 'object') return false
+  const entry = value as Partial<ProHistoryVersion>
+  return (
+    typeof entry.id === 'string' &&
+    typeof entry.createdAt === 'number' &&
+    typeof entry.trigger === 'string' &&
+    !!entry.files &&
+    typeof entry.files === 'object' &&
+    Object.values(entry.files).every(
+      (digest) => typeof digest === 'string' && DIGEST.test(digest),
+    ) &&
+    Array.isArray(entry.directories) &&
+    typeof entry.changedFiles === 'number'
+  )
+}
+
+/**
+ * O índice guardado. `known: false` = de um formato que este código não conhece (uma aba de outra
+ * versão do Estúdio): ninguém grava por cima, para não perder as versões nem deixar arquivos sem
+ * dono. Entradas corrompidas ficam de fora da leitura (revisão do lote 7).
+ */
+function readIndex(value: unknown): { index: ProHistoryIndex; known: boolean } {
   const empty: ProHistoryIndex = { version: 1, versions: [], sizes: {} }
-  if (!value || typeof value !== 'object') return empty
+  if (value === undefined || value === null) return { index: empty, known: true }
+  if (typeof value !== 'object') return { index: empty, known: false }
   const raw = value as Partial<ProHistoryIndex>
-  if (raw.version !== 1 || !Array.isArray(raw.versions) || !raw.sizes) return empty
-  return { version: 1, versions: raw.versions, sizes: raw.sizes }
+  if (
+    raw.version !== 1 ||
+    !Array.isArray(raw.versions) ||
+    !raw.sizes ||
+    typeof raw.sizes !== 'object'
+  )
+    return { index: empty, known: false }
+  const sizes = Object.fromEntries(
+    Object.entries(raw.sizes).filter(
+      ([digest, size]) => DIGEST.test(digest) && typeof size === 'number' && size >= 0,
+    ),
+  )
+  return { index: { version: 1, versions: raw.versions.filter(isVersion), sizes }, known: true }
 }
 
 /** Uma gravação por projeto de cada vez: ler, decidir e gravar o índice não pode intercalar. */
 const queues = new Map<string, Promise<unknown>>()
+/** Projetos apagados nesta página: uma gravação que chegar depois não recria o histórico. */
+const deleted = new Set<string>()
+const queueKey = (scope: ProjectStorageScope, projectId: string) =>
+  `${scope.identity}\u0000${projectId}`
 function serialized<T>(scope: ProjectStorageScope, projectId: string, task: () => Promise<T>) {
-  const key = `${scope.identity}\u0000${projectId}`
+  const key = queueKey(scope, projectId)
   const run = (queues.get(key) ?? Promise.resolve()).catch(() => undefined).then(task)
   queues.set(key, run)
-  void run.finally(() => {
+  // Os dois caminhos limpam: um `finally` solto deixava a rejeição sem dono ("Uncaught (in
+  // promise)") a cada falha ao gravar, mesmo com o chamador tratando (revisão do lote 7).
+  const cleanup = () => {
     if (queues.get(key) === run) queues.delete(key)
-  })
+  }
+  run.then(cleanup, cleanup)
   return run
+}
+
+/**
+ * Antes de apagar o projeto: nenhuma gravação nova do histórico começa, e a que está em voo
+ * termina antes de as chaves serem lidas para o apagar. Sem isso, uma versão gravada logo antes de
+ * sair do editor podia terminar depois e deixar arquivos sem dono (revisão do lote 7).
+ */
+export async function quiesceProHistory(scope: ProjectStorageScope, projectId: string) {
+  const key = queueKey(scope, projectId)
+  deleted.add(key)
+  await queues.get(key)?.catch(() => undefined)
 }
 
 /** As versões do projeto, da mais nova para a mais antiga. */
@@ -79,7 +133,7 @@ export async function listProHistory(
   scope: ProjectStorageScope,
   projectId: string,
 ): Promise<ProHistoryVersion[]> {
-  const index = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
+  const { index } = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
   return [...index.versions].reverse()
 }
 
@@ -94,11 +148,14 @@ export function recordProHistoryVersion(
   projectId: string,
   tree: ProjectTree,
   trigger: ProHistoryTrigger,
-  options: { label?: string; now?: number } = {},
+  options: { label?: string; restoredFrom?: number; now?: number } = {},
 ): Promise<ProHistoryVersion | null> {
   return serialized(scope, projectId, async () => {
+    if (deleted.has(queueKey(scope, projectId))) return null
     const now = options.now ?? Date.now()
-    const index = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
+    const read = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
+    if (!read.known) return null
+    const index = read.index
     const last = index.versions.at(-1)
     if (
       trigger === 'run' &&
@@ -127,6 +184,7 @@ export function recordProHistoryVersion(
       id: crypto.randomUUID(),
       trigger,
       ...(options.label ? { label: options.label.slice(0, 200) } : {}),
+      ...(options.restoredFrom !== undefined ? { restoredFrom: options.restoredFrom } : {}),
       createdAt: now,
       files,
       directories,
@@ -170,7 +228,7 @@ export async function readProHistoryTree(
   projectId: string,
   versionId: string,
 ): Promise<ProjectTree> {
-  const index = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
+  const { index } = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
   const version = index.versions.find((entry) => entry.id === versionId)
   if (!version) throw new Error('Esta versão não está mais guardada neste computador.')
   const paths = Object.keys(version.files)
@@ -194,7 +252,7 @@ export async function proHistoryStorageKeys(
   scope: ProjectStorageScope,
   projectId: string,
 ): Promise<string[]> {
-  const index = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
+  const { index } = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
   return [
     proHistoryIndexKey(projectId),
     ...Object.keys(index.sizes)

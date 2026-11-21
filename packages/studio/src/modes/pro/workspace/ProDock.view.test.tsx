@@ -209,6 +209,29 @@ describe('Investigar e Desempenho no Pro (proposta aprovada em 20/11/2026)', () 
     expect(navigate).toHaveBeenCalledWith('src/main.ts', 1, 7)
   })
 
+  // Achado no ensaio do Pro com dependência (21/11/2026): depois de o Vite recarregar o jogo
+  // consertado, a aba seguia dizendo "O jogo parou com um problema" com o erro da página anterior.
+  it('o erro de execução de uma página anterior não conta depois que a página do jogo recomeça', () => {
+    const { stores } = mount({ diagnostics: [] })
+    const erro = (timestamp: number, text: string) =>
+      stores.logs.getState().push({
+        source: 'sz-preview',
+        kind: 'runtimeError',
+        parts: [text],
+        error: { message: text },
+        timestamp,
+      })
+    act(() => erro(1_000, 'TypeError: nanoid is not a function'))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
+    act(() => stores.proRun.getState().markPageLoaded(2_000))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).not.toMatch(/\d/)
+    act(() => erro(3_000, 'TypeError: outra coisa'))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
+    // Um aviso de começo mais antigo que o último não volta a mostrar o erro velho.
+    act(() => stores.proRun.getState().markPageLoaded(500))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
+  })
+
   it('Desempenho: a medida liga pela aba e para quando a gaveta fecha', async () => {
     const { stores, selected } = mount()
     fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))

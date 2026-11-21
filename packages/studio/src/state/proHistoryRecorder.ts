@@ -11,7 +11,7 @@ import type { ProHistoryTrigger } from './proProjectHistory'
 export type ProHistoryRecorder = (
   tree: ProjectTree,
   trigger: ProHistoryTrigger,
-  label?: string,
+  info: { projectId: string; label?: string; restoredFrom?: number },
 ) => void
 
 const recorders = new WeakMap<object, ProHistoryRecorder>()

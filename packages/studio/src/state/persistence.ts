@@ -488,10 +488,13 @@ export async function deleteProject(
     const backupKeys = await localProjectBackupKeys(id, scope)
     // O Histórico do projeto do Pro (proposta aprovada em 21/11/2026) sai junto, na mesma transação.
     // Só um projeto Pro tem histórico: os outros não pagam a leitura do índice.
-    const historyKeys =
-      isRecord(meta) && meta.kind === 'pro'
-        ? await (await import('./proProjectHistory')).proHistoryStorageKeys(scope, id)
-        : []
+    // A gravação em voo termina e nenhuma nova começa antes de as chaves serem lidas.
+    let historyKeys: string[] = []
+    if (isRecord(meta) && meta.kind === 'pro') {
+      const history = await import('./proProjectHistory')
+      await history.quiesceProHistory(scope, id)
+      historyKeys = await history.proHistoryStorageKeys(scope, id)
+    }
     const done = conditionalWrite(
       scope.store,
       scope.identity,
