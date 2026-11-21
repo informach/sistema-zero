@@ -99,6 +99,14 @@ pendentes. O formato ativo continua em 7; não há oficina expansível publicada
 
 ## 3. Oficina e consumidores
 
+Em 21/11, o mesmo pincel e balde de terrenos passaram a consumir o leitor e o
+escritor comuns, com origem assinada, recusa atômica e orçamento de trabalho.
+Passaram 36 casos focados, 2.343 da suíte completa, três controles nativos e seis
+ensaios de navegador da oficina densa, além dos tipos. A revisão atualizou a lista
+de acesso cru e tornou explícito o motivo de recusa na coleta. Ver
+`qa/terrenos-por-regioes-2026-11-21/`, no diretório da missão. A oficina expansível,
+os demais consumidores, protocolo 3 e novos contratos continuam pendentes.
+
 Seleção, recorte, colagem e carimbos existentes passaram a usar leitura por
 origem e escrita heterogênea comum, com recusa atômica de dados inválidos e
 orçamento de 65.536 células por gesto. O caso de coluna fora da grade que

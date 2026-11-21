@@ -14,6 +14,14 @@ para anunciar suporte de oficina antes de completar seus consumidores.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
 Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
 
+**Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
+e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
+variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.
+`collectTerrainRegion` distingue recusa de região vazia; `terrainRegion` conserva
+a API de array. Formato 8 público, protocolo 3 e mensagens da oficina expansível
+continuam condicionados aos demais consumidores. Provas e limites em
+`qa/terrenos-por-regioes-2026-11-21/`, no diretório da missão.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
