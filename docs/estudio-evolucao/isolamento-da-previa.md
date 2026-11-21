@@ -272,3 +272,27 @@ passo e espera o iframe preso, então com `--trace` os passos ficam lentos enqua
 hostil roda (o trabalho síncrono de 30 s foi de 18 s para 37 s de teste). Medido sem o trace, o
 editor fica responsivo o tempo todo: `evaluate` de 1 a 3 ms e nenhum atraso de relógio acima de
 120 ms. Antes, as trocas indevidas matavam o iframe e escondiam isso.
+
+### Liberação de recursos, medida do lado do jogo (lote 2, 21/11/2026)
+
+`e2e/preview-resource-release.spec.ts` (Chromium completo, a prévia em outro processo), um jogo de
+cada família: Jogo 2D (Mini plataforma), Jogo 3D (Cubo girando) e Jogo 3D Avançado (Defesa da
+Torre Profissional). Local, Windows, com placa de vídeo; evidência em
+`evidencias/liberacao-de-recursos-2026-11-21/windows-local.json`:
+
+| Jogo | CPU em 2 s rodando (renderização / GPU) | CPU em 2 s depois do Parar | Processos de renderização após 1 e 10 ciclos | Memória do jogo no 1º e no 10º Rodar |
+|---|---|---|---|---|
+| Mini plataforma | 214 / 368 ms | 30 / 6 ms | 4 e 4 | 2,0 e 3,4 MB |
+| Cubo girando | 225 / 355 ms | 29 / 3 ms | 4 e 4 | 3,9 e 3,8 MB |
+| Defesa da Torre Profissional | 246 / 479 ms | 39 / 6 ms | 4 e 4 | 4,6 e 4,7 MB |
+
+O que sobra de CPU de renderização com o jogo parado é a página do editor. O teste exige a queda a
+menos de um quarto (com piso para esse ruído), nenhum processo acumulado e a memória do jogo do
+10º Rodar abaixo de 1,5 vez a do 1º.
+
+**Observação do editor, fora do jogo:** o serviço de áudio do Chromium segue gastando ~14 ms por
+segundo com o jogo parado. É do próprio Blockly: cada área de blocos cria um `AudioContext` (três
+no editor aberto, todos `running` no Playwright, que libera áudio sem gesto). No Chrome de verdade
+um contexto criado antes de um gesto nasce suspenso; depois do primeiro som do Blockly ele fica
+ligado enquanto o editor estiver aberto. Não é recurso do jogo; fica registrado para o relatório de
+eficiência do editor (lote 8).

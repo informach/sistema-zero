@@ -1,0 +1,62 @@
+{
+  "commit": null,
+  "measuredAt": "2026-11-21T13:56:26.181Z",
+  "browser": "159.0.8154.6",
+  "note": "CPU sem o processo do navegador e sem o serviço de áudio (o Blockly do editor mantém AudioContext próprios).",
+  "rows": [
+    {
+      "engine": "Jogo 2D",
+      "game": "Mini plataforma",
+      "cpuTwoSecondsRunning": {
+        "renderersMs": 214,
+        "gpuMs": 368
+      },
+      "cpuTwoSecondsStopped": {
+        "renderersMs": 30,
+        "gpuMs": 6
+      },
+      "renderersAfterFirstStop": 4,
+      "renderersAfterTenCycles": 4,
+      "gameHeapMb": {
+        "firstRun": 2,
+        "tenthRun": 3.4
+      }
+    },
+    {
+      "engine": "Jogo 3D",
+      "game": "Cubo girando",
+      "cpuTwoSecondsRunning": {
+        "renderersMs": 225,
+        "gpuMs": 355
+      },
+      "cpuTwoSecondsStopped": {
+        "renderersMs": 29,
+        "gpuMs": 3
+      },
+      "renderersAfterFirstStop": 4,
+      "renderersAfterTenCycles": 4,
+      "gameHeapMb": {
+        "firstRun": 3.9,
+        "tenthRun": 3.8
+      }
+    },
+    {
+      "engine": "Jogo 3D Avançado",
+      "game": "Defesa da Torre Profissional",
+      "cpuTwoSecondsRunning": {
+        "renderersMs": 246,
+        "gpuMs": 479
+      },
+      "cpuTwoSecondsStopped": {
+        "renderersMs": 39,
+        "gpuMs": 6
+      },
+      "renderersAfterFirstStop": 4,
+      "renderersAfterTenCycles": 4,
+      "gameHeapMb": {
+        "firstRun": 4.6,
+        "tenthRun": 4.7
+      }
+    }
+  ]
+}
