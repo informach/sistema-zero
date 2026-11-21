@@ -24,6 +24,7 @@ import {
   tilemapTilesetIds,
 } from '../core/project'
 import { cellTile } from './cell'
+import { readDenseTileCell } from './mapCells'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
 export type TileLayerFilter = (layer: TilemapTileLayer) => boolean
@@ -36,8 +37,8 @@ export function tileLayerById(tilemap: TilemapAsset, layerId: string): TilemapTi
 
 export function cellAt(tilemap: TilemapAsset, layerId: string, col: number, row: number): number {
   const layer = tileLayerById(tilemap, layerId)
-  if (!layer || col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) return -1
-  return layer.cells[row * tilemap.cols + col] ?? -1
+  if (!layer) return -1
+  return readDenseTileCell(layer.cells, tilemap.cols, tilemap.rows, col, row)
 }
 
 /** Troca UMA camada (qualquer tipo). Mesmo asset quando o `update` não muda nada. */

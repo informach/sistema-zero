@@ -45,6 +45,16 @@ recusa/histórico passaram. Tipos Pinta/Core e suíte Core passaram. Evidências
 em `qa/regioes-autorais-operacoes-2026-11-20/`. A união no documento, schema 8,
 consumidores e protocolo físico 3 ainda não foram ativados nem declarados prontos.
 
+A base recebeu os leitores 24226 e 13e, preservando os seis arquivos próprios do
+contrato/acessores; passaram 3.205 testes do Core e os tipos de Core/Pinta.
+O leitor comum `tiles/mapCells.ts` acrescenta consultas com origem, recorte ocupado
+e orçamento, com o acesso pontual existente integrado. Uma reprodução mostrou
+coordenadas fracionárias consultando outra célula; o acesso agora as recusa.
+Passaram 2.288 casos da suíte do Pinta, os três controles nativos ignorados nela,
+tipos/lint e doze ensaios locais Pinta → Estúdio sem skip ou flaky. Evidências em
+`qa/leitor-comum-de-celulas-2026-11-21/`. Isso não conclui o item 2: a união no
+documento, os demais consumidores e a persistência continuam pendentes.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles
