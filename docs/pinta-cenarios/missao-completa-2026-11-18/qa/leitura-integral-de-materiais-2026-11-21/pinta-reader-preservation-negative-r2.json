@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-21T06:29:14.414Z",
+  "sourceFile": "packages/studio/src/state/projectStorageRead.ts",
+  "originalSha256": "526708052d52a4379210e75ff933561bfe8434396b1c1017b0f9375f81211d92",
+  "restoredExactly": true,
+  "negativeExit": 1,
+  "negativeCasesFail": true,
+  "timeout": null
+}

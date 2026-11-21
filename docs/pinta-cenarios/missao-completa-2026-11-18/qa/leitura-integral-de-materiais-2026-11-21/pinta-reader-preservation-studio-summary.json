@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-21T06:29:49.821Z",
+  "officialRunner": "bun --no-env-file run test in packages/studio",
+  "pass": 12179,
+  "fail": 0,
+  "skip": 4,
+  "skipCases": [
+    "(skip) o executor roda o jogo e confere > jogo de código: variável, tecla, texto, console e função",
+    "(skip) o executor roda o jogo e confere > regra em JavaScript: lê o jogo depois dos passos, sob a CSP da prévia",
+    "(skip) o executor roda o jogo e confere > o jogo que troca eval, then e innerText não forja o resultado (review da etapa 4)",
+    "(skip) o executor roda o jogo e confere > jogo de blocos do Jogo 2D: o herói anda com a seta e fica parado sem ela"
+  ],
+  "counts": "top-level Bun batch summaries; isolated child case summaries are not double-counted"
+}

@@ -1,0 +1,8 @@
+{
+  "rawBytes": 1829264,
+  "rawSha256": "0f0ff3e365c6ca1b989a0a04162289575bb87547d72356965afdce0fccd053a1",
+  "compressedBytes": 318220,
+  "compressedSha256": "f81645da118250c2f2670bbadf5a04ba0796823629151f540f8ffae75fbb5317",
+  "roundTripBytesVerified": true,
+  "compressedFile": "full-studio.log.gz"
+}

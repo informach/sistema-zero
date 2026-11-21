@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-21T06:37:56.575Z",
+  "base": "66e3c54584e4eb4fdd1f37e144df30a1fe95eaff",
+  "file": "packages/studio/src/state/__tests__/persistence.cases.ts",
+  "sha256": "e0182615d7edbae6d7a17dc1d6b070d9becfed0b1973fa4d27b3010fba4e7cfb",
+  "productionSourceUnchanged": true,
+  "fullStudio": {
+    "pass": 12179,
+    "fail": 0,
+    "skip": 4
+  },
+  "nativeRerun": {
+    "pass": 4,
+    "fail": 0,
+    "skip": 0
+  },
+  "focusedPersistence": {
+    "wrapperPass": 1,
+    "isolatedCases": 73,
+    "fail": 0
+  },
+  "faultInjection": {
+    "negativeCases": 3,
+    "allFailWithoutGuard": true,
+    "restoredExactly": true
+  },
+  "studioTypecheckExit": 0,
+  "newWholeCiPending": true
+}

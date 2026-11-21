@@ -1724,16 +1724,27 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
       {
         id: 'jogo-p',
         assets: [
-          { id: 'a1', name: 'Nave', kind: 'image', dataUrl: 'data:image/png;base64,AAAA' },
-          { id: 'a2', name: 'Nave', kind: 'image', dataUrl: 'data:image/png;base64,BBBB' },
-          { id: 'a3', name: 'Doc', kind: 'pdf', dataUrl: 'data:application/pdf;base64,CCCC' },
+          {
+            id: 'a1',
+            name: 'nave',
+            kind: 'image',
+            dataUrl: 'data:image/png;base64,AAAA',
+            source: 'upload',
+          },
+          {
+            id: 'a2',
+            name: 'bosque',
+            kind: 'image',
+            dataUrl: 'data:image/png;base64,BBBB',
+            source: 'upload',
+          },
         ],
       },
       undefined,
     ])
     const assets = await loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' })
-    // Saneado como o resto do pacote (nome repetido e tipo desconhecido caem) e lido do DB do perfil.
-    expect(assets.map((asset) => asset.id)).toEqual(['a1'])
+    // A leitura leve conserva todos os materiais válidos e usa o DB do perfil.
+    expect(assets.map((asset) => asset.id)).toEqual(['a1', 'a2'])
     expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio-perfil-Z', 'kv')
     expect(idb.getMany).toHaveBeenCalledTimes(1)
     expect((idb.getMany.mock.calls[0] as unknown[])[0]).toEqual([
@@ -1746,6 +1757,73 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     idb.getMany.mockResolvedValueOnce([undefined, undefined])
     expect(await loadProjectAssetsSnapshotForCloud('legado', { namespace: 'perfil-Z' })).toEqual([])
   })
+
+  for (const [caseName, invalidAssets] of [
+    [
+      'nome repetido',
+      [
+        {
+          id: 'a1',
+          name: 'nave',
+          kind: 'image',
+          dataUrl: 'data:image/png;base64,AAAA',
+          source: 'upload',
+        },
+        {
+          id: 'a2',
+          name: 'nave',
+          kind: 'image',
+          dataUrl: 'data:image/png;base64,BBBB',
+          source: 'upload',
+        },
+      ],
+    ],
+    [
+      'tipo desconhecido',
+      [
+        {
+          id: 'a1',
+          name: 'nave',
+          kind: 'image',
+          dataUrl: 'data:image/png;base64,AAAA',
+          source: 'upload',
+        },
+        {
+          id: 'a3',
+          name: 'doc',
+          kind: 'pdf',
+          dataUrl: 'data:application/pdf;base64,CCCC',
+          source: 'upload',
+        },
+      ],
+    ],
+    [
+      'cena de versão mais nova',
+      [
+        {
+          id: 'a1',
+          name: 'mapa',
+          kind: 'image',
+          dataUrl: 'data:image/png;base64,AAAA',
+          source: 'upload',
+          scene: { version: 99, futureLayers: [1, 2] },
+        },
+      ],
+    ],
+  ] as const) {
+    it(`loadProjectAssetsSnapshotForCloud recusa ${caseName} sem regravar uma lista parcial`, async () => {
+      const { loadProjectAssetsSnapshotForCloud } = await import('../../projects/importSnapshot')
+      const record = { id: 'jogo-p', assets: structuredClone(invalidAssets) }
+      const before = structuredClone(record)
+      const writesBefore = fakeIdbWrites().length
+      idb.getMany.mockResolvedValueOnce([record, undefined, undefined])
+      await expect(
+        loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' }),
+      ).rejects.toMatchObject({ code: 'invalid-document' })
+      expect(record).toEqual(before)
+      expect(fakeIdbWrites()).toHaveLength(writesBefore)
+    })
+  }
 
   it('o restauro SUBSTITUI: apaga a partição de blocos quando o snapshot não traz blocos, e a capa antiga', async () => {
     const raw = {
