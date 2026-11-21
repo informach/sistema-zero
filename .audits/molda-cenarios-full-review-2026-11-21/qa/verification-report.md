@@ -80,6 +80,10 @@ compilador e colisões usados por URLs calculadas, conforme a documentação de
 A confirmação dessa hipótese fica com a próxima rodada remota. O artefato passa a incluir
 o log oculto do servidor e o ensaio registra mensagens do Vite para permitir diagnóstico.
 
+O ciclo `44947262460` apontou o fingerprint anterior à alteração recente do Pinta
+(`719fade30`). O gerador oficial atualizou apenas `validation-profile.json`; geração e
+conferência passaram em 760 ms. A construção da imagem continua exclusivamente remota.
+
 Merge local em staging, push de todos os commits dessa branch, todos os jobs obrigatórios
 verdes e `deploy-staging` concluído pelo fluxo normal. Falhas novas devem ser corrigidas e
 verificadas no GitHub; não se executam novamente testes pesados na máquina do usuário.
