@@ -139,6 +139,17 @@ function StudioProClientSession({
     if (cloud.getState().status === 'offline') return leave()
     void cloud.flush({ timeoutMs: EXIT_FLUSH_TIMEOUT_MS }).finally(leave)
   }, [cloud, boundHandoff, incorporadoNoArquipelago])
+  // "Abrir a versão em blocos" (proposta aprovada em 21/11/2026): a cópia em blocos abre no
+  // `/estudio` clássico pelo `?projeto=`, com a mesma carga completa e a mesma subida com teto da
+  // saída. Dentro do jogo do Arquipélago não há para onde ir: o item não aparece.
+  const openProject = useCallback(
+    (id: string) => {
+      const go = () => window.location.assign(`/estudio?projeto=${encodeURIComponent(id)}`)
+      if (!cloud || cloud.getState().status === 'offline') return go()
+      void cloud.flush({ timeoutMs: EXIT_FLUSH_TIMEOUT_MS }).finally(go)
+    },
+    [cloud],
+  )
   const navigateTask = useCallback(
     (path: string) => {
       if (path.startsWith('/estudio/pro/') && path.split('?')[0] === window.location.pathname)
@@ -284,6 +295,7 @@ function StudioProClientSession({
             projectId={projectId}
             theme={theme}
             onExit={onExit}
+            onOpenProject={incorporadoNoArquipelago ? undefined : openProject}
             tutor={tutor}
             share={share}
             onChange={handleActivity}

@@ -198,6 +198,13 @@ export interface StudioCommonProps {
    */
   onCloudSync?: () => void
   /**
+   * Callback OPCIONAL de abrir outro projeto (proposta aprovada em 21/11/2026): no Pro que veio
+   * de "Virar profissional", o menu ⋯ ganha "Abrir a versão em blocos", que chama este callback
+   * com o id da cópia em blocos guardada na conversão. O HOST navega. Ausente → sem item. O
+   * Studio sempre chama a versão mais recente do callback.
+   */
+  onOpenProject?: (projectId: string) => void
+  /**
    * Callback OPCIONAL "editar este desenho no Pinta": quando presente, os
    * desenhos vindos do Pinta ganham um botão de editar na aba "Imagens" (na
    * biblioteca "Meus desenhos" e nas imagens já usadas no projeto). O HOST abre o

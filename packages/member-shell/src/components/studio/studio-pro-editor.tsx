@@ -44,6 +44,8 @@ interface Props {
   theme: StudioTheme
   /** Volta para o destino definido pelo host (lista ou plano do Pensa). */
   onExit: () => void
+  /** Abre outro projeto (a versão em blocos de um Pro convertido). Ausente = sem o item. */
+  onOpenProject?: (projectId: string) => void
   /** Tutor opcional do host. Ausente em aulas e hosts que não contrataram o recurso. */
   tutor?: StudioTutorConfig
   share?: StudioEditorProps['share']
@@ -114,6 +116,7 @@ function StudioProEditorSession({
   projectId,
   theme,
   onExit,
+  onOpenProject,
   tutor,
   share,
   onChange,
@@ -354,6 +357,7 @@ function StudioProEditorSession({
           }
           allowedModes={state.project.programmingLanguage === 'python' ? ['code'] : undefined}
           onExit={onExit}
+          onOpenProject={onOpenProject}
         />
       </div>
     </div>

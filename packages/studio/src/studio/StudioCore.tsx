@@ -38,6 +38,7 @@ import { StudioExamplesVisibleProvider } from './examples-visibility'
 import { StudioI18nProvider } from './i18n'
 import { StudioMoldaLibraryProvider } from './molda-library'
 import { StudioExecutionProvider } from './observation'
+import { StudioOpenProjectProvider } from './open-project'
 import { StudioPintaLibraryProvider } from './pinta-library'
 import { useStudioPreviewShellUrl } from './preview-shell'
 import { ProBuilderDeletionReconciler } from './pro-builder-deletion'
@@ -148,6 +149,7 @@ function StudioCoreBody({
   share,
   shareDisabledReason,
   onCloudSync,
+  onOpenProject,
   onEditDrawing,
   onEditCreation,
   pintaLibrary,
@@ -182,6 +184,14 @@ function StudioCoreBody({
   // Callback "Trazer o que eu enviei" — latcha uma vez por instância (igual ao
   // share); o host fornece uma referência estável (useCallback). `null` → sem item.
   const [cloudSyncValue] = useState(() => onCloudSync ?? null)
+
+  // "Abrir a versão em blocos": a PRESENÇA é latchada (o item não pisca), mas a chamada vai sempre
+  // ao callback mais recente do host (o dele depende da nuvem, que chega depois da montagem).
+  const openProjectRef = useRef(onOpenProject)
+  openProjectRef.current = onOpenProject
+  const [openProjectValue] = useState(() =>
+    onOpenProject ? (projectId: string) => openProjectRef.current?.(projectId) : null,
+  )
 
   // "Editar o desenho no Pinta" — mesmo latch: o host passa uma referência
   // estável e a janela dos materiais decide se mostra o botão. `null` → sem botão.
@@ -638,134 +648,139 @@ function StudioCoreBody({
       >
         <StudioShareProvider value={shareValue}>
           <StudioCloudSyncProvider value={cloudSyncValue}>
-            <StudioEditDrawingProvider value={editDrawingValue}>
-              <StudioEditCreationProvider value={editCreationValue}>
-                <StudioPintaLibraryProvider value={pintaLibraryValue}>
-                  <StudioMoldaLibraryProvider value={moldaLibraryValue}>
-                    <StudioTeamLibraryProvider value={teamLibraryValue}>
-                      <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-                        <StudioExamplesVisibleProvider value={examplesVisible}>
-                          <StudioConfigProvider value={config}>
-                            <StudioThemeProvider value={effectiveTheme}>
-                              <StudioExecutionProvider
-                                value={{
-                                  editingAccess: isObserver ? 'observer' : 'author',
-                                  autoRun,
-                                  originAdapter: previewOriginAdapter,
-                                  shellUrl: previewShellUrl ?? hostPreviewShellUrl ?? undefined,
-                                  requireIsolatedPreview,
-                                  muted: projectMuted,
-                                  writerEpoch,
-                                }}
-                              >
-                                <StudioProCandidatePreviewProvider>
-                                  <div
-                                    ref={studioRootRef}
-                                    data-editing-access={isObserver ? 'observer' : 'author'}
-                                    data-sz-theme={effectiveTheme}
-                                    className={['h-full min-h-0', className]
-                                      .filter(Boolean)
-                                      .join(' ')}
-                                    // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
-                                    // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
-                                    // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
-                                    // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
-                                    // é PORTALADO pro document.body — fora da cerca, segue intacto.
-                                    style={{
-                                      fontFamily: 'var(--font-family-sans)',
-                                      isolation: 'isolate',
-                                      ...style,
-                                    }}
-                                  >
-                                    {sanitized === null ? (
-                                      <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                                        <p className="text-sm">
-                                          {preparationError ?? 'Preparando seu projeto…'}
-                                        </p>
-                                        {preparationError && onExit ? (
-                                          <button
-                                            type="button"
-                                            className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
-                                            onClick={onExit}
-                                          >
-                                            Voltar
-                                          </button>
-                                        ) : null}
-                                      </div>
-                                    ) : projectAccessBlocked ? (
-                                      <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
-                                        <p className="text-base font-semibold text-sz-fg">
-                                          Este projeto usa ferramentas que você ainda vai conquistar
-                                        </p>
-                                        <p className="max-w-md text-sm">
-                                          Continue avançando na Jornada do Criador. O projeto ficou
-                                          guardado e abrirá normalmente quando essas ferramentas
-                                          forem liberadas.
-                                        </p>
-                                        {onExit ? (
-                                          <button
-                                            type="button"
-                                            className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
-                                            onClick={onExit}
-                                          >
-                                            Voltar
-                                          </button>
-                                        ) : null}
-                                      </div>
-                                    ) : hasProject ? (
-                                      <ErrorBoundary
-                                        fallback={(p) => (
-                                          <RootErrorFallback {...p} onExit={onExit} />
-                                        )}
-                                        resetKeys={[sanitizedId]}
-                                        label="Studio"
-                                      >
-                                        <div
-                                          inert={isObserver}
-                                          className="flex h-full min-h-0 flex-col"
+            <StudioOpenProjectProvider value={openProjectValue}>
+              <StudioEditDrawingProvider value={editDrawingValue}>
+                <StudioEditCreationProvider value={editCreationValue}>
+                  <StudioPintaLibraryProvider value={pintaLibraryValue}>
+                    <StudioMoldaLibraryProvider value={moldaLibraryValue}>
+                      <StudioTeamLibraryProvider value={teamLibraryValue}>
+                        <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+                          <StudioExamplesVisibleProvider value={examplesVisible}>
+                            <StudioConfigProvider value={config}>
+                              <StudioThemeProvider value={effectiveTheme}>
+                                <StudioExecutionProvider
+                                  value={{
+                                    editingAccess: isObserver ? 'observer' : 'author',
+                                    autoRun,
+                                    originAdapter: previewOriginAdapter,
+                                    shellUrl: previewShellUrl ?? hostPreviewShellUrl ?? undefined,
+                                    requireIsolatedPreview,
+                                    muted: projectMuted,
+                                    writerEpoch,
+                                  }}
+                                >
+                                  <StudioProCandidatePreviewProvider>
+                                    <div
+                                      ref={studioRootRef}
+                                      data-editing-access={isObserver ? 'observer' : 'author'}
+                                      data-sz-theme={effectiveTheme}
+                                      className={['h-full min-h-0', className]
+                                        .filter(Boolean)
+                                        .join(' ')}
+                                      // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
+                                      // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
+                                      // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
+                                      // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
+                                      // é PORTALADO pro document.body — fora da cerca, segue intacto.
+                                      style={{
+                                        fontFamily: 'var(--font-family-sans)',
+                                        isolation: 'isolate',
+                                        ...style,
+                                      }}
+                                    >
+                                      {sanitized === null ? (
+                                        <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                                          <p className="text-sm">
+                                            {preparationError ?? 'Preparando seu projeto…'}
+                                          </p>
+                                          {preparationError && onExit ? (
+                                            <button
+                                              type="button"
+                                              className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                              onClick={onExit}
+                                            >
+                                              Voltar
+                                            </button>
+                                          ) : null}
+                                        </div>
+                                      ) : projectAccessBlocked ? (
+                                        <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
+                                          <p className="text-base font-semibold text-sz-fg">
+                                            Este projeto usa ferramentas que você ainda vai
+                                            conquistar
+                                          </p>
+                                          <p className="max-w-md text-sm">
+                                            Continue avançando na Jornada do Criador. O projeto
+                                            ficou guardado e abrirá normalmente quando essas
+                                            ferramentas forem liberadas.
+                                          </p>
+                                          {onExit ? (
+                                            <button
+                                              type="button"
+                                              className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                              onClick={onExit}
+                                            >
+                                              Voltar
+                                            </button>
+                                          ) : null}
+                                        </div>
+                                      ) : hasProject ? (
+                                        <ErrorBoundary
+                                          fallback={(p) => (
+                                            <RootErrorFallback {...p} onExit={onExit} />
+                                          )}
+                                          resetKeys={[sanitizedId]}
+                                          label="Studio"
                                         >
-                                          {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou
+                                          <div
+                                            inert={isObserver}
+                                            className="flex h-full min-h-0 flex-col"
+                                          >
+                                            {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou
                                               uma faixa embaixo, na tela estreita): nunca cobre o
                                               editor, e o editor se mede no espaço que sobra. */}
-                                          <PensaMissionLayout
-                                            panel={
-                                              sessaoDoGuia ? (
-                                                <TaskGuidePanel session={sessaoDoGuia} />
-                                              ) : null
-                                            }
-                                          >
-                                            <div className="min-h-0 min-w-0 flex-1">
-                                              <Shell
-                                                key={observationViewVersion}
-                                                onExit={onExit}
-                                                onPromoteToPro={onPromoteToPro}
-                                                canToggleTheme={theme === undefined}
-                                                onRenderError={(area, error) =>
-                                                  onError?.({
-                                                    kind: 'render',
-                                                    area,
-                                                    message: error.message,
-                                                    ...(error.stack ? { stack: error.stack } : {}),
-                                                  })
-                                                }
-                                              />
-                                            </div>
-                                          </PensaMissionLayout>
-                                        </div>
-                                      </ErrorBoundary>
-                                    ) : null}
-                                  </div>
-                                </StudioProCandidatePreviewProvider>
-                              </StudioExecutionProvider>
-                            </StudioThemeProvider>
-                          </StudioConfigProvider>
-                        </StudioExamplesVisibleProvider>
-                      </StudioShareDisabledProvider>
-                    </StudioTeamLibraryProvider>
-                  </StudioMoldaLibraryProvider>
-                </StudioPintaLibraryProvider>
-              </StudioEditCreationProvider>
-            </StudioEditDrawingProvider>
+                                            <PensaMissionLayout
+                                              panel={
+                                                sessaoDoGuia ? (
+                                                  <TaskGuidePanel session={sessaoDoGuia} />
+                                                ) : null
+                                              }
+                                            >
+                                              <div className="min-h-0 min-w-0 flex-1">
+                                                <Shell
+                                                  key={observationViewVersion}
+                                                  onExit={onExit}
+                                                  onPromoteToPro={onPromoteToPro}
+                                                  canToggleTheme={theme === undefined}
+                                                  onRenderError={(area, error) =>
+                                                    onError?.({
+                                                      kind: 'render',
+                                                      area,
+                                                      message: error.message,
+                                                      ...(error.stack
+                                                        ? { stack: error.stack }
+                                                        : {}),
+                                                    })
+                                                  }
+                                                />
+                                              </div>
+                                            </PensaMissionLayout>
+                                          </div>
+                                        </ErrorBoundary>
+                                      ) : null}
+                                    </div>
+                                  </StudioProCandidatePreviewProvider>
+                                </StudioExecutionProvider>
+                              </StudioThemeProvider>
+                            </StudioConfigProvider>
+                          </StudioExamplesVisibleProvider>
+                        </StudioShareDisabledProvider>
+                      </StudioTeamLibraryProvider>
+                    </StudioMoldaLibraryProvider>
+                  </StudioPintaLibraryProvider>
+                </StudioEditCreationProvider>
+              </StudioEditDrawingProvider>
+            </StudioOpenProjectProvider>
           </StudioCloudSyncProvider>
         </StudioShareProvider>
       </StudioProRuntimeProvider>
