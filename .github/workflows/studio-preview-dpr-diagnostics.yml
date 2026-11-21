@@ -7,6 +7,10 @@ name: Studio preview DPR diagnostics
 # interface padrão (headless shell) e com o Chromium completo, para separar defeito da emulação
 # de defeito do produto. Não muda nenhum teste nem a suíte.
 on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-preview-dpr-diagnostics.yml'
   workflow_dispatch:
 
 permissions:
