@@ -3,6 +3,7 @@ import { Button, ConfirmDialog, Modal } from '#ui'
 import type { ProjectTree } from '../../../core/proProject'
 import { useProjectStoreApi } from '../../../state/projectStore'
 import type { ProHistoryVersion } from '../../../state/proProjectHistory'
+import { changedTreePaths, sameTree } from './treeChanges'
 import type { ProHistory } from './useProHistory'
 import type { ProOperations } from './useProOperations'
 
@@ -45,14 +46,6 @@ function changedText(version: ProHistoryVersion): string {
 const textOf = (tree: ProjectTree, path: string) => {
   const node = tree[path]
   return node?.kind === 'file' ? node.content : ''
-}
-
-/** As duas árvores têm os mesmos caminhos, do mesmo tipo e com o mesmo texto? */
-function sameTree(left: ProjectTree, right: ProjectTree): boolean {
-  const paths = new Set([...Object.keys(left), ...Object.keys(right)])
-  return [...paths].every(
-    (path) => left[path]?.kind === right[path]?.kind && textOf(left, path) === textOf(right, path),
-  )
 }
 
 interface Comparison {
@@ -100,13 +93,7 @@ export function ProOperationReview({
     try {
       const then = await history.treeOf(version.id)
       const now = store.getState().project?.tree ?? {}
-      const paths = [...new Set([...Object.keys(then), ...Object.keys(now)])]
-        .filter(
-          (file) =>
-            (then[file]?.kind === 'file' || now[file]?.kind === 'file') &&
-            textOf(then, file) !== textOf(now, file),
-        )
-        .sort()
+      const paths = changedTreePaths(then, now)
       setComparing({ version, then, now, paths, path: paths[0] ?? '' })
     } catch (cause) {
       setHistoryError(cause instanceof Error ? cause.message : 'Não consegui abrir esta versão.')
