@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
-import { createEmptyProject } from '../core/project'
+import { createEmptyProject, type Project } from '../core/project'
 import { encodeExitJournal } from '../state/exitJournalCodec'
 import { readAllKeys, readValue, writeInOneTransaction } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
@@ -52,7 +52,7 @@ function v3Project(id = 'jogo-v3') {
   return Object.assign(project, { futureTool: { zero: -0, optional: undefined, nested: [1, 2] } })
 }
 
-async function seedV3(scope: ProjectStorageScope, project = v3Project()) {
+async function seedV3(scope: ProjectStorageScope, project: Project = v3Project()) {
   await writeInOneTransaction(scope.store, {
     puts: [...projectStorageEntries(project, 3), [projectHeadKey(project.id, 3), head]],
   })
@@ -248,11 +248,11 @@ test('card preservado sem backup: a cópia vem dos registros que continuam no lu
 // P1 da revisão de 20/11/2026: "Restaurar uma cópia" pegava o backup do dia da migração antes de
 // tudo e ignorava a edição preservada, que é justamente o que o card "Preservado" guarda.
 function capturingImport() {
-  const imported: Array<{ files: Record<string, string>; name: string }> = []
+  const imported: Array<{ files: Project['files']; name: string }> = []
   return {
     imported,
     importSnapshot: async (raw: unknown, opts: { name: string; namespace: string }) => {
-      imported.push(raw as { files: Record<string, string>; name: string })
+      imported.push(raw as { files: Project['files']; name: string })
       return fakeImport(raw, opts)
     },
   }

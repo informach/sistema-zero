@@ -9,6 +9,7 @@ import {
   isStudioStudentTest,
   STUDENT_TEST_CASES_MAX,
   STUDENT_TESTS_MAX,
+  type StudioStudentTest,
   StudioStudentTestsSchema,
   sanitizeStudioStudentTests,
 } from '../src/studio/student-tests'
@@ -27,7 +28,7 @@ const moeda = {
     ],
     expect: { target: { kind: 'value', path: 'pontos' }, compare: 'increased' },
   },
-}
+} satisfies StudioStudentTest
 
 describe('os testes da criança no documento do projeto', () => {
   it('aceita o teste no formato dos objetivos (passos e a conferência do fim)', () => {

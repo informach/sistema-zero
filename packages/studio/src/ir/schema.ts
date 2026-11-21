@@ -128,6 +128,7 @@ import {
   createCanvas3DStatementContextIndex,
   programImportsThreeClasses,
 } from './programmingReferences'
+import type { ReadonlyNames } from './symbolNames'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
@@ -11312,7 +11313,7 @@ const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
 
 function containsCanvas3DResourceCreatorExpression(
   value: unknown,
-  importedClassNames: ReadonlySet<string> | undefined,
+  importedClassNames: ReadonlyNames<string> | undefined,
 ): boolean {
   if (Array.isArray(value)) {
     return value.some((child) =>

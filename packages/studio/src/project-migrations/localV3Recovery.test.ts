@@ -475,9 +475,18 @@ test('o arquivo v3 antigo, gravado na chave da origem, vale como o arquivo daque
     expect(sources.puts).toEqual([])
     expect(await readValue(f.scope.store, legacyKey)).toEqual(prepared.archive)
     // Conteúdo diferente sob o mesmo token continua recusado: os dois ficam preservados.
-    const changed = structuredClone(prepared.projected) as RecoveryWrite
-    const meta = changed.write.puts!.find(([key]) => key === projectMetaKey(f.project.id, 4))!
-    meta[1] = { ...(meta[1] as object), name: 'Outro conteúdo' }
+    const projected = structuredClone(prepared.projected) as RecoveryWrite
+    const changed: RecoveryWrite = {
+      ...projected,
+      write: {
+        ...projected.write,
+        puts: projected.write.puts!.map(([key, value]) =>
+          key === projectMetaKey(f.project.id, 4)
+            ? ([key, { ...(value as object), name: 'Outro conteúdo' }] as const)
+            : ([key, value] as const),
+        ),
+      },
+    }
     await writeInOneTransaction(f.scope.store, { puts: [[staged, changed]] })
     await expect(
       prepareRecoverySources(f.scope, child, child.replacesRecovery, stagedKey, 4),

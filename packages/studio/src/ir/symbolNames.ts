@@ -3,7 +3,18 @@
  * mutation detaches it. Unlike a parent-linked scope, later parent writes cannot
  * become visible in an earlier snapshot. Iteration reads the captured storage.
  */
-export class SymbolNames<T = string> implements ReadonlySet<T> {
+/**
+ * Um conjunto de nomes só para leitura, com os membros de sempre do `ReadonlySet`. O Members
+ * compila o Estúdio com o lib ESNext, cujo `ReadonlySet` pede também `union`, `intersection` e os
+ * outros métodos novos de conjunto, que um retrato nunca usa: declarar `ReadonlySet` reprovava o
+ * typecheck de lá (escondido de 18 a 20/11/2026 pelo lint vermelho, que pulava o typecheck).
+ */
+export type ReadonlyNames<T = string> = Pick<
+  ReadonlySet<T>,
+  'has' | 'size' | 'forEach' | 'entries' | 'keys' | 'values' | typeof Symbol.iterator
+>
+
+export class SymbolNames<T = string> implements ReadonlyNames<T> {
   private storage: { values: Set<T>; shared: boolean }
 
   constructor(values?: Iterable<T>, storage?: { values: Set<T>; shared: boolean }) {
@@ -57,7 +68,7 @@ export class SymbolNames<T = string> implements ReadonlySet<T> {
     return this.values()
   }
 
-  forEach(callback: (value: T, key: T, set: ReadonlySet<T>) => void, thisArg?: unknown): void {
+  forEach(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown): void {
     this.storage.values.forEach((value) => {
       callback.call(thisArg, value, value, this)
     })
