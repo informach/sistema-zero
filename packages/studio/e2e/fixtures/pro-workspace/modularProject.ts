@@ -49,10 +49,17 @@ const SCENES = [
 const UI = ['hud', 'menu', 'dialog', 'theme'] as const
 
 const entityName = (index: number) => `enemy${String(index).padStart(2, '0')}`
-const className = (name: string) => name[0].toUpperCase() + name.slice(1)
+const className = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
+
+/** O item na posição dada, dando a volta na lista (as listas daqui nunca estão vazias). */
+function cyclic<T>(list: readonly T[], index: number): T {
+  const item = list[index % list.length]
+  if (item === undefined) throw new Error('Lista vazia no projeto modular.')
+  return item
+}
 
 function coreFile(name: (typeof CORE)[number], index: number): string {
-  const other = CORE[(index + 1) % CORE.length]
+  const other = cyclic(CORE, index + 1)
   const lines = [
     index === 0 ? '' : "import { Vector } from './vector'",
     other === 'vector' || index === 0 ? '' : `import { ${other}Version } from './${other}'`,
@@ -128,7 +135,7 @@ function baseFile(): string {
 
 function entityFile(index: number): string {
   const name = entityName(index)
-  const core = CORE[index % CORE.length]
+  const core = cyclic(CORE, index)
   const lines = [
     "import { Vector } from '../core/vector'",
     core === 'vector' ? '' : `import { ${core}Helper${index % 12} } from '../core/${core}'`,
@@ -164,7 +171,7 @@ function entityFile(index: number): string {
 function systemFile(name: (typeof SYSTEMS)[number], index: number): string {
   const first = entityName(index % ENTITY_COUNT)
   const second = entityName((index + 7) % ENTITY_COUNT)
-  const core = CORE[(index + 3) % CORE.length]
+  const core = cyclic(CORE, index + 3)
   const lines = [
     "import type { Entity } from '../entities/base'",
     `import { ${className(first)} } from '../entities/${first}'`,
@@ -198,9 +205,9 @@ function systemFile(name: (typeof SYSTEMS)[number], index: number): string {
 }
 
 function sceneFile(name: (typeof SCENES)[number], index: number): string {
-  const a = SYSTEMS[index % SYSTEMS.length]
-  const b = SYSTEMS[(index + 5) % SYSTEMS.length]
-  const c = SYSTEMS[(index + 10) % SYSTEMS.length]
+  const a = cyclic(SYSTEMS, index)
+  const b = cyclic(SYSTEMS, index + 5)
+  const c = cyclic(SYSTEMS, index + 10)
   return [
     ...[a, b, c].map(
       (system) =>
