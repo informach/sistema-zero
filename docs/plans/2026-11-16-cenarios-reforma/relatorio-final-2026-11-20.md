@@ -10,7 +10,7 @@ esperando a sua conferência.
 - Mundos, bibliotecas (trazer `.glb` e `.zip`, cópias dos modelos do Molda), cenários com relevo,
   água, caminhos e objetos, o Testar com personagem, versões com retrato, desfazer e refazer.
 - Exportar para three.js, GLB e Raylib; levar o cenário para o Estúdio ("Usar o cenário");
-  publicar no Arquipélago (provado localmente no `/macro`).
+  publicar no Arquipélago (provado no `/macro` e, em 21/11, a Faísca publicada na staging).
 - Agentes de IA pelo MCP e pelo CLI, com os mesmos comandos da tela, inclusive trazer modelos do
   computador e exportar (guia em `docs/molda-cenarios-agentes.md`).
 - Abertura pronta, sem ligar: exige o Molda, os mundos são da criança no Kids, cota configurável e
@@ -86,19 +86,33 @@ A medição só deixa a CPU mais lenta; a placa de vídeo era dedicada.
 | Adulto: seletor de espaço com a equipe; mundo do perfil aparece na conta | ok |
 | Sem login | 401 nos dois apps e no gateway |
 | "Usar o cenário" no Estúdio | ok: a "Praia" cabe com "juntar peças" e aparece no jogo |
-| Publicar a Faísca em staging | **pendente** (ver item 4) |
+| Agente com login na staging (21/11) | ok: levou a Faísca ao espaço da equipe (ver item 4) |
+| Publicar a Faísca em staging (21/11) | ok: "Versão 1 publicada" na ilha Faísca, pela tela |
+| Andar na Faísca no jogo da staging | **pendente**: a ilha só abre para quem já chegou ao posto Faísca |
 
 Fotos (fora do Git, em `output/cenarios-reforma/etapa7/`): a oficina em staging, e no playground
 1440, 1024, celular e tema escuro. As medições de desempenho estão na mesma pasta.
 
 ## 4. O que fica pendente
 
-**A Faísca publicada em staging e a prova do agente.** A Faísca convertida existe só localmente (a
-publicação foi provada no `/macro`). O caminho para levá-la ao espaço da equipe em staging é o
-próprio agente, que é também a prova que falta da Etapa 5. Para isso, crie fora do repositório as
-variáveis `MOLDA_CENARIOS_APP` (o endereço da comunidade adulta de staging) e
-`MOLDA_CENARIOS_EMAIL` / `MOLDA_CENARIOS_SENHA` de uma conta da equipe (ou um
-`MOLDA_CENARIOS_TOKEN`). Eu não digito senha.
+**A Faísca em staging e a prova do agente (feitas em 21/11).** Com o arquivo de acesso que você
+deixou fora do repositório (lido só pelo programa, nunca mostrado), o agente entrou na staging
+como a conta da equipe e, pelo mesmo cliente da oficina:
+
+- criou a biblioteca "Faísca · peças da ilha" (restrita, espaço da equipe) e trouxe os 42
+  modelos em 19 s, sem recusa; os 42 chegaram com o mesmo hash do acervo local;
+- criou o mundo "Arquipélago Vagalume" e o cenário "Faísca", guardou as 54 peças do relevo e
+  gravou o documento inteiro (523 objetos, 7 caminhos, o lago e 26 marcadores) num passo só;
+- fotografou o cenário sem janela, lendo da staging: igual à foto da conversão local.
+
+Na oficina da staging, pela tela, a Faísca abriu com 523 objetos, e a publicação no Arquipélago
+terminou em "Versão 1 publicada" na ilha Faísca. Fotos em `output/cenarios-reforma/etapa7/`
+(`faisca-staging-*`).
+
+**Falta andar na Faísca no jogo da staging.** A ilha abre pela jornada (`ilhaAberta`, posto
+Faísca), e a conta da equipe ainda está no começo: o mapa mostra 1 ilha aberta. O passeio com o
+personagem já foi provado no `/macro`; na staging ele precisa de uma conta que já chegou ao posto
+Faísca.
 
 **O agente agora também traz modelos e exporta** (`trazer_modelos` e `exportar_cenario`), pelo
 mesmo código da oficina, num Chrome sem tela neste computador. Provado localmente com o Chrome de
@@ -116,7 +130,12 @@ exportados. Publicar no Arquipélago continua só pela tela, por decisão sua.
 - A biblioteca inicial livre ficou para depois, por decisão sua.
 - A reconstrução artística da Faísca é um trabalho separado.
 - Ficaram dados de teste em staging na sua conta: o mundo "Ilha da conferência", a biblioteca
-  "Peças da ilha" e o projeto do Estúdio "Teste cenario". Apago quando você quiser.
+  "Peças da ilha" e o projeto do Estúdio "Teste cenario". Apago quando você quiser. O mundo
+  "Arquipélago Vagalume" do espaço da equipe, com a Faísca publicada, não é teste: fica.
+- **Implantação automática da staging (21/11):** o Railway da staging não tinha os pacotes dos
+  cenários na lista de pastas do Members. Com a CI verde, o passo que ajusta o Railway recusava
+  mexer no Members, de propósito. Alinhei essa lista com o `.railway/services/members.json`, sem
+  implantar nada. Em produção, essa mesma lista vai junto na ida para produção.
 
 **Produção**, depois da sua conferência: criar `CENARIOS_MODO=equipe` no Railway de produção (e
 então em `.railway/variables.ts`), PR de staging para main e o `deploy-production.yml`.
