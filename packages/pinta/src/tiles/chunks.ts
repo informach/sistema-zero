@@ -127,14 +127,28 @@ export function drawCellImage(
   ctx.restore()
 }
 
-interface ChunkEntry {
-  canvas: HTMLCanvasElement
+interface ChunkComposition {
   values: Int16Array
   source: CanvasImageSource
   animation: string
   bytes: number
   tileCount: number
+}
+interface PreparedChunk extends ChunkComposition {
+  animated: Map<number, number>
+}
+interface ChunkEntry extends ChunkComposition {
+  canvas: HTMLCanvasElement
   fingerprint: number
+}
+function sameChunkComposition(a: ChunkComposition, b: ChunkComposition): boolean {
+  return (
+    a.source === b.source &&
+    a.bytes === b.bytes &&
+    a.tileCount === b.tileCount &&
+    a.animation === b.animation &&
+    a.values.every((value, i) => value === b.values[i])
+  )
 }
 /** Lookup accelerator only: collisions must still compare every cell and atlas contract. */
 export function chunkFingerprint(values: Int16Array): number {
@@ -146,6 +160,41 @@ export function chunkFingerprint(values: Int16Array): number {
 export function chunkBytes(tileSize: number): number {
   const size = MAP_CHUNK_SIDE * tileSize
   return size * size * 4
+}
+
+function prepareChunk(
+  ts: AnyTilesetAsset,
+  sheet: HTMLCanvasElement,
+  col: number,
+  row: number,
+  time: number,
+  reader: TileCellReader,
+): PreparedChunk | null {
+  const values = new Int16Array(MAP_CHUNK_SIDE * MAP_CHUNK_SIDE).fill(-1),
+    animated = new Map<number, number>()
+  let filled = false
+  for (let r = 0; r < MAP_CHUNK_SIDE; r++)
+    for (let c = 0; c < MAP_CHUNK_SIDE; c++) {
+      const cell = reader.at(col * MAP_CHUNK_SIDE + c, row * MAP_CHUNK_SIDE + r)
+      values[r * MAP_CHUNK_SIDE + c] = cell
+      const tile = cellTile(cell)
+      if (tile < 0 || tile >= ts.tiles.length) continue
+      filled = true
+      if (ts.animations?.[String(tile)] && !animated.has(tile))
+        animated.set(tile, animatedTile(ts, tile, time))
+    }
+  if (!filled) return null
+  return {
+    values,
+    animated,
+    source: sheet,
+    bytes: chunkBytes(ts.tileSize),
+    tileCount: ts.tiles.length,
+    animation: [...animated]
+      .sort((a, b) => a[0] - b[0])
+      .map(([tile, frame]) => `${tile}:${frame}`)
+      .join(','),
+  }
 }
 /**
  * Guarda os blocos já pintados (o menos usado sai primeiro), com um teto em bytes: o histórico de
@@ -174,6 +223,9 @@ export class TileChunkCache {
   ) {}
   get size(): number {
     return this.entries.size
+  }
+  get capacityBytes(): number {
+    return this.budget
   }
   get usedBytes(): number {
     return this.bytes + (this.scratch ? this.scratch.width * this.scratch.height * 4 : 0)
@@ -216,62 +268,31 @@ export class TileChunkCache {
     row: number,
     time = 0,
     reader = createTileCellReader(layer.cells, mapCellBounds(map)),
+    prepared?: PreparedChunk | null,
   ): HTMLCanvasElement | null {
     const bounds = mapCellBounds(map)
     const key = `${layer.id}:${col}:${row}:${map.cols}:${map.rows}:${bounds.col}:${bounds.row}`
-    const values = new Int16Array(MAP_CHUNK_SIDE * MAP_CHUNK_SIDE).fill(-1)
-    let filled = false
-    // Só as peças animadas que aparecem NESTE bloco entram na chave da animação.
-    const animated = new Map<number, number>()
-    for (let r = 0; r < MAP_CHUNK_SIDE; r++)
-      for (let c = 0; c < MAP_CHUNK_SIDE; c++) {
-        const x = col * MAP_CHUNK_SIDE + c,
-          y = row * MAP_CHUNK_SIDE + r
-        const cell = reader.at(x, y)
-        values[r * MAP_CHUNK_SIDE + c] = cell
-        const tile = cellTile(cell)
-        if (tile < 0 || tile >= ts.tiles.length) continue
-        filled = true
-        if (ts.animations?.[String(tile)] && !animated.has(tile))
-          animated.set(tile, animatedTile(ts, tile, time))
-      }
+    const composition =
+      prepared === undefined ? prepareChunk(ts, sheet, col, row, time, reader) : prepared
     const hit = this.entries.get(key)
-    if (!filled) {
+    if (!composition) {
       if (hit) this.drop(key, hit)
       return null
     }
-    const animation = [...animated]
-      .sort((a, b) => a[0] - b[0])
-      .map(([tile, frame]) => `${tile}:${frame}`)
-      .join(',')
-    if (
-      hit &&
-      hit.source === sheet &&
-      hit.bytes === chunkBytes(ts.tileSize) &&
-      hit.tileCount === ts.tiles.length &&
-      hit.animation === animation &&
-      hit.values.every((v, i) => v === values[i])
-    ) {
+    const { values, animation, animated, bytes } = composition
+    if (hit && sameChunkComposition(hit, composition)) {
       this.entries.delete(key)
       this.entries.set(key, hit)
       return hit.canvas
     }
     if (hit) this.drop(key, hit)
-    const bytes = chunkBytes(ts.tileSize),
-      size = MAP_CHUNK_SIDE * ts.tileSize,
+    const size = MAP_CHUNK_SIDE * ts.tileSize,
       fingerprint = chunkFingerprint(values)
     // A canonical canvas has one LRU owner. Other positions borrow it without
     // storing aliases, so metadata and pixel retention remain bounded together.
     for (const candidate of this.byFingerprint.get(fingerprint) ?? []) {
       const entry = this.entries.get(candidate)
-      if (
-        entry &&
-        entry.source === sheet &&
-        entry.bytes === bytes &&
-        entry.tileCount === ts.tiles.length &&
-        entry.animation === animation &&
-        entry.values.every((value, i) => value === values[i])
-      ) {
+      if (entry && sameChunkComposition(entry, composition)) {
         this.entries.delete(candidate)
         this.entries.set(candidate, entry)
         return entry.canvas
@@ -377,6 +398,58 @@ export function visibleLayerChunks<Cells extends TilemapCells>(
   return out
 }
 
+interface FrameCompositions {
+  bytes: number
+  sheets?: Map<TilemapTileLayer<TilemapCells>, HTMLCanvasElement | null>
+  chunks?: WeakMap<object, PreparedChunk | null>
+}
+/** Refine only overflowing estimates. Stop conservatively before retaining excess recipes. */
+function frameCompositions(
+  map: TilemapAsset<TilemapCells>,
+  layers: ReturnType<typeof visibleLayerChunks<TilemapCells>>,
+  sheetOf: (id: string) => HTMLCanvasElement | null,
+  budget: number,
+  time: number,
+): FrameCompositions {
+  const nominal = layers.reduce(
+    (sum, l) => sum + l.chunks.length * chunkBytes(l.tileset.tileSize),
+    0,
+  )
+  if (nominal <= budget || !Number.isFinite(budget) || budget <= 0) return { bytes: nominal }
+  const sheets = new Map<TilemapTileLayer<TilemapCells>, HTMLCanvasElement | null>(),
+    chunks = new WeakMap<object, PreparedChunk | null>(),
+    seen = new Map<number, PreparedChunk[]>(),
+    bounds = mapCellBounds(map)
+  let bytes = 0
+  for (const { layer, tileset, chunks: positions } of layers) {
+    const sheet = sheetOf(tileLayerTilesetId(map, layer))
+    sheets.set(layer, sheet)
+    if (!sheet) continue
+    const reader = createTileCellReader(layer.cells, bounds)
+    for (const position of positions) {
+      const prepared = prepareChunk(tileset, sheet, position.col, position.row, time, reader)
+      if (!prepared) {
+        chunks.set(position, null)
+        continue
+      }
+      const fingerprint = chunkFingerprint(prepared.values),
+        bucket = seen.get(fingerprint) ?? []
+      let canonical = bucket.find((candidate) => sameChunkComposition(candidate, prepared))
+      if (!canonical) {
+        // Fingerprints never admit data: crowded collision buckets abandon the
+        // optimization, keeping the existing pressure path and work bounded.
+        if (bucket.length >= 8 || bytes + prepared.bytes > budget) return { bytes: nominal, sheets }
+        canonical = prepared
+        bucket.push(canonical)
+        seen.set(fingerprint, bucket)
+        bytes += canonical.bytes
+      }
+      chunks.set(position, canonical)
+    }
+  }
+  return { bytes, sheets, chunks }
+}
+
 /** Direct cells equal scaled chunks only when their destination pixels cannot overlap. */
 function directPixels(ctx: CanvasRenderingContext2D, size: number): boolean {
   if (
@@ -426,12 +499,12 @@ export function paintTilemapLayers(
 ): void {
   const layers = visibleLayerChunks(map, tilesets, view, includeCollision)
   const bounds = mapCellBounds(map)
-  // Mede a pressão da tela; o cache mantém o teto mesmo quando ela é maior.
-  cache.beginFrame(
-    layers.reduce((sum, l) => sum + l.chunks.length * chunkBytes(l.tileset.tileSize), 0),
-  )
+  const frame = frameCompositions(map, layers, sheetOf, cache.capacityBytes, time)
+  cache.beginFrame(frame.bytes)
   for (const { layer, tileset: ts, opacity, offsetX, offsetY, chunks } of layers) {
-    const sheet = sheetOf(tileLayerTilesetId(map, layer))
+    const sheet = frame.sheets?.has(layer)
+      ? frame.sheets.get(layer)
+      : sheetOf(tileLayerTilesetId(map, layer))
     if (!sheet) continue
     ctx.save()
     ctx.globalAlpha *= opacity
@@ -500,8 +573,19 @@ export function paintTilemapLayers(
       ctx.restore()
       continue
     }
-    for (const { col, row } of chunks) {
-      const chunk = cache.get(map, layer, ts, sheet, col, row, time, reader)
+    for (const position of chunks) {
+      const { col, row } = position
+      const chunk = cache.get(
+        map,
+        layer,
+        ts,
+        sheet,
+        col,
+        row,
+        time,
+        reader,
+        frame.chunks?.get(position),
+      )
       if (chunk)
         ctx.drawImage(
           chunk,

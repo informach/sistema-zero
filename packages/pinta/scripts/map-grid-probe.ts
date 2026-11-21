@@ -141,6 +141,26 @@ export function countGridMoves() {
     context.moveTo = original
   }
 }
+
+/** Count actual main-canvas blits in an untimed pass, preserving native overloads. */
+export function countGridDraws() {
+  if (!active) throw Error('Lab ausente')
+  const { context, frame } = active,
+    original = context.drawImage
+  let draws = 0
+  context.drawImage = new Proxy(original, {
+    apply(target, receiver, args) {
+      draws++
+      return Reflect.apply(target, receiver, args)
+    },
+  })
+  try {
+    frame()
+    return draws
+  } finally {
+    context.drawImage = original
+  }
+}
 export async function gridPixels() {
   if (!active) throw Error('Lab ausente')
   const pixels = active.context.getImageData(0, 0, active.canvas.width, active.canvas.height).data,

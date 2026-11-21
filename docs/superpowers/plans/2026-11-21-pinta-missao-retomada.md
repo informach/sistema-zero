@@ -399,3 +399,21 @@ qualificação de latência. O perfil ainda aponta desenho direto; a estimativa 
 pressão nominal permanece 128 MiB. Próximo lote: estimar pressão por composições
 distintas, reutilizando a mesma identidade completa, sem ampliar orçamento ou
 alterar guardas de alpha/pixels. Não fecha a fluidez densa ou as etapas macro.
+
+Lote verificado: refinar a pressão pelo número de composições distintas quando
+a estimativa nominal exceder o orçamento. Usar o mesmo preparo/identidade do LRU,
+sem duplicar regras de células/atlas/fase. Preservar as receitas admitidas só no
+quadro atual para evitar uma segunda leitura; metadados por posição não entram no
+cache persistente. Parar conservadoramente ao exceder bytes ou oito candidatos
+de colisão; nesse caso, manter a estimativa nominal e o caminho anterior.
+A classificação de alpha e seus guardas permanecem iguais. O cache segue em
+32 MiB; as receitas canônicas retidas para o quadro cabem nesse orçamento, com
+no máximo 128 vetores de 2 KiB no menor tamanho de peça. Não somar regiões vazias
+como imagens, nem confundir hash com identidade. Qualificar mapas repetidos e
+únicos, callbacks de atlas, pixels, animação/contagem e colisões antes de promover.
+Recibos em `qa/pressao-por-composicoes-2026-11-21/`: suíte 2.582, 93 testes focados,
+nove ensaios e 612 comparações RGBA aprovados, tipos e lint. ABBA periódico CPU
+normal p50 170,2 → 9,2 ms, p95 235,9 → 11,5 ms, 49.216 → 128 blits, 4 MiB retidos.
+CPU 4× e composição sem repetição continuam acima do alvo; não é qualificação
+da oficina, do gesto ou do IO. Seguir aos consumidores restantes de recursos e
+modelo autoral, protocolo físico 3 e adaptadores antes da promoção pública 8.

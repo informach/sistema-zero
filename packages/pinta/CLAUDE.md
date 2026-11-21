@@ -62,9 +62,17 @@ O LRU de chunks reutiliza composições canônicas por conteúdo, com um único 
 por entrada: posição/camada não gera aliases retidos. Fingerprint é só índice;
 atlas, tamanho, contagem de peças, fase e todas as células precisam coincidir.
 Há uma colisão real nos testes e prova de mutação da comparação integral.
-Expulsão/clear limpam o índice; bytes/scratch e estimativa de pressão não mudam.
+Expulsão/clear limpam o índice; bytes/scratch conservam o orçamento.
 O atlas continua imutável por identidade. Não inferir fluidez global desse lote:
 provas, controles sem repetição e medições em `qa/cache-por-conteudo-2026-11-21/`.
+
+O lote seguinte refina estimativas que excedem a capacidade por composições
+distintas, usando a mesma identidade e preparo do LRU. Receitas admitidas são
+transitórias ao quadro e reaproveitadas no desenho. Excesso de bytes ou buckets
+com oito colisões conserva a estimativa nominal/caminho anterior. Os guardas de
+alpha/transformação não mudam. A capacidade segue em 32 MiB; nenhum dado autoral
+é convertido em imagem. Medição do renderer e limites, incluindo o controle sem
+repetição, em `qa/pressao-por-composicoes-2026-11-21/`. Não é SLA da oficina/IO.
 
 O minimapa aceita o contrato interno de regiões com visão geral de no máximo
 256 × 256 pixels e desempate global, visitando células armazenadas. O painel
