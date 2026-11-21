@@ -6,7 +6,7 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
 
 ## Ordem e critérios de fechamento
 
-- [ ] 0. Fechar gravador 6 com produtor real, leitor anterior, erros de cliente
+- [x] 0. Fechar gravador 6 com produtor real, leitor anterior, erros de cliente
   antigo, CAS, recuperação offline e rollback B → A → B em staging.
 - [ ] 1. Promover regiões somente após adaptar todos os consumidores, preservando
   IDs, metadados, recursos, snapshots e formatos antigos.
@@ -51,6 +51,17 @@ com suas versões e escopos. Nenhum rollout novo ocorreu nesta retomada.
 Cada lote exige testes, ensaio funcional aplicável, revisão e commit.
 Um teste HTTP local com repositório em memória não substitui IndexedDB real,
 R2/Postgres, login ou rollback dos serviços publicados.
+
+## Etapa 0 fechada: gravador 6 (21/11)
+
+Produtor autenticado, recusas 4/5, CAS e recuperação offline já registrados foram
+complementados pelo ciclo publicado B → A → B em frontend temporário de staging.
+A reteve a edição local sem rebaixar a nuvem; B a sincronizou intacta na revisão 4.
+Um contexto sem o IndexedDB anterior e o parser público sobre download R2 real
+confirmaram os documentos completos. Serviço e regra CORS temporários removidos;
+Community/Kids conservaram os deployments concorrentes. Provas e alcance em
+`qa/rollback-publicado-2026-11-21/`, no diretório da missão. Isso não homologa a
+atualização da cena no Estúdio, Python no domínio temporário ou o formato 8.
 
 ## Lote verificado: referências dos conjuntos (21/11)
 

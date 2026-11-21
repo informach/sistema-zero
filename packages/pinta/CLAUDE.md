@@ -8,6 +8,12 @@ Conferir a fonte publicada e executar produtor real, CAS, cliente antigo e
 rollback antes de concluir o rollout. As seções datadas abaixo incluem o histórico
 do corte anterior; os números atuais pertencem a `core/creations/pinta-format.ts`.
 
+O ciclo do gravador 6 foi homologado com login em staging em 21/11: B → A → B,
+edição local conservada em A e sincronizada intacta por B; serviço temporário
+removido, frontends compartilhados preservados. Alcance e recibos em
+`qa/rollback-publicado-2026-11-21/`, no diretório da missão. Não confundir essa
+prova com ativação dos futuros contratos de regiões ou com o ciclo final do jogo.
+
 `RegionTilemapAsset`/codec 8 continuam preparação interna: não integram ainda
 a união pública, o escritor de backup ou o protocolo físico 3. Não subir constantes
 para anunciar suporte de oficina antes de completar seus consumidores.

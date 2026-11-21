@@ -2,9 +2,15 @@
 
 ## Continuação da missão
 
-O [plano em execução](missao-completa-2026-11-18/plano.md) acompanha os lotes verificados
-e os critérios ainda pendentes. A integração em staging segue a autorização posterior
-do usuário, sem PR. A missão integral continua em andamento.
+O [plano da retomada](../superpowers/plans/2026-11-21-pinta-missao-retomada.md) acompanha
+os lotes verificados e os critérios ainda pendentes. O trabalho segue em branch isolada,
+com [PR draft 276](https://github.com/informach/sistema-zero/pull/276) para revisão,
+sem merge automático. A missão integral continua em andamento.
+
+O gravador de nuvem 6 teve seu ciclo autenticado e rollback publicado B → A → B
+homologados em staging. A edição feita durante o rollback foi conservada e sincronizada
+intacta após a restauração. Serviço temporário removido e publicações compartilhadas
+preservadas. [Provas e alcance](missao-completa-2026-11-18/qa/rollback-publicado-2026-11-21/README.md).
 
 O [checkpoint local de 21/11](missao-completa-2026-11-18/qa/fechamento-local-2026-11-21/README.md)
 registra a pausa solicitada, as publicações JavaScript e Python em staging,
@@ -18,7 +24,7 @@ mantendo as definições vinculadas e um desfazer por gesto.
 O lote de [contornos autorais](missao-completa-2026-11-18/colisoes-autorais.md) acrescenta
 documento/envelope 7, cena 3 e PNG 4 com leitor específico. O leitor de rollback
 lê nuvem 6 e declara 4. O gravador preparado, integrado localmente em 21/11,
-declara 6, mas sua ativação e homologação autenticada continuam pendentes.
+declara 6 e sua homologação autenticada está registrada no relatório acima.
 [Provas e limites](missao-completa-2026-11-18/qa/colisoes-autorais/README.md).
 
 A continuação de [plataformas precisas](missao-completa-2026-11-18/plataformas-precisas.md)

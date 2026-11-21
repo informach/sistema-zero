@@ -1,5 +1,19 @@
 # Gravador de nuvem 6 após o leitor A
 
+## Fechamento em staging, 21/11/2026
+
+Os critérios autenticados 6 e 7 foram executados: produtor 6 real, recusas 4/5,
+CAS, recuperação offline e ciclo publicado B → A → B com edição local preservada
+durante A e subida intacta na restauração de B. As provas estão em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador6-autenticado-2026-11-21/`
+e `qa/rollback-publicado-2026-11-21/`, no mesmo diretório da missão. O frontend
+temporário e seu CORS foram removidos; as publicações da outra sessão ficaram
+intactas. Os diretórios relevantes de persistência na staging principal são
+iguais aos da fonte B qualificada. O fluxo final de atualização/publicação do
+jogo e os contratos de regiões continuam nas etapas seguintes.
+
+As seções abaixo registram a decisão original e o histórico das preparações.
+
 ## Decisão e limite desta preparação
 
 O leitor A `4db9390c2` aceita nuvem 6, documentos nativos 7 e a política

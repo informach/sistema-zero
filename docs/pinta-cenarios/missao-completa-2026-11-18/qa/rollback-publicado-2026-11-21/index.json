@@ -1,0 +1,689 @@
+{
+  "at": "2026-11-21T14:08:03.057Z",
+  "sequence": "B→A→B",
+  "stagingOnly": true,
+  "canary": {
+    "service": "cbae628f-3f04-48b8-a64d-ac201331765b",
+    "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+    "deployments": {
+      "b1": "434e2a56-d18c-4163-93cf-c72c7460f02f",
+      "a": "45c17a96-160c-4cf5-87f4-c71de5cb2717",
+      "b2": "141110dc-411d-42b6-bca8-e8b1071b4c7d"
+    },
+    "removed": true
+  },
+  "qualifications": [
+    {
+      "headSha": "ab39a593bae1760bb0cd043957becbd2ec67e05a",
+      "run": 44901287656,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "ci",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-chromium-2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-python-extensions",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-chromium-3",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "arquipelago",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "desktop-windows",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "members-image",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-storage-macos",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-firefox",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-webkit",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-chromium-1",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "community-kids-e2e",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "deploy-staging",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ]
+    },
+    {
+      "headSha": "a8209d3ad6d6d3d57c1a164e62b8fd146a41685d",
+      "run": 44903058759,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "studio-python-extensions",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "arquipelago",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-webkit",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "community-kids-e2e",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "desktop-windows",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-chromium-3",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "ci",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-chromium-2",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "members-image",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-storage-macos",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-chromium-1",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "studio-e2e-firefox",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "deploy-staging",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ]
+    }
+  ],
+  "assertions": {
+    "b1ActualUploadPutCommit": true,
+    "aNoMapMutationAttempt": true,
+    "aRetainedLocalEdit": true,
+    "b2UploadedAEditIntact": true,
+    "independentStorageSameSixDocuments": true,
+    "actualR2DownloadReparsed": true,
+    "storedProgramUnchanged": true,
+    "studioUpdateReopened": false,
+    "pythonCanaryTested": false,
+    "mainFrontendsPreserved": true,
+    "corsSemanticallyRestored": true,
+    "canaryRemoved": true,
+    "physicalDevices": 1
+  },
+  "corsCanonicalSha256": "9aeaeef04528f1befbf59ba86d2e498679cded4d6c5511db8879210b1262d83e",
+  "latestNativeSha256": "15c3393cbbc9861df0c80036e98130bcb5ebe545369a77347fb58cf149b6e296",
+  "latestCloudRevision": 4,
+  "latestCloudFormat": 6,
+  "relevantSourceEquality": {
+    "qualifiedWriter": "ab39a593bae1760bb0cd043957becbd2ec67e05a",
+    "mainStaging": "0a881cf007d173a3b6d372c029f5668c505f2e7d",
+    "paths": [
+      "packages/pinta/src",
+      "packages/core/src/creations",
+      "packages/member-shell/src",
+      "packages/community/src",
+      "packages/community-kids/src",
+      "packages/members/src"
+    ],
+    "changed": []
+  },
+  "records": [
+    {
+      "file": "pinta-reader-current-a-frontends-result.json.gz",
+      "bytes": 366,
+      "sha256": "53eae8027b67526877b65a7694f08dd632ec65cb6e28b2523400e94fad910c3a",
+      "rawBytes": 555,
+      "rawSha256": "a9d64b86ae06d295ff826dd76d85851ac71a9232a44460cc2938432c8fbe89ac"
+    },
+    {
+      "file": "pinta-retomada-b6-frontends-result.json.gz",
+      "bytes": 332,
+      "sha256": "5b21d16701e6118e96f8bbee91f9aae5baf409143c21047de892e9b9696eab67",
+      "rawBytes": 479,
+      "rawSha256": "cff24ae1cf283fdcb0e20538761d79252fc87f860968fc993d508c2836bfdeaa"
+    },
+    {
+      "file": "pinta-canary-b1-start.json.gz",
+      "bytes": 340,
+      "sha256": "b31f5bbfe9efca48f10509afabdf3c361552657f4a3ca0b28a8fcb99ec9cd69a",
+      "rawBytes": 486,
+      "rawSha256": "ac58000ad05a72bfb9a1509789bd89a219de4155aa6f3b1a6ddce2c0a29d871a"
+    },
+    {
+      "file": "pinta-canary-b1-process.json.gz",
+      "bytes": 379,
+      "sha256": "59262c9e9c742d5a6e5acdb613dc7d5bb9d824bcbfbf14121c14f048a04a3d31",
+      "rawBytes": 555,
+      "rawSha256": "13f2cf4ad7e6da78ef2f623c5c76435842516a5ea29acf24c545f8fba0f95234"
+    },
+    {
+      "file": "pinta-canary-b1-upload.log.gz",
+      "bytes": 211,
+      "sha256": "6fcab401d9689eee6ab9b3b53c457305038b84b32ae667ff2ce3e4362e89b83a",
+      "rawBytes": 287,
+      "rawSha256": "5e33a82971d50deda1c827e9a687c64f629bb968dc810b23a7809568f7b4db49"
+    },
+    {
+      "file": "pinta-canary-b1-filtered-start.json.gz",
+      "bytes": 425,
+      "sha256": "cd29ae4286f75db275975eee01220eede6df28a9d9b6cd7ffcf308210471efd6",
+      "rawBytes": 629,
+      "rawSha256": "397b752fa078c355def4ea7702914aef2e1f7fc757e02f2a9f881c66145ac74f"
+    },
+    {
+      "file": "pinta-canary-b1-filtered-process.json.gz",
+      "bytes": 483,
+      "sha256": "f1367e237381fd68e4c2be458a81d72ead79d580db22f7eed6b8f13be877c2d4",
+      "rawBytes": 746,
+      "rawSha256": "3fe8f0f07486ca70655bd626e1ba1100561e6f80cdb098441e99bf00d2d72f6d"
+    },
+    {
+      "file": "pinta-canary-b1-filtered-upload.log.gz",
+      "bytes": 175,
+      "sha256": "a831b8c31a4d4e0a3b2dd679a635866fbfbb8d219165eae28f794f9cbabff097",
+      "rawBytes": 218,
+      "rawSha256": "0d9bb17985eb4bc3a1228eb7a61fcefe7e7fe7ad1c3e8af92cd54483dadb9038"
+    },
+    {
+      "file": "pinta-canary-a-start.json.gz",
+      "bytes": 427,
+      "sha256": "5b890b57ac596062b0bf97f3e2c68238a8d0121faab48e534e4176bf37dbf643",
+      "rawBytes": 628,
+      "rawSha256": "da34175849c9131c9b8b54cea751b608df95d36c81b31119e183f4be6f10845b"
+    },
+    {
+      "file": "pinta-canary-a-process.json.gz",
+      "bytes": 485,
+      "sha256": "fd1475cb6dfa28c2c8e8c83f107c295e50d11eadbb26b67726bc2a23204177b4",
+      "rawBytes": 745,
+      "rawSha256": "15731b88f2d223f9c627e33431b9295e0269e1cf14d671ed9015d675a7f51d30"
+    },
+    {
+      "file": "pinta-canary-a-upload.log.gz",
+      "bytes": 175,
+      "sha256": "64ac4929b50a6ec60fae47d49e669ffe967cdff47ed408e03c0fa2b29b06d31a",
+      "rawBytes": 218,
+      "rawSha256": "fc1bce4e0d7ec566698570998c76e21f19222e0e34bcabdf4240ff1dd3cd99a7"
+    },
+    {
+      "file": "pinta-canary-b2-start.json.gz",
+      "bytes": 426,
+      "sha256": "1c7a4b827ff995cc4a4c76e21d7d417a0f1c473687af5420447a59158ce8e558",
+      "rawBytes": 629,
+      "rawSha256": "72657b5e7c5cebffb24b888607acf9eb13133e7db6885657271c66d3df7acbde"
+    },
+    {
+      "file": "pinta-canary-b2-process.json.gz",
+      "bytes": 483,
+      "sha256": "5fc2eaeaed934b9a6ae75add3b379074a177b50094c70a00f83988ad40a5a3fe",
+      "rawBytes": 746,
+      "rawSha256": "9c942c77b22133a8a12cede3869993e194b9900f1540ee6f2f6cfeeff3865edb"
+    },
+    {
+      "file": "pinta-canary-b2-upload.log.gz",
+      "bytes": 174,
+      "sha256": "59585439f98be43350266d82b0dc7b6b8381478ced36ae713dbb17d27b68e70c",
+      "rawBytes": 218,
+      "rawSha256": "3eac98281e15a6275710fb16c66f6c42023ebe7fe401571060c63bc84650fe2e"
+    },
+    {
+      "file": "pinta-canary-cors-before.json.gz",
+      "bytes": 264,
+      "sha256": "1ca81a746bfd501e59e73cab0defd820f66049ec6142b13d420b3da2c1c2c43b",
+      "rawBytes": 554,
+      "rawSha256": "0eef77f1ee63b1e299037853884d844604a1600afbeea352f8b1411264e40757"
+    },
+    {
+      "file": "pinta-canary-cors-add-fresh.json.gz",
+      "bytes": 264,
+      "sha256": "1ca81a746bfd501e59e73cab0defd820f66049ec6142b13d420b3da2c1c2c43b",
+      "rawBytes": 554,
+      "rawSha256": "0eef77f1ee63b1e299037853884d844604a1600afbeea352f8b1411264e40757"
+    },
+    {
+      "file": "pinta-canary-cors-add-proposed.json.gz",
+      "bytes": 303,
+      "sha256": "2ae130dd7a5d7ef30707a9addf0194d4ba9baa4c5ae35d133d6897d42e817c46",
+      "rawBytes": 980,
+      "rawSha256": "931c011a92c26ed700910326b1eaa241e1eb17ce5905bbda6987ca1f8c16b8a5"
+    },
+    {
+      "file": "pinta-canary-cors-add-start.json.gz",
+      "bytes": 170,
+      "sha256": "d8b5c2ccdb91031b0d1d49e20f772e3faf19b134f721852f7fffd99156d050a2",
+      "rawBytes": 196,
+      "rawSha256": "0e74f2a35a8631318fae31f3c7d9da353a2a1d5cc12fffe1dcfb800e60f4f04c"
+    },
+    {
+      "file": "pinta-canary-cors-add-result.json.gz",
+      "bytes": 181,
+      "sha256": "056c97d024be64910da3d7f34c1ca8cdd510532e2d7b293e8a13200b927a49dd",
+      "rawBytes": 215,
+      "rawSha256": "ecc9e25f34cfa6a94d21566f11e15240ba30eb308fcbb700b25f55e454edd936"
+    },
+    {
+      "file": "pinta-canary-cors-add-verified.json.gz",
+      "bytes": 302,
+      "sha256": "c50317070cbb7073f9bd648a0e1b37956179cab6a156aa9636937a0858f073ff",
+      "rawBytes": 980,
+      "rawSha256": "8bdbd4e2fe753ced95e44cf53627709ed2e699666d3e5bc5cc11ee6ad62c281b"
+    },
+    {
+      "file": "pinta-canary-cors-add-wrangler.log.gz",
+      "bytes": 156,
+      "sha256": "8657cc7d0525891433e2ce363f4178460acb914dc7614527d3e1ff274a9e5794",
+      "rawBytes": 307,
+      "rawSha256": "98ac8ea97548d31498904a841a632742d907cc303b7d1562963e2fcc3b0ecf08"
+    },
+    {
+      "file": "pinta-canary-cors-remove-fresh.json.gz",
+      "bytes": 302,
+      "sha256": "c50317070cbb7073f9bd648a0e1b37956179cab6a156aa9636937a0858f073ff",
+      "rawBytes": 980,
+      "rawSha256": "8bdbd4e2fe753ced95e44cf53627709ed2e699666d3e5bc5cc11ee6ad62c281b"
+    },
+    {
+      "file": "pinta-canary-cors-remove-proposed.json.gz",
+      "bytes": 262,
+      "sha256": "f690f75c875f7645d146a8bc4ab70020af455b3852e846076e98e71fcf9b2d10",
+      "rawBytes": 554,
+      "rawSha256": "fc6f5f9d3b1f7e4ef9ceda3a176f2e124548733fc946aeedbb4bb60b072e0bb8"
+    },
+    {
+      "file": "pinta-canary-cors-remove-start.json.gz",
+      "bytes": 173,
+      "sha256": "83c551a6027de6539d7dd5d5b0e01b59d06868f65d32bb5c50df15adf41e6a38",
+      "rawBytes": 199,
+      "rawSha256": "a6b8758cb039dfca30d15f02182f4cc0c9bdc98fecce58e3455ef3804321858e"
+    },
+    {
+      "file": "pinta-canary-cors-remove-result.json.gz",
+      "bytes": 183,
+      "sha256": "180e3c58d5e61868290767dd42e8affa44fefa42ad4b4eb78aafc27b2363264e",
+      "rawBytes": 218,
+      "rawSha256": "f0939de5b328718dfb2706f9ed2308dab73d31372a13c779204c6d2742f47c74"
+    },
+    {
+      "file": "pinta-canary-cors-remove-verified.json.gz",
+      "bytes": 262,
+      "sha256": "f690f75c875f7645d146a8bc4ab70020af455b3852e846076e98e71fcf9b2d10",
+      "rawBytes": 554,
+      "rawSha256": "fc6f5f9d3b1f7e4ef9ceda3a176f2e124548733fc946aeedbb4bb60b072e0bb8"
+    },
+    {
+      "file": "pinta-canary-cors-remove-wrangler.log.gz",
+      "bytes": 156,
+      "sha256": "9a0d4479fb098b004d0c94e937a67adeb9a99c1af919bb9fb020707836db1987",
+      "rawBytes": 307,
+      "rawSha256": "130133d11e5b476833567e72080aa4812481b2f5fa875b142ae6be308d2487a9"
+    },
+    {
+      "file": "pinta-canary-pre-cleanup.json.gz",
+      "bytes": 518,
+      "sha256": "0c67bdeeee395a1db49ffbfb00a3c2daf6a0f587adba2b5f45cf57ebbe13a705",
+      "rawBytes": 1059,
+      "rawSha256": "e887a2a23576eb21b280acb5ca85c3f72fb93e92cf023ef0386855071c3a3ec1"
+    },
+    {
+      "file": "pinta-canary-deletion.json.gz",
+      "bytes": 211,
+      "sha256": "0eb9d8caeeecff8720ca22b81d7692c78b92217c08c34e60609b606ff76bfe8b",
+      "rawBytes": 252,
+      "rawSha256": "bfd3a588ea5bf443d469b99dc93ebf475308d6038646fa7f2ac7cc8d97278be3"
+    },
+    {
+      "file": "pinta-canary-cleanup-verified.json.gz",
+      "bytes": 340,
+      "sha256": "b72ff1fd3bdbbc6266f0dd82624db46964120a4c9f1cd7ec205e0d560bcc483f",
+      "rawBytes": 576,
+      "rawSha256": "f53a91a83b1758f8f724e9e9e2f0d632e12c38b849a649dc2b4c447faced03b8"
+    },
+    {
+      "file": "pinta-canary-final-native-parsed.json.gz",
+      "bytes": 251,
+      "sha256": "0a582e6ad8e6e23b8cf0e3b0c80f9a1e832b6e2768d4debbf1ee20e625d61b95",
+      "rawBytes": 326,
+      "rawSha256": "c7afcf81f87a850f8dd07c249b5040ff02876147668285eaaa9bd38305b3bb79"
+    },
+    {
+      "file": "pinta-canary-full-review.json.gz",
+      "bytes": 1011,
+      "sha256": "e5dbd8863227f5224f0e4eca555206c6ce81e6b120b360c0370abaa25f837c84",
+      "rawBytes": 4863,
+      "rawSha256": "9d3c380aa220ec84dd35a51e56f1788d1ef45620743be10dd12b6314965d3cf0"
+    },
+    {
+      "file": "pinta-canary-upload.cjs.gz",
+      "bytes": 1423,
+      "sha256": "22904f4fcccf7baa42afe6dc9f494832787758ca1f7c22995bd1f4e66c0f6716",
+      "rawBytes": 3056,
+      "rawSha256": "3cadba0aa53756cb6857f8e33f00382668e9b2a264d5dcd19ca9ced2c3b8f80e"
+    },
+    {
+      "file": "pinta-canary-cors-read.mjs.gz",
+      "bytes": 620,
+      "sha256": "4743d354b249422e8be452a0d722023f68b3003967bbd384c4d812a72462fa8b",
+      "rawBytes": 1016,
+      "rawSha256": "b6cc49af315e9e29cae0c9e139c105ea38fa15034620cf677a60f4baf8a886d1"
+    },
+    {
+      "file": "pinta-canary-cors-change.cjs.gz",
+      "bytes": 1072,
+      "sha256": "c1640fc91fe0072bf275f5eec3d5c25eb096c647e48b3b6adcfa9d1576415ac9",
+      "rawBytes": 2602,
+      "rawSha256": "f090dcd39ad9d7734aa584473f850b103529d71344e26311d8da1fdabf0f1325"
+    },
+    {
+      "file": "review-canary-rollout.cjs.gz",
+      "bytes": 1684,
+      "sha256": "5692e19f4edeb8a31d7062ce72df0da2d43b3b800c8552a4c3b4d3e8f963b043",
+      "rawBytes": 3539,
+      "rawSha256": "1cbb215a0013d872b9f6dcd77fb86d6b86ea66c5b2a5c0da9e5eaf1c020a76b6"
+    },
+    {
+      "file": "verify-canary-final-native.ts.gz",
+      "bytes": 790,
+      "sha256": "480cd745e10a838148d3eb6c9d863f3403743003004c5f430428c70ec5768674",
+      "rawBytes": 1461,
+      "rawSha256": "927a9a2b5630f93dba5f0501874f9903249e93762d7ff63d358db4658fd1366b"
+    },
+    {
+      "file": "034-canary-b1.json.gz",
+      "bytes": 124,
+      "sha256": "6ae0fc1e3c218f1a2ad8063ddffb1e652e5a9c64c52076a84165ceeb4669f612",
+      "rawBytes": 136,
+      "rawSha256": "53d24ad1e9e5bc6fa0f0cb8f66d438966c5c4645467374723e1b69a8a9d9352f"
+    },
+    {
+      "file": "035-canary-auth-form.json.gz",
+      "bytes": 211,
+      "sha256": "03669e736010d5a1fb8535b7519a74cb94692e7338a0d77cd817bd632f0a63f9",
+      "rawBytes": 429,
+      "rawSha256": "7f119b03244ce4e91b02944c69a2a7a8d571358e6a20609e4dc045ca77afd75b"
+    },
+    {
+      "file": "036-canary-login.json.gz",
+      "bytes": 81,
+      "sha256": "25f47a667a494e77e23d6ec474577751dbdebb153b189545bda2aa1e92b5e7fb",
+      "rawBytes": 64,
+      "rawSha256": "1f89cde244ba2f28d74124eba14d431ad468c3e28ed04528cd9d99fc8555bdc3"
+    },
+    {
+      "file": "037-canary-status.json.gz",
+      "bytes": 473,
+      "sha256": "01caf4b1577bda4c7cfa8404a5b4abe72c2cd155d2569aac7c9c94113bbbc601",
+      "rawBytes": 1815,
+      "rawSha256": "adc366621aaff04c4e269f5207497e6ede3c38c31abc4736ad2ad9a176413d4d"
+    },
+    {
+      "file": "038-canary-diagnose.json.gz",
+      "bytes": 146,
+      "sha256": "e0354009c590a111cf64f05868208f2ee6618349d35f4d4ee23130ed8e7a72bb",
+      "rawBytes": 202,
+      "rawSha256": "b5ffb8e146f7f5d2114a42d451d3548b7c467932f4c14044a59aafefe89be62e"
+    },
+    {
+      "file": "039-canary-download-probe.json.gz",
+      "bytes": 200,
+      "sha256": "61fd4a7838abb4ad6ef9dfcf7283e6bcfc042f68794cfaeaf7614068fe46ce13",
+      "rawBytes": 286,
+      "rawSha256": "3f2c5af62ffd90b3a98f4e515d35cb934779eb5090b2ca23bf929c7fbac98162"
+    },
+    {
+      "file": "040-canary-bucket.json.gz",
+      "bytes": 156,
+      "sha256": "f3888855b8f66ab0fa105665e1a09cec1cf2d16178ef2fcfec25cf3d13a01eb4",
+      "rawBytes": 175,
+      "rawSha256": "d06e320e45bc12a9ecff5e0fe8d6b7841e8fe3ad4097c09229c0d4082705eccd"
+    },
+    {
+      "file": "041-canary-b1-open.json.gz",
+      "bytes": 939,
+      "sha256": "e339af949477dc31f1c87bb00085ac77ace9c0e80dec1cb66cc46d79422844db",
+      "rawBytes": 4910,
+      "rawSha256": "decaf4706e69033f2b21c22794f909d996ae4606d767b37e3461fce992860800"
+    },
+    {
+      "file": "042-canary-b1-edit.json.gz",
+      "bytes": 844,
+      "sha256": "bdc9d9371152a92719f38067bedc7bc6f66a5ee7ada9c74972cd483c1a75a68d",
+      "rawBytes": 2391,
+      "rawSha256": "41ff4d2ff0d6c655d01c25af23fcaecd8b644ecefba5cdf9db9dc2263fc8230b"
+    },
+    {
+      "file": "043-canary-hold-b1.json.gz",
+      "bytes": 683,
+      "sha256": "22549bd44967bd58ee24eb0a97a39b26ea7f87e1c475ccfe4eedc3177017cd01",
+      "rawBytes": 1634,
+      "rawSha256": "50452cd3fdb9875b009bbb5dc5bbed35694b9ff4b1330cae84e969908274e3b9"
+    },
+    {
+      "file": "044-canary-reader-a.json.gz",
+      "bytes": 987,
+      "sha256": "c465a206e334114826668be3db55d41e25fb2a3031b94403cbfa6215e9c7cf7f",
+      "rawBytes": 3696,
+      "rawSha256": "c43edcb7b80be97a0605d1b4697c96a18d5cd836d5415ef7463087c8828eac75"
+    },
+    {
+      "file": "045-canary-hold-a.json.gz",
+      "bytes": 710,
+      "sha256": "f81247afaa11eb7e6e2a1508141be4b402170a9e10b6cf1fa6a40c171b878e33",
+      "rawBytes": 1676,
+      "rawSha256": "3db89f9bb54f6fc456efd6cc2662a0f9755414ed74d98170b63b9bf23562a651"
+    },
+    {
+      "file": "046-canary-restore-b2.json.gz",
+      "bytes": 1412,
+      "sha256": "3a1bce6d9903163e2ab3c3c7928ecf9a8d1cca87072268311552c35993f22525",
+      "rawBytes": 4549,
+      "rawSha256": "b68a79747ce606f226674b42e921c9ca30b223523fbc1a700f01734cba42f25a"
+    },
+    {
+      "file": "047-canary-final-independent.json.gz",
+      "bytes": 735,
+      "sha256": "017db9befbbf3c4bb4cb4508c9a98602a5fde41ac39e9c59de8a9831233ea61f",
+      "rawBytes": 1752,
+      "rawSha256": "b1fba1d7ca773ce2daf70d9b7cc2ccd7de23af53bdcebf2dba3188d59e2d6b3f"
+    },
+    {
+      "file": "048-canary-download-final.json.gz",
+      "bytes": 281,
+      "sha256": "501e38cffe57ba80d3f281459954f588439dad45ed806c789103d752d96e2f2a",
+      "rawBytes": 409,
+      "rawSha256": "668f189aa6ca05d84099ade0f6f64a66bf6954891933c8600d0c60efcbdb93ab"
+    },
+    {
+      "file": "049-canary-close.json.gz",
+      "bytes": 193,
+      "sha256": "c7db34737a686d952b54a9b6563e096fdc80e3f4a707039d694c294f5beeda7a",
+      "rawBytes": 241,
+      "rawSha256": "dc5bb5be4025e1c50087f4c322e7fb5de91e7d548d1681647c4d5ce8d8abf339"
+    },
+    {
+      "file": "retomada-canary-b1.cjs.gz",
+      "bytes": 1057,
+      "sha256": "e0921651a3c53ff074c6970f46255af0c44a93633e431733bd86780e0d08a09e",
+      "rawBytes": 2087,
+      "rawSha256": "aa1d166701d1b67af3eca292741877714383322ce079bacaa3a73919fee8de27"
+    },
+    {
+      "file": "retomada-canary-auth-form.cjs.gz",
+      "bytes": 227,
+      "sha256": "875b09a3b32ea628b20c6058578925a8751f05271cfc5df78190a6659ed9b2ce",
+      "rawBytes": 290,
+      "rawSha256": "e23c6fe44c3945bf7122701ffd0c6cf933283d20a31e09c3560f4fa7e80fdd28"
+    },
+    {
+      "file": "retomada-canary-login.cjs.gz",
+      "bytes": 744,
+      "sha256": "fced51c54f011271045db140acafccfba665f3eb9f724ef560eedd088434bcd4",
+      "rawBytes": 1380,
+      "rawSha256": "ed1aadcc02f142e8a52f9c8ed409404fe38d1fbcca0bd3104b51ff3bf86ed51a"
+    },
+    {
+      "file": "retomada-canary-status.cjs.gz",
+      "bytes": 303,
+      "sha256": "41e1b86ad399940d8f72e7044731925cf04b086e132ade3c22bf486f2c1b109a",
+      "rawBytes": 446,
+      "rawSha256": "1b64dcfd8b7b067189656055f5ea4553d5dcc71537d22708079b957d9139d9c9"
+    },
+    {
+      "file": "retomada-canary-diagnose.cjs.gz",
+      "bytes": 464,
+      "sha256": "30affe22fceac50cdcffa04c5540bd5b3ada59338620293bded9bbd4bf6db747",
+      "rawBytes": 740,
+      "rawSha256": "f51611fdeec1ac66a1ea080396bc7a32b3f82a8f7290cc841606d815ac8ef27a"
+    },
+    {
+      "file": "retomada-canary-download-probe.cjs.gz",
+      "bytes": 507,
+      "sha256": "f7a432ac05ddf760a53f1822f3b0827f91eaddbd5d013c559122836ef42cbcd5",
+      "rawBytes": 911,
+      "rawSha256": "888fbf5dd29f01a1fda078858b39e68c0d6e8bddb47c27c92ef279c1b36cce73"
+    },
+    {
+      "file": "retomada-canary-bucket.cjs.gz",
+      "bytes": 347,
+      "sha256": "e3d3b828fd93766a0a69fe57d9978e2b378ccdbaf7a20c5fc624f7f66bea79da",
+      "rawBytes": 465,
+      "rawSha256": "775dbe5bb9c3f3b6cac9fcd22327f83c120c18ddb4aea4e0c318078f0a3f0c8c"
+    },
+    {
+      "file": "retomada-canary-b1-open.cjs.gz",
+      "bytes": 458,
+      "sha256": "edaff0b35d589eac9f55094ccce7237c0d8cce0485493960329359076fece774",
+      "rawBytes": 773,
+      "rawSha256": "b0d421e024a315d62321b3de93815b2bd50988bae1a4f44d0eefb9b0faf23be3"
+    },
+    {
+      "file": "retomada-canary-b1-edit.cjs.gz",
+      "bytes": 1373,
+      "sha256": "1e42d0de9e5c94b6d8729cae9de1b64c57fff6af8ee1becc29c5ac575895cc4a",
+      "rawBytes": 2873,
+      "rawSha256": "e0e5f188248b2ce041bd9192f81b2ba1af0d5634f7f21e445b49d08bb9853bbe"
+    },
+    {
+      "file": "retomada-canary-hold-b1.cjs.gz",
+      "bytes": 243,
+      "sha256": "a10701164a8bd83c2f8bb1f5553275067b6daddb65255c94bb481367a15b1063",
+      "rawBytes": 311,
+      "rawSha256": "f18a975015fe8356ad1c36593248ee173112afb48cd9cb35aaa27a77f777d63c"
+    },
+    {
+      "file": "retomada-canary-reader-a.cjs.gz",
+      "bytes": 1262,
+      "sha256": "c7c687b314af445dba5030223be502b7c28f7a0f12c38b78f30bc87120fe9c54",
+      "rawBytes": 2682,
+      "rawSha256": "27fb73c0e0879881d4889e3d6db0a68b8e7af27addb2b745383bde3a63e1c8a6"
+    },
+    {
+      "file": "retomada-canary-hold-a.cjs.gz",
+      "bytes": 311,
+      "sha256": "9c21a88c54602612fb4e4bf5d4b84966a855277b68b2194cdc407fac630cfb8a",
+      "rawBytes": 438,
+      "rawSha256": "1eebebf36c6306ae6bb282b0177b2dde39af7b969821ace7bf8c47cdcf2c49f6"
+    },
+    {
+      "file": "retomada-canary-restore-b2.cjs.gz",
+      "bytes": 1150,
+      "sha256": "97847e298284a6705c9495453167874783f32cc9c7681e7c9dd8eb6dbda08e69",
+      "rawBytes": 2321,
+      "rawSha256": "fa6f2d8f72441b874afaa0fff63cf6cf608ea8f65e5b9aa80e1a7787aad420c6"
+    },
+    {
+      "file": "retomada-canary-final-independent.cjs.gz",
+      "bytes": 723,
+      "sha256": "c4316dc2da5202a210dfcf1d3d60fc90a00810b99070828d107154351b938479",
+      "rawBytes": 1270,
+      "rawSha256": "b293bc1aee6e2df2761442497b62fc249df72003ccae9412d5a95bdf871cd7c5"
+    },
+    {
+      "file": "retomada-canary-download-final.cjs.gz",
+      "bytes": 696,
+      "sha256": "9344fdd1fdeb49a063d5d264eb713a7457f296b507c1502d80a564956b1cfde0",
+      "rawBytes": 1349,
+      "rawSha256": "bb9212c6faeb7bbd4529230c25777967500951acf2bb5efd2b5f52ff639646f5"
+    },
+    {
+      "file": "retomada-canary-close.cjs.gz",
+      "bytes": 302,
+      "sha256": "0e9f8c4064059e2738f7d53bcb26cd6f049630c3bc580deff94b96d6a1152398",
+      "rawBytes": 415,
+      "rawSha256": "7cd76f507ed8e5b094fcc5aecaa11b64269157cdddc98f0cb88ced4503c809dd"
+    },
+    {
+      "file": "vila-final.pinta.json.gz",
+      "bytes": 2874,
+      "sha256": "1e65f38b2da15d66aa77f6f03547514978b3e4c6827a691e85233736e51ae9ee",
+      "rawBytes": 203839,
+      "rawSha256": "b57a3a89ae67c960efe8f33b5ee8d3fb0135e7fbe2b8d64ad685b74d8d4a63f7"
+    }
+  ]
+}

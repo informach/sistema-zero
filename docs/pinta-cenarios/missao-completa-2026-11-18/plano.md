@@ -4,6 +4,9 @@ Plano de execução aprovado pelo pedido de concluir a missão, mantendo sua ord
 visual. Parte de staging `4fe2aac0f`, na branch isolada `pinta-missao-completar-20261118`.
 As alterações em andamento de Molda no worktree principal não fazem parte desta entrega.
 
+A continuação de 21/11 está no [plano da retomada](../../superpowers/plans/2026-11-21-pinta-missao-retomada.md).
+As anotações datadas abaixo conservam o histórico, incluindo bloqueios já resolvidos.
+
 ## Arquitetura e critérios globais
 
 - Evoluir documento, stores, ferramentas e componentes existentes; um único editor.
@@ -20,8 +23,15 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
 ## Execução, na ordem da missão
 
 - [x] 0a. Reauditar staging e recuperar matriz R01–R33 e critérios originais.
-- [ ] 0b. Acrescentar ensaio de implantação gradual/rollback de versões e executar o ciclo
+- [x] 0b. Acrescentar ensaio de implantação gradual/rollback de versões e executar o ciclo
   autenticado entre clientes de staging com a conta de teste fornecida pelo usuário.
+  Fechado em 21/11 com produtor 6, CAS, cliente antigo, recuperação offline e
+  rollback publicado B → A → B. A edição local feita em A foi sincronizada intacta
+  por B; novo IndexedDB e download R2 confirmaram os documentos completos.
+  Serviço/CORS temporários removidos e frontends concorrentes preservados.
+  Ver `qa/gravador6-autenticado-2026-11-21/` e
+  `qa/rollback-publicado-2026-11-21/`. Isso não fecha a atualização/publicação
+  integral do cenário das etapas seguintes. Segue o histórico desta etapa:
   Login confirmado e runtime C4 armazenado no R2 real, com 128 objetos conferidos;
   nenhuma ativação realizada. Provas e limites em `qa/runtime-c4-staging/README.md`.
   O CI remoto de `7347a7707` encontrou quatro bloqueios adicionais; diagnóstico,
