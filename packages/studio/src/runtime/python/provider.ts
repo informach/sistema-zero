@@ -49,6 +49,7 @@ export function createPythonRuntimeProvider(options: {
     id: options.id,
     async prepare(input) {
       const { frame, signal } = input
+      const background = input.pythonBackground === true
       const activity =
         input.pythonActivity === undefined
           ? undefined
@@ -167,6 +168,7 @@ export function createPythonRuntimeProvider(options: {
         hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),
         ...(input.pythonMission ? { mission: true } : {}),
+        ...(background ? { background: true as const } : {}),
       })
     },
   }

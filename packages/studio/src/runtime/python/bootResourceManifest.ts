@@ -57,10 +57,10 @@ export function pythonBootResourceManifestKey(raw: unknown): string {
 }
 
 /** Public data only, derived from the same verified deployment as executable artifacts. */
-export async function createPythonBootResourceManifest(
+export async function preparePythonBootResourceMetadata(
   rawDeployment: unknown,
   expectedRuntimeHash: string,
-): Promise<PythonBootResourceManifest> {
+) {
   if (!/^[a-f0-9]{64}$/.test(expectedRuntimeHash))
     throw new Error('Pin de release Python inválido.')
   const deployment = await verifyStudioPythonDeployment(rawDeployment)
@@ -71,9 +71,18 @@ export async function createPythonBootResourceManifest(
     if (!file) throw new Error(`Recurso de boot Python ausente: ${name}.`)
     return { name, bytes: file.bytes, sha256: file.sha256, mime: mime[name] }
   })
-  return capturePythonBootResourceManifest({
+  const manifest = capturePythonBootResourceManifest({
     version: 1,
     runtimeManifestSha256: expectedRuntimeHash,
     files,
   })
+  return { manifest, features: deployment.distribution.features }
+}
+
+/** The wire manifest remains version 1: capabilities stay in verified host metadata. */
+export async function createPythonBootResourceManifest(
+  rawDeployment: unknown,
+  expectedRuntimeHash: string,
+): Promise<PythonBootResourceManifest> {
+  return (await preparePythonBootResourceMetadata(rawDeployment, expectedRuntimeHash)).manifest
 }

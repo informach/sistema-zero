@@ -72,6 +72,7 @@ export interface PythonFrameInitialization {
   snapshot: PythonExecutionSnapshot
   activity?: StudioPythonActivity
   mission?: true
+  background?: true
   bootResources: 1
 }
 export type PythonFrameCommand = {
@@ -88,6 +89,11 @@ export type PythonFrameCommand = {
   | { type: 'audio-response'; requestId: string; response: string }
   /** A aba Desempenho liga e desliga a medida (o quadro conta os quadros pintados). */
   | { type: 'perf'; on: boolean }
+  /**
+   * A aba Meus testes aperta (`down`) ou solta uma tecla do contrato dos objetivos no programa,
+   * como o teclado faria: o quadro despacha o KeyboardEvent no desenho (que sobe até a janela).
+   */
+  | { type: 'key'; key: string; down: boolean }
 )
 export type PythonFrameMessage = {
   protocol: 1

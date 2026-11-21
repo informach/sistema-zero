@@ -926,7 +926,15 @@ export function Position() {
   )
 }
 
-/** As réguas nas bordas da tela do jogo (0 no alto e à esquerda) e o rastro do último movimento. */
+/**
+ * As réguas nas bordas da tela do jogo (0 no alto e à esquerda), as guias até a chave, o número dela
+ * e o alvo. ⚠️ O lugar anterior (quadrado pontilhado e seta) é do palco, `MarcaDoLugarAnterior`, e
+ * não se repete aqui: as duas marcas, uma sobre a outra e um pouco deslocadas, confundiam (revisão
+ * de 20/11/2026). Por isso o pontilhado fica só para o lugar anterior, e o alvo tem borda contínua.
+ * `antes` serve para não cobrir a seta: as guias param no lugar anterior quando ele está no
+ * caminho, e, depois de subir ou descer, o número vai para o lado da chave, porque embaixo ou em
+ * cima ele ficava em cima do lugar de onde ela saiu.
+ */
 function Reguas({
   x,
   y,
@@ -944,6 +952,12 @@ function Reguas({
   // O 0 dos dois números mora no canto ("0,0").
   const xs = [112, 224, 336, 448]
   const ys = [82, 164, 246, 328]
+  const guiaDaEsquerda = antes && antes.y === y && antes.x < x ? antes.x : x
+  const guiaDeCima = antes && antes.y < y && antes.x === x ? antes.y : y
+  const vertical = antes !== null && antes.x === x && antes.y !== y
+  const rotulo = vertical
+    ? { x: x <= 370 ? x + 38 : Math.max(36, x - 74), y: y + 7 }
+    : { x: Math.min(408, Math.max(36, x + MEIO - 34)), y: y > 280 ? y - 22 : y + 36 }
   return (
     <svg className="sz-discovery-reguas" viewBox="0 0 480 360" aria-hidden>
       <rect x="0" y="0" width="480" height="22" fill="rgba(255,253,243,.6)" />
@@ -999,7 +1013,6 @@ function Reguas({
             fill={noAlvo ? 'rgba(11,122,84,.25)' : 'none'}
             stroke={noAlvo ? '#0b7a54' : '#c8246f'}
             strokeWidth="3"
-            strokeDasharray={noAlvo ? undefined : '6 4'}
           />
           <text
             x={alvo.x + 16}
@@ -1013,42 +1026,18 @@ function Reguas({
           </text>
         </g>
       ) : null}
-      {antes ? (
-        <>
-          <rect
-            x={antes.x}
-            y={antes.y}
-            width="32"
-            height="32"
-            rx="6"
-            fill="none"
-            stroke="#865900"
-            strokeWidth="2.5"
-            strokeDasharray="5 4"
-          />
-          <line
-            x1={antes.x + MEIO}
-            y1={antes.y + MEIO}
-            x2={x + MEIO}
-            y2={y + MEIO}
-            stroke="#865900"
-            strokeWidth="3"
-            strokeDasharray="6 5"
-          />
-        </>
-      ) : null}
       <line
         x1={x + MEIO}
         x2={x + MEIO}
         y1={22}
-        y2={y}
+        y2={guiaDeCima}
         stroke="#0a2a7a"
         strokeOpacity=".35"
         strokeDasharray="3 4"
       />
       <line
         x1={34}
-        x2={x}
+        x2={guiaDaEsquerda}
         y1={y + MEIO}
         y2={y + MEIO}
         stroke="#0a2a7a"
@@ -1056,8 +1045,8 @@ function Reguas({
         strokeDasharray="3 4"
       />
       <rect
-        x={Math.min(408, Math.max(36, x + MEIO - 34))}
-        y={y > 280 ? y - 22 : y + 36}
+        x={rotulo.x}
+        y={rotulo.y}
         width="68"
         height="18"
         rx="9"
@@ -1066,8 +1055,8 @@ function Reguas({
         strokeWidth="2"
       />
       <text
-        x={Math.min(442, Math.max(70, x + MEIO))}
-        y={y > 280 ? y - 9 : y + 49}
+        x={rotulo.x + 34}
+        y={rotulo.y + 13}
         textAnchor="middle"
         fontSize="11"
         fontWeight="800"

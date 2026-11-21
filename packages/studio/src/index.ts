@@ -171,6 +171,10 @@ export type {
   StudioShareResult,
 } from './studio/share'
 export type {
+  StudioStudentTestsServer,
+  StudioStudentTestsServerResult,
+} from './studio/student-tests-server'
+export type {
   StudioTeamArtKind,
   StudioTeamArtSummary,
   StudioTeamImportResult,

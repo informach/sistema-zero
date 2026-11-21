@@ -7,13 +7,14 @@ import {
   createPythonEditorConsole,
   type PythonEditorConsole,
 } from '../runtime/python/editorConsole'
+import type { StudioStudentTestsServer } from '../studio/student-tests-server'
 import type { StudioWorkspacePreferencesAdapter } from '../studio/workspace'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
-import { createPreviewDocumentSource, type PreviewDocumentSource } from './previewDocumentFactory'
+import { createPreviewSlot, type PreviewDocumentSource } from './previewDocumentFactory'
 import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
 import {
   createLocalPersistenceAdapter,
@@ -22,6 +23,7 @@ import {
   useProjectStore,
 } from './projectStore'
 import { createProRunStore } from './proRun'
+import type { PythonTestHostSource } from './pythonTestHost'
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'
@@ -53,6 +55,10 @@ export interface StudioStores {
   proRun: ReturnType<typeof createProRunStore>
   /** O documento do jogo como a prévia o monta (a aba "Meus testes" pede a ela). */
   previewDocument: PreviewDocumentSource
+  /** O ambiente e o projeto do Python como a prévia os tem (a aba "Meus testes" pede a ela). */
+  pythonTestHost: PythonTestHostSource
+  /** O executor dos testes do Pro no servidor (a aba "Meus testes" no Pro); `null` sem ele. */
+  studentTestsServer: StudioStudentTestsServer | null
   persistence: PersistenceService
   workspacePreferences: StudioWorkspacePreferencesAdapter | null
 }
@@ -65,6 +71,8 @@ export interface CreateStudioStoresOptions {
   limits?: StudioLimits
   /** Cotas do compilador Pro remoto, quando o host usa um runtime remoto. */
   proBuildLimits?: StudioProBuildLimits
+  /** O executor dos testes do Pro no servidor, quando o host o entrega (estático por instância). */
+  studentTestsServer?: StudioStudentTestsServer
   /** Locale estático usado também por mensagens produzidas fora do React. */
   locale?: Locale
 }
@@ -92,7 +100,9 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     pythonConsole: createPythonEditorConsole(),
     editorHistory: createEditorHistory(),
     proRun: createProRunStore(),
-    previewDocument: createPreviewDocumentSource(),
+    previewDocument: createPreviewSlot(),
+    pythonTestHost: createPreviewSlot(),
+    studentTestsServer: options.studentTestsServer ?? null,
     workspacePreferences:
       options.workspacePreferences ??
       ((options.persistence ?? 'local') === 'local' ? createLocalWorkspacePreferences() : null),
@@ -179,4 +189,12 @@ export function useEditorHistory(): EditorHistory | null {
  */
 export function usePreviewDocumentSource(): PreviewDocumentSource | null {
   return useContext(StudioStoresContext)?.previewDocument ?? null
+}
+
+/**
+ * O anfitrião dos testes no Python desta instância (a prévia Python registra; a aba "Meus testes"
+ * pede). `null` fora de um <Studio>.
+ */
+export function usePythonTestHostSource(): PythonTestHostSource | null {
+  return useContext(StudioStoresContext)?.pythonTestHost ?? null
 }

@@ -1,5 +1,6 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
+import { PYTHON_BACKGROUND_FOCUS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import type { StudioRuntimeSession } from '../types'
@@ -26,17 +27,17 @@ const isFramePort = (value: unknown): value is FramePort =>
   'close' in value &&
   typeof value.close === 'function'
 
-async function fixture(mission = false) {
+async function fixture(mission = false, background = false, supportsBackground = false) {
   const { project, environment } = await pythonEnvironmentFixture('classic')
   const original = environment.catalog.releases[0]
-  if (!original) throw new Error('Missing inert release')
+  if (!original?.manifest.python) throw new Error('Missing inert Python release')
   const bytes = new TextEncoder().encode('inert public bytes')
   const digest = await pythonWebBytesSha256(bytes)
   const distribution = StudioPythonDistributionSchema.parse({
     version: 1,
     pythonVersion: '3.14.2',
     pyodideVersion: '314.0.7',
-    features: [],
+    features: supportsBackground ? [PYTHON_BACKGROUND_FOCUS_FEATURE] : [],
     providedModules: [],
     previewHostAudioVersion: 1,
     files: [
@@ -55,6 +56,7 @@ async function fixture(mission = false) {
   })
   const release = await createStudioRuntimeRelease({
     ...original.manifest,
+    python: { ...original.manifest.python, features: distribution.features },
     artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
   })
   const snapshot = await preparePythonExecutionSnapshot(project)
@@ -142,6 +144,7 @@ async function fixture(mission = false) {
   })
   const preparation = preparePythonFrameSession({
     ...(mission ? { mission: true } : {}),
+    ...(background ? { background: true as const } : {}),
     frame,
     frameURL: new URL(`https://runtime.test/v1/runtimes/${release.manifestSha256}/frame.html`),
     identity,
@@ -234,6 +237,35 @@ async function fixture(mission = false) {
   }
 }
 
+test('a background Python frame does not delegate focus to its hidden document', async () => {
+  const value = await fixture(false, true)
+  expect(value.frame.allow).toBe("focus-without-user-activation 'none'")
+})
+
+test('a background Python run refuses an old verified release before admitting executable state', async () => {
+  const value = await fixture(false, true)
+  value.complete()
+  value.hello()
+  await expect(value.admitted()).rejects.toThrow('Session ended before admission')
+  const result = await value.preparation
+  expect(result.error).toBeInstanceOf(Error)
+  expect((result.error as Error).message).toContain('Atualize o ambiente Python')
+  expect(value.transfers).toHaveLength(0)
+})
+
+test('a capable verified release receives background presentation outside the learner snapshot', async () => {
+  const value = await fixture(false, true, true)
+  value.complete()
+  value.hello()
+  await value.admitted()
+  const initialization = value.transfers[0]!.data as PythonFrameInitialization
+  expect(initialization.background).toBe(true)
+  expect(initialization.snapshot).not.toHaveProperty('background')
+  expect(value.frame.allow).toBe("focus-without-user-activation 'none'")
+  const session = await value.prepared()
+  await session.dispose()
+})
+
 test('mission reads use the authenticated generation and are rejected after disposal', async () => {
   const value = await fixture(true)
   value.complete()
@@ -271,6 +303,61 @@ test('mission reads use the authenticated generation and are rejected after disp
   })
   await session.dispose()
   await expect(session.observePythonMission({ type: 'value', path: 'pontos' })).rejects.toThrow()
+})
+
+test('a tecla de Meus testes vai pelo canal da execução, e o quadro antigo só recusa o comando', async () => {
+  const value = await fixture()
+  value.complete()
+  value.hello()
+  await value.admitted()
+  const initialization = value.transfers[0]!.data as PythonFrameInitialization
+  const remote = value.transfers[0]!.ports[0] as MessagePort
+  let sequence = 2
+  const emit = (body: Record<string, unknown>) =>
+    remote.postMessage({
+      ...body,
+      protocol: 1,
+      challenge: initialization.challenge,
+      identity: initialization.identity,
+      sequence: ++sequence,
+    })
+  const keys: { key: string; down: boolean }[] = []
+  // O quadro novo conhece a tecla; o de antes dela responde como a qualquer comando desconhecido.
+  let knowsKeys = true
+  remote.onmessage = (event: MessageEvent<PythonFrameCommand>) => {
+    const command = event.data
+    if (command.type === 'run') emit({ type: 'event', event: { type: 'state', state: 'running' } })
+    if (command.type === 'key') {
+      if (!knowsKeys) {
+        emit({
+          type: 'ack',
+          commandId: command.commandId,
+          ok: false,
+          error: 'Comando de execução inválido.',
+        })
+        return
+      }
+      keys.push({ key: command.key, down: command.down })
+    }
+    emit({ type: 'ack', commandId: command.commandId, ok: true })
+  }
+  remote.start()
+  const session = await value.prepared()
+  if (!session.pressKey) throw new Error('Missing key capability')
+  await session.run()
+  await session.pressKey('Enter', true)
+  await session.pressKey('Enter', false)
+  expect(keys).toEqual([
+    { key: 'Enter', down: true },
+    { key: 'Enter', down: false },
+  ])
+  knowsKeys = false
+  await expect(session.pressKey('a', true)).rejects.toThrow('Comando de execução inválido.')
+  // A recusa não derruba a execução: o programa segue respondendo.
+  knowsKeys = true
+  await session.pressKey('a', true)
+  expect(keys.at(-1)).toEqual({ key: 'a', down: true })
+  await session.dispose()
 })
 
 test('routes audio over the authenticated session channel and correlates its response', async () => {

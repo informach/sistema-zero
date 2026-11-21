@@ -66,7 +66,10 @@ export function createPythonExecutionController(options: {
    * missões, que lê as variáveis a cada quadro sem mudar o programa). Lido a cada Rodar.
    */
   observation?(): boolean
+  /** Keep keyboard ownership in the host while an isolated test runs. */
+  readonly background?: true
 }) {
+  const background = options.background === true
   const activity =
     options.pythonActivity === undefined
       ? undefined
@@ -236,6 +239,7 @@ export function createPythonExecutionController(options: {
         },
         ...(activity ? { pythonActivity: activity } : {}),
         ...(!activity && options.observation?.() ? { pythonMission: true as const } : {}),
+        ...(background ? { pythonBackground: true as const } : {}),
       })
       current.session = session
       requireOwner(current, true)
@@ -382,6 +386,17 @@ export function createPythonExecutionController(options: {
             }
           : null,
       )
+      requireOwner(current)
+    },
+    /**
+     * A aba Meus testes: aperta (`down`) ou solta uma tecla no programa da execução da vez, como
+     * o teclado faria. Recusa quando o quadro do Python não conhece o comando.
+     */
+    async pressKey(key: string, down: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pressKey) throw new Error('Este ambiente não aperta teclas no programa.')
+      await session.pressKey(key, down)
       requireOwner(current)
     },
     /**

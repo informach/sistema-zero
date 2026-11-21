@@ -1,6 +1,7 @@
 import {
   createExecutionObservationCodec,
   EXECUTION_COMPARES_WITHOUT_VALUE,
+  EXECUTION_GAME_FIELDS,
   EXECUTION_KEYS,
   EXECUTION_LIMITS,
   type ExecutionCompare,
@@ -13,13 +14,23 @@ import {
 import { isRunnableStudentTestRule } from '@sistemazero/core/studio/student-test-runnable'
 import {
   isStudioStudentTest,
+  STUDENT_TEST_CASES_MAX,
   STUDENT_TEST_NAME_MAX,
   STUDENT_TEST_STEPS_MAX,
-  type StudentTestRule,
+  type StudentTestBehaviorRule,
+  type StudentTestFunctionRule,
   type StudioStudentTest,
 } from '@sistemazero/core/studio/student-tests'
 import type { Translator } from '../../core/i18n/translator'
-import type { StudentTestOutcome } from '../../studentTests/runner'
+import type { StudentTestOutcome } from '../../studentTests/outcome'
+import {
+  type CasesProblem,
+  casesLanguageOf,
+  parsePythonCases,
+  pythonCall,
+  pythonCasesText,
+  pythonLiteral,
+} from './studentTestsPython'
 
 /**
  * Como a aba Meus testes escreve cada teste e cada resultado (pranchas aprovadas em 20/11/2026):
@@ -76,14 +87,18 @@ function joinSteps(t: Translator, parts: string[]): string {
   return `${parts.slice(0, -1).join(', ')} ${t('tests.and')} ${parts.at(-1)}`
 }
 
-/** O que a conferência olha: a variável, a posição do sprite, o texto ou as mensagens. */
-export type CheckKind = 'value' | 'spriteX' | 'spriteY' | 'text' | 'console'
+/**
+ * O que a conferência olha: a variável, a posição do sprite, o texto ou as mensagens; no Pro, o
+ * estado de um kit (`game`: a fase, os pontos, a meta ou a vida, pelo `__studioGame.inspect`).
+ */
+export type CheckKind = 'value' | 'spriteX' | 'spriteY' | 'text' | 'console' | 'game'
 
 /** A conferência do teste como o formulário a vê (a posição do sprite é `<sprite>.x` no contrato). */
 export function checkOf(expect: ExecutionExpectation): { kind: CheckKind; name: string } {
   const target = expect.target
   if (target.kind === 'text') return { kind: 'text', name: '' }
   if (target.kind === 'console') return { kind: 'console', name: '' }
+  if (target.kind === 'game') return { kind: 'game', name: target.field }
   if (target.kind === 'value') {
     const position = /^(.+)\.([xy])$/.exec(target.path)
     if (position?.[1])
@@ -98,6 +113,7 @@ function subjectText(t: Translator, expect: ExecutionExpectation): string {
   if (kind === 'value') return name
   if (kind === 'spriteX') return t('tests.subject.spriteX', { name })
   if (kind === 'spriteY') return t('tests.subject.spriteY', { name })
+  if (kind === 'game') return t(`tests.subject.game.${name}`)
   return t(kind === 'text' ? 'tests.subject.text' : 'tests.subject.console')
 }
 
@@ -112,13 +128,31 @@ export function valueText(t: Translator, value: unknown): string {
   return `"${short.replace(/\s+/g, ' ')}"`
 }
 
-/** "Quando eu apertar Enter. No fim, pontos aumentou." */
-export function describeTest(t: Translator, test: StudioStudentTest): string {
-  const { expect } = test.rule
+/** "dobro(2) responde 4; dobro(5) responde 10." (o teste de função do Python). */
+function describeFunction(t: Translator, rule: StudentTestFunctionRule): string {
+  const language = casesLanguageOf(rule)
+  const cases = rule.cases.map((item) =>
+    t('tests.function.case', {
+      call: pythonCall(rule.name, item.args, language),
+      expected: pythonLiteral(item.expected, language),
+    }),
+  )
+  return t('tests.function.describe', { cases: cases.join('; ') })
+}
+
+/** A conferência do fim escrita por inteiro ("pontos aumentou", "o texto na tela tem "Oi""). */
+function checkText(t: Translator, expect: ExecutionExpectation): string {
   const compare = t(`tests.compare.${expect.compare}`)
-  const check = EXECUTION_COMPARES_WITHOUT_VALUE.includes(expect.compare)
+  return EXECUTION_COMPARES_WITHOUT_VALUE.includes(expect.compare)
     ? `${subjectText(t, expect)} ${compare}`
     : `${subjectText(t, expect)} ${compare} ${valueText(t, expect.value)}`
+}
+
+/** "Quando eu apertar Enter. No fim, pontos aumentou." */
+export function describeTest(t: Translator, test: StudioStudentTest): string {
+  if (test.rule.type === 'functionReturns') return describeFunction(t, test.rule)
+  const { expect } = test.rule
+  const check = checkText(t, expect)
   const steps = test.rule.steps.map((step) => stepText(t, step)).filter(Boolean)
   return steps.length
     ? t('tests.when', { steps: joinSteps(t, steps), check })
@@ -143,15 +177,73 @@ export interface OutcomeLine {
   text: string
 }
 
+/** O resultado de um teste de função: os casos certos, ou o primeiro que não respondeu certo. */
+function describeFunctionOutcome(
+  t: Translator,
+  rule: StudentTestFunctionRule,
+  outcome: Extract<StudentTestOutcome, { status: 'passed' | 'failed' }>,
+): OutcomeLine {
+  if (outcome.status === 'passed') {
+    const what =
+      rule.cases.length === 1
+        ? t('tests.what.functionRight.one')
+        : t('tests.what.functionRight.many', { n: rule.cases.length })
+    return { tone: 'passed', text: t('tests.passed', { what }) }
+  }
+  const failed = (what: string): OutcomeLine => ({
+    tone: 'failed',
+    text: t('tests.failed', { what }),
+  })
+  const { observation } = outcome
+  if (observation.error) return failed(t('tests.what.unfinished', { error: observation.error }))
+  if (observation.errors?.length) return failed(t('tests.what.gameError'))
+  if (observation.missing) return failed(t('tests.what.functionMissing', { name: rule.name }))
+  const language = casesLanguageOf(rule)
+  for (const [index, item] of rule.cases.entries()) {
+    const seen = observation.cases?.[index]
+    const call = pythonCall(rule.name, item.args, language)
+    if (!seen?.ok) return failed(t('tests.what.functionError', { call }))
+    if (JSON.stringify(seen.value) !== JSON.stringify(item.expected))
+      return failed(
+        t('tests.what.functionWrong', { call, value: pythonLiteral(seen.value, language) }),
+      )
+  }
+  return failed(outcome.detail)
+}
+
+/**
+ * O resultado que veio do executor do servidor (o Pro): passou ou não, e o que ele viu. Passou: a
+ * conferência por inteiro (ou "a função respondeu certo"); não passou: o que o executor viu,
+ * numa frase só ("com (2) respondeu 7; esperava 10").
+ */
+function describeRemoteOutcome(
+  t: Translator,
+  test: StudioStudentTest,
+  outcome: Extract<StudentTestOutcome, { status: 'remote' }>,
+): OutcomeLine {
+  const rule = test.rule
+  if (outcome.passed) {
+    const what =
+      rule.type === 'functionReturns'
+        ? rule.cases.length === 1
+          ? t('tests.what.functionRight.one')
+          : t('tests.what.functionRight.many', { n: rule.cases.length })
+        : checkText(t, rule.expect)
+    return { tone: 'passed', text: t('tests.passed', { what }) }
+  }
+  const seen = (outcome.detail ?? '').trim().replace(/\.$/, '')
+  const what = seen
+    ? `${seen.charAt(0).toLowerCase()}${seen.slice(1)}`
+    : t('tests.what.remoteFailed')
+  return { tone: 'failed', text: t('tests.failed', { what }) }
+}
+
 /** A linha do resultado embaixo do teste ("Passou: …", "Não passou: …" ou um recado). */
 export function describeOutcome(
   t: Translator,
   test: StudioStudentTest,
   outcome: StudentTestOutcome,
 ): OutcomeLine | null {
-  const { expect } = test.rule
-  const subject = subjectText(t, expect)
-  const expected = valueText(t, expect.value)
   if (outcome.status === 'cancelled') return null
   if (outcome.status === 'invalid') return { tone: 'note', text: t('tests.invalid') }
   if (outcome.status === 'unsupported') return { tone: 'note', text: t('tests.unsupported') }
@@ -159,6 +251,11 @@ export function describeOutcome(
   if (outcome.status === 'unsaved') return { tone: 'note', text: t('tests.unsaved') }
   if (outcome.status === 'timeout')
     return { tone: 'failed', text: t('tests.failed', { what: t('tests.what.timeout') }) }
+  if (outcome.status === 'remote') return describeRemoteOutcome(t, test, outcome)
+  if (test.rule.type === 'functionReturns') return describeFunctionOutcome(t, test.rule, outcome)
+  const { expect } = test.rule
+  const subject = subjectText(t, expect)
+  const expected = valueText(t, expect.value)
   const { observation } = outcome
   const initial = decoded(observation.initial)
   const final = decoded(observation.final)
@@ -210,6 +307,18 @@ export function describeOutcome(
 export function comparesFor(kind: CheckKind): ExecutionCompare[] {
   if (kind === 'text' || kind === 'console')
     return ['equals', 'notEquals', 'contains', 'notContains', 'changed', 'truthy']
+  if (kind === 'game')
+    return [
+      'equals',
+      'notEquals',
+      'greaterThan',
+      'lessThan',
+      'atLeast',
+      'atMost',
+      'changed',
+      'increased',
+      'decreased',
+    ]
   if (kind === 'spriteX' || kind === 'spriteY')
     return [
       'equals',
@@ -247,33 +356,58 @@ export type FormStep =
   | { kind: 'click'; sprite: string; group: string }
 
 export interface TestForm {
+  /** Testar o programa (passos e a conferência do fim) ou testar uma função (só no Python). */
+  kind: 'behavior' | 'function'
   name: string
   steps: FormStep[]
   check: CheckKind
   subject: string
   compare: ExecutionCompare
   value: string
+  /** A função do teste de função (`functionKey`: o nome, ou `arquivo.py:nome`). */
+  fn: string
+  /** Os casos, um por linha, como a criança escreveu (`2, 3 -> 5`). */
+  cases: string
 }
 
 function secondsInput(t: Translator, ms: number): string {
   return numberText(t, ms / 1000).replace(/\s/g, '')
 }
 
-export function formFromTest(t: Translator, test: StudioStudentTest | null): TestForm {
-  if (!test)
+export function formFromTest(
+  t: Translator,
+  test: StudioStudentTest | null,
+  /** O teste novo começa testando uma função (o Python sem biblioteca de jogo só testa função). */
+  startWith: TestForm['kind'] = 'behavior',
+): TestForm {
+  const blank: TestForm = {
+    kind: startWith,
+    name: '',
+    steps: [{ kind: 'press', key: 'Enter' }],
+    check: 'value',
+    subject: '',
+    compare: 'equals',
+    value: '',
+    fn: '',
+    cases: '',
+  }
+  if (!test) return blank
+  if (test.rule.type === 'functionReturns')
     return {
-      name: '',
-      steps: [{ kind: 'press', key: 'Enter' }],
-      check: 'value',
-      subject: '',
-      compare: 'equals',
-      value: '',
+      ...blank,
+      kind: 'function',
+      name: test.name,
+      fn: test.rule.module ? `${test.rule.module}:${test.rule.name}` : test.rule.name,
+      cases: pythonCasesText(test.rule.cases, casesLanguageOf(test.rule)),
     }
-  const { kind, name } = checkOf(test.rule.expect)
-  const value = test.rule.expect.value
+  const rule: StudentTestBehaviorRule = test.rule
+  const { kind, name } = checkOf(rule.expect)
+  const value = rule.expect.value
   return {
+    ...blank,
+    kind: 'behavior',
     name: test.name,
-    steps: test.rule.steps.flatMap((step): FormStep[] => {
+    steps: rule.steps.flatMap((step): FormStep[] => {
       if (step.action === 'wait') return [{ kind: 'wait', seconds: secondsInput(t, step.ms) }]
       if (step.action === 'clickTarget' && step.target.kind === 'sprite')
         return [{ kind: 'click', sprite: step.target.path, group: step.target.groupPath }]
@@ -287,7 +421,7 @@ export function formFromTest(t: Translator, test: StudioStudentTest | null): Tes
     }),
     check: kind,
     subject: name,
-    compare: test.rule.expect.compare,
+    compare: rule.expect.compare,
     value:
       value === undefined
         ? ''
@@ -333,19 +467,51 @@ export type FormProblem =
   | 'tests.form.needSprite'
   | 'tests.form.needSubject'
   | 'tests.form.needValue'
+  | 'tests.form.needFunction'
   | 'tests.form.tooLong'
   | 'tests.form.limits'
+  | CasesProblem
+
+/** O teste de função do formulário (no Python e no Pro em JavaScript). */
+function functionTestFromForm(
+  form: TestForm,
+  id: string,
+  name: string,
+  language: 'javascript' | 'python',
+  kind: 'classic' | 'pro',
+): { test: StudioStudentTest } | { problem: FormProblem } {
+  if (!form.fn) return { problem: 'tests.form.needFunction' }
+  const parsed = parsePythonCases(form.cases, STUDENT_TEST_CASES_MAX, language)
+  if ('problem' in parsed) return parsed
+  const split = form.fn.lastIndexOf(':')
+  const rule: StudentTestFunctionRule = {
+    type: 'functionReturns',
+    name: split < 0 ? form.fn : form.fn.slice(split + 1),
+    ...(split < 0 ? {} : { module: form.fn.slice(0, split) }),
+    cases: parsed.cases,
+  }
+  const test: StudioStudentTest = { id, name, rule }
+  if (!isRunnableStudentTestRule(rule, language, kind) || !isStudioStudentTest(test))
+    return { problem: 'tests.form.badCase' }
+  return { test }
+}
 
 /** O formulário como teste, ou o primeiro problema que impede salvar. */
 export function testFromForm(
   t: Translator,
   form: TestForm,
   id: string,
+  language: 'javascript' | 'python' = 'javascript',
+  kind: 'classic' | 'pro' = 'classic',
 ): { test: StudioStudentTest } | { problem: FormProblem } {
   const name = form.name.trim().slice(0, STUDENT_TEST_NAME_MAX)
   if (!name) return { problem: 'tests.form.needName' }
+  if (form.kind === 'function' && (language === 'python' || kind === 'pro'))
+    return functionTestFromForm(form, id, name, language, kind)
   const needsSubject = form.check !== 'text' && form.check !== 'console'
   if (needsSubject && !form.subject) return { problem: 'tests.form.needSubject' }
+  const gameField = EXECUTION_GAME_FIELDS.find((field) => field === form.subject)
+  if (form.check === 'game' && !gameField) return { problem: 'tests.form.needSubject' }
   const needsValue = !EXECUTION_COMPARES_WITHOUT_VALUE.includes(form.compare)
   if (needsValue && !form.value.trim()) return { problem: 'tests.form.needValue' }
   const steps: ExecutionStep[] = []
@@ -377,7 +543,7 @@ export function testFromForm(
       : form.check === 'spriteY'
         ? `${form.subject}.y`
         : form.subject
-  const rule: StudentTestRule = {
+  const rule: StudentTestBehaviorRule = {
     type: 'behavior',
     steps,
     expect: {
@@ -386,7 +552,9 @@ export function testFromForm(
           ? { kind: 'text' }
           : form.check === 'console'
             ? { kind: 'console' }
-            : { kind: 'value', path },
+            : form.check === 'game' && gameField
+              ? { kind: 'game', field: gameField }
+              : { kind: 'value', path },
       compare: form.compare,
       ...(needsValue ? { value: parseValueInput(t, form.value) } : {}),
     },
@@ -394,7 +562,7 @@ export function testFromForm(
   if (executionRuleBudgetMs(rule) > EXECUTION_LIMITS.maxTotalWaitMs)
     return { problem: 'tests.form.tooLong' }
   const test: StudioStudentTest = { id, name, rule }
-  if (!isRunnableStudentTestRule(rule) || !isStudioStudentTest(test))
+  if (!isRunnableStudentTestRule(rule, language, kind) || !isStudioStudentTest(test))
     return { problem: 'tests.form.limits' }
   return { test }
 }

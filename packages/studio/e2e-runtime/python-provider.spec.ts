@@ -359,6 +359,74 @@ test('a aba Desempenho num programa sem tela: as fatias dizem que não há quadr
   await page.evaluate(() => globalThis.providerProbe.dispose('perf-text'))
 })
 
+test('Meus testes: o quadro do Python aperta a tecla do teste e o jogo responde', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('teclas', 'pgzeroGame', { observation: true }),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('teclas'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('teclas').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const read = async (path: string) => {
+    const { observation } = await page.evaluate(
+      (path) => globalThis.pythonControllerProbe.observe('teclas', path),
+      path,
+    )
+    if (observation.type !== 'value' || !observation.observed.found) throw new Error(path)
+    return Number(observation.observed.value)
+  }
+  const press = (key: string, down: boolean) =>
+    page.evaluate(([key, down]) => globalThis.pythonControllerProbe.pressKey('teclas', key, down), [
+      key,
+      down,
+    ] as const)
+  // Espaço: o `on_key_down` do jogo soma um ponto.
+  expect(await read('pontos')).toBe(0)
+  await press('Space', true)
+  await press('Space', false)
+  await expect.poll(() => read('pontos')).toBe(1)
+  // Seta segurada: o `keyboard.right` do jogo anda com o herói enquanto a tecla está apertada.
+  const before = await read('heroi.x')
+  await press('ArrowRight', true)
+  await expect.poll(() => read('heroi.x')).toBeGreaterThan(before)
+  await press('ArrowRight', false)
+  const stopped = await read('heroi.x')
+  await page.waitForTimeout(300)
+  expect(await read('heroi.x')).toBe(stopped)
+  // A função do jogo, chamada no quadro (o `marcar()` responde None).
+  expect(
+    (await page.evaluate(() => globalThis.pythonControllerProbe.call('teclas', 'marcar', [[]])))
+      .observation,
+  ).toEqual({ id: 'chamada', type: 'functionReturns', cases: [{ ok: true, value: null }] })
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('teclas'))
+})
+
+test('Meus testes: o executor testa uma função do Python clássico numa execução escondida', async ({
+  page,
+}) => {
+  const run = (expected: number) =>
+    page.evaluate(
+      (expected) =>
+        globalThis.pythonControllerProbe.studentTest('classic-portable', {
+          id: 'atual',
+          name: 'O valor atual',
+          rule: { type: 'functionReturns', name: 'current', cases: [{ args: [], expected }] },
+        }),
+      expected,
+    )
+  const certo = await run(7)
+  expect(certo.status).toBe('passed')
+  const errado = await run(8)
+  expect(errado.status).toBe('failed')
+  if (errado.status === 'failed') expect(errado.detail).toContain('respondeu 7')
+  // A execução escondida sai da página no fim.
+  expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
+})
+
 test('Investigar: o controlador no modo de observação lê as variáveis do jogo a cada quadro', async ({
   page,
 }) => {

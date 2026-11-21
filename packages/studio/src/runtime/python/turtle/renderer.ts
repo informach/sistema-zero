@@ -3,6 +3,7 @@ import type { StudioPythonPlaytestRecipe } from '@sistemazero/core/studio/python
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
 import { createPythonMissionPoseTracker } from '../missionPose'
+import { createPythonRendererFocus, type PythonRendererFocusOptions } from '../rendererFocus'
 import {
   TURTLE_GRAPHICS_LIMITS as LIMITS,
   readTurtleGraphicsRequest,
@@ -107,8 +108,9 @@ export interface TurtleRenderer {
 /** One instance per frame generation. Never exposes learner objects or callback code to DOM APIs. */
 export function createTurtleRenderer(
   container: HTMLElement,
-  options: { activityPresentation?: boolean } = {},
+  options: PythonRendererFocusOptions & { activityPresentation?: boolean } = {},
 ): TurtleRenderer {
+  const focusCanvas = createPythonRendererFocus(options)
   const scene = new Map<number, SceneItem>()
   const mission = createPythonMissionPoseTracker(LIMITS.turtles)
   const actorItems = new Map<number, number[]>()
@@ -294,7 +296,7 @@ export function createTurtleRenderer(
     if (!button) return
     const item = type === 'click' ? hit(x, y) : drag?.item
     if (type === 'click') {
-      canvas.focus({ preventScroll: true })
+      focusCanvas(canvas)
       if (item !== undefined) drag = { item, button }
       canvas.setPointerCapture(event.pointerId)
     }
@@ -625,7 +627,7 @@ export function createTurtleRenderer(
         break
       case 'focus':
         ensureCanvas()
-        canvas!.focus({ preventScroll: true })
+        focusCanvas(canvas!)
         break
       case 'bind': {
         const binding = `${operation.event}:${operation.button}`

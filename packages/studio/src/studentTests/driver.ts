@@ -10,6 +10,7 @@ import {
   readStageGeometryInPage,
   stagePointToViewport,
 } from '../check/clickTargetInPage'
+import { executionKeyEvent } from './keyEvent'
 
 /**
  * O piloto de um teste da aba "Meus testes" (proposta aprovada em 20/11/2026), que roda DENTRO do
@@ -51,18 +52,9 @@ export interface StudentTestDriverOptions {
   target: ExecutionTarget
 }
 
-/** A tecla do contrato dos objetivos como o navegador a nomeia num KeyboardEvent. */
-function keyEvent(key: string): { key: string; code: string } {
-  if (key === 'Space') return { key: ' ', code: 'Space' }
-  if (key === 'Shift') return { key: 'Shift', code: 'ShiftLeft' }
-  if (/^[a-z]$/.test(key)) return { key, code: `Key${key.toUpperCase()}` }
-  if (/^[0-9]$/.test(key)) return { key, code: `Digit${key}` }
-  return { key, code: key }
-}
-
 export function buildStudentTestDriver(options: StudentTestDriverOptions): string {
   const steps = options.steps.map((step) =>
-    step.action === 'press' ? { ...step, event: keyEvent(step.key) } : step,
+    step.action === 'press' ? { ...step, event: executionKeyEvent(step.key) } : step,
   )
   const plan = JSON.stringify({ steps, target: options.target })
     .replaceAll('<', '\\u003c')

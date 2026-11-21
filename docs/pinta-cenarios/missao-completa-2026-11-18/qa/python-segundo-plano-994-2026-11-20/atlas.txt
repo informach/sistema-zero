@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+tests\relevo-atlas.test.ts:
+(pass) quatro peças vizinhas viram uma grade 2x2 com os ladrilhos na posição do chão
+(pass) fora da grade não há atlas: tamanhos, texturas ou posições que não encaixam
+(pass) uma peça faltando deixa a célula vazia, sem mudar a posição das outras
+(pass) acima do lado máximo os ladrilhos caem pela metade; ímpar não reduz
+(pass) o atlas copia cada textura para o seu ladrilho, linha a linha
+(pass) célula vazia nunca deixa a beira da peça encostar no transparente
+(pass) célula que só encosta nas diagonais repete o canto de cada vizinha
+(pass) a redução faz a média de cada quadrado 2x2
+(pass) o UV precisa seguir o chão para entrar no atlas
+(pass) o UV vai para o ladrilho da peça; os cantos caem nas bordas dele
+(pass) a conferência do UV usa a matriz da peça sem alterar a geometria
+
+ 11 pass
+ 0 fail
+ 34 expect() calls
+Ran 11 tests across 1 file. [79.00ms]

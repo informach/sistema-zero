@@ -6,7 +6,7 @@ import type { StudioHostAudioPreference, StudioRuntimeEvent, StudioRuntimeSessio
 import { createPythonExecutionController } from './controller'
 import { preparePythonExecutionSnapshot } from './snapshot'
 
-async function fixture(kind: 'classic' | 'pro' = 'classic') {
+async function fixture(kind: 'classic' | 'pro' = 'classic', background = false) {
   const { project, environment: original } = await pythonEnvironmentFixture(kind)
   let currentProject = project
   let revoked = false
@@ -19,6 +19,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
   let muted = false
   const audioPreferences: (StudioHostAudioPreference | undefined)[] = []
   const runMutes: boolean[] = []
+  const backgroundRequests: (true | undefined)[] = []
   const sessions: StudioRuntimeSession[] = []
   const listeners = new Map<StudioRuntimeSession, Set<(event: StudioRuntimeEvent) => void>>()
   let beforePrepare = async () => {}
@@ -41,8 +42,9 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
         kinds: ['classic', 'pro'],
         load: async () => ({
           id: 'test-controller',
-          prepare: async ({ identity, hostAudio }) => {
+          prepare: async ({ identity, hostAudio, pythonBackground }) => {
             audioPreferences.push(hostAudio)
+            backgroundRequests.push(pythonBackground)
             await beforePrepare()
             const callbacks = new Set<(event: StudioRuntimeEvent) => void>()
             const session: StudioRuntimeSession = {
@@ -84,6 +86,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
     ]),
   }
   const controller = createPythonExecutionController({
+    ...(background ? { background: true as const } : {}),
     instanceId: 'test',
     environment: () => environment,
     project: () => currentProject,
@@ -109,6 +112,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
     sessions,
     audioPreferences,
     runMutes,
+    backgroundRequests,
     mute: (value: boolean) => {
       muted = value
       controller.syncAudioPreference()
@@ -138,6 +142,22 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
     },
   }
 }
+
+for (const kind of ['classic', 'pro'] as const)
+  for (const background of [false, true])
+    test(`${kind}: background=${background} is host presentation and preserves the program revision`, async () => {
+      const f = await fixture(kind, background)
+      const before = await preparePythonExecutionSnapshot(f.project)
+      try {
+        await f.controller.run()
+        expect(f.backgroundRequests).toEqual([background ? true : undefined])
+        expect(f.sessions[0]?.identity.revision).toBe(before.revision)
+        expect(f.project).not.toHaveProperty('pythonBackground')
+        expect(f.runs()).toBe(1)
+      } finally {
+        await f.controller.dispose()
+      }
+    })
 
 test('host audio preference follows pending prepare without restarting and retired capabilities cannot unmute', async () => {
   const f = await fixture()

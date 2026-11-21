@@ -1,0 +1,47 @@
+{
+  "studio": {
+    "pass": 12112,
+    "skip": 4,
+    "groups": 167
+  },
+  "core": 3183,
+  "nativeSkippedControlsExecutedSeparately": 4,
+  "browserStats": {
+    "browser": {
+      "startTime": "2026-11-20T23:51:38.018Z",
+      "duration": 218460.27,
+      "expected": 35,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "integracao": {
+      "startTime": "2026-11-20T23:55:18.338Z",
+      "duration": 123690.566,
+      "expected": 12,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "pygame": {
+      "startTime": "2026-11-21T00:08:40.423Z",
+      "duration": 61043.023,
+      "expected": 22,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "python-compartilhado": {
+      "startTime": "2026-11-21T00:09:43.134Z",
+      "duration": 170988.495,
+      "expected": 88,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "profile": "069c2ea93f58bb35f59339c14de53670ca7901b90967b6e9a51a70f9ae0ee62a",
+  "linuxQualified": false,
+  "catalogActivated": false,
+  "missionComplete": false
+}

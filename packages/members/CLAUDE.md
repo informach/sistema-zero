@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/members
 
+## Meus testes no Pro do Estúdio Completo (20/11/2026)
+
+`POST /members/studio/student-tests?audience=` (`StudioStudentTestsService`,
+`application/studio/studio-student-tests.service.ts`): os testes que a criança escreve na aba
+"Meus testes" do Pro em JavaScript, `{project, tests}`. Confere o acesso ao Pro do Estúdio Completo
+(`FreeStudioAccessService.execute(actor, 'existing-pro', 'javascript')`), o projeto Pro com modelo
+conhecido, cada teste pela régua do Pro (`isRunnableStudentTestRule(rule, 'javascript', 'pro')`:
+texto, mensagens, estado do kit ou função exportada de `src`) e roda no MESMO
+`ProjectExecutionChecker` do "Verificar projeto" (`requester` = o perfil). UM lote por pedido
+(`studentTestServerBatches` do core: até 8 testes e 40 s de espera); mais que isso é 400 (o
+Estúdio manda em sequência). A recusa do executor (não compila) volta como 400 com o motivo, a
+criança lê; fora do ar e ocupado seguem 424/429. Nada é guardado. Corpo até o teto do Estúdio
+(`bodyLimitForPath`). Teste: `tests/unit/studio-student-tests.service.test.ts`.
+
 ## Identidade pública e certificado (full review da Aula 7, 19/11/2026)
 
 O emissor recebe `profileSession` obrigatório da fronteira autenticada: `kids-context=student`,

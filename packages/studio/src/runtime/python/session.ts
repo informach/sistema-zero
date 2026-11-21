@@ -12,6 +12,7 @@ import {
   type StudioPythonMissionProbe,
   verifyStudioPythonMissionObservation,
 } from '@sistemazero/core/studio/python-mission-observation'
+import { PYTHON_BACKGROUND_FOCUS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   type StudioExecutionIdentity,
   type StudioHostAudioPreference,
@@ -51,6 +52,7 @@ export function preparePythonFrameSession(options: {
   signal: AbortSignal
   activity?: StudioPythonActivity
   mission?: true
+  background?: true
   hostAudio?: StudioHostAudioPreference
   /**
    * A file the program saved; the host keeps it for the next run (savedFiles.ts). A deleted
@@ -60,6 +62,7 @@ export function preparePythonFrameSession(options: {
 }): Promise<StudioRuntimeSession> {
   const { frame, signal } = options
   const identity = Object.freeze({ ...options.identity })
+  const background = options.background === true
   const activity =
     options.activity === undefined ? undefined : StudioPythonActivitySchema.parse(options.activity)
   if (activity) assertStudioPythonActivityScope(activity, options.snapshot.configuration)
@@ -412,6 +415,11 @@ export function preparePythonFrameSession(options: {
         const result = await bootPreparation
         if (!result.ok) throw result.error
         const host = result.host
+        if (background && !host.features.includes(PYTHON_BACKGROUND_FOCUS_FEATURE))
+          throw new StudioRuntimeUnavailableError(
+            'background-focus-unsupported',
+            'Atualize o ambiente Python para rodar testes sem tirar o foco da oficina.',
+          )
         if (!active || closed || bootSignal.aborted) {
           channel.port2.close()
           return
@@ -434,15 +442,21 @@ export function preparePythonFrameSession(options: {
             snapshot: options.snapshot,
             ...(activity ? { activity } : {}),
             ...(options.mission ? { mission: true } : {}),
+            ...(background ? { background: true } : {}),
             bootResources: 1,
           },
           '*',
           [channel.port2, resourcePort],
         )
-      } catch {
+      } catch (error) {
         channel.port2.close()
         resourcePort?.close()
-        fail('Não foi possível preparar o canal Python.')
+        fail(
+          error instanceof StudioRuntimeUnavailableError &&
+            error.reasonCode === 'background-focus-unsupported'
+            ? error.message
+            : 'Não foi possível preparar o canal Python.',
+        )
       }
     }
     async function command(value: Command, expectedState: string) {
@@ -494,6 +508,12 @@ export function preparePythonFrameSession(options: {
         if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
         perfListener = listener
         await send({ type: 'perf', on: listener !== null })
+      },
+      async pressKey(key, down) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        if (typeof key !== 'string' || key.length > 20 || typeof down !== 'boolean')
+          throw new Error('Tecla de teste inválida.')
+        await send({ type: 'key', key, down })
       },
       repl: {
         kind: 'python',
@@ -680,7 +700,7 @@ export function preparePythonFrameSession(options: {
     // Pro hosts keep COEP; anonymous framing permits this isolated runtime without cookies.
     frame.setAttribute('credentialless', '')
     frame.sandbox.value = 'allow-scripts allow-pointer-lock'
-    frame.allow = GAME_FRAME_FOCUS_ALLOW
+    frame.allow = background ? "focus-without-user-activation 'none'" : GAME_FRAME_FOCUS_ALLOW
     frame.referrerPolicy = 'no-referrer'
     frame.src = url.href
   })

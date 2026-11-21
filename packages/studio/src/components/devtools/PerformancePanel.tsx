@@ -50,19 +50,25 @@ export function PerformancePanel(): JSX.Element {
   const t = usePerfT()
   const ui = useUIStoreApi()
   const pythonCanvas = usePythonCanvas(ui)
+  // O Pro mede pela ponte da página, sem montar o jogo de novo (só quadros e o tempo de cada um).
+  const pro = useProjectStore((s) =>
+    Boolean(s.project && !isPythonProject(s.project) && s.project.kind === 'pro'),
+  )
   // O programa Python sem tela não tem quadros: a aba mostra o tempo que ele leva.
   if (pythonCanvas === false) return <ProgramTimePanel />
-  return <FramesPanel t={t} ui={ui} python={pythonCanvas === true} />
+  return <FramesPanel t={t} ui={ui} python={pythonCanvas === true} pro={pro} />
 }
 
 function FramesPanel({
   t,
   ui,
   python,
+  pro = false,
 }: {
   t: Translator
   ui: ReturnType<typeof useUIStoreApi>
   python: boolean
+  pro?: boolean
 }): JSX.Element {
   const measuring = useUIStore((s) => s.measuring)
   // Ligar a medida esquece a janela anterior: a nova começa a contar agora.
@@ -96,7 +102,7 @@ function FramesPanel({
         <span className="text-sm">
           {measuring
             ? t(python ? 'perf.on.python' : 'perf.on', { seconds })
-            : t(python ? 'perf.off.python' : 'perf.off')}
+            : t(python ? 'perf.off.python' : pro ? 'perf.off.pro' : 'perf.off')}
         </span>
       </div>
       {measuring && !running ? (
@@ -108,7 +114,7 @@ function FramesPanel({
         </p>
       ) : null}
       {latest && !latest.canvas ? <p className="m-0 text-sm">{t('perf.page')}</p> : null}
-      {latest?.canvas ? <PerfReadings latest={latest} python={python} /> : null}
+      {latest?.canvas ? <PerfReadings latest={latest} python={python || pro} /> : null}
       {latest?.canvas ? <PerfHistory slices={slices} /> : null}
     </div>
   )

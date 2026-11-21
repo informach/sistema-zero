@@ -3236,6 +3236,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
+      // "Meus testes" no Pro (proposta aprovada em 20/11/2026): os testes da criança no executor
+      // do "Verificar projeto" (o members compila e abre o jogo num navegador do studio-runtime),
+      // um lote por pedido (até 8 testes); o teto de tempo é o do Verificar projeto.
+      id: 'members-studio-student-tests',
+      methods: ['POST'],
+      pathPattern: '/members/studio/student-tests',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: 2_000_000,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      timeoutMs: 160_000,
+    },
+    {
       id: 'members-studio-python-analysis',
       methods: ['POST'],
       pathPattern: '/members/studio/python-analysis',

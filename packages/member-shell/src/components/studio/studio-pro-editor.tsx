@@ -3,6 +3,7 @@
 import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch } from '../../lib/session-fetch'
 import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
+import { createStudentTestsServer } from '../../lib/studio-student-tests'
 import '@sistemazero/studio/styles.css'
 import type {
   EditableStudioProject as Project,
@@ -129,6 +130,9 @@ function StudioProEditorSession({
   freeRuntime = false,
   onCompletionControlChange,
 }: Props) {
+  // "Meus testes" no Pro do Estúdio Completo: os testes rodam no executor do servidor (o do
+  // "Verificar projeto"). Um adaptador por editor; o editor o lê uma vez, ao montar.
+  const studentTestsServer = useMemo(() => createStudentTestsServer(), [])
   const prepareDependencies = useMemo(
     () =>
       freeRuntime
@@ -308,6 +312,7 @@ function StudioProEditorSession({
   }
 
   const StudioEditor = mod.StudioEditor
+  const javascriptPro = state.project.programmingLanguage !== 'python'
   const pythonUnavailable =
     state.project.programmingLanguage === 'python' && (free.loading || Boolean(free.error))
   return (
@@ -343,6 +348,7 @@ function StudioProEditorSession({
           editingAccess={pythonUnavailable ? 'observer' : undefined}
           prepareProDependencies={prepareDependencies}
           proRuntime={state.project.programmingLanguage === 'python' ? undefined : proRuntime}
+          studentTestsServer={freeRuntime && javascriptPro ? studentTestsServer : undefined}
           pythonLevel={
             state.project.programmingLanguage === 'python' && freeRuntime ? 3 : undefined
           }

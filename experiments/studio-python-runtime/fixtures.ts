@@ -125,6 +125,8 @@ export async function runtimeFixtureProject(
       'classic-turtleImage',
       'classic-portableAudio',
       'classic-portableAudioNamespace',
+      'classic-pgzeroGame',
+      'classic-pinta-world-1x',
     ].includes(name)
   ) {
     const pro = await runtimeFixtureProject(name.slice('classic-'.length))
@@ -135,6 +137,10 @@ export async function runtimeFixtureProject(
       kind: 'classic',
       mode: 'bridge',
       python: { ...pro.python, entrypoint: 'main.py' },
+      // O programa sai de src/ para a raiz; suas artes relativas acompanham a mudança.
+      assets: common.assets.map((asset) =>
+        asset.proPath?.startsWith('src/') ? { ...asset, proPath: asset.proPath.slice(4) } : asset,
+      ),
       files: Object.fromEntries(
         Object.entries(tree).flatMap(([path, node]) =>
           node.kind === 'file'

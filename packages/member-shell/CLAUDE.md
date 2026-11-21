@@ -362,7 +362,11 @@ aprovada no Canvas "Experiências do Cadê e do Farol" virou a moldura de TODAS 
     pega no chão por proximidade, o caderninho, o balão da porta com a largura medida pelo texto)
     e `Position` (− e +, réguas, aviso de borda, o palpite grande do y, teclado com setas, WASD, +,
     −, X e Y, e o desafio do alvo depois das 4 descobertas). `proximoGestoDaMemoria` decide o que
-    pulsa na memória.
+    pulsa na memória. ⚠️ O lugar anterior da chave (quadrado pontilhado e seta até a chave) é
+    desenhado só pelo palco, `MarcaDoLugarAnterior` em `scene-lighthouse-position.tsx`; as réguas
+    não repetem a marca, o alvo tem borda contínua e o número vai para o lado depois de subir ou
+    descer (20/11/2026: uma criança achou confusa a linha pontilhada, que não diz para onde a chave
+    foi, e as duas marcas sobrepostas).
   - As falas vêm do motor (`discoveryGuidance`, as que o Admin grava com voz); a ideia, a ponte e os
     momentos que só a tela conhece (o palpite e o alvo da posição) vêm de `discoverySpeech(id,
     cenario)` do core.

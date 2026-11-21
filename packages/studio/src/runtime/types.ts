@@ -96,6 +96,11 @@ export interface StudioRuntimeSession {
    * A aba Desempenho: com um ouvinte, o quadro manda uma fatia a cada meio segundo; `null`
    * desliga. Só lê o contador de quadros do renderizador; nunca toca no programa.
    */
+  /**
+   * A aba Meus testes: aperta (`down`) ou solta uma tecla do contrato dos objetivos no programa.
+   * Recusa quando o quadro do Python não conhece o comando (distribuição anterior a ele).
+   */
+  pressKey?(key: string, down: boolean): Promise<void>
   measurePerformance?(
     listener: ((slice: StudioRuntimePerformanceSlice) => void) | null,
   ): Promise<void>
@@ -103,6 +108,8 @@ export interface StudioRuntimeSession {
 
 export interface StudioRuntimePrepareInput {
   pythonMission?: true
+  /** Host presentation only; never part of the learner's document or execution digest. */
+  pythonBackground?: true
   /** Trusted host UI preference. Never supplied by learner source or frame messages. */
   hostAudio?: StudioHostAudioPreference
   /** Host-owned lesson criteria, separate from the editable project and its execution digest. */

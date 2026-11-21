@@ -116,6 +116,57 @@ export const STUDENT_TESTS_COPY: Record<Locale, Record<string, string>> = {
     'tests.key.Escape': 'Esc',
     'tests.key.Shift': 'Shift',
     'tests.key.Enter': 'Enter',
+    'tests.kind': 'O que testar',
+    'tests.kind.behavior': 'Testar o programa',
+    'tests.kind.function': 'Testar uma função',
+    'tests.function.describe': '{cases}.',
+    'tests.function.case': '{call} responde {expected}',
+    'tests.function.none':
+      'Ainda não tem nenhuma função para testar. Crie uma com def num arquivo .py do projeto e ela aparece aqui.',
+    'tests.function.after':
+      'Depois você escreve o que ela recebe e o que ela tem de responder, um caso por linha.',
+    'tests.function.pick': 'A função',
+    'tests.function.cases': 'Casos, um por linha',
+    'tests.function.casesNote':
+      'Escreva o que a função recebe, uma seta e o que ela tem de responder, como no Python: 2, 3 -> 5. Texto vai entre aspas: "Ana" -> "Olá, Ana". Até 8 casos.',
+    'tests.function.note':
+      'O teste roda o programa do zero e chama a função com cada caso. A função de outro arquivo leva o nome dele.',
+    'tests.what.functionRight.one': 'a função respondeu certo',
+    'tests.what.functionRight.many': 'a função respondeu certo nos {n} casos',
+    'tests.what.functionMissing': 'o programa não tem a função {name}',
+    'tests.what.functionWrong': '{call} respondeu {value}',
+    'tests.what.functionError': '{call} deu erro',
+    'tests.form.needFunction': 'Escolha a função.',
+    'tests.form.needCases': 'Escreva pelo menos um caso.',
+    'tests.form.badCase':
+      'Um caso não deu para ler. Escreva o que a função recebe, uma seta e a resposta: 2, 3 -> 5.',
+    'tests.form.tooManyCases': 'Um teste tem até 8 casos.',
+    'tests.kind.game': 'Testar o jogo',
+    'tests.function.none.pro':
+      'Ainda não tem nenhuma função para testar. Crie uma com export function num arquivo da pasta src e ela aparece aqui.',
+    'tests.function.casesNote.pro':
+      'Escreva o que a função recebe, uma seta e o que ela tem de responder, como no JavaScript: 2, 3 -> 5. Texto vai entre aspas: "Ana" -> "Olá, Ana". Até 8 casos.',
+    'tests.function.note.pro': 'O teste roda no servidor e chama a função com cada caso.',
+    'tests.note.server.many': 'Eles rodam no servidor, sem mexer no projeto.',
+    'tests.note.server.one': 'Ele roda no servidor, sem mexer no projeto.',
+    'tests.empty.pro':
+      'Nenhum teste ainda. Um teste roda o seu jogo no servidor e confere se aconteceu o que você queria, ou chama uma função exportada e confere a resposta.',
+    'tests.ranOnServer': 'Rodou no servidor em {seconds} segundos.',
+    'tests.ranOnServer.one': 'Rodou no servidor em 1 segundo.',
+    'tests.serverError': 'Não deu para rodar os testes no servidor agora. Tente de novo.',
+    'tests.what.remoteFailed': 'o servidor não disse o que viu',
+    'tests.form.target.game': 'o estado do jogo',
+    'tests.form.name.game': 'Qual parte do jogo',
+    'tests.game.phase': 'a fase',
+    'tests.game.score': 'os pontos',
+    'tests.game.goal': 'a meta',
+    'tests.game.health': 'a vida',
+    'tests.subject.game.phase': 'a fase do jogo',
+    'tests.subject.game.score': 'os pontos do jogo',
+    'tests.subject.game.goal': 'a meta do jogo',
+    'tests.subject.game.health': 'a vida do jogo',
+    'tests.form.note.pro':
+      'O teste começa o jogo do zero no servidor, faz os passos e olha o resultado no fim. Ele pode durar até 15 segundos.',
   },
   en: {
     'tests.run': 'Run the tests',
@@ -226,5 +277,114 @@ export const STUDENT_TESTS_COPY: Record<Locale, Record<string, string>> = {
     'tests.key.Escape': 'Esc',
     'tests.key.Shift': 'Shift',
     'tests.key.Enter': 'Enter',
+    'tests.kind': 'What to test',
+    'tests.kind.behavior': 'Test the program',
+    'tests.kind.function': 'Test a function',
+    'tests.function.describe': '{cases}.',
+    'tests.function.case': '{call} answers {expected}',
+    'tests.function.none':
+      'There is no function to test yet. Create one with def in a .py file of the project and it shows up here.',
+    'tests.function.after':
+      'Then you write what it receives and what it has to answer, one case per line.',
+    'tests.function.pick': 'The function',
+    'tests.function.cases': 'Cases, one per line',
+    'tests.function.casesNote':
+      'Write what the function receives, an arrow and what it has to answer, as in Python: 2, 3 -> 5. Text goes in quotes: "Ana" -> "Hi, Ana". Up to 8 cases.',
+    'tests.function.note':
+      'The test runs the program from the start and calls the function with each case. A function from another file carries its name.',
+    'tests.what.functionRight.one': 'the function answered right',
+    'tests.what.functionRight.many': 'the function answered right in the {n} cases',
+    'tests.what.functionMissing': 'the program has no function {name}',
+    'tests.what.functionWrong': '{call} answered {value}',
+    'tests.what.functionError': '{call} raised an error',
+    'tests.form.needFunction': 'Choose the function.',
+    'tests.form.needCases': 'Write at least one case.',
+    'tests.form.badCase':
+      'A case could not be read. Write what the function receives, an arrow and the answer: 2, 3 -> 5.',
+    'tests.form.tooManyCases': 'A test has up to 8 cases.',
+    'tests.kind.game': 'Test the game',
+    'tests.function.none.pro':
+      'There is no function to test yet. Create one with export function in a file of the src folder and it shows up here.',
+    'tests.function.casesNote.pro':
+      'Write what the function receives, an arrow and what it has to answer, as in JavaScript: 2, 3 -> 5. Text goes in quotes: "Ana" -> "Hi, Ana". Up to 8 cases.',
+    'tests.function.note.pro': 'The test runs on the server and calls the function with each case.',
+    'tests.note.server.many': 'They run on the server, without changing the project.',
+    'tests.note.server.one': 'It runs on the server, without changing the project.',
+    'tests.empty.pro':
+      'No tests yet. A test runs your game on the server and checks whether what you wanted happened, or calls an exported function and checks the answer.',
+    'tests.ranOnServer': 'Ran on the server in {seconds} seconds.',
+    'tests.ranOnServer.one': 'Ran on the server in 1 second.',
+    'tests.serverError': 'The tests could not run on the server now. Try again.',
+    'tests.what.remoteFailed': 'the server did not say what it saw',
+    'tests.form.target.game': 'the game state',
+    'tests.form.name.game': 'Which part of the game',
+    'tests.game.phase': 'the phase',
+    'tests.game.score': 'the score',
+    'tests.game.goal': 'the goal',
+    'tests.game.health': 'the health',
+    'tests.subject.game.phase': 'the game phase',
+    'tests.subject.game.score': 'the game score',
+    'tests.subject.game.goal': 'the game goal',
+    'tests.subject.game.health': 'the game health',
+    'tests.form.note.pro':
+      'The test starts the game from the beginning on the server, does the steps and looks at the result at the end. It can take up to 15 seconds.',
+  },
+}
+
+/**
+ * No Python a aba fala do PROGRAMA (a tabela da proposta: "testar o programa e testar uma
+ * função"): estas frases trocam as que dizem "jogo". O painel junta as duas tabelas quando o
+ * projeto é Python.
+ */
+export const STUDENT_TESTS_PYTHON_COPY: Record<Locale, Record<string, string>> = {
+  'pt-BR': {
+    'tests.note.many': 'Eles rodam o seu programa escondido, sem mexer no projeto.',
+    'tests.note.one': 'Ele roda o seu programa escondido, sem mexer no projeto.',
+    'tests.empty':
+      'Nenhum teste ainda. Um teste roda o seu programa escondido e confere se aconteceu o que você queria, ou chama uma função sua e confere a resposta.',
+    'tests.empty.function':
+      'Nenhum teste ainda. Um teste chama uma função sua e confere se ela responde o que você queria.',
+    'tests.subject.console': 'as mensagens do programa',
+    'tests.subject.spriteX': 'a posição x de {name}',
+    'tests.subject.spriteY': 'a posição y de {name}',
+    'tests.what.notFound': 'não achei {name} no programa',
+    'tests.what.gameError': 'o programa deu erro durante o teste',
+    'tests.what.timeout': 'o programa não respondeu a tempo',
+    'tests.unavailable': 'O Python ainda está carregando. Rode os testes de novo.',
+    'tests.unsupported': 'Este teste tem um passo que o Python ainda não roda aqui.',
+    'tests.ending': 'Ver como o programa terminou',
+    'tests.ending.alt': 'Como o programa terminou no teste "{name}"',
+    'tests.form.target.spriteX': 'a posição x de',
+    'tests.form.target.spriteY': 'a posição y de',
+    'tests.form.target.console': 'as mensagens do programa',
+    'tests.form.name.sprite': 'De quem',
+    'tests.form.noNames': 'Nenhum nome no programa ainda',
+    'tests.form.note':
+      'O teste começa o programa do zero, faz os passos e olha o valor no fim. Ele pode durar até 15 segundos.',
+  },
+  en: {
+    'tests.note.many': 'They run your program hidden, without changing the project.',
+    'tests.note.one': 'It runs your program hidden, without changing the project.',
+    'tests.empty':
+      'No tests yet. A test runs your program hidden and checks whether what you wanted happened, or calls one of your functions and checks the answer.',
+    'tests.empty.function':
+      'No tests yet. A test calls one of your functions and checks whether it answers what you wanted.',
+    'tests.subject.console': 'the program messages',
+    'tests.subject.spriteX': 'the x position of {name}',
+    'tests.subject.spriteY': 'the y position of {name}',
+    'tests.what.notFound': 'could not find {name} in the program',
+    'tests.what.gameError': 'the program raised an error during the test',
+    'tests.what.timeout': 'the program did not answer in time',
+    'tests.unavailable': 'Python is still loading. Run the tests again.',
+    'tests.unsupported': 'This test has a step Python cannot run here yet.',
+    'tests.ending': 'See how the program ended',
+    'tests.ending.alt': 'How the program ended in the test "{name}"',
+    'tests.form.target.spriteX': 'the x position of',
+    'tests.form.target.spriteY': 'the y position of',
+    'tests.form.target.console': 'the program messages',
+    'tests.form.name.sprite': 'Of whom',
+    'tests.form.noNames': 'No names in the program yet',
+    'tests.form.note':
+      'The test starts the program from the beginning, does the steps and looks at the value at the end. It can take up to 15 seconds.',
   },
 }

@@ -58,3 +58,24 @@ permite evitar a solicitação na origem e verificar o comportamento completo.
 O usuário autorizou a execução contínua das etapas e as decisões técnicas
 justificadas. Não há aprovação intermediária nem autorização de produção neste
 plano. As regiões expansíveis continuam depois do fechamento desse fluxo.
+
+## Evidências de implementação — 20/11/2026
+
+As etapas 1 a 6 foram implementadas na integração dos cortes publicados
+`df2d715af` e `994aacd3`. A execução congelada passou nas 22 verificações,
+incluindo 12.112 testes do Estúdio, 3.183 do Core e as seleções de navegador:
+35 do frontend, 12 da integração, 22 de Pygame/Pinta e 88 do Python compartilhado.
+Os quatro controles Chrome pulados na seleção padrão do Windows passaram
+separadamente com o executável instalado.
+
+A regressão executa os três renderizadores e o executor Python real, com entrada
+sintética e transição de mundo Pinta, preservando o foco do campo do host. Também
+verifica a recusa de uma distribuição antiga antes de admitir a execução.
+As tentativas anteriores e as correções das fixtures estão preservadas no
+[relatório de evidências](../pinta-cenarios/missao-completa-2026-11-18/qa/python-segundo-plano-994-2026-11-20/README.md).
+
+A etapa 7 permanece em andamento: a distribuição construída nesta máquina é
+Windows e não foi ativada. A imagem Linux deve ser qualificada a partir do commit
+exato. Sua política deve estar empacotada no leitor que servirá de rollback antes
+de ativar o novo guest ou o gravador de nuvem. A homologação autenticada em
+staging e a conclusão das regiões avançadas continuam pendentes.

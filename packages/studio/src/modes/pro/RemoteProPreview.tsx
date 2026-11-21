@@ -12,6 +12,7 @@ import { useT } from '../../studio/i18n'
 import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { isProConsoleMessage } from './proConsoleBridge'
+import { useProPreviewDevtools } from './proPreviewDevtools'
 import { useProGameStorage } from './useProGameStorage'
 
 type Phase = 'building' | 'ready' | 'error'
@@ -45,6 +46,7 @@ export function RemoteProPreview({
   const latestProjectRef = useRef(project)
   latestProjectRef.current = project
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const artifactFrameRef = useRef<HTMLIFrameElement>(null)
 
   const [phase, setPhase] = useState<Phase>('building')
   const [compiled, setCompiled] = useState<{
@@ -80,6 +82,16 @@ export function RemoteProPreview({
     revision: builtRevision ?? 0,
     identity: `${shown?.artifact?.id ?? builtRevision ?? ''}:${reloadNonce}`,
     origin: active && shown?.html ? 'null' : null,
+  })
+
+  // As abas Desempenho e Investigar: a medida e o erro com a pilha chegam pela ponte da página
+  // (as duas formas da prévia montada no servidor têm a origem opaca do sandbox).
+  useProPreviewDevtools({
+    frame: () => artifactFrameRef.current ?? iframeRef.current,
+    origin: () => null,
+    errors: true,
+    active: Boolean(active && shown),
+    documentKey: `${shown?.artifact?.id ?? builtRevision ?? ''}:${reloadNonce}`,
   })
 
   useEffect(() => {
@@ -230,6 +242,7 @@ export function RemoteProPreview({
           {shown.artifact ? (
             <ProArtifactPreview
               artifact={shown.artifact}
+              frameRef={artifactFrameRef}
               identity={`${scope.identity}:${projectId}:${reloadNonce}`}
               revision={builtRevision ?? 0}
               backend={backend}

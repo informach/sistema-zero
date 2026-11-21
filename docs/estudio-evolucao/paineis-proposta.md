@@ -159,4 +159,89 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   funções puras (nomes, traceback, valores), a aba no Python (valores, linha, erro) e, na suíte
   Python do navegador (homologação), o controlador no modo de observação lendo `WIDTH` e o
   contador de quadros subindo num jogo de Pygame Zero.
-- Próximos: Pausar no Python e Meus testes no Python; os três no Pro.
+- **Lote 8 (20/11, noite): Meus testes no Python.** A aba entra na gaveta do Python clássico, com
+  a tabela: no programa com Turtle, Pygame Zero, pygame-ce ou Raylib, o teste novo escolhe
+  "Testar o programa" ou "Testar uma função"; sem biblioteca de jogo, só "Testar uma função".
+  - **Testar o programa:** os passos Apertar a tecla, Segurar a tecla e Esperar (o clique no
+    sprite de um grupo é do Jogo 2D) e, no fim, a variável, a posição x ou y (`ator.x`) ou as
+    mensagens do programa (a tela do Python é um desenho, sem texto para ler).
+  - **Testar uma função** (a prancha do Pro, em Python): escolhe uma função `def` de um arquivo
+    `.py` do projeto e escreve os casos, um por linha, como no Python (`2, 3 -> 5`,
+    `"Ana" -> "Olá, Ana"`); até 8 casos. Sem função no projeto, a aba explica como criar uma, com
+    o exemplo `somar_pontos`.
+  - **Executor** (`studentTests/pythonRunner.ts`): uma execução escondida do Python, só do teste,
+    no modo de observação das missões, com o ambiente e o projeto que a prévia entrega
+    (`state/pythonTestHost.ts`; o editor descarrega o que segura antes, como no Rodar). A tecla
+    vai pelo comando novo `key` do quadro do Python, que despacha o KeyboardEvent no desenho
+    (+582 bytes no `frame.mjs`; as teclas do contrato vêm de `@sistemazero/core/studio/execution-keys`,
+    porque o índice de `core/learning` levava +302 KB ao quadro). A função é chamada pela sonda
+    `functionReturns` das missões: no quadro, ou no fim do programa sem desenho. O julgamento é o
+    dos objetivos; "Ver como o programa terminou" é a foto do quadro do Python.
+  - **No documento:** o teste de função (`functionReturns`, até 8 casos) e o campo `studentTests`
+    no projeto Python clássico (`core/studio/student-tests.ts` e `project-document.ts`).
+  - ⚠️ O teste de função já roda com o quadro publicado (a sonda das missões é de antes). O
+    teste com tecla precisa do quadro novo: até uma versão nova da distribuição do runtime, o
+    quadro publicado recusa a tecla e o teste diz "Este teste tem um passo que o Python ainda não
+    roda aqui." (o teste só com esperas roda).
+  - ⚠️ **Ordem do deploy:** o Members confere o envio pelo esquema do documento; ele sai com o
+    esquema novo (o commit do core deste lote) ANTES do Kids, da comunidade e do member-shell.
+  - Provas: o contrato no core, os casos (ler e escrever como no Python), o executor com um
+    controlador falso (função certa, errada, ausente, erro, prazo, tecla recusada, mensagens), a
+    aba na gaveta (o formulário de função, o exemplo sem função, os passos e conferências do
+    Python) e, na suíte Python do navegador (homologação; o servidor de provas não roda no Windows
+    com o Bun 1.3), o quadro apertando Espaço e a seta num jogo de Pygame Zero e o executor
+    inteiro testando uma função do Python clássico.
+- **Lote 9 (20/11, noite): Investigar e Desempenho no Pro em JavaScript.** A gaveta do Pro ganha
+  as abas Investigar e Desempenho, entre Problemas e Terminal (a ordem da prancha). O Python Pro
+  não entra (a tabela da proposta é do Pro em JavaScript).
+  - **Investigar:** o caminho até o erro que parou o jogo, da pilha que a prévia já recebe: cada
+    passo que é arquivo do projeto, com o arquivo, a linha, o texto da linha e "Ir para a linha"
+    (abre o arquivo no editor); a biblioteca e o navegador ficam de fora. Sem erro, a aba diz que
+    o caminho aparece quando o jogo parar com um erro. Pausar e Valores não entram no Pro.
+  - **Desempenho:** a mesma aba do clássico, com os quadros por segundo e o tempo de cada quadro
+    (sem sprites; a memória segue indisponível), sem montar o jogo de novo.
+  - **Por trás:** a ponte que a prévia do Pro já injeta na página (`buildProHostBridgeScript`, do
+    core) ganhou `sz:perf` (desligada até o Estúdio pedir; ligada, conta os quadros pelo
+    `requestAnimationFrame` e devolve o do navegador ao desligar) e `sz:pro-error` (o erro com a
+    pilha, no máximo 20 por página). `modes/pro/proPreviewDevtools.ts` liga as duas prévias: a do
+    WebContainer (só a medida; o erro já chega pelo `preview-message`) e a montada no servidor
+    (medida e erro). Fechar a gaveta desliga a medida.
+  - ⚠️ A prévia montada no servidor como artefato recebe a ponte no build do studio-runtime: a
+    medida e o erro com a pilha valem nela depois do próximo deploy do studio-runtime (o perfil de
+    validação foi regenerado). A prévia do WebContainer (Estúdio Completo) e a de documento direto
+    já valem.
+  - Provas: a ponte sobre uma janela de mentira (medida ligada e desligada, página sem quadros,
+    outra origem ignorada, erro com a pilha e o teto de 20), a pilha do Chromium, do Firefox e do
+    Safari virando passos, e a gaveta do Pro (as abas, o caminho até o erro com "Ir para a linha",
+    a medida que para ao fechar e o Python Pro sem as abas).
+- **Lote 10 (20/11, noite): Meus testes no Pro em JavaScript.** A aba entra na gaveta do Pro
+  (entre Desempenho e Terminal) quando o host entrega o executor do servidor; hoje, o Pro do
+  Estúdio Completo (Kids e adulto). Na prancha: "Rodar os testes", "1 de 1 teste passou. Rodou no
+  servidor em 6 segundos.", e o teste novo com "Testar o jogo" e "Testar uma função".
+  - **Testar o jogo:** Apertar a tecla, Segurar a tecla e Esperar; no fim, o texto na tela ou as
+    mensagens do jogo e, nos kits, o estado do jogo (a fase, os pontos, a meta ou a vida, pelo
+    `__studioGame.inspect`). As variáveis não entram no Pro (o leitor das variáveis é do clássico).
+  - **Testar uma função:** uma `export function` (ou `export const … =>`) de um arquivo da pasta
+    `src`, com os casos um por linha escritos como no JavaScript (`2, 3 -> 5`, `true`, `null`);
+    sem função, o texto e o exemplo `somarPontos` da prancha.
+  - **Por trás:** `POST /members/studio/student-tests` (`StudioStudentTestsService`): confere o
+    acesso ao Pro do Estúdio Completo (`FreeStudioAccessService`, `existing-pro`), confere cada
+    teste pela régua do Pro (`isRunnableStudentTestRule(rule, 'javascript', 'pro')`) e roda no
+    MESMO checador do "Verificar projeto" (`ProjectExecutionChecker`: limite por pessoa do
+    executor, resultado reaproveitado para o mesmo projeto e as mesmas regras). Um lote por pedido
+    (`studentTestServerBatches`: até 8 testes e 40 s de espera, os tetos do executor), porque a
+    borda espera 160 s; o Estúdio manda os lotes em sequência. O gateway ganhou
+    `members-studio-student-tests` (JWT de conta ativa, 2 MB, 20 por minuto, 160 s), o member-shell
+    a rota `/api/studio/student-tests` (com os shims nos dois apps) e o adaptador
+    `createStudentTestsServer`, que o `StudioProEditor` passa ao `StudioEditor`
+    (`studentTestsServer`, guardado nas lojas da instância, sem código novo na abertura). O
+    resultado vem como `remote` (passou ou não, e o que o executor viu): "Passou: o texto na tela
+    tem o texto …" ou "Não passou: com (2, 3) respondeu 6; esperava 5".
+  - **No documento:** o Pro em JavaScript guarda `studentTests` (`project-document.ts`).
+  - ⚠️ **Ordem do deploy:** Members (esquema e rota) e gateway (a rota) antes do Kids e da
+    comunidade.
+  - Provas: a régua e os lotes no core, o serviço do Members (acesso, lotes, recusas, executor fora
+    e o motivo da recusa), a rota no gateway, a rota do BFF e o adaptador, os casos em JavaScript,
+    as funções exportadas e a gaveta do Pro (a aba só com o servidor, o formulário do jogo e o da
+    função, e os resultados com o tempo do servidor).
+- Próximos: Pausar no Python.

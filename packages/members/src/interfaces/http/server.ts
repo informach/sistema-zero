@@ -155,6 +155,8 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     /^\/members\/lessons\/[^/]+\/blocks\/[^/]+\/studio-runtime$/.test(pathname) ||
     pathname === '/members/admin/studio/authoring-runtime' ||
     pathname === '/members/studio/free-runtime' ||
+    // "Meus testes" no Pro: o projeto inteiro e os testes.
+    pathname === '/members/studio/student-tests' ||
     pathname === '/members/studio/python-analysis' ||
     pathname === '/members/internal/studio/public-runtime' ||
     /^\/members\/live\/workspaces\/[^/]+\/publication-runtime$/.test(pathname) ||

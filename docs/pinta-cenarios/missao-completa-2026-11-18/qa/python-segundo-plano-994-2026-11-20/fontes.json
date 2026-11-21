@@ -1,0 +1,462 @@
+{
+  "parents": [
+    "df2d715af83e66ed72cbb8afa8a3c1f1c5df47fd",
+    "994aacd3abc2032bc44dd8d8f437a420d3107d8e"
+  ],
+  "profile": "069c2ea93f58bb35f59339c14de53670ca7901b90967b6e9a51a70f9ae0ee62a",
+  "protectedPublished3DBytesUnchanged": true,
+  "files": [
+    {
+      "file": "experiments/studio-python-runtime/controllerHost.ts",
+      "sha256": "9f638e412967d35ead9b6b52d75144aebf8b2faaad4b7048b80af9123879bcfc"
+    },
+    {
+      "file": "experiments/studio-python-runtime/fixtures.ts",
+      "sha256": "301b126afcf0120037a057dc4332f1d994a24aa68df279ede4660195d249cace"
+    },
+    {
+      "file": "experiments/studio-python-runtime/providerHost.ts",
+      "sha256": "6ee697bc9a4678fef38f459357c21e7b359c41a5b3e179e19f42be34e0b8e32a"
+    },
+    {
+      "file": "packages/api-gateway/CLAUDE.md",
+      "sha256": "1f39ba1ae801c48a17f6f1b240871e3290d11082b158f64fc5f431e54774a041"
+    },
+    {
+      "file": "packages/api-gateway/gateway.config.ts",
+      "sha256": "46fac5e93b01cd2b2ae17e5e0bffd2baa352f2f7fe0bc8da2fb1335ae0ba0563"
+    },
+    {
+      "file": "packages/api-gateway/tests/unit/config.test.ts",
+      "sha256": "250a07cdc8d36406752a1977db677658715b3acfe181679d304e17669b28263f"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/studio/student-tests/route.ts",
+      "sha256": "942e0e1b64b2f0bbb6fa866f5c6c024a5a0abc1da8cf346c6d8ea9e3809bff32"
+    },
+    {
+      "file": "packages/community/src/app/api/studio/student-tests/route.ts",
+      "sha256": "942e0e1b64b2f0bbb6fa866f5c6c024a5a0abc1da8cf346c6d8ea9e3809bff32"
+    },
+    {
+      "file": "packages/core/src/studio/execution-keys.ts",
+      "sha256": "10156e6fc4b39b502b64fb19d82a09a35794e88f6ccae10ad15556355d415dc7"
+    },
+    {
+      "file": "packages/core/src/studio/pro-runtime-bridge.ts",
+      "sha256": "0b4578a3d832241dd04568d8d7fde3648424a38bcfaa06324f9fba1225bf1dd8"
+    },
+    {
+      "file": "packages/core/src/studio/project-document.ts",
+      "sha256": "2d2792b731b754e1d4f696502b9dec3a328583cdab9074e39c2afac4d07d8d02"
+    },
+    {
+      "file": "packages/core/src/studio/python-runtime-features.ts",
+      "sha256": "da5e5e81faf5afb0f12cf2e54ce686f107eabd5b624151eba1c9af9daec89c49"
+    },
+    {
+      "file": "packages/core/src/studio/student-test-runnable.ts",
+      "sha256": "da87abfba22ff93021a7ea686dd89c3c7d322da6e562d763c7c675f3b294288f"
+    },
+    {
+      "file": "packages/core/src/studio/student-tests.ts",
+      "sha256": "170666da88f83c32339415e8b4c7aae7749e2e9738b1ffc057935f2128506a92"
+    },
+    {
+      "file": "packages/core/tests/studio-pro-host-bridge.test.ts",
+      "sha256": "8581ea6e7988b90472fb33729620fc14c844df111b3d02fffaaadf9b7ad7da56"
+    },
+    {
+      "file": "packages/core/tests/studio-student-tests.test.ts",
+      "sha256": "95a8c0c0a250be096d47ba0d8f2d7941302f6a30f050aa46f09627d683e1ddc6"
+    },
+    {
+      "file": "packages/member-shell/CLAUDE.md",
+      "sha256": "c2f8cfaa9560894cc42c443687a83370007bef1c62c25ff1491acda5c98296c1"
+    },
+    {
+      "file": "packages/member-shell/src/components/scene-discovery-controls.tsx",
+      "sha256": "30519cc16831c9f126c5a2d1522dced895d941d51eebe56f484ee8a418ede4db"
+    },
+    {
+      "file": "packages/member-shell/src/components/scene-lighthouse-position.tsx",
+      "sha256": "4d4bd27b08ce97d0f9c69367cea15f7b77fb7f76766ec65da904b4821c598dd5"
+    },
+    {
+      "file": "packages/member-shell/src/components/studio/studio-pro-editor.tsx",
+      "sha256": "13a2bc58d8d34dfe7fc5a19997d9a1209fbead7e6c70cb8df0203830c5118680"
+    },
+    {
+      "file": "packages/member-shell/src/lib/studio-student-tests.ts",
+      "sha256": "616c892a2028ced133a5a61991ba98bc6fd5dd2d9f7b00837d6841c5666d8678"
+    },
+    {
+      "file": "packages/member-shell/src/routes/studio-free-runtime.ts",
+      "sha256": "f1d4ede9b92d82d03194f11771198a8f7afedecc7a57209dc911f968b6ce0279"
+    },
+    {
+      "file": "packages/member-shell/src/server/clients.ts",
+      "sha256": "314db7cf75f082240e73d5afaa09d43dfaffaa2ddb076c372bf454ffdee28a49"
+    },
+    {
+      "file": "packages/member-shell/tests/scene-lighthouse-position.test.tsx",
+      "sha256": "418d21c8974dc239aea3cacda26097edb5b5fec4178c4c44274fa73b8c7ede14"
+    },
+    {
+      "file": "packages/member-shell/tests/studio-free-runtime-route.test.ts",
+      "sha256": "dd1192a26cf4d4b486d5d8034e8b8f8b79d512ab77a290613b706fb8c21cec15"
+    },
+    {
+      "file": "packages/member-shell/tests/studio-student-tests-adapter.test.ts",
+      "sha256": "e4ba42b44636c9b24cb63945ebfcd729ad57107cb2b1ad71917968cd3fedea72"
+    },
+    {
+      "file": "packages/members/CLAUDE.md",
+      "sha256": "5d12e0711f7efbe0f262a9d3e385e5c40c9d6cb9d4a3922c6bb24c0e770ac99c"
+    },
+    {
+      "file": "packages/members/src/application/studio/studio-student-tests.service.ts",
+      "sha256": "5e994f0d49b3aa8cf68604fa3a4502d4a257dc35fd7f226c8019f20ff0edffd7"
+    },
+    {
+      "file": "packages/members/src/composition-root.ts",
+      "sha256": "691370380e16fd1a5697d54758165c06ff5b2dc2b97886b9c45f37d14a221d42"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/routes/members.routes.ts",
+      "sha256": "9f73769cf15ec39a45ca60db7cbf961e9987ea687e5dfc9009f53c81388edc0a"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/server.ts",
+      "sha256": "2a1942159e2f9dd7b25f2c5f30fbfd573071f845cba4acd49dfd1ecc61661874"
+    },
+    {
+      "file": "packages/members/tests/unit/studio-student-tests.service.test.ts",
+      "sha256": "57d9021f4e21579a6434ea21c1c59016d3ba00fb961c1699b49838c43a0ebab0"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/scripts/verificar-trazer-exportar.ts",
+      "sha256": "d8c0a5706c15863edf1d213b6dffc8008eaa35dd2214b02cf8e4055b54099b1a"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/src/oficina/captura.ts",
+      "sha256": "e15f83dcab36822367d609381693c26d7a675b26445d66c3ed15f45dfcb5bb62"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/src/oficina/ferramentas.ts",
+      "sha256": "eeb134c28a5085376983ba0309d224fa7bf9962047cbf3ff6961be6174069ef4"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/src/oficina/oficina-pagina.ts",
+      "sha256": "13a5587a0610108abc10df155d76fc19a67c0c950b963ad45018f01fc24b06de"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/src/oficina/pagina-sem-janela.ts",
+      "sha256": "ef1f59823213a246a63295915094588016f812cb2665b1b7650ee2c79a60e879"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/src/oficina/trazer-e-exportar.ts",
+      "sha256": "4320b2f7e199a9e5f7b8634c9d4c4000bbf45f21b2659ce96ec7109187e1e83a"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/tests/trazer-e-exportar.test.ts",
+      "sha256": "1c9c54625e64c349bec98a6b9c2e6fcdef9f584e73b51d40b6ac115151035fda"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/compilar/juncao.ts",
+      "sha256": "1c97f920f683fcd7d0da9835350fdbd3fc193a72a18596bc84d10ddfc1315c0d"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/compilar/relevo-atlas.ts",
+      "sha256": "95cf7acfb6dfd168d0fdccdf91af84a4797e90f41721e6b249ad9ca82b0df879"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/tests/relevo-atlas.test.ts",
+      "sha256": "b396a99c59fc1a0eedbf223899e216101187e3f278927c7cc96cc082d8296803"
+    },
+    {
+      "file": "packages/molda-cenarios/package.json",
+      "sha256": "433b090c0afeaa56d6696bff3be5dbfa6b0f013a0b2240a425ed25ef80897543"
+    },
+    {
+      "file": "packages/molda-cenarios/src/exportar/compilar-revisao.ts",
+      "sha256": "c191947e877f1713e49d2d2ce945e0b330cdf56265175fd48ed8ec46f030837a"
+    },
+    {
+      "file": "packages/molda-cenarios/src/exportar/preparar.ts",
+      "sha256": "68fabe26dc5bc5c2630fb964ba8ac017027153730a1dd554a0dda4ec4e6993f3"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/autoria.ts",
+      "sha256": "6d92149eed554db25cdd267749b24d6eb60017adffd08c60585f161c0110385c"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/python-playtest.generated.mjs",
+      "sha256": "eb4646dff59e8c87e15796d9cbf7e4c339fda3b5d934a1db7315f4bcc56ea7c3"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "d13c2cdb26ecc46a8ad2c14ac3e7a486921cc696d32a9a405f442c42a386e67f"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-background-focus.spec.ts",
+      "sha256": "7e7890af3333336f2c4080fa481fb5cd7d4c617c63cc7cfc5f06ee57f4948486"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-provider.spec.ts",
+      "sha256": "cb1f0adfaca1eb1454ec90ab9318e49c75737f26db781b36108989fd0d4baeea"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/cleanBrowser.ts",
+      "sha256": "c44bc43ac383b9cdf104733da80c902142c7611b043cd1ab338409369a2a3f36"
+    },
+    {
+      "file": "packages/studio/e2e/student-tests.spec.ts",
+      "sha256": "57ac4003f608776eab96f2763be66153773630066978487232de0d80f133defb"
+    },
+    {
+      "file": "packages/studio/playwright.python-pygame.config.ts",
+      "sha256": "d7f8b8d252cdb0b9240aa428cc35df0e9c0adb981ae7f64bd0ce5d9fa70d567d"
+    },
+    {
+      "file": "packages/studio/playwright.python-runtime.config.ts",
+      "sha256": "0cf1ac70faec88cc175bd207d2289f9d1c6e78293ad04c47bea7aca0414cf74f"
+    },
+    {
+      "file": "packages/studio/scripts/build-python-runtime.ts",
+      "sha256": "f8c8442a7d1e85626474aca8d157ef8faaa496e334190e6075aed6b85916e44e"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/PerformancePanel.tsx",
+      "sha256": "0bd67f04d873d55ac7c407292111606a16a4f07143a388200fa39bd9a8e5647d"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/ProInvestigatePanel.tsx",
+      "sha256": "e4d4309f14d78eb26a3dfd92bbb73cf58b7e281d0f1fc6cf3c4b509f62348d79"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/StudentTestsPanel.test.tsx",
+      "sha256": "aebe80dda4b3fc8fde40b8997839ec9c57d2ee8fba04d54c501732165e1c12a0"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/StudentTestsPanel.tsx",
+      "sha256": "f52b3ee9dee5f467259f6249d84882ee8c67216073d18ca900094bee2149fe56"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/investigateCopy.ts",
+      "sha256": "c550470362f508adc9d1539ce60efa817d23e6785e56db9dcdcd0e43332fb06c"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/performanceCopy.ts",
+      "sha256": "ce96845f86076b25d14d74b508b467d97c931c8beed7ca335114429651f81ecd"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/proInvestigation.test.ts",
+      "sha256": "d586e75d5dd6dc2d62757c7040d6f6e270923c033f7219bc00658563ab2be84e"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/proInvestigation.ts",
+      "sha256": "dbe445d19eb30ebd4edd57d4c5ce3fcd71a678c74ffae128710a5bcb9941145f"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsCopy.ts",
+      "sha256": "80b818be4223eeb51abc8bda03e1a1ad96a8d0718a17c85579421f5cede85132"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsPython.test.ts",
+      "sha256": "53a3d9952cc8934ef5b47e5a2f7b6d6320e967487be76e201b8ba1afaacecd2a"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsPython.ts",
+      "sha256": "5c9e8d855b3faf464a572005dce2422711c50a0a5f1809be8b713dc8f99657ea"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsText.ts",
+      "sha256": "aaa2d85d24bb12912ab67abf75c9615e986a5a429cbbe222d3e9fd5722ac42e5"
+    },
+    {
+      "file": "packages/studio/src/components/layout/ClassicDock.test.tsx",
+      "sha256": "919f544c38a37235ec04dce956b49ec01266263bee55c67457906012c6458df8"
+    },
+    {
+      "file": "packages/studio/src/components/layout/ClassicDock.tsx",
+      "sha256": "5ac47b457466dac5b9898a1d84a7c886d3f5a2edf049ea9deafd42a71b97fd14"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PreviewIframe.test.tsx",
+      "sha256": "c46c26477a4f9936e96a7fac73a3209ccd004300c97a807441066e0deb039477"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PythonEditorPreview.tsx",
+      "sha256": "a7cf04936a637a4cabd2fc5a013eaada442aa5976dc7e1bf914192f77831470e"
+    },
+    {
+      "file": "packages/studio/src/index.ts",
+      "sha256": "fa5143cc1cd53d6366ef99d57705bea7db0360da86d339c83d7206a31c1d8f75"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProPreview.tsx",
+      "sha256": "98f351256b69e28ecbec8abfdc41929cb227b0b0c0de1ed81f0e2ec45a5b4924"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/RemoteProPreview.tsx",
+      "sha256": "e61441a174eebd6535355f71960552743f9bff84de9e000caa96e48c1d4eda62"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/proPreviewDevtools.ts",
+      "sha256": "ad266507fd2a773297e383164dcf6f0c7672b54a08373ca837008658c2d585fb"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProDock.tsx",
+      "sha256": "aabc371d44ad9537548ee570b451e47de683442e96cfc429033eb7443387b1b1"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProDock.view.test.tsx",
+      "sha256": "b26bb469335bb1a386ff7f5e2810e0eaa1d1ab336cea23879e7117111bf3e556"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/model.ts",
+      "sha256": "252cfa8e041eef218f8c6ac011853600270d73f1a530628525bc03e9eba94aa5"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d/__tests__/scene3d.test.ts",
+      "sha256": "48c078556533e1685b22a7fb611420b2d0440fb29549395909e89be5e665c58f"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d/runtimeScene.ts",
+      "sha256": "77c3246f1670402e762c67c86a75683df5df03144b19940f3681f698dac85b38"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/bootResourceHost.ts",
+      "sha256": "613a77aec6516d540dde3b0b0e60bfc45070732f3bab49cec8b36469f9bca3d1"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/bootResourceManifest.ts",
+      "sha256": "cd0856e1dfd451ff2ff1a4a26197dc8eeb4a0cacc9fc11c09b5d594d6caad9b2"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/controller.test.ts",
+      "sha256": "d400c7857d2e01338c953f2940f53f6bbccb671ab051a9e1d0469c45e274f25c"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/controller.ts",
+      "sha256": "50a7709650ed606b6393433c2acfcaaafc7fdc64ad955d21f6080f223c6c206c"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frame.ts",
+      "sha256": "1d3a413256b8e0a19c1f968aa7d11e91a02489474cf4ff11c8764cdd9e1659ac"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frameProtocol.ts",
+      "sha256": "f2455b71dc6d797d34e7a60519b8edb4ad9ecafe2cc1c6973a6199224b6284b4"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.test.ts",
+      "sha256": "12fcbbcc3807c66cf18353085d7f381ac65933e64a4c052d711a0f763e4725b0"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.ts",
+      "sha256": "1f2be9226ef96dca85ac2b41bacea5fdd52c93956b18ff9ae5c371f941d0a508"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/provider.ts",
+      "sha256": "ffa790d0daafcbef49d611d0322d4ac1e12028c3a5fd01decd4859be28c9de34"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/renderer.ts",
+      "sha256": "9cc34dc56b05544ff876b7196a62630a105fccef0eb31fbb2d0e087c3c38911f"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/rendererFocus.ts",
+      "sha256": "d0b62aed6dcb2a1ce5b12ec5f12e1a3c81667aea071a98917bd2da7a18292ffd"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/session.test.ts",
+      "sha256": "e2e22ae95c593cb6e5052ea50a75ca1463b6de2f98d9ba372ab9c43fedaf9df3"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/session.ts",
+      "sha256": "58e0e1d328940bb32ce0409c25841b70bdeac72c967080a9fbb5ad019d4ac8d1"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/turtle/renderer.ts",
+      "sha256": "e5337e6ef19f131cdde201e08eef2b8122950c9920481e6bc0991f9b58c48d47"
+    },
+    {
+      "file": "packages/studio/src/runtime/types.ts",
+      "sha256": "c6a95e997a1fa2f980dcf214c95cff1b53c94108644d81786af645624be5ffcb"
+    },
+    {
+      "file": "packages/studio/src/state/previewDocumentFactory.ts",
+      "sha256": "71a418f98397bece239cd0f415fea207377d318ecef965540b13d1a6619f386a"
+    },
+    {
+      "file": "packages/studio/src/state/projectStore.studentTests.test.ts",
+      "sha256": "9f7480fb4bd0a82d6628e5e39a03f358f9ed6b3243f299026b90c11ea494e098"
+    },
+    {
+      "file": "packages/studio/src/state/projectStore.ts",
+      "sha256": "726a32855607a575d1feeb3d3cdcb0afc6c64f9ada8e98a32c9ee6beba0c473a"
+    },
+    {
+      "file": "packages/studio/src/state/projectValidation.ts",
+      "sha256": "49e2fd1594df9ea2e064968e6ff583158040f6465b838f2fc67278beb010b0e1"
+    },
+    {
+      "file": "packages/studio/src/state/pythonTestHost.ts",
+      "sha256": "57d12b3d065f082a514b90d30c9701d407216c0c20c8140af0d2d997106d74b4"
+    },
+    {
+      "file": "packages/studio/src/state/studioStores.ts",
+      "sha256": "6024a21946f6f537204a254582b5308f80e494728013c1b3e02a3d304f376c51"
+    },
+    {
+      "file": "packages/studio/src/studentTests/driver.ts",
+      "sha256": "d64f29fa7e6a51232df502bce69e846c618e7c607d561a3f13972c3d48758bbe"
+    },
+    {
+      "file": "packages/studio/src/studentTests/keyEvent.ts",
+      "sha256": "a8ccd1f4176adffeece4ca1deea159e5474f7d38fc0d0bb3bceaeb6cc7162157"
+    },
+    {
+      "file": "packages/studio/src/studentTests/outcome.ts",
+      "sha256": "fbcbe03708980e69f697a7802fdb39e817e267d90c61d4f475e0c1f50348aab2"
+    },
+    {
+      "file": "packages/studio/src/studentTests/pythonRunner.test.ts",
+      "sha256": "5fa38a4cfe191b8fca8457052cd56bfe5a04900c463686fb124dedd65f0f4c38"
+    },
+    {
+      "file": "packages/studio/src/studentTests/pythonRunner.ts",
+      "sha256": "89954dbf7b3e2779630a390b583b436b6d01bea0e539ebbc4e9a40d08e196eab"
+    },
+    {
+      "file": "packages/studio/src/studentTests/runner.test.ts",
+      "sha256": "c0fed477294dce40db888b2ea17ec10998e83769cbc651966f800eea0b835430"
+    },
+    {
+      "file": "packages/studio/src/studentTests/runner.ts",
+      "sha256": "891c1be4ffb33b8bd0e6c40c8f3654f7f184473080199cdc025d4ac0eca60345"
+    },
+    {
+      "file": "packages/studio/src/studio/StudioCore.tsx",
+      "sha256": "cb156f4ec79369cda25880826c3ee7352574379a8f125972781122b245f23d68"
+    },
+    {
+      "file": "packages/studio/src/studio/student-tests-server.ts",
+      "sha256": "c47d6a5c7554a72c43a70ae7d8b1c642bb95a418bcb0734d1e8cc99f211d6a46"
+    },
+    {
+      "file": "packages/studio/src/studio/types.ts",
+      "sha256": "d5b2e1b47e5289df179e171246a105f8e2bad80a552aeffd360be30ea7d43d7e"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+      "sha256": "1428f113fdc39d11db7a80d84a59ae0358844567429c852abba73e92f47c25af"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+      "sha256": "9a0ca370230c14a6446a8cdd22a61d9e222755b1e6d8fa96e4b6628c9002b399"
+    }
+  ]
+}

@@ -4,7 +4,17 @@ import type { ProjectTree } from '../../../core/proProject'
 export type ProWorkspacePanel = 'files' | 'search' | 'materials' | 'guides'
 
 /** A gaveta de baixo do Pro: `repl` é o "Experimentar comandos" do Python (11/2026). */
-export type ProWorkspaceBottom = 'closed' | 'problems' | 'console' | 'terminal' | 'repl'
+export type ProWorkspaceBottom =
+  | 'closed'
+  | 'problems'
+  | 'console'
+  | 'terminal'
+  | 'repl'
+  /** As abas Investigar e Desempenho do Pro em JavaScript (proposta aprovada em 20/11/2026). */
+  | 'investigate'
+  | 'performance'
+  /** Meus testes no Pro, quando o host entrega o executor do servidor. */
+  | 'tests'
 
 /** Presentation only. Never serialized into the game document or its export. */
 export interface ProWorkspacePreferences {
@@ -29,7 +39,16 @@ export const PRO_WORKSPACE_PANELS: readonly ProWorkspacePanel[] = [
   'materials',
   'guides',
 ]
-const BOTTOMS: readonly ProWorkspaceBottom[] = ['closed', 'problems', 'console', 'terminal', 'repl']
+const BOTTOMS: readonly ProWorkspaceBottom[] = [
+  'closed',
+  'problems',
+  'console',
+  'terminal',
+  'repl',
+  'investigate',
+  'performance',
+  'tests',
+]
 
 export function emptyWorkspace(): ProWorkspacePreferences {
   return {

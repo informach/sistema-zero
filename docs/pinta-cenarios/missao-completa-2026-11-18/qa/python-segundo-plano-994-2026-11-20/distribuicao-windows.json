@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-20T23:04:53.220Z",
+  "builder": "1.3.11",
+  "platform": "win32",
+  "base": "df2d715af83e66ed72cbb8afa8a3c1f1c5df47fd",
+  "incoming": "994aacd3abc2032bc44dd8d8f437a420d3107d8e",
+  "uncommittedImplementation": true,
+  "hash": "f30ac6960bb6fdc0cd7c2eaa70c46d60ea353b1c0b9357f2438f6d65d6300a43",
+  "manifestSha256": "f3f361d27f000201a7ba6004df8418f5a97c46965c3cf40c562d420b766aafc7",
+  "directory": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-background-python-closure\\f30ac6960bb6fdc0cd7c2eaa70c46d60ea353b1c0b9357f2438f6d65d6300a43",
+  "files": 126,
+  "totalBytes": 26021498,
+  "features": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1"
+  ],
+  "recomputedAllFileHashes": true,
+  "activated": false
+}

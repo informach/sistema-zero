@@ -22,3 +22,38 @@ export function requireCleanRuntimeBrowser() {
     expect(current).toEqual([])
   })
 }
+
+/** Returning focus later cannot erase a transition to a hidden execution. */
+export function requireRetainedHostFocus(frameTitle: string) {
+  const taken = new WeakMap<Page, boolean>()
+  const marker = `__sz_hidden_student_test_took_focus__:${frameTitle}`
+  test.beforeEach(async ({ page }) => {
+    taken.set(page, false)
+    page.on('console', (message) => {
+      if (message.text() === marker) taken.set(page, true)
+    })
+    await page.addInitScript(
+      ({ title, marker }) => {
+        let reported = false
+        const inspect = () => {
+          const active = document.activeElement
+          if (!reported && active instanceof HTMLIFrameElement && active.title === title) {
+            reported = true
+            console.info(marker)
+          }
+        }
+        document.addEventListener('focusin', inspect, true)
+        window.addEventListener('blur', () => queueMicrotask(inspect))
+        window.setInterval(inspect, 10)
+      },
+      { title: frameTitle, marker },
+    )
+  })
+  test.afterEach(async ({ page }, info) => {
+    await info.attach('hidden-frame-focus', {
+      body: JSON.stringify({ frameTitle, taken: taken.get(page) }),
+      contentType: 'application/json',
+    })
+    expect(taken.get(page)).toBe(false)
+  })
+}

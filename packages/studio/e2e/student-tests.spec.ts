@@ -1,36 +1,12 @@
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
-import { requireCleanRuntimeBrowser } from './helpers/cleanBrowser'
+import { requireCleanRuntimeBrowser, requireRetainedHostFocus } from './helpers/cleanBrowser'
 import { replaceBridgeScript } from './helpers/previewShell'
 
 requireCleanRuntimeBrowser()
 
-// The pilot's synthetic input must leave the editor's keyboard outside the hidden stage.
-const FOCUS_PROBE = '__sz_hidden_student_test_took_focus__'
-const focusTaken = new WeakMap<Page, boolean>()
-test.beforeEach(async ({ page }) => {
-  focusTaken.set(page, false)
-  page.on('console', (message) => {
-    if (message.text() === FOCUS_PROBE) focusTaken.set(page, true)
-  })
-  await page.addInitScript((marker) => {
-    let reported = false
-    const inspect = () => {
-      const active = document.activeElement
-      if (!reported && active instanceof HTMLIFrameElement && active.title === 'Teste do jogo') {
-        reported = true
-        console.info(marker)
-      }
-    }
-    document.addEventListener('focusin', inspect, true)
-    window.addEventListener('blur', () => queueMicrotask(inspect))
-    window.setInterval(inspect, 10)
-  }, FOCUS_PROBE)
-})
-test.afterEach(async ({ page }) => {
-  expect(focusTaken.get(page)).toBe(false)
-})
+requireRetainedHostFocus('Teste do jogo')
 
 /**
  * A aba Meus testes no navegador (proposta aprovada em 20/11/2026): o formulário cria os testes

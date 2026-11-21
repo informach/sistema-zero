@@ -3,7 +3,7 @@ import {
   studioPythonDeploymentRoute,
   studioPythonRuntimeRoute,
 } from '@sistemazero/core/studio/python-runtime-distribution'
-import { createPythonBootResourceManifest } from './bootResourceManifest'
+import { preparePythonBootResourceMetadata } from './bootResourceManifest'
 import { createPythonBootResourceStore, type PythonBootCacheStorage } from './bootResourceStore'
 import { readPythonWebBytes } from './webFiles'
 
@@ -75,7 +75,7 @@ export async function preparePythonBootResourceHost(options: {
     }
     const bytes = await readPythonWebBytes(response, metadataBytes, signal)
     const raw: unknown = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
-    const manifest = await createPythonBootResourceManifest(raw, hash)
+    const { manifest, features } = await preparePythonBootResourceMetadata(raw, hash)
     signal.throwIfAborted()
     const store = createPythonBootResourceStore({
       directory,
@@ -83,6 +83,6 @@ export async function preparePythonBootResourceHost(options: {
       cacheStorage,
       fetch: request,
     })
-    return { manifest, store }
+    return { manifest, store, features }
   }, signal)
 }

@@ -104,6 +104,7 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
       workspacePreferences: props.workspacePreferences,
       limits: props.limits,
       proBuildLimits: props.proRuntime?.limits,
+      studentTestsServer: props.studentTestsServer,
       locale: props.locale,
     }),
   )

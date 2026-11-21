@@ -61,6 +61,7 @@ import type { SaveVideoPositionService } from '../../../application/save-video-p
 import type { AuthorizeFreeRuntimeService } from '../../../application/studio/authorize-free-runtime.service'
 import type { AuthorizeLessonRuntimeService } from '../../../application/studio/authorize-lesson-runtime.service'
 import type { OpenLessonStudioService } from '../../../application/studio/open-lesson-studio.service'
+import type { StudioStudentTestsService } from '../../../application/studio/studio-student-tests.service'
 import type { StudioBuilderService } from '../../../application/studio-pro/studio-builder.service'
 import type { GetStudioUnlocksService } from '../../../application/studio-unlocks/get-studio-unlocks.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
@@ -161,6 +162,8 @@ export interface MembersRoutesDeps {
   openLessonStudio?: OpenLessonStudioService
   authorizeLessonRuntime?: AuthorizeLessonRuntimeService
   authorizeFreeRuntime?: AuthorizeFreeRuntimeService
+  /** "Meus testes" no Pro: os testes da criança no executor do servidor. */
+  studioStudentTests?: StudioStudentTestsService
   getOwnStudioSubmission: GetOwnStudioSubmissionService
   teacherThreads: TeacherThreadsService
   getShowcasePayload: GetShowcasePayloadService
@@ -585,6 +588,24 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { body: StudioFreeRuntimeRequestSchema, query: AudienceQuery },
+      )
+      // "Meus testes" no Pro (proposta aprovada em 20/11/2026): roda os testes da criança no
+      // executor do "Verificar projeto" e devolve passou ou não por teste. Nada é guardado.
+      .post(
+        '/studio/student-tests',
+        async ({ headers, body, query, set }) => {
+          set.headers['cache-control'] = 'private, no-store'
+          if (!deps.studioStudentTests)
+            throw new AccessDeniedError('Os testes do servidor ainda não estão disponíveis.')
+          return deps.studioStudentTests.run(
+            resolveStudioFreeActor(headers, query.audience ?? 'kids'),
+            body,
+          )
+        },
+        {
+          body: t.Object({ project: t.Unknown(), tests: t.Array(t.Unknown(), { maxItems: 20 }) }),
+          query: AudienceQuery,
+        },
       )
       // Desafio do MÊS (game jam): tema determinístico global + `entered` do perfil.
       // A posse (Clube+Estúdio) gateia só a UI (via /members/access); o gate REAL do

@@ -550,22 +550,24 @@ describe('PreviewIframe', () => {
     const key = `sz:run-tripwire:${project.id}`
     window.localStorage.removeItem(key)
     useProjectStore.setState({ project, isDirty: false, saveError: null })
-    // Observe before mounting: a ready document may be present in the first
-    // commit. Watching only that iframe's later attributes misses this valid
-    // path, and also keeps watching a detached frame when React replaces it.
+    // Observe antes da montagem e em qualquer iframe que entrar no contêiner:
+    // o documento pode aparecer no primeiro commit ou num quadro substituto.
+    // A microtarefa lê a marca após o commit, antes da tarefa que carrega o documento.
+    // O MutationObserver do happy-dom perde callbacks em WeakRef durante o GC.
+    // Este ensaio não distingue layout/passivo quando o React roda ambos no commit.
     const container = document.createElement('div')
     document.body.appendChild(container)
     const observed: Array<string | null> = []
-    const observer = new MutationObserver(() => {
-      if (container.querySelector('iframe')?.getAttribute('srcdoc')?.includes('Preview automático'))
-        observed.push(marcaDaAba(project.id))
-    })
-    observer.observe(container, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['srcdoc'],
-    })
+    const setAttribute = HTMLIFrameElement.prototype.setAttribute
+    const attributeWrites = spyOn(HTMLIFrameElement.prototype, 'setAttribute').mockImplementation(
+      function (this: HTMLIFrameElement, name: string, value: string) {
+        setAttribute.call(this, name, value)
+        if (name.toLowerCase() === 'srcdoc' && String(value).includes('Preview automático'))
+          queueMicrotask(() => {
+            if (container.contains(this)) observed.push(marcaDaAba(project.id))
+          })
+      },
+    )
     let unmount: (() => void) | undefined
     try {
       unmount = render(<PreviewIframe />, { container }).unmount
@@ -573,7 +575,7 @@ describe('PreviewIframe', () => {
       await waitFor(() => expect(observed.length).toBeGreaterThan(0))
       expect(observed.every((mark) => mark !== null)).toBe(true)
     } finally {
-      observer.disconnect()
+      attributeWrites.mockRestore()
       unmount?.()
       container.remove()
     }

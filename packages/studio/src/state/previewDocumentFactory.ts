@@ -36,23 +36,29 @@ export type PreviewDocumentFactory = (
   request: PreviewDocumentRequest,
 ) => Promise<PreviewDocumentResult>
 
-export interface PreviewDocumentSource {
-  /** A prévia montada entrega a fábrica; a devolução a retira. */
-  register(factory: PreviewDocumentFactory): () => void
-  get(): PreviewDocumentFactory | null
+/**
+ * Uma vaga por instância que a prévia montada ocupa e a aba "Meus testes" lê: a fábrica do
+ * documento (JavaScript) ou o anfitrião dos testes (Python, `pythonTestHost.ts`).
+ */
+export interface PreviewSlot<Value> {
+  /** A prévia montada entrega o valor; a devolução o retira. */
+  register(value: Value): () => void
+  get(): Value | null
 }
 
-export function createPreviewDocumentSource(): PreviewDocumentSource {
-  let current: PreviewDocumentFactory | null = null
+export function createPreviewSlot<Value>(): PreviewSlot<Value> {
+  let current: Value | null = null
   return {
-    register(factory) {
-      current = factory
+    register(value) {
+      current = value
       return () => {
         // Uma prévia nova (o largo virando estreito remonta os painéis) pode ter registrado antes
         // de a antiga sair: a saída da antiga não derruba a nova.
-        if (current === factory) current = null
+        if (current === value) current = null
       }
     },
     get: () => current,
   }
 }
+
+export type PreviewDocumentSource = PreviewSlot<PreviewDocumentFactory>

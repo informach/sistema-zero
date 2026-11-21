@@ -10,6 +10,8 @@ export const gameThreeDSceneRuntimeSource = `
       warn('Traga um cenário do Molda para este projeto antes de carregar.');
       return Promise.resolve(false);
     }
+    // A cena chega depois e a água anda: sem "A cada quadro" ninguém a desenharia de novo.
+    if (!world._szSceneTick) { world._szSceneTick = true; animate(world, function () {}); }
     var previous = world._scenePending;
     var pending = { controller: new AbortController() };
     world._scenePending = pending;

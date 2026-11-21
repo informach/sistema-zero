@@ -231,16 +231,22 @@ describe('o executor de "Meus testes"', () => {
   it('não monta nada quando o teste sai do contrato, pede um passo que o piloto não faz ou a prévia não está pronta', async () => {
     const { frames, createFrame } = fakeFrames()
     const base = pontosChegaA(1)
+    const expect1 = {
+      target: { kind: 'value', path: 'pontos' },
+      compare: 'equals',
+      value: 1,
+    } as const
     const longo: StudioStudentTest = {
       ...base,
-      rule: { ...base.rule, steps: [{ action: 'wait', ms: 60_000 }] },
+      rule: { type: 'behavior', steps: [{ action: 'wait', ms: 60_000 }], expect: expect1 },
     }
     const clique: StudioStudentTest = {
       ...base,
       rule: {
-        ...base.rule,
+        type: 'behavior',
         // O clique numa coordenada fixa é do contrato, mas a aba não o oferece nem o piloto o faz.
         steps: [{ action: 'click', x: 10, y: 10 }],
+        expect: expect1,
       },
     }
     const comum = { documentFactory: factory, parentOrigin: 'https://editor.test', createFrame }

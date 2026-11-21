@@ -79,7 +79,7 @@ const api = {
       ),
     }
   },
-  async prepare(slot: string, fixture: string, mismatch = false) {
+  async prepare(slot: string, fixture: string, mismatch = false, background = false) {
     const previous = entries.get(slot)
     if (previous) {
       await previous.session?.dispose()
@@ -100,6 +100,7 @@ const api = {
       const project = await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json()
       const snapshot = await preparePythonExecutionSnapshot(project)
       const session = await provider.prepare({
+        ...(background ? { pythonBackground: true as const } : {}),
         project,
         signal: entry.abort.signal,
         frame,

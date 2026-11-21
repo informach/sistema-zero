@@ -2,6 +2,7 @@ import type { ExecutionMotionSample } from '@sistemazero/core/learning'
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
 import { createPythonMissionPoseTracker } from '../missionPose'
+import { createPythonRendererFocus, type PythonRendererFocusOptions } from '../rendererFocus'
 import { createPgzeroInputQueue, readPgzeroKey } from './inputQueue'
 import { PGZERO_KEY_MODS } from './keyCodes.generated'
 import { createPgzeroFramePacer } from './pacing'
@@ -90,7 +91,7 @@ const css = (color: readonly number[] | undefined, fallback: string, alpha = tru
  */
 export function createPgzeroRenderer(
   container: HTMLElement,
-  options: {
+  options: PythonRendererFocusOptions & {
     /** How the canvas introduces itself to screen readers (Pygame Zero by default). */
     name?: string
     /** `watch`: Python waits for sounds to end, so the host should report them. */
@@ -102,6 +103,7 @@ export function createPgzeroRenderer(
     mission?: true
   } = {},
 ): PgzeroRenderer {
+  const focusCanvas = createPythonRendererFocus(options)
   const images = new Map<number, Sprite>()
   const mission = createPythonMissionPoseTracker(2048)
   const families = new Map<number, string>()
@@ -157,7 +159,7 @@ export function createPgzeroRenderer(
     context = ctx
     container.append(canvas)
     installInput(canvas)
-    canvas.focus({ preventScroll: true })
+    focusCanvas(canvas)
     return ctx
   }
 
@@ -267,7 +269,7 @@ export function createPgzeroRenderer(
       (event) => {
         const pos = position(event)
         if (!pos || event.button > 2) return
-        element.focus({ preventScroll: true })
+        focusCanvas(element)
         element.setPointerCapture?.(event.pointerId)
         lastMouse = pos
         if (!disposed) input.syncButtons(pos[0], pos[1], buttonsMask(event))

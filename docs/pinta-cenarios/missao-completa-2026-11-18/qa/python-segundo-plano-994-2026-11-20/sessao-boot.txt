@@ -1,0 +1,51 @@
+bun test v1.3.11 (af24e281)
+
+src\runtime\python\bootResourceChannel.test.ts:
+(pass) native ports transfer exactly three verified public resources and complete after ACKs [16.00ms]
+Native Node24 reader-ownership: 2 tests passed, 0 failed/cancelled/skipped
+(pass) native Node24 reader buffer ownership [266.00ms]
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":1,"name":"../private"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":1,"name":"pyodide.asm.wasm","url":"https://private.test/"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":1,"name":"pyodide.asm.wasm","method":"POST"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"read","id":2,"name":"pyodide.asm.wasm"}
+(pass) closed broker refuses forged request {"protocol":1,"type":"ack","id":1}
+(pass) reader refuses foreign URLs, options, relative aliases and duplicate reads before sending them
+(pass) owner retirement cancels its read and never transfers bytes that arrive later
+(pass) reader refuses premature completion and malformed or wrong-name bytes
+
+src\runtime\python\bootResources.test.ts:
+(pass) broker rejects a real verified store from another release or different same-pin descriptors [31.00ms]
+(pass) store binding is immutable and equivalent descriptor order is accepted
+(pass) host withdrawal settles before a non-cooperative metadata producer or cancellation ACK [109.00ms]
+(pass) host metadata URLs are derived only from pinned online or exported runtime frames
+(pass) host refuses unsafe or mismatched frame addresses before requesting metadata
+(pass) host verifies deployment before creating a bound store and never requests project or executable bytes
+(pass) host rejects changed deployments, oversized metadata and cancellation without opening the resource cache [16.00ms]
+(pass) boot manifest derives only the three public data resources from a verified release
+(pass) boot store verifies cold and cached bytes, never refetches a corrupt cache [16.00ms]
+(pass) streamed byte limits refuse oversized data and cancel without caching it
+(pass) a retired read cancels a late network response instead of publishing it
+(pass) cache quota errors remain visible and only owned cache generations are pruned
+(pass) store captures trusted configuration and refuses unsafe runtime directories [15.00ms]
+(pass) boot resources reject oversized metadata before any download
+(pass) decoded bodies use logical byte limits and never retain wire encoding in cache
+
+src\runtime\python\session.test.ts:
+(pass) a background Python frame does not delegate focus to its hidden document
+(pass) a background Python run refuses an old verified release before admitting executable state [16.00ms]
+(pass) a capable verified release receives background presentation outside the learner snapshot [203.00ms]
+(pass) mission reads use the authenticated generation and are rejected after disposal [16.00ms]
+(pass) a tecla de Meus testes vai pelo canal da execução, e o quadro antigo só recusa o comando
+(pass) routes audio over the authenticated session channel and correlates its response [15.00ms]
+(pass) prepares pinned public metadata in parallel but transfers nothing before a valid frame hello [250.00ms]
+(pass) a hello without the current boot protocol is refused before any channel transfer
+(pass) metadata failure only fails a session after its valid hello negotiates boot resources [32.00ms]
+(pass) completed metadata never authorizes a forged origin, challenge or source [218.00ms]
+(pass) withdrawal before the hello retires late metadata without a channel or cache [32.00ms]
+(pass) withdrawal during the hello retires late metadata without a channel or cache [218.00ms]
+(pass) an occupied iframe rejects another owner before starting another metadata request [32.00ms]
+
+ 38 pass
+ 0 fail
+ 196 expect() calls
+Ran 38 tests across 3 files. [2.10s]

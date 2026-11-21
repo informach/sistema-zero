@@ -62,9 +62,49 @@ test('o atlas copia cada textura para o seu ladrilho, linha a linha', () => {
   expect([px(0, 0), px(1, 1), px(2, 0), px(3, 1), px(2, 2), px(3, 3)]).toEqual([
     10, 10, 20, 20, 30, 30,
   ])
-  // A célula sem peça fica vazia (transparente), nunca com a textura de outra.
-  expect(px(0, 2)).toBe(0)
+  // A célula sem peça repete a borda da vizinha mais perto (acima: 10; à direita: 30), opaca.
+  expect([px(0, 2), px(1, 3)]).toEqual([10, 30])
+  expect(atlas[(2 * plano.largura + 0) * 4 + 3]).toBe(10)
   expect(() => comporAtlasDoRelevo(plano, [cor(1)], 2)).toThrow('Falta a textura')
+})
+
+test('célula vazia nunca deixa a beira da peça encostar no transparente', () => {
+  // Duas peças só na diagonal (grade 2x2): as duas células vazias tocam as duas peças.
+  const plano = planejarAtlasDoRelevo([peca(64, 64, 4), peca(128, 128, 4)])!
+  expect(plano.celulas).toEqual([
+    { coluna: 0, linha: 0 },
+    { coluna: 1, linha: 1 },
+  ])
+  const gradiente = new Uint8Array(4 * 4 * 4),
+    canto = new Uint8Array(4 * 4 * 4).fill(200)
+  for (let i = 0; i < 16; i++) gradiente.set([i * 10, 0, 0, 255], i * 4)
+  const atlas = comporAtlasDoRelevo(plano, [gradiente, canto], 4),
+    px = (x: number, y: number) => {
+      const i = (y * plano.largura + x) * 4
+      return [...atlas.subarray(i, i + 4)]
+    }
+  // À direita da primeira peça (célula 1,0): a coluna da borda direita dela, linha a linha.
+  expect(px(4, 0)).toEqual(px(3, 0))
+  expect(px(4, 3)).toEqual(px(3, 3))
+  // Abaixo dela (célula 0,1): a linha de baixo dela.
+  expect(px(2, 4)).toEqual(px(2, 3))
+  // Nenhum pixel do atlas ficou transparente.
+  expect(atlas.every((v, i) => i % 4 !== 3 || v > 0)).toBe(true)
+})
+
+test('célula que só encosta nas diagonais repete o canto de cada vizinha', () => {
+  // Grade 3x3 com peças em (0,0) e (2,2): a célula do meio só as toca pelos cantos.
+  const plano = planejarAtlasDoRelevo([peca(0, 0, 2), peca(128, 128, 2)])!
+  const a = new Uint8Array(2 * 2 * 4),
+    b = new Uint8Array(2 * 2 * 4)
+  for (let i = 0; i < 4; i++) {
+    a.set([10 + i, 0, 0, 255], i * 4)
+    b.set([50 + i, 0, 0, 255], i * 4)
+  }
+  const atlas = comporAtlasDoRelevo(plano, [a, b], 2),
+    px = (x: number, y: number) => atlas[(y * plano.largura + x) * 4]
+  // O canto de baixo à direita de (0,0) é o texel 3 (13); o de cima à esquerda de (2,2), o 0 (50).
+  expect([px(2, 2), px(3, 3)]).toEqual([13, 50])
 })
 
 test('a redução faz a média de cada quadrado 2x2', () => {

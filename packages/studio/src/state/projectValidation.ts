@@ -1083,8 +1083,8 @@ export function sanitizeJavaScriptProjectPayload(
   }
   const coverAssetName = sanitizeCoverAssetName(r.coverAssetName)
   if (coverAssetName) project.coverAssetName = coverAssetName
-  // Os testes da criança: só no clássico, só os válidos; sem nenhum, a chave nem aparece.
-  const studentTests = isPro ? undefined : sanitizeStudioStudentTests(r.studentTests)
+  // Os testes da criança (no clássico e no Pro): só os válidos; sem nenhum, a chave nem aparece.
+  const studentTests = sanitizeStudioStudentTests(r.studentTests)
   if (studentTests) project.studentTests = studentTests
   return project
 }

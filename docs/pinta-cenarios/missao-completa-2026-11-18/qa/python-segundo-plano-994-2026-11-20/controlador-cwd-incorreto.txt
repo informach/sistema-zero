@@ -1,0 +1,167 @@
+bun test v1.3.11 (af24e281)
+
+packages\studio\src\runtime\python\controller.test.ts:
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:152:28)
+(fail) classic: background=false is host presentation and preserves the program revision [31.00ms]
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:152:28)
+(fail) classic: background=true is host presentation and preserves the program revision [16.00ms]
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:152:28)
+(fail) pro: background=false is host presentation and preserves the program revision
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:152:28)
+(fail) pro: background=true is host presentation and preserves the program revision [15.00ms]
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+(fail) host audio preference follows pending prepare without restarting and retired capabilities cannot unmute
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:198:22)
+(fail) context disposal stops an existing run and prevents starting another in the revoked environment
+218 |       }
+219 |     })
+220 |     await expect(f.controller.run()).rejects.toThrow()
+221 |     expect(f.runs()).toBe(0)
+222 |     await f.controller.dispose()
+223 |     expect(f.frames()).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:223:24)
+(fail) revocation and Stop during ready prevent dispatch of the old run
+234 |       restart = f.controller.run()
+235 |     }
+236 |   })
+237 |   await expect(f.controller.run()).rejects.toThrow()
+238 |   await restart
+239 |   expect(f.runs()).toBe(1)
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:239:20)
+(fail) a restart during ready runs only the replacement generation [16.00ms]
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+(fail) late preparation after Stop or a source change cannot start a stale program
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:276:24)
+(fail) writer epochs and fresh grants protect commands after a successful start
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:288:22)
+(fail) automatic and explicit cover requests share one capture, and Stop revokes both
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:319:26)
+(fail) REPL checks its own grant and current project independently of execute permission [15.00ms]
+ 95 |     audioMuted: () => muted,
+ 96 |     mountFrame: () => {
+ 97 |       frames++
+ 98 |       let removed = false
+ 99 |       return {
+100 |         frame: document.createElement('iframe'),
+                     ^
+ReferenceError: document is not defined
+      at mountFrame (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:100:16)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.ts:210:31)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\runtime\python\controller.test.ts:349:22)
+(fail) context authorization receives the real snapshot revision before a frame or run exists
+(pass) late authorization after Stop or editing cannot start the captured project
+
+ 1 pass
+ 13 fail
+ 15 expect() calls
+Ran 14 tests across 1 file. [600.00ms]

@@ -159,6 +159,11 @@ export interface StudioCommonProps {
    * modo Pro usa o WebContainer local do Estúdio Completo.
    */
   proRuntime?: StudioProRuntimeAdapter
+  /**
+   * "Meus testes" no Pro: o executor dos testes no servidor (o do "Verificar projeto"). Sem ele,
+   * a aba não aparece no Pro. Estático por instância.
+   */
+  studentTestsServer?: import('./student-tests-server').StudioStudentTestsServer
   /** Canonical lock preparation for authenticated local WebContainer hosts. */
   prepareProDependencies?: PrepareProDependencies
   /** Approved language catalog and providers, shared by editor and public player. */

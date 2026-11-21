@@ -143,7 +143,9 @@ export async function buildPrototype({
     baseStyles +
     '\n' +
     (await readFile(resolve(prototype, 'styles.css'), 'utf8')) +
-    '</style></head><body><div id="root"></div><script>' +
+    // O Bun.build gera ESM, e há dependência com `import.meta.url` (a cola de um WebAssembly):
+    // como script clássico, a página parava em "Cannot use 'import.meta' outside a module".
+    '</style></head><body><div id="root"></div><script type="module">' +
     javascript.replaceAll('</script', '<\\/script') +
     '</script></body></html>'
   await writeFile(resolve(root, 'docs/design', filename), html)

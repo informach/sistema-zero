@@ -1,5 +1,12 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Meus testes no Pro (20/11/2026)
+
+`members-studio-student-tests` (`POST /members/studio/student-tests`): JWT de conta ativa,
+`membersInternalTransforms`, corpo de 2 MB, 20 por minuto por principal e o `timeoutMs` do
+"Verificar projeto" (160 s). O members confere o acesso ao Pro e roda os testes no executor; um
+lote por pedido. Teste em `tests/unit/config.test.ts`.
+
 ## Molda Cenários (16/11/2026)
 
 `src/infrastructure/config/cenarios-routes.ts` (`cenariosRoutes(membersInternalTransforms)`),

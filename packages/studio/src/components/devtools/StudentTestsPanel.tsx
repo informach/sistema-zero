@@ -1,20 +1,37 @@
+import { EXECUTION_GAME_FIELDS } from '@sistemazero/core/learning'
+import { studioProTemplate } from '@sistemazero/core/studio/pro-templates'
+import { studentTestServerBatches } from '@sistemazero/core/studio/student-test-runnable'
 import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import { STUDENT_TESTS_MAX } from '@sistemazero/core/studio/student-tests'
-import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { type JSX, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { IconCheckCircle, IconPlay, IconX } from '#ui'
-import { javaScriptProject } from '../../core/editableProject'
+import { isPythonProject, javaScriptProject } from '../../core/editableProject'
 import { createDictionaryTranslator, type Translator } from '../../core/i18n/translator'
-import { useProjectStore } from '../../state/projectStore'
+import { pythonCanvasExtension } from '../../runtime/python/canvasExtension'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { StudioStoresContext } from '../../state/storesContext'
 import { studentTestResultsFor } from '../../state/studentTestResults'
-import { usePreviewDocumentSource } from '../../state/studioStores'
+import {
+  usePendingEditorEdits,
+  usePreviewDocumentSource,
+  usePythonTestHostSource,
+} from '../../state/studioStores'
 import { useUIStoreApi } from '../../state/uiStore'
+import { outcomePassed } from '../../studentTests/outcome'
 import { runStudentTest, type StudentTestOutcome } from '../../studentTests/runner'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
-import { STUDENT_TESTS_COPY } from './studentTestsCopy'
+import { pythonTopLevelNames } from './pythonInvestigation'
+import { STUDENT_TESTS_COPY, STUDENT_TESTS_PYTHON_COPY } from './studentTestsCopy'
 import { type StudentTestNames, studentTestNames } from './studentTestsNames'
+import {
+  functionKey,
+  type PythonTestFunction,
+  proTestFunctions,
+  pythonTestFunctions,
+} from './studentTestsPython'
 import {
   type CheckKind,
   comparesFor,
@@ -31,9 +48,18 @@ import {
   testFromForm,
 } from './studentTestsText'
 
-function useTestsT(): Translator {
+/** No Python, as frases falam do programa (`STUDENT_TESTS_PYTHON_COPY` troca as do jogo). */
+const PYTHON_TESTS_COPY = {
+  'pt-BR': { ...STUDENT_TESTS_COPY['pt-BR'], ...STUDENT_TESTS_PYTHON_COPY['pt-BR'] },
+  en: { ...STUDENT_TESTS_COPY.en, ...STUDENT_TESTS_PYTHON_COPY.en },
+}
+
+function useTestsT(python: boolean): Translator {
   const t = useT()
-  return createDictionaryTranslator(STUDENT_TESTS_COPY, t.locale ?? 'pt-BR')
+  return createDictionaryTranslator(
+    python ? PYTHON_TESTS_COPY : STUDENT_TESTS_COPY,
+    t.locale ?? 'pt-BR',
+  )
 }
 
 /** O círculo com o X (Lucide "circle-x"): o teste que não passou. */
@@ -65,9 +91,16 @@ const FIELD =
  * do zero num palco escondido (`studentTests/runner.ts`), aperta as teclas e confere um valor no
  * fim, com o formato e o julgamento dos objetivos das aulas. Os testes ficam guardados no projeto;
  * rodar não muda nada nele. Fechar a gaveta para a rodada.
+ *
+ * No Python clássico (a tabela da proposta: "testar o programa e testar uma função"), cada teste
+ * roda numa execução escondida do Python (`studentTests/pythonRunner.ts`); o teste novo escolhe
+ * entre testar o programa (com Turtle, Pygame Zero, pygame-ce ou Raylib) e testar uma função.
  */
 export function StudentTestsPanel(): JSX.Element {
-  const t = useTestsT()
+  const python = useProjectStore((s) =>
+    s.project && isPythonProject(s.project) && s.project.kind === 'classic' ? s.project : null,
+  )
+  const t = useTestsT(Boolean(python))
   const ui = useUIStoreApi()
   const results = useMemo(() => studentTestResultsFor(ui), [ui])
   const { outcomes, running, resultsProject } = useStore(
@@ -78,11 +111,22 @@ export function StudentTestsPanel(): JSX.Element {
       resultsProject: s.projectId,
     })),
   )
-  const project = useProjectStore((s) => (s.project ? javaScriptProject(s.project) : null))
+  const javascript = useProjectStore((s) => (s.project ? javaScriptProject(s.project) : null))
+  const project = python ?? javascript
+  // O Pro em JavaScript roda os testes no executor do servidor (o host entrega o adaptador).
+  const pro = javascript?.kind === 'pro' ? javascript : null
+  const server = useContext(StudioStoresContext)?.studentTestsServer ?? null
+  const projectStore = useProjectStoreApi()
+  const pendingEdits = usePendingEditorEdits()
+  const [ranMs, setRanMs] = useState<number | null>(null)
+  const [runError, setRunError] = useState<string | null>(null)
   const setStudentTests = useProjectStore((s) => s.setStudentTests)
   const readOnly = useStudioExecution().editingAccess === 'observer'
   const previewDocument = usePreviewDocumentSource()
+  const pythonHost = usePythonTestHostSource()
   const tests = project?.studentTests ?? []
+  // Testar o programa é do programa Python que desenha; sem biblioteca de jogo, só função.
+  const testsProgram = !python || pythonCanvasExtension(python.installedExtensions) !== undefined
   const own = project && resultsProject === project.id ? outcomes : {}
   const [editing, setEditing] = useState<{ test: StudioStudentTest | null } | null>(null)
   const [openEnding, setOpenEnding] = useState<string | null>(null)
@@ -97,25 +141,87 @@ export function StudentTestsPanel(): JSX.Element {
     [results],
   )
 
+  /** O Pro: os testes em lotes no executor do servidor, com o projeto como está agora. */
+  const runOnServer = async (controller: AbortController) => {
+    if (!server) return
+    const started = performance.now()
+    pendingEdits?.flush()
+    const current = projectStore.getState().project
+    let done = 0
+    for (const batch of studentTestServerBatches(tests)) {
+      if (controller.signal.aborted) return
+      results.setState({ running: { current: done + 1, total: tests.length } })
+      try {
+        const { results: answers } = await server.run({
+          project: current,
+          tests: batch,
+          signal: controller.signal,
+        })
+        if (controller.signal.aborted) return
+        const byId = new Map(answers.map((answer) => [answer.id, answer]))
+        results.setState((s) => ({
+          outcomes: {
+            ...s.outcomes,
+            ...Object.fromEntries(
+              batch.map((test): [string, StudentTestOutcome] => {
+                const answer = byId.get(test.id)
+                return [
+                  test.id,
+                  answer
+                    ? { status: 'remote', passed: answer.passed, detail: answer.detail ?? null }
+                    : { status: 'unavailable' },
+                ]
+              }),
+            ),
+          },
+        }))
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setRunError(
+          error instanceof Error && error.message ? error.message : t('tests.serverError'),
+        )
+        return
+      }
+      done += batch.length
+    }
+    setRanMs(performance.now() - started)
+  }
+
   const runAll = async () => {
     if (!project || running || tests.length === 0) return
     const controller = new AbortController()
     abort.current = controller
     setOpenEnding(null)
+    setRanMs(null)
+    setRunError(null)
     results.setState({
       projectId: project.id,
       outcomes: {},
       running: { current: 1, total: tests.length },
     })
+    if (pro) {
+      await runOnServer(controller)
+      if (abort.current === controller) abort.current = null
+      results.setState({ running: null })
+      return
+    }
     for (const [index, test] of tests.entries()) {
       if (controller.signal.aborted) break
       results.setState({ running: { current: index + 1, total: tests.length } })
-      const outcome = await runStudentTest({
-        test,
-        documentFactory: previewDocument?.get() ?? null,
-        parentOrigin: window.location.origin,
-        signal: controller.signal,
-      })
+      const outcome = python
+        ? await import('../../studentTests/pythonRunner').then(({ runPythonStudentTest }) =>
+            runPythonStudentTest({
+              test,
+              host: pythonHost?.get() ?? null,
+              signal: controller.signal,
+            }),
+          )
+        : await runStudentTest({
+            test,
+            documentFactory: previewDocument?.get() ?? null,
+            parentOrigin: window.location.origin,
+            signal: controller.signal,
+          })
       if (controller.signal.aborted) break
       results.setState((s) => ({ outcomes: { ...s.outcomes, [test.id]: outcome } }))
     }
@@ -144,8 +250,25 @@ export function StudentTestsPanel(): JSX.Element {
       <TestEditor
         t={t}
         test={editing.test}
-        names={studentTestNames(project.files['script.js'] ?? '', project.blocksState)}
-        canClick={project.installedExtensions.some((extension) => extension.id === 'game-2d')}
+        language={python ? 'python' : 'javascript'}
+        kind={pro ? 'pro' : 'classic'}
+        kit={Boolean(pro && studioProTemplate(pro.proMeta?.templateId)?.kitVersion)}
+        testsProgram={testsProgram}
+        functions={
+          python
+            ? pythonTestFunctions(python.files, python.python.entrypoint)
+            : pro?.tree
+              ? proTestFunctions(pro.tree)
+              : []
+        }
+        names={
+          python
+            ? pythonNames(python.files[python.python.entrypoint] ?? '')
+            : studentTestNames(project.files['script.js'] ?? '', project.blocksState)
+        }
+        canClick={
+          !python && project.installedExtensions.some((extension) => extension.id === 'game-2d')
+        }
         error={saveError}
         onCancel={() => {
           setSaveError(null)
@@ -153,7 +276,13 @@ export function StudentTestsPanel(): JSX.Element {
         }}
         onSave={(form) => {
           const id = editing.test?.id ?? newTestId(new Set(tests.map((test) => test.id)))
-          const built = testFromForm(t, form, id)
+          const built = testFromForm(
+            t,
+            form,
+            id,
+            python ? 'python' : 'javascript',
+            pro ? 'pro' : 'classic',
+          )
           if ('problem' in built) return built.problem
           const next = editing.test
             ? tests.map((test) => (test.id === id ? built.test : test))
@@ -179,7 +308,7 @@ export function StudentTestsPanel(): JSX.Element {
     )
 
   const done = tests.filter((test) => own[test.id])
-  const passed = done.filter((test) => own[test.id]?.status === 'passed').length
+  const passed = done.filter((test) => outcomePassed(own[test.id])).length
   const full = tests.length >= STUDENT_TESTS_MAX
   const summary =
     done.length === tests.length && tests.length > 0
@@ -219,19 +348,25 @@ export function StudentTestsPanel(): JSX.Element {
           {running ? (
             t('tests.running', running)
           ) : tests.length === 0 ? (
-            t('tests.empty')
+            t(pro ? 'tests.empty.pro' : testsProgram ? 'tests.empty' : 'tests.empty.function')
           ) : (
             <>
               {summary ? <b>{summary}</b> : null}
               {summary ? ' ' : null}
-              {t(tests.length === 1 ? 'tests.note.one' : 'tests.note.many')}
+              {pro && summary && ranMs !== null
+                ? Math.round(ranMs / 1000) <= 1
+                  ? t('tests.ranOnServer.one')
+                  : t('tests.ranOnServer', { seconds: Math.round(ranMs / 1000) })
+                : pro
+                  ? t(tests.length === 1 ? 'tests.note.server.one' : 'tests.note.server.many')
+                  : t(tests.length === 1 ? 'tests.note.one' : 'tests.note.many')}
             </>
           )}
         </span>
       </div>
-      {saveError ? (
+      {saveError || runError ? (
         <p role="alert" className="m-0 text-sm text-sz-error">
-          {saveError}
+          {saveError ?? runError}
         </p>
       ) : null}
       {tests.map((test) => (
@@ -336,10 +471,32 @@ function TestCard({
 }
 
 const CHECK_KINDS: readonly CheckKind[] = ['value', 'spriteX', 'spriteY', 'text', 'console']
+/** No Python a tela é um desenho: não há texto de página para conferir. */
+const PYTHON_CHECK_KINDS: readonly CheckKind[] = ['value', 'spriteX', 'spriteY', 'console']
+/** No Pro: o texto da página e as mensagens (as variáveis não entram); nos kits, o estado do jogo. */
+const PRO_CHECK_KINDS: readonly CheckKind[] = ['text', 'console']
+const PRO_KIT_CHECK_KINDS: readonly CheckKind[] = ['text', 'console', 'game']
+
+/** Os nomes que o formulário oferece no Python: as variáveis do topo do arquivo inicial. */
+function pythonNames(source: string): StudentTestNames {
+  const names = pythonTopLevelNames(source)
+  return { variables: names, sprites: names, groups: [] }
+}
+
+/** O exemplo da prancha, em Python: a função que soma os pontos. */
+const PYTHON_FUNCTION_SAMPLE = 'def somar_pontos(pontos, bonus):\n    return pontos + bonus'
+/** O exemplo da prancha do Pro. */
+const PRO_FUNCTION_SAMPLE =
+  'export function somarPontos(pontos, bonus) {\n  return pontos + bonus\n}'
 
 function TestEditor({
   t,
   test,
+  language,
+  kind = 'classic',
+  kit = false,
+  testsProgram,
+  functions,
   names,
   canClick,
   error,
@@ -349,6 +506,15 @@ function TestEditor({
 }: {
   t: Translator
   test: StudioStudentTest | null
+  language: 'javascript' | 'python'
+  /** O Pro roda no servidor: sem variáveis, com o estado dos kits e a função exportada. */
+  kind?: 'classic' | 'pro'
+  /** O projeto Pro é de um kit (o estado do jogo, `__studioGame`, entra na conferência). */
+  kit?: boolean
+  /** O teste do programa existe (no Python, só no programa com biblioteca de jogo). */
+  testsProgram: boolean
+  /** As funções que o teste de função oferece (só no Python). */
+  functions: readonly PythonTestFunction[]
   names: StudentTestNames
   /** O clique no sprite de um grupo lê o grupo pelo inspetor do Jogo 2D: só com ele instalado. */
   canClick: boolean
@@ -357,10 +523,25 @@ function TestEditor({
   onCancel: () => void
   onDelete?: () => void
 }): JSX.Element {
-  const [form, setForm] = useState<TestForm>(() => formFromTest(t, test))
+  const [form, setForm] = useState<TestForm>(() =>
+    formFromTest(t, test, testsProgram ? 'behavior' : 'function'),
+  )
   const [problem, setProblem] = useState<FormProblem | null>(null)
   const nameId = useId()
   const headingId = useId()
+  const fnId = useId()
+  const casesId = useId()
+  const python = language === 'python'
+  const pro = kind === 'pro'
+  // O teste de função existe no Python e no Pro.
+  const functionTests = python || pro
+  const checkKinds = python
+    ? PYTHON_CHECK_KINDS
+    : pro
+      ? kit
+        ? PRO_KIT_CHECK_KINDS
+        : PRO_CHECK_KINDS
+      : CHECK_KINDS
   const change = (patch: Partial<TestForm>) => {
     setProblem(null)
     setForm((current) => ({ ...current, ...patch }))
@@ -393,6 +574,60 @@ function TestEditor({
     const value = Number(text.replace(',', '.'))
     return t(Number.isFinite(value) && value < 2 ? 'tests.second' : 'tests.seconds')
   }
+  const nameField = (
+    <>
+      <label htmlFor={nameId} className="text-xs font-bold">
+        {t('tests.form.name')}
+      </label>
+      <input
+        id={nameId}
+        className={FIELD}
+        value={form.name}
+        maxLength={60}
+        autoComplete="off"
+        onChange={(event) => change({ name: event.target.value })}
+      />
+    </>
+  )
+  const footer = (
+    <>
+      {problem || error ? (
+        <p role="alert" className="m-0 text-sm text-sz-error">
+          {problem ? t(problem) : error}
+        </p>
+      ) : null}
+      <div className="mt-auto flex flex-wrap gap-1.5">
+        <button type="submit" className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--primary">
+          {t('tests.form.save')}
+        </button>
+        <button type="button" className="sz-pro-btn sz-pro-btn--sm" onClick={onCancel}>
+          {t('tests.form.cancel')}
+        </button>
+        {onDelete ? (
+          <button
+            type="button"
+            className="sz-pro-btn sz-pro-btn--sm sz-student-test-form__delete"
+            onClick={onDelete}
+          >
+            {t('tests.form.delete')}
+          </button>
+        ) : null}
+      </div>
+    </>
+  )
+  // O teste guardado com uma função que o projeto não tem mais continua na lista.
+  const fnOptions =
+    functions.some((fn) => functionKey(fn) === form.fn) || !form.fn
+      ? functions
+      : [
+          {
+            name: form.fn.slice(form.fn.lastIndexOf(':') + 1),
+            ...(form.fn.includes(':')
+              ? { module: form.fn.slice(0, form.fn.lastIndexOf(':')) }
+              : {}),
+          },
+          ...functions,
+        ]
 
   return (
     <form
@@ -406,211 +641,275 @@ function TestEditor({
       <h3 id={headingId} className="m-0 text-base font-bold">
         {t(test ? 'tests.form.edit' : 'tests.form.new')}
       </h3>
-      <div className="sz-student-test-form__columns">
-        <div className="flex min-w-0 flex-col gap-2">
-          <label htmlFor={nameId} className="text-xs font-bold">
-            {t('tests.form.name')}
-          </label>
-          <input
-            id={nameId}
-            className={FIELD}
-            value={form.name}
-            maxLength={60}
-            autoComplete="off"
-            onChange={(event) => change({ name: event.target.value })}
-          />
-          <p className="m-0 text-xs font-bold">{t('tests.form.when')}</p>
-          <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
-            {form.steps.map((step, index) => (
-              <li
-                // biome-ignore lint/suspicious/noArrayIndexKey: os passos não têm id; a ordem é o que a criança vê
-                key={index}
-                className="flex flex-wrap items-center gap-1.5 text-sm"
-              >
-                <span className="w-5 text-xs text-sz-fg-soft">{index + 1}.</span>
+      {functionTests && testsProgram ? (
+        <fieldset className="m-0 flex flex-wrap items-center gap-1.5 border-0 p-0">
+          <legend className="sr-only">{t('tests.kind')}</legend>
+          {(['behavior', 'function'] as const).map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              className={`sz-pro-btn sz-pro-btn--sm${form.kind === kind ? ' sz-pro-btn--primary' : ''}`}
+              aria-pressed={form.kind === kind}
+              onClick={() => change({ kind })}
+            >
+              {t(kind === 'behavior' && pro ? 'tests.kind.game' : `tests.kind.${kind}`)}
+            </button>
+          ))}
+        </fieldset>
+      ) : null}
+      {functionTests && form.kind === 'function' ? (
+        <div className="sz-student-test-form__columns">
+          <div className="flex min-w-0 flex-col gap-2">
+            {nameField}
+            {fnOptions.length === 0 ? (
+              <>
+                <p className="m-0 text-sm">
+                  {t(pro ? 'tests.function.none.pro' : 'tests.function.none')}
+                </p>
+                <pre className="sz-student-test-form__sample m-0 rounded-lg bg-sz-bg p-2.5 text-xs">
+                  <code>{pro ? PRO_FUNCTION_SAMPLE : PYTHON_FUNCTION_SAMPLE}</code>
+                </pre>
+                <p className="m-0 text-xs text-sz-fg-soft">{t('tests.function.after')}</p>
+              </>
+            ) : (
+              <>
+                <label htmlFor={fnId} className="text-xs font-bold">
+                  {t('tests.function.pick')}
+                </label>
                 <select
-                  aria-label={t('tests.form.step', { n: index + 1 })}
+                  id={fnId}
                   className={FIELD}
-                  value={step.kind}
-                  onChange={(event) => {
-                    const kind = event.target.value as FormStep['kind']
-                    const key = step.kind === 'press' || step.kind === 'hold' ? step.key : 'Enter'
-                    const seconds =
-                      step.kind === 'hold' || step.kind === 'wait' ? step.seconds : '1'
-                    setStep(
-                      index,
-                      kind === 'press'
-                        ? { kind, key }
-                        : kind === 'hold'
-                          ? { kind, key, seconds }
-                          : kind === 'wait'
-                            ? { kind, seconds }
-                            : { kind, sprite: '', group: '' },
-                    )
-                  }}
+                  value={form.fn}
+                  onChange={(event) => change({ fn: event.target.value })}
                 >
-                  <option value="press">{t('tests.form.step.press')}</option>
-                  <option value="hold">{t('tests.form.step.hold')}</option>
-                  <option value="wait">{t('tests.form.step.wait')}</option>
-                  {canClick || step.kind === 'click' ? (
-                    <option value="click">{t('tests.form.step.click')}</option>
-                  ) : null}
+                  <option value="" disabled />
+                  {fnOptions.map((fn) => (
+                    <option key={functionKey(fn)} value={functionKey(fn)}>
+                      {fn.module ? `${fn.name} (${fn.module})` : fn.name}
+                    </option>
+                  ))}
                 </select>
-                {step.kind === 'click' ? (
-                  <>
-                    <select
-                      aria-label={t('tests.form.clickSprite', { n: index + 1 })}
-                      className={FIELD}
-                      value={step.sprite}
-                      onChange={(event) => setStep(index, { ...step, sprite: event.target.value })}
-                    >
-                      {nameOptions(names.sprites, step.sprite)}
-                    </select>
-                    <span>{t('tests.form.ofGroup')}</span>
-                    <select
-                      aria-label={t('tests.form.clickGroup', { n: index + 1 })}
-                      className={FIELD}
-                      value={step.group}
-                      onChange={(event) => setStep(index, { ...step, group: event.target.value })}
-                    >
-                      {nameOptions(names.groups, step.group)}
-                    </select>
-                  </>
-                ) : null}
-                {step.kind === 'press' || step.kind === 'hold' ? (
+              </>
+            )}
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor={casesId} className="text-xs font-bold">
+              {t('tests.function.cases')}
+            </label>
+            <textarea
+              id={casesId}
+              className={`${FIELD} min-h-24 py-1.5 font-mono`}
+              value={form.cases}
+              spellCheck={false}
+              autoComplete="off"
+              placeholder="2, 3 -> 5"
+              onChange={(event) => change({ cases: event.target.value })}
+            />
+            <p className="m-0 text-xs text-sz-fg-soft">
+              {t(pro ? 'tests.function.casesNote.pro' : 'tests.function.casesNote')}
+            </p>
+            <p className="m-0 text-xs text-sz-fg-soft">
+              {t(pro ? 'tests.function.note.pro' : 'tests.function.note')}
+            </p>
+            {footer}
+          </div>
+        </div>
+      ) : (
+        <div className="sz-student-test-form__columns">
+          <div className="flex min-w-0 flex-col gap-2">
+            {nameField}
+            <p className="m-0 text-xs font-bold">{t('tests.form.when')}</p>
+            <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
+              {form.steps.map((step, index) => (
+                <li
+                  // biome-ignore lint/suspicious/noArrayIndexKey: os passos não têm id; a ordem é o que a criança vê
+                  key={index}
+                  className="flex flex-wrap items-center gap-1.5 text-sm"
+                >
+                  <span className="w-5 text-xs text-sz-fg-soft">{index + 1}.</span>
                   <select
-                    aria-label={t('tests.form.key', { n: index + 1 })}
+                    aria-label={t('tests.form.step', { n: index + 1 })}
                     className={FIELD}
-                    value={step.key}
+                    value={step.kind}
                     onChange={(event) => {
-                      const key = event.target.value
-                      if (isFormKey(key)) setStep(index, { ...step, key })
+                      const kind = event.target.value as FormStep['kind']
+                      const key = step.kind === 'press' || step.kind === 'hold' ? step.key : 'Enter'
+                      const seconds =
+                        step.kind === 'hold' || step.kind === 'wait' ? step.seconds : '1'
+                      setStep(
+                        index,
+                        kind === 'press'
+                          ? { kind, key }
+                          : kind === 'hold'
+                            ? { kind, key, seconds }
+                            : kind === 'wait'
+                              ? { kind, seconds }
+                              : { kind, sprite: '', group: '' },
+                      )
                     }}
                   >
-                    {FORM_KEYS.map((key) => (
-                      <option key={key} value={key}>
-                        {keyLabel(t, key)}
-                      </option>
-                    ))}
+                    <option value="press">{t('tests.form.step.press')}</option>
+                    <option value="hold">{t('tests.form.step.hold')}</option>
+                    <option value="wait">{t('tests.form.step.wait')}</option>
+                    {canClick || step.kind === 'click' ? (
+                      <option value="click">{t('tests.form.step.click')}</option>
+                    ) : null}
                   </select>
-                ) : null}
-                {step.kind === 'hold' || step.kind === 'wait' ? (
-                  <>
-                    {step.kind === 'hold' ? <span>{t('tests.form.for')}</span> : null}
-                    <input
-                      aria-label={t('tests.form.seconds', { n: index + 1 })}
-                      className={`${FIELD} w-16`}
-                      inputMode="decimal"
-                      value={step.seconds}
-                      onChange={(event) => setStep(index, { ...step, seconds: event.target.value })}
-                    />
-                    <span>{secondsUnit(step.seconds)}</span>
-                  </>
-                ) : null}
-                <button
-                  type="button"
-                  className="sz-pro-btn sz-pro-btn--sm sz-student-test-form__remove"
-                  aria-label={t('tests.form.remove', { n: index + 1 })}
-                  onClick={() => change({ steps: form.steps.filter((_, at) => at !== index) })}
-                >
-                  <IconX />
-                </button>
-              </li>
-            ))}
-          </ol>
-          <div>
-            <button
-              type="button"
-              className="sz-pro-btn sz-pro-btn--sm"
-              disabled={form.steps.length >= 20}
-              onClick={() => change({ steps: [...form.steps, { kind: 'press', key: 'Enter' }] })}
-            >
-              {t('tests.form.more')}
-            </button>
-          </div>
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <p className="m-0 text-xs font-bold">{t('tests.form.check')}</p>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <select
-              aria-label={t('tests.form.target')}
-              className={FIELD}
-              value={form.check}
-              onChange={(event) => {
-                const check = event.target.value as CheckKind
-                const list = comparesFor(check)
-                change({
-                  check,
-                  subject: '',
-                  compare: list.includes(form.compare) ? form.compare : 'equals',
-                })
-              }}
-            >
-              {CHECK_KINDS.map((kind) => (
-                <option key={kind} value={kind}>
-                  {t(`tests.form.target.${kind}`)}
-                </option>
+                  {step.kind === 'click' ? (
+                    <>
+                      <select
+                        aria-label={t('tests.form.clickSprite', { n: index + 1 })}
+                        className={FIELD}
+                        value={step.sprite}
+                        onChange={(event) =>
+                          setStep(index, { ...step, sprite: event.target.value })
+                        }
+                      >
+                        {nameOptions(names.sprites, step.sprite)}
+                      </select>
+                      <span>{t('tests.form.ofGroup')}</span>
+                      <select
+                        aria-label={t('tests.form.clickGroup', { n: index + 1 })}
+                        className={FIELD}
+                        value={step.group}
+                        onChange={(event) => setStep(index, { ...step, group: event.target.value })}
+                      >
+                        {nameOptions(names.groups, step.group)}
+                      </select>
+                    </>
+                  ) : null}
+                  {step.kind === 'press' || step.kind === 'hold' ? (
+                    <select
+                      aria-label={t('tests.form.key', { n: index + 1 })}
+                      className={FIELD}
+                      value={step.key}
+                      onChange={(event) => {
+                        const key = event.target.value
+                        if (isFormKey(key)) setStep(index, { ...step, key })
+                      }}
+                    >
+                      {FORM_KEYS.map((key) => (
+                        <option key={key} value={key}>
+                          {keyLabel(t, key)}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                  {step.kind === 'hold' || step.kind === 'wait' ? (
+                    <>
+                      {step.kind === 'hold' ? <span>{t('tests.form.for')}</span> : null}
+                      <input
+                        aria-label={t('tests.form.seconds', { n: index + 1 })}
+                        className={`${FIELD} w-16`}
+                        inputMode="decimal"
+                        value={step.seconds}
+                        onChange={(event) =>
+                          setStep(index, { ...step, seconds: event.target.value })
+                        }
+                      />
+                      <span>{secondsUnit(step.seconds)}</span>
+                    </>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="sz-pro-btn sz-pro-btn--sm sz-student-test-form__remove"
+                    aria-label={t('tests.form.remove', { n: index + 1 })}
+                    onClick={() => change({ steps: form.steps.filter((_, at) => at !== index) })}
+                  >
+                    <IconX />
+                  </button>
+                </li>
               ))}
-            </select>
-            {form.check !== 'text' && form.check !== 'console' ? (
-              <select
-                aria-label={t(
-                  form.check === 'value' ? 'tests.form.name.variable' : 'tests.form.name.sprite',
-                )}
-                className={FIELD}
-                value={form.subject}
-                onChange={(event) => change({ subject: event.target.value })}
-              >
-                {nameOptions(subjects, form.subject)}
-              </select>
-            ) : null}
-            <select
-              aria-label={t('tests.form.compare')}
-              className={FIELD}
-              value={form.compare}
-              onChange={(event) => change({ compare: event.target.value as TestForm['compare'] })}
-            >
-              {compares.map((compare) => (
-                <option key={compare} value={compare}>
-                  {t(`tests.compare.${compare}`)}
-                </option>
-              ))}
-            </select>
-            {needsValue ? (
-              <input
-                aria-label={t('tests.form.value')}
-                className={`${FIELD} w-32`}
-                value={form.value}
-                autoComplete="off"
-                onChange={(event) => change({ value: event.target.value })}
-              />
-            ) : null}
-          </div>
-          <p className="m-0 text-xs text-sz-fg-soft">{t('tests.form.note')}</p>
-          {problem || error ? (
-            <p role="alert" className="m-0 text-sm text-sz-error">
-              {problem ? t(problem) : error}
-            </p>
-          ) : null}
-          <div className="mt-auto flex flex-wrap gap-1.5">
-            <button type="submit" className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--primary">
-              {t('tests.form.save')}
-            </button>
-            <button type="button" className="sz-pro-btn sz-pro-btn--sm" onClick={onCancel}>
-              {t('tests.form.cancel')}
-            </button>
-            {onDelete ? (
+            </ol>
+            <div>
               <button
                 type="button"
-                className="sz-pro-btn sz-pro-btn--sm sz-student-test-form__delete"
-                onClick={onDelete}
+                className="sz-pro-btn sz-pro-btn--sm"
+                disabled={form.steps.length >= 20}
+                onClick={() => change({ steps: [...form.steps, { kind: 'press', key: 'Enter' }] })}
               >
-                {t('tests.form.delete')}
+                {t('tests.form.more')}
               </button>
-            ) : null}
+            </div>
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <p className="m-0 text-xs font-bold">{t('tests.form.check')}</p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <select
+                aria-label={t('tests.form.target')}
+                className={FIELD}
+                value={form.check}
+                onChange={(event) => {
+                  const check = event.target.value as CheckKind
+                  const list = comparesFor(check)
+                  change({
+                    check,
+                    subject: '',
+                    compare: list.includes(form.compare) ? form.compare : 'equals',
+                  })
+                }}
+              >
+                {checkKinds.map((kind) => (
+                  <option key={kind} value={kind}>
+                    {t(`tests.form.target.${kind}`)}
+                  </option>
+                ))}
+              </select>
+              {form.check === 'game' ? (
+                <select
+                  aria-label={t('tests.form.name.game')}
+                  className={FIELD}
+                  value={form.subject}
+                  onChange={(event) => change({ subject: event.target.value })}
+                >
+                  <option value="" disabled />
+                  {EXECUTION_GAME_FIELDS.map((field) => (
+                    <option key={field} value={field}>
+                      {t(`tests.game.${field}`)}
+                    </option>
+                  ))}
+                </select>
+              ) : form.check !== 'text' && form.check !== 'console' ? (
+                <select
+                  aria-label={t(
+                    form.check === 'value' ? 'tests.form.name.variable' : 'tests.form.name.sprite',
+                  )}
+                  className={FIELD}
+                  value={form.subject}
+                  onChange={(event) => change({ subject: event.target.value })}
+                >
+                  {nameOptions(subjects, form.subject)}
+                </select>
+              ) : null}
+              <select
+                aria-label={t('tests.form.compare')}
+                className={FIELD}
+                value={form.compare}
+                onChange={(event) => change({ compare: event.target.value as TestForm['compare'] })}
+              >
+                {compares.map((compare) => (
+                  <option key={compare} value={compare}>
+                    {t(`tests.compare.${compare}`)}
+                  </option>
+                ))}
+              </select>
+              {needsValue ? (
+                <input
+                  aria-label={t('tests.form.value')}
+                  className={`${FIELD} w-32`}
+                  value={form.value}
+                  autoComplete="off"
+                  onChange={(event) => change({ value: event.target.value })}
+                />
+              ) : null}
+            </div>
+            <p className="m-0 text-xs text-sz-fg-soft">
+              {t(pro ? 'tests.form.note.pro' : 'tests.form.note')}
+            </p>
+            {footer}
           </div>
         </div>
-      </div>
+      )}
     </form>
   )
 }
