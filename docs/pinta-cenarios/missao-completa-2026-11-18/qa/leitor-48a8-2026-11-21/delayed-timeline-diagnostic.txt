@@ -1,0 +1,51 @@
+import { expect, mock, test } from 'bun:test'
+import { createElement } from '../packages/molda/node_modules/react'
+import { act, fireEvent, render, screen } from '../packages/molda/node_modules/@testing-library/react'
+import { COPY } from '../packages/molda/src/core/copy'
+import { structuredBytes } from '../packages/molda/src/core/structuredBytes'
+import { moldaToolFamilyIds } from '../packages/molda/src/core/toolFamilies'
+import { createDocumentEditorStore } from '../packages/molda/src/state/editorStore'
+import { animatedScene } from '../packages/molda/src/testing/sceneAnimation'
+import { sceneViewportProbe } from '../packages/molda/src/testing/sceneViewportProbe'
+import { MoldaToolAccessProvider } from '../packages/molda/src/components/toolAccess'
+
+const deferred = await import('../packages/molda/src/components/editor/DeferredEditor')
+const OriginalDeferredModule = deferred.DeferredModule
+let release!: () => void
+const pending = new Promise<void>(resolve => { release = resolve })
+const loaders = new WeakMap<Function, Function>()
+mock.module('../packages/molda/src/components/editor/DeferredEditor', () => ({
+  ...deferred,
+  DeferredModule(props: any) {
+    let load = props.load
+    if (load.name === 'loadTimeline') {
+      if (!loaders.has(load)) loaders.set(load, async () => { await pending; return props.load() })
+      load = loaders.get(load)
+    }
+    return createElement(OriginalDeferredModule, {...props, load})
+  },
+}))
+const { SceneWorkshop } = await import('../packages/molda/src/components/editor/scene/SceneWorkshop')
+test('independent cold timeline can finish after clip rename and permission revocation', async () => {
+  const source = animatedScene()
+  const editor = createDocumentEditorStore({asset: source, sizeOf: structuredBytes, persistence: {save: async () => undefined}, autosaveMs:60000})
+  const probe = sceneViewportProbe()
+  const draw = (denied: string[] = []) => createElement(MoldaToolAccessProvider, {access:{allow:moldaToolFamilyIds(['basic','intermediate','professional']).filter(id => !denied.includes(id))}}, createElement(SceneWorkshop,{editor,viewportFactory:probe.factory}))
+  const view = render(draw())
+  try {
+    fireEvent.click(screen.getByRole('button',{name:COPY.scene.animationMode}))
+    fireEvent.doubleClick(await screen.findByRole('button',{name:'Escolher movimento Acenar'}))
+    const field=screen.getByRole('textbox',{name:COPY.scene.animationRename})
+    fireEvent.change(field,{target:{value:'Nome sem acesso'}})
+    const form=field.closest('form')!
+    view.rerender(draw(['animate.create']))
+    expect(screen.queryByRole('textbox',{name:COPY.scene.animationRename})).toBeNull()
+    fireEvent.submit(form)
+    expect(editor.getState().content).toBe(source)
+    expect(editor.getState().contentRevision).toBe(0)
+    expect(() => screen.getByRole('button',{name:COPY.scene.animationPlay})).toThrow()
+    await act(async () => release())
+    expect(await screen.findByRole('button',{name:COPY.scene.animationPlay})).toBeDefined()
+    expect(editor.getState().content).toBe(source)
+  } finally { release(); view.unmount(); editor.getState().dispose() }
+})

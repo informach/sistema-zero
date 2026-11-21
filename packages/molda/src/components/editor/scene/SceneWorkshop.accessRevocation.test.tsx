@@ -82,6 +82,8 @@ test('revoking animation creation closes rename and regranting cannot resurrect 
   try {
     fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
     const clip = await screen.findByRole('button', { name: 'Escolher movimento Acenar' })
+    // Clips and timeline load independently; establish playback before testing its preservation.
+    await screen.findByRole('button', { name: COPY.scene.animationPlay })
     fireEvent.doubleClick(clip)
     const field = screen.getByRole('textbox', { name: COPY.scene.animationRename })
     fireEvent.change(field, { target: { value: 'Nome sem acesso' } })

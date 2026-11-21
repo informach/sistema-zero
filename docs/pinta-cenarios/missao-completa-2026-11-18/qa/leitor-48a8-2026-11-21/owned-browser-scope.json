@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "result": {
+    "installed": true,
+    "allowedIds": [
+      "1cb291ea-b512-4e46-b3cd-e5d783454c3a",
+      "209771ff-621e-41a8-a05d-e454853b5071",
+      "3d36c552-4ecd-418c-9a1d-72032dcd6e3c",
+      "6c7c2b91-0023-42c4-8252-59d27b202f46",
+      "9ab472dd-a61c-4f2b-8092-b413ac1ed6e6",
+      "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+      "fc15aec6-b219-452a-9f85-80c2c2681598",
+      "fdfc2756-83f7-433e-8003-bcfe8bb69449"
+    ],
+    "writeRequestsSoFar": 0,
+    "heldLegacyPagePreserved": true,
+    "scope": "Only eight explicitly owned QA resources; all other Pinta API mutations aborted"
+  }
+}
