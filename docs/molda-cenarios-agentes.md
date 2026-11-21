@@ -93,6 +93,24 @@ biblioteca e a leitura do cenário continuam pelo token do agente.
   existe não é sobrescrito (o novo ganha " (2)"). Volta o caminho gravado, as medidas e os
   avisos. Com `revisaoEsperada` vencida, nada é exportado.
 
+### Jogar no `/macro` o que foi publicado
+
+O jogo integrado ainda não lê cenários publicados: o mundo V2 e as publicações só existem no
+`/macro`, o playground local do Arquipélago. Para andar com o personagem de verdade (Rapier) no
+que está no ar numa ilha:
+
+```
+MOLDA_CENARIOS_APP=... MOLDA_CENARIOS_GATEWAY=... MOLDA_CENARIOS_EMAIL=... MOLDA_CENARIOS_SENHA=... \
+  bun packages/molda-cenarios-agente/scripts/levar-publicacao-ao-macro.ts sua-ilha
+cd packages/arquipelago && CENARIOS_PUBLICADOS_QA_DIR=<pasta que o script mostrou> bun run dev
+```
+
+e abrir `http://127.0.0.1:4520/macro`. O script lê pelas mesmas rotas do jogo (perfil da ilha,
+manifesto e arquivos em lote), confere o hash de cada arquivo e grava em
+`output/cenarios-reforma/macro-staging` (ou na pasta passada depois da ilha). Rodar de novo só
+baixa o que mudou; o perfil só é gravado no fim, com tudo no lugar. Publicar continua pela tela da
+oficina.
+
 ## Receitas
 
 ### Uma ilha com um lago, uma trilha até um farol e árvores em volta

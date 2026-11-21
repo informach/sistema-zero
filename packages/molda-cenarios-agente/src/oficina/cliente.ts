@@ -22,6 +22,16 @@ export interface AcessoDaOficina {
 
 type Buscar = (endereco: string, opcoes?: RequestInit) => Promise<Response>
 
+export interface ClienteDaOficina {
+  host: CenariosHost
+  app: string
+  baixar(endereco: string): Promise<Uint8Array>
+  /** GET de JSON em `/api/cenarios/<caminho>`, com o token. */
+  lerJson(caminho: string): Promise<unknown>
+  /** Baixa um endereço assinado do armazenamento, sem o token. */
+  baixarAssinado(url: string): Promise<Uint8Array>
+}
+
 /** Confere um endereço de serviço: HTTPS fora do computador local, sem usuário, consulta ou âncora. */
 function enderecoDeServico(valor: string, nome: string): string {
   const url = new URL(valor)
@@ -41,7 +51,7 @@ function enderecoDeServico(valor: string, nome: string): string {
 export function criarClienteDaOficina(
   acesso: AcessoDaOficina,
   buscar: Buscar = (endereco, opcoes) => fetch(endereco, opcoes),
-): { host: CenariosHost; app: string; baixar(endereco: string): Promise<Uint8Array> } {
+): ClienteDaOficina {
   const app = enderecoDeServico(acesso.app, 'do app')
   const gateway = acesso.gateway ? enderecoDeServico(acesso.gateway, 'do gateway') : null
   if (!acesso.token && !(acesso.email && acesso.senha))
@@ -115,9 +125,35 @@ export function criarClienteDaOficina(
     return new Uint8Array(await arquivo.arrayBuffer())
   }
 
+  /** Um GET de JSON nas rotas de cenários do app (as do jogo inclusive), com o token. */
+  async function lerJson(caminho: string): Promise<unknown> {
+    if (!/^[a-z][\w\-/.?=,&%]*$/i.test(caminho) || caminho.includes('..'))
+      throw Error('Caminho de leitura inesperado')
+    const resposta = await comToken(`${app}/api/cenarios/${caminho}`, {
+      headers: { accept: 'application/json' },
+    })
+    const lido = await resposta.json().catch(() => null)
+    if (!resposta.ok) {
+      const mensagem = (lido as { error?: { message?: unknown } } | null)?.error?.message
+      throw Error(typeof mensagem === 'string' ? mensagem : `O app respondeu ${resposta.status}`)
+    }
+    return lido
+  }
+
+  /** Um endereço assinado do armazenamento: vai direto, sem o token. */
+  async function baixarAssinado(url: string): Promise<Uint8Array> {
+    if (!/^https:\/\//.test(url) && !/^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url))
+      throw Error('Endereço de arquivo inesperado')
+    const resposta = await buscar(url, { redirect: 'error' })
+    if (!resposta.ok) throw Error(`O armazenamento respondeu ${resposta.status}`)
+    return new Uint8Array(await resposta.arrayBuffer())
+  }
+
   return {
     app,
     baixar,
+    lerJson,
+    baixarAssinado,
     host: criarHostHttp({
       base: `${app}/api/cenarios`,
       buscar: comToken,
