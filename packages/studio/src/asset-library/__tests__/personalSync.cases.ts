@@ -6,7 +6,7 @@ import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-cata
 import type { UseStore } from 'idb-keyval'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { beginProjectOpening, isProjectOpening } from '../../state/projectOpening'
-import { projectHeadKey, projectThumbKey } from '../../state/projectStorageKeys'
+import { projectAssetsKey, projectHeadKey, projectThumbKey } from '../../state/projectStorageKeys'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
 import type { StudioPintaLibraryAdapter } from '../../studio/pinta-library'
 import { failNextFakeIdbWrite, fakeUseStore } from '../../testing/fakeIdbStore'
@@ -122,8 +122,16 @@ const QUASE_CHEIO = 41
 /** Enche o projeto até a beira da cota — o cenário real da recusa. */
 function fillerAssets(): ProjectAsset[] {
   return Array.from({ length: QUASE_CHEIO }, (_, i) =>
-    drawingAsset({ id: `filler-${i}`, name: `filler-${i}`, dataUrl: PNG_ENORME, libId: '' }),
+    uploadedAsset({ id: `filler-${i}`, name: `filler-${i}`, dataUrl: PNG_ENORME }),
   )
+}
+
+/**
+ * Asset que NÃO veio de "Meus desenhos", do jeito que a loja grava (sem `libId`). Um `libId: ''`
+ * nunca chega ao disco pela loja, e a leitura recusa o que a limpeza mudaria.
+ */
+function uploadedAsset(over: Partial<ProjectAsset>): ProjectAsset {
+  return { id: 'asset-1', name: 'heroi', kind: 'image', dataUrl: PNG, source: 'upload', ...over }
 }
 
 /** Asset de projeto que veio de "Meus desenhos" (o elo é o `libId`). */
@@ -522,7 +530,7 @@ describe('syncDrawingsIntoProjects', () => {
     seedOpenProject([
       drawingAsset({ scene: linkedScene('d1') }),
       ...Array.from({ length: PROJECT_ASSET_LIMITS.maxAssetsCount - 1 }, (_, i) =>
-        drawingAsset({ id: `f${i}`, name: `f${i}`, libId: '' }),
+        uploadedAsset({ id: `f${i}`, name: `f${i}` }),
       ),
     ])
     const before = useProjectStore.getState().project
@@ -680,7 +688,7 @@ describe('syncDrawingsIntoProjects', () => {
     closed.assets = [
       drawingAsset({ scene: linkedScene('d1') }),
       ...Array.from({ length: PROJECT_ASSET_LIMITS.maxAssetsCount - 1 }, (_, i) =>
-        drawingAsset({ id: `f${i}`, name: `f${i}`, libId: '' }),
+        uploadedAsset({ id: `f${i}`, name: `f${i}` }),
       ),
     ]
     await persistProject(closed)
@@ -877,7 +885,11 @@ describe('syncDrawingsIntoProjects', () => {
       width: 32,
       height: 32,
       tileset: { tileSize: 16, solid: [1] },
-      sprite: { frameW: 16, frameH: 16, animations: [] },
+      sprite: {
+        frameW: 16,
+        frameH: 16,
+        animations: [{ name: 'parado', from: 0, to: 1, fps: 4, loop: true }],
+      },
     })
     expect(drawingNeedsSync(configurado, await getPersonalAsset('d1'))).toBe(false)
     const fechado = createEmptyProject('fechado', 'Outro Jogo')
@@ -1034,6 +1046,46 @@ describe('syncDrawingsIntoProjects', () => {
     expect(result.failures[0]).toContain('Outro Jogo')
     expect(takeDrawingSyncFailures()).toHaveLength(1)
     expect((await loadProjectAssetsById('fechado'))[0]?.dataUrl).toBe(PNG)
+  })
+
+  it('cena que esta versão não lê não some do jogo fechado quando outro desenho dele muda', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const fechado = createEmptyProject('fechado', 'Outro Jogo')
+    fechado.assets = [drawingAsset({ id: 'asset-2' }), uploadedAsset({ id: 'mapa', name: 'mapa' })]
+    await persistProject(fechado)
+    // Um aparelho com o Estúdio mais novo gravou no "mapa" uma cena que esta versão não lê.
+    const futura = { version: 99, camadasDoFuturo: [1, 2, 3] }
+    let stored = false
+    for (const kv of dbs.values()) {
+      const record = kv.get(projectAssetsKey('fechado')) as
+        | { assets: Array<Record<string, unknown>> }
+        | undefined
+      if (!record) continue
+      kv.set(projectAssetsKey('fechado'), {
+        ...record,
+        assets: record.assets.map((asset) =>
+          asset.id === 'mapa' ? { ...asset, scene: futura } : asset,
+        ),
+      })
+      stored = true
+    }
+    expect(stored).toBe(true)
+    seedOpenProject([])
+
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+
+    // A varredura deixa este jogo como está (o desenho novo entra quando ele abrir numa versão
+    // que lê a cena), em vez de regravar a lista inteira sem a cena do "mapa".
+    expect(result.updatedInOtherProjects).toBe(0)
+    let scene: unknown
+    for (const kv of dbs.values()) {
+      const record = kv.get(projectAssetsKey('fechado')) as
+        | { assets: Array<Record<string, unknown>> }
+        | undefined
+      if (record) scene = record.assets.find((asset) => asset.id === 'mapa')?.scene
+    }
+    expect(scene).toEqual(futura)
   })
 
   it('duas chamadas ao mesmo tempo viram UMA varredura', async () => {
