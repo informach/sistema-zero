@@ -37,6 +37,91 @@ const record = (value: unknown): Record<string, string> => {
   )
 }
 
+interface LockMark {
+  dev: boolean
+  optional: boolean
+  devOptional: boolean
+  peer: boolean
+}
+
+/**
+ * O recorte do grafo que o projeto alcança, com as marcas que o npm calcula para ESTE projeto
+ * (revisão final do lote 7). As marcas da trava do runtime valem para o runtime: o `tslib`, por
+ * exemplo, é opcional lá (só o `@emnapi` chega nele) e seria copiado como opcional mesmo declarado
+ * direto pelo projeto, e o `npm ci --omit=optional` o tiraria calado. Cada pacote guarda por que
+ * tipos de caminho foi alcançado; uma marca fica só se NENHUM caminho a desfaz:
+ * - `dev`: nenhum caminho sai das `dependencies`;
+ * - `optional`: todo caminho passa por uma dependência opcional;
+ * - `devOptional`: todo caminho passa por desenvolvimento OU por opcional;
+ * - `peer`: todo caminho passa por um par (`peerDependencies`).
+ * O par OPCIONAL não entra no recorte: o npm nunca o instala sozinho. Uma indireta obrigatória
+ * que falta no grafo devolve `null` (a trava seria falsa).
+ */
+function lockFlags(
+  dependencies: Record<string, string>,
+  devDependencies: Record<string, string>,
+  packages: Record<string, ApprovedLockPackage>,
+): Map<string, LockMark> | null {
+  interface Step {
+    name: string
+    dev: boolean
+    optional: boolean
+    peer: boolean
+    required: boolean
+  }
+  const marks = new Map<string, LockMark>()
+  const seen = new Set<string>()
+  const queue: Step[] = [
+    ...Object.keys(dependencies).map((name) => ({
+      name,
+      dev: false,
+      optional: false,
+      peer: false,
+      required: true,
+    })),
+    ...Object.keys(devDependencies).map((name) => ({
+      name,
+      dev: true,
+      optional: false,
+      peer: false,
+      required: true,
+    })),
+  ]
+  for (let index = 0; index < queue.length; index++) {
+    const step = queue[index] as Step
+    const path = `node_modules/${step.name}`
+    const entry = packages[path]
+    if (!entry) {
+      if (step.required) return null
+      continue
+    }
+    const key = `${path}|${step.dev}|${step.optional}|${step.peer}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    const mark = marks.get(path) ?? { dev: true, optional: true, devOptional: true, peer: true }
+    if (!step.dev) mark.dev = false
+    if (!step.optional) mark.optional = false
+    if (!step.dev && !step.optional) mark.devOptional = false
+    if (!step.peer) mark.peer = false
+    marks.set(path, mark)
+    const next = (name: string, kind: 'dependency' | 'optional' | 'peer') =>
+      queue.push({
+        name,
+        dev: step.dev,
+        optional: step.optional || kind === 'optional',
+        peer: step.peer || kind === 'peer',
+        required: kind !== 'optional',
+      })
+    const optionalNames = entry.optionalDependencies ?? {}
+    for (const name of Object.keys(entry.dependencies ?? {}))
+      if (!(name in optionalNames)) next(name, 'dependency')
+    for (const name of Object.keys(optionalNames)) next(name, 'optional')
+    for (const name of Object.keys(entry.peerDependencies ?? {}))
+      if (!entry.peerDependenciesMeta?.[name]?.optional) next(name, 'peer')
+  }
+  return marks
+}
+
 export function approvedLockFor(
   manifestText: string,
   packages: Record<string, ApprovedLockPackage> = approvedPackages(),
@@ -69,33 +154,8 @@ export function approvedLockFor(
   for (const [name, version] of Object.entries(direct))
     if (packages[`node_modules/${name}`]?.version !== version) return null
 
-  // O que cada lado alcança: o que só as dependências de desenvolvimento alcançam leva `dev`.
-  const reach = (roots: string[]): Set<string> | null => {
-    const seen = new Set<string>()
-    const queue = roots.map((name) => ({ name, optional: false }))
-    while (queue.length) {
-      const next = queue.shift()
-      if (!next) break
-      const path = `node_modules/${next.name}`
-      if (seen.has(path)) continue
-      const entry = packages[path]
-      if (!entry) {
-        if (next.optional) continue
-        return null
-      }
-      seen.add(path)
-      for (const name of Object.keys(entry.dependencies ?? {}))
-        queue.push({ name, optional: false })
-      for (const name of Object.keys(entry.optionalDependencies ?? {}))
-        queue.push({ name, optional: true })
-      for (const name of Object.keys(entry.peerDependencies ?? {}))
-        queue.push({ name, optional: Boolean(entry.peerDependenciesMeta?.[name]?.optional) })
-    }
-    return seen
-  }
-  const production = reach(Object.keys(dependencies))
-  const everything = reach(Object.keys(direct))
-  if (!production || !everything) return null
+  const flags = lockFlags(dependencies, devDependencies, packages)
+  if (!flags) return null
 
   const locked: Record<string, ApprovedLockPackage> = {
     '': {
@@ -105,9 +165,21 @@ export function approvedLockFor(
       ...(Object.keys(devDependencies).length ? { devDependencies } : {}),
     },
   }
-  for (const path of [...everything].sort((a, b) => a.localeCompare(b, 'en'))) {
-    const { dev: _dev, ...entry } = packages[path] as ApprovedLockPackage & { dev?: boolean }
-    locked[path] = production.has(path) ? entry : { ...entry, dev: true }
+  for (const [path, mark] of [...flags].sort(([a], [b]) => a.localeCompare(b, 'en'))) {
+    const {
+      dev: _dev,
+      optional: _optional,
+      devOptional: _devOptional,
+      peer: _peer,
+      ...entry
+    } = packages[path] as ApprovedLockPackage
+    locked[path] = {
+      ...entry,
+      ...(mark.peer ? { peer: true } : {}),
+      ...(mark.dev ? { dev: true } : {}),
+      ...(mark.optional ? { optional: true } : {}),
+      ...(mark.devOptional && !mark.dev && !mark.optional ? { devOptional: true } : {}),
+    }
   }
   return `${JSON.stringify(
     {

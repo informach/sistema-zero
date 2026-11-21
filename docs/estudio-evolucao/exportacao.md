@@ -59,6 +59,23 @@ impressão SHA-256 de caminhos e bytes tem de bater.
   os 15 projetos (inclusive o que vai sem trava, naquela data). Os hashes do Windows do CI são os
   mesmos do Windows local: o mesmo ZIP gera o mesmo jogo em três máquinas.
 
+## Revisão final (21/11/2026)
+
+- **As marcas da trava são calculadas para cada projeto** (`lockFlags` em
+  `src/export/approvedDependencyLock.ts`), como o npm faz: `dev`, `optional`, `devOptional` e
+  `peer` pelo tipo de caminho que alcança cada pacote. Antes elas vinham copiadas da trava do
+  runtime: um `tslib` declarado direto pelo projeto saía `optional`, e um `npm ci --omit=optional`
+  o tiraria calado. O par opcional (`peerDependenciesMeta`) não entra mais no recorte: o npm nunca
+  o instala sozinho.
+- **Os modelos têm de sair com a trava:** um teste unitário (`approvedDependencyLock.test.ts`,
+  "os modelos do Pro saem todos com a trava", provado trocando a versão do `three`) e o
+  `verify-exports.ts`, que reprova modelo sem trava e o projeto com biblioteca fora do grafo com
+  trava. Antes, um modelo cuja versão deixasse de bater com o grafo cairia no `npm install` calado.
+- O gerador recusa apelido (`name`), `link` e pacote embutido (`inBundle`) na trava do runtime.
+- Aceito, sem mudança: a impressão do `dist` concatena caminho e bytes sem separador. Uma colisão
+  exigiria bytes escolhidos a dedo, e mudar o formato invalidaria a comparação com a evidência
+  versionada.
+
 ## O que fica de fora, de propósito
 
 - O ZIP não leva histórico de conversa com o Zappy, credenciais da plataforma nem estado do editor.

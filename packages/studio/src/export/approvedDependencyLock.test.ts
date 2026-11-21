@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { strFromU8, unzipSync } from 'fflate'
-import { createProProject } from '../components/code/pro-templates'
+import { createProProject, listProTemplates } from '../components/code/pro-templates'
 import { type ApprovedLockPackage, approvedLockFor } from './approvedDependencyLock'
 import { exportProjectSource } from './sourceExport'
 
@@ -92,6 +92,55 @@ describe('a trava tirada do grafo aprovado', () => {
     delete missing['node_modules/rolldown']
     expect(approvedLockFor(manifest({ devDependencies: { vite: '8.1.6' } }), missing)).toBeNull()
   })
+
+  // Revisão final do lote 7: as marcas são calculadas para ESTE projeto, não copiadas do runtime.
+  describe('as marcas da trava', () => {
+    const marked: Record<string, ApprovedLockPackage> = {
+      ...graph,
+      // Opcional no runtime (só um pacote opcional chega nele), como o `tslib` de verdade.
+      'node_modules/tslib': { version: '2.8.1', optional: true },
+      // Par opcional do Vite que existe no grafo: o npm nunca o instala sozinho.
+      'node_modules/less': { version: '4.2.0' },
+      'node_modules/three': {
+        version: '0.184.0',
+        optionalDependencies: { 'meio-opcional': '1.0.0' },
+        peerDependencies: { 'so-par': '1.0.0' },
+      },
+      'node_modules/meio-opcional': { version: '1.0.0' },
+      'node_modules/so-par': { version: '1.0.0' },
+      'node_modules/ferramenta': { version: '1.0.0', dependencies: { 'meio-opcional': '1.0.0' } },
+    }
+    const lockOf = (value: Record<string, unknown>) =>
+      JSON.parse(approvedLockFor(manifest(value), marked) ?? 'null')
+
+    it('dependência direta não é opcional, mesmo opcional na trava do runtime', () => {
+      const entry = lockOf({ dependencies: { tslib: '2.8.1' } }).packages['node_modules/tslib']
+      expect(entry).toEqual({ version: '2.8.1' })
+    })
+
+    it('o par opcional fica fora; o binário só alcançado pelo desenvolvimento e por opcional leva as duas', () => {
+      const lock = lockOf({ devDependencies: { vite: '8.1.6' } })
+      expect(lock.packages['node_modules/less']).toBeUndefined()
+      expect(lock.packages['node_modules/@rolldown/binding-linux-x64-gnu']).toEqual({
+        version: '1.0.0',
+        dev: true,
+        optional: true,
+      })
+    })
+
+    it('`devOptional` quando um caminho é opcional e o outro é só de desenvolvimento; `peer` no que só um par traz', () => {
+      const lock = lockOf({
+        dependencies: { three: '0.184.0' },
+        devDependencies: { ferramenta: '1.0.0' },
+      })
+      expect(lock.packages['node_modules/meio-opcional']).toEqual({
+        version: '1.0.0',
+        devOptional: true,
+      })
+      expect(lock.packages['node_modules/so-par']).toEqual({ version: '1.0.0', peer: true })
+      expect(lock.packages['node_modules/three']).toEqual(marked['node_modules/three'])
+    })
+  })
 })
 
 describe('a exportação do Pro leva a trava', () => {
@@ -108,5 +157,19 @@ describe('a exportação do Pro leva a trava', () => {
     // As instruções passam a mandar instalar as versões registradas.
     expect(strFromU8(files['LEIA-ME.txt'] as Uint8Array)).toContain('npm ci')
     expect(result.warnings).toEqual([])
+  })
+
+  // Revisão final do lote 7: se a versão de uma dependência de um modelo deixar de bater com a do
+  // grafo aprovado, o modelo sairia sem trava, calado (o `verify-exports` aceita `npm install`).
+  it('os modelos do Pro saem todos com a trava', async () => {
+    const templates = listProTemplates()
+    expect(templates.length).toBeGreaterThanOrEqual(14)
+    const withoutLock: string[] = []
+    for (const { id } of templates) {
+      const project = await createProProject(`trava-${id}`, id, id)
+      const node = project.tree?.['package.json']
+      if (node?.kind !== 'file' || !approvedLockFor(node.content)) withoutLock.push(id)
+    }
+    expect(withoutLock).toEqual([])
   })
 })

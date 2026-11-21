@@ -21,10 +21,16 @@ if (
 )
   throw new Error('O lock do runtime mudou de estrutura; revise o gerador da trava aprovada.')
 // Um pacote preso a uma plataforma (`os`/`cpu`) que não é opcional quebraria a instalação nas
-// outras máquinas (`EBADPLATFORM`), e o recorte herda a marca `optional` do grafo (revisão do lote 7).
-for (const [path, entry] of Object.entries(runtime.packages))
+// outras máquinas (`EBADPLATFORM`). O recorte recalcula as marcas para cada projeto, mas um
+// obrigatório preso a uma plataforma no próprio grafo seria obrigatório em qualquer recorte.
+for (const [path, entry] of Object.entries(runtime.packages)) {
   if ((entry.os !== undefined || entry.cpu !== undefined) && entry.optional !== true)
     throw new Error(`Pacote preso a uma plataforma sem ser opcional no grafo aprovado: ${path}`)
+  // A exportação acha cada pacote pelo NOME da pasta e pela versão (revisão final do lote 7): um
+  // apelido (`name` diferente da pasta), um link ou um pacote embutido instalariam outra coisa.
+  if (path !== '' && (entry.name !== undefined || entry.link === true || entry.inBundle === true))
+    throw new Error(`Apelido, link ou pacote embutido no grafo aprovado: ${path}`)
+}
 const packages = Object.fromEntries(
   Object.entries(runtime.packages)
     .filter(([path]) => path !== '')

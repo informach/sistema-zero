@@ -64,7 +64,11 @@ async function distDigest(root: string) {
   return { files: files.length, sha256: hash.digest('hex') }
 }
 
-async function verify(label: string, project: Awaited<ReturnType<typeof createProProject>>) {
+async function verify(
+  label: string,
+  project: Awaited<ReturnType<typeof createProProject>>,
+  expectLock: boolean,
+) {
   const root = await mkdtemp(join(tmpdir(), 'studio-export-proof-'))
   if (
     dirname(resolve(root)) !== resolve(tmpdir()) ||
@@ -82,6 +86,11 @@ async function verify(label: string, project: Awaited<ReturnType<typeof createPr
       await writeFile(join(root, path), bytes)
     }
     const locked = 'package-lock.json' in files
+    // Revisão final do lote 7: os modelos TÊM de sair com a trava (uma versão que deixou de bater
+    // com o grafo aprovado faria o modelo cair no `npm install` calado), e a biblioteca fora do
+    // grafo, sem ela.
+    if (locked !== expectLock)
+      throw new Error(`${label}: ${expectLock ? 'saiu sem' : 'saiu com'} a trava aprovada.`)
     const readme = strFromU8(files['LEIA-ME.txt'] ?? new Uint8Array())
     const install = locked ? ['npm', 'ci'] : ['npm', 'install']
     if (!readme.includes(install.join(' ')))
@@ -113,7 +122,7 @@ async function verify(label: string, project: Awaited<ReturnType<typeof createPr
 
 const results = []
 for (const id of templates) {
-  results.push(await verify(id, await createProProject(`export-${id}`, id, id)))
+  results.push(await verify(id, await createProProject(`export-${id}`, id, id), true))
   console.log(JSON.stringify(results.at(-1)))
 }
 if (!chosen || process.argv.includes('--with-extra')) {
@@ -127,7 +136,7 @@ if (!chosen || process.argv.includes('--with-extra')) {
   const main = project.tree?.['src/main.js']
   if (main?.kind !== 'file') throw new Error('Modelo sem src/main.js.')
   main.content = `import { nanoid } from 'nanoid'\n${main.content}\nconsole.log(nanoid(6))\n`
-  results.push(await verify('vanilla-js + nanoid (fora do grafo aprovado)', project))
+  results.push(await verify('vanilla-js + nanoid (fora do grafo aprovado)', project, false))
   console.log(JSON.stringify(results.at(-1)))
 }
 
