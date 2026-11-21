@@ -6,12 +6,14 @@ import {
   CommerceOriginSchema,
   memberPromotionSchema,
 } from '@sistemazero/core/commerce'
+import type { ReferralGiftOfferView } from '@sistemazero/core/referrals'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { PromotionCardView } from '../lib/commerce'
 import {
   type CommerceAccess,
   commerceEligibility,
+  giftAlreadyIncluded,
   hasOngoingSubscription,
 } from '../lib/commerce-eligibility'
 import { isSameOriginRequest } from '../lib/csrf'
@@ -252,7 +254,7 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
           ...(input.origin.kind === 'lesson' ? { blockId: input.origin.blockId } : {}),
         }
         const inspected = await deps.gateway.gatewayFetchHmac<{
-          gift?: { offerId: string }
+          gift?: ReferralGiftOfferView
           state?: string
         }>('/referrals/internal/member-gifts', {
           method: 'POST',
@@ -262,6 +264,32 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
           return NextResponse.json(inspected.body, { status: inspected.status })
         if (source.expectedOfferId && inspected.body.gift.offerId !== source.expectedOfferId)
           return failure('A campanha está vinculada a outra oferta.', 409)
+        const gift = inspected.body.gift
+        if (gift.courseSlug && (input.action === 'inspect' || input.action === 'redeem')) {
+          const access = await deps.gateway.gatewayFetch<{ items: CommerceAccess[] }>(
+            '/members/commerce/access',
+          )
+          if (
+            access.status !== 200 ||
+            !Array.isArray(access.body?.items) ||
+            access.body.items.some((entry) => !entry.accessType)
+          )
+            return failure('Não foi possível conferir seus acessos agora. Tente novamente.')
+          if (giftAlreadyIncluded(access.body.items, gift.courseSlug, deps.audience))
+            return NextResponse.json(
+              {
+                mode: 'included',
+                courseTitle: gift.courseTitle || gift.offerTitle,
+                continueUrl:
+                  deps.audience === 'kids' && gift.learner === 'child'
+                    ? '/pais/familia'
+                    : `${deps.audience === 'kids' ? '/pais' : ''}/cursos/${encodeURIComponent(gift.courseSlug)}`,
+                message:
+                  'Este curso já faz parte do seu acesso. Vocês podem começar sem ativar o presente.',
+              },
+              { headers: { 'cache-control': 'no-store' } },
+            )
+        }
         if (input.action === 'inspect')
           return NextResponse.json(
             { ...inspected.body, mode: 'gift', config },

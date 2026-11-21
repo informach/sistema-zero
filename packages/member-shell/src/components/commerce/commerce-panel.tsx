@@ -137,12 +137,15 @@ export function CommercePanel({
     setBusy(true)
     setError('')
     try {
-      const result = await apiSend<{ kind: string; expiresAt?: string | null }>(
-        '/api/commerce',
-        'POST',
-        { action: 'redeem', origin },
-      )
+      const result = await apiSend<
+        { kind: string; expiresAt?: string | null } | Extract<CommerceView, { mode: 'included' }>
+      >('/api/commerce', 'POST', { action: 'redeem', origin })
       if (!alive.current) return
+      if ('mode' in result) {
+        setView(result)
+        onUpdated?.()
+        return
+      }
       setGiftResult(result)
       if (result.kind === 'completed') onUpdated?.()
     } catch (e) {
@@ -218,6 +221,18 @@ export function CommercePanel({
           <p>{view.message}</p>
           <a href={view.manageUrl} className={buttonVariants()}>
             Ver meus acessos e compras
+          </a>
+        </div>
+      ) : null}
+      {view?.mode === 'included' ? (
+        <div role="status" className="flex flex-col gap-4 rounded-2xl bg-primary/5 p-4">
+          <p className="flex items-center gap-2 font-bold text-primary">
+            <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
+            {view.courseTitle} já está incluído no seu acesso
+          </p>
+          <p className="text-sm text-muted-foreground">{view.message}</p>
+          <a href={view.continueUrl} className={buttonVariants()}>
+            {view.continueUrl === '/pais/familia' ? 'Continuar com meu filho' : 'Ir para o curso'}
           </a>
         </div>
       ) : null}
