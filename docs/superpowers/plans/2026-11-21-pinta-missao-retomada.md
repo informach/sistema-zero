@@ -174,3 +174,32 @@ o cache canônico. A reprodução anterior e as 24 variantes passaram a zero can
 diferentes. As 192 comparações de imagens e os 12 ensaios da oficina passaram,
 sem ampliar memória ou mudar estilos. Os alvos de latência seguem não qualificados.
 O trabalho volta ao item 2 dos consumidores visuais: miniaturas e minimapa.
+
+### Lote do item 2: visão geral e navegação pelo minimapa
+
+- [x] Tornar a resolução de folhas/versões independente do armazenamento das
+  células. Em regiões, referência padrão ausente não deve escolher uma arte
+  diferente; o fallback de folha única dos mapas legados permanece compatível.
+- [x] Centralizar o cache de cores dominantes no núcleo, sem montar um mapa
+  autoral fictício para calcular a cor de cada peça. Conservar a API antiga.
+- [x] Criar visão geral com no máximo 256 × 256 pixels. Em regiões, visitar
+  células armazenadas; não alocar `cols × rows`. Respeitar ordem, visibilidade,
+  offsets, recorte lógico e fontes compatíveis. Ela continua sendo representação
+  aproximada em cores, não exportação visual nem documento autoral.
+- [x] Quando várias casas ocupadas caírem no mesmo pixel, desempatar pela ordem
+  global linha/coluna dentro de cada camada, independentemente da ordem dos chunks.
+  Peças transparentes não devem apagar a paisagem da camada inferior nessa visão.
+- [x] Integrar o painel existente, teclado, toque e retângulo de navegação. Aplicar
+  a origem lógica nos destinos e contar buffers efetivamente guardados no orçamento.
+  Preservar componentes, estilos e comportamento das visões densas existentes.
+- [x] Verificar mundo 10.000 × 10.000, origens negativas, fontes privadas/múltiplas,
+  regressão do legado e memória/resolução limitadas. Exercitar o componente real
+  em página isolada de QA e a oficina pública, revisar e commitar.
+
+Não promover o documento público 8 neste lote. As miniaturas/imagens completas
+seguem no próximo sublote do mesmo item 2, com orçamento próprio de rasterização.
+
+Provas e revisão em `qa/minimapa-por-regioes-2026-11-21/`, no diretório da missão.
+A API bruta antiga conserva recomputação; o cache por identidade é compartilhado
+pelos consumidores imutáveis. O componente real foi exercitado em host de QA,
+e a oficina pública continuou usando mapas densos. O item 2 permanece aberto.

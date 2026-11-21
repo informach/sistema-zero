@@ -2,52 +2,11 @@
  * As contas do minimapa, PURAS: a cor de cada casa (com a cor de cada peça guardada por
  * conjunto de peças) e o retângulo do que aparece na tela.
  */
-import { type AnyTilesetAsset, createTilemapAsset, type TilemapAsset } from '../../../core/project'
-import { drawableMapTile, resolveMapTilesets } from '../../../tiles/mapTilesets'
-import { tilemapMinimapColors } from '../../../tiles/minimap'
-import { flattenWithTilesets } from '../../../tiles/tilemapOps'
-
-const tileColorCache = new WeakMap<AnyTilesetAsset, Array<string | null>>()
-
-/**
- * A cor de cada peça de um conjunto, calculada UMA vez por conjunto (o objeto muda quando uma
- * peça é redesenhada, e aí a conta é refeita). A conta é a do minimapa de sempre, feita sobre
- * um mapa de uma linha com todas as peças em fila.
- */
-export function tilesetMinimapColors(tileset: AnyTilesetAsset): Array<string | null> {
-  const cached = tileColorCache.get(tileset)
-  if (cached) return cached
-  const count = tileset.tiles.length
-  const strip = createTilemapAsset({ name: 'cores', tilesetId: tileset.id, cols: 1, rows: 1 })
-  const first = strip.layers[0]
-  const colors =
-    count > 0 && first
-      ? tilemapMinimapColors(
-          {
-            ...strip,
-            cols: count,
-            rows: 1,
-            layers: [{ ...first, cells: Int16Array.from({ length: count }, (_, i) => i) }],
-          } as TilemapAsset,
-          tileset,
-        )
-      : []
-  tileColorCache.set(tileset, colors)
-  return colors
-}
-
-/** Uma cor (ou `null`) por casa do mapa, usando as cores guardadas de cada conjunto de peças. */
-export function cachedMinimapColors(
-  map: TilemapAsset,
-  tilesets: readonly AnyTilesetAsset[],
-): Array<string | null> {
-  const resolved = resolveMapTilesets(map, tilesets)
-  const flat = flattenWithTilesets(map, undefined, drawableMapTile(map, resolved))
-  const bySource = resolved.map((tileset) => (tileset ? tilesetMinimapColors(tileset) : null))
-  return Array.from(flat.tiles, (index, at) =>
-    index >= 0 ? (bySource[flat.sources[at] ?? 0]?.[index] ?? null) : null,
-  )
-}
+export {
+  cachedTilemapMinimapColors as cachedMinimapColors,
+  tilemapOverview as cachedMinimapOverview,
+  tilesetMinimapColors,
+} from '../../../tiles/minimap'
 
 export interface MinimapViewRect {
   /** Frações de 0 a 1 do tamanho do mapa. */

@@ -48,6 +48,22 @@ test('minimapa existente navega por teclado e ponteiro sem alterar as células',
   await page.getByLabel(COPY.scene.nivelDasFerramentas, { exact: true }).selectOption('create')
   const minimap = page.getByRole('button', { name: COPY.scene.navegarPeloMinimapa, exact: true })
   await expect(minimap).toBeVisible()
+  await expect(minimap.locator('canvas')).toHaveAttribute('width', '192')
+  await expect(minimap.locator('canvas')).toHaveAttribute('height', '128')
+  await expect
+    .poll(() =>
+      minimap.locator('canvas').evaluate((canvas: HTMLCanvasElement) => {
+        const ctx = canvas.getContext('2d')!
+        return [
+          Array.from(ctx.getImageData(48, 64, 1, 1).data),
+          Array.from(ctx.getImageData(144, 64, 1, 1).data),
+        ]
+      }),
+    )
+    .toEqual([
+      [255, 255, 255, 255],
+      [255, 33, 33, 255],
+    ])
   const rect = page.locator('[data-pin-minimap-view]')
   const position = () =>
     rect.evaluate((element) => ({

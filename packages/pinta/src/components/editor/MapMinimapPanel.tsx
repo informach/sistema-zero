@@ -1,14 +1,15 @@
 import { type JSX, type RefObject, useEffect, useId, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
-import {
-  type AnyTilesetAsset,
-  isTileLayer,
-  PINTA_MAP_FORMAT_LIMITS,
-  type TilemapAsset,
-} from '../../core/project'
+import { type AnyTilesetAsset, PINTA_MAP_FORMAT_LIMITS } from '../../core/project'
+import type { AuthorMap } from '../../tiles/mapCellEdits'
+import { mapAllocatedCellCount, mapCellBounds } from '../../tiles/mapCells'
 import { paintMinimap } from '../../tiles/minimap'
 import { Panel } from '../ui/Panel'
-import { cachedMinimapColors, type MinimapViewRect, minimapViewRect } from './mapTools/minimapView'
+import {
+  cachedMinimapOverview,
+  type MinimapViewRect,
+  minimapViewRect,
+} from './mapTools/minimapView'
 
 /** Quanto esperar depois da última mudança do mapa para pintar o minimapa de novo. */
 export const MINIMAP_REPAINT_DELAY_MS = 200
@@ -22,7 +23,7 @@ export function MapMinimapPanel({
   pad = 0,
   repaintDelayMs = MINIMAP_REPAINT_DELAY_MS,
 }: {
-  map: TilemapAsset
+  map: AuthorMap
   tilesets: readonly AnyTilesetAsset[]
   onJump: (col: number, row: number) => void
   /** A área que rola do palco: com ela o minimapa mostra a parte que aparece na tela. */
@@ -32,7 +33,8 @@ export function MapMinimapPanel({
   repaintDelayMs?: number
 }): JSX.Element {
   const ref = useRef<HTMLCanvasElement>(null),
-    count = map.cols * map.rows * map.layers.filter(isTileLayer).length
+    count = mapAllocatedCellCount(map),
+    bounds = mapCellBounds(map)
   const [view, setView] = useState<MinimapViewRect | null>(null)
   const helpId = useId()
   function currentView(): MinimapViewRect | null {
@@ -42,21 +44,26 @@ export function MapMinimapPanel({
   function viewCenter(): { col: number; row: number; view: MinimapViewRect | null } {
     const current = currentView()
     return {
-      col: ((current?.left ?? 0) + (current?.width ?? 1) / 2) * map.cols,
-      row: ((current?.top ?? 0) + (current?.height ?? 1) / 2) * map.rows,
+      col: bounds.col + ((current?.left ?? 0) + (current?.width ?? 1) / 2) * map.cols,
+      row: bounds.row + ((current?.top ?? 0) + (current?.height ?? 1) / 2) * map.rows,
       view: current,
     }
   }
   const jump = (col: number, row: number): void =>
-    onJump(Math.max(0, Math.min(map.cols - 1, col)), Math.max(0, Math.min(map.rows - 1, row)))
+    onJump(
+      Math.max(bounds.col, Math.min(bounds.col + map.cols - 1, col)),
+      Math.max(bounds.row, Math.min(bounds.row + map.rows - 1, row)),
+    )
   // O mapa muda a cada movimento do lápis. O minimapa espera o traço sossegar: pinta na
   // primeira vez e depois só quando passa um instante sem mudança nenhuma.
   const painted = useRef(false)
   useEffect(() => {
     const paint = (): void => {
       painted.current = true
-      if (ref.current)
-        paintMinimap(ref.current, map.cols, map.rows, cachedMinimapColors(map, tilesets))
+      if (ref.current) {
+        const overview = cachedMinimapOverview(map, tilesets)
+        if (overview) paintMinimap(ref.current, overview.width, overview.height, overview.colors)
+      }
     }
     if (!painted.current) {
       paint()
@@ -125,11 +132,12 @@ export function MapMinimapPanel({
               row += stepY * 2
               break
             case 'Home':
-              col = row = 0
+              col = bounds.col
+              row = bounds.row
               break
             case 'End':
-              col = map.cols - 1
-              row = map.rows - 1
+              col = bounds.col + map.cols - 1
+              row = bounds.row + map.rows - 1
               break
             default:
               return
@@ -146,9 +154,9 @@ export function MapMinimapPanel({
           }
           const r = e.currentTarget.getBoundingClientRect()
           if (r.width <= 0 || r.height <= 0) return
-          onJump(
-            ((e.clientX - r.left) / r.width) * map.cols,
-            ((e.clientY - r.top) / r.height) * map.rows,
+          jump(
+            bounds.col + ((e.clientX - r.left) / r.width) * map.cols,
+            bounds.row + ((e.clientY - r.top) / r.height) * map.rows,
           )
         }}
       >

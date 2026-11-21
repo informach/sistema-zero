@@ -58,6 +58,14 @@ O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição n
 aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
 herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.
 
+O minimapa aceita o contrato interno de regiões com visão geral de no máximo
+256 × 256 pixels e desempate global, visitando células armazenadas. O painel
+existente usa a origem lógica nos destinos e conta buffers no orçamento; as cores
+brutas legadas continuam sem cache, enquanto a interface compartilha cache por
+identidade imutável. Não é exportação visual completa. Provas em
+`qa/minimapa-por-regioes-2026-11-21/`, no diretório da missão. Miniaturas/imagens,
+IO 3 e ativação pública 8 continuam pendentes; estilos do painel preservados.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.
