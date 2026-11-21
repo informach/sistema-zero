@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+src\ir\__tests__\programmingSymbols.test.ts:
+(pass) símbolos léxicos da Programação > aceita os locais do núcleo mesmo quando Jogo 2D está instalado [94.00ms]
+(pass) símbolos léxicos da Programação > recusa leitura e atribuição de variável que ainda não foi declarada [16.00ms]
+(pass) símbolos léxicos da Programação > mantém variáveis declaradas disponíveis depois da declaração e em ramos internos
+(pass) símbolos léxicos da Programação > não libera declaração posterior para callback síncrono de colisão
+(pass) símbolos léxicos da Programação > reconhece id, tempo e delta declarados pelo próprio loop de animação
+(pass) símbolos léxicos da Programação > valida o nome de listas como uma referência léxica, inclusive em expressões [15.00ms]
+(pass) símbolos léxicos da Programação > exige que classes existam antes de extends/new e libera namespaces oficiais
+(pass) símbolos léxicos da Programação > infere capacidade Canvas 3D de newExpr guardado por variável genérica
+(pass) símbolos léxicos da Programação > faz hoisting de funções apenas no escopo onde foram declaradas
+(pass) símbolos léxicos da Programação > recusa referências em campos-string que não possuem declaração
+(pass) símbolos léxicos da Programação > aceita os mesmos campos-string depois que as variáveis foram declaradas [16.00ms]
+(pass) símbolos léxicos da Programação > exige que o pincel seja preparado antes de qualquer operação Canvas
+(pass) símbolos léxicos da Programação > não confunde uma variável comum com um pincel Canvas preparado
+(pass) símbolos léxicos da Programação > recusa declarações JavaScript repetidas no mesmo escopo
+(pass) símbolos léxicos da Programação > permite reutilizar um nome em um escopo filho
+(pass) símbolos léxicos da Programação > não entrega variáveis futuras ao corpo de uma função
+(pass) símbolos léxicos da Programação > permite que uma função capture uma variável já declarada
+(pass) símbolos léxicos da Programação > permite declarar a closure antes da variável quando a chamada acontece depois
+(pass) símbolos léxicos da Programação > resolve variáveis futuras em callbacks que só executam depois do trecho atual
+(pass) símbolos léxicos da Programação > recusa event e ctx fora dos corpos que realmente os declaram
+(pass) símbolos léxicos da Programação > libera event no listener e ctx somente no corpo da figura
+(pass) símbolos léxicos da Programação > promove símbolos futuros somente depois de await em função assíncrona
+(pass) símbolos léxicos da Programação > promove símbolos futuros depois de await em método assíncrono
+(pass) símbolos léxicos da Programação > trata onclick, onload e onerror como callbacks adiados
+(pass) símbolos léxicos da Programação > valida o corpo de métodos e construtores no ponto em que a instância é usada [16.00ms]
+(pass) símbolos léxicos da Programação > exige que o namespace de um construtor exista
+(pass) símbolos léxicos da Programação > recusa objetos e grupos do Jogo 3D que não existem nesse ponto
+(pass) símbolos léxicos da Programação > registra todo criador de objeto do Jogo 3D também como variável JavaScript
+(pass) símbolos léxicos da Programação > recusa nomes duplicados entre criadores de objetos do Jogo 3D
+(pass) símbolos léxicos da Programação > não aceita objeto Three.js cru em comando que exige vínculo com o mundo do jogo
+(pass) símbolos léxicos da Programação > promove resultados de seleção e mira guardados em variáveis para objeto do Jogo 3D
+(pass) símbolos léxicos da Programação > distingue os tipos 3D e libera o objeto da vez de um para-cada no grupo
+
+src\ir\__tests__\symbolNames.test.ts:
+(pass) parent and sibling writes cannot change an earlier lexical snapshot
+(pass) independent snapshots match eager sets through deterministic branching edits [63.00ms]
+(pass) insertion order, delete/reinsert, no-op writes and readonly iteration match names
+
+src\ir\__tests__\symbolNamesTypes.test.ts:
+(pass) lexical snapshots keep their own readonly callback contract with lib.es2022.d.ts [375.00ms]
+(pass) lexical snapshots keep their own readonly callback contract with lib.esnext.d.ts [265.00ms]
+
+ 37 pass
+ 0 fail
+ 94687 expect() calls
+Ran 37 tests across 3 files. [1.78s]

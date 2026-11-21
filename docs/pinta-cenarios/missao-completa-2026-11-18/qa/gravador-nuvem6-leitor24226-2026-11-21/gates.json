@@ -1,0 +1,51 @@
+[
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-21T03:29:03.948Z",
+    "finished": "2026-11-21T03:29:15.535Z",
+    "log": ".cache/pinta-writer-24226-core.log"
+  },
+  {
+    "name": "core-types",
+    "exit": 0,
+    "started": "2026-11-21T03:29:16.447Z",
+    "finished": "2026-11-21T03:29:24.393Z",
+    "log": ".cache/pinta-writer-24226-core-types.log"
+  },
+  {
+    "name": "shell",
+    "exit": 0,
+    "started": "2026-11-21T03:29:25.104Z",
+    "finished": "2026-11-21T03:29:32.564Z",
+    "log": ".cache/pinta-writer-24226-shell.log"
+  },
+  {
+    "name": "members-format",
+    "exit": 0,
+    "started": "2026-11-21T03:29:33.279Z",
+    "finished": "2026-11-21T03:29:38.819Z",
+    "log": ".cache/pinta-writer-24226-members-format.log"
+  },
+  {
+    "name": "shell-types",
+    "exit": 0,
+    "started": "2026-11-21T03:29:39.536Z",
+    "finished": "2026-11-21T03:32:16.015Z",
+    "log": ".cache/pinta-writer-24226-shell-types.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-21T03:32:16.752Z",
+    "finished": "2026-11-21T03:32:17.657Z",
+    "log": ".cache/pinta-writer-24226-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T03:32:18.380Z",
+    "finished": "2026-11-21T03:32:48.463Z",
+    "log": ".cache/pinta-writer-24226-biome.log"
+  }
+]

@@ -1,0 +1,2 @@
+$ bun scripts/validation-profile.ts --check
+Studio runtime validation profile verified.

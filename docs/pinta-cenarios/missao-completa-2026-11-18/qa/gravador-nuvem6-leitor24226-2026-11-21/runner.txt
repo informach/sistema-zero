@@ -1,0 +1,18 @@
+const fs=require('node:fs'),cp=require('node:child_process'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const reader='598824bd1403fbb4723b77d5662d996a584aa0ea',git=a=>cp.execFileSync('git',a,{encoding:'utf8',windowsHide:true}).trim(),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+assert.equal(git(['rev-parse','HEAD']),'2923ca0dea7e78c087e743fb166ed53166c3d140');assert.equal(git(['rev-parse','MERGE_HEAD']),reader);assert.equal(git(['diff','--name-only','--diff-filter=U']),'');
+const delta=git(['diff',reader,'--name-only','--','packages']).split(/\r?\n/).filter(Boolean);assert.equal(delta.length,4);
+const changed=()=>[...new Set([...git(['diff','HEAD','--name-only']).split(/\r?\n/),...git(['diff',reader,'--name-only']).split(/\r?\n/),...git(['ls-files','--others','--exclude-standard']).split(/\r?\n/)])].filter(f=>f.startsWith('packages/')||f.startsWith('experiments/')||f==='biome.json'||f==='.gitattributes').sort();
+const freeze={at:new Date().toISOString(),base:git(['rev-parse','HEAD']),reader,writerDelta:delta,files:changed().map(file=>({file,sha256:sha(fs.readFileSync(file))}))};
+fs.writeFileSync('.cache/pinta-writer-598-source-freeze.json',JSON.stringify(freeze,null,2)+'\n',{flag:'wx'});
+const verify=()=>{assert.deepEqual(changed(),freeze.files.map(f=>f.file));for(const f of freeze.files)assert.equal(sha(fs.readFileSync(f.file)),f.sha256,f.file)};
+const rows=[];
+for(const[name,cwd,args]of[
+ ['core','packages/core',['test']],
+ ['core-types','packages/core',['x','--no-install','tsc','--noEmit']],
+ ['shell','packages/member-shell',['test','tests/pinta-format-memory.test.ts','tests/pinta-local-authority.test.ts','tests/pinta-studio-bridge.test.ts','tests/pinta-loader.test.ts','tests/creations-routes.test.ts','tests/creations-routes-after.test.ts','tests/lesson-draft-persistence.test.ts','tests/studio-public-pinta.test.ts','tests/studio-python-publish.test.ts','tests/studio-publication.test.ts']],
+ ['members-format','packages/members',['test','tests/integration/creations.test.ts','tests/integration/lesson-drafts.test.ts']],
+ ['shell-types','packages/member-shell',['x','--no-install','tsc','--noEmit']],
+ ['profile','packages/studio-runtime',['run','check:validation-profile']],
+ ['biome','.', ['x','--no-install','biome','check','.','--diagnostic-level=error']],
+]){verify();const log='.cache/pinta-writer-598-'+name+'.log',fd=fs.openSync(log,'wx'),started=new Date().toISOString();let result;try{result=cp.spawnSync('bun',['--no-env-file',...args],{cwd:path.resolve(cwd),windowsHide:true,env:{...process.env,NODE_OPTIONS:'--max-old-space-size=6144'},stdio:['ignore',fd,fd]})}finally{fs.closeSync(fd)}verify();rows.push({name,exit:result.status,started,finished:new Date().toISOString(),log});fs.writeFileSync('.cache/pinta-writer-598-gates.json',JSON.stringify(rows,null,2)+'\n');console.log(JSON.stringify(rows.at(-1)));if(result.status!==0){process.exitCode=1;break}}

@@ -1,0 +1,27 @@
+const fs=require('node:fs'),cp=require('node:child_process'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const root=process.cwd(),git=a=>cp.execFileSync('git',a,{encoding:'utf8',windowsHide:true}).trim(),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+assert.equal(git(['rev-parse','HEAD']),'598824bd1403fbb4723b77d5662d996a584aa0ea');assert.equal(git(['rev-parse','MERGE_HEAD']),'a674e4c162321e1d4206266b0be47f65ede64ca8');assert.equal(git(['diff','--name-only','--diff-filter=U']),'');
+const changed=()=>[...new Set([...git(['diff','HEAD','--name-only']).split(/\r?\n/),...git(['ls-files','--others','--exclude-standard']).split(/\r?\n/)])].filter(f=>f.startsWith('packages/')||f.startsWith('experiments/')||f==='biome.json'||f==='.gitattributes').sort();
+const names=changed();assert.equal(names.length,5);const freeze={at:new Date().toISOString(),head:git(['rev-parse','HEAD']),mergeHead:git(['rev-parse','MERGE_HEAD']),files:names.map(file=>({file,sha256:sha(fs.readFileSync(file))}))};
+fs.writeFileSync('.cache/pinta-a674-source-freeze.json',JSON.stringify(freeze,null,2)+'\n',{flag:'wx'});
+const verify=()=>{assert.deepEqual(changed(),names);for(const f of freeze.files)assert.equal(sha(fs.readFileSync(f.file)),f.sha256,f.file)};
+const env={...process.env,NODE_OPTIONS:'--max-old-space-size=6144',PW_REUSE_SERVER:'0',E2E_PORT:'5513',E2E_OUT_DIR:'.cache/pinta-a674-pro-main-dist'};
+delete env.PW_CHROMIUM;delete env.DEBUG;delete env.PWDEBUG;delete env.CI;delete env.PLAYWRIGHT_JSON_OUTPUT_FILE;
+const rows=[];
+for(const[name,cwd,args]of[
+ ['symbols','packages/studio',['test','src/ir/__tests__/symbolNamesTypes.test.ts','src/ir/__tests__/symbolNames.test.ts','src/ir/__tests__/programmingSymbols.test.ts']],
+ ['profile','packages/studio-runtime',['run','check:validation-profile']],
+ ['studio-sdk','packages/studio',['run','check:scene3d-runtime']],
+ ['molda-sdk','packages/molda-cenarios',['run','conferir:runtime']],
+ ['policy','packages/members',['test','tests/unit/studio-student-tests.service.test.ts','tests/unit/studio-authoring-policy.test.ts','tests/unit/studio-runtime-hosts.test.ts']],
+ ['python-closure','.', ['.cache/prove-pinta-a674-python.ts']],
+ ['runtime-closure','.', ['.cache/prove-pinta-a674-runtime.cjs']],
+ ['studio-types','packages/studio',['x','--no-install','tsc','--noEmit']],
+ ['members-types','packages/members',['x','--no-install','tsc','--noEmit']],
+ ['pro-performance','packages/studio',['x','--no-install','playwright','test','e2e/pro-workspace-performance.spec.ts','--project=chromium','--reporter=list,json']],
+ ['biome','.', ['x','--no-install','biome','check','.','--diagnostic-level=error']],
+]){
+ verify();const log='.cache/pinta-a674-'+name+'.log',fd=fs.openSync(log,'wx'),started=new Date().toISOString();const childEnv={...env};if(name==='pro-performance'){childEnv.PLAYWRIGHT_JSON_OUTPUT_FILE=path.join(root,'.cache/pinta-a674-pro-performance-report.json');childEnv.PLAYWRIGHT_OUTPUT_DIR=path.join(root,'packages/studio/.cache/pinta-a674-pro-performance-results')}
+ let result;try{result=cp.spawnSync(name==='runtime-closure'?'node':'bun',name==='runtime-closure'?args:['--no-env-file',...args],{cwd:path.resolve(root,cwd),windowsHide:true,env:childEnv,stdio:['ignore',fd,fd]})}finally{fs.closeSync(fd)}
+ verify();rows.push({name,exit:result.status,started,finished:new Date().toISOString(),log});fs.writeFileSync('.cache/pinta-a674-gates.json',JSON.stringify(rows,null,2)+'\n');console.log(JSON.stringify(rows.at(-1)));if(result.status!==0){process.exitCode=1;break}
+}

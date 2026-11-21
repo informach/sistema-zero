@@ -1,0 +1,3 @@
+Bundled 144 modules in 68ms
+
+  pinta-39fc-linux-operator-protocol.mjs  0.57 MB  (entry point)

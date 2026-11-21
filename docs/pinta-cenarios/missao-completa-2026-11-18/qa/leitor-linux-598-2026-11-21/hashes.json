@@ -1,0 +1,140 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2610,
+      "sha256": "a71efb54914d973bf9d3d105f6165d7344af418921d3095d2d020c72aeb06d86"
+    },
+    {
+      "file": "aprovacao-operacional.json",
+      "bytes": 577,
+      "sha256": "5e1375b07dc3b7e8c6bce4711157a1b658ee08b41d9bab768e8e1dad74bbea10"
+    },
+    {
+      "file": "ci-imagem.txt",
+      "bytes": 150161,
+      "sha256": "23ca09e508d57034b1891eb64a3f416713ca73f649f9c5e10a749ee2aa0d290e"
+    },
+    {
+      "file": "ci.json",
+      "bytes": 480,
+      "sha256": "8c96fa0bccf76414fb49b132208ea30b8af2be8cf8ba090578917addc8bda1de"
+    },
+    {
+      "file": "distribuicao.json",
+      "bytes": 28640,
+      "sha256": "9bd7d46756cbfc588c1ff9555902aa2c299e78c6208a0b9a5ece272777e78737"
+    },
+    {
+      "file": "empacotamento-politica.txt",
+      "bytes": 788,
+      "sha256": "59bbda018ad506e5b558f68efe2852b917cd284cf2571e56759aea4d9ea060dd"
+    },
+    {
+      "file": "execucao-remota.txt",
+      "bytes": 773,
+      "sha256": "70697863d8bb1062008bf677d4bb49d7ed35ff3a68e7890b1edef7a3ca70fc4e"
+    },
+    {
+      "file": "fonte.json",
+      "bytes": 608,
+      "sha256": "b9bbe953164b1f698d6228b05990871045448fc792bdc3ad018296de83b1e50b"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 817,
+      "sha256": "a748882c35535e89c12de2224c9fb87c02a772961398cb363dc2c1963109a2c6"
+    },
+    {
+      "file": "imagem-local.json",
+      "bytes": 425,
+      "sha256": "aafebfbf060d35266852cbcba110a1fd2fe2b498ffb0b8aca5fab307f54338bd"
+    },
+    {
+      "file": "imagem-registry.json",
+      "bytes": 595,
+      "sha256": "32ce7f5d897534ac6b3b9fd22a3841ebc7ad3a8f914f2c20013a6519634f81ed"
+    },
+    {
+      "file": "leitura-r2.json",
+      "bytes": 1151,
+      "sha256": "d90b40c223c3b6fdea983e6e50a39b38e0a55d6e5bce8a7fa9c79eb7cee415e2"
+    },
+    {
+      "file": "limpeza.json",
+      "bytes": 301,
+      "sha256": "dba489c333ad9b2c2e0dd4388a283a9f3f8f01f5eb737a55a852507c0cbefa8e"
+    },
+    {
+      "file": "linux.json",
+      "bytes": 1220,
+      "sha256": "c9f6d0038b6b7791305621d26b8c531fea6c1ef79401390e030737c1f00251b3"
+    },
+    {
+      "file": "plano-promocao.json",
+      "bytes": 819279,
+      "sha256": "665dd42e2ed480d28079fda8e9a813ee25bceee64e57472e2d5d56f55f733627"
+    },
+    {
+      "file": "politica-preparada.json",
+      "bytes": 852,
+      "sha256": "abe8d7bf072b68b89340660b8aa31603cc81e3b58691cf5b71addc8f731019cd"
+    },
+    {
+      "file": "preparacao.txt",
+      "bytes": 303,
+      "sha256": "ae65e7c508e0a72e9e177db88c5e9ab665bee92916c1f08966fdf50b4b38ac3f"
+    },
+    {
+      "file": "protocolo-compilacao.txt",
+      "bytes": 94,
+      "sha256": "cae1dff9eb52da0bbb3db5c5e05a25073d45b21d35899ae77cf9bef79bbe815f"
+    },
+    {
+      "file": "pygame.json",
+      "bytes": 1221932,
+      "sha256": "b6e4cd9132f084ce690dcd5d6f84a13d7d5921e2c0bffbb01193d8bef299bf56"
+    },
+    {
+      "file": "pygame.txt",
+      "bytes": 3204,
+      "sha256": "d381eae1fd6727c4f5ed497759119d4f72fb2e7529383424757e7029d5583f4d"
+    },
+    {
+      "file": "python-compartilhado.json",
+      "bytes": 3227187,
+      "sha256": "0a77586ad27c52aef4de6c122829e2af4903f718f172c236b64c75e5e27fc68f"
+    },
+    {
+      "file": "python-compartilhado.txt",
+      "bytes": 12100,
+      "sha256": "b542836d98afce3fd46cda51624b0478382917cfda7874a8cde1e726b147e327"
+    },
+    {
+      "file": "qualificacao.json",
+      "bytes": 808,
+      "sha256": "aa0827ad65e309f182054fb0ec122234d18b47aaf52ced3b271e5ef9eb5331ee"
+    },
+    {
+      "file": "servico-temporario.json",
+      "bytes": 1159,
+      "sha256": "33e9b99f0d43764f81150185f834c46bcd55551f7a0c9466342dd95fd2d8eb2d"
+    },
+    {
+      "file": "servidor-fixado.txt",
+      "bytes": 114,
+      "sha256": "8a259c27e81980f1a9178b32c550032c79f57461bef12c724f0d53cffc747d00"
+    },
+    {
+      "file": "upload-r2.json",
+      "bytes": 817,
+      "sha256": "a136e244b52b24557509e8f49942cdeab7a2e3c7aa207f1dfc0ab928793c5d51"
+    },
+    {
+      "file": "workflow.json",
+      "bytes": 469,
+      "sha256": "cc050b9c687fefab0d7f326d06abdd2d22f2d1656ab940995f399b984122599f"
+    }
+  ]
+}

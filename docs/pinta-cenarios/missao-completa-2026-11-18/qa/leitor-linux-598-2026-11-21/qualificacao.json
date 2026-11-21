@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-21T02:58:24.819Z",
+  "source": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "distributionSha256": "f7c60430cb693962aec48da387898882d4708bfc7629fbd30ac3ca2ab403acc1",
+  "imageRun": 44856177200,
+  "imageWorkflow": "0b2cd34c1955f2bffca7f17350e07a999afe3b53",
+  "activationQualified": false,
+  "browserContracts": {
+    "shared": "Installed Chrome channel, matching official Python/Raylib configs",
+    "pygame": "Playwright Chromium 159 including strict Pinta browser errors"
+  },
+  "tests": [
+    {
+      "name": "pygame",
+      "passed": 22,
+      "reportSha256": "94a35add36013f08b39a8f80f39056ac2d737958464e8067ff403d7a991a24a3"
+    },
+    {
+      "name": "shared",
+      "passed": 90,
+      "reportSha256": "14862f281236870b4ee7000247126cb3ddb49de170a4abc45ea244ac180aa4d8"
+    }
+  ]
+}

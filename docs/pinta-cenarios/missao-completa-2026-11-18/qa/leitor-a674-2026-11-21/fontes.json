@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-21T03:07:48.307Z",
+  "head": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "mergeHead": "a674e4c162321e1d4206266b0be47f65ede64ca8",
+  "files": [
+    {
+      "file": "packages/members/src/infrastructure/config/studio-authoring-catalogs/12220f13fea768bd3dd77a386170a292aed1067bc8d7583d4c4a3c4d2e9c0a37.json",
+      "sha256": "12220f13fea768bd3dd77a386170a292aed1067bc8d7583d4c4a3c4d2e9c0a37"
+    },
+    {
+      "file": "packages/studio/e2e/fixtures/pro-workspace/main.tsx",
+      "sha256": "6308c7def6964e11306423dea50b3355c9735213dc5248fba0925f023f44fc8d"
+    },
+    {
+      "file": "packages/studio/e2e/fixtures/pro-workspace/modularProject.ts",
+      "sha256": "a318b0f0e76bbf92754a94fd8d806f7ab4c1553bb6f33185143120d6f7f06946"
+    },
+    {
+      "file": "packages/studio/e2e/pro-workspace-performance.spec.ts",
+      "sha256": "c1fde0671036a89932fb6ecc4fa7cfdc7768f582678c5301e877ce379ccac761"
+    },
+    {
+      "file": "packages/studio/src/ir/symbolNames.ts",
+      "sha256": "667a0c238dc6f0995ddde59ca792edf6e2977107b46a1b642dfb4ea1aef827a2"
+    }
+  ]
+}

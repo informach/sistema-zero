@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-21T03:29:15.172Z",
+  "reader": "24226bb3f0ab10e96174d80dcbbcafe1f37653ff",
+  "profile": "da629a58eb2369b6e1363c6ca26b75b156f9e519b7097f843b7b770e1174e4f6",
+  "bundleSha256": "670c8c32d33cf541dc16b6ff81e3c5acf0978626ef6844f7fefaf316f668cf6a",
+  "bundleBytes": 1979073,
+  "byteIdentical": true,
+  "writeDeclaration": 6,
+  "readLimit": 6,
+  "productionRuntimeChanged": false,
+  "deployed": false,
+  "dryRunImageTemplateOnly": true
+}

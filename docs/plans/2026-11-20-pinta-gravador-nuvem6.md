@@ -48,3 +48,9 @@ arquivos Python são byte a byte iguais ao leitor integrado; ver
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-nuvem6-integrado-598-2026-11-20/`.
 Isso ainda não ativa a escrita: falta receber a política final do leitor de
 rollback, concluir seu rollout e executar os critérios autenticados 6 e 7.
+
+Em 21/11, o leitor de rollback `24226bb3f` foi integrado sem conflitos,
+incluindo a política `12220f13…`. Os sete controles e a igualdade dos artefatos
+foram repetidos; ver `qa/gravador-nuvem6-leitor24226-2026-11-21/` no diretório
+da missão. A escrita continua inativa até a qualificação e o rollout do leitor,
+seguidos dos ensaios autenticados e do rollback previstos neste plano.

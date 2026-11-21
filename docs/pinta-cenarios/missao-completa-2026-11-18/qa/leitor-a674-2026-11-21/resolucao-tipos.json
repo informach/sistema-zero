@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-21T03:03:59.154Z",
+  "qualifiedSource": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "incoming": "a674e4c162321e1d4206266b0be47f65ede64ca8",
+  "file": "packages/studio/src/ir/symbolNames.ts",
+  "retainedCorrectReadonlyCallback": true,
+  "typescriptJavaScriptExactlyEqual": true,
+  "bunJavaScriptExactlyEqual": true,
+  "typescriptJavaScriptSha256": "fb697f1b624234f3b403e8f8d4b3c62281dc697425c4efbc9db1ab235cfbc8a7",
+  "sourceSha256": "667a0c238dc6f0995ddde59ca792edf6e2977107b46a1b642dfb4ea1aef827a2",
+  "runtimeLogicChanged": false
+}

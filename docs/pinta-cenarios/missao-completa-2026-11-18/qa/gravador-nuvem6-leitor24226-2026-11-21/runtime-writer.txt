@@ -1,0 +1,26 @@
+
+ ⛅️ wrangler 4.120.1 (update available 4.166.0)
+───────────────────────────────────────────────
+Total Upload: 1932.69 KiB / gzip: 391.46 KiB
+Your Worker has access to the following bindings:
+Binding                                                                                   Resource
+env.ProBuildSandbox (ProBuildSandbox)                                                     Durable Object
+env.ThreeDCheckSandbox (ThreeDCheckSandbox)                                               Durable Object
+env.PythonInspectionJobs (PythonInspectionJob)                                            Durable Object
+env.PRO_ARTIFACTS (sistemazero-studio-artifacts-staging)                                  R2 Bucket
+env.PYTHON_INPUTS (sistemazero-studio-artifacts-staging)                                  R2 Bucket
+env.PYTHON_PREVIEWS (sistemazero-studio-artifacts-staging)                                R2 Bucket
+env.PYTHON_UPLOAD_RATE_LIMITER (120 requests/60s)                                         Rate Limit
+env.BUILD_RATE_LIMITER (10 requests/60s)                                                  Rate Limit
+env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 ("f69814b9412125e9bb8f8f33aea2b682cf1e7...")       Environment Variable
+env.STUDIO_PYTHON_PREVIEW_ORIGIN ("https://sistemazero-studio-runtime-st...")             Environment Variable
+env.PUBLICATION_AUTHORIZATION_URL ("https://community-kids-staging.up.rai...")            Environment Variable
+env.PUBLICATION_AUTHORIZATION_ADULT_URL ("https://community-staging-66f2.up.rai...")      Environment Variable
+env.PUBLICATION_CLEANUP_URL ("https://community-kids-staging.up.rai...")                  Environment Variable
+env.PUBLICATION_CLEANUP_ADULT_URL ("https://community-staging-66f2.up.rai...")            Environment Variable
+
+The following containers are available:
+- sistemazero-studio-runtime-staging-probuildsandbox-staging (registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-fb973c50f@sha256:aeb69b4da266e7475b3a6941ea91017df4668f33c18b5834aa4b2f1b509e4097)
+- sistemazero-studio-runtime-staging-threedchecksandbox-staging (registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-fb973c50f@sha256:aeb69b4da266e7475b3a6941ea91017df4668f33c18b5834aa4b2f1b509e4097)
+
+--dry-run: exiting now.
