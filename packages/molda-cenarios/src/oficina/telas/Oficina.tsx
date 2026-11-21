@@ -9,6 +9,7 @@ import {
   FAMILIA_DA_FERRAMENTA,
   indiceDaOrganizacao,
   type ModeloDoCenario,
+  PREFIXO_ARQUIPELAGO,
 } from '@sistemazero/molda-cenarios-core/v2'
 import {
   type ConfiguracaoDoTeste,
@@ -2313,6 +2314,7 @@ function OficinaAberta({
                     palco={palco.current}
                     apenasLuzes={aba === 'luz'}
                     alturaDoAvatar={alturaDoAvatar}
+                    {...(naEquipe ? {} : { chavesDaEquipe: PREFIXO_ARQUIPELAGO })}
                     aoSelecionar={aoSelecionarMarcador}
                     indisponivel={
                       !relevoPronto ||
@@ -2485,6 +2487,7 @@ function OficinaAberta({
                       <Propriedades
                         key={entidade.id}
                         valor={entidade.propriedades}
+                        {...(naEquipe ? {} : { chavesDaEquipe: PREFIXO_ARQUIPELAGO })}
                         desligado={
                           estado.ocupado ||
                           !relevoPronto ||

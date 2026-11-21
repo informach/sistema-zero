@@ -56,6 +56,7 @@ export function Jogo({
   aoCapturar,
   alturaDoAvatar,
   apenasLuzes = false,
+  chavesDaEquipe,
 }: {
   jogo: ReturnType<typeof useJogo>
   documento: DocumentoDeCenario
@@ -67,6 +68,8 @@ export function Jogo({
   aoCapturar(): void
   alturaDoAvatar(): number
   apenasLuzes?: boolean
+  /** Prefixo das propriedades que só a equipe cria ou muda (os campos do Arquipélago). */
+  chavesDaEquipe?: string
 }) {
   const [busca, setBusca] = useState(''),
     [pagina, setPagina] = useState(0),
@@ -325,6 +328,7 @@ export function Jogo({
               valor={m.propriedades}
               aoGuardar={(propriedades) => t.mudar({ ...m, propriedades })}
               rotuloAcao="Usar propriedades no rascunho"
+              {...(chavesDaEquipe ? { chavesDaEquipe } : {})}
             />
             <button type="button" className="sz-tool-btn" onClick={() => void t.preparar()}>
               Ver prévia do marcador

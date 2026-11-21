@@ -4,6 +4,7 @@ import {
   CenarioInvalido,
   type ComandoDeCenario,
   ConflitoDeCenario,
+  camposDoArquipelagoMudados,
   criarDocumentoVazio,
   espacosDosComandos,
   executarLote,
@@ -1030,6 +1031,14 @@ export class CenariosService {
       )
       if (trancadas.length) throw new CenarioFerramentaTrancadaError(trancadas)
     }
+    // O Arquipélago é da equipe: fora do espaço dela, nenhum lote cria ou muda um campo dele
+    // (tirar um campo que já estava lá continua valendo).
+    if (
+      autoria &&
+      espaco.tipo !== 'equipe' &&
+      camposDoArquipelagoMudados(cenario.documento, depois.documento).length
+    )
+      throw new CenarioInvalidoError(['Os campos que começam com "arquipelago." são só da equipe'])
     const gravado = await this.repo.gravarLote(
       {
         cenarioId: id,
