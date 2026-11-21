@@ -45,6 +45,8 @@ export const COPY = {
     right: 'À direita',
     setCropAlignment:
       'Para guardar este pedaço, alinhe o deslocamento das camadas de peças à grade.',
+    setCropBudget: (cols: number, rows: number) =>
+      `Escolha um pedaço de até ${cols} × ${rows} casas para guardar como conjunto.`,
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>

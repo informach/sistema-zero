@@ -51,3 +51,14 @@ com suas versões e escopos. Nenhum rollout novo ocorreu nesta retomada.
 Cada lote exige testes, ensaio funcional aplicável, revisão e commit.
 Um teste HTTP local com repositório em memória não substitui IndexedDB real,
 R2/Postgres, login ou rollback dos serviços publicados.
+
+## Lote verificado: referências dos conjuntos (21/11)
+
+Clonagem do grafo extraída para o núcleo, com escopos distintos de IDs de
+camadas/objetos. Captura e separação religam propriedades de objetos nas versões
+de arte incorporadas, versionando somente recursos alterados. Separar conserva
+locks herdados; capturar recusa recortes inválidos antes de alocar. O remapeamento
+interno preserva vínculos explícitos de regiões, mantendo o legado denso.
+Relatório e resultados em `qa/referencias-de-conjuntos-2026-11-21/`, no diretório
+da missão. Isso não fecha as etapas 1 ou 4: conjuntos nativos esparsos e seus
+consumidores ainda precisam ser integrados.

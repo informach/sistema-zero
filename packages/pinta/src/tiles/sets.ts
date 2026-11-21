@@ -1,5 +1,6 @@
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
+import { cloneMapIds } from '../core/mapClone'
 import { mergeMapResourceVersions } from '../core/mapResourceVersions'
 import {
   effectiveLayer,
@@ -13,8 +14,8 @@ import {
   type TilemapLayer,
 } from '../core/project'
 import type { CellRect } from './cellGeometry'
+import { isBoundedCellRect } from './mapCellEdits'
 import { addMapObject, createMapObject } from './mapObjects'
-import { cloneObjects } from './objectSelection'
 import { transformStamp } from './transform'
 
 /** Recorta todas as camadas e objetos. Referências de arte e propriedades continuam vivas. */
@@ -24,6 +25,19 @@ export function createMapSet(
   tileSize: number,
   name: string,
 ): MapSetAsset {
+  if (
+    !isBoundedCellRect(rect) ||
+    rect.cols > PINTA_MAP_FORMAT_LIMITS.maxCols ||
+    rect.rows > PINTA_MAP_FORMAT_LIMITS.maxRows ||
+    map.layers.length > PINTA_MAP_FORMAT_LIMITS.maxLayers ||
+    rect.cols * rect.rows * map.layers.filter(isTileLayer).length >
+      PINTA_MAP_FORMAT_LIMITS.maxCells ||
+    !Number.isFinite(tileSize) ||
+    tileSize <= 0
+  )
+    throw new Error(
+      COPY.scene.setCropBudget(PINTA_MAP_FORMAT_LIMITS.maxCols, PINTA_MAP_FORMAT_LIMITS.maxRows),
+    )
   const now = Date.now()
   // Não há meia célula no documento nativo: recusar antes de cortar uma peça em silêncio.
   if (
@@ -63,40 +77,29 @@ export function createMapSet(
     })
   )
     throw new Error(COPY.scene.nestedSet)
-  const selectedObjects = map.layers.flatMap((l) => {
-    const e = effectiveLayer(map, l)
-    return isObjectLayer(l)
-      ? l.objects.filter(
-          (o) =>
-            !o.setId &&
-            o.x + e.offsetX >= rect.col * tileSize &&
-            o.y + e.offsetY >= rect.row * tileSize &&
-            o.x + e.offsetX < (rect.col + rect.cols) * tileSize &&
-            o.y + e.offsetY < (rect.row + rect.rows) * tileSize,
-        )
-      : []
-  })
-  const copies = cloneObjects(selectedObjects, -rect.col * tileSize, -rect.row * tileSize)
-  const objectCopies = new Map(selectedObjects.map((o, i) => [o.id, copies[i]!]))
-  const layerIds = new Map(map.layers.map((l) => [l.id, newId()]))
+  const selectObjects = () =>
+    map.layers.flatMap((l) => {
+      const e = effectiveLayer(map, l)
+      return isObjectLayer(l)
+        ? l.objects.filter(
+            (o) =>
+              !o.setId &&
+              o.x + e.offsetX >= rect.col * tileSize &&
+              o.y + e.offsetY >= rect.row * tileSize &&
+              o.x + e.offsetX < (rect.col + rect.cols) * tileSize &&
+              o.y + e.offsetY < (rect.row + rect.rows) * tileSize,
+          )
+        : []
+    })
+  // Clone object IDs and their embedded resource references as one graph. References
+  // outside this fragment retain their original scope; unchanged versions can be reused.
+  map = cloneMapIds(map, undefined, new Set(selectObjects().map((o) => o.id)))
+  const selectedObjectIds = new Set(selectObjects().map((o) => o.id))
   const layers = map.layers.map((layer): TilemapLayer => {
     const { parentId: _parent, ...common } = layer
     const base = {
       ...common,
-      id: layerIds.get(layer.id)!,
-      ...(layer.parentId ? { parentId: layerIds.get(layer.parentId) } : {}),
-      ...(layer.properties
-        ? {
-            properties: Object.fromEntries(
-              Object.entries(layer.properties).map(([k, v]) => [
-                k,
-                typeof v === 'object' && v.type === 'object'
-                  ? { ...v, value: objectCopies.get(String(v.value))?.id ?? v.value }
-                  : v,
-              ]),
-            ),
-          }
-        : {}),
+      ...(layer.parentId ? { parentId: layer.parentId } : {}),
     }
     if (isTileLayer(layer)) {
       const cells = new Int16Array(rect.cols * rect.rows).fill(-1)
@@ -121,7 +124,7 @@ export function createMapSet(
       } as TilemapLayer
     }
     if (isObjectLayer(layer)) {
-      const included = layer.objects.filter((o) => objectCopies.has(o.id)),
+      const included = layer.objects.filter((o) => selectedObjectIds.has(o.id)),
         shiftX = Math.min(0, ...included.map((o) => o.x - rect.col * tileSize)),
         shiftY = Math.min(0, ...included.map((o) => o.y - rect.row * tileSize))
       // O deslocamento só entra quando difere de zero (chave no padrão não é forma canônica).
@@ -134,7 +137,7 @@ export function createMapSet(
         ...(offsetX !== 0 ? { offsetX } : {}),
         ...(offsetY !== 0 ? { offsetY } : {}),
         objects: included.map((o) => ({
-          ...objectCopies.get(o.id)!,
+          ...o,
           x: o.x - rect.col * tileSize - shiftX,
           y: o.y - rect.row * tileSize - shiftY,
         })),
@@ -142,7 +145,7 @@ export function createMapSet(
     }
     return { ...base, kind: 'group' } as TilemapLayer
   })
-  const firstTile = layerIds.get(map.layers.find(isTileLayer)?.id ?? '')
+  const firstTile = map.layers.find(isTileLayer)?.id
   const keep = new Set(
     layers
       .filter((l) =>
@@ -221,8 +224,6 @@ export function detachMapSet(
 ): TilemapAsset {
   const owner = map.layers.find((l) => l.id === layerId)
   if (!owner || !isObjectLayer(owner) || effectiveLayer(map, owner).locked) return map
-  const resources = mergeMapResourceVersions(map.resources ?? [], set.map.resources ?? [])
-  if (!resources) return map
   const instance = owner.objects.find((o) => o.id === objectId && o.setId === set.id)
   if (
     !instance ||
@@ -246,6 +247,14 @@ export function detachMapSet(
   const placedCols = turns % 2 === 1 ? set.map.rows : set.map.cols,
     placedRows = turns % 2 === 1 ? set.map.cols : set.map.rows
   if (placedCols > map.cols || placedRows > map.rows) return map
+  const copy = cloneMapIds(
+    set.map,
+    undefined,
+    new Set(set.map.layers.filter(isObjectLayer).flatMap((l) => l.objects.map((o) => o.id))),
+  )
+  const resources = mergeMapResourceVersions(map.resources ?? [], copy.resources ?? [])
+  if (!resources) return map
+  set = { ...set, map: copy }
   const transform = (x: number, y: number) => {
     const px = instance.flipX ? instance.width - x : x,
       py = instance.flipY ? instance.height - y : y
@@ -262,11 +271,6 @@ export function detachMapSet(
   ]
   const minX = Math.min(...corners.map((p) => p.x)),
     minY = Math.min(...corners.map((p) => p.y))
-  const idMap = new Map(
-    set.map.layers.flatMap((l) =>
-      isObjectLayer(l) ? l.objects.map((o) => [o.id, newId()] as const) : [],
-    ),
-  )
   const layers = set.map.layers
     .filter((l) => l.kind !== 'group')
     .map((layer): TilemapLayer => {
@@ -278,13 +282,15 @@ export function detachMapSet(
         opacity: _opacity,
         offsetX: _offsetX,
         offsetY: _offsetY,
+        locked: _locked,
         ...original
       } = layer
       const opacity = e.opacity * (owner.opacity ?? 1)
       const placed = (offsetX: number, offsetY: number) => ({
         ...original,
-        id: newId(),
+        id: layer.id,
         visible: e.visible && owner.visible,
+        ...(e.locked ? { locked: true } : {}),
         ...(opacity !== 1 ? { opacity } : {}),
         ...(offsetX !== 0 ? { offsetX } : {}),
         ...(offsetY !== 0 ? { offsetY } : {}),
@@ -304,20 +310,12 @@ export function detachMapSet(
               360
             return {
               ...rest,
-              id: idMap.get(o.id)!,
               x: transform(o.x + e.offsetX, o.y + e.offsetY).x + instance.x,
               y: transform(o.x + e.offsetX, o.y + e.offsetY).y + instance.y,
               ...(rotation !== 0 ? { rotation } : {}),
               ...(!!o.flipX !== !!instance.flipX ? { flipX: true as const } : {}),
               ...(!!o.flipY !== !!instance.flipY ? { flipY: true as const } : {}),
-              properties: Object.fromEntries(
-                Object.entries(o.properties).map(([k, v]) => [
-                  k,
-                  typeof v === 'object' && v.type === 'object'
-                    ? { ...v, value: idMap.get(String(v.value)) ?? v.value }
-                    : v,
-                ]),
-              ),
+              properties: o.properties,
             }
           }),
         } as TilemapLayer

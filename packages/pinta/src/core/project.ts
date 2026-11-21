@@ -770,23 +770,25 @@ export function isCompatibleMapTileset(base: AnyTilesetAsset, candidate: AnyTile
 /**
  * O mapa com TODAS as referências a tileset trocadas por `remap` (a padrão e as
  * das camadas) — o import religa um mapa às peças que vieram junto com ids
- * novos. Camada que cai no padrão perde a chave (forma canônica). Mesmo asset
+ * novos. No legado, camada que cai no padrão perde a chave (forma canônica). Mesmo asset
  * quando nada muda.
  */
-export function remapTilemapTilesetIds(
-  tilemap: TilemapAsset,
+export function remapTilemapTilesetIds<Map extends TilemapAsset<TilemapCells>>(
+  tilemap: Map,
   remap: (id: string) => string,
-): TilemapAsset {
+): Map {
   const tilesetId = remap(tilemap.tilesetId)
+  // Explicit binding remains authorial data in native 8; legacy canonicalization is unchanged.
+  const preserveExplicit = 'origin' in tilemap
   let changed = tilesetId !== tilemap.tilesetId
-  const layers = tilemap.layers.map((layer): TilemapLayer => {
+  const layers = tilemap.layers.map((layer) => {
     if (!isTileLayer(layer) || layer.tilesetId === undefined) return layer
     const next = remap(layer.tilesetId)
-    if (next === layer.tilesetId && next !== tilesetId) return layer
+    if (next === layer.tilesetId && (preserveExplicit || next !== tilesetId)) return layer
     changed = true
     const { tilesetId: _previous, ...rest } = layer
-    return next === tilesetId ? rest : { ...rest, tilesetId: next }
-  })
+    return next === tilesetId && !preserveExplicit ? rest : { ...rest, tilesetId: next }
+  }) as Map['layers']
   return changed ? { ...tilemap, tilesetId, layers } : tilemap
 }
 

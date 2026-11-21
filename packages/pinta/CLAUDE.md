@@ -24,6 +24,15 @@ continuam condicionados aos demais consumidores. Provas e limites em
 
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
+**Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
+clonagem/remapeamento usada por importação e conjuntos. IDs de camadas e objetos
+possuem escopos separados. Um fragmento só troca o ID de uma versão incorporada
+quando precisa religar propriedades de objeto nela; arte inalterada é reutilizada.
+`createMapSet` admite o recorte antes de alocar; `detachMapSet` conserva locks
+herdados. O remapeador preserva vínculos explícitos de folhas no modelo interno 8,
+conservando a canonicalização densa. Conjuntos esparsos ainda não estão ativos.
+Provas: `qa/referencias-de-conjuntos-2026-11-21/`, no diretório da missão.
+
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
 
 **Autoridade local offline (issue 026):** `pinta:local:document:<id>` é o documento

@@ -4,17 +4,11 @@
  * restauro de backup e o pacote) e pela biblioteca do Estúdio (`importDrawingsForStudio`, os
  * desenhos de um jogo de exemplo), que precisa saber QUAL id novo cada desenho ganhou.
  */
+
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
-import type { TilemapObjectPropertyValue } from '../core/project'
-import {
-  isObjectLayer,
-  isTilesetKind,
-  PINTA_LIMITS,
-  type PintaAsset,
-  remapTilemapTilesetIds,
-  type TilemapAsset,
-} from '../core/project'
+import { cloneMapIds, mapPropertyRefs, remapMapAssets } from '../core/mapClone'
+import { isTilesetKind, PINTA_LIMITS, type PintaAsset } from '../core/project'
 
 /** Nome único por sufixo numérico (`heroi` → `heroi-2`), respeitando o teto. */
 export function uniqueName(base: string, taken: Set<string>): string | null {
@@ -49,137 +43,6 @@ export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
     copy.map = cloneMapIds(copy.map)
   }
   return copy
-}
-
-function cloneMapIds(map: TilemapAsset, mapId = newId()): TilemapAsset {
-  const ids = new Map<string, string>()
-  for (const l of map.layers) {
-    ids.set(l.id, newId())
-    if (isObjectLayer(l)) for (const o of l.objects) ids.set(o.id, newId())
-  }
-  const versions = new Map((map.resources ?? []).map((version) => [version.asset.id, newId()]))
-  const cloned: TilemapAsset = {
-    ...map,
-    id: mapId,
-    ...(map.resources?.length
-      ? {
-          resources: map.resources.map((version) => ({
-            ...version,
-            asset:
-              isTilesetKind(version.asset) && version.asset.tileProperties
-                ? {
-                    ...version.asset,
-                    tileProperties: Object.fromEntries(
-                      Object.entries(version.asset.tileProperties).map(([tile, properties]) => [
-                        tile,
-                        mapPropertyRefs(properties, ids, 'object'),
-                      ]),
-                    ),
-                  }
-                : version.asset,
-          })),
-        }
-      : {}),
-    layers: map.layers.map((l) => ({
-      ...l,
-      id: ids.get(l.id) ?? l.id,
-      ...(l.parentId ? { parentId: ids.get(l.parentId) ?? l.parentId } : {}),
-      ...(l.properties ? { properties: mapPropertyRefs(l.properties, ids, 'object') } : {}),
-      ...(isObjectLayer(l)
-        ? {
-            objects: l.objects.map((o) => ({
-              ...o,
-              id: ids.get(o.id) ?? o.id,
-              properties: Object.fromEntries(
-                Object.entries(o.properties).map(([k, v]) => [
-                  k,
-                  typeof v === 'object' && v.type === 'object'
-                    ? { ...v, value: ids.get(String(v.value)) ?? v.value }
-                    : v,
-                ]),
-              ),
-            })),
-          }
-        : {}),
-    })) as TilemapAsset['layers'],
-  }
-  return versions.size ? remapMapAssets(cloned, versions) : cloned
-}
-
-function remapMapAssets(
-  map: TilemapAsset,
-  idMap: ReadonlyMap<string, string>,
-  names: ReadonlyMap<string, string> = new Map(),
-  animations: ReadonlyMap<string, ReadonlyMap<string, string>> = new Map(),
-): TilemapAsset {
-  const result = remapTilemapTilesetIds(map, (id) => idMap.get(id) ?? id)
-  return {
-    ...result,
-    ...(result.resources
-      ? {
-          resources: result.resources.map((version) => ({
-            ...version,
-            sourceId: idMap.get(version.sourceId) ?? version.sourceId,
-            asset: {
-              ...version.asset,
-              id: idMap.get(version.asset.id) ?? version.asset.id,
-              ...(isTilesetKind(version.asset) && version.asset.tileProperties
-                ? {
-                    tileProperties: Object.fromEntries(
-                      Object.entries(version.asset.tileProperties).map(([tile, properties]) => [
-                        tile,
-                        mapPropertyRefs(properties, idMap, 'asset'),
-                      ]),
-                    ),
-                  }
-                : {}),
-            },
-          })),
-        }
-      : {}),
-    layers: result.layers.map((l) =>
-      !isObjectLayer(l)
-        ? {
-            ...l,
-            ...(l.properties ? { properties: mapPropertyRefs(l.properties, idMap, 'asset') } : {}),
-          }
-        : {
-            ...l,
-            ...(l.properties ? { properties: mapPropertyRefs(l.properties, idMap, 'asset') } : {}),
-            objects: l.objects.map((o) => ({
-              ...o,
-              ...(o.art
-                ? {
-                    art: {
-                      ...o.art,
-                      assetId: idMap.get(o.art.assetId) ?? o.art.assetId,
-                      ...(o.art.animationId
-                        ? {
-                            animationId:
-                              animations.get(o.art.assetId)?.get(o.art.animationId) ??
-                              o.art.animationId,
-                          }
-                        : {}),
-                    },
-                  }
-                : {}),
-              ...(o.setId ? { setId: idMap.get(o.setId) ?? o.setId } : {}),
-              properties: Object.fromEntries(
-                Object.entries(o.properties).map(([k, v]) => [
-                  k,
-                  typeof v === 'object' && v.type === 'asset'
-                    ? { ...v, value: idMap.get(String(v.value)) ?? v.value }
-                    : o.role === 'door' &&
-                        (k === 'destino' || k === 'destination') &&
-                        typeof v === 'string'
-                      ? (names.get(v) ?? idMap.get(v) ?? v)
-                      : v,
-                ]),
-              ),
-            })),
-          },
-    ),
-  }
 }
 
 export interface ImportPlan {
@@ -265,19 +128,4 @@ export function planImport(
             : source,
   }))
   return { pairs, idMap, skipped, error }
-}
-
-function mapPropertyRefs(
-  properties: Record<string, TilemapObjectPropertyValue>,
-  ids: ReadonlyMap<string, string>,
-  type: 'object' | 'asset',
-): Record<string, TilemapObjectPropertyValue> {
-  return Object.fromEntries(
-    Object.entries(properties).map(([k, v]) => [
-      k,
-      typeof v === 'object' && v.type === type
-        ? { ...v, value: ids.get(String(v.value)) ?? v.value }
-        : v,
-    ]),
-  )
 }
