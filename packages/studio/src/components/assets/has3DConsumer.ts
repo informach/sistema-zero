@@ -1,3 +1,4 @@
+import { jsonStringify } from '../../blockly/jsonPlainCopy'
 import type { EditableStudioProject as Project } from '../../core/editableProject'
 import { projectUsesRaylib, projectUsesRaylib3D } from '../../core/raylibMediaPaths'
 
@@ -43,7 +44,9 @@ function blocksStateUsesCanvas3D(blocksState: Project['blocksState']): boolean {
   if (!blocksState || typeof blocksState !== 'object') return false
   const cached = canvas3DByBlocksState.get(blocksState)
   if (cached !== undefined) return cached
-  const usa = JSON.stringify(blocksState).includes('sz_t3d_')
+  // Sem recursão: numa sequência única de 10 mil blocos o `JSON.stringify` nativo estourava a pilha
+  // e este seletor, que roda na barra a cada mudança, derrubava o editor (lote 3, conserto B).
+  const usa = jsonStringify(blocksState)?.includes('sz_t3d_') ?? false
   canvas3DByBlocksState.set(blocksState, usa)
   return usa
 }

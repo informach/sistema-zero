@@ -137,3 +137,86 @@ export function jsonPlainCopy(input: unknown): unknown {
   if (!Object.hasOwn(holder, '')) throw new SyntaxError('"undefined" is not valid JSON')
   return holder['']
 }
+
+type TextFrame =
+  | { kind: 'array'; source: unknown[]; index: number }
+  | {
+      kind: 'object'
+      source: Record<string, unknown>
+      keys: string[]
+      index: number
+      wrote: boolean
+    }
+
+/**
+ * O mesmo texto que `JSON.stringify(valor)` devolveria (sem `replacer` nem recuo), sem recursão.
+ *
+ * Por que existe (lote 3, conserto B, 21/11/2026): numa sequência única de 10 mil blocos o estado
+ * do Blockly é uma cadeia `next` de 20 mil níveis, e o `JSON.stringify` nativo estoura a pilha no
+ * Chromium (o seletor da barra que procura blocos 3D derrubava o editor inteiro), no Firefox (a
+ * partir de ~2 mil elos, mesmo em objetos comuns) e no JavaScriptCore (20 mil). As regras são as
+ * de `resolve`, as mesmas da `jsonPlainCopy`; texto e chaves são escritos pelo próprio
+ * `JSON.stringify`, que não recursa num valor primitivo.
+ */
+export function jsonStringify(input: unknown): string | undefined {
+  const root = resolve(input, '')
+  if (root === OMIT) return undefined
+  const out: string[] = []
+  const stack: TextFrame[] = []
+  const ancestors = new Set<object>()
+  const emit = (value: unknown) => {
+    if (value === null || typeof value !== 'object') {
+      out.push(JSON.stringify(value))
+      return
+    }
+    if (ancestors.has(value)) throw new TypeError('Converting circular structure to JSON')
+    ancestors.add(value)
+    if (Array.isArray(value)) {
+      out.push('[')
+      stack.push({ kind: 'array', source: value, index: 0 })
+    } else {
+      out.push('{')
+      const source = value as Record<string, unknown>
+      stack.push({ kind: 'object', source, keys: Object.keys(source), index: 0, wrote: false })
+    }
+  }
+  emit(root)
+  while (stack.length > 0) {
+    const top = stack[stack.length - 1] as TextFrame
+    if (top.kind === 'array') {
+      if (top.index >= top.source.length) {
+        out.push(']')
+        stack.pop()
+        ancestors.delete(top.source)
+        continue
+      }
+      if (top.index > 0) out.push(',')
+      const index = top.index++
+      const value = resolve(top.source[index], String(index))
+      if (value === OMIT) out.push('null')
+      else emit(value)
+      continue
+    }
+    let descended = false
+    while (top.index < top.keys.length) {
+      const key = top.keys[top.index++] as string
+      const value = resolve(top.source[key], key)
+      if (value === OMIT) continue
+      if (top.wrote) out.push(',')
+      top.wrote = true
+      out.push(JSON.stringify(key), ':')
+      const depth = stack.length
+      emit(value)
+      if (stack.length > depth) {
+        descended = true
+        break
+      }
+    }
+    if (!descended) {
+      out.push('}')
+      stack.pop()
+      ancestors.delete(top.source)
+    }
+  }
+  return out.join('')
+}

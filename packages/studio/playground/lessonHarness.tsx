@@ -112,7 +112,53 @@ function ampliar(projeto: Project, alvo: number): Project {
   return copia
 }
 
-async function carregar(aula: string, chave: string | null, escala: number): Promise<Estado> {
+/**
+ * Uma sequência ÚNICA de `alvo` instruções no corpo do primeiro evento de "Quando acontecer" (o
+ * caso que o Blockly 12 carrega, salva e descarta com recursão no `next`; lote 3, conserto B).
+ * Cada instrução é um "Código avançado JavaScript" de uma peça só, com um texto diferente.
+ */
+function sequencia(projeto: Project, alvo: number): Project {
+  const copia = structuredClone(projeto) as Project & {
+    blocksState?: { blocks?: { blocks?: BlocoSalvo[] } }
+  }
+  const eventos = copia.blocksState?.blocks?.blocks?.find(
+    (bloco) => bloco.type === 'sz_frame_events',
+  )
+  const evento = eventos?.inputs?.CHILDREN?.block
+  const corpo = evento
+    ? Object.entries(evento.inputs ?? {}).find(([, entrada]) => entrada.block)?.[0]
+    : undefined
+  if (!evento || !corpo) throw new Error('Este projeto não tem um evento com corpo para estender.')
+  let fim = evento.inputs?.[corpo]?.block as BlocoSalvo
+  while (fim.next) fim = fim.next.block
+  // Completa ATÉ `alvo` blocos no projeto (o teto do projeto é 10 mil, `MAX_PROJECT_BLOCKS`).
+  let existentes = 0
+  const pendentes: unknown[] = [copia.blocksState]
+  while (pendentes.length > 0) {
+    const atual = pendentes.pop()
+    if (!atual || typeof atual !== 'object') continue
+    const tipo = (atual as { type?: unknown }).type
+    if (typeof tipo === 'string' && tipo.startsWith('sz_')) existentes++
+    for (const valor of Object.values(atual)) pendentes.push(valor)
+  }
+  for (let indice = 0; indice < alvo - existentes; indice++) {
+    const novo: BlocoSalvo = {
+      type: 'sz_adv_raw_js',
+      id: `seq${indice.toString(36)}`,
+      fields: { CODE: `// passo ${indice}` },
+    }
+    fim.next = { block: novo }
+    fim = novo
+  }
+  return copia
+}
+
+async function carregar(
+  aula: string,
+  chave: string | null,
+  escala: number,
+  forma: 'jogo' | 'sequencia' = 'jogo',
+): Promise<Estado> {
   const caminho = caminhoDoManifesto(aula)
   const importar = caminho ? MANIFESTOS[caminho] : undefined
   if (!importar) return { fase: 'erro', recado: `Aula não encontrada: ${aula}` }
@@ -131,7 +177,13 @@ async function carregar(aula: string, chave: string | null, escala: number): Pro
     fase: 'pronta',
     bloco: {
       ...bloco,
-      content: { ...bloco.content, initialProject: ampliar(bloco.content.initialProject, escala) },
+      content: {
+        ...bloco.content,
+        initialProject:
+          forma === 'sequencia'
+            ? sequencia(bloco.content.initialProject, escala)
+            : ampliar(bloco.content.initialProject, escala),
+      },
     },
   }
 }
@@ -158,7 +210,7 @@ export function LessonHarness(): JSX.Element {
       setEstado({ fase: 'erro', recado: 'Faltou ?aula=<curso>/<aula>.' })
       return
     }
-    carregar(pedido.aula, pedido.bloco, pedido.escala)
+    carregar(pedido.aula, pedido.bloco, pedido.escala, pedido.forma)
       .then((proximo) => {
         if (vivo) setEstado(proximo)
       })

@@ -82,9 +82,18 @@ for (const tamanho of TAMANHOS) {
             __aula: { projeto(): { files: Record<string, string>; blocksState: unknown } }
           }
         ).__aula.projeto()
-        return qual === 'script'
-          ? (projeto.files['script.js'] ?? '')
-          : String(JSON.stringify(projeto.blocksState).split('"type":"sz_').length - 1)
+        if (qual === 'script') return projeto.files['script.js'] ?? ''
+        // Sem JSON.stringify: o do Firefox recursa a partir de ~2 mil elos de uma cadeia.
+        let blocos = 0
+        const pendentes: unknown[] = [projeto.blocksState]
+        while (pendentes.length > 0) {
+          const atual = pendentes.pop()
+          if (!atual || typeof atual !== 'object') continue
+          const tipo = (atual as { type?: unknown }).type
+          if (typeof tipo === 'string' && tipo.startsWith('sz_')) blocos++
+          for (const valor of Object.values(atual)) pendentes.push(valor)
+        }
+        return String(blocos)
       }, o)
     const antesDaEdicao = await lerDoProjeto('script')
     const blocosNoProjeto = Number(await lerDoProjeto('blocos'))

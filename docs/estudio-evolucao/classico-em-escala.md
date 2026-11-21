@@ -552,3 +552,44 @@ Uma sequência de ~860 instruções no mesmo corpo derruba o salvar do Python no
 comparação `samePythonWorkspaceProgram` também recursa bloco a bloco. Fica para o lote 3, com a
 medição no editor de verdade, e o comentário de `savedWorkspaceState.ts` deixou de dizer que todo
 estado passa por ali.
+
+## Conserto B: a sequência única de 10 mil blocos (lote 3, 21/11/2026)
+
+**O Python primeiro** (`fce7540e4`): o `rebasePythonWorkspaceState` copia o estado com a
+`jsonPlainCopy` e o `samePythonWorkspaceProgram` tira a apresentação com pilha explícita; o estado
+que vai ao Zappy sai em objetos comuns. Testes de 30 mil e 18 mil blocos reprovam na versão antiga.
+
+**A sequência única no Clássico, medida no navegador.** Para medir, o playground ganhou
+`&forma=sequencia` (`playground/lessonHarness.tsx`): em vez de repetir eventos curtos, completa o
+projeto até N blocos com instruções seguidas ("Código avançado JavaScript") no corpo do primeiro
+evento. Com 10 mil blocos no Chromium 159:
+
+1. **O editor quebrava inteiro** ("A IDE encontrou um erro inesperado"): o seletor da barra que
+   procura blocos 3D (`projectHas3DConsumer`) fazia `JSON.stringify` do estado a cada mudança, e o
+   nativo estoura numa cadeia de 20 mil níveis. Conserto: `jsonStringify` (`blockly/jsonPlainCopy.ts`),
+   o mesmo texto do `JSON.stringify`, sem recursão, com testes diferenciais (embrulhos, `-0`,
+   omitidos, texto com surrogates, ciclos, cadeia de 200 mil níveis). Usado no seletor e nas sete
+   impressões digitais do estado no `BlocklyPanel`.
+2. **Com o editor de pé, apareceu perda de dados calada.** O `load` do Blockly 12 parava no meio: o
+   desenho recursa na cadeia de pais (`queueRender` no gerenciador de desenho) e estoura por volta de
+   2 mil blocos seguidos. O erro virava só um aviso no console, e a regeneração seguinte gravava o
+   workspace parcial: o projeto passava de 10.000 para ~2.150 blocos, sem nada na tela. Conserto
+   (`BlocklyPanel.tsx`): uma restauração que falha trava a gravação do estado dos blocos até uma
+   carga dar certo, limpa o workspace sem gerar eventos e mostra na área de blocos "Não deu para
+   abrir estes blocos. Nada foi perdido...". O código continua editável pela Ponte. Teste:
+   `e2e/classic-long-sequence.spec.ts` (o recado aparece e o projeto continua com os 10.000 blocos;
+   vermelho com o `BlocklyPanel` anterior). A trava vale para qualquer falha de carga, não só para
+   esta.
+
+**Os 10 mil no formato dos jogos seguem abrindo** (eventos com corpo): `classic-scale` com 10.000,
+Chromium 159, abrir 17,7 s, edição de campo chega ao código (`setupStage(500, 360,`), projeto com
+os 10.000 blocos. As cinco aulas protegidas passam.
+
+**O que falta do conserto B, sem enfeite.**
+- Abrir a sequência única no editor de blocos: a cauda adiada (`deferredTail.ts`) solta da cadeia
+  os eventos distantes durante a carga, e por isso o formato dos jogos não esbarra no desenho
+  recursivo; uma sequência dentro de UM corpo não é dividida. Estender a divisão para dentro dos
+  corpos mexe nos ganchos do Blockly que o módulo já adapta, com a guarda de atualização.
+- As migrações antigas (`migrateIfElse`, `migrateValueFields`) clonam por `JSON.parse(JSON.stringify())`
+  e andam o estado com recursão; só rodam em projeto de formato antigo.
+- O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo.

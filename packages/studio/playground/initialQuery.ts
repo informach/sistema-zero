@@ -16,6 +16,10 @@ export const PLAYGROUND_LESSON =
         // `&escala=2000`: repete os eventos do projeto até passar desse número de blocos (para o
         // perfil de escala, `e2e/classic-scale.spec.ts`). Sem ele, o projeto é o da aula.
         escala: Number(initialQuery.get('escala')) || 0,
+        // `&forma=sequencia` (lote 3, conserto B): em vez de repetir eventos curtos, põe a escala
+        // numa sequência ÚNICA de instruções no corpo do primeiro evento.
+        forma:
+          initialQuery.get('forma') === 'sequencia' ? ('sequencia' as const) : ('jogo' as const),
       }
     : null
 

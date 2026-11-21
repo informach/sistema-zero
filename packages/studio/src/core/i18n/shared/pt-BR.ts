@@ -91,6 +91,9 @@ export const ptBR: Record<string, string> = {
   'stage.bigger': 'Jogo maior',
   'stage.smaller': 'Jogo menor',
   'stage.errorMark': 'O jogo parou neste bloco.',
+  'blocks.restoreFailed.title': 'Não deu para abrir estes blocos',
+  'blocks.restoreFailed.body':
+    'Nada foi perdido: o projeto continua como estava. O editor de blocos não conseguiu mostrar este programa, o que acontece, por exemplo, com uma sequência de blocos longa demais. Continue pelo código, no modo Ponte.',
   'blocks.dropToDelete': 'Solte aqui para apagar',
   'blocks.moreBlocks': 'Mais blocos',
   'tour.title': 'Primeiros passos',

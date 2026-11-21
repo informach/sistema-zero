@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from '../blocksStateVersion'
-import { jsonPlainCopy } from '../jsonPlainCopy'
+import { jsonPlainCopy, jsonStringify } from '../jsonPlainCopy'
 import { saveWorkspaceState } from '../savedWorkspaceState'
 import { ensureBlocklyInitialized } from '../setup'
 
@@ -194,5 +194,51 @@ describe('jsonPlainCopy', () => {
       depth++
     }
     expect(depth).toBe(200_000)
+  })
+})
+
+describe('jsonStringify', () => {
+  const casos: Record<string, unknown> = {
+    objeto: { a: 1, b: 'x', c: [1, 'dois', null], d: { e: true } },
+    vazios: { a: {}, b: [], c: '' },
+    omitidos: { a: undefined, b: () => 1, c: Symbol('s'), d: [undefined, () => 2, Symbol('t')] },
+    numeros: { a: -0, b: Number.NaN, c: Number.POSITIVE_INFINITY, d: 1e21, e: 0.1 },
+    textos: { 'chave "com" aspas': 'linha\nnova', unicode: 'olá 🌟  ', solto: '\ud800' },
+    embrulhos: { n: new Number(5), s: new String('ab'), b: new Boolean(true) },
+    toJSON: { data: new Date(0), proprio: { toJSON: (key: string) => `k:${key}` } },
+    lista: [1, [2, [3, [4]]], { x: [] }],
+    raiz: 'só texto',
+    nulo: null,
+    protoNulo: Object.assign(Object.create(null), { a: 1, b: [2] }),
+  }
+  for (const [nome, valor] of Object.entries(casos))
+    test(`igual ao JSON.stringify: ${nome}`, () => {
+      expect(jsonStringify(valor)).toBe(JSON.stringify(valor))
+    })
+
+  test('raiz que o JSON não escreve devolve undefined, como o JSON.stringify', () => {
+    for (const valor of [undefined, () => 1, Symbol('z')])
+      expect(jsonStringify(valor)).toBe(JSON.stringify(valor))
+  })
+
+  test('ciclo lança, referência repetida não', () => {
+    const shared = { n: 1 }
+    expect(jsonStringify({ a: shared, b: shared })).toBe('{"a":{"n":1},"b":{"n":1}}')
+    const loop: Record<string, unknown> = {}
+    loop.self = loop
+    expect(() => jsonStringify(loop)).toThrow(TypeError)
+  })
+
+  test('uma cadeia muito mais funda que a pilha vira texto', () => {
+    const root: Record<string, unknown> = Object.create(null)
+    let cursor = root
+    for (let index = 0; index < 200_000; index++) {
+      const next: Record<string, unknown> = Object.create(null)
+      cursor.next = { block: next }
+      cursor = next
+    }
+    const text = jsonStringify(root) as string
+    expect(text.startsWith('{"next":{"block":{"next":')).toBe(true)
+    expect(text.length).toBe('{"next":{"block":'.length * 200_000 + 2 + '}}'.length * 200_000)
   })
 })
