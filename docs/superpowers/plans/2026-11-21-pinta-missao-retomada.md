@@ -154,16 +154,23 @@ orçamento. Isso não fecha os demais consumidores visuais nem o formato públic
 
 ### Lote imediato da revisão: composição com opacidade
 
-- [ ] Corrigir a condição de equivalência do caminho direto sob pressão quando
+- [x] Corrigir a condição de equivalência do caminho direto sob pressão quando
   há opacidade de camada, sem alterar o caminho rápido nas condições qualificadas.
-- [ ] Reproduzir o achado no renderer anterior, isolar fonte/camada e conservar
+- [x] Reproduzir o achado no renderer anterior, isolar fonte/camada e conservar
   os recibos; comparar contra o cache canônico no Chromium, além do motor nativo.
-- [ ] Acrescentar provas de caminho rápido com opacidade total e de fallback com
+- [x] Acrescentar provas de caminho rápido com opacidade total e de fallback com
   opacidade composta, sem retirar a comparação rigorosa de pixels.
-- [ ] Repetir suíte, navegador e revisão; registrar o custo/limites da guarda e
+- [x] Repetir suíte, navegador e revisão; registrar o custo/limites da guarda e
   commitar separadamente antes de prosseguir às miniaturas e ao minimapa.
 
 A reprodução densa de `8d40b4b1b` já confirmou 36.061 canais diferentes (delta
 máximo 2) na escala 1. Fonte opaca não bastou; camadas opacas eliminaram a
 diferença nos quatro zooms ensaiados. A correção fica em commit próprio para
 separar mudança de armazenamento e condição de composição.
+
+Fechado em `qa/precisao-de-opacidade-2026-11-21/`, no diretório da missão. A guarda
+exige opacidade composta total para o caminho direto; os demais casos conservam
+o cache canônico. A reprodução anterior e as 24 variantes passaram a zero canais
+diferentes. As 192 comparações de imagens e os 12 ensaios da oficina passaram,
+sem ampliar memória ou mudar estilos. Os alvos de latência seguem não qualificados.
+O trabalho volta ao item 2 dos consumidores visuais: miniaturas e minimapa.

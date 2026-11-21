@@ -31,7 +31,7 @@ test('chunks assinados: pixels, animações, pressão e recorte do mundo esparso
     }),
     contentType: 'application/json',
   })
-  expect(result.cases).toHaveLength(32)
+  expect(result.cases).toHaveLength(40)
   for (const entry of result.cases) {
     expect(
       entry.actual,
@@ -46,8 +46,9 @@ test('chunks assinados: pixels, animações, pressão e recorte do mundo esparso
     ).toBe(entry.reference)
     expect(entry.cacheBytes).toBeLessThanOrEqual(32 * 1024 * 1024)
     if (entry.pressure) {
-      expect(entry.rebuilds).toBe(0)
-      expect(entry.cacheBytes).toBe(0)
+      if (entry.directExpected) expect(entry.rebuilds).toBe(0)
+      else expect(entry.rebuilds).toBeGreaterThan(0)
+      expect(entry.cacheBytes).toBe(entry.directExpected ? 0 : entry.chunkBytes)
     }
   }
   expect(result.sparse.logicalCells).toBe(100000000)

@@ -7,7 +7,13 @@ import {
   translatedRegionRenderMap as translated,
 } from '../../scripts/homologacao/regionRendering'
 import { isTileLayer, type RegionTilemapAsset, type TilemapAsset } from '../core/project'
-import { paintTilemapLayers, TileChunkCache, visibleChunks, visibleLayerChunks } from './chunks'
+import {
+  chunkBytes,
+  paintTilemapLayers,
+  TileChunkCache,
+  visibleChunks,
+  visibleLayerChunks,
+} from './chunks'
 import { editRegionMapCells } from './regionMap'
 
 function fixture() {
@@ -104,7 +110,7 @@ for (const [col, row] of [
 ] as const)
   for (const scale of [0.25, 0.5, 1, 2])
     test(`signed direct rendering conserves pixels under pressure at (${col},${row}), scale ${scale}`, () => {
-      const data = integerPixelRenderFixture(fixture()),
+      const data = integerPixelRenderFixture(fixture(), true),
         map = translated(data.map, col, row),
         dense = alignedDenseReference(data.map, col, row),
         reference = paint(data, dense.map, scale, 100, 32 * 1024 * 1024, dense.origin),
@@ -112,6 +118,22 @@ for (const [col, row] of [
       expect(actual.pixels.findIndex((value, index) => value !== reference.pixels[index])).toBe(-1)
       expect(actual.rebuilds).toBe(0)
       expect(actual.bytes).toBe(0)
+    })
+
+for (const [col, row] of [
+  [-64, -64],
+  [-65, -66],
+] as const)
+  for (const scale of [0.25, 0.5, 1, 2])
+    test(`signed layer opacity keeps canonical pixels under pressure at (${col},${row}), scale ${scale}`, () => {
+      const data = integerPixelRenderFixture(fixture()),
+        map = translated(data.map, col, row),
+        dense = alignedDenseReference(data.map, col, row),
+        reference = paint(data, dense.map, scale, 100, 32 * 1024 * 1024, dense.origin),
+        actual = paint(data, map, scale, 100, 1)
+      expect(actual.pixels.findIndex((value, index) => value !== reference.pixels[index])).toBe(-1)
+      expect(actual.rebuilds).toBeGreaterThan(0)
+      expect(actual.bytes).toBe(chunkBytes(16))
     })
 
 test('a huge sparse viewport visits occupied chunks only and honors visibility and layer offsets', () => {

@@ -346,6 +346,9 @@ function directPixels(ctx: CanvasRenderingContext2D, size: number): boolean {
     !Number.isSafeInteger(size) ||
     size < 1 ||
     ctx.imageSmoothingEnabled ||
+    // Backends can quantize tile and chunk blits differently with composed layer alpha.
+    // Keep the canonical intermediate pixels unless layer opacity is exactly full.
+    ctx.globalAlpha !== 1 ||
     ctx.globalCompositeOperation !== 'source-over' ||
     (ctx.filter !== undefined && ctx.filter !== 'none') ||
     ctx.shadowColor !== 'rgba(0, 0, 0, 0)'

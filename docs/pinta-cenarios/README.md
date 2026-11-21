@@ -24,7 +24,8 @@ na prévia e repetiu os ensaios de recursos com o fator de CPU aplicado corretam
 O [renderizador de chunks por regiões](missao-completa-2026-11-18/qa/renderizacao-por-regioes-2026-11-21/README.md)
 já consulta os chunks assinados e conserva os pixels do caminho denso equivalente.
 A revisão isolou uma diferença anterior de composição com opacidade no caminho
-rápido; ela é o lote seguinte. As regiões ainda não foram expostas publicamente.
+rápido, corrigida no [lote de precisão](missao-completa-2026-11-18/qa/precisao-de-opacidade-2026-11-21/README.md).
+As regiões ainda não foram expostas publicamente.
 
 O [checkpoint local de 21/11](missao-completa-2026-11-18/qa/fechamento-local-2026-11-21/README.md)
 registra a pausa solicitada, as publicações JavaScript e Python em staging,

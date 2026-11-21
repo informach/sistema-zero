@@ -12,7 +12,7 @@ global de linha/coluna. Um mundo de 10.000 × 10.000 com dois chunks não produz
 Offsets, visibilidade e opacidade herdados, tilesets por camada, transformações
 e seleção de quadros continuam no mesmo caminho. O cache mantém o teto de
 32 MiB; quando o orçamento é menor que um chunk, permanece a política anterior
-de um único canvas de trabalho, cujo tamanho não entra em `usedBytes`.
+de um único canvas de trabalho, cujo tamanho também entra em `usedBytes`.
 
 `mapCellBounds` concentra os limites lógicos usados pelo renderizador. O arquivo
 de chunks saiu da lista de acesso cru: ele passou a consultar o leitor comum,
@@ -48,11 +48,12 @@ Copiar ou fazer readback da folha não a eliminou. Esses ensaios indicam uma
 diferença de quantização da composição com alpha entre os caminhos deste backend.
 Não se generaliza o resultado para outros navegadores/dispositivos.
 
-Esse achado será corrigido no lote imediatamente seguinte, com uma guarda de
-composição e provas próprias, preservando o caminho rápido nas condições
-qualificadas. A existência desse ponto impede considerar a renderização integral
-ou a missão encerradas. Recibos antigos, imagens, variantes e a configuração com
-o renderizador histórico estão preservados no índice.
+Esse achado foi corrigido no [lote seguinte](../precisao-de-opacidade-2026-11-21/README.md),
+com uma guarda de composição e provas próprias, preservando o caminho rápido nas
+condições qualificadas. O índice deste checkpoint conserva o estado pendente que
+foi observado naquele momento. Recibos antigos, imagens, variantes e a configuração
+com o renderizador histórico estão preservados. Os demais consumidores continuam
+necessários antes de considerar a renderização integral ou a missão encerradas.
 
 ## Verificação deste lote
 

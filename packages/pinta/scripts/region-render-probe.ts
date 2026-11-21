@@ -1,5 +1,10 @@
 import { isTileLayer, type RegionTilemapAsset, type TilemapAsset } from '../src/core/project'
-import { paintTilemapLayers, TileChunkCache, visibleLayerChunks } from '../src/tiles/chunks'
+import {
+  chunkBytes,
+  paintTilemapLayers,
+  TileChunkCache,
+  visibleLayerChunks,
+} from '../src/tiles/chunks'
 import { mapCellBounds } from '../src/tiles/mapCells'
 import { editRegionMapCells } from '../src/tiles/regionMap'
 import {
@@ -169,6 +174,8 @@ export async function runRegionRenderProbe() {
           scale,
           time,
           pressure: false,
+          chunkBytes: chunkBytes(data.tileset.tileSize),
+          directExpected: false,
           difference: difference(actual.pixels, reference.pixels),
           reference: reference.sha256,
           actual: actual.sha256,
@@ -179,30 +186,40 @@ export async function runRegionRenderProbe() {
       }
   }
   // Integer destinations admit the direct path; transformed/downsampled cases above keep chunks.
-  const aligned = integerPixelRenderFixture(data)
-  for (const [col, row] of [
-    [-64, -64],
-    [-65, -66],
-  ] as const) {
-    const map = translatedRegionRenderMap(aligned.map, col, row),
-      dense = alignedDenseRenderReference(aligned.map, col, row)
-    for (const scale of [0.25, 0.5, 1, 2]) {
-      // Storage parity compares the same renderer mode. Cross-mode alpha precision is isolated above.
-      const reference = await paint(aligned, dense.map, scale, 100, 1, dense.origin),
-        actual = await paint(aligned, map, scale, 100, 1)
-      cases.push({
-        col,
-        row,
-        scale,
-        time: 100,
-        pressure: true,
-        difference: difference(actual.pixels, reference.pixels),
-        reference: reference.sha256,
-        actual: actual.sha256,
-        cacheBytes: actual.cacheBytes,
-        rebuilds: actual.rebuilds,
-        pressureBytes: actual.pressureBytes,
-      })
+  for (const fullLayerOpacity of [false, true]) {
+    const aligned = integerPixelRenderFixture(data, fullLayerOpacity)
+    for (const [col, row] of [
+      [-64, -64],
+      [-65, -66],
+    ] as const) {
+      const map = translatedRegionRenderMap(aligned.map, col, row),
+        dense = alignedDenseRenderReference(aligned.map, col, row)
+      for (const scale of [0.25, 0.5, 1, 2]) {
+        const reference = await paint(
+            aligned,
+            dense.map,
+            scale,
+            100,
+            32 * 1024 * 1024,
+            dense.origin,
+          ),
+          actual = await paint(aligned, map, scale, 100, 1)
+        cases.push({
+          col,
+          row,
+          scale,
+          time: 100,
+          pressure: true,
+          chunkBytes: chunkBytes(aligned.tileset.tileSize),
+          directExpected: fullLayerOpacity,
+          difference: difference(actual.pixels, reference.pixels),
+          reference: reference.sha256,
+          actual: actual.sha256,
+          cacheBytes: actual.cacheBytes,
+          rebuilds: actual.rebuilds,
+          pressureBytes: actual.pressureBytes,
+        })
+      }
     }
   }
   const prepared = translatedRegionRenderMap(data.map, -65, -66),

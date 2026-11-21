@@ -48,8 +48,11 @@ globais assinadas. O recorte esparso visita apenas chunks armazenados; leitor po
 camada/frame e cache de 32 MiB. A referência densa de QA mantém o alinhamento
 global e o mesmo orçamento. O lote não ativa a oficina 8. Provas e achado de
 precisão entre composição direta/cache com opacidade de camada estão em
-`qa/renderizacao-por-regioes-2026-11-21/`, no diretório da missão. Esse achado,
-reproduzido no renderer anterior, será corrigido antes dos próximos consumidores.
+`qa/renderizacao-por-regioes-2026-11-21/`, no diretório da missão. Esse achado foi
+corrigido em `qa/precisao-de-opacidade-2026-11-21/`: `directPixels` exige alpha
+composto 1; opacidade parcial conserva chunks canônicos. `usedBytes` inclui o
+scratch. Os casos diretos qualificados continuam sem canvases; não ampliar o
+orçamento nem relaxar igualdade de pixels para admitir uma composição diferente.
 
 O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
 aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax

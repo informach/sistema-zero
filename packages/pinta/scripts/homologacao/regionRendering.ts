@@ -59,13 +59,17 @@ export function makeRegionRenderFixture(
   return { map, tileset, sheet: sheet as unknown as HTMLCanvasElement }
 }
 /** At every tested zoom, the direct path requires integer destinations and no sampled flips. */
-export function integerPixelRenderFixture(data: ReturnType<typeof makeRegionRenderFixture>) {
+export function integerPixelRenderFixture(
+  data: ReturnType<typeof makeRegionRenderFixture>,
+  fullLayerOpacity = false,
+) {
   const map: TilemapAsset = {
     ...data.map,
     layers: data.map.layers.map((layer) => {
       const offsets = {
         offsetX: Math.round((layer.offsetX ?? 0) / 4) * 4,
         offsetY: Math.round((layer.offsetY ?? 0) / 4) * 4,
+        ...(fullLayerOpacity ? { opacity: 1 } : {}),
       }
       return isTileLayer(layer)
         ? { ...layer, ...offsets, cells: layer.cells.map(cellTile) }
