@@ -49,7 +49,9 @@ estivesse homologada. Dependências externas devem ser discriminadas.
 - [x] Executar os 399 gestos no navegador, comparar as fontes e registrar 13 capturas
   de depois, preservando as capturas anteriores; inspeção visual representativa.
 - [x] Aprovar 49 objetivos de estrutura e 17 de execução pelo executor real do servidor.
-- [ ] Completar A4 na página real de homologação: verificar, enviar e concluir.
+- [x] Completar A4 na página real de homologação: verificar, enviar e concluir. Feito em 20/11
+  numa aula de cada curso (`../qa/2026-11-20-studio-casca-staging.md`). O estado de cada seção da
+  missão, a partir de 21/11, está em `mapa-da-missao.md`.
 - [ ] Inventariar capacidades reais dos dez runtimes, executores, IDE e armazenamento.
   Inventário estático dos dez runtimes em `capacidades-dos-runtimes.md`;
   custos medidos por runtime e inventário completo da IDE ainda pendentes.

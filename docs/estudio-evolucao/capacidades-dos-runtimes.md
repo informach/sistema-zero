@@ -8,10 +8,12 @@ Não substitui a linha de base medida exigida pela etapa 0.
 ## Execução, desenho e descarte
 
 Os cinco motores JavaScript abaixo são os runtimes atuais, compostos pelos
-fragmentos das próprias extensões. Não são novos motores. A execução direta
-usa o documento da prévia; a casca entre sites é um caminho opcional e ainda
-não foi ativada no host por esta frente. Não há prova de isolamento de CPU
-desse arranjo no WebKit.
+fragmentos das próprias extensões. Não são novos motores. Desde 21/11/2026 a
+prévia do Clássico roda, no staging, na casca em outro site
+(`STUDIO_CLASSIC_SHELL_ENABLED=1`, conferida logada em
+`../qa/2026-11-21-studio-casca-staging.md`); em produção, e quando a casca não
+responde em 4 s, roda no documento direto. Não há prova de isolamento de CPU
+desse arranjo no WebKit (decisão B4 pendente).
 
 | Runtime | Implementação inspecionada | Recursos e limites existentes | Próxima evidência necessária |
 | --- | --- | --- | --- |
@@ -52,16 +54,20 @@ raylib-python-cffi 6.0.1.0. Não uniformizar esses números por conveniência.
 
 ## Depuração, desempenho e testes do autor
 
-| Capacidade | O que existe | O que não está entregue por este inventário |
-| --- | --- | --- |
-| Erros e mensagens | Captura de execução, mensagens, localização e vínculo com bloco/código nos caminhos implementados | Breakpoints, inspeção de pilha e passo a passo por executor |
-| Desempenho | Contador de FPS no Jogo 2D, orçamentos gráficos 3D e ensaios de laboratório | Profiler opt-in com amostragem, custo medido, comparação e métricas técnicas/pedagógicas nos painéis |
-| Verificação | Objetivos de cursos e executor hospedado, além dos testes internos dos pacotes | Ferramenta genérica para o aluno escrever e executar testes no Clássico e Pro |
-| Cenas | Adaptadores 2D/3D e contratos de cenas em integração | Prova de streaming genérico, prefetch, falha segura, persistência e descarte sob limite de memória |
+Atualizado em 21/11/2026. Os painéis Investigar, Desempenho e Meus testes saíram pela proposta
+aprovada ([`paineis-proposta.md`](paineis-proposta.md)), que tem a tabela do que cada tipo de
+projeto mostra. No Python, conferidos no staging com a distribuição nova
+(`../qa/2026-11-21-studio-casca-staging.md`).
 
-Não apresentar erros localizados como depuração completa, contador de FPS
-como profiler ou verificadores dos cursos como sistema de testes do aluno.
-As capacidades ausentes continuam tarefas de implementação da missão.
+| Capacidade | O que existe | O que ainda não existe |
+| --- | --- | --- |
+| Investigar | Pausar e Avançar 1 quadro na troca de quadro, Valores agora e o caminho até o erro com "Mostrar o bloco" ou "Ir para a linha", nos cinco motores JavaScript e no Python; no Pro, só o caminho até o erro | Breakpoints e passo a passo por linha (fora da proposta aprovada); Pausar e Valores no Pro |
+| Desempenho | Quadros por segundo e tempo de cada quadro; sprites (2D) ou objetos e desenhos por quadro (3D); memória marcada "indisponível" onde o navegador não informa | O custo da medida (< 5% do quadro) medido no navegador |
+| Meus testes | O aluno escreve e roda testes com passos e conferências num palco escondido, até 20 passos e 15 segundos por teste; no Python, testar o programa e testar uma função | Os casos de chave, porta, vida, placar, fim, compilação e tempo, todos provados |
+| Cenas | Adaptadores 2D/3D, fixtures congeladas dos contratos e a prova da exportação 2D | Prova 3D com cenário real; streaming genérico, prefetch, falha segura, persistência e descarte sob limite de memória |
+
+Não apresentar o caminho até o erro como depurador por linha, nem os verificadores dos cursos como
+os testes do aluno.
 
 ## Linha de base ainda necessária
 
