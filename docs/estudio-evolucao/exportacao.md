@@ -49,8 +49,12 @@ impressão SHA-256 de caminhos e bytes tem de bater.
 - **CI** (`.github/workflows/studio-export.yml`): os 14 modelos e um projeto com biblioteca fora do
   grafo, no Linux e no Windows, e um passo final que compara os builds das duas máquinas para os
   projetos com trava.
-- **Windows local, 21/11/2026:** ver
+- **Windows local, 21/11/2026:** 15 de 15, ver
   [`evidencias/exportacao-2026-11-21/`](evidencias/exportacao-2026-11-21/).
+- **CI em `ee82d0dfd`** (run 44944817571, Ubuntu 24.04 e Windows Server 2025): 15 de 15 nas duas
+  máquinas, e o passo de comparação achou o **mesmo build byte a byte** no Linux e no Windows para
+  os 15 projetos (inclusive o que vai sem trava, naquela data). Os hashes do Windows do CI são os
+  mesmos do Windows local: o mesmo ZIP gera o mesmo jogo em três máquinas.
 
 ## O que fica de fora, de propósito
 
