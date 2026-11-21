@@ -35,9 +35,23 @@ manual por SHA completo); os consertos achados aqui foram implantados em seguida
    conectado desenha devagar quando a janela não está à vista); a parte que cabia ao Estúdio era não
    mudar o projeto à toa.
 
+## Achado aberto (sem causa confirmada)
+
+Na segunda cópia do Reino Zero Ultra (a das 78 funções abertas pelo defeito 3, antes do conserto),
+o topo passou a "Erro ao salvar", com a dica "Falha ao salvar projeto: A cópia de recuperação
+completa não pôde ser preparada. Salve ou exporte antes de fechar esta aba." A mensagem vem de
+`state/synchronousExitJournal.ts`: a cópia de recuperação síncrona (a que vai para o
+`localStorage` quando a aba fica escondida ou fecha) tem teto próprio de 2.000.000 de caracteres e
+500 mil nós (`exitJournalCodec.ts`). O Chrome conectado fica com a janela escondida, então o
+salvamento passa por esse caminho. O JSON do exemplo como vem tem 367.092 caracteres; o tamanho do
+projeto aberto (com o estado dos blocos, a IR e o código gerado) não foi medido. Pendente: medir e
+decidir se um projeto desse tamanho deve caber na cópia de recuperação ou salvar por outro caminho
+com a aba escondida. O aviso de alterações não salvas dessa aba também segurou uma navegação.
+
 ## Não conferido aqui
 
-- O mesmo gesto da busca no staging depois do conserto (implantação em andamento ao escrever).
+- O mesmo gesto da busca no staging depois do conserto: community e community-kids já estão em
+  `1750d5881`, mas a aba conferida ficou presa na cópia com "Erro ao salvar" (acima).
 - O Kids (a mesma tela do Estúdio Completo, o mesmo código).
 - A subida para a conta de um projeto de 7 mil blocos medida à parte: o travamento coincidiu com
   ela, mas a causa medida foi a das funções abertas.
