@@ -17,7 +17,7 @@ const cases = [
 ]
 for (const { operation, set } of cases)
   for (const ending of operation === 'move'
-    ? ['cancel', 'external', 'undo', 'host', 'unmount']
+    ? ['cancel', 'external', 'undo', 'host', 'unmount', 'collapse', 'zoom']
     : operation === 'opacity'
       ? ['cancel', 'external', 'undo', 'unmount']
       : ['cancel', 'external', 'undo'])
@@ -80,6 +80,10 @@ for (const { operation, set } of cases)
       } else if (ending === 'cancel') await pointer('cancel')
       else if (ending === 'host') await pointer('move', { x: end.x + 32, y: end.y })
       else if (ending === 'unmount') await page.keyboard.press('u')
+      else if (ending === 'collapse') {
+        await page.keyboard.press('c')
+        await pointer('move', { x: end.x + 8, y: end.y })
+      } else if (ending === 'zoom') await page.keyboard.press('z')
       // CDP ends the native contact on touchCancel; a second touchEnd is invalid.
       if (!(touch && ending === 'cancel')) await pointer('up')
       if (ending === 'undo') {
@@ -99,6 +103,7 @@ for (const { operation, set } of cases)
         body: JSON.stringify({ operation, set, ending, cpuSlowdown: rate, touch, saved: data }),
         contentType: 'application/json',
       })
+
       await info.attach('controle', { body: await page.screenshot(), contentType: 'image/png' })
       await cdp.detach()
     })
@@ -159,3 +164,45 @@ for (const set of [false, true])
       await info.attach('controle', { body: await page.screenshot(), contentType: 'image/png' })
       await cdp.detach()
     })
+
+test('SVG regional de leitura conserva a posição negativa sem modificar o documento público', async ({
+  page,
+}, info) => {
+  const cdp = await page.context().newCDPSession(page),
+    rate = Number(info.project.metadata.cpuSlowdown ?? 1)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate })
+  await page.goto('/?operation=region')
+  const svg = page.getByLabel(COPY.tiles.objectsOverlay),
+    path = page.locator('[data-object-id="qa-negative-object"] path').first()
+  await expect(svg).toHaveAttribute('viewBox', '-64 -64 192 160')
+  await expect(path).toBeVisible()
+  const box = await svg.boundingBox(),
+    shape = await path.boundingBox()
+  if (!box || !shape) throw Error('Objeto regional não apareceu')
+  expect(shape.x + shape.width / 2 - box.x).toBeCloseTo(95.5, 2)
+  expect(shape.y + shape.height / 2 - box.y).toBeCloseTo(127, 2)
+  await expect
+    .poll(async () => JSON.parse((await page.locator('[data-current]').textContent())!).matches)
+    .toBe(true)
+  await page.getByRole('button', { name: 'Conferir salvamento', exact: true }).click()
+  const saved = page.locator('[data-saved]')
+  await expect.poll(async () => JSON.parse((await saved.textContent())!)?.ok).toBe(true)
+  const data = JSON.parse((await saved.textContent())!)
+  expect(data.current).toBe(data.expected)
+  expect(data.persisted).toBe(data.expected)
+  await info.attach('svg-regional-leitura', {
+    body: JSON.stringify({
+      cpuSlowdown: rate,
+      box,
+      shape,
+      saved: data,
+      publicStoreUnchanged: true,
+    }),
+    contentType: 'application/json',
+  })
+  await info.attach('svg-regional-imagem', {
+    body: await svg.screenshot(),
+    contentType: 'image/png',
+  })
+  await cdp.detach()
+})

@@ -25,18 +25,18 @@ import {
   type TilemapObjectLayer,
 } from '../../core/project'
 import { createEditorGesture, type EditorGesture } from '../../state/editorGesture'
+import type { PintaEditorStore } from '../../state/editorStore'
 import type { MapObjectToolId } from '../../state/sessionStore'
+import type { AuthorMap } from '../../tiles/mapCellEdits'
 import {
   addMapObject,
-  createMapObject,
   isPointObject,
   nextObjectName,
   objectAt,
   objectLayerById,
-  snapObjectPoint,
-  snapToGrid,
   updateMapObject,
 } from '../../tiles/mapObjects'
+import { objectEditorSpace } from '../../tiles/objectEditorSpace'
 import {
   insertObjectPoint,
   minObjectPoints,
@@ -75,7 +75,12 @@ interface ShapeDraft {
   points: Point[]
 }
 
-type Gesture = { edit: EditorGesture; layerId: string } & (
+type Gesture = {
+  edit: EditorGesture
+  editor: PintaEditorStore
+  layerId: string
+  contextKey: string
+} & (
   | {
       kind: 'marquee'
       pointerId: number
@@ -129,7 +134,7 @@ const TOUCH_REACH_PX = MAP_EDITOR_LIMITS.touchTargetPx / 2
 const VERTEX_PX = 6
 
 interface MapObjectsOverlayProps {
-  tilemap: TilemapAsset
+  tilemap: AuthorMap
   /** A camada de objetos ativa (`null` = a ativa é de peças: só desenha). */
   activeLayerId: string | null
   /** A camada ativa é de objetos E a ferramenta é de objeto. */
@@ -171,6 +176,7 @@ export function MapObjectsOverlay({
   const { showToast } = useToast()
   const previewSet = new Set(previewIds)
   const svgRef = useRef<SVGSVGElement>(null)
+  const contextKey = JSON.stringify([tool, activeLayerId, interactive, tileSize, pad, scale, snap])
   const gestureRef = useRef<Gesture | null>(null)
   const [marquee, setMarquee] = useState<{
     x: number
@@ -189,7 +195,7 @@ export function MapObjectsOverlay({
     gesture?.edit.cancel()
     setMarquee(null)
   }, [])
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tool/layer/editor changes cancel ownership before the next gesture
+  // biome-ignore lint/correctness/useExhaustiveDependencies: input/geometry/store changes cancel ownership before the next gesture
   useEffect(() => {
     setMarquee(null)
     return () => {
@@ -197,7 +203,7 @@ export function MapObjectsOverlay({
       gestureRef.current = null
       gesture?.edit.cancel()
     }
-  }, [tool, activeLayerId, interactive, editor])
+  }, [contextKey, editor])
   useEffect(() => {
     const cancel = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape' || !gestureRef.current || isTextEntryTarget(event.target)) return
@@ -214,40 +220,15 @@ export function MapObjectsOverlay({
     if (!next) setCursor(null)
   }
 
-  const mapW = tilemap.cols * tileSize
-  const mapH = tilemap.rows * tileSize
-  const ring = pad * tileSize
+  const space = objectEditorSpace(tilemap, activeLayerId, tileSize, pad, snap)
+  const { clampX, clampY, snapEdge, snapPoint } = space
   const unit = 1 / Math.max(scale, 0.0001)
 
   /** Ponteiro → pixels do mapa (pela caixa REAL do svg, como o canvas faz com a dele). */
-  function pointFromEvent(event: PointerEvent<SVGSVGElement>): { x: number; y: number } {
+  function pointFromEvent(event: PointerEvent<SVGSVGElement>): Point | null {
     const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect || rect.width === 0 || rect.height === 0) return { x: 0, y: 0 }
-    const viewW = mapW + 2 * ring
-    const viewH = mapH + 2 * ring
-    return {
-      x:
-        ((event.clientX - rect.left) * viewW) / rect.width -
-        ring -
-        (activeLayerId
-          ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetX
-          : 0),
-      y:
-        ((event.clientY - rect.top) * viewH) / rect.height -
-        ring -
-        (activeLayerId
-          ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetY
-          : 0),
-    }
+    return rect ? space.fromClient({ x: event.clientX, y: event.clientY }, rect) : null
   }
-
-  const clampX = (x: number, width = 0): number => Math.min(Math.max(x, 0), mapW - width)
-  const clampY = (y: number, height = 0): number => Math.min(Math.max(y, 0), mapH - height)
-  /** Canto de retângulo: na linha da grade com o encaixe ligado. */
-  const snapEdge = (value: number): number =>
-    snap ? snapToGrid(value, tileSize) : Math.round(value)
-  /** Ponto: no MEIO da peça com o encaixe ligado ("o ponto está naquela casa"). */
-  const snapPoint = (value: number): number => snapObjectPoint(value, tileSize, snap)
 
   function currentLayer(): TilemapObjectLayer | null {
     const asset = editor.getState().asset
@@ -295,11 +276,16 @@ export function MapObjectsOverlay({
     const state = editor.getState()
     const layer = currentLayer()
     if (state.asset.kind !== 'tilemap' || !layer) return
-    const object = createMapObject({
+    const object = space.createObject({
       name: nextObjectName(layer),
       shape: current.shape,
       ...objectFromWorldPoints(current.points),
     })
+    if (!object) {
+      changeDraft(null)
+      showToast(COPY.scene.gestureRefused)
+      return
+    }
     const next = addMapObject(state.asset, activeLayerId, object)
     changeDraft(null)
     if (next === state.asset) {
@@ -414,6 +400,8 @@ export function MapObjectsOverlay({
       return
     }
     const p = pointFromEvent(event)
+    if (!p) return
+    const context = { edit, editor, layerId: activeLayerId, contextKey }
     // Desenhando uma forma: cada toque é um ponto (nada de arrastar objeto no meio).
     if (draftRef.current && (tool === 'object-polygon' || tool === 'object-polyline')) {
       draftTap(draftRef.current.shape, p)
@@ -449,8 +437,7 @@ export function MapObjectsOverlay({
       if (index >= 0) {
         setVertex({ objectId: selected.id, index })
         gestureRef.current = {
-          edit,
-          layerId: activeLayerId,
+          ...context,
           kind: 'vertex',
           pointerId: event.pointerId,
           base: asset,
@@ -464,8 +451,7 @@ export function MapObjectsOverlay({
     const handle = selected ? handleAt(selected, p.x, p.y) : null
     if (selected && handle) {
       gestureRef.current = {
-        edit,
-        layerId: activeLayerId,
+        ...context,
         kind: 'resize',
         pointerId: event.pointerId,
         base: asset,
@@ -481,8 +467,7 @@ export function MapObjectsOverlay({
       setVertex(null)
       onSelectObject(hit.id, event.shiftKey || event.metaKey || event.ctrlKey)
       gestureRef.current = {
-        edit,
-        layerId: activeLayerId,
+        ...context,
         kind: 'move',
         pointerId: event.pointerId,
         base: asset,
@@ -495,8 +480,7 @@ export function MapObjectsOverlay({
     if (tool === 'object-select') {
       const additive = event.shiftKey || event.ctrlKey || event.metaKey
       gestureRef.current = {
-        edit,
-        layerId: activeLayerId,
+        ...context,
         kind: 'marquee',
         pointerId: event.pointerId,
         base: asset,
@@ -511,7 +495,7 @@ export function MapObjectsOverlay({
       setMarquee({ x: p.x, y: p.y, width: 0, height: 0 })
       return
     }
-    if (p.x < 0 || p.y < 0 || p.x > mapW || p.y > mapH) {
+    if (!space.contains(p)) {
       onSelectObject(null)
       return
     }
@@ -522,12 +506,16 @@ export function MapObjectsOverlay({
     }
     // Ponto ou área nova: nasce já no mapa (via `replace`) e o arrasto continua o gesto.
     const isPoint = tool === 'object-point'
-    const object = createMapObject({
+    const object = space.createObject({
       name: nextObjectName(layer),
       ...(tool === 'object-ellipse' ? { shape: 'ellipse' as const } : {}),
       x: isPoint ? clampX(snapPoint(p.x)) : clampX(snapEdge(p.x)),
       y: isPoint ? clampY(snapPoint(p.y)) : clampY(snapEdge(p.y)),
     })
+    if (!object) {
+      showToast(COPY.scene.gestureRefused)
+      return
+    }
     const next = addMapObject(asset, activeLayerId, object)
     if (next === asset) {
       showToast(COPY.tiles.objectLimit)
@@ -537,8 +525,7 @@ export function MapObjectsOverlay({
     onSelectObject(object.id)
     gestureRef.current = isPoint
       ? {
-          edit,
-          layerId: activeLayerId,
+          ...context,
           kind: 'move',
           pointerId: event.pointerId,
           base: asset,
@@ -547,8 +534,7 @@ export function MapObjectsOverlay({
           origin: { x: object.x, y: object.y },
         }
       : {
-          edit,
-          layerId: activeLayerId,
+          ...context,
           kind: 'create',
           pointerId: event.pointerId,
           base: asset,
@@ -562,34 +548,42 @@ export function MapObjectsOverlay({
     // Sem gesto, com uma forma sendo desenhada: o trecho de prévia segue o ponteiro.
     if (!gesture && draftRef.current) {
       const raw = pointFromEvent(event)
-      setCursor({ x: clampX(snapEdge(raw.x)), y: clampY(snapEdge(raw.y)) })
+      setCursor(raw ? { x: clampX(snapEdge(raw.x)), y: clampY(snapEdge(raw.y)) } : null)
       return
     }
     if (!gesture || event.pointerId !== gesture.pointerId || !activeLayerId) return
-    if (!gesture.edit.isCurrent() || gesture.layerId !== activeLayerId) {
+    if (
+      !gesture.edit.isCurrent() ||
+      gesture.editor !== editor ||
+      gesture.contextKey !== contextKey ||
+      gesture.layerId !== activeLayerId
+    ) {
       cancelGesture()
       return
     }
     const asset = editor.getState().asset
     if (asset.kind !== 'tilemap') return
+    const p = pointFromEvent(event)
+    if (!p) {
+      cancelGesture()
+      return
+    }
     if (gesture.kind === 'vertex') {
-      const raw = pointFromEvent(event)
       // Sempre a partir do objeto do COMEÇO do arrasto: o ponto não escorrega por arredondar.
       const patch = moveObjectPoint(gesture.origin, gesture.index, {
-        x: clampX(snapEdge(raw.x)),
-        y: clampY(snapEdge(raw.y)),
+        x: clampX(snapEdge(p.x)),
+        y: clampY(snapEdge(p.y)),
       })
       if (patch) apply(updateMapObject(asset, activeLayerId, gesture.objectId, patch))
       return
     }
     if (gesture.kind === 'marquee') {
-      const p = pointFromEvent(event),
-        r = {
-          x: Math.min(p.x, gesture.start.x),
-          y: Math.min(p.y, gesture.start.y),
-          width: Math.abs(p.x - gesture.start.x),
-          height: Math.abs(p.y - gesture.start.y),
-        }
+      const r = {
+        x: Math.min(p.x, gesture.start.x),
+        y: Math.min(p.y, gesture.start.y),
+        width: Math.abs(p.x - gesture.start.x),
+        height: Math.abs(p.y - gesture.start.y),
+      }
       setMarquee(r)
       const ids = (currentLayer()?.objects ?? [])
         .filter((o) => {
@@ -607,7 +601,6 @@ export function MapObjectsOverlay({
     }
     const object = currentLayer()?.objects.find((o) => o.id === gesture.objectId)
     if (!object) return
-    const p = pointFromEvent(event)
     if (gesture.kind === 'move') {
       const rawX = gesture.origin.x + (p.x - gesture.start.x)
       const rawY = gesture.origin.y + (p.y - gesture.start.y)
@@ -662,7 +655,12 @@ export function MapObjectsOverlay({
       setMarquee(null)
       return
     }
-    if (!gesture.edit.isCurrent() || gesture.layerId !== activeLayerId) {
+    if (
+      !gesture.edit.isCurrent() ||
+      gesture.editor !== editor ||
+      gesture.contextKey !== contextKey ||
+      gesture.layerId !== activeLayerId
+    ) {
       cancelGesture()
       return
     }
@@ -678,8 +676,8 @@ export function MapObjectsOverlay({
         if (
           !apply(
             updateMapObject(asset, activeLayerId, object.id, {
-              width: object.width || Math.min(tileSize, mapW - object.x) || 1,
-              height: object.height || Math.min(tileSize, mapH - object.y) || 1,
+              width: object.width || Math.min(tileSize, space.right - object.x) || 1,
+              height: object.height || Math.min(tileSize, space.bottom - object.y) || 1,
             }),
           )
         )
@@ -690,10 +688,7 @@ export function MapObjectsOverlay({
     gesture.edit.finish()
   }
 
-  const activeLayer = activeLayerId ? tilemap.layers.find((l) => l.id === activeLayerId) : null
-  const layerOffset = activeLayer
-    ? effectiveLayer(tilemap, activeLayer)
-    : { offsetX: 0, offsetY: 0 }
+  const layerOffset = space.offset
   const layers = tilemap.layers
     .filter(isObjectLayer)
     .filter((layer) => isLayerShown(tilemap, layer))
@@ -704,7 +699,7 @@ export function MapObjectsOverlay({
       aria-label={COPY.tiles.objectsOverlay}
       data-pin-objects-overlay=""
       className="absolute inset-0 block h-full w-full"
-      viewBox={`${-ring} ${-ring} ${mapW + 2 * ring} ${mapH + 2 * ring}`}
+      viewBox={space.viewBox}
       preserveAspectRatio="none"
       style={{
         pointerEvents: interactive ? 'auto' : 'none',
@@ -724,18 +719,8 @@ export function MapObjectsOverlay({
       <title>{COPY.tiles.objectsOverlay}</title>
       {marquee ? (
         <rect
-          x={
-            marquee.x +
-            (activeLayerId
-              ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetX
-              : 0)
-          }
-          y={
-            marquee.y +
-            (activeLayerId
-              ? effectiveLayer(tilemap, tilemap.layers.find((l) => l.id === activeLayerId)!).offsetY
-              : 0)
-          }
+          x={marquee.x + layerOffset.offsetX}
+          y={marquee.y + layerOffset.offsetY}
           width={marquee.width}
           height={marquee.height}
           fill="var(--color-pin-accent)"

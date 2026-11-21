@@ -327,5 +327,18 @@ frações e offsets. O documento por regiões continua interno: movimento SVG,
 modelos do store e recursos/IO permanecem pendentes. A grade inteira foi medida
 na prova esparsa, sem otimização misturada à correção geométrica. Não fecha o item
 3 ou a etapa macro 6. Seguir para o restante da geometria/consumidores e perfil.
+
+Lote verificado: espaço de edição dos objetos. Reproduzir o SVG de
+objetos regionais recortado na origem errada; centralizar bounds locais, conversão
+do ponteiro, snap e criação estrita. Integrar ao overlay atual, conservando a
+aritmética legada, as classes e os eventos protegidos por revisão. O documento 8
+continua interno; não usar um store falso ou cast de asset para simular sua edição
+pública antes do IO. Qualificar geometria pura regional, render de leitura no SVG
+e regressão de gestos/objeto da oficina pública antes do commit.
+Provas em `qa/espaco-de-objetos-2026-11-21/`: 2.558 testes do Pinta, 69 focados,
+126 ensaios do controlador e 33 da oficina. O módulo anterior reproduz 12 falhas
+de perda de layout/zoom, com seis controles positivos. A revisão acrescentou o
+cancelamento por mudança do contexto geométrico, sem restaurar revisão externa.
+O SVG regional foi exercitado apenas em leitura; não fecha a etapa macro.
 - [ ] Prosseguir ao perfil de render estabilizado e aos adaptadores/IO, conforme
   os itens anteriores. O contrato público e as etapas macro continuam abertos.

@@ -107,6 +107,13 @@ Isso não ativa edição pública 8: movimento SVG de objetos, recursos, modelos
 store/IO e adaptadores continuam no plano. Provas em
 `qa/geometria-do-papel-2026-11-21/`, no diretório da missão.
 
+O SVG de objetos usa `tiles/objectEditorSpace.ts`: origem global, limites locais
+com offsets e frações regionais; o ramo denso conserva a aritmética anterior.
+O overlay aceita leitura regional, mas o store público continua denso. Sem layout
+válido, o gesto é cancelado; mudar zoom, anel, snap, ferramenta, camada ou store
+também cancela somente a própria revisão. Não simular edição 8 por casts.
+Provas em `qa/espaco-de-objetos-2026-11-21/`, no diretório da missão.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

@@ -12,6 +12,7 @@ import {
   createTilesetAsset,
   isObjectLayer,
   type PintaAsset,
+  type RegionTilemapAsset,
 } from '../../src/core/project'
 import { createClipboardStore } from '../../src/state/clipboardStore'
 import { createEditorStore } from '../../src/state/editorStore'
@@ -20,7 +21,8 @@ import { createMapSetEditorStore } from '../../src/state/mapSetEditorStore'
 import { createPaletteLibraryStore } from '../../src/state/paletteLibraryStore'
 import { createPintaPersistence } from '../../src/state/persistence'
 import { createSessionStore } from '../../src/state/sessionStore'
-import { addMapObject, createMapObject } from '../../src/tiles/mapObjects'
+import { addMapObject, createMapObject, createRegionMapObject } from '../../src/tiles/mapObjects'
+import { expandRegionMap, prepareMapRegions } from '../../src/tiles/regionMap'
 import { createMapSet } from '../../src/tiles/sets'
 import { addObjectLayer } from '../../src/tiles/tilemapOps'
 
@@ -58,9 +60,10 @@ async function start() {
     ),
     seed = set ? createMapSet(base, { col: 0, row: 0, cols: 8, rows: 6 }, 16, 'conjunto') : base
   await persistence.persistAssets([art, seed])
-  const initial = await persistence.loadAssetById(seed.id)
-  if (!initial || (initial.kind !== 'tilemap' && initial.kind !== 'map-set'))
+  const loaded = await persistence.loadAssetById(seed.id)
+  if (!loaded || (loaded.kind !== 'tilemap' && loaded.kind !== 'map-set'))
     throw Error('Documento inicial não reabriu')
+  const initial = loaded
   let expected: PintaAsset = initial
   const normalize = (asset: PintaAsset) =>
       JSON.stringify({
@@ -100,6 +103,24 @@ async function start() {
       requestInitialIntent: () => {},
       takeInitialAssetId: () => null,
     }
+  // Read-only internal input, distinct from the public store; no fake schema-8 writer.
+  let regionView: RegionTilemapAsset | null = null
+  if (operation === 'region') {
+    const prepared = prepareMapRegions(initialMap)
+    if (!prepared.ok) throw Error(prepared.reason)
+    const expanded = expandRegionMap(prepared.map, { col: -4, row: -4, cols: 12, rows: 10 })
+    if (!expanded.ok) throw Error(expanded.reason)
+    const object = createRegionMapObject({
+      id: 'qa-negative-object',
+      name: 'casa negativa',
+      x: -24.25,
+      y: -8.5,
+      width: 16,
+      height: 16,
+    })
+    if (!object) throw Error('Objeto regional inválido')
+    regionView = addMapObject(expanded.map, objectLayer.id, object)
+  }
   async function hash(text: string) {
     return Array.from(
       new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))),
@@ -110,7 +131,9 @@ async function start() {
     const state = useSyncExternalStore(editor.subscribe, editor.getState),
       root = useSyncExternalStore(outer.subscribe, outer.getState),
       [saved, setSaved] = useState<unknown>(null),
-      [mounted, setMounted] = useState(true)
+      [mounted, setMounted] = useState(true),
+      [collapsed, setCollapsed] = useState(false),
+      [zoom, setZoom] = useState(2)
     useEffect(() => {
       const key = (event: KeyboardEvent) => {
         if (event.key === 'r') {
@@ -118,6 +141,8 @@ async function start() {
           outer.getState().replace(expected)
         }
         if (event.key === 'u') setMounted(false)
+        if (event.key === 'c') setCollapsed(true)
+        if (event.key === 'z') setZoom(4)
       }
       window.addEventListener('keydown', key)
       return () => window.removeEventListener('keydown', key)
@@ -151,23 +176,31 @@ async function start() {
                     />
                   </div>
                 ) : (
-                  <div style={{ position: 'relative', width: 256, height: 192 }}>
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: collapsed ? 0 : (regionView?.cols ?? asset.cols) * 16 * zoom,
+                      height: (regionView?.rows ?? asset.rows) * 16 * zoom,
+                    }}
+                  >
                     <MapObjectsOverlay
-                      tilemap={asset}
+                      tilemap={regionView ?? asset}
                       activeLayerId={objectLayer.id}
-                      interactive
+                      interactive={!regionView}
                       tool={
-                        operation === 'draft'
-                          ? 'object-polygon'
-                          : operation === 'create'
-                            ? 'object-rect'
-                            : operation === 'point'
-                              ? 'object-point'
-                              : 'object-select'
+                        regionView
+                          ? null
+                          : operation === 'draft'
+                            ? 'object-polygon'
+                            : operation === 'create'
+                              ? 'object-rect'
+                              : operation === 'point'
+                                ? 'object-point'
+                                : 'object-select'
                       }
                       tileSize={16}
                       pad={0}
-                      scale={2}
+                      scale={zoom}
                       snap={false}
                       selectedObjectId={
                         ['resize', 'vertex', 'insert'].includes(operation)

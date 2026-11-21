@@ -57,7 +57,8 @@ function setup(set = false, refuse = false, operation: Operation = 'move') {
     editor = facade?.store ?? outer,
     stop = facade ? outer.subscribe(() => facade.store.setState(facade.read(), true)) : () => {},
     session = createSessionStore(),
-    viewLayer = (root.kind === 'map-set' ? root.map : base).layers.find(isObjectLayer)!
+    viewLayer = (root.kind === 'map-set' ? root.map : base).layers.find(isObjectLayer)!,
+    geometry = { pad: 0, scale: 1, snap: false }
   function Host() {
     const asset = useEditor((state) => state.asset)
     if (asset.kind !== 'tilemap') throw Error('Mapa esperado')
@@ -76,9 +77,9 @@ function setup(set = false, refuse = false, operation: Operation = 'move') {
                 : 'object-select'
         }
         tileSize={16}
-        pad={0}
-        scale={1}
-        snap={false}
+        pad={geometry.pad}
+        scale={geometry.scale}
+        snap={geometry.snap}
         selectedObjectId={
           ['resize', 'vertex', 'insert'].includes(operation) ? viewLayer.objects[0]!.id : null
         }
@@ -86,13 +87,14 @@ function setup(set = false, refuse = false, operation: Operation = 'move') {
       />
     )
   }
-  const view = render(
-      <ToastProvider>
-        <PintaEditorProvider value={{ editor, session }}>
-          <Host />
-        </PintaEditorProvider>
-      </ToastProvider>,
-    ),
+  const element = () => (
+    <ToastProvider>
+      <PintaEditorProvider value={{ editor, session }}>
+        <Host />
+      </PintaEditorProvider>
+    </ToastProvider>
+  )
+  const view = render(element()),
     svg = view.container.querySelector('svg')!
   Object.defineProperty(svg, 'getBoundingClientRect', {
     configurable: true,
@@ -104,7 +106,18 @@ function setup(set = false, refuse = false, operation: Operation = 'move') {
     clientX: x,
     clientY: y,
   })
-  return { outer, editor, svg, at, stop, view }
+  return {
+    outer,
+    editor,
+    svg,
+    at,
+    stop,
+    view,
+    reconfigure: (patch: Partial<typeof geometry>) => {
+      Object.assign(geometry, patch)
+      view.rerender(element())
+    },
+  }
 }
 
 function content(asset: PintaAsset): PintaAsset {
@@ -253,3 +266,61 @@ for (const set of [false, true])
         stop()
       }
     })
+
+for (const set of [false, true])
+  test(`perder o layout do palco cancela o movimento inteiro, conjunto=${set}`, async () => {
+    const { outer, svg, at, stop } = setup(set),
+      base = outer.getState().asset
+    try {
+      fireEvent.pointerDown(svg, at(32))
+      fireEvent.pointerMove(svg, at(48))
+      expect(content(outer.getState().asset)).not.toEqual(content(base))
+      Object.defineProperty(svg, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => ({ left: 0, top: 0, width: 0, height: 96 }),
+      })
+      fireEvent.pointerMove(svg, at(56))
+      fireEvent.pointerUp(svg, at(56))
+      expect(content(outer.getState().asset)).toEqual(content(base))
+      expect(outer.getState().canUndo).toBe(false)
+      await outer.getState().flush()
+    } finally {
+      stop()
+    }
+  })
+
+for (const set of [false, true])
+  for (const patch of [{ scale: 2 }, { pad: 1 }, { snap: true }])
+    test(`mudar a geometria durante o gesto descarta o movimento, conjunto=${set}, ${JSON.stringify(patch)}`, async () => {
+      const { outer, svg, at, stop, reconfigure } = setup(set),
+        base = outer.getState().asset
+      try {
+        fireEvent.pointerDown(svg, at(32))
+        fireEvent.pointerMove(svg, at(48))
+        reconfigure(patch)
+        fireEvent.pointerUp(svg, at(56))
+        expect(content(outer.getState().asset)).toEqual(content(base))
+        expect(outer.getState().canUndo).toBe(false)
+        await outer.getState().flush()
+      } finally {
+        stop()
+      }
+    })
+
+for (const set of [false, true])
+  test(`mudar a geometria não restaura o gesto sobre uma revisão externa, conjunto=${set}`, async () => {
+    const { outer, svg, at, stop, reconfigure } = setup(set)
+    try {
+      fireEvent.pointerDown(svg, at(32))
+      fireEvent.pointerMove(svg, at(48))
+      act(() => outer.getState().replace({ ...outer.getState().asset, name: 'revisao-externa' }))
+      const adopted = outer.getState().asset
+      reconfigure({ scale: 2 })
+      fireEvent.pointerUp(svg, at(56))
+      expect(outer.getState().asset).toBe(adopted)
+      expect(outer.getState().canUndo).toBe(false)
+      await outer.getState().flush()
+    } finally {
+      stop()
+    }
+  })
