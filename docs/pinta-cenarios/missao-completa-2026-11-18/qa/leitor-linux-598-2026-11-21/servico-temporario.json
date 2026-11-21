@@ -1,0 +1,31 @@
+{
+  "nativeQualificationMode": "actual temporary staging Worker and R2; completion verified separately",
+  "localNativeStartup": "prior same-host startup spawn UNKNOWN; not repeated",
+  "promoterSourceMatchesPreviousQualified": true,
+  "currentFrameBytes": 25979243,
+  "previousQualifiedFrameBytes": 26007007,
+  "currentLocalMemoryMeasurement": false,
+  "versionId": "82648b78-c4b5-4b5b-8219-a09969a39b3d",
+  "workerName": "sistemazero-python-promoter-staging-0148c46f6c0a",
+  "operatorOrigin": "https://sistemazero-python-promoter-staging-0148c46f6c0a.helena-bcc.workers.dev",
+  "bundleSha256": "3418e689a53b16229c3d3916fcf3613c72b210276869c9a4b07f8693112a3369",
+  "remoteBundleSha256": "3418e689a53b16229c3d3916fcf3613c72b210276869c9a4b07f8693112a3369",
+  "bindings": [
+    {
+      "name": "CF_VERSION_METADATA",
+      "type": "version_metadata"
+    },
+    {
+      "name": "OPERATOR_HMAC_KEY",
+      "type": "secret_text"
+    },
+    {
+      "bucket_name": "sistemazero-studio-artifacts-staging",
+      "name": "PYTHON_RUNTIME",
+      "type": "r2_bucket"
+    }
+  ],
+  "unauthorizedStatus": 401,
+  "expiresAt": 1795231404838,
+  "activationPerformed": false
+}

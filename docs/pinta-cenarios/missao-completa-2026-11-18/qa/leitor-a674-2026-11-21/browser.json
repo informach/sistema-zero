@@ -1,0 +1,295 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/pro-workspace-performance.spec.ts",
+      "--project=chromium",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\playwright.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-a674-pro-performance-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-a674-pro-performance-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/preview-security\\.spec\\.ts/",
+          "/preview-executes-user-code\\.spec\\.ts/",
+          "/preview-shell(?:-performance|-hostile)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/",
+          "/student-tests\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-a674-pro-performance-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/reload-flush\\.spec\\.ts/",
+          "/preview-shell(?:-performance)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/",
+          "/student-tests\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-a674-pro-performance-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5513",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.8154.6 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "permissions": ["clipboard-read", "clipboard-write"]
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "bun run serve:e2e",
+      "env": {
+        "E2E_PORT": "5513"
+      },
+      "url": "http://127.0.0.1:5513",
+      "reuseExistingServer": false,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "pro-workspace-performance.spec.ts",
+      "file": "pro-workspace-performance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "large source ZIP uses one disposable worker and retains canonical buffers on success and abort",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1397,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "\u001b[33m[INEFFECTIVE_DYNAMIC_IMPORT] \u001b[0msrc/core/scene3d/referencias.ts is dynamically imported by src/state/proWorkspaceOperations.ts, src/state/projectStore.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/Scene3DAssetRow.tsx, src/core/projectAssets.ts, src/core/raylibMediaPaths.ts, ..., dynamic import will not move module into another chunk.\n\n"
+                    },
+                    {
+                      "text": "[plugin builtin:vite-reporter] \u001b[33;1m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[0m\n"
+                    },
+                    {
+                      "text": "\u001b[33m[INEFFECTIVE_DYNAMIC_IMPORT] \u001b[0msrc/core/proProject.ts is dynamically imported by src/components/code/pro-templates/index.ts but also statically imported by src/core/index.ts, src/core/projectFactory.ts, dynamic import will not move module into another chunk.\n\n"
+                    },
+                    {
+                      "text": "\u001b[33m[INEFFECTIVE_DYNAMIC_IMPORT] \u001b[0m../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/learning/python-project-checks.ts, ../core/src/learning/python-project-execution.ts, ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ..., dynamic import will not move module into another chunk.\n\n"
+                    },
+                    {
+                      "text": "\u001b[33m[INEFFECTIVE_DYNAMIC_IMPORT] \u001b[0msrc/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectIndexedRecovery.ts, src/state/projectValidation.ts but also statically imported by src/project-migrations/localV3.ts, src/project-migrations/localV3Recovery.ts, src/state/editableCloudProject.ts, src/state/projectRecoverySources.ts, src/state/projectStore.ts, ..., dynamic import will not move module into another chunk.\n\n"
+                    },
+                    {
+                      "text": "\u001b[33m[INEFFECTIVE_DYNAMIC_IMPORT] \u001b[0msrc/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, dynamic import will not move module into another chunk.\n\n"
+                    },
+                    {
+                      "text": "\u001b[33m[PLUGIN_TIMINGS] \u001b[0mYour build spent significant time in plugins. Here is a breakdown:\n  - vite:build-import-analysis (69%)\n  - vite:css-post (14%)\n  - rolldown:vite-resolve (6%)\n  - vite:css (5%)\nSee https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.\n\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-21T03:15:36.071Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c5ba324de19c133cdf61-79a227f01bd390be0149",
+          "file": "pro-workspace-performance.spec.ts",
+          "line": 85,
+          "column": 1
+        },
+        {
+          "title": "records real editor input, openings and layout lifecycle with controlled services",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23631,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"openingP95\":705.658199999998,\"inputFrameP95\":31.91500000655651,\"layoutP95\":134.54789999999775}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-21T03:15:59.679Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c5ba324de19c133cdf61-ca08091d14edc096c055",
+          "file": "pro-workspace-performance.spec.ts",
+          "line": 111,
+          "column": 1
+        },
+        {
+          "title": "modular 60-file project: typing, panels, first search answer and analysis across files",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7178,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "{\"typingP95\":33.195000007748604,\"panelP95\":27.59000000357628,\"dockP95\":28.444999992847443,\"searchP95\":12.474999994039536,\"brokenAfter\":360,\"fixedAfter\":356}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-21T03:16:23.320Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c5ba324de19c133cdf61-f8a33bf55c628066966e",
+          "file": "pro-workspace-performance.spec.ts",
+          "line": 281,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-21T03:15:14.061Z",
+    "duration": 76862.806,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

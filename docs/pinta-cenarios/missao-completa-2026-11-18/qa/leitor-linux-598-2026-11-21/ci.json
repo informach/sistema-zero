@@ -1,0 +1,14 @@
+{
+  "run": 44856177200,
+  "source": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "workflowCommit": "0b2cd34c1955f2bffca7f17350e07a999afe3b53",
+  "artifact": "pinta-staging-runtime-image-598824bd1",
+  "profile": "da629a58eb2369b6e1363c6ca26b75b156f9e519b7097f843b7b770e1174e4f6",
+  "event": "push",
+  "status": "completed",
+  "activated": false,
+  "conclusion": "success",
+  "artifactId": 14687792562,
+  "artifactBytes": 509030942,
+  "artifactExpiresAt": "2026-11-22T02:39:29Z"
+}

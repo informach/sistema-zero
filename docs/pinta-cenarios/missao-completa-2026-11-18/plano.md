@@ -149,6 +149,19 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   O perfil combinado é da629a58…; o guest Windows 5667348a… manteve os 126 arquivos
   idênticos após a correção de tipos. Esta fonte exige sua própria qualificação
   Linux e CI geral. Não houve ativação de distribuição, política ou gravador.
+  Continuidade de 21/11: a imagem da fonte 598824bd1 passou na qualificação
+  Linux 44856177200 e foi armazenada no registry com digest relido. O guest
+  exato f7c60430… passou nos 112 ensaios nativos. A promoção inativa conferiu
+  128 objetos no R2; quatro leituras independentes e a remoção do serviço/chave
+  temporários foram confirmadas. A política 12220f13… está empacotada no leitor
+  de rollback, cuja declaração de escrita permanece 4. Ver
+  `qa/leitor-linux-598-2026-11-21/`. Os três novos commits publicados até a674
+  foram integrados conservando JavaScript, Worker e guest idênticos à fonte
+  qualificada; passaram 11 controles, incluindo os novos ensaios do Pro e os
+  tipos completos. Ver `qa/leitor-a674-2026-11-21/`. O gravador isolado 8d5573f97
+  também passou em sete controles e conserva os mesmos artefatos do leitor;
+  ele ainda precisa receber a política final e aguardar o rollout A. A CI geral
+  do leitor final, ativação, ciclo autenticado e rollback continuam pendentes.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

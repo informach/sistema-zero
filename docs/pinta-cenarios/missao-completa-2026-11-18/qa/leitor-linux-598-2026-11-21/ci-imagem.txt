@@ -1,0 +1,1500 @@
+﻿2026-11-21T02:29:34.0753645Z Current runner version: '2.338.2'
+2026-11-21T02:29:34.0778135Z ##[group]Runner Image Provisioner
+2026-11-21T02:29:34.0778898Z Hosted Compute Agent
+2026-11-21T02:29:34.0779474Z Version: 20261111.635
+2026-11-21T02:29:34.0780113Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-21T02:29:34.0781145Z Build Date: 2026-11-11T01:49:01Z
+2026-11-21T02:29:34.0782200Z Worker ID: {9b5619b3-c779-407a-a0b2-3bd99be45ef3}
+2026-11-21T02:29:34.0782837Z Region: westus3
+2026-11-21T02:29:34.0783327Z Cloud: Azure
+2026-11-21T02:29:34.0783834Z ##[endgroup]
+2026-11-21T02:29:34.0785297Z ##[group]Operating System
+2026-11-21T02:29:34.0785882Z Ubuntu
+2026-11-21T02:29:34.0786339Z 24.04.5
+2026-11-21T02:29:34.0786778Z LTS
+2026-11-21T02:29:34.0787366Z ##[endgroup]
+2026-11-21T02:29:34.0787897Z ##[group]Runner Image
+2026-11-21T02:29:34.0788450Z Image: ubuntu-24.04
+2026-11-21T02:29:34.0788967Z Version: 20261116.376.1
+2026-11-21T02:29:34.0790138Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261116.376/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-21T02:29:34.0791819Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261116.376
+2026-11-21T02:29:34.0792699Z ##[endgroup]
+2026-11-21T02:29:34.0793659Z ##[group]GITHUB_TOKEN Permissions
+2026-11-21T02:29:34.0795665Z Contents: read
+2026-11-21T02:29:34.0796188Z Metadata: read
+2026-11-21T02:29:34.0796670Z ##[endgroup]
+2026-11-21T02:29:34.0799065Z Secret source: Actions
+2026-11-21T02:29:34.0799905Z Cache mode: write
+2026-11-21T02:29:34.0800776Z Prepare workflow directory
+2026-11-21T02:29:34.1368722Z Prepare all required actions
+2026-11-21T02:29:34.1417410Z Getting action download info
+2026-11-21T02:29:34.4686934Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-11-21T02:29:34.6259100Z Download action repository 'oven-sh/setup-bun@v2' (SHA:0c5077e51419868618aeaa5fe8019c62421857d6)
+2026-11-21T02:29:35.1258097Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-11-21T02:29:35.1944023Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-21T02:29:35.3669213Z Complete job name: image
+2026-11-21T02:29:35.4476072Z ##[group]Run actions/checkout@v5
+2026-11-21T02:29:35.4476823Z with:
+2026-11-21T02:29:35.4477228Z   ref: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:29:35.4477756Z   persist-credentials: false
+2026-11-21T02:29:35.4478215Z   repository: informach/sistema-zero
+2026-11-21T02:29:35.4482360Z   token: ***
+2026-11-21T02:29:35.4482733Z   ssh-strict: true
+2026-11-21T02:29:35.4483106Z   ssh-user: git
+2026-11-21T02:29:35.4483460Z   clean: true
+2026-11-21T02:29:35.4483840Z   sparse-checkout-cone-mode: true
+2026-11-21T02:29:35.4484292Z   fetch-depth: 1
+2026-11-21T02:29:35.4484675Z   fetch-tags: false
+2026-11-21T02:29:35.4485059Z   show-progress: true
+2026-11-21T02:29:35.4485441Z   lfs: false
+2026-11-21T02:29:35.4485787Z   submodules: false
+2026-11-21T02:29:35.4486172Z   set-safe-directory: true
+2026-11-21T02:29:35.4486633Z   allow-unsafe-pr-checkout: false
+2026-11-21T02:29:35.4487320Z env:
+2026-11-21T02:29:35.4487754Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:29:35.4488662Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:29:35.4489445Z ##[endgroup]
+2026-11-21T02:29:35.6811359Z Syncing repository: informach/sistema-zero
+2026-11-21T02:29:35.6814174Z ##[group]Getting Git version info
+2026-11-21T02:29:35.6815442Z Working directory is '/home/runner/work/sistema-zero/sistema-zero'
+2026-11-21T02:29:35.6817284Z [command]/usr/bin/git version
+2026-11-21T02:29:35.6884397Z git version 2.56.1
+2026-11-21T02:29:35.6903966Z ##[endgroup]
+2026-11-21T02:29:35.6918706Z Temporarily overriding HOME='/home/runner/work/_temp/957f30e2-812b-4ed2-8f10-421364e84d82' before making global git config changes
+2026-11-21T02:29:35.6921339Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-21T02:29:35.6933526Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sistema-zero/sistema-zero
+2026-11-21T02:29:35.6976205Z Deleting the contents of '/home/runner/work/sistema-zero/sistema-zero'
+2026-11-21T02:29:35.6982693Z ##[group]Initializing the repository
+2026-11-21T02:29:35.6985809Z [command]/usr/bin/git init /home/runner/work/sistema-zero/sistema-zero
+2026-11-21T02:29:35.7094894Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-21T02:29:35.7096361Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-21T02:29:35.7097233Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-21T02:29:35.7097898Z hint: call:
+2026-11-21T02:29:35.7098453Z hint:
+2026-11-21T02:29:35.7099015Z hint: 	git config --global init.defaultBranch <name>
+2026-11-21T02:29:35.7099572Z hint:
+2026-11-21T02:29:35.7100095Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-21T02:29:35.7101863Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-21T02:29:35.7103255Z hint:
+2026-11-21T02:29:35.7103824Z hint: 	git branch -m <name>
+2026-11-21T02:29:35.7104277Z hint:
+2026-11-21T02:29:35.7104818Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-21T02:29:35.7106199Z Initialized empty Git repository in /home/runner/work/sistema-zero/sistema-zero/.git/
+2026-11-21T02:29:35.7126412Z [command]/usr/bin/git remote add origin https://github.com/informach/sistema-zero
+2026-11-21T02:29:35.7164394Z ##[endgroup]
+2026-11-21T02:29:35.7166043Z ##[group]Disabling automatic garbage collection
+2026-11-21T02:29:35.7167320Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-21T02:29:35.7194055Z ##[endgroup]
+2026-11-21T02:29:35.7195311Z ##[group]Setting up auth
+2026-11-21T02:29:35.7200456Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-21T02:29:35.7231021Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-21T02:29:35.7548375Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-21T02:29:35.7609904Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-21T02:29:35.7812809Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-21T02:29:35.7843764Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-21T02:29:35.8022398Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-21T02:29:35.8057709Z ##[endgroup]
+2026-11-21T02:29:35.8058987Z ##[group]Fetching the repository
+2026-11-21T02:29:35.8070367Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:21.9758686Z From https://github.com/informach/sistema-zero
+2026-11-21T02:30:21.9759845Z  * branch              598824bd1403fbb4723b77d5662d996a584aa0ea -> FETCH_HEAD
+2026-11-21T02:30:21.9762171Z ##[endgroup]
+2026-11-21T02:30:21.9762718Z ##[group]Determining the checkout info
+2026-11-21T02:30:21.9763288Z ##[endgroup]
+2026-11-21T02:30:21.9771558Z [command]/usr/bin/git sparse-checkout disable
+2026-11-21T02:30:21.9813480Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-21T02:30:21.9846450Z ##[group]Checking out the ref
+2026-11-21T02:30:21.9852253Z [command]/usr/bin/git checkout --progress --force 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:23.4216834Z Updating files:  15% (4561/29623)
+2026-11-21T02:30:23.9294698Z Updating files:  16% (4740/29623)
+2026-11-21T02:30:24.0197288Z Updating files:  17% (5036/29623)
+2026-11-21T02:30:24.4324117Z Updating files:  17% (5082/29623)
+2026-11-21T02:30:24.8736345Z Updating files:  18% (5333/29623)
+2026-11-21T02:30:25.0352017Z Updating files:  19% (5629/29623)
+2026-11-21T02:30:25.3572619Z Updating files:  19% (5760/29623)
+2026-11-21T02:30:25.5434324Z Updating files:  20% (5925/29623)
+2026-11-21T02:30:25.6187397Z Updating files:  21% (6221/29623)
+2026-11-21T02:30:25.7025146Z Updating files:  22% (6518/29623)
+2026-11-21T02:30:25.7625196Z Updating files:  23% (6814/29623)
+2026-11-21T02:30:25.8206074Z Updating files:  24% (7110/29623)
+2026-11-21T02:30:25.8451576Z Updating files:  25% (7406/29623)
+2026-11-21T02:30:25.9035002Z Updating files:  26% (7702/29623)
+2026-11-21T02:30:26.0207214Z Updating files:  27% (7999/29623)
+2026-11-21T02:30:26.0641165Z Updating files:  27% (8171/29623)
+2026-11-21T02:30:26.1764876Z Updating files:  28% (8295/29623)
+2026-11-21T02:30:26.2653697Z Updating files:  29% (8591/29623)
+2026-11-21T02:30:26.3387677Z Updating files:  30% (8887/29623)
+2026-11-21T02:30:26.4161143Z Updating files:  31% (9184/29623)
+2026-11-21T02:30:26.5123777Z Updating files:  32% (9480/29623)
+2026-11-21T02:30:26.6812707Z Updating files:  33% (9776/29623)
+2026-11-21T02:30:26.7687123Z Updating files:  34% (10072/29623)
+2026-11-21T02:30:26.7912975Z Updating files:  35% (10369/29623)
+2026-11-21T02:30:26.8092607Z Updating files:  36% (10665/29623)
+2026-11-21T02:30:26.8230482Z Updating files:  37% (10961/29623)
+2026-11-21T02:30:26.8354767Z Updating files:  38% (11257/29623)
+2026-11-21T02:30:26.8470556Z Updating files:  39% (11553/29623)
+2026-11-21T02:30:26.8612284Z Updating files:  40% (11850/29623)
+2026-11-21T02:30:26.8780994Z Updating files:  41% (12146/29623)
+2026-11-21T02:30:26.9081051Z Updating files:  42% (12442/29623)
+2026-11-21T02:30:26.9944185Z Updating files:  43% (12738/29623)
+2026-11-21T02:30:27.0087014Z Updating files:  44% (13035/29623)
+2026-11-21T02:30:27.0193148Z Updating files:  45% (13331/29623)
+2026-11-21T02:30:27.0226649Z Updating files:  45% (13560/29623)
+2026-11-21T02:30:27.0370504Z Updating files:  46% (13627/29623)
+2026-11-21T02:30:27.0545736Z Updating files:  47% (13923/29623)
+2026-11-21T02:30:27.0680812Z Updating files:  48% (14220/29623)
+2026-11-21T02:30:27.0784329Z Updating files:  49% (14516/29623)
+2026-11-21T02:30:27.0918754Z Updating files:  50% (14812/29623)
+2026-11-21T02:30:27.1070755Z Updating files:  51% (15108/29623)
+2026-11-21T02:30:27.1228078Z Updating files:  52% (15404/29623)
+2026-11-21T02:30:27.1459061Z Updating files:  53% (15701/29623)
+2026-11-21T02:30:27.2020135Z Updating files:  54% (15997/29623)
+2026-11-21T02:30:27.2365405Z Updating files:  55% (16293/29623)
+2026-11-21T02:30:27.2506330Z Updating files:  56% (16589/29623)
+2026-11-21T02:30:27.2639133Z Updating files:  57% (16886/29623)
+2026-11-21T02:30:27.2775265Z Updating files:  58% (17182/29623)
+2026-11-21T02:30:27.2882117Z Updating files:  59% (17478/29623)
+2026-11-21T02:30:27.3015946Z Updating files:  60% (17774/29623)
+2026-11-21T02:30:27.3188569Z Updating files:  61% (18071/29623)
+2026-11-21T02:30:27.3374461Z Updating files:  62% (18367/29623)
+2026-11-21T02:30:27.3587228Z Updating files:  63% (18663/29623)
+2026-11-21T02:30:27.3741575Z Updating files:  64% (18959/29623)
+2026-11-21T02:30:27.3913421Z Updating files:  65% (19255/29623)
+2026-11-21T02:30:27.4033671Z Updating files:  66% (19552/29623)
+2026-11-21T02:30:27.4281946Z Updating files:  67% (19848/29623)
+2026-11-21T02:30:27.4458125Z Updating files:  68% (20144/29623)
+2026-11-21T02:30:27.4587499Z Updating files:  69% (20440/29623)
+2026-11-21T02:30:27.4716759Z Updating files:  70% (20737/29623)
+2026-11-21T02:30:27.4912017Z Updating files:  71% (21033/29623)
+2026-11-21T02:30:27.5058546Z Updating files:  72% (21329/29623)
+2026-11-21T02:30:27.5191614Z Updating files:  73% (21625/29623)
+2026-11-21T02:30:27.5328943Z Updating files:  74% (21922/29623)
+2026-11-21T02:30:27.5458987Z Updating files:  75% (22218/29623)
+2026-11-21T02:30:27.5588637Z Updating files:  76% (22514/29623)
+2026-11-21T02:30:27.5707316Z Updating files:  77% (22810/29623)
+2026-11-21T02:30:27.5877879Z Updating files:  78% (23106/29623)
+2026-11-21T02:30:27.6085131Z Updating files:  79% (23403/29623)
+2026-11-21T02:30:27.6244991Z Updating files:  80% (23699/29623)
+2026-11-21T02:30:27.6458947Z Updating files:  81% (23995/29623)
+2026-11-21T02:30:27.6652886Z Updating files:  82% (24291/29623)
+2026-11-21T02:30:27.6751270Z Updating files:  83% (24588/29623)
+2026-11-21T02:30:27.7038132Z Updating files:  84% (24884/29623)
+2026-11-21T02:30:27.7204587Z Updating files:  85% (25180/29623)
+2026-11-21T02:30:27.7928689Z Updating files:  86% (25476/29623)
+2026-11-21T02:30:27.8292031Z Updating files:  87% (25773/29623)
+2026-11-21T02:30:27.8426052Z Updating files:  88% (26069/29623)
+2026-11-21T02:30:27.8522922Z Updating files:  89% (26365/29623)
+2026-11-21T02:30:27.8625212Z Updating files:  90% (26661/29623)
+2026-11-21T02:30:27.8918402Z Updating files:  91% (26957/29623)
+2026-11-21T02:30:27.9417062Z Updating files:  92% (27254/29623)
+2026-11-21T02:30:27.9593171Z Updating files:  93% (27550/29623)
+2026-11-21T02:30:27.9873653Z Updating files:  94% (27846/29623)
+2026-11-21T02:30:28.0116418Z Updating files:  95% (28142/29623)
+2026-11-21T02:30:28.0192209Z Updating files:  96% (28439/29623)
+2026-11-21T02:30:28.0341233Z Updating files:  96% (28537/29623)
+2026-11-21T02:30:28.0598630Z Updating files:  97% (28735/29623)
+2026-11-21T02:30:28.0758101Z Updating files:  98% (29031/29623)
+2026-11-21T02:30:28.0933794Z Updating files:  99% (29327/29623)
+2026-11-21T02:30:28.0934541Z Updating files: 100% (29623/29623)
+2026-11-21T02:30:28.0934836Z Updating files: 100% (29623/29623), done.
+2026-11-21T02:30:28.1271243Z Note: switching to '598824bd1403fbb4723b77d5662d996a584aa0ea'.
+2026-11-21T02:30:28.1271671Z
+2026-11-21T02:30:28.1271872Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-21T02:30:28.1272350Z changes and commit them, and you can discard any commits you make in this
+2026-11-21T02:30:28.1272829Z state without impacting any branches by switching back to a branch.
+2026-11-21T02:30:28.1273129Z
+2026-11-21T02:30:28.1273330Z If you want to create a new branch to retain commits you create, you may
+2026-11-21T02:30:28.1274014Z do so (now or later) by using -c with the switch command. Example:
+2026-11-21T02:30:28.1274263Z
+2026-11-21T02:30:28.1274387Z   git switch -c <new-branch-name>
+2026-11-21T02:30:28.1274573Z
+2026-11-21T02:30:28.1274671Z Or undo this operation with:
+2026-11-21T02:30:28.1274837Z
+2026-11-21T02:30:28.1274920Z   git switch -
+2026-11-21T02:30:28.1275055Z
+2026-11-21T02:30:28.1275258Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-21T02:30:28.1275556Z
+2026-11-21T02:30:28.1275798Z HEAD is now at 598824bd fix(pinta): preserve runtime contracts while integrating staging
+2026-11-21T02:30:28.1443142Z ##[endgroup]
+2026-11-21T02:30:28.1486528Z [command]/usr/bin/git log -1 --format=%H
+2026-11-21T02:30:28.1515199Z 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:28.1522872Z ##[group]Removing auth
+2026-11-21T02:30:28.1526898Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-21T02:30:28.1557951Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-21T02:30:28.1788773Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-21T02:30:28.1811210Z http.https://github.com/.extraheader
+2026-11-21T02:30:28.1825578Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-21T02:30:28.1849469Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-21T02:30:28.2089490Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-21T02:30:28.2121806Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-21T02:30:28.2360756Z ##[endgroup]
+2026-11-21T02:30:28.2595108Z ##[group]Run oven-sh/setup-bun@v2
+2026-11-21T02:30:28.2595392Z with:
+2026-11-21T02:30:28.2595620Z   bun-version: 1.3.11
+2026-11-21T02:30:28.2595856Z   no-cache: false
+2026-11-21T02:30:28.2598630Z   token: ***
+2026-11-21T02:30:28.2598843Z env:
+2026-11-21T02:30:28.2599106Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:28.2599645Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:30:28.2600108Z ##[endgroup]
+2026-11-21T02:30:28.6400659Z Cache hit for: bun-7/QmryP/e10nHn0ivgSAK3UdqOg=
+2026-11-21T02:30:29.8180719Z Received 35349284 of 35349284 (100.0%), 36.5 MBs/sec
+2026-11-21T02:30:29.8181830Z Cache Size: ~34 MB (35349284 B)
+2026-11-21T02:30:29.8212641Z [command]/usr/bin/tar -xf /home/runner/work/_temp/7c638529-9501-4938-94c9-cc131bef9aa9/cache.tzst -P -C /home/runner/work/sistema-zero/sistema-zero --use-compress-program unzstd
+2026-11-21T02:30:29.9653483Z Cache restored successfully
+2026-11-21T02:30:29.9672692Z [command]/home/runner/.bun/bin/bun --revision
+2026-11-21T02:30:29.9714576Z 1.3.11+af24e281e
+2026-11-21T02:30:29.9719812Z Using a cached version of Bun: 1.3.11+af24e281e
+2026-11-21T02:30:29.9875322Z ##[group]Run actions/setup-node@v4
+2026-11-21T02:30:29.9875628Z with:
+2026-11-21T02:30:29.9875832Z   node-version: 24
+2026-11-21T02:30:29.9876048Z   always-auth: false
+2026-11-21T02:30:29.9876259Z   check-latest: false
+2026-11-21T02:30:29.9879017Z   token: ***
+2026-11-21T02:30:29.9879215Z env:
+2026-11-21T02:30:29.9879466Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:29.9879985Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:30:29.9880625Z ##[endgroup]
+2026-11-21T02:30:30.1333846Z Found in cache @ /opt/hostedtoolcache/node/24.22.3/x64
+2026-11-21T02:30:30.1334623Z (node:2450) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-21T02:30:30.1335338Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-21T02:30:30.1337284Z ##[group]Environment details
+2026-11-21T02:30:30.5367809Z node: v24.22.3
+2026-11-21T02:30:30.5368225Z npm: 11.19.1
+2026-11-21T02:30:30.5368554Z yarn: 1.22.22
+2026-11-21T02:30:30.5369611Z ##[endgroup]
+2026-11-21T02:30:30.5488948Z ##[group]Run test "$(git rev-parse HEAD)" = "$PINTA_SOURCE_SHA"
+2026-11-21T02:30:30.5489555Z test "$(git rev-parse HEAD)" = "$PINTA_SOURCE_SHA"
+2026-11-21T02:30:30.5489977Z bun install --frozen-lockfile
+2026-11-21T02:30:30.5513652Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:30:30.5513959Z env:
+2026-11-21T02:30:30.5514241Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:30.5514771Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:30:30.5515245Z ##[endgroup]
+2026-11-21T02:30:30.5626506Z bun install v1.3.11 (af24e281)
+2026-11-21T02:30:30.5805996Z Resolving dependencies
+2026-11-21T02:30:30.5807681Z Resolved, downloaded and extracted [2]
+2026-11-21T02:30:40.1096378Z
+2026-11-21T02:30:40.1111384Z + @biomejs/biome@2.4.16
+2026-11-21T02:30:40.1112008Z + @gltf-transform/core@4.5.1
+2026-11-21T02:30:40.1112472Z + @gltf-transform/extensions@4.5.1
+2026-11-21T02:30:40.1113059Z + @gltf-transform/functions@4.5.1
+2026-11-21T02:30:40.1113482Z + @napi-rs/canvas@1.0.0
+2026-11-21T02:30:40.1113842Z + @opentui/core@0.3.0
+2026-11-21T02:30:40.1114205Z + @types/bun@1.3.11
+2026-11-21T02:30:40.1114541Z + sharp@0.35.3
+2026-11-21T02:30:40.1114867Z + zod@4.3.6
+2026-11-21T02:30:40.1115059Z
+2026-11-21T02:30:40.1115298Z 2931 packages installed [9.55s]
+2026-11-21T02:30:40.1798576Z ##[group]Run bun run --cwd packages/studio check:scene3d-runtime
+2026-11-21T02:30:40.1799074Z bun run --cwd packages/studio check:scene3d-runtime
+2026-11-21T02:30:40.1817334Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:30:40.1817600Z env:
+2026-11-21T02:30:40.1817864Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:40.1818398Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:30:40.1818847Z ##[endgroup]
+2026-11-21T02:30:40.2284201Z $ bun scripts/generate-scene3d-runtime.ts --check
+2026-11-21T02:30:40.3683875Z SCENE3D_RUNTIME: 514763 caracteres, 3 imports Three compartilhados, SHA-256 49b330d51fafa31845c53ef94a8de7ad53d26155575121ad9105021a32a7e912.
+2026-11-21T02:30:40.4583407Z SCENE3D_PRO_RUNTIME: 515000 caracteres, 3 imports Three compartilhados, SHA-256 c2f73c7775d8a0b330c6dc6e3719f6ff37769fb6c565bb2f2bfd8135d9c8c84a.
+2026-11-21T02:30:40.4696711Z ##[group]Run bun run build:image
+2026-11-21T02:30:40.4697011Z bun run build:image
+2026-11-21T02:30:40.4710391Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:30:40.4710753Z env:
+2026-11-21T02:30:40.4711046Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:30:40.4711564Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:30:40.4712020Z ##[endgroup]
+2026-11-21T02:30:40.4768030Z $ bun run check:validation-profile && docker build --load --platform linux/amd64 --provenance=false --tag sistemazero-studio-runtime:verify .
+2026-11-21T02:30:40.4796877Z $ bun scripts/validation-profile.ts --check
+2026-11-21T02:30:40.5614582Z Studio runtime validation profile verified.
+2026-11-21T02:30:41.1146931Z #0 building with "default" instance using docker driver
+2026-11-21T02:30:41.1147250Z
+2026-11-21T02:30:41.1147459Z #1 [internal] load build definition from Dockerfile
+2026-11-21T02:30:41.1148136Z #1 transferring dockerfile: 1.49kB done
+2026-11-21T02:30:41.1148524Z #1 DONE 0.0s
+2026-11-21T02:30:41.1148700Z
+2026-11-21T02:30:41.1149180Z #2 [internal] load metadata for docker.io/library/node:22.17.0-bookworm-slim
+2026-11-21T02:30:41.2976127Z #2 ...
+2026-11-21T02:30:41.2976467Z
+2026-11-21T02:30:41.2976868Z #3 [auth] library/node:pull token for registry-1.docker.io
+2026-11-21T02:30:41.2977302Z #3 DONE 0.0s
+2026-11-21T02:30:41.2977443Z
+2026-11-21T02:30:41.2977736Z #4 [auth] cloudflare/sandbox:pull token for registry-1.docker.io
+2026-11-21T02:30:41.2978152Z #4 DONE 0.0s
+2026-11-21T02:30:41.4468574Z
+2026-11-21T02:30:41.4469844Z #5 [internal] load metadata for docker.io/cloudflare/sandbox:0.10.3
+2026-11-21T02:30:41.6004281Z #5 DONE 0.6s
+2026-11-21T02:30:41.6004520Z
+2026-11-21T02:30:41.6004918Z #2 [internal] load metadata for docker.io/library/node:22.17.0-bookworm-slim
+2026-11-21T02:30:41.7290436Z #2 DONE 0.8s
+2026-11-21T02:30:41.8511495Z
+2026-11-21T02:30:41.8512292Z #6 [internal] load .dockerignore
+2026-11-21T02:30:41.8512803Z #6 transferring context: 2B done
+2026-11-21T02:30:41.8513062Z #6 DONE 0.0s
+2026-11-21T02:30:41.8513192Z
+2026-11-21T02:30:41.8513336Z #7 [internal] load build context
+2026-11-21T02:30:41.8513639Z #7 transferring context: 1.03MB done
+2026-11-21T02:30:41.8513919Z #7 DONE 0.0s
+2026-11-21T02:30:41.8514045Z
+2026-11-21T02:30:41.8514526Z #8 FROM docker.io/cloudflare/sandbox:0.10.3@sha256:180814e61d1e0d14dda758913ecbd19cba2e696437f3fe4e408888418ff24a97
+2026-11-21T02:30:41.8515417Z #8 resolve docker.io/cloudflare/sandbox:0.10.3@sha256:180814e61d1e0d14dda758913ecbd19cba2e696437f3fe4e408888418ff24a97 done
+2026-11-21T02:30:41.8516224Z #8 sha256:3ff62170ae8b5c9380d16cf0886ab30c510f064300412a24f33d3a05a8b72209 7.08kB / 7.08kB done
+2026-11-21T02:30:41.8516947Z #8 sha256:40d16f30db405106ef8074779bdf41f012465c2a785bbeaa2eab9f2081099b47 14.68MB / 29.74MB 0.1s
+2026-11-21T02:30:41.8517634Z #8 sha256:21470dd875446d651ad0a37245d4245de26b89d112ffe22ede5d6c4514bc3d4f 0B / 47.55MB 0.1s
+2026-11-21T02:30:41.8518311Z #8 sha256:96d5cad17abadf30277bc5b5c3486f679d6ab6112a624b13b5eb7dc7303f8405 0B / 492B 0.1s
+2026-11-21T02:30:41.8519015Z #8 sha256:180814e61d1e0d14dda758913ecbd19cba2e696437f3fe4e408888418ff24a97 3.66kB / 3.66kB done
+2026-11-21T02:30:42.0403297Z #8 sha256:40d16f30db405106ef8074779bdf41f012465c2a785bbeaa2eab9f2081099b47 29.74MB / 29.74MB 0.1s done
+2026-11-21T02:30:42.0404758Z #8 sha256:21470dd875446d651ad0a37245d4245de26b89d112ffe22ede5d6c4514bc3d4f 3.15MB / 47.55MB 0.2s
+2026-11-21T02:30:42.0406105Z #8 sha256:96d5cad17abadf30277bc5b5c3486f679d6ab6112a624b13b5eb7dc7303f8405 492B / 492B 0.2s done
+2026-11-21T02:30:42.0408380Z #8 extracting sha256:40d16f30db405106ef8074779bdf41f012465c2a785bbeaa2eab9f2081099b47 0.1s
+2026-11-21T02:30:42.0410814Z #8 sha256:a5c9b75d174e24bf32529f3df59af88c0468e3d32151ffc39cba6f55a7b2b5d4 0B / 130B 0.2s
+2026-11-21T02:30:42.0412876Z #8 sha256:333deb6ca6ce78a50628ba6b9ff25cd58069a23607f2274d06543c5ef8f649f1 0B / 45.21MB 0.2s
+2026-11-21T02:30:42.1509048Z #8 sha256:21470dd875446d651ad0a37245d4245de26b89d112ffe22ede5d6c4514bc3d4f 24.12MB / 47.55MB 0.4s
+2026-11-21T02:30:42.1511224Z #8 sha256:a5c9b75d174e24bf32529f3df59af88c0468e3d32151ffc39cba6f55a7b2b5d4 130B / 130B 0.2s done
+2026-11-21T02:30:42.1512925Z #8 sha256:333deb6ca6ce78a50628ba6b9ff25cd58069a23607f2274d06543c5ef8f649f1 42.99MB / 45.21MB 0.4s
+2026-11-21T02:30:42.1521585Z #8 sha256:f4d5ed23b2dfc9bdc219545718c44755ce9c00eb6700df2d4d1d3a6fc05a91e2 2.99MB / 2.99MB 0.4s done
+2026-11-21T02:30:42.1523335Z #8 sha256:9fd87c92bec57e4c409163d244f6c794a62d46a72feabb163a87c0642a9cf397 0B / 203B 0.4s
+2026-11-21T02:30:42.2510885Z #8 sha256:21470dd875446d651ad0a37245d4245de26b89d112ffe22ede5d6c4514bc3d4f 47.55MB / 47.55MB 0.5s done
+2026-11-21T02:30:42.2512486Z #8 sha256:333deb6ca6ce78a50628ba6b9ff25cd58069a23607f2274d06543c5ef8f649f1 45.21MB / 45.21MB 0.4s done
+2026-11-21T02:30:42.2513884Z #8 sha256:9fd87c92bec57e4c409163d244f6c794a62d46a72feabb163a87c0642a9cf397 203B / 203B 0.4s done
+2026-11-21T02:30:42.2515313Z #8 sha256:689b16d5bc715a2f464cc15ac9399604296e7b4c3efedac6035aa81cd05ad28d 1.05MB / 39.45MB 0.5s
+2026-11-21T02:30:42.2516553Z #8 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 0B / 32B 0.5s
+2026-11-21T02:30:42.2517961Z #8 sha256:d95c93aeae3bbd1e6d8359207abe888f87a23b637d1df44bf15d42a3e070861c 0B / 39.52MB 0.5s
+2026-11-21T02:30:42.3580665Z #8 sha256:689b16d5bc715a2f464cc15ac9399604296e7b4c3efedac6035aa81cd05ad28d 7.34MB / 39.45MB 0.6s
+2026-11-21T02:30:42.3581901Z #8 sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 32B / 32B 0.6s done
+2026-11-21T02:30:42.3583045Z #8 sha256:d95c93aeae3bbd1e6d8359207abe888f87a23b637d1df44bf15d42a3e070861c 7.34MB / 39.52MB 0.6s
+2026-11-21T02:30:42.3585333Z #8 sha256:6878324923ad8cda7c36c45231dc9f200c504469a53f044960dc9538ac1c85ed 0B / 37.18kB 0.6s
+2026-11-21T02:30:42.4619577Z #8 sha256:689b16d5bc715a2f464cc15ac9399604296e7b4c3efedac6035aa81cd05ad28d 22.02MB / 39.45MB 0.7s
+2026-11-21T02:30:42.4622775Z #8 sha256:d95c93aeae3bbd1e6d8359207abe888f87a23b637d1df44bf15d42a3e070861c 14.68MB / 39.52MB 0.7s
+2026-11-21T02:30:42.4623691Z #8 sha256:6878324923ad8cda7c36c45231dc9f200c504469a53f044960dc9538ac1c85ed 37.18kB / 37.18kB 0.6s done
+2026-11-21T02:30:42.4624538Z #8 sha256:efe67ab478173b277922976da1a33b122b2dfef88bcb39b234fd06680f6d9246 74.89kB / 74.89kB 0.7s done
+2026-11-21T02:30:42.6087145Z #8 sha256:689b16d5bc715a2f464cc15ac9399604296e7b4c3efedac6035aa81cd05ad28d 39.45MB / 39.45MB 0.8s done
+2026-11-21T02:30:42.6089122Z #8 sha256:d95c93aeae3bbd1e6d8359207abe888f87a23b637d1df44bf15d42a3e070861c 39.52MB / 39.52MB 0.8s done
+2026-11-21T02:30:42.6090758Z #8 sha256:a12b53f031fc06fc672b0c3484c9b6c90b3ab017a1be98d08ddc4d6a2755a432 10.49MB / 19.56MB 0.8s
+2026-11-21T02:30:42.6092680Z #8 sha256:d731e5ce5f993936a0e3d74c01efe18e8d7ee6681c21b8ee68e1a3d4c3901811 0B / 99B 0.8s
+2026-11-21T02:30:42.7257409Z #8 sha256:a12b53f031fc06fc672b0c3484c9b6c90b3ab017a1be98d08ddc4d6a2755a432 19.56MB / 19.56MB 0.8s done
+2026-11-21T02:30:42.7259043Z #8 sha256:d731e5ce5f993936a0e3d74c01efe18e8d7ee6681c21b8ee68e1a3d4c3901811 99B / 99B 0.8s done
+2026-11-21T02:30:43.0414466Z #8 extracting sha256:40d16f30db405106ef8074779bdf41f012465c2a785bbeaa2eab9f2081099b47 1.0s done
+2026-11-21T02:30:43.1437682Z #8 extracting sha256:21470dd875446d651ad0a37245d4245de26b89d112ffe22ede5d6c4514bc3d4f
+2026-11-21T02:30:44.8142512Z #8 extracting sha256:21470dd875446d651ad0a37245d4245de26b89d112ffe22ede5d6c4514bc3d4f 1.6s done
+2026-11-21T02:30:47.0908914Z #8 extracting sha256:96d5cad17abadf30277bc5b5c3486f679d6ab6112a624b13b5eb7dc7303f8405
+2026-11-21T02:30:47.2078059Z #8 extracting sha256:96d5cad17abadf30277bc5b5c3486f679d6ab6112a624b13b5eb7dc7303f8405 done
+2026-11-21T02:30:47.2080389Z #8 extracting sha256:a5c9b75d174e24bf32529f3df59af88c0468e3d32151ffc39cba6f55a7b2b5d4 done
+2026-11-21T02:30:47.2082532Z #8 extracting sha256:333deb6ca6ce78a50628ba6b9ff25cd58069a23607f2274d06543c5ef8f649f1
+2026-11-21T02:30:47.8649321Z #8 extracting sha256:333deb6ca6ce78a50628ba6b9ff25cd58069a23607f2274d06543c5ef8f649f1 0.7s done
+2026-11-21T02:30:48.1868542Z #8 extracting sha256:f4d5ed23b2dfc9bdc219545718c44755ce9c00eb6700df2d4d1d3a6fc05a91e2
+2026-11-21T02:30:48.7277761Z #8 extracting sha256:f4d5ed23b2dfc9bdc219545718c44755ce9c00eb6700df2d4d1d3a6fc05a91e2 0.5s done
+2026-11-21T02:30:48.8721149Z #8 ...
+2026-11-21T02:30:48.8722160Z
+2026-11-21T02:30:48.8723517Z #9 [stage-0  1/22] FROM docker.io/library/node:22.17.0-bookworm-slim@sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0
+2026-11-21T02:30:48.8724816Z #9 resolve docker.io/library/node:22.17.0-bookworm-slim@sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0 done
+2026-11-21T02:30:48.8725655Z #9 sha256:358a55f9683d8444a810bf36ff1ea4f60522f55a82cada25f7eabdf79e445226 1.93kB / 1.93kB done
+2026-11-21T02:30:48.8726366Z #9 sha256:1c7ae5960f8925bfc3f6b2537e9ffaca9024f76a2ed32adb1fde4c672f9f9bba 6.79kB / 6.79kB done
+2026-11-21T02:30:48.8727082Z #9 sha256:b04ce4ae4e95b522112c2e5c52f781471a5cbc3b594527bcddedee9bc48c03a0 6.49kB / 6.49kB done
+2026-11-21T02:30:48.8727829Z #9 sha256:3da95a905ed546f99c4564407923a681757d89651a388ec3f1f5e9bf5ed0b39d 28.23MB / 28.23MB 1.0s done
+2026-11-21T02:30:48.8728561Z #9 sha256:c9718143803045d1084eb7607eae89227f62ce7322c88fdfd8460fe46577ad87 49.02MB / 49.02MB 1.1s done
+2026-11-21T02:30:48.8729300Z #9 sha256:0b420cf1c884b28cd6eba2c65c39c5bd34d1fe5b2042c81a31ed01bc9d2a5a89 3.31kB / 3.31kB 0.9s done
+2026-11-21T02:30:48.8730013Z #9 extracting sha256:3da95a905ed546f99c4564407923a681757d89651a388ec3f1f5e9bf5ed0b39d 1.1s done
+2026-11-21T02:30:48.8731413Z #9 sha256:58e444f52c3d7cb258c746eca4f3d19c33fa66e7944aee7f4943c551676bc86f 1.71MB / 1.71MB 1.0s done
+2026-11-21T02:30:48.8732143Z #9 sha256:045e1270451bb1fde446fa30c9e8dd3bb15abe59f4bdcb9ac40018b37224f140 447B / 447B 1.0s done
+2026-11-21T02:30:48.8733089Z #9 extracting sha256:0b420cf1c884b28cd6eba2c65c39c5bd34d1fe5b2042c81a31ed01bc9d2a5a89 done
+2026-11-21T02:30:48.8733926Z #9 extracting sha256:c9718143803045d1084eb7607eae89227f62ce7322c88fdfd8460fe46577ad87 1.5s done
+2026-11-21T02:30:48.8734687Z #9 extracting sha256:58e444f52c3d7cb258c746eca4f3d19c33fa66e7944aee7f4943c551676bc86f 0.0s done
+2026-11-21T02:30:48.8735367Z #9 extracting sha256:045e1270451bb1fde446fa30c9e8dd3bb15abe59f4bdcb9ac40018b37224f140 done
+2026-11-21T02:30:48.8736047Z #9 DONE 7.0s
+2026-11-21T02:30:48.8736173Z
+2026-11-21T02:30:48.8736611Z #8 FROM docker.io/cloudflare/sandbox:0.10.3@sha256:180814e61d1e0d14dda758913ecbd19cba2e696437f3fe4e408888418ff24a97
+2026-11-21T02:30:48.8737593Z #8 extracting sha256:9fd87c92bec57e4c409163d244f6c794a62d46a72feabb163a87c0642a9cf397 done
+2026-11-21T02:30:48.8738435Z #8 extracting sha256:689b16d5bc715a2f464cc15ac9399604296e7b4c3efedac6035aa81cd05ad28d 0.1s
+2026-11-21T02:30:49.3397215Z #8 extracting sha256:689b16d5bc715a2f464cc15ac9399604296e7b4c3efedac6035aa81cd05ad28d 0.4s done
+2026-11-21T02:30:49.3398668Z #8 extracting sha256:d95c93aeae3bbd1e6d8359207abe888f87a23b637d1df44bf15d42a3e070861c 0.1s
+2026-11-21T02:30:49.8256529Z #8 extracting sha256:d95c93aeae3bbd1e6d8359207abe888f87a23b637d1df44bf15d42a3e070861c 0.4s done
+2026-11-21T02:30:49.8258269Z #8 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+2026-11-21T02:30:49.8259091Z #8 extracting sha256:6878324923ad8cda7c36c45231dc9f200c504469a53f044960dc9538ac1c85ed done
+2026-11-21T02:30:49.8260011Z #8 extracting sha256:efe67ab478173b277922976da1a33b122b2dfef88bcb39b234fd06680f6d9246 done
+2026-11-21T02:30:49.8260941Z #8 extracting sha256:a12b53f031fc06fc672b0c3484c9b6c90b3ab017a1be98d08ddc4d6a2755a432 0.1s
+2026-11-21T02:30:49.9499838Z #8 extracting sha256:a12b53f031fc06fc672b0c3484c9b6c90b3ab017a1be98d08ddc4d6a2755a432 0.2s done
+2026-11-21T02:30:49.9500973Z #8 extracting sha256:d731e5ce5f993936a0e3d74c01efe18e8d7ee6681c21b8ee68e1a3d4c3901811 done
+2026-11-21T02:30:49.9501520Z #8 DONE 8.2s
+2026-11-21T02:30:50.1113697Z
+2026-11-21T02:30:50.1114693Z #10 [stage-0  2/22] COPY --from=docker.io/cloudflare/sandbox:0.10.3 /container-server/sandbox /sandbox
+2026-11-21T02:30:50.1115187Z #10 DONE 0.1s
+2026-11-21T02:30:50.2812788Z
+2026-11-21T02:30:50.2814066Z #11 [stage-0  3/22] WORKDIR /opt/sz-runtime
+2026-11-21T02:30:50.2814461Z #11 DONE 0.0s
+2026-11-21T02:30:50.2814590Z
+2026-11-21T02:30:50.2814822Z #12 [stage-0  4/22] COPY runtime/package.json ./package.json
+2026-11-21T02:30:50.2815149Z #12 DONE 0.0s
+2026-11-21T02:30:50.2815291Z
+2026-11-21T02:30:50.2815534Z #13 [stage-0  5/22] COPY runtime/package-lock.json ./package-lock.json
+2026-11-21T02:30:50.2815891Z #13 DONE 0.0s
+2026-11-21T02:30:50.2815998Z
+2026-11-21T02:30:50.2816837Z #14 [stage-0  6/22] RUN npm ci --ignore-scripts --no-audit --no-fund   && node node_modules/playwright-core/cli.js install --with-deps chromium --only-shell   && npm cache clean --force   && chmod -R a-w /opt/sz-runtime
+2026-11-21T02:30:53.4099501Z #14 3.279
+2026-11-21T02:30:53.4099853Z #14 3.279 added 36 packages in 3s
+2026-11-21T02:30:53.5612998Z #14 3.280 npm notice
+2026-11-21T02:30:53.5613735Z #14 3.280 npm notice New major version of npm available! 10.9.2 -> 12.2.3
+2026-11-21T02:30:53.5614452Z #14 3.280 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+2026-11-21T02:30:53.5615058Z #14 3.280 npm notice To update run: npm install -g npm@12.2.3
+2026-11-21T02:30:53.5615459Z #14 3.280 npm notice
+2026-11-21T02:30:53.7409273Z #14 3.610 Installing dependencies...
+2026-11-21T02:30:53.8838113Z #14 3.671 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+2026-11-21T02:30:53.8839222Z #14 3.698 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+2026-11-21T02:30:53.8840457Z #14 3.708 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+2026-11-21T02:30:53.8841101Z #14 3.752 Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+2026-11-21T02:30:54.1113818Z #14 3.820 Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+2026-11-21T02:30:54.1114722Z #14 3.830 Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [378 kB]
+2026-11-21T02:30:54.7441266Z #14 4.613 Fetched 9417 kB in 1s (9759 kB/s)
+2026-11-21T02:30:55.1592304Z #14 4.613 Reading package lists...
+2026-11-21T02:30:55.5826346Z #14 5.044 Reading package lists...
+2026-11-21T02:30:55.6840781Z #14 5.463 Building dependency tree...
+2026-11-21T02:30:55.6841738Z #14 5.553 Reading state information...
+2026-11-21T02:30:55.7907848Z #14 5.660 The following additional packages will be installed:
+2026-11-21T02:30:55.9433323Z #14 5.660   at-spi2-common fontconfig fontconfig-config libasound2-data libavahi-client3
+2026-11-21T02:30:55.9434148Z #14 5.660   libavahi-common-data libavahi-common3 libbrotli1 libbsd0 libdatrie1
+2026-11-21T02:30:55.9434877Z #14 5.660   libdrm-amdgpu1 libdrm-common libdrm-intel1 libdrm-nouveau2 libdrm-radeon1
+2026-11-21T02:30:55.9435712Z #14 5.660   libedit2 libelf1 libexpat1 libfontenc1 libfribidi0 libgl1 libgl1-mesa-dri
+2026-11-21T02:30:55.9436565Z #14 5.660   libglapi-mesa libglvnd0 libglx-mesa0 libglx0 libgraphite2-3 libgssapi-krb5-2
+2026-11-21T02:30:55.9437322Z #14 5.660   libharfbuzz0b libice6 libicu72 libk5crypto3 libkeyutils1 libkrb5-3
+2026-11-21T02:30:55.9438000Z #14 5.660   libkrb5support0 libllvm15 libpciaccess0 libpixman-1-0 libpng16-16
+2026-11-21T02:30:55.9438694Z #14 5.660   libsensors-config libsensors5 libsm6 libsqlite3-0 libssl3 libthai-data
+2026-11-21T02:30:55.9439855Z #14 5.661   libthai0 libunwind8 libwayland-server0 libx11-data libx11-xcb1 libxau6
+2026-11-21T02:30:55.9440795Z #14 5.661   libxaw7 libxcb-dri2-0 libxcb-dri3-0 libxcb-glx0 libxcb-present0
+2026-11-21T02:30:55.9441465Z #14 5.661   libxcb-randr0 libxcb-render0 libxcb-shm0 libxcb-sync1 libxcb-xfixes0
+2026-11-21T02:30:55.9442172Z #14 5.661   libxdmcp6 libxfont2 libxi6 libxkbfile1 libxml2 libxmu6 libxpm4 libxrender1
+2026-11-21T02:30:55.9442881Z #14 5.661   libxshmfence1 libxt6 libxxf86vm1 libz3-4 x11-common x11-xkb-utils
+2026-11-21T02:30:55.9443492Z #14 5.661   xfonts-encodings xfonts-utils xkb-data xserver-common
+2026-11-21T02:30:55.9443935Z #14 5.662 Suggested packages:
+2026-11-21T02:30:55.9444740Z #14 5.662   libasound2-plugins alsa-utils cups-common low-memory-monitor krb5-doc
+2026-11-21T02:30:55.9445289Z #14 5.662   krb5-user pciutils lm-sensors
+2026-11-21T02:30:55.9445666Z #14 5.662 Recommended packages:
+2026-11-21T02:30:55.9446220Z #14 5.662   fonts-ipafont-mincho fonts-tlwg-loma alsa-ucm-conf alsa-topology-conf
+2026-11-21T02:30:55.9447227Z #14 5.662   at-spi2-core dbus libglib2.0-data shared-mime-info xdg-user-dirs
+2026-11-21T02:30:55.9447986Z #14 5.662   krb5-locales xfonts-base xauth
+2026-11-21T02:30:56.1762621Z #14 6.045 The following NEW packages will be installed:
+2026-11-21T02:30:56.3004678Z #14 6.045   at-spi2-common fontconfig fontconfig-config fonts-freefont-ttf
+2026-11-21T02:30:56.3005840Z #14 6.045   fonts-ipafont-gothic fonts-liberation fonts-noto-color-emoji
+2026-11-21T02:30:56.3006714Z #14 6.045   fonts-tlwg-loma-otf fonts-unifont fonts-wqy-zenhei libasound2
+2026-11-21T02:30:56.3007585Z #14 6.045   libasound2-data libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0
+2026-11-21T02:30:56.3008595Z #14 6.045   libavahi-client3 libavahi-common-data libavahi-common3 libbrotli1 libbsd0
+2026-11-21T02:30:56.3011856Z #14 6.045   libcairo2 libcups2 libdatrie1 libdbus-1-3 libdrm-amdgpu1 libdrm-common
+2026-11-21T02:30:56.3012876Z #14 6.045   libdrm-intel1 libdrm-nouveau2 libdrm-radeon1 libdrm2 libedit2 libelf1
+2026-11-21T02:30:56.3014141Z #14 6.045   libexpat1 libfontconfig1 libfontenc1 libfreetype6 libfribidi0 libgbm1 libgl1
+2026-11-21T02:30:56.3015321Z #14 6.045   libgl1-mesa-dri libglapi-mesa libglib2.0-0 libglvnd0 libglx-mesa0 libglx0
+2026-11-21T02:30:56.3016496Z #14 6.045   libgraphite2-3 libgssapi-krb5-2 libharfbuzz0b libice6 libicu72 libk5crypto3
+2026-11-21T02:30:56.3017622Z #14 6.046   libkeyutils1 libkrb5-3 libkrb5support0 libllvm15 libnspr4 libnss3
+2026-11-21T02:30:56.3018708Z #14 6.046   libpango-1.0-0 libpciaccess0 libpixman-1-0 libpng16-16 libsensors-config
+2026-11-21T02:30:56.3019702Z #14 6.046   libsensors5 libsm6 libsqlite3-0 libssl3 libthai-data libthai0 libunwind8
+2026-11-21T02:30:56.3020752Z #14 6.046   libwayland-server0 libx11-6 libx11-data libx11-xcb1 libxau6 libxaw7
+2026-11-21T02:30:56.3021807Z #14 6.046   libxcb-dri2-0 libxcb-dri3-0 libxcb-glx0 libxcb-present0 libxcb-randr0
+2026-11-21T02:30:56.3022361Z #14 6.046   libxcb-render0 libxcb-shm0 libxcb-sync1 libxcb-xfixes0 libxcb1
+2026-11-21T02:30:56.3022932Z #14 6.046   libxcomposite1 libxdamage1 libxdmcp6 libxext6 libxfixes3 libxfont2 libxi6
+2026-11-21T02:30:56.3023522Z #14 6.046   libxkbcommon0 libxkbfile1 libxml2 libxmu6 libxpm4 libxrandr2 libxrender1
+2026-11-21T02:30:56.3024080Z #14 6.046   libxshmfence1 libxt6 libxxf86vm1 libz3-4 x11-common x11-xkb-utils
+2026-11-21T02:30:56.3024642Z #14 6.046   xfonts-encodings xfonts-scalable xfonts-utils xkb-data xserver-common xvfb
+2026-11-21T02:30:56.3025204Z #14 6.103 0 upgraded, 111 newly installed, 0 to remove and 30 not upgraded.
+2026-11-21T02:30:56.3025609Z #14 6.103 Need to get 100 MB of archives.
+2026-11-21T02:30:56.3026037Z #14 6.103 After this operation, 335 MB of additional disk space will be used.
+2026-11-21T02:30:56.3026711Z #14 6.103 Get:1 http://deb.debian.org/debian bookworm/main amd64 fonts-ipafont-gothic all 00303-23 [3515 kB]
+2026-11-21T02:30:56.3027428Z #14 6.169 Get:2 http://deb.debian.org/debian bookworm/main amd64 at-spi2-common all 2.46.0-5 [162 kB]
+2026-11-21T02:30:56.4200566Z #14 6.170 Get:3 http://deb.debian.org/debian-security bookworm-security/main amd64 libexpat1 amd64 2.5.0-1+deb12u5 [108 kB]
+2026-11-21T02:30:56.4202201Z #14 6.171 Get:4 http://deb.debian.org/debian-security bookworm-security/main amd64 libbrotli1 amd64 1.0.9-2+deb12u1 [275 kB]
+2026-11-21T02:30:56.4203824Z #14 6.182 Get:5 http://deb.debian.org/debian-security bookworm-security/main amd64 libpng16-16 amd64 1.6.39-2+deb12u6 [277 kB]
+2026-11-21T02:30:56.4204674Z #14 6.183 Get:6 http://deb.debian.org/debian bookworm/main amd64 libfreetype6 amd64 2.12.1+dfsg-5+deb12u4 [398 kB]
+2026-11-21T02:30:56.4205421Z #14 6.196 Get:7 http://deb.debian.org/debian bookworm/main amd64 fonts-liberation all 1:1.07.4-11 [828 kB]
+2026-11-21T02:30:56.4206418Z #14 6.206 Get:8 http://deb.debian.org/debian bookworm/main amd64 fonts-freefont-ttf all 20120503-10 [2552 kB]
+2026-11-21T02:30:56.4207158Z #14 6.213 Get:9 http://deb.debian.org/debian bookworm/main amd64 fontconfig-config amd64 2.14.1-4 [315 kB]
+2026-11-21T02:30:56.4207886Z #14 6.215 Get:10 http://deb.debian.org/debian bookworm/main amd64 libfontconfig1 amd64 2.14.1-4 [386 kB]
+2026-11-21T02:30:56.4208567Z #14 6.216 Get:11 http://deb.debian.org/debian bookworm/main amd64 fontconfig amd64 2.14.1-4 [449 kB]
+2026-11-21T02:30:56.4209314Z #14 6.218 Get:12 http://deb.debian.org/debian bookworm/main amd64 fonts-noto-color-emoji all 2.042-0+deb12u1 [9894 kB]
+2026-11-21T02:30:56.4210077Z #14 6.247 Get:13 http://deb.debian.org/debian bookworm/main amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [147 kB]
+2026-11-21T02:30:56.4211010Z #14 6.247 Get:14 http://deb.debian.org/debian bookworm/main amd64 fonts-unifont all 1:15.0.01-2 [2019 kB]
+2026-11-21T02:30:56.4212136Z #14 6.267 Get:15 http://deb.debian.org/debian bookworm/main amd64 fonts-wqy-zenhei all 0.9.45-8 [7479 kB]
+2026-11-21T02:30:56.4213427Z #14 6.289 Get:16 http://deb.debian.org/debian bookworm/main amd64 libasound2-data all 1.2.8-1 [20.5 kB]
+2026-11-21T02:30:56.5253020Z #14 6.290 Get:17 http://deb.debian.org/debian bookworm/main amd64 libasound2 amd64 1.2.8-1+b1 [362 kB]
+2026-11-21T02:30:56.5254456Z #14 6.291 Get:18 http://deb.debian.org/debian bookworm/main amd64 libglib2.0-0 amd64 2.74.6-2+deb12u9 [1403 kB]
+2026-11-21T02:30:56.5256020Z #14 6.295 Get:19 http://deb.debian.org/debian bookworm/main amd64 libatk1.0-0 amd64 2.46.0-5 [49.6 kB]
+2026-11-21T02:30:56.5257229Z #14 6.296 Get:20 http://deb.debian.org/debian bookworm/main amd64 libdbus-1-3 amd64 1.14.10-1~deb12u1 [201 kB]
+2026-11-21T02:30:56.5258462Z #14 6.296 Get:21 http://deb.debian.org/debian bookworm/main amd64 libxau6 amd64 1:1.0.9-1 [19.7 kB]
+2026-11-21T02:30:56.5259776Z #14 6.296 Get:22 http://deb.debian.org/debian bookworm/main amd64 libbsd0 amd64 0.11.7-2 [117 kB]
+2026-11-21T02:30:56.5261067Z #14 6.297 Get:23 http://deb.debian.org/debian bookworm/main amd64 libxdmcp6 amd64 1:1.1.2-3 [26.3 kB]
+2026-11-21T02:30:56.5261842Z #14 6.297 Get:24 http://deb.debian.org/debian bookworm/main amd64 libxcb1 amd64 1.15-1 [144 kB]
+2026-11-21T02:30:56.5262675Z #14 6.299 Get:25 http://deb.debian.org/debian bookworm/main amd64 libx11-data all 2:1.8.4-2+deb12u2 [292 kB]
+2026-11-21T02:30:56.5263515Z #14 6.309 Get:26 http://deb.debian.org/debian bookworm/main amd64 libx11-6 amd64 2:1.8.4-2+deb12u2 [760 kB]
+2026-11-21T02:30:56.5264317Z #14 6.312 Get:27 http://deb.debian.org/debian bookworm/main amd64 libxext6 amd64 2:1.3.4-1+b1 [52.9 kB]
+2026-11-21T02:30:56.5266217Z #14 6.312 Get:28 http://deb.debian.org/debian bookworm/main amd64 libxi6 amd64 2:1.8-1+b1 [84.2 kB]
+2026-11-21T02:30:56.5267370Z #14 6.312 Get:29 http://deb.debian.org/debian bookworm/main amd64 libatspi2.0-0 amd64 2.46.0-5 [75.4 kB]
+2026-11-21T02:30:56.5269017Z #14 6.313 Get:30 http://deb.debian.org/debian bookworm/main amd64 libatk-bridge2.0-0 amd64 2.46.0-5 [64.6 kB]
+2026-11-21T02:30:56.5271137Z #14 6.313 Get:31 http://deb.debian.org/debian bookworm/main amd64 libavahi-common-data amd64 0.8-10+deb12u1 [107 kB]
+2026-11-21T02:30:56.5272794Z #14 6.314 Get:32 http://deb.debian.org/debian bookworm/main amd64 libavahi-common3 amd64 0.8-10+deb12u1 [42.1 kB]
+2026-11-21T02:30:56.5275223Z #14 6.314 Get:33 http://deb.debian.org/debian bookworm/main amd64 libavahi-client3 amd64 0.8-10+deb12u1 [45.8 kB]
+2026-11-21T02:30:56.5276516Z #14 6.315 Get:34 http://deb.debian.org/debian bookworm/main amd64 libpixman-1-0 amd64 0.42.2-1 [546 kB]
+2026-11-21T02:30:56.5278327Z #14 6.318 Get:35 http://deb.debian.org/debian bookworm/main amd64 libxcb-render0 amd64 1.15-1 [115 kB]
+2026-11-21T02:30:56.5279372Z #14 6.326 Get:36 http://deb.debian.org/debian bookworm/main amd64 libxcb-shm0 amd64 1.15-1 [105 kB]
+2026-11-21T02:30:56.5280060Z #14 6.327 Get:37 http://deb.debian.org/debian bookworm/main amd64 libxrender1 amd64 1:0.9.10-1.1 [33.2 kB]
+2026-11-21T02:30:56.5281147Z #14 6.327 Get:38 http://deb.debian.org/debian bookworm/main amd64 libcairo2 amd64 1.16.0-7 [575 kB]
+2026-11-21T02:30:56.5281948Z #14 6.330 Get:39 http://deb.debian.org/debian bookworm/main amd64 libkrb5support0 amd64 1.20.1-2+deb12u5 [33.2 kB]
+2026-11-21T02:30:56.5282866Z #14 6.330 Get:40 http://deb.debian.org/debian bookworm/main amd64 libk5crypto3 amd64 1.20.1-2+deb12u5 [79.7 kB]
+2026-11-21T02:30:56.5284043Z #14 6.331 Get:41 http://deb.debian.org/debian bookworm/main amd64 libkeyutils1 amd64 1.6.3-2 [8808 B]
+2026-11-21T02:30:56.5285344Z #14 6.341 Get:42 http://deb.debian.org/debian-security bookworm-security/main amd64 libssl3 amd64 3.0.22-1~deb12u2 [2040 kB]
+2026-11-21T02:30:56.5286299Z #14 6.351 Get:43 http://deb.debian.org/debian bookworm/main amd64 libkrb5-3 amd64 1.20.1-2+deb12u5 [332 kB]
+2026-11-21T02:30:56.5287542Z #14 6.352 Get:44 http://deb.debian.org/debian bookworm/main amd64 libgssapi-krb5-2 amd64 1.20.1-2+deb12u5 [135 kB]
+2026-11-21T02:30:56.5288280Z #14 6.372 Get:45 http://deb.debian.org/debian bookworm/main amd64 libcups2 amd64 2.4.2-3+deb12u9 [245 kB]
+2026-11-21T02:30:56.5289265Z #14 6.373 Get:46 http://deb.debian.org/debian bookworm/main amd64 libdatrie1 amd64 0.2.13-2+b1 [43.3 kB]
+2026-11-21T02:30:56.5290625Z #14 6.373 Get:47 http://deb.debian.org/debian bookworm/main amd64 libdrm-common all 2.4.114-1 [7112 B]
+2026-11-21T02:30:56.5291799Z #14 6.374 Get:48 http://deb.debian.org/debian bookworm/main amd64 libdrm2 amd64 2.4.114-1+b1 [37.5 kB]
+2026-11-21T02:30:56.5293051Z #14 6.374 Get:49 http://deb.debian.org/debian bookworm/main amd64 libdrm-amdgpu1 amd64 2.4.114-1+b1 [20.9 kB]
+2026-11-21T02:30:56.5293903Z #14 6.375 Get:50 http://deb.debian.org/debian bookworm/main amd64 libpciaccess0 amd64 0.17-2 [51.4 kB]
+2026-11-21T02:30:56.5294608Z #14 6.376 Get:51 http://deb.debian.org/debian bookworm/main amd64 libdrm-intel1 amd64 2.4.114-1+b1 [64.0 kB]
+2026-11-21T02:30:56.5295802Z #14 6.376 Get:52 http://deb.debian.org/debian bookworm/main amd64 libdrm-nouveau2 amd64 2.4.114-1+b1 [19.1 kB]
+2026-11-21T02:30:56.5296842Z #14 6.377 Get:53 http://deb.debian.org/debian bookworm/main amd64 libdrm-radeon1 amd64 2.4.114-1+b1 [21.8 kB]
+2026-11-21T02:30:56.5297678Z #14 6.377 Get:54 http://deb.debian.org/debian bookworm/main amd64 libedit2 amd64 3.1-20221030-2 [93.0 kB]
+2026-11-21T02:30:56.5298366Z #14 6.382 Get:55 http://deb.debian.org/debian bookworm/main amd64 libelf1 amd64 0.188-2.1 [174 kB]
+2026-11-21T02:30:56.5299070Z #14 6.394 Get:56 http://deb.debian.org/debian bookworm/main amd64 libfontenc1 amd64 1:1.1.4-1 [24.3 kB]
+2026-11-21T02:30:56.6904089Z #14 6.395 Get:57 http://deb.debian.org/debian bookworm/main amd64 libfribidi0 amd64 1.0.8-2.1 [65.0 kB]
+2026-11-21T02:30:56.6905165Z #14 6.396 Get:58 http://deb.debian.org/debian bookworm/main amd64 libwayland-server0 amd64 1.21.0-1 [35.9 kB]
+2026-11-21T02:30:56.6905909Z #14 6.397 Get:59 http://deb.debian.org/debian bookworm/main amd64 libgbm1 amd64 22.3.6-1+deb12u2 [38.1 kB]
+2026-11-21T02:30:56.6906768Z #14 6.398 Get:60 http://deb.debian.org/debian bookworm/main amd64 libglvnd0 amd64 1.6.0-1 [51.8 kB]
+2026-11-21T02:30:56.6907849Z #14 6.398 Get:61 http://deb.debian.org/debian bookworm/main amd64 libglapi-mesa amd64 22.3.6-1+deb12u2 [35.9 kB]
+2026-11-21T02:30:56.6908600Z #14 6.399 Get:62 http://deb.debian.org/debian bookworm/main amd64 libx11-xcb1 amd64 2:1.8.4-2+deb12u2 [192 kB]
+2026-11-21T02:30:56.6909581Z #14 6.399 Get:63 http://deb.debian.org/debian bookworm/main amd64 libxcb-dri2-0 amd64 1.15-1 [107 kB]
+2026-11-21T02:30:56.6910824Z #14 6.400 Get:64 http://deb.debian.org/debian bookworm/main amd64 libxcb-dri3-0 amd64 1.15-1 [107 kB]
+2026-11-21T02:30:56.6911616Z #14 6.403 Get:65 http://deb.debian.org/debian bookworm/main amd64 libxcb-glx0 amd64 1.15-1 [122 kB]
+2026-11-21T02:30:56.6912300Z #14 6.412 Get:66 http://deb.debian.org/debian bookworm/main amd64 libxcb-present0 amd64 1.15-1 [105 kB]
+2026-11-21T02:30:56.6913390Z #14 6.413 Get:67 http://deb.debian.org/debian bookworm/main amd64 libxcb-randr0 amd64 1.15-1 [117 kB]
+2026-11-21T02:30:56.6914615Z #14 6.414 Get:68 http://deb.debian.org/debian bookworm/main amd64 libxcb-sync1 amd64 1.15-1 [109 kB]
+2026-11-21T02:30:56.6915440Z #14 6.415 Get:69 http://deb.debian.org/debian bookworm/main amd64 libxcb-xfixes0 amd64 1.15-1 [109 kB]
+2026-11-21T02:30:56.6916577Z #14 6.415 Get:70 http://deb.debian.org/debian bookworm/main amd64 libxfixes3 amd64 1:6.0.0-2 [22.7 kB]
+2026-11-21T02:30:56.6917859Z #14 6.416 Get:71 http://deb.debian.org/debian bookworm/main amd64 libxshmfence1 amd64 1.3-1 [8820 B]
+2026-11-21T02:30:56.6918728Z #14 6.417 Get:72 http://deb.debian.org/debian bookworm/main amd64 libxxf86vm1 amd64 1:1.1.4-1+b2 [20.8 kB]
+2026-11-21T02:30:56.6919497Z #14 6.419 Get:73 http://deb.debian.org/debian bookworm/main amd64 libicu72 amd64 72.1-3+deb12u1 [9376 kB]
+2026-11-21T02:30:56.6920382Z #14 6.448 Get:74 http://deb.debian.org/debian bookworm/main amd64 libxml2 amd64 2.9.14+dfsg-1.3~deb12u6 [689 kB]
+2026-11-21T02:30:56.6921171Z #14 6.459 Get:75 http://deb.debian.org/debian bookworm/main amd64 libz3-4 amd64 4.8.12-3.1 [7216 kB]
+2026-11-21T02:30:56.6922412Z #14 6.482 Get:76 http://deb.debian.org/debian bookworm/main amd64 libllvm15 amd64 1:15.0.6-4+b1 [23.1 MB]
+2026-11-21T02:30:56.6923742Z #14 6.559 Get:77 http://deb.debian.org/debian bookworm/main amd64 libsensors-config all 1:3.6.0-7.1 [14.3 kB]
+2026-11-21T02:30:56.6925058Z #14 6.559 Get:78 http://deb.debian.org/debian bookworm/main amd64 libsensors5 amd64 1:3.6.0-7.1 [34.2 kB]
+2026-11-21T02:30:56.7932699Z #14 6.561 Get:79 http://deb.debian.org/debian bookworm/main amd64 libgl1-mesa-dri amd64 22.3.6-1+deb12u2 [7240 kB]
+2026-11-21T02:30:56.7934350Z #14 6.582 Get:80 http://deb.debian.org/debian bookworm/main amd64 libglx-mesa0 amd64 22.3.6-1+deb12u2 [148 kB]
+2026-11-21T02:30:56.7935068Z #14 6.582 Get:81 http://deb.debian.org/debian bookworm/main amd64 libglx0 amd64 1.6.0-1 [34.4 kB]
+2026-11-21T02:30:56.7935946Z #14 6.583 Get:82 http://deb.debian.org/debian bookworm/main amd64 libgl1 amd64 1.6.0-1 [88.4 kB]
+2026-11-21T02:30:56.7936652Z #14 6.583 Get:83 http://deb.debian.org/debian bookworm/main amd64 libgraphite2-3 amd64 1.3.14-1+deb12u1 [74.6 kB]
+2026-11-21T02:30:56.7937504Z #14 6.584 Get:84 http://deb.debian.org/debian bookworm/main amd64 libharfbuzz0b amd64 6.0.0+dfsg-3 [1945 kB]
+2026-11-21T02:30:56.7938578Z #14 6.590 Get:85 http://deb.debian.org/debian bookworm/main amd64 x11-common all 1:7.7+23 [252 kB]
+2026-11-21T02:30:56.7939255Z #14 6.591 Get:86 http://deb.debian.org/debian bookworm/main amd64 libice6 amd64 2:1.0.10-1 [58.5 kB]
+2026-11-21T02:30:56.7939916Z #14 6.592 Get:87 http://deb.debian.org/debian bookworm/main amd64 libnspr4 amd64 2:4.35-1 [113 kB]
+2026-11-21T02:30:56.7941723Z #14 6.592 Get:88 http://deb.debian.org/debian bookworm/main amd64 libsqlite3-0 amd64 3.40.1-2+deb12u2 [839 kB]
+2026-11-21T02:30:56.7942926Z #14 6.595 Get:89 http://deb.debian.org/debian-security bookworm-security/main amd64 libnss3 amd64 2:3.87.1-1+deb12u4 [1331 kB]
+2026-11-21T02:30:56.7943704Z #14 6.604 Get:90 http://deb.debian.org/debian bookworm/main amd64 libthai-data all 0.1.29-1 [176 kB]
+2026-11-21T02:30:56.7944380Z #14 6.605 Get:91 http://deb.debian.org/debian bookworm/main amd64 libthai0 amd64 0.1.29-1 [57.5 kB]
+2026-11-21T02:30:56.7946318Z #14 6.605 Get:92 http://deb.debian.org/debian bookworm/main amd64 libpango-1.0-0 amd64 1.50.12+ds-1 [212 kB]
+2026-11-21T02:30:56.7947705Z #14 6.606 Get:93 http://deb.debian.org/debian bookworm/main amd64 libsm6 amd64 2:1.2.3-1 [35.1 kB]
+2026-11-21T02:30:56.7949929Z #14 6.607 Get:94 http://deb.debian.org/debian bookworm/main amd64 libunwind8 amd64 1.6.2-3 [51.2 kB]
+2026-11-21T02:30:56.7951454Z #14 6.612 Get:95 http://deb.debian.org/debian bookworm/main amd64 libxt6 amd64 1:1.2.1-1.1 [186 kB]
+2026-11-21T02:30:56.7953437Z #14 6.613 Get:96 http://deb.debian.org/debian bookworm/main amd64 libxmu6 amd64 2:1.1.3-3 [60.1 kB]
+2026-11-21T02:30:56.7955143Z #14 6.614 Get:97 http://deb.debian.org/debian bookworm/main amd64 libxpm4 amd64 1:3.5.12-1.1+deb12u1 [48.6 kB]
+2026-11-21T02:30:56.7956129Z #14 6.614 Get:98 http://deb.debian.org/debian bookworm/main amd64 libxaw7 amd64 2:1.0.14-1 [201 kB]
+2026-11-21T02:30:56.7958241Z #14 6.615 Get:99 http://deb.debian.org/debian bookworm/main amd64 libxcomposite1 amd64 1:0.4.5-1 [16.6 kB]
+2026-11-21T02:30:56.7959636Z #14 6.619 Get:100 http://deb.debian.org/debian bookworm/main amd64 libxdamage1 amd64 1:1.1.6-1 [15.1 kB]
+2026-11-21T02:30:56.7962402Z #14 6.629 Get:101 http://deb.debian.org/debian-security bookworm-security/main amd64 libxfont2 amd64 1:2.0.6-1+deb12u1 [132 kB]
+2026-11-21T02:30:56.7964862Z #14 6.630 Get:102 http://deb.debian.org/debian bookworm/main amd64 xkb-data all 2.35.1-1 [764 kB]
+2026-11-21T02:30:56.7966214Z #14 6.632 Get:103 http://deb.debian.org/debian bookworm/main amd64 libxkbcommon0 amd64 1.5.0-1 [106 kB]
+2026-11-21T02:30:56.7968397Z #14 6.633 Get:104 http://deb.debian.org/debian bookworm/main amd64 libxkbfile1 amd64 1:1.1.0-1 [75.2 kB]
+2026-11-21T02:30:56.7969793Z #14 6.633 Get:105 http://deb.debian.org/debian bookworm/main amd64 libxrandr2 amd64 2:1.5.2-2+b1 [39.2 kB]
+2026-11-21T02:30:56.7972277Z #14 6.643 Get:106 http://deb.debian.org/debian bookworm/main amd64 x11-xkb-utils amd64 7.7+7 [165 kB]
+2026-11-21T02:30:56.7973807Z #14 6.644 Get:107 http://deb.debian.org/debian bookworm/main amd64 xfonts-encodings all 1:1.0.4-2.2 [577 kB]
+2026-11-21T02:30:56.7976422Z #14 6.646 Get:108 http://deb.debian.org/debian bookworm/main amd64 xfonts-utils amd64 1:7.7+6 [93.0 kB]
+2026-11-21T02:30:56.7977853Z #14 6.646 Get:109 http://deb.debian.org/debian bookworm/main amd64 xfonts-scalable all 1:1.0.3-1.3 [306 kB]
+2026-11-21T02:30:56.7979476Z #14 6.662 Get:110 http://deb.debian.org/debian-security bookworm-security/main amd64 xserver-common all 2:21.1.7-3+deb12u13 [2384 kB]
+2026-11-21T02:30:56.9303832Z #14 6.684 Get:111 http://deb.debian.org/debian-security bookworm-security/main amd64 xvfb amd64 2:21.1.7-3+deb12u13 [3154 kB]
+2026-11-21T02:30:56.9304800Z #14 6.799 debconf: delaying package configuration, since apt-utils is not installed
+2026-11-21T02:30:57.1183979Z #14 6.819 Fetched 100 MB in 1s (154 MB/s)
+2026-11-21T02:30:57.1185092Z #14 6.829 Selecting previously unselected package fonts-ipafont-gothic.
+2026-11-21T02:30:57.1186057Z #14 6.829 (Reading database ...
+2026-11-21T02:30:57.1187161Z (Reading database ... 5%
+2026-11-21T02:30:57.1187657Z (Reading database ... 10%
+2026-11-21T02:30:57.1187967Z (Reading database ... 15%
+2026-11-21T02:30:57.1188256Z (Reading database ... 20%
+2026-11-21T02:30:57.1188499Z (Reading database ... 25%
+2026-11-21T02:30:57.1188736Z (Reading database ... 30%
+2026-11-21T02:30:57.1188983Z (Reading database ... 35%
+2026-11-21T02:30:57.1189219Z (Reading database ... 40%
+2026-11-21T02:30:57.1189451Z (Reading database ... 45%
+2026-11-21T02:30:57.1189691Z (Reading database ... 50%
+2026-11-21T02:30:57.1189929Z (Reading database ... 55%
+2026-11-21T02:30:57.1190343Z (Reading database ... 60%
+2026-11-21T02:30:57.1190607Z (Reading database ... 65%
+2026-11-21T02:30:57.1190863Z (Reading database ... 70%
+2026-11-21T02:30:57.1191100Z (Reading database ... 75%
+2026-11-21T02:30:57.1191340Z (Reading database ... 80%
+2026-11-21T02:30:57.1191586Z (Reading database ... 85%
+2026-11-21T02:30:57.1191832Z (Reading database ... 90%
+2026-11-21T02:30:57.1192066Z (Reading database ... 95%
+2026-11-21T02:30:57.1192344Z (Reading database ... 100%
+2026-11-21T02:30:57.1192742Z (Reading database ... 6089 files and directories currently installed.)
+2026-11-21T02:30:57.1193570Z #14 6.833 Preparing to unpack .../000-fonts-ipafont-gothic_00303-23_all.deb ...
+2026-11-21T02:30:57.1194068Z #14 6.837 Unpacking fonts-ipafont-gothic (00303-23) ...
+2026-11-21T02:30:57.1929489Z #14 7.062 Selecting previously unselected package at-spi2-common.
+2026-11-21T02:30:57.3249194Z #14 7.063 Preparing to unpack .../001-at-spi2-common_2.46.0-5_all.deb ...
+2026-11-21T02:30:57.3249699Z #14 7.064 Unpacking at-spi2-common (2.46.0-5) ...
+2026-11-21T02:30:57.3250319Z #14 7.088 Selecting previously unselected package libexpat1:amd64.
+2026-11-21T02:30:57.3250930Z #14 7.089 Preparing to unpack .../002-libexpat1_2.5.0-1+deb12u5_amd64.deb ...
+2026-11-21T02:30:57.3251407Z #14 7.090 Unpacking libexpat1:amd64 (2.5.0-1+deb12u5) ...
+2026-11-21T02:30:57.3252088Z #14 7.106 Selecting previously unselected package libbrotli1:amd64.
+2026-11-21T02:30:57.3252613Z #14 7.107 Preparing to unpack .../003-libbrotli1_1.0.9-2+deb12u1_amd64.deb ...
+2026-11-21T02:30:57.3253081Z #14 7.108 Unpacking libbrotli1:amd64 (1.0.9-2+deb12u1) ...
+2026-11-21T02:30:57.3253546Z #14 7.135 Selecting previously unselected package libpng16-16:amd64.
+2026-11-21T02:30:57.3254066Z #14 7.136 Preparing to unpack .../004-libpng16-16_1.6.39-2+deb12u6_amd64.deb ...
+2026-11-21T02:30:57.3254595Z #14 7.136 Unpacking libpng16-16:amd64 (1.6.39-2+deb12u6) ...
+2026-11-21T02:30:57.3255377Z #14 7.159 Selecting previously unselected package libfreetype6:amd64.
+2026-11-21T02:30:57.3256104Z #14 7.160 Preparing to unpack .../005-libfreetype6_2.12.1+dfsg-5+deb12u4_amd64.deb ...
+2026-11-21T02:30:57.3257008Z #14 7.160 Unpacking libfreetype6:amd64 (2.12.1+dfsg-5+deb12u4) ...
+2026-11-21T02:30:57.3257486Z #14 7.194 Selecting previously unselected package fonts-liberation.
+2026-11-21T02:30:57.5375296Z #14 7.195 Preparing to unpack .../006-fonts-liberation_1%3a1.07.4-11_all.deb ...
+2026-11-21T02:30:57.5376224Z #14 7.196 Unpacking fonts-liberation (1:1.07.4-11) ...
+2026-11-21T02:30:57.5377052Z #14 7.255 Selecting previously unselected package fonts-freefont-ttf.
+2026-11-21T02:30:57.5378104Z #14 7.255 Preparing to unpack .../007-fonts-freefont-ttf_20120503-10_all.deb ...
+2026-11-21T02:30:57.5379019Z #14 7.256 Unpacking fonts-freefont-ttf (20120503-10) ...
+2026-11-21T02:30:57.5639599Z #14 7.433 Selecting previously unselected package fontconfig-config.
+2026-11-21T02:30:57.6731029Z #14 7.434 Preparing to unpack .../008-fontconfig-config_2.14.1-4_amd64.deb ...
+2026-11-21T02:30:57.6731554Z #14 7.502 Unpacking fontconfig-config (2.14.1-4) ...
+2026-11-21T02:30:57.6732025Z #14 7.523 Selecting previously unselected package libfontconfig1:amd64.
+2026-11-21T02:30:57.6732548Z #14 7.524 Preparing to unpack .../009-libfontconfig1_2.14.1-4_amd64.deb ...
+2026-11-21T02:30:57.6733005Z #14 7.524 Unpacking libfontconfig1:amd64 (2.14.1-4) ...
+2026-11-21T02:30:57.6733461Z #14 7.542 Selecting previously unselected package fontconfig.
+2026-11-21T02:30:57.8445566Z #14 7.543 Preparing to unpack .../010-fontconfig_2.14.1-4_amd64.deb ...
+2026-11-21T02:30:57.8446400Z #14 7.544 Unpacking fontconfig (2.14.1-4) ...
+2026-11-21T02:30:57.8447297Z #14 7.562 Selecting previously unselected package fonts-noto-color-emoji.
+2026-11-21T02:30:57.8448406Z #14 7.563 Preparing to unpack .../011-fonts-noto-color-emoji_2.042-0+deb12u1_all.deb ...
+2026-11-21T02:30:57.8449380Z #14 7.563 Unpacking fonts-noto-color-emoji (2.042-0+deb12u1) ...
+2026-11-21T02:30:58.3119527Z #14 8.181 Selecting previously unselected package fonts-tlwg-loma-otf.
+2026-11-21T02:30:58.4783543Z #14 8.182 Preparing to unpack .../012-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+2026-11-21T02:30:58.4784483Z #14 8.183 Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+2026-11-21T02:30:58.4785211Z #14 8.200 Selecting previously unselected package fonts-unifont.
+2026-11-21T02:30:58.4786079Z #14 8.201 Preparing to unpack .../013-fonts-unifont_1%3a15.0.01-2_all.deb ...
+2026-11-21T02:30:58.4786821Z #14 8.202 Unpacking fonts-unifont (1:15.0.01-2) ...
+2026-11-21T02:30:58.4787534Z #14 8.347 Selecting previously unselected package fonts-wqy-zenhei.
+2026-11-21T02:30:58.6356492Z #14 8.348 Preparing to unpack .../014-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+2026-11-21T02:30:58.6357402Z #14 8.354 Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+2026-11-21T02:30:58.9537855Z #14 8.823 Selecting previously unselected package libasound2-data.
+2026-11-21T02:30:59.1035608Z #14 8.824 Preparing to unpack .../015-libasound2-data_1.2.8-1_all.deb ...
+2026-11-21T02:30:59.1036658Z #14 8.824 Unpacking libasound2-data (1.2.8-1) ...
+2026-11-21T02:30:59.1037449Z #14 8.840 Selecting previously unselected package libasound2:amd64.
+2026-11-21T02:30:59.1038287Z #14 8.841 Preparing to unpack .../016-libasound2_1.2.8-1+b1_amd64.deb ...
+2026-11-21T02:30:59.1039017Z #14 8.842 Unpacking libasound2:amd64 (1.2.8-1+b1) ...
+2026-11-21T02:30:59.1040014Z #14 8.875 Selecting previously unselected package libglib2.0-0:amd64.
+2026-11-21T02:30:59.1041135Z #14 8.876 Preparing to unpack .../017-libglib2.0-0_2.74.6-2+deb12u9_amd64.deb ...
+2026-11-21T02:30:59.1041916Z #14 8.877 Unpacking libglib2.0-0:amd64 (2.74.6-2+deb12u9) ...
+2026-11-21T02:30:59.1042668Z #14 8.973 Selecting previously unselected package libatk1.0-0:amd64.
+2026-11-21T02:30:59.2323800Z #14 8.974 Preparing to unpack .../018-libatk1.0-0_2.46.0-5_amd64.deb ...
+2026-11-21T02:30:59.2324677Z #14 8.974 Unpacking libatk1.0-0:amd64 (2.46.0-5) ...
+2026-11-21T02:30:59.2325361Z #14 8.987 Selecting previously unselected package libdbus-1-3:amd64.
+2026-11-21T02:30:59.2326014Z #14 8.988 Preparing to unpack .../019-libdbus-1-3_1.14.10-1~deb12u1_amd64.deb ...
+2026-11-21T02:30:59.2326625Z #14 8.988 Unpacking libdbus-1-3:amd64 (1.14.10-1~deb12u1) ...
+2026-11-21T02:30:59.2327183Z #14 9.010 Selecting previously unselected package libxau6:amd64.
+2026-11-21T02:30:59.2327786Z #14 9.010 Preparing to unpack .../020-libxau6_1%3a1.0.9-1_amd64.deb ...
+2026-11-21T02:30:59.2328353Z #14 9.011 Unpacking libxau6:amd64 (1:1.0.9-1) ...
+2026-11-21T02:30:59.2328883Z #14 9.021 Selecting previously unselected package libbsd0:amd64.
+2026-11-21T02:30:59.2329455Z #14 9.022 Preparing to unpack .../021-libbsd0_0.11.7-2_amd64.deb ...
+2026-11-21T02:30:59.2329991Z #14 9.022 Unpacking libbsd0:amd64 (0.11.7-2) ...
+2026-11-21T02:30:59.2330892Z #14 9.038 Selecting previously unselected package libxdmcp6:amd64.
+2026-11-21T02:30:59.2331762Z #14 9.039 Preparing to unpack .../022-libxdmcp6_1%3a1.1.2-3_amd64.deb ...
+2026-11-21T02:30:59.2332390Z #14 9.040 Unpacking libxdmcp6:amd64 (1:1.1.2-3) ...
+2026-11-21T02:30:59.2333445Z #14 9.050 Selecting previously unselected package libxcb1:amd64.
+2026-11-21T02:30:59.2334081Z #14 9.051 Preparing to unpack .../023-libxcb1_1.15-1_amd64.deb ...
+2026-11-21T02:30:59.2334598Z #14 9.052 Unpacking libxcb1:amd64 (1.15-1) ...
+2026-11-21T02:30:59.2335003Z #14 9.065 Selecting previously unselected package libx11-data.
+2026-11-21T02:30:59.2335684Z #14 9.066 Preparing to unpack .../024-libx11-data_2%3a1.8.4-2+deb12u2_all.deb ...
+2026-11-21T02:30:59.2336400Z #14 9.067 Unpacking libx11-data (2:1.8.4-2+deb12u2) ...
+2026-11-21T02:30:59.2337121Z #14 9.101 Selecting previously unselected package libx11-6:amd64.
+2026-11-21T02:30:59.3421112Z #14 9.102 Preparing to unpack .../025-libx11-6_2%3a1.8.4-2+deb12u2_amd64.deb ...
+2026-11-21T02:30:59.3422358Z #14 9.103 Unpacking libx11-6:amd64 (2:1.8.4-2+deb12u2) ...
+2026-11-21T02:30:59.3423708Z #14 9.153 Selecting previously unselected package libxext6:amd64.
+2026-11-21T02:30:59.3424789Z #14 9.154 Preparing to unpack .../026-libxext6_2%3a1.3.4-1+b1_amd64.deb ...
+2026-11-21T02:30:59.3425742Z #14 9.155 Unpacking libxext6:amd64 (2:1.3.4-1+b1) ...
+2026-11-21T02:30:59.3426595Z #14 9.167 Selecting previously unselected package libxi6:amd64.
+2026-11-21T02:30:59.3428327Z #14 9.168 Preparing to unpack .../027-libxi6_2%3a1.8-1+b1_amd64.deb ...
+2026-11-21T02:30:59.3429079Z #14 9.168 Unpacking libxi6:amd64 (2:1.8-1+b1) ...
+2026-11-21T02:30:59.3429940Z #14 9.182 Selecting previously unselected package libatspi2.0-0:amd64.
+2026-11-21T02:30:59.3431053Z #14 9.183 Preparing to unpack .../028-libatspi2.0-0_2.46.0-5_amd64.deb ...
+2026-11-21T02:30:59.3431852Z #14 9.183 Unpacking libatspi2.0-0:amd64 (2.46.0-5) ...
+2026-11-21T02:30:59.3432502Z #14 9.197 Selecting previously unselected package libatk-bridge2.0-0:amd64.
+2026-11-21T02:30:59.3433055Z #14 9.198 Preparing to unpack .../029-libatk-bridge2.0-0_2.46.0-5_amd64.deb ...
+2026-11-21T02:30:59.3433528Z #14 9.199 Unpacking libatk-bridge2.0-0:amd64 (2.46.0-5) ...
+2026-11-21T02:30:59.3434022Z #14 9.211 Selecting previously unselected package libavahi-common-data:amd64.
+2026-11-21T02:30:59.4512161Z #14 9.212 Preparing to unpack .../030-libavahi-common-data_0.8-10+deb12u1_amd64.deb ...
+2026-11-21T02:30:59.4512861Z #14 9.213 Unpacking libavahi-common-data:amd64 (0.8-10+deb12u1) ...
+2026-11-21T02:30:59.4513385Z #14 9.231 Selecting previously unselected package libavahi-common3:amd64.
+2026-11-21T02:30:59.4514181Z #14 9.232 Preparing to unpack .../031-libavahi-common3_0.8-10+deb12u1_amd64.deb ...
+2026-11-21T02:30:59.4515000Z #14 9.232 Unpacking libavahi-common3:amd64 (0.8-10+deb12u1) ...
+2026-11-21T02:30:59.4515719Z #14 9.244 Selecting previously unselected package libavahi-client3:amd64.
+2026-11-21T02:30:59.4516606Z #14 9.244 Preparing to unpack .../032-libavahi-client3_0.8-10+deb12u1_amd64.deb ...
+2026-11-21T02:30:59.4517501Z #14 9.245 Unpacking libavahi-client3:amd64 (0.8-10+deb12u1) ...
+2026-11-21T02:30:59.4518374Z #14 9.257 Selecting previously unselected package libpixman-1-0:amd64.
+2026-11-21T02:30:59.4519352Z #14 9.257 Preparing to unpack .../033-libpixman-1-0_0.42.2-1_amd64.deb ...
+2026-11-21T02:30:59.4520464Z #14 9.258 Unpacking libpixman-1-0:amd64 (0.42.2-1) ...
+2026-11-21T02:30:59.4521320Z #14 9.286 Selecting previously unselected package libxcb-render0:amd64.
+2026-11-21T02:30:59.4521888Z #14 9.287 Preparing to unpack .../034-libxcb-render0_1.15-1_amd64.deb ...
+2026-11-21T02:30:59.4522570Z #14 9.288 Unpacking libxcb-render0:amd64 (1.15-1) ...
+2026-11-21T02:30:59.4523187Z #14 9.304 Selecting previously unselected package libxcb-shm0:amd64.
+2026-11-21T02:30:59.4523672Z #14 9.304 Preparing to unpack .../035-libxcb-shm0_1.15-1_amd64.deb ...
+2026-11-21T02:30:59.4524253Z #14 9.305 Unpacking libxcb-shm0:amd64 (1.15-1) ...
+2026-11-21T02:30:59.4524968Z #14 9.320 Selecting previously unselected package libxrender1:amd64.
+2026-11-21T02:30:59.5556091Z #14 9.321 Preparing to unpack .../036-libxrender1_1%3a0.9.10-1.1_amd64.deb ...
+2026-11-21T02:30:59.5557050Z #14 9.322 Unpacking libxrender1:amd64 (1:0.9.10-1.1) ...
+2026-11-21T02:30:59.5557989Z #14 9.333 Selecting previously unselected package libcairo2:amd64.
+2026-11-21T02:30:59.5559185Z #14 9.334 Preparing to unpack .../037-libcairo2_1.16.0-7_amd64.deb ...
+2026-11-21T02:30:59.5559951Z #14 9.335 Unpacking libcairo2:amd64 (1.16.0-7) ...
+2026-11-21T02:30:59.5561163Z #14 9.378 Selecting previously unselected package libkrb5support0:amd64.
+2026-11-21T02:30:59.5562118Z #14 9.379 Preparing to unpack .../038-libkrb5support0_1.20.1-2+deb12u5_amd64.deb ...
+2026-11-21T02:30:59.5562991Z #14 9.379 Unpacking libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:30:59.5563773Z #14 9.392 Selecting previously unselected package libk5crypto3:amd64.
+2026-11-21T02:30:59.5564709Z #14 9.393 Preparing to unpack .../039-libk5crypto3_1.20.1-2+deb12u5_amd64.deb ...
+2026-11-21T02:30:59.5565520Z #14 9.394 Unpacking libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:30:59.5566401Z #14 9.411 Selecting previously unselected package libkeyutils1:amd64.
+2026-11-21T02:30:59.5567068Z #14 9.412 Preparing to unpack .../040-libkeyutils1_1.6.3-2_amd64.deb ...
+2026-11-21T02:30:59.5567641Z #14 9.412 Unpacking libkeyutils1:amd64 (1.6.3-2) ...
+2026-11-21T02:30:59.5568154Z #14 9.425 Selecting previously unselected package libssl3:amd64.
+2026-11-21T02:30:59.6802072Z #14 9.426 Preparing to unpack .../041-libssl3_3.0.22-1~deb12u2_amd64.deb ...
+2026-11-21T02:30:59.6803181Z #14 9.427 Unpacking libssl3:amd64 (3.0.22-1~deb12u2) ...
+2026-11-21T02:30:59.6804042Z #14 9.549 Selecting previously unselected package libkrb5-3:amd64.
+2026-11-21T02:30:59.7900663Z #14 9.550 Preparing to unpack .../042-libkrb5-3_1.20.1-2+deb12u5_amd64.deb ...
+2026-11-21T02:30:59.7901986Z #14 9.551 Unpacking libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:30:59.7902727Z #14 9.584 Selecting previously unselected package libgssapi-krb5-2:amd64.
+2026-11-21T02:30:59.7903604Z #14 9.585 Preparing to unpack .../043-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...
+2026-11-21T02:30:59.7904407Z #14 9.585 Unpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:30:59.7905115Z #14 9.604 Selecting previously unselected package libcups2:amd64.
+2026-11-21T02:30:59.7905885Z #14 9.605 Preparing to unpack .../044-libcups2_2.4.2-3+deb12u9_amd64.deb ...
+2026-11-21T02:30:59.7906604Z #14 9.606 Unpacking libcups2:amd64 (2.4.2-3+deb12u9) ...
+2026-11-21T02:30:59.7907286Z #14 9.633 Selecting previously unselected package libdatrie1:amd64.
+2026-11-21T02:30:59.7908707Z #14 9.634 Preparing to unpack .../045-libdatrie1_0.2.13-2+b1_amd64.deb ...
+2026-11-21T02:30:59.7909754Z #14 9.635 Unpacking libdatrie1:amd64 (0.2.13-2+b1) ...
+2026-11-21T02:30:59.7910720Z #14 9.647 Selecting previously unselected package libdrm-common.
+2026-11-21T02:30:59.7911572Z #14 9.648 Preparing to unpack .../046-libdrm-common_2.4.114-1_all.deb ...
+2026-11-21T02:30:59.7912266Z #14 9.649 Unpacking libdrm-common (2.4.114-1) ...
+2026-11-21T02:30:59.7912870Z #14 9.659 Selecting previously unselected package libdrm2:amd64.
+2026-11-21T02:30:59.8947673Z #14 9.660 Preparing to unpack .../047-libdrm2_2.4.114-1+b1_amd64.deb ...
+2026-11-21T02:30:59.8948282Z #14 9.661 Unpacking libdrm2:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:30:59.8948762Z #14 9.674 Selecting previously unselected package libdrm-amdgpu1:amd64.
+2026-11-21T02:30:59.8949310Z #14 9.675 Preparing to unpack .../048-libdrm-amdgpu1_2.4.114-1+b1_amd64.deb ...
+2026-11-21T02:30:59.8949801Z #14 9.675 Unpacking libdrm-amdgpu1:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:30:59.8950496Z #14 9.686 Selecting previously unselected package libpciaccess0:amd64.
+2026-11-21T02:30:59.8951032Z #14 9.687 Preparing to unpack .../049-libpciaccess0_0.17-2_amd64.deb ...
+2026-11-21T02:30:59.8951481Z #14 9.688 Unpacking libpciaccess0:amd64 (0.17-2) ...
+2026-11-21T02:30:59.8951935Z #14 9.703 Selecting previously unselected package libdrm-intel1:amd64.
+2026-11-21T02:30:59.8952649Z #14 9.704 Preparing to unpack .../050-libdrm-intel1_2.4.114-1+b1_amd64.deb ...
+2026-11-21T02:30:59.8953405Z #14 9.704 Unpacking libdrm-intel1:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:30:59.8954122Z #14 9.719 Selecting previously unselected package libdrm-nouveau2:amd64.
+2026-11-21T02:30:59.8954990Z #14 9.720 Preparing to unpack .../051-libdrm-nouveau2_2.4.114-1+b1_amd64.deb ...
+2026-11-21T02:30:59.8955703Z #14 9.721 Unpacking libdrm-nouveau2:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:30:59.8956417Z #14 9.732 Selecting previously unselected package libdrm-radeon1:amd64.
+2026-11-21T02:30:59.8957061Z #14 9.733 Preparing to unpack .../052-libdrm-radeon1_2.4.114-1+b1_amd64.deb ...
+2026-11-21T02:30:59.8957737Z #14 9.734 Unpacking libdrm-radeon1:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:30:59.8958280Z #14 9.746 Selecting previously unselected package libedit2:amd64.
+2026-11-21T02:30:59.8958770Z #14 9.747 Preparing to unpack .../053-libedit2_3.1-20221030-2_amd64.deb ...
+2026-11-21T02:30:59.8959400Z #14 9.748 Unpacking libedit2:amd64 (3.1-20221030-2) ...
+2026-11-21T02:30:59.8960061Z #14 9.764 Selecting previously unselected package libelf1:amd64.
+2026-11-21T02:30:59.9948247Z #14 9.765 Preparing to unpack .../054-libelf1_0.188-2.1_amd64.deb ...
+2026-11-21T02:30:59.9948758Z #14 9.765 Unpacking libelf1:amd64 (0.188-2.1) ...
+2026-11-21T02:30:59.9949214Z #14 9.788 Selecting previously unselected package libfontenc1:amd64.
+2026-11-21T02:30:59.9949733Z #14 9.789 Preparing to unpack .../055-libfontenc1_1%3a1.1.4-1_amd64.deb ...
+2026-11-21T02:30:59.9950502Z #14 9.789 Unpacking libfontenc1:amd64 (1:1.1.4-1) ...
+2026-11-21T02:30:59.9951012Z #14 9.800 Selecting previously unselected package libfribidi0:amd64.
+2026-11-21T02:30:59.9951503Z #14 9.801 Preparing to unpack .../056-libfribidi0_1.0.8-2.1_amd64.deb ...
+2026-11-21T02:30:59.9951947Z #14 9.802 Unpacking libfribidi0:amd64 (1.0.8-2.1) ...
+2026-11-21T02:30:59.9952635Z #14 9.816 Selecting previously unselected package libwayland-server0:amd64.
+2026-11-21T02:30:59.9953191Z #14 9.817 Preparing to unpack .../057-libwayland-server0_1.21.0-1_amd64.deb ...
+2026-11-21T02:30:59.9953685Z #14 9.818 Unpacking libwayland-server0:amd64 (1.21.0-1) ...
+2026-11-21T02:30:59.9954126Z #14 9.831 Selecting previously unselected package libgbm1:amd64.
+2026-11-21T02:30:59.9954611Z #14 9.832 Preparing to unpack .../058-libgbm1_22.3.6-1+deb12u2_amd64.deb ...
+2026-11-21T02:30:59.9955109Z #14 9.833 Unpacking libgbm1:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:30:59.9955547Z #14 9.845 Selecting previously unselected package libglvnd0:amd64.
+2026-11-21T02:30:59.9956217Z #14 9.846 Preparing to unpack .../059-libglvnd0_1.6.0-1_amd64.deb ...
+2026-11-21T02:30:59.9956934Z #14 9.847 Unpacking libglvnd0:amd64 (1.6.0-1) ...
+2026-11-21T02:30:59.9957666Z #14 9.862 Selecting previously unselected package libglapi-mesa:amd64.
+2026-11-21T02:30:59.9958589Z #14 9.863 Preparing to unpack .../060-libglapi-mesa_22.3.6-1+deb12u2_amd64.deb ...
+2026-11-21T02:30:59.9959223Z #14 9.864 Unpacking libglapi-mesa:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:00.1019974Z #14 9.877 Selecting previously unselected package libx11-xcb1:amd64.
+2026-11-21T02:31:00.1021424Z #14 9.878 Preparing to unpack .../061-libx11-xcb1_2%3a1.8.4-2+deb12u2_amd64.deb ...
+2026-11-21T02:31:00.1022453Z #14 9.879 Unpacking libx11-xcb1:amd64 (2:1.8.4-2+deb12u2) ...
+2026-11-21T02:31:00.1023416Z #14 9.894 Selecting previously unselected package libxcb-dri2-0:amd64.
+2026-11-21T02:31:00.1024422Z #14 9.895 Preparing to unpack .../062-libxcb-dri2-0_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.1025243Z #14 9.895 Unpacking libxcb-dri2-0:amd64 (1.15-1) ...
+2026-11-21T02:31:00.1027511Z #14 9.913 Selecting previously unselected package libxcb-dri3-0:amd64.
+2026-11-21T02:31:00.1028414Z #14 9.914 Preparing to unpack .../063-libxcb-dri3-0_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.1029166Z #14 9.915 Unpacking libxcb-dri3-0:amd64 (1.15-1) ...
+2026-11-21T02:31:00.1029952Z #14 9.932 Selecting previously unselected package libxcb-glx0:amd64.
+2026-11-21T02:31:00.1030970Z #14 9.933 Preparing to unpack .../064-libxcb-glx0_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.1031652Z #14 9.934 Unpacking libxcb-glx0:amd64 (1.15-1) ...
+2026-11-21T02:31:00.1032440Z #14 9.952 Selecting previously unselected package libxcb-present0:amd64.
+2026-11-21T02:31:00.1033321Z #14 9.953 Preparing to unpack .../065-libxcb-present0_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.1034039Z #14 9.954 Unpacking libxcb-present0:amd64 (1.15-1) ...
+2026-11-21T02:31:00.1034822Z #14 9.971 Selecting previously unselected package libxcb-randr0:amd64.
+2026-11-21T02:31:00.3509181Z #14 9.972 Preparing to unpack .../066-libxcb-randr0_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.3510143Z #14 9.973 Unpacking libxcb-randr0:amd64 (1.15-1) ...
+2026-11-21T02:31:00.3511169Z #14 9.990 Selecting previously unselected package libxcb-sync1:amd64.
+2026-11-21T02:31:00.3512219Z #14 9.992 Preparing to unpack .../067-libxcb-sync1_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.3513111Z #14 9.993 Unpacking libxcb-sync1:amd64 (1.15-1) ...
+2026-11-21T02:31:00.3514017Z #14 10.01 Selecting previously unselected package libxcb-xfixes0:amd64.
+2026-11-21T02:31:00.3515042Z #14 10.01 Preparing to unpack .../068-libxcb-xfixes0_1.15-1_amd64.deb ...
+2026-11-21T02:31:00.3515890Z #14 10.01 Unpacking libxcb-xfixes0:amd64 (1.15-1) ...
+2026-11-21T02:31:00.3516719Z #14 10.03 Selecting previously unselected package libxfixes3:amd64.
+2026-11-21T02:31:00.3517660Z #14 10.03 Preparing to unpack .../069-libxfixes3_1%3a6.0.0-2_amd64.deb ...
+2026-11-21T02:31:00.3518481Z #14 10.03 Unpacking libxfixes3:amd64 (1:6.0.0-2) ...
+2026-11-21T02:31:00.3519310Z #14 10.04 Selecting previously unselected package libxshmfence1:amd64.
+2026-11-21T02:31:00.3520343Z #14 10.04 Preparing to unpack .../070-libxshmfence1_1.3-1_amd64.deb ...
+2026-11-21T02:31:00.3521126Z #14 10.04 Unpacking libxshmfence1:amd64 (1.3-1) ...
+2026-11-21T02:31:00.3521930Z #14 10.05 Selecting previously unselected package libxxf86vm1:amd64.
+2026-11-21T02:31:00.3523219Z #14 10.06 Preparing to unpack .../071-libxxf86vm1_1%3a1.1.4-1+b2_amd64.deb ...
+2026-11-21T02:31:00.3524037Z #14 10.06 Unpacking libxxf86vm1:amd64 (1:1.1.4-1+b2) ...
+2026-11-21T02:31:00.3524837Z #14 10.07 Selecting previously unselected package libicu72:amd64.
+2026-11-21T02:31:00.3525734Z #14 10.07 Preparing to unpack .../072-libicu72_72.1-3+deb12u1_amd64.deb ...
+2026-11-21T02:31:00.3526580Z #14 10.07 Unpacking libicu72:amd64 (72.1-3+deb12u1) ...
+2026-11-21T02:31:00.6776829Z #14 10.55 Selecting previously unselected package libxml2:amd64.
+2026-11-21T02:31:00.8837011Z #14 10.55 Preparing to unpack .../073-libxml2_2.9.14+dfsg-1.3~deb12u6_amd64.deb ...
+2026-11-21T02:31:00.8837850Z #14 10.55 Unpacking libxml2:amd64 (2.9.14+dfsg-1.3~deb12u6) ...
+2026-11-21T02:31:00.8838341Z #14 10.60 Selecting previously unselected package libz3-4:amd64.
+2026-11-21T02:31:00.8838818Z #14 10.60 Preparing to unpack .../074-libz3-4_4.8.12-3.1_amd64.deb ...
+2026-11-21T02:31:00.8839250Z #14 10.60 Unpacking libz3-4:amd64 (4.8.12-3.1) ...
+2026-11-21T02:31:01.2150796Z #14 11.08 Selecting previously unselected package libllvm15:amd64.
+2026-11-21T02:31:01.3670752Z #14 11.09 Preparing to unpack .../075-libllvm15_1%3a15.0.6-4+b1_amd64.deb ...
+2026-11-21T02:31:01.3671968Z #14 11.09 Unpacking libllvm15:amd64 (1:15.0.6-4+b1) ...
+2026-11-21T02:31:02.0230683Z #14 11.89 Selecting previously unselected package libsensors-config.
+2026-11-21T02:31:02.2089524Z #14 11.89 Preparing to unpack .../076-libsensors-config_1%3a3.6.0-7.1_all.deb ...
+2026-11-21T02:31:02.2090495Z #14 11.89 Unpacking libsensors-config (1:3.6.0-7.1) ...
+2026-11-21T02:31:02.2091237Z #14 11.91 Selecting previously unselected package libsensors5:amd64.
+2026-11-21T02:31:02.2092245Z #14 11.91 Preparing to unpack .../077-libsensors5_1%3a3.6.0-7.1_amd64.deb ...
+2026-11-21T02:31:02.2093089Z #14 11.91 Unpacking libsensors5:amd64 (1:3.6.0-7.1) ...
+2026-11-21T02:31:02.2093687Z #14 11.92 Selecting previously unselected package libgl1-mesa-dri:amd64.
+2026-11-21T02:31:02.2094240Z #14 11.92 Preparing to unpack .../078-libgl1-mesa-dri_22.3.6-1+deb12u2_amd64.deb ...
+2026-11-21T02:31:02.2094745Z #14 11.93 Unpacking libgl1-mesa-dri:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:02.5308343Z #14 12.40 Selecting previously unselected package libglx-mesa0:amd64.
+2026-11-21T02:31:02.6703653Z #14 12.40 Preparing to unpack .../079-libglx-mesa0_22.3.6-1+deb12u2_amd64.deb ...
+2026-11-21T02:31:02.6704568Z #14 12.40 Unpacking libglx-mesa0:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:02.6705488Z #14 12.42 Selecting previously unselected package libglx0:amd64.
+2026-11-21T02:31:02.6706429Z #14 12.42 Preparing to unpack .../080-libglx0_1.6.0-1_amd64.deb ...
+2026-11-21T02:31:02.6707253Z #14 12.42 Unpacking libglx0:amd64 (1.6.0-1) ...
+2026-11-21T02:31:02.6708125Z #14 12.44 Selecting previously unselected package libgl1:amd64.
+2026-11-21T02:31:02.6709013Z #14 12.44 Preparing to unpack .../081-libgl1_1.6.0-1_amd64.deb ...
+2026-11-21T02:31:02.6709841Z #14 12.44 Unpacking libgl1:amd64 (1.6.0-1) ...
+2026-11-21T02:31:02.6711518Z #14 12.45 Selecting previously unselected package libgraphite2-3:amd64.
+2026-11-21T02:31:02.6712510Z #14 12.46 Preparing to unpack .../082-libgraphite2-3_1.3.14-1+deb12u1_amd64.deb ...
+2026-11-21T02:31:02.6713325Z #14 12.46 Unpacking libgraphite2-3:amd64 (1.3.14-1+deb12u1) ...
+2026-11-21T02:31:02.6714022Z #14 12.47 Selecting previously unselected package libharfbuzz0b:amd64.
+2026-11-21T02:31:02.6714633Z #14 12.47 Preparing to unpack .../083-libharfbuzz0b_6.0.0+dfsg-3_amd64.deb ...
+2026-11-21T02:31:02.6715204Z #14 12.49 Unpacking libharfbuzz0b:amd64 (6.0.0+dfsg-3) ...
+2026-11-21T02:31:02.6715709Z #14 12.54 Selecting previously unselected package x11-common.
+2026-11-21T02:31:02.7832432Z #14 12.54 Preparing to unpack .../084-x11-common_1%3a7.7+23_all.deb ...
+2026-11-21T02:31:02.7832926Z #14 12.55 Unpacking x11-common (1:7.7+23) ...
+2026-11-21T02:31:02.7833347Z #14 12.56 Selecting previously unselected package libice6:amd64.
+2026-11-21T02:31:02.7834047Z #14 12.57 Preparing to unpack .../085-libice6_2%3a1.0.10-1_amd64.deb ...
+2026-11-21T02:31:02.7834478Z #14 12.57 Unpacking libice6:amd64 (2:1.0.10-1) ...
+2026-11-21T02:31:02.7834891Z #14 12.58 Selecting previously unselected package libnspr4:amd64.
+2026-11-21T02:31:02.7835363Z #14 12.58 Preparing to unpack .../086-libnspr4_2%3a4.35-1_amd64.deb ...
+2026-11-21T02:31:02.7835784Z #14 12.58 Unpacking libnspr4:amd64 (2:4.35-1) ...
+2026-11-21T02:31:02.7836210Z #14 12.60 Selecting previously unselected package libsqlite3-0:amd64.
+2026-11-21T02:31:02.7836713Z #14 12.60 Preparing to unpack .../087-libsqlite3-0_3.40.1-2+deb12u2_amd64.deb ...
+2026-11-21T02:31:02.7837320Z #14 12.60 Unpacking libsqlite3-0:amd64 (3.40.1-2+deb12u2) ...
+2026-11-21T02:31:02.7838124Z #14 12.65 Selecting previously unselected package libnss3:amd64.
+2026-11-21T02:31:02.9044710Z #14 12.65 Preparing to unpack .../088-libnss3_2%3a3.87.1-1+deb12u4_amd64.deb ...
+2026-11-21T02:31:02.9045677Z #14 12.65 Unpacking libnss3:amd64 (2:3.87.1-1+deb12u4) ...
+2026-11-21T02:31:02.9046714Z #14 12.75 Selecting previously unselected package libthai-data.
+2026-11-21T02:31:02.9047657Z #14 12.75 Preparing to unpack .../089-libthai-data_0.1.29-1_all.deb ...
+2026-11-21T02:31:02.9048515Z #14 12.75 Unpacking libthai-data (0.1.29-1) ...
+2026-11-21T02:31:02.9049419Z #14 12.77 Selecting previously unselected package libthai0:amd64.
+2026-11-21T02:31:03.0109706Z #14 12.77 Preparing to unpack .../090-libthai0_0.1.29-1_amd64.deb ...
+2026-11-21T02:31:03.0110736Z #14 12.78 Unpacking libthai0:amd64 (0.1.29-1) ...
+2026-11-21T02:31:03.0111704Z #14 12.79 Selecting previously unselected package libpango-1.0-0:amd64.
+2026-11-21T02:31:03.0112678Z #14 12.79 Preparing to unpack .../091-libpango-1.0-0_1.50.12+ds-1_amd64.deb ...
+2026-11-21T02:31:03.0113559Z #14 12.79 Unpacking libpango-1.0-0:amd64 (1.50.12+ds-1) ...
+2026-11-21T02:31:03.0114458Z #14 12.81 Selecting previously unselected package libsm6:amd64.
+2026-11-21T02:31:03.0115380Z #14 12.82 Preparing to unpack .../092-libsm6_2%3a1.2.3-1_amd64.deb ...
+2026-11-21T02:31:03.0116777Z #14 12.82 Unpacking libsm6:amd64 (2:1.2.3-1) ...
+2026-11-21T02:31:03.0117623Z #14 12.83 Selecting previously unselected package libunwind8:amd64.
+2026-11-21T02:31:03.0118399Z #14 12.83 Preparing to unpack .../093-libunwind8_1.6.2-3_amd64.deb ...
+2026-11-21T02:31:03.0118918Z #14 12.83 Unpacking libunwind8:amd64 (1.6.2-3) ...
+2026-11-21T02:31:03.0119367Z #14 12.84 Selecting previously unselected package libxt6:amd64.
+2026-11-21T02:31:03.0119830Z #14 12.84 Preparing to unpack .../094-libxt6_1%3a1.2.1-1.1_amd64.deb ...
+2026-11-21T02:31:03.0120710Z #14 12.84 Unpacking libxt6:amd64 (1:1.2.1-1.1) ...
+2026-11-21T02:31:03.0121458Z #14 12.87 Selecting previously unselected package libxmu6:amd64.
+2026-11-21T02:31:03.0122274Z #14 12.87 Preparing to unpack .../095-libxmu6_2%3a1.1.3-3_amd64.deb ...
+2026-11-21T02:31:03.0123013Z #14 12.87 Unpacking libxmu6:amd64 (2:1.1.3-3) ...
+2026-11-21T02:31:03.0123880Z #14 12.88 Selecting previously unselected package libxpm4:amd64.
+2026-11-21T02:31:03.1702866Z #14 12.88 Preparing to unpack .../096-libxpm4_1%3a3.5.12-1.1+deb12u1_amd64.deb ...
+2026-11-21T02:31:03.1703898Z #14 12.88 Unpacking libxpm4:amd64 (1:3.5.12-1.1+deb12u1) ...
+2026-11-21T02:31:03.1704485Z #14 12.90 Selecting previously unselected package libxaw7:amd64.
+2026-11-21T02:31:03.1705050Z #14 12.90 Preparing to unpack .../097-libxaw7_2%3a1.0.14-1_amd64.deb ...
+2026-11-21T02:31:03.1705517Z #14 12.90 Unpacking libxaw7:amd64 (2:1.0.14-1) ...
+2026-11-21T02:31:03.1706134Z #14 12.92 Selecting previously unselected package libxcomposite1:amd64.
+2026-11-21T02:31:03.1706746Z #14 12.92 Preparing to unpack .../098-libxcomposite1_1%3a0.4.5-1_amd64.deb ...
+2026-11-21T02:31:03.1707478Z #14 12.92 Unpacking libxcomposite1:amd64 (1:0.4.5-1) ...
+2026-11-21T02:31:03.1708251Z #14 12.93 Selecting previously unselected package libxdamage1:amd64.
+2026-11-21T02:31:03.1709206Z #14 12.93 Preparing to unpack .../099-libxdamage1_1%3a1.1.6-1_amd64.deb ...
+2026-11-21T02:31:03.1709980Z #14 12.93 Unpacking libxdamage1:amd64 (1:1.1.6-1) ...
+2026-11-21T02:31:03.1710925Z #14 12.95 Selecting previously unselected package libxfont2:amd64.
+2026-11-21T02:31:03.1711529Z #14 12.95 Preparing to unpack .../100-libxfont2_1%3a2.0.6-1+deb12u1_amd64.deb ...
+2026-11-21T02:31:03.1712003Z #14 12.95 Unpacking libxfont2:amd64 (1:2.0.6-1+deb12u1) ...
+2026-11-21T02:31:03.1712418Z #14 12.96 Selecting previously unselected package xkb-data.
+2026-11-21T02:31:03.1712850Z #14 12.97 Preparing to unpack .../101-xkb-data_2.35.1-1_all.deb ...
+2026-11-21T02:31:03.1713240Z #14 12.97 Unpacking xkb-data (2.35.1-1) ...
+2026-11-21T02:31:03.1713654Z #14 13.04 Selecting previously unselected package libxkbcommon0:amd64.
+2026-11-21T02:31:03.2929016Z #14 13.04 Preparing to unpack .../102-libxkbcommon0_1.5.0-1_amd64.deb ...
+2026-11-21T02:31:03.2930449Z #14 13.04 Unpacking libxkbcommon0:amd64 (1.5.0-1) ...
+2026-11-21T02:31:03.2930987Z #14 13.06 Selecting previously unselected package libxkbfile1:amd64.
+2026-11-21T02:31:03.2931691Z #14 13.06 Preparing to unpack .../103-libxkbfile1_1%3a1.1.0-1_amd64.deb ...
+2026-11-21T02:31:03.2932258Z #14 13.06 Unpacking libxkbfile1:amd64 (1:1.1.0-1) ...
+2026-11-21T02:31:03.2932728Z #14 13.07 Selecting previously unselected package libxrandr2:amd64.
+2026-11-21T02:31:03.2933287Z #14 13.07 Preparing to unpack .../104-libxrandr2_2%3a1.5.2-2+b1_amd64.deb ...
+2026-11-21T02:31:03.2933830Z #14 13.08 Unpacking libxrandr2:amd64 (2:1.5.2-2+b1) ...
+2026-11-21T02:31:03.2934250Z #14 13.09 Selecting previously unselected package x11-xkb-utils.
+2026-11-21T02:31:03.2935007Z #14 13.09 Preparing to unpack .../105-x11-xkb-utils_7.7+7_amd64.deb ...
+2026-11-21T02:31:03.2935664Z #14 13.09 Unpacking x11-xkb-utils (7.7+7) ...
+2026-11-21T02:31:03.2936330Z #14 13.11 Selecting previously unselected package xfonts-encodings.
+2026-11-21T02:31:03.2936979Z #14 13.11 Preparing to unpack .../106-xfonts-encodings_1%3a1.0.4-2.2_all.deb ...
+2026-11-21T02:31:03.2937746Z #14 13.11 Unpacking xfonts-encodings (1:1.0.4-2.2) ...
+2026-11-21T02:31:03.2938517Z #14 13.16 Selecting previously unselected package xfonts-utils.
+2026-11-21T02:31:03.4473221Z #14 13.16 Preparing to unpack .../107-xfonts-utils_1%3a7.7+6_amd64.deb ...
+2026-11-21T02:31:03.4473894Z #14 13.16 Unpacking xfonts-utils (1:7.7+6) ...
+2026-11-21T02:31:03.4474470Z #14 13.18 Selecting previously unselected package xfonts-scalable.
+2026-11-21T02:31:03.4475126Z #14 13.18 Preparing to unpack .../108-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+2026-11-21T02:31:03.4475688Z #14 13.18 Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+2026-11-21T02:31:03.4476287Z #14 13.22 Selecting previously unselected package xserver-common.
+2026-11-21T02:31:03.4476953Z #14 13.22 Preparing to unpack .../109-xserver-common_2%3a21.1.7-3+deb12u13_all.deb ...
+2026-11-21T02:31:03.4477570Z #14 13.22 Unpacking xserver-common (2:21.1.7-3+deb12u13) ...
+2026-11-21T02:31:03.4477978Z #14 13.24 Selecting previously unselected package xvfb.
+2026-11-21T02:31:03.4478509Z #14 13.24 Preparing to unpack .../110-xvfb_2%3a21.1.7-3+deb12u13_amd64.deb ...
+2026-11-21T02:31:03.4479113Z #14 13.24 Unpacking xvfb (2:21.1.7-3+deb12u13) ...
+2026-11-21T02:31:03.4479569Z #14 13.32 Setting up libexpat1:amd64 (2.5.0-1+deb12u5) ...
+2026-11-21T02:31:03.5497359Z #14 13.32 Setting up libgraphite2-3:amd64 (1.3.14-1+deb12u1) ...
+2026-11-21T02:31:03.5498108Z #14 13.32 Setting up libpixman-1-0:amd64 (0.42.2-1) ...
+2026-11-21T02:31:03.5498793Z #14 13.32 Setting up libwayland-server0:amd64 (1.21.0-1) ...
+2026-11-21T02:31:03.5499408Z #14 13.32 Setting up libpciaccess0:amd64 (0.17-2) ...
+2026-11-21T02:31:03.5500032Z #14 13.33 Setting up libxau6:amd64 (1:1.0.9-1) ...
+2026-11-21T02:31:03.5501566Z #14 13.33 Setting up libkeyutils1:amd64 (1.6.3-2) ...
+2026-11-21T02:31:03.5501997Z #14 13.33 Setting up libicu72:amd64 (72.1-3+deb12u1) ...
+2026-11-21T02:31:03.5502431Z #14 13.33 Setting up libdatrie1:amd64 (0.2.13-2+b1) ...
+2026-11-21T02:31:03.5502855Z #14 13.33 Setting up fonts-noto-color-emoji (2.042-0+deb12u1) ...
+2026-11-21T02:31:03.5503449Z #14 13.33 Setting up libglib2.0-0:amd64 (2.74.6-2+deb12u9) ...
+2026-11-21T02:31:03.5504410Z #14 13.34 No schema files found: doing nothing.
+2026-11-21T02:31:03.5505005Z #14 13.34 Setting up libglvnd0:amd64 (1.6.0-1) ...
+2026-11-21T02:31:03.5505478Z #14 13.34 Setting up libbrotli1:amd64 (1.0.9-2+deb12u1) ...
+2026-11-21T02:31:03.5506036Z #14 13.34 Setting up libsqlite3-0:amd64 (3.40.1-2+deb12u2) ...
+2026-11-21T02:31:03.5506444Z #14 13.34 Setting up libssl3:amd64 (3.0.22-1~deb12u2) ...
+2026-11-21T02:31:03.5506900Z #14 13.35 Setting up x11-common (1:7.7+23) ...
+2026-11-21T02:31:03.5507272Z #14 13.41 debconf: unable to initialize frontend: Dialog
+2026-11-21T02:31:03.5507857Z #14 13.41 debconf: (TERM is not set, so the dialog frontend is not usable.)
+2026-11-21T02:31:03.5508401Z #14 13.41 debconf: falling back to frontend: Readline
+2026-11-21T02:31:03.5508969Z #14 13.41 debconf: unable to initialize frontend: Readline
+2026-11-21T02:31:03.5511839Z #14 13.41 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+2026-11-21T02:31:03.5514041Z #14 13.41 debconf: falling back to frontend: Teletype
+2026-11-21T02:31:03.5514717Z #14 13.42 invoke-rc.d: could not determine current runlevel
+2026-11-21T02:31:03.6748410Z #14 13.42 invoke-rc.d: policy-rc.d denied execution of restart.
+2026-11-21T02:31:03.6749230Z #14 13.42 Setting up libsensors-config (1:3.6.0-7.1) ...
+2026-11-21T02:31:03.6749879Z #14 13.43 Setting up fonts-freefont-ttf (20120503-10) ...
+2026-11-21T02:31:03.6750742Z #14 13.43 Setting up xkb-data (2.35.1-1) ...
+2026-11-21T02:31:03.6751392Z #14 13.43 Setting up libunwind8:amd64 (1.6.2-3) ...
+2026-11-21T02:31:03.6752138Z #14 13.43 Setting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:31:03.6752728Z #14 13.44 Setting up libasound2-data (1.2.8-1) ...
+2026-11-21T02:31:03.6753129Z #14 13.44 Setting up libfontenc1:amd64 (1:1.1.4-1) ...
+2026-11-21T02:31:03.6753492Z #14 13.44 Setting up libz3-4:amd64 (4.8.12-3.1) ...
+2026-11-21T02:31:03.6753881Z #14 13.44 Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+2026-11-21T02:31:03.6754274Z #14 13.44 Setting up libx11-data (2:1.8.4-2+deb12u2) ...
+2026-11-21T02:31:03.6754676Z #14 13.44 Setting up libnspr4:amd64 (2:4.35-1) ...
+2026-11-21T02:31:03.6755094Z #14 13.44 Setting up libavahi-common-data:amd64 (0.8-10+deb12u1) ...
+2026-11-21T02:31:03.6755548Z #14 13.45 Setting up libdbus-1-3:amd64 (1.14.10-1~deb12u1) ...
+2026-11-21T02:31:03.6755952Z #14 13.45 Setting up xfonts-encodings (1:1.0.4-2.2) ...
+2026-11-21T02:31:03.6756334Z #14 13.45 Setting up libfribidi0:amd64 (1.0.8-2.1) ...
+2026-11-21T02:31:03.6756740Z #14 13.45 Setting up libpng16-16:amd64 (1.6.39-2+deb12u6) ...
+2026-11-21T02:31:03.6757142Z #14 13.45 Setting up libsensors5:amd64 (1:3.6.0-7.1) ...
+2026-11-21T02:31:03.6757548Z #14 13.45 Setting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:31:03.6757983Z #14 13.45 Setting up libglapi-mesa:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:03.6758391Z #14 13.46 Setting up fonts-ipafont-gothic (00303-23) ...
+2026-11-21T02:31:03.6759372Z #14 13.46 update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+2026-11-21T02:31:03.6760420Z #14 13.46 Setting up libxshmfence1:amd64 (1.3-1) ...
+2026-11-21T02:31:03.6760851Z #14 13.46 Setting up at-spi2-common (2.46.0-5) ...
+2026-11-21T02:31:03.6761225Z #14 13.46 Setting up libasound2:amd64 (1.2.8-1+b1) ...
+2026-11-21T02:31:03.6761630Z #14 13.46 Setting up fonts-liberation (1:1.07.4-11) ...
+2026-11-21T02:31:03.6762001Z #14 13.47 Setting up libthai-data (0.1.29-1) ...
+2026-11-21T02:31:03.6762374Z #14 13.47 Setting up libatk1.0-0:amd64 (2.46.0-5) ...
+2026-11-21T02:31:03.6762779Z #14 13.47 Setting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:31:03.6763462Z #14 13.47 Setting up libbsd0:amd64 (0.11.7-2) ...
+2026-11-21T02:31:03.6763824Z #14 13.47 Setting up libdrm-common (2.4.114-1) ...
+2026-11-21T02:31:03.6764181Z #14 13.47 Setting up libelf1:amd64 (0.188-2.1) ...
+2026-11-21T02:31:03.6764587Z #14 13.48 Setting up libxml2:amd64 (2.9.14+dfsg-1.3~deb12u6) ...
+2026-11-21T02:31:03.6764986Z #14 13.48 Setting up fonts-unifont (1:15.0.01-2) ...
+2026-11-21T02:31:03.6765362Z #14 13.48 Setting up libxkbcommon0:amd64 (1.5.0-1) ...
+2026-11-21T02:31:03.6765733Z #14 13.48 Setting up libice6:amd64 (2:1.0.10-1) ...
+2026-11-21T02:31:03.6766095Z #14 13.48 Setting up libxdmcp6:amd64 (1:1.1.2-3) ...
+2026-11-21T02:31:03.6766441Z #14 13.48 Setting up libxcb1:amd64 (1.15-1) ...
+2026-11-21T02:31:03.6766922Z #14 13.49 Setting up libxcb-xfixes0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.6767293Z #14 13.49 Setting up libxcb-render0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.6767658Z #14 13.49 Setting up fontconfig-config (2.14.1-4) ...
+2026-11-21T02:31:03.6768058Z #14 13.54 debconf: unable to initialize frontend: Dialog
+2026-11-21T02:31:03.6768514Z #14 13.54 debconf: (TERM is not set, so the dialog frontend is not usable.)
+2026-11-21T02:31:03.6768950Z #14 13.54 debconf: falling back to frontend: Readline
+2026-11-21T02:31:03.7752885Z #14 13.54 debconf: unable to initialize frontend: Readline
+2026-11-21T02:31:03.7755511Z #14 13.54 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+2026-11-21T02:31:03.7757889Z #14 13.54 debconf: falling back to frontend: Teletype
+2026-11-21T02:31:03.7758581Z #14 13.64 Setting up libxcb-glx0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.7759024Z #14 13.64 Setting up libedit2:amd64 (3.1-20221030-2) ...
+2026-11-21T02:31:03.7759545Z #14 13.64 Setting up libavahi-common3:amd64 (0.8-10+deb12u1) ...
+2026-11-21T02:31:03.7760006Z #14 13.64 Setting up libnss3:amd64 (2:3.87.1-1+deb12u4) ...
+2026-11-21T02:31:03.9841107Z #14 13.65 Setting up libxcb-shm0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.9842020Z #14 13.65 Setting up libxcb-present0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.9842956Z #14 13.65 Setting up libthai0:amd64 (0.1.29-1) ...
+2026-11-21T02:31:03.9843878Z #14 13.65 Setting up libfreetype6:amd64 (2.12.1+dfsg-5+deb12u4) ...
+2026-11-21T02:31:03.9844869Z #14 13.65 Setting up libxcb-sync1:amd64 (1.15-1) ...
+2026-11-21T02:31:03.9845386Z #14 13.65 Setting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+2026-11-21T02:31:03.9846301Z #14 13.66 Setting up libxcb-dri2-0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.9846940Z #14 13.66 Setting up libdrm2:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:31:03.9847373Z #14 13.66 Setting up libxcb-randr0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.9848353Z #14 13.66 Setting up libllvm15:amd64 (1:15.0.6-4+b1) ...
+2026-11-21T02:31:03.9848945Z #14 13.66 Setting up libx11-6:amd64 (2:1.8.4-2+deb12u2) ...
+2026-11-21T02:31:03.9849553Z #14 13.67 Setting up libharfbuzz0b:amd64 (6.0.0+dfsg-3) ...
+2026-11-21T02:31:03.9850653Z #14 13.67 Setting up libfontconfig1:amd64 (2.14.1-4) ...
+2026-11-21T02:31:03.9851149Z #14 13.67 Setting up libxkbfile1:amd64 (1:1.1.0-1) ...
+2026-11-21T02:31:03.9851883Z #14 13.67 Setting up libxcomposite1:amd64 (1:0.4.5-1) ...
+2026-11-21T02:31:03.9852623Z #14 13.67 Setting up libsm6:amd64 (2:1.2.3-1) ...
+2026-11-21T02:31:03.9853101Z #14 13.67 Setting up libxfont2:amd64 (1:2.0.6-1+deb12u1) ...
+2026-11-21T02:31:03.9854006Z #14 13.68 Setting up libavahi-client3:amd64 (0.8-10+deb12u1) ...
+2026-11-21T02:31:03.9854661Z #14 13.68 Setting up libdrm-amdgpu1:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:31:03.9855197Z #14 13.70 Setting up libxcb-dri3-0:amd64 (1.15-1) ...
+2026-11-21T02:31:03.9856153Z #14 13.70 Setting up libx11-xcb1:amd64 (2:1.8.4-2+deb12u2) ...
+2026-11-21T02:31:03.9857114Z #14 13.70 Setting up fontconfig (2.14.1-4) ...
+2026-11-21T02:31:05.9019286Z #14 13.70 Regenerating fonts cache... done.
+2026-11-21T02:31:06.0353688Z #14 15.77 Setting up libdrm-nouveau2:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:31:06.0354680Z #14 15.77 Setting up libxdamage1:amd64 (1:1.1.6-1) ...
+2026-11-21T02:31:06.0355122Z #14 15.78 Setting up libxpm4:amd64 (1:3.5.12-1.1+deb12u1) ...
+2026-11-21T02:31:06.0355554Z #14 15.78 Setting up libxrender1:amd64 (1:0.9.10-1.1) ...
+2026-11-21T02:31:06.0355959Z #14 15.78 Setting up libgbm1:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:06.0356368Z #14 15.78 Setting up libdrm-radeon1:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:31:06.0356793Z #14 15.78 Setting up libpango-1.0-0:amd64 (1.50.12+ds-1) ...
+2026-11-21T02:31:06.0357561Z #14 15.79 Setting up libdrm-intel1:amd64 (2.4.114-1+b1) ...
+2026-11-21T02:31:06.0358000Z #14 15.79 Setting up libgl1-mesa-dri:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:06.0358415Z #14 15.79 Setting up fonts-wqy-zenhei (0.9.45-8) ...
+2026-11-21T02:31:06.0358820Z #14 15.80 Setting up libxext6:amd64 (2:1.3.4-1+b1) ...
+2026-11-21T02:31:06.0359193Z #14 15.80 Setting up xfonts-utils (1:7.7+6) ...
+2026-11-21T02:31:06.0359558Z #14 15.81 Setting up libcairo2:amd64 (1.16.0-7) ...
+2026-11-21T02:31:06.0359948Z #14 15.81 Setting up libxxf86vm1:amd64 (1:1.1.4-1+b2) ...
+2026-11-21T02:31:06.0360616Z #14 15.81 Setting up libxfixes3:amd64 (1:6.0.0-2) ...
+2026-11-21T02:31:06.0361010Z #14 15.81 Setting up libxrandr2:amd64 (2:1.5.2-2+b1) ...
+2026-11-21T02:31:06.0361392Z #14 15.81 Setting up libxt6:amd64 (1:1.2.1-1.1) ...
+2026-11-21T02:31:06.0361775Z #14 15.81 Setting up libcups2:amd64 (2.4.2-3+deb12u9) ...
+2026-11-21T02:31:06.0362159Z #14 15.82 Setting up xfonts-scalable (1:1.0.3-1.3) ...
+2026-11-21T02:31:06.0362550Z #14 15.84 Setting up libxmu6:amd64 (2:1.1.3-3) ...
+2026-11-21T02:31:06.0362949Z #14 15.84 Setting up libglx-mesa0:amd64 (22.3.6-1+deb12u2) ...
+2026-11-21T02:31:06.0363330Z #14 15.84 Setting up libxi6:amd64 (2:1.8-1+b1) ...
+2026-11-21T02:31:06.0363700Z #14 15.84 Setting up libglx0:amd64 (1.6.0-1) ...
+2026-11-21T02:31:06.0364053Z #14 15.84 Setting up libxaw7:amd64 (2:1.0.14-1) ...
+2026-11-21T02:31:06.0364433Z #14 15.84 Setting up libatspi2.0-0:amd64 (2.46.0-5) ...
+2026-11-21T02:31:06.0364841Z #14 15.85 Setting up libatk-bridge2.0-0:amd64 (2.46.0-5) ...
+2026-11-21T02:31:06.0365214Z #14 15.85 Setting up libgl1:amd64 (1.6.0-1) ...
+2026-11-21T02:31:06.0365565Z #14 15.85 Setting up x11-xkb-utils (7.7+7) ...
+2026-11-21T02:31:06.0365962Z #14 15.85 Setting up xserver-common (2:21.1.7-3+deb12u13) ...
+2026-11-21T02:31:06.0366358Z #14 15.85 Setting up xvfb (2:21.1.7-3+deb12u13) ...
+2026-11-21T02:31:06.0366760Z #14 15.85 Processing triggers for libc-bin (2.36-9+deb12u10) ...
+2026-11-21T02:31:06.0367784Z #14 15.90 Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+2026-11-21T02:31:06.4961128Z #14 16.37 |                                                                                |   0% of 120 MiB
+2026-11-21T02:31:06.6627157Z #14 16.53 |■■■■■■■■                                                                        |  10% of 120 MiB
+2026-11-21T02:31:06.8026498Z #14 16.59 |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+2026-11-21T02:31:06.8027517Z #14 16.67 |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+2026-11-21T02:31:06.9184586Z #14 16.73 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+2026-11-21T02:31:06.9185725Z #14 16.79 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+2026-11-21T02:31:07.0375775Z #14 16.91 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+2026-11-21T02:31:07.1425965Z #14 17.01 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+2026-11-21T02:31:07.2953224Z #14 17.09 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+2026-11-21T02:31:07.2954131Z #14 17.16 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+2026-11-21T02:31:07.5086435Z #14 17.23 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+2026-11-21T02:31:09.2322993Z #14 19.10 Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /opt/sz-runtime/browsers/chromium_headless_shell-1248
+2026-11-21T02:31:09.3833462Z #14 19.10 Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+2026-11-21T02:31:09.6245914Z #14 19.49 |                                                                                |   0% of 2.2 MiB
+2026-11-21T02:31:09.7775907Z #14 19.50 |■■■■■■■■                                                                        |  10% of 2.2 MiB
+2026-11-21T02:31:09.7776641Z #14 19.50 |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+2026-11-21T02:31:09.7777262Z #14 19.50 |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+2026-11-21T02:31:09.7777865Z #14 19.50 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+2026-11-21T02:31:09.7778486Z #14 19.50 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+2026-11-21T02:31:09.7779100Z #14 19.50 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+2026-11-21T02:31:09.7779737Z #14 19.51 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+2026-11-21T02:31:09.7780565Z #14 19.51 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+2026-11-21T02:31:09.7781213Z #14 19.51 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+2026-11-21T02:31:09.7781841Z #14 19.51 |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+2026-11-21T02:31:09.7782477Z #14 19.57 FFmpeg (playwright ffmpeg v1013) downloaded to /opt/sz-runtime/browsers/ffmpeg-1013
+2026-11-21T02:31:09.7783052Z #14 19.65 npm warn using --force Recommended protections disabled.
+2026-11-21T02:31:11.1810450Z #14 DONE 21.0s
+2026-11-21T02:31:11.2848155Z
+2026-11-21T02:31:11.2848919Z #15 [stage-0  7/22] COPY runtime/pack-artifact.mjs ./
+2026-11-21T02:31:11.2849535Z #15 DONE 0.0s
+2026-11-21T02:31:11.2849734Z
+2026-11-21T02:31:11.2850133Z #16 [stage-0  8/22] COPY runtime/check-project.mjs ./
+2026-11-21T02:31:11.2851142Z #16 DONE 0.0s
+2026-11-21T02:31:11.2851333Z
+2026-11-21T02:31:11.2851701Z #17 [stage-0  9/22] COPY runtime/validation-profile.json ./
+2026-11-21T02:31:11.2852269Z #17 DONE 0.0s
+2026-11-21T02:31:11.2852861Z
+2026-11-21T02:31:11.2853412Z #18 [stage-0 10/22] COPY runtime/playtest.mjs runtime/gameplay.mjs runtime/check-objectives.mjs ./
+2026-11-21T02:31:11.2853874Z #18 DONE 0.0s
+2026-11-21T02:31:11.2853997Z
+2026-11-21T02:31:11.2854716Z #19 [stage-0 11/22] COPY runtime/check-click-target.mjs runtime/check-javascript-modules.mjs runtime/check-approach.mjs runtime/check-approach-3d.mjs ./
+2026-11-21T02:31:11.2855741Z #19 DONE 0.0s
+2026-11-21T02:31:11.2855907Z
+2026-11-21T02:31:11.2856120Z #20 [stage-0 12/22] COPY runtime/check-models-ready.mjs ./
+2026-11-21T02:31:11.2856431Z #20 DONE 0.0s
+2026-11-21T02:31:11.2856558Z
+2026-11-21T02:31:11.2857005Z #21 [stage-0 13/22] COPY runtime/execution-observation.generated.mjs ./
+2026-11-21T02:31:11.2857422Z #21 DONE 0.0s
+2026-11-21T02:31:11.2857776Z
+2026-11-21T02:31:11.2858068Z #22 [stage-0 14/22] COPY runtime/click-target.generated.mjs ./
+2026-11-21T02:31:11.2858400Z #22 DONE 0.0s
+2026-11-21T02:31:11.4370512Z
+2026-11-21T02:31:11.4371704Z #23 [stage-0 15/22] COPY runtime/python-inspect.mjs ./
+2026-11-21T02:31:11.4372510Z #23 DONE 0.0s
+2026-11-21T02:31:11.4372740Z
+2026-11-21T02:31:11.4373572Z #24 [stage-0 16/22] COPY runtime/python-playtest.mjs runtime/python-playtest.generated.mjs ./
+2026-11-21T02:31:11.4374299Z #24 DONE 0.0s
+2026-11-21T02:31:11.4374519Z
+2026-11-21T02:31:11.4374889Z #25 [stage-0 17/22] COPY runtime/python-mission.mjs ./
+2026-11-21T02:31:11.4375484Z #25 DONE 0.0s
+2026-11-21T02:31:11.4375709Z
+2026-11-21T02:31:11.4376164Z #26 [stage-0 18/22] COPY runtime/python-browser-resources.mjs ./
+2026-11-21T02:31:11.4376797Z #26 DONE 0.0s
+2026-11-21T02:31:11.4376981Z
+2026-11-21T02:31:11.4377357Z #27 [stage-0 19/22] COPY runtime/portable-path.generated.mjs ./
+2026-11-21T02:31:11.4377896Z #27 DONE 0.0s
+2026-11-21T02:31:11.4378098Z
+2026-11-21T02:31:11.4378715Z #28 [stage-0 20/22] COPY runtime/scene3d-pro.generated.mjs runtime/scene3d-pro-canonical.mjs ./
+2026-11-21T02:31:11.4379471Z #28 DONE 0.0s
+2026-11-21T02:31:11.4380319Z
+2026-11-21T02:31:11.4381759Z #29 [stage-0 21/22] RUN mkdir -p /workspace/builds   && chown -R node:node /workspace   && chmod a-w /opt/sz-runtime/*.mjs /opt/sz-runtime/*.json
+2026-11-21T02:31:11.4382926Z #29 DONE 0.1s
+2026-11-21T02:31:11.6036972Z
+2026-11-21T02:31:11.6037928Z #30 [stage-0 22/22] WORKDIR /workspace
+2026-11-21T02:31:11.6038635Z #30 DONE 0.0s
+2026-11-21T02:31:11.6039032Z
+2026-11-21T02:31:11.6039814Z #31 exporting to image
+2026-11-21T02:31:11.6040445Z #31 exporting layers
+2026-11-21T02:31:16.3184631Z #31 exporting layers 4.9s done
+2026-11-21T02:31:16.3352364Z #31 writing image sha256:da0b2fbcf320f330217df1ebab4f8dc4e99eda459aac78a832087e3213a39099 done
+2026-11-21T02:31:16.3353323Z #31 naming to docker.io/library/sistemazero-studio-runtime:verify done
+2026-11-21T02:31:16.3353912Z #31 DONE 4.9s
+2026-11-21T02:31:16.3440509Z ##[group]Run bun tests/image-smoke.ts
+2026-11-21T02:31:16.3440888Z bun tests/image-smoke.ts
+2026-11-21T02:31:16.3441156Z bun tests/validation-smoke.ts
+2026-11-21T02:31:16.3455228Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:31:16.3455522Z env:
+2026-11-21T02:31:16.3455803Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:31:16.3456327Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:31:16.3456776Z ##[endgroup]
+2026-11-21T02:31:16.8872412Z {"ok":true,"uid":1000,"files":4,"bytes":2250,"protectedDependencies":true}
+2026-11-21T02:31:20.1697812Z vite v8.1.6 building client environment for production...
+2026-11-21T02:31:20.1912114Z
+2026-11-21T02:31:20.2471645Z transforming...✓ 12 modules transformed.
+2026-11-21T02:31:20.2593370Z rendering chunks...
+2026-11-21T02:31:20.2664240Z computing gzip size...
+2026-11-21T02:31:20.2672298Z dist/index.html                  0.35 kB │ gzip: 0.26 kB
+2026-11-21T02:31:20.2672904Z dist/assets/index-Bu2fMx90.css   1.29 kB │ gzip: 0.71 kB
+2026-11-21T02:31:20.2673456Z dist/assets/index-BMgtM4SR.js   15.19 kB │ gzip: 6.19 kB
+2026-11-21T02:31:20.2673736Z
+2026-11-21T02:31:20.2677079Z ✓ built in 97ms
+2026-11-21T02:31:29.2832329Z {"kit":"canvas-puzzle","ok":true,"uid":1000,"durationMs":12102,"bytes":70106,"captureBytes":44358,"evidence":[{"kind":"playtest","status":"passed","detail":"Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."},{"kind":"capture","status":"passed","detail":"Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."}]}
+2026-11-21T02:31:33.2541879Z vite v8.1.6 building client environment for production...
+2026-11-21T02:31:33.2732708Z
+2026-11-21T02:31:33.2991522Z transforming...✓ 23 modules transformed.
+2026-11-21T02:31:33.3528421Z rendering chunks...
+2026-11-21T02:31:33.3627610Z computing gzip size...
+2026-11-21T02:31:33.3639636Z dist/index.html                  0.45 kB │ gzip:  0.29 kB
+2026-11-21T02:31:33.3640457Z dist/assets/index-Bu2fMx90.css   1.29 kB │ gzip:  0.71 kB
+2026-11-21T02:31:33.3641180Z dist/assets/index-BqetMkA3.js   39.04 kB │ gzip: 14.89 kB
+2026-11-21T02:31:33.3641585Z
+2026-11-21T02:31:33.3644471Z ✓ built in 110ms
+2026-11-21T02:31:58.6599051Z {"kit":"canvas-survival","ok":true,"uid":1000,"durationMs":29187,"bytes":116739,"captureBytes":55903,"evidence":[{"kind":"playtest","status":"passed","detail":"Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."},{"kind":"capture","status":"passed","detail":"Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."}]}
+2026-11-21T02:32:04.0257806Z vite v8.1.6 building client environment for production...
+2026-11-21T02:32:04.0507601Z
+2026-11-21T02:32:04.2199335Z transforming...✓ 17 modules transformed.
+2026-11-21T02:32:04.2652276Z rendering chunks...
+2026-11-21T02:32:04.3272803Z computing gzip size...
+2026-11-21T02:32:04.3368012Z dist/index.html                   0.35 kB │ gzip:   0.26 kB
+2026-11-21T02:32:04.3368949Z dist/assets/index-Bu2fMx90.css    1.29 kB │ gzip:   0.71 kB
+2026-11-21T02:32:04.3369795Z dist/assets/index-B70oQ3eK.js   628.84 kB │ gzip: 162.95 kB
+2026-11-21T02:32:04.3370469Z
+2026-11-21T02:32:04.3374602Z ✓ built in 311ms
+2026-11-21T02:32:04.3381856Z [plugin builtin:vite-reporter]
+2026-11-21T02:32:04.3384343Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-11-21T02:32:04.3385120Z - Using dynamic import() to code-split the application
+2026-11-21T02:32:04.3386010Z - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+2026-11-21T02:32:04.3386771Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-11-21T02:32:51.3815510Z {"kit":"three-exploration","ok":true,"uid":1000,"durationMs":52552,"bytes":680681,"captureBytes":41282,"evidence":[{"kind":"playtest","status":"passed","detail":"Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."},{"kind":"capture","status":"passed","detail":"Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."}]}
+2026-11-21T02:32:54.6776413Z vite v8.1.6 building client environment for production...
+2026-11-21T02:32:54.6959299Z
+2026-11-21T02:32:54.7475855Z transforming...✓ 14 modules transformed.
+2026-11-21T02:32:54.7591888Z rendering chunks...
+2026-11-21T02:32:54.7666348Z computing gzip size...
+2026-11-21T02:32:54.7674181Z dist/index.html                  0.35 kB │ gzip: 0.26 kB
+2026-11-21T02:32:54.7675012Z dist/assets/index-Bu2fMx90.css   1.29 kB │ gzip: 0.71 kB
+2026-11-21T02:32:54.7675790Z dist/assets/index-DIH9qDuH.js   18.66 kB │ gzip: 7.33 kB
+2026-11-21T02:32:54.7676202Z
+2026-11-21T02:32:54.7679284Z ✓ built in 89ms
+2026-11-21T02:33:05.4950832Z {"kit":"canvas-grid-arena","ok":true,"uid":1000,"durationMs":13888,"bytes":69034,"captureBytes":39813,"evidence":[{"kind":"playtest","status":"passed","detail":"Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."},{"kind":"capture","status":"passed","detail":"Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."}]}
+2026-11-21T02:33:10.1406792Z vite v8.1.6 building client environment for production...
+2026-11-21T02:33:10.1614512Z
+2026-11-21T02:33:10.4857940Z transforming...✓ 16 modules transformed.
+2026-11-21T02:33:10.7354965Z rendering chunks...
+2026-11-21T02:33:10.9060531Z computing gzip size...
+2026-11-21T02:33:10.9236917Z dist/index.html                     0.35 kB │ gzip:   0.26 kB
+2026-11-21T02:33:10.9237466Z dist/assets/index-Bu2fMx90.css      1.29 kB │ gzip:   0.71 kB
+2026-11-21T02:33:10.9238134Z dist/assets/index-vRSgZjJG.js   1,221.99 kB │ gzip: 328.43 kB
+2026-11-21T02:33:10.9238528Z
+2026-11-21T02:33:10.9239425Z ✓ built in 782ms
+2026-11-21T02:33:10.9245794Z [plugin builtin:vite-reporter]
+2026-11-21T02:33:10.9246879Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-11-21T02:33:10.9247704Z - Using dynamic import() to code-split the application
+2026-11-21T02:33:10.9249012Z - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+2026-11-21T02:33:10.9250473Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-11-21T02:33:37.9661415Z {"kit":"phaser-tactics","ok":true,"uid":1000,"durationMs":32310,"bytes":1283653,"captureBytes":51110,"evidence":[{"kind":"playtest","status":"passed","detail":"Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."},{"kind":"capture","status":"passed","detail":"Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."}]}
+2026-11-21T02:33:43.1752186Z vite v8.1.6 building client environment for production...
+2026-11-21T02:33:43.2033794Z
+2026-11-21T02:33:43.3649310Z transforming...✓ 17 modules transformed.
+2026-11-21T02:33:43.4045036Z rendering chunks...
+2026-11-21T02:33:43.4549617Z computing gzip size...
+2026-11-21T02:33:43.4620055Z dist/index.html                   0.35 kB │ gzip:   0.25 kB
+2026-11-21T02:33:43.4620873Z dist/assets/index-Bu2fMx90.css    1.29 kB │ gzip:   0.71 kB
+2026-11-21T02:33:43.4621378Z dist/assets/index-BdoWrnri.js   537.39 kB │ gzip: 138.60 kB
+2026-11-21T02:33:43.4621623Z
+2026-11-21T02:33:43.4626445Z ✓ built in 286ms
+2026-11-21T02:33:43.4634350Z [plugin builtin:vite-reporter]
+2026-11-21T02:33:43.4635608Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2026-11-21T02:33:43.4636641Z - Using dynamic import() to code-split the application
+2026-11-21T02:33:43.4638003Z - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+2026-11-21T02:33:43.4639465Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2026-11-21T02:33:52.1039605Z {"kit":"three-tactics","ok":true,"uid":1000,"durationMs":13969,"bytes":612244,"captureBytes":64294,"evidence":[{"kind":"playtest","status":"passed","detail":"Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."},{"kind":"capture","status":"passed","detail":"Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."}]}
+2026-11-21T02:33:52.1565298Z ##[group]Run bun packages/studio/scripts/build-python-runtime.ts
+2026-11-21T02:33:52.1566026Z bun packages/studio/scripts/build-python-runtime.ts
+2026-11-21T02:33:52.1586142Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:33:52.1586560Z env:
+2026-11-21T02:33:52.1586983Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:33:52.1587836Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:33:52.1588608Z ##[endgroup]
+2026-11-21T02:33:53.2668678Z ▲ [WARNING] The CommonJS "module" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
+2026-11-21T02:33:53.2669478Z
+2026-11-21T02:33:53.2669970Z     .cache/studio-python-runtime/distributions/.boot-loader-928ZWs/pyodide.asm.mjs:1:61853:
+2026-11-21T02:33:53.2671778Z       1 │ ...(typeof module!="undefined"){module.exports=MiniLZ4}return MiniL...
+2026-11-21T02:33:53.2672352Z         ╵                                 ~~~~~~
+2026-11-21T02:33:53.2672540Z
+2026-11-21T02:33:53.2672875Z   This file is considered to be an ECMAScript module because of the "export" keyword here:
+2026-11-21T02:33:53.2673357Z
+2026-11-21T02:33:53.2673883Z     .cache/studio-python-runtime/distributions/.boot-loader-928ZWs/pyodide.asm.mjs:2:19976:
+2026-11-21T02:33:53.2674975Z       2 │ ...urn compiled};return moduleRtn}export default _createPyodideModule;
+2026-11-21T02:33:53.2675760Z         ╵                                   ~~~~~~
+2026-11-21T02:33:53.2676093Z
+2026-11-21T02:33:59.4964738Z {"directory":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/distributions/f7c60430cb693962aec48da387898882d4708bfc7629fbd30ac3ca2ab403acc1","hash":"f7c60430cb693962aec48da387898882d4708bfc7629fbd30ac3ca2ab403acc1","files":126}
+2026-11-21T02:33:59.5133927Z ##[group]Run bun packages/studio-runtime/tests/python-mission-smoke.ts
+2026-11-21T02:33:59.5134441Z bun packages/studio-runtime/tests/python-mission-smoke.ts
+2026-11-21T02:33:59.5134949Z bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
+2026-11-21T02:33:59.5135476Z bun packages/studio-runtime/tests/three-objectives-smoke.ts
+2026-11-21T02:33:59.5148999Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:33:59.5149263Z env:
+2026-11-21T02:33:59.5149529Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:33:59.5150061Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:33:59.5150877Z ##[endgroup]
+2026-11-21T02:34:00.1899820Z ▲ [WARNING] The CommonJS "module" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
+2026-11-21T02:34:00.1900818Z
+2026-11-21T02:34:00.1901477Z     .cache/studio-python-runtime/distributions/.boot-loader-TXsQEq/pyodide.asm.mjs:1:61853:
+2026-11-21T02:34:00.1902188Z       1 │ ...(typeof module!="undefined"){module.exports=MiniLZ4}return MiniL...
+2026-11-21T02:34:00.1902658Z         ╵                                 ~~~~~~
+2026-11-21T02:34:00.1902844Z
+2026-11-21T02:34:00.1903130Z   This file is considered to be an ECMAScript module because of the "export" keyword here:
+2026-11-21T02:34:00.1903464Z
+2026-11-21T02:34:00.1903770Z     .cache/studio-python-runtime/distributions/.boot-loader-TXsQEq/pyodide.asm.mjs:2:19976:
+2026-11-21T02:34:00.1904457Z       2 │ ...urn compiled};return moduleRtn}export default _createPyodideModule;
+2026-11-21T02:34:00.1904941Z         ╵                                   ~~~~~~
+2026-11-21T02:34:00.1905134Z
+2026-11-21T02:34:05.4807389Z {"name":"function-input","expected":true,"results":[{"id":"input-function","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/function-input"}
+2026-11-21T02:34:10.2635347Z {"name":"four-input-lines","expected":true,"results":[{"id":"input","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/four-input-lines"}
+2026-11-21T02:34:14.6596074Z {"name":"unused-input","expected":false,"results":[{"id":"input","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/unused-input"}
+2026-11-21T02:34:19.1141908Z {"name":"extra-input","expected":false,"results":[{"id":"input","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/extra-input"}
+2026-11-21T02:34:24.2639558Z {"name":"stdout-limit","expected":false,"results":[{"id":"output","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/stdout-limit"}
+2026-11-21T02:34:29.0066321Z {"name":"network-denied","expected":false,"results":[{"id":"network","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/network-denied"}
+2026-11-21T02:34:33.4608294Z {"name":"host-file-denied","expected":false,"results":[{"id":"host-file","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/host-file-denied"}
+2026-11-21T02:34:38.2328416Z {"name":"console-correct","expected":true,"results":[{"id":"console","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/console-correct"}
+2026-11-21T02:34:42.8732068Z {"name":"console-wrong","expected":false,"results":[{"id":"console","passed":false,"detail":"Esperava o console contendo \"missao concluida\"; o jogo mostrou \"outro resultado\\n\"."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/console-wrong"}
+2026-11-21T02:34:48.0810056Z {"name":"dead-branch","expected":false,"results":[{"id":"console","passed":false,"detail":"Esperava o console contendo \"missao concluida\"; o jogo mostrou \"\"."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/dead-branch"}
+2026-11-21T02:34:52.8996705Z {"name":"input","expected":true,"results":[{"id":"console","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/input"}
+2026-11-21T02:34:58.3766071Z {"name":"exception","expected":false,"results":[{"id":"console","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/exception"}
+2026-11-21T02:35:03.8484355Z {"name":"function","expected":true,"results":[{"id":"function","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/function"}
+2026-11-21T02:35:08.8538069Z {"name":"function-wrong","expected":false,"results":[{"id":"function","passed":false,"detail":"Com (3) respondeu 5; esperava 6."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/function-wrong"}
+2026-11-21T02:35:13.9900518Z {"name":"async-function","expected":true,"results":[{"id":"function","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/async-function"}
+2026-11-21T02:35:21.3634126Z {"name":"cpu-loop","expected":false,"results":[{"id":"value","passed":false,"detail":"O programa relatou erro durante a execução."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/cpu-loop"}
+2026-11-21T02:35:26.9623446Z {"name":"turtle-3","expected":true,"results":[{"id":"move","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/turtle-3"}
+2026-11-21T02:35:32.2592037Z {"name":"turtle-9","expected":true,"results":[{"id":"move","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/turtle-9"}
+2026-11-21T02:35:37.7634602Z {"name":"turtle--3","expected":false,"results":[{"id":"move","passed":false,"detail":"Esperava heroi.y que aumentasse; o jogo mostrou -3."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/turtle--3"}
+2026-11-21T02:35:43.5537428Z {"name":"turtle-0","expected":false,"results":[{"id":"move","passed":false,"detail":"Esperava heroi.y que aumentasse; o jogo mostrou 0."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/turtle-0"}
+2026-11-21T02:35:49.2482499Z {"name":"turtle-click-score","expected":true,"results":[{"id":"score","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/turtle-click-score"}
+2026-11-21T02:35:54.8957567Z {"name":"turtle-autonomous","expected":false,"results":[{"id":"move","passed":false,"detail":"O personagem se moveu antes de apertar a tecla."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/turtle-autonomous"}
+2026-11-21T02:36:01.1528890Z {"name":"raylib-2d-3","expected":true,"results":[{"id":"right","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-2d-3"}
+2026-11-21T02:36:07.3975170Z {"name":"raylib-2d--3","expected":false,"results":[{"id":"right","passed":false,"detail":"Esperava posicao.x que aumentasse; o jogo mostrou -0.2859000265598297."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-2d--3"}
+2026-11-21T02:36:12.8011973Z {"name":"raylib-2d-0","expected":false,"results":[{"id":"right","passed":false,"detail":"Esperava posicao.x que aumentasse; o jogo mostrou 0."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-2d-0"}
+2026-11-21T02:36:18.6769098Z {"name":"raylib-3d-3","expected":true,"results":[{"id":"right","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-3d-3"}
+2026-11-21T02:36:24.4416702Z {"name":"raylib-3d--3","expected":false,"results":[{"id":"right","passed":false,"detail":"Esperava posicao.x que aumentasse; o jogo mostrou -0.28679999709129333."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-3d--3"}
+2026-11-21T02:36:30.1257847Z {"name":"raylib-3d-0","expected":false,"results":[{"id":"right","passed":false,"detail":"Esperava posicao.x que aumentasse; o jogo mostrou 0."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-3d-0"}
+2026-11-21T02:36:35.9071587Z {"name":"raylib-click","expected":true,"results":[{"id":"click","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-click"}
+2026-11-21T02:36:42.2732597Z {"name":"raylib-other-module","expected":true,"results":[{"id":"function","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/raylib-other-module"}
+2026-11-21T02:36:48.3655418Z {"name":"pgzero--3","expected":true,"results":[{"id":"move","passed":true}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/pgzero--3"}
+2026-11-21T02:36:54.4641601Z {"name":"pgzero-3","expected":false,"results":[{"id":"move","passed":false,"detail":"Esperava heroi.y que diminuísse; o jogo mostrou 121."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/pgzero-3"}
+2026-11-21T02:37:00.2459475Z {"name":"pgzero-0","expected":false,"results":[{"id":"move","passed":false,"detail":"Esperava heroi.y que diminuísse; o jogo mostrou 100."}],"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/mission-docker/753f1ff7-a22c-476a-be38-975d249ebdf2/pgzero-0"}
+2026-11-21T02:37:00.8722428Z ▲ [WARNING] The CommonJS "module" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
+2026-11-21T02:37:00.8723165Z
+2026-11-21T02:37:00.8723649Z     .cache/studio-python-runtime/distributions/.boot-loader-utzLED/pyodide.asm.mjs:1:61853:
+2026-11-21T02:37:00.8724680Z       1 │ ...(typeof module!="undefined"){module.exports=MiniLZ4}return MiniL...
+2026-11-21T02:37:00.8725495Z         ╵                                 ~~~~~~
+2026-11-21T02:37:00.8725749Z
+2026-11-21T02:37:00.8726526Z   This file is considered to be an ECMAScript module because of the "export" keyword here:
+2026-11-21T02:37:00.8727272Z
+2026-11-21T02:37:00.8727844Z     .cache/studio-python-runtime/distributions/.boot-loader-utzLED/pyodide.asm.mjs:2:19976:
+2026-11-21T02:37:00.8729023Z       2 │ ...urn compiled};return moduleRtn}export default _createPyodideModule;
+2026-11-21T02:37:00.8729763Z         ╵                                   ~~~~~~
+2026-11-21T02:37:00.8730060Z
+2026-11-21T02:37:06.4533632Z {"name":"health-correct","expected":"passed","exitCode":0,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/playtest-docker/ebdd339e-acf9-469b-be07-fbb71f2b1b52/health-correct"}
+2026-11-21T02:37:11.4569601Z {"name":"health-import-error","expected":"failed","exitCode":0,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/playtest-docker/ebdd339e-acf9-469b-be07-fbb71f2b1b52/health-import-error"}
+2026-11-21T02:37:18.9863160Z {"name":"health-cpu-loop","expected":"failed","exitCode":0,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/playtest-docker/ebdd339e-acf9-469b-be07-fbb71f2b1b52/health-cpu-loop"}
+2026-11-21T02:37:24.2741671Z {"name":"health-input","expected":"failed","exitCode":0,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/playtest-docker/ebdd339e-acf9-469b-be07-fbb71f2b1b52/health-input"}
+2026-11-21T02:37:33.1210482Z {"name":"blocks","results":[{"id":"move","passed":true},{"id":"resources","passed":true}],"captureBytes":3041,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/blocks"}
+2026-11-21T02:37:43.9218518Z {"name":"classic-3","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":3767,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/classic-3"}
+2026-11-21T02:37:54.2584499Z {"name":"classic-9","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":2754,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/classic-9"}
+2026-11-21T02:38:04.5418250Z {"name":"classic--3","results":[{"id":"move","passed":false,"detail":"Esperava jogador.position.z que aumentasse; o jogo mostrou -3."},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":3149,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/classic--3"}
+2026-11-21T02:38:14.5215483Z {"name":"classic-0","results":[{"id":"move","passed":false,"detail":"Esperava jogador.position.z que aumentasse; o jogo mostrou 0."},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":3358,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/classic-0"}
+2026-11-21T02:38:17.4174799Z {"name":"pro-3","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":6622,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-3"}
+2026-11-21T02:38:20.3038032Z {"name":"pro-9","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":4718,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-9"}
+2026-11-21T02:38:23.3189520Z {"name":"pro--3","results":[{"id":"move","passed":false,"detail":"Esperava jogador.position.z (src/main.ts) que aumentasse; o jogo mostrou -3."},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":5476,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro--3"}
+2026-11-21T02:38:26.4675372Z {"name":"pro-0","results":[{"id":"move","passed":false,"detail":"Esperava jogador.position.z (src/main.ts) que aumentasse; o jogo mostrou 0."},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":5732,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-0"}
+2026-11-21T02:38:29.7029485Z {"name":"pro-no-export","results":[{"id":"move","passed":false,"detail":"Não foi possível observar a coordenada inteira."},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":6622,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-no-export"}
+2026-11-21T02:38:39.8862404Z {"name":"classic-x","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":3431,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/classic-x"}
+2026-11-21T02:38:49.9494512Z {"name":"classic-y","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":3286,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/classic-y"}
+2026-11-21T02:38:52.9538727Z {"name":"pro-x","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":6137,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-x"}
+2026-11-21T02:38:55.9455508Z {"name":"pro-y","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"resources","passed":true}],"captureBytes":5270,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-y"}
+2026-11-21T02:38:58.9175418Z {"name":"pro-wrong-return","results":[{"id":"move","passed":true},{"id":"draw","passed":false,"detail":"Com () respondeu false; esperava true."},{"id":"resources","passed":true}],"captureBytes":6622,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-wrong-return"}
+2026-11-21T02:39:01.9587573Z {"name":"pro-error","results":[{"id":"move","passed":false,"detail":"O jogo relatou erro durante a observação."},{"id":"draw","passed":false,"detail":"O jogo relatou erro durante a observação."},{"id":"resources","passed":false,"detail":"O jogo relatou erro durante a observação."}],"captureBytes":6622,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-error"}
+2026-11-21T02:39:05.0894962Z {"name":"pro-network","results":[{"id":"move","passed":true},{"id":"draw","passed":true},{"id":"network","passed":true}],"captureBytes":6622,"evidence":"/home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime/three-objectives/abc8ca5e-8f0f-4cc7-b6ba-e7e976791d58/pro-network"}
+2026-11-21T02:39:05.1339044Z ##[group]Run set -euo pipefail
+2026-11-21T02:39:05.1339384Z set -euo pipefail
+2026-11-21T02:39:05.1339675Z mkdir -p .cache/pinta-runtime-image
+2026-11-21T02:39:05.1340503Z docker image save sistemazero-studio-runtime:verify | gzip -1 > .cache/pinta-runtime-image/runtime-image.tar.gz
+2026-11-21T02:39:05.1341267Z sha256sum .cache/pinta-runtime-image/runtime-image.tar.gz > .cache/pinta-runtime-image/SHA256SUMS
+2026-11-21T02:39:05.1342032Z cp packages/studio-runtime/runtime/validation-profile.json .cache/pinta-runtime-image/validation-profile.json
+2026-11-21T02:39:05.1342715Z printf '%s\n' "$PINTA_SOURCE_SHA" > .cache/pinta-runtime-image/source-sha.txt
+2026-11-21T02:39:05.1343391Z docker image inspect sistemazero-studio-runtime:verify --format '{{.Id}}' > .cache/pinta-runtime-image/image-id.txt
+2026-11-21T02:39:05.1343933Z node --input-type=module <<'NODE'
+2026-11-21T02:39:05.1344351Z import { readdirSync, cpSync, writeFileSync } from 'node:fs'
+2026-11-21T02:39:05.1344775Z const base = '.cache/studio-python-runtime/distributions'
+2026-11-21T02:39:05.1345414Z const candidates = readdirSync(base, { withFileTypes: true }).filter(entry => entry.isDirectory() && /^[a-f0-9]{64}$/.test(entry.name))
+2026-11-21T02:39:05.1346162Z if (candidates.length !== 1) throw new Error('Expected the exact qualified Python distribution')
+2026-11-21T02:39:05.1346631Z const hash = candidates[0].name
+2026-11-21T02:39:05.1347166Z cpSync(`${base}/${hash}`, `.cache/pinta-runtime-image/python/${hash}`, { recursive: true, force: false, errorOnExist: true })
+2026-11-21T02:39:05.1347938Z writeFileSync('.cache/pinta-runtime-image/python-distribution-sha.txt', `${hash}\n`, { flag: 'wx' })
+2026-11-21T02:39:05.1348431Z NODE
+2026-11-21T02:39:05.1361630Z shell: /usr/bin/bash -e {0}
+2026-11-21T02:39:05.1361926Z env:
+2026-11-21T02:39:05.1362205Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:39:05.1362859Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:39:05.1363341Z ##[endgroup]
+2026-11-21T02:39:28.9301655Z ##[group]Run actions/upload-artifact@v4
+2026-11-21T02:39:28.9301961Z with:
+2026-11-21T02:39:28.9302208Z   name: pinta-staging-runtime-image-598824bd1
+2026-11-21T02:39:28.9302525Z   path: .cache/pinta-runtime-image/
+2026-11-21T02:39:28.9302798Z   include-hidden-files: true
+2026-11-21T02:39:28.9303045Z   if-no-files-found: error
+2026-11-21T02:39:28.9303276Z   compression-level: 0
+2026-11-21T02:39:28.9303488Z   retention-days: 1
+2026-11-21T02:39:28.9303686Z   overwrite: false
+2026-11-21T02:39:28.9303892Z env:
+2026-11-21T02:39:28.9304139Z   PINTA_SOURCE_SHA: 598824bd1403fbb4723b77d5662d996a584aa0ea
+2026-11-21T02:39:28.9304659Z   STUDIO_PYTHON_TEST_CACHE: /home/runner/work/sistema-zero/sistema-zero/.cache/studio-python-runtime
+2026-11-21T02:39:28.9305104Z ##[endgroup]
+2026-11-21T02:39:29.0968424Z (node:16060) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-21T02:39:29.0969265Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-21T02:39:29.1274999Z With the provided path, there will be 133 files uploaded
+2026-11-21T02:39:29.1280360Z Artifact name is valid!
+2026-11-21T02:39:29.1280904Z Root directory input is valid!
+2026-11-21T02:39:29.5027523Z Beginning upload of artifact content to blob storage
+2026-11-21T02:39:29.6067413Z (node:16060) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-21T02:39:30.3286141Z Uploaded bytes 8388608
+2026-11-21T02:39:30.4235096Z Uploaded bytes 16777216
+2026-11-21T02:39:30.4597865Z Uploaded bytes 25165824
+2026-11-21T02:39:30.5108725Z Uploaded bytes 33554432
+2026-11-21T02:39:30.5990147Z Uploaded bytes 41943040
+2026-11-21T02:39:30.7036760Z Uploaded bytes 50331648
+2026-11-21T02:39:30.7401777Z Uploaded bytes 58720256
+2026-11-21T02:39:30.7581391Z Uploaded bytes 67108864
+2026-11-21T02:39:30.8428777Z Uploaded bytes 75497472
+2026-11-21T02:39:30.9454462Z Uploaded bytes 83886080
+2026-11-21T02:39:30.9893047Z Uploaded bytes 92274688
+2026-11-21T02:39:31.0142059Z Uploaded bytes 100663296
+2026-11-21T02:39:31.1243366Z Uploaded bytes 109051904
+2026-11-21T02:39:31.1801133Z Uploaded bytes 117440512
+2026-11-21T02:39:31.2748684Z Uploaded bytes 125829120
+2026-11-21T02:39:31.3082344Z Uploaded bytes 134217728
+2026-11-21T02:39:31.3872083Z Uploaded bytes 142606336
+2026-11-21T02:39:31.3983485Z Uploaded bytes 150994944
+2026-11-21T02:39:31.5311629Z Uploaded bytes 159383552
+2026-11-21T02:39:31.5431702Z Uploaded bytes 167772160
+2026-11-21T02:39:31.6301262Z Uploaded bytes 176160768
+2026-11-21T02:39:31.6399938Z Uploaded bytes 184549376
+2026-11-21T02:39:31.7703598Z Uploaded bytes 192937984
+2026-11-21T02:39:31.7841432Z Uploaded bytes 201326592
+2026-11-21T02:39:31.9131304Z Uploaded bytes 209715200
+2026-11-21T02:39:31.9224957Z Uploaded bytes 218103808
+2026-11-21T02:39:32.0140512Z Uploaded bytes 226492416
+2026-11-21T02:39:32.1186106Z Uploaded bytes 234881024
+2026-11-21T02:39:32.1600103Z Uploaded bytes 243269632
+2026-11-21T02:39:32.1698056Z Uploaded bytes 251658240
+2026-11-21T02:39:32.2594073Z Uploaded bytes 260046848
+2026-11-21T02:39:32.3959007Z Uploaded bytes 268435456
+2026-11-21T02:39:32.4522962Z Uploaded bytes 276824064
+2026-11-21T02:39:32.4719833Z Uploaded bytes 285212672
+2026-11-21T02:39:32.4868428Z Uploaded bytes 293601280
+2026-11-21T02:39:32.6582168Z Uploaded bytes 301989888
+2026-11-21T02:39:32.6980708Z Uploaded bytes 310378496
+2026-11-21T02:39:32.7141648Z Uploaded bytes 318767104
+2026-11-21T02:39:32.7548458Z Uploaded bytes 327155712
+2026-11-21T02:39:32.9173228Z Uploaded bytes 335544320
+2026-11-21T02:39:32.9586533Z Uploaded bytes 343932928
+2026-11-21T02:39:32.9721623Z Uploaded bytes 352321536
+2026-11-21T02:39:32.9992961Z Uploaded bytes 360710144
+2026-11-21T02:39:33.1981946Z Uploaded bytes 369098752
+2026-11-21T02:39:33.2405762Z Uploaded bytes 377487360
+2026-11-21T02:39:33.2520447Z Uploaded bytes 385875968
+2026-11-21T02:39:33.2714037Z Uploaded bytes 394264576
+2026-11-21T02:39:33.4275176Z Uploaded bytes 402653184
+2026-11-21T02:39:33.4722620Z Uploaded bytes 411041792
+2026-11-21T02:39:33.4922919Z Uploaded bytes 419430400
+2026-11-21T02:39:33.5111580Z Uploaded bytes 427819008
+2026-11-21T02:39:33.6748525Z Uploaded bytes 436207616
+2026-11-21T02:39:33.6928180Z Uploaded bytes 444596224
+2026-11-21T02:39:33.7099597Z Uploaded bytes 452984832
+2026-11-21T02:39:33.7657055Z Uploaded bytes 461373440
+2026-11-21T02:39:33.9271381Z Uploaded bytes 469762048
+2026-11-21T02:39:33.9582103Z Uploaded bytes 478150656
+2026-11-21T02:39:33.9625644Z Uploaded bytes 486539264
+2026-11-21T02:39:34.0348092Z Uploaded bytes 494927872
+2026-11-21T02:39:34.2289074Z Uploaded bytes 503316480
+2026-11-21T02:39:34.4700144Z Uploaded bytes 509030942
+2026-11-21T02:39:34.5348316Z Finished uploading artifact content to blob storage!
+2026-11-21T02:39:34.5351962Z SHA256 digest of uploaded artifact zip is 52288a7977f70237c8942781a11a6eb004c48cb65712ec37c9e1a6fc74236c0f
+2026-11-21T02:39:34.5354621Z Finalizing artifact upload
+2026-11-21T02:39:35.0118380Z Artifact pinta-staging-runtime-image-598824bd1.zip successfully finalized. Artifact ID 14687792562
+2026-11-21T02:39:35.0119566Z Artifact pinta-staging-runtime-image-598824bd1 has been successfully uploaded! Final size is 509030942 bytes. Artifact ID is 14687792562
+2026-11-21T02:39:35.0128045Z Artifact download URL: https://github.com/informach/sistema-zero/actions/runs/44856177200/artifacts/14687792562
+2026-11-21T02:39:35.0372058Z Post job cleanup.
+2026-11-21T02:39:35.1629210Z (node:16077) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-21T02:39:35.1629971Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-21T02:39:35.1813541Z Post job cleanup.
+2026-11-21T02:39:35.3684709Z Post job cleanup.
+2026-11-21T02:39:35.4586800Z [command]/usr/bin/git version
+2026-11-21T02:39:35.4636512Z git version 2.56.1
+2026-11-21T02:39:35.4682776Z Temporarily overriding HOME='/home/runner/work/_temp/f7749d05-cc29-4f04-ac6e-1c8137088f7a' before making global git config changes
+2026-11-21T02:39:35.4684267Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-21T02:39:35.4689483Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sistema-zero/sistema-zero
+2026-11-21T02:39:35.4732849Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-21T02:39:35.4773214Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-21T02:39:35.5045303Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-21T02:39:35.5099707Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-21T02:39:35.5378592Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-21T02:39:35.5416846Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-21T02:39:35.5806420Z Cleaning up orphan processes
+2026-11-21T02:39:35.6117407Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
