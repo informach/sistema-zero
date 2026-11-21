@@ -1,0 +1,15 @@
+module.exports=async function(qa){
+ const assert=require('node:assert/strict'),expected=qa.retowOfflineA;assert(expected);const reader=await qa.makeAuthorityPage();
+ try{
+  const result=await reader.evaluate(async({namespace,id,prefix,existing,expectedPrimary})=>{
+   if(navigator.onLine)throw Error('Must be offline');const all=await window.pinta026.createPintaPersistence({namespace}).listAllAssets(),primary=all.find(a=>a.id===id),copies=all.filter(a=>a.kind==='tilemap'&&a.name.startsWith(prefix)&&!existing.includes(a.id));
+   function canonical(v){if(ArrayBuffer.isView(v))return Array.from(v);if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>[k,canonical(v[k])]));return v}
+   async function hash(v){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(v)))))).map(v=>v.toString(16).padStart(2,'0')).join('')}
+   if(primary?.schema!==7||primary.layers.length!==18||copies.length!==1)throw Error('Primary or unique recovery missing');const copy=copies[0];
+   const floor=a=>a.layers.find(l=>l.name==='Chão'&&l.cells);if(copy.layers.length!==18||copy.schema!==7||floor(primary).cells[3]!==-1||floor(primary).cells[4]!==15||floor(copy).cells[3]!==15||floor(copy).cells[4]!==-1)throw Error('Edits merged or lost');
+   const primarySha256=await hash(primary);if(primarySha256!==expectedPrimary)throw Error('Primary altered');
+   return{offline:true,primarySha256,copyId:copy.id,copyName:copy.name,copySha256:await hash(copy),copyCount:copies.length,primaryCells:Array.from(floor(primary).cells.slice(0,6)),copyCells:Array.from(floor(copy).cells.slice(0,6)),layers:copy.layers.length,schema:copy.schema};
+  },{namespace:qa.ownedStorageNamespace,id:qa.ownedVila.mapId,...expected});
+  if(expected.recovery)assert.deepEqual(result,expected.recovery);expected.recovery=result;expected.phase='recovered';return{...result,freshRealm:true,documentRecoveredWithoutCloud:true,reopenDidNotDuplicate:!!expected.recovery};
+ }finally{await reader.close()}
+};

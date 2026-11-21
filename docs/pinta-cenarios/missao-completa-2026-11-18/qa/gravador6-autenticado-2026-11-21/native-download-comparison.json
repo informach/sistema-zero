@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-21T11:57:11.278Z",
+  "realCloudDownload": true,
+  "publicNativeParser": true,
+  "records": [
+    {
+      "id": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+      "nativeSha256": "22e035863fdc5fbce9997b5a051d2db8e481d89485fa28ecb78eb9dec6a929fd",
+      "fullNativeEqual": true,
+      "warnings": []
+    },
+    {
+      "id": "fc15aec6-b219-452a-9f85-80c2c2681598",
+      "nativeSha256": "241e873cb86cf56461d2d69bcabfc7c2e4bfb65d4c1159e451b0aaeffa770014",
+      "fullNativeEqual": true,
+      "warnings": []
+    },
+    {
+      "id": "570efa11-5a85-4863-8d5c-ac61fd608d53",
+      "nativeSha256": "c68d4756eebbd5856838b04b713c2e8b376c4c7d708afd519bec032f73b8491e",
+      "fullNativeEqual": true,
+      "warnings": []
+    }
+  ]
+}

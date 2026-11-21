@@ -1,0 +1,13 @@
+module.exports=async function(qa){
+ const assert=require('node:assert/strict'),fs=require('node:fs'),zlib=require('node:zlib'),crypto=require('node:crypto');assert(!qa.retowNativeDownloads);
+ const ids=[qa.ownedVila.mapId,qa.ownedVila.cabanaId,qa.retowRecoveredCloudId];assert(ids.every(id=>/^[a-f0-9-]{36}$/.test(id)));assert.equal(new Set(ids).size,3);
+ const namespace=qa.ownedStorageNamespace,viewer=namespace.startsWith('adult:')?namespace.slice(6):namespace;assert(/^[a-f0-9-]{36}$/i.test(viewer));fs.mkdirSync('.cache/pinta-retomada-remote-native',{recursive:true});const records=[];qa.retowNativeDownloads={phase:'reading',records};
+ for(const id of ids){
+  const r=await qa.context.request.get(new URL('/api/creations/pinta/'+id+'/download',qa.origin).href,{headers:{'x-sz-viewer':viewer},timeout:15000});assert.equal(r.status(),200);const ticket=await r.json();assert.equal(ticket.item.itemId,id);assert.equal(ticket.item.formatVersion,6);
+  const u=new URL(ticket.downloadUrl);assert.equal(u.protocol,'https:');assert(!u.username&&!u.password);
+  const blob=await qa.context.request.get(u.href,{timeout:20000});assert.equal(blob.status(),200);let data=await blob.body();assert(data.length<=32*1024*1024);if(data[0]===31&&data[1]===139)data=zlib.gunzipSync(data,{maxOutputLength:32*1024*1024});assert(data.length<=32*1024*1024);
+  const document=JSON.parse(data);assert(Array.isArray(document.assets)&&document.assets.length===1);assert.equal(document.assets[0].id,id);
+  const file='.cache/pinta-retomada-remote-native/'+id+'.pinta.json';fs.writeFileSync(file,data,{flag:'wx'});records.push({itemId:id,revision:ticket.item.revision,formatVersion:ticket.item.formatVersion,jsonBytes:data.length,sha256:crypto.createHash('sha256').update(data).digest('hex'),file});
+ }
+ qa.retowNativeDownloads.phase='downloaded';return{records,authenticatedDownload:true,actualR2Get:true,credentialsOrSignedUrlsStored:false};
+};
