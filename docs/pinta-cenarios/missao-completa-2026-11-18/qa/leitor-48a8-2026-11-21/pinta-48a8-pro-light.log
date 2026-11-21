@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src\modes\pro\lightProBuild.test.ts:
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > monta os modelos JavaScript e TypeScript sem biblioteca, com a política do servidor [47.00ms]
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > tira os tipos, descarta a importação só de tipo e liga cada importação ao seu módulo [15.00ms]
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > aceita ciclos e await no topo, que os módulos nativos resolvem como o Vite
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > junta o CSS importado no fim do head, na ordem em que os módulos rodam
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > JSON vira módulo com o padrão e os nomes, como o plugin do Vite
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > reescreve a importação dinâmica com caminho escrito
+(pass) execução leve do Pro: o que o navegador monta igual ao Vite > nenhum fechamento de script escapa do documento [16.00ms]
+(pass) execução leve do Pro: o que continua no servidor > biblioteca
+(pass) execução leve do Pro: o que continua no servidor > bibliotecas no package.json
+(pass) execução leve do Pro: o que continua no servidor > vite.config mudado
+(pass) execução leve do Pro: o que continua no servidor > materiais
+(pass) execução leve do Pro: o que continua no servidor > import.meta
+(pass) execução leve do Pro: o que continua no servidor > caminho calculado
+(pass) execução leve do Pro: o que continua no servidor > consulta do Vite
+(pass) execução leve do Pro: o que continua no servidor > JSX
+(pass) execução leve do Pro: o que continua no servidor > arquivo que não existe
+(pass) execução leve do Pro: o que continua no servidor > código que não compila
+(pass) execução leve do Pro: o que continua no servidor > CSS Modules
+(pass) execução leve do Pro: o que continua no servidor > CSS com nome
+(pass) execução leve do Pro: o que continua no servidor > url() no CSS
+(pass) execução leve do Pro: o que continua no servidor > @import no CSS
+(pass) execução leve do Pro: o que continua no servidor > imagem local no HTML
+(pass) execução leve do Pro: o que continua no servidor > ícone local [16.00ms]
+(pass) execução leve do Pro: o que continua no servidor > módulo escrito no HTML
+(pass) execução leve do Pro: o que continua no servidor > sem index.html
+(pass) execução leve do Pro: o que continua no servidor > caminho fora do projeto
+(pass) execução leve do Pro: o que continua no servidor > um projeto Python (sem index.html nem módulos JS) continua no caminho dele
+(pass) execução leve do Pro: o que continua no servidor > o que passa das cotas do compilador vai ao servidor, que dá a mensagem certa
+
+ 28 pass
+ 0 fail
+ 54 expect() calls
+Ran 28 tests across 1 file. [692.00ms]

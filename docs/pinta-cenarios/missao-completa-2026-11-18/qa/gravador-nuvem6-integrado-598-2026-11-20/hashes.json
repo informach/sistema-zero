@@ -1,0 +1,85 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 1821,
+      "sha256": "94dc3a763fd817318d8178c51b795641134c61afdeebae8e29c1695d806567a2"
+    },
+    {
+      "file": "biome.txt",
+      "bytes": 46,
+      "sha256": "d159f89affd1659ff5d381f0b6d1c8d8f33bd9c5e2228ec749a606620512c16a"
+    },
+    {
+      "file": "core-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "core.txt",
+      "bytes": 374584,
+      "sha256": "240290f3c0ce49d0a09da29591df4090cc601c6881c296b06bfed1f949a2f16e"
+    },
+    {
+      "file": "fontes.json",
+      "bytes": 22625,
+      "sha256": "ca9ada0e38648714f81ddf24e98c1fe27a774c89039c101c15195774d4a7704a"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 1298,
+      "sha256": "464e9c97bcdbeb6c80e30e019c6f286254ea16c57dd4eaf271dfb668231e5d6f"
+    },
+    {
+      "file": "members-format.txt",
+      "bytes": 9692,
+      "sha256": "6c80c00e70de31e460b7f4e7dbf82e895509ef4ce0b61625f4d7a2710d2c46c3"
+    },
+    {
+      "file": "profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "python.json",
+      "bytes": 379,
+      "sha256": "571e970c703714f5b96a9f84f1d5f0f60aec9088e6e0be07915ab092185c2472"
+    },
+    {
+      "file": "python.txt",
+      "bytes": 1036,
+      "sha256": "e9455fc62e8e72e1acba4e6c16de742fd607ab1af6761686082de72ecb1760f1"
+    },
+    {
+      "file": "runner.txt",
+      "bytes": 2969,
+      "sha256": "3d8629ae5eda81aa917d95175e384c6ceafc5f9bb3b75c8d9aa9ba955850bda1"
+    },
+    {
+      "file": "runtime-reader.txt",
+      "bytes": 2389,
+      "sha256": "bfa60cf6520a8af7867dfab66d6497b88ae58f6db1e2d05a68e67805347b4ca2"
+    },
+    {
+      "file": "runtime-writer.txt",
+      "bytes": 2389,
+      "sha256": "bfa60cf6520a8af7867dfab66d6497b88ae58f6db1e2d05a68e67805347b4ca2"
+    },
+    {
+      "file": "runtime.json",
+      "bytes": 449,
+      "sha256": "bd02d45cffabadffd42b5a6ba52394f2f7419c9cb38f61948a0420f3df5c7dde"
+    },
+    {
+      "file": "shell-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "shell.txt",
+      "bytes": 24300,
+      "sha256": "7ee4fada9132f970ba51d72d844eeea681ba44a97ffe20a81f2414bb776bd978"
+    }
+  ]
+}

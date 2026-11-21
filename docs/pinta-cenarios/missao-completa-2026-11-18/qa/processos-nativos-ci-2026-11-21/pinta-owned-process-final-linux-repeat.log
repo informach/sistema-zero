@@ -1,0 +1,170 @@
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [45.93ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4009.30ms]
+(pass) output overflow is bounded and retires the owned native process [37.01ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.67ms]
+(pass) an actual running process is never accepted as retired [1.45ms]
+(pass) invalid process ids are refused before any process probe [0.17ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [67.09ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.19s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [37.45ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4008.57ms]
+(pass) output overflow is bounded and retires the owned native process [37.57ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.28ms]
+(pass) an actual running process is never accepted as retired [1.09ms]
+(pass) invalid process ids are refused before any process probe [0.16ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [78.08ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.19s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [38.92ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.59ms]
+(pass) output overflow is bounded and retires the owned native process [36.73ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.37ms]
+(pass) an actual running process is never accepted as retired [0.28ms]
+(pass) invalid process ids are refused before any process probe [0.20ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [76.27ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.19s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [40.04ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4006.93ms]
+(pass) output overflow is bounded and retires the owned native process [37.08ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.31ms]
+(pass) an actual running process is never accepted as retired [0.26ms]
+(pass) invalid process ids are refused before any process probe [0.14ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [68.40ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.18s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [40.12ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4006.88ms]
+(pass) output overflow is bounded and retires the owned native process [37.66ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.28ms]
+(pass) an actual running process is never accepted as retired [1.65ms]
+(pass) invalid process ids are refused before any process probe [0.16ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [73.37ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.19s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [39.63ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.92ms]
+(pass) output overflow is bounded and retires the owned native process [46.25ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.47ms]
+(pass) an actual running process is never accepted as retired [0.34ms]
+(pass) invalid process ids are refused before any process probe [0.21ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [82.18ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.21s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [38.32ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.45ms]
+(pass) output overflow is bounded and retires the owned native process [36.30ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.29ms]
+(pass) an actual running process is never accepted as retired [0.23ms]
+(pass) invalid process ids are refused before any process probe [0.17ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [69.43ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.18s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [39.33ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.00ms]
+(pass) output overflow is bounded and retires the owned native process [37.49ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.34ms]
+(pass) an actual running process is never accepted as retired [0.25ms]
+(pass) invalid process ids are refused before any process probe [0.19ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [68.03ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.18s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [38.99ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.48ms]
+(pass) output overflow is bounded and retires the owned native process [37.23ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.33ms]
+(pass) an actual running process is never accepted as retired [1.93ms]
+(pass) invalid process ids are refused before any process probe [0.18ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [67.99ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.18s]
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [37.94ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.14ms]
+(pass) output overflow is bounded and retires the owned native process [36.38ms]
+
+tests/native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses [0.30ms]
+(pass) an actual running process is never accepted as retired [0.25ms]
+(pass) invalid process ids are refused before any process probe [0.15ms]
+(pass) a controlled Linux zombie is retired while its stopped owner is still alive [77.41ms]
+
+ 7 pass
+ 0 fail
+ 33 expect() calls
+Ran 7 tests across 2 files. [4.19s]

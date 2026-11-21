@@ -1,0 +1,150 @@
+{
+  "at": "2026-11-21T06:50:58.982Z",
+  "files": [
+    {
+      "file": "pinta-read-vs-write66-reader-compile.log",
+      "bytes": 2455,
+      "sha256": "c646a0b81aee56ced4e3a2ae520e1de64aaf201507c4c71a90f65da33826bbef"
+    },
+    {
+      "file": "pinta-read-vs-write66-writer-compile.log",
+      "bytes": 2563,
+      "sha256": "4917403347f70e1e3b84b13d642a569e067ebd238fbe03199d729dbd5de9d882"
+    },
+    {
+      "file": "pinta-writer-preservation-followup-biome.log",
+      "bytes": 46,
+      "sha256": "3714f14b962ca52a5db3f4ff2324433530fd5bb6793c1b0302cc3485e5a18a13"
+    },
+    {
+      "file": "pinta-writer-preservation-followup-freeze.json",
+      "bytes": 306,
+      "sha256": "afc27e371a134b9159b4a363e2e376ec617212fd799c355b75a09ac38020922e"
+    },
+    {
+      "file": "pinta-writer-preservation-followup-gates.json",
+      "bytes": 606,
+      "sha256": "7a31da8c91159d20e0869ef6e4b13495e3ff156f9546540f1387e1d52e696187"
+    },
+    {
+      "file": "pinta-writer-preservation-followup-persistence.log",
+      "bytes": 281,
+      "sha256": "42b3a6064d0996b8280ba04f0437e9d9d19be0db5f32433df341375b6a9eaf75"
+    },
+    {
+      "file": "pinta-writer-preservation-followup-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-writer-reader66-biome.log",
+      "bytes": 46,
+      "sha256": "3714f14b962ca52a5db3f4ff2324433530fd5bb6793c1b0302cc3485e5a18a13"
+    },
+    {
+      "file": "pinta-writer-reader66-community-cloud.log",
+      "bytes": 15866,
+      "sha256": "61be918676e91ea0465f7328ae026114fe76058d3f0bce86f2addfe8aad20793"
+    },
+    {
+      "file": "pinta-writer-reader66-core-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-writer-reader66-core.log",
+      "bytes": 374734,
+      "sha256": "0e23171fea764ce981bd74be950a30f776647c1a3e76b56e94431a65b86ba1fb"
+    },
+    {
+      "file": "pinta-writer-reader66-freeze.json",
+      "bytes": 1893,
+      "sha256": "5caaa6fa8735aa6e1cac17f893548a13a30fa2bacdbf880fbda5e44a07acca5c"
+    },
+    {
+      "file": "pinta-writer-reader66-gates.json",
+      "bytes": 2539,
+      "sha256": "64834a92f08f4cbdbe635de6eb2a217f09508da8274411be5a608ef7f3799652"
+    },
+    {
+      "file": "pinta-writer-reader66-integration-report.json",
+      "bytes": 1288138,
+      "sha256": "bfd5580135c8d53d0dd12cfc0d6d770042dd97a59714b6283cbf5bb193cb0c43"
+    },
+    {
+      "file": "pinta-writer-reader66-integration.log",
+      "bytes": 7564,
+      "sha256": "779cec360c39c43c310712afdc495a748e7a7ba7391fde28820bc467803d0aa9"
+    },
+    {
+      "file": "pinta-writer-reader66-members-format.log",
+      "bytes": 9692,
+      "sha256": "cccb00859d03d609d890c1d51ad182f9a936fd9909ba7a80d6bd164a74774e44"
+    },
+    {
+      "file": "pinta-writer-reader66-profile.log",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "pinta-writer-reader66-python-closure.log",
+      "bytes": 1075,
+      "sha256": "37f47624586e834c6f23469d446e3015c2763511a5c268e3ac291c092e2b9641"
+    },
+    {
+      "file": "pinta-writer-reader66-python-equality.json",
+      "bytes": 412,
+      "sha256": "6b7493708f23678f45c985993203f612631ecea8ea2097cbac3f800480e11197"
+    },
+    {
+      "file": "pinta-writer-reader66-runtime-closure.log",
+      "bytes": 340,
+      "sha256": "22c45b15bfb3c988dbd5acad5681853e8862e968c273faea11781e7b55c55b38"
+    },
+    {
+      "file": "pinta-writer-reader66-runtime-equality.json",
+      "bytes": 377,
+      "sha256": "e14c0e75a23713bd813f6ceab349137cc2f70fe7734c23588b6c5eeeb25e165a"
+    },
+    {
+      "file": "pinta-writer-reader66-shell-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-writer-reader66-shell.log",
+      "bytes": 24351,
+      "sha256": "60edab8683578436bbe49ac1993433dfbdee2f84bdf64ed471cd93e08385289f"
+    },
+    {
+      "file": "pinta-writer-reader66-studio-storage.log",
+      "bytes": 6434,
+      "sha256": "571c7e081da96f1629a65524ea136b82679a1b7ae92e501844d00531c933374e"
+    },
+    {
+      "file": "pinta-writer-reader66-studio-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-writer-reader85-merge.json",
+      "bytes": 376,
+      "sha256": "4db67acdc8558ddc67caebeb7ee605096eac722789eaa6ac82fa3eba754b0f27"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2404,
+      "sha256": "ecdb326525e74d10864fc42d1e4489dde74e0694ff39067fd0045fca1e67b166"
+    },
+    {
+      "file": "source.json",
+      "bytes": 1420,
+      "sha256": "856a9e5a0a811ab8d2c828207093c8045648a28ec13ba646bf9ce4136f078318"
+    },
+    {
+      "file": "final-biome.log",
+      "bytes": 47,
+      "sha256": "43b8d55b6b12ae52ccc28d9a2811483a8151020592695de1fc899d637b4b1640"
+    }
+  ]
+}

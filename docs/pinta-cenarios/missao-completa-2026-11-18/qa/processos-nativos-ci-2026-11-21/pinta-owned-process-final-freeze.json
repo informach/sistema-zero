@@ -1,0 +1,22 @@
+{
+  "capturedAt": "2026-11-21T08:27:29.521Z",
+  "base": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "files": [
+    {
+      "file": "packages/studio-runtime/tests/owned-node-process.test.ts",
+      "sha256": "744b8883df2ac03d708e764d05728d7e844ff7a98b9e1f51d6ef6c062de9e0e8"
+    },
+    {
+      "file": "packages/studio-runtime/tests/native-process-state.test.ts",
+      "sha256": "426e2ec551bcde78fffb7f551dd021ca02e9c0609f88137af1e733db0d4ed77c"
+    },
+    {
+      "file": "packages/studio-runtime/tests/fixtures/native-process-state.ts",
+      "sha256": "d29d436bdc3fdc38cb166ebc5fe0e2ea4f3118294008ad5ea9cd8b1d23851174"
+    },
+    {
+      "file": "packages/studio-runtime/tests/fixtures/controlled-zombie-owner.mjs",
+      "sha256": "114da85e81795489a75f2e88c92613271483ba00a03900b19c3c546c6c100c33"
+    }
+  ]
+}

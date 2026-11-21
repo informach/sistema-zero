@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-21T01:08:31.630Z",
+  "base": "4db9390c2ec732bbce034b4ffd7bee3be849489b",
+  "files": [
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "sha256": "59997f34aaa645b80461ba04ad883c13b0b8b4bd61a13d836a1276eb7840e3c6"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "sha256": "c03ae67523343498193a8b0d8ec869e031c62bb9d9666fb1c58dd73866bb15b2"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "sha256": "f11d50f89de28b830635ca0ce586de674dcccce2e8d8ed0c5d0038d6b568292e"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "sha256": "28e86f353d4be4e7b4c63874ba3070a90c305ebc44f46c1d48f7bdab3e884ad7"
+    }
+  ]
+}

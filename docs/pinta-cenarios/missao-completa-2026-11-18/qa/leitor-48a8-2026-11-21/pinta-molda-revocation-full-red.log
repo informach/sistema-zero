@@ -1,0 +1,1874 @@
+bun test v1.4.4 (38afee6c8)
+
+src\components\MoldaApp.hostChrome.test.tsx:
+(pass) chrome do host na galeria > sem Provider nada aparece, e o cartão lilás fala do APARELHO [63.20ms]
+(pass) chrome do host na galeria > menu e seta ANTES do título; a conta em repouso vira a pílula e o lilás fala da CONTA [24.75ms]
+(pass) chrome do host na galeria > a seta: clique simples navega pelo host; com Ctrl fica com o navegador [17.54ms]
+(pass) chrome do host na galeria > o selo do host vence a conta: com algo acontecendo, a pílula diz o que é [16.99ms]
+(pass) chrome do host na galeria > menu escondido é marcado por aria-pressed [11.89ms]
+(pass) chrome do host na galeria > a seta aparece mesmo sem o menu [12.09ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) chrome do host na barra do editor > o menu vem ANTES do Voltar, o selo depois do "Salvo", e o editor ignora a seta e a conta [76.67ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) chrome do host na barra do editor > com aviso, o selo da barra mostra o rótulo curto [32.72ms]
+
+src\components\MoldaApp.scene.test.tsx:
+(pass) gallery imports a Molda project as an editable copy while 3D models stay in the workshop [62.60ms]
+(pass) project recovery in the gallery remains available without the 3D model import tool [13.89ms]
+(pass) a galeria padrão mostra modelos dos dois formatos numa lista só [149.14ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) um deep link sem configuração de versão abre o modelo antigo na oficina [105.73ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) um modelo no formato atual abre na mesma oficina sem configuração adicional [60.05ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) abrir um modelo antigo converte a criação e abre na oficina padrão [70.73ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) textura usa seu editor de pintura 2D [32.40ms]
+(pass) o pacote "Baixar tudo" leva a criação da oficina nova no arquivo nativo dela [333.44ms]
+
+src\components\MoldaApp.test.tsx:
+(pass) MoldaApp > fechar Criar novo durante a gravação não abre uma oficina atrasada [26.42ms]
+(pass) MoldaApp > galeria vazia mostra o convite e o tema no root [10.58ms]
+(pass) MoldaApp > galeria que não carregou ainda oferece trazer as criações de volta [6.44ms]
+(pass) MoldaApp > lista as criações com selo do tipo, busca e filtro [44.56ms]
+(pass) MoldaApp > limita a primeira página da galeria e permite revelar o restante [102.23ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > Criar novo: tipo → opções → nome → abre o editor e grava [52.45ms]
+(pass) MoldaApp > nome inválido ou repetido não cria [20.25ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > editor do céu: trocar o preset salva, desfaz e refaz; Voltar volta à galeria [648.04ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > Voltar antes do autosave aguarda o salvamento e reenvia a versão nova ao Estúdio [217.93ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > sob StrictMode (montagem dupla) o salvamento automático segue vivo e a criação fica aberta [703.04ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > Voltar rechecks edits made during asynchronous Studio delivery before leaving [412.80ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > atalho Ctrl+Z desfaz no editor (e não com um modal aberto) [40.07ms]
+(pass) MoldaApp > renomear e apagar pela galeria [37.98ms]
+(pass) MoldaApp > mantém os diálogos abertos e explica quando renomear ou apagar não pode ser salvo [35.58ms]
+(pass) MoldaApp > duplicar cria a cópia -2 [16.24ms]
+(pass) MoldaApp > deep link para uma criação que não existe fica na galeria; onChange avisa [9.54ms]
+(pass) MoldaApp > atalho do Estúdio só com posse [10.30ms]
+(pass) MoldaApp > o atalho Cenários aparece só quando o host oferece a oficina [7.43ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp > Modelos prontos: escolher a nave sugere um nome livre e abre o modelo já montado [128.54ms]
+(pass) MoldaApp > Importar projeto aceita o .zip do "Baixar tudo" e o .molda.json solto [56.66ms]
+(pass) galeria: o desenho das telas-modelo (11/09) > três faixas de borda a borda rolam juntas: cabeçalho creme, grade no céu, fechamento lilás [8.14ms]
+(pass) galeria: o desenho das telas-modelo (11/09) > o cartão da criação: nome em cima, a capa cinza-clara abre, e sem a borda do tipo [8.83ms]
+(pass) galeria: o desenho das telas-modelo (11/09) > o cartão "Nova criação" abre a grade, tem nome próprio e some com busca ou filtro [25.33ms]
+(pass) galeria: o desenho das telas-modelo (11/09) > os chips de tipo levam ícones de linha no lugar dos emojis ("Todos" sem ícone) [7.88ms]
+(pass) galeria: o desenho das telas-modelo (11/09) > Baixar tudo e Importar projeto moram no cartão lilás; o cabeçalho fica com o Criar novo [9.57ms]
+(pass) galeria: o desenho das telas-modelo (11/09) > galeria vazia: o fechamento lilás aparece (trazer de volta num aparelho novo), sem o Baixar tudo [5.42ms]
+(pass) deep link para uma criação que não existe abre a galeria e AVISA [10.39ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) controle do host grava o céu aberto antes de entregar o snapshot [62.12ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) controle do host recusa criação quando salvamento do editor falha [114.76ms]
+THREE.WebGLRenderer: Error creating WebGL context.
+THREE.WebGLRenderer: Error creating WebGL context.
+(pass) MoldaApp: molde do host (Arquipélago) > cria o modelo com a caixa do molde e abre a oficina; da segunda vez reabre o mesmo [101.03ms]
+
+src\components\toolAccess.test.tsx:
+(pass) revocation and unmount invalidate captured authoring even if access is granted again [1.19ms]
+(pass) sem provedor, tudo liberado: o playground, os testes e outros hosts [0.99ms]
+(pass) com a lista do host, o trancado NÃO é desenhado (nunca fica desligado) [0.59ms]
+(pass) o portão atravessa a oficina carregada sob demanda, sem ganhar prop [2.56ms]
+(pass) trocar a lista do host redesenha na hora (a criança subiu de posto com o Molda aberto) [0.56ms]
+(pass) o domínio não conhece o portão: trancar tira a autoria, nunca a leitura [93.95ms]
+
+src\scene\alphaMask.test.ts:
+(pass) closed mask contract preserves finite precision, rejects incomplete fields and owns its values [6.96ms]
+(pass) zero-alpha colors have an explicit mask composition policy, including partial updates and hidden layers [1.29ms]
+
+src\scene\animationArrival.test.ts:
+(pass) constant rotation pace removes a smooth slowdown at each quarter turn without editing other channels [1.74ms]
+(pass) constant rotation pace closes the small overshoot in a one-second windmill loop [0.92ms]
+(pass) a two-pose wheel loop becomes a complete constant-speed turn on its authored axis [2.07ms]
+(pass) editing arrival changes the preceding interval, never the following interval [2.33ms]
+(pass) move, copy and delete retain arrival at each surviving destination and reject crossings atomically [2.74ms]
+(pass) marking unchanged values creates a hold pose; first later edit includes a starting key [3.05ms]
+(pass) editing an imported channel that begins later preserves its first time [0.98ms]
+(pass) retiming a batch uses a fixed anchor, keeps arrivals and refuses collisions or inherited locks [1.58ms]
+(pass) editing the entire key budget keeps values and arrival metadata and rejects over-budget copies atomically [412.89ms]
+
+src\scene\animationCommands.test.ts:
+(pass) closing a loop keeps the last authored pose and adds a smooth return to the first [1.25ms]
+(pass) closing a near-full turn keeps a constant pace through its final angle [0.57ms]
+(pass) closing a nearly finished windmill turn snaps its last pose without adding a reverse flick [0.45ms]
+(pass) rounding noise and equivalent quaternion signs do not request a loop repair [0.30ms]
+(pass) a new movement rotates a tall box without shearing its sides [1.43ms]
+(pass) a genuinely sheared piece keeps its affine matrix when a movement is created [0.42ms]
+(pass) an unrelated sheared piece does not force a resized box into relative rotation [0.61ms]
+(pass) animation authoring commands > create, rename, duplicate and delete preserve unrelated resources and own copied keys [1.65ms]
+(pass) animation authoring commands > fps changes never retime/snap keys, and shortening refuses keys past the new end [1.10ms]
+(pass) animation authoring commands > explicit keys insert/replace at exact seconds and own input while retaining other keys/tracks [1.38ms]
+(pass) animation authoring commands > new scale/rotation tracks, malformed keys and derived/missing targets are handled at the command boundary [1.67ms]
+(pass) animation authoring commands > removing keys is atomic across tracks, drops empty tracks, and keeps untouched references [0.90ms]
+(pass) animation authoring commands > bulk deletion inspects times linearly, not once per selected key squared [1.81ms]
+(pass) animation authoring commands > locks include inherited groups and locked descendants affected by a group track [1.72ms]
+(pass) animation authoring commands > retiming scales source times and preserves values/curves, including extreme finite durations [1.33ms]
+(pass) animation authoring commands > reversing continuous segments mirrors evaluation and step still means holding the left pose [0.76ms]
+(pass) animation authoring commands > precision collisions and aggregate budgets refuse the entire operation [8.26ms]
+(pass) animation authoring commands > a recorded key is one real undo/redo entry and restores unchanged original pose [1.09ms]
+
+src\scene\animationIntegration.test.ts:
+(pass) animation and existing scene commands > duplication owns remapped keys; deletion prunes only removed targets and reserves clip ids [2.13ms]
+(pass) animation and existing scene commands > animated groups cannot disappear or change inherited motion through reparent/group [1.50ms]
+(pass) animation and existing scene commands > delta clips survive rest changes; local moves retarget keys while grouping and turns stay guarded [2.13ms]
+(pass) animation and existing scene commands > resizing a piece with local animation scales its absolute keys and keeps the clip editable [1.46ms]
+(pass) animation and existing scene commands > clips persist with owned values, exact costs, CAS and a single deletion undo/redo [84.55ms]
+
+src\scene\animationKeyEdits.test.ts:
+(pass) moving multiple keys into vacated times is atomic, exact, and keeps untouched keys/resources [1.86ms]
+(pass) copy owns exact values, collapses duplicate refs and creates one reversible editor commit [0.92ms]
+(pass) overlaps, out-of-range times, stale selections, invalid options and imperceptible Double shifts are refused without mutation [1.68ms]
+(pass) inherited locks apply to batch edits and copy budgets are checked before reading values [9.10ms]
+(pass) timeline selection merges exact channel times while range edits retain per-node identities [0.60ms]
+
+src\scene\animationPivot.test.ts:
+(pass) a newly authored turn keeps its pivot fixed between keys, and changing the authoring pivot leaves that entire curve intact [9.97ms]
+(pass) editing an interpolated pivot pose starts at the displayed matrix without jumping [1.63ms]
+(pass) explicitly marking any unchanged channel at a fractional pivot pose preserves its displayed matrix [6.18ms]
+(pass) numeric rotation and size keep the displayed pivot fixed, including between existing poses [5.95ms]
+(pass) numeric position uses the displayed origin and cancels the rotation interval correction in its stored key [1.23ms]
+(pass) numeric local authoring remains well-defined beneath a rotated singular parent [1.49ms]
+
+src\scene\animationPivotEditing.test.ts:
+(pass) reversal carries interval pivots to their new destinations, including different pivots and a second reversal [5.00ms]
+(pass) changing angular arrival to step keeps the pivot fixed without rewriting position keys [1.54ms]
+(pass) changing angular arrival to linear keeps the pivot fixed without rewriting position keys [1.36ms]
+(pass) changing angular arrival to smooth keeps the pivot fixed without rewriting position keys [1.10ms]
+(pass) changing angular arrival preserves independently authored position keys and the path of the reference point [1.59ms]
+(pass) marking an existing rotation again preserves its independent compensation curve [1.84ms]
+(pass) compensation interpolation is validated and metadata-only replacements are not discarded [0.73ms]
+(pass) editing a saved clip without the new compensation field preserves its original reference curve [1.42ms]
+(pass) moving and retiming a complete pose preserve its separate reference curve; copying and removing retain valid interval metadata [3.76ms]
+
+src\scene\animationPose.test.ts:
+(pass) bulk recording owns all new channels, retains untouched keys, and is a no-op when everything already matches [1.46ms]
+(pass) bulk budgets precede reading oversized input values, but replacing at the exact budget remains valid [12.46ms]
+(pass) capture owns exact authored quaternion/Double values and samples in-between poses without retaining the document [0.54ms]
+(pass) local x reflection matches an independent matrix oracle, preserves scales, and mirrors twice exactly [0.38ms]
+(pass) local y reflection matches an independent matrix oracle, preserves scales, and mirrors twice exactly [0.04ms]
+(pass) local z reflection matches an independent matrix oracle, preserves scales, and mirrors twice exactly [0.05ms]
+(pass) pasting applies only selected roots, owns per-target values, preserves existing easing and respects locked descendants [1.27ms]
+(pass) absolute poses use rest channels and cannot silently be pasted into delta clips [0.49ms]
+
+src\scene\animationPoseSet.test.ts:
+(pass) a nested local pose set reflects all three independent joints on every local axis [6.80ms]
+(pass) a nested local-delta pose set reflects all three independent joints on every local axis [6.55ms]
+(pass) capture and paste own exact raw quaternions, subnormal numbers and labels without geometry/image reads [1.03ms]
+(pass) reciprocal mapping swaps snapshot values instead of reading an already replaced joint, retaining destination curves and one undo [1.14ms]
+(pass) incomplete, duplicated, unknown or unbounded pairs and malformed snapshots never partially change a document [1.17ms]
+(pass) capturing the node budget indexes hierarchy and tracks once, rather than once per copied pose [1.66ms]
+(pass) destination locks, incompatible spaces and aggregate key budgets are checked before the one commit [9.06ms]
+
+src\scene\animationPoseTransform.test.ts:
+(pass) visual local translation writes only changed channels and preserves exact raw quaternion and curve [7.73ms]
+(pass) visual local-delta translation writes only changed channels and preserves exact raw quaternion and curve [0.94ms]
+(pass) world deltas transform selected roots once and carry their animated descendants, matching an independent Three matrix oracle [1.58ms]
+(pass) successive drags have absolute seeds, preserve signed and zero scales for translation/uniform scaling, and reject another owner [0.78ms]
+(pass) affine bases are preserved; induced shear, singular parent and inherited locks refuse atomically [1.28ms]
+(pass) prepared pointer updates do not revisit geometry, images, or original key arrays, and enforce key budgets [4.67ms]
+
+src\scene\animationPresets.test.ts:
+(pass) bounce preset adds an editable clip and preview uses the exact original revision without changing it [1.92ms]
+(pass) sway preset adds an editable clip and preview uses the exact original revision without changing it [1.64ms]
+(pass) spin preset adds an editable clip and preview uses the exact original revision without changing it [1.14ms]
+(pass) spin around local x completes negative turns with intermediate keys and matches independent matrices [1.42ms]
+(pass) spin around local y completes negative turns with intermediate keys and matches independent matrices [0.88ms]
+(pass) spin around local z completes negative turns with intermediate keys and matches independent matrices [0.94ms]
+(pass) new spin presets use the face-aligned pivot axis saved on the piece [0.67ms]
+(pass) presets reject locks, invalid settings, precision collisions and exhausted budgets before allocating IDs [0.79ms]
+(pass) o mesmo movimento pronto duas vezes ganha nomes que se distinguem [0.35ms]
+(pass) a ready spin rotates a resized piece without introducing shear [0.41ms]
+
+src\scene\animationRotationPreview.test.ts:
+(pass) local nested rotation previews exactly match committed playback without changing other channels [14.05ms]
+(pass) local-delta nested rotation previews exactly match committed playback without changing other channels [10.63ms]
+(pass) relative rotations retain affine shear and negative scales, with a separate Three hierarchy oracle [0.97ms]
+(pass) each preview owns all matrices, including static branches, and never retains rotation inputs or target lists [0.59ms]
+(pass) preparation never reads geometry/images and repeated fixed-time updates never read original keys [2.05ms]
+(pass) invalid captures and quaternion batches refuse atomically; affine unedited ancestors remain supported [0.98ms]
+
+src\scene\animationTarget.test.ts:
+(pass) whole-model candidate is atomic, preserves world positions and accepts future pieces in the same group [1.56ms]
+(pass) incompatible animated reparenting fails before any group is created [0.48ms]
+
+src\scene\animationTrs.test.ts:
+(pass) derived TRS decomposition preserves reference scale signs across every quaternion branch [0.53ms]
+(pass) shear, perspective, handedness flips and zero scales are refused instead of approximating a rotation [0.22ms]
+
+src\scene\appearanceCommands.test.ts:
+(pass) material edits validate the shared reader contract and preserve untouched resources and exact base colors [2.54ms]
+(pass) new rectangular color images bind explicitly, retain old sources and validate IDs and dimensions before publishing [0.74ms]
+(pass) shared box paint honors inherited locks; explicit copy isolates only the chosen node and its corner bindings [2.10ms]
+(pass) shared mesh paint honors inherited locks; explicit copy isolates only the chosen node and its corner bindings [1.35ms]
+(pass) shared path paint honors inherited locks; explicit copy isolates only the chosen node and its corner bindings [1.52ms]
+(pass) layer commands preserve source pixels, stacking and last-layer safety with exact metadata no-ops [1.08ms]
+(pass) indexed-to-RGBA conversion preserves every layer and composited color while intentionally releasing palette binding [1.06ms]
+(pass) paint budget rejects copies, conversion and excess layers before allocating identities or modifying originals [10.51ms]
+
+src\scene\appendImport.test.ts:
+(pass) an imported model joins the current scene instead of replacing its pieces [1.08ms]
+(pass) repeated imports receive separate groups and resource IDs while preserving both animations [1.96ms]
+(pass) a different source palette keeps imported painted colors without changing the current palette [0.75ms]
+(pass) imported skin bindings keep their joint and vertex references [2.49ms]
+(pass) a mirrored imported piece keeps its mirror on the new node [0.92ms]
+
+src\scene\arrange.test.ts:
+(pass) world alignment and spacing preserve geometry, pixels, pivots, animation and native TRS [2.32ms]
+(pass) selected parent and child move exactly once while children retain their local transforms [0.69ms]
+(pass) rotated scaled parents receive a local displacement derived from the same world direction [0.58ms]
+(pass) locks, insufficient independent roots and insufficient room reject the complete arrangement [0.91ms]
+(pass) a rig aligns its deformed form as one unit; a mesh or bone alone cannot leave its binding behind [1.59ms]
+
+src\scene\bendLimit.test.ts:
+(pass) flexion bounds preserve both lengths at the chosen angle across unequal bones and wide scales [3.23ms]
+(pass) a range preserves reachable targets and distinguishes geometric reach from configured flexion [0.31ms]
+(pass) limited reach follows rigid and reflected coordinate changes without changing the bend side [1.80ms]
+(pass) native bend limits roundtrip exactly, own their values and duplicate with supports; metadata editing is one undo [1.56ms]
+(pass) malformed ranges, mesh rules and locked dependent subtrees refuse without repairs [0.80ms]
+(pass) local limited poses match saved playback; portable export reports the lost editable rule [48.08ms]
+(pass) local-delta limited poses match saved playback; portable export reports the lost editable rule [42.57ms]
+
+src\scene\booleanSolids.test.ts:
+(pass) booleanos sólidos > union gera volume editável e documento válido [37.49ms]
+(pass) booleanos sólidos > intersection gera volume editável e documento válido [6.19ms]
+(pass) booleanos sólidos > difference gera volume editável e documento válido [5.12ms]
+(pass) booleanos sólidos > respeita a orientação de uma segunda peça espelhada [4.98ms]
+(pass) booleanos sólidos > combina uma peça girada sem perder o fechamento da malha [6.45ms]
+(pass) booleanos sólidos > combina uma forma curva sem abrir a malha [11.30ms]
+(pass) booleanos sólidos > diferença cria uma cavidade fechada quando o cortador está dentro da base [4.23ms]
+(pass) booleanos sólidos > união preserva duas regiões separadas e diferença mantém a base [6.25ms]
+(pass) booleanos sólidos > interseção sem volume recusa a confirmação [5.62ms]
+(pass) booleanos sólidos > recusa malha aberta e peça bloqueada sem mudar a origem [1.10ms]
+(pass) booleanos sólidos > confirmação entra como uma ação no histórico [2.59ms]
+
+src\scene\bounds.test.ts:
+(pass) cached local bounds equal fresh bounds for every pose/selection/visibility option and reject another geometry owner [3.47ms]
+(pass) group origins participate only when explicitly requested and obey selection and inherited visibility [0.67ms]
+
+src\scene\boxSolidCut.test.ts:
+(pass) axis cuts preserve native dimensions, UV functions, material seams and local coordinates [2.76ms]
+
+src\scene\characterAutoMarks.test.ts:
+(pass) a silhueta de frente acha os 5 pontos perto de onde a pessoa marcaria [51.03ms]
+(pass) uma placa larga e fina é recusada na hora, sem montar uma grade enorme [0.48ms]
+(pass) o que não parece um corpo é recusado, para a pessoa marcar à mão [8.96ms]
+
+src\scene\characterRig.test.ts:
+(pass) com espelho são 5 pontos; sem espelho, o outro braço e a outra perna também [0.04ms]
+(pass) o encaixe espelha o lado marcado e põe a esquerda do personagem no +X [4.24ms]
+(pass) pontos impossíveis viram mensagem, não esqueleto torto [3.71ms]
+(pass) montar cria os 24 ossos, liga todas as peças e o arquivo continua válido [34.87ms]
+(pass) o esqueleto fica dentro do grupo do personagem e as juntas ganham cortes [36.37ms]
+(pass) renomear um osso não quebra o reconhecimento; apagar uma junta, sim [27.55ms]
+(pass) cada ponto segue o próprio osso e só mistura perto da junta [0.14ms]
+(pass) movimento "idle": válido, emenda no fim e o pé não atravessa o chão [42.25ms]
+(pass) movimento "walk": válido, emenda no fim e o pé não atravessa o chão [46.87ms]
+(pass) movimento "run": válido, emenda no fim e o pé não atravessa o chão [29.97ms]
+(pass) movimento "jump": válido, emenda no fim e o pé não atravessa o chão [32.22ms]
+(pass) movimento "crouch": válido, emenda no fim e o pé não atravessa o chão [27.64ms]
+(pass) movimento "fall": válido, emenda no fim e o pé não atravessa o chão [29.19ms]
+(pass) movimento "wave": válido, emenda no fim e o pé não atravessa o chão [34.88ms]
+(pass) movimento "clap": válido, emenda no fim e o pé não atravessa o chão [34.84ms]
+(pass) movimento "push": válido, emenda no fim e o pé não atravessa o chão [28.03ms]
+(pass) movimento "punch": válido, emenda no fim e o pé não atravessa o chão [37.15ms]
+(pass) movimento "dance": válido, emenda no fim e o pé não atravessa o chão [27.61ms]
+(pass) movimento "cheer": válido, emenda no fim e o pé não atravessa o chão [20.53ms]
+(pass) movimento "lookAround": válido, emenda no fim e o pé não atravessa o chão [28.29ms]
+(pass) movimento "startle": válido, emenda no fim e o pé não atravessa o chão [26.69ms]
+(pass) movimento "sit": válido, emenda no fim e o pé não atravessa o chão [24.81ms]
+(pass) parado: os pés ficam plantados enquanto o quadril balança e respira [47.95ms]
+(pass) walk: o pé apoiado não escorrega (andando de verdade) e vai para trás igual (no lugar) [22.49ms]
+(pass) run: o pé apoiado não escorrega (andando de verdade) e vai para trás igual (no lugar) [29.86ms]
+(pass) braços: num tronco largo o braço caído passa do lado, e o ajuste junta ou afasta [51.83ms]
+(pass) meus movimentos: um movimento guardado volta igual no mesmo personagem e serve em outro [48.52ms]
+(pass) dois personagens: cada um tem o seu Andando, reconhecido pelos ossos que ele mexe [16.79ms]
+(pass) andar: os pés se alternam e o braço vai contra a perna do mesmo lado [22.10ms]
+(pass) guardar de novo troca o movimento no lugar: mesmo id, nome e posição na lista [36.19ms]
+(pass) sem esqueleto de personagem, o movimento pede para montar antes [2.77ms]
+(pass) o personagem com todos os movimentos prontos exporta um GLB sem erros [164.71ms]
+(pass) para outros programas, os ossos saem com os nomes padrão (Mixamo) e o GLB continua válido [39.67ms]
+(pass) montar de novo troca os ossos antigos, sem apagar peças, e leva os movimentos deles [40.48ms]
+(pass) remover ossos tira o esqueleto, os vínculos e os movimentos, mas deixa as peças [21.50ms]
+
+src\scene\commands.test.ts:
+(pass) scene authoring commands > group/reparent/ungroup preserve world space, original references and nested selection [1.40ms]
+(pass) scene authoring commands > ungroup preserves hidden state and works below a singular surviving parent without inversion [0.65ms]
+(pass) scene authoring commands > world transforms apply once to covered descendants and retain shear under a nonuniform parent [0.77ms]
+(pass) scene authoring commands > cyclic, singular and locked operations fail atomically, including locked descendants [0.69ms]
+(pass) scene authoring commands > pivot movement preserves painted world geometry, child world matrices and shared geometry ownership [0.79ms]
+(pass) scene authoring commands > duplication remaps subtrees, face materials, shared images and mirrors without coupling to originals [1.22ms]
+(pass) scene authoring commands > delete removes complete subtrees and mirrors but retains authorial shared paint resources [0.53ms]
+(pass) scene authoring commands > creating and deleting more than the geometry budget does not exhaust an empty workshop [13.47ms]
+(pass) scene authoring commands > node flags, rename and mirror removal are explicit, preserve independent locks and return no-op identity [1.22ms]
+(pass) scene authoring commands > budget and numerical overflow refuse the whole change [2.44ms]
+(pass) scene authoring commands > a compound command commits and undoes as one real history entry [0.57ms]
+(pass) o mesmo espelho duas vezes não desenha duas cópias uma em cima da outra: nada muda [0.32ms]
+
+src\scene\composite.test.ts:
+(pass) canonical layer composition > legacy indexed paint and transparent zero preserve exact colors over the base material [1.19ms]
+(pass) canonical layer composition > RGBA layers blend bottom to top, respect layer opacity/visibility and do not multiply paint by base [0.14ms]
+(pass) canonical layer composition > transparent RGB does not bleed; quantization happens only after all layers [0.09ms]
+
+src\scene\cone.test.ts:
+(pass) o cone nativo tem uma ponta, base fechada e detalhes persistidos [1.36ms]
+
+src\scene\createProject.test.ts:
+(pass) empty start is truly empty, explicitly named and independently identified [0.16ms]
+(pass) template personagem starts as independent native pieces, geometry and paintings without discarded migration issues [6.44ms]
+(pass) template carro starts as independent native pieces, geometry and paintings without discarded migration issues [1.23ms]
+(pass) template arvore starts as independent native pieces, geometry and paintings without discarded migration issues [0.68ms]
+(pass) template casa starts as independent native pieces, geometry and paintings without discarded migration issues [0.79ms]
+(pass) template nave starts as independent native pieces, geometry and paintings without discarded migration issues [0.88ms]
+(pass) template cristal starts as independent native pieces, geometry and paintings without discarded migration issues [2.11ms]
+(pass) start schema and names reject invalid choices, shadow identity and truncation instead of creating fallback content [0.20ms]
+
+src\scene\documentContent.test.ts:
+(pass) content identity ignores only thumbnail and save timestamp, including an absent thumbnail [0.50ms]
+
+src\scene\evaluate.test.ts:
+(pass) migrated primitives and their live mirrors preserve the exact legacy world bounds [1.31ms]
+(pass) group flags are inherited and reflection changes orientation without copying resources [0.23ms]
+
+src\scene\flipNodes.test.ts:
+(pass) an in-place X flip keeps the base-center coordinate reference rather than shifting it to a corner [0.68ms]
+(pass) whole-piece flip on x reflects world positions and keeps every authorial resource [0.39ms]
+(pass) whole-piece flip on y reflects world positions and keeps every authorial resource [0.26ms]
+(pass) whole-piece flip on z reflects world positions and keeps every authorial resource [0.18ms]
+(pass) flipping a group and an explicitly selected child transforms the hierarchy only once [0.36ms]
+(pass) generated mirror planes follow their selected source during a flip [0.30ms]
+(pass) flipping in place on x preserves the selection center and its bounds [0.26ms]
+(pass) flipping in place on y preserves the selection center and its bounds [0.20ms]
+(pass) flipping in place on z preserves the selection center and its bounds [0.16ms]
+(pass) a selected child under a rotated and sheared parent flips in world axes while shared geometry users stay untouched [0.23ms]
+(pass) a rig flips with its complete binding and refuses partial mesh or joint selections [0.88ms]
+(pass) coordinates remain editable after flipping x and resizing preserves the reflection [0.47ms]
+(pass) coordinates remain editable after flipping y and resizing preserves the reflection [0.25ms]
+(pass) coordinates remain editable after flipping z and resizing preserves the reflection [0.22ms]
+
+src\scene\geometry.test.ts:
+(pass) derived scene geometry > box migration draws the same world geometry and local UV as v1 [0.60ms]
+(pass) derived scene geometry > wedge migration draws the same world geometry and local UV as v1 [0.28ms]
+(pass) derived scene geometry > cylinder migration draws the same world geometry and local UV as v1 [1.39ms]
+(pass) derived scene geometry > sphere migration draws the same world geometry and local UV as v1 [2.07ms]
+(pass) derived scene geometry > small native primitives are not silently discarded by the legacy absolute-area threshold [0.19ms]
+(pass) derived scene geometry > concave polygons conserve signed area, winding and every corner without crossing outside the face [0.19ms]
+(pass) derived scene geometry > convex quads retain their legacy diagonal and malformed cycles return explicit issues [0.18ms]
+(pass) derived scene geometry > UV seams, arbitrary face ids and face materials survive expansion and picking [0.21ms]
+(pass) derived scene geometry > primitive UV rotation and translation preserve spatial buffers and have face material bindings [0.27ms]
+(pass) derived scene geometry > Float32 collapse is reported explicitly without changing authorial coordinates [0.15ms]
+
+src\scene\geometryUv.test.ts:
+(pass) UV patches match full triangulation byte for byte for concave faces, seams, winding and arbitrary IDs [0.74ms]
+(pass) eligibility checks topology, face order, material, spatial identities and diagnostics, not just array sizes [0.26ms]
+(pass) UV conversion refuses Float32 overflow atomically and preserves invisible Double changes without new upload ranges [0.34ms]
+(pass) corner mapping stays aligned when a precision-collapsed face is discarded [0.31ms]
+
+src\scene\graph.test.ts:
+(pass) scene hierarchy > single parent and parent-first world matrices do not depend on storage order [0.17ms]
+(pass) scene hierarchy > invalid identity, missing parents and cycles never produce a partial scene [0.15ms]
+(pass) scene hierarchy > deep hierarchy and multi-selection are iterative, not recursive or quadratic [48.22ms]
+(pass) scene hierarchy > reparent preserves world, shear, descendants, selection atomicity and custom data [0.79ms]
+(pass) scene hierarchy > cycles, missing targets/selection and singular parents refuse the complete command [0.23ms]
+
+src\scene\imageAtlas.test.ts:
+(pass) atlas packing is deterministic and preserves every composed pixel, corners and replicated edges without transparent gaps [2.38ms]
+(pass) atlas refuses to change opaque/transparent render classification, but keeps alpha for uniformly transparent tiles [0.22ms]
+(pass) atlas keeps box authorial geometry and sampled appearance while isolating shared, locked users [1.45ms]
+(pass) atlas keeps wedge authorial geometry and sampled appearance while isolating shared, locked users [0.74ms]
+(pass) atlas keeps cylinder authorial geometry and sampled appearance while isolating shared, locked users [2.13ms]
+(pass) atlas keeps path authorial geometry and sampled appearance while isolating shared, locked users [2.31ms]
+(pass) atlas keeps mesh authorial geometry and sampled appearance while isolating shared, locked users [0.90ms]
+(pass) atlas preflight rejects inherited locks, outside UV and aggregate paint budget before publishing; exact tile keys deduplicate only identical base colors [477.44ms]
+
+src\scene\imageFlipbook.test.ts:
+(pass) flipbook validates whole cells and explicit sequence without truncating, clamping or dropping repeated frames [0.57ms]
+(pass) flipbook sampling separates sequence positions from sheet cells, ends once or loops and keeps long times finite [0.78ms]
+(pass) visible top-left numbering maps to exact canonical rows and 3D UV clamps within the chosen cell, never its neighbor [0.29ms]
+(pass) flipbook metadata is undoable without copying pixels, honors all shared locks and survives JSON and image workers [22.91ms]
+
+src\scene\imageGradient.test.ts:
+(pass) gradient clamps its projection, preserves exact endpoints and copies only the changed layer [0.60ms]
+(pass) gradient interpolates premultiplied alpha without leaking transparent RGB and clips to selection [0.16ms]
+(pass) vertical and diagonal gradients use source V=0 at row zero and continuous projected distance [0.11ms]
+(pass) gradient reader owns settings and rejects malformed input; a zero length draft cannot become a command [0.33ms]
+(pass) picker returns exact authorial bytes or palette index without flattening or sharing mutable storage [0.17ms]
+
+src\scene\imageImport.test.ts:
+(pass) canvas import reverses rows once, preserves all decoded RGBA bytes and owns its buffer [0.31ms]
+(pass) import binds a new owned RGBA source, retains the old library image and never changes geometry or UVs [0.98ms]
+(pass) import checks shared locks and aggregate capacity before copying pixels or allocating identities [5.74ms]
+
+src\scene\imageOperations.test.ts:
+(pass) fill has four-connected exact index semantics, no row wrap, and retains other layers by reference [0.52ms]
+(pass) RGBA fill compares all four original channels against the seed, without growing tolerance transitively [0.09ms]
+(pass) bounded fill agrees with independent small-grid connectivity and handles a full megapixel without recursion [109.68ms]
+(pass) conversion preserves transparent RGB and layer metadata; fill validation refuses invalid drafts [0.34ms]
+
+src\scene\imagePaint.test.ts:
+(pass) indexed brush interpolation clips stamps and owns only changed pixels [0.68ms]
+(pass) rgba brush interpolation clips stamps and owns only changed pixels [0.17ms]
+(pass) canonical paint validates bindings and shared locks without changing UV or material metadata [1.01ms]
+(pass) UV to texel mapping matches clamped flipY=false resources, including extreme imported coordinates [0.05ms]
+
+src\scene\imageRaster.test.ts:
+(pass) indexed region comparison includes every changed byte, ignores equal clones and hidden paint [0.15ms]
+(pass) rgba region comparison includes every changed byte, ignores equal clones and hidden paint [0.17ms]
+(pass) indexed patches and reverse patches exactly reconstruct full source-over composition [4.45ms]
+(pass) rgba patches and reverse patches exactly reconstruct full source-over composition [5.22ms]
+(pass) opacity/palette/base changes force complete composition; names and equal bytes do not [0.33ms]
+
+src\scene\imageShapes.test.ts:
+(pass) native line uses the same inclusive raster as legacy without changing either source [1.26ms]
+(pass) native rectangle uses the same inclusive raster as legacy without changing either source [0.56ms]
+(pass) native ellipse uses the same inclusive raster as legacy without changing either source [0.36ms]
+(pass) indexed rectangular selection clips pencil, thick shapes and connected fill without cropping pixels [0.45ms]
+(pass) rgba rectangular selection clips pencil, thick shapes and connected fill without cropping pixels [0.21ms]
+(pass) shape reader rejects outside points, invalid bounds and unknown settings before traversing the raster [0.14ms]
+
+src\scene\imageStamp.test.ts:
+(pass) stamp rotates rectangular pixels clockwise before screen-axis flips, replicating integer blocks without interpolation [4.97ms]
+(pass) stamp blends alpha once in the layer, ignores transparent source pixels, and clips large stamps without allocating a scaled image [1.47ms]
+(pass) stamp reader owns its raster and settings and rejects malformed operations before allocating output [0.28ms]
+(pass) capturing a rectangular stamp preserves the chosen layer and alpha independently from source and other layers [0.17ms]
+
+src\scene\joinSceneMeshes.test.ts:
+(pass) unir peças > dois cilindros sobrepostos viram uma peça só, sem costurar nem recortar [2.80ms]
+(pass) unir peças > une várias peças de uma vez e mantém o material de cada uma [1.01ms]
+(pass) unir peças > peça espelhada continua com o lado de fora para fora [0.92ms]
+(pass) unir peças > recusa apoios e peças travadas sem mudar nada [0.41ms]
+
+src\scene\materialImages.test.ts:
+(pass) creating/importing/painting normal uses the selected binding and never replaces the color image [1.35ms]
+(pass) creating/importing/painting roughness uses the selected binding and never replaces the color image [1.00ms]
+(pass) creating/importing/painting metalness uses the selected binding and never replaces the color image [1.04ms]
+(pass) detail bindings survive strict JSON roundtrip with exact strength; no implicit indexed-to-data conversion or missing references [1.81ms]
+(pass) all image roles participate in locks; material isolation clones each reachable image once and leaves locked users untouched [0.98ms]
+(pass) subtree duplication remaps every data image and keeps internal aliasing without aliasing original pixels [0.86ms]
+(pass) multi-role isolation checks aggregate pixel capacity before allocating IDs or cloning paint [4.50ms]
+
+src\scene\matrix.test.ts:
+(pass) scene affine transforms > degree XYZ keeps matching the independent oracle across 1000 deterministic rotations [6.19ms]
+(pass) scene affine transforms > explicit XYZ/ZYX radian rotation matches the independent Three oracle [1.27ms]
+(pass) scene affine transforms > TRS matches an independent implementation without snapping imported angles [1.78ms]
+(pass) scene affine transforms > nested rotated non-uniform scales preserve shear and normals [0.34ms]
+(pass) scene affine transforms > inverse rejects singular transforms but accepts tiny well-conditioned scales [0.09ms]
+(pass) scene affine transforms > invalid canonical transforms are refused, never repaired on read [0.22ms]
+
+src\scene\measurementStep.test.ts:
+(pass) measurement precision supports whole units and tenths, including negative positions and minimum sizes [0.16ms]
+(pass) o passo guardado no perfil volta como escolhido; valor estranho volta ao fino [0.07ms]
+
+src\scene\measurementTransform.test.ts:
+(pass) click steps add units or tenths to actual size, preserve a rotated custom pivot, and keep other axes exact [1.87ms]
+(pass) position click steps snap the edited coordinate in its parent frame and multi-selection moves once [0.59ms]
+(pass) position steps after a flip snap the same bottom reference shown in the piece fields [0.31ms]
+
+src\scene\meshBevel.test.ts:
+(pass) each cube edge can be chamfered without opening the solid or moving paint at different scales [19.60ms]
+(pass) chamfer stays local, preserves other solids, unused points and construction lines, and supports another edge [1.17ms]
+(pass) oversized, inward, flat, open, missing and invalid chamfers never publish partial geometry [1.12ms]
+(pass) duas quinas opostas do cubo são chanfradas na mesma ação, e o sólido continua fechado [2.23ms]
+(pass) duas quinas vizinhas recusam a ação INTEIRA, sem deixar a peça pela metade [0.27ms]
+(pass) profundidade zero não muda nada, com uma quina ou com várias [0.09ms]
+
+src\scene\meshComponentExtrude.test.ts:
+(pass) extruding connected border edges shares new points and preserves paint, winding and original faces [0.90ms]
+(pass) point extrusion creates linked points that can be extruded again into a connected path [0.27ms]
+(pass) a construction line becomes a face border, with its new edge selected [0.17ms]
+(pass) invalid or parallel extrusions reject without changing the source; zero offset is a no-op [0.33ms]
+
+src\scene\meshComponentOperations.test.ts:
+(pass) face duplication preserves connections and paint while creating a disconnected translated copy [0.81ms]
+(pass) duplication refuses exact overlap with another face and offsets below coordinate precision [0.29ms]
+(pass) hole orientation is independent of which construction edge was selected first [1.21ms]
+(pass) reflection preserves UV corners, reverses winding and shares only corresponding plane vertices [0.77ms]
+(pass) hole filling rejects an existing surface and closes construction edges without leaving loose duplicates [0.32ms]
+(pass) a concave hole has valid planar UVs; twisted, branched and multiple boundaries are refused [0.54ms]
+(pass) hole filling requires an explicit neighboring material when the border has different paint [0.50ms]
+(pass) reflection across local axis %s preserves corner paint while flipping the chosen surface [0.30ms]
+(pass) reflection across local axis %s preserves corner paint while flipping the chosen surface [0.10ms]
+(pass) reflection across local axis %s preserves corner paint while flipping the chosen surface [0.10ms]
+
+src\scene\meshComponents.test.ts:
+(pass) a knife loop continues across its triangular side faces instead of stopping after the top segment [3.35ms]
+(pass) inserting points along the knife loop preserves its continuation across polygonal faces [1.76ms]
+(pass) component identities include isolated points and loose edges, deduplicate shared edges and never invent diagonals [0.50ms]
+(pass) component connectivity is iterative on long chains and preserves special authorial IDs [35.30ms]
+(pass) native selection grows one geometric neighborhood, shrinks it and inverts without touching paint [9.24ms]
+(pass) native rings cross opposite quad sides and loops stop at poles and branching edges [0.71ms]
+
+src\scene\meshConversion.test.ts:
+(pass) conversion of nested selection is one undo and retains transforms, paint and mirrors [2.54ms]
+(pass) copy-on-write protects unselected geometry users and keeps sharing inside the selection [1.15ms]
+(pass) copy-on-write respects authorial geometry budget including unreferenced resources [120.05ms]
+
+src\scene\meshCoplanarSelection.test.ts:
+(pass) a cylinder cap selects its eight connected triangles, leaving the sides and back untouched [1.65ms]
+(pass) coplanar selection is relative to geometry scale %s [0.50ms]
+(pass) coplanar selection is relative to geometry scale %s [0.32ms]
+(pass) coplanar selection is relative to geometry scale %s [0.30ms]
+(pass) selection stops at a fold, reversed faces, disconnected faces and non-manifold junctions [0.34ms]
+(pass) drawing retains separate component face IDs and parametric paint surfaces [0.62ms]
+
+src\scene\meshCreate.test.ts:
+(pass) two opposite border edges create the missing quad without needing the other two edges [1.15ms]
+(pass) two border edges can create a bent face without moving their points [0.31ms]
+(pass) two adjacent edges create a triangle while unordered points create the full face [0.73ms]
+(pass) two points create a selected construction line and three loose points create a triangle [0.53ms]
+(pass) a concave contour keeps every authorial corner and does not depend on click order [0.21ms]
+(pass) two edges use the first line paint automatically and preserve neighboring UVs [0.42ms]
+(pass) two lines inside a closed piece keep the paint choice of the faces they touch [0.28ms]
+(pass) two neighboring edges also create a face without a paint choice [0.28ms]
+(pass) invalid, nonplanar point selections, branched or duplicate creations preserve the original mesh [0.78ms]
+
+src\scene\meshCut.test.ts:
+(pass) a face cut creates one internal edge and preserves material, corners, points and neighboring incidence [1.35ms]
+(pass) concave cuts stay inside the surface and keep the source ID with its original first corner [0.57ms]
+(pass) cut preflight refuses ambiguous surfaces, old edges, non-affine paint and invalid choices before allocating IDs [58.42ms]
+(pass) construction lines preserve surfaces and exact coordinates, reject duplicates and honor their budget [47.94ms]
+(pass) cuts isolate shared geometry through the real mesh command without modifying images or materials [1.44ms]
+
+src\scene\meshDiagnosis.test.ts:
+(pass) a closed cube has no findings; open borders and coincident points remain advisory and untouched [1.08ms]
+(pass) triangulating folded or non-affine painted faces reproduces exactly the current drawing and preserves authorial corners [0.97ms]
+(pass) duplicate detection respects corner paint, material, winding and cycle rotation; deletion keeps all points and other faces [0.50ms]
+(pass) unused points, empty lines and duplicate lines are independent repairs with exact impact, including special IDs [0.78ms]
+(pass) faces that cannot draw are offered separately from winding conflicts; removal never fills or deletes their points [0.47ms]
+
+src\scene\meshDistanceField.test.ts:
+(pass) surface distance excludes construction bridges and disconnected coincident points but all-edge movement keeps them [0.95ms]
+(pass) world transforms, returned points and earlier distance maps cannot change a later query [0.34ms]
+
+src\scene\meshEdges.test.ts:
+(pass) edge splitting preserves shared boundaries, independent lines, old coordinates and corner UV seams [0.89ms]
+(pass) independent lines retain Double precision, can be divided repeatedly, and empty selection is a no-op [0.27ms]
+(pass) split preflight rejects non-affine paint, unknown edges, collapsed midpoints and budgets before allocating identities [102.85ms]
+(pass) splitting refuses an adjacent face at the 64-corner limit without consuming IDs [0.39ms]
+
+src\scene\meshFaces.test.ts:
+(pass) face triangulation retains rendered triangles, corner UV, materials and source data [1.08ms]
+(pass) detaching a connected region shares its copied boundary and does not discard independent points or edges [0.41ms]
+(pass) flipping is an involution without paint reprojection; invalid IDs/actions and colliding allocation reject atomically [0.65ms]
+(pass) connectivity crosses shared edges, includes non-manifold incidence, and ignores vertex-only contact [0.11ms]
+(pass) mesh command isolates shared geometry, roundtrips paint, and respects locks before editing [1.01ms]
+
+src\scene\meshInsetSelection.test.ts:
+(pass) inset of a triangulated wheel cap creates one border with eight bands and keeps its shared center [2.53ms]
+(pass) the inset center extrudes as one closed cap without internal walls or leftover points [2.31ms]
+(pass) separate caps have independent borders, and a partial cap does not expand into unselected faces [2.23ms]
+(pass) an internal point attached to a loose line stays fixed and is copied for the inset cap [1.05ms]
+(pass) unsafe seams and overlapping topology reject the whole inset without changing its source [1.21ms]
+(pass) regions with holes reject without filling the hole, and reversed edges reject without changing winding [0.84ms]
+
+src\scene\meshKnife.test.ts:
+(pass) knife cuts a face at arbitrary edge positions, sharing new vertices with neighbors and preserving paint [1.13ms]
+(pass) knife follows neighboring faces through a shared border and preserves reversed winding [0.71ms]
+(pass) knife partitions a concave face without filling the outside of its boundary [0.49ms]
+(pass) a closed knife path inside a face creates a selectable center that can be extruded independently [1.21ms]
+(pass) knife accepts interior endpoints and a bent boundary-to-boundary path, leaving valid face regions [0.61ms]
+(pass) knife refuses invalid or crossed paths before allocating authorial IDs and never mutates its source [0.31ms]
+(pass) knife cuts a face with non-affine corner UVs without requiring manual triangulation [0.57ms]
+(pass) knife accepts a cut across a bent quad using the drawn surface for interior points [0.39ms]
+
+src\scene\meshMerge.test.ts:
+(pass) merging keeps exact boundary corners, material and point identities with one surviving face ID [0.84ms]
+(pass) concave disks join, disconnected faces are unchanged, and special identities remain own properties [0.91ms]
+(pass) all source corners must share one affine paint mapping, including discarded interior points [0.81ms]
+(pass) joining refuses holes, folds, inconsistent orientation, non-manifold edges and overlong boundaries [6.88ms]
+(pass) triangulating and rejoining flat painted faces preserves appearance and external incidence [0.38ms]
+(pass) a shared UV plane is checked without coordinate rounding on translated, thin and rotated surfaces [0.72ms]
+(pass) dissolving neighboring pairs removes exactly the selected lines, not the border between the pairs [0.59ms]
+(pass) partial cycles, boundary edges, loose lines and paint seams cannot be silently dissolved [0.66ms]
+
+src\scene\meshPixelUv.test.ts:
+(pass) cut faces share one pixel-aligned chart at exact density, regardless of corner order [3.04ms]
+(pass) nonuniform piece size and a rotated parent keep square pixels in world units [0.32ms]
+(pass) capacity errors do not silently shrink the pixels [0.34ms]
+(pass) translation and unused construction points never shift or collapse the paint grid [0.75ms]
+(pass) equivalent geometry with a tiny node scale keeps the same real pixel grid [0.25ms]
+(pass) coincident surfaces stay in separate charts and a densely cut plane stays connected [13.00ms]
+(pass) a cone unfolds into compact connected islands without overlap or density loss [8.46ms]
+
+src\scene\meshPlaneCut.test.ts:
+(pass) plane cuts share points across a closed solid, preserve volume and orientation at different scales [5.20ms]
+(pass) exact axis position, original UV seams and construction lines survive a cut [0.58ms]
+(pass) planes through existing vertices cut without adding duplicate points; tangent/missing planes are no-ops [0.17ms]
+(pass) invalid planes, non-affine UVs, concavity and budgets fail before allocating authorial IDs [47.81ms]
+(pass) preexisting special IDs and disconnected construction lines are never aliased by temporary identities [0.42ms]
+
+src\scene\meshPlaneSection.test.ts:
+(pass) cut preview follows the surface at all scales, without connecting points through the solid [0.90ms]
+
+src\scene\meshRemoval.test.ts:
+(pass) point removal reports exact incident faces/loose edges and preserves every surviving authorial reference [0.33ms]
+(pass) edge removal deletes its adjacent faces, never removes endpoints, and does not affect unrelated UV [0.34ms]
+(pass) component removal respects copy-on-write, locks and a single undo without modifying source materials/images [1.47ms]
+
+src\scene\meshRingCut.test.ts:
+(pass) a strip cut shares each midpoint and preserves independent corner paint across seams [1.33ms]
+(pass) a closed cube strip terminates, preserves every manifold edge and can be cut again from a new edge [1.34ms]
+(pass) the strip stops at a triangle but still inserts its shared boundary point and splits matching construction lines [0.42ms]
+(pass) strip preflight refuses branching incidence, non-affine neighbors, missing seeds and triangle budget overflow [76.94ms]
+
+src\scene\meshRingCuts.test.ts:
+(pass) multiple off-center cuts follow a closed quad strip with shared vertices and valid paint [1.18ms]
+(pass) quad strips reject invalid counts, edge positions and incompatible transitions without mutating source [0.44ms]
+(pass) loop cuts interpolate each edge UV on trapezoid faces without a triangulation prerequisite [0.28ms]
+(pass) loop cuts stop at non-quad neighbors while sharing new border points without cracks [0.32ms]
+
+src\scene\meshSectionPath.test.ts:
+(pass) a cut path crosses consecutive surface faces, not the box interior, at tiny and large scales [2.01ms]
+(pass) disconnected cross sections never gain an invented bridge [0.10ms]
+
+src\scene\meshSoftMovement.test.ts:
+(pass) soft reach follows connected edge distances in world units, never nearby disconnected points [0.48ms]
+(pass) multi-source priorities match an independent repeated-relaxation oracle over cyclic graphs and shear [8.36ms]
+(pass) large chains are iterative, preserve special IDs and reject invalid reach or non-translation data [21.32ms]
+
+src\scene\meshSolidIntersections.test.ts:
+(pass) closed incidence alone does not permit crossed, coplanar-overlapping or disconnected touching shells [5.38ms]
+(pass) hollow and disconnected solids produce closed caps with holes, conserving exterior UVs and volume [11.32ms]
+
+src\scene\meshSubdivide.test.ts:
+(pass) subdivision preserves affine painting and shares split boundaries with neighbors and loose edges [1.41ms]
+(pass) levels are absolute, repeat stable IDs, expand selected children and preserve the outer shape [3.18ms]
+(pass) a previously connected neighbor with straight boundary corners can be subdivided later [0.91ms]
+(pass) preflight refuses non-affine selected or adjacent paint, concavity, non-planarity and result overflow atomically [80.55ms]
+(pass) a neighboring 64-corner face is not silently overflowed or disconnected [0.50ms]
+
+src\scene\meshSurfaceTools.test.ts:
+(pass) a Move displacement extrudes a closed region with stable caps, UVs and no source mutation [1.10ms]
+(pass) prepared extrusion is byte-identical to fresh operations and releases bounded caches over 20 sessions [16.78ms]
+(pass) region extrusion keeps a closed surface and omits internal walls for distance %s [0.58ms]
+(pass) region extrusion keeps a closed surface and omits internal walls for distance %s [0.28ms]
+(pass) disconnected extrusions use each region normal; unsafe topology and nonplanar selection reject without mutation [0.58ms]
+(pass) proportional inset preserves closed topology and is a no-op at zero [0.89ms]
+(pass) inset keeps an affine painted surface continuous across every new triangle and refuses incompatible UV [0.61ms]
+
+src\scene\meshSymmetry.test.ts:
+(pass) persistent symmetry survives reading and regenerates extrusion with stable identities [2.32ms]
+(pass) moving a welded source point off the fixed plane creates its counterpart without overwriting the source [0.43ms]
+
+src\scene\meshThickness.test.ts:
+(pass) thickness closes a planar sheet with outward winding, exact top/bottom paint and original material links [1.22ms]
+(pass) holes remain empty, surrounded by inner walls instead of being filled by a new bottom face [0.76ms]
+(pass) prepared thickness is absolute, reuses stable IDs, restores zero and releases bounded derived caches [0.43ms]
+(pass) thickness refuses partial sheets, non-affine paint, invalid distances and budgets before allocating geometry IDs [49.54ms]
+
+src\scene\meshUv.test.ts:
+(pass) UV islands cross only exact opposite corner pairs, not nearby UV, materials or ambiguous edges [0.76ms]
+(pass) UV transforms preserve topology, material, precision, source identity and unchanged references [0.60ms]
+(pass) quarter turns and flips use the common selection center and do not accumulate trigonometric noise [0.29ms]
+(pass) axis and individual planar projection preserve proportions without altering 3D geometry [0.30ms]
+(pass) packing is deterministic, keeps relative scale and leaves positive margins without changing topology [0.81ms]
+(pass) UV operation failures are atomic; packing refuses partial islands and impossible margins [0.84ms]
+(pass) UV special IDs are owned properties; finite layout includes out-of-tile values and cycles overlaps [0.44ms]
+(pass) large UV island traversal and packing stay within the model budget without recursive walks or spread overflow [142.04ms]
+(pass) UV layout preserves square texels for rectangular images and filters other texture sheets [0.23ms]
+
+src\scene\meshUvAuto.test.ts:
+(pass) automatic per-face UV keeps physical density, separates charts and is deterministic without touching topology [1.19ms]
+(pass) automatic UV tolerates extreme spans, subnormal scale and distant translated faces without storing normalized positions [0.64ms]
+(pass) auto UV refuses warped faces, precision collapse and invalid groups atomically [0.36ms]
+(pass) per-face UV uses normal mesh COW/locks/history and never rewrites images or materials [1.10ms]
+(pass) connected UV uses normal mesh COW/locks/history and never rewrites images or materials [0.69ms]
+(pass) auto UV packs a thousand independent face charts without recursive traversal or cross-chart overlap [64.01ms]
+
+src\scene\meshUvCorners.test.ts:
+(pass) corner moves preserve Double coordinates and all unrelated corner/topology references, with exact no-op and strict selection [0.64ms]
+(pass) explicit stitching moves exactly two opposite corner UVs, joins an actual seam and refuses unselected or ambiguous neighbors [0.53ms]
+(pass) frozen UV view maps deltas without snapping or click-offset jumps and rejects only unrepresentable results [0.09ms]
+
+src\scene\meshUvOverlap.test.ts:
+(pass) the UV spatial index agrees with the exhaustive overlap check for small, large and extreme triangles [8.49ms]
+
+src\scene\meshUvUnfold.test.ts:
+(pass) connected unfolding opens a cube as one painting chart, retaining metric density and authorial geometry [2.07ms]
+(pass) explicit cuts survive alternative paths around a cycle and material boundaries never join [1.41ms]
+(pass) non-manifold and reversed neighbor boundaries stay cut; unselected faces and native source stay untouched [0.81ms]
+(pass) unfolding tolerates Double extremes without storing normalized points and refuses warped input atomically [0.43ms]
+(pass) large connected sheets use bounded charts rather than quadratic all-face overlap checks [14.30ms]
+(pass) saddle facets split into extra charts when unfolding would overlap, verified by independent clipping [1.79ms]
+(pass) concave faces retain all corners and open beside their oriented neighbor without a convex-only approximation [0.35ms]
+
+src\scene\meshVertices.test.ts:
+(pass) shared face points transform exactly once with stable topology, UV and untouched point references [0.43ms]
+(pass) handle center is a finite world-space bounding center, not the object pivot [0.16ms]
+(pass) valid imported point IDs that match object property names remain editable own data [0.07ms]
+
+src\scene\meshWeld.test.ts:
+(pass) stitching detached corners preserves rendered positions, corner paint seams and material identities [1.03ms]
+(pass) weld is exact, selection-local and preserves the first chosen identity including special keys [0.15ms]
+(pass) only remapped construction lines can combine or collapse; unrelated duplicates remain untouched [0.14ms]
+(pass) weld reports blocked topology before applying and never removes faces to hide a conflict [0.21ms]
+(pass) stitching refuses newly overlapping sides or three-face edges without rejecting unrelated existing problems [0.33ms]
+
+src\scene\migrateLegacy.test.ts:
+(pass) migration preserves identity, palette bindings, source pixels and parametric shapes [0.94ms]
+(pass) pivot becomes the local origin without rounding geometry or world positions [0.30ms]
+(pass) mesh preserves vertex/face IDs, loose edges and per-corner UV seams [0.65ms]
+(pass) live mirror retains identity and source link without duplicating geometry or paint [0.19ms]
+
+src\scene\modelGuides.test.ts:
+(pass) pivot choices use real rotated corners; applying preserves all world bounds [1.80ms]
+(pass) authoring pivot preserves animation and refuses locked pieces [0.45ms]
+(pass) two orthographic points divide a transformed mesh without deleting either side [1.26ms]
+(pass) keep base scales a group around its pivot and restores only base height [0.52ms]
+
+src\scene\paintableInterior.test.ts:
+(pass) an open painted face gains a visible, independently paintable inner face [8.36ms]
+(pass) a double-sided sheet gets separate front and back materials without changing a shared copy [0.43ms]
+
+src\scene\paintCutout.test.ts:
+(pass) vazado removes the base at only the brushed pixel; painting restores it and project JSON preserves it [2.00ms]
+(pass) vazado clears visible lower paint, preserves hidden layers, and clips a wide brush at the face boundary [0.64ms]
+(pass) shared images stay unchanged for other materials and scalar maps [0.93ms]
+(pass) GLB preserves a pixel cutout with MASK, crisp cutoff and a transparent PNG texel [69.21ms]
+(pass) cutting a pixel in imported translucent paint preserves blending outside the stroke [1.79ms]
+(pass) a full layer budget refuses background preparation without changing authored bytes [5.31ms]
+(pass) an imported zero-cutoff mask with opacity %s keeps every untouched visible pixel when one pixel is cut out [1.38ms]
+(pass) an imported zero-cutoff mask with opacity %s keeps every untouched visible pixel when one pixel is cut out [0.83ms]
+(pass) an imported zero-cutoff mask with opacity %s keeps every untouched visible pixel when one pixel is cut out [0.70ms]
+
+src\scene\paintFaceView.test.ts:
+(pass) a face vista de fora, em pé > as formas ficam como no editor antigo: a linha zero da folha em cima da face [3.84ms]
+(pass) a face vista de fora, em pé > o canto de cima à esquerda da frente da caixa é a primeira célula da vista [0.42ms]
+(pass) a face vista de fora, em pé > malha com a UV do arquivo, V para cima: a última linha da região vai em cima [0.29ms]
+(pass) a face vista de fora, em pé > UV espelhada: a coluna zero da folha vai para a direita [0.13ms]
+(pass) a face vista de fora, em pé > UV deitada: as colunas da vista correm pelas linhas da folha [0.09ms]
+(pass) a face vista de fora, em pé > face deitada: olhando de cima, o fundo da peça fica em cima; de baixo, a frente [0.09ms]
+(pass) a face vista de fora, em pé > sem área de UV, a folha crua; face que não existe, nada [0.06ms]
+(pass) a face vista de fora, em pé > a região pedida (o quadro de uma pintura que se mexe) vale no lugar da face inteira [0.06ms]
+
+src\scene\paintIndicators.test.ts:
+(pass) piece color indicators use composed paint and visible layers rather than an imported palette [1.46ms]
+
+src\scene\paintInk.test.ts:
+(pass) a new visual ink joins the first stroke, one undo also removes the prepared color [2.17ms]
+(pass) picker composites lower layers and base; changing the base preserves drawings and other pieces [1.02ms]
+
+src\scene\paintRegionRotate.test.ts:
+(pass) região quadrada: gira como o "Girar a pele" antigo, em todas as camadas [1.07ms]
+(pass) região retangular volta ao tamanho dela pelo vizinho mais próximo; fora dela nada muda [0.54ms]
+(pass) um pixel só não muda nada; peça travada recusa [0.33ms]
+(pass) no sentido contrário (o lado do espelho), girar desfaz o giro de sempre [0.40ms]
+(pass) a face gira junto com os mapas do material: o relevo não desalinha da cor [0.57ms]
+
+src\scene\paintSurface.test.ts:
+(pass) textura por peça com densidade escolhida > cria mapas de 16px a 512px e guarda a densidade ao reabrir [30.72ms]
+(pass) textura por peça com densidade escolhida > importa pixels originais sem reamostrar e mantém as faces na escala escolhida [36.92ms]
+(pass) textura por peça com densidade escolhida > o mesmo mapa de importação preserva a escala em uma malha editável [24.19ms]
+(pass) textura por peça com densidade escolhida > uma nova textura preserva a anterior no documento [8.52ms]
+(pass) textura por peça com densidade escolhida > substituir uma textura compartilhada mantém a imagem antiga sem criar uma cópia órfã [2.28ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > cone separa a lateral da base na folha de pintura [1.05ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > formas grandes usam a resolução nativa sem reduzir a grade ao limite do editor antigo [14.22ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > uma caixa alongada mantém pixels quadrados nas faces, sem converter a forma [1.67ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > caixa: seis blocos que não se tocam, um passo só e nada muda de aparência [3.69ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > rampa e cilindro: cada superfície no seu bloco; bola: a folha inteira, UV identidade [3.35ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > torus cria uma folha contínua para pintar o anel [2.06ms]
+(pass) formas: um bloco por superfície, no tamanho da pele do editor antigo > tubo com tampas: a lateral mede a volta e o comprimento, as tampas o diâmetro [1.19ms]
+(pass) malha: faces espalhadas pela UV automática, sem sobrepor > a caixa virada malha ganha uma folha quadrada, sem nenhuma face por cima de outra [6.47ms]
+(pass) malha: faces espalhadas pela UV automática, sem sobrepor > face torta: pergunta antes; com o sim, divide em triângulos e pinta, tudo num passo [3.63ms]
+(pass) malha: faces espalhadas pela UV automática, sem sobrepor > face sem área fica de fora da folha; tocar nela diretamente é recusado [1.52ms]
+(pass) o que já existe nunca se move > peça do editor antigo: a face pintada continua com a tinta dela; o resto ganha folha nova [1.86ms]
+(pass) o que já existe nunca se move > material de outra peça: isola antes; com imagem, a cópia leva a tinta e a UV fica [1.89ms]
+(pass) o que já existe nunca se move > geometria dividida: só esta peça ganha a UV nova, a outra fica com a de antes [0.73ms]
+(pass) recusas > peça travada, ou dentro de um grupo travado [0.34ms]
+(pass) recusas > material só com relevo, brilho ou metal: recusa sem copiar nada [0.29ms]
+(pass) recusas > pintura com todas as camadas escondidas pede para mostrar uma [0.90ms]
+(pass) recusas > sem espaço para pintura: recusa inteira, sem revisão pela metade [4.19ms]
+(pass) recusas > face que não existe mais [0.20ms]
+
+src\scene\paintSurfaceBounds.test.ts:
+(pass) superfície sem UV própria cobre a folha inteira; com bloco, exatamente o bloco [0.25ms]
+(pass) face de malha: o retângulo em volta dos cantos, arredondado como o toque [0.34ms]
+(pass) UV fora da folha é presa à borda; UV achatada vira uma coluna; inválida ou ausente é nula [0.13ms]
+(pass) malha com UV contínua: o limite é a ilha inteira, não o triângulo; com costura, cada um [0.20ms]
+(pass) na pintura que se mexe, o limite é a face DENTRO do quadro, não o quadro inteiro [0.06ms]
+(pass) girar só vale na face que enche o retângulo dela: a forma e o quadrado da malha [0.19ms]
+
+src\scene\paintTransparentBase.test.ts:
+(pass) transparent base isolates a shared piece and lets a gradient fade to the scene [4.99ms]
+(pass) transparent base covers every material on the piece and removes binary cutout [0.93ms]
+
+src\scene\paletteCommands.test.ts:
+(pass) trocar a paleta conserva extras e guarda as cores personalizadas no documento [0.51ms]
+(pass) paleta de 32 cores preserva a extra pintada em materiais e camadas indexadas [0.62ms]
+(pass) cor que já existe reaproveita o índice; cor nova vira extra no fim, sem mexer nas outras [0.22ms]
+(pass) com as 48 extras ocupadas, não cabe mais nenhuma [0.19ms]
+(pass) trocar uma extra muda só ela, no lugar; cor repetida, fixa ou fora das extras não troca [0.12ms]
+(pass) só a última extra sai, e a lista vazia some do documento [0.09ms]
+
+src\scene\pathCommands.test.ts:
+(pass) a selected loop is deterministic, stays parametric through save/edit and creates one undo entry [2.88ms]
+(pass) a path copied from an animated piece receives independent matching movement tracks [0.89ms]
+(pass) chain traversal is deterministic, owned and rejects gaps, forks, cycles and special-ID collisions [0.56ms]
+(pass) creating and editing a parametric tube preserve the source, follow transforms and survive JSON/undo/conversion [3.64ms]
+(pass) shared paths isolate changes, duplication owns points and painted bindings, and locks/budgets reject atomically [2.76ms]
+
+src\scene\pathMesh.test.ts:
+(pass) closed planar and spatial tubes share their closing ring, remain watertight and preserve UV seams [2.93ms]
+(pass) open straight and bent paths produce consistently oriented tubes with exact budgets and per-corner seams [41.05ms]
+(pass) straight frames remain aligned across intermediate knots and the two caps face outward [0.92ms]
+(pass) path parsing is strict and rejects degenerate or backtracking paths without quantization [0.80ms]
+
+src\scene\pieceAppearance.test.ts:
+(pass) material só da peça: muda no lugar, e nada mudou devolve o mesmo documento [0.89ms]
+(pass) material dividido: pintar a porta de azul não pinta a parede, e nenhum pixel é copiado [1.02ms]
+(pass) vale para todos os materiais da peça, inclusive o da face pintada do editor antigo [0.35ms]
+(pass) face com material dividido em geometria dividida: só esta peça ganha a cópia [0.71ms]
+(pass) recusas: peça travada e cor fora da paleta [0.34ms]
+
+src\scene\pieceTexture.test.ts:
+(pass) vestir a peça com uma textura > Repetir veste cada face em pé: a linha de cima da textura em cima da face [3.91ms]
+(pass) vestir a peça com uma textura > Esticar amostra a textura inteira em cada face, pelo vizinho mais próximo [2.05ms]
+(pass) vestir a peça com uma textura > cor que o modelo não tem vira extra; sem vaga, a mais parecida [2.15ms]
+(pass) vestir a peça com uma textura > é cópia: mudar a textura depois não muda a peça [0.75ms]
+(pass) vestir a peça com uma textura > vestir de novo com a mesma textura devolve o mesmo documento (nenhum desfazer vazio) [1.02ms]
+(pass) vestir a peça com uma textura > na folha de cores livres, a cor da textura entra direto; o transparente mostra a peça [1.42ms]
+(pass) vestir a peça com uma textura > peça travada ou pintura de relevo recusam, sem mudar nada [0.62ms]
+(pass) vestir a peça inteira > a peça do editor antigo (um material por face pintada) veste todas as faces [3.74ms]
+(pass) vestir a peça inteira > a pintura que se mexe recusa: vestir apagaria os quadros [0.57ms]
+
+src\scene\pivot.test.ts:
+(pass) authoring pivot preserves every old animation sample, descendants and shared resources [2.69ms]
+(pass) base, dimensions and local corner remain honest under a transformed parent [1.37ms]
+(pass) legacy origins, locks, invalid pivot data and shear are preserved or rejected explicitly [0.71ms]
+(pass) aligning the pivot axis to a tilted face saves its direction without changing geometry or old animation [1.07ms]
+
+src\scene\placement.test.ts:
+(pass) montar peças sem coordenadas > adiciona formas visíveis e separadas, sem alterar a original [0.52ms]
+(pass) montar peças sem coordenadas > a forma nova nasce AO LADO da peça erguida e afastada, na altura da base dela [0.46ms]
+(pass) montar peças sem coordenadas > caixa deitada de lado ainda é apoio de topo reto; caixa torta continua recusada [0.71ms]
+(pass) montar peças sem coordenadas > uma peça nova pertence ao grupo transformado sem mudar o pivô ou o movimento [0.80ms]
+(pass) montar peças sem coordenadas > empilha pelo contato da base e permite voltar ao chão [0.73ms]
+(pass) montar peças sem coordenadas > recusa apoio curvo, a própria seleção e peças travadas sem modificar a origem [0.53ms]
+(pass) montar peças sem coordenadas > duplica ao lado, com nome e recursos independentes, mantendo o grupo [0.87ms]
+
+src\scene\plane.test.ts:
+(pass) Plano is a horizontal editable quad with upward normals and square UVs [4.87ms]
+(pass) a plane resizes on its nonzero axes without flattening its transform or moving its pivot [0.61ms]
+(pass) plane movement and rotation keep a valid editable surface [0.48ms]
+(pass) planes are placed separately, including multiple flat obstacles, and inherit the chosen group [1.41ms]
+(pass) the duplicate owns an independent mesh and keeps the zero-thickness surface [0.49ms]
+(pass) plane paint preparation preserves the quad and permits extrusion upward [0.71ms]
+(pass) native project and GLB preserve the plane and its double-sided material [2.26ms]
+
+src\scene\primitiveDetail.test.ts:
+(pass) every boundary tessellation has a closed oriented surface and an exact drawing/conversion budget [178.19ms]
+(pass) torus keeps its painted surface and detail through save, resize and conversion [4.47ms]
+(pass) strict detail boundaries reject coercion, wrong fields and invalid budgets without synthesizing defaults [0.27ms]
+(pass) detail changes isolate shared users, preserve paint and dimensions, survive the codec and undo conversion [1.98ms]
+(pass) both orphan geometry and rendered instances including mirrors count authored detail [0.80ms]
+
+src\scene\primitiveMesh.test.ts:
+(pass) box converts to a closed connected surface without changing rendered bytes [0.80ms]
+(pass) wedge converts to a closed connected surface without changing rendered bytes [0.18ms]
+(pass) cylinder converts to a closed connected surface without changing rendered bytes [1.07ms]
+(pass) sphere converts to a closed connected surface without changing rendered bytes [1.81ms]
+(pass) curved shapes share seam/pole vertices without welding away per-corner UVs [0.58ms]
+(pass) conversion keeps exact endpoints, full-precision UV and coordinates below Float32 range [0.27ms]
+(pass) thin native shapes keep all representable faces after conversion [0.17ms]
+
+src\scene\primitives.test.ts:
+(pass) scene primitives and locators > all forms render and resize with local origin and paint intact [4.17ms]
+(pass) scene primitives and locators > shared geometry is copy-on-write and deletion preserves remaining and orphan resources [0.74ms]
+(pass) scene primitives and locators > locators have a frameable origin without creating geometry or changing export bounds [0.41ms]
+
+src\scene\readAnimation.test.ts:
+(pass) native animation source contracts > optional clips own every key/tuple, retain Double precision and leave public v1 closed [1.18ms]
+(pass) native animation source contracts > signed zero is canonical without normalizing authored rotations or snapping times [0.07ms]
+(pass) native animation source contracts > malformed clips retain raw data, including unsupported interpolation and duplicate times [0.59ms]
+(pass) native animation source contracts > references target real nodes and absolute clips cannot silently decompose affine rests [0.64ms]
+(pass) native animation source contracts > clip, aggregate track and aggregate key budgets reject excess before copying its values [85.81ms]
+
+src\scene\readDocument.test.ts:
+(pass) unreleased scene document reader > creation ids obey platform limits while internal resource ids keep their own namespace [0.94ms]
+(pass) unreleased scene document reader > native and JSON roundtrips preserve fractional transforms, geometry, UVs, bytes and palette bindings [1.00ms]
+(pass) unreleased scene document reader > hierarchy and affine shear are accepted without collapsing local transforms [0.56ms]
+(pass) unreleased scene document reader > one mesh may exceed the legacy per-piece limit within the aggregate budget [3.08ms]
+(pass) unreleased scene document reader > signed zero has the same canonical representation in memory and JSON without snapping [1.59ms]
+(pass) unreleased scene document reader > composed positions and mirror planes cannot overflow despite finite input numbers [0.90ms]
+(pass) unreleased scene document reader > ler a geração seguinte não autoriza o caminho v1 a escrevê-la nem a saneá-la [0.51ms]
+(pass) unreleased scene document reader > unknown fields and malformed values retain the entire raw document for recovery [2.14ms]
+(pass) unreleased scene document reader > missing geometry, face vertices, material maps and mirror identities fail as a whole [2.89ms]
+(pass) unreleased scene document reader > pixel dimensions, palette indexes, layer counts and duplicate IDs are strict [0.92ms]
+(pass) unreleased scene document reader > aggregate budgets include shared geometry instances and layers before oversized allocation [4.89ms]
+
+src\scene\regionSelection.test.ts:
+(pass) screen selection regions > box includes its boundary and works in every drag direction [0.09ms]
+(pass) screen selection regions > lasso handles concavity, reversed winding and exact edge hits [0.13ms]
+
+src\scene\resizePaint.test.ts:
+(pass) new planes and boxes have exactly one paint pixel per world unit, including odd sizes [2.32ms]
+(pass) resizing expands the grid without multiplying paint pixels or retaining retired paint images [1.50ms]
+(pass) resizing a piece with a shared high-density texture does not duplicate its image [0.70ms]
+(pass) moving and turning preserve painting references; a group scale adjusts each descendant once [1.48ms]
+(pass) older projects keep their paint density, UV and pixels through resizing and reopening [0.49ms]
+(pass) a resized duplicate has its own paint and leaves the original unchanged [1.48ms]
+(pass) a freely rotated UV island remains square in world space after a nonuniform size change [0.80ms]
+(pass) rgba cutouts, hidden layers and paint metadata survive resizing without interpolation [0.72ms]
+(pass) shared geometry, materials and images are isolated from a locked instance [1.27ms]
+(pass) size gestures cancel and undo both UVs and pixels in one history step [1.52ms]
+(pass) fractional dimensions keep fractional UV coverage instead of stretching a rounded grid [0.62ms]
+(pass) large authored coordinates with tiny node scales still resize at physical pixel size [0.84ms]
+(pass) oversized and animated paint reject the whole size change instead of stretching or losing work [0.85ms]
+(pass) curved primitives retain their parametric surfaces, including sphere pole seams [3.39ms]
+(pass) continuous mesh mirrors keep sharing reflected UVs when the piece is resized [1.31ms]
+
+src\scene\rigBuilder.test.ts:
+(pass) guided bones preserve rest shape, original nodes and paint and add an actual bend in a primitive [2.26ms]
+(pass) chain origins use world positions under a reflected, rotated and unevenly scaled parent [0.59ms]
+(pass) invalid and locked preparations do not modify the source [0.35ms]
+(pass) preparing a painted shared mesh isolates geometry and preserves every sampled UV and image layer [1.27ms]
+
+src\scene\rigidEmptyAnimations.test.ts:
+(pass) opening an authored relative rotation keeps the rest pose and removes the scale shear [0.56ms]
+(pass) genuinely sheared targets retain their relative animation channels [0.18ms]
+(pass) an empty old movement becomes rigid when another piece has genuine shear [0.19ms]
+
+src\scene\rotationBetweenDirections.test.ts:
+(pass) shortest rotations preserve directions near parallel/opposite, across magnitude, and have deterministic exact half turns [1.00ms]
+(pass) invalid and overflowing direction magnitudes refuse without mutating either input [0.21ms]
+
+src\scene\sampleAnimation.test.ts:
+(pass) derived animation sampling > a looping smooth track returns from its last pose to its first before wrapping [0.71ms]
+(pass) derived animation sampling > a looping rotation returns through the short arc with its pivot compensation [0.54ms]
+(pass) derived animation sampling > clock clamps/seeks exact ends and loops without erasing tiny positive Double times [0.18ms]
+(pass) derived animation sampling > linear/step/smooth values have exact boundaries, owned endpoints and no overshoot [0.29ms]
+(pass) derived animation sampling > rotations follow shortest-arc SLERP, including opposite signs, tiny angles and ease-in/out [0.86ms]
+(pass) derived animation sampling > extreme finite translations/scales interpolate without subtraction overflow or fps snapping [0.36ms]
+(pass) derived animation sampling > parent and child delta TRS preserve affine rest/shear and agree with independent matrix composition [0.69ms]
+(pass) derived animation sampling > absolute local clips retain unkeyed rest channels and static reparenting preserves delta motion for all sampled times [0.81ms]
+(pass) derived animation sampling > empty clips reproduce rest pose and animation compilation/sampling never reads geometry or image data [0.23ms]
+
+src\scene\SceneRasterWindow.test.ts:
+(pass) raster windows alias static derived pixels and reuse a single frame buffer through switches [0.46ms]
+(pass) off-frame edits update the retained sheet without visible upload and transparency remains sheet-wide [0.16ms]
+(pass) partial updates crossing a window boundary match a full reference crop for every small rectangle [4.80ms]
+(pass) invalid patches/windows are atomic; resize and whole-image refresh keep the crop current [0.38ms]
+
+src\scene\simplePaintUv.test.ts:
+(pass) simple UV transfers each old face into a continuous chart, retains layers, and is idempotent [2.33ms]
+(pass) organizing a piece keeps its own texture density when the project default differs [1.84ms]
+(pass) simple UV preserves continuous reflection and its paint through later mesh edits [2.02ms]
+(pass) shared geometry/material/image are isolated, including a locked other instance [0.77ms]
+(pass) locked target refuses UV changes and a primitive can receive the same simple mapping [0.99ms]
+(pass) RGBA paint remains exact-color and materials sharing an image get independent new charts [0.91ms]
+(pass) special maps and animated paint refuse before changing source resources [0.56ms]
+(pass) a narrow painted triangle keeps visible color even when its new pixel center falls outside the face [0.52ms]
+
+src\scene\skinBinding.test.ts:
+(pass) bind captures full affine rest without decomposing, owns nested data, and the reader never recomputes bind pose [0.82ms]
+(pass) binding reader rejects unknown fields, orphaned/duplicate references, missing vertices and non-normalized weights [1.97ms]
+(pass) weighted-vertex budget counts each bound instance even when all nodes share one small geometry [144.84ms]
+(pass) prototype-like vertex and joint ids remain own data, never inherited setters or missing lookup fallbacks [0.68ms]
+
+src\scene\skinDraw.test.ts:
+(pass) skin draw attributes follow the existing expanded corner map, preserve UV seams and exclude omitted faces/loose points [2.89ms]
+(pass) draw preparation refuses a stale corner/position mapping and positive influences that vanish in Float32 [1.06ms]
+(pass) joint-cluster bounds enclose Float32 weighted shader arithmetic under reflections, cancellation and weight sum error [26.76ms]
+
+src\scene\skinIndex.test.ts:
+(pass) skin indexing keeps numeric/prototype IDs as own ordered data, without replacing bindings or rows [1.11ms]
+(pass) index errors retain point order: row capacity, membership and missing vertices are not reordered [0.53ms]
+(pass) differently ordered weights retain references and validate errors in weight order [0.58ms]
+
+src\scene\skinIntegration.test.ts:
+(pass) native reader retains owned weights and inverse binds without enabling public v2 reads [1.39ms]
+(pass) weight commands are atomic copy-on-write, normalize only on request, and rebind only explicitly [1.95ms]
+(pass) inherited mesh locks protect bindings while locked referenced joints remain untouched [0.74ms]
+(pass) whole and partial rig duplication remap owned weights without changing the rest deformation [2.18ms]
+(pass) deleting bound meshes removes only their bindings; removing used joints or changing pivots/topology refuses [1.51ms]
+(pass) two meshes sharing geometry have independent weights and deleting one retains the other binding [0.90ms]
+(pass) native storage includes skin byte costs, owns save/read data, and retains a single undo/redo with CAS [73.23ms]
+(pass) internal GLB exports bindings with explicit conversion consent and keeps unbound output unchanged [2.94ms]
+(pass) bind, weights, pose capture and unlink each retain an exact undo/redo revision [15.56ms]
+
+src\scene\skinJoints.test.ts:
+(pass) adding a joint captures only its affine rest, keeps old binds and Double weights, and changes no deformed vertex [2.17ms]
+(pass) removal rejects every positive force; explicit zero-slot removal preserves other row identities and bind relations [1.96ms]
+(pass) new singular joints are refused but an existing zero-scale joint does not force a rebind when adding another [1.13ms]
+(pass) joint budgets reject growth atomically, and prototype-like node IDs stay ordinary own data [213.98ms]
+
+src\scene\skinPaint.test.ts:
+(pass) partial strength cannot round a positive influence to zero or silently become full coverage [1.83ms]
+(pass) a detached stroke uses maximum coverage, owns its output and changes only the targeted binding with an explicit command [0.98ms]
+(pass) a surface stroke cannot cross a loose construction edge into a coincident disconnected face [0.66ms]
+(pass) refusal counts track the latest coverage and recover only when an explicit full weight is representable [0.69ms]
+(pass) greater coverage replaces the first preview instead of accumulating pressure from repeated samples [0.35ms]
+(pass) refused points keep their original rows; invalid or zero-strength samples cannot leave a partial draft [0.68ms]
+
+src\scene\skinPaintCommit.test.ts:
+(pass) prepared private commits match the fully checked command for varied forces, zeros, tiny values and shared geometry [32.73ms]
+(pass) a prepared commit accepts only the captured COW content and cannot erase a new source, even on an empty stroke [0.94ms]
+(pass) prepared commits keep general byte budgets and world overflow checks, with the same errors as the full command [1.62ms]
+
+src\scene\skinPaintWeights.test.ts:
+(pass) painting preserves influence order and zeros, redistributes the remaining mixture and never borrows rows [0.16ms]
+(pass) adding an influence is explicit, never evicts a fifth slot, and removing strength requires an existing recipient [0.09ms]
+(pass) tiny positive values stay Double; scaling underflow is refused while an explicit full target may zero others [0.17ms]
+
+src\scene\skinPose.test.ts:
+(pass) Double skin deformation matches real Three SkinnedMesh across affine/reflected ancestors and independent joint/mesh poses [9.28ms]
+(pass) the existing local-delta timeline drives joint skinning with no second animation system [1.24ms]
+(pass) prepared buffers own exact values, reject incomplete/non-affine/singular poses and never emit partial invalid positions [0.67ms]
+(pass) the highest joint slot stays addressable and zero-weight slots do not contribute [5.68ms]
+
+src\scene\skinSmooth.test.ts:
+(pass) os vizinhos vêm das arestas das faces, sem o próprio ponto [0.86ms]
+(pass) suavizar anda na direção da média dos vizinhos e mantém o total em 100% [0.37ms]
+(pass) suavizar guarda no máximo quatro ossos, os mais fortes [0.13ms]
+(pass) ponto sem vizinhos, força zero ou mistura igual à dos vizinhos não muda [0.05ms]
+(pass) a ordem dos vizinhos não muda o resultado [0.07ms]
+(pass) as passadas mexem só nos pontos escolhidos; os outros servem de vizinhos [0.72ms]
+(pass) o comando suaviza, devolve um passo válido e pode ser desfeito [1.16ms]
+(pass) o comando recusa pontos de fora da peça e peça travada [0.85ms]
+(pass) o pincel no modo Suavizar mistura com os vizinhos e não acumula no mesmo traço [1.19ms]
+
+src\scene\skinSuggestion.test.ts:
+(pass) segment suggestion gives endpoint weights in world space and rigid mode chooses one joint; no source data is changed [1.30ms]
+(pass) prepared suggestions own all positions and resolve selected ancestors across intermediate groups [0.99ms]
+(pass) affine/reflected scenes agree with an independent Three line projection and suggestion binding preserves rest geometry [11.57ms]
+(pass) suggestion rejects locked/linked/invalid targets and impossible distances instead of changing or repairing input [1.24ms]
+(pass) coincident joints have stable ASCII ties and prototype-like vertex IDs stay own data [0.41ms]
+
+src\scene\skinWeights.test.ts:
+(pass) explicit normalization owns stable ids/order, keeps zero slots and handles Double extremes without overflow [0.40ms]
+(pass) normalization does not invent a bone, drop an unrepresentable influence, coerce data or prune a fifth bone [0.29ms]
+
+src\scene\solidCut.test.ts:
+(pass) every native solid yields two closed solids with conserved volume at axis and oblique cuts [83.74ms]
+(pass) exact vertex and edge cuts retain manifold boundaries across scales [12.22ms]
+(pass) a cut is atomic, keeps exterior UVs and existing rigid motion on both children [2.08ms]
+(pass) open, inverted, tangent and missed solids are refused without mutation [1.44ms]
+
+src\scene\solidCutLine.test.ts:
+(pass) an internal flat line previews a volume cut and creates two independent closed pieces [7.87ms]
+(pass) a corner line cannot silently choose one of two cut directions [1.18ms]
+(pass) a closed planar loop defines its own cut plane regardless of edge order [2.38ms]
+(pass) a sixteen-line loop around a tapered piece cuts across its volume [6.29ms]
+
+src\scene\solidCutPoints.test.ts:
+(pass) two points share a face, the third can tilt the plane, and later points must stay coplanar at any scale [1.44ms]
+
+src\scene\textureViewport.test.ts:
+(pass) zoom preserves the texel under the pointer, including at both camera limits [0.20ms]
+(pass) fit preserves rectangular pixel proportions and close zoom steps use whole texels [0.12ms]
+(pass) UV framing centers the occupied region while keeping source image coordinates [0.10ms]
+
+src\scene\twoBonePose.test.ts:
+(pass) local two-bone frames reach the target, preserve lengths/channels and exactly match committed playback [2.58ms]
+(pass) local-delta two-bone frames reach the target, preserve lengths/channels and exactly match committed playback [1.94ms]
+(pass) affine parents preserve their metric; sampled local and relative rigs match independent world targets [27.96ms]
+(pass) a bound mesh follows solved bone keys without changing weights, inverse binds or base geometry [1.39ms]
+(pass) local preserves keyed translations/scales under an animated parent, uses fixed time, and rejects unrepresentable nonuniform joints [1.49ms]
+(pass) local-delta preserves keyed translations/scales under an animated parent, uses fixed time, and rejects unrepresentable nonuniform joints [1.23ms]
+(pass) unreachable inner targets are reported without stretching or rewriting signed scales [0.66ms]
+(pass) owned private keys resist forged/mutated frames, cancellation and stale revisions, while keeping latest thumbnail on one undo [1.46ms]
+(pass) no-op preserves raw authored quaternions, and pointer samples do not reread geometry/images/keys [3.86ms]
+(pass) invalid chains, inherited locks, singular frames, unsupported shear, and key budgets refuse without writes [5.92ms]
+
+src\scene\twoBoneReach.test.ts:
+(pass) reachable target and hint choose the bend without stretching, and all returned data is owned [0.51ms]
+(pass) unreachable targets report the outer and inner reach boundaries instead of changing lengths [0.15ms]
+(pass) coincident targets, straight chains and absent or parallel hints resolve deterministically [0.19ms]
+(pass) law-of-cosines solution is covariant under rigid/reflected uniform transforms and wide numeric scales [3.14ms]
+(pass) invalid, zero-length and numerically unresolvable chains refuse without repairing the source [0.32ms]
+(pass) unequal lengths and almost folded or extended targets retain both distances without iterative drift [3.01ms]
+
+src\scene\twoBoneTargetDrag.test.ts:
+(pass) target translation uses private captured world inputs, retains the bend hint/limit and never reindexes geometry [6.39ms]
+
+src\scene\uvRotation.test.ts:
+(pass) free UV rotation preserves texel lengths and center on a rectangular texture [0.23ms]
+(pass) whole turns are exact no-ops and quarter turns keep exact pixel coordinates [0.06ms]
+
+src\components\editor\DeferredEditor.test.tsx:
+(pass) module failure offers retry without touching the saved creation [6.80ms]
+(pass) leaving while a module loads ignores its late result [76.54ms]
+
+src\components\editor\useAssetDocument.test.tsx:
+(pass) document load ignores an old creation resolving after a new one [173.72ms]
+(pass) load failures stay recoverable; retry reads again and unsupported data is never made editable [163.40ms]
+(pass) completion after unmount cannot acquire a document [53.88ms]
+
+src\components\editor\useStudioResync.test.tsx:
+(pass) useStudioResync > does not encode or request consent for a creation that has never been linked to Studio [2.12ms]
+(pass) useStudioResync > unmount after switching profiles exports in the original profile [53.43ms]
+(pass) useStudioResync > a newer save cancels the actual scene export before delivery and only sends the latest creation [42.45ms]
+(pass) useStudioResync > reviews a real scene export before resync and invalidates consent on a later save [75.80ms]
+(pass) useStudioResync > thumbnail saves preserve a pending authoring send and never send another model copy [105.48ms]
+(pass) useStudioResync > serializes worker export and delivery; flush waits for the newest saved sky [372.14ms]
+(pass) useStudioResync > abrir não reenvia; salvar reenvia UMA vez depois da folga, no formato do Estúdio [189.48ms]
+(pass) useStudioResync > vários salvamentos dentro da folga viram UM reenvio, o último [171.80ms]
+(pass) useStudioResync > desmontar (fechar a criação) com reenvio pendente envia na hora [6.63ms]
+(pass) useStudioResync > esconder a aba envia na hora [6.75ms]
+(pass) useStudioResync > sem `send` (host sem Estúdio) não faz nada [21.99ms]
+(pass) useStudioResync > expõe falha devolvida pelo host e rejeição sem quebrar os próximos envios [65.91ms]
+(pass) useStudioResync > updated false por ainda não estar ligado ao Estúdio permanece silencioso [22.07ms]
+(pass) useStudioResync: o host recria o adapter > trocar a identidade do `send` no meio da folga NÃO cancela o reenvio agendado [153.14ms]
+
+src\components\gallery\ProgressiveThumb.test.tsx:
+(pass) offscreen thumbnails do not load; leaving cancels and stale completion does not render [4.80ms]
+(pass) stored thumbnails need no source read and defer image decoding [1.51ms]
+(pass) a malformed stored image has a friendly fallback and a new image can recover [2.09ms]
+
+src\components\gallery\RecoveryNotice.test.tsx:
+(pass) a gallery containing only newer documents is not reported as empty or deleted [11.02ms]
+(pass) unreadable creations remain visible and download without opening or altering the original [14.70ms]
+
+src\components\ui\Dialog.test.tsx:
+(pass) Tab wraps from the final disclosure summary and Shift+Tab returns to it [3.37ms]
+(pass) closed details hide descendant controls from the trap, including nested disclosures [3.24ms]
+
+src\components\ui\Panel.test.tsx:
+(pass) Panel > sem disclosure continua exatamente como era: título é texto, corpo sempre à mostra [1.60ms]
+(pass) Panel > recolhido, o corpo sai do alcance mas o que estava escrito sobrevive [4.46ms]
+(pass) Panel > a faixa inteira do título abre e recolhe, não só o chevron [3.01ms]
+(pass) Panel > recolhido mostra o assunto no lugar do valor, e troca as ações pelo resumo [2.31ms]
+(pass) Panel > o título e o chevron apontam para o mesmo corpo, e dizem se está aberto [1.79ms]
+
+src\components\ui\Toast.test.tsx:
+(pass) Toast com ações > a região viva já existe e mantém a identidade quando a mensagem chega [1.31ms]
+(pass) Toast com ações > o botão da ação chama o conserto e fecha o toast [1.72ms]
+(pass) Toast com ações > só a mensagem é região viva; com o foco num botão o toast não some sozinho [470.38ms]
+
+src\components\editor\model\ApplyTextureDialog.test.tsx:
+(pass) applying a listed texture loads its pixels, never passes summary metadata to the painter [13.98ms]
+(pass) closing while the chosen texture loads prevents a late paint operation [91.92ms]
+
+src\components\editor\model\commandRegistry.test.ts:
+(pass) model command registry > has unique ids and no shortcut collision in the same context [0.48ms]
+(pass) model command registry > finds shortcuts only in their valid context [0.17ms]
+(pass) model command registry > carries availability, disabled reason and execution in the resolved command [0.11ms]
+
+src\components\editor\model\ModelEditor.mesh.test.tsx:
+(pass) Editar malha (M2) > a selection shortcut cannot retarget the points owned by an in-flight drag [156.25ms]
+(pass) Editar malha (M2) > selection tools and shortcuts keep the current mode, share results and never enter undo history [831.00ms]
+(pass) Editar malha (M2) > edge ring has the same button/keyboard result and help/typing do not trigger selection [154.00ms]
+(pass) Editar malha (M2) > Transformar em malha: a caixa vira malha, o toast avisa e a bancada troca de caixa [102.95ms]
+(pass) Editar malha (M2) > toque escolhe ponto/face; arrastar a alça move os vértices com UM desfazer; Esc fecha [156.54ms]
+(pass) Editar malha (M2) > Delete apaga a seleção; apagar tudo apaga a peça e avisa [116.57ms]
+(pass) Editar malha (M2) > a 5ª forma "Malha" coloca uma caixa já convertida [37.39ms]
+(pass) ferramentas da malha (M3) > cada modo mostra somente as ferramentas que servem para pontos, arestas ou faces [120.22ms]
+(pass) ferramentas da malha (M3) > Puxar a face de cima, Ajustar a distância (um desfazer só) e o toast de face virada [172.94ms]
+(pass) ferramentas da malha (M3) > Cortar no meio com UMA aresta escolhida; Juntar pontos com dois [152.69ms]
+(pass) ferramentas da malha (M3) > Corte em faixa abre a bandeja larga, cria cortes múltiplos e mantém um desfazer [175.52ms]
+(pass) ferramentas da malha (M3) > Criar face ou aresta cria uma aresta solta, que pode ser puxada e direcionada [139.33ms]
+(pass) ferramentas da malha (M3) > Encolher dentro ajusta o percentual sobre a face original e desfaz em um passo [136.53ms]
+(pass) ferramentas da malha (M3) > Criar face ou aresta cria a diagonal escolhida e já muda para Arestas [112.61ms]
+(pass) review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo > "Virar" do toast conserta de verdade; depois de mudar o modelo o botão não mexe em nada [159.84ms]
+(pass) review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo > duas faces opostas continuam duas e Puxar não translada o cubo inteiro [113.30ms]
+(pass) review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo > mudar a paleta encerra Ajustar sem reverter a mudança [155.50ms]
+(pass) review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo > E fecha o Editar malha sem apagar a seleção antes; Ctrl+A escolhe todos os pontos [110.86ms]
+(pass) review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo > undo que restaura uma peça trancada encerra o Editar malha [75.49ms]
+(pass) review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo > redo que restaura uma peça trancada encerra o Editar malha [99.90ms]
+
+src\components\editor\model\ModelEditor.paint.test.tsx:
+(pass) ModelEditor (Pintar) > Escape cancels the close-up stroke first; a second Escape closes the dialog [108.36ms]
+(pass) ModelEditor (Pintar) > a aba Pintar troca a caixa de ferramentas, o palco recebe modo e ajustes [140.64ms]
+(pass) ModelEditor (Pintar) > um gesto de pintura vira UM commit e o conta-gotas troca a cor do lápis [703.71ms]
+(pass) ModelEditor (Pintar) > Pintar de perto abre a face, respeita atalhos do modal e fecha o traço em um desfazer [134.31ms]
+(pass) ModelEditor (Pintar) > Pintar de perto fecha com aviso quando o alvo já não existe [91.90ms]
+(pass) ModelEditor (Pintar) > texels por bloco re-amostram as peles; atlas cheio avisa uma vez; status mostra o atlas [92.04ms]
+(pass) ModelEditor (Pintar) > apagar uma cor extra remapeia e a lixeira não mexe nas 16 fixas [95.96ms]
+(pass) ModelEditor (Pintar) > Baixar .glb prepara o arquivo e avisa (o download em si depende do navegador) [83.71ms]
+
+src\components\editor\model\ModelEditor.test.tsx:
+(pass) ModelEditor (bancada Montar) > isolation follows selection, offers an explicit exit and never enters saved content/history [104.93ms]
+(pass) ModelEditor (bancada Montar) > view controls show the active projection and frame the selection without changing the document [98.35ms]
+(pass) ModelEditor (bancada Montar) > Escape cancels a held arrow without creating history on its late keyup [95.94ms]
+(pass) ModelEditor (bancada Montar) > Escape cancels the active viewport preview and ignores its late end [111.01ms]
+(pass) ModelEditor (bancada Montar) > pointercancel cancels the active viewport preview and ignores its late end [103.17ms]
+(pass) ModelEditor (bancada Montar) > a late paint completion cannot overwrite a newer palette command [95.04ms]
+(pass) ModelEditor (bancada Montar) > uma criação com paleta personalizada pode voltar para uma paleta de fábrica [82.94ms]
+(pass) ModelEditor (bancada Montar) > abre com a caixa de ferramentas, o palco recebe o modelo e o status conta as peças [72.08ms]
+(pass) ModelEditor (bancada Montar) > a ajuda mostra apenas os comandos e gestos do contexto atual [108.95ms]
+(pass) ModelEditor (bancada Montar) > adicionar caixa entra no modo de colocar; toque na superfície cria e desfazer volta [100.22ms]
+(pass) ModelEditor (bancada Montar) > selecionar pela lista mostra as propriedades; Delete apaga; steppers commitam [734.78ms]
+(pass) ModelEditor (bancada Montar) > espelhar cria o gêmeo na lista e desligar assa; encaixe de meio bloco muda o snap [94.94ms]
+(pass) ModelEditor (bancada Montar) > espelhar no teto de peças explica por que não pode ligar [168.03ms]
+(pass) ModelEditor (bancada Montar) > atalhos trocam a ferramenta e adicionam caixa; vistas e grade chegam ao palco [100.71ms]
+(pass) ModelEditor (bancada Montar) > adicionar no teto de triângulos explica o limite correto [180.60ms]
+(pass) ModelEditor (bancada Montar) > um arrasto de mover é UM passo de desfazer; o de tamanho aplica a caixa no soltar [107.02ms]
+(pass) ModelEditor (bancada Montar) > cores: tocar um swatch pinta a peça; a cor nova entra nas extras [126.29ms]
+(pass) ModelEditor (bancada Montar) > "+ Nova cor" é UM gesto: N passos do seletor viram UMA extra e UM desfazer [109.14ms]
+(pass) ModelEditor (bancada Montar) > sem foto no palco, nada é gravado depois que o teste passa do tempo da miniatura [1273.28ms]
+(pass) ModelEditor (bancada Montar) > a miniatura é fotografada depois de uma mudança e salva no asset [1386.98ms]
+(pass) ModelEditor (bancada Montar) > sem WebGL a tela mostra o recado em vez de quebrar [19.88ms]
+(pass) ModelEditor (bancada Montar) > sair do editor descarta o palco [118.47ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > setas empurram a peça um encaixe (Shift = 5, PageUp sobe); no Editar malha movem os pontos [171.72ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > "Ver arestas" chega ao palco [78.53ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > pivô: os steppers gravam a origem dentro da caixa e "Pivô no centro" apaga [107.21ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > trancar e esconder pela lista; a peça trancada não anda com as setas e avisa [119.64ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > seleção múltipla: Somar à seleção (ou Shift) soma pela lista; o palco recebe as somadas; Delete apaga todas [156.93ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > duplicar uma seleção é atômico quando só parte do grupo caberia [272.65ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > Arrumar move o grupo atomicamente e Repetir mantém um único passo de desfazer ao ajustar [190.47ms]
+(pass) extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla > arrasto do grupo é atômico quando um novo gêmeo não cabe [141.90ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > o gesto do "+" fecha ANTES de um gesto do palco: o histórico fica na ordem certa [107.53ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > um passo do seletor sobre uma cor que JÁ existe tira a extra e aponta para ela [95.03ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > desfazer a cor extra que o lápis usa devolve o lápis à 1ª cor [92.52ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > seta segurada é UM gesto (um desfazer só) e sem seleção a seta é do navegador [141.31ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > no Pintar o toque só escolhe a peça (o "Somar à seleção" não vaza) [98.01ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > Editar malha numa peça trancada avisa em vez de abrir um beco sem saída [99.44ms]
+(pass) review 06/09: gesto de cor, setas seguradas, Pintar sem somar > apagar a extra anterior preserva a mesma cor física do lápis [141.04ms]
+(pass) Grudar pontos > dois toques movem a peça em um único commit e voltam para Mover [123.26ms]
+(pass) Grudar pontos > G ativa; Esc, novo clique e troca de modo cancelam; peça trancada não entra [176.36ms]
+(pass) Grudar pontos > trocar a seleção pela lista cancela Grudar e não move o grupo antigo [109.34ms]
+
+src\components\editor\model\ReferenceImageGuide.test.tsx:
+(pass) a reference is view-bound, non-interactive and adjustable without touching the model canvas [84.10ms]
+(pass) front and side keep separate images and adjustments when changing views [132.30ms]
+(pass) failed replacement keeps the previous guide; cancel does not install late decoded data [211.79ms]
+(pass) rapid replacement only adopts the latest request, and remove releases its resource [142.46ms]
+(pass) closing the editor during decode releases its URL and cannot leak into the next instance [64.56ms]
+
+src\components\editor\model\WorkspaceInspector.test.tsx:
+(pass) workspace inspector > the tablet drawer is labelled, non-modal, focusable and leaves the canvas available [4.14ms]
+(pass) workspace inspector > the desktop dock can collapse; resize keeps the current controls mounted [2.06ms]
+
+src\components\editor\scene\animationCurvePlot.test.ts:
+(pass) curve drawing samples the same effective transform, includes exact arrivals and stays bounded for dense clips [7.44ms]
+
+src\components\editor\scene\moldeChecks.test.ts:
+(pass) conferências do molde > a caixa de começo cabe, encosta na frente e é leve [0.06ms]
+(pass) conferências do molde > passar do molde em qualquer lado não cabe; meio passo de folga vale [0.04ms]
+(pass) conferências do molde > a frente precisa encostar na marca rosa (a face +z) [0.13ms]
+(pass) conferências do molde > acima do teto de triângulos não é leve; criação vazia não cabe nem encosta [0.03ms]
+
+src\components\editor\scene\sceneAdjustment.test.ts:
+(pass) workshop adjustments > rotation of one piece uses its relocated pivot, not its geometry centre [0.55ms]
+(pass) workshop adjustments > numeric rotation uses the saved face axis [0.44ms]
+(pass) workshop adjustments > nested multi-selection applies world movement once; invalid numbers do not mutate [0.56ms]
+
+src\components\editor\scene\SceneAnimationAuthoring.test.tsx:
+(pass) native control activation keeps Space and Enter while the canvas retains playback shortcuts [146.11ms]
+(pass) New creates an empty two-second movement without selection, grouping, or implicit keys [92.36ms]
+(pass) repeat in the timeline applies immediately with advanced animation tools enabled [105.06ms]
+(pass) duration in the timeline retimes every pose and can be undone [87.46ms]
+(pass) the loop repair action keeps the last pose and gives it time to return [106.51ms]
+(pass) a spinning piece can switch every turn segment to constant pace in one action [157.41ms]
+(pass) a two-pose spinning wheel can complete its loop from the pose card [180.67ms]
+(pass) mark pose stays in the timeline header while automatic marking stays in the inspector [166.50ms]
+(pass) nearby poses show different times without rounding both to the same label [121.78ms]
+(pass) eight channel keys remain five summary times; copying previews a free destination and commits one undo [193.20ms]
+(pass) timeline height is a recoverable preference and never document history [84.49ms]
+(pass) recording a transformed pose selects its channel immediately (automatic=%s) [145.53ms]
+(pass) recording a transformed pose selects its channel immediately (automatic=%s) [162.14ms]
+
+src\components\editor\scene\sceneAnimationForm.test.ts:
+(pass) unchanged rotation preserves the exact owned quaternion even when its displayed Euler angles are rounded [0.91ms]
+(pass) numeric fields keep Double precision and exact subnormal values, and reject missing or nonfinite input [0.38ms]
+(pass) missing delta channels use identity; imported absolute channels use the original local TRS [0.28ms]
+
+src\components\editor\scene\SceneAnimationKeyStrip.test.tsx:
+(pass) strip navigation preserves exact keys through mouse, keyboard, endpoints and empty tracks [2.59ms]
+(pass) 65,536 keys have bounded DOM/bitmap marks; cursor updates do not repaint the key bitmap [80.67ms]
+(pass) dragging empty space seeks continuously, snaps to exact keys, and Escape restores the start [2.84ms]
+
+src\components\editor\scene\SceneBbmodelAnimationReview.test.tsx:
+(pass) bbmodel movement review pages through every omission by original name without mounting a giant list or interpreting text [25.96ms]
+(pass) bbmodel review explains real discarded metadata, pre/post, zero size and values below draw precision [4.26ms]
+
+src\components\editor\scene\SceneBbmodelImportOptions.test.tsx:
+(pass) bbmodel option fields cover every normalized codec choice and only update their declared leaf [3.69ms]
+(pass) bbmodel movement controls expose every integer FPS and keep controller omission independent [265.04ms]
+(pass) bbmodel opacity editing preserves exact unrounded linear RGB and color editing preserves exact opacity [8.77ms]
+
+src\components\editor\scene\SceneBbmodelImportPanel.test.tsx:
+(pass) bbmodel UI reviews editable paint layers, revokes acceptance on choice change, and adopts with one undo [224.68ms]
+(pass) bbmodel UI imports animated clips with reasons, playback, complete download, fresh review and one undo [209.71ms]
+(pass) workshop lazy bbmodel import reviews without editing, confirms once, restores focus and undoes/redoes addition [216.11ms]
+(pass) bbmodel UI exposes every codec policy and missing companion flow; any change revokes the previous review [284.22ms]
+(pass) bbmodel original bytes and full bounded report download while source text stays inert [76.95ms]
+(pass) bbmodel format changes discard pending file IO and accepted reviews without editing the current creation [102.33ms]
+(pass) bbmodel UI errors keep originals and retry choices; current pose and external edits block adoption [130.20ms]
+
+src\components\editor\scene\SceneBbmodelPaintReview.test.tsx:
+(pass) bbmodel paint review pages through every image, keeps names inert and clamps its page when the report shrinks [12.36ms]
+
+src\components\editor\scene\SceneCanvas.animation.test.tsx:
+(pass) animation starts on the piece axes and keeps its explicit choice separate from modeling [14.88ms]
+(pass) saved pivot face axis becomes the selected rotation space in modeling and animation [13.55ms]
+(pass) bones become visible and selectable when entering animation [8.79ms]
+(pass) disposing a viewport cancels its captured transform and ignores a late successful pointer end [5.53ms]
+(pass) canvas subscribes to poses directly without document updates per frame and keeps revision/lifecycle ownership [11.68ms]
+(pass) draw failures stop playback, surface an error, and a subsequent valid seek recovers without remounting [9.00ms]
+
+src\components\editor\scene\sceneCommandAccess.test.ts:
+(pass) família de cada comando > o mapa cobre o registro inteiro, e só famílias que existem [0.18ms]
+(pass) família de cada comando > ler, sair, desfazer, guardar e olhar nunca trancam [0.22ms]
+(pass) família de cada comando > a entrada mantém apoio e importação simples, com malha, laço e UV nos níveis seguintes [0.20ms]
+(pass) o registro com o portão > sem `can`, nada muda: é o mesmo que tudo liberado [0.73ms]
+(pass) o registro com o portão > trancado some do trilho (nunca desligado), e o grupo que esvazia não vira legenda [0.30ms]
+(pass) o registro com o portão > atalho trancado é reconhecido, mas não executa [0.17ms]
+
+src\components\editor\scene\sceneCommandRegistry.test.tsx:
+(pass) registro de comandos da oficina > ids únicos, e todo comando do trilho declara o grupo que vira a legenda [0.18ms]
+(pass) registro de comandos da oficina > ícone único dentro de cada conjunto visível [0.24ms]
+(pass) registro de comandos da oficina > atalho único por contexto, contando o modificador [0.18ms]
+(pass) registro de comandos da oficina > Ctrl+Z e Ctrl+Shift+Z não se confundem [0.10ms]
+(pass) registro de comandos da oficina > atalhos respeitam o contexto: G preenche em Pintar e move em Modelar [0.19ms]
+(pass) registro de comandos da oficina > Animar esconde os destrutivos de modelagem, inclusive o Apagar [0.19ms]
+(pass) registro de comandos da oficina > os grupos do trilho saem na ordem declarada, e grupo vazio não vira legenda solta [0.13ms]
+(pass) registro de comandos da oficina > todo rótulo do registro existe na oficina de verdade [35.08ms]
+
+src\components\editor\scene\SceneComponentOperations.test.tsx:
+(pass) extruding a selected edge previews stable linked geometry, cancels and commits one undo [12.33ms]
+(pass) extruding a selected vertex previews stable linked geometry, cancels and commits one undo [8.08ms]
+(pass) an extrusion preview cannot apply after its document changes or the window loses focus [6.70ms]
+(pass) point extrusion uses the mesh permission without requiring advanced mesh tools [5.13ms]
+(pass) creating a face from two border edges previews without saving, cancels, and stays in Linhas with the new face lines [11.70ms]
+(pass) face tool picks two edges of one mesh in sequence without Shift or selecting layers [7.18ms]
+(pass) creating an edge from two points uses mesh access and selects the edge for further extrusion [5.08ms]
+(pass) face creation can retarget an invalid selection without changing the saved document [7.89ms]
+(pass) face extrusion accepts the Move handles and confirms topology and movement together [8.37ms]
+(pass) canceling an extrusion drag restores the previous amount and canceling the preview restores the source [6.20ms]
+(pass) region inset previews one border, cancels and confirms one undo with the inner cap still selected [8.73ms]
+(pass) coplanar selection expands existing faces, toggles complete regions and remains session-only [8.35ms]
+(pass) whole-loop selection expands the current edge, follows single clicks, toggles complete loops and never edits the document [15.43ms]
+(pass) face copy preview moves with the gizmo, stays outside saving and applies in one history entry [6.07ms]
+(pass) multiple ring cuts preview and cancellation restore the original face selection; applying cuts one piece [9.05ms]
+(pass) hole preview fills a box border without saving and confirms one new selected face [4.49ms]
+(pass) continuous reflection persists, maps generated selection to source, follows extrusion and bakes reversibly [8.70ms]
+
+src\components\editor\scene\SceneExitControl.test.tsx:
+(pass) saving locally keeps the workshop open when the Studio copy still needs review [466.46ms]
+(pass) exit starts saving directly, waits for all writes and invalidates a cancelled pending navigation [75.87ms]
+(pass) exit save failure retains edits/history, exposes backup errors and requires explicit discard [63.73ms]
+(pass) late save cannot exit a replaced editor/callback or an unmounted control [44.01ms]
+
+src\components\editor\scene\SceneFirstSteps.test.tsx:
+(pass) optional reading preserves focus and positions per topic, with bounded navigation [9.43ms]
+(pass) opening uses the current context, changing the context does not hijack a reading, new project resets [5.67ms]
+(pass) Escape closes only help, authoring keys stay local and Tab remains native [2.80ms]
+
+src\components\editor\scene\sceneFlipbookForm.test.ts:
+(pass) flipbook form generates every cell only after dimensions validation and preserves explicit repeated one-based steps [0.47ms]
+(pass) flipbook form rejects cropped cells, excessive grids and invalid sequence tokens rather than repairing them [0.27ms]
+
+src\components\editor\scene\SceneFlipControls.test.tsx:
+(pass) whole-piece flip obeys piece access (%s), keeps selection and commits one undo [92.29ms]
+(pass) whole-piece flip obeys piece access (%s), keeps selection and commits one undo [28.66ms]
+
+src\components\editor\scene\SceneGlbExportPanel.test.tsx:
+(pass) hundreds of unrenderable faces have one readable warning row, not hundreds of DOM items [57.46ms]
+(pass) Studio guidance for 1 rendered pieces preserves the source and enables the lossless portable download button [51.73ms]
+(pass) Studio guidance for 49 rendered pieces preserves the source and enables the lossless portable download button [46.24ms]
+(pass) the real worker shows exported clip names, omits empty clips and requires consent for renamed copies [44.64ms]
+(pass) skin export uses the real worker, explains each conversion once and requires consent without changing history [42.96ms]
+(pass) escolher o destino do Estúdio leva a pintura animada inteira e descarta a cópia anterior [84.85ms]
+
+src\components\editor\scene\SceneGltfImportPanel.test.tsx:
+(pass) workshop imports through its lazy dialog, requires review, restores focus and undoes/redoes one addition [264.59ms]
+(pass) folder paths and missing companions remain explicit; selecting an empty scene does not import the default scene [198.75ms]
+(pass) report detail DOM is bounded and literal; original and complete report downloads require explicit clicks [116.76ms]
+(pass) standalone review preview is read-only, seekable, motion-paused, context-safe and fully disposed in StrictMode [10.27ms]
+
+src\components\editor\scene\SceneHierarchy.selection.test.tsx:
+(pass) Shift+clique alterna peças individuais; clique comum reinicia a seleção [7.18ms]
+(pass) dois Ctrl+cliques escolhem o intervalo inclusivo em ambos os sentidos [17.05ms]
+(pass) o intervalo segue a ordem da lista e pula as peças de um grupo fechado [6.30ms]
+
+src\components\editor\scene\SceneHierarchyOrganization.test.tsx:
+(pass) hierarchy multiselect stays readable when authoring groups is unavailable [46.36ms]
+(pass) o intervalo por Ctrl+clique chega às ações de várias peças da oficina [141.32ms]
+(pass) grouping from the hierarchy, nesting, renaming and moving back to root preserve the model and undo [199.00ms]
+(pass) hierarchy destinations exclude self, descendants, mesh parents, locked subtrees and singular groups [0.90ms]
+(pass) replacing the editor cancels a hierarchy drag even when both editors share the document [39.54ms]
+(pass) drag moves one owned subtree atomically and a changed tree rejects its late drop [76.27ms]
+
+src\components\editor\scene\SceneImageImport.test.tsx:
+(pass) local file import previews before one undoable commit and rejects pending or previewed work from a replaced source [287.24ms]
+
+src\components\editor\scene\SceneImagePreview.test.tsx:
+(pass) 2D flipbook preview crops canonical cells, skips off-frame writes and restores the full sheet [1.47ms]
+(pass) 2D preview writes only the changed compact patch at bottom-up UV coordinates and redraws after palette changes [1.04ms]
+
+src\components\editor\scene\SceneKnife.test.tsx:
+(pass) knife applies one undoable surface cut, selects all resulting faces and supports a separate extrusion [8.47ms]
+(pass) cancel restores the previous face selection; undo and interruptions discard the draft without editing [11.49ms]
+(pass) K opens the surface knife; Enter applies it without creating pieces and Escape cancels it [130.23ms]
+(pass) knife edits a shared geometry copy and selects its new faces without changing the other piece [5.98ms]
+(pass) replacing the editor discards a knife draft even when both editors share the same document [1.79ms]
+(pass) loop cut previews on hover, applies multiple positioned cuts once and restores the original with Undo [6.12ms]
+(pass) a ferramenta Cortar mostra Corte em faixa e descarta cortes interrompidos [96.55ms]
+
+src\components\editor\scene\SceneMaterialMaskSettings.test.tsx:
+(pass) exact mask controls commit once, undo/redo, retain blobs, restore focus on removal and respect locks [48.98ms]
+
+src\components\editor\scene\SceneMeasurements.test.tsx:
+(pass) dimensions and position show two decimals and accept hundredths independently of movement steps [174.29ms]
+(pass) displaying imported coordinates with two decimals does not change their stored precision [54.74ms]
+
+src\components\editor\scene\SceneMeshCheck.test.tsx:
+(pass) mesh check restores the keyboard target during the DOM commit, before passive effects [3.10ms]
+(pass) mesh check leaves focus alone on mount and on unrelated report updates [1.56ms]
+
+src\components\editor\scene\SceneObjImportPanel.test.tsx:
+(pass) workshop lazy OBJ panel prepares a read-only review, requires consent, restores focus and undoes/redoes one addition [203.52ms]
+(pass) OBJ directory companions and all compatibility policies are selectable, explicit and require a new review [235.31ms]
+(pass) OBJ report DOM is bounded and escaped; full report and exact original download only on explicit clicks [61.91ms]
+(pass) switching format discards staged files, pending native IO and accepted reviews without touching the editor [113.90ms]
+
+src\components\editor\scene\ScenePaintCanvas.test.tsx:
+(pass) 2D pointer painting uses actual rectangular UV bounds, final release sample and one undo [9.97ms]
+(pass) 2D blur, second touch and failed capture cancel without committing partial pixels [5.09ms]
+(pass) an external revision invalidates a captured stroke and late input cannot overwrite it [5.54ms]
+
+src\components\editor\scene\ScenePaletteLibrary.test.tsx:
+(pass) paletas criadas persistem no perfil e podem ser renomeadas e apagadas [1.62ms]
+(pass) criar e escolher paleta envia as cores ao documento [21.90ms]
+(pass) selecionar paleta guardada copia as cores para a criação [1.99ms]
+(pass) Molda usa a biblioteca compartilhada pelo host e vê alterações do Pinta [46.98ms]
+(pass) paleta de 32 cores fica no Molda sem ser cortada pela biblioteca do Pinta [1.00ms]
+
+src\components\editor\scene\ScenePrecisionTools.test.tsx:
+(pass) numeric cut validates the full plane, previews without saving and creates two native halves in one undo [601.59ms]
+(pass) visual pivot selection ends after picking a point, preserves the scene and undoes once [187.33ms]
+(pass) pivot presets support groups and locked pieces cannot accept point picking [152.14ms]
+(pass) whole movement rhythm and reversal use a disposable preview and one explicit confirmation [196.10ms]
+
+src\components\editor\scene\SceneProjectRestore.test.tsx:
+(pass) native copy UI validates off-thread, requires confirmation, preserves review on save failure and cancels a pending save on unmount [73.03ms]
+(pass) choosing another native file and changing owner withdraw stale previews without allowing late reads or writes [766.89ms]
+(pass) oversized native file is rejected before reading bytes or creating a worker; invalid content never offers confirmation [44.25ms]
+
+src\components\editor\scene\SceneSaveProtection.test.tsx:
+(pass) a successful automatic save stays silent [63.37ms]
+(pass) the same save failure warns once while its persistent banner remains available [39.51ms]
+
+src\components\editor\scene\SceneSelectionModes.test.tsx:
+(pass) the stage selection bar opens edge picking directly and the panel expands a knife loop without changing geometry [118.15ms]
+
+src\components\editor\scene\sceneSkinWeightDraft.test.ts:
+(pass) untouched percentages retain exact Double, order and zero influences instead of a percent round-trip [0.32ms]
+(pass) mixed selections start with no chosen mixture; uniform and empty selections keep authorial rows own [0.90ms]
+(pass) invalid drafts never clamp, normalize or prune automatically; equal and proportional normalization are explicit [0.52ms]
+
+src\components\editor\scene\SceneStart.test.tsx:
+(pass) namespace change clears a pending name and resets pagination without revealing another profile [84.94ms]
+(pass) start chooses real templates or empty, restores chooser focus, validates names and guards duplicate submissions [52.81ms]
+(pass) all indexed projects are reachable by pages, dates/names stay safe, invalid records are reported and listing never loads document pixels [61.70ms]
+
+src\components\editor\scene\SceneStorageNotice.test.tsx:
+(pass) manual check, focus and visible return refresh only the observation; unmount removes both listeners [36.45ms]
+
+src\components\editor\scene\SceneStudioExit.test.tsx:
+(pass) guardar e voltar waits for the actual GLB loss review, preserves the native model and exits after consent [143.74ms]
+
+src\components\editor\scene\SceneUvAutoPreview.test.tsx:
+(pass) UV method/cut changes cancel old previews; preserving existing cuts is scoped to the selected faces [69.85ms]
+
+src\components\editor\scene\SceneUvCanvas.test.tsx:
+(pass) cut focus draws the chosen edge and corner numbers without enabling UV movement [2.22ms]
+(pass) UV corner input keeps the canvas frozen, accounts for pointer offset/final sample and cancels interrupted owners [8.00ms]
+(pass) UV corner keyboard placement supports precise increments, Escape and one explicit confirmation [4.17ms]
+(pass) visual UV snaps points and whole selections to real pixels, keeps clicks selecting and cancels moved selections [4.42ms]
+
+src\components\editor\scene\SceneUvCutPicker.test.tsx:
+(pass) cut picking keeps a session-only focus, toggles one shared edge once and sends exact cut instructions [69.86ms]
+
+src\components\editor\scene\SceneUvEditor.test.tsx:
+(pass) visual point movement keeps selected neighboring UV corners together without welding an existing seam [4.71ms]
+(pass) free UV rotation previews by keyboard, cancels on owner changes, and commits only once [17.69ms]
+
+src\components\editor\scene\SceneVectorForm.test.tsx:
+(pass) advanced position form rounds only edited axes on Enter and preserves imported fractions elsewhere [2.38ms]
+(pass) advanced size form uses tenths, refuses zero and negative sizes and keeps small positive sizes on the grid [3.07ms]
+(pass) two-decimal form preserves unedited source values while applying hundredth edits [2.01ms]
+
+src\components\editor\scene\SceneWorkshop.accessRevocation.test.tsx:
+(pass) revoking bones discards the guide and retained marking or start actions cannot restore it [147.99ms]
+(pass) revoking animation creation closes rename and regranting cannot resurrect its draft [128.75ms]
+(pass) revoking cut closes a prepared plane without modifying history and regranting starts a fresh session [175.89ms]
+(pass) revoking mesh-pro closes advanced component pages and invalidates their retained actions [107.50ms]
+(pass) numeric fields respect the independent model.coordinates family [67.03ms]
+(pass) numeric fields respect the independent model.pivot family [66.22ms]
+(pass) revoking pivot while a numeric draft is focused cannot commit it on blur [93.73ms]
+
+src\components\editor\scene\SceneWorkshop.contract.test.tsx:
+(pass) inventário da oficina: o que a criança alcança > o estado padrão tem os comandos de sempre, e abrir revelações só ACRESCENTA [42.18ms]
+(pass) inventário da oficina: o que a criança alcança > com uma peça escolhida o inventário CRESCE, e não troca de conjunto [83.95ms]
+(pass) inventário da oficina: o que a criança alcança > a aba Animar troca o conjunto; as abas são as ÚNICAS trocas legítimas [253.44ms]
+(pass) inventário da oficina: o que a criança alcança > a aba Pintar troca o conjunto; as abas são as ÚNICAS trocas legítimas [185.63ms]
+(pass) inventário da oficina: o que a criança alcança > o inventário respeita as ações explícitas da proposta de fidelidade [76.29ms]
+(pass) inventário da oficina: o que a criança alcança > a aba Pintar tem a catraca dela, medida com o módulo carregado [117.74ms]
+(pass) inventário da oficina: o que a criança alcança > todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala [32.20ms]
+
+src\components\editor\scene\SceneWorkshop.paint.test.tsx:
+(pass) Pintar oferece criação de textura por peça com densidade de 16px a 512px [144.58ms]
+(pass) Organizar quadradinhos respects inherited group locks as well as unlocked pieces [150.30ms]
+(pass) the sheet divider applies the release position even without an intermediate pointer move [435.28ms]
+(pass) nível intermediário cria uma textura e continua pintando no modelo [147.74ms]
+(pass) Modelar mostra a prévia booleana e confirma em um único desfazer [184.83ms]
+(pass) a miniatura atualizada durante o cálculo não descarta a prévia booleana [95.09ms]
+(pass) a aba Pintar > grade e giro ficam nos controles do palco e da ferramenta, fora da barra de pincéis [84.78ms]
+(pass) a aba Pintar > um modelo aberto pode ganhar interior pintável em um passo de desfazer [128.16ms]
+(pass) a aba Pintar > um traço direto numa peça torta oferece preparação junto das cores, sem mudar a criação antes da escolha [110.85ms]
+(pass) a aba Pintar > a cor de fundo de uma peça torta muda sem preparar UV, criar imagens ou dividir faces [107.12ms]
+(pass) a aba Pintar > pintar outra peça pronta retira o pedido de preparação da peça anterior [90.30ms]
+(pass) a aba Pintar > visitar Pintar e salvar conserva o documento confirmado; o primeiro traço guarda a superfície [199.05ms]
+(pass) a aba Pintar > da oficina aberta ao primeiro traço: 3 interações à vista, nenhum painel aberto [115.01ms]
+(pass) a aba Pintar > olhar a aba Pintar não apaga o Refazer nem muda a criação [202.49ms]
+(pass) a aba Pintar > tocar em outra peça troca o alvo e mantém a cor, a ferramenta e a largura [137.53ms]
+(pass) a aba Pintar > Esc cancela o traço; sem traço, solta a peça e a aba continua [94.53ms]
+(pass) a aba Pintar > em Pintar somem os comandos de modelar, e a peça travada explica em vez de pintar [112.85ms]
+(pass) a aba Pintar > face torta: pergunta antes, e o sim divide e pinta num passo só [117.44ms]
+(pass) pintar de perto > o toque escolhe a face; a face ampliada recebe o traço preso a ela; Esc volta [149.37ms]
+(pass) espelho de pintura > liga no palco, e um traço pinta os dois lados no mesmo desfazer [122.35ms]
+(pass) girar a pintura da face > um toque gira a pintura daquela face, e só dela; um passo de desfazer [133.55ms]
+(pass) vestir com textura > só aparece dentro do app, que tem a galeria das texturas [70.34ms]
+(pass) vestir com textura > a textura da galeria veste a peça inteira, num passo de desfazer [109.82ms]
+(pass) atalhos do editor antigo na aba Pintar > B, E, G, I, 1 a 3, M, R e F trocam a ferramenta; a dica mostra a tecla [181.67ms]
+(pass) atalhos do editor antigo na aba Pintar > no meio do traço a tecla não troca nada; trancada, também não, e o navegador não a recebe [138.60ms]
+(pass) "+ Nova cor" na aba Pintar > escolher tinta não altera o projeto; a cor entra com o primeiro traço e permanece escolhida após desfazer [126.13ms]
+(pass) a cor e o acabamento da peça, no Modelar > tocar numa cor pinta só a peça escolhida, mesmo com o material dividido [121.32ms]
+(pass) o review da aba Pintar > girar e "de perto" sem a face (a folha inteira) só explicam, sem mexer na imagem [104.63ms]
+(pass) o review da aba Pintar > com o espelho, o balde enche os dois lados num passo de desfazer [201.46ms]
+(pass) o review da aba Pintar > digitar no hexadecimal não aciona atalhos de pintura [68.99ms]
+(pass) o review da aba Pintar > no nível de entrada, o erro que aponta o caminho avançado diz o que dá para fazer [104.68ms]
+(pass) as três zonas da aba Pintar (27/10/2026) > a barra de cores fica no pé do palco: potinho com o nome, a paleta e o "+" [92.07ms]
+(pass) as três zonas da aba Pintar (27/10/2026) > "Só nesta peça" mora na coluna e alterna o alcance do pincel; o palco fica sem "Pintar em" [104.74ms]
+(pass) as três zonas da aba Pintar (27/10/2026) > o bloco "Jeito" segue a ferramenta: tamanho, como apagar e o que o balde enche [100.64ms]
+(pass) as três zonas da aba Pintar (27/10/2026) > as texturas só aparecem com uma peça escolhida, no cartão da peça [78.15ms]
+(pass) as três zonas da aba Pintar (27/10/2026) > os ladrilhos não desenham a tecla; o atalho fica no title e no aria-keyshortcuts [58.14ms]
+(pass) o review da barra de cores e da coluna (27/10/2026) > uma cor repetida na paleta aparece uma vez só na barra [64.55ms]
+(pass) o review da barra de cores e da coluna (27/10/2026) > o "+" fecha com um toque fora dele [86.68ms]
+(pass) o review da barra de cores e da coluna (27/10/2026) > a borracha explica o que apaga; "Só nesta peça" sem peça pede a peça [100.89ms]
+
+src\components\editor\scene\SceneWorkshop.skinPaint.test.tsx:
+(pass) o modo Suavizar do pincel aplica um traço que mistura com os vizinhos [161.72ms]
+(pass) workshop brush controls preview without document renders, preserve thumbnails and apply one undo in StrictMode [152.14ms]
+(pass) escape cancels workshop weight preview and its late completion cannot write [90.19ms]
+(pass) radius cancels workshop weight preview and its late completion cannot write [86.12ms]
+(pass) strength cancels workshop weight preview and its late completion cannot write [82.60ms]
+(pass) bone cancels workshop weight preview and its late completion cannot write [78.47ms]
+(pass) tool cancels workshop weight preview and its late completion cannot write [96.10ms]
+(pass) camera cancels workshop weight preview and its late completion cannot write [96.60ms]
+(pass) context cancels workshop weight preview and its late completion cannot write [96.34ms]
+(pass) blur cancels workshop weight preview and its late completion cannot write [100.29ms]
+(pass) mode cancels workshop weight preview and its late completion cannot write [135.12ms]
+(pass) selection cancels workshop weight preview and its late completion cannot write [102.32ms]
+(pass) finish cancels workshop weight preview and its late completion cannot write [110.08ms]
+(pass) external cancels workshop weight preview and its late completion cannot write [97.16ms]
+(pass) undo-noop cancels workshop weight preview and its late completion cannot write [116.99ms]
+(pass) unmount cancels workshop weight preview and its late completion cannot write [99.89ms]
+(pass) empty radius disables drawing, and subtracting without a recipient explains the unchanged points [102.01ms]
+(pass) a replacement viewport revokes old input while a fresh stroke uses the new attachment [127.04ms]
+(pass) replacing an editor with identical IDs and revision cannot commit its old stroke into either store [106.26ms]
+(pass) hidden pages cancel a held stroke and reject new input until visible [103.74ms]
+
+src\components\editor\scene\SceneWorkshop.test.tsx:
+(pass) scene workshop integration > o cone pode ser criado pelo ladrilho de formas 3D e desfeito [80.84ms]
+(pass) scene workshop integration > a forma Torus pode ser criada pelo ladrilho de formas 3D [52.11ms]
+(pass) scene workshop integration > Separar linha opens a cut preview without changing the piece until confirmation [128.83ms]
+(pass) scene workshop integration > Separar linha accepts a selected closed loop [118.84ms]
+(pass) scene workshop integration > Unir peças junta dois cilindros sobrepostos numa peça só, com um desfazer [83.95ms]
+(pass) scene workshop integration > trocar a paleta no Pintar é um passo de desfazer [111.68ms]
+(pass) scene workshop integration > salvar na oficina reenvia a criação ao Estúdio; abrir não reenvia nada [109.48ms]
+(pass) scene workshop integration > a falha da ponte com o Estúdio chega à criança [1607.59ms]
+(pass) scene workshop integration > abrir e sair sem editar não reenvia nada, nem na drenagem da saída [238.96ms]
+(pass) scene workshop integration > a foto da criação entra no documento sem virar passo de desfazer [741.45ms]
+(pass) scene workshop integration > o palco que RECUSA fotografar preserva a foto que a criação já tinha [1237.01ms]
+(pass) scene workshop integration > first steps follow painting without closing its session or forwarding model shortcuts [499.28ms]
+(pass) scene workshop integration > first steps leave an unrecorded pose, selection, document and history untouched [157.55ms]
+(pass) scene workshop integration > cross-tab notice preserves an open edit, offers backup and keeps undo available under StrictMode [874.63ms]
+(pass) scene workshop integration > two-bone destination handles hold fields during movement, sync them on release and leave one explicit undoable pose [581.65ms]
+(pass) scene workshop integration > bend-limit controls withdraw previews, validate drafts and save the assistance rule separately from the pose [222.36ms]
+(pass) scene workshop integration > two-bone controls name the chain, preview steps without autokey and record exactly one undo matching playback [458.69ms]
+(pass) scene workshop integration > two-bone exact fields withdraw stale poses, preserve incomplete values, explain reach and optional bend direction [177.18ms]
+(pass) scene workshop integration > assisted poses cancel explicitly, resolve time changes and survive selection, blur, context loss and thumbnail metadata [488.96ms]
+(pass) scene workshop integration > two-bone controls explain missing ancestors and refuse degenerate or locked dependent chains without editing [212.62ms]
+(pass) scene workshop integration > weight-map choices are view-only, survive saved weight edits, and clear when the bone or component session disappears [200.04ms]
+(pass) scene workshop integration > bone membership controls explain use, review additions/removals and leave authorial nodes and weights untouched [487.99ms]
+(pass) scene workshop integration > vertex weight selection requires an explicit common mixture, changes only its points and creates one undo [443.79ms]
+(pass) scene workshop integration > edge weight selection requires an explicit common mixture, changes only its points and creates one undo [147.74ms]
+(pass) scene workshop integration > face weight selection requires an explicit common mixture, changes only its points and creates one undo [165.77ms]
+(pass) scene workshop integration > opening and confirming untouched displayed weights preserves Double and zero slots without history [191.26ms]
+(pass) scene workshop integration > esqueleto de personagem: 5 pontos de frente, um passo de desfazer e movimentos prontos [679.94ms]
+(pass) scene workshop integration > sem esqueleto, clicar em Andando põe os ossos sozinho e o movimento num passo de desfazer [515.38ms]
+(pass) scene workshop integration > sem um corpo que a silhueta reconheça, o movimento pede os 5 pontos ali mesmo [83.08ms]
+(pass) scene workshop integration > galeria por categorias, No lugar, Braços e Meus movimentos [435.57ms]
+(pass) scene workshop integration > remover ossos do modelo deixa as peças e pode ser desfeito [194.43ms]
+(pass) scene workshop integration > Suavizar forças mistura os pontos escolhidos com os vizinhos num passo de desfazer [123.99ms]
+(pass) scene workshop integration > weight drafts need explicit normalization and are revoked by selection, revision, close, blur and context loss [196.86ms]
+(pass) scene workshop integration > support visibility is session-only and temporarily leaves component editing to its own picking tools [104.50ms]
+(pass) scene workshop integration > opening bones for a bound piece shows the manipulable supports immediately [83.01ms]
+(pass) scene workshop integration > weights limit the chosen mixture to four existing bones and removal never silently redistributes force [131.62ms]
+(pass) scene workshop integration > skin dialog reviews real suggestions before one undoable bind, blocks shortcuts and restores focus [171.95ms]
+(pass) scene workshop integration > changing the selected piece closes skin review; inherited locks disable binding and no supports are invented [123.55ms]
+(pass) scene workshop integration > bound pieces explain form-base editing and closing it changes neither weights nor history [75.38ms]
+(pass) scene workshop integration > GLB review requires explicit loss consent, preserves the source, blocks shortcuts and restores focus on close [115.30ms]
+(pass) scene workshop integration > opening GLB review requires resolving an unrecorded pose and pauses playback before capturing canonical content [319.27ms]
+(pass) scene workshop integration > visual poses preview through the existing viewport, explicitly record, undo, and support opt-in automatic recording [239.72ms]
+(pass) scene workshop integration > poses concluídas sobrevivem à seleção e interrupções; trocar o instante pede decisão e soltar o ponteiro depois não grava [279.28ms]
+(pass) scene workshop integration > animation presets preview in the existing viewport without writes, cancel restores the previous cursor, and confirmation creates one editable undo [248.92ms]
+(pass) scene workshop integration > fechar movimentos prontos preserva a prévia até uma decisão, e ajustes mantêm direção e limites válidos [225.95ms]
+(pass) scene workshop integration > guardar movimento do modelo inteiro e retomar Pintar conserva a seleção do conjunto [203.54ms]
+(pass) scene workshop integration > animation preset drafts resolve deliberate context changes and invalidate on source or environment changes [378.43ms]
+(pass) scene workshop integration > animation clipboard pastes an exact local pose into another piece, mirrors without changing the clipboard, and undoes all channels together [280.07ms]
+(pass) scene workshop integration > pose sets map nested supports explicitly, withdraw edited previews, retain the clipboard and record one undo [241.23ms]
+(pass) scene workshop integration > pose-set explicit cancellation clears review; selection and interruptions retain completed adjustments [459.19ms]
+(pass) scene workshop integration > pose-set names remain distinguishable, locks and incompatible clips explain refusal, and another creation clears the clipboard [198.09ms]
+(pass) scene workshop integration > exporting cannot silently discard an unrecorded direct pose [189.18ms]
+(pass) scene workshop integration > exporting cannot silently discard an unrecorded assisted pose [159.71ms]
+(pass) scene workshop integration > exporting cannot silently discard an unrecorded set pose [181.46ms]
+(pass) scene workshop integration > animation range tools copy/move/remove only the chosen keys with collision protection and one undo [295.31ms]
+(pass) scene workshop integration > animation mode creates exact keys with one undo, keeps base geometry unchanged, and disables destructive modeling shortcuts [248.99ms]
+(pass) scene workshop integration > animation timeline seeks exact selected keys, pauses on selection/Escape/mode changes, and supports clip CRUD [353.66ms]
+(pass) scene workshop integration > animation settings retime atomically, refresh stale drafts after undo, and enforce inherited locks [166.07ms]
+(pass) scene workshop integration > faces auto UV preview is read-only and cancelable across revisions/close; confirmation applies only selected UV with one COW undo [570.28ms]
+(pass) scene workshop integration > connected auto UV preview is read-only and cancelable across revisions/close; confirmation applies only selected UV with one COW undo [337.97ms]
+(pass) scene workshop integration > cuts auto UV preview is read-only and cancelable across revisions/close; confirmation applies only selected UV with one COW undo [291.70ms]
+(pass) scene workshop integration > existing animated textures remain intact while their controls are hidden in Pintar [136.73ms]
+(pass) scene workshop integration > 3D frame bounds clip wide brushes and fill while 2D sheet painting remains unrestricted [332.17ms]
+(pass) scene workshop integration > detail normal has contextual creation, exact settings and keyboard painting with separate undo, keeping original color paint intact [336.42ms]
+(pass) scene workshop integration > detail roughness has contextual creation, exact settings and keyboard painting with separate undo, keeping original color paint intact [338.35ms]
+(pass) scene workshop integration > detail metalness has contextual creation, exact settings and keyboard painting with separate undo, keeping original color paint intact [320.21ms]
+(pass) scene workshop integration > shared painting previews without edits, cancels on external revisions and closing, then commits geometry/material/image together with one undo [392.70ms]
+(pass) scene workshop integration > stamp captures the selected layer, transforms its preview and applies only once after keyboard confirmation [452.22ms]
+(pass) scene workshop integration > gradient requires explicit conversion and separate undo; picker samples the composite over the piece background without history [622.97ms]
+(pass) scene workshop integration > shape tools support two keyboard anchors, cancellation, one undo and a session-only pixel selection [523.60ms]
+(pass) scene workshop integration > native paint uses the same image for keyboard and 3D strokes, breaks at seams and cancels with Escape [461.84ms]
+(pass) scene workshop integration > appearance panel creates canonical images and applies material and layer changes as separate undoable commands [368.02ms]
+(pass) scene workshop integration > appearance panel explains locked shared images and isolates a selected material without changing the locked piece [210.09ms]
+(pass) scene workshop integration > a ferramenta Puxar faz as alças puxarem a face, e Mover continua movendo [208.64ms]
+(pass) scene workshop integration > arrastar a face escolhida abre o Puxar com a distância no painel e aplica num desfazer [194.21ms]
+(pass) scene workshop integration > UV corner controls share 3D selection, explicitly align a neighbor and keep separate undo for keyboard and numeric positions [169.44ms]
+(pass) scene workshop integration > UV panel shares face selection with 3D and edits only chosen UVs with copy-on-write and one undo [139.00ms]
+(pass) scene workshop integration > UV projection joins matching corners into an island; partial packing reports a recoverable error [203.95ms]
+(pass) scene workshop integration > mesh check previews an explicit repair on a %s-wide shared mesh, cancels with Escape and confirms one undo [220.38ms]
+(pass) scene workshop integration > mesh check previews an explicit repair on a %s-wide shared mesh, cancels with Escape and confirms one undo [565.45ms]
+(pass) scene workshop integration > mesh check cancels pending work and discards a ready preview when another revision replaces the source [391.30ms]
+(pass) scene workshop integration > closed tube controls create a loop from selected edges and undo the entire operation [175.86ms]
+(pass) scene workshop integration > path creation from a primitive copies a chain without converting its source, and edits settings with separate undo steps [251.69ms]
+(pass) scene workshop integration > chamfer validates selection and depth, keeps invalid attempts out of history and undoes a local corner [152.92ms]
+(pass) scene workshop integration > plane cut in vertex mode isolates a shared piece, selects the cut and undoes once [128.95ms]
+(pass) scene workshop integration > plane cut in edge mode isolates a shared piece, selects the cut and undoes once [154.80ms]
+(pass) scene workshop integration > plane cut in face mode isolates a shared piece, selects the cut and undoes once [149.77ms]
+(pass) scene workshop integration > curve detail for cylinder has a cost, validates a draft and restores fields on undo [136.06ms]
+(pass) scene workshop integration > curve detail for sphere has a cost, validates a draft and restores fields on undo [197.57ms]
+(pass) scene workshop integration > curve detail for torus has a cost, validates a draft and restores fields on undo [161.73ms]
+(pass) scene workshop integration > soft movement limits tools, validates reach, freezes settings during drag and undoes neighboring changes together [171.91ms]
+(pass) scene workshop integration > thickness previews a %s-wide sheet, restores zero/cancel and commits a single undo [216.61ms]
+(pass) scene workshop integration > thickness previews a %s-wide sheet, restores zero/cancel and commits a single undo [681.86ms]
+(pass) scene workshop integration > welding chosen detached points reports exact impact, preserves paint and restores the split with undo [179.95ms]
+(pass) scene workshop integration > a strip cut stays in Linhas with the new cut lines, keeps materials and is a single undo from the edge panel [158.21ms]
+(pass) scene workshop integration > point tools distinguish construction lines from face cuts, explain refused cuts and share undo [230.61ms]
+(pass) scene workshop integration > advanced selection is progressive, keeps the current mode and creates no undo entries [229.05ms]
+(pass) scene workshop integration > dissolving an internal line keeps the surface, clears removed IDs and can be undone [192.20ms]
+(pass) scene workshop integration > joining triangles retains the chosen face identity and paint with a separate undo for each operation [178.40ms]
+(pass) scene workshop integration > point deletion explains connected-face impact before changing topology and supports undo [136.79ms]
+(pass) scene workshop integration > splitting lines selects both children, preserves paint and restores exact topology with undo [180.84ms]
+(pass) scene workshop integration > component area selections merge instead of toggling, clear without history, and cannot reopen a closed mode [169.81ms]
+(pass) scene workshop integration > points and lines share selection, transforms and undo without applying face tools or moving the object [229.14ms]
+(pass) scene workshop integration > subdivision previews selected children, returns to zero, validates integer levels and commits one undo [299.11ms]
+(pass) scene workshop integration > large surface previews run in a real worker, wait before confirming, and reject a later external revision [390.30ms]
+(pass) scene workshop integration > completed local and worker surface previews close immediately when an external revision arrives [366.37ms]
+(pass) scene workshop integration > face handles change geometry, never object transforms, and panel commands cancel before running [194.86ms]
+(pass) scene workshop integration > uma face escolhida define o eixo do pivô com desfazer e retorno aos eixos da peça [178.94ms]
+(pass) scene workshop integration > surface previews support confirm/undo and cancel on Escape, blur, context loss and returning to pieces [312.32ms]
+(pass) scene workshop integration > face controls and keyboard edit only faces, preserve undo, and ignore callbacks after exiting [254.17ms]
+(pass) scene workshop integration > converts selected primitives together and undo restores parametric controls [127.29ms]
+(pass) scene workshop integration > Raio-X deixa ver e alcançar atrás das peças sem mexer no documento [68.13ms]
+(pass) scene workshop integration > region choices are additive session state and overlays do not create history [85.15ms]
+(pass) scene workshop integration > viewport gesture callbacks preserve the selected revision and cancel before a panel command [89.15ms]
+(pass) scene workshop integration > shape dimensions, locator creation and mirror removal are reachable from native controls [131.24ms]
+(pass) scene workshop integration > touch multiselect, group, rename, movement, undo and isolation share one document [203.83ms]
+(pass) scene workshop integration > 3D selection follows current additive mode, locked commands report errors, context loss keeps edits [152.61ms]
+
+src\components\editor\scene\SceneWorkshop.toolAccess.test.tsx:
+(pass) the basic pivot offers point picking and presets without the advanced modelling family [79.52ms]
+(pass) the basic timeline changes duration and keeps every pose in time with it [112.87ms]
+(pass) the animation pivot keeps its controls before the first movement [126.53ms]
+(pass) a oficina no nível de entrada > a quantidade de controles que a criança encara, medida no básico [61.26ms]
+(pass) a oficina no nível de entrada > nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo [101.30ms]
+(pass) a oficina no nível de entrada > uma linha "Ferramentas que vêm por aí" no Modelar e no Animar; o Pintar fica sem ela [84.26ms]
+(pass) a oficina no nível de entrada > tudo liberado (a equipe, a Lenda): nenhuma linha de descoberta [40.63ms]
+(pass) a oficina no nível de entrada > textura e camadas continua acessível quando as ferramentas avançadas estão liberadas [93.79ms]
+(pass) a oficina no nível de entrada > o espelho do básico é o do meio: sem escolher eixo nem posição [59.22ms]
+(pass) a oficina no nível de entrada > a ferramenta de outra aba não acende a alça numa família trancada [88.42ms]
+(pass) a oficina no nível de entrada > atalho de família trancada não age e o navegador não o recebe [37.07ms]
+(pass) a oficina no nível de entrada > Ctrl+D duplica a peça escolhida, como no editor antigo [67.31ms]
+(pass) a regra de ouro: trancar tira a autoria, nunca a leitura > uma criação com tudo abre, reproduz e exporta no básico, e continua idêntica [195.08ms]
+
+src\components\editor\scene\SceneWorkshopHost.test.tsx:
+(pass) o host recebe a cena 3D somente depois de gravar as alterações pendentes [82.18ms]
+(pass) o host não recebe cena 3D quando a gravação falha [99.72ms]
+(pass) native backup roundtrip previews before any write and restores as an independent new creation without overwriting its source [694.40ms]
+(pass) a cancelled or replaced restore cannot navigate after its already authorized commit, and never writes into the replacement namespace [183.92ms]
+(pass) internal host creates only on demand, edits, saves, resumes the same project and releases each viewport under StrictMode [573.21ms]
+(pass) missing, future, corrupt and deleted links fail without creating a demo or rewriting any stored record [133.41ms]
+(pass) failed save stays editable; explicit discard never retries the failed write during host cleanup [136.23ms]
+(pass) namespace replacement owns late project reads and creation commits without cross-profile navigation [92.20ms]
+
+src\components\editor\scene\SceneWorkspaceAreas.test.tsx:
+(pass) replacing an editor with the same document cancels a pending UV edit in its original owner [159.27ms]
+(pass) contextual mesh and UV panels preserve the scene and live viewport; opening UV never converts a primitive [62.13ms]
+(pass) opening the UV sheet after touching a native cylinder cap keeps that side selected [115.11ms]
+(pass) curves use exact imported times, preview without saving, cancel and confirm one undo [172.30ms]
+(pass) the unified sheet keeps the viewport and primitive intact, frames the UV map and restores paint zoom [168.06ms]
+
+src\components\editor\scene\timelineLayout.test.ts:
+(pass) timeline respects exact collapse boundaries and keeps a viewport in short windows [0.08ms]
+(pass) timeline storage rejects invalid values and the time scale follows exact endpoints [0.13ms]
+
+src\components\editor\scene\useCanvasHints.test.tsx:
+(pass) dismissed hints survive reopening, stay scoped to mode/profile, and can be restored [1.43ms]
+(pass) unavailable preference storage still allows session dismissal and reports its limit [0.78ms]
+
+src\components\editor\scene\usePaintFavorites.test.ts:
+(pass) saved paint colors survive remounts, deduplicate, and stay isolated by profile [1.08ms]
+(pass) invalid saved colors are reported without rewriting their source [0.80ms]
+
+src\components\editor\scene\useSceneAnimationPlayer.test.tsx:
+(pass) thumbnail updates preserve playback and preview ownership without adding history [1.21ms]
+(pass) any editor revision invalidates a preview, including a candidate using an existing clip ID [0.73ms]
+(pass) animation session pauses on revision/blur/hidden and StrictMode cleanup; playback does not create history [1.56ms]
+(pass) enabling reduced motion pauses playback without clearing the chosen pose or creating history [0.72ms]
+(pass) a new revision that cannot compose its current pose clears the old owner and reports the failure [0.89ms]
+
+src\components\editor\scene\useSceneBbmodelImport.test.tsx:
+(pass) bbmodel visible defaults allow native appearance but no content omission [0.20ms]
+(pass) bbmodel real worker prepares without mutation, requires current consent and commits one undoable addition [57.59ms]
+(pass) bbmodel options, entry, edits and undo, blur, cancellation and unmount revoke captured consent [316.21ms]
+(pass) bbmodel missing companions append without recopying prior files or approving an old review [100.89ms]
+(pass) bbmodel latest host gate and reentrant edit cannot adopt stale content [52.87ms]
+(pass) bbmodel callbacks from a replaced editor cannot operate on the next editor with the same document id [99.10ms]
+
+src\components\editor\scene\useSceneComponentWeights.test.tsx:
+(pass) captured weight commands cannot cross selection, revision, close or unmount; thumbnails remain unrelated [5.13ms]
+(pass) a pending component transform revokes previously captured weight actions without cancelling the gesture [2.49ms]
+(pass) replacing the editor revokes the UI draft identity even with the same document and revision [2.00ms]
+
+src\components\editor\scene\useSceneContextTransition.test.tsx:
+(pass) a failed preview application keeps the requested destination; continue preserves the draft and discard resumes once [0.68ms]
+(pass) an invalidated preview cannot be applied by an old decision; a valid application can issue its own command [0.49ms]
+
+src\components\editor\scene\useSceneFacePreview.test.tsx:
+(pass) a nested external revision closes the old owner while a replacement preview remains editable [1.92ms]
+(pass) own previews and non-content metadata do not invalidate the owner; cancellation adds no undo [1.42ms]
+
+src\components\editor\scene\useSceneFlipbookPlayer.test.tsx:
+(pass) flipbook session pauses on revision/blur/hidden and StrictMode cleanup cancels callbacks without touching history [1.51ms]
+
+src\components\editor\scene\useSceneGlbExport.test.tsx:
+(pass) hidden tabs discard a ready result and cannot start another worker until visible [86.03ms]
+(pass) unavailable workers produce a recoverable error without falling back to main-thread encoding [76.67ms]
+(pass) export only downloads after an explicit click, matches real encoder, and writes no editor history or persistence [44.58ms]
+(pass) loss consent is explicit, revocable, and bound to the exact result; thumbnails do not invalidate it [85.18ms]
+(pass) an edit, undo, restart, blur and unmount invalidate prepared bytes and captured confirmations [121.84ms]
+(pass) pending real worker is discarded on cancel, content change and unmount, without stale errors/results [4.29ms]
+(pass) switching stores for the same document id resets the session and rejects callbacks from the previous store [71.61ms]
+(pass) download failures retain the current report and allow explicit retry without rebuilding or changing the document [42.75ms]
+
+src\components\editor\scene\useSceneGltfImport.test.tsx:
+(pass) revoking specialized options invalidates their review, keeps files and prevents stale callbacks from restoring them [182.38ms]
+(pass) real import requires a scene and fresh consent; one commit preserves identity and supports undo/redo [90.37ms]
+(pass) options, scene, edits, undo, blur and close revoke an accepted result and captured confirmations [485.59ms]
+(pass) deferred native IO is discarded on cancel, content edits, newer selection and unmount [84.71ms]
+(pass) the latest host pose guard is read at confirmation and reentrant host changes cannot adopt stale content [89.95ms]
+(pass) changing editor instance with the same id resets the session and rejects every old callback [178.74ms]
+(pass) hidden tabs do not read files; worker construction cancellation terminates before posting [46.94ms]
+
+src\components\editor\scene\useSceneObjImport.test.tsx:
+(pass) OBJ selection waits for Prepare, real worker review waits for current consent, addition is one undoable commit [50.32ms]
+(pass) OBJ options, entry choice, edits, undo, blur and close revoke accepted reviews and captured callbacks [276.76ms]
+(pass) OBJ deferred file IO is discarded on cancel, edits, newer selection and unmount [51.61ms]
+(pass) OBJ latest pose guard and reentrant host changes cannot confirm stale content [48.32ms]
+(pass) OBJ sessions reject old callbacks when the editor instance changes, even for the same document id [90.47ms]
+(pass) OBJ missing companions can be added without copying previous session files or accepting old review [87.13ms]
+(pass) hidden OBJ sessions do not read files, and cancellation during worker construction prevents posting [18.92ms]
+
+src\components\editor\scene\useScenePaint.colors.test.tsx:
+(pass) escolher cores não registra tinta como usada antes de confirmar uma pintura [1.57ms]
+(pass) Pegar cor num ponto sem tinta nenhuma mantém a tinta de antes e volta ao Pincel [0.93ms]
+
+src\components\editor\scene\useScenePaint.test.ts:
+(pass) a emenda da volta do cilindro e da bola recomeça o traço; o passo comum continua ligado [0.09ms]
+
+src\components\editor\scene\useScenePoseRecovery.test.tsx:
+(pass) rascunhos de poses ficam separados por perfil mesmo quando o modelo tem o mesmo id [93.98ms]
+(pass) reload restores completed pose across thumbnail stamps without saving the pose itself [111.11ms]
+(pass) reload keeps a draft when decomposable affine transforms open as rigid transforms [115.89ms]
+(pass) recovery waits for its authoring base to reach persistence [54.51ms]
+(pass) a failed base save keeps the live draft and explains that recovery was not stored [59.39ms]
+(pass) recovery never overlays a different authoring revision [108.31ms]
+(pass) a oferta de continuar a pose some quando a criação muda depois de aberta [108.48ms]
+
+src\components\editor\scene\useScenePoseSetPreview.test.tsx:
+(pass) closed panels cannot start a preview and their callbacks stay revoked after reopening [3.71ms]
+(pass) mapped-pose forms revoke old scopes and do not steal a replacement on the same source/time, including reentrancy [4.29ms]
+
+src\components\editor\scene\useSceneProjectList.test.tsx:
+(pass) project metadata subscription coalesces invalidations, ignores stale StrictMode connections and stops all reads on unmount [592.44ms]
+(pass) project list never shows another namespace, retains its own list on failure and recovers without notifications [106.76ms]
+
+src\components\editor\scene\useSceneSkinBinding.test.tsx:
+(pass) joint addition/removal have independent read-only reviews and one owned undo each [1.86ms]
+(pass) joint reviews reject used bones and cannot cross content changes, context loss or closed sessions [1.51ms]
+(pass) real worker review has no writes; confirmation owns exact weights, keeps latest thumbnail and is one undo/redo [13.54ms]
+(pass) parameter changes revoke results and captured preparation/confirmation without accepting an old choice again [25.33ms]
+(pass) content changes, undo, blur, cancellation and unmount revoke reviews and stale callbacks [45.29ms]
+(pass) in-flight real workers are cancelled on parameter, node, revision, editor and unmount changes [9.47ms]
+(pass) hidden tabs revoke ready reviews and do not create a worker; unavailable workers return recoverable errors [18.68ms]
+(pass) rebind/remove require independent reviews, preserve source data and produce no history for an unchanged bind [1.91ms]
+(pass) invalid/locked targets fail without a commit and removed joint choices are pruned after a content edit [13.74ms]
+(pass) another creation with reused IDs resets choices and a singular joint cannot silently recapture a binding [12.82ms]
+
+src\components\editor\scene\useSceneSolidCut.test.tsx:
+(pass) a chosen line opens the solid cut preview and an invalid line explains the correction [2.72ms]
+(pass) confirming a selected loop commits two pieces as one undoable change [738.71ms]
+(pass) revocation aborts a pending cut worker and rejects late results and captured confirmations [115.21ms]
+
+src\components\editor\scene\useSceneTwoBonePreview.test.tsx:
+(pass) the form reuses preparation across invalidations and revokes old closures on time, document and unmount [8.55ms]
+
+src\components\editor\scene\useSceneUvPreview.test.tsx:
+(pass) UV preview cancels when another gesture blocks it, rejects captured confirmations and terminates work on selection/unmount [19.50ms]
+
+src\components\editor\sky\SkyEditor.test.tsx:
+(pass) SkyEditor > download can be cancelled without changing the document or history [55.25ms]
+(pass) SkyEditor > editing invalidates an in-flight export instead of downloading the old revision [43.91ms]
+(pass) SkyEditor > Escape cancels a live slider without an undo step [31.66ms]
+(pass) SkyEditor > pointercancel cancels a live slider without an undo step [29.32ms]
+(pass) SkyEditor > a late slider release cannot replace an intervening preset [45.82ms]
+(pass) SkyEditor > a prévia recebe a imagem do render e acompanha os controles [136.82ms]
+(pass) SkyEditor > um arrasto de slider é UM passo de desfazer e vira "Do seu jeito" [643.93ms]
+(pass) SkyEditor > preset, cores, sortear nuvens e download [2028.70ms]
+(pass) SkyEditor > sair do editor descarta a prévia [37.29ms]
+
+src\components\editor\texture\IndexedPixelStage.test.ts:
+(pass) mapIndexedPixelPoint > clamps a captured pointer to the edge when wrapping is disabled [0.06ms]
+(pass) mapIndexedPixelPoint > returns null outside a masked face instead of joining strokes across it [0.05ms]
+
+src\components\editor\texture\TextureEditor.test.tsx:
+(pass) TextureEditor > rectangle preview replaces the previous preview, commits once and survives undo/redo [714.38ms]
+(pass) TextureEditor > line: Escape cancels the preview and discards late pointer events [94.66ms]
+(pass) TextureEditor > rectangle: Escape cancels the preview and discards late pointer events [103.81ms]
+(pass) TextureEditor > ellipse: Escape cancels the preview and discards late pointer events [96.97ms]
+(pass) TextureEditor > tool changes cannot retarget a shape in progress; shifting the view cancels its uncommitted preview [712.32ms]
+(pass) TextureEditor > a shifted view interpolates the visible short line even when seamless is off [693.37ms]
+(pass) TextureEditor > Escape restores the pixels and discards late pointer events [104.94ms]
+(pass) TextureEditor > pointercancel restores the pixels and discards late pointer events [100.83ms]
+(pass) TextureEditor > lostpointercapture restores the pixels and discards late pointer events [94.52ms]
+(pass) TextureEditor > an unrelated undo invalidates the unfinished stroke without creating a redo entry [89.95ms]
+(pass) TextureEditor > uma textura com paleta personalizada pode voltar para uma paleta de fábrica [679.83ms]
+(pass) TextureEditor > a prévia 3D recebe a folha; lápis pinta num gesto só; borracha apaga [1307.39ms]
+(pass) TextureEditor > sem emenda faz o traço atravessar a borda; balde e conta-gotas [2552.93ms]
+(pass) TextureEditor > deslocar meio muda só a vista; baixar avisa; sair descarta a prévia [97.50ms]
+(pass) vestir a peça (editor do modelo) > o diálogo lista as texturas e veste a peça selecionada num commit [678.42ms]
+(pass) "+ Nova cor" é UM gesto na textura: N passos viram UMA extra, o lápis a escolhe, UM desfazer apaga [698.39ms]
+
+ 1392 pass
+ 0 fail
+ 135555 expect() calls
+Ran 1392 tests across 229 files. [99.39s]

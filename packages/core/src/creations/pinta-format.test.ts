@@ -8,6 +8,16 @@ import {
   pintaWriteFormatVersion,
 } from './pinta-format'
 
+test('o gravador B admite os documentos nativos conhecidos e recusa o próximo formato', () => {
+  for (const kind of ['tilemap', 'tileset', 'vector-tileset', 'map-set']) {
+    const declared = pintaWriteFormatVersion(kind)
+    for (let schema = 0; schema <= 7; schema++)
+      expect(pintaCanWriteNativeSchema(schema, declared)).toBe(true)
+    expect(pintaCanWriteNativeSchema(8, declared)).toBe(false)
+    expect(pintaCanReadFormatVersion(declared)).toBe(true)
+  }
+})
+
 test('o rollout só do leitor nunca envia documento 6 declarando nuvem 4', () => {
   expect(pintaCanWriteNativeSchema(6, 4)).toBe(false)
   expect(pintaCanWriteNativeSchema(6, 5)).toBe(true)
@@ -39,10 +49,10 @@ test('nunca se declara uma versão que este código não lê', () => {
   expect(PINTA_MAP_WRITE_FORMAT_VERSION).toBeGreaterThanOrEqual(1)
 })
 
-test('a capacidade 4 protege documentos nativos 5 do cliente completo que declara 3', () => {
+test('a declaração atual protege documentos nativos 5 do cliente completo que declara 3', () => {
   expect(PINTA_MAX_READ_FORMAT_VERSION).toBeGreaterThanOrEqual(4)
   for (const kind of ['tilemap', 'map-set', 'tileset', 'vector-tileset']) {
-    expect(pintaWriteFormatVersion(kind)).toBe(4)
+    expect(pintaWriteFormatVersion(kind)).toBe(6)
     expect(3 >= pintaWriteFormatVersion(kind)).toBe(false)
   }
   expect(pintaCanReadFormatVersion(4)).toBe(true)
@@ -69,12 +79,12 @@ test('item sem versão conta como 1; acima do teto não é lido', () => {
 })
 
 test('os números de hoje estão travados: mudar é seguir o procedimento do pinta-format.ts', () => {
-  // Leitura e escrita iguais é o desvio conhecido desta entrega (ver o comentário do arquivo).
-  // A escrita nunca pode passar da leitura; a próxima subida é leitura primeiro, escrita depois.
+  // Fase B separada do leitor A (leitura 6 / escrita 4), que permanece o alvo do rollback.
+  // A declaração por tipo admite todos os documentos conhecidos, sem alterar seus codecs.
   expect(PINTA_MAX_READ_FORMAT_VERSION).toBeGreaterThanOrEqual(PINTA_MAP_WRITE_FORMAT_VERSION)
   expect({
     leitura: PINTA_MAX_READ_FORMAT_VERSION as number,
     escrita: PINTA_MAP_WRITE_FORMAT_VERSION as number,
-  }).toEqual({ leitura: 6, escrita: 4 })
+  }).toEqual({ leitura: 6, escrita: 6 })
   expect(pintaCanReadFormatVersion(PINTA_MAP_WRITE_FORMAT_VERSION)).toBe(true)
 })

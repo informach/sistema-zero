@@ -1,0 +1,15 @@
+bun test v1.4.4 (38afee6c8)
+
+src\components\editor\scene\SceneWorkshop.accessRevocation.test.tsx:
+(pass) revoking bones discards the guide and retained marking or start actions cannot restore it [307.54ms]
+(pass) revoking animation creation closes rename and regranting cannot resurrect its draft [169.00ms]
+(pass) revoking cut closes a prepared plane without modifying history and regranting starts a fresh session [160.60ms]
+(pass) revoking mesh-pro closes advanced component pages and invalidates their retained actions [126.31ms]
+(pass) numeric fields respect the independent model.coordinates family [84.63ms]
+(pass) numeric fields respect the independent model.pivot family [83.40ms]
+(pass) revoking pivot while a numeric draft is focused cannot commit it on blur [90.20ms]
+
+ 7 pass
+ 0 fail
+ 37 expect() calls
+Ran 7 tests across 1 file. [1441.00ms]

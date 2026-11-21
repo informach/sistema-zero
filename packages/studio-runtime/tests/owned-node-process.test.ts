@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { mkdtemp, readFile, rmdir, unlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { nativeProcessIsRetired } from './fixtures/native-process-state'
 import { runOwnedNodeProcess } from './fixtures/owned-node-process'
 
 const node = process.env.STUDIO_PYTHON_BUILD_NODE ?? Bun.which('node')
@@ -104,9 +105,12 @@ test('parent deadline retires a noncooperative native child and its grandchild b
     expect(performance.now() - started).toBeLessThan(9500)
     const evidence = JSON.parse(await readFile(marker, 'utf8'))
     expect(evidence.retainedInput).toBe(await readFile(input, 'utf8'))
+    retired = false
     for (const pid of [evidence.parent, evidence.grandchild]) {
       expect(processIsRunning(pid)).toBe(false)
+      expect(await nativeProcessIsRetired(pid)).toBe(true)
     }
+    retired = true
   } catch (error) {
     errors.push(error)
   } finally {

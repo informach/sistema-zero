@@ -1,0 +1,87 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.process-qa
+#1 transferring dockerfile: 195B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/oven/bun:1.3.11
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24.22.3-bookworm-slim
+#3 DONE 1.9s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [stage-1 1/3] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 resolve docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 0.0s done
+#5 DONE 0.2s
+
+#6 [bun 1/1] FROM docker.io/oven/bun:1.3.11@sha256:0733e50325078969732ebe3b15ce4c4be5082f18c4ac1a0f0ca4839c2e4e42a7
+#6 resolve docker.io/oven/bun:1.3.11@sha256:0733e50325078969732ebe3b15ce4c4be5082f18c4ac1a0f0ca4839c2e4e42a7 0.0s done
+#6 extracting sha256:8f6ad858d0a46fa8ee628532c70b8dc82d06179d543b0b09ec19fc03d4c5b373
+#6 extracting sha256:8f6ad858d0a46fa8ee628532c70b8dc82d06179d543b0b09ec19fc03d4c5b373 2.2s done
+#6 DONE 2.4s
+
+#5 [stage-1 1/3] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 sha256:c34f02d00fde0767e1607c15d336cb71414e607acb0b4e63680a37c007b76204 448B / 448B 0.2s done
+#5 sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064 1.71MB / 1.71MB 0.4s done
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 33.55MB / 51.10MB 2.1s
+#5 sha256:22a7c5e442cd30f0c37eb73f2f6d91be1c6b63bd1c4278641b042fe77b260f33 3.31kB / 3.31kB 0.5s done
+#5 sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3 28.25MB / 28.25MB 1.9s done
+#5 extracting sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 36.70MB / 51.10MB 2.3s
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 40.89MB / 51.10MB 2.4s
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 44.04MB / 51.10MB 2.6s
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 47.19MB / 51.10MB 2.7s
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 51.10MB / 51.10MB 2.9s
+#5 ...
+
+#6 [bun 1/1] FROM docker.io/oven/bun:1.3.11@sha256:0733e50325078969732ebe3b15ce4c4be5082f18c4ac1a0f0ca4839c2e4e42a7
+#6 extracting sha256:52cf652074edd33da4645671fb62b2a70adc3e5614763bacae1b4f5d66205a33 0.0s done
+#6 extracting sha256:0d9ada4f8e197c264e8e2c9fa4fe0b84f4e40f3cd271d30ee2932f58604bbfd4 0.7s done
+#6 extracting sha256:e3452f101463c0d2ced20a33e884b4905738fc23b5f489391576078a97f64c56 0.0s done
+#6 DONE 3.2s
+
+#5 [stage-1 1/3] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 51.10MB / 51.10MB 2.9s done
+#5 ...
+
+#6 [bun 1/1] FROM docker.io/oven/bun:1.3.11@sha256:0733e50325078969732ebe3b15ce4c4be5082f18c4ac1a0f0ca4839c2e4e42a7
+#6 extracting sha256:b1b2b9bb5e4219683f23338914c88c6ed481ea7beef47e2428241ae09de695c9 0.0s done
+#6 extracting sha256:e0a8e14ee07a3335f115a78f9795d9679a3e29df87ac82277e709e09f343513b 0.0s done
+#6 DONE 3.2s
+
+#5 [stage-1 1/3] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 extracting sha256:dd051e1b8c92ff101fa3071ab97ea4924885942f15644e01c3dc095764e863e3 1.3s done
+#5 DONE 3.5s
+
+#5 [stage-1 1/3] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 extracting sha256:22a7c5e442cd30f0c37eb73f2f6d91be1c6b63bd1c4278641b042fe77b260f33 0.0s done
+#5 extracting sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114
+#5 extracting sha256:5030a48eb5b08bea228f0db8440fed216cf91b5ca4d999bc2a692c2eb0a60114 1.2s done
+#5 DONE 4.7s
+
+#5 [stage-1 1/3] FROM docker.io/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+#5 extracting sha256:e727da478d47d626146e734dd426cad789beb1fe49c55a06a175621d30f31064 0.0s done
+#5 extracting sha256:c34f02d00fde0767e1607c15d336cb71414e607acb0b4e63680a37c007b76204 0.0s done
+#5 DONE 4.8s
+
+#7 [stage-1 2/3] COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
+#7 DONE 0.3s
+
+#8 [stage-1 3/3] WORKDIR /qa
+#8 DONE 0.0s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 3.0s done
+#9 exporting manifest sha256:6aa8e6fb98d51c5bd69b1ad73419936ffde5d061d3b09cc97416be26ce2f74b3 0.0s done
+#9 exporting config sha256:7b8fa21cc81698ab3ab6b741d89244452607f53a7ecd3c656e44b88b34f25348 0.0s done
+#9 exporting attestation manifest sha256:25c5f04e643cc489e23bedbfe639332e2cc85e555f93e926c8348b164b6ee1ff 0.0s done
+#9 exporting manifest list sha256:19c99ed3199a8731b262582fe651d03cc0de4ad1c34226357dcfce23ce17d4b1 0.0s done
+#9 naming to docker.io/library/pinta-owned-process-qa:node24-bun1311 done
+#9 unpacking to docker.io/library/pinta-owned-process-qa:node24-bun1311
+#9 unpacking to docker.io/library/pinta-owned-process-qa:node24-bun1311 2.9s done
+#9 DONE 6.0s

@@ -1,0 +1,93 @@
+[
+  {
+    "name": "community-cloud",
+    "started": "2026-11-21T06:05:34.791Z",
+    "finished": "2026-11-21T06:05:37.471Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-community-cloud.log"
+  },
+  {
+    "name": "core",
+    "started": "2026-11-21T06:05:38.229Z",
+    "finished": "2026-11-21T06:05:50.527Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-core.log"
+  },
+  {
+    "name": "core-types",
+    "started": "2026-11-21T06:05:51.208Z",
+    "finished": "2026-11-21T06:05:59.557Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-core-types.log"
+  },
+  {
+    "name": "shell",
+    "started": "2026-11-21T06:06:00.216Z",
+    "finished": "2026-11-21T06:06:08.564Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-shell.log"
+  },
+  {
+    "name": "members-format",
+    "started": "2026-11-21T06:06:09.241Z",
+    "finished": "2026-11-21T06:06:15.293Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-members-format.log"
+  },
+  {
+    "name": "shell-types",
+    "started": "2026-11-21T06:06:15.957Z",
+    "finished": "2026-11-21T06:08:54.263Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-shell-types.log"
+  },
+  {
+    "name": "studio-storage",
+    "started": "2026-11-21T06:08:54.883Z",
+    "finished": "2026-11-21T06:09:28.340Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-studio-storage.log"
+  },
+  {
+    "name": "studio-types",
+    "started": "2026-11-21T06:09:29.040Z",
+    "finished": "2026-11-21T06:12:27.572Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-studio-types.log"
+  },
+  {
+    "name": "python-closure",
+    "started": "2026-11-21T06:12:28.192Z",
+    "finished": "2026-11-21T06:12:29.891Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-python-closure.log"
+  },
+  {
+    "name": "runtime-closure",
+    "started": "2026-11-21T06:12:30.589Z",
+    "finished": "2026-11-21T06:12:34.102Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-runtime-closure.log"
+  },
+  {
+    "name": "profile",
+    "started": "2026-11-21T06:12:34.702Z",
+    "finished": "2026-11-21T06:12:35.528Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-profile.log"
+  },
+  {
+    "name": "integration",
+    "started": "2026-11-21T06:12:36.149Z",
+    "finished": "2026-11-21T06:14:38.578Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-integration.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T06:14:39.255Z",
+    "finished": "2026-11-21T06:15:08.682Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-reader66-biome.log"
+  }
+]

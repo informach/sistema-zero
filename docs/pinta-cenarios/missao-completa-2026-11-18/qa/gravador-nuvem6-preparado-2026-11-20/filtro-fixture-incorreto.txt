@@ -1,0 +1,9 @@
+bun test v1.3.11 (af24e281)
+The following filters did not match any test files:
+ tests/fixtures/pinta-local-authority.fixture.ts
+1018 files were searched [25.00ms]
+
+note: Tests need ".test", "_test_", ".spec" or "_spec_" in the filename (ex: "MyApp.test.ts")
+note: To treat the "tests/fixtures/pinta-local-authority.fixture.ts" filter as a path, run "bun test ./tests/fixtures/pinta-local-authority.fixture.ts"
+
+Learn more about bun test: https://bun.com/docs/cli/test

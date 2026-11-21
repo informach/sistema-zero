@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-21T00:59:30.093Z",
+  "old4": {
+    "exit": 1,
+    "rejected": "PintaClientOutdatedError"
+  },
+  "new6": {
+    "exit": 0,
+    "fixturePass": 4
+  },
+  "onlyCurrentWriterDeclarationTemporarilyChanged": true,
+  "sourceRestoredExactly": true,
+  "sourceSha256": "c03ae67523343498193a8b0d8ec869e031c62bb9d9666fb1c58dd73866bb15b2",
+  "deployed": false
+}

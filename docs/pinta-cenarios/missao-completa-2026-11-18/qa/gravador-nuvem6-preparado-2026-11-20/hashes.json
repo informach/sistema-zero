@@ -1,0 +1,110 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2566,
+      "sha256": "cd5ba87d17a1dff4f42a80fb4626b5f7b40262c90c8b490aea8e70666f3d1320"
+    },
+    {
+      "file": "biome.txt",
+      "bytes": 46,
+      "sha256": "a359e9932f7d24be055c938f420f79bb31143b3a2a03443c12e851e9c56838c7"
+    },
+    {
+      "file": "core-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "core.txt",
+      "bytes": 373780,
+      "sha256": "80217a62e359fd01c37a50e9a15faf701c9b7ae4cc94934aebd06c27fc107f65"
+    },
+    {
+      "file": "declaracao-corrigida.txt",
+      "bytes": 763,
+      "sha256": "4ab2634b3dba143c368e9e0d487147397ffc245c97fb6e91b688270f6cd8d993"
+    },
+    {
+      "file": "declaracao-inicial.txt",
+      "bytes": 1394,
+      "sha256": "36928450038ec4c688419e498189ff443f91d018ce3423fa2c7644a55453026a"
+    },
+    {
+      "file": "filtro-fixture-incorreto.txt",
+      "bytes": 469,
+      "sha256": "cf976614ce526aa39d24d1e4209eefa4b393aad62f23ce43337fb4b6bb9c7ab0"
+    },
+    {
+      "file": "fontes.json",
+      "bytes": 783,
+      "sha256": "e69aa6e5ed5aae51b7a7d18887c25893d16f6ae05b40a3c570fc96cc7bcdea9f"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 1113,
+      "sha256": "6ccc9c134e1c50ec97dc438fb02c94d8811681eda5e6a98d3f71e905c4a9706b"
+    },
+    {
+      "file": "produtor-cliente4.txt",
+      "bytes": 2555,
+      "sha256": "177d401303a837681c2633b2ace33c3e79eac414fbfc052506440fbda56e385e"
+    },
+    {
+      "file": "produtor-cliente6.txt",
+      "bytes": 1840,
+      "sha256": "a32e5a0cdfcc3f7e831ab1ad32626cef35bd1d9c4b4d6eb1ffccdc8e04da08c2"
+    },
+    {
+      "file": "produtor-import-incorreto.txt",
+      "bytes": 3109,
+      "sha256": "ef041d510a1b67a910122dd5ec0a8d079f0f0b147b76ef7dafc7623f7199d654"
+    },
+    {
+      "file": "profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "python-build.txt",
+      "bytes": 1045,
+      "sha256": "5c4e7a43541a35c8413b41b5b2b29d691c6f65debe1f9c2b651a8adbe792f6a5"
+    },
+    {
+      "file": "python-identico.json",
+      "bytes": 396,
+      "sha256": "d9f2ed7ea36bd918f0ce25460491c7370732bfde6044a4a505ce9b0924ec898d"
+    },
+    {
+      "file": "red-green.json",
+      "bytes": 365,
+      "sha256": "5af652a352e481599c8b9dcdc20b3105c6c94afef0cf07f7709e4ff7db321962"
+    },
+    {
+      "file": "runtime-identico.json",
+      "bytes": 423,
+      "sha256": "412065783c0b1f55a03e7f7befc3b0a09870872fdce51007b7c271c242f9e7e7"
+    },
+    {
+      "file": "shell-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "shell.txt",
+      "bytes": 14185,
+      "sha256": "51d4fcf220634e07587d92a9247b869f30c9a55b48485e2761d0f0a575488f21"
+    },
+    {
+      "file": "tipo-fixture-corrigido.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "tipo-fixture-inicial.txt",
+      "bytes": 189,
+      "sha256": "43ec2044e9da0d39a431622f6ee24d0a51bae6091a1e62c00bb359f2a09bffd6"
+    }
+  ]
+}

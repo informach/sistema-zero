@@ -1,0 +1,272 @@
+bun test v1.3.11 (af24e281)
+
+tests\creations-routes-after.test.ts:
+(pass) BFF das criações — o apagar no R2 fica para DEPOIS da resposta > commit: a resposta sai SEM apagar; o apagar roda quando o agendador roda (o `after()` do Next) [63.00ms]
+(pass) BFF das criações — o apagar no R2 fica para DEPOIS da resposta > lixeira: idem (manifesto + partes em lote, depois da resposta) [15.00ms]
+
+tests\creations-routes.test.ts:
+(pass) protocolo de isolamento adulto durante deploy e rollback > members antigo não recebe reserva, commit ou exclusão e não ganha URL assinada
+(pass) protocolo de isolamento adulto durante deploy e rollback > reserva adulta só assina chave do contexto adulto confirmado
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: 2
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > ticket legado ausente confirma somente formato 1
+(pass) BFF das criações — reserva > encaminha formato numérico sem coerção
+(pass) BFF das criações — reserva > recusa de formato atravessa o BFF com a versão exigida, sem assinar upload
+(pass) BFF das criações — reserva > corta o nome no teto (120) e descarta miniatura grande, em vez de recusar; assina o PUT com o Content-Length ecoado pelo members
+(pass) BFF das criações — reserva > bytes acima do teto por item é 409 de quota com "grande demais" (o selo diz a verdade); corpo malformado ou itemId com ":" são 400 (nunca chegam ao members)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva: repassa `parts` ao members e assina UM PUT por parte faltante (Content-Length da parte), além do manifesto
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva: total declarado (manifesto + partes) acima de 40 MB é 409 de quota SEM ir ao members; 129 partes ou hash fora do padrão são 400
+[creations] commit com partes que não estão no R2 {
+  itemId: "proj-1",
+  missing: [ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" ],
+}
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit: confere as `uploadedParts` no R2 (HEAD, chave com a revisão do commit) antes do members; 404 definitivo é 409 CREATION_PART_MISSING com os hashes e o members NÃO é chamado
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva com partes declaradas mas members SEM `parts` na resposta (members antigo/rollback): 503 retentável, nunca um ticket sem as faltantes
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > 409 CREATION_PARTS_NEED_BYTES do members atravessa o BFF com `details.hashes` (o cliente comprime só essas) [15.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > storage SEM `deleteObjects` (fallback): apaga um a um o que a revisão soltou [32.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit: HEAD que falha (não é 404) NÃO barra; repassa `uploadedParts` ao members e apaga em lote tudo o que a revisão soltou (`releasedStorageKeys`) [31.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit sem `releasedStorageKeys` (members antigo) apaga só `previousStorageKey`; 409 do members apaga só o manifesto recusado (nunca as partes) [62.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > download: assina o GET do manifesto e um por parte (`parts: [{hash, bytes, url}]`)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > lixeira: apaga em lote tudo o que o members soltou (`storageKeys` = manifesto + partes) [32.00ms]
+(pass) BFF das criações — commit > promove o documento Python v3 e preserva a revisão de recursos conferida [15.00ms]
+(pass) BFF das criações — commit > recusa fonte Python v3 corrompida antes de promover a revisão
+(pass) BFF das criações — commit > confere o documento do R2 antes do commit e recusa formato antigo sem promover nem apagar
+(pass) BFF das criações — commit > manda a revisão e os recursos conferidos ao members, apaga a revisão anterior e devolve o resumo
+(pass) BFF das criações — commit > `bytes` no corpo do commit é recusado (o corpo é estrito): os bytes são os da reserva
+(pass) BFF das criações — commit > o navegador não pode declarar a versão verificada do documento no commit
+(pass) BFF das criações — commit > o DELETE do blob anterior no R2 fica FORA do caminho crítico: a resposta do commit sai mesmo com o R2 pendurado
+[creations] não apagou a revisão anterior no R2 {
+  keys: [ "creations/u/studio/proj-1/1.json.gz" ],
+  error: warn: R2 fora do ar
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:46:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:51:45)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:221:50)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:183:21)
+      at deferWithNextAfter (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:187:10)
+      at deleteManyQuietly (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:219:5)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:538:9)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:791:46)
+,
+}
+(pass) BFF das criações — commit > falha ao apagar o blob anterior não vira erro para a criança
+(pass) BFF das criações — commit > 409 definitivo do members apaga do R2 a revisão recusada e passa o erro
+(pass) BFF das criações — apagar > encaminha capacidade junto da revisão; recusa de formato não apaga R2
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: 2
+[creations] não apagou o blob da lixeira no R2 {
+  keys: [ "creations/u/studio/proj-1/2.json.gz" ],
+  error: warn: R2 fora do ar
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:46:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:51:45)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:221:50)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:183:21)
+      at deferWithNextAfter (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:187:10)
+      at deleteManyQuietly (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:219:5)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:601:9)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:873:48)
+,
+}
+(pass) BFF das criações — apagar > a lixeira apaga o blob que o members soltou (best-effort) e devolve só `{deleted}`
+(pass) BFF das criações — apagar > recusa DELETE sem revisão-base antes de chamar o members
+(pass) BFF das criações — respostas e sessão > lista valida e repassa cursor/limite ao members [16.00ms]
+(pass) BFF das criações — respostas e sessão > 200 sem corpo vira 502 (o cliente nunca recebe `{ok:true}` no lugar de um ticket)
+(pass) BFF das criações — respostas e sessão > download assina o GET da chave corrente e devolve o resumo
+(pass) BFF das criações — respostas e sessão > `x-sz-viewer` diferente do perfil da sessão é 409 em TODAS as rotas (troca de perfil no meio de um upload em voo)
+(pass) BFF das criações — respostas e sessão > sessão de suporte (impersonação) é só leitura: reserva, commit e apagar são 403 antes do members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > rascunho exige UUID antes de chamar o members ou o armazenamento
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > reserva do `lesson-studio` repassa a impressão v1 ao members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > reserva do `lesson-studio` repassa a impressão v2 ao members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > impressão fora do formato é 400 antes do members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > o commit do `lesson-studio` confere o projeto como o do Estúdio; o `lesson-pinta` não
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > o download leva o relógio do servidor
+
+tests\lesson-draft-persistence.test.ts:
+(pass) rascunho Pinta com frações usa documento 5 e capacidade de nuvem 4
+(pass) rascunho nativo 6 nunca declara a capacidade antiga de nuvem
+(pass) falha ao reler o disco não se passa por rascunho já sincronizado: missing
+(pass) falha ao reler o disco não se passa por rascunho já sincronizado: read-error
+(pass) studio: download da outra versão não autoriza sobrescrever a conta
+(pass) pinta: download da outra versão não autoriza sobrescrever a conta
+(pass) studio: storage da outra versão não autoriza sobrescrever a conta
+(pass) pinta: storage da outra versão não autoriza sobrescrever a conta
+(pass) offline context opens the existing draft without another network wait or cloud acknowledgement
+(pass) first admission cannot interpret an unavailable account as absence of previous work
+(pass) studio prepare: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio conflict-first: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio conflict-later: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio prepare-local-newer: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio submission: incompatible cloud work never replaces the active draft or acknowledges its revision [16.00ms]
+(pass) studio producer: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio: identical content fingerprints do not authorize a different Pro template
+(pass) pinta: conflito com o MESMO desenho só adota a revisão e não gasta a outra versão
+(pass) pinta: desenho diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) pinta: desenho diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: projeto diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: projeto diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: conflito com o MESMO projeto só adota a revisão
+(pass) estúdio: a versão da conta feita por um Estúdio mais novo vira "página desatualizada", sem gravar nada
+(pass) estúdio: falha do disco ao guardar a outra versão continua sendo falha comum
+(pass) pinta: rascunho da conta em formato mais novo não é baixado ao abrir; o local abre e nada sobe
+(pass) pinta: conflito com a conta em formato mais novo para antes de baixar e pede a página nova
+(pass) pinta: documento com carimbo que esta página não conhece é recusado inteiro, como página antiga
+
+tests\pinta-format-memory.test.ts:
+(pass) a memória de formato continua protegendo o registro quando a escrita estoura a cota
+(pass) um valor antigo legível não substitui a atualização que só coube em memória
+(pass) falha ao remover não ressuscita uma marca apagada na mesma instância
+(pass) storage saudável continua propagando alterações entre instâncias
+(pass) revisão, capacidade e autoria da assinatura sobrevivem à reabertura sem apagar entradas antigas
+(pass) assinatura sem capacidade/autoria ou revisão inválida exige nova conferência
+
+tests\pinta-loader.test.ts:
+(pass) loadPintaLessonModule > converte falha do chunk em estado recuperável para a aula
+
+tests\pinta-local-authority.test.ts:
+(pass) a ponte de nuvem preserva a autoridade local em realm isolado [125.00ms]
+
+tests\pinta-studio-bridge.test.ts:
+(pass) Pinta host bridge owns its DOM and mocked external modules in an isolated realm [547.00ms]
+
+tests\studio-public-pinta.test.ts:
+(pass) public classic detaches Pinta ownership while preserving playable and exported bytes [31.00ms]
+(pass) public classic validates private derivation integrity before redacting metadata
+(pass) public pro detaches Pinta ownership while preserving playable and exported bytes [16.00ms]
+(pass) public pro validates private derivation integrity before redacting metadata
+
+tests\studio-publication.test.ts:
+(pass) Pro free publication binds the public app origin behind an internal proxy [16.00ms]
+(pass) Pro lesson publication binds the public app origin behind an internal proxy
+(pass) Pro publication validates before creating the Mural post and resolves a permanent revision for play/remix [15.00ms]
+(pass) publication mutations reject browser-supplied ownership and oversized envelopes before runtime calls
+(pass) entitlement and failed validation prevent any post or playable pointer [16.00ms]
+(pass) a lost Hub response retries the same permanent publication without compiling again
+(pass) Pro publication enforces the journey on the server before compiling or creating a post
+(pass) an eligible Pro lesson retains its course authorization before the free Studio Pro tier
+(pass) vanilla-js publishes without a release flag
+(pass) vanilla-vite publishes without a release flag
+(pass) react-ts publishes without a release flag
+(pass) three-js publishes without a release flag [15.00ms]
+(pass) three-ts publishes without a release flag
+(pass) canvas-puzzle publishes without a release flag
+(pass) canvas-survival publishes without a release flag
+(pass) phaser-arcade publishes without a release flag
+(pass) phaser-platformer publishes without a release flag
+(pass) three-exploration publishes without a release flag
+(pass) canvas-grid-arena publishes without a release flag [16.00ms]
+(pass) phaser-tactics publishes without a release flag
+(pass) three-tactics publishes without a release flag
+(pass) three-action publishes without a release flag
+(pass) cleanup cannot acknowledge an intent while its authentication secret is missing
+(pass) the runtime visibility callback requires its bearer, checks the Hub and never counts a play
+(pass) Pro publication follows custom capabilities even at Noob, while a team role cannot bypass missing policy
+(pass) a Hub schema rejection reaches the author as a sentence, keeping the code for diagnostics [16.00ms]
+
+tests\studio-python-publish.test.ts:
+(pass) free: publicação de dados Pinta 2 mapa recusa o leitor anterior [31.00ms]
+(pass) free: revisão de dados Pinta 2 mapa recusa o leitor anterior [16.00ms]
+(pass) free: publicação de dados Pinta 3 mundo recusa o leitor anterior [15.00ms]
+(pass) free: revisão de dados Pinta 3 mundo recusa o leitor anterior [16.00ms]
+(pass) free: publicação de dados Pinta 4 mapa recusa o leitor anterior
+(pass) free: revisão de dados Pinta 4 mapa recusa o leitor anterior [16.00ms]
+(pass) free: publicação de dados Pinta 4 mundo recusa o leitor anterior
+(pass) free: revisão de dados Pinta 4 mundo recusa o leitor anterior [15.00ms]
+(pass) free: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior
+(pass) free: revisão de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior
+(pass) free: publicação de dados Pinta 2 mapa preserva a privacidade [16.00ms]
+(pass) free: revisão de dados Pinta 2 mapa preserva a privacidade [16.00ms]
+(pass) free: publicação de dados Pinta 3 mundo preserva a privacidade
+(pass) free: revisão de dados Pinta 3 mundo preserva a privacidade [15.00ms]
+(pass) free: publicação de dados Pinta 4 mapa preserva a privacidade
+(pass) free: revisão de dados Pinta 4 mapa preserva a privacidade [16.00ms]
+(pass) free: publicação de dados Pinta 4 mundo preserva a privacidade [15.00ms]
+(pass) free: revisão de dados Pinta 4 mundo preserva a privacidade
+(pass) free: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor novo
+(pass) free: revisão de dados Pinta 4 mapa recusa bytes inválidos com leitor novo [16.00ms]
+(pass) lesson: publicação de dados Pinta 2 mapa recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 3 mundo recusa o leitor anterior [16.00ms]
+(pass) lesson: publicação de dados Pinta 4 mapa recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 4 mundo recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior
+(pass) lesson: publicação de dados Pinta 2 mapa preserva a privacidade [15.00ms]
+(pass) lesson: publicação de dados Pinta 3 mundo preserva a privacidade
+(pass) lesson: publicação de dados Pinta 4 mapa preserva a privacidade [16.00ms]
+(pass) lesson: publicação de dados Pinta 4 mundo preserva a privacidade
+(pass) lesson: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor novo
+(pass) live: publicação de dados Pinta 2 mapa recusa o leitor anterior [16.00ms]
+(pass) live: publicação de dados Pinta 3 mundo recusa o leitor anterior
+(pass) live: publicação de dados Pinta 4 mapa recusa o leitor anterior
+(pass) live: publicação de dados Pinta 4 mundo recusa o leitor anterior
+(pass) live: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior
+(pass) live: publicação de dados Pinta 2 mapa preserva a privacidade [15.00ms]
+(pass) live: publicação de dados Pinta 3 mundo preserva a privacidade
+(pass) live: publicação de dados Pinta 4 mapa preserva a privacidade
+(pass) live: publicação de dados Pinta 4 mundo preserva a privacidade [16.00ms]
+(pass) live: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor novo
+(pass) cenário 3D do Molda recusa o ambiente sem o leitor de cenas [78.00ms]
+(pass) cenário 3D do Molda publica com o leitor de cenas [16.00ms]
+(pass) free Python classic publishes retained source with its own scope and opens an anonymous public game
+(pass) free Python pro publishes retained source with its own scope and opens an anonymous public game [15.00ms]
+(pass) lesson Python classic publishes retained source with its own scope and opens an anonymous public game [16.00ms]
+(pass) lesson Python pro publishes retained source with its own scope and opens an anonymous public game [15.00ms]
+(pass) live Python classic publishes retained source with its own scope and opens an anonymous public game
+(pass) live Python pro publishes retained source with its own scope and opens an anonymous public game
+(pass) adult free Python classic publication authorizes the adult audience [16.00ms]
+(pass) adult free Python pro publication authorizes the adult audience
+(pass) free Python classic deduplication preserves the canonical published bytes
+(pass) free Python pro deduplication preserves the canonical published bytes [16.00ms]
+(pass) lesson Python classic deduplication preserves the canonical published bytes
+(pass) lesson Python pro deduplication preserves the canonical published bytes
+(pass) live Python classic deduplication preserves the canonical published bytes [15.00ms]
+(pass) live Python pro deduplication preserves the canonical published bytes
+(pass) free a finalized legacy post is returned without claiming or rewriting its artifact
+(pass) lesson a finalized legacy post is returned without claiming or rewriting its artifact [16.00ms]
+(pass) live a finalized legacy post is returned without claiming or rewriting its artifact
+(pass) free JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot
+(pass) lesson JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot
+(pass) live JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot [16.00ms]
+(pass) a missing private snapshot is 404, while a temporary storage failure is retryable
+(pass) revoked Python release cannot publish; retired existing release stays playable
+(pass) free Python publication requires the exact release to declare publish [15.00ms]
+(pass) lesson Python publication requires the exact release to declare publish
+(pass) live Python publication requires the exact release to declare publish [16.00ms]
+(pass) free JavaScript Classic publication is unchanged by release publish declarations
+(pass) lesson JavaScript Classic publication is unchanged by release publish declarations
+(pass) live JavaScript Classic publication is unchanged by release publish declarations
+(pass) a Python project cannot publish a Turtle extension absent from its approved release
+(pass) free rejects a reservation with snapshot mismatch before any artifact write
+(pass) free rejects a reservation with missing-id mismatch before any artifact write [15.00ms]
+(pass) lesson rejects a reservation with snapshot mismatch before any artifact write
+(pass) lesson rejects a reservation with missing-id mismatch before any artifact write
+(pass) live rejects a reservation with snapshot mismatch before any artifact write
+(pass) live rejects a reservation with missing-id mismatch before any artifact write [16.00ms]
+(pass) live rejects a reservation for a different signed workspace publication
+(pass) a lost reservation response writes no artifact and retries the same reserved ID
+(pass) a lost Hub response retries the exact Python publication without adding a second retained revision
+(pass) replaying a finalized publication preserves its cover without uploading another candidate [31.00ms]
+(pass) replay after moderation cannot restore the original public cover or retained source
+(pass) JavaScript Classic replay after deleted leaves no candidate snapshot or cover [16.00ms]
+(pass) JavaScript Classic replay after rejected leaves no candidate snapshot or cover
+(pass) same author and request in two publication contexts never share a cover object [16.00ms]
+(pass) free Python republication updates the same link, skips an unchanged game, restores and disables [15.00ms]
+(pass) the free-studio finalize carries the project identity and the new-post choice to the hub
+(pass) a project that changed kind after publishing cannot update the old post
+[studio-play] classic revision unavailable {
+  playId: "93be314a-39ab-4b47-b23c-61fb0eb49822",
+}
+(pass) a slow versions service does not hold the classic public game [3031.00ms]
+(pass) classic JavaScript keeps versions behind the same link and the status compares the game [16.00ms]
+(pass) "Publicar como jogo novo" skips the existing post and creates another link
+(pass) a large PNG publishes at the 6 MiB project cap and fails clearly one encoded block above it [297.00ms]
+
+ 213 pass
+ 0 fail
+ 1266 expect() calls
+Ran 213 tests across 10 files. [6.68s]

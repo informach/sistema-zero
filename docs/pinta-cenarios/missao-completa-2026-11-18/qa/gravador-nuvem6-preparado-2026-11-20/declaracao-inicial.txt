@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+src\creations\pinta-format.test.ts:
+10 |
+11 | test('o gravador B admite os documentos nativos conhecidos e recusa o próximo formato', () => {
+12 |   for (const kind of ['tilemap', 'tileset', 'vector-tileset', 'map-set']) {
+13 |     const declared = pintaWriteFormatVersion(kind)
+14 |     for (let schema = 0; schema <= 7; schema++)
+15 |       expect(pintaCanWriteNativeSchema(schema, declared)).toBe(true)
+                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\core\src\creations\pinta-format.test.ts:15:59)
+(fail) o gravador B admite os documentos nativos conhecidos e recusa o próximo formato
+(pass) o rollout só do leitor nunca envia documento 6 declarando nuvem 4
+(pass) a versão declarada depende só do tipo do desenho
+(pass) nunca se declara uma versão que este código não lê
+(pass) a capacidade 4 protege documentos nativos 5 do cliente completo que declara 3
+(pass) o gravador completo supera o cliente intermediário que só entende camadas
+(pass) item sem versão conta como 1; acima do teto não é lido
+(pass) os números de hoje estão travados: mudar é seguir o procedimento do pinta-format.ts
+
+ 7 pass
+ 1 fail
+ 60 expect() calls
+Ran 8 tests across 1 file. [67.00ms]
