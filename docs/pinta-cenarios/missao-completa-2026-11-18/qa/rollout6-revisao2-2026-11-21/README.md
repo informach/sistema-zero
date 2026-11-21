@@ -17,6 +17,8 @@ gravador 6; as fontes funcionais do Pinta e Estúdio são iguais ao leitor 85.
 
 Antes de solicitar qualquer deploy, o inventário detectou uma publicação
 concorrente do Community na fonte 61ef. O operador encerrou com zero solicitações
-de mutação. A fonte concorrente já contém o gravador 6 e tem CI aprovada; será
-verificada quando estiver ativa, sem substituí-la ou alterar Members/Auth.
+de mutação. A fonte concorrente já contém o gravador 6; sua consulta inicial de
+sucesso era do diagnóstico SSH, não da CI completa. A correção desse diagnóstico
+está em `../revisao-ci-formatacao-2026-11-21/`. A publicação será verificada sem
+substituí-la ou alterar Members/Auth.
 Isso ainda não conclui o ensaio autenticado B6 nem o rollback B → A → B.
