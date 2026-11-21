@@ -272,7 +272,11 @@ describe('criações guardadas na conta — HTTP', () => {
     // A lê 6 mas escreve 4: o rollback pode baixar; não pode rebaixar nem apagar.
     const downloaded = await req(ctx.app, 'GET', `${path}/download`)
     expect(downloaded.status).toBe(200)
-    expect((await json(downloaded)).storageKey).toBe(ticket.storageKey)
+    expect(await json(downloaded)).toMatchObject({
+      storageKey: ticket.storageKey,
+      revision: ticket.revision,
+      summary: confirmed,
+    })
     const oldDelete = await req(ctx.app, 'DELETE', path, {
       baseRevision: ticket.revision,
       maxFormatVersion: 4,

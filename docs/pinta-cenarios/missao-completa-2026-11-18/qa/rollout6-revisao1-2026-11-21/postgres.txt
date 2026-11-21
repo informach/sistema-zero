@@ -1,0 +1,61 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\creations.repository.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"members\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42710",
+  message: "enum label \"molda\" already exists, skipping",
+  file: "pg_enum.c",
+  line: "341",
+  routine: "AddEnumLabel",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "00000",
+  message: "table \"creations\" does not exist, skipping",
+  file: "tablecmds.c",
+  line: "1450",
+  routine: "DropErrorMsgNonExistent",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"account_deletion_fences\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) índice das criações (Postgres real) > cerca de exclusão recusa reserva mesmo com credencial antiga [15.00ms]
+(pass) índice das criações (Postgres real) > migração conserva registro e chave legados como Kids, invisíveis no adulto
+(pass) índice das criações (Postgres real) > mesma conta e mesmo item mantêm versões, cotas e exclusões isoladas por público [79.00ms]
+(pass) índice das criações (Postgres real) > manifesto verificado precisa corresponder às partes reservadas dentro da transação [31.00ms]
+(pass) índice das criações (Postgres real) > formato validado deve coincidir com a reserva sob lock, sem promover divergências [62.00ms]
+(pass) índice das criações (Postgres real) > o corte do Studio recusa formato antigo também dentro da transação
+(pass) índice das criações (Postgres real) > delete confere capacidade contra formato %s confirmado e pendente sob lock [63.00ms]
+(pass) índice das criações (Postgres real) > delete confere capacidade contra formato %s confirmado e pendente sob lock [78.00ms]
+(pass) índice das criações (Postgres real) > delete reavalia formato %s após atualização concorrente sob lock [78.00ms]
+(pass) índice das criações (Postgres real) > delete reavalia formato %s após atualização concorrente sob lock [31.00ms]
+(pass) índice das criações (Postgres real) > delete repetido cancela uma reserva compatível de restauro sem renovar a lápide [47.00ms]
+(pass) índice das criações (Postgres real) > formatos são monotônicos em reservas concorrentes e commits, inclusive reserva legada [125.00ms]
+(pass) índice das criações (Postgres real) > reserva → commit promove os pendentes; commit errado recusado; lixeira; contador nunca volta; idempotência [156.00ms]
+(pass) índice das criações (Postgres real) > quota dentro da transação: total de bytes e itens por ferramenta; reservas concorrentes de item NOVO não dão 500 [188.00ms]
+(pass) índice das criações (Postgres real) > biblioteca de paletas: fora da CONTAGEM de itens (bytes contam), e nunca recusada pelo teto [125.00ms]
+(pass) índice das criações (Postgres real) > PARTES no Postgres real: JSONB vai e volta com `rev`, commit exige as enviadas, idempotência não solta nada, `pending_parts` vira NULL, lixeira e ressurreição [94.00ms]
+(pass) índice das criações (Postgres real) > paginação é estável e compactação remove somente o lote de lápides anterior ao corte [62.00ms]
+
+ 17 pass
+ 0 fail
+ 160 expect() calls
+Ran 17 tests across 1 file. [1.85s]
