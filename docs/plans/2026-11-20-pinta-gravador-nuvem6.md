@@ -66,3 +66,12 @@ arquivos Python são idênticos ao leitor. Evidências em
 `qa/gravador-nuvem6-leitor13e-2026-11-21/`, no diretório da missão.
 Esta preparação exige CI própria e continua sem deploy até completar o leitor,
 sua ativação e a homologação autenticada dos critérios 6 e 7.
+
+A declaração de staging do Worker acompanha o seletor preparado fa8847d2…
+da release 6, para que um deploy futuro não restaure o catálogo anterior.
+Somente esse valor de staging mudou; produção, código do Worker/Core e perfil
+permanecem iguais. Isso prepara o código e não executa ativação. Ver
+`qa/gravador-seletor-staging-2026-11-21/`, no diretório da missão.
+O rollback B6 → leitor 13e afeta a escrita das aplicações: deve conservar o
+Worker/imagem comuns qualificados, o seletor ativo e a política do Members.
+Não redeployar a configuração antiga de distribuição durante esse rollback.
