@@ -1,0 +1,93 @@
+[
+  {
+    "name": "pro-light",
+    "exit": 0,
+    "started": "2026-11-21T03:48:33.727Z",
+    "finished": "2026-11-21T03:48:34.973Z",
+    "log": ".cache/pinta-48a8-pro-light.log"
+  },
+  {
+    "name": "symbols",
+    "exit": 0,
+    "started": "2026-11-21T03:48:35.472Z",
+    "finished": "2026-11-21T03:48:37.364Z",
+    "log": ".cache/pinta-48a8-symbols.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-21T03:48:37.870Z",
+    "finished": "2026-11-21T03:48:38.608Z",
+    "log": ".cache/pinta-48a8-profile.log"
+  },
+  {
+    "name": "studio-sdk",
+    "exit": 0,
+    "started": "2026-11-21T03:48:39.112Z",
+    "finished": "2026-11-21T03:48:39.935Z",
+    "log": ".cache/pinta-48a8-studio-sdk.log"
+  },
+  {
+    "name": "molda-sdk",
+    "exit": 0,
+    "started": "2026-11-21T03:48:40.435Z",
+    "finished": "2026-11-21T03:48:41.190Z",
+    "log": ".cache/pinta-48a8-molda-sdk.log"
+  },
+  {
+    "name": "policy",
+    "exit": 0,
+    "started": "2026-11-21T03:48:41.693Z",
+    "finished": "2026-11-21T03:48:43.548Z",
+    "log": ".cache/pinta-48a8-policy.log"
+  },
+  {
+    "name": "python-closure",
+    "exit": 0,
+    "started": "2026-11-21T03:48:44.046Z",
+    "finished": "2026-11-21T03:48:45.548Z",
+    "log": ".cache/pinta-48a8-python-closure.log"
+  },
+  {
+    "name": "runtime-closure",
+    "exit": 0,
+    "started": "2026-11-21T03:48:46.056Z",
+    "finished": "2026-11-21T03:48:47.991Z",
+    "log": ".cache/pinta-48a8-runtime-closure.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-21T03:48:48.496Z",
+    "finished": "2026-11-21T03:51:48.070Z",
+    "log": ".cache/pinta-48a8-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-21T03:51:48.574Z",
+    "finished": "2026-11-21T03:53:56.719Z",
+    "log": ".cache/pinta-48a8-members-types.log"
+  },
+  {
+    "name": "pro-light-browser",
+    "exit": 0,
+    "started": "2026-11-21T03:53:57.331Z",
+    "finished": "2026-11-21T03:55:21.918Z",
+    "log": ".cache/pinta-48a8-pro-light-browser.log"
+  },
+  {
+    "name": "molda-regression",
+    "exit": 0,
+    "started": "2026-11-21T03:55:22.493Z",
+    "finished": "2026-11-21T03:57:05.116Z",
+    "log": ".cache/pinta-48a8-molda-regression.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T03:57:05.640Z",
+    "finished": "2026-11-21T03:57:37.102Z",
+    "log": ".cache/pinta-48a8-biome.log"
+  }
+]

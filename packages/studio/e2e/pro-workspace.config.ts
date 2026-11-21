@@ -3,6 +3,7 @@ export default defineConfig({
   testDir: '.',
   testMatch: [
     'pro-workspace.spec.ts',
+    'pro-light-runtime.spec.ts',
     'pro-builder-review.spec.ts',
     'zappy-assistance.spec.ts',
     'preview-startup.spec.ts',

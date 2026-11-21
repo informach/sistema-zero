@@ -158,10 +158,20 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   `qa/leitor-linux-598-2026-11-21/`. Os três novos commits publicados até a674
   foram integrados conservando JavaScript, Worker e guest idênticos à fonte
   qualificada; passaram 11 controles, incluindo os novos ensaios do Pro e os
-  tipos completos. Ver `qa/leitor-a674-2026-11-21/`. O gravador isolado 8d5573f97
-  também passou em sete controles e conserva os mesmos artefatos do leitor;
-  ele ainda precisa receber a política final e aguardar o rollout A. A CI geral
-  do leitor final, ativação, ciclo autenticado e rollback continuam pendentes.
+  tipos completos. Ver `qa/leitor-a674-2026-11-21/`. O gravador isolado c70e93ba0
+  recebeu a política final e passou em sete controles, conservando os mesmos
+  artefatos; ainda aguarda a qualificação do leitor e o rollout A.
+  A CI 44860880266 do leitor 24226 passou nos outros onze jobs de verificação,
+  mas falhou numa precondição de QA do Molda: a lista de movimentos e a linha
+  do tempo carregam separadamente. Um ensaio controlado comprovou essa janela;
+  o teste agora estabelece a reprodução antes de conferir sua preservação após
+  revogar a autoria, conservando as mesmas verificações e limites.
+  Os quatro commits públicos seguintes, até 48a8d0f05, foram integrados.
+  Passaram treze controles locais, incluindo tipos completos, seis ensaios do
+  Pro em três motores e 1.392 testes da suíte de cena/componentes do Molda.
+  Worker e os 126 arquivos do guest continuam idênticos à fonte qualificada.
+  Ver `qa/leitor-48a8-2026-11-21/`. Isso exige nova CI da revisão integrada;
+  ativação, ciclo autenticado e rollback continuam pendentes.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

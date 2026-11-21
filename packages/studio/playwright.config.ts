@@ -49,12 +49,15 @@ export default defineConfig({
       // A lixeira e o zoom do Blockly (desenho em vetor, a lixeira por cima, a tampa): cada motor
       // desenha o SVG à sua maneira, e foi no desenho que os ícones sumiram (20/11/2026).
       // Meus testes: o piloto do teste roda dentro do documento da prévia, sob a CSP dele.
+      // A execução leve do Pro: módulos em blob e mapa de importação inserido por script, num
+      // quadro de origem opaca, é arranjo que cada motor implementa à sua maneira.
       testMatch: [
         /preview-security\.spec\.ts/,
         /preview-executes-user-code\.spec\.ts/,
         /preview-shell(?:-performance|-hostile)?\.spec\.ts/,
         /blockly-media\.spec\.ts/,
         /student-tests\.spec\.ts/,
+        /pro-light-runtime\.spec\.ts/,
       ],
       use: {
         ...devices['Desktop Firefox'],
@@ -79,6 +82,7 @@ export default defineConfig({
         /preview-shell(?:-performance)?\.spec\.ts/,
         /blockly-media\.spec\.ts/,
         /student-tests\.spec\.ts/,
+        /pro-light-runtime\.spec\.ts/,
       ],
       use: { ...devices['Desktop Safari'] },
     },

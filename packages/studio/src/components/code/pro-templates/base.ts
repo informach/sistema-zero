@@ -32,7 +32,7 @@ function pkg(deps: Record<string, string>, devDeps: Record<string, string>): str
 
 // vite.config: o dev-server DENTRO do container serve isolado (COOP/COEP) e
 // aceita host externo (o preview do WebContainer é cross-origin).
-const VITE_CONFIG_VANILLA = `import { defineConfig } from 'vite'
+export const VITE_CONFIG_VANILLA = `import { defineConfig } from 'vite'
 
 export default defineConfig({
   base: './',

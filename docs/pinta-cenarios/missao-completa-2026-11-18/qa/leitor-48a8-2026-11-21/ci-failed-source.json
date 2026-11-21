@@ -1,0 +1,15 @@
+{
+  "run": 44860880266,
+  "job": 136713735129,
+  "source": "24226bb3f0ab10e96174d80dcbbcafe1f37653ff",
+  "url": "https://github.com/informach/sistema-zero/actions/runs/44860880266",
+  "fullLogSha256": "9401a54bc85aa4af9ca5c9dfdc5e7e91cdb4acd3e3323b2841bac4531b639f97",
+  "globalJob": "failure",
+  "failedStep": "Testes do Molda no runtime corrigido de workers",
+  "otherVerificationJobs": 11,
+  "otherVerificationJobsSucceeded": 11,
+  "automaticDeployment": "skipped",
+  "localIsolatedOriginalPassed": true,
+  "localFullOriginalPassed": 1392,
+  "controlledIndependentLoadReproducedMissingSynchronousButton": true
+}
