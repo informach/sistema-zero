@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-21T09:18:06.351Z",
+  "readOnly": true,
+  "policy": "12220f13fea768bd3dd77a386170a292aed1067bc8d7583d4c4a3c4d2e9c0a37",
+  "previousHosts": [
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-22-visual-games-3",
+        "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+      },
+      "origin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+    },
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-25-integrated-games-2",
+        "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+      },
+      "origin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+    }
+  ],
+  "nextHosts": [
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-22-visual-games-3",
+        "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+      },
+      "origin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+    },
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-10-25-integrated-games-2",
+        "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+      },
+      "origin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+    },
+    {
+      "runtime": {
+        "profileId": "python-browser",
+        "releaseId": "2026-11-20-pinta-cenarios-6",
+        "manifestSha256": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0"
+      },
+      "origin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+    }
+  ],
+  "previousRawSha256": "e9637a7a8453a99475c3ae7bc9a8aae5e3ef8dfc723215fc4bb13b87a3e8f818",
+  "missingManifest": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0",
+  "proposedOnly": true
+}

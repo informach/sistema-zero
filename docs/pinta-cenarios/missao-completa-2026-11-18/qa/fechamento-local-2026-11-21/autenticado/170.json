@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "result": {
+    "readOnlyAnalysisRetry": true,
+    "rows": [
+      {
+        "httpStatus": 200,
+        "transportStatus": 200,
+        "keys": ["transportVersion", "status", "body"],
+        "bodyKeys": ["version", "sessionId", "projectId"]
+      }
+    ],
+    "status": ["", "Rodando"],
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8"
+  }
+}

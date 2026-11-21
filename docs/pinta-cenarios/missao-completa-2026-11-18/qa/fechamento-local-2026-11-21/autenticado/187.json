@@ -1,0 +1,120 @@
+{
+  "ok": true,
+  "result": {
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8",
+    "publishedGame": true,
+    "runtimeManifest": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0",
+    "keyboardOnly": true,
+    "preciseWall": true,
+    "updatedChildRendered": true,
+    "doorCycle": "Vila → Cabana → Vila",
+    "phase": "confirmed",
+    "steps": [
+      {
+        "key": "ArrowDown",
+        "p": {
+          "minX": 32,
+          "minY": 70,
+          "maxX": 43,
+          "maxY": 81,
+          "count": 144,
+          "width": 640,
+          "height": 480
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "p": {
+          "minX": 68,
+          "minY": 112,
+          "maxX": 79,
+          "maxY": 123,
+          "count": 144,
+          "width": 640,
+          "height": 480
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "p": {
+          "minX": 96,
+          "minY": 112,
+          "maxX": 107,
+          "maxY": 123,
+          "count": 144,
+          "width": 640,
+          "height": 480
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "p": {
+          "minX": 68,
+          "minY": 32,
+          "maxX": 79,
+          "maxY": 43,
+          "count": 144,
+          "width": 640,
+          "height": 480
+        }
+      }
+    ],
+    "initial": {
+      "hero": {
+        "minX": 32,
+        "minY": 32,
+        "maxX": 43,
+        "maxY": 43,
+        "count": 144,
+        "width": 640,
+        "height": 480
+      },
+      "pixels": {
+        "first": [32, 43, 40, 255],
+        "neighbor": [32, 43, 40, 255],
+        "outsideCabana": [151, 200, 103, 255]
+      }
+    },
+    "wall": {
+      "minX": 68,
+      "minY": 70,
+      "maxX": 79,
+      "maxY": 81,
+      "count": 144,
+      "width": 640,
+      "height": 480
+    },
+    "cabana": {
+      "hero": {
+        "minX": 32,
+        "minY": 32,
+        "maxX": 43,
+        "maxY": 43,
+        "count": 144,
+        "width": 640,
+        "height": 480
+      },
+      "pixels": {
+        "first": [32, 43, 40, 255],
+        "neighbor": [105, 76, 56, 255],
+        "outsideCabana": [32, 43, 40, 255]
+      }
+    },
+    "returned": {
+      "hero": {
+        "minX": 32,
+        "minY": 32,
+        "maxX": 43,
+        "maxY": 43,
+        "count": 144,
+        "width": 640,
+        "height": 480
+      },
+      "pixels": {
+        "first": [32, 43, 40, 255],
+        "neighbor": [32, 43, 40, 255],
+        "outsideCabana": [151, 200, 103, 255]
+      }
+    }
+  }
+}

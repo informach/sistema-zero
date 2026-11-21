@@ -1,0 +1,296 @@
+{
+  "createdAt": "2026-11-21T09:55:56.578Z",
+  "options": {
+    "sourceImageRef": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+    "expectedPlatformManifestDigest": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+    "platform": "linux/amd64",
+    "run": "pinta-reader85-44891720185",
+    "bundleSha256": "f44cb5ee0bfb895439eca2db65e26fc60ebeb695026891cee0a9f50ddaed3a5c",
+    "expectedManifestSha256": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0"
+  },
+  "verifierSha256": "e394a96c5bf895bc649d02e14e3373b7c4c3c905a27302db7ee5105427a40b01",
+  "supervisorSha256": "a1400026678dea75c5c30dc128e2335424cddf2a8ed526b8149526d3d2d02924",
+  "probeSha256": "af79df3e636b903fe84774a974e86ee42f037c3375218e19abadd17907793e4c",
+  "host": {
+    "bun": "1.3.11",
+    "node": "v24.3.0",
+    "platform": "linux"
+  },
+  "cases": [
+    {
+      "mode": "empty",
+      "name": "sz-language22-pinta-reader85-44891720185-empty",
+      "creationCommandAcknowledged": true,
+      "containerId": "2dc046693ddf986fe1e65c631bc232e0ce556ae09560c46bda2d3d91c2abad98",
+      "isolation": {
+        "storeImageIdentity": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+        "platformManifestDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+          "size": 2575,
+          "platform": {
+            "architecture": "amd64",
+            "os": "linux"
+          }
+        },
+        "sourceImageRef": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+        "owner": "052698a1-afa7-4015-a1a3-4cfdc711f92e",
+        "network": "none",
+        "user": "1000:1000",
+        "readonly": true,
+        "memory": 536870912,
+        "memorySwap": 536870912,
+        "nanoCpus": 1000000000,
+        "pids": 64,
+        "capDrop": ["ALL"],
+        "securityOpt": ["no-new-privileges"],
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m",
+          "/workspace": "rw,noexec,nosuid,nodev,size=32m,uid=1000,gid=1000"
+        }
+      },
+      "exitCode": 0,
+      "timedOut": false,
+      "stderr": "",
+      "probe": {
+        "mode": "empty",
+        "node": "v24.15.0",
+        "pyrightVersion": "1.1.414",
+        "uid": 1000,
+        "healthBefore": 503,
+        "healthAfter": 200,
+        "configureOnce": true,
+        "assertions": [
+          "turtle-completion",
+          "entry-directory-definition",
+          "invalid-entrypoint-atomic",
+          "stale-query"
+        ],
+        "completionCount": 110,
+        "elapsedMs": 1047.3494329999999,
+        "cancel": {
+          "requestId": "cancel-target",
+          "replyCode": "cancelled"
+        },
+        "processes": [
+          {
+            "pid": "38",
+            "entrypoint": "/opt/language/node_modules/pyright/langserver.index.js",
+            "heapMiB": 192,
+            "stdio": true,
+            "environmentNames": ["PATH"]
+          }
+        ],
+        "serverExit": {
+          "pid": 13,
+          "exited": true,
+          "code": 0,
+          "signal": null
+        },
+        "metadataRemoved": true,
+        "markersExecuted": false
+      },
+      "passed": true,
+      "cleanup": {
+        "removedById": "2dc046693ddf986fe1e65c631bc232e0ce556ae09560c46bda2d3d91c2abad98",
+        "absentAfterCleanupObserved": true,
+        "observedAt": "2026-11-21T09:55:58.847Z",
+        "creationUnknown": false,
+        "creationCommandAcknowledged": true
+      }
+    },
+    {
+      "mode": "provided",
+      "name": "sz-language22-pinta-reader85-44891720185-provided",
+      "creationCommandAcknowledged": true,
+      "containerId": "5a994d304945d632897c4dbb02d7c927166f40616d1c869ad4f076ce331276a9",
+      "isolation": {
+        "storeImageIdentity": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+        "platformManifestDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+          "size": 2575,
+          "platform": {
+            "architecture": "amd64",
+            "os": "linux"
+          }
+        },
+        "sourceImageRef": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+        "owner": "fc3c3e30-4619-43ba-9911-fe6e195e29d3",
+        "network": "none",
+        "user": "1000:1000",
+        "readonly": true,
+        "memory": 536870912,
+        "memorySwap": 536870912,
+        "nanoCpus": 1000000000,
+        "pids": 64,
+        "capDrop": ["ALL"],
+        "securityOpt": ["no-new-privileges"],
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m",
+          "/workspace": "rw,noexec,nosuid,nodev,size=32m,uid=1000,gid=1000"
+        }
+      },
+      "exitCode": 0,
+      "timedOut": false,
+      "stderr": "",
+      "probe": {
+        "mode": "provided",
+        "node": "v24.15.0",
+        "pyrightVersion": "1.1.414",
+        "uid": 1000,
+        "healthBefore": 503,
+        "healthAfter": 200,
+        "configureOnce": true,
+        "assertions": [
+          "exact-stub-bytes",
+          "typed-api",
+          "external-definition-redacted",
+          "author-module",
+          "namespace-fallback",
+          "author-package",
+          "invalid-argument",
+          "entrypoint-directory",
+          "author-stub",
+          "delete-restores-provided"
+        ],
+        "completionCount": 0,
+        "elapsedMs": 2994.145829,
+        "cancel": {
+          "requestId": "cancel-target",
+          "replyCode": "cancelled"
+        },
+        "processes": [
+          {
+            "pid": "38",
+            "entrypoint": "/opt/language/node_modules/pyright/langserver.index.js",
+            "heapMiB": 192,
+            "stdio": true,
+            "environmentNames": ["PATH"]
+          }
+        ],
+        "serverExit": {
+          "pid": 13,
+          "exited": true,
+          "code": 0,
+          "signal": null
+        },
+        "metadataRemoved": true,
+        "markersExecuted": false
+      },
+      "passed": true,
+      "cleanup": {
+        "removedById": "5a994d304945d632897c4dbb02d7c927166f40616d1c869ad4f076ce331276a9",
+        "absentAfterCleanupObserved": true,
+        "observedAt": "2026-11-21T09:56:02.419Z",
+        "creationUnknown": false,
+        "creationCommandAcknowledged": true
+      }
+    },
+    {
+      "mode": "forged",
+      "name": "sz-language22-pinta-reader85-44891720185-forged",
+      "creationCommandAcknowledged": true,
+      "containerId": "21eb23a1b3be9c62eef240c9a55319fa9995783c203f3e57eafb6ba69d29ff9e",
+      "isolation": {
+        "storeImageIdentity": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+        "platformManifestDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+          "size": 2575,
+          "platform": {
+            "architecture": "amd64",
+            "os": "linux"
+          }
+        },
+        "sourceImageRef": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+        "owner": "9151fa47-7018-4fa3-bbe2-94474bc140ee",
+        "network": "none",
+        "user": "1000:1000",
+        "readonly": true,
+        "memory": 536870912,
+        "memorySwap": 536870912,
+        "nanoCpus": 1000000000,
+        "pids": 64,
+        "capDrop": ["ALL"],
+        "securityOpt": ["no-new-privileges"],
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m",
+          "/workspace": "rw,noexec,nosuid,nodev,size=32m,uid=1000,gid=1000"
+        }
+      },
+      "exitCode": 0,
+      "timedOut": false,
+      "stderr": "",
+      "probe": {
+        "mode": "forged",
+        "node": "v24.15.0",
+        "pyrightVersion": "1.1.414",
+        "uid": 1000,
+        "healthBefore": 503,
+        "invalidConfiguration": 400,
+        "noLegacyFallback": true,
+        "serverExit": {
+          "pid": 13,
+          "exited": true,
+          "code": 0,
+          "signal": null
+        },
+        "metadataRemoved": true
+      },
+      "passed": true,
+      "cleanup": {
+        "removedById": "21eb23a1b3be9c62eef240c9a55319fa9995783c203f3e57eafb6ba69d29ff9e",
+        "absentAfterCleanupObserved": true,
+        "observedAt": "2026-11-21T09:56:02.972Z",
+        "creationUnknown": false,
+        "creationCommandAcknowledged": true
+      }
+    }
+  ],
+  "bootstrapSha256": "a6abd3d4f188c6e5bf439f22d1f4fb93c2cfb3f3e7220884ce34ca6bbe55c22b",
+  "releaseSha256": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0",
+  "stubSha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+  "image": {
+    "sourceImageRef": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+    "sourceDescriptor": {
+      "mediaType": "application/vnd.oci.image.index.v1+json",
+      "digest": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+      "size": 856
+    },
+    "platform": "linux/amd64",
+    "platformManifestDescriptor": {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+      "size": 2575,
+      "platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      }
+    },
+    "configProjectionSha256": "1f48b1e50089b3adb805059d25d5c530c9d7232cd53451beb82e36306144f9e7",
+    "configProjectionIsOciBlobDigest": false,
+    "id": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+    "architecture": "amd64",
+    "os": "linux",
+    "rootFS": {
+      "Type": "layers",
+      "Layers": [
+        "sha256:b2008ac19409fa6fee4b52596271400498aebd0be04dffac5351bd1dcf230f2a",
+        "sha256:3094f70a010a6b8c06356e904cdd6ab9b0c3b5c84299c26253cc319125c98f5f",
+        "sha256:ff26b3537e39f28ab5dbb34da85448518aa6580c5fdc822bb7a40e34c6f99c7a",
+        "sha256:24cced70ec2b15a5b4b5ff9f501756e76615fccf63b96c0e412e9d26170c739f",
+        "sha256:269277bc230f953f5819d85e08823cca494d0078c80e67b0658eeb7be7f38af5",
+        "sha256:085a064b5b2e6c4a18d4d39254fe57c661c12f0795bd66cf22b7ab8d99f03c77",
+        "sha256:f44f6ddcee9d059f912c91f59674ae5afee623c4df9f9b652d9d55ae0325d610",
+        "sha256:3f0fa4583dd4c56574c4cf5fc575e0f0dd726dd7e0b11b3c9d38435005aadd31",
+        "sha256:40abfa38a6e86812a2b67c244d8bb5713fceee677235de9b084ff8a104f26439",
+        "sha256:465cfe1eea4dfb6994e2c39752151093767c733ac88f24c4807abd2c75836782",
+        "sha256:807fcaaa3b12572491071daa6fe4ca555fd93026a57a50752376329e3b700e4c",
+        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+      ]
+    }
+  },
+  "passed": true,
+  "finishedAt": "2026-11-21T09:56:02.972Z"
+}

@@ -1,0 +1,20 @@
+module.exports=async function(qa){let phase='frame',last;try{if(!qa.ownedVilaRun||!qa.ownedVilaGame)throw Error('Owned Vila not running');const page=qa.ownedVilaPublishedPage;
+let frame;
+for(const candidate of page.frames())if(await candidate.locator('canvas#tela').count()){frame=candidate;break}if(!frame)throw Error('Owned game frame missing');
+await page.bringToFront();const canvas=frame.locator('canvas#tela');
+const sample=()=>frame.evaluate(()=>{const api=window.SZGame2D,c=document.querySelector('canvas#tela');if(!api||!c)throw Error('Game API missing');const p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let minX=c.width,minY=c.height,maxX=-1,maxY=-1,count=0;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const k=(y*c.width+x)*4;if(p[k]===74&&p[k+1]===222&&p[k+2]===128&&p[k+3]===255){count++;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}}return {width:api.mapSize('mapa','width'),height:api.mapSize('mapa','height'),vilaStart:!!api.mapObjectNamed('mapa','Início'),cabanaStart:!!api.mapObjectNamed('mapa','Entrada'),player:{minX,minY,maxX,maxY,count}}});
+const initial=await sample();if(initial.width!==512||!initial.vilaStart||initial.player.minY!==32)throw Error('Expected Vila initial route');
+await canvas.click({position:{x:32,y:32}});try{await page.keyboard.down('ArrowRight');await page.waitForTimeout(250)}finally{await page.keyboard.up('ArrowRight')}
+const blocked=await sample();if(blocked.player.minX!==36||blocked.player.maxX!==47)throw Error('Stone collision failed');
+const drive=async(key,done)=>{let current;try{await page.keyboard.down(key);for(let i=0;i<400;i++){await page.waitForTimeout(5);current=await sample();last=current;if(done(current))return current}}finally{await page.keyboard.up(key)}throw Error('Keyboard route did not reach target')};
+phase='below';
+const below=await drive('ArrowDown',s=>s.player.minY>=113);
+phase='entrance';
+const entrance=await drive('ArrowRight',s=>s.player.minX>=98);
+phase='enter-cabana';
+const cabana=await drive('ArrowUp',s=>s.width===128&&s.cabanaStart);
+await canvas.screenshot({path:'.cache/pinta-published-cabana-game.png'});
+phase='return';if(cabana.player.minY<34)await drive('ArrowDown',s=>s.player.minY>=34);
+const returned=await drive('ArrowRight',s=>s.width===512&&s.vilaStart);
+await canvas.screenshot({path:'.cache/pinta-published-vila-game.png'});
+qa.ownedVilaPublishedJourney={initial,blocked,below,entrance,cabana,returned,keyboardOnlyMovement:true,publicGameApiReadOnly:true,stoneRightBoundary:48,collisionStoppedAtBoundary:true,roundTrip:'Vila → Cabana → Vila',realPublishedGame:true,cloudPublicationTested:true};return qa.ownedVilaPublishedJourney;}catch(e){return {failed:true,phase,last,type:e.name}}};

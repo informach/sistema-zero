@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "result": {
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8",
+    "actualUpdatedChildRendered": true,
+    "childErasedCellPixels": {
+      "erased": [32, 43, 40, 255],
+      "neighbor": [105, 76, 56, 255]
+    },
+    "keyboard": true,
+    "doorCycle": ["qa-vila-floresta-20261120", "qa-cabana-20261120", "qa-vila-floresta-20261120"],
+    "returnEvent": {
+      "evento": "porta",
+      "mapa": "qa-vila-floresta-20261120",
+      "camadas": 18,
+      "folhas": 2,
+      "objetos": 6,
+      "conjuntos": 1,
+      "x": 32,
+      "y": 32,
+      "marcador": 261121
+    },
+    "filesExactlyPreserved": true,
+    "pngSha256": "70919156591cc98d5c0702fd396fd460e2a380b9f820d3f30999087e6975bdcf",
+    "image": ".cache/pinta-owned-python-updated-cabana-browser.png",
+    "historicalTabPreserved": true
+  }
+}

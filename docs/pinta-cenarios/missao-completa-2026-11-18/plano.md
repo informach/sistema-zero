@@ -352,3 +352,9 @@ ruidosos no Chromium. Exportações mantêm seus próprios tetos até o lote 2 v
 - O pior caso medido exige otimização na etapa 8 e transporte maior/mais eficiente no lote 2;
   isso não está sendo confundido com fluidez em hardware de entrada nem com compatibilidade
   de todos os mapas máximos em todos os destinos.
+- Checkpoint de 21/11: pausa solicitada pelo usuário, seguida de commit e integração
+  somente na staging local. As provas autenticadas, as publicações JavaScript/Python,
+  a análise Python atualizada e os pacotes da mesma edição estão em
+  [fechamento local](qa/fechamento-local-2026-11-21/README.md). Gravador B6 e regiões
+  internas foram integrados como preparação; a ativação da escrita e os itens 8b,
+  8c e restantes do ciclo completo continuam abertos. Não houve push neste fechamento.

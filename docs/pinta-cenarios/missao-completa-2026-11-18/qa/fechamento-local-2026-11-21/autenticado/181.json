@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "result": {
+    "phase": "response-visible",
+    "at": "2026-11-21T10:24:12.402Z",
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8",
+    "links": [
+      {
+        "text": "Ver no Mural",
+        "href": "https://community-staging-66f2.up.railway.app/mural-dos-criadores-adulto?thread=3e60d0a6-268c-430a-a1bf-d0de152be817"
+      },
+      {
+        "text": "Abrir o jogo",
+        "href": "https://community-staging-66f2.up.railway.app/jogar/f5026544-89f6-4fcd-9c0b-d0cdd0da4b93"
+      }
+    ],
+    "text": "Compartilhar no Mural dos Criadores\n\nVersões do jogo\n\nPara pôr a versão de agora no link, use o botão Atualizar. Aqui você volta a uma versão antiga ou desliga o link.\n\nAtualizar histórico\n\nVerificando a publicação…\n\nSeu jogo está no Mural! 🎉\n\nSeu projeto já está no Mural dos Criadores.\n\nVer no Mural\nAbrir o jogo\nCopiar link de jogar\nFechar",
+    "historicalTabPreserved": true
+  }
+}

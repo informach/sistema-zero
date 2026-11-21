@@ -1,0 +1,169 @@
+{
+  "ok": true,
+  "result": {
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8",
+    "reconnectResponse": [
+      {
+        "httpStatus": 200,
+        "transportStatus": 200,
+        "keys": ["transportVersion", "status", "body"],
+        "bodyKeys": ["version", "sessionId", "projectId"]
+      }
+    ],
+    "status": ["", "Rodando"],
+    "retryAbsent": true,
+    "buttons": [
+      {
+        "text": "Sistema Zero Studio",
+        "label": null,
+        "title": "Voltar à lista de projetos"
+      },
+      {
+        "text": "qa-vila-python-20261121",
+        "label": null,
+        "title": "Renomear projeto"
+      },
+      {
+        "text": "Rodar de novo",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Parar",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "label": "Abrir Zappy",
+        "title": "Zappy"
+      },
+      {
+        "text": "",
+        "label": "Desfazer",
+        "title": "Desfazer no código (Ctrl+Z)"
+      },
+      {
+        "text": "",
+        "label": "Refazer",
+        "title": "Refazer no código (Ctrl+Y)"
+      },
+      {
+        "text": "",
+        "label": "Mais opções",
+        "title": "Mais opções"
+      },
+      {
+        "text": "Compartilhar",
+        "label": "Compartilhar",
+        "title": null
+      },
+      {
+        "text": "Arquivos",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Procurar",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Materiais",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Guias",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Novo",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "⋯",
+        "label": "Opções de main.py",
+        "title": "Opções de main.py"
+      },
+      {
+        "text": "⋯",
+        "label": "Opções de requirements.txt",
+        "title": "Opções de requirements.txt"
+      },
+      {
+        "text": "Pymain.py",
+        "label": "main.py",
+        "title": "main.py"
+      },
+      {
+        "text": "×",
+        "label": "Fechar main.py",
+        "title": null
+      },
+      {
+        "text": "Arrumar código",
+        "label": "Arrumar código",
+        "title": "Arrumar código (Shift+Alt+F)"
+      },
+      {
+        "text": "Aa",
+        "label": "Tamanho da letra",
+        "title": "Tamanho da letra"
+      },
+      {
+        "text": "",
+        "label": "Mais",
+        "title": "Mais"
+      },
+      {
+        "text": "",
+        "label": "Lado a lado",
+        "title": "Lado a lado"
+      },
+      {
+        "text": "",
+        "label": "Só o código",
+        "title": "Só o código"
+      },
+      {
+        "text": "",
+        "label": "Só o programa",
+        "title": "Só o programa"
+      },
+      {
+        "text": "",
+        "label": "Tela cheia",
+        "title": "Tela cheia"
+      },
+      {
+        "text": "Fechar a gaveta",
+        "label": "Fechar a gaveta",
+        "title": null
+      },
+      {
+        "text": "Tudo",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Avisos",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Erros",
+        "label": null,
+        "title": null
+      },
+      {
+        "text": "Limpar",
+        "label": null,
+        "title": null
+      }
+    ],
+    "historicalTabPreserved": true
+  }
+}

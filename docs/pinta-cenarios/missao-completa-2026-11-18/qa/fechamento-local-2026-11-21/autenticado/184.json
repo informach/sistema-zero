@@ -1,0 +1,90 @@
+{
+  "ok": true,
+  "result": {
+    "initial": {
+      "width": 512,
+      "height": 384,
+      "vilaStart": true,
+      "cabanaStart": false,
+      "player": {
+        "minX": 32,
+        "minY": 32,
+        "maxX": 43,
+        "maxY": 43,
+        "count": 144
+      }
+    },
+    "blocked": {
+      "width": 512,
+      "height": 384,
+      "vilaStart": true,
+      "cabanaStart": false,
+      "player": {
+        "minX": 36,
+        "minY": 32,
+        "maxX": 47,
+        "maxY": 43,
+        "count": 144
+      }
+    },
+    "below": {
+      "width": 512,
+      "height": 384,
+      "vilaStart": true,
+      "cabanaStart": false,
+      "player": {
+        "minX": 36,
+        "minY": 113,
+        "maxX": 47,
+        "maxY": 124,
+        "count": 144
+      }
+    },
+    "entrance": {
+      "width": 512,
+      "height": 384,
+      "vilaStart": true,
+      "cabanaStart": false,
+      "player": {
+        "minX": 99,
+        "minY": 116,
+        "maxX": 110,
+        "maxY": 127,
+        "count": 144
+      }
+    },
+    "cabana": {
+      "width": 128,
+      "height": 128,
+      "vilaStart": false,
+      "cabanaStart": true,
+      "player": {
+        "minX": 32,
+        "minY": 32,
+        "maxX": 43,
+        "maxY": 43,
+        "count": 144
+      }
+    },
+    "returned": {
+      "width": 512,
+      "height": 384,
+      "vilaStart": true,
+      "cabanaStart": false,
+      "player": {
+        "minX": 32,
+        "minY": 32,
+        "maxX": 43,
+        "maxY": 43,
+        "count": 144
+      }
+    },
+    "keyboardOnlyMovement": true,
+    "publicGameApiReadOnly": true,
+    "stoneRightBoundary": 48,
+    "collisionStoppedAtBoundary": true,
+    "roundTrip": "Vila → Cabana → Vila",
+    "realPublishedGame": true,
+    "cloudPublicationTested": true
+  }
+}

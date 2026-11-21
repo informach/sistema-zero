@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-21T10:04:56.129Z",
+  "source": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "qualificationRun": 44891720185,
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-language-85d16fcd9:qualified-44891720185",
+  "index": "sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+  "platform": "sha256:b4804a547a2393a35624b030c3f7b8f447ba18886112fb9a8c072fe2188c97ea",
+  "config": "sha256:40f8de6a7aeba53cb62304f967ae1548fec037569b00b5ba548e21fb3c192772",
+  "serverSha256": "f44cb5ee0bfb895439eca2db65e26fc60ebeb695026891cee0a9f50ddaed3a5c",
+  "nativeQualifiedSourceIndexExact": true,
+  "platformManifestExact": true,
+  "configurationExact": true,
+  "stagingOnly": true,
+  "workerDeployed": false
+}

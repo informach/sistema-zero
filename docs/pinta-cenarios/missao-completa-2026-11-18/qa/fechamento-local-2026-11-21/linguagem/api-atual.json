@@ -1,0 +1,185 @@
+{
+  "kind": "python-language-remote-api",
+  "state": "API_PASSED",
+  "environment": "staging",
+  "baseUrl": "https://sistemazero-studio-language-staging.helena-bcc.workers.dev",
+  "manifestSha256": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0",
+  "distributionSha256": "f7c60430cb693962aec48da387898882d4708bfc7629fbd30ac3ca2ab403acc1",
+  "profileId": "python-browser",
+  "releaseId": "2026-11-20-pinta-cenarios-6",
+  "bootstrapSha256": "96896b9f297ab8ec76a67f9ff29c5e0c1a1937bc529eb462a10fc3229e30dceb",
+  "fixtureSha256": "05dbac80cce1250c27c4c668eed6a3a80d19981346703becba8fce16458e4c91",
+  "owner": "1a892026a4cafd760ac11e71d479456dcb884c2228c6f5baa91890bcb74186bc",
+  "projectId": "qa-language-f591cbd2-4922-4049-952f-6c92e827ca4d",
+  "startedAt": "2026-11-21T10:17:44.313Z",
+  "stage": "closed-session",
+  "checks": [
+    {
+      "stage": "anonymous-auth",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "stage": "token-auth",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "stage": "missing-release",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "stage": "forged-release",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "stage": "reserve-1",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "reserve-2",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "owner-quota",
+      "status": 429,
+      "passed": true
+    },
+    {
+      "stage": "wrong-start-binding",
+      "status": 410,
+      "passed": true
+    },
+    {
+      "stage": "start",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "wrong-command-binding",
+      "status": 410,
+      "passed": true
+    },
+    {
+      "stage": "sync_1",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "diagnostics_2",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "completions_3",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "completions_4",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "hover_5",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "sync_6",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "diagnostics_7",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "sync_8",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "diagnostics_9",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "stale_10",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "sync_11",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "cancel_target_12",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "cancel_13",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "close",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "closed-session",
+      "status": 410,
+      "passed": true
+    },
+    {
+      "stage": "close",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "stage": "closed-session",
+      "status": 410,
+      "passed": true
+    }
+  ],
+  "sessions": [
+    {
+      "id": "ca4078112d9bbb9dd2b6a80c6aedabc8",
+      "closeAcknowledged": true,
+      "retired": true
+    },
+    {
+      "id": "e4d74ad7b2c826690e651f964b0e0e10",
+      "closeAcknowledged": true,
+      "retired": true
+    }
+  ],
+  "failures": [],
+  "remoteOutcomeUnknown": false,
+  "cancellationQualified": true,
+  "cancellation": "target-cancelled",
+  "physicalCleanupVerified": false,
+  "hostedUiVerified": false,
+  "contextualAuthorizationVerified": false,
+  "deployedVersionVerified": false,
+  "overallQualified": false,
+  "sourceExecutionRequested": false,
+  "limits": {
+    "workMs": 240000,
+    "cleanupMs": 60000,
+    "totalMs": 300000,
+    "admissionMs": 5000,
+    "deploymentBytes": 2000000,
+    "cancelLines": 7000
+  },
+  "completedAt": "2026-11-21T10:17:52.226Z",
+  "elapsedMs": 7901
+}

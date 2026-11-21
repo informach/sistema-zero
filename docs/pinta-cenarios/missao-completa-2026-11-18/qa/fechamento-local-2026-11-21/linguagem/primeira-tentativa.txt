@@ -1,0 +1,57 @@
+
+ ⛅️ wrangler 4.120.1 (update available 4.166.0)
+───────────────────────────────────────────────
+Total Upload: 1110.22 KiB / gzip: 203.94 KiB
+Worker Startup Time: 69 ms
+Your Worker has access to the following bindings:
+Binding                                                  Resource            
+env.PythonLanguageSandbox (PythonLanguageSandbox)        Durable Object      
+env.PythonLanguageSessions (PythonLanguageSessions)      Durable Object      
+env.LANGUAGE_OPEN_LIMIT (10 requests/60s)                Rate Limit          
+env.LANGUAGE_COMMAND_LIMIT (600 requests/60s)            Rate Limit          
+
+The following containers are available:
+- sistemazero-studio-language-staging-pythonlanguagesandbox (registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-language-85d16fcd9:qualified-44891720185@sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5)
+
+Uploaded sistemazero-studio-language-staging (8.04 sec)
+╭ Deploy a container application deploy changes to your application
+│
+│ Container application changes
+│
+├ NEW sistemazero-studio-language-staging-pythonlanguagesandbox
+│
+│   {
+│     "containers": [
+│       {
+│         "name": "sistemazero-studio-language-staging-pythonlanguagesandbox",
+│         "scheduling_policy": "default",
+│         "configuration": {
+│           "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-language-85d16fcd9:qualified-44891720185@sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+│           "instance_type": "standard-2"
+│         },
+│         "instances": 0,
+│         "max_instances": 64,
+│         "constraints": {
+│           "tiers": [
+│             1,
+│             2
+│           ]
+│         },
+│         "durable_objects": {
+│           "namespace_id": "fb9d81d3e52b489faf23ed8c74cea71a"
+│         },
+│         "rollout_active_grace_period": 0
+│       }
+│     ]
+│   }
+│
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mError creating application due to a misconfiguration:[0m
+
+  DURABLE_OBJECT_ALREADY_HAS_APPLICATION
+  name sistemazero-studio-language-staging-pythonlanguagesandbox-staging
+  id a03225c7-85d7-4bd6-9919-a63ba03178af
+
+
+🪵  Logs were written to "C:\Users\tocha\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-11-21_10-09-56_376.log"

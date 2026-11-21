@@ -6,13 +6,20 @@ O [plano em execução](missao-completa-2026-11-18/plano.md) acompanha os lotes 
 e os critérios ainda pendentes. A integração em staging segue a autorização posterior
 do usuário, sem PR. A missão integral continua em andamento.
 
+O [checkpoint local de 21/11](missao-completa-2026-11-18/qa/fechamento-local-2026-11-21/README.md)
+registra a pausa solicitada, as publicações JavaScript e Python em staging,
+as exportações da mesma edição e a integração local das branches de preparação.
+Ele distingue as provas concluídas das pendências da missão e do rollout.
+
 O [pincel de objetos e conjuntos](missao-completa-2026-11-18/espalhar-objetos.md)
 permite compor decoração com afastamento, variação determinística e prévia,
 mantendo as definições vinculadas e um desfazer por gesto.
 
 O lote de [contornos autorais](missao-completa-2026-11-18/colisoes-autorais.md) acrescenta
-documento/envelope 7, cena 3 e PNG 4 com leitor específico. O código lê nuvem 6 e ainda
-declara 4 durante o rollout do leitor. [Provas e limites](missao-completa-2026-11-18/qa/colisoes-autorais/README.md).
+documento/envelope 7, cena 3 e PNG 4 com leitor específico. O leitor de rollback
+lê nuvem 6 e declara 4. O gravador preparado, integrado localmente em 21/11,
+declara 6, mas sua ativação e homologação autenticada continuam pendentes.
+[Provas e limites](missao-completa-2026-11-18/qa/colisoes-autorais/README.md).
 
 A continuação de [plataformas precisas](missao-completa-2026-11-18/plataformas-precisas.md)
 integra o teste lateral e os motores, com gravidade/pouso nos jogos novos criados

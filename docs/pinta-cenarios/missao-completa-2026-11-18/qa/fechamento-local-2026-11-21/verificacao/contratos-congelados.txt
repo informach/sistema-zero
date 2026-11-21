@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+src\testing\contracts\contracts.test.ts:
+(pass) cena do Pinta: cada versão congelada abre e volta igual > versão 1 [15.00ms]
+(pass) cena do Pinta: cada versão congelada abre e volta igual > versão 2 [32.00ms]
+(pass) cena do Pinta: cada versão congelada abre e volta igual > versão 3
+(pass) cena do Pinta: o que esta versão não conhece é recusado sem perda > campo desconhecido
+(pass) cena do Pinta: o que esta versão não conhece é recusado sem perda > versão desconhecida
+(pass) cenário do Molda Cenários (studio-cena3d v1) > a versão congelada abre inteira, com a cena e os arquivos dela [15.00ms]
+(pass) cenário do Molda Cenários (studio-cena3d v1) > campo desconhecido no envelope é recusado sem perda [16.00ms]
+
+ 7 pass
+ 0 fail
+ 17 expect() calls
+Ran 7 tests across 1 file. [584.00ms]
