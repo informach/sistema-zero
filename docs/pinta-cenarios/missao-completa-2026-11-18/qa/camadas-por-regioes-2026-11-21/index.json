@@ -1,0 +1,347 @@
+{
+  "baseline": "ed3b3a24bb8a225ed7aafafc3f7dca232706fc28",
+  "sources": [
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "07948f4214683ce8b8c193a6535586c6fbc362ab5e33e72cf44725830d279797",
+      "previousSha256": "b342615611d535d190c75550b6f7e46d144c114fc41ea363f461d66232ab83ac"
+    },
+    {
+      "file": "packages/pinta/src/tiles/layerTree.ts",
+      "sha256": "06dd1d32c8097a06817f6cea10fcefe3a332519a12218f3419f443167acec76c",
+      "previousSha256": "030931d22d20bf9bcc827b8a54fa1826db31c7a61381d037e5af67d1aa419c80"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "4f8dec929ff9f71c9840eb93cb321e24f21ea0d486303f838d2ecdff065b52d1",
+      "previousSha256": "d0f3e984d8b30189580d61a80af8eb345a0506a54c6a6c158d094fac424959e8"
+    },
+    {
+      "file": "packages/pinta/src/tiles/layerTreeRegions.test.ts",
+      "sha256": "fc6e3f19b39bb7042ea5ab2a1521769c7c40f990efa10824f48de3e173a3092e"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/layerRegions.ts",
+      "sha256": "0aa31731c9d39f0556da9c328e4ee977d0c4068a48614dba05e10991b21be413"
+    },
+    {
+      "file": "packages/pinta/scripts/layers-regions-probe.ts",
+      "sha256": "fc335f9694de562c88856df44a21813a1b45dbcfa6059c77aff3860c475ce349"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-memory-regions-e2e.ts",
+      "sha256": "9e97a0695ef5df9437d81e7a919a542b163b1dd14bc4b2ac37f0a5eb3cd9d359"
+    },
+    {
+      "file": "packages/pinta/tsconfig.json",
+      "sha256": "240b8e3fa8589a65e67c57e2254cc6ec779c5b2d0562c3ce2a946d5f3a0f6521"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-layers-regions.flow.ts",
+      "sha256": "b16176c9ca9732cfe09c5222619923bbe9af9e03d05be2197b3f2a55e87fa940"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-layers-regions.config.ts",
+      "sha256": "0fd7723a5bf7a605e40b3cea5b8c898927064ec81673498280c34ee62ddd0a79"
+    },
+    {
+      "file": "packages/studio/tsconfig.json",
+      "sha256": "4a5b87c35b766529be26fc26c889e2ecb4fc6b3f1b4e5cd674b8e36b4def5a5f"
+    }
+  ],
+  "records": [
+    {
+      "file": "layers-region-red.log.gz",
+      "bytes": 1837,
+      "sha256": "6c1f0f636665ad95307831ff9b72e79d0e11bdc43eb3946e9da49dca7e1bbce4",
+      "rawBytes": 23182,
+      "rawSha256": "718777549dcd34afdabfe6227d4535a6ebf628f75dad1d1c3be99d18b6f4b155"
+    },
+    {
+      "file": "layers-region-first.log.gz",
+      "bytes": 1162,
+      "sha256": "e8c3fa1c7428ab7644c46de75bbd7983505220183517d4e296ab98a9cf4e30c4",
+      "rawBytes": 2518,
+      "rawSha256": "4d0d41746613a9fd121fbc67e0ade127e0cae1e652ce158e6b2a476e756f318c"
+    },
+    {
+      "file": "layers-region-focused.log.gz",
+      "bytes": 1792,
+      "sha256": "b8612847de2660edc387021e166389cbf45bf249a28218c4aaf8b12201c002bb",
+      "rawBytes": 4401,
+      "rawSha256": "3c79281427b825fce15cc8ffe93951a079d31211b3bae7f507a60cf72bb0f358"
+    },
+    {
+      "file": "layers-region-suite.log.gz",
+      "bytes": 77814,
+      "sha256": "dfd305aa00b1b1236f6ed7ac894c64c6ba90af88d3b7704fd503912ad5414fd6",
+      "rawBytes": 290360,
+      "rawSha256": "cbf8e894f7d4023b65e9ff021d7c32ba4270d574d730ca4ffae8d893a4cddc67"
+    },
+    {
+      "file": "layers-region-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "layers-region-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "layers-region-browser.log.gz",
+      "bytes": 330,
+      "sha256": "fcc482bbe2d37376f0c0350df5cac6c8ae00544c886e45b8cc4716153dfbf424",
+      "rawBytes": 969,
+      "rawSha256": "fe769163b15c8ba75b8fd663899ca4dc9d8f35a01f3bbdab30909f7fe90acfcd"
+    },
+    {
+      "file": "layers-region-memory-browser.log.gz",
+      "bytes": 349,
+      "sha256": "827218750c50f3ddaf3d3ec4604d7fc668346501cef5ec724bcd067345e56ac6",
+      "rawBytes": 1041,
+      "rawSha256": "f30b6d749c5c2476ae5c80228da483e82df8787559628bf7944ad2c0083227d7"
+    },
+    {
+      "file": "layers-region-workshop-browser.log.gz",
+      "bytes": 1329,
+      "sha256": "51dd004d867d2465e8f3c768b6cd70d467847e53c94fe3fd0cb391db27ab5391",
+      "rawBytes": 6315,
+      "rawSha256": "56d984ef6424757bdd2480135a9aab940e5210f75c377656d7eb03698183e44c"
+    },
+    {
+      "file": "layers-region-biome.log.gz",
+      "bytes": 65,
+      "sha256": "ea51481a7b77955c1831e17f260f53c0b3b56d671fadb156d26852c2cbad0dfc",
+      "rawBytes": 45,
+      "rawSha256": "7fe08552a3abb1b01daee3189692c54d1d29e9c6588b212feca37f499715d475"
+    },
+    {
+      "file": "layers-region-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 4237,
+      "sha256": "c9df22ed0a2448a025cf34d77a2304a3b76b6c8d618b9e0eca5c79ea8113fe95",
+      "rawBytes": 85232,
+      "rawSha256": "8bd512747345fe1983a060d1078104013e13c2f8375c002bc9e984266df90d26"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 2339,
+      "sha256": "fd9e868992f937835c07cc9c8884b5ae60bb2623cf711bc3c8a862287e360f3f",
+      "rawBytes": 13692,
+      "rawSha256": "4b42c5fa61b0d41c0b2e18dc3581ede209cc29ab6d339e423c9bbf73ebec000c"
+    },
+    {
+      "file": "playwright-2-report.json.gz",
+      "bytes": 3001689,
+      "sha256": "43a5c90013a394855f19115587bf7d76220f205f18bbc248c1165f05b74a4b4c",
+      "rawBytes": 4435697,
+      "rawSha256": "96888898aade1308c9644082d7515e2206cf3d5b58d1d7b2645ba86b8502dfce"
+    },
+    {
+      "file": "archive-layer-regions.cjs.gz",
+      "bytes": 1577,
+      "sha256": "423d5f610358b0b0f532b025a6976761e102313220266565cd58094b2ae0dc5f",
+      "rawBytes": 4100,
+      "rawSha256": "0cd11ee1b1f04eb237433289f4febd1a487a885455b39bb12cce049ea01f6f76"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "desktop",
+      "cpu": 1,
+      "before": {
+        "legacy": [
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"},{\"id\":\"layer-2\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"opacity\":0.5,\"offsetX\":-2.25,\"offsetY\":4.5,\"parallaxX\":0.5,\"properties\":{\"note\":\"ok\"}},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"kind\":\"objects\",\"id\":\"layer-3\",\"name\":\"Portas\",\"visible\":true,\"objects\":[]}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}"
+        ],
+        "regions": {
+          "metadataPreserved": false,
+          "noOpShared": false,
+          "invalidRefused": false,
+          "cellStorageShared": true,
+          "emptyLayer": false,
+          "explicitBinding": false,
+          "layers": 1,
+          "limitRefused": true,
+          "roundTrip": true
+        }
+      },
+      "after": {
+        "legacy": [
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"},{\"id\":\"layer-2\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"opacity\":0.5,\"offsetX\":-2.25,\"offsetY\":4.5,\"parallaxX\":0.5,\"properties\":{\"note\":\"ok\"}},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"kind\":\"objects\",\"id\":\"layer-3\",\"name\":\"Portas\",\"visible\":true,\"objects\":[]}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}"
+        ],
+        "regions": {
+          "metadataPreserved": true,
+          "noOpShared": true,
+          "invalidRefused": true,
+          "cellStorageShared": true,
+          "emptyLayer": true,
+          "explicitBinding": true,
+          "layers": 32,
+          "limitRefused": true,
+          "roundTrip": true
+        }
+      },
+      "native8Public": false
+    },
+    {
+      "profile": "touch",
+      "cpu": 1,
+      "before": {
+        "legacy": [
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"},{\"id\":\"layer-2\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"opacity\":0.5,\"offsetX\":-2.25,\"offsetY\":4.5,\"parallaxX\":0.5,\"properties\":{\"note\":\"ok\"}},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"kind\":\"objects\",\"id\":\"layer-3\",\"name\":\"Portas\",\"visible\":true,\"objects\":[]}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}"
+        ],
+        "regions": {
+          "metadataPreserved": false,
+          "noOpShared": false,
+          "invalidRefused": false,
+          "cellStorageShared": true,
+          "emptyLayer": false,
+          "explicitBinding": false,
+          "layers": 1,
+          "limitRefused": true,
+          "roundTrip": true
+        }
+      },
+      "after": {
+        "legacy": [
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"},{\"id\":\"layer-2\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"opacity\":0.5,\"offsetX\":-2.25,\"offsetY\":4.5,\"parallaxX\":0.5,\"properties\":{\"note\":\"ok\"}},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"kind\":\"objects\",\"id\":\"layer-3\",\"name\":\"Portas\",\"visible\":true,\"objects\":[]}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}"
+        ],
+        "regions": {
+          "metadataPreserved": true,
+          "noOpShared": true,
+          "invalidRefused": true,
+          "cellStorageShared": true,
+          "emptyLayer": true,
+          "explicitBinding": true,
+          "layers": 32,
+          "limitRefused": true,
+          "roundTrip": true
+        }
+      },
+      "native8Public": false
+    },
+    {
+      "profile": "cpu-4x",
+      "cpu": 4,
+      "before": {
+        "legacy": [
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"},{\"id\":\"layer-2\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"opacity\":0.5,\"offsetX\":-2.25,\"offsetY\":4.5,\"parallaxX\":0.5,\"properties\":{\"note\":\"ok\"}},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"kind\":\"objects\",\"id\":\"layer-3\",\"name\":\"Portas\",\"visible\":true,\"objects\":[]}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}"
+        ],
+        "regions": {
+          "metadataPreserved": false,
+          "noOpShared": false,
+          "invalidRefused": false,
+          "cellStorageShared": true,
+          "emptyLayer": false,
+          "explicitBinding": false,
+          "layers": 1,
+          "limitRefused": true,
+          "roundTrip": true
+        }
+      },
+      "after": {
+        "legacy": [
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\"},{\"id\":\"layer-2\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"opacity\":0.5,\"offsetX\":-2.25,\"offsetY\":4.5,\"parallaxX\":0.5,\"properties\":{\"note\":\"ok\"}},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\"}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":true,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"id\":\"layer-1\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-2\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-1\",\"front\":true,\"collision\":true}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}},{\"kind\":\"objects\",\"id\":\"layer-3\",\"name\":\"Portas\",\"visible\":true,\"objects\":[]}]}",
+          "{\"id\":\"map\",\"kind\":\"tilemap\",\"name\":\"vila\",\"createdAt\":1,\"updatedAt\":1,\"tilesetId\":\"ground\",\"cols\":4,\"rows\":4,\"layers\":[{\"id\":\"layer-0\",\"kind\":\"group\",\"name\":\"Vila\",\"visible\":true,\"offsetY\":4.5,\"parallaxX\":0.5},{\"id\":\"layer-1\",\"name\":\"Água\",\"visible\":true,\"cells\":{\"0\":-1,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1},\"tilesetId\":\"water\",\"parentId\":\"layer-0\",\"front\":true,\"collision\":true},{\"id\":\"layer-2\",\"name\":\"Chão\",\"visible\":false,\"cells\":{\"0\":3,\"1\":-1,\"2\":-1,\"3\":-1,\"4\":-1,\"5\":-1,\"6\":-1,\"7\":-1,\"8\":-1,\"9\":-1,\"10\":-1,\"11\":-1,\"12\":-1,\"13\":-1,\"14\":-1,\"15\":-1}}]}"
+        ],
+        "regions": {
+          "metadataPreserved": true,
+          "noOpShared": true,
+          "invalidRefused": true,
+          "cellStorageShared": true,
+          "emptyLayer": true,
+          "explicitBinding": true,
+          "layers": 32,
+          "limitRefused": true,
+          "roundTrip": true
+        }
+      },
+      "native8Public": false
+    }
+  ],
+  "browserTests": 39,
+  "native8Public": false,
+  "physicalIO3": false
+}

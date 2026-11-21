@@ -43,12 +43,22 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    ensaios de navegador; tipos completos dos dois pacotes aprovados.
 3. Completar operações de árvore de camadas, remapeamento de peças e dependentes
    pelo contrato comum antes de ampliar store, protocolo físico e adaptadores.
-   Começar pelas operações de camadas: criar camada regional vazia sem alocar a
+   Camadas verificadas em `qa/camadas-por-regioes-2026-11-21/`: suíte 2.608,
+   45 testes focados, 39 ensaios e tipos completos dos dois pacotes. Camada
+   regional vazia não aloca a extensão; defaults/frações e vínculos explícitos
+   sobrevivem ao codec, sem serializar payload na edição de cabeçalhos.
+   O escopo deste sublote foi: criar camada regional vazia sem alocar a
    extensão, preservar defaults explícitos, frações e offsets do contrato 8,
    admitir propriedades/árvore sem normalização com perda e comparar apenas
    metadados ao alterar um cabeçalho. Depois remapear índices/flags nos chunks
    armazenados e nos objetos, compartilhando regiões intactas e recusando lotes
    inválidos integralmente. Manter a política densa e provar ambas no navegador.
+
+Na promoção do store, conferir também os orçamentos globais de metadados e JSON
+antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
+pode exceder o documento mesmo com cada objeto individualmente válido. Reusar
+o orçamento compartilhado e os caches por identidade; não descobrir a recusa
+somente na gravação nem ampliar os tetos para acomodar o caso.
 
 Cada item conserva revisão, provas e commit próprios. Não acrescentar outro
 editor, estilo, teto de memória ou implementação paralela de histórico.

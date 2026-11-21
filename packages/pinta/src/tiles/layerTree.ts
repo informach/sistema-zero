@@ -8,11 +8,14 @@ import {
   PINTA_LIMITS,
   PINTA_MAP_FORMAT_LIMITS,
   sanitizeObjectProperties,
-  type TilemapAsset,
+  sanitizeRegionLayerHeader,
+  type TilemapCells,
   type TilemapLayer,
+  tilemapLayerHeader,
 } from '../core/project'
+import type { AuthorMap } from './mapCellEdits'
 
-export function addMapGroup(map: TilemapAsset, name: string): TilemapAsset {
+export function addMapGroup<Map extends AuthorMap>(map: Map, name: string): Map {
   if (map.layers.length >= PINTA_LIMITS.maxTilemapLayers) return map
   return {
     ...map,
@@ -27,8 +30,8 @@ export function addMapGroup(map: TilemapAsset, name: string): TilemapAsset {
     ],
   }
 }
-export function updateMapLayer(
-  map: TilemapAsset,
+export function updateMapLayer<Map extends AuthorMap>(
+  map: Map,
   id: string,
   patch: Partial<
     Pick<
@@ -43,10 +46,27 @@ export function updateMapLayer(
       | 'properties'
     >
   >,
-): TilemapAsset {
+): Map {
   const layer = map.layers.find((l) => l.id === id)
   if (!layer) return map
   const next = { ...layer, ...patch }
+  if ('origin' in map) {
+    const header = { ...tilemapLayerHeader(layer), ...patch }
+    if (!header.locked) delete header.locked
+    if (!sanitizeRegionLayerHeader(header)) return map
+    if (JSON.stringify(header) === JSON.stringify(tilemapLayerHeader(layer))) return map
+    if (!next.locked) delete next.locked
+    for (const key of [
+      'opacity',
+      'offsetX',
+      'offsetY',
+      'parallaxX',
+      'parallaxY',
+      'properties',
+    ] as const)
+      if (next[key] === undefined) delete next[key]
+    return { ...map, layers: map.layers.map((l) => (l === layer ? next : l)) }
+  }
   next.name = next.name.trim().slice(0, 30) || layer.name
   for (const key of ['opacity', 'offsetX', 'offsetY', 'parallaxX', 'parallaxY'] as const) {
     const value = next[key]
@@ -67,13 +87,18 @@ export function updateMapLayer(
     next.properties = sanitizeObjectProperties(next.properties)
     if (!Object.keys(next.properties).length) delete next.properties
   }
-  if (JSON.stringify(next) === JSON.stringify(layer)) return map
+  if (JSON.stringify(tilemapLayerHeader(next)) === JSON.stringify(tilemapLayerHeader(layer)))
+    return map
   return { ...map, layers: map.layers.map((l) => (l === layer ? next : l)) }
 }
-function subtree(map: TilemapAsset, id: string): TilemapLayer[] {
+function subtree(map: AuthorMap, id: string): TilemapLayer<TilemapCells>[] {
   return map.layers.filter((l) => l.id === id || layerAncestors(map, l).some((g) => g.id === id))
 }
-export function setMapLayerParent(map: TilemapAsset, id: string, parentId?: string): TilemapAsset {
+export function setMapLayerParent<Map extends AuthorMap>(
+  map: Map,
+  id: string,
+  parentId?: string,
+): Map {
   const layer = map.layers.find((l) => l.id === id),
     parent = map.layers.find((l) => l.id === parentId)
   if (!layer || layer.parentId === parentId || (parentId && (!parent || !isGroupLayer(parent))))
@@ -100,7 +125,7 @@ export function setMapLayerParent(map: TilemapAsset, id: string, parentId?: stri
     layers: [...rest.slice(0, at), next, ...moving.filter((l) => l.id !== id), ...rest.slice(at)],
   }
 }
-export function moveMapLayer(map: TilemapAsset, id: string, direction: -1 | 1): TilemapAsset {
+export function moveMapLayer<Map extends AuthorMap>(map: Map, id: string, direction: -1 | 1): Map {
   const layer = map.layers.find((l) => l.id === id)
   if (!layer) return map
   const siblings = map.layers.filter((l) => l.parentId === layer.parentId)
@@ -114,9 +139,9 @@ export function moveMapLayer(map: TilemapAsset, id: string, direction: -1 | 1): 
     blocks = direction === -1 ? [...a, ...b] : [...b, ...a]
   return { ...map, layers: [...rest.slice(0, index), ...blocks, ...rest.slice(index)] }
 }
-export function toggleMapLayerCollision(map: TilemapAsset, id: string): TilemapAsset {
+export function toggleMapLayerCollision<Map extends AuthorMap>(map: Map, id: string): Map {
   const layer = map.layers.find((l) => l.id === id)
-  if (!layer || !isTileLayer(layer) || effectiveLayer(map, layer).locked) return map
+  if (!layer || !isTileLayer<TilemapCells>(layer) || effectiveLayer(map, layer).locked) return map
   const { collision, ...rest } = layer
   return {
     ...map,

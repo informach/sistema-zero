@@ -4,14 +4,32 @@ import { dirname, resolve } from 'node:path'
 const port = Number(process.env.PINTA_MEMORY_PORT ?? 5570)
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('Porta inválida')
 const directory = resolve(import.meta.dir, `../.cache/memory-regions-${port}`)
-const baseline = '52ca47bbd345fb0968bd882aec904da59b735270'
-const previousFiles = new Set([
-  'src/core/assetMemory.ts',
-  'src/core/mapResourceVersions.ts',
-  'src/core/project.ts',
-  'src/state/editorStore.ts',
-  'src/tiles/resourceVersions.ts',
-])
+const probe = process.env.PINTA_MEMORY_PROBE ?? 'memory'
+if (probe !== 'memory' && probe !== 'layers') throw Error('Laboratório inválido')
+const selected =
+  probe === 'layers'
+    ? {
+        baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
+        entry: 'layers-regions-probe',
+        fn: 'runLayerRegionsProbe',
+        global: 'layers',
+        files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+      }
+    : {
+        baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
+        entry: 'memory-regions-probe',
+        fn: 'runMemoryRegionsProbe',
+        global: 'memory',
+        files: [
+          'src/core/assetMemory.ts',
+          'src/core/mapResourceVersions.ts',
+          'src/core/project.ts',
+          'src/state/editorStore.ts',
+          'src/tiles/resourceVersions.ts',
+        ],
+      }
+const baseline = selected.baseline,
+  previousFiles = new Set(selected.files)
 const historical: Bun.BunPlugin = {
   name: 'previous-memory-contract',
   setup(build) {
@@ -34,7 +52,7 @@ for (const previous of [false, true]) {
     entry = resolve(directory, `${name}.ts`)
   await writeFile(
     entry,
-    `import {runMemoryRegionsProbe} from '../../scripts/memory-regions-probe';Object.assign(window,{memory${previous ? 'Previous' : 'Current'}:runMemoryRegionsProbe});`,
+    `import {${selected.fn}} from '../../scripts/${selected.entry}';Object.assign(window,{${selected.global}${previous ? 'Previous' : 'Current'}:${selected.fn}});`,
   )
   const result = await Bun.build({
     entrypoints: [entry],
@@ -42,7 +60,7 @@ for (const previous of [false, true]) {
     outdir: directory,
     plugins: previous ? [historical] : [],
   })
-  if (!result.success) throw new AggregateError(result.logs, 'Prova de memória não compilou')
+  if (!result.success) throw new AggregateError(result.logs, 'Laboratório de regiões não compilou')
 }
 Bun.serve({
   hostname: '127.0.0.1',

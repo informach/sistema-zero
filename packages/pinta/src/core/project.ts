@@ -1445,6 +1445,43 @@ function sanitizeLayerCommon(
   }
 }
 
+/** Metadata only: header edits never enumerate object or cell payloads. */
+export function tilemapLayerHeader(layer: TilemapLayerCommon): TilemapLayerCommon {
+  return {
+    id: layer.id,
+    name: layer.name,
+    visible: layer.visible,
+    ...(layer.parentId !== undefined ? { parentId: layer.parentId } : {}),
+    ...(layer.locked !== undefined ? { locked: layer.locked } : {}),
+    ...(layer.opacity !== undefined ? { opacity: layer.opacity } : {}),
+    ...(layer.offsetX !== undefined ? { offsetX: layer.offsetX } : {}),
+    ...(layer.offsetY !== undefined ? { offsetY: layer.offsetY } : {}),
+    ...(layer.parallaxX !== undefined ? { parallaxX: layer.parallaxX } : {}),
+    ...(layer.parallaxY !== undefined ? { parallaxY: layer.parallaxY } : {}),
+    ...(layer.properties !== undefined ? { properties: layer.properties } : {}),
+  }
+}
+
+/** Same policy as the native-8 reader, with atomic refusal of lossy normalization. */
+export function sanitizeRegionLayerHeader(raw: unknown): TilemapLayerCommon | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+  const record = raw as Record<string, unknown>
+  if (
+    typeof record.id !== 'string' ||
+    !record.id ||
+    typeof record.name !== 'string' ||
+    typeof record.visible !== 'boolean'
+  )
+    return null
+  const header = {
+    id: record.id,
+    name: record.name.trim().slice(0, 30),
+    visible: record.visible,
+    ...sanitizeLayerCommon(record, true),
+  }
+  return header.name && sameMapDocumentMetadata(record, header) ? header : null
+}
+
 /**
  * Confere a árvore de grupos: o pai precisa existir, ser um grupo, vir ANTES na lista e não
  * passar da profundidade. Camada com pai inválido sai do grupo (vai para a raiz); nunca some.
@@ -1703,13 +1740,17 @@ export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | n
       const l = item as Record<string, unknown>
       if (typeof l.id !== 'string' || !l.id || layerIds.has(l.id)) return null
       layerIds.add(l.id)
-      const header = {
-        id: l.id,
-        name: typeof l.name === 'string' ? l.name.trim().slice(0, 30) : '',
-        visible: l.visible !== false,
-        ...sanitizeLayerCommon(l, true),
-      }
-      if (!header.name) return null
+      const {
+        kind: _kind,
+        cells: _cells,
+        objects: _objects,
+        front: _front,
+        tilesetId: _tilesetId,
+        collision: _collision,
+        ...headerFields
+      } = l
+      const header = sanitizeRegionLayerHeader(headerFields)
+      if (!header) return null
       if (l.kind === 'objects') {
         const objects = sanitizeTilemapObjectsFor(l.objects, true)
         for (const object of objects) {

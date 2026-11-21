@@ -32,7 +32,9 @@ import { REGION_EDIT_LIMIT, regionCellAt } from './regionCells'
 import { editRegionMapCells, fillRegionMapCells } from './regionMap'
 
 /** Filtro de camadas de PEÇAS (as de objetos nunca entram nas grades). */
-export type TileLayerFilter = (layer: TilemapTileLayer) => boolean
+export type TileLayerFilter<Cells extends TilemapCells = Int16Array> = (
+  layer: TilemapTileLayer<Cells>,
+) => boolean
 
 /** A camada de PEÇAS com este id (`null` para objetos ou id desconhecido). */
 export function tileLayerById<Cells extends TilemapCells>(
@@ -310,30 +312,37 @@ export function floodFillCells(
   })
 }
 
-export function addLayer(
-  tilemap: TilemapAsset,
+export function addLayer<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
   name: string,
   /** Peças da camada nova; ausente ou igual ao padrão = as do mapa. */
   tilesetId?: string,
-): TilemapAsset {
+): Map {
   if (tilemap.layers.length >= PINTA_LIMITS.maxTilemapLayers) return tilemap
   if (
+    !('origin' in tilemap) &&
     tilemap.cols * tilemap.rows * (tilemap.layers.filter(isTileLayer).length + 1) >
-    PINTA_MAP_FORMAT_LIMITS.maxCells
+      PINTA_MAP_FORMAT_LIMITS.maxCells
   )
     return tilemap
-  const layer: TilemapTileLayer = {
+  const layer: TilemapTileLayer<TilemapCells> = {
     id: newId(),
     name: name.trim().slice(0, 30) || `${COPY.tiles.layerNamePrefix} ${tilemap.layers.length + 1}`,
     visible: true,
-    cells: new Int16Array(tilemap.cols * tilemap.rows).fill(-1),
-    ...(tilesetId && tilesetId !== tilemap.tilesetId ? { tilesetId } : {}),
+    cells:
+      'origin' in tilemap
+        ? { kind: 'regions', version: 1, side: 32, chunks: [] }
+        : new Int16Array(tilemap.cols * tilemap.rows).fill(-1),
+    ...(tilesetId && ('origin' in tilemap || tilesetId !== tilemap.tilesetId) ? { tilesetId } : {}),
   }
   return { ...tilemap, layers: [...tilemap.layers, layer] }
 }
 
 /** Nova camada de OBJETOS (vazia) no topo. No teto de camadas devolve o mesmo asset. */
-export function addObjectLayer(tilemap: TilemapAsset, name: string): TilemapAsset {
+export function addObjectLayer<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
+  name: string,
+): Map {
   if (tilemap.layers.length >= PINTA_LIMITS.maxTilemapLayers) return tilemap
   const layer: TilemapObjectLayer = {
     kind: 'objects',
@@ -349,13 +358,20 @@ export function addObjectLayer(tilemap: TilemapAsset, name: string): TilemapAsse
  * Remove a camada — nunca deixa o mapa sem nenhuma camada de PEÇAS (um mapa só
  * de objetos não tem o que desenhar, e o sanitize o descartaria).
  */
-export function removeLayer(tilemap: TilemapAsset, layerId: string): TilemapAsset {
+export function removeLayer<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
+  layerId: string,
+): Map {
   if (tilemap.layers.length <= 1) return tilemap
   const index = tilemap.layers.findIndex((layer) => layer.id === layerId)
   const layer = tilemap.layers[index]
   if (!layer) return tilemap
   if (effectiveLayer(tilemap, layer).locked) return tilemap
-  if (isTileLayer(layer) && tilemap.layers.filter(isTileLayer).length <= 1) return tilemap
+  if (
+    isTileLayer<TilemapCells>(layer) &&
+    tilemap.layers.filter(isTileLayer<TilemapCells>).length <= 1
+  )
+    return tilemap
   return {
     ...tilemap,
     layers: tilemap.layers
@@ -368,13 +384,23 @@ export function removeLayer(tilemap: TilemapAsset, layerId: string): TilemapAsse
   }
 }
 
-export function toggleLayerVisible(tilemap: TilemapAsset, layerId: string): TilemapAsset {
+export function toggleLayerVisible<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
+  layerId: string,
+): Map {
   return withMapLayer(tilemap, layerId, (layer) => ({ ...layer, visible: !layer.visible }))
 }
 
 /** Marca/desmarca a camada como "da frente" (desenhada por cima do jogador). */
-export function toggleLayerFront(tilemap: TilemapAsset, layerId: string): TilemapAsset {
-  return withTileLayer(tilemap, layerId, (layer) => ({ ...layer, front: !layer.front }))
+export function toggleLayerFront<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
+  layerId: string,
+): Map {
+  return withMapLayer(tilemap, layerId, (layer) =>
+    isTileLayer<TilemapCells>(layer) && !effectiveLayer(tilemap, layer).locked
+      ? { ...layer, front: !layer.front }
+      : layer,
+  )
 }
 
 /**
@@ -383,22 +409,27 @@ export function toggleLayerFront(tilemap: TilemapAsset, layerId: string): Tilema
  * grade é uma só. Escolher o padrão de volta remove a chave (forma canônica).
  * As células ficam como estão: o índice passa a apontar para as peças novas.
  */
-export function setLayerTileset(
-  tilemap: TilemapAsset,
+export function setLayerTileset<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
   layerId: string,
   tileset: AnyTilesetAsset,
   base: AnyTilesetAsset,
-): TilemapAsset {
+): Map {
   if (!isCompatibleMapTileset(base, tileset)) return tilemap
-  return withTileLayer(tilemap, layerId, (layer) => {
+  return withMapLayer(tilemap, layerId, (layer) => {
+    if (!isTileLayer<TilemapCells>(layer) || effectiveLayer(tilemap, layer).locked) return layer
     if (tileLayerTilesetId(tilemap, layer) === tileset.id) return layer
-    const { tilesetId: _previous, ...rest } = layer
-    return tileset.id === tilemap.tilesetId ? rest : { ...rest, tilesetId: tileset.id }
+    const next = { ...layer }
+    delete next.tilesetId
+    if (tileset.id !== tilemap.tilesetId || 'origin' in tilemap) next.tilesetId = tileset.id
+    return next
   })
 }
 
 /** Filtro: só as camadas que usam as peças PADRÃO do mapa (o que a ponte leva). */
-export function usesMapTileset(tilemap: TilemapAsset): TileLayerFilter {
+export function usesMapTileset<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+): TileLayerFilter<Cells> {
   return (layer) => tileLayerTilesetId(tilemap, layer) === tilemap.tilesetId
 }
 

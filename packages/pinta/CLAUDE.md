@@ -167,6 +167,14 @@ nova. O leitor interno 8 e a migração usam a métrica ampliada. Tetos preserva
 isso não é medição de heap nem ativação de store/IO 3. Provas em
 `qa/memoria-por-regioes-2026-11-21/`, no diretório da missão.
 
+Camadas internas por regiões usam os mesmos comandos de árvore, com criação
+vazia e teto compartilhado de 32. `tilemapLayerHeader` exclui payload da comparação;
+`sanitizeRegionLayerHeader` compartilha a admissão com o leitor 8. Defaults
+explícitos e offsets fracionários não são canonicalizados para o legado. A troca
+de folhas conserva o vínculo explícito e a trava herdada; o ramo denso mantém
+sua política. Provas em `qa/camadas-por-regioes-2026-11-21/`. Achatar, remapear,
+store/IO e adaptadores ainda precisam completar os consumidores antes da promoção.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
