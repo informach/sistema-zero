@@ -1,9 +1,18 @@
 import { beforeEach, expect, test } from 'bun:test'
 import { pintaLocalRevisionOf } from '../../../pinta/src/core/localAssetOrigin'
-import { createTilemapAsset, isTileLayer } from '../../../pinta/src/core/project'
-import { assetToJson } from '../../../pinta/src/export/assetJson'
+import {
+  createTilemapAsset,
+  isTileLayer,
+  withPintaSchemaStamp,
+} from '../../../pinta/src/core/project'
+import { assetFromJson, assetToJson } from '../../../pinta/src/export/assetJson'
 import { clearIdbMock } from '../../../pinta/src/testing/idbMock'
-import type { CloudCreationSummary, CreationsCloud } from '../../src/lib/creations-cloud'
+import type {
+  CloudCreationSummary,
+  CreationsCloud,
+  SnapshotProducer,
+  UploadedListener,
+} from '../../src/lib/creations-cloud'
 import { createMemorySyncedMarks } from '../../src/lib/creations-sync'
 import {
   createCloudMirroredPintaPersistence,
@@ -21,6 +30,8 @@ function fakeCloud(
   beforeDownload = async () => {},
 ) {
   const queued: string[] = []
+  const producers = new Map<string, SnapshotProducer>()
+  const acknowledgements = new Map<string, UploadedListener>()
   const summary: CloudCreationSummary = {
     itemId: remote.id,
     name: remote.name,
@@ -46,8 +57,10 @@ function fakeCloud(
       await beforeDownload()
       return { json: assetToJson(remote), summary, parts: [], fetchPart: unused }
     },
-    enqueueUpload: (id) => {
+    enqueueUpload: (id, produce, onUploaded) => {
       queued.push(id)
+      producers.set(id, produce)
+      if (onUploaded) acknowledgements.set(id, onUploaded)
     },
     enqueueRemove: () => {},
     flush: async () => {},
@@ -58,8 +71,71 @@ function fakeCloud(
     subscribeItems: () => () => {},
     dispose: () => {},
   }
-  return { cloud, queued }
+  return { cloud, queued, producers, acknowledgements }
 }
+
+test('o gravador B sobe a autoridade nativa 7 inteira com nuvem 6 e só confirma após o commit', async () => {
+  const source = createTilemapAsset({
+    name: 'parede-autoral',
+    cols: 2,
+    rows: 2,
+    tilesetId: 'tiles',
+    now: 1000,
+  })
+  source.layers[0]!.offsetX = 0.25
+  source.layers.push({
+    id: 'objects',
+    kind: 'objects',
+    name: 'Objetos',
+    visible: true,
+    objects: [
+      {
+        id: 'wall',
+        name: 'Parede',
+        type: '',
+        shape: 'ellipse',
+        collision: true,
+        x: 16,
+        y: 16,
+        width: 16,
+        height: 16,
+        properties: { vida: { type: 'int', value: 5 } },
+      },
+    ],
+  })
+  const rich = withPintaSchemaStamp(source)
+  expect(rich.schema).toBe(7)
+  const local = createPintaPersistence({ namespace: 'cloud-writer6' })
+  const marks = createMemorySyncedMarks()
+  const { cloud, producers, acknowledgements } = fakeCloud(source, 0)
+  cloud.list = async () => []
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud,
+    marks,
+    formatMemory: createMemoryPintaFormatMemory(),
+    viewerId: 'writer6',
+  })
+  try {
+    await wrapper.persistAsset(rich)
+    const saved = await local.loadAssetById(rich.id)
+    const produce = producers.get(rich.id)
+    expect(produce).toBeDefined()
+    const snapshot = await produce!()
+    expect(snapshot?.meta).toMatchObject({ formatVersion: 6, baseRevision: 0 })
+    const imported = assetFromJson(snapshot!.json)
+    expect(imported.warnings).toEqual([])
+    const restored = imported.asset
+    expect(restored).toMatchObject({ kind: 'tilemap', schema: 7 })
+    expect(assetToJson(restored!)).toBe(assetToJson(saved!))
+    expect(marks.revision(rich.id)).toBeUndefined()
+    acknowledgements.get(rich.id)!({ itemId: rich.id, updatedAt: saved!.updatedAt, revision: 1 })
+    expect(marks.revision(rich.id)).toBe(1)
+    expect(await produce!()).toBeNull()
+  } finally {
+    wrapper.dispose?.()
+  }
+})
 
 test('reconciliação não empresta uma revisão lida depois do snapshot, mesmo com relógios iguais', async () => {
   const initial = createTilemapAsset({

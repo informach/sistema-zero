@@ -80,11 +80,11 @@ export const PINTA_MAX_READ_FORMAT_VERSION = 6
  * deploy. Um rollback para um cliente de nuvem 3 conserva os itens 4 na conta, mas o cliente antigo
  * fica bloqueado até ser atualizado. Nunca rebaixe os números para permitir que ele grave.
  */
-export const PINTA_MAP_WRITE_FORMAT_VERSION = 4
+export const PINTA_MAP_WRITE_FORMAT_VERSION = 6
 
-// Rollout A: native 6/7 (resource versions, animations and authored physics) are readable.
-// Writers remain at 4 until the cloud-6 reader has been deployed and verified in staging.
-// Producers reject native 6/7 with declaration 4; the authoritative local checkpoint stays intact.
+// Rollout B: native 6/7 can be uploaded without weakening their format guard.
+// Deploy only after Reader A (cloud read 6 / write 4) is verified in staging.
+// Rollback returns to that reader, which preserves cloud 6 and its packaged runtime policy.
 
 /** Tipos de desenho cujo formato evolui com o editor de cenários. */
 const VERSIONED_KINDS: ReadonlySet<string> = new Set([

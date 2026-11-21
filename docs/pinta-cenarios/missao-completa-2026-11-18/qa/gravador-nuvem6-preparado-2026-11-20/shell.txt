@@ -1,0 +1,147 @@
+bun test v1.3.11 (af24e281)
+
+tests\creations-routes-after.test.ts:
+(pass) BFF das criações — o apagar no R2 fica para DEPOIS da resposta > commit: a resposta sai SEM apagar; o apagar roda quando o agendador roda (o `after()` do Next) [78.00ms]
+(pass) BFF das criações — o apagar no R2 fica para DEPOIS da resposta > lixeira: idem (manifesto + partes em lote, depois da resposta)
+
+tests\creations-routes.test.ts:
+(pass) protocolo de isolamento adulto durante deploy e rollback > members antigo não recebe reserva, commit ou exclusão e não ganha URL assinada
+(pass) protocolo de isolamento adulto durante deploy e rollback > reserva adulta só assina chave do contexto adulto confirmado [16.00ms]
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: 2
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > ticket legado ausente confirma somente formato 1
+(pass) BFF das criações — reserva > encaminha formato numérico sem coerção
+(pass) BFF das criações — reserva > recusa de formato atravessa o BFF com a versão exigida, sem assinar upload
+(pass) BFF das criações — reserva > corta o nome no teto (120) e descarta miniatura grande, em vez de recusar; assina o PUT com o Content-Length ecoado pelo members
+(pass) BFF das criações — reserva > bytes acima do teto por item é 409 de quota com "grande demais" (o selo diz a verdade); corpo malformado ou itemId com ":" são 400 (nunca chegam ao members)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva: repassa `parts` ao members e assina UM PUT por parte faltante (Content-Length da parte), além do manifesto
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva: total declarado (manifesto + partes) acima de 40 MB é 409 de quota SEM ir ao members; 129 partes ou hash fora do padrão são 400
+[creations] commit com partes que não estão no R2 {
+  itemId: "proj-1",
+  missing: [ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" ],
+}
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit: confere as `uploadedParts` no R2 (HEAD, chave com a revisão do commit) antes do members; 404 definitivo é 409 CREATION_PART_MISSING com os hashes e o members NÃO é chamado
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva com partes declaradas mas members SEM `parts` na resposta (members antigo/rollback): 503 retentável, nunca um ticket sem as faltantes
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > 409 CREATION_PARTS_NEED_BYTES do members atravessa o BFF com `details.hashes` (o cliente comprime só essas)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > storage SEM `deleteObjects` (fallback): apaga um a um o que a revisão soltou [31.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit: HEAD que falha (não é 404) NÃO barra; repassa `uploadedParts` ao members e apaga em lote tudo o que a revisão soltou (`releasedStorageKeys`) [32.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit sem `releasedStorageKeys` (members antigo) apaga só `previousStorageKey`; 409 do members apaga só o manifesto recusado (nunca as partes) [62.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > download: assina o GET do manifesto e um por parte (`parts: [{hash, bytes, url}]`)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > lixeira: apaga em lote tudo o que o members soltou (`storageKeys` = manifesto + partes) [31.00ms]
+(pass) BFF das criações — commit > promove o documento Python v3 e preserva a revisão de recursos conferida [16.00ms]
+(pass) BFF das criações — commit > recusa fonte Python v3 corrompida antes de promover a revisão
+(pass) BFF das criações — commit > confere o documento do R2 antes do commit e recusa formato antigo sem promover nem apagar
+(pass) BFF das criações — commit > manda a revisão e os recursos conferidos ao members, apaga a revisão anterior e devolve o resumo
+(pass) BFF das criações — commit > `bytes` no corpo do commit é recusado (o corpo é estrito): os bytes são os da reserva
+(pass) BFF das criações — commit > o navegador não pode declarar a versão verificada do documento no commit
+(pass) BFF das criações — commit > o DELETE do blob anterior no R2 fica FORA do caminho crítico: a resposta do commit sai mesmo com o R2 pendurado
+[creations] não apagou a revisão anterior no R2 {
+  keys: [ "creations/u/studio/proj-1/1.json.gz" ],
+  error: warn: R2 fora do ar
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:46:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:51:45)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:221:50)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:183:21)
+      at deferWithNextAfter (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:187:10)
+      at deleteManyQuietly (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:219:5)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:538:9)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:791:46)
+,
+}
+(pass) BFF das criações — commit > falha ao apagar o blob anterior não vira erro para a criança
+(pass) BFF das criações — commit > 409 definitivo do members apaga do R2 a revisão recusada e passa o erro
+(pass) BFF das criações — apagar > encaminha capacidade junto da revisão; recusa de formato não apaga R2
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: 2
+[creations] não apagou o blob da lixeira no R2 {
+  keys: [ "creations/u/studio/proj-1/2.json.gz" ],
+  error: warn: R2 fora do ar
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:46:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:51:45)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:221:50)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:183:21)
+      at deferWithNextAfter (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:187:10)
+      at deleteManyQuietly (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:219:5)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\routes\creations.ts:601:9)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\creations-routes.test.ts:873:48)
+,
+}
+(pass) BFF das criações — apagar > a lixeira apaga o blob que o members soltou (best-effort) e devolve só `{deleted}`
+(pass) BFF das criações — apagar > recusa DELETE sem revisão-base antes de chamar o members
+(pass) BFF das criações — respostas e sessão > lista valida e repassa cursor/limite ao members
+(pass) BFF das criações — respostas e sessão > 200 sem corpo vira 502 (o cliente nunca recebe `{ok:true}` no lugar de um ticket)
+(pass) BFF das criações — respostas e sessão > download assina o GET da chave corrente e devolve o resumo
+(pass) BFF das criações — respostas e sessão > `x-sz-viewer` diferente do perfil da sessão é 409 em TODAS as rotas (troca de perfil no meio de um upload em voo)
+(pass) BFF das criações — respostas e sessão > sessão de suporte (impersonação) é só leitura: reserva, commit e apagar são 403 antes do members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > rascunho exige UUID antes de chamar o members ou o armazenamento
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > reserva do `lesson-studio` repassa a impressão v1 ao members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > reserva do `lesson-studio` repassa a impressão v2 ao members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > impressão fora do formato é 400 antes do members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > o commit do `lesson-studio` confere o projeto como o do Estúdio; o `lesson-pinta` não
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > o download leva o relógio do servidor
+
+tests\lesson-draft-persistence.test.ts:
+(pass) rascunho Pinta com frações usa documento 5 e capacidade de nuvem 4
+(pass) rascunho nativo 6 nunca declara a capacidade antiga de nuvem
+(pass) falha ao reler o disco não se passa por rascunho já sincronizado: missing
+(pass) falha ao reler o disco não se passa por rascunho já sincronizado: read-error
+(pass) studio: download da outra versão não autoriza sobrescrever a conta
+(pass) pinta: download da outra versão não autoriza sobrescrever a conta [16.00ms]
+(pass) studio: storage da outra versão não autoriza sobrescrever a conta
+(pass) pinta: storage da outra versão não autoriza sobrescrever a conta
+(pass) offline context opens the existing draft without another network wait or cloud acknowledgement
+(pass) first admission cannot interpret an unavailable account as absence of previous work
+(pass) studio prepare: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio conflict-first: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio conflict-later: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio prepare-local-newer: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio submission: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio producer: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio: identical content fingerprints do not authorize a different Pro template
+(pass) pinta: conflito com o MESMO desenho só adota a revisão e não gasta a outra versão
+(pass) pinta: desenho diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) pinta: desenho diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: projeto diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: projeto diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: conflito com o MESMO projeto só adota a revisão
+(pass) estúdio: a versão da conta feita por um Estúdio mais novo vira "página desatualizada", sem gravar nada
+(pass) estúdio: falha do disco ao guardar a outra versão continua sendo falha comum
+(pass) pinta: rascunho da conta em formato mais novo não é baixado ao abrir; o local abre e nada sobe
+(pass) pinta: conflito com a conta em formato mais novo para antes de baixar e pede a página nova [15.00ms]
+(pass) pinta: documento com carimbo que esta página não conhece é recusado inteiro, como página antiga
+
+tests\pinta-format-memory.test.ts:
+(pass) a memória de formato continua protegendo o registro quando a escrita estoura a cota
+(pass) um valor antigo legível não substitui a atualização que só coube em memória
+(pass) falha ao remover não ressuscita uma marca apagada na mesma instância
+(pass) storage saudável continua propagando alterações entre instâncias
+(pass) revisão, capacidade e autoria da assinatura sobrevivem à reabertura sem apagar entradas antigas
+(pass) assinatura sem capacidade/autoria ou revisão inválida exige nova conferência
+
+tests\pinta-loader.test.ts:
+(pass) loadPintaLessonModule > converte falha do chunk em estado recuperável para a aula
+
+tests\pinta-local-authority.test.ts:
+(pass) a ponte de nuvem preserva a autoridade local em realm isolado [141.00ms]
+
+tests\pinta-studio-bridge.test.ts:
+(pass) Pinta host bridge owns its DOM and mocked external modules in an isolated realm [469.00ms]
+
+tests\studio-public-pinta.test.ts:
+(pass) public classic detaches Pinta ownership while preserving playable and exported bytes [46.00ms]
+(pass) public classic validates private derivation integrity before redacting metadata
+(pass) public pro detaches Pinta ownership while preserving playable and exported bytes [16.00ms]
+(pass) public pro validates private derivation integrity before redacting metadata
+
+ 95 pass
+ 0 fail
+ 374 expect() calls
+Ran 95 tests across 8 files. [1.77s]

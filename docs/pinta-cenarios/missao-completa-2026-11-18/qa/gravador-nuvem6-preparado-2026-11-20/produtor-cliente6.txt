@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+tests\fixtures\pinta-local-authority.fixture.ts:
+(pass) o gravador B sobe a autoridade nativa 7 inteira com nuvem 6 e só confirma após o commit [16.00ms]
+[criacoes-nuvem] descida falhou {
+  itemId: "751a756e-4870-41c1-a240-3ac7a863470d",
+  error: PintaLocalStorageError: Guardei suas mudanças numa cópia para proteger as duas versões.
+ forks: Map(1) {
+    "751a756e-4870-41c1-a240-3ac7a863470d": [Object ...],
+  },
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\pinta\src\state\persistence.ts:495:40)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\pinta\src\state\persistence.ts:475:13)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\pinta-cloud-persistence.ts:1179:21)
+      at async worker (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\creations-sync.ts:653:34)
+      at async reconcileCreations (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\creations-sync.ts:699:17)
+      at async reconcilePass (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\pinta-cloud-persistence.ts:1130:26)
+      at async reconcile (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\pinta-cloud-persistence.ts:1083:30)
+,
+}
+(pass) reconciliação não empresta uma revisão lida depois do snapshot, mesmo com relógios iguais [16.00ms]
+(pass) reinício com lápide restaura revisão remota nova no ID original
+(pass) conflito local enfileira somente cópias confirmadas, sem subir o original atrasado [15.00ms]
+
+ 4 pass
+ 0 fail
+ 21 expect() calls
+Ran 4 tests across 1 file. [129.00ms]

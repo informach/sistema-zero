@@ -1,0 +1,2 @@
+tests/fixtures/pinta-local-authority.fixture.ts(130,22): error TS2339: Property 'schema' does not exist on type 'PintaAsset'.
+  Property 'schema' does not exist on type 'PixelSpriteAsset'.

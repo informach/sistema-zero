@@ -1,0 +1,40 @@
+# Gravador de nuvem 6 após o leitor A
+
+## Decisão e limite desta preparação
+
+O leitor A `4db9390c2` aceita nuvem 6, documentos nativos 7 e a política
+Python Linux nova, enquanto continua declarando nuvem 4. Por isso a Vila
+com colisões autorais permanece protegida localmente e sua subida é recusada.
+A fase B deve declarar nuvem 6 para mapas, folhas e conjuntos, conservando
+o formato dos desenhos, os dados nativos e os leitores anteriores.
+
+Preparar a fase B em worktree separado não autoriza sua implantação antes
+da confirmação do leitor A em staging. A imagem, a distribuição Python e
+a política empacotada não devem mudar com essa decisão. O rollback de B
+deve voltar a A, que lê nuvem 6 e conserva a política selecionada.
+
+O usuário autorizou o trabalho contínuo e o rollout em staging; não há
+confirmação intermediária nem autorização de produção. A identidade visual
+e os arquivos funcionais 3D permanecem fora desta alteração.
+
+## Execução e aceite
+
+1. Reproduzir a recusa da subida do documento nativo 7 com a declaração
+   anterior, preservando os testes de leitura e as recusas de clientes antigos.
+2. Subir somente a declaração por tipo para 6 e atualizar os testes que
+   documentam a decisão de rollout. Manter o teto de leitura e os codecs.
+3. Verificar os consumidores de nuvem, reservas, conflitos, remoção e
+   recuperação; distinguir fixtures de cliente 4 dos usos do gravador atual.
+4. Executar os testes e tipos pertinentes. Comparar os artefatos executáveis
+   do runtime, o perfil e a distribuição com a fonte qualificada de A.
+5. Registrar o delta e as provas. Comprovar primeiro Reader A em staging;
+   somente depois implantar B no mesmo ambiente.
+6. No cenário próprio de homologação: salvar, confirmar nuvem 6, ler com A,
+   rejeitar escrita antiga com CREATION_CLIENT_OUTDATED, exercitar CAS e
+   recuperar edição offline sem perder o mapa ou multiplicar cópias.
+7. Executar rollback B → A → B preservando os mapas e a programação. Fechar
+   o ciclo autenticado antes de declarar concluída a etapa 0b.
+
+Não mudar a programação do jogo ou achatar o cenário para contornar a recusa.
+Um mapa novo precisa continuar editável, com camadas, objetos, referências,
+recursos e colisões completos.

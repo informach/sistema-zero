@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+src\creations\pinta-format.test.ts:
+(pass) o gravador B admite os documentos nativos conhecidos e recusa o próximo formato
+(pass) o rollout só do leitor nunca envia documento 6 declarando nuvem 4
+(pass) a versão declarada depende só do tipo do desenho
+(pass) nunca se declara uma versão que este código não lê
+(pass) a declaração atual protege documentos nativos 5 do cliente completo que declara 3 [15.00ms]
+(pass) o gravador completo supera o cliente intermediário que só entende camadas
+(pass) item sem versão conta como 1; acima do teto não é lido
+(pass) os números de hoje estão travados: mudar é seguir o procedimento do pinta-format.ts
+
+ 8 pass
+ 0 fail
+ 93 expect() calls
+Ran 8 tests across 1 file. [50.00ms]
