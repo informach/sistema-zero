@@ -295,4 +295,15 @@ describe('execução leve do Pro: o que continua no servidor', () => {
       'sem index.html',
     )
   })
+
+  it('o que passa das cotas do compilador vai ao servidor, que dá a mensagem certa', () => {
+    const many: Record<string, string> = { ...base }
+    for (let index = 0; index < 80; index++) many[`src/extra${index}.ts`] = 'export {}\n'
+    expect(hostedReason(planLightProBuild(project(many)))).toBe('passa das cotas do compilador')
+    // As cotas do host valem no lugar das padrão.
+    expect(planLightProBuild(project(base)).kind).toBe('light')
+    expect(hostedReason(planLightProBuild(project(base), { maxFiles: 1 }))).toBe(
+      'passa das cotas do compilador',
+    )
+  })
 })

@@ -45,6 +45,12 @@ Vai ao servidor:
 
 Os modelos "JavaScript" e "TypeScript" do Pro cabem; os de Three.js e React vão ao servidor.
 
+As cotas do compilador do servidor (80 arquivos, 256 mil caracteres por arquivo, 1,5 milhão no
+total, o tamanho do pedido) valem na execução leve também: o projeto que passaria delas vai ao
+servidor, que dá a mensagem certa. Com o host declarando as cotas (`proRuntime.limits`), o editor
+já recusa a mudança que passaria delas (`projectStore`); sem declarar, o montador usa as padrão
+(`STUDIO_PRO_BUILD_LIMITS`). Nada roda no navegador que o servidor recusaria pelo tamanho.
+
 ## Por que módulos nativos, e não o CommonJS do Sucrase
 
 O modo `imports` do Sucrase troca as variáveis exportadas por propriedades de `exports`. Num
@@ -68,9 +74,9 @@ módulos vão como JSON com `<` escapado).
 
 ## Provas
 
-- `src/modes/pro/lightProBuild.test.ts`: 27 casos (os modelos, os tipos, a resolução, ciclos,
+- `src/modes/pro/lightProBuild.test.ts`: 28 casos (os modelos, os tipos, a resolução, ciclos,
   `await`, a ordem do CSS, o JSON, a importação dinâmica, o fechamento de script e os 20 motivos
-  de ir ao servidor).
+  de ir ao servidor, mais as cotas do compilador).
 - `e2e/pro-light-runtime.spec.ts`, no Chromium, no Firefox e no WebKit: o jogo escreve na tela o
   que só sai certo com ES modules de verdade (o placar vivo lido de dentro e de fora do módulo, o
   ciclo, o `await`, o JSON, o `.js` que aponta para o `.ts` e o CSS na ordem do Vite) sem chamar

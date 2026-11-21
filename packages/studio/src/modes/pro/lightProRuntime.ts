@@ -16,7 +16,7 @@ export function withLightProBuild(remote: StudioProRuntimeAdapter): StudioProRun
       const started = performance.now()
       const { planLightProBuild } = await import('./lightProBuild')
       input.signal?.throwIfAborted()
-      const plan = planLightProBuild(input.project)
+      const plan = planLightProBuild(input.project, remote.limits)
       if (plan.kind === 'hosted') return remote.build(input)
       return {
         html: plan.html,

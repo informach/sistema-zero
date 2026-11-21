@@ -1,6 +1,11 @@
 import { parse } from '@babel/parser'
 import { transform } from 'sucrase'
-import type { Project, ProjectTree } from '#core'
+import {
+  type Project,
+  type ProjectTree,
+  type StudioProBuildLimits,
+  studioProBuildFileLimitError,
+} from '#core'
 import { VITE_CONFIG_VANILLA } from '../../components/code/pro-templates/base'
 import { sameTextExceptLineBreaks } from '../../monaco/lineBreaks'
 
@@ -202,10 +207,16 @@ function viteConfigIsTheTemplate(tree: ProjectTree): boolean {
   return true
 }
 
-function plan(project: Project): LightProPlan {
+function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightProPlan {
   if (project.kind !== 'pro' || !project.tree) return hosted('não é um projeto Pro')
   if (project.assets?.length) return hosted('o projeto tem materiais')
   const tree = project.tree
+  // As cotas do compilador do servidor valem aqui também: nada roda no navegador que o servidor
+  // recusaria pelo tamanho (ele é quem dá a mensagem certa).
+  const files: Record<string, string> = {}
+  for (const [path, node] of Object.entries(tree))
+    if (node.kind === 'file') files[path] = node.content
+  if (studioProBuildFileLimitError(files, limits)) return hosted('passa das cotas do compilador')
   if (!viteConfigIsTheTemplate(tree)) return hosted('vite.config diferente do modelo')
   const manifest = fileText(tree, 'package.json')
   if (manifest !== null) {
@@ -346,9 +357,12 @@ function plan(project: Project): LightProPlan {
 }
 
 /** Monta o projeto no navegador quando dá para ficar igual ao Vite; senão diz por que vai ao servidor. */
-export function planLightProBuild(project: Project): LightProPlan {
+export function planLightProBuild(
+  project: Project,
+  limits?: Partial<StudioProBuildLimits>,
+): LightProPlan {
   try {
-    return plan(project)
+    return plan(project, limits)
   } catch (error) {
     if (error instanceof Hosted) return { kind: 'hosted', reason: error.message }
     throw error
