@@ -17,6 +17,7 @@ import { updateProToolchainBeforeExecution } from '../../state/proToolchainUpdat
 import { useStudioConfig } from '../../studio/config'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
 import { useStudioProDependencies, useStudioProRuntime } from '../../studio/pro-runtime'
+import { withLightProBuild } from './lightProRuntime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { useProWebContainer } from './ProWebContainerProvider'
 import { isProConsoleMessage } from './proConsoleBridge'
@@ -55,7 +56,12 @@ function capLogString(value: string): string {
  * Exceções do app cross-origin chegam via `preview-message` e vão ao Console.
  */
 export function ProPreview(): JSX.Element {
-  const remoteRuntime = useStudioProRuntime()
+  const hostRuntime = useStudioProRuntime()
+  // O projeto que o navegador monta igual ao Vite nem vai ao servidor (execução leve).
+  const remoteRuntime = useMemo(
+    () => (hostRuntime ? withLightProBuild(hostRuntime) : null),
+    [hostRuntime],
+  )
   const { candidate: selection, mode, select, close, report } = useProCandidatePreview()
   const candidate = selection?.kind === 'python' ? null : selection
   const candidateActive = candidate !== null && mode === 'candidate'
