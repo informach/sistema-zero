@@ -1,19 +1,21 @@
 /**
+ * Um conjunto de nomes só para leitura: `has`, `size` e a iteração do `ReadonlySet`. O Members
+ * compila o Estúdio com o lib ESNext, cujo `ReadonlySet` pede também `union`, `intersection` e os
+ * outros métodos novos de conjunto, que um retrato nunca usa: declarar `ReadonlySet` reprovava o
+ * typecheck de lá (escondido de 18 a 20/11/2026 pelo lint vermelho, que pulava o typecheck).
+ * O `forEach` também fica de fora: o do `ReadonlySet` entrega o próprio conjunto ao retorno de
+ * chamada COMO `ReadonlySet`, e no ESNext um retrato não é um. Quem lê só pergunta `has`.
+ */
+export type ReadonlyNames<T = string> = Pick<
+  ReadonlySet<T>,
+  'has' | 'size' | 'entries' | 'keys' | 'values' | typeof Symbol.iterator
+>
+
+/**
  * A lexical-scope snapshot. Forking shares read-only storage; the first actual
  * mutation detaches it. Unlike a parent-linked scope, later parent writes cannot
  * become visible in an earlier snapshot. Iteration reads the captured storage.
  */
-/**
- * Um conjunto de nomes só para leitura, com os membros de sempre do `ReadonlySet`. O Members
- * compila o Estúdio com o lib ESNext, cujo `ReadonlySet` pede também `union`, `intersection` e os
- * outros métodos novos de conjunto, que um retrato nunca usa: declarar `ReadonlySet` reprovava o
- * typecheck de lá (escondido de 18 a 20/11/2026 pelo lint vermelho, que pulava o typecheck).
- */
-export type ReadonlyNames<T = string> = Pick<
-  ReadonlySet<T>,
-  'has' | 'size' | 'forEach' | 'entries' | 'keys' | 'values' | typeof Symbol.iterator
->
-
 export class SymbolNames<T = string> implements ReadonlyNames<T> {
   private storage: { values: Set<T>; shared: boolean }
 
@@ -68,7 +70,7 @@ export class SymbolNames<T = string> implements ReadonlyNames<T> {
     return this.values()
   }
 
-  forEach(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown): void {
+  forEach(callback: (value: T, key: T, set: SymbolNames<T>) => void, thisArg?: unknown): void {
     this.storage.values.forEach((value) => {
       callback.call(thisArg, value, value, this)
     })
