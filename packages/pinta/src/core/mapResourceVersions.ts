@@ -7,6 +7,7 @@ import type {
   TilemapResourceVersion,
   VersionablePintaAsset,
 } from './project'
+import { withPintaSchemaStamp } from './project'
 import { PINTA_MAX_SCHEMA, PINTA_RESOURCE_LIMITS } from './projectConfig'
 
 export function isVersionablePintaAsset(asset: PintaAsset): asset is VersionablePintaAsset {
@@ -94,8 +95,36 @@ export function mergeMapResourceVersions(
 }
 
 /** O ID da cópia imutável é sua versão; as referências continuam resolvidas por ID. */
+export interface MapResourceSource {
+  readonly resources?: readonly TilemapResourceVersion[]
+}
+
+/** Canonical snapshot labels for strict native-8 authoring; future labels are never downgraded. */
+export function stampMapResourceVersions(
+  source: MapResourceSource,
+): TilemapResourceVersion[] | null {
+  if (source.resources === undefined) return []
+  if (
+    !Array.isArray(source.resources) ||
+    source.resources.length > PINTA_RESOURCE_LIMITS.maxVersions
+  )
+    return null
+  const result: TilemapResourceVersion[] = []
+  for (const version of source.resources) {
+    if (!version?.asset || !isVersionablePintaAsset(version.asset)) return null
+    const schema = version.asset.schema
+    if (
+      schema !== undefined &&
+      (!Number.isSafeInteger(schema) || schema < 0 || schema > PINTA_MAX_SCHEMA)
+    )
+      return null
+    result.push({ ...version, asset: withPintaSchemaStamp(version.asset) })
+  }
+  return result
+}
+
 export function withMapResourceVersions(
-  map: TilemapAsset,
+  map: MapResourceSource,
   find: (id: string) => PintaAsset | null,
 ): (id: string) => PintaAsset | null {
   const versions = new Map(

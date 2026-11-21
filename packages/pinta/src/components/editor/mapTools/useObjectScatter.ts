@@ -9,13 +9,16 @@ import {
   type TilemapAsset,
   type TilemapObject,
 } from '../../../core/project'
+import { createEditorGesture } from '../../../state/editorGesture'
 import type { PintaEditorStore } from '../../../state/editorStore'
-import { type CellPos, lineCells } from '../../../tiles/cellGeometry'
+import type { CellPos } from '../../../tiles/cellGeometry'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import {
   type ObjectScatterResult,
   type ObjectScatterSettings,
   scatterMapObjects,
 } from '../../../tiles/objectScatter'
+import { ObjectScatterStroke } from '../../../tiles/objectScatterStroke'
 import { isPintaModalOpen } from '../useActionShortcuts'
 import { pointOnMap } from './mapViewport'
 
@@ -29,9 +32,17 @@ type Gesture = {
   tileSize: number
   pad: number
   cellPx: number
-  positions: Map<number, CellPos>
+  positions: ObjectScatterStroke
   last: CellPos | null
   result: ObjectScatterResult | null
+  workRefused: boolean
+}
+
+function refusalMessage(result: ObjectScatterResult): string {
+  if (result.reason === 'work-budget') return COPY.scene.scatterWorkLimit
+  if (result.reason === 'resources') return COPY.scene.resourcePasteFailed
+  if (result.reason === 'invalid-template') return COPY.scene.scatterRefused
+  return COPY.scene.scatterLimit
 }
 
 export function useObjectScatter(deps: {
@@ -72,6 +83,7 @@ export function useObjectScatter(deps: {
           stage,
           viewport: { width: window.innerWidth, height: window.innerHeight },
           cols: map.cols,
+          origin: mapCellBounds(map),
           rows: map.rows,
           tileSize: d.tileSize,
           pad: d.pad,
@@ -83,31 +95,25 @@ export function useObjectScatter(deps: {
   )
   const paint = useCallback((current: Gesture, at: CellPos): ObjectScatterResult => {
     const before = current.positions.size
-    const radius = Math.floor(Math.max(1, Math.min(9, current.settings.width)) / 2)
-    for (const center of lineCells(current.last ?? at, at))
-      for (let dy = -radius; dy <= radius; dy++)
-        for (let dx = -radius; dx <= radius; dx++) {
-          if (dx * dx + dy * dy > radius * radius) continue
-          const col = center.col + dx,
-            row = center.row + dy
-          if (col < 0 || row < 0 || col >= current.map.cols || row >= current.map.rows) continue
-          current.positions.set(row * current.map.cols + col, { col, row })
-        }
+    if (!current.workRefused)
+      current.workRefused = current.positions.add(current.last ?? at, at) !== null
     current.last = at
-    if (current.positions.size !== before || !current.result)
+    if (current.workRefused)
+      current.result = { map: current.map, addedIds: [], overflow: true, reason: 'work-budget' }
+    else if (current.positions.size !== before || !current.result)
       current.result = scatterMapObjects(
         current.map,
         current.layerId,
         current.source,
         current.tileSize,
-        [...current.positions.values()],
+        current.positions.positions(),
         current.settings,
         current.id,
       )
     setPreview(current.result)
     setMessage(
       current.result.overflow
-        ? COPY.scene.scatterLimit
+        ? refusalMessage(current.result)
         : COPY.scene.scatterPreviewCount(current.result.addedIds.length),
     )
     return current.result
@@ -120,6 +126,12 @@ export function useObjectScatter(deps: {
         current &&
         (!d.active ||
           d.editor.getState().asset !== current.map ||
+          d.map !== current.map ||
+          d.source !== current.source ||
+          d.settings !== current.settings ||
+          d.cellPx !== current.cellPx ||
+          d.pad !== current.pad ||
+          d.tileSize !== current.tileSize ||
           d.layerId !== current.layerId ||
           isPintaModalOpen())
       ) {
@@ -153,16 +165,15 @@ export function useObjectScatter(deps: {
       setPreview(null)
       const d = latest.current
       if (result.overflow) {
-        d.showToast(COPY.scene.scatterLimit)
+        d.showToast(refusalMessage(result))
         return
       }
       if (result.map === current.map) {
         setMessage(COPY.scene.scatterEmpty)
         return
       }
-      d.editor.getState().commit(result.map)
-      const accepted = d.editor.getState().asset
-      if (accepted.kind !== 'tilemap' || accepted.layers !== result.map.layers) {
+      const edit = createEditorGesture(d.editor)
+      if (edit.base !== current.map || !edit.replace(result.map) || !edit.finish()) {
         d.showToast(COPY.scene.scatterRefused)
         setMessage(COPY.scene.scatterRefused)
         return
@@ -263,9 +274,10 @@ export function useObjectScatter(deps: {
         tileSize: d.tileSize,
         cellPx: d.cellPx,
         pad: d.pad,
-        positions: new Map(),
+        positions: new ObjectScatterStroke(map, d.settings.width),
         last: null,
         result: null,
+        workRefused: false,
       }
       gesture.current = current
       safeSetPointerCapture(event.currentTarget, event.pointerId)

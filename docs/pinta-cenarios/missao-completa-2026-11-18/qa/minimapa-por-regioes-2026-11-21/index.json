@@ -1,0 +1,271 @@
+{
+  "at": "2026-11-21T16:38:25.230Z",
+  "sourceBase": "ae2e25ee5bddc33b15440fdb443f458fc90c5101",
+  "native8Public": false,
+  "physical3Public": false,
+  "approximateOverview": true,
+  "verified": {
+    "focused": {
+      "passed": 68,
+      "failed": 0,
+      "assertions": 286
+    },
+    "pinta": {
+      "passed": 2442,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 28896
+    },
+    "nativeControls": {
+      "passed": 3,
+      "failed": 0,
+      "assertions": 4372
+    },
+    "browser": {
+      "passed": 6,
+      "failed": 0,
+      "retries": 0,
+      "profiles": [
+        {
+          "name": "desktop",
+          "cpuSlowdown": 1,
+          "canvas": [
+            256,
+            256
+          ],
+          "occupiedPixels": 2
+        },
+        {
+          "name": "touch",
+          "cpuSlowdown": 1,
+          "canvas": [
+            256,
+            256
+          ],
+          "occupiedPixels": 2
+        },
+        {
+          "name": "cpu-4x",
+          "cpuSlowdown": 4,
+          "canvas": [
+            256,
+            256
+          ],
+          "occupiedPixels": 2
+        }
+      ]
+    },
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "studioTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1,
+    "children": false,
+    "heapMeasured": false,
+    "latencyQualified": false
+  },
+  "review": {
+    "rawLegacyApiUncached": true,
+    "immutableColorCacheShared": true,
+    "globalTieOrder": true,
+    "privateResources": true,
+    "stylesChanged": false,
+    "noWorldSizedAllocation": true
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/homologacao/minimapRegions.tsx",
+      "sha256": "cb897282a13450e89e8b90193b508970da4facfa54eb22e4541e365b3b7b47dd"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-minimap-regions-e2e.ts",
+      "sha256": "70be85efd987c060ae83790f4dfa97848dac7ba4d0c4a9425f09c6fa922b95ca"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapMinimapPanel.tsx",
+      "sha256": "64398403988bda5881ec942815dd52d5746cc2a0a034e7a1c899a99d49b24dad"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapMinimapRegions.test.tsx",
+      "sha256": "8f6e8add666b67abf9e3e2b6e221688a2afe6749a262d172d461727e08b8034c"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/minimapView.ts",
+      "sha256": "3c9fc86af626abc629925828942170ec88126c74eb08faf2c1c888010704ba57"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "sha256": "db6bdc831e16419505c0ae649f9de01d69a8c85ca0a4609e94f84c374bd88a8e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapTilesets.ts",
+      "sha256": "6a8b054634e48f96dd22dd7d07237ddf6ff0656312278201c31f127cb4645cd9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/minimap.ts",
+      "sha256": "a97159735c3f60bea34ab99f27bf870575e742664c1c60aa449327c3f346bc54"
+    },
+    {
+      "file": "packages/pinta/src/tiles/minimapRegions.test.ts",
+      "sha256": "bca7a3af401b500d56750b58cefeb5d6468e90d2e43dbb4abadae4ea7fc9f58f"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-minimap-regions.flow.ts",
+      "sha256": "9c234bcbe8fd17172ff475a645b675c8ad4dea48dfe555f2cdf9e18528757b12"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-minimap.flow.ts",
+      "sha256": "bd832a462f7acc6452fcd337c2708671961bead45429e0a5267cd783684d437c"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-minimap-regions.config.ts",
+      "sha256": "9f10de48bdbed8b565a53887f361ca4bd9a764995f0ebc6a68c150568fd5cf48"
+    }
+  ],
+  "records": [
+    {
+      "file": "regions-desktop.png",
+      "bytes": 15370,
+      "sha256": "3ed461290057bd0511dd46e13a556bd21c540f119d2408a0bca66e2d4182d111"
+    },
+    {
+      "file": "regions-touch.png",
+      "bytes": 36114,
+      "sha256": "5915f93231a9fb187195d0ed006fff2123e0ecee93f24698342c0147a1f5b58a"
+    },
+    {
+      "file": "regions-cpu-4x.png",
+      "bytes": 15370,
+      "sha256": "3ed461290057bd0511dd46e13a556bd21c540f119d2408a0bca66e2d4182d111"
+    },
+    {
+      "file": "playwright-regions-report.json.gz",
+      "bytes": 52523,
+      "sha256": "fa4b33822c7887d14467143280946a74dbec7917edd5decf7242ea72303a0acf",
+      "rawBytes": 100813,
+      "rawSha256": "d975685fa41f4804473bf7ba164f288947f6d101c4e97a0590cbe2407ba54bd0"
+    },
+    {
+      "file": "legacy-desktop.png",
+      "bytes": 59821,
+      "sha256": "c7f4fbe3b34de42694fe6770ee28affa17be66570a7556f2a696e90f0ea0aa5c"
+    },
+    {
+      "file": "legacy-touch.png",
+      "bytes": 120419,
+      "sha256": "917720f8ea9f3f06a33199390722bf07f96e8c0bcb7bfefa13fd4f72b5c0830e"
+    },
+    {
+      "file": "legacy-cpu-4x.png",
+      "bytes": 59822,
+      "sha256": "c7cd11599ba959bd9836e19e35fbd19e1d3792a213527338a3c7b934514a889b"
+    },
+    {
+      "file": "playwright-legacy-report.json.gz",
+      "bytes": 228364,
+      "sha256": "3eb457921acfcfe7cc5c24a7eadd44aa229a777072725769776117586bf97783",
+      "rawBytes": 330838,
+      "rawSha256": "aa6e2e213aeec79f530febb69d10671b0c19fdb55f0c1fe7a839fe4eeb6d9faa"
+    },
+    {
+      "file": "pinta-minimap-regions-red.log.gz",
+      "bytes": 1987,
+      "sha256": "a382e75a12fab8e3ce9fc5f82c6609aa93c31ed32cbe3455f0c887968577a334",
+      "rawBytes": 7477,
+      "rawSha256": "92e3b7ce9dc010342d569a6652d72b7a72c48f838e73652eea2a7a974142d164"
+    },
+    {
+      "file": "pinta-minimap-regions-ui-red.log.gz",
+      "bytes": 1154,
+      "sha256": "4806f51e943337d715cbb3c85d5b5e0ccfbd6c11c22df50b693943e0f39783cf",
+      "rawBytes": 3079,
+      "rawSha256": "b4bd24b1a6a0811f1c8a9f244d5cb33ebcc445fc9d63451457fe3b813172bcb4"
+    },
+    {
+      "file": "pinta-minimap-regions-cache-review-red.log.gz",
+      "bytes": 864,
+      "sha256": "f66c3f245961c650bf84b79c292420770d84ef12c88a3c25cd8012e6383c3556",
+      "rawBytes": 1640,
+      "rawSha256": "332740a524a0681802fb78e4b9476d8bce2b0c998da8d6114c31582171e13eaa"
+    },
+    {
+      "file": "pinta-minimap-regions-browser.log.gz",
+      "bytes": 1165,
+      "sha256": "a761a4f937fceb86963f05cfb9713a78cffbf7a3d7ce5129c4ff4309eefbad31",
+      "rawBytes": 9455,
+      "rawSha256": "965cb428797b30783c913b961b82035ca033c5502957c57e5d6223ad6d8eec4f"
+    },
+    {
+      "file": "pinta-minimap-regions-browser-green.log.gz",
+      "bytes": 1155,
+      "sha256": "c322033f0c74aa3ca4ad77caec7721bca5e7ced88f043535ba48ef272d3ec533",
+      "rawBytes": 9523,
+      "rawSha256": "1b6b39bcee2a7b94dcbc55ab21bd903b1ecba7b23bba43d8b468d86ef6098812"
+    },
+    {
+      "file": "pinta-minimap-regions-browser-final.log.gz",
+      "bytes": 503,
+      "sha256": "7f3d942bc5a5a07d7df3a248eabab1aa684c07e1dc5de373ec242a8114adbab1",
+      "rawBytes": 1605,
+      "rawSha256": "42cec69efd79b68cf723608dc942d3ea0f375114da4a4bf00bbea3a5edbfdd8e"
+    },
+    {
+      "file": "pinta-minimap-legacy-browser-final.log.gz",
+      "bytes": 693,
+      "sha256": "485ee8f7a6947d5c13d8c9777e6c4f8741e539cc875c22937a26a113641afb39",
+      "rawBytes": 1974,
+      "rawSha256": "de7ce6bc23038b74689820e78f385f8faf3d9a30ea6d05f6b03e3c75b0f87db5"
+    },
+    {
+      "file": "pinta-minimap-regions-focused-final.log.gz",
+      "bytes": 2560,
+      "sha256": "9e538e85104392ca477c2f0332796c4bebcd007d60ad10a0796524db327041b1",
+      "rawBytes": 6987,
+      "rawSha256": "f812c4b47857845d0aca662ac016126b6711d0a611511e741cbbbd31653da266"
+    },
+    {
+      "file": "pinta-minimap-regions-suite.log.gz",
+      "bytes": 74345,
+      "sha256": "e4cd0228696a75d45174cf2d3d08ae5661bd303e535bce36d6d11e6feea2bd12",
+      "rawBytes": 275630,
+      "rawSha256": "fd2eeff3ad8e4222a16bf04b0a25ed01a606f96501c621bbd0fcf6986f12c816"
+    },
+    {
+      "file": "pinta-minimap-regions-types.log.gz",
+      "bytes": 293,
+      "sha256": "1b7b291e8e2ac5cda7eb4e0bc6943b409480c313558914a3945bec2c12202f9e",
+      "rawBytes": 669,
+      "rawSha256": "ea46bbdd845acbad435837f521ed0bf0ec97e021174691fd77b8b9eb3e4cd114"
+    },
+    {
+      "file": "pinta-minimap-regions-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-minimap-regions-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-minimap-regions-native.log.gz",
+      "bytes": 330,
+      "sha256": "d04780df421ee68b18cab0af2317b5036225f789efc0ccb52aee57bfdef7a2a5",
+      "rawBytes": 507,
+      "rawSha256": "d4c7fa65df6a9a70f837faf075ba1e6fcff2c786cb194f8ad22a5b54a422d044"
+    },
+    {
+      "file": "pinta-minimap-regions-all-biome.log.gz",
+      "bytes": 55,
+      "sha256": "15551a46a5a79cca041f691c73b8e8dc447db18126074c6ced1cbc3fe7cf63db",
+      "rawBytes": 41,
+      "rawSha256": "c600456a7c9c08d8ac75f083cedf97cf786a6535780a93edd326ccb89b37a325"
+    }
+  ]
+}

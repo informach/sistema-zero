@@ -4,7 +4,7 @@ import {
   type PintaRegionBounds,
   parsePintaRegionBounds,
 } from '@sistemazero/core/creations'
-import type { TilemapCells } from '../core/project'
+import { isTileLayer, type TilemapAsset, type TilemapCells } from '../core/project'
 import { EMPTY_CELL } from './cell'
 import { createRegionCellReader } from './regionCells'
 
@@ -15,7 +15,31 @@ export interface TileCellReader {
   visitOccupied(
     rect: PintaRegionBounds,
     visit: (cell: number, col: number, row: number) => void,
+    traversal?: 'row-major',
   ): void
+}
+
+/** Logical world bounds of an admitted dense or region map, independent of storage. */
+export function mapCellBounds(map: {
+  cols: number
+  rows: number
+  origin?: { col: number; row: number }
+}): PintaRegionBounds {
+  return { col: map.origin?.col ?? 0, row: map.origin?.row ?? 0, cols: map.cols, rows: map.rows }
+}
+
+/** Storage capacity, not the logical extent (which can contain large unallocated gaps). */
+export function mapAllocatedCellCount(map: TilemapAsset<TilemapCells>): number {
+  let count = 0
+  for (const layer of map.layers)
+    if (isTileLayer(layer)) {
+      const grid = layer.cells
+      count +=
+        grid instanceof Int16Array
+          ? grid.length
+          : grid.chunks.reduce((sum, chunk) => sum + chunk.cells.length, 0)
+    }
+  return count
 }
 
 function inside(bounds: PintaRegionBounds, col: number, row: number): boolean {
@@ -72,7 +96,7 @@ function denseReader(cells: Int16Array, bounds: PintaRegionBounds) {
  * A bounded view of an immutable, boundary-validated grid. Keep one reader per
  * gesture/frame; its sparse index retains only this snapshot, never global history.
  * Viewports may exceed the logical map; visitation clips before scanning cells.
- * Sparse visitation uses deterministic chunk order, not global row-major order.
+ * Sparse visitation defaults to chunk order; images may request global row-major.
  */
 export function createTileCellReader(
   cells: TilemapCells,
@@ -98,7 +122,7 @@ export function createTileCellReader(
       if (!inside(bounds, col, row)) return EMPTY_CELL
       return storage.at(col, row)
     },
-    visitOccupied(rect, visit) {
+    visitOccupied(rect, visit, traversal) {
       if (
         ![rect.col, rect.row, rect.cols, rect.rows].every(Number.isSafeInteger) ||
         rect.cols < 1 ||
@@ -112,7 +136,7 @@ export function createTileCellReader(
         endCol = Math.min(right, rect.col + rect.cols),
         endRow = Math.min(bottom, rect.row + rect.rows)
       if (endCol <= col || endRow <= row) return
-      storage.visitOccupied({ col, row, cols: endCol - col, rows: endRow - row }, visit)
+      storage.visitOccupied({ col, row, cols: endCol - col, rows: endRow - row }, visit, traversal)
     },
   }
 }

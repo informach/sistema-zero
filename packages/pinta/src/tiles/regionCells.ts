@@ -70,6 +70,7 @@ export function createRegionCellReader(grid: PintaRegionCells) {
     visitOccupied(
       rect: PintaRegionBounds,
       visit: (cell: number, col: number, row: number) => void,
+      traversal?: 'row-major',
     ): void {
       if (
         ![rect.col, rect.row, rect.cols, rect.rows].every(Number.isSafeInteger) ||
@@ -77,18 +78,35 @@ export function createRegionCellReader(grid: PintaRegionCells) {
         rect.rows < 1
       )
         return
-      for (const chunk of [...grid.chunks].sort(order)) {
+      const ordered = [...grid.chunks].sort(order)
+      const visitChunk = (chunk: RegionChunk, firstRow: number, endRow: number): void => {
         const originCol = chunk.col * PINTA_REGION_SIDE,
           originRow = chunk.row * PINTA_REGION_SIDE
         const left = Math.max(rect.col, originCol),
-          top = Math.max(rect.row, originRow)
+          top = Math.max(firstRow, originRow)
         const right = Math.min(rect.col + rect.cols, originCol + PINTA_REGION_SIDE)
-        const bottom = Math.min(rect.row + rect.rows, originRow + PINTA_REGION_SIDE)
+        const bottom = Math.min(endRow, originRow + PINTA_REGION_SIDE)
         for (let row = top; row < bottom; row++)
           for (let col = left; col < right; col++) {
             const cell = chunk.cells[(row - originRow) * PINTA_REGION_SIDE + col - originCol]!
             if (cell !== EMPTY_CELL) visit(cell, col, row)
           }
+      }
+      if (traversal !== 'row-major') {
+        for (const chunk of ordered) visitChunk(chunk, rect.row, rect.row + rect.rows)
+        return
+      }
+      // Interleave only chunks in the same stored row band. Empty world gaps
+      // and per-cell sorting/collections never enter the image compositor.
+      for (let first = 0; first < ordered.length; ) {
+        const chunkRow = ordered[first]!.row
+        let end = first + 1
+        while (end < ordered.length && ordered[end]!.row === chunkRow) end++
+        const top = Math.max(rect.row, chunkRow * PINTA_REGION_SIDE),
+          bottom = Math.min(rect.row + rect.rows, (chunkRow + 1) * PINTA_REGION_SIDE)
+        for (let row = top; row < bottom; row++)
+          for (let index = first; index < end; index++) visitChunk(ordered[index]!, row, row + 1)
+        first = end
       }
     },
   }

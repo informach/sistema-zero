@@ -1,13 +1,16 @@
 import {
   type AnyTilesetAsset,
   effectiveLayer,
-  type TilemapAsset,
+  PINTA_MAP_FORMAT_LIMITS,
+  type TilemapCells,
   type TileTerrain,
   withPintaSchemaStamp,
 } from '../core/project'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile, makeCell } from './cell'
 import type { CellPos } from './cellGeometry'
-import { tileLayerById, withTileLayer } from './tilemapOps'
+import { type AuthorMap, editMapCellBatch, isCellPosition } from './mapCellEdits'
+import { REGION_EDIT_LIMIT, type RegionCellEdit } from './regionCells'
+import { createMapLayerCellReader, tileLayerById } from './tilemapOps'
 export function seededChoice(seed: number, x: number, y: number): number {
   let n = (seed ^ Math.imul(x + 1, 374761393) ^ Math.imul(y + 1, 668265263)) | 0
   n = Math.imul(n ^ (n >>> 13), 1274126177)
@@ -54,42 +57,79 @@ function key(c: number, r: number, s: number): string {
   ][s]!
 }
 /** Pinta pontos e bordas compartilhados; resolve também os oito vizinhos com a mesma semente. */
-export function paintTerrain(
-  map: TilemapAsset,
+export function paintTerrain<Map extends AuthorMap>(
+  map: Map,
   layerId: string,
   terrain: TileTerrain,
   color: number,
   positions: readonly CellPos[],
   seed = 1,
-): { map: TilemapAsset; unmatched: number } {
-  const layer = tileLayerById(map, layerId)
+): { map: Map; unmatched: number; failure?: 'invalid-edit' | 'work-budget' | 'storage-budget' } {
+  const layer = tileLayerById<TilemapCells>(map, layerId)
   if (!layer || effectiveLayer(map, layer).locked) return { map, unmatched: 0 }
+  if (positions.length > REGION_EDIT_LIMIT) return { map, unmatched: 0, failure: 'work-budget' }
+  if (positions.some((p) => !p || !isCellPosition(p)))
+    return { map, unmatched: 0, failure: 'invalid-edit' }
+  const reader = createMapLayerCellReader(map, layerId)!
+  const origin = 'origin' in map ? map.origin : { col: 0, row: 0 }
+  const inside = (col: number, row: number) =>
+    col >= origin.col &&
+    row >= origin.row &&
+    col < origin.col + map.cols &&
+    row < origin.row + map.rows
+  const index = (col: number, row: number) => (row - origin.row) * map.cols + col - origin.col
   const active = slots(terrain.mode),
     constraints = new Map<string, number>(),
     neighbors = new Map<number, CellPos>(),
     painted = new Set<number>()
   for (const p of positions) {
-    if (p.col < 0 || p.row < 0 || p.col >= map.cols || p.row >= map.rows) continue
-    painted.add(p.row * map.cols + p.col)
+    if (!inside(p.col, p.row)) continue
+    painted.add(index(p.col, p.row))
     for (const s of active)
       constraints.set(key(p.col, p.row, s), Math.max(0, Math.min(terrain.colors.length, color)))
     for (let dy = -1; dy <= 1; dy++)
       for (let dx = -1; dx <= 1; dx++) {
         const col = p.col + dx,
           row = p.row + dy
-        if (col >= 0 && row >= 0 && col < map.cols && row < map.rows)
-          neighbors.set(row * map.cols + col, { col, row })
+        if (inside(col, row)) {
+          const at = index(col, row)
+          if (!neighbors.has(at) && neighbors.size >= REGION_EDIT_LIMIT)
+            return { map, unmatched: 0, failure: 'work-budget' }
+          neighbors.set(at, { col, row })
+        }
       }
   }
   const candidates = Object.entries(terrain.tiles).map(([tile, pattern]) => ({
     tile: Number(tile),
     pattern,
   }))
+  if (
+    candidates.length > PINTA_MAP_FORMAT_LIMITS.maxTiles ||
+    candidates.some(
+      (c) =>
+        !Number.isInteger(c.tile) ||
+        c.tile < 0 ||
+        c.tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles ||
+        c.pattern.length !== 8 ||
+        c.pattern.some((v) => !Number.isInteger(v) || v < 0 || v > terrain.colors.length),
+    )
+  )
+    return { map, unmatched: 0, failure: 'invalid-edit' }
+  // Index once; keep candidate order so the same seed retains the existing art.
+  const patternKey = (pattern: readonly number[]) => active.map((s) => pattern[s]).join(',')
+  const matching = new Map<string, number[]>()
+  for (const candidate of candidates) {
+    const key = patternKey(candidate.pattern),
+      group = matching.get(key)
+    if (group) group.push(candidate.tile)
+    else matching.set(key, [candidate.tile])
+  }
   let unmatched = 0
-  const cells = new Int16Array(layer.cells)
+  const edits: RegionCellEdit[] = []
   for (const [at, p] of neighbors) {
-    const tile = cellTile(cells[at] ?? -1),
-      known = visualPattern(terrain, cells[at] ?? -1)
+    const current = reader.at(p.col, p.row),
+      tile = cellTile(current),
+      known = visualPattern(terrain, current)
     // A vizinha com uma peça de FORA do terreno (uma árvore, uma casa) não é mexida: só a casa
     // que a criança pintou pode trocar uma peça que não é deste terreno.
     if (!painted.has(at) && tile >= 0 && !known) continue
@@ -98,52 +138,70 @@ export function paintTerrain(
     // Vizinha que não ganhou nenhum encaixe novo fica como está (não sorteia outra variação).
     if (!painted.has(at) && active.every((s) => desired[s] === old[s])) continue
     if (active.every((s) => desired[s] === 0)) {
-      cells[at] = -1
+      if (current !== -1) edits.push({ ...p, cell: -1 })
       continue
     }
-    const matches = candidates.filter((c) => active.every((s) => c.pattern[s] === desired[s]))
-    if (!matches.length) {
+    const matches = matching.get(patternKey(desired))
+    if (!matches?.length) {
       unmatched++
       continue
     }
-    cells[at] = makeCell(
-      matches[Math.floor(seededChoice(seed, p.col, p.row) * matches.length)]!.tile,
-    )
+    const cell = makeCell(matches[Math.floor(seededChoice(seed, p.col, p.row) * matches.length)]!)
+    if (cell !== current) edits.push({ ...p, cell })
   }
   if (unmatched) return { map, unmatched }
-  return {
-    map: withTileLayer(map, layerId, (l) =>
-      l.cells.every((v, i) => v === cells[i]) ? l : { ...l, cells },
-    ),
-    unmatched: 0,
-  }
+  const next = editMapCellBatch(map, layerId, edits)
+  return next === map && edits.length > 0
+    ? { map, unmatched: 0, failure: 'storage-budget' }
+    : { map: next, unmatched: 0 }
 }
-export function terrainRegion(
-  map: TilemapAsset,
+export type TerrainRegionResult =
+  | { ok: true; positions: CellPos[] }
+  | { ok: false; reason: 'invalid-layer' | 'invalid-edit' | 'outside-map' | 'work-budget' }
+
+/** Admit the complete bucket before painting; callers can explain a work refusal. */
+export function collectTerrainRegion(
+  map: AuthorMap,
   layerId: string,
   start: CellPos,
   terrain?: TileTerrain,
-): CellPos[] {
-  const layer = tileLayerById(map, layerId)
-  if (!layer || start.col < 0 || start.row < 0 || start.col >= map.cols || start.row >= map.rows)
-    return []
-  const signature = (at: number): string => {
-    const tile = cellTile(layer.cells[at] ?? -1)
+): TerrainRegionResult {
+  const reader = createMapLayerCellReader(map, layerId)
+  const origin = 'origin' in map ? map.origin : { col: 0, row: 0 }
+  const inside = (col: number, row: number) =>
+    col >= origin.col &&
+    row >= origin.row &&
+    col < origin.col + map.cols &&
+    row < origin.row + map.rows
+  const index = (col: number, row: number) => (row - origin.row) * map.cols + col - origin.col
+  if (!reader) return { ok: false, reason: 'invalid-layer' }
+  if (!isCellPosition(start)) return { ok: false, reason: 'invalid-edit' }
+  if (!inside(start.col, start.row)) return { ok: false, reason: 'outside-map' }
+  const signatures = new Map<number, string>()
+  const signature = (col: number, row: number): string => {
+    const cell = reader.at(col, row),
+      cached = signatures.get(cell)
+    if (cached !== undefined) return cached
+    const tile = cellTile(cell)
     if (!terrain) return String(tile)
     if (tile < 0) return 'empty'
-    const pattern = visualPattern(terrain, layer.cells[at] ?? -1)
-    return pattern ? `terrain:${JSON.stringify(pattern)}` : `outside:${layer.cells[at]}`
+    const pattern = visualPattern(terrain, cell),
+      value = pattern ? `terrain:${JSON.stringify(pattern)}` : `outside:${cell}`
+    signatures.set(cell, value)
+    return value
   }
-  const target = signature(start.row * map.cols + start.col),
+  const target = signature(start.col, start.row),
     seen = new Set<number>(),
     pending = [start],
     out: CellPos[] = []
   while (pending.length) {
     const p = pending.pop()!
-    if (p.col < 0 || p.row < 0 || p.col >= map.cols || p.row >= map.rows) continue
-    const at = p.row * map.cols + p.col
-    if (seen.has(at) || signature(at) !== target) continue
+    if (!inside(p.col, p.row)) continue
+    const at = index(p.col, p.row)
+    if (seen.has(at)) continue
+    if (seen.size >= REGION_EDIT_LIMIT) return { ok: false, reason: 'work-budget' }
     seen.add(at)
+    if (signature(p.col, p.row) !== target) continue
     out.push(p)
     pending.push(
       { col: p.col - 1, row: p.row },
@@ -152,7 +210,18 @@ export function terrainRegion(
       { col: p.col, row: p.row + 1 },
     )
   }
-  return out
+  return { ok: true, positions: out }
+}
+
+/** Existing array API, backed by the same bounded collector. */
+export function terrainRegion(
+  map: AuthorMap,
+  layerId: string,
+  start: CellPos,
+  terrain?: TileTerrain,
+): CellPos[] {
+  const result = collectTerrainRegion(map, layerId, start, terrain)
+  return result.ok ? result.positions : []
 }
 export function setTilesetTerrain(ts: AnyTilesetAsset, terrain: TileTerrain): AnyTilesetAsset {
   // O carimbo do formato é calculado pelo que o conjunto usa, nunca escrito à mão.

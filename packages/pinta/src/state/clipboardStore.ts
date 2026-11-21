@@ -17,11 +17,13 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { pintaAssetFromWire, pintaAssetToWire } from '../assets/wire'
 import { decodeBitmap, encodeBitmap } from '../core/bitmapCodec'
+import { sameMapDocumentMetadata } from '../core/mapDocumentBoundary'
 import { sanitizeMapResourceVersions } from '../core/mapResourceVersions'
 import { PALETTE_SIZE } from '../core/palette'
 import {
   PINTA_LIMITS,
   type PintaBitmap,
+  sanitizeRegionMapObject,
   sanitizeTilemapObjects,
   type TilemapObject,
   type TilemapResourceVersion,
@@ -29,7 +31,12 @@ import {
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 
 export type PintaClipboardItem =
-  | { kind: 'objects'; objects: TilemapObject[]; resources?: TilemapResourceVersion[] }
+  | {
+      kind: 'objects'
+      objects: TilemapObject[]
+      resources?: TilemapResourceVersion[]
+      coordinates?: 'signed'
+    }
   | { kind: 'pixel'; bitmap: PintaBitmap; colors: readonly string[] }
   | { kind: 'shapes'; shapes: VectorShape[]; width: number; height: number }
 
@@ -53,7 +60,7 @@ const MAX_DOC_SIDE = 4096
 const HEX = /^#[0-9a-f]{6}$/i
 
 interface MirrorEnvelope {
-  v: 1 | 2
+  v: 1 | 2 | 3
   at: number
   kind: 'pixel' | 'shapes' | 'objects'
   objects?: unknown
@@ -85,7 +92,12 @@ function defaultMirror(): ClipboardMirror | null {
 function serialize(item: PintaClipboardItem, at: number): string {
   if (item.kind === 'objects')
     return JSON.stringify({
-      v: item.resources?.length || item.objects.some((o) => o.art?.animationId) ? 2 : 1,
+      v:
+        item.coordinates === 'signed'
+          ? 3
+          : item.resources?.length || item.objects.some((o) => o.art?.animationId)
+            ? 2
+            : 1,
       at,
       kind: 'objects',
       objects: item.objects,
@@ -109,7 +121,7 @@ function serialize(item: PintaClipboardItem, at: number): string {
 export function parseClipboardMirror(
   text: string | null,
 ): { item: PintaClipboardItem; at: number } | null {
-  if (!text) return null
+  if (!text || text.length > CLIPBOARD_MIRROR_MAX_CHARS) return null
   let raw: unknown
   try {
     raw = JSON.parse(text)
@@ -119,21 +131,52 @@ export function parseClipboardMirror(
   if (!raw || typeof raw !== 'object') return null
   const env = raw as Partial<MirrorEnvelope>
   if (
-    (env.v !== 1 && env.v !== 2) ||
+    (env.v !== 1 && env.v !== 2 && env.v !== 3) ||
     typeof env.at !== 'number' ||
     !Number.isFinite(env.at) ||
-    (env.v === 2 && env.kind !== 'objects')
+    (env.v !== 1 && env.kind !== 'objects')
   )
     return null
   if (env.kind === 'objects') {
-    const objects = sanitizeTilemapObjects(env.objects)
+    let objects: TilemapObject[]
+    if (env.v === 3) {
+      if (
+        Object.keys(env).some(
+          (key) => !['v', 'at', 'kind', 'objects', 'resources'].includes(key),
+        ) ||
+        !Array.isArray(env.objects) ||
+        env.objects.length > PINTA_LIMITS.maxTilemapObjects
+      )
+        return null
+      objects = []
+      const ids = new Set<string>()
+      for (const raw of env.objects) {
+        const object = sanitizeRegionMapObject(raw)
+        if (!object || ids.has(object.id)) return null
+        ids.add(object.id)
+        objects.push(object)
+      }
+    } else objects = sanitizeTilemapObjects(env.objects)
     if (env.v === 1 && (env.resources !== undefined || objects.some((o) => o.art?.animationId)))
       return null
     const resources = sanitizeMapResourceVersions(env.resources, pintaAssetFromWire)
     if (!resources) return null
+    if (
+      env.v === 3 &&
+      !sameMapDocumentMetadata(
+        env.resources ?? [],
+        resources.map((version) => ({ ...version, asset: pintaAssetToWire(version.asset) })),
+      )
+    )
+      return null
     return objects.length
       ? {
-          item: { kind: 'objects', objects, ...(resources.length ? { resources } : {}) },
+          item: {
+            kind: 'objects',
+            objects,
+            ...(resources.length ? { resources } : {}),
+            ...(env.v === 3 ? { coordinates: 'signed' as const } : {}),
+          },
           at: env.at,
         }
       : null

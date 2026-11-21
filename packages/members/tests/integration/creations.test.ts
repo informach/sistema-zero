@@ -236,6 +236,105 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('Pinta B6 → leitor A → B6 conserva o confirmado durante reservas, conflitos e recusas antigas', async () => {
+    const ctx = buildWithTools()
+    const id = 'vila-rollout-6'
+    const path = `/members/creations/pinta/${id}`
+    const initial = await saveItem(ctx, 'pinta', id, { kind: 'tilemap', formatVersion: 4 })
+    const promoted = await reserve(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: initial.item.revision,
+      name: 'Vila com colisões autorais',
+    })
+    expect(promoted.status).toBe(200)
+    const ticket = await json(promoted)
+    // Uma reserva não é prova de upload, nem pode mudar o documento visível.
+    expect((await listOf(ctx, 'pinta'))[0]).toEqual(initial.item)
+    for (const confirmed of [false, true]) {
+      if (confirmed) expect((await commit(ctx, 'pinta', id, ticket.revision)).status).toBe(200)
+      for (const formatVersion of [1, 2, 3, 4, 5]) {
+        const denied = await reserve(ctx, 'pinta', id, {
+          kind: 'tilemap',
+          formatVersion,
+          baseRevision: confirmed ? ticket.revision : initial.item.revision,
+        })
+        expect(denied.status).toBe(409)
+        expect(await json(denied)).toMatchObject({
+          error: { code: 'CREATION_CLIENT_OUTDATED' },
+          details: { requiredVersion: 6 },
+        })
+      }
+    }
+    const confirmed = (await listOf(ctx, 'pinta'))[0]
+    const before = structuredClone(await ctx.creations.get(USER, 'pinta', id))
+    expect(confirmed).toMatchObject({ formatVersion: 6, revision: ticket.revision })
+    // A lê 6 mas escreve 4: o rollback pode baixar; não pode rebaixar nem apagar.
+    const downloaded = await req(ctx.app, 'GET', `${path}/download`)
+    expect(downloaded.status).toBe(200)
+    expect(await json(downloaded)).toMatchObject({
+      storageKey: ticket.storageKey,
+      revision: ticket.revision,
+      summary: confirmed,
+    })
+    const oldDelete = await req(ctx.app, 'DELETE', path, {
+      baseRevision: ticket.revision,
+      maxFormatVersion: 4,
+    })
+    expect(oldDelete.status).toBe(409)
+    expect(await json(oldDelete)).toMatchObject({ error: { code: 'CREATION_CLIENT_OUTDATED' } })
+    const stale = await reserve(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: initial.item.revision,
+    })
+    expect(stale.status).toBe(409)
+    expect(await json(stale)).toMatchObject({ error: { code: 'CREATION_STALE_BASE' } })
+    expect(await ctx.creations.get(USER, 'pinta', id)).toEqual(before)
+    expect((await listOf(ctx, 'pinta'))[0]).toEqual(confirmed)
+    const resumed = await saveItem(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: ticket.revision,
+      name: 'Vila retomada no B6',
+    })
+    expect(resumed.item.revision).toBeGreaterThan(ticket.revision)
+    expect(resumed.item.formatVersion).toBe(6)
+    expect(resumed.previousStorageKey).toBe(ticket.storageKey)
+  })
+
+  test('a confirmação tardia de A4 não confirma a reserva B6 nem apaga o último estado confirmado', async () => {
+    const ctx = buildWithTools()
+    const id = 'vila-reserva-antiga'
+    const initial = await saveItem(ctx, 'pinta', id, { kind: 'tilemap', formatVersion: 4 })
+    const a = await json(
+      await reserve(ctx, 'pinta', id, {
+        kind: 'tilemap',
+        formatVersion: 4,
+        baseRevision: initial.item.revision,
+      }),
+    )
+    const bResponse = await reserve(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: initial.item.revision,
+    })
+    expect(bResponse.status).toBe(200)
+    const b = await json(bResponse)
+    expect(b.revision).toBeGreaterThan(a.revision)
+    const before = structuredClone(await ctx.creations.get(USER, 'pinta', id))
+    const stale = await commit(ctx, 'pinta', id, a.revision)
+    expect(stale.status).toBe(409)
+    expect(await json(stale)).toMatchObject({ error: { code: 'CREATION_REVISION_MISMATCH' } })
+    expect(await ctx.creations.get(USER, 'pinta', id)).toEqual(before)
+    expect((await listOf(ctx, 'pinta'))[0]).toEqual(initial.item)
+    expect((await commit(ctx, 'pinta', id, b.revision)).status).toBe(200)
+    expect((await listOf(ctx, 'pinta'))[0]).toMatchObject({
+      formatVersion: 6,
+      revision: b.revision,
+    })
+  })
+
   test('Pinta capacidade 4 bloqueia gravador 3 durante a reserva e após o commit', async () => {
     const ctx = buildWithTools()
     const first = await saveItem(ctx, 'pinta', 'precisao', { kind: 'tilemap', formatVersion: 3 })

@@ -1,0 +1,6 @@
+{
+  "commit": "b3e4e7ed26acdb098c28b24dc00eb80ebf8670f0",
+  "source": "packages/pinta/src/state/clipboardStore.ts",
+  "sha256": "1a1623e17c1dadbba2a48632171e150a9c0df12ee42d08073ebb886ccc28c910",
+  "purpose": "Historical production clipboard reader/writer, v1/v2. Source fixture only; never imported by the application."
+}

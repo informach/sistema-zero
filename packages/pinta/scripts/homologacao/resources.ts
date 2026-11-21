@@ -92,6 +92,50 @@ export async function generateResourcePackages(output: string) {
     resolve(output, 'resources-cross-map.pinta.json'),
     galleryToPintaJson([frozen.map, target]),
   )
+  const ground = createTilesetAsset({ name: 'chao-vinculos', tileSize: 16 }),
+    detail = createTilesetAsset({ name: 'placa-vinculos', tileSize: 16 })
+  const marker = createMapObject({
+    id: 'qa-object-reference-source',
+    name: 'Placa QA',
+    shape: 'art',
+    x: 16,
+    y: 16,
+    width: 16,
+    height: 16,
+    art: { assetId: 'qa-dependent-version', tile: 0 },
+  })
+  const direct = {
+    ...detail,
+    id: 'qa-direct-version',
+    tileProperties: {
+      '0': { marker: { type: 'object' as const, value: marker.id }, literal: marker.id },
+    },
+  }
+  const dependent = {
+    ...detail,
+    id: 'qa-dependent-version',
+    tiles: detail.tiles.map((t) => ({ ...t, data: new Uint8Array(t.data.length).fill(3) })),
+    tileProperties: { '0': { linked: { type: 'asset' as const, value: direct.id } } },
+  }
+  const originBase = addObjectLayer(
+    createTilemapAsset({ name: 'vinculos-qa', tilesetId: ground.id, cols: 10, rows: 8 }),
+    'Objetos',
+  )
+  const origin = {
+    ...addMapObject(originBase, originBase.layers.at(-1)!.id, marker),
+    resources: [
+      { sourceId: 'source-direct', capturedAt: 1, asset: direct },
+      { sourceId: 'source-dependent', capturedAt: 1, asset: dependent },
+    ],
+  }
+  const destination = addObjectLayer(
+    createTilemapAsset({ name: 'destino-vinculos-qa', tilesetId: ground.id, cols: 10, rows: 8 }),
+    'Objetos',
+  )
+  await writeFile(
+    resolve(output, 'resources-object-references.pinta.json'),
+    galleryToPintaJson([ground, origin, destination]),
+  )
   const { map, assets, sprite, tileset } = resourceScenario(true)
   const tree = map.layers
     .flatMap((l) => (l.kind === 'objects' ? l.objects : []))

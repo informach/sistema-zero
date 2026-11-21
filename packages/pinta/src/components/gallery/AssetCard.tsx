@@ -25,7 +25,7 @@ import {
 } from '../../core/project'
 import { paintBitmapCapped } from '../../pixel/render'
 import { collectMapTilesets } from '../../tiles/mapTilesets'
-import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
+import { paintMinimap, tilemapOverview } from '../../tiles/minimap'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Check, Copy, Pencil, Trash2 } from '../ui/icons'
 
@@ -174,16 +174,16 @@ function TilemapThumb({
     [asset, findAsset],
   )
   const tileset = tilesets[0] ?? null
-  const colors = useMemo(
-    () => (tileset ? tilemapMinimapColors(asset, tilesets) : null),
+  const overview = useMemo(
+    () => (tileset ? tilemapOverview(asset, tilesets) : null),
     [asset, tileset, tilesets],
   )
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !colors) return
-    paintMinimap(canvas, asset.cols, asset.rows, colors)
-  }, [asset, colors])
+    if (!canvas || !overview) return
+    paintMinimap(canvas, overview.width, overview.height, overview.colors)
+  }, [overview])
 
   if (!tileset) return null
   return (

@@ -2,6 +2,7 @@ import type { PintaScene, PintaSceneLayer } from '@sistemazero/core/studio/pinta
 import { sceneArtFrame, sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { cellTile } from '../tiles/cell'
 import { cellMatrix } from '../tiles/chunks'
+import { MAP_IMAGE_LIMITS } from '../tiles/mapImageBudget'
 
 /** Compositor estático/animado compartilhado pela imagem de exportação e pelo teste no Pinta. */
 export async function loadSceneImages(scene: PintaScene): Promise<Map<string, HTMLImageElement>> {
@@ -137,7 +138,7 @@ export async function scenePng(
   maxPx = Infinity,
 ): Promise<{ dataUrl: string; width: number; height: number } | null> {
   const actual = Math.min(scale, maxPx / (Math.max(scene.cols, scene.rows) * scene.tileSize))
-  if (scene.cols * scene.rows * (scene.tileSize * actual) ** 2 > 16_777_216)
+  if (scene.cols * scene.rows * (scene.tileSize * actual) ** 2 > MAP_IMAGE_LIMITS.pixels)
     throw new Error(
       'A imagem ficou grande demais. Use uma escala menor ou baixe o cenário como projeto.',
     )

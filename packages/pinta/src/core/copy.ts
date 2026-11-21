@@ -45,6 +45,17 @@ export const COPY = {
     right: 'À direita',
     setCropAlignment:
       'Para guardar este pedaço, alinhe o deslocamento das camadas de peças à grade.',
+    setCropBudget: (cols: number, rows: number) =>
+      `Escolha um pedaço de até ${cols} × ${rows} casas para guardar como conjunto.`,
+    setCaptureRefused: 'Não foi possível guardar esse pedaço sem mudar suas posições.',
+    objectPasteFormat: 'Este mapa não consegue guardar esse grupo sem mudar suas posições.',
+    scatterWorkLimit: 'Esta pincelada ficou muito grande. Espalhe em pedaços menores.',
+    brushWorkLimit: 'Esta pincelada ficou muito grande. Pinte em pedaços menores.',
+    brushStorageLimit: 'Não coube mais neste cenário. Apague um trecho ou crie outro mapa.',
+    brushRefused: 'Não consegui pintar este trecho. Escolha a ferramenta de novo.',
+    brushChanged: 'O cenário mudou. Comece a pincelada de novo.',
+    gestureChanged: 'O cenário mudou. Comece de novo.',
+    gestureRefused: 'Não consegui aplicar esta mudança. Tente de novo.',
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>

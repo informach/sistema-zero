@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-21T11:25:29.077Z",
+  "source": "a486bbdbdb77339f1f22407314ddd7cd3c0f7ebe",
+  "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+  "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "mode": "preflight",
+  "deployRequested": false,
+  "ok": true,
+  "result": {
+    "status": "preflight"
+  }
+}

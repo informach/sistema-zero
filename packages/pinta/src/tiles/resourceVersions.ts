@@ -1,6 +1,10 @@
 import { assetBytes } from '../core/assetMemory'
 import { newId } from '../core/id'
-import { isVersionablePintaAsset, withMapResourceVersions } from '../core/mapResourceVersions'
+import {
+  isVersionablePintaAsset,
+  type MapResourceSource,
+  withMapResourceVersions,
+} from '../core/mapResourceVersions'
 import {
   effectiveLayer,
   isCompatibleMapTileset,
@@ -174,7 +178,7 @@ export function linkMapTilesets(
 
 /** Só uma ação explícita remove versões sem uso; também percorre propriedades entre versões. */
 function reachableResourceVersions(
-  map: TilemapAsset,
+  map: MapResourceSource,
   roots: readonly string[],
 ): TilemapResourceVersion[] {
   const find = withMapResourceVersions(map, () => null),
@@ -191,7 +195,7 @@ function reachableResourceVersions(
 }
 
 export function mapResourceVersionsForObjects(
-  map: TilemapAsset,
+  map: MapResourceSource,
   objects: readonly TilemapObject[],
 ): TilemapResourceVersion[] {
   const roots = objects.flatMap((object) => [

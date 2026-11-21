@@ -1,6 +1,7 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
 import { useAnimationPlayer } from '../../animation/player'
 import { COPY } from '../../core/copy'
+import type { MapResourceSource } from '../../core/mapResourceVersions'
 import {
   isTilesetKind,
   type PintaAsset,
@@ -66,14 +67,22 @@ export function artworkImage(
 export function MapObjectArtwork({
   object,
   source,
+  resourceSource,
 }: {
   object: TilemapObject
   source?: PintaAsset
+  /** The displayed snapshot may be a gesture preview rather than the saved editor value. */
+  resourceSource?: MapResourceSource
 }): JSX.Element | null {
   const assets = usePintaGallery((s) => s.assets)
   const map = useEditor((state) => state.asset)
-  const resources =
-    map.kind === 'tilemap' ? map.resources : map.kind === 'map-set' ? map.map.resources : undefined
+  const resources = resourceSource
+    ? resourceSource.resources
+    : map.kind === 'tilemap'
+      ? map.resources
+      : map.kind === 'map-set'
+        ? map.map.resources
+        : undefined
   const find = useMemo(() => {
     const byId = new Map(assets.map((a) => [a.id, a]))
     for (const version of resources ?? []) byId.set(version.asset.id, version.asset)

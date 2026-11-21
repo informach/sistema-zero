@@ -7,12 +7,13 @@ import {
   type AnyTilesetAsset,
   effectiveLayer,
   isTileLayer,
-  type TilemapAsset,
+  type TilemapCells,
   tileLayerTilesetId,
 } from '../../../core/project'
 import { cellTile } from '../../../tiles/cell'
 import { type MapViewport, paintTilemapLayers, type TileChunkCache } from '../../../tiles/chunks'
-import { cellAt } from '../../../tiles/tilemapOps'
+import type { AuthorMap } from '../../../tiles/mapCellEdits'
+import { createTileCellReader, mapCellBounds } from '../../../tiles/mapCells'
 
 const GRID_STROKE = 'rgba(127,127,127,0.3)'
 const SOLID_FILL = 'rgba(239,68,68,0.38)'
@@ -41,7 +42,7 @@ export function mapCanvasViewport(
 export interface MapCanvasOptions {
   canvas: HTMLCanvasElement
   stage: HTMLElement | null
-  map: TilemapAsset
+  map: AuthorMap
   /** Casas do anel de "crescer o mapa" em volta da grade (0 ou 1). */
   pad: number
   /** Pixels de tela por casa. */
@@ -58,6 +59,7 @@ export interface MapCanvasOptions {
 /** Pinta o mapa e devolve a janela pintada (em pixels de tela do papel); `null` sem canvas 2D. */
 export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
   const { canvas, stage, map, pad, cellPx, tileSize, tilesetById, showCollision } = options
+  const bounds = mapCellBounds(map)
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   const fullWidth = (map.cols + 2 * pad) * cellPx,
@@ -70,7 +72,7 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.translate(-x, -y)
   ctx.save()
-  ctx.translate(pad * cellPx, pad * cellPx)
+  ctx.translate((pad - bounds.col) * cellPx, (pad - bounds.row) * cellPx)
   paintTilemapLayers(
     ctx,
     map,
@@ -78,8 +80,8 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
     options.sheetOf,
     options.cache,
     {
-      x: ((x - pad * cellPx) * tileSize) / cellPx,
-      y: ((y - pad * cellPx) * tileSize) / cellPx,
+      x: bounds.col * tileSize + ((x - pad * cellPx) * tileSize) / cellPx,
+      y: bounds.row * tileSize + ((y - pad * cellPx) * tileSize) / cellPx,
       width: (width * tileSize) / cellPx,
       height: (height * tileSize) / cellPx,
     },
@@ -90,28 +92,35 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
   ctx.restore()
   if (showCollision) {
     for (const l of map.layers) {
-      if (!isTileLayer(l)) continue
+      if (!isTileLayer<TilemapCells>(l)) continue
       const e = effectiveLayer(map, l),
         ts = tilesetById.get(tileLayerTilesetId(map, l))
       if (!e.visible || !ts) continue
-      const minC = Math.max(0, Math.floor((x - pad * cellPx) / cellPx - e.offsetX / tileSize)),
+      const reader = createTileCellReader(l.cells, bounds)
+      const minC = Math.max(
+          bounds.col,
+          bounds.col + Math.floor((x - pad * cellPx) / cellPx - e.offsetX / tileSize),
+        ),
         maxC = Math.min(
-          map.cols,
-          Math.ceil((x + width - pad * cellPx) / cellPx - e.offsetX / tileSize),
+          bounds.col + map.cols,
+          bounds.col + Math.ceil((x + width - pad * cellPx) / cellPx - e.offsetX / tileSize),
         )
-      const minR = Math.max(0, Math.floor((y - pad * cellPx) / cellPx - e.offsetY / tileSize)),
+      const minR = Math.max(
+          bounds.row,
+          bounds.row + Math.floor((y - pad * cellPx) / cellPx - e.offsetY / tileSize),
+        ),
         maxR = Math.min(
-          map.rows,
-          Math.ceil((y + height - pad * cellPx) / cellPx - e.offsetY / tileSize),
+          bounds.row + map.rows,
+          bounds.row + Math.ceil((y + height - pad * cellPx) / cellPx - e.offsetY / tileSize),
         )
       for (let r = minR; r < maxR; r++)
         for (let c = minC; c < maxC; c++) {
-          const tile = cellTile(cellAt(map, l.id, c, r))
+          const tile = cellTile(reader.at(c, r))
           if (tile < 0 || (!l.collision && !ts.solid[tile] && !ts.platform[tile])) continue
           ctx.fillStyle = l.collision || ts.solid[tile] ? SOLID_FILL : PLATFORM_FILL
           ctx.fillRect(
-            (c + pad) * cellPx + (e.offsetX * cellPx) / tileSize,
-            (r + pad) * cellPx + (e.offsetY * cellPx) / tileSize,
+            (c - bounds.col + pad) * cellPx + (e.offsetX * cellPx) / tileSize,
+            (r - bounds.row + pad) * cellPx + (e.offsetY * cellPx) / tileSize,
             cellPx,
             cellPx,
           )

@@ -4,7 +4,7 @@ import base from './playwright.pinta-budget.config'
 const port = Number(process.env.PINTA_RENDER_PORT ?? 5492)
 export default defineConfig({
   ...base,
-  testMatch: 'pinta-render-pressure.flow.ts',
+  testMatch: ['pinta-render-pressure.flow.ts', 'pinta-region-render.flow.ts'],
   outputDir: './.cache/pinta-render-pressure-results',
   reporter: [
     ['list'],

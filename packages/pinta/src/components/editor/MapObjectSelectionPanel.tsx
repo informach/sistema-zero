@@ -1,6 +1,6 @@
 import { type JSX, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { embeddedTilesetOf, mergeMapResourceVersions } from '../../core/mapResourceVersions'
+import { embeddedTilesetOf } from '../../core/mapResourceVersions'
 import {
   effectiveLayer,
   isObjectLayer,
@@ -13,7 +13,7 @@ import { objectBounds } from '../../tiles/objectGeometry'
 import {
   arrangeObjects,
   type ObjectArrange,
-  pasteObjects,
+  pasteObjectSelection,
   pasteOffset,
 } from '../../tiles/objectSelection'
 import { mapResourceVersionsForObjects } from '../../tiles/resourceVersions'
@@ -67,6 +67,7 @@ export function MapObjectSelectionPanel({
       structuredClone({
         kind: 'objects',
         objects: selected,
+        ...('origin' in source ? { coordinates: 'signed' as const } : {}),
         ...(resources.length ? { resources } : {}),
       }),
     )
@@ -94,11 +95,16 @@ export function MapObjectSelectionPanel({
     const layer = s.asset.layers.find((l) => l.id === layerId)
     if (!layer || !isObjectLayer(layer)) return
     const offset = effectiveLayer(s.asset, layer)
+    const coordinates = 'origin' in s.asset ? 'signed' : 'legacy'
     let [dx, dy] = target
-      ? pasteOffset(item.objects, {
-          x: target.x - offset.offsetX,
-          y: target.y - offset.offsetY,
-        })
+      ? pasteOffset(
+          item.objects,
+          {
+            x: target.x - offset.offsetX,
+            y: target.y - offset.offsetY,
+          },
+          coordinates,
+        )
       : [16, 16]
     if (snapObjects && item.objects.length) {
       const tilesetId = s.asset.tilesetId
@@ -110,21 +116,26 @@ export function MapObjectSelectionPanel({
         minY = Math.min(...boxes.map((b) => b.y))
       // Pontos ficam no meio da casa; desenhos e grupos encaixam pela borda, como no palco.
       const phase = item.objects.every((o) => o.width === 0 && o.height === 0) ? size / 2 : 0
-      dx = Math.max(-minX, Math.round((minX + dx - phase) / size) * size + phase - minX)
-      dy = Math.max(-minY, Math.round((minY + dy - phase) / size) * size + phase - minY)
+      const x = Math.round((minX + dx - phase) / size) * size + phase - minX,
+        y = Math.round((minY + dy - phase) / size) * size + phase - minY
+      dx = coordinates === 'signed' ? x : Math.max(-minX, x)
+      dy = coordinates === 'signed' ? y : Math.max(-minY, y)
     }
-    let next = pasteObjects(s.asset, layerId, item.objects, dx, dy)
+    const { map: next, reason } = pasteObjectSelection(
+      s.asset,
+      layerId,
+      item.objects,
+      dx,
+      dy,
+      item.resources,
+      item.coordinates,
+    )
     if (next === s.asset) {
-      warnLocked()
+      if (reason === 'resources') showToast(COPY.scene.resourcePasteFailed)
+      else if (reason === 'incompatible-format') showToast(COPY.scene.objectPasteFormat)
+      else if (reason === 'object-budget') showToast(COPY.tiles.objectLimit)
+      else warnLocked()
       return
-    }
-    if (item.resources?.length) {
-      const resources = mergeMapResourceVersions(s.asset.resources ?? [], item.resources)
-      if (!resources) {
-        showToast(COPY.scene.resourcePasteFailed)
-        return
-      }
-      next = { ...next, resources }
     }
     const oldIds = new Set(
       s.asset.layers.flatMap((l) => (isObjectLayer(l) ? l.objects.map((o) => o.id) : [])),

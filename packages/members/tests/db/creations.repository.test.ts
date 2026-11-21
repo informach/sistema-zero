@@ -269,7 +269,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     })
   })
 
-  test('delete confere capacidade contra formato confirmado e pendente sob lock', async () => {
+  test.each([
+    2, 6,
+  ])('delete confere capacidade contra formato %s confirmado e pendente sob lock', async (formatVersion) => {
     const input = {
       ...base,
       tool: 'pinta' as const,
@@ -280,28 +282,44 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     const first = await repo.reserveUpload(input)
     if (!first.ok) throw new Error('Expected initial reservation')
     await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
-    const next = await repo.reserveUpload({ ...input, formatVersion: 2 })
+    const next = await repo.reserveUpload({ ...input, formatVersion })
     if (!next.ok) throw new Error('Expected future reservation')
     const before = await repo.get(input.userId, input.tool, input.itemId)
-    for (const cap of [undefined, 1]) {
+    for (const cap of formatVersion === 6 ? [undefined, 1, 4, 5] : [undefined, 1]) {
       expect(
         await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now, cap),
-      ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+      ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: formatVersion })
       expect(await repo.get(input.userId, input.tool, input.itemId)).toEqual(before)
     }
     await repo.commit({ ...input, revision: next.revision, storageRef: 'future' })
     expect(
       await repo.softDelete(input.userId, input.tool, input.itemId, next.revision, now),
-    ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: formatVersion })
     expect(
-      await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now, 2),
+      await repo.softDelete(
+        input.userId,
+        input.tool,
+        input.itemId,
+        first.revision,
+        now,
+        formatVersion,
+      ),
     ).toMatchObject({ ok: false, reason: 'stale-base' })
     expect(
-      await repo.softDelete(input.userId, input.tool, input.itemId, next.revision, now, 2),
+      await repo.softDelete(
+        input.userId,
+        input.tool,
+        input.itemId,
+        next.revision,
+        now,
+        formatVersion,
+      ),
     ).toMatchObject({ ok: true, deleted: true, storageRef: 'future' })
   })
 
-  test('delete espera uma atualização concorrente e reavalia a versão, sem preflight externo', async () => {
+  test.each([
+    2, 6,
+  ])('delete reavalia formato %s após atualização concorrente sob lock', async (formatVersion) => {
     const input = {
       ...base,
       tool: 'pinta' as const,
@@ -321,17 +339,28 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       release = resolve
     })
     const promoted = conn.sql.begin(async (sql) => {
-      await sql`update members.creations set format_version = 2 where user_id = ${input.userId} and item_id = ${input.itemId}`
+      await sql`update members.creations set format_version = ${formatVersion} where user_id = ${input.userId} and item_id = ${input.itemId}`
       locked()
       await barrier
     })
     await ready
-    const deleting = repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now)
+    const deleting = repo.softDelete(
+      input.userId,
+      input.tool,
+      input.itemId,
+      first.revision,
+      now,
+      formatVersion === 6 ? 4 : undefined,
+    )
     release()
     await promoted
-    expect(await deleting).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    expect(await deleting).toEqual({
+      ok: false,
+      reason: 'client-outdated',
+      requiredVersion: formatVersion,
+    })
     expect(await repo.get(input.userId, input.tool, input.itemId)).toMatchObject({
-      formatVersion: 2,
+      formatVersion,
       storageRef: 'original',
       deletedAt: null,
     })

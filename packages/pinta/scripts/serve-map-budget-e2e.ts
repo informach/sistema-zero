@@ -31,7 +31,8 @@ await writeFile(
   entry,
   `import { runMapBudgetProbe } from '../../scripts/map-budget-probe';
 ${proveRender ? "import { runMapRenderProbe } from '../../scripts/map-render-probe';" : ''}
-Object.assign(window, { runMapBudgetProbe${proveRender ? ', runMapRenderProbe' : ''} });`,
+${proveRender ? "import { runRegionRenderProbe, runDensePressureRenderProbe } from '../../scripts/region-render-probe';" : ''}
+Object.assign(window, { runMapBudgetProbe${proveRender ? ', runMapRenderProbe, runRegionRenderProbe, runDensePressureRenderProbe' : ''} });`,
 )
 const built = await Bun.build({
   entrypoints: [entry],

@@ -55,7 +55,7 @@ export function updateMapLayer(
       key === 'opacity'
         ? 1
         : key.startsWith('parallax')
-          ? 16
+          ? PINTA_MAP_FORMAT_LIMITS.maxLayerParallax
           : PINTA_MAP_FORMAT_LIMITS.maxLayerOffset
     next[key] = Number.isFinite(value)
       ? Math.max(key.startsWith('offset') ? -max : 0, Math.min(max, value))

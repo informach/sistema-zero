@@ -3,6 +3,7 @@ import { safeSetPointerCapture } from '../../../core/pointer'
 import type { TilemapAsset } from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import { type CellPos, type CellRect, normalizeCellRect } from '../../../tiles/cellGeometry'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import {
   clearRegion,
   extractRegion,
@@ -149,7 +150,7 @@ export function createMapSelectionController({
     selRef.current = {
       kind: 'marquee',
       start: p,
-      rect: normalizeCellRect(p, p, tilemap.cols, tilemap.rows),
+      rect: normalizeCellRect(p, p, tilemap.cols, tilemap.rows, mapCellBounds(tilemap)),
     }
     renderSelection()
   }
@@ -165,7 +166,7 @@ export function createMapSelectionController({
       return
     }
     if (sel?.kind === 'marquee') {
-      sel.rect = normalizeCellRect(sel.start, p, tilemap.cols, tilemap.rows)
+      sel.rect = normalizeCellRect(sel.start, p, tilemap.cols, tilemap.rows, mapCellBounds(tilemap))
       renderSelection()
     }
   }

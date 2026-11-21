@@ -1,0 +1,97 @@
+bun test v1.3.11 (af24e281)
+
+packages\member-shell\tests\creations-routes.test.ts:
+(pass) protocolo de isolamento adulto durante deploy e rollback > members antigo não recebe reserva, commit ou exclusão e não ganha URL assinada
+(pass) protocolo de isolamento adulto durante deploy e rollback > reserva adulta só assina chave do contexto adulto confirmado
+(pass) BFF das criações — reserva > Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s
+(pass) BFF das criações — reserva > Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s
+(pass) BFF das criações — reserva > Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s
+(pass) BFF das criações — reserva > Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s
+(pass) BFF das criações — reserva > Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s
+(pass) BFF das criações — reserva > Pinta B6 não recebe PUT assinado se o backend confirmar capacidade 6
+(pass) BFF das criações — reserva > Pinta B6 recebe URL somente depois da confirmação exata e conserva a revisão e os bytes
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: 2
+(pass) BFF das criações — reserva > não assina blob nem partes sem confirmação exata do formato solicitado: %s
+(pass) BFF das criações — reserva > ticket legado ausente confirma somente formato 1 [15.00ms]
+(pass) BFF das criações — reserva > encaminha formato numérico sem coerção
+(pass) BFF das criações — reserva > recusa de formato atravessa o BFF com a versão exigida, sem assinar upload
+(pass) BFF das criações — reserva > corta o nome no teto (120) e descarta miniatura grande, em vez de recusar; assina o PUT com o Content-Length ecoado pelo members
+(pass) BFF das criações — reserva > bytes acima do teto por item é 409 de quota com "grande demais" (o selo diz a verdade); corpo malformado ou itemId com ":" são 400 (nunca chegam ao members)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva: repassa `parts` ao members e assina UM PUT por parte faltante (Content-Length da parte), além do manifesto
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva: total declarado (manifesto + partes) acima de 40 MB é 409 de quota SEM ir ao members; 129 partes ou hash fora do padrão são 400
+[creations] commit com partes que não estão no R2 {
+  itemId: "proj-1",
+  missing: [ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" ],
+}
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit: confere as `uploadedParts` no R2 (HEAD, chave com a revisão do commit) antes do members; 404 definitivo é 409 CREATION_PART_MISSING com os hashes e o members NÃO é chamado
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > reserva com partes declaradas mas members SEM `parts` na resposta (members antigo/rollback): 503 retentável, nunca um ticket sem as faltantes
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > 409 CREATION_PARTS_NEED_BYTES do members atravessa o BFF com `details.hashes` (o cliente comprime só essas)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > storage SEM `deleteObjects` (fallback): apaga um a um o que a revisão soltou [110.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit: HEAD que falha (não é 404) NÃO barra; repassa `uploadedParts` ao members e apaga em lote tudo o que a revisão soltou (`releasedStorageKeys`) [47.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > commit sem `releasedStorageKeys` (members antigo) apaga só `previousStorageKey`; 409 do members apaga só o manifesto recusado (nunca as partes) [62.00ms]
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > download: assina o GET do manifesto e um por parte (`parts: [{hash, bytes, url}]`)
+(pass) BFF das criações — PARTES (assets do Estúdio por conteúdo) > lixeira: apaga em lote tudo o que o members soltou (`storageKeys` = manifesto + partes) [31.00ms]
+(pass) BFF das criações — commit > promove o documento Python v3 e preserva a revisão de recursos conferida [16.00ms]
+(pass) BFF das criações — commit > recusa fonte Python v3 corrompida antes de promover a revisão
+(pass) BFF das criações — commit > confere o documento do R2 antes do commit e recusa formato antigo sem promover nem apagar
+(pass) BFF das criações — commit > manda a revisão e os recursos conferidos ao members, apaga a revisão anterior e devolve o resumo
+(pass) BFF das criações — commit > `bytes` no corpo do commit é recusado (o corpo é estrito): os bytes são os da reserva
+(pass) BFF das criações — commit > o navegador não pode declarar a versão verificada do documento no commit
+(pass) BFF das criações — commit > o DELETE do blob anterior no R2 fica FORA do caminho crítico: a resposta do commit sai mesmo com o R2 pendurado
+[creations] não apagou a revisão anterior no R2 {
+  keys: [ "creations/u/studio/proj-1/1.json.gz" ],
+  error: warn: R2 fora do ar
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\tests\creations-routes.test.ts:46:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\tests\creations-routes.test.ts:51:45)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:221:50)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:183:21)
+      at deferWithNextAfter (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:187:10)
+      at deleteManyQuietly (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:219:5)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:538:9)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\tests\creations-routes.test.ts:858:46)
+,
+}
+(pass) BFF das criações — commit > falha ao apagar o blob anterior não vira erro para a criança
+(pass) BFF das criações — commit > 409 definitivo do members apaga do R2 a revisão recusada e passa o erro
+(pass) BFF das criações — apagar > encaminha capacidade junto da revisão; recusa de formato não apaga R2
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: %s
+(pass) BFF das criações — apagar > não encaminha capacidade inválida: 2
+[creations] não apagou o blob da lixeira no R2 {
+  keys: [ "creations/u/studio/proj-1/2.json.gz" ],
+  error: warn: R2 fora do ar
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\tests\creations-routes.test.ts:46:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\tests\creations-routes.test.ts:51:45)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:221:50)
+      at run (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:183:21)
+      at deferWithNextAfter (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:187:10)
+      at deleteManyQuietly (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:219:5)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\src\routes\creations.ts:601:9)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\member-shell\tests\creations-routes.test.ts:940:48)
+,
+}
+(pass) BFF das criações — apagar > a lixeira apaga o blob que o members soltou (best-effort) e devolve só `{deleted}`
+(pass) BFF das criações — apagar > recusa DELETE sem revisão-base antes de chamar o members
+(pass) BFF das criações — respostas e sessão > lista valida e repassa cursor/limite ao members
+(pass) BFF das criações — respostas e sessão > 200 sem corpo vira 502 (o cliente nunca recebe `{ok:true}` no lugar de um ticket)
+(pass) BFF das criações — respostas e sessão > download assina o GET da chave corrente e devolve o resumo
+(pass) BFF das criações — respostas e sessão > `x-sz-viewer` diferente do perfil da sessão é 409 em TODAS as rotas (troca de perfil no meio de um upload em voo)
+(pass) BFF das criações — respostas e sessão > sessão de suporte (impersonação) é só leitura: reserva, commit e apagar são 403 antes do members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > rascunho exige UUID antes de chamar o members ou o armazenamento
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > reserva do `lesson-studio` repassa a impressão v1 ao members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > reserva do `lesson-studio` repassa a impressão v2 ao members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > impressão fora do formato é 400 antes do members
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > o commit do `lesson-studio` confere o projeto como o do Estúdio; o `lesson-pinta` não
+(pass) BFF das criações — o rascunho da aula (10/10/2026) > o download leva o relógio do servidor
+
+ 59 pass
+ 0 fail
+ 229 expect() calls
+Ran 59 tests across 1 file. [1123.00ms]

@@ -41,6 +41,8 @@ export interface PintaEditorState {
   commitLinked(next: PintaAsset, linked: { before: PintaAsset[]; after: PintaAsset[] }): void
   /** Substitui SEM entrada de undo (ex.: rename vindo da galeria). */
   replace(next: PintaAsset): void
+  /** Conditional gesture write; returns its surviving snapshot, or null if superseded/refused. */
+  replaceIfCurrent(expected: PintaAsset, next: PintaAsset): PintaAsset | null
   /**
    * Fecha um gesto de VÁRIOS passos aplicados via `replace` (ex.: arrastar
    * pintando células do tilemap): grava o snapshot INICIAL do gesto no undo —
@@ -207,14 +209,15 @@ export function createEditorStore(options: {
       next: PintaAsset,
       recordHistory: boolean,
       linked?: { before: PintaAsset[]; after: PintaAsset[] },
-    ): boolean {
+    ): PintaAsset | null {
       const current = get().asset
       // A controller from a gesture that began before conflict recovery may still finish.
       // It must never put the old document back into the adopted copy or its history.
-      if (next.id !== current.id) return false
+      if (next.id !== current.id) return null
       const acceptEdit = options.acceptEdit
       if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
-        return false
+        return null
+      if (get().asset !== current) return null
       const previousLinked = linked
         ? mergeLinkedAssets(currentLinked, linked.before)
         : currentLinked
@@ -224,14 +227,15 @@ export function createEditorStore(options: {
         history.record({ asset: current, linkedMaps: previousLinked })
       }
       if (linked) currentLinked = mergeLinkedAssets(previousLinked, linked.after)
+      const applied = { ...next, updatedAt: Date.now() } as PintaAsset
       set({
-        asset: { ...next, updatedAt: Date.now() } as PintaAsset,
+        asset: applied,
         linkedAssets: currentLinked,
         canUndo: history.canUndo(),
         canRedo: history.canRedo(),
       })
       scheduleAutosave()
-      return true
+      return get().asset === applied ? applied : null
     }
 
     return {
@@ -245,7 +249,7 @@ export function createEditorStore(options: {
       canRedo: false,
 
       commit(next) {
-        return apply(next, true)
+        return apply(next, true) !== null
       },
 
       commitLinked(next, linked) {
@@ -254,6 +258,10 @@ export function createEditorStore(options: {
 
       replace(next) {
         apply(next, false)
+      },
+
+      replaceIfCurrent(expected, next) {
+        return get().asset === expected ? apply(next, false) : null
       },
 
       commitGesture(base) {

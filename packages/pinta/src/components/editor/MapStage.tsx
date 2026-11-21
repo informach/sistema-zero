@@ -7,10 +7,12 @@ import { COPY } from '../../core/copy'
 import type { TilemapAsset } from '../../core/project'
 import { isMapObjectTool } from '../../state/sessionStore'
 import { normalizeCellRect } from '../../tiles/cellGeometry'
+import { mapCellBounds } from '../../tiles/mapCells'
 import { Button } from '../ui/Button'
-import { MapObjectArtwork } from './MapObjectArtwork'
+import { MapLibraryPreview } from './MapLibraryPreview'
 import { MapObjectsOverlay } from './MapObjectsOverlay'
 import { keyboardCellBounds, keyboardRegionBounds } from './mapTools/keyboardPainting'
+import { mapPointToPaper } from './mapTools/mapViewport'
 import type { TilemapController } from './mapTools/useTilemapController'
 import { stageCursor } from './stageCursor'
 
@@ -27,14 +29,24 @@ export function MapStage({
   const anchor = c.keyboard.anchor
   const cursorBox = cursor ? keyboardCellBounds(tilemap, c.layerId, cursor, c.tileSize) : null
   const area =
-    cursor && anchor ? normalizeCellRect(cursor, anchor, tilemap.cols, tilemap.rows) : null
+    cursor && anchor
+      ? normalizeCellRect(cursor, anchor, tilemap.cols, tilemap.rows, mapCellBounds(tilemap))
+      : null
   const areaBox = area ? keyboardRegionBounds(tilemap, c.layerId, area, c.tileSize) : null
-  const screenBox = (box: { x: number; y: number; width: number; height: number }) => ({
-    left: (box.x / c.tileSize + c.pad) * c.cellPx,
-    top: (box.y / c.tileSize + c.pad) * c.cellPx,
-    width: (box.width * c.cellPx) / c.tileSize,
-    height: (box.height * c.cellPx) / c.tileSize,
-  })
+  const screenBox = (box: { x: number; y: number; width: number; height: number }) => {
+    const point = mapPointToPaper(box, {
+      tileSize: c.tileSize,
+      cellPx: c.cellPx,
+      pad: c.pad,
+      origin: mapCellBounds(tilemap),
+    })
+    return {
+      left: point.x,
+      top: point.y,
+      width: (box.width * c.cellPx) / c.tileSize,
+      height: (box.height * c.cellPx) / c.tileSize,
+    }
+  }
   return (
     // A grade do mapa (no meio quando é menor; rola quando é maior, com `safe center`, senão
     // o que passa do topo fica fora de alcance).
@@ -137,33 +149,13 @@ export function MapStage({
             previewIds={c.objectScatter.preview?.addedIds}
           />
           {c.libraryPlacement.preview ? (
-            <svg
-              data-pin-library-preview
-              aria-label={COPY.scene.libraryPreview}
-              role="img"
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              viewBox={`0 0 ${(tilemap.cols + 2 * c.pad) * c.tileSize} ${(tilemap.rows + 2 * c.pad) * c.tileSize}`}
-            >
-              <title>{COPY.scene.libraryPreview}</title>
-              <g
-                transform={`translate(${c.libraryPlacement.preview.offsetX + c.pad * c.tileSize} ${c.libraryPlacement.preview.offsetY + c.pad * c.tileSize})`}
-                opacity={0.65}
-              >
-                <MapObjectArtwork
-                  object={c.libraryPlacement.preview.object}
-                  source={c.libraryPlacement.preview.source}
-                />
-                <rect
-                  x={c.libraryPlacement.preview.object.x}
-                  y={c.libraryPlacement.preview.object.y}
-                  width={c.libraryPlacement.preview.object.width}
-                  height={c.libraryPlacement.preview.object.height}
-                  fill="none"
-                  stroke="var(--color-pin-accent)"
-                  strokeWidth={(2 * c.tileSize) / c.cellPx}
-                />
-              </g>
-            </svg>
+            <MapLibraryPreview
+              map={tilemap}
+              preview={c.libraryPlacement.preview}
+              tileSize={c.tileSize}
+              pad={c.pad}
+              cellPx={c.cellPx}
+            />
           ) : null}
         </div>
       </div>

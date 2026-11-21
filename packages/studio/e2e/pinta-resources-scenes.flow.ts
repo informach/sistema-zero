@@ -2,6 +2,8 @@ import { execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
+import { isObjectLayer, isTilesetKind, type TilemapAsset } from '../../pinta/src/core/project'
+import { importPintaJson } from '../../pinta/src/export/projectJson'
 
 const root = resolve(import.meta.dirname, '../../..')
 const fixture = resolve(root, '.tmp/pinta-resources-e2e/resources.pinta.json')
@@ -14,10 +16,122 @@ test.beforeAll(() => {
 })
 test.use({ actionTimeout: 15000 })
 test.beforeEach(async ({ page }, info) => {
-  if (info.project.name === 'cpu4x') {
+  const rate = Number(info.project.metadata.cpuSlowdown ?? (info.project.name === 'cpu4x' ? 4 : 1))
+  if (rate > 1) {
     const session = await page.context().newCDPSession(page)
-    await session.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+    await session.send('Emulation.setCPUThrottlingRate', { rate })
   }
+  await info.attach('perfil-de-cpu', {
+    body: JSON.stringify({ rate, emulated: true }),
+    contentType: 'application/json',
+  })
+})
+
+test('espalhar arte privada religa cada cópia e conserva recursos no cancelamento, histórico e reabertura', async ({
+  page,
+  isMobile,
+}) => {
+  test.setTimeout(120000)
+  await page.goto(`/?namespace=scatter-references-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(fixture, '../resources-object-references.pinta.json'))
+  await page.getByRole('button', { name: 'Abrir vinculos-qa (Mapa)', exact: true }).click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByLabel('Nível das ferramentas', { exact: true }).selectOption('advanced')
+  await page.getByRole('button', { name: /^Objetos/ }).click()
+  await page.getByRole('button', { name: 'Escolher o objeto Placa QA', exact: true }).click()
+  async function saved() {
+    const map = importPintaJson(JSON.stringify(await backup(page))).assets.find(
+      (a) => a.kind === 'tilemap' && a.name === 'vinculos-qa',
+    )
+    if (map?.kind !== 'tilemap') throw Error('Mapa esperado')
+    return map
+  }
+  const original = await saved()
+  await page.getByRole('button', { name: 'Espalhar desenhos', exact: true }).click()
+  await page.getByLabel('Tamanho do pincel (casas)', { exact: true }).selectOption('1')
+  const density = page.getByRole('slider', { name: /^Densidade/ })
+  await density.focus()
+  await density.press('End')
+  const spacing = page.getByRole('slider', { name: /^Distância entre centros:/ })
+  await spacing.focus()
+  await spacing.press('Home')
+  const cdp = await page.context().newCDPSession(page)
+  async function begin() {
+    const overlay = page.locator('[data-pin-objects-overlay]')
+    await overlay.scrollIntoViewIfNeeded()
+    const points = await overlay.evaluate((element) => {
+      const matrix = (element as SVGSVGElement).getScreenCTM()
+      if (!matrix) throw Error('Transformação esperada')
+      return [new DOMPoint(56, 56), new DOMPoint(72, 56)].map((point) => {
+        const p = point.matrixTransform(matrix)
+        return { x: p.x, y: p.y }
+      })
+    })
+    for (const p of points) {
+      expect(p.x).toBeGreaterThanOrEqual(0)
+      expect(p.y).toBeGreaterThanOrEqual(0)
+      expect(p.x).toBeLessThan(page.viewportSize()!.width)
+      expect(p.y).toBeLessThan(page.viewportSize()!.height)
+    }
+    if (isMobile) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [points[0]!] })
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [points[1]!] })
+    } else {
+      await page.mouse.move(points[0]!.x, points[0]!.y)
+      await page.mouse.down()
+      await page.mouse.move(points[1]!.x, points[1]!.y, { steps: 3 })
+    }
+    const preview = page.locator('[data-pin-scatter-preview]')
+    await expect(preview).toHaveCount(2)
+    await expect(preview.locator('image')).toHaveCount(2)
+    await expect(preview.first().locator('image')).toHaveAttribute('href', /^data:image\//)
+    return preview.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute('data-pin-scatter-preview')),
+    )
+  }
+  await begin()
+  if (isMobile) await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] })
+  else {
+    await page.keyboard.press('Escape')
+    await page.mouse.up()
+  }
+  expect((await saved()).resources).toEqual(original.resources)
+  expect((await saved()).layers).toEqual(original.layers)
+  const previewIds = await begin()
+  if (isMobile) await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  else await page.mouse.up()
+  await expect(page.locator('[data-pin-scatter-preview]')).toHaveCount(0)
+  const placed = await saved(),
+    objects = placed.layers.filter(isObjectLayer).flatMap((l) => l.objects)
+  expect(objects).toHaveLength(3)
+  expect(objects.slice(1).map((o) => o.id)).toEqual(previewIds)
+  expect(placed.resources).toHaveLength(6)
+  for (const object of objects) {
+    const dependent = placed.resources!.find((v) => v.asset.id === object.art?.assetId)!.asset
+    if (!isTilesetKind(dependent)) throw Error('Peças esperadas')
+    const ref = dependent.tileProperties!['0']!.linked
+    if (typeof ref !== 'object' || ref.type !== 'asset') throw Error('Vínculo esperado')
+    const direct = placed.resources!.find((v) => v.asset.id === ref.value)!.asset
+    if (!isTilesetKind(direct)) throw Error('Peças esperadas')
+    expect(direct.tileProperties!['0']!.marker).toEqual({ type: 'object', value: object.id })
+  }
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect((await saved()).layers).toEqual(original.layers)
+  expect((await saved()).resources).toEqual(original.resources)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  expect((await saved()).resources).toEqual(placed.resources)
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'Abrir vinculos-qa (Mapa)', exact: true }).click()
+  const reopened = await saved()
+  expect(reopened.layers).toEqual(placed.layers)
+  expect(reopened.resources).toEqual(placed.resources)
 })
 async function backup(page: Page) {
   await page.getByRole('button', { name: 'Baixar', exact: true }).click()
@@ -205,4 +319,69 @@ test('copiar para outro mapa após reabrir leva a versão privada e desfaz os da
   expect(
     (await backup(page)).assets.find((a: { kind: string }) => a.kind === 'tilemap').resources,
   ).toHaveLength(2)
+})
+
+test('colar entre mapas religa propriedades de objetos e a cadeia de versões privadas com um histórico', async ({
+  page,
+  isMobile,
+}) => {
+  test.setTimeout(90000)
+  await page.goto(`/?namespace=object-references-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(fixture, '../resources-object-references.pinta.json'))
+  await page.getByRole('button', { name: 'Abrir vinculos-qa (Mapa)', exact: true }).click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByLabel('Nível das ferramentas', { exact: true }).selectOption('advanced')
+  await page.getByRole('button', { name: /^Objetos/ }).click()
+  await page.getByRole('button', { name: 'Escolher o objeto Placa QA', exact: true }).click()
+  async function saved(name: string) {
+    const parsed = importPintaJson(JSON.stringify(await backup(page))),
+      map = parsed.assets.find((a) => a.kind === 'tilemap' && a.name === name)
+    if (map?.kind !== 'tilemap') throw Error('Mapa esperado')
+    return map
+  }
+  function refs(map: TilemapAsset) {
+    const object = map.layers.filter(isObjectLayer).flatMap((l) => l.objects)[0]!,
+      dependent = map.resources!.find((v) => v.asset.id === object.art?.assetId)!.asset
+    if (!isTilesetKind(dependent)) throw Error('Peças esperadas')
+    const linked = dependent.tileProperties!['0']!.linked
+    if (typeof linked !== 'object' || linked.type !== 'asset') throw Error('Vínculo esperado')
+    const direct = map.resources!.find((v) => v.asset.id === linked.value)!.asset
+    if (!isTilesetKind(direct)) throw Error('Peças esperadas')
+    return { object, dependent, direct }
+  }
+  const original = refs(await saved('vinculos-qa'))
+  await page.getByRole('button', { name: 'Copiar', exact: true }).click()
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'Abrir destino-vinculos-qa (Mapa)', exact: true }).click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByRole('button', { name: /^Objetos/ }).click()
+  await page.getByRole('button', { name: 'Colar', exact: true }).click()
+  const pasted = await saved('destino-vinculos-qa'),
+    copy = refs(pasted)
+  expect(copy.object.id).not.toBe(original.object.id)
+  expect(copy.dependent.id).not.toBe(original.dependent.id)
+  expect(copy.direct.id).not.toBe(original.direct.id)
+  expect(copy.direct.tileProperties!['0']!.marker).toEqual({
+    type: 'object',
+    value: copy.object.id,
+  })
+  expect(copy.direct.tileProperties!['0']!.literal).toBe('qa-object-reference-source')
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  const undone = await saved('destino-vinculos-qa')
+  expect(undone.layers.filter(isObjectLayer).flatMap((l) => l.objects)).toHaveLength(0)
+  expect(undone.resources ?? []).toHaveLength(0)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  expect(refs(await saved('destino-vinculos-qa'))).toEqual(copy)
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'Abrir destino-vinculos-qa (Mapa)', exact: true }).click()
+  expect(refs(await saved('destino-vinculos-qa'))).toEqual(copy)
 })

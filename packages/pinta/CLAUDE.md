@@ -1,6 +1,146 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Retomada do rollout e regiões (21/11/2026)
+
+O código integrado lê nuvem 6 e declara escrita 6 para mapas, folhas e conjuntos.
+Isso não atesta a versão implantada: o leitor de rollback 85d16fcd9 declara 4.
+Conferir a fonte publicada e executar produtor real, CAS, cliente antigo e
+rollback antes de concluir o rollout. As seções datadas abaixo incluem o histórico
+do corte anterior; os números atuais pertencem a `core/creations/pinta-format.ts`.
+
+O ciclo do gravador 6 foi homologado com login em staging em 21/11: B → A → B,
+edição local conservada em A e sincronizada intacta por B; serviço temporário
+removido, frontends compartilhados preservados. Alcance e recibos em
+`qa/rollback-publicado-2026-11-21/`, no diretório da missão. Não confundir essa
+prova com ativação dos futuros contratos de regiões ou com o ciclo final do jogo.
+
+`RegionTilemapAsset`/codec 8 continuam preparação interna: não integram ainda
+a união pública, o escritor de backup ou o protocolo físico 3. Não subir constantes
+para anunciar suporte de oficina antes de completar seus consumidores.
+Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
+Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
+
+`RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
+separação usam células por regiões e o clonador comum; a separação esparsa conserva
+a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto
+global de chunks; recusa conserva o mesmo mapa. Inserção/atualização de objetos
+usam a admissão estrita para posições assinadas/fracionárias. Render e protocolo 3
+ainda precisam ser integrados. Provas em
+`qa/conjuntos-por-regioes-2026-11-21/`, no diretório da missão.
+
+Seleção/clipboard e templates já usam o mesmo grafo e o modelo interno de regiões.
+Colar religa também dependentes indiretos das versões privadas, com admissão atômica
+de objetos/recursos; alinhar valida todos os destinos antes do gesto. O espelho de
+clipboard 3 conserva posições assinadas/fracionárias e é recusado pelo módulo antigo;
+1/2 mantêm os bytes anteriores. O template usa base neutra sem materializar o mundo.
+Isso não ativa formato 8 público. Provas em `qa/objetos-por-regioes-2026-11-21/`.
+
+O espalhamento também usa limites assinados e deltas fracionários no núcleo
+interno. Amostras têm teto de 65.536, e objetos/recursos são admitidos juntos.
+O clonador comum aceita IDs determinísticos por gesto; cada cópia religa as peças
+privadas. `MapObjectArtwork` resolve a arte no snapshot exibido, inclusive prévia,
+e não apenas no editor salvo. O formato 8 ainda não está ativo na oficina.
+Provas, comparação com 48 composições legadas e retificação do hook de CPU em
+`qa/espalhamento-de-objetos-por-regioes-2026-11-21/`, no diretório da missão.
+
+O render de chunks também usa o leitor comum e `mapCellBounds`, com coordenadas
+globais assinadas. O recorte esparso visita apenas chunks armazenados; leitor por
+camada/frame e cache de 32 MiB. A referência densa de QA mantém o alinhamento
+global e o mesmo orçamento. O lote não ativa a oficina 8. Provas e achado de
+precisão entre composição direta/cache com opacidade de camada estão em
+`qa/renderizacao-por-regioes-2026-11-21/`, no diretório da missão. Esse achado foi
+corrigido em `qa/precisao-de-opacidade-2026-11-21/`: `directPixels` exige alpha
+composto 1; opacidade parcial conserva chunks canônicos. `usedBytes` inclui o
+scratch. Os casos diretos qualificados continuam sem canvases; não ampliar o
+orçamento nem relaxar igualdade de pixels para admitir uma composição diferente.
+
+O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
+aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
+herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.
+
+O minimapa aceita o contrato interno de regiões com visão geral de no máximo
+256 × 256 pixels e desempate global, visitando células armazenadas. O painel
+existente usa a origem lógica nos destinos e conta buffers no orçamento; as cores
+brutas legadas continuam sem cache, enquanto a interface compartilha cache por
+identidade imutável. Não é exportação visual completa. Provas em
+`qa/minimapa-por-regioes-2026-11-21/`, no diretório da missão. Miniaturas/imagens,
+IO 3 e ativação pública 8 continuam pendentes; estilos do painel preservados.
+
+As imagens de peças pixel/vetor também aceitam regiões internamente, pelo leitor
+comum com visita opcional em ordem global linha/coluna. O percurso padrão por
+chunks permanece igual. PNG de regiões tem admissão prévia de 8.192 px/lado e
+16 Mi pixels; a miniatura tem teto 512 e o SVG 8 Mi unidades UTF-16. O SVG entregue
+ao decoder usa o tamanho raster, conservando o viewBox lógico. `withSvgRootSize`
+foi extraído do compositor portátil, sem duplicação; a área de `scenePng` conserva
+o limite anterior compartilhado. A imagem antiga achatada permanece igual, e o
+novo contrato usa composição completa das camadas. Provas em
+`qa/imagens-por-regioes-2026-11-21/`. Objetos/conjuntos na imagem 8 ainda dependem
+do adaptador Scene 4 existente no plano; não há outro compositor independente.
+
+Pincéis usam o escritor comum com resultado de recusa; linhas/retângulos são
+admitidos antes de gerar pontos e carimbos expandem blocos distintos. Cada coleção
+e traço aceita até 65.536 destinos; revisitas não gastam o teto, e o pincel fica
+estável até soltar. `replaceIfCurrent(expected, next)` é CAS **em RAM**: passe o
+snapshot produzido pelo próprio gesto, não uma leitura recente para legitimar uma
+proposta antiga. O retorno é o snapshot que sobreviveu aos assinantes, ou `null`.
+A fachada de conjuntos possui identidade por revisão externa e adapta essa mesma
+operação. Recusa/cancelamento não restaura a base sobre outra revisão do mesmo ID.
+O CAS persistente/local da issue 026 permanece separado. Outros gestos contínuos,
+geometria/câmera e ativação pública 8 continuam no plano. Provas e limites em
+`qa/pinceis-por-regioes-2026-11-21/`, no diretório da missão.
+
+Objetos e opacidade de camada usam a sessão `state/editorGesture.ts`, sobre o
+mesmo CAS em RAM: término/cancelamento só atua na própria revisão sobrevivente.
+Recusa no meio restaura a base; Esc, pointercancel e desmontagem cancelam o gesto.
+Keyup não fecha um arrasto de ponteiro no range. O rascunho de polígono/caminho
+retém revisão e camada iniciais e é descartado se mudarem. Estilos preservados;
+isso não migra automaticamente os gestos de vetor/recursos, nem promove formato 8.
+Provas em `qa/gestos-de-objetos-e-camadas-2026-11-21/`, no diretório da missão.
+
+O papel/canvas usa `mapCellBounds` e conversões comuns de mundo, ponteiro e CSS.
+Seleção, cursor, destinos do minimapa e ponto de inserção descontam a origem.
+O canvas de oficina aceita o documento interno por regiões, com colisões pelo
+leitor comum e bitmap limitado ao viewport. A biblioteca conserva coordenadas
+assinadas/fracionárias e o deslocamento herdado; o legado conserva sua régua.
+A grade ainda percorre as linhas do mundo: perfil e culling ficam em lote isolado.
+Isso não ativa edição pública 8: movimento SVG de objetos, recursos, modelos de
+store/IO e adaptadores continuam no plano. Provas em
+`qa/geometria-do-papel-2026-11-21/`, no diretório da missão.
+
+O SVG de objetos usa `tiles/objectEditorSpace.ts`: origem global, limites locais
+com offsets e frações regionais; o ramo denso conserva a aritmética anterior.
+O overlay aceita leitura regional, mas o store público continua denso. Sem layout
+válido, o gesto é cancelado; mudar zoom, anel, snap, ferramenta, camada ou store
+também cancela somente a própria revisão. Não simular edição 8 por casts.
+Provas em `qa/espaco-de-objetos-2026-11-21/`, no diretório da missão.
+
+`ObjectScatterStroke` coleta posições do mundo com limites assinados e teto de
+65.536 destinos distintos; segmentos excessivos são recusados antes da linha.
+Uma recusa é terminal e não admite parte do segmento. A prévia da biblioteca
+usa `MapLibraryPreview`, conservando estilos e compensando a origem no SVG.
+Biblioteca/espalhamento confirmam pela sessão condicional, sem registrar histórico
+se um assinante adotar outra revisão durante a escrita. As geometrias dos hooks
+são conferidas também nos eventos, antes da limpeza dos efeitos. Preparação interna;
+o store público continua denso. Provas em `qa/confirmacao-de-previas-2026-11-21/`.
+
+**Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
+e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
+variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.
+`collectTerrainRegion` distingue recusa de região vazia; `terrainRegion` conserva
+a API de array. Formato 8 público, protocolo 3 e mensagens da oficina expansível
+continuam condicionados aos demais consumidores. Provas e limites em
+`qa/terrenos-por-regioes-2026-11-21/`, no diretório da missão.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
+
+**Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
+clonagem/remapeamento usada por importação e conjuntos. IDs de camadas e objetos
+possuem escopos separados. Um fragmento só troca o ID de uma versão incorporada
+quando precisa religar propriedades de objeto nela; arte inalterada é reutilizada.
+`createMapSet` admite o recorte antes de alocar; `detachMapSet` conserva locks
+herdados. O remapeador preserva vínculos explícitos de folhas no modelo interno 8,
+conservando a canonicalização densa. Conjuntos esparsos ainda não estão ativos.
+Provas: `qa/referencias-de-conjuntos-2026-11-21/`, no diretório da missão.
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
 
@@ -54,8 +194,9 @@ Comparação com renderer publicado, orçamento e limites em
   `physics: 'precise'` no mapa. `PINTA_MAX_SCHEMA = 7`. Campo ausente conserva o legado;
   não gravar `false` nem promover jogos existentes silenciosamente. Conjuntos acompanham
   o mapa interno. Cena 3 e PNG de dados 4 exigem o leitor `pinta-scene-physics-v1`;
-  receitas permanecem em 1 (mapa) / 2 (mundo). Nuvem lê 6 e ainda declara 4: documentos
-  6/7 ficam protegidos localmente até o rollout do leitor e a ativação posterior do gravador.
+  receitas permanecem em 1 (mapa) / 2 (mundo). O leitor de rollback lê nuvem 6 e
+  declara 4; o gravador preparado declara 6. Conferir o rollout efetivamente publicado:
+  somente a integração Git não comprova a subida dos documentos 6/7 para a conta.
 - Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
   completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
   recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado

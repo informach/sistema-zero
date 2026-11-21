@@ -1,0 +1,8 @@
+{
+  "started": "2026-11-21T11:21:44.365Z",
+  "isolation": "fresh disposable PostgreSQL; localhost dynamic port",
+  "status": "passed",
+  "exit": 0,
+  "containerRemoved": true,
+  "finished": "2026-11-21T11:21:49.127Z"
+}

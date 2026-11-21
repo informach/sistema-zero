@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-21T11:36:26.021Z",
+  "source": "5d0d58ab44e5d21125bd4d91091b89e347785aa7",
+  "qualification": 44887571933,
+  "target": {
+    "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "environment": "f634cff6-aafb-4804-8b69-172fad4e946e"
+  },
+  "stagingOnly": true,
+  "entries": [],
+  "ok": false,
+  "stage": "community-fresh-inventory",
+  "failure": {
+    "kind": "kids-journey-rollout-failure",
+    "step": "unclassified",
+    "reason": "operation-failed"
+  }
+}

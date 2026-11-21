@@ -1,27 +1,46 @@
 import { COPY } from '../core/copy'
+import { newId } from '../core/id'
 import {
   effectiveLayer,
+  isGroupLayer,
   isObjectLayer,
-  isTileLayer,
+  layerAncestors,
   type MapSetAsset,
   PINTA_LIMITS,
+  type RegionMapSetAsset,
+  type RegionTilemapAsset,
   type TilemapAsset,
 } from '../core/project'
+import type { AuthorMap } from './mapCellEdits'
 import { objectBounds } from './objectGeometry'
-import { createMapSet } from './sets'
+import { createMapSet, MapSetCaptureError } from './sets'
 
 /** Guarda o objeto inteiro, inclusive sua caixa girada, no contrato de conjunto existente. */
+export function createObjectTemplate(
+  map: RegionTilemapAsset,
+  layerId: string,
+  objectId: string,
+  tileSize: number,
+  name: string,
+): RegionMapSetAsset | null
 export function createObjectTemplate(
   map: TilemapAsset,
   layerId: string,
   objectId: string,
   tileSize: number,
   name: string,
-): MapSetAsset | null {
+): MapSetAsset | null
+export function createObjectTemplate(
+  map: AuthorMap,
+  layerId: string,
+  objectId: string,
+  tileSize: number,
+  name: string,
+): MapSetAsset | RegionMapSetAsset | null {
   const layer = map.layers.find((l) => l.id === layerId)
   if (!layer || !isObjectLayer(layer) || !Number.isFinite(tileSize) || tileSize <= 0) return null
   const object = layer.objects.find((o) => o.id === objectId)
-  if (!object || object.setId) return null
+  if (!object || object.setId || object.shape === 'set') return null
   const offset = effectiveLayer(map, layer),
     box = objectBounds(object)
   const anchorX = object.x + offset.offsetX,
@@ -41,26 +60,39 @@ export function createObjectTemplate(
     Math.floor(anchorY / tileSize) + 1 - row,
   )
   if (cols > PINTA_LIMITS.maxTilemapCols || rows > PINTA_LIMITS.maxTilemapRows) return null
-  const source = {
-    ...map,
-    layers: map.layers.map((l) =>
-      isObjectLayer(l)
-        ? { ...l, objects: l.id === layerId ? [object] : [] }
-        : isTileLayer(l)
-          ? { ...l, cells: new Int16Array(l.cells.length).fill(-1) }
-          : l,
-    ),
-  }
-  const set = createMapSet(source, { col, row, cols, rows }, tileSize, name)
-  // Modelo de objeto tem base neutra; não herda a colisão/propriedades do chão.
-  set.map.layers = [
-    {
-      id: `${set.id}-base`,
-      name: COPY.scene.base,
-      visible: true,
-      cells: new Int16Array(cols * rows).fill(-1),
-    },
-    ...set.map.layers.filter((l) => l.kind === 'group' || isObjectLayer(l)),
+  const ancestors = new Set(layerAncestors(map, layer).map((group) => group.id))
+  const context = [
+    ...map.layers.filter(isGroupLayer).filter((group) => ancestors.has(group.id)),
+    { ...layer, objects: [object] },
   ]
-  return set
+  // Only the selected object's ancestry and a neutral base enter the template.
+  const base = { id: newId(), name: COPY.scene.base, visible: true },
+    rect = { col, row, cols, rows }
+  try {
+    if ('origin' in map)
+      return createMapSet(
+        {
+          ...map,
+          layers: [
+            { ...base, cells: { kind: 'regions', version: 1, side: 32, chunks: [] } },
+            ...context,
+          ],
+        },
+        rect,
+        tileSize,
+        name,
+      )
+    return createMapSet(
+      {
+        ...map,
+        layers: [{ ...base, cells: new Int16Array(map.cols * map.rows).fill(-1) }, ...context],
+      },
+      rect,
+      tileSize,
+      name,
+    )
+  } catch (error) {
+    if (error instanceof MapSetCaptureError) return null
+    throw error
+  }
 }

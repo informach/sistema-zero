@@ -34,6 +34,10 @@ limitada a 128×128 células, oito camadas e 64 peças por folha, com aviso ante
    pontos, posição, tamanho, giro e espelhos. O papel indica início, perigo, porta, caminho,
    inimigo ou região. Propriedades podem ser texto, número, booleano, inteiro, decimal, cor ou
    referência a outro objeto/desenho.
+   Enquanto arrasta um objeto ou ajusta a opacidade de uma camada, **Esc** descarta
+   o gesto inteiro. Um toque cancelado pelo navegador também descarta o gesto.
+   Ao terminar, uma ação de **Desfazer** volta ao começo do movimento. Se o cenário
+   mudar durante o gesto, comece novamente; a revisão recebida é preservada.
 7. Selecione vários objetos com Shift ou arrastando no espaço vazio. Copie, recorte, cole,
    alinhe ou distribua. Referências entre objetos copiados acompanham as novas cópias.
 8. Use a biblioteca para colocar desenhos com miniatura real. Selecione uma área de peças e

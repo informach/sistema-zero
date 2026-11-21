@@ -25,13 +25,8 @@ test('mapa sob pressão conserva todos os pixels do renderer publicado', async (
   )
   for (const entry of current.cases) {
     expect(entry.cacheBytes).toBeLessThanOrEqual(32 * 1024 * 1024)
-    if (
-      entry.pressureBytes > 32 * 1024 * 1024 &&
-      (!entry.transformed || Number.isInteger(entry.scale))
-    ) {
-      expect(entry.rebuilds).toBe(0)
-      expect(entry.cacheBytes).toBe(0)
-    }
+    // Partial layer opacity uses canonical chunks even under pressure. Opaque-layer
+    // fast-path allocation assertions live in the region/dense precision cases.
   }
   expect(new Set(current.cases.map((entry) => entry.sha256)).size).toBeGreaterThan(8)
   for (const [name, data] of [

@@ -2,7 +2,9 @@ import { encodePintaRegionLayers, type PintaRegionWire } from '@sistemazero/core
 import { pintaAssetToWire } from '../assets/wire'
 import {
   isTileLayer,
+  type RegionMapSetAsset,
   type RegionTilemapAsset,
+  sanitizeRegionMapSetAsset,
   sanitizeRegionTilemapAsset,
   type TilemapGroupLayer,
   type TilemapObjectLayer,
@@ -14,6 +16,20 @@ type WireLayer = Omit<TilemapTileLayer, 'cells'> & { cells: PintaRegionWire }
 export type RegionMapDocument = Omit<RegionTilemapAsset, 'layers' | 'resources'> & {
   layers: Array<WireLayer | TilemapObjectLayer | TilemapGroupLayer>
   resources?: Array<Omit<TilemapResourceVersion, 'asset'> & { asset: unknown }>
+}
+
+export type RegionSetDocument = Omit<RegionMapSetAsset, 'map'> & { map: RegionMapDocument }
+
+/** Internal only: no public writer or version advertisement changes here. */
+export function decodeRegionSetDocument(raw: unknown): RegionMapSetAsset | null {
+  return sanitizeRegionMapSetAsset(raw)
+}
+
+export function encodeRegionSetDocument(raw: RegionMapSetAsset): RegionSetDocument | null {
+  const set = sanitizeRegionMapSetAsset(raw)
+  if (!set) return null
+  const map = encodeRegionMapDocument(set.map)
+  return map ? { ...set, map } : null
 }
 
 /** Internal codec, separate from the active 0–7 document writer during reader integration. */

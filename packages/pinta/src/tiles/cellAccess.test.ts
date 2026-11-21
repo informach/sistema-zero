@@ -17,6 +17,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'tiles/objectScatterStroke.ts':
+    'percorre posições distintas de amostragem, não valores de peças; limites vêm do leitor comum, sem acessar os buffers autorais ou decodificar bits',
   'tiles/regionMap.ts':
     'valida células densas inteiras antes de converter e soma chunks por camada; delega conversão e edição às operações comuns preservando flags',
   'tiles/mapCells.ts':
@@ -29,11 +31,6 @@ const CONFERIDOS: Record<string, string> = {
     'GDScript usa a máscara de CELL_MAX_TILES para consultar sólidos; o contorno retangular da peça é simétrico aos flips e recebe a base afim da camada/conjunto',
   'export/godot/project.ts':
     'o projeto GDScript extrai a peça com máscara 4095 e conserva os três bits nos flags nativos do TileMapLayer',
-  'tiles/terrain.ts':
-    'resolve índices de terrenos por cellTile; escreve células inteiras com makeCell',
-  'tiles/scatter.ts':
-    'escolhe peças por semente e grava com makeCell, conservando flags explícitos',
-  'tiles/chunks.ts': 'blocos guardam células inteiras; desenhar lê cellTile e cellMatrix',
   'tiles/sets.ts': 'recorta e expande células inteiras, conservando os bits de giro',
   'tiles/tilemapOps.ts':
     'pinta, apaga, preenche e cresce movendo células inteiras; achatar e a peça do topo leem por cellTile',
@@ -51,9 +48,6 @@ const CONFERIDOS: Record<string, string> = {
     'percorre células inteiras; o gid sai de cellTile e cellFlags (cellToGid) e o giro de cellMatrix',
   'export/tiled/import.ts':
     'confere referências da cena importada por cellTile antes de restaurar a contagem do atlas; não recorta peças novas usadas no Tiled',
-  'tiles/renderVectorTilemap.ts': 'percorre as células e lê o índice por cellTile',
-  'tiles/renderTilemap.ts':
-    'percorre células inteiras, só compara com vazio e entrega a célula ao desenho por blocos',
   'export/sceneDrawing.ts': 'percorre as células da cena e lê o índice por cellTile',
   'components/editor/mapTools/mapLevels.ts':
     'só pergunta se alguma célula está virada, por cellFlags',

@@ -9,14 +9,11 @@ import {
 } from 'react'
 import { COPY } from '../../../core/copy'
 import { safeSetPointerCapture } from '../../../core/pointer'
-import {
-  effectiveLayer,
-  isObjectLayer,
-  type PintaAsset,
-  type TilemapAsset,
-} from '../../../core/project'
+import { effectiveLayer, type PintaAsset, type TilemapAsset } from '../../../core/project'
+import { createEditorGesture } from '../../../state/editorGesture'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import { libraryPlacement, placeLibraryObject } from '../../../tiles/libraryPlacement'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import { pointOnMap } from './mapViewport'
 
 type Preview = NonNullable<ReturnType<typeof libraryPlacement>> & { source: PintaAsset }
@@ -85,15 +82,8 @@ export function useLibraryPlacement(deps: {
         refused()
         return
       }
-      d.editor.getState().commit(next)
-      const accepted = d.editor.getState().asset
-      if (
-        accepted.kind !== 'tilemap' ||
-        !accepted.layers.some(
-          (layer) =>
-            isObjectLayer(layer) && layer.objects.some((object) => object.id === placed.object.id),
-        )
-      ) {
+      const edit = createEditorGesture(d.editor)
+      if (edit.base !== d.map || !edit.replace(next) || !edit.finish()) {
         refused()
         return
       }
@@ -110,6 +100,10 @@ export function useLibraryPlacement(deps: {
         current &&
         (d.editor.getState().asset !== current.map ||
           d.layerId !== current.layerId ||
+          d.snap !== current.snap ||
+          d.tileSize !== current.tileSize ||
+          d.pad !== current.pad ||
+          d.cellPx !== current.cellPx ||
           d.assets.find((a) => a.id === current.source.id) !== current.source)
       ) {
         cancel()
@@ -129,6 +123,7 @@ export function useLibraryPlacement(deps: {
           stage,
           viewport: { width: window.innerWidth, height: window.innerHeight },
           cols: d.map.cols,
+          origin: mapCellBounds(d.map),
           rows: d.map.rows,
           tileSize: d.tileSize,
           pad: d.pad,

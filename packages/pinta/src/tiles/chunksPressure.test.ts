@@ -2,9 +2,9 @@ import { expect, test } from 'bun:test'
 import { createCanvas } from '@napi-rs/canvas'
 import { createTilemapAsset, createTilesetAsset, type TilemapAsset } from '../core/project'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, makeCell } from './cell'
-import { paintTilemapLayers, TileChunkCache } from './chunks'
+import { chunkBytes, paintTilemapLayers, TileChunkCache } from './chunks'
 
-function fixture(transformed = true) {
+function fixture(transformed = true, layerOpacity = true) {
   const flags = [
     0,
     CELL_FLIP_H,
@@ -38,7 +38,7 @@ function fixture(transformed = true) {
       id: `layer-${layer}`,
       name: `Camada ${layer}`,
       visible: true,
-      opacity: layer % 2 ? 0.45 : 1,
+      opacity: layerOpacity && layer % 2 ? 0.45 : 1,
       offsetX: layer * 4,
       offsetY: -layer * 4,
       cells: Int16Array.from({ length: 4096 }, (_, i) =>
@@ -93,7 +93,7 @@ function paint(
 for (const scale of [0.25, 0.5, 1, 2])
   for (const time of [0, 100, 250])
     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
-      const data = fixture(Number.isInteger(scale))
+      const data = fixture(Number.isInteger(scale), false)
       const reference = paint(data, 128 * 1024 * 1024, scale, time)
       const direct = paint(data, 1, scale, time)
       const mismatch = direct.pixels.findIndex((value, index) => value !== reference.pixels[index])
@@ -105,6 +105,17 @@ for (const scale of [0.25, 0.5, 1, 2])
       expect(direct.bytes).toBe(0)
       expect(direct.rebuilds).toBe(0)
     })
+
+for (const scale of [0.25, 0.5, 1, 2])
+  test(`opacidade de camada conserva a composição canônica sob pressão no zoom ${scale}`, () => {
+    const data = fixture(false),
+      reference = paint(data, 128 * 1024 * 1024, scale, 100),
+      actual = paint(data, 1, scale, 100)
+    expect(actual.pixels.every((value, index) => value === reference.pixels[index])).toBe(true)
+    expect(actual.rebuilds).toBeGreaterThan(0)
+    expect(actual.allocations).toBeLessThanOrEqual(1)
+    expect(actual.bytes).toBe(chunkBytes(16))
+  })
 
 for (const scale of [0.25, 0.5, 1.5, 2.5])
   test(`peças transformadas conservam a amostragem anterior no zoom ${scale}`, () => {

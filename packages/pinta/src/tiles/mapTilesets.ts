@@ -16,6 +16,7 @@ import {
   isTilesetKind,
   type PintaAsset,
   type TilemapAsset,
+  type TilemapCells,
   tilemapTilesetIds,
 } from '../core/project'
 import type { DrawableTile } from './tilemapOps'
@@ -26,7 +27,10 @@ function listOf(source: MapTilesets): readonly AnyTilesetAsset[] {
   return Array.isArray(source) ? source : [source as AnyTilesetAsset]
 }
 
-function withVersionedTilesets(map: TilemapAsset, source: MapTilesets): readonly AnyTilesetAsset[] {
+function withVersionedTilesets(
+  map: TilemapAsset<TilemapCells>,
+  source: MapTilesets,
+): readonly AnyTilesetAsset[] {
   const list = listOf(source)
   if (!map.resources?.length) return list
   const byId = new Map(list.map((tileset) => [tileset.id, tileset]))
@@ -36,15 +40,18 @@ function withVersionedTilesets(map: TilemapAsset, source: MapTilesets): readonly
 }
 
 /**
- * O tileset PADRÃO do mapa dentro da fonte: o de mesmo id; sem ele, o primeiro
- * (compatibilidade com quem sempre passou "o tileset do mapa" sem conferir id).
+ * O tileset PADRÃO é o de mesmo id. Só o contrato denso conserva o fallback
+ * histórico para quem passou uma folha sem conferir o id; regiões o recusam.
  */
 export function primaryMapTileset(
-  tilemap: TilemapAsset,
+  tilemap: TilemapAsset<TilemapCells>,
   source: MapTilesets,
 ): AnyTilesetAsset | null {
   const list = withVersionedTilesets(tilemap, source)
-  return list.find((tileset) => tileset.id === tilemap.tilesetId) ?? list[0] ?? null
+  return (
+    list.find((tileset) => tileset.id === tilemap.tilesetId) ??
+    ('origin' in tilemap ? null : (list[0] ?? null))
+  )
 }
 
 /**
@@ -52,7 +59,7 @@ export function primaryMapTileset(
  * ordem — é o índice que `flattenWithTilesets` grava em `sources`.
  */
 export function resolveMapTilesets(
-  tilemap: TilemapAsset,
+  tilemap: TilemapAsset<TilemapCells>,
   source: MapTilesets,
 ): Array<AnyTilesetAsset | null> {
   const list = withVersionedTilesets(tilemap, source)
@@ -70,7 +77,7 @@ export function resolveMapTilesets(
  * tileset achado tem. É o que faz o Pinta mostrar o mesmo que o atlas do pygame.
  */
 export function drawableMapTile(
-  tilemap: TilemapAsset,
+  tilemap: TilemapAsset<TilemapCells>,
   resolved: ReadonlyArray<AnyTilesetAsset | null>,
 ): DrawableTile {
   const byId = new Map<string, AnyTilesetAsset>()
@@ -95,7 +102,7 @@ export function drawableIn(tilesets: ReadonlyMap<string, AnyTilesetAsset>): Draw
  * sumiram", como sempre).
  */
 export function collectMapTilesets(
-  tilemap: TilemapAsset,
+  tilemap: TilemapAsset<TilemapCells>,
   findAsset: (id: string) => PintaAsset | null | undefined,
 ): AnyTilesetAsset[] {
   const find = withMapResourceVersions(tilemap, (id) => findAsset(id) ?? null)
@@ -123,7 +130,7 @@ export function collectTilesetsByIds(
 
 /** `collectMapTilesets` sobre uma lista de assets (galeria, backup, pacote). */
 export function collectMapTilesetsFrom(
-  tilemap: TilemapAsset,
+  tilemap: TilemapAsset<TilemapCells>,
   assets: readonly PintaAsset[],
 ): AnyTilesetAsset[] {
   const byId = new Map(assets.map((asset) => [asset.id, asset]))

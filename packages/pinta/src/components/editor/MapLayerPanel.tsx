@@ -1,4 +1,4 @@
-import { type JSX, useId, useRef } from 'react'
+import { type JSX, useCallback, useEffect, useId, useRef } from 'react'
 import { COPY } from '../../core/copy'
 import {
   effectiveLayer,
@@ -10,6 +10,7 @@ import {
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../../core/project'
+import { createEditorGesture, type EditorGesture } from '../../state/editorGesture'
 import {
   addMapGroup,
   moveMapLayer,
@@ -278,17 +279,27 @@ function MapLayerDetails({
   const fieldId = useId()
   const { editor } = useEditorStores()
   const { showToast } = useToast()
-  const opacityBase = useRef<TilemapAsset | null>(null)
-  const beginOpacity = (): void => {
+  const opacityGesture = useRef<{ edit: EditorGesture; pointerId: number | null } | null>(null)
+  const opacityCancelled = useRef(false)
+  const beginOpacity = (pointerId: number | null): void => {
     const a = editor.getState().asset
-    if (a.kind === 'tilemap' && !opacityBase.current) opacityBase.current = a
-  }
-  const endOpacity = (): void => {
-    if (opacityBase.current) {
-      editor.getState().commitGesture(opacityBase.current)
-      opacityBase.current = null
+    if (a.kind === 'tilemap' && !opacityGesture.current) {
+      opacityCancelled.current = false
+      opacityGesture.current = { edit: createEditorGesture(editor), pointerId }
     }
   }
+  const endOpacity = (): void => {
+    opacityGesture.current?.edit.finish()
+    opacityGesture.current = null
+  }
+  const cancelOpacity = useCallback((): void => {
+    opacityGesture.current?.edit.cancel()
+    opacityGesture.current = null
+    opacityCancelled.current = true
+  }, [])
+  // A different layer or editor ends ownership, including when its panel unmounts.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: identity changes cancel the held gesture
+  useEffect(() => cancelOpacity, [editor, layer.id, cancelOpacity])
   const commit = (edit: (map: TilemapAsset) => TilemapAsset): boolean => {
     const state = editor.getState()
     return state.asset.kind === 'tilemap' && commitIfChanged(state, edit(state.asset))
@@ -353,21 +364,39 @@ function MapLayerDetails({
               min="0"
               max="100"
               value={(layer.opacity ?? 1) * 100}
-              onPointerDown={beginOpacity}
-              onPointerUp={endOpacity}
-              onPointerCancel={endOpacity}
-              onKeyDown={beginOpacity}
-              onKeyUp={endOpacity}
+              onPointerDown={(event) => beginOpacity(event.pointerId)}
+              onPointerUp={(event) => {
+                if (opacityGesture.current?.pointerId === event.pointerId) endOpacity()
+              }}
+              onPointerCancel={(event) => {
+                if (opacityGesture.current?.pointerId === event.pointerId) cancelOpacity()
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  cancelOpacity()
+                } else beginOpacity(null)
+              }}
+              onKeyUp={() => {
+                if (opacityGesture.current?.pointerId === null) endOpacity()
+              }}
               onBlur={endOpacity}
               onChange={(e) => {
+                if (opacityCancelled.current) return
                 const s = editor.getState()
                 if (s.asset.kind === 'tilemap') {
                   const next = updateMapLayer(s.asset, layer.id, {
                     opacity: Number(e.target.value) / 100,
                   })
                   if (next === s.asset) return
-                  if (opacityBase.current) s.replace(next)
-                  else s.commit(next)
+                  if (opacityGesture.current) {
+                    const owned = opacityGesture.current.edit.isCurrent()
+                    if (!opacityGesture.current.edit.replace(next)) {
+                      cancelOpacity()
+                      showToast(owned ? COPY.scene.gestureRefused : COPY.scene.gestureChanged)
+                    }
+                  } else s.commit(next)
                 }
               }}
             />

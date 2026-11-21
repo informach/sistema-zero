@@ -2,6 +2,16 @@ import { describe, expect, it } from 'bun:test'
 import { cellInRect, lineCells, normalizeCellRect, rectCells } from './cellGeometry'
 
 describe('normalizeCellRect', () => {
+  it('recorta seleções no intervalo assinado sem alocar as casas', () => {
+    expect(
+      normalizeCellRect({ col: -10, row: -20 }, { col: -5, row: -10 }, 4, 6, { col: -8, row: -18 }),
+    ).toEqual({ col: -8, row: -18, cols: 4, rows: 6 })
+    expect(
+      normalizeCellRect({ col: 5, row: 5 }, { col: 6, row: 6 }, 4, 6, { col: -8, row: -18 }),
+    ).toBeNull()
+    expect(normalizeCellRect({ col: NaN, row: 0 }, { col: 1, row: 1 }, 4, 4)).toBeNull()
+    expect(normalizeCellRect({ col: 0, row: 0 }, { col: 1, row: 1 }, Infinity, 4)).toBeNull()
+  })
   it('ordena os cantos e clampa à grade', () => {
     expect(normalizeCellRect({ col: 3, row: 2 }, { col: 1, row: 0 }, 5, 5)).toEqual({
       col: 1,

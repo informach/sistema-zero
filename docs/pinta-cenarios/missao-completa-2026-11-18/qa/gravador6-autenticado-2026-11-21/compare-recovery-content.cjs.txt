@@ -1,0 +1,16 @@
+module.exports=async function(qa){
+ const assert=require('node:assert/strict'),page=await qa.makeAuthorityPage();
+ try{return await page.evaluate(async({namespace,id,copyId})=>{
+  const all=await window.pinta026.createPintaPersistence({namespace}).listAllAssets(),primary=all.find(a=>a.id===id),copy=all.find(a=>a.id===copyId);if(!primary||!copy)throw Error('Owned documents missing');
+  function canonical(v){if(ArrayBuffer.isView(v))return Array.from(v);if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>[k,canonical(v[k])]));return v}
+  const inverse=new Map([[copy.id,primary.id]]);function pair(a,b){if(!a||!b||inverse.has(b.id)||[...inverse.values()].includes(a.id))throw Error('Identity mapping is not bijective');inverse.set(b.id,a.id)}
+  if(primary.layers.length!==copy.layers.length)throw Error('Layer count changed');
+  primary.layers.forEach((layer,i)=>{const other=copy.layers[i];pair(layer,other);if((layer.kind??'tiles')!==(other.kind??'tiles'))throw Error('Layer type changed');if(layer.objects){if(layer.objects.length!==other.objects?.length)throw Error('Objects changed');layer.objects.forEach((o,j)=>pair(o,other.objects[j]))}});
+  if((primary.resources?.length??0)!==(copy.resources?.length??0))throw Error('Resources changed');primary.resources?.forEach((r,i)=>pair(r.asset,copy.resources[i].asset));
+  function remap(v){if(typeof v==='string')return inverse.get(v)??v;if(Array.isArray(v))return v.map(remap);if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).map(([k,x])=>[k,remap(x)]));return v}
+  function comparable(asset,restoreIds){let result=canonical(asset);if(restoreIds)result=remap(result);delete result.id;delete result.name;delete result.updatedAt;delete result.createdAt;const floor=result.layers.find(l=>l.name==='Chão'&&l.cells);if(!floor)throw Error('Floor missing');floor.cells[3]=15;floor.cells[4]=15;return JSON.stringify(result)}
+  const a=comparable(primary,false),b=comparable(copy,true);if(a!==b){const differences=[];function diff(x,y,path){if(differences.length>=16||JSON.stringify(x)===JSON.stringify(y))return;if(x&&y&&typeof x==='object'&&typeof y==='object'){for(const k of new Set([...Object.keys(x),...Object.keys(y)]))diff(x[k],y[k],path+'.'+k)}else differences.push({path,primary:x,copy:y})}diff(JSON.parse(a),JSON.parse(b),'asset');return{allUnrelatedAuthoringFieldsEqual:false,differences}}
+  const sha=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(a)))).map(v=>v.toString(16).padStart(2,'0')).join('');
+  return{allUnrelatedAuthoringFieldsEqual:true,ignoredIdentityFields:['id','name','createdAt','updatedAt'],bijectiveInternalIds:inverse.size,normalizedOnlyEditedCells:[3,4],normalizedDocumentSha256:sha,snapshotsNotWritten:true,layers:primary.layers.length};
+ },{namespace:qa.ownedStorageNamespace,id:qa.ownedVila.mapId,copyId:qa.retowOfflineA.recovery.copyId})}finally{await page.close()}
+};

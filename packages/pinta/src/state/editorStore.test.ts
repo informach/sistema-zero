@@ -28,6 +28,51 @@ function edited(asset: PintaAsset): PintaAsset {
 }
 
 describe('editorStore — commit/undo/redo', () => {
+  it('admissão que adota outra revisão não deixa a escrita condicional sobrescrevê-la', async () => {
+    const initial = makeAsset()
+    const store = createEditorStore({
+      asset: initial,
+      persist: async () => {},
+      acceptEdit: (next) => {
+        if (next.name === 'candidato')
+          store.getState().replace({ ...initial, name: 'outra revisão' })
+        return true
+      },
+    })
+    expect(store.getState().replaceIfCurrent(initial, { ...initial, name: 'candidato' })).toBeNull()
+    expect(store.getState().asset.name).toBe('outra revisão')
+    expect(store.getState().canUndo).toBe(false)
+    await store.getState().flush()
+  })
+  it('a escrita condicional recusa outra revisão do mesmo ID sem histórico', async () => {
+    const initial = makeAsset(),
+      store = createEditorStore({ asset: initial, persist: async () => {} })
+    store.getState().replace({ ...initial, name: 'outra revisão' })
+    const current = store.getState().asset
+    expect(store.getState().replaceIfCurrent(initial, edited(initial))).toBeNull()
+    expect(store.getState().asset).toBe(current)
+    expect(store.getState().canUndo).toBe(false)
+    await store.getState().flush()
+  })
+
+  it('a escrita condicional só entrega o snapshot quando ele sobrevive aos assinantes', async () => {
+    const initial = makeAsset(),
+      store = createEditorStore({ asset: initial, persist: async () => {} })
+    const first = store.getState().replaceIfCurrent(initial, edited(initial))
+    expect(first).toBe(store.getState().asset)
+    expect(first).not.toBeNull()
+    const stop = store.subscribe((state) => {
+      if (state.asset.name === 'candidato')
+        store.getState().replace({ ...state.asset, name: 'outra revisão' })
+    })
+    expect(
+      store.getState().replaceIfCurrent(store.getState().asset, { ...initial, name: 'candidato' }),
+    ).toBeNull()
+    expect(store.getState().asset.name).toBe('outra revisão')
+    expect(store.getState().canUndo).toBe(false)
+    stop()
+    await store.getState().flush()
+  })
   it('o orçamento da aula recusa a transação inteira antes de histórico e autosave', async () => {
     let map = createTilemapAsset({ name: 'aula', tilesetId: 't', cols: 128, rows: 128 })
     for (let i = 1; i < 8; i++) map = addLayer(map, `Camada ${i}`)

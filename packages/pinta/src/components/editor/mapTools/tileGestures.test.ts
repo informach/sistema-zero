@@ -9,9 +9,14 @@ import { addObjectLayer } from '../../../tiles/tilemapOps'
 import { DEFAULT_MAP_BRUSH } from '../MapTerrainPanel'
 import { createTileGestures, type TileGestureDeps } from './tileGestures'
 
-function prepare(map: TilemapAsset, recovery?: TilemapAsset) {
+function prepare(
+  map: TilemapAsset,
+  recovery?: TilemapAsset,
+  acceptEdit?: Parameters<typeof createEditorStore>[0]['acceptEdit'],
+) {
   const editor = createEditorStore({
     asset: map,
+    acceptEdit,
     autosaveDelayMs: 100_000,
     persist: async () => {
       if (recovery) throw new Error('Conflito de revisão')
@@ -105,4 +110,110 @@ it('cancelamento tardio não recoloca o documento antigo sobre a cópia adotada 
   expect(editor.getState().asset).toBe(recovered)
   expect(editor.getState().canUndo).toBe(false)
   expect(editor.getState().canRedo).toBe(false)
+})
+
+it('cancelar não restaura a base sobre uma revisão mais nova que conserva o mesmo ID', async () => {
+  const initial = base(),
+    { editor, gesture, event } = prepare(initial)
+  gesture.down(event(1, 1))
+  const other = { ...initial, name: 'revisão externa mais nova' }
+  editor.getState().replace(other)
+  const adopted = editor.getState().asset
+  gesture.cancel()
+  gesture.up()
+  expect(editor.getState().asset).toBe(adopted)
+  expect(editor.getState().canUndo).toBe(false)
+  await editor.getState().flush()
+})
+
+it('um gesto que perde sua revisão não pinta a revisão externa no próximo movimento', async () => {
+  const initial = base(),
+    { editor, gesture, event } = prepare(initial)
+  gesture.down(event(1, 1))
+  const other = { ...initial, name: 'revisão externa mais nova' }
+  editor.getState().replace(other)
+  const adopted = editor.getState().asset
+  gesture.move(event(2, 1))
+  gesture.up()
+  expect(editor.getState().asset).toBe(adopted)
+  expect(editor.getState().canUndo).toBe(false)
+  await editor.getState().flush()
+})
+
+it('um carimbo recusado desfaz o traço inteiro, sem salvar um pedaço ou criar histórico', async () => {
+  const initial = createTilemapAsset({ name: 'Grande', tilesetId: 'peças', cols: 256, rows: 256 }),
+    { editor, gesture, event, deps } = prepare(initial),
+    messages: string[] = []
+  deps.autoExpand = false
+  deps.stamp = { cols: 256, rows: 256, tiles: new Int16Array(65536).fill(0) }
+  deps.showToast = (text) => messages.push(text)
+  gesture.down(event(1, 1))
+  gesture.move(event(0, 1))
+  gesture.up()
+  const restored = editor.getState().asset
+  expect(restored.kind === 'tilemap' && restored.layers === initial.layers).toBe(true)
+  expect(editor.getState().canUndo).toBe(false)
+  expect(messages).toHaveLength(1)
+  await editor.getState().flush()
+})
+
+it('voltar sobre os mesmos blocos não esgota o gesto nem duplica o histórico', async () => {
+  const initial = createTilemapAsset({ name: 'Grande', tilesetId: 'peças', cols: 256, rows: 256 }),
+    { editor, gesture, event, deps } = prepare(initial),
+    messages: string[] = []
+  deps.autoExpand = false
+  deps.stamp = { cols: 16, rows: 16, tiles: new Int16Array(256).fill(0) }
+  deps.showToast = (text) => messages.push(text)
+  gesture.down(event(0, 0))
+  for (let row = 0; row < 20; row++) gesture.move(event(row % 2 ? 0 : 255, row))
+  gesture.up()
+  expect(editor.getState().canUndo).toBe(true)
+  expect(messages).toEqual([])
+  editor.getState().undo()
+  expect(editor.getState().canUndo).toBe(false)
+  const restored = editor.getState().asset
+  expect(restored.kind === 'tilemap' && restored.layers === initial.layers).toBe(true)
+  await editor.getState().flush()
+})
+
+it('soltar sem outro movimento não cria histórico em cima de uma revisão externa do mesmo ID', async () => {
+  const initial = base(),
+    { editor, gesture, event } = prepare(initial)
+  gesture.down(event(1, 1))
+  editor.getState().replace({ ...initial, name: 'outra revisão' })
+  const adopted = editor.getState().asset
+  gesture.up()
+  expect(editor.getState().asset).toBe(adopted)
+  expect(editor.getState().canUndo).toBe(false)
+  await editor.getState().flush()
+})
+
+it('um pincel iniciado conserva sua escolha de peça até a soltura', async () => {
+  const initial = base(),
+    { editor, gesture, event, deps } = prepare(initial)
+  gesture.down(event(0, 0))
+  deps.selectedTile = 1
+  gesture.move(event(1, 0))
+  gesture.up()
+  const current = editor.getState().asset
+  expect(current.kind === 'tilemap' && tileLayerAt(current).cells[1]).toBe(0)
+  editor.getState().undo()
+  expect(editor.getState().canUndo).toBe(false)
+  await editor.getState().flush()
+})
+
+it('a recusa do host no meio do traço restaura a base inteira sem uma entrada de histórico', async () => {
+  const initial = base(),
+    { editor, gesture, event } = prepare(
+      initial,
+      undefined,
+      (candidate) => candidate.kind === 'tilemap' && tileLayerAt(candidate).cells[1] === -1,
+    )
+  gesture.down(event(0, 0))
+  gesture.move(event(1, 0))
+  gesture.up()
+  const restored = editor.getState().asset
+  expect(restored.kind === 'tilemap' && restored.layers === initial.layers).toBe(true)
+  expect(editor.getState().canUndo).toBe(false)
+  await editor.getState().flush()
 })
