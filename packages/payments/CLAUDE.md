@@ -12,6 +12,16 @@
 
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
+## Entrega das renovações pagas (21/11/2026)
+
+O limite de tentativas do `WebhookDeliveryWorker` não encerra `payment.paid` com
+`subscriptionId` nem `payment.subscription_period_confirmed`. Essas entregas permanecem
+PENDING, com backoff limitado a uma hora e log `webhook.renewal_delivery_pending` após o teto.
+A fila é persistida; o worker relê o consumer e assina a cada tentativa. Não cria cobrança,
+não estende por data inventada e conserva o mesmo delivery para deduplicação no destino.
+Demais eventos conservam o teto; consumidor sem destino continua DEAD. Testes em
+`tests/application/webhook-delivery.test.ts` reproduzem HTTP 401/500 após o limite e recuperação.
+
 ## O que é
 
 Microserviço de **pagamentos/checkout** consumido por outros sistemas internos
