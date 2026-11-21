@@ -12,7 +12,7 @@
  * resultado não depende de qual `<rect>` ficou por cima nem do layout.
  */
 import type { JSX, PointerEvent, RefObject } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { safeSetPointerCapture } from '../../core/pointer'
@@ -24,6 +24,7 @@ import {
   type TilemapObject,
   type TilemapObjectLayer,
 } from '../../core/project'
+import { createEditorGesture, type EditorGesture } from '../../state/editorGesture'
 import type { MapObjectToolId } from '../../state/sessionStore'
 import {
   addMapObject,
@@ -67,12 +68,14 @@ type Handle = ObjectHandle
 
 /** A forma que está sendo desenhada ponto a ponto (ainda não está no mapa). */
 interface ShapeDraft {
+  base: TilemapAsset
+  layerId: string
   shape: 'polygon' | 'polyline'
   /** Os pontos já tocados, em pixels do mapa (no espaço da camada). */
   points: Point[]
 }
 
-type Gesture =
+type Gesture = { edit: EditorGesture; layerId: string } & (
   | {
       kind: 'marquee'
       pointerId: number
@@ -113,6 +116,7 @@ type Gesture =
       objectId: string
       start: { x: number; y: number }
     }
+)
 
 /** Tamanho das alças/marcadores em px de TELA (o desenho divide pela escala). */
 const HANDLE_PX = 10
@@ -179,6 +183,31 @@ export function MapObjectsOverlay({
   const draftRef = useRef<ShapeDraft | null>(null)
   const [cursor, setCursor] = useState<Point | null>(null)
   const [vertex, setVertex] = useState<{ objectId: string; index: number } | null>(null)
+  const cancelGesture = useCallback((): void => {
+    const gesture = gestureRef.current
+    gestureRef.current = null
+    gesture?.edit.cancel()
+    setMarquee(null)
+  }, [])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tool/layer/editor changes cancel ownership before the next gesture
+  useEffect(() => {
+    setMarquee(null)
+    return () => {
+      const gesture = gestureRef.current
+      gestureRef.current = null
+      gesture?.edit.cancel()
+    }
+  }, [tool, activeLayerId, interactive, editor])
+  useEffect(() => {
+    const cancel = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || !gestureRef.current || isTextEntryTarget(event.target)) return
+      event.preventDefault()
+      event.stopPropagation()
+      cancelGesture()
+    }
+    window.addEventListener('keydown', cancel, true)
+    return () => window.removeEventListener('keydown', cancel, true)
+  }, [cancelGesture])
   function changeDraft(next: ShapeDraft | null): void {
     draftRef.current = next
     setDraft(next)
@@ -245,11 +274,19 @@ export function MapObjectsOverlay({
   const hasPoints = (object: TilemapObject): boolean =>
     (object.shape === 'polygon' || object.shape === 'polyline') && !!object.points?.length
 
+  function ownsDraft(current: ShapeDraft): boolean {
+    if (editor.getState().asset === current.base && activeLayerId === current.layerId) return true
+    changeDraft(null)
+    showToast(COPY.scene.gestureChanged)
+    return false
+  }
+
   // ---- Forma desenhada ponto a ponto ------------------------------------
   /** Fecha a forma: ela entra no mapa de uma vez (um desfazer). */
   function finishDraft(): void {
     const current = draftRef.current
     if (!current || !activeLayerId) return
+    if (!ownsDraft(current)) return
     const min = minObjectPoints(current.shape)
     if (current.points.length < min) {
       showToast(COPY.scene.formaPrecisaDePontos(min))
@@ -277,8 +314,11 @@ export function MapObjectsOverlay({
   function draftTap(shape: ShapeDraft['shape'], raw: Point): void {
     const p = { x: clampX(snapEdge(raw.x)), y: clampY(snapEdge(raw.y)) }
     const current = draftRef.current
+    if (current && !ownsDraft(current)) return
     if (!current) {
-      changeDraft({ shape, points: [p] })
+      const base = editor.getState().asset
+      if (base.kind !== 'tilemap' || !activeLayerId) return
+      changeDraft({ base, layerId: activeLayerId, shape, points: [p] })
       setCursor(p)
       showToast(COPY.scene.comoDesenharAForma)
       return
@@ -299,7 +339,7 @@ export function MapObjectsOverlay({
       showToast(COPY.scene.formaCheiaDePontos(MAP_EDITOR_LIMITS.maxObjectPoints))
       return
     }
-    changeDraft({ shape, points: [...current.points, p] })
+    changeDraft({ ...current, points: [...current.points, p] })
   }
 
   // Trocar de ferramenta ou de camada no meio da forma joga o rascunho fora.
@@ -307,7 +347,7 @@ export function MapObjectsOverlay({
   useEffect(() => {
     changeDraft(null)
     setVertex(null)
-  }, [tool, activeLayerId])
+  }, [tool, activeLayerId, interactive])
   // O ponto escolhido é do objeto escolhido: outra escolha larga o ponto.
   useEffect(() => {
     setVertex((old) => (old && old.objectId === selectedObjectId ? old : null))
@@ -351,9 +391,12 @@ export function MapObjectsOverlay({
   }
   if (deleteVertexRef) deleteVertexRef.current = interactive ? deleteVertex : () => false
 
-  function apply(next: TilemapAsset): void {
-    const state = editor.getState()
-    if (next !== state.asset) state.replace(next)
+  function apply(next: TilemapAsset, edit = gestureRef.current?.edit): boolean {
+    const owned = edit?.isCurrent()
+    if (edit?.replace(next)) return true
+    cancelGesture()
+    showToast(owned ? COPY.scene.gestureRefused : COPY.scene.gestureChanged)
+    return false
   }
 
   function handlePointerDown(event: PointerEvent<SVGSVGElement>): void {
@@ -362,7 +405,8 @@ export function MapObjectsOverlay({
     // um objeto: o blur do navegador viria depois deste gesto, e o desfazer do gesto
     // (`commitGesture(base)`) engoliria a edição do campo.
     commitFocusedField()
-    const asset = editor.getState().asset
+    const edit = createEditorGesture(editor)
+    const asset = edit.base
     const layer = currentLayer()
     if (asset.kind !== 'tilemap' || !layer) return
     if (effectiveLayer(asset, layer).locked) {
@@ -396,7 +440,7 @@ export function MapObjectsOverlay({
             (o) => o.id === selected.id,
           )
           if (inserted && next !== asset) {
-            apply(next)
+            if (!apply(next, edit)) return
             origin = inserted
             index = at
           }
@@ -405,6 +449,8 @@ export function MapObjectsOverlay({
       if (index >= 0) {
         setVertex({ objectId: selected.id, index })
         gestureRef.current = {
+          edit,
+          layerId: activeLayerId,
           kind: 'vertex',
           pointerId: event.pointerId,
           base: asset,
@@ -418,6 +464,8 @@ export function MapObjectsOverlay({
     const handle = selected ? handleAt(selected, p.x, p.y) : null
     if (selected && handle) {
       gestureRef.current = {
+        edit,
+        layerId: activeLayerId,
         kind: 'resize',
         pointerId: event.pointerId,
         base: asset,
@@ -433,6 +481,8 @@ export function MapObjectsOverlay({
       setVertex(null)
       onSelectObject(hit.id, event.shiftKey || event.metaKey || event.ctrlKey)
       gestureRef.current = {
+        edit,
+        layerId: activeLayerId,
         kind: 'move',
         pointerId: event.pointerId,
         base: asset,
@@ -445,6 +495,8 @@ export function MapObjectsOverlay({
     if (tool === 'object-select') {
       const additive = event.shiftKey || event.ctrlKey || event.metaKey
       gestureRef.current = {
+        edit,
+        layerId: activeLayerId,
         kind: 'marquee',
         pointerId: event.pointerId,
         base: asset,
@@ -481,10 +533,12 @@ export function MapObjectsOverlay({
       showToast(COPY.tiles.objectLimit)
       return
     }
-    apply(next)
+    if (!apply(next, edit)) return
     onSelectObject(object.id)
     gestureRef.current = isPoint
       ? {
+          edit,
+          layerId: activeLayerId,
           kind: 'move',
           pointerId: event.pointerId,
           base: asset,
@@ -493,6 +547,8 @@ export function MapObjectsOverlay({
           origin: { x: object.x, y: object.y },
         }
       : {
+          edit,
+          layerId: activeLayerId,
           kind: 'create',
           pointerId: event.pointerId,
           base: asset,
@@ -510,6 +566,10 @@ export function MapObjectsOverlay({
       return
     }
     if (!gesture || event.pointerId !== gesture.pointerId || !activeLayerId) return
+    if (!gesture.edit.isCurrent() || gesture.layerId !== activeLayerId) {
+      cancelGesture()
+      return
+    }
     const asset = editor.getState().asset
     if (asset.kind !== 'tilemap') return
     if (gesture.kind === 'vertex') {
@@ -597,9 +657,13 @@ export function MapObjectsOverlay({
   function endGesture(event: PointerEvent<SVGSVGElement>): void {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
-    gestureRef.current = null
     if (gesture.kind === 'marquee') {
+      gestureRef.current = null
       setMarquee(null)
+      return
+    }
+    if (!gesture.edit.isCurrent() || gesture.layerId !== activeLayerId) {
+      cancelGesture()
       return
     }
     const state = editor.getState()
@@ -611,15 +675,19 @@ export function MapObjectsOverlay({
         (o) => o.id === gesture.objectId,
       )
       if (object && (object.width === 0 || object.height === 0)) {
-        state.replace(
-          updateMapObject(asset, activeLayerId, object.id, {
-            width: object.width || Math.min(tileSize, mapW - object.x) || 1,
-            height: object.height || Math.min(tileSize, mapH - object.y) || 1,
-          }),
+        if (
+          !apply(
+            updateMapObject(asset, activeLayerId, object.id, {
+              width: object.width || Math.min(tileSize, mapW - object.x) || 1,
+              height: object.height || Math.min(tileSize, mapH - object.y) || 1,
+            }),
+          )
         )
+          return
       }
     }
-    state.commitGesture(gesture.base)
+    gestureRef.current = null
+    gesture.edit.finish()
   }
 
   const activeLayer = activeLayerId ? tilemap.layers.find((l) => l.id === activeLayerId) : null
@@ -646,7 +714,9 @@ export function MapObjectsOverlay({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endGesture}
-      onPointerCancel={endGesture}
+      onPointerCancel={(event) => {
+        if (gestureRef.current?.pointerId === event.pointerId) cancelGesture()
+      }}
       onDoubleClick={() => {
         if (draftRef.current) finishDraft()
       }}

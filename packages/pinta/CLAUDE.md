@@ -89,6 +89,14 @@ O CAS persistente/local da issue 026 permanece separado. Outros gestos contínuo
 geometria/câmera e ativação pública 8 continuam no plano. Provas e limites em
 `qa/pinceis-por-regioes-2026-11-21/`, no diretório da missão.
 
+Objetos e opacidade de camada usam a sessão `state/editorGesture.ts`, sobre o
+mesmo CAS em RAM: término/cancelamento só atua na própria revisão sobrevivente.
+Recusa no meio restaura a base; Esc, pointercancel e desmontagem cancelam o gesto.
+Keyup não fecha um arrasto de ponteiro no range. O rascunho de polígono/caminho
+retém revisão e camada iniciais e é descartado se mudarem. Estilos preservados;
+isso não migra automaticamente os gestos de vetor/recursos, nem promove formato 8.
+Provas em `qa/gestos-de-objetos-e-camadas-2026-11-21/`, no diretório da missão.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

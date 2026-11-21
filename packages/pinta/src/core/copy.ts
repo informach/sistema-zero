@@ -54,6 +54,8 @@ export const COPY = {
     brushStorageLimit: 'Não coube mais neste cenário. Apague um trecho ou crie outro mapa.',
     brushRefused: 'Não consegui pintar este trecho. Escolha a ferramenta de novo.',
     brushChanged: 'O cenário mudou. Comece a pincelada de novo.',
+    gestureChanged: 'O cenário mudou. Comece de novo.',
+    gestureRefused: 'Não consegui aplicar esta mudança. Tente de novo.',
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>

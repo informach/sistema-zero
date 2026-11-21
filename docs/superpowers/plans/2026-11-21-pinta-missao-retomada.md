@@ -276,6 +276,27 @@ positivo continua passando. Versão atual: 51 ensaios de navegador aprovados,
 
 ### Continuação do item 3
 
+Lote em execução: propriedade dos gestos contínuos. A reprodução com o overlay
+real encontrou nove falhas: movimento/soltura/cancelamento após revisão do mesmo
+ID, em mapa e conjunto, cancelamento nativo e recusa do host no meio do gesto.
+Extrair uma sessão de gesto em RAM que retenha a revisão produzida e use o CAS
+existente; aplicá-la aos objetos e à opacidade de camada, sem alterar estilos.
+Testar criação, movimento, vértice, resize, Esc/cancelamento, troca de camada e
+desmontagem; conservar um desfazer por gesto e provar no Chromium. Gestos de
+vetor e recursos serão revisados em seguida; não inferir proteção global desses
+consumidores a partir deste lote.
+
+#### Lote de objetos e opacidade verificado
+
+Sessão de gesto compartilhada sobre o CAS em RAM: criação/movimento/resize,
+vértices, inserção de pontos e opacidade só escrevem/finalizam a própria revisão.
+Cancelamento nativo, Esc e desmontagem descartam a edição inteira. Keyup não
+encerra o arrasto de ponteiro; rascunhos ponto a ponto retêm sua origem.
+O módulo anterior reproduz 12 falhas de revisão no Chromium, com 12 controles
+positivos; o atual passa 111 ensaios e os 33 percursos da oficina. Evidências em
+`qa/gestos-de-objetos-e-camadas-2026-11-21/`. A revisão dos demais consumidores e
+a geometria assinada continuam na lista abaixo; nenhuma etapa macro é fechada.
+
 - [ ] Revisar os demais gestos de objetos, transformações e controles contínuos
   de camada/recursos, adotando a escrita condicional com sua revisão de origem.
   Reproduzir cancelamento/admissão tardios com o mesmo ID e com conjuntos.
