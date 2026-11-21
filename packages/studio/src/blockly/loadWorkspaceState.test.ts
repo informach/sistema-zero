@@ -62,3 +62,34 @@ describe('loadWorkspaceState', () => {
     }
   })
 })
+
+// Full review final (21/11/2026): o editor Python, a conferência prévia do rascunho Python e a
+// captura chamavam o `load` cru. O estado que ele deixa para trás quando lança é GLOBAL do Blockly
+// (o "Desfazer" de todo editor da página), então ninguém mais pode chamá-lo fora daqui.
+it('nenhum código do Estúdio chama o load do Blockly fora do carregador seguro', async () => {
+  const { readdir, readFile } = await import('node:fs/promises')
+  const { join, sep } = await import('node:path')
+  const root = join(import.meta.dir, '..')
+  const offenders: string[] = []
+  const walk = async (directory: string) => {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name)
+      if (entry.isDirectory()) {
+        if (entry.name !== '__tests__' && entry.name !== 'node_modules') await walk(path)
+      } else if (
+        /\.tsx?$/.test(entry.name) &&
+        !/\.(test|cases)\.tsx?$/.test(entry.name) &&
+        entry.name !== 'loadWorkspaceState.ts' &&
+        (await readFile(path, 'utf8')).includes('serialization.workspaces.load(')
+      )
+        offenders.push(
+          path
+            .slice(root.length + 1)
+            .split(sep)
+            .join('/'),
+        )
+    }
+  }
+  await walk(root)
+  expect(offenders).toEqual([])
+})

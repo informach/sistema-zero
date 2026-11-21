@@ -39,8 +39,14 @@ const STATEMENT_CONNECTION = 3
 /** Até onde um valor encaixado dentro de outro entra na linha (o resto é raro e só alonga). */
 const LINE_DEPTH_MAX = 4
 
-/** Um botão de imagem (o + e o − do "Se"): o texto dele é a descrição, não algo que se lê. */
-const isImageButton = (field: Blockly.Field) => !field.EDITABLE && field.isClickable()
+/**
+ * Um botão de imagem (o + e o − do "Se"): o texto dele é a descrição, não algo que se lê. Pelo
+ * `clickHandler` do `FieldImage`, não pelo `isClickable()`: este exige o bloco editável, e num
+ * bloco travado o "adicionar senão se" voltava à busca (full review final de 21/11/2026). O
+ * Blockly 12 não tem leitura pública do tratador; a propriedade é a que o `isClickable` dele usa.
+ */
+const isImageButton = (field: Blockly.Field) =>
+  !field.EDITABLE && Boolean((field as unknown as { clickHandler?: unknown }).clickHandler)
 
 /**
  * O texto que a criança lê na LINHA do próprio bloco (proposta aprovada em 21/11/2026): rótulos e

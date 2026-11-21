@@ -99,6 +99,24 @@ describe('procurar no programa', () => {
     }
   })
 
+  // Full review final (21/11/2026): o botão + da classe ("herdar de outra classe") fica na linha
+  // de cima, antes do corpo. Num bloco travado o isClickable() do Blockly é falso, e o rótulo do
+  // botão voltava à linha e à busca.
+  test('o rótulo de um botão de imagem fica de fora também num bloco travado', () => {
+    const workspace = workspaceWith([
+      { type: 'sz_js_class', id: 'classe', x: 0, y: 0, fields: { NAME: 'Heroi' } },
+    ])
+    try {
+      const classe = workspace.getBlockById('classe') as Blockly.Block
+      expect(blockOwnText(classe)).toBe('Classe Heroi')
+      classe.setEditable(false)
+      expect(blockOwnText(classe)).toBe('Classe Heroi')
+      expect(searchWorkspaceBlocks(workspace, 'herdar').total).toBe(0)
+    } finally {
+      workspace.dispose()
+    }
+  })
+
   test('o limite corta a lista mas conta todos', () => {
     const workspace = workspaceWith([
       chained(Array.from({ length: 50 }, (_, index) => raw(`r${index}`, `repete ${index}`))),
