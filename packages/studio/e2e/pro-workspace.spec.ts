@@ -371,6 +371,42 @@ test('updates language and removes obsolete markers when an open file changes ex
   expect(errors).toEqual([])
 })
 
+// Lote 6 da missão (seção 7.2): organizar as importações pelo serviço do TypeScript, aplicado no
+// editor como UM passo de desfazer.
+test('organizes the imports of the open file in one undo step', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('treeitem', { name: 'src/main.ts', exact: true }).dblclick()
+  const original = 'import { speed } from "./config"\nexport const score = speed + 1\n'
+  const mainContent = async () => {
+    const models = JSON.parse((await inspectWorkspaceBuffers(page))!) as Array<{
+      path: string
+      content: string
+    }>
+    return models.find((model) => model.path.endsWith('/src/main.ts'))!.content
+  }
+  expect(await mainContent()).toBe(original)
+  const codeInput = page.locator('.monaco-editor textarea.inputarea').first()
+  await codeInput.focus()
+  await codeInput.press('Control+Home')
+  // `insertText` não passa pelo fechamento automático das chaves do editor.
+  await page.keyboard.insertText('import { wrong } from "./closed"\n')
+  expect(await mainContent()).toBe(`import { wrong } from "./closed"\n${original}`)
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
+  await page.getByRole('searchbox', { name: 'O que você quer fazer?' }).fill('importações')
+  await page.getByRole('button', { name: 'Organizar as importações', exact: true }).click()
+  await expect.poll(mainContent).toBe(original)
+  await codeInput.focus()
+  await codeInput.press('Control+z')
+  await expect.poll(mainContent).toBe(`import { wrong } from "./closed"\n${original}`)
+  expect(errors).toEqual([])
+})
+
 test('keeps buffers and the game session across layout changes, reviews rename and diagnoses closed files', async ({
   page,
 }, info) => {

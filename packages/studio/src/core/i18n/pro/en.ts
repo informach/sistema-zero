@@ -14,6 +14,7 @@ export const en: Record<string, string> = {
   'pro.pinTab': 'Keep this tab open',
   'pro.closeOtherTabs': 'Close the other tabs',
   'pro.organizeCode': 'Tidy code',
+  'pro.organizeImports': 'Organize imports',
   'pro.quickOpen': 'Go to a file',
   'pro.quickOpenHint':
     '↑ ↓ to select · Enter to open · Esc to return. Up to 100 files; type part of a path to filter.',

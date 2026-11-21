@@ -11,7 +11,11 @@ import type { ProExample } from '../../core/proExamples'
 import { proFileDescriptions } from '../../core/proLearningGuides'
 import type { MonacoHighlight, MonacoTabsProps } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
-import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
+import type {
+  ProAnalysisState,
+  ProEditorDiagnostic,
+  ProLanguageSession,
+} from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useProRunApi } from '../../state/proRun'
 import { useStudioConfig } from '../../studio/config'
@@ -92,6 +96,41 @@ export function ProWorkspace({
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [languageSession, setLanguageSession] = useState<ProWorkspaceLanguage | null>(null)
+  // A sessão inteira do serviço de linguagem (as consultas por arquivo, como organizar as
+  // importações); a `languageSession` acima é só o contrato das operações do projeto.
+  const proSessionRef = useRef<ProLanguageSession | null>(null)
+  // Organizar as importações do arquivo aberto (lote 6 da missão, seção 7.2): o serviço do
+  // TypeScript calcula as mudanças e o editor as aplica como UM passo de desfazer. A contribuição de
+  // code actions do Monaco não é carregada no Estúdio, então a ação dele não existiria aqui.
+  const organizeImports = async () => {
+    const editor = editorRef.current
+    const model = editor?.getModel()
+    const session = proSessionRef.current
+    if (!editor || !model || !session) return
+    const version = model.getVersionId()
+    const edits = await session.query('organizeImports', model)
+    if (!edits.length || model.isDisposed() || editor.getModel() !== model) return
+    // A criança digitou enquanto o serviço calculava: as posições já não valem.
+    if (model.getVersionId() !== version) return
+    editor.pushUndoStop()
+    editor.executeEdits(
+      'organizar-importacoes',
+      edits.map((edit) => {
+        const from = model.getPositionAt(edit.span.start)
+        const to = model.getPositionAt(edit.span.start + edit.span.length)
+        return {
+          range: {
+            startLineNumber: from.lineNumber,
+            startColumn: from.column,
+            endLineNumber: to.lineNumber,
+            endColumn: to.column,
+          },
+          text: edit.newText,
+        }
+      }),
+    )
+    editor.pushUndoStop()
+  }
   const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
   // As janelas do `ProCodeTools`, abertas pela faixa do editor (redesenho de 11/2026).
@@ -355,6 +394,7 @@ export function ProWorkspace({
         search={() => setQuickOpen({ query: '' })}
         searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
+        organizeImports={() => void organizeImports()}
         onToolsReady={setTools}
         mapContainer={mapSlot}
         path={activeFile}
@@ -477,6 +517,7 @@ export function ProWorkspace({
               }}
               onProLanguageReady={(session) => {
                 operations.language.current = session
+                proSessionRef.current = session
                 setLanguageSession(session)
                 if (!session) setDiagnostics(null)
               }}

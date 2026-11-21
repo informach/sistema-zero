@@ -160,3 +160,71 @@ describe('serviço TS isolado por projeto', () => {
     service.dispose()
   })
 })
+
+// Lote 6 da missão (seção 7.2, "organização de imports", 21/11/2026).
+describe('organizar as importações', () => {
+  const aplicar = (
+    source: string,
+    edits: { span: { start: number; length: number }; newText: string }[],
+  ) =>
+    [...edits]
+      .sort((a, b) => b.span.start - a.span.start)
+      .reduce(
+        (text, edit) =>
+          text.slice(0, edit.span.start) +
+          edit.newText +
+          text.slice(edit.span.start + edit.span.length),
+        source,
+      )
+
+  it('tira o que não é usado e põe em ordem, só no arquivo pedido', () => {
+    const service = createProLanguageService(libraries)
+    const main = [
+      "import { zeta } from './zeta'",
+      "import { alfa, nuncaUsado } from './alfa'",
+      "import { beta } from './beta'",
+      '',
+      'export const total = alfa + beta + zeta',
+      '',
+    ].join('\n')
+    const outro =
+      "import { beta } from './beta'\nimport { alfa } from './alfa'\nexport const x = alfa + beta\n"
+    try {
+      service.update({
+        'main.ts': main,
+        'outro.ts': outro,
+        'alfa.ts': 'export const alfa = 1\nexport const nuncaUsado = 2\n',
+        'beta.ts': 'export const beta = 2\n',
+        'zeta.ts': 'export const zeta = 3\n',
+      })
+      const resultado = aplicar(main, service.organizeImports('main.ts'))
+      expect(resultado).toBe(
+        [
+          "import { alfa } from './alfa'",
+          "import { beta } from './beta'",
+          "import { zeta } from './zeta'",
+          '',
+          'export const total = alfa + beta + zeta',
+          '',
+        ].join('\n'),
+      )
+      // O outro arquivo também está fora de ordem: pedido à parte, ele se organiza sozinho.
+      expect(aplicar(outro, service.organizeImports('outro.ts'))).toBe(
+        "import { alfa } from './alfa'\nimport { beta } from './beta'\nexport const x = alfa + beta\n",
+      )
+    } finally {
+      service.dispose()
+    }
+  })
+
+  it('um arquivo já organizado não muda', () => {
+    const service = createProLanguageService(libraries)
+    const main = "import { alfa } from './alfa'\n\nexport const total = alfa\n"
+    try {
+      service.update({ 'main.ts': main, 'alfa.ts': 'export const alfa = 1\n' })
+      expect(aplicar(main, service.organizeImports('main.ts'))).toBe(main)
+    } finally {
+      service.dispose()
+    }
+  })
+})

@@ -358,6 +358,29 @@ export function createProLanguageService(defaultLibraries: Record<string, string
         semicolons: ts.SemicolonPreference.Remove,
       })
     },
+    /**
+     * Organizar as importações (lote 6 da missão, seção 7.2): o `organizeImports` do próprio
+     * serviço do TypeScript, só no arquivo pedido (tira o que não é usado e põe em ordem). Devolve
+     * as mudanças no formato do `format`, para o editor aplicar como uma edição só.
+     */
+    organizeImports(path: string) {
+      synchronize()
+      const fileName = absolute(`/project/${path}`)
+      return service
+        .organizeImports(
+          { type: 'file', fileName },
+          {
+            tabSize: 2,
+            indentSize: 2,
+            convertTabsToSpaces: true,
+            newLineCharacter: '\n',
+            semicolons: ts.SemicolonPreference.Remove,
+          },
+          {},
+        )
+        .filter((change) => change.fileName === fileName)
+        .flatMap((change) => change.textChanges)
+    },
     dispose() {
       service.dispose()
       files.clear()
