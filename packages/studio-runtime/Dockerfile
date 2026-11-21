@@ -25,6 +25,7 @@ COPY runtime/python-playtest.mjs runtime/python-playtest.generated.mjs ./
 COPY runtime/python-mission.mjs ./
 COPY runtime/python-browser-resources.mjs ./
 COPY runtime/portable-path.generated.mjs ./
+COPY runtime/scene3d-pro.generated.mjs runtime/scene3d-pro-canonical.mjs ./
 
 RUN mkdir -p /workspace/builds \
   && chown -R node:node /workspace \
