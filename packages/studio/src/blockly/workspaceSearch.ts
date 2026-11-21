@@ -34,18 +34,33 @@ export function normalizeSearchText(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
-/** O texto que a criança lê no próprio bloco: rótulos e campos das entradas dele. */
-export function blockOwnText(block: Blockly.Block): string {
+/** `ConnectionType.NEXT_STATEMENT`: a entrada que guarda blocos empilhados ("então", "fazer"). */
+const STATEMENT_CONNECTION = 3
+/** Até onde um valor encaixado dentro de outro entra na linha (o resto é raro e só alonga). */
+const LINE_DEPTH_MAX = 4
+
+/** Um botão de imagem (o + e o − do "Se"): o texto dele é a descrição, não algo que se lê. */
+const isImageButton = (field: Blockly.Field) => !field.EDITABLE && field.isClickable()
+
+/**
+ * O texto que a criança lê na LINHA do próprio bloco (proposta aprovada em 21/11/2026): rótulos e
+ * campos, e o que está encaixado nela (a condição do "Se", o número de um encaixe), até a primeira
+ * entrada de blocos empilhados, inclusive o rótulo dela ("então"). As partes seguintes (os outros
+ * ramos, o + e o −) e os blocos de dentro são outros resultados.
+ */
+export function blockOwnText(block: Blockly.Block, depth = 0): string {
   const parts: string[] = []
   for (const input of block.inputList) {
     for (const field of input.fieldRow) {
+      if (isImageButton(field)) continue
       const text = field.getText()
       if (text) parts.push(text)
     }
+    if (input.connection?.type === STATEMENT_CONNECTION) break
     const target = input.connection?.targetBlock()
-    if (target?.isShadow()) {
-      const shadowText = blockOwnText(target)
-      if (shadowText) parts.push(shadowText)
+    if (target && depth < LINE_DEPTH_MAX) {
+      const nested = blockOwnText(target, depth + 1)
+      if (nested) parts.push(nested)
     }
   }
   return parts.join(' ').replace(/\s+/g, ' ').trim()

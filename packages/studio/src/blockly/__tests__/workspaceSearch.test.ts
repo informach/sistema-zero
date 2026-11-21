@@ -66,6 +66,39 @@ describe('procurar no programa', () => {
     }
   })
 
+  // Proposta aprovada em 21/11/2026: o resultado mostra a LINHA do próprio bloco. Antes, um "Se"
+  // com "senão se" e "senão" aparecia como "Se então senão se então senão ... remover o último",
+  // e "mover" o achava pelo rótulo do botão de menos ("remover o último").
+  test('o resultado é a linha do próprio bloco, com o que está encaixado nela', () => {
+    const workspace = workspaceWith([
+      {
+        type: 'sz_js_if_else',
+        id: 'se',
+        x: 0,
+        y: 0,
+        extraState: { elseIf: 1, hasElse: true },
+        inputs: {
+          COND: { block: { type: 'sz_val_variable', id: 'cond', fields: { NAME: 'temChave' } } },
+          THEN: { block: raw('dentro', 'abrir a porta') },
+          ELSE: { block: raw('senao', 'mover o barco') },
+        },
+      },
+    ])
+    try {
+      const se = workspace.getBlockById('se') as Blockly.Block
+      expect(blockOwnText(se)).toBe('Se valor da variável temChave então')
+      // "mover" acha só o bloco que move, não o "Se" pelo botão "remover o último".
+      expect(searchWorkspaceBlocks(workspace, 'mover').hits.map((hit) => hit.id)).toEqual(['senao'])
+      expect(searchWorkspaceBlocks(workspace, 'senão').total).toBe(0)
+      expect(searchWorkspaceBlocks(workspace, 'temChave').hits.map((hit) => hit.id)).toEqual([
+        'se',
+        'cond',
+      ])
+    } finally {
+      workspace.dispose()
+    }
+  })
+
   test('o limite corta a lista mas conta todos', () => {
     const workspace = workspaceWith([
       chained(Array.from({ length: 50 }, (_, index) => raw(`r${index}`, `repete ${index}`))),
