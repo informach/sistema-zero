@@ -22,7 +22,7 @@ import { expect, type Frame, type Page, test } from '@playwright/test'
  * - no Jogo 3D e no 3D Avançado o recomeço RECRIA a cena, então os criados sobem a cada ciclo
  *   (senão contas iguais provariam só que nada aconteceu);
  * - o Mundo 3D recomeça "leve", no lugar, sem recriar objetos do WebGL: ele prova só isso, em
- *   "alta" e em "leve" (o bloco Qualidade fixa o nível antes dos ciclos);
+ *   "alta" e em "desempenho" (o bloco Qualidade fixa o nível antes dos ciclos);
  * - a API de recomeço tem de existir e o último ciclo tem de ter contexto e objetos vivos.
  * (Revisão do lote 4: a primeira versão aceitava um recomeço que não fazia nada.)
  */
@@ -32,7 +32,7 @@ const GAMES = [
   // Com um modelo .glb do Molda: o cache de modelos e as cópias passam pelo recomeço.
   { engine: 'Jogo 3D', name: 'Meu herói do Molda', restart: 'game3d', quality: null },
   { engine: 'Mundo 3D', name: 'Meu Mundo', restart: 'world3d', quality: 'alta' },
-  { engine: 'Mundo 3D', name: 'Meu Mundo', restart: 'world3d', quality: 'leve' },
+  { engine: 'Mundo 3D', name: 'Meu Mundo', restart: 'world3d', quality: 'desempenho' },
   {
     engine: 'Jogo 3D Avançado',
     name: 'Defesa da Torre Profissional',
