@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { maiorAtrasoDaPagina, replaceBridgeScript } from './helpers/bridgeEditor'
 import { applyCpuThrottle } from './helpers/cpuThrottle'
 import {
   abrirMensagensDoJogo,
@@ -6,7 +7,6 @@ import {
   PROGRAMAS_HOSTIS,
   salvarDuranteOPior,
 } from './helpers/hostilePrograms'
-import { maiorAtrasoDaPagina, replaceBridgeScript } from './helpers/previewShell'
 
 // A homologação de isolamento usa o Chromium completo, como measure-preview-isolation.mjs.
 // O headless shell padrão tem outro modelo de processos e não representa essa capacidade.
@@ -25,8 +25,12 @@ test.use({ channel: 'chromium' })
  * no experimento mínimo e ainda apresentam limitações; esta suíte não os homologa.
  */
 
-async function createProject(page: Page): Promise<void> {
-  await page.goto('/')
+async function createProject(
+  page: Page,
+  opcoes: { segurarAutosave?: boolean } = {},
+): Promise<void> {
+  // `segurarAutosave`: só o Salvar explícito grava (ver `salvarDuranteOPior`).
+  await page.goto(opcoes.segurarAutosave ? '/?autosave-ms=600000' : '/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
@@ -80,13 +84,13 @@ test.describe('programas hostis na prévia', () => {
   })
 
   test('trabalho síncrono longo que não é laço não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.trabalhoSincrono)
     await editorSobrevive(page)
   })
 
   test('laço infinito: a guarda corta e avisa nas mensagens do jogo', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.laco)
     await editorSobrevive(page, 500, async () => {
       await abrirMensagensDoJogo(page)
@@ -97,39 +101,39 @@ test.describe('programas hostis na prévia', () => {
   })
 
   test('recursão sem fim vira erro do jogo, não do editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.recursao)
     await expect(palco(page).getByText('Opa, a página parou')).toBeVisible({ timeout: 15_000 })
     await editorSobrevive(page)
   })
 
   test('enxurrada de mensagens não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.enxurradaDeMensagens)
     await editorSobrevive(page, 1000)
   })
 
   test('enxurrada de eventos e de mensagens forjadas não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.eventos)
     await editorSobrevive(page, 1000)
   })
 
   test('renderização pesada a cada quadro não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.renderizacao)
     await editorSobrevive(page)
   })
 
   test('erro de compilação é do jogo, com o lugar, e o conserto roda', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.compilacao)
     await expect(palco(page).getByText('Opa, a página parou')).toBeVisible({ timeout: 15_000 })
     await editorSobrevive(page)
   })
 
   test('erros de física no motor do Jogo 2D: o editor segue e aponta o bloco', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await instalarJogo2D(page)
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.fisica)
     await expect(palco(page).getByText('Opa, o jogo parou')).toBeVisible({ timeout: 15_000 })
@@ -180,7 +184,7 @@ test.describe('programas hostis na prévia', () => {
   })
 
   test('memória crescendo sem parar não derruba o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.memoria)
     await editorSobrevive(page, 1000)
   })

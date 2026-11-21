@@ -1,6 +1,6 @@
 {
   "commit": null,
-  "measuredAt": "2026-11-21T13:56:26.181Z",
+  "measuredAt": "2026-11-21T15:33:29.922Z",
   "browser": "159.0.8154.6",
   "note": "CPU sem o processo do navegador e sem o serviço de áudio (o Blockly do editor mantém AudioContext próprios).",
   "rows": [
@@ -8,54 +8,72 @@
       "engine": "Jogo 2D",
       "game": "Mini plataforma",
       "cpuTwoSecondsRunning": {
-        "renderersMs": 214,
-        "gpuMs": 368
+        "renderersMs": 141,
+        "gpuMs": 202
       },
       "cpuTwoSecondsStopped": {
-        "renderersMs": 30,
-        "gpuMs": 6
+        "renderersMs": 24,
+        "gpuMs": 5
       },
+      "framesAfterFirstStop": 2,
+      "framesAfterTenCycles": 2,
       "renderersAfterFirstStop": 4,
       "renderersAfterTenCycles": 4,
       "gameHeapMb": {
-        "firstRun": 2,
-        "tenthRun": 3.4
+        "firstRun": 1.8,
+        "tenthRun": 1.8
+      },
+      "gameProcessDocumentsStopped": {
+        "afterFirstStop": 1,
+        "afterTenCycles": 1
       }
     },
     {
       "engine": "Jogo 3D",
       "game": "Cubo girando",
       "cpuTwoSecondsRunning": {
-        "renderersMs": 225,
-        "gpuMs": 355
+        "renderersMs": 156,
+        "gpuMs": 180
       },
       "cpuTwoSecondsStopped": {
-        "renderersMs": 29,
+        "renderersMs": 16,
         "gpuMs": 3
       },
+      "framesAfterFirstStop": 2,
+      "framesAfterTenCycles": 2,
       "renderersAfterFirstStop": 4,
       "renderersAfterTenCycles": 4,
       "gameHeapMb": {
-        "firstRun": 3.9,
-        "tenthRun": 3.8
+        "firstRun": 3.7,
+        "tenthRun": 3.7
+      },
+      "gameProcessDocumentsStopped": {
+        "afterFirstStop": 1,
+        "afterTenCycles": 1
       }
     },
     {
       "engine": "Jogo 3D Avançado",
       "game": "Defesa da Torre Profissional",
       "cpuTwoSecondsRunning": {
-        "renderersMs": 246,
-        "gpuMs": 479
+        "renderersMs": 162,
+        "gpuMs": 264
       },
       "cpuTwoSecondsStopped": {
-        "renderersMs": 39,
-        "gpuMs": 6
+        "renderersMs": 17,
+        "gpuMs": 3
       },
+      "framesAfterFirstStop": 2,
+      "framesAfterTenCycles": 2,
       "renderersAfterFirstStop": 4,
       "renderersAfterTenCycles": 4,
       "gameHeapMb": {
-        "firstRun": 4.6,
-        "tenthRun": 4.7
+        "firstRun": 4.4,
+        "tenthRun": 4.5
+      },
+      "gameProcessDocumentsStopped": {
+        "afterFirstStop": 2,
+        "afterTenCycles": 2
       }
     }
   ]

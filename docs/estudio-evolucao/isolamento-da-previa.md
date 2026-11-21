@@ -260,12 +260,23 @@ prendia antes de a guarda (4 s) cortar; o aviso só chegava ~15 s depois.
 A causa: o vigia distingue "processo preso pelo anterior" de "documento que só demora" pelo
 batimento imediato do documento novo (achado E3), mas no Chromium o batimento de um documento que
 prende a tarefa logo no começo só sai quando a tarefa acaba (em duas de três rodadas ele não
-chegou). Conserto (`PreviewIframe.tsx`): a primeira troca só arma com o documento anterior JÁ
-calado na hora do pedido. Com ele vivo, nada segura a entrada do novo, e o novo que não entra está
-preso em si mesmo; trocar não adianta. Esse caso fica com o vigia de batimentos ("O preview parece
-travado") e com o Parar. Teste: `PreviewIframe.test.tsx` "documento novo calado com o anterior
-vivo no pedido não é trocado" (vermelho antes: o iframe era trocado). O caso antigo ("calado é
-trocado", com o anterior sem sinal) segue passando.
+chegou). Conserto (`PreviewIframe.tsx`, corrigido depois da revisão do lote 2), a primeira troca
+não arma quando:
+- o que está carregado NESTE iframe é o documento em branco (depois do Parar, na abertura, com a
+  marca de execução): ele não tem programa e não segura processo nenhum. Só vale se o branco
+  entrou no iframe atual: depois de uma troca, o iframe novo pode ter caído no processo ainda preso
+  (e2e `preview-startup`, que reprovou com a primeira versão desta regra);
+- o documento anterior falou há menos de 1,2 s (o batimento é de 1 por segundo): estava vivo.
+
+O novo que não entra nesses casos está preso em si mesmo; trocar não adianta, e ele fica com o
+vigia de batimentos ("O preview parece travado") e o Parar. Um anterior que falou e calou há mais
+de 1,2 s conta como preso, e o resgate segue como antes. A primeira versão usava 2,5 s e olhava só
+o anterior vivo; a revisão do lote 2 mostrou que, partindo do parado, as três trocas continuavam,
+e que um jogo travado havia menos de 2,5 s deixava o documento novo esperando. Os avisos próprios
+da casca (`sz-shell:ready`, `sz-shell:loaded`) deixaram de contar como sinal de vida do jogo: o
+pronto da casca nova parava a cadeia de trocas na primeira tentativa. Testes em
+`PreviewIframe.test.tsx`: "anterior vivo no pedido", "anterior calado há 1500 ms" e "há 3000 ms"
+(o caso real do resgate) e "começar do parado".
 
 Efeito colateral visto no trace: o gravador do Playwright tira retrato de todos os quadros a cada
 passo e espera o iframe preso, então com `--trace` os passos ficam lentos enquanto o programa
@@ -280,15 +291,31 @@ cada família: Jogo 2D (Mini plataforma), Jogo 3D (Cubo girando) e Jogo 3D Avan�
 Torre Profissional). Local, Windows, com placa de vídeo; evidência em
 `evidencias/liberacao-de-recursos-2026-11-21/windows-local.json`:
 
-| Jogo | CPU em 2 s rodando (renderização / GPU) | CPU em 2 s depois do Parar | Processos de renderização após 1 e 10 ciclos | Memória do jogo no 1º e no 10º Rodar |
+| Jogo | CPU em 2 s rodando (renderização / GPU) | CPU em 2 s parado | Documentos no processo da prévia, parado, após 1 e 10 ciclos | Memória do jogo no 1º e no 10º Rodar |
 |---|---|---|---|---|
-| Mini plataforma | 214 / 368 ms | 30 / 6 ms | 4 e 4 | 2,0 e 3,4 MB |
-| Cubo girando | 225 / 355 ms | 29 / 3 ms | 4 e 4 | 3,9 e 3,8 MB |
-| Defesa da Torre Profissional | 246 / 479 ms | 39 / 6 ms | 4 e 4 | 4,6 e 4,7 MB |
+| Mini plataforma | 141 / 202 ms | 24 / 5 ms | 1 e 1 | 1,8 e 1,8 MB |
+| Cubo girando | 156 / 180 ms | 16 / 3 ms | 1 e 1 | 3,7 e 3,7 MB |
+| Defesa da Torre Profissional | 162 / 264 ms | 17 / 3 ms | 2 e 2 | 4,4 e 4,5 MB |
 
-O que sobra de CPU de renderização com o jogo parado é a página do editor. O teste exige a queda a
-menos de um quarto (com piso para esse ruído), nenhum processo acumulado e a memória do jogo do
-10º Rodar abaixo de 1,5 vez a do 1º.
+Critérios do teste, exatamente como estão no código: CPU parada abaixo de um quarto da rodando
+(piso de 100 ms na renderização, que é o editor, e 30 ms na GPU); os mesmos quadros na página e
+os mesmos documentos no processo da prévia depois do 1º e do 10º Parar (contados com o jogo
+parado); a memória do 10º Rodar abaixo de 1,5 vez a do 1º mais 1 MB, as duas medidas 1,5 s depois
+do primeiro quadro. O áudio não é medido à parte (o Blockly do editor mantém `AudioContext`
+próprios ligados), e a contagem de processos vai para a evidência sem critério: os iframes com
+sandbox da mesma página dividem um processo.
+
+**O vazamento que a medida achou.** Na primeira medida, a memória do Jogo 2D ia de 2,0 para
+3,4 MB em dez ciclos. Contando os documentos do processo da prévia: cada Parar e Rodar deixava um
+documento e um quadro presos, mesmo com um programa vazio (8 ciclos, 8 documentos a mais; 30 s e
+coleta de lixo forçada depois, eles continuavam lá). O retrato da memória mostrou quem segura: o
+`LocalFrameMojoHandler` do Chromium, por uma raiz persistente da API de postura do aparelho, no
+quadro descartado. Oito edições no MESMO iframe não deixaram nada; o que vazava era a troca de
+iframe que todo Parar fazia, mesmo com o jogo vivo. Conserto (`PreviewIframe.tsx`): com o jogo
+vivo, o Parar leva o próprio iframe ao documento em branco; a troca fica para o jogo preso, e a
+rede de segurança troca como preso se o branco não entrar em 2 s (com 800 ms, um 3D pesado numa
+máquina carregada às vezes não soltava a tempo). A guarda nova (documentos com o jogo parado)
+reprova com o Parar antigo: 9 documentos contra 1.
 
 **Observação do editor, fora do jogo:** o serviço de áudio do Chromium segue gastando ~14 ms por
 segundo com o jogo parado. É do próprio Blockly: cada área de blocos cria um `AudioContext` (três

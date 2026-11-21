@@ -82,7 +82,9 @@ a falha intermitente de entrada e a homologação integral continuam abertas.
   conserva a edição para nova tentativa. Não usar deadline como confirmação de gravação.
 - [x] Testar edição/troca de projeto/desmontagem enquanto salva, clique duplo,
   erro de cota, observador, geração de escritor e confirmação assíncrona do host.
-- [ ] Homologar troca real de perfil no app conectado durante um salvamento.
+- [x] Homologar troca real de perfil no app conectado durante um salvamento. Feito em 21/11 no
+  app Kids de staging, com o selo em "Alterações não salvas" no instante da troca
+  (`../qa/2026-11-21-studio-casca-staging.md`).
 - [x] Medir atraso/clique nos três engines de laboratório e discriminar o headless
   shell do Chromium completo; artefatos e ambiente versionados.
 - [ ] Completar medição de processo, tempo de Parar e salvamento em todos os engines

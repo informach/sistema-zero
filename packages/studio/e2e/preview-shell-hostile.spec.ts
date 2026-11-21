@@ -68,13 +68,13 @@ test.describe('programas hostis na prévia dentro da casca', () => {
   )
 
   test('trabalho síncrono longo que não é laço não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.trabalhoSincrono)
     await editorSobrevive(page)
   })
 
   test('laço infinito: a guarda corta e avisa nas mensagens do jogo', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.laco)
     await editorSobrevive(page, 500, async () => {
       await abrirMensagensDoJogo(page)
@@ -85,39 +85,39 @@ test.describe('programas hostis na prévia dentro da casca', () => {
   })
 
   test('recursão sem fim vira erro do jogo, não do editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.recursao)
     await expect(palco(page).getByText('Opa, a página parou')).toBeVisible({ timeout: 15_000 })
     await editorSobrevive(page)
   })
 
   test('enxurrada de mensagens não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.enxurradaDeMensagens)
     await editorSobrevive(page, 1000)
   })
 
   test('enxurrada de eventos e de mensagens forjadas não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.eventos)
     await editorSobrevive(page, 1000)
   })
 
   test('renderização pesada a cada quadro não trava o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.renderizacao)
     await editorSobrevive(page)
   })
 
   test('erro de compilação é do jogo, com o lugar, e o conserto roda', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.compilacao)
     await expect(palco(page).getByText('Opa, a página parou')).toBeVisible({ timeout: 15_000 })
     await editorSobrevive(page)
   })
 
   test('erros de física no motor do Jogo 2D: o editor segue e aponta o bloco', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await instalarJogo2D(page)
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.fisica)
     await expect(palco(page).getByText('Opa, o jogo parou')).toBeVisible({ timeout: 15_000 })
@@ -127,7 +127,7 @@ test.describe('programas hostis na prévia dentro da casca', () => {
   })
 
   test('memória crescendo sem parar não derruba o editor', async ({ page }) => {
-    await createProject(page)
+    await createProject(page, { segurarAutosave: true })
     await replaceBridgeScript(page, PROGRAMAS_HOSTIS.memoria)
     await editorSobrevive(page, 1000)
   })

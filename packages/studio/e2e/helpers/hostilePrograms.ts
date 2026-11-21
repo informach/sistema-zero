@@ -142,9 +142,16 @@ export function seloSalvo(page: Page) {
 
 /**
  * Com o programa hostil rodando, o editor ainda atende o Salvar do menu ⋯ e a gravação termina
- * (o selo só volta a "Salvo" depois que o banco confirma).
+ * (o selo só volta a "Salvo" depois que o banco confirma). Pede o salvamento automático segurado
+ * (`createProject(page, { segurarAutosave: true })`): sem isso o automático já tinha gravado e o
+ * selo nunca saía de "Salvo" (revisão do lote 2, 21/11/2026).
  */
 export async function salvarDuranteOPior(page: Page): Promise<void> {
+  await expect(
+    page
+      .getByText('Alterações não salvas', { exact: true })
+      .or(page.getByRole('status', { name: 'Alterações não salvas', exact: true })),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Mais opções' }).click()
   await page.getByRole('menuitem', { name: 'Salvar', exact: true }).click()
   await expect(seloSalvo(page)).toBeVisible({ timeout: 10_000 })

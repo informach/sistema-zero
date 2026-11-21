@@ -12,11 +12,14 @@ test.use({ channel: 'chromium' })
  *
  * - CPU de todos os processos do navegador em 2 s com o jogo rodando e em 2 s depois do Parar
  *   (`SystemInfo.getProcessInfo`). Laço de quadros, timers e WebGL do jogo param junto com o
- *   documento: a CPU da prévia e da GPU tem de cair. O serviço de áudio fica de fora da soma: o
- *   Blockly do editor mantém os próprios `AudioContext` (medido em 21/11/2026; ver
- *   `docs/estudio-evolucao/isolamento-da-previa.md`).
- * - Processos de renderização depois de 10 ciclos de Parar e Rodar: nenhum se acumula.
- * - Memória JS do quadro do jogo no 1º e no 10º Rodar: cada execução é um documento novo.
+ *   documento: a CPU da prévia e da GPU tem de cair. O ÁUDIO não é medido à parte: o Blockly do
+ *   editor mantém os próprios `AudioContext` ligados, e o serviço de áudio fica de fora da soma
+ *   (medido em 21/11/2026; ver `docs/estudio-evolucao/isolamento-da-previa.md`).
+ * - Quadros na página depois de 10 ciclos de Parar e Rodar: nenhum documento fica para trás. A
+ *   contagem de processos vai para a evidência, sem critério: os iframes com sandbox da mesma
+ *   página dividem um processo, e o fim de um processo é adiado (revisão do lote 2).
+ * - Memória JS do quadro do jogo no 1º e no 10º Rodar, medida no mesmo instante (1,5 s depois do
+ *   primeiro quadro): o 10º fica abaixo de 1,5 vez o 1º mais 1 MB de folga para memória pequena.
  *
  * Só Chromium (o protocolo de depuração dele dá os processos).
  */
@@ -63,15 +66,20 @@ async function gameFrame(page: Page): Promise<Frame> {
   return page.frames().find((frame) => frame !== page.mainFrame()) as Frame
 }
 
-/** Memória JS do documento do jogo, pela sessão de depuração do quadro em outro processo. */
-async function gameHeapMb(page: Page): Promise<number> {
+/**
+ * Memória JS e documentos vivos no processo da prévia, pela sessão de depuração do quadro em outro
+ * processo. Os documentos pegam o quadro descartado que fica preso (revisão do lote 2: cada Parar
+ * trocava o iframe e deixava um documento a mais).
+ */
+async function gameProcessMetrics(page: Page): Promise<{ heapMb: number; documents: number }> {
   const session = await page.context().newCDPSession(await gameFrame(page))
   try {
     await session.send('Performance.enable')
     await session.send('HeapProfiler.collectGarbage')
     const { metrics } = await session.send('Performance.getMetrics')
     const used = metrics.find((metric) => metric.name === 'JSHeapUsedSize')?.value ?? Number.NaN
-    return Math.round((used / 1024 / 1024) * 10) / 10
+    const documents = metrics.find((metric) => metric.name === 'Documents')?.value ?? Number.NaN
+    return { heapMb: Math.round((used / 1024 / 1024) * 10) / 10, documents }
   } finally {
     await session.detach().catch(() => {})
   }
@@ -102,8 +110,8 @@ for (const game of GAMES)
     const run = page.locator('[data-live-target="studio-run"]')
     const stop = page.locator('[data-live-target="studio-stop"]')
 
+    const firstRun = await gameProcessMetrics(page)
     const running = await cpuDuring(page, session, 2000)
-    const heapFirstRun = await gameHeapMb(page)
     await stop.click()
     await expect(preview(page).locator('canvas')).toHaveCount(0, { timeout: 30_000 })
     await page.waitForTimeout(1000)
@@ -111,14 +119,19 @@ for (const game of GAMES)
     const renderersAfterFirstStop = (await processes(session)).filter(
       (item) => item.type === 'renderer',
     ).length
+    const framesAfterFirstStop = page.frames().length
+    // Documentos no processo da prévia com o jogo PARADO (o documento em branco): com o jogo
+    // rodando, um motor pode ter um documento passageiro (o 3D Avançado mostrou um a mais no meio
+    // da execução, sem memória a mais), e o que interessa é o que sobra dos descartados.
+    const documentsAfterFirstStop = (await gameProcessMetrics(page)).documents
 
-    let heapTenthRun = Number.NaN
+    let tenthRun = { heapMb: Number.NaN, documents: Number.NaN }
     for (let cycle = 1; cycle <= 10; cycle++) {
       await run.click()
       await expect(preview(page).locator('canvas').first()).toBeVisible({ timeout: 90_000 })
       if (cycle === 10) {
         await page.waitForTimeout(1500)
-        heapTenthRun = await gameHeapMb(page)
+        tenthRun = await gameProcessMetrics(page)
       }
       await stop.click()
       await expect(preview(page).locator('canvas')).toHaveCount(0, { timeout: 30_000 })
@@ -127,15 +140,23 @@ for (const game of GAMES)
     const renderersAfterTenCycles = (await processes(session)).filter(
       (item) => item.type === 'renderer',
     ).length
+    const framesAfterTenCycles = page.frames().length
+    const documentsAfterTenCycles = (await gameProcessMetrics(page)).documents
 
     const row = {
       engine: game.engine,
       game: game.name,
       cpuTwoSecondsRunning: running,
       cpuTwoSecondsStopped: stopped,
+      framesAfterFirstStop,
+      framesAfterTenCycles,
       renderersAfterFirstStop,
       renderersAfterTenCycles,
-      gameHeapMb: { firstRun: heapFirstRun, tenthRun: heapTenthRun },
+      gameHeapMb: { firstRun: firstRun.heapMb, tenthRun: tenthRun.heapMb },
+      gameProcessDocumentsStopped: {
+        afterFirstStop: documentsAfterFirstStop,
+        afterTenCycles: documentsAfterTenCycles,
+      },
     }
     rows.push(row)
     console.log(JSON.stringify(row))
@@ -156,11 +177,13 @@ for (const game of GAMES)
     )
 
     // O jogo parado não gasta: a CPU da prévia e da GPU cai a menos de um quarto da que gastava
-    // rodando (com um piso para o ruído do próprio editor).
-    expect(stopped.renderersMs).toBeLessThan(Math.max(60, running.renderersMs / 4))
+    // rodando (com um piso para o ruído do próprio editor, maior num runner lento).
+    expect(stopped.renderersMs).toBeLessThan(Math.max(100, running.renderersMs / 4))
     expect(stopped.gpuMs).toBeLessThan(Math.max(30, running.gpuMs / 4))
-    // Dez ciclos não deixam processos para trás.
-    expect(renderersAfterTenCycles).toBeLessThanOrEqual(renderersAfterFirstStop + 1)
-    // Cada Rodar é um documento novo: a memória do jogo não cresce de uma execução para outra.
-    expect(heapTenthRun).toBeLessThan(heapFirstRun * 1.5 + 1)
+    // Dez ciclos não deixam documento para trás: a página tem os mesmos quadros do 1º Parar.
+    expect(framesAfterTenCycles).toBe(framesAfterFirstStop)
+    // Nenhum documento descartado fica preso no processo da prévia.
+    expect(documentsAfterTenCycles).toBeLessThanOrEqual(documentsAfterFirstStop)
+    // Cada Rodar é um documento novo: o 10º abaixo de 1,5 vez o 1º, mais 1 MB de folga.
+    expect(tenthRun.heapMb).toBeLessThan(firstRun.heapMb * 1.5 + 1)
   })
