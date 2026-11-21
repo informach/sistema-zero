@@ -1,0 +1,74 @@
+[
+  {
+    "checkId": "porta-sem-chave-em-execucao",
+    "label": "Sem chave, mantenha o farol apagado e mostre um aviso.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "memoria-em-execucao",
+    "label": "Guarde a coleta e continue com a chave ao se afastar.",
+    "passed": true,
+    "execucao": true
+  },
+  {
+    "checkId": "direcional",
+    "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "andar",
+    "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "borda",
+    "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "memoria",
+    "label": "Crie temChave começando em falso.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "encontro-chave",
+    "label": "No encontro com a chave, retire a chave e atualize temChave e o aviso.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "recolher",
+    "label": "Retire a chave dentro do encontro entre personagem e chave.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "lembrar",
+    "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "aviso-chave",
+    "label": "Mude aviso para um texto dentro do encontro com a chave.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "condicao",
+    "label": "Faça o Se consultar temChave no encontro com o farol.",
+    "passed": true,
+    "execucao": false
+  },
+  {
+    "checkId": "aviso-sem-chave",
+    "label": "Altere aviso com um texto dentro de senão, no encontro com o farol.",
+    "passed": true,
+    "execucao": false
+  }
+]

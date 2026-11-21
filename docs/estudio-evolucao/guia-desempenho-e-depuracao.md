@@ -22,7 +22,8 @@ Os números citados são exemplos com a fonte; o lugar de cada número é o docu
 6. **A medida não pode pesar no jogo de todo dia.** As abas Investigar e Desempenho só ligam a coleta
    quando são abertas, e o documento padrão da prévia não ganha nenhum byte. O custo da coleta (meta:
    menos de 5% do quadro) ainda não foi medido no navegador ([`mapa-da-missao.md`](mapa-da-missao.md),
-   seções 9 a 11).
+   seções 9 a 11). ⚠️ A tela da aba Desempenho já diz "Medir quase não pesa no jogo" (texto da
+   proposta aprovada dos painéis): a medida é o que falta para essa frase ter prova.
 7. **Medida com profiler não se compara com medida sem profiler.** Iniciar o perfil de CPU dentro da
    janela medida já criou picos falsos de 100 a 250 ms
    ([`../qa/2026-11-08-python-classic-performance.md`](../qa/2026-11-08-python-classic-performance.md)).
@@ -73,7 +74,7 @@ na última instrução; `?montagem=inteira` desliga a abertura adiada e a montag
 
 | O que | Comando | Saída |
 |---|---|---|
-| Digitar, abrir painel, gaveta, primeira resposta da busca, diagnósticos entre arquivos e as operações do editor, no projeto modular de 60 arquivos | `bunx playwright test e2e/pro-workspace-performance.spec.ts --project=chromium --grep modular --trace off` | relatório com SHA e amostras em `pro-modular-current.json`, ou em `STUDIO_BROWSER_BENCH_OUTPUT` |
+| Digitar, abrir painel, gaveta, primeira resposta da busca, diagnósticos entre arquivos e as operações do editor, no projeto modular de 60 arquivos | `bunx playwright test e2e/pro-workspace-performance.spec.ts --project=chromium --grep modular --trace off` | relatório com SHA e amostras em `pro-modular-current.json` (com `-cpuN` no nome quando a CPU é desacelerada), na pasta `.audits/studio-pro-evolution/` ou na que `STUDIO_BROWSER_BENCH_OUTPUT` indicar |
 | Tudo ligado ao mesmo tempo (análise, jogo, pergunta ao Zappy em voo, painéis, busca, arquivo criado e renomeado, 10 ciclos de Parar e Rodar) | o caso "tudo ligado ao mesmo tempo" do mesmo arquivo | [`pro-em-escala.md`](pro-em-escala.md); o Zappy ali é um adaptador de teste que responde em 1,5 s |
 | O serviço de linguagem sem tela | `bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language.json` (`STUDIO_PRO_LANGUAGE_FILES=1000` para mil arquivos; `STUDIO_PRO_LANGUAGE_SAMPLES`) | edição e diagnóstico por arquivo; não mede digitação |
 | WebContainer com uma dependência de verdade | `bunx playwright test --config playwright.pro-full.config.ts` (sob demanda: precisa de rede para o npm) | `npm install`, prévia, `npm run build` e recarga |
@@ -95,7 +96,7 @@ enquanto o programa hostil roda (o trabalho síncrono de 30 s foi de 18 s para 3
 | O que | Comando | Saída |
 |---|---|---|
 | Linha de base dos cinco motores (abrir, editar, rodar e memória depois de 10 ciclos de Parar e Rodar) | `bunx playwright test e2e/engine-baseline.spec.ts --project=chromium` | registro, não teto: `.cache/mission/engine-baseline.json` ou `STUDIO_ENGINE_BASELINE_OUTPUT` |
-| GPU em 10 recomeços e sprites fora do palco | `bunx playwright test --config playwright.engines.config.ts` | `.cache/mission/engine-gpu-cycles.json` (ou `STUDIO_GPU_CYCLES_OUTPUT`) e `engine-2d-offscreen.json`; [`motores-inventario.md`](motores-inventario.md) |
+| GPU em 10 recomeços e sprites fora do palco | `bunx playwright test --config playwright.engines.config.ts` | `.cache/mission/engine-gpu-cycles.json` (ou `STUDIO_GPU_CYCLES_OUTPUT`) e `engine-2d-offscreen.json` (ou `STUDIO_OFFSCREEN_OUTPUT`); [`motores-inventario.md`](motores-inventario.md) |
 
 ### Python
 
@@ -133,7 +134,7 @@ executor permite e como funciona por trás.
 | Python com Turtle, Pygame Zero, pygame-ce ou Raylib | sim, na troca de quadro (precisa da distribuição nova do runtime) | sim (observador das missões) | sim (traceback, arquivo e linha) | quadros e tempo do quadro | testar o programa (o passo de tecla precisa da distribuição nova) e testar uma função |
 | Python sem biblioteca de jogo | não | no fim do programa | sim | o tempo do programa | testar uma função |
 | Pro em JavaScript | não | não | sim, com arquivo e linha | quadros e tempo do quadro | no servidor: testar o jogo e testar uma função exportada |
-| Python Pro | as abas Investigar e Desempenho não entram | | Problemas | | |
+| Python Pro | não (as abas Investigar e Desempenho não entram) | não | sim, na aba Problemas | não | não (a gaveta tem Problemas, Experimentar comandos e Mensagens) |
 
 Em nenhum executor existe breakpoint nem passo a passo por linha (fora da proposta aprovada). Não
 apresente o caminho até o erro como depurador por linha, nem os verificadores dos cursos como
@@ -307,7 +308,8 @@ como "emulado, não conferido em aparelho físico".
 
 ## 10. O que ainda não tem medida
 
-- O custo da coleta das abas Investigar e Desempenho (meta abaixo de 5% do quadro).
+- O custo da coleta das abas Investigar e Desempenho (meta abaixo de 5% do quadro). A tela já diz
+  que medir quase não pesa; falta a prova.
 - O custo do interpretador Python, do transporte dos quadros, da renderização e do editor, cada um à
   parte.
 - A gravação no IndexedDB com 10 mil blocos no Estúdio livre.

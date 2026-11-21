@@ -7,8 +7,9 @@ versionada e onde ela foi conferida.
 
 Nada foi rodado de novo para escrever este documento. As marcas vêm dos registros citados: os
 documentos desta pasta, os relatórios de `docs/qa/` e as rodadas do GitHub Actions consultadas em
-21/11/2026 (`gh run list` e `gh run view`, só leitura). Último commit do Estúdio na staging nesta
-data: `7fb0c4f30`.
+21/11/2026 (`gh run list` e `gh run view`, só leitura). Escrito com o Estúdio em `7fb0c4f30` e
+atualizado no fim do lote 8, depois da homologação integral em `d2f238b62` e do full review final
+(até `b182d1313`).
 
 ## As marcas
 
@@ -28,9 +29,13 @@ data: `7fb0c4f30`.
   verdes é a **44860362872**, em `48a8d0f05` (21/11, 03:17 UTC). A última rodada é a
   **44904766980**, em `1dd1f51c6` (21/11): 11 de 12 jobs verdes; o shard 1 do Chromium no Linux
   reprovou, e a revisão do lote 1 atribui a falha ao `css-learning.spec.ts`, intermitente
-  ([`revisao-2026-11-20.md`](revisao-2026-11-20.md)). **Nenhuma homologação integral rodou depois
-  de `1dd1f51c6`.** O que os lotes 2 a 7 trouxeram (de `6c07e0343` a `7fb0c4f30`) tem só as provas
-  parciais listadas abaixo.
+  ([`revisao-2026-11-20.md`](revisao-2026-11-20.md)). **Homologação integral no fim do lote 8:
+  44949817617, em `d2f238b62`** (os lotes 2 a 7 e a revisão dos lotes 6 e 7): 11 de 12 jobs verdes,
+  inclusive as cinco aulas protegidas (66 de 66 objetivos, capturas abaixo), o Firefox, o WebKit, o
+  Windows e o Python. O job `contracts` do Linux reprovou num teste do Estúdio que passava por sorte
+  de tempo ("o resultado acompanha o programa", que esperava só um `setTimeout(0)` pelo evento do
+  Blockly), consertado em `b182d1313`. Os consertos do full review final (de `efd8a4d12` a
+  `b182d1313`) têm as provas de cada commit e entram na próxima homologação.
 - **CI do monorepo (`.github/workflows/ci.yml`, a cada push na staging).** Desde `61ef65f2d`
   nenhuma rodada terminou inteira: as seguintes foram canceladas por pushes novos ou ainda estavam
   rodando. O job `ci` reprova no lint (`biome ci`) por arquivos de outras frentes
@@ -59,9 +64,9 @@ data: `7fb0c4f30`.
 | G. Python | parcial | CI Linux, staging logado; os custos separados não foram medidos |
 | H. Falhas intencionais | parcial: 7 de 10 com prova no navegador | CI Linux, CI Windows, Windows local, staging logado, emulado |
 
-"Feito" em A e B quer dizer que os itens pedidos têm prova. As lacunas que ficam (capturas depois
-das mudanças de 20 e 21/11, Verificar e Enviar com a casca ligada, vídeos gravados nunca
-acessados) estão escritas em cada linha.
+"Feito" em A e B quer dizer que os itens pedidos têm prova. As lacunas que ficam (os vídeos
+gravados, nunca acessados, e os 6 de 6 da parte 4 do Desafio com a casca ligada) estão escritas em
+cada linha.
 
 ## A. Cadê Todo Mundo?
 
@@ -76,10 +81,10 @@ aulas (`packages/studio/e2e/helpers/palco.ts`) dentro de `packages/studio/e2e/pr
 | Visibilidade | "Deixar o sprite … com … % de visibilidade" (`Jogo 2D → Sprites → Aparência`). Prova de que o teste morde: com o texto trocado para "Tornar o sprite…", a aula 1 reprova no gesto 14 | [`README.md`](README.md), seções A2 e A3 | O teste: CI Linux e CI Windows. A sabotagem foi feita em 17/11 na sessão em Linux fora do CI |
 | Imagens | A troca das imagens do jogo na parte "personalizar" da aula 2, pelos gestos do roteiro; o jogo da aula 2 rodou na casca isolada, com o jardim desenhado | `protected-lessons.spec.ts`; [`../qa/2026-11-21-studio-casca-staging.md`](../qa/2026-11-21-studio-casca-staging.md) | CI Linux, CI Windows, Windows local; staging logado (21/11) |
 | Execução | Os objetivos de execução rodam o jogo no executor de verdade do servidor (no Cadê, 2 na aula 1 e 4 na aula 2; 17 nos dois cursos). Desde `ae53e7ca0` o CI não aceita objetivo sem nota | `protected-lessons.spec.ts` com `SZ_CHECK_CHROMIUM`; [`../qa/2026-11-20-studio-course-generation-and-undo.md`](../qa/2026-11-20-studio-course-generation-and-undo.md) (17 aprovados, zero sem medição) | CI Linux, CI Windows, Windows local |
-| Verificação | "Verificar projeto" na página real da aula: Cadê adulto, aula 1, parte 4, 2 de 2 objetivos | [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md) | staging logado (20/11, com a casca desligada). Com a casca ligada: não verificado |
+| Verificação | "Verificar projeto" na página real da aula: Cadê adulto, aula 1, parte 4, 2 de 2 objetivos | [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md) | staging logado (20/11, com a casca desligada; e 21/11 com a casca ligada, de novo 2 de 2, [`../qa/2026-11-21-studio-casca-staging.md`](../qa/2026-11-21-studio-casca-staging.md)) |
 | Salvamento | Rodar só depois de gravar; recarregar logo depois de uma mudança traz a mudança; os rascunhos de aula têm testes no member-shell (linha 7 de [`persistencia-matriz.md`](persistencia-matriz.md)); no staging, recarregar 50 ms depois de Rodar trouxe o último código inteiro | `packages/studio/e2e/run-save-revision.spec.ts`, `packages/studio/e2e/reload-flush.spec.ts`, `packages/member-shell/tests/lesson-draft-*.test.ts` | CI Linux (`ci.yml`), CI Windows (job `browsers` do Windows, 44904766980), staging logado (20/11). Lacuna: o servidor guarda uma versão anterior do envio, e dois reenvios apagam a original (lacuna 5 da matriz) |
-| Envio | "Enviar meu projeto" respondeu "Projeto enviado! Foi em 20/11/2026, 11:15:18." e "Concluir aula" respondeu "Aula concluída!" | [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md) | staging logado (20/11, casca desligada) |
-| Resultado visual e funcional | Capturas de cada parte antes (17/11) e depois (19/11); o jogo montado pelos gestos é o projeto final do curso, linha por linha | `evidencias/a3-antes/`; `evidencias/a3-depois-windows/manifesto.json` (`sourceCommit` `0b169f83`, Chromium 148 completo, 399 gestos, 66 objetivos aprovados) | Windows local (19/11). Capturas depois das mudanças de 20 e 21/11: não verificado. Vídeos gravados: nunca acessados |
+| Envio | "Enviar meu projeto" respondeu "Projeto enviado! Foi em 20/11/2026, 11:15:18." e "Concluir aula" respondeu "Aula concluída!"; com a casca ligada, "Enviar de novo" respondeu "Projeto enviado! Foi em 21/11/2026, 18:13:39." | [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md), [`../qa/2026-11-21-studio-casca-staging.md`](../qa/2026-11-21-studio-casca-staging.md) | staging logado (20/11, casca desligada; 21/11, casca ligada) |
+| Resultado visual e funcional | Capturas de cada parte antes (17/11) e depois (19/11); o jogo montado pelos gestos é o projeto final do curso, linha por linha | `evidencias/a3-antes/`; `evidencias/a3-depois-windows/manifesto.json` (`sourceCommit` `0b169f83`, Chromium 148 completo, 399 gestos, 66 objetivos aprovados) | Windows local (19/11). Depois das mudanças de 20 e 21/11: as 13 capturas e os 66 objetivos em `evidencias/a3-depois-2026-11-21-ci/` (homologação 44949817617, `d2f238b62`, Chromium 159 completo no Windows Server 2025). Vídeos gravados: nunca acessados |
 
 ## B. Desafio do Primeiro Jogo: A Chave do Farol
 
@@ -98,7 +103,7 @@ Três dias com Estúdio: dia 1 (55 gestos, 5 de 5 objetivos de estrutura e 4 de 
 | Troca de imagens | "Trocar imagem do sprite … para …"; o objetivo confere que a imagem do farol muda ao vencer, pelo nome curto `sprite.imageName` | `packages/studio/CLAUDE.md` (seção de 29/10); objetivos de execução | CI Linux, CI Windows, Windows local |
 | Mensagens | "Escrever …" e "Mostrar placar …" (`Jogo 2D → Vida e placar → Indicadores e texto na tela`); parte "farol-mensagens" do dia 3 | `evidencias/a3-depois-windows/desafio-dia-3/farol-mensagens.objetivos.json` | CI Linux, CI Windows, Windows local |
 | Reinício da partida | O gesto `[rodar de novo]` do roteiro do dia 2 ("Para ver, clique em Rodar de novo, no alto do Estúdio") é refeito pelo robô. O antigo "Atualizar o preview" do palco não existe desde o redesenho (achado A5, conferido em 17/11) | `docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.roteiro.md`; `protected-lessons.spec.ts` | CI Linux, CI Windows, Windows local |
-| Verificação e envio | Desafio no Kids, aula 1, parte 6: "Projeto enviado! Foi em 20/11/2026, 11:25:30." e "Aula concluída!" (+10 XP, +5 moedas) | [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md) | staging logado (20/11, casca desligada) |
+| Verificação e envio | Desafio no Kids, aula 1, parte 6: "Projeto enviado! Foi em 20/11/2026, 11:25:30." e "Aula concluída!" (+10 XP, +5 moedas); com a casca ligada, parte 4: Verificar respondeu (0 de 6 no projeto inicial) e "Projeto enviado! Foi em 21/11/2026, 18:15:56." | [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md), [`../qa/2026-11-21-studio-casca-staging.md`](../qa/2026-11-21-studio-casca-staging.md) | staging logado (20/11, casca desligada; 21/11, casca ligada) |
 | Posições e caminhos visuais | Cada caminho dos roteiros achado na paleta real da aula (matriz); o robô acha cada bloco pelo texto da paleta, como na gravação; a parte "decisao" do dia 3 monta o projeto final do curso, linha por linha | matriz; `protected-lessons.spec.ts`; capturas em `evidencias/a3-antes/` e `evidencias/a3-depois-windows/` | CI Linux, CI Windows, Windows local (capturas de 19/11). Capturas depois de 20 e 21/11: não verificado |
 
 ## C. Projeto Clássico com milhares de blocos
@@ -128,9 +133,11 @@ Fixtures: o dia 3 do Farol com os eventos repetidos até o tamanho pedido (`/aul
 
 **Não feito.** O jogo pedido (vila, floresta, cavernas, interiores, centenas de entidades, regiões,
 transições, persistência e carregamento progressivo) depende do carregamento por regiões da seção
-8.3, que nenhum motor 2D tem ([`motores-inventario.md`](motores-inventario.md)). Segundo a missão, a
-proposta das regiões foi aprovada em 21/11; não há documento versionado dela nesta pasta nem em
-`docs/plans/` (não confirmado no repositório).
+8.3, que nenhum motor 2D tem ([`motores-inventario.md`](motores-inventario.md)). A proposta das
+regiões foi aprovada em 21/11: a parte 2D é o recorte do desenho dos objetos do Pinta (`719fade30`,
+com o conserto dos conjuntos em `78f854bae`), sem bloco nem carregamento por regiões; a parte 3D
+está especificada em [`regioes-3d-especificacao.md`](regioes-3d-especificacao.md) e depende do
+formato da frente do Molda.
 
 O que já existe e o jogo D vai usar:
 
@@ -178,7 +185,7 @@ O projeto modular de 60 arquivos TypeScript que se importam em cinco camadas
 | Materiais | A exportação leva os materiais em `public/` com o `studio-assets/manifest.json` | `packages/studio/scripts/verify-exports.ts` | CI Linux e CI Windows (44944817571). No ensaio com tudo ligado: não exercitado |
 | Testes | "Meus testes" do Pro roda no executor do servidor ("Testar o jogo" e "Testar uma função"), com os testes do core, do Members, do gateway, da rota e da gaveta | [`paineis-proposta.md`](paineis-proposta.md), lote 10 da interface | não verificado no navegador nem no staging |
 | Build | O mesmo ZIP instala com `npm ci` e constrói duas vezes igual; o mesmo build, byte a byte, no Linux e no Windows, para os 15 projetos | `verify-exports.ts`; [`exportacao.md`](exportacao.md); `evidencias/exportacao-2026-11-21/windows-local.json` | CI Linux e CI Windows (44944817571), Windows local |
-| Histórico | O Histórico do projeto guarda a versão antes de uma operação, compara com agora e volta | `packages/studio/src/state/__tests__/proProjectHistory.cases.ts`; `packages/studio/e2e/pro-workspace.spec.ts` ("the project history keeps the version before an operation…") | não verificado (o commit `7fb0c4f30` é de 21/11 e a rodada do CI estava em andamento) |
+| Histórico | O Histórico do projeto guarda a versão antes de uma operação, compara com agora e volta | `packages/studio/src/state/__tests__/proProjectHistory.cases.ts`; `packages/studio/e2e/pro-workspace.spec.ts` ("the project history keeps the version before an operation…") | CI Linux (homologação 44949817617, `d2f238b62`, shard 3 do Chromium); Windows local. Desde o full review final, também a janela sem versões e a linha "Antes de voltar para a versão de…" (`0fe5d470e`, Windows local) |
 | Execução | As três execuções: leve (montada no navegador, sem o compilador do servidor), hospedada (o Vite no contêiner) e completa (WebContainer) | `packages/studio/e2e/pro-light-runtime.spec.ts` (Chromium, Firefox e WebKit); job `hosted-runtime` ("Real build and validation in the sandbox without network"); `pro-full-preview.spec.ts` | Leve: CI Linux (`ci.yml` e homologação). Hospedada: CI Linux (44904766980). Completa: Windows local. O mesmo projeto pelo compilador de staging, lado a lado: não verificado ([`pro-execucao.md`](pro-execucao.md)) |
 | Exportação | 15 de 15 projetos exportados, instalados e construídos fora do Estúdio | `.github/workflows/studio-export.yml` | CI Linux, CI Windows, Windows local |
 | Editor, linguagem, prévia, console e Zappy juntos | Ensaio com a análise dos 61 arquivos, o jogo rodando, uma pergunta ao Zappy em voo (um adaptador de teste que responde em 1,5 s, não o Zappy de verdade), painéis, busca, um arquivo criado e renomeado com o jogo rodando e 10 ciclos de Parar e Rodar: digitar p95 32,0 ms (Linux) e 31,2 ms (Windows), quadros do jogo p95 16,7 e 16,8 ms, memória do editor +1,5% | `pro-workspace-performance.spec.ts`, caso "tudo ligado ao mesmo tempo"; `evidencias/pro-ensaio-2026-11-21/` | CI Linux e CI Windows (homologação de `1dd1f51c6`), Windows local. O console não aparece na lista do ensaio: não confirmado |
@@ -229,15 +236,17 @@ voo).
 
 ## O que falta para fechar a seção 17
 
-1. Uma homologação integral (`studio-mission.yml`) no SHA atual, já que nenhuma rodou depois de
-   `1dd1f51c6`, e o lint do `ci.yml` verde (hoje vermelho por arquivos de outras frentes).
-2. Capturas de depois das mudanças de 20 e 21/11 nas 13 partes dos cursos protegidos.
-3. Verificar e Enviar numa aula de cada curso com a casca ligada.
+1. Uma homologação integral com os consertos do full review final (a de `d2f238b62` teve 11 de 12
+   verdes; a falha foi um teste consertado em `b182d1313`).
+2. Feito no lote 8: as capturas de depois das mudanças de 20 e 21/11 nas 13 partes
+   (`evidencias/a3-depois-2026-11-21-ci/`).
+3. Feito no lote 8: Verificar e Enviar com a casca ligada, Cadê adulto (2 de 2 e enviado) e Desafio
+   no Kids (enviado; os 6 de 6 da parte 4 com a casca ficaram sem conferir).
 4. Os jogos D e E inteiros, que dependem das regiões e do streaming (proposta, e no 3D a entrega da
    frente do Molda).
 5. No C: trocar de modo, executar e "Virar profissional" com milhares de blocos.
-6. No F: o build hospedado com dependências reais, Meus testes do Pro no navegador e o Histórico do
-   projeto numa rodada do CI.
+6. No F: o build hospedado com dependências reais e Meus testes do Pro no navegador (o Histórico
+   do projeto já passou no CI, na homologação de `d2f238b62`).
 7. No G: o Raylib, e o custo do interpretador, do transporte dos quadros, da renderização e do
    editor medidos à parte.
 8. No H: material corrompido num jogo rodando, importação de biblioteca ausente e projeto acima do

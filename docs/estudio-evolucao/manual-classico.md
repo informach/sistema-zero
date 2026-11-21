@@ -28,10 +28,10 @@ Da esquerda para a direita:
 | Peça | Para que serve |
 |---|---|
 | Botão do menu da plataforma | Aparece só quando a página da plataforma o oferece, e esconde ou mostra o menu lateral dela |
-| Seta com "Sistema Zero Studio" | "Voltar à lista de projetos". Em telas estreitas a marca some e fica só a seta |
+| Seta com "Sistema Zero Studio" | "Voltar à lista de projetos". Abaixo de 1.600 px de largura a marca some e fica só a seta |
 | Nome do projeto, com o lápis | Clique para renomear. Enter grava e Esc desiste |
 | Selo "Salvo" | Mostra se o projeto está guardado. Muda para "Alterações não salvas" enquanto há mudança a gravar |
-| Nuvem | Aparece quando a página guarda o projeto na sua conta. Em repouso é só o desenho; quando algo acontece, mostra uma frase curta |
+| Nuvem | Aparece quando a página guarda o projeto na sua conta e algo está acontecendo (guardando, sem internet, erro), com uma frase curta. Em repouso ela não aparece: a frase da conta fica na dica do selo "Salvo" |
 | "Rodar", "Rodar de novo" e "Parar" | No meio da barra. É daqui que o jogo é posto para rodar (seção 3) |
 | "Blocos" e "Ponte" | Os modos de edição (seção 4) |
 | "Zappy" | Abre e fecha o painel do Zappy, o assistente virtual |
@@ -59,11 +59,13 @@ Em telas menores alguns botões ficam só com o ícone. Abaixo de 720 px de larg
   "Opa, o programa parou"), com "O sinal vermelho mostra o bloco onde ele parou.", os botões
   "Mostrar o bloco" e "Ver em Problemas", e "O que o computador disse" com o texto técnico. O bloco
   ganha um sinal vermelho.
-- **Quando o jogo trava**, aparece "O preview parece travado", com "Parar" e "Continuar esperando".
+- **Quando o jogo trava** (projetos em JavaScript), aparece "O preview parece travado", com "Parar" e
+  "Continuar esperando".
   Parar troca a prévia presa por uma nova, e o conserto roda na hora. O editor continua respondendo
   e salvando enquanto o jogo está preso.
-- **Laço sem fim**: um `while` ou `for` que não acaba é cortado em cerca de 4 segundos, e as
-  Mensagens do jogo dizem "laço interrompido".
+- **Laço sem fim** (projetos em JavaScript): um `while` ou `for` que não acaba é cortado em cerca de
+  4 segundos, e as Mensagens do jogo dizem "laço interrompido". No Python, o programa roda fora da
+  página, num Worker, e o Parar o encerra.
 - **Projeto que travou a aba**: na próxima abertura, a prévia não roda sozinha. Ela espera você
   apertar Rodar, para o projeto não prender de novo.
 
@@ -98,9 +100,10 @@ fora dela também é rascunho. O cabeçalho "Arquivo e partes do programa" tem o
 
 **O botão direito.** Num bloco: "Duplicar", "Copiar", "Colar", "Escrever um recado", "Abrir o
 bloco" ou "Fechar o bloco", "Desligar o bloco" ou "Ligar o bloco", "Encaixes na mesma linha" ou "Encaixes um
-embaixo do outro" e "Perguntar ao Zappy sobre este bloco" (quando o Zappy está ligado). No fundo da área: "Organizar
-blocos", "Fechar todos os blocos" e "Abrir todos os blocos". Para apagar, arraste o bloco para a
-lixeira ("Solte aqui para apagar").
+embaixo do outro", "Apagar este bloco" e "Perguntar ao Zappy sobre este bloco" (quando o Zappy está
+ligado). No fundo da área: "Organizar blocos" (no Python, o "Arrumar blocos" do próprio editor),
+"Fechar todos os blocos", "Abrir todos os blocos" e "Apagar os N blocos". Também dá para apagar
+arrastando o bloco para a lixeira ("Solte aqui para apagar").
 
 ### Ponte
 
@@ -140,7 +143,7 @@ aulas, por exemplo, alguns ficam de fora.
 
 ## 6. Procurar no programa
 
-Nos projetos grandes, com **300 blocos ou mais**, aparece o botão **"Procurar no programa"** no
+Só nos projetos em JavaScript. Nos projetos grandes, com **300 blocos ou mais**, aparece o botão **"Procurar no programa"** no
 canto de cima da área de blocos. O atalho Ctrl+F, com a área de blocos em foco, faz o mesmo. Nos
 jogos das aulas, que são menores, o botão não aparece.
 
@@ -308,7 +311,7 @@ Detalhes em [`exportacao.md`](exportacao.md).
 
 ## 12. Quando aparece "Não deu para abrir estes blocos"
 
-Na área de blocos aparece o recado:
+Só nos projetos em JavaScript. Na área de blocos aparece o recado:
 
 > Não deu para abrir estes blocos. Nada foi perdido: o projeto continua como estava. O editor de
 > blocos não conseguiu mostrar este programa, o que acontece, por exemplo, com uma sequência de
@@ -332,7 +335,7 @@ proteção vale para qualquer falha ao abrir os blocos. Mais em
 
 ## 13. Projetos grandes
 
-A partir de 1.500 blocos, o Estúdio desenha só a parte do programa que está perto da tela. O resto
+Nos projetos em JavaScript, a partir de 1.500 blocos, o Estúdio desenha só a parte do programa que está perto da tela. O resto
 continua no projeto, com todos os blocos, e é desenhado quando você chega perto, usa "Mostrar o
 bloco", desfaz ou refaz. Nada muda no código gerado nem no que é guardado. Nos jogos das aulas, que
 têm de 70 a 80 blocos, isso nunca entra em ação.

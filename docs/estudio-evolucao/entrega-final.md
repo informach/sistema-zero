@@ -1,0 +1,169 @@
+# Entrega final da missão (seção 20), 21/11/2026
+
+Fecho do plano de 21/11 (lotes 1 a 8). A régua é [`missao-original.md`](missao-original.md); o
+estado por seção, com a evidência de cada uma, fica em [`mapa-da-missao.md`](mapa-da-missao.md).
+Tudo está na `staging`, em commits pequenos; nada foi para a `main` nem para produção (decisão da
+dona). Este documento responde aos 17 entregáveis da seção 20, lista o que ficou concluído e o que
+ficou pendente, e diz como retomar. Trabalho parcial não aparece aqui como concluído.
+
+## Os 17 entregáveis
+
+| # | Entregável | Onde está | Estado |
+|---|---|---|---|
+| 1 | Diagnóstico técnico inicial | [`README.md`](README.md) ("Diagnóstico de partida"), [`diagnostico-windows.md`](diagnostico-windows.md), [`linha-de-base-linux.md`](linha-de-base-linux.md) | feito |
+| 2 | Plano executado, com o estado das etapas | [`mapa-da-missao.md`](mapa-da-missao.md), [`plano-execucao.md`](plano-execucao.md) | feito |
+| 3 | Implementação funcional | os commits da missão na `staging` (lista abaixo) | feito no que está marcado como concluído |
+| 4 | Matriz de compatibilidade dos cursos protegidos | `docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.md` (43 testes) | feito |
+| 5 | Evidência de que os blocos e percursos ensinados funcionam | `protectedCourses.test.ts`, as cinco aulas refeitas pelo robô (`protected-lessons.spec.ts`), [`homologacao-a-h.md`](homologacao-a-h.md) A e B, `../qa/2026-11-20-studio-casca-staging.md` e `../qa/2026-11-21-studio-casca-staging.md` | feito: as 13 capturas e os 66 objetivos depois das mudanças de 20 e 21/11 estão em `evidencias/a3-depois-2026-11-21-ci/` (homologação 44949817617, `d2f238b62`) |
+| 6 | Relatórios de desempenho antes e depois | [`classico-em-escala.md`](classico-em-escala.md), [`pro-em-escala.md`](pro-em-escala.md), [`motores-inventario.md`](motores-inventario.md), [`aparelho-modesto-emulado.md`](aparelho-modesto-emulado.md) | parcial: falta o relatório consolidado com p50 e p95 por máquina e fixture |
+| 7 | Evidência de jogos grandes | Clássico com 10 mil blocos e Reino Zero Ultra (7.297 blocos); Pro com 60 arquivos (e o serviço de linguagem com mil) | parcial: os jogos D (2D grande) e E (3D de exploração) não existem |
+| 8 | Relatório de consumo de memória | seção "Consumo de memória" abaixo | parcial: reúne o que foi medido e diz o que não foi |
+| 9 | Revisão de segurança e isolamento | [`isolamento-da-previa.md`](isolamento-da-previa.md), [`homologacao-a-h.md`](homologacao-a-h.md) H | feito no Chromium e no Firefox; o WebKit fica sem isolamento por decisão (B4) |
+| 10 | Testes de salvamento, recuperação e compatibilidade | [`persistencia-matriz.md`](persistencia-matriz.md), [`salvar-e-executar.md`](salvar-e-executar.md), [`historico-do-projeto.md`](historico-do-projeto.md) | feito, com oito lacunas escritas na matriz |
+| 11 | Manual do Estúdio Clássico | [`manual-classico.md`](manual-classico.md) | feito |
+| 12 | Manual do Estúdio Pro | [`manual-pro.md`](manual-pro.md) | feito |
+| 13 | Capacidades dos runtimes | [`capacidades-dos-runtimes.md`](capacidades-dos-runtimes.md) | feito |
+| 14 | Guia de profiling e depuração | [`guia-desempenho-e-depuracao.md`](guia-desempenho-e-depuracao.md) | feito |
+| 15 | Documentação da exportação | [`exportacao.md`](exportacao.md) | feito |
+| 16 | Lista de funcionalidades concluídas e pendências | este documento | feito |
+| 17 | Pull Request com os commits verificados | substituído por decisão da dona: commits pequenos direto na `staging`, sem PR | substituído |
+
+## Funcionalidades concluídas
+
+### Isolamento e segurança da prévia (seção 5)
+- A prévia do Clássico em outro site (a casca do Worker), ligada no staging e conferida logada nos
+  dois apps: teclas sem clicar no palco, Parar com o jogo preso, aula com vídeo, Verificar e Enviar
+  numa aula de cada curso com a casca ligada (21/11; no Desafio, os 6 de 6 da parte 4 com a casca
+  ficaram sem conferir).
+- Os nove programas hostis da missão no CI (Chromium com a prévia direta e com a casca; Firefox com
+  a casca), com o editor salvando durante o pior (`6c07e0343`).
+- A liberação de recursos medida do lado do jogo e o documento preso por Parar consertado
+  (`a70c17033`, `830a85b6b`).
+- A troca de perfil com gravação em voo conferida no app (`e6d880a23`).
+
+### Clássico em escala (seção 6)
+- 10 mil blocos abrem e geram código nas três engines (`43f20c03d`).
+- A sequência única de 10 mil não derruba o editor nem perde blocos (`2b54c17e5`); o Python em
+  blocos guarda e compara sequências longas sem recursão (`fce7540e4`).
+- "Procurar no programa" com "Mostrar o bloco", também na parte que ainda não foi desenhada
+  (`fe622cf3f`, `f84f54255`).
+- O mesmo estado e o mesmo código com e sem montagem sob demanda, num job do CI
+  (`studio-classic-equivalence.yml`, `6d495f877`).
+
+### Motores (seção 8)
+- Inventário medido dos cinco motores; os tetos que cortavam calados passaram a avisar; o Jogo 2D
+  13% menor em bytes e o 3D Avançado 2,2 KB menor, com os tetos descidos (`33cd419d8`,
+  `64e7f6281`).
+- A GPU dos três motores 3D estável em 10 recomeços (`engine-gpu-cycles.spec.ts`).
+- O tocador de cenas do Pinta desenha só os objetos perto da câmera (16.384 para 1.358 desenhos
+  por quadro numa cena no limite, `719fade30`).
+
+### Pinta, Molda e Zappy (seções 12 e 15)
+- Fixtures congeladas dos contratos e a recusa sem perda de campo ou versão desconhecida
+  (`1136c01a1`); prova da exportação 2D nas três engines; o contrato de um cenário completo do
+  Molda pelo domínio, pelo compilador e pela importação (`fa4872992`).
+- O Zappy recebe, na hora da pergunta, os valores e as medidas que as abas Investigar e Desempenho
+  mostram, com a regra de não inventar (`fa4872992`, `ee8a17e9d`).
+
+### Pro e persistência (seções 7 e 13)
+- O "ENOENT" cru some da tela enquanto o Pro prepara (`74c852e78`).
+- "Organizar as importações" (`f3b11d15a`); "Arrumar código" que mantém os espaços e o tempo de
+  "Onde isto é usado", "Trocar nome em todo lugar" e "Arrumar código" abaixo de 200 ms
+  (`9d8934d5a`).
+- O ensaio com uma dependência de verdade no WebContainer, com o erro antigo da página que não fica
+  contado depois do conserto (`c2142a528`, `bf96c7a56`).
+- O Pro convertido mostra de onde veio e abre a versão em blocos (`6c96234f2`).
+- O Histórico do projeto: versões neste computador, comparar com agora e voltar (`7fb0c4f30`).
+- A matriz de quedas por borda de escrita (`74c852e78`); P1 a P4 da persistência v4.
+
+### Fluxo profissional (seção 14)
+- A exportação do Pro leva a trava do grafo aprovado e é conferida fora do Estúdio: `npm ci` e o
+  build duas vezes igual nos 15 projetos, e o mesmo build no Linux e no Windows (`ee82d0dfd`).
+- Avaliação escrita do Git no Pro ([`git-no-pro-avaliacao.md`](git-no-pro-avaliacao.md): sem Git
+  agora).
+
+## Full review final (21/11)
+
+Seis revisões independentes, uma por frente. Nada de gravidade alta; os achados médios e os baixos
+de conserto barato foram consertados, cada um com teste vermelho antes:
+
+- a trava da exportação calcula as marcas (`dev`, `optional`, `devOptional`, `peer`) para o projeto,
+  e os 14 modelos têm de sair com ela (`efd8a4d12`);
+- o recorte do Pinta não corta mais conjuntos e pede as imagens ao criar a cena, com o teto do
+  fragmento descido de 26.600 para 26.500 (`78f854bae`);
+- no Pro, o erro de uma página anterior sai também do Investigar e do Zappy; a observação das abas
+  cede no orçamento do pedido, com os campos dela tratados como dado não confiável (`b817a7ab1`);
+- o Histórico do projeto grava numa transação só, respeita a lápide do projeto apagado noutra aba,
+  apaga pelas chaves do banco e não promete versões onde não as guarda (`0fe5d470e`);
+- a carga dos blocos Python não desliga o "Desfazer" da página, e a busca ignora o rótulo de botões
+  em bloco travado (`0179cbf52`);
+- cada caminho que enche um grupo do Jogo 2D tem teste próprio (`fab54bc52`), e o teste da busca
+  que passava por sorte espera o evento do Blockly (`b182d1313`);
+- os documentos foram conferidos contra o código (nomes de tela, menus, atalhos, constantes, SHAs)
+  e corrigidos.
+
+## Pendências
+
+| Pendência | Por que ficou | O que destrava |
+|---|---|---|
+| Regiões 3D (pré-carga, ativação e descarte) e o bloco "Quando ⟨personagem⟩ entrar na região" | o formato de cena do Molda não tem regiões | a frente do Molda escrever o formato da [especificação](regioes-3d-especificacao.md) |
+| Jogos de homologação D e E inteiros | dependem das regiões e do streaming | as regiões 3D |
+| Recorte de sprites no Jogo 2D | separar o estado do quadro do desenho; o custo medido é baixo (até 0,45 ms por grupo cheio fora da tela) | um lote do motor 2D |
+| O teclado preso nos jogos 3D sem placa de vídeo | diagnosticado (`756ce2cfa`), sem conserto | um lote de entrada do 3D |
+| A prévia isolada no WebKit (Safari, iPad) | decisão B4: nenhum arranjo de iframe isola no WebKit | nada: decisão dela |
+| Abrir nos blocos a sequência única de 10 mil | hoje abre pelo código, sem perda | carga de cadeia por partes no Blockly |
+| IR, avisos e código refeitos só no evento mexido | o gesto com 10 mil blocos leva 220 a 354 ms; a meta de 50 ms vale até cerca de 2 mil | processamento semântico incremental |
+| Custo da medida dos painéis (< 5%) no navegador; os casos de chave, porta, vida, placar, fim, compilação e tempo nos testes do aluno | não feitos; a tela da aba Desempenho já diz "Medir quase não pesa no jogo" (texto aprovado), sem a prova | um lote dos painéis |
+| As oito lacunas da matriz de persistência | escritas em [`persistencia-matriz.md`](persistencia-matriz.md) | um lote de persistência |
+| O build hospedado com dependências reais | só o WebContainer foi provado | conferir no staging |
+| A textura de biblioteca e a carga no Three do cenário completo do Molda; a memória da prova 2D em ciclos | não feitos no navegador | um lote de integração |
+| Relatório consolidado de p50 e p95 por máquina e fixture; custos medidos dos dez runtimes | os números estão espalhados pelos documentos | um lote de medição |
+| G: Raylib e os custos do Python medidos à parte; H: três falhas sem prova no navegador | não feitos | um lote de homologação |
+| Aparelhos físicos | decisão da dona: só emulação no CI | nada: decisão dela |
+| Produção | decisão da dona: só staging | a dona pedir a release |
+
+## Consumo de memória
+
+| O quê | Medida | Onde | Evidência |
+|---|---|---|---|
+| Página do editor do Pro depois de 10 Parar e Rodar | +1,5% (Linux e Windows) | CI, homologação de `1dd1f51c6` | [`pro-em-escala.md`](pro-em-escala.md), `evidencias/pro-ensaio-2026-11-21/` |
+| Jogo do Clássico no processo da prévia, do 1º ao 10º Rodar | Mini plataforma 1,8 e 1,8 MB; Cubo girando 3,7 e 3,7 MB; Defesa da Torre 4,4 e 4,5 MB | Windows local | [`isolamento-da-previa.md`](isolamento-da-previa.md), `evidencias/liberacao-de-recursos-2026-11-21/` |
+| O vazamento que essa medida achou | o Jogo 2D ia de 2,0 para 3,4 MB em 10 ciclos (um documento preso por Parar); consertado | Windows local | `830a85b6b` |
+| Objetos de GPU dos três motores 3D em 10 recomeços | contas vivas iguais nos quatro últimos recomeços | Windows local, CI Linux | [`motores-inventario.md`](motores-inventario.md), `evidencias/motores-gpu-2026-11-21/` |
+| WebContainer do Pro | 2,4 a 2,7 GiB | diagnóstico de 17/11 | [`README.md`](README.md) |
+
+Não medido: a memória do interpretador Python por parte, o Pygame nativo, a memória por processo
+do navegador no Linux, a memória de GPU em bytes e os triângulos dos jogos 3D, a memória da prova
+2D em ciclos e as sessões prolongadas num mundo grande.
+
+## Limitações registradas
+
+- **"Abrir a versão em blocos"** diz "A versão em blocos foi apagada" quando a cópia em blocos não
+  está neste computador: num computador novo, antes de a lista descer da nuvem, a cópia pode
+  existir só na nuvem ([`historico-do-projeto.md`](historico-do-projeto.md)).
+- **Tetos de 200 ms** das operações do editor do Pro: medidos no Windows local (56, 97 e 87 ms);
+  no CI podem oscilar.
+- **Emulado** é só CPU do editor desacelerada no Chromium; Firefox e WebKit não têm essa emulação.
+- O texto da missão chama a busca de "Pesquisar"; no Estúdio ela se chama "Procurar no programa",
+  porque "Pesquisar" já é a busca de blocos da paleta. Ela, a montagem sob demanda e o recado "Não
+  deu para abrir estes blocos" são do editor de blocos em JavaScript; o Python em blocos não os tem.
+- **Recuperar a prévia presa** espera 1,2 s de silêncio do jogo (o batimento é de 1 por segundo):
+  um jogo com quadros muito longos, editado bem nessa janela, pode ter o código de topo rodado de
+  novo. Escolha de projeto, registrada.
+- **No Pro**, um erro atrasado da página antiga que chegue depois do aviso de começo da página nova
+  (são dois canais, sem ordem garantida entre eles) volta a contar; nenhum erro da página nova é
+  escondido. Com a prévia defasada (código editado depois de rodar), o Zappy recebe os valores do
+  jogo que roda e o código do editor, sem aviso.
+- **A liberação de recursos do jogo** mede documentos, quadros, CPU e memória; a contagem de
+  processos vai só para a evidência, sem critério (iframes com sandbox da mesma página dividem um
+  processo).
+
+## Como retomar
+
+1. Ler [`mapa-da-missao.md`](mapa-da-missao.md) e a tabela de pendências acima.
+2. Conferir a homologação integral mais recente (`gh run list --workflow studio-mission.yml`) e o
+   registro dela em [`homologacao-a-h.md`](homologacao-a-h.md).
+3. Seguir a ordem: regiões 3D com a frente do Molda (destrava D e E), recorte de sprites no 2D,
+   lacunas de persistência, painéis (custo da medida e casos), consolidado de desempenho.
+4. Regras que valem para qualquer lote: [`missao-original.md`](missao-original.md) (decisões no
+   topo) e `packages/studio/CLAUDE.md`.

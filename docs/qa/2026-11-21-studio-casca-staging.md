@@ -114,3 +114,21 @@ repete. O gerador (`generators/js.ts`, `compileBehaviorLoopRoot`) só põe laço
 dos motores (Jogo 2D e Jogo 2D Avançado); o código avançado na área roda uma vez, no fim do
 programa, e numa regeração entra no envelope da partida com o mesmo efeito (sonda local: o
 contador da página ficou em 1).
+
+## Verificar e Enviar com a casca ligada (lote 8, 21/11 à noite)
+
+Lacuna 3 de [`homologacao-a-h.md`](../estudio-evolucao/homologacao-a-h.md): em 20/11 o Verificar e
+o Enviar foram conferidos com a casca desligada. Mesma conta da equipe, mesmos apps de staging
+(build das 16:24 UTC no Kids), Chrome conectado.
+
+| Aula | Prévia | Verificar projeto | Enviar |
+|---|---|---|---|
+| Cadê Todo Mundo (adulto), aula 1, parte 4 | "Pré-visualização" no Worker de staging, sem `srcdoc` | **2 de 2 cumpridos**, "Objetivo cumprido!" (o executor rodou o jogo) | "Enviar de novo" → "Projeto enviado! Foi em 21/11/2026, 18:13:39." |
+| Desafio do Primeiro Jogo (Kids, perfil Criador(a) "QA troca de perfil 21-11"), aula 1, parte 4 de 6 | a mesma casca, sem `srcdoc` | com o projeto inicial, sem nada feito: **0 de 6**, "Ainda falta um objetivo. Veja a lista e tente de novo." | "Enviar meu projeto" → "Projeto enviado! Foi em 21/11/2026, 18:15:56." |
+
+- A aula 1 do Desafio tem Estúdio em duas partes (manifesto `desafio-dia-1`): a 4, "Faça o
+  personagem andar", com 6 objetivos, usada aqui; e a 6, "Mantenha o personagem na tela", usada em
+  20/11. Este perfil ainda não tinha passado da parte 4.
+- **Não verificado com a casca:** os 6 de 6 do Desafio (montar os blocos pelo Chrome remoto) e o
+  "Concluir aula". Os objetivos das aulas protegidas passam no robô das aulas, no CI, com a prévia
+  direta.

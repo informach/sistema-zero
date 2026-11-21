@@ -37,10 +37,16 @@ projetos de blocos continuam disponíveis.
 no Python). No tablet a gaveta abre fechada; no celular a tela vira as abas "Código" e "Saída", e o
 Rodar vira um botão flutuante.
 
-O menu ⋯ do Pro tem quase os mesmos grupos do Clássico, com três diferenças: "Mais blocos" só
-aparece no Python Pro (é por ali que se instala Turtle, Pygame Zero, pygame-ce ou Raylib), entra
-**"Atalhos do teclado"** no grupo "Estúdio", e entra **"Abrir a versão em blocos"** quando o
-projeto veio de "Virar profissional" (seção 11). Os materiais moram no trilho, não no menu.
+O menu ⋯ do Pro tem quase os mesmos grupos do Clássico, com estas diferenças:
+- "Mais blocos" só aparece no Python Pro (é por ali que se instala Turtle, Pygame Zero, pygame-ce ou
+  Raylib);
+- entra **"Atalhos do teclado"** no grupo "Estúdio";
+- entra **"Abrir a versão em blocos"** quando o projeto veio de "Virar profissional" (seção 11);
+- "Virar profissional" e "Mostrar o jogo" não aparecem (o projeto já é profissional, e o jogo fica
+  na "Arrumação da tela");
+- em "Mostrar" entra o "Terminal" no Pro em JavaScript, quando a página o libera.
+
+Os materiais moram no trilho, não no menu.
 
 ## 3. Arquivos e a seção Configuração
 
@@ -80,8 +86,9 @@ O editor é o Monaco, o mesmo do VS Code, com as palavras do Estúdio.
   - "Onde isto é usado" (Shift+F12): todos os lugares que usam o nome sob o cursor;
   - "Trocar nome em todo lugar" (F2): "Nome de agora", "Nome novo" e "Conferir referências" antes
     de aplicar;
-  - "Mostrar espaços", "Mostrar na lista de arquivos", "Deixar esta aba aberta" e "Fechar as outras
-    abas";
+  - "Mostrar espaços", "Mostrar na lista de arquivos", "Deixar esta aba aberta" (só quando a aba
+    aberta é temporária) e "Fechar as outras abas";
+  - "Histórico do projeto" (seção 10);
   - "Todas as ações…" (Ctrl+Shift+P).
 
 **"Todas as ações"** pergunta "O que você quer fazer?" e reúne tudo: "Ir para um arquivo",
@@ -142,9 +149,10 @@ Em todas as três, o código do projeto roda num quadro isolado, nunca na págin
 
 ## 7. O terminal
 
-O terminal só existe no Pro em JavaScript e na execução completa (WebContainer, que precisa do
-isolamento COOP e COEP da página). No Python não há terminal. Ele aparece como a aba "Terminal"
-("avançado") da gaveta, ou pelo menu ⋯ → "Mostrar" → "Terminal", quando a página o libera.
+O terminal só existe no Pro em JavaScript; no Python não há terminal. A aba "Terminal"
+("avançado") da gaveta aparece quando a página o libera, ou pelo menu ⋯ → "Mostrar" → "Terminal".
+Ele só funciona de verdade na execução completa (WebContainer, que precisa do isolamento COOP e
+COEP da página); sem isso a aba diz "O terminal real não está disponível aqui ainda."
 
 - Na primeira vez: "O terminal é a janela dos programadores", com "Abrir o terminal" e "O que dá
   para fazer nele?".
@@ -213,8 +221,9 @@ Abra pelo menu **"Mais"** do editor → **"Histórico do projeto"** (ou por **"T
 ficam guardadas neste computador. Voltar para uma versão guarda antes a de agora, então nada se
 perde."
 
-- **Quando o Estúdio guarda uma versão:** ao Rodar (no máximo uma a cada 2 minutos), antes de cada
-  operação com arquivos e antes de cada mudança do Zappy. Versão igual à anterior não é guardada.
+- **Quando o Estúdio guarda uma versão:** ao Rodar (no máximo uma versão de Rodar a cada 2
+  minutos), antes de cada operação com arquivos e antes de cada mudança do Zappy. Versão igual à
+  anterior não é guardada.
 - **Cada linha** tem a hora e o que aconteceu ("Você rodou o jogo", "Antes de o Zappy mudar o
   código", "Antes de: …") e quantos arquivos mudaram.
 - **"Ver mudanças"** compara a versão (à esquerda) com o projeto de agora (à direita), um arquivo
@@ -226,7 +235,8 @@ perde."
 
 O histórico fica só neste computador: ficam as últimas 50 versões, ou até 20 MB por projeto, e as
 mais antigas saem primeiro. Os materiais (imagens, sons, modelos) não entram nas versões. Nas aulas e
-em páginas sem armazenamento local (como o Admin) não há Histórico do projeto. Ele sai junto quando o
+em páginas sem armazenamento local (como o Admin) a janela mostra só as operações com arquivos, com o
+"Recuperar"; versões não são guardadas, e o texto do alto diz isso. O histórico sai junto quando o
 projeto é apagado. O Histórico do projeto não é o Git, e o Pro não tem Git
 ([`git-no-pro-avaliacao.md`](git-no-pro-avaliacao.md)); quem quiser Git usa a exportação (seção 12)
 e roda `git init` na pasta.
@@ -290,7 +300,8 @@ assistente virtual, não uma pessoa da equipe." Pelo editor e por "Todas as aç�
 - **"Explicar trecho com Zappy"** e **"Investigar trecho com Zappy"**: o Zappy recebe o trecho
   selecionado e explica;
 - **"Pedir mudança nestas linhas"** (Ctrl+Alt+K): abre o Zappy no modo de construir junto. A
-  proposta dele aparece para você conferir ("Ver mudanças") e só entra no código com "Aplicar
+  proposta dele aparece para você conferir ("Destacar diferenças" no painel, e "Ampliar
+  comparação" abre a janela "Ver mudanças · <arquivo>") e só entra no código com "Aplicar
   alterações"; "Descartar proposta" desiste (`packages/studio/src/components/tutor/ProBuilderPanel.tsx`);
 - **"Pedir uma dica ao Zappy"**, em cada problema da aba "Problemas".
 
