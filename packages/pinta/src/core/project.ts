@@ -8,6 +8,7 @@
  * operações puras testáveis sem canvas.
  */
 
+import type { PintaRegionCells } from '@sistemazero/core/creations'
 import { PINTA_SOURCE_REF_PATTERN } from '@sistemazero/core/studio/pinta-source-ref'
 import { cellTile, isValidCell } from '../tiles/cell'
 import { unpackCells } from '../tiles/cellCodec'
@@ -437,10 +438,13 @@ export interface TilemapLayerCommon {
   properties?: Record<string, TilemapObjectPropertyValue>
 }
 
-export interface TilemapTileLayer extends TilemapLayerCommon {
+export type TilemapCells = Int16Array | PintaRegionCells
+
+export interface TilemapTileLayer<Cells extends TilemapCells = Int16Array>
+  extends TilemapLayerCommon {
   kind?: 'tiles'
   /** Uma célula por posição, linha a linha; -1 = vazia. Leia a peça por `cellTile` (`tiles/cell`). */
-  cells: Int16Array
+  cells: Cells
   /**
    * Camada de COLISÃO: onde há peça, o jogo não deixa passar; ela não é desenhada no jogo.
    * Serve para barreiras que não coincidem com as peças do cenário. Ausente = camada comum.
@@ -545,9 +549,12 @@ export interface TilemapGroupLayer extends TilemapLayerCommon {
   collision?: never
 }
 
-export type TilemapLayer = TilemapTileLayer | TilemapObjectLayer | TilemapGroupLayer
+export type TilemapLayer<Cells extends TilemapCells = Int16Array> =
+  | TilemapTileLayer<Cells>
+  | TilemapObjectLayer
+  | TilemapGroupLayer
 
-export interface TilemapAsset extends PintaAssetBase {
+export interface TilemapAsset<Cells extends TilemapCells = Int16Array> extends PintaAssetBase {
   kind: 'tilemap'
   /** Explicit opt-in for existing maps; scene 1/2 games keep their previous tile-grid physics. */
   physics?: 'precise'
@@ -560,7 +567,7 @@ export interface TilemapAsset extends PintaAssetBase {
   cols: number
   rows: number
   /** Nasce com 1 camada ("Chão"); peças, objetos e grupos dividem o teto de camadas. */
-  layers: TilemapLayer[]
+  layers: TilemapLayer<Cells>[]
   /** Versões de arte com ID próprio: editar a biblioteca não altera uma versão guardada. */
   resources?: TilemapResourceVersion[]
   /**
@@ -571,6 +578,12 @@ export interface TilemapAsset extends PintaAssetBase {
    * regravar), em vez de cortar o que não entende.
    */
   schema?: number
+}
+
+/** In-memory preparation only; not part of PintaAsset/persistence until all format-8 readers exist. */
+export interface RegionTilemapAsset extends TilemapAsset<PintaRegionCells> {
+  schema: 8
+  origin: { col: number; row: number }
 }
 
 /** Um pedaço reutilizável do mapa; uma instância aponta para o id deste desenho. */
@@ -584,16 +597,21 @@ export interface MapSetAsset extends PintaAssetBase {
   map: TilemapAsset
 }
 
-export function isTileLayer(layer: TilemapLayer): layer is TilemapTileLayer {
+export function isTileLayer<Cells extends TilemapCells>(
+  layer: TilemapLayer<Cells>,
+): layer is TilemapTileLayer<Cells> {
   return layer.kind === undefined || layer.kind === 'tiles'
 }
 
-export function isGroupLayer(layer: TilemapLayer): layer is TilemapGroupLayer {
+export function isGroupLayer(layer: TilemapLayer<TilemapCells>): layer is TilemapGroupLayer {
   return layer.kind === 'group'
 }
 
 /** Os grupos que contêm a camada, do mais próximo ao mais de fora. */
-export function layerAncestors(tilemap: TilemapAsset, layer: TilemapLayer): TilemapGroupLayer[] {
+export function layerAncestors(
+  tilemap: TilemapAsset<TilemapCells>,
+  layer: TilemapLayer<TilemapCells>,
+): TilemapGroupLayer[] {
   const out: TilemapGroupLayer[] = []
   let parentId = layer.parentId
   // O sanitizador garante que não há ciclo; o teto é só o cinto.
@@ -617,7 +635,10 @@ export interface EffectiveLayer {
   parallaxY: number
 }
 
-export function effectiveLayer(tilemap: TilemapAsset, layer: TilemapLayer): EffectiveLayer {
+export function effectiveLayer(
+  tilemap: TilemapAsset<TilemapCells>,
+  layer: TilemapLayer<TilemapCells>,
+): EffectiveLayer {
   const out: EffectiveLayer = {
     visible: layer.visible,
     locked: layer.locked === true,
@@ -640,27 +661,35 @@ export function effectiveLayer(tilemap: TilemapAsset, layer: TilemapLayer): Effe
 }
 
 /** A camada aparece? (ela e todos os grupos em volta estão visíveis). */
-export function isLayerShown(tilemap: TilemapAsset, layer: TilemapLayer): boolean {
+export function isLayerShown(
+  tilemap: TilemapAsset<TilemapCells>,
+  layer: TilemapLayer<TilemapCells>,
+): boolean {
   if (!layer.visible) return false
   return layer.parentId === undefined || effectiveLayer(tilemap, layer).visible
 }
 
-export function isObjectLayer(layer: TilemapLayer): layer is TilemapObjectLayer {
+export function isObjectLayer(layer: TilemapLayer<TilemapCells>): layer is TilemapObjectLayer {
   return layer.kind === 'objects'
 }
 
 /** As camadas de PEÇAS, na ordem do mapa (fundo primeiro). */
-export function tileLayersOf(tilemap: TilemapAsset): TilemapTileLayer[] {
+export function tileLayersOf<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+): TilemapTileLayer<Cells>[] {
   return tilemap.layers.filter(isTileLayer)
 }
 
 /** O tileset que uma camada de peças usa (o próprio ou o padrão do mapa). */
-export function tileLayerTilesetId(tilemap: TilemapAsset, layer: TilemapTileLayer): string {
+export function tileLayerTilesetId(
+  tilemap: Pick<TilemapAsset, 'tilesetId'>,
+  layer: Pick<TilemapTileLayer, 'tilesetId'>,
+): string {
   return layer.tilesetId ?? tilemap.tilesetId
 }
 
 /** Todos os tilesets que o mapa referencia, sem repetir: o PADRÃO primeiro. */
-export function tilemapTilesetIds(tilemap: TilemapAsset): string[] {
+export function tilemapTilesetIds(tilemap: TilemapAsset<TilemapCells>): string[] {
   const ids = [tilemap.tilesetId]
   for (const layer of tilemap.layers) {
     if (!isTileLayer(layer)) continue
@@ -671,7 +700,10 @@ export function tilemapTilesetIds(tilemap: TilemapAsset): string[] {
 }
 
 /** O mapa usa este tileset (como padrão ou em alguma camada)? */
-export function tilemapUsesTileset(tilemap: TilemapAsset, tilesetId: string): boolean {
+export function tilemapUsesTileset(
+  tilemap: TilemapAsset<TilemapCells>,
+  tilesetId: string,
+): boolean {
   return (
     tilemapTilesetIds(tilemap).includes(tilesetId) ||
     tilemap.layers.some(

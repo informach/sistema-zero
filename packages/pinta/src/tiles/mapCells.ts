@@ -2,13 +2,12 @@ import {
   PINTA_REGION_CELL_COUNT,
   PINTA_REGION_LIMITS,
   type PintaRegionBounds,
-  type PintaRegionCells,
   parsePintaRegionBounds,
 } from '@sistemazero/core/creations'
+import type { TilemapCells } from '../core/project'
 import { EMPTY_CELL } from './cell'
 import { createRegionCellReader } from './regionCells'
 
-export type TileCellData = Int16Array | PintaRegionCells
 export interface TileCellReader {
   readonly allocatedCellCount: number
   readonly allocatedCellBytes: number
@@ -76,7 +75,7 @@ function denseReader(cells: Int16Array, bounds: PintaRegionBounds) {
  * Sparse visitation uses deterministic chunk order, not global row-major order.
  */
 export function createTileCellReader(
-  cells: TileCellData,
+  cells: TilemapCells,
   rawBounds: PintaRegionBounds,
 ): TileCellReader {
   const bounds = parsePintaRegionBounds(rawBounds)

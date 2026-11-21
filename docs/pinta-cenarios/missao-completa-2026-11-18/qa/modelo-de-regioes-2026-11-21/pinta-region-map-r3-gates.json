@@ -1,0 +1,30 @@
+[
+  {
+    "name": "focused",
+    "exit": 0,
+    "started": "2026-11-21T04:35:10.411Z",
+    "finished": "2026-11-21T04:35:10.897Z",
+    "log": ".cache/pinta-region-map-r3-focused.log"
+  },
+  {
+    "name": "pinta-types",
+    "exit": 0,
+    "started": "2026-11-21T04:35:10.899Z",
+    "finished": "2026-11-21T04:35:20.024Z",
+    "log": ".cache/pinta-region-map-r3-pinta-types.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-21T04:35:20.025Z",
+    "finished": "2026-11-21T04:38:18.653Z",
+    "log": ".cache/pinta-region-map-r3-studio-types.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T04:38:18.655Z",
+    "finished": "2026-11-21T04:38:18.831Z",
+    "log": ".cache/pinta-region-map-r3-biome.log"
+  }
+]

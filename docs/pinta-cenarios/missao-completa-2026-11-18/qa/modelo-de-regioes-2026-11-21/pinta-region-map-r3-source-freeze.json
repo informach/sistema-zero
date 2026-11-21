@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-21T04:35:10.363Z",
+  "head": "d106a29fa1efdc9ea174eb1f01a693a32afcefff",
+  "files": [
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "2f69fe1b7dc9222e93b613c5f28b7ff78d31e623efb3cfbb46e79030569ad0f0"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "sha256": "9c2379deb9eb72b3b135afaa341ab2e97bb0fce6e63e883da9727778376d5c75"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "sha256": "b8bb3d1aefc54187d3573c005d0032443eb7ebcfb20ad19db6c4bd965cfd692d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.test.ts",
+      "sha256": "a792af3ff6bef10fc0eb75ce149cb74e66b4c2b3a967ad408078576a1c6c146a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "a8a263a7aac12386492e526628c840ba701dcaa2c7d7654ec2c84212234e0537"
+    }
+  ]
+}

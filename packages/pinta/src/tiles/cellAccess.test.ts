@@ -17,6 +17,8 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'tiles/regionMap.ts':
+    'valida células densas inteiras antes de converter e soma chunks por camada; delega conversão e edição às operações comuns preservando flags',
   'tiles/mapCells.ts':
     'lê células inteiras por origem/extensão e visita apenas o recorte ocupado, preservando bits e orçamento sem decodificar índices',
   'tiles/regionCells.ts':

@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-21T04:33:47.739Z",
+  "baseline": "d106a29fa1efdc9ea174eb1f01a693a32afcefff",
+  "modules": [
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "emittedByteIdentical": true,
+      "beforeSha256": "a68850e52fda47e2681cc7f9e2cc811b65748bf98766f58cded67819561b18d1",
+      "afterSha256": "a68850e52fda47e2681cc7f9e2cc811b65748bf98766f58cded67819561b18d1",
+      "runtimeTokensIdentical": true
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "emittedByteIdentical": true,
+      "beforeSha256": "20a6926162dbca4010c08a8ca07bd231fc7b2a774a7cd0d6efcf3a52d2330cc4",
+      "afterSha256": "20a6926162dbca4010c08a8ca07bd231fc7b2a774a7cd0d6efcf3a52d2330cc4",
+      "runtimeTokensIdentical": true
+    }
+  ],
+  "unpreparedRegionDocumentExcludedFromPintaAsset": true,
+  "nativeMaximumStill7": true,
+  "featureActivated": false
+}

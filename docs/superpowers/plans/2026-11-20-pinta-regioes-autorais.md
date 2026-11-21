@@ -55,6 +55,14 @@ tipos/lint e doze ensaios locais Pinta → Estúdio sem skip ou flaky. Evidênci
 `qa/leitor-comum-de-celulas-2026-11-21/`. Isso não conclui o item 2: a união no
 documento, os demais consumidores e a persistência continuam pendentes.
 
+O modelo existente foi parametrizado pelo tipo das células, conservando a grade
+densa como padrão. A preparação RegionTilemapAsset reutiliza grupos, objetos e
+recursos, com conversão explícita, expansão que não move dados e edição atômica
+sob orçamento global. Ela continua excluída de PintaAsset e dos escritores até
+completar os leitores: não ativa arquivo 8 nem armazenamento 3. Os dois módulos
+preexistentes emitem JavaScript idêntico; passaram 46 testes focados, os tipos
+de Pinta/Estúdio e o lint. Ver `qa/modelo-de-regioes-2026-11-21/`. O item 2 permanece aberto.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles
