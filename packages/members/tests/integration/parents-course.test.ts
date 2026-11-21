@@ -7,6 +7,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { parentsLessonIssues } from '@sistemazero/core/course/learner'
+import { EntitlementAggregate } from '../../src/domain/entitlement/entitlement.aggregate'
 import { buildApp, grantAllKidsCourses, grantLifetime, seedSampleCourse } from '../helpers'
 
 type Env = ReturnType<typeof buildApp>
@@ -127,6 +128,45 @@ describe('Curso para pais — autoria', () => {
 })
 
 describe('Curso para pais — vitrines e acesso', () => {
+  test.each([
+    'subscription',
+    'manual',
+    'gift',
+  ] as const)('chave Kids ativa abre os cursos dos pais, origem %s', async (source) => {
+    const env = buildApp({ now: NOW })
+    const { lessonIds } = seedParentsCourse(env)
+    const grant = grantAllKidsCourses(env.entitlements, {
+      userId: ACCOUNT,
+      now: NOW,
+      subscriptionId: source === 'subscription' ? 'subscription-1' : undefined,
+    })
+    if (source === 'gift')
+      env.entitlements.seed(
+        EntitlementAggregate.restore({
+          ...grant.toSnapshot(),
+          sourceId: 'scholarship:community-gift',
+        }),
+      )
+    const catalog = await readJson(
+      await request(env, '/members/catalog?audience=kids&learner=parents', {
+        headers: parentHeaders,
+      }),
+    )
+    expect(catalog.courses[0].hasAccess).toBe(true)
+    const mine = await readJson(
+      await request(env, '/members/courses?audience=kids&learner=parents', {
+        headers: parentHeaders,
+      }),
+    )
+    expect(mine.courses).toHaveLength(1)
+    expect(
+      (
+        await request(env, `/members/courses/ajudar-sem-fazer-por-eles/lessons/${lessonIds[0]}`, {
+          headers: parentHeaders,
+        })
+      ).status,
+    ).toBe(200)
+  })
   test('a criança não vê o curso para pais; a conta vê na lista dos pais', async () => {
     const env = buildApp({ now: NOW })
     seedParentsCourse(env)
