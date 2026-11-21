@@ -524,7 +524,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       '--',
       ...args,
     ])
-  const probe = (service, current, requireAdmission = false) => {
+  const probeOnce = (service, current, requireAdmission = false) => {
     const nonce = randomBytes(16).toString('hex')
     const required = !requireAdmission
       ? []
@@ -566,7 +566,14 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
               ? 'ssh-auth-rejected'
               : /no ssh keys found|ssh key.*not registered/i.test(diagnostic)
                 ? 'ssh-key-unavailable'
-                : /timed out|connection refused|could not connect/i.test(diagnostic)
+                : /timed out|connection refused|could not connect/i.test(diagnostic) ||
+                    [
+                      'ETIMEDOUT',
+                      'ECONNRESET',
+                      'ECONNREFUSED',
+                      'EHOSTUNREACH',
+                      'ENETUNREACH',
+                    ].includes(error?.code)
                   ? 'ssh-connection-failed'
                   : 'ssh-command-failed'
       const failure = new Error('Preflight SSH não executou no artefato esperado')
@@ -607,6 +614,23 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       const failure = new Error('Preflight SSH encontrou identidade ou configuração divergente')
       probeFailureReasons.set(failure, `${check}-check-failed`)
       throw failure
+    }
+  }
+  const probe = async (service, current, requireAdmission, deadline) => {
+    for (let attempt = 0; ; attempt++) {
+      checkTime(deadline)
+      try {
+        probeOnce(service, current, requireAdmission)
+        checkTime(deadline)
+        return
+      } catch (error) {
+        const reason = probeFailureReasons.get(error)
+        if (reason !== 'ssh-connection-failed' || attempt >= 2) throw error
+        checkTime(deadline)
+        log({ stage: 'ssh-readonly-retry', service, attempt: attempt + 2, reason })
+        // Só o bun -e acima é readonly. Bootstrap, migrations e disparos nunca passam aqui.
+        await sleep(Math.min(1000 * 2 ** attempt, deadline - now()))
+      }
     }
   }
   return {
@@ -685,7 +709,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           checkTime(deadline)
           before.set(service, [current.id])
           step = `${service}-probe`
-          probe(service, current)
+          await probe(service, current, false, deadline)
           checkTime(deadline)
         }
       } catch (error) {
@@ -853,7 +877,8 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
                 checkRetirementTime()
               }
               step = `${label}-admission-probe`
-              if (['members', 'auth'].includes(service)) probe(service, current, true)
+              if (['members', 'auth'].includes(service))
+                await probe(service, current, true, deadline)
               checkRetirementTime()
               return
             }

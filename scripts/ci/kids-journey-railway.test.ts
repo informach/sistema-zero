@@ -27,6 +27,8 @@ function transport(
     hideOldAfterProbe?: boolean
     failedProbeCheck?: 'environment' | 'service' | 'deployment' | 'commit' | 'required'
     probeStderr?: string
+    probeFailures?: number
+    probeErrorCode?: string
     pendingForMs?: number
     adoption?: typeof adoption
     failAt?: 'cli' | 'openssh' | 'inventory' | 'probe'
@@ -41,6 +43,7 @@ function transport(
   let activeReads = 0
   let inventoryService = stagingJourney.members
   let elapsedMs = 0
+  let probeFailures = options.probeFailures ?? 0
   const ports = createRailwayPorts(
     sha,
     {
@@ -61,10 +64,11 @@ function transport(
         if (
           (options.failAt === 'cli' && args[0] === '--version') ||
           (options.failAt === 'openssh' && command === 'ssh') ||
-          (options.failAt === 'probe' && args[0] === 'ssh')
+          (args[0] === 'ssh' && (options.failAt === 'probe' || probeFailures-- > 0))
         )
           throw Object.assign(new Error('sensitive raw transport detail'), {
             stderr: options.probeStderr ?? 'sensitive raw transport detail',
+            code: options.probeErrorCode,
           })
         if (command === 'ssh') return ''
         if (args[0] === '--version') return 'railway 5.62.1\n'
@@ -164,6 +168,37 @@ function transport(
 }
 
 describe('actual Railway boundary without remote I/O', () => {
+  test('a silent SSH process timeout retries only the readonly identity probe', async () => {
+    const f = transport({ probeFailures: 1, probeErrorCode: 'ETIMEDOUT' })
+    await f.ports.preflight(60_000)
+    expect(f.commands.filter((call) => call[1] === 'ssh')).toHaveLength(3)
+    expect(f.elapsed()).toBe(1000)
+    expect(f.logs).toContainEqual({
+      stage: 'ssh-readonly-retry',
+      service: 'members',
+      attempt: 2,
+      reason: 'ssh-connection-failed',
+    })
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('SSH retries stay bounded and never retry an authentication refusal', async () => {
+    const stalled = transport({ failAt: 'probe', probeErrorCode: 'ETIMEDOUT' })
+    await expect(stalled.ports.preflight(60_000)).rejects.toThrow('não executou')
+    expect(stalled.commands.filter((call) => call[1] === 'ssh')).toHaveLength(3)
+    const denied = transport({
+      failAt: 'probe',
+      probeErrorCode: 'ETIMEDOUT',
+      probeStderr: 'Permission denied (publickey)',
+    })
+    await expect(denied.ports.preflight(60_000)).rejects.toThrow('não executou')
+    expect(denied.commands.filter((call) => call[1] === 'ssh')).toHaveLength(1)
+    expect(denied.elapsed()).toBe(0)
+    const expired = transport({ failAt: 'probe', probeErrorCode: 'ETIMEDOUT' })
+    await expect(expired.ports.preflight(500)).rejects.toThrow('limite')
+    expect(expired.commands.filter((call) => call[1] === 'ssh')).toHaveLength(1)
+    expect(expired.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
   test('preflight can identify an uploaded staging baseline without authorizing its release', async () => {
     const f = transport({ unversioned: true })
     await f.ports.preflight()
