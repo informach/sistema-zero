@@ -255,6 +255,45 @@ function timeUntilVisible(button: Locator, target: 'search' | 'files' | 'problem
   }, target)
 }
 
+/**
+ * Clica e mede, na página, até o resultado da operação do editor aparecer e o quadro seguinte
+ * sair: a lista de referências, a revisão do novo nome (com os arquivos afetados) ou um texto nas
+ * linhas do editor.
+ */
+function timeUntilEditorResult(
+  trigger: Locator,
+  target: { kind: 'references' } | { kind: 'review' } | { kind: 'text'; text: string },
+) {
+  return trigger.evaluate(async (element, target) => {
+    const frame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve))
+    const ready = () => {
+      if (target.kind === 'references')
+        return [
+          ...document.querySelectorAll('section[aria-label="Referências encontradas"] button'),
+        ].some((button) => /^src\/.+:\d+$/.test(button.textContent ?? ''))
+      if (target.kind === 'review')
+        return [...document.querySelectorAll('dialog[open]')].some((dialog) =>
+          /\d+ arquivos afetados/.test(dialog.textContent ?? ''),
+        )
+      return [...document.querySelectorAll('.monaco-editor .view-lines')].some((lines) =>
+        (lines.textContent ?? '').replace(/\u00a0/g, ' ').includes(target.text),
+      )
+    }
+    if (ready()) throw new Error(`O resultado de ${target.kind} já estava na tela.`)
+    const start = performance.now()
+    ;(element as HTMLElement).click()
+    while (!ready()) {
+      if (performance.now() - start > 20_000)
+        throw new Error(
+          `Sem resultado de ${target.kind} ${target.kind === 'text' ? target.text : ''}: ${[...document.querySelectorAll('dialog[open], [role="alert"], [role="status"]')].map((item) => item.textContent).join(' | ')} | linhas: ${[...document.querySelectorAll('.monaco-editor .view-lines')].map((lines) => JSON.stringify([...lines.querySelectorAll('.view-line')].map((line) => line.textContent).join(' / '))).join(' | ')}`,
+        )
+      await frame()
+    }
+    await frame()
+    return performance.now() - start
+  }, target)
+}
+
 /** Escreve a busca como a criança (um evento de entrada) e mede até o primeiro resultado aparecer. */
 function timeUntilFirstResult(field: Locator, query: string) {
   return field.evaluate(async (element, query) => {
@@ -410,6 +449,86 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
   await expect(problemsTab).toHaveAccessibleName(/Nenhum problema/, { timeout: 60_000 })
   const fixedAfter = Date.now() - fixedAt
   await expect(page.getByRole('button', { name: /^Ir para src\/entities\// })).toHaveCount(0)
+
+  // Lote 6 da missão (seção 7.2): as operações do editor que atravessam os arquivos, medidas do
+  // clique até o resultado aparecer na tela. O cursor fica dentro de `points`, o método abstrato
+  // que as 20 entidades implementam e os sistemas chamam.
+  await input.focus()
+  await input.press('Control+f')
+  await page.keyboard.type('abstract points')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Escape')
+  await input.press('ArrowLeft')
+  for (const _ of 'abstract p') await input.press('ArrowRight')
+  const more = page.getByRole('button', { name: 'Mais', exact: true })
+  const referencesPanel = page.getByRole('region', { name: 'Referências encontradas' })
+  const references: number[] = []
+  let referenceCount = 0
+  for (let index = 0; index < 10; index++) {
+    await more.click()
+    references.push(
+      await timeUntilEditorResult(page.getByRole('menuitem', { name: 'Onde isto é usado' }), {
+        kind: 'references',
+      }),
+    )
+    referenceCount = await referencesPanel.getByRole('button', { name: /^src\/.+:\d+$/ }).count()
+    await referencesPanel.getByRole('button', { name: 'Fechar referências', exact: true }).click()
+    await expect(referencesPanel).toBeHidden()
+  }
+  // Trocar o nome de `points` passaria do limite de 24 arquivos por operação (a recuperação
+  // inteira precisa caber): a troca usa `alive`, o campo da classe base que as entidades leem.
+  await input.focus()
+  await input.press('Control+f')
+  await page.keyboard.type('alive = true')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Escape')
+  await input.press('ArrowLeft')
+  for (const _ of 'al') await input.press('ArrowRight')
+  const renames: number[] = []
+  let renamedFiles = 0
+  const review = page.getByRole('dialog', { name: 'Conferir mudança nos arquivos' })
+  for (let index = 0; index < 10; index++) {
+    await input.focus()
+    await input.press('F2')
+    await expect(page.getByLabel('Novo nome do símbolo')).toHaveValue('alive')
+    await page.getByLabel('Novo nome do símbolo').fill(`vivo${index}`)
+    renames.push(
+      await timeUntilEditorResult(
+        page.getByRole('button', { name: 'Conferir referências', exact: true }),
+        { kind: 'review' },
+      ),
+    )
+    renamedFiles = Number(/(\d+) arquivos afetados/.exec((await review.textContent()) ?? '')?.[1])
+    await review.getByRole('button', { name: 'Voltar ao código', exact: true }).click()
+    await expect(review).toBeHidden()
+  }
+  // Com a gaveta fechada o arquivo inteiro cabe no editor: a medida lê o texto na tela.
+  const dockClose = page.getByRole('button', { name: 'Fechar a gaveta', exact: true })
+  if (await dockClose.isVisible()) await dockClose.click()
+  await expect(page.locator('.sz-pro-dock__body')).toBeHidden()
+  const formats: number[] = []
+  for (let index = 0; index < 10; index++) {
+    await input.focus()
+    // Uma linha bagunçada por rodada, no começo do arquivo (que o Ctrl+Home sempre traz à vista;
+    // no fim, a linha nova chegou a ficar abaixo da área visível). `insertText` não abre sugestões.
+    await input.press('Control+Home')
+    await page.keyboard.insertText(`const   formatar${index}   =   ${index}\n`)
+    await page.locator('.monaco-editor .view-lines').first().hover()
+    await page.mouse.wheel(0, -5000)
+    await expect(page.locator('.monaco-editor .view-lines').first()).toContainText(
+      `formatar${index}`,
+    )
+    // "Arrumar código" é o botão do cabeçalho do editor, não um item do menu Mais.
+    formats.push(
+      await timeUntilEditorResult(
+        page.getByRole('button', { name: 'Arrumar código', exact: true }),
+        {
+          kind: 'text',
+          text: `const formatar${index} = ${index}`,
+        },
+      ),
+    )
+  }
   expect(errors).toEqual([])
 
   const report = {
@@ -422,6 +541,7 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
       'Input to second animation frame is a presentation proxy, not INP or exact pixel latency.',
       'Panel and search times are measured inside the page from the click or input event to the frame after the target appears.',
       'Analysis times include Playwright typing and polling; they are recorded, not budgeted.',
+      'References, rename review and format are measured inside the page from the click to the frame after the result appears.',
     ],
     typing: benchmarkStats(typing),
     panelOpen: benchmarkStats(panels),
@@ -429,6 +549,9 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
     firstSearchAnswer: benchmarkStats(searches),
     analysisAfterBreakingBaseMs: brokenAfter,
     analysisAfterFixingBaseMs: fixedAfter,
+    references: { ...benchmarkStats(references), results: referenceCount },
+    renameReview: { ...benchmarkStats(renames), files: renamedFiles },
+    format: benchmarkStats(formats),
     cpu,
     errors,
   }
@@ -451,13 +574,24 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
       searchP95: report.firstSearchAnswer.p95,
       brokenAfter,
       fixedAfter,
+      referencesP95: report.references.p95,
+      renameReviewP95: report.renameReview.p95,
+      formatP95: report.format.p95,
     }),
   )
+  // As operações atravessam os arquivos de verdade.
+  expect(referenceCount).toBeGreaterThan(20)
+  expect(renamedFiles).toBeGreaterThan(10)
   // Os critérios da etapa 3 do plano (Pro em escala), na máquina do teste.
   expect(report.typing.p95).toBeLessThan(50)
   expect(report.panelOpen.p95).toBeLessThan(150)
   expect(report.dockOpen.p95).toBeLessThan(150)
   expect(report.firstSearchAnswer.p95).toBeLessThan(200)
+  // Lote 6: as operações que atravessam os arquivos têm o teto da primeira resposta da busca
+  // (seção 16 da missão), medido em 21/11/2026 com p95 de 57, 94 e 89 ms no Windows local.
+  expect(report.references.p95).toBeLessThan(200)
+  expect(report.renameReview.p95).toBeLessThan(200)
+  expect(report.format.p95).toBeLessThan(200)
 })
 
 /** Os horários dos quadros que o jogo do ensaio guardou (`window.__ensaio`, no quadro do jogo). */

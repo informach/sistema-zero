@@ -217,6 +217,30 @@ describe('organizar as importações', () => {
     }
   })
 
+  // Achado da medida do lote 6 (21/11/2026): as opções iam incompletas, e opção que falta conta
+  // como desligada no TypeScript. "Arrumar código" tirava os espaços em volta do `=` e dos
+  // operadores (`this.position=this.position.add(...)`).
+  it('"Arrumar código" mantém os espaços do jeito comum e arruma os que sobram', () => {
+    const service = createProLanguageService(libraries)
+    const arrumado = [
+      'export function total(alfa: number, beta: number): number {',
+      '  const soma = alfa + beta * 2',
+      '  if (soma > 10) return soma - 1',
+      '  return soma',
+      '}',
+      '',
+    ].join('\n')
+    try {
+      service.update({ 'main.ts': arrumado })
+      expect(aplicar(arrumado, service.format('main.ts'))).toBe(arrumado)
+      const baguncado = 'export const   x   =   1+2\n'
+      service.update({ 'main.ts': baguncado })
+      expect(aplicar(baguncado, service.format('main.ts'))).toBe('export const x = 1 + 2\n')
+    } finally {
+      service.dispose()
+    }
+  })
+
   it('um arquivo já organizado não muda', () => {
     const service = createProLanguageService(libraries)
     const main = "import { alfa } from './alfa'\n\nexport const total = alfa\n"
