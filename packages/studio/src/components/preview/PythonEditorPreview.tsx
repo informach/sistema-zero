@@ -18,6 +18,7 @@ import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
+import { useFreshInvestigationPerRun } from '../devtools/useFreshInvestigationPerRun'
 import { type PythonRunCommands, PythonRuntimePreview } from './PythonRuntimePreview'
 import { pythonExecuting, pythonPreviewIsStale, pythonRunState } from './pythonRunState'
 
@@ -193,6 +194,8 @@ export function PythonEditorPreview() {
     investigatingBefore.current = investigating
     if (commands && statusRef.current !== 'idle') commands.run()
   }, [investigating, commands])
+  // Cada execução começa com a janela do Investigar limpa (revisão do lote 5).
+  useFreshInvestigationPerRun(ui, investigating, runId)
   const entrySource =
     python && python.kind !== 'pro' ? (python.files[python.python.entrypoint] ?? '') : ''
   const investigatedRun =

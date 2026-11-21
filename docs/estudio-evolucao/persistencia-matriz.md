@@ -77,9 +77,11 @@ sobrescreve na próxima gravação.
   Kids.
 - **Vínculo Clássico → Pro**: existe nos dados. As duas conversões (JavaScript e Python) gravam
   `proMeta.origin = { projectId, revision }` apontando para a cópia em Blocos guardada; o esquema
-  canônico do documento valida o campo (`core/src/studio/project-document.ts`) e o teste da
-  conversão confere que ele aponta para a cópia e sobrevive à gravação
-  (`studio/src/state/convertToPro.test.ts`). Falta MOSTRAR à criança de onde o projeto Pro veio
+  canônico do documento valida o campo (`core/src/studio/project-document.ts`). As provas: no
+  JavaScript, `studio/src/state/convertToPro.test.ts` confere que ele aponta para a cópia e
+  `studio/src/persistence/promotion.test.ts` que ele chega gravado pelo serviço de persistência
+  (cópia primeiro, Pro depois); no Python, `studio/src/state/pythonProjectValidation.test.ts`
+  confere `projectId` e `revision`. Falta MOSTRAR à criança de onde o projeto Pro veio
   (com o caminho para abrir a cópia): é tela nova e precisa da aprovação dela.
 - **O "ENOENT … scandir node_modules" cru no Pro** (visto no staging em 20/11): corrigido. A leitura
   das bibliotecas instaladas (`modes/pro/dependencyDeclarations.ts`) trata pasta ou arquivo que some

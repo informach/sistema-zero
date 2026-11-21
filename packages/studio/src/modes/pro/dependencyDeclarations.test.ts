@@ -90,8 +90,11 @@ describe('dependências ainda não instaladas', () => {
     console.warn = () => {}
     try {
       expect(dependencyIndexIssue(denied)).toBe(
-        'Não consegui ler as bibliotecas instaladas agora. Elas voltam a ser lidas quando a instalação terminar.',
+        'Não consegui ler as bibliotecas instaladas agora: o editor pode não reconhecer alguma delas.',
       )
+      // Um `code` que não é do sistema de arquivos segue com a própria mensagem.
+      const aborted = Object.assign(new Error('A leitura foi cancelada.'), { code: 'ABORT_ERR' })
+      expect(dependencyIndexIssue(aborted)).toBe('A leitura foi cancelada.')
     } finally {
       console.warn = original
     }

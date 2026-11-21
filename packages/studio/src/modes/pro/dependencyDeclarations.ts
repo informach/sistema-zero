@@ -15,9 +15,12 @@ const vanished = (error: unknown) =>
  * frases; um erro do sistema de arquivos vira uma frase e o texto técnico fica no console.
  */
 export function dependencyIndexIssue(error: unknown): string {
-  if (fileSystemErrorCode(error) !== null) {
+  // Só um código do sistema de arquivos (`EACCES`, `EPERM`...); outro `code` qualquer não é dele.
+  if (/^E[A-Z]+$/.test(fileSystemErrorCode(error) ?? '')) {
     console.warn('Leitura das bibliotecas instaladas:', error)
-    return 'Não consegui ler as bibliotecas instaladas agora. Elas voltam a ser lidas quando a instalação terminar.'
+    // A frase diz o que muda para a criança e não promete releitura: depois de a instalação
+    // terminar, uma permissão negada continuaria negada (revisão do lote 5).
+    return 'Não consegui ler as bibliotecas instaladas agora: o editor pode não reconhecer alguma delas.'
   }
   return error instanceof Error ? error.message : String(error)
 }

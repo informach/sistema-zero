@@ -2031,6 +2031,105 @@ describe('lote 5 da missão (seção 15): as abas Investigar e Desempenho chegam
     // O valor que a criança digitou passa pela mesma limpeza do erro.
     expect(userPrompt).not.toContain('maria@exemplo.com')
   })
+
+  // Revisão do lote 5: o pedido inteiro passa pela rota, e cada caso diz o que o modelo recebeu.
+  async function askWithContext(context: Record<string, unknown>) {
+    let systemPrompt = ''
+    let userPrompt = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as { messages?: { content: string }[] }
+      systemPrompt = body.messages?.[0]?.content ?? ''
+      userPrompt = body.messages?.[1]?.content ?? ''
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  text: 'Vamos conferir juntos.',
+                  scope: 'error',
+                  blockReferences: [],
+                  lessonReferences: [],
+                  suggestions: [],
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+    try {
+      const routes = createStudioZappyRoutes({
+        session: { getSession: async () => STAFF },
+        members: members(),
+      } as never)
+      const response = await routes.studioZappyMessage.POST(
+        new Request('https://kids.test/api/studio/zappy/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            projectId: PROJECT_ID,
+            clientMessageId: crypto.randomUUID(),
+            question: 'por que meu jogo esta lento?',
+            context: { projectId: PROJECT_ID, ...context },
+          }),
+        }),
+      )
+      return { status: response.status, systemPrompt, userPrompt }
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  }
+  const measured = {
+    seconds: 10,
+    fpsNow: 22,
+    fpsMin: 14,
+    slowEpisodes: 3,
+    slowestFrameMs: 90,
+    sprites: null,
+    objects: null,
+    draws: null,
+  }
+
+  test('no Pro em JavaScript o Desempenho chega ao modelo, e a regra não fala da Investigar', async () => {
+    const result = await askWithContext({
+      kind: 'pro',
+      mode: 'code',
+      blocks: [],
+      installedExtensions: [],
+      selectedBlockId: null,
+      lastError: null,
+      code: [{ path: 'src/main.ts', content: 'export const velocidade = 4' }],
+      performance: measured,
+      observing: { investigate: false, performance: true },
+    })
+    expect(result.status).toBe(200)
+    expect(result.userPrompt).toContain('"desempenhoMedido"')
+    expect(result.userPrompt).toContain('"quadrosPorSegundoAgora":22')
+    expect(result.userPrompt).toContain('"abasLigadas":{"investigar":false,"desempenho":true}')
+    expect(result.systemPrompt).toContain('Só peça para ligar a aba Desempenho')
+    expect(result.systemPrompt).not.toContain('aba Investigar')
+  })
+
+  test('aba ligada sem leitura não vira "ligue a aba", e observação fora dos tetos não recusa a pergunta', async () => {
+    const result = await askWithContext({
+      mode: 'blocks',
+      kind: 'classic',
+      blocks: [{ id: 'b1', type: 'sz_g2d_on_key', topLevel: true }],
+      installedExtensions: ['game-2d'],
+      selectedBlockId: null,
+      lastError: null,
+      // Uma fatia forjada pelo próprio jogo: acima dos tetos do esquema.
+      performance: { ...measured, fpsNow: 5000 },
+      observing: { investigate: true, performance: true },
+    })
+    expect(result.status).toBe(200)
+    expect(result.userPrompt).not.toContain('desempenhoMedido')
+    expect(result.userPrompt).toContain('"abasLigadas":{"investigar":true,"desempenho":true}')
+    expect(result.systemPrompt).toContain('aba ligada cujo campo não veio ainda não tem leitura')
+  })
 })
 
 describe('review 2: a recusa por limite chega marcada como aviso', () => {

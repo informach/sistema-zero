@@ -176,7 +176,9 @@ const QuestionBody = z.object({
       .max(160)
       .optional(),
     draftBlockIds: z.array(z.string().min(1).max(128)).max(60).optional(),
-    // Lote 5 (seção 15): as abas Investigar e Desempenho, só quando a criança as ligou.
+    // Lote 5 (seção 15): as abas Investigar e Desempenho, só quando a criança as ligou. A
+    // observação é opcional: fora dos tetos ela é DESCARTADA (`.catch`), nunca recusa a pergunta
+    // (uma fatia forjada pelo próprio jogo travava o Zappy de quem ligou a aba; revisão do lote 5).
     investigation: z
       .object({
         frame: z.number().int().min(0).max(1_000_000_000).nullable(),
@@ -193,7 +195,8 @@ const QuestionBody = z.object({
           })
           .optional(),
       })
-      .optional(),
+      .optional()
+      .catch(undefined),
     performance: z
       .object({
         seconds: z.number().min(0).max(120),
@@ -205,7 +208,12 @@ const QuestionBody = z.object({
         objects: z.number().int().min(0).max(10_000_000).nullable(),
         draws: z.number().int().min(0).max(10_000_000).nullable(),
       })
-      .optional(),
+      .optional()
+      .catch(undefined),
+    observing: z
+      .object({ investigate: z.boolean(), performance: z.boolean() })
+      .optional()
+      .catch(undefined),
     semanticIssues: z
       .array(
         z.object({ blockId: z.string().min(1).max(128).optional(), message: z.string().max(300) }),

@@ -41,9 +41,10 @@ import {
 import { PENSA_CHILD_SAFETY_CLAUSE } from './child-safety'
 import { completePensaJson, type PensaJsonTransport } from './pensa-llm'
 import {
-  ZAPPY_OBSERVATION_RULE,
   type ZappyInvestigationInput,
+  type ZappyObservedTabsInput,
   type ZappyPerformanceInput,
+  zappyObservationRule,
   zappyObservedRuntime,
 } from './zappy-observation'
 import {
@@ -123,6 +124,7 @@ export interface ZappyContextInput {
   /** As abas Investigar e Desempenho, só quando a criança as ligou (seção 15). */
   investigation?: ZappyInvestigationInput
   performance?: ZappyPerformanceInput
+  observing?: ZappyObservedTabsInput
   code?: StudioTutorCodeFile[]
   pro?: {
     revision: number
@@ -766,7 +768,7 @@ function systemPrompt(
     'O campo "blocosRelevantes" lista blocos do projeto dela com o id, para você citar a instância exata em blockReferences.',
     'O campo "rascunhosSoltos" lista pilhas que estão SALVAS mas NUNCA rodam, porque ficaram fora das Áreas do projeto. Se a criança reclama que algo não acontece e aquilo está aqui, ESSA é a causa: diga com carinho que a pilha precisa ser arrastada para dentro da Área certa.',
     'O campo "avisosDoEditor" traz problemas que o próprio editor já detectou, já escritos para a criança (ex.: um nome usado que nunca foi criado). Se houver algum relacionado à dúvida, use-o como a causa em vez de procurar outra.',
-    ZAPPY_OBSERVATION_RULE,
+    zappyObservationRule('investigate-and-performance'),
     'Pergunta de REVISÃO ("o que falta?", "o que posso melhorar?"): use scope "project-review" e responda em 3 partes curtas — ✅ o que já está pronto; 🔧 o que corrigir (UMA causa provável, apontando o bloco); ➡️ próximo passo (UMA mecânica nova do catálogo).',
     ...(diagnosis
       ? [
@@ -856,7 +858,8 @@ function proSystemPrompt(): string {
     COMMON_LEARNING_LANGUAGE,
     `Se precisar chamar a criança, use exatamente ${PROFILE_MARKER}.`,
     'Cite lessonReferences apenas de releasedLessonKnowledge e helpReferences apenas de ajudaComoFazer, somente se aplicáveis ao Pro. Nunca invente referências.',
-    ZAPPY_OBSERVATION_RULE,
+    // No Pro, a aba ligada a estes campos é só a Desempenho (a "Investigar" dele é outro painel).
+    zappyObservationRule('performance'),
     'Preencha suggestions com até 3 continuações curtas em primeira pessoa, compatíveis com código e terminal, ou [].',
   ].join('\n')
 }
@@ -928,6 +931,11 @@ function proProjectData(input: {
         }
       : undefined,
     ...(input.context.pensaMission ? { pensaMission: input.context.pensaMission } : {}),
+    // As abas da gaveta (lote 5). Faltavam aqui: o contexto do Pro é remontado campo a campo, e a
+    // medida do Desempenho nunca chegava ao modelo (revisão do lote 5).
+    ...(input.context.investigation ? { investigation: input.context.investigation } : {}),
+    ...(input.context.performance ? { performance: input.context.performance } : {}),
+    ...(input.context.observing ? { observing: input.context.observing } : {}),
   }
   const terms = expandedTerms(searchTerms(`${input.question} ${context.lastError ?? ''}`))
   const ranked = (context.code ?? [])

@@ -306,4 +306,59 @@ describe('lote 5 da missão (seção 15): as abas Investigar e Desempenho no con
       draws: null,
     })
   })
+
+  // Revisão do lote 5: um valor fora dos tetos do esquema do member-shell recusava a pergunta
+  // inteira (uma fatia forjada pelo próprio jogo passa deles).
+  it('cada número cabe nos tetos do servidor, e valor sem nome não vai', () => {
+    const context = buildStudioTutorContext({
+      project,
+      selectedBlockId: null,
+      lastError: null,
+      investigation: {
+        frame: 2_000_000_000.7,
+        paused: false,
+        values: [
+          { name: '', text: 'sem nome' },
+          { name: 'pontos', text: '1' },
+        ],
+      },
+      performance: {
+        seconds: 5,
+        fpsNow: 5000,
+        fpsMin: 4000,
+        slowEpisodes: 9999,
+        slowestFrameMs: 9_000_000,
+        sprites: 50_000_000,
+        objects: 3.4,
+        draws: null,
+      },
+      observing: { investigate: true, performance: true },
+    })
+    expect(context.investigation).toEqual({
+      frame: 1_000_000_000,
+      paused: false,
+      values: [{ name: 'pontos', text: '1' }],
+    })
+    expect(context.performance).toEqual({
+      seconds: 5,
+      fpsNow: 1000,
+      fpsMin: 1000,
+      slowEpisodes: 1000,
+      slowestFrameMs: 600_000,
+      sprites: 10_000_000,
+      objects: 3,
+      draws: null,
+    })
+    expect(context.observing).toEqual({ investigate: true, performance: true })
+  })
+
+  it('as abas desligadas não vão no contexto', () => {
+    const context = buildStudioTutorContext({
+      project,
+      selectedBlockId: null,
+      lastError: null,
+      observing: { investigate: false, performance: false },
+    })
+    expect(context.observing).toBeUndefined()
+  })
 })

@@ -11,6 +11,7 @@ import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProRunApi } from '../../state/proRun'
 import { useUIStoreApi } from '../../state/uiStore'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
@@ -151,6 +152,7 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
   const semanticIssues = useDiagnosticsStore((s) => s.semanticIssues)
   // As abas Investigar e Desempenho desta instância (lidas só na hora da pergunta).
   const uiStoreApi = useUIStoreApi()
+  const proRunApi = useProRunApi()
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
@@ -453,13 +455,24 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
         // Lote 5 (seção 15): com a aba Investigar ou Desempenho ligada, o Zappy recebe o que ela
         // mostra agora. O módulo das abas só baixa nesse caso (sob demanda).
         const { measuring, investigating } = uiStoreApi.getState()
-        const observation =
+        const runState = proRunApi.getState().state
+        // A observação é opcional: se o pedaço dela não baixar (deploy novo, rede instável), a
+        // pergunta segue sem ela, em vez de travar o Zappy de quem ligou a aba (revisão do lote 5).
+        const observing =
           measuring || investigating
-            ? (await import('../devtools/zappyObservation')).readZappyObservation(uiStoreApi, {
-                measuring,
-                investigating,
-              })
-            : {}
+            ? await import('../devtools/zappyObservation').catch(() => null)
+            : null
+        const observation = observing
+          ? observing.readZappyObservation(
+              uiStoreApi,
+              { measuring, investigating },
+              {
+                phase: runState?.phase ?? null,
+                runtimeError: runState?.phase === 'error' && runState.errorKind === 'runtime',
+                python: isPythonProject(project),
+              },
+            )
+          : {}
         if (!valid()) return
         const fresh = store.getState().project!
         const editor = proCapture.current?.() ?? proEditor.current

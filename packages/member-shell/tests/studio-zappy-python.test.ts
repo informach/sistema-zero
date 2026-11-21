@@ -441,3 +441,65 @@ test('Python Zappy requires the exact release to declare assist; history deletio
     globalThis.fetch = originalFetch
   }
 })
+
+// Revisão do lote 5 (21/11/2026): as abas chegam ao modelo também no Python, com a regra do modo.
+test('lote 5: no Python as abas chegam ao modelo, e o Pro não sugere a aba Investigar', async () => {
+  const originalFetch = globalThis.fetch
+  const prompts: Array<{ system: string; user: string }> = []
+  globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+    const body = JSON.parse(String(init?.body))
+    prompts.push({ system: body.messages[0].content, user: body.messages[1].content })
+    return Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              text: 'Vamos conferir os números juntos.',
+              scope: 'concept',
+              blockReferences: [],
+              fileReferences: [],
+              lessonReferences: [],
+              helpReferences: [],
+              suggestions: [],
+            }),
+          },
+        },
+      ],
+    })
+  }) as typeof fetch
+  try {
+    for (const kind of ['classic', 'pro'] as const) {
+      const fixture = await pythonZappyFixture(kind)
+      const response = await fixture.request({
+        ...fixture.input,
+        context: {
+          ...fixture.input.context,
+          investigation: { frame: 7, paused: false, values: [{ name: 'pontos', text: '5' }] },
+          performance: {
+            seconds: 8,
+            fpsNow: 30,
+            fpsMin: 20,
+            slowEpisodes: 1,
+            slowestFrameMs: 70,
+            sprites: null,
+            objects: null,
+            draws: null,
+          },
+          observing: { investigate: kind === 'classic', performance: true },
+        },
+      })
+      const envelope = await response.json()
+      expect(envelope.status, JSON.stringify(envelope)).toBe(200)
+    }
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+  expect(prompts).toHaveLength(2)
+  const [classic, pro] = prompts
+  expect(classic!.user).toContain('"oQueOJogoMostra"')
+  expect(classic!.user).toContain('"quadrosPorSegundoAgora":30')
+  expect(classic!.system).toContain('Só peça para ligar a aba Investigar ou Desempenho')
+  expect(pro!.user).toContain('"desempenhoMedido"')
+  expect(pro!.user).toContain('"abasLigadas":{"investigar":false,"desempenho":true}')
+  expect(pro!.system).not.toContain('aba Investigar')
+})
