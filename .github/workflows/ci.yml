@@ -854,10 +854,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Preparar fontes Ubuntu assinadas antes das instalações
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
       - run: bun install --frozen-lockfile
       - name: Preparar Chrome e gravação dos ensaios
-        working-directory: packages/studio
-        run: bunx --no-install playwright install --with-deps chrome ffmpeg
+        working-directory: packages/molda-cenarios
+        run: node node_modules/playwright-core/cli.js install --with-deps chrome ffmpeg
       - name: Oficina e compilação reais no navegador
         shell: bash
         run: |

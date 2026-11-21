@@ -61,6 +61,12 @@ FBX, ZIP com OBJ/MTL/PNG, dependência ausente, endereço externo recusado e can
 
 ## Critério de conclusão
 
+A primeira rodada integrada (`44943713383`) comprovou o preflight SSH remoto, mas revelou dois
+contratos de workflow ainda não atualizados para o novo job e o FFmpeg de outro Playwright.
+O job agora prepara as fontes Ubuntu pelo helper existente e instala Chrome/FFmpeg pela CLI
+do próprio `molda-cenarios` (1.60.0), em vez da CLI do Estúdio (1.65.1). Os contratos do CI
+incluem explicitamente o novo job e seu orçamento de 25 minutos, sem alterar os outros limites.
+
 Merge local em staging, push de todos os commits dessa branch, todos os jobs obrigatórios
 verdes e `deploy-staging` concluído pelo fluxo normal. Falhas novas devem ser corrigidas e
 verificadas no GitHub; não se executam novamente testes pesados na máquina do usuário.

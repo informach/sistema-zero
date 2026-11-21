@@ -102,6 +102,7 @@ test('CI and deployment budgets preserve individual proofs and other job deadlin
     'studio-e2e-firefox': 20,
     'studio-e2e-webkit': 20,
     'members-image': 25,
+    'molda-cenarios-e2e': 25,
   })
   expect(deploy).toContain('needs: [ci, arquipelago, studio-python-extensions,')
   expect(
