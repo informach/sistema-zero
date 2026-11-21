@@ -56,17 +56,18 @@ jobs:
             writeFileSync('.cache/pinta-language-image/' + file, JSON.stringify(value, null, 2) + '\n', { flag: 'wx' })
           TS
           bun --no-env-file .cache/pinta-language-image/prepare.ts
-      - name: Preparar armazenamento OCI no runner descartável
+      - name: Fixar Docker com inspeção nativa de manifests por plataforma
+        uses: docker/setup-docker-action@v5
+        with:
+          version: v29.8.2
+          daemon-config: |
+            {"features":{"containerd-snapshotter":true}}
+      - name: Conferir armazenamento OCI no runner descartável
         run: |
           set -euo pipefail
-          sudo python3 - <<'PY'
-          import json, pathlib
-          target = pathlib.Path('/etc/docker/daemon.json')
-          config = json.loads(target.read_text()) if target.exists() else {}
-          config.setdefault('features', {})['containerd-snapshotter'] = True
-          target.write_text(json.dumps(config))
-          PY
-          sudo systemctl restart docker
+          test "$(docker version --format '{{.Client.Version}}')" = '29.8.2'
+          test "$(docker version --format '{{.Server.Version}}')" = '29.8.2'
+          docker image inspect --help | grep -- '--platform'
           docker info --format '{{json .DriverStatus}}' > .cache/pinta-language-image/docker-storage.json
       - name: Construir e conferir a imagem imutável
         run: |
