@@ -234,6 +234,73 @@ describe('BFF das criações — reserva', () => {
   test.each([
     undefined,
     null,
+    1,
+    4,
+    5,
+    '6',
+  ])('Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s', async (formatVersion) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: { revision: 3, storageKey: 'pinta-reservado', bytes: 100, formatVersion },
+        }),
+      },
+    })
+    const response = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Vila',
+        kind: 'tilemap',
+        itemUpdatedAt: '2026-11-21T11:00:00.000Z',
+        bytes: 100,
+        formatVersion: 6,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'qa-vila-b6' }) },
+    )
+    expect(response.status).toBe(503)
+    expect(await response.json()).toMatchObject({ error: { code: 'UPSTREAM_INCOMPATIBLE' } })
+    expect(r2.presignPut).toEqual([])
+  })
+
+  test('Pinta B6 recebe URL somente depois da confirmação exata e conserva a revisão e os bytes', async () => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: { revision: 3, storageKey: 'pinta-reservado', bytes: 100, formatVersion: 6 },
+        }),
+      },
+    })
+    const response = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Vila',
+        kind: 'tilemap',
+        itemUpdatedAt: '2026-11-21T11:00:00.000Z',
+        bytes: 100,
+        formatVersion: 6,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'qa-vila-b6' }) },
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      revision: 3,
+      bytes: 100,
+      formatVersion: 6,
+      method: 'PUT',
+    })
+    expect(r2.presignPut).toEqual([
+      {
+        key: 'pinta-reservado',
+        contentType: 'application/gzip',
+        contentLength: 100,
+        expiresInSeconds: 600,
+      },
+    ])
+  })
+
+  test.each([
+    undefined,
+    null,
     0,
     1,
     '2',
