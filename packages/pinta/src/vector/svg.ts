@@ -28,6 +28,20 @@ export interface VectorDoc {
   shapes: VectorShape[]
 }
 
+/** Keep the source viewBox while bounding the decoder's intrinsic image size. */
+export function withSvgRootSize(svg: string, width: number, height: number): string {
+  const rootEnd = svg.indexOf('>')
+  if (!svg.startsWith('<svg') || rootEnd < 0) throw new Error('O desenho vetorial é inválido.')
+  const root = svg.slice(0, rootEnd)
+  if (!/\swidth="[^"]*"/.test(root) || !/\sheight="[^"]*"/.test(root) || !/\sviewBox="/.test(root))
+    throw new Error('O desenho vetorial não diz o próprio tamanho.')
+  return (
+    root
+      .replace(/(\s)width="[^"]*"/, `$1width="${width}"`)
+      .replace(/(\s)height="[^"]*"/, `$1height="${height}"`) + svg.slice(rootEnd)
+  )
+}
+
 function escapeXml(value: string): string {
   return value
     .replace(/&/g, '&amp;')

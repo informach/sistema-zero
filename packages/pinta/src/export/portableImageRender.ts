@@ -15,7 +15,12 @@ import { cellTile } from '../tiles/cell'
 import { cellMatrix } from '../tiles/chunks'
 import type { VectorShape } from '../vector/model'
 import { embedVectorFonts, vectorToPortableSvg } from '../vector/portableSvg'
-import { sceneDefsMarkup, shapesToMarkup, type VectorDoc } from '../vector/svg'
+import {
+  sceneDefsMarkup,
+  shapesToMarkup,
+  type VectorDoc,
+  withSvgRootSize as withRootSize,
+} from '../vector/svg'
 import { pngCrc32 } from './pngText'
 
 export type PintaImageScene =
@@ -308,19 +313,6 @@ export async function renderPintaImageSvg(
   const svg = await sceneSvg(vector)
   signal?.throwIfAborted()
   return withRootSize(svg, width, height)
-}
-
-function withRootSize(svg: string, width: number, height: number): string {
-  const rootEnd = svg.indexOf('>')
-  if (!svg.startsWith('<svg') || rootEnd < 0) throw new Error('O desenho vetorial é inválido.')
-  const root = svg.slice(0, rootEnd)
-  if (!/\swidth="[^"]*"/.test(root) || !/\sheight="[^"]*"/.test(root) || !/\sviewBox="/.test(root))
-    throw new Error('O desenho vetorial não diz o próprio tamanho.')
-  return (
-    root
-      .replace(/(\s)width="[^"]*"/, `$1width="${width}"`)
-      .replace(/(\s)height="[^"]*"/, `$1height="${height}"`) + svg.slice(rootEnd)
-  )
 }
 
 export async function renderPintaImage(

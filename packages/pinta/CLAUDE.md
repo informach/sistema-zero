@@ -66,6 +66,17 @@ identidade imutável. Não é exportação visual completa. Provas em
 `qa/minimapa-por-regioes-2026-11-21/`, no diretório da missão. Miniaturas/imagens,
 IO 3 e ativação pública 8 continuam pendentes; estilos do painel preservados.
 
+As imagens de peças pixel/vetor também aceitam regiões internamente, pelo leitor
+comum com visita opcional em ordem global linha/coluna. O percurso padrão por
+chunks permanece igual. PNG de regiões tem admissão prévia de 8.192 px/lado e
+16 Mi pixels; a miniatura tem teto 512 e o SVG 8 Mi unidades UTF-16. O SVG entregue
+ao decoder usa o tamanho raster, conservando o viewBox lógico. `withSvgRootSize`
+foi extraído do compositor portátil, sem duplicação; a área de `scenePng` conserva
+o limite anterior compartilhado. A imagem antiga achatada permanece igual, e o
+novo contrato usa composição completa das camadas. Provas em
+`qa/imagens-por-regioes-2026-11-21/`. Objetos/conjuntos na imagem 8 ainda dependem
+do adaptador Scene 4 existente no plano; não há outro compositor independente.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

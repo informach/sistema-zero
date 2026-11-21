@@ -1,0 +1,409 @@
+{
+  "at": "2026-11-21T17:02:40.456Z",
+  "sourceBase": "79ee6613091988b271d026b6923124ef9cb9dd74",
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "focused": {
+      "passed": 121,
+      "failed": 0,
+      "assertions": 561
+    },
+    "pinta": {
+      "passed": 2449,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 29026
+    },
+    "nativeControls": {
+      "passed": 3,
+      "failed": 0,
+      "assertions": 4372
+    },
+    "browser": {
+      "passed": 12,
+      "failed": 0,
+      "retries": 0,
+      "images": 3,
+      "render": 6,
+      "gallery": 3,
+      "imageComparisons": 168,
+      "profiles": [
+        {
+          "name": "desktop",
+          "cpuSlowdown": 1,
+          "historicalImageComparisons": 20,
+          "regionImageComparisons": 36,
+          "distinctHistoricalSvgComparisons": 2,
+          "world": {
+            "pixel": {
+              "width": 512,
+              "height": 512,
+              "rgba": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+              "painted": 0
+            },
+            "vector": {
+              "width": 512,
+              "height": 512,
+              "rgba": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+              "painted": 0
+            },
+            "decoderRoots": [
+              "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"512\" height=\"512\" viewBox=\"0 0 160000 160000\" overflow=\"hidden\">"
+            ]
+          }
+        },
+        {
+          "name": "touch",
+          "cpuSlowdown": 1,
+          "historicalImageComparisons": 20,
+          "regionImageComparisons": 36,
+          "distinctHistoricalSvgComparisons": 2,
+          "world": {
+            "pixel": {
+              "width": 512,
+              "height": 512,
+              "rgba": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+              "painted": 0
+            },
+            "vector": {
+              "width": 512,
+              "height": 512,
+              "rgba": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+              "painted": 0
+            },
+            "decoderRoots": [
+              "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"512\" height=\"512\" viewBox=\"0 0 160000 160000\" overflow=\"hidden\">"
+            ]
+          }
+        },
+        {
+          "name": "cpu-4x",
+          "cpuSlowdown": 4,
+          "historicalImageComparisons": 20,
+          "regionImageComparisons": 36,
+          "distinctHistoricalSvgComparisons": 2,
+          "world": {
+            "pixel": {
+              "width": 512,
+              "height": 512,
+              "rgba": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+              "painted": 0
+            },
+            "vector": {
+              "width": 512,
+              "height": 512,
+              "rgba": "30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58",
+              "painted": 0
+            },
+            "decoderRoots": [
+              "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"512\" height=\"512\" viewBox=\"0 0 160000 160000\" overflow=\"hidden\">"
+            ]
+          }
+        }
+      ]
+    },
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "studioTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1,
+    "children": false,
+    "heapMeasured": false,
+    "latencyQualified": false
+  },
+  "review": {
+    "defaultTraversalUnchanged": true,
+    "globalRowMajorOptional": true,
+    "noWorldSizedMatrix": true,
+    "legacyImagesUnchanged": true,
+    "legacyFlatAndLayeredContractsDistinct": true,
+    "boundedIntrinsicSvg": true,
+    "sharedRootSizer": true,
+    "sharedSceneAreaBudget": true,
+    "stylesChanged": false,
+    "scene4Pending": true
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/map-images-regions-probe.ts",
+      "sha256": "efe0c2a8209cac55aa3464b5f0e60f5b2fecd11cee083055284d073bfe979338"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-images-regions-e2e.ts",
+      "sha256": "3b5be1910c4cc9f415fc4a0ee48cc61f95b97d1809ef62f034508f3cc041fe66"
+    },
+    {
+      "file": "packages/pinta/src/components/gallery/AssetCard.tsx",
+      "sha256": "5f9a2a97a3e3fca7bb9eecd9c1b31b357aac821fde4cb264a9194c5cca5525bf"
+    },
+    {
+      "file": "packages/pinta/src/export/portableImageRender.ts",
+      "sha256": "35d87b78ebf2ecfea588e699f7bba5d75785364a57fdf744e1c149c7c2c3ca5b"
+    },
+    {
+      "file": "packages/pinta/src/export/sceneDrawing.ts",
+      "sha256": "fda997ddd0abb4998b1aabfd7e4d04737810210e075d0661637f3b07b1618e87"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "642dc027725ac105db38d5102fbbe8629459dc547d496b060401ce6b6a416d4f"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "sha256": "c5733972fcc1e87638e8ed5a65926210ac29ef43775ceb8ac8b7b78bd3b8e914"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapImageBudget.ts",
+      "sha256": "608c7bd4308c1cccd22a68595f6138875ab77e51a7342c914a9bacbde3758adb"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapImageRegions.test.ts",
+      "sha256": "50f3b7e1318dba404b049f0998920cf8074744c203c9043564bfd82992b2cd21"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "sha256": "ca3846e6b92c2b0ce649cd033b137a21bc88a247012fe4936ece7fa1ac6ead35"
+    },
+    {
+      "file": "packages/pinta/src/tiles/renderTilemap.ts",
+      "sha256": "04cfade7061ebf6ed9f9376870470bbe99f94c75448ee8557a7dbd91922ec1ca"
+    },
+    {
+      "file": "packages/pinta/src/tiles/renderVectorTilemap.ts",
+      "sha256": "d6d346a1779fcfb94bf4137ecbcaa5f103b264d8c80b7be35e57a4bdcf87b494"
+    },
+    {
+      "file": "packages/pinta/src/vector/svg.ts",
+      "sha256": "8a447fa3cb80a5c561311653a5cc98f4564946de0e136e1366891b99e15592b6"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-images-regions.flow.ts",
+      "sha256": "9d63f8153274f5b266ed8622e9710e706304ce71d1ee66863a454685d4fc9944"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-images.config.ts",
+      "sha256": "95dd239818a77c8a23a8bfaa08d540c5111bc449a69031639a3fa27d1fc881b6"
+    }
+  ],
+  "historicalSources": [
+    {
+      "file": "packages/pinta/src/tiles/renderTilemap.ts",
+      "commit": "79ee6613091988b271d026b6923124ef9cb9dd74",
+      "sha256": "b445dacbcbbc8caf57c59b299e7b9083cb90966fc33c2fb3b9e5ffc66d084611"
+    },
+    {
+      "file": "packages/pinta/src/tiles/renderVectorTilemap.ts",
+      "commit": "79ee6613091988b271d026b6923124ef9cb9dd74",
+      "sha256": "7c7eb861f767f8fc94cbedb97dbafee80b5a06037aacf142dc40941727d871b7"
+    }
+  ],
+  "records": [
+    {
+      "file": "images-desktop.png",
+      "bytes": 8245,
+      "sha256": "e9d8e0cca028b7d02c69290da5c1303d6da56b7d4a6dd87ceea6319d5e0f81d7"
+    },
+    {
+      "file": "images-touch.png",
+      "bytes": 28217,
+      "sha256": "f191e3db812b47adc14d03bb9cfba1a68212f522f3a5ee11eb860d3df5abbded"
+    },
+    {
+      "file": "images-cpu-4x.png",
+      "bytes": 8245,
+      "sha256": "e9d8e0cca028b7d02c69290da5c1303d6da56b7d4a6dd87ceea6319d5e0f81d7"
+    },
+    {
+      "file": "playwright-images-report.json.gz",
+      "bytes": 45734,
+      "sha256": "9748a7bead408763a8873671990b0407c96c23b58687b3be3815d31915f729b8",
+      "rawBytes": 154110,
+      "rawSha256": "1dfd660132da9068207e0129ad67039710a550affdc8d1112c5e10e54dd7c3a3"
+    },
+    {
+      "file": "playwright-render-report.json.gz",
+      "bytes": 425871,
+      "sha256": "6e181c60e520d2fb8bf95894c17c0e83d752be972fc564286d15a9e1c156d88b",
+      "rawBytes": 668438,
+      "rawSha256": "1d0824cad639186f58af78829d2b0e3b924b64f0b0f4e6f2eb4926546d7929ce"
+    },
+    {
+      "file": "playwright-gallery-report.json.gz",
+      "bytes": 228364,
+      "sha256": "0e5df027bdabdc16c13ab1c485b7fd7144a3832e6075d74faacfc1d635caa5c3",
+      "rawBytes": 330839,
+      "rawSha256": "ad6c350f306f0ac6c8a0dcd84f380956addbc4c1dcbd30c890eab14a734142c9"
+    },
+    {
+      "file": "pinta-map-images-regions-red.log.gz",
+      "bytes": 1225,
+      "sha256": "b43cd15d1f061c2b9d82463861f2015b1c4c71710ffda8c122e91426452e4119",
+      "rawBytes": 3225,
+      "rawSha256": "7e89884751431debfb8cf583d628b1bf7da9eeb8391e4480a5cfd15073cc110e"
+    },
+    {
+      "file": "pinta-map-images-regions-initial-report.json.gz",
+      "bytes": 2835,
+      "sha256": "8bd5ad17e475f378b0050b30d7fa673cf008852fbdc0fe2970176ae099501fb0",
+      "rawBytes": 28204,
+      "rawSha256": "5729173a6b4dc0f6cc9b31e1e038f8e973918ba6a5fed56733c7ef5663feea50"
+    },
+    {
+      "file": "pinta-map-images-regions-diagnostic.log.gz",
+      "bytes": 1020,
+      "sha256": "55c13ab67c9532482aa81c439bd4ad723760422a3535873e56b68b017bd776ef",
+      "rawBytes": 3505,
+      "rawSha256": "3824fc3dd3d46f8da9f3763824dba065bf5fac964347608dd261262633d8e41b"
+    },
+    {
+      "file": "pinta-map-images-regions-diagnostic.json.gz",
+      "bytes": 1798,
+      "sha256": "6882bd976f269f7d2cb9b9caa3c97b78b9f5b048c50b837cc777ca77786f51cd",
+      "rawBytes": 17714,
+      "rawSha256": "3d143067d414e71ef0010c767fa156b707a80456b022016c611a60036d2c0b30"
+    },
+    {
+      "file": "pinta-map-images-regions-diagnostic-report.json.gz",
+      "bytes": 8298,
+      "sha256": "8f9acf990ef9344e5ca19a0fcff78f71741f8ab5b2c788d82bac26947e55dd19",
+      "rawBytes": 36968,
+      "rawSha256": "2bd0410d7e93842d7da6c031471a39e8eebe27814dc45088754d383d37f64985"
+    },
+    {
+      "file": "pinta-map-images-regions-browser.log.gz",
+      "bytes": 1102,
+      "sha256": "9f9e81777901555ec6cfb82c1a88b3507d9a9be08bcfe4fac400a4091e0a068a",
+      "rawBytes": 9393,
+      "rawSha256": "740a850fa648a90631eddef720501d42283e106cb09442b77a8df12ba6a8b33d"
+    },
+    {
+      "file": "pinta-map-images-regions-browser-green.log.gz",
+      "bytes": 329,
+      "sha256": "71f0eb62ace0c78468d01c582bd7274b0641f1caf07adf20931555df62e6054d",
+      "rawBytes": 987,
+      "rawSha256": "05d8a8f4fb426c04e025d87f2cbab95de9f2134701b572a057b33c469a9ed555"
+    },
+    {
+      "file": "pinta-map-images-regions-layered-report.json.gz",
+      "bytes": 42925,
+      "sha256": "c65cf7c9c2dd420172a0494a49a9055f9010c509ee9da6f5560073bf75aec4c2",
+      "rawBytes": 145433,
+      "rawSha256": "9846794edbde0d6f73945a1603086bc273f45261464dc16400301ad03c2a7cfa"
+    },
+    {
+      "file": "pinta-map-images-regions-browser-final.log.gz",
+      "bytes": 334,
+      "sha256": "8ad82ed3bc115c5e375a66843900c1c0256a2ce7549387859a9a881b829d543d",
+      "rawBytes": 988,
+      "rawSha256": "76f6a3a93eb7decad42b5be70d4be1b9d785fdb36c711fbb717c3f9318ab8816"
+    },
+    {
+      "file": "pinta-map-images-regions-decode-report.json.gz",
+      "bytes": 43752,
+      "sha256": "4bd816a45277bf06cdd929f0ea807cc9c4122b2bb0d5357b363912cf57a7457d",
+      "rawBytes": 146909,
+      "rawSha256": "34dac7696f4f1390203c68242c4df6811b2fea8164737fdab030a2365d93aa83"
+    },
+    {
+      "file": "pinta-map-images-regions-browser-qualified.log.gz",
+      "bytes": 331,
+      "sha256": "b4a7638c6e4632c27bfd3ebc5fdd3c0daefbc69460e67f3f7ebd46062742f350",
+      "rawBytes": 988,
+      "rawSha256": "8361196d2cc04ad667312772be80d54b4c37740ada22b9b6457fb05ec0782dcb"
+    },
+    {
+      "file": "pinta-map-images-regions-focused-final.log.gz",
+      "bytes": 4544,
+      "sha256": "6e8bbf302203088400343597bd3154f34ad3995fa5dd6767e5948b5a0c275fbc",
+      "rawBytes": 13658,
+      "rawSha256": "0bebee13721ec01dc65727a2257d017117790492cfb02de38c62011f2ef76358"
+    },
+    {
+      "file": "pinta-map-images-regions-types-first.log.gz",
+      "bytes": 260,
+      "sha256": "da0913458820b29ab3b042ff67fccc93c28c0b07c6bb749feff596f8d1c9a8fa",
+      "rawBytes": 412,
+      "rawSha256": "6d90fc3a77d0ad2239d4d52224ede4072973031bca55b86ba527353c974e43d4"
+    },
+    {
+      "file": "pinta-map-images-regions-types-second.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-images-regions-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-images-regions-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-images-regions-studio-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-images-regions-suite.log.gz",
+      "bytes": 74872,
+      "sha256": "74708cef75ea18b67c58bc3f9fb2376643a011db682f3104627c02a5d3c98757",
+      "rawBytes": 277212,
+      "rawSha256": "b7743f8d5aa8f8a258c3425b75bf3eb536c0fd35ea490fc4b965e9f18d627683"
+    },
+    {
+      "file": "pinta-map-images-regions-suite-final.log.gz",
+      "bytes": 74475,
+      "sha256": "1d1f8c2f0cc924ce63bdffe7f771b4fb46fe1386f674f87637c1eaf5f7510efd",
+      "rawBytes": 276211,
+      "rawSha256": "0f3b141cf1e5918ed94db7073078d52d85844c88d4053450d56716e3f5f6ceab"
+    },
+    {
+      "file": "pinta-map-images-regions-native.log.gz",
+      "bytes": 330,
+      "sha256": "87f8798da7ead4aef3e52c15a3718a7ecb25f6687390b59ee8d67408592f03d1",
+      "rawBytes": 507,
+      "rawSha256": "46b93d0e3b1f0dec6b6f70ee1403f22f04ce16dd752c456021f7ab36fbef9af6"
+    },
+    {
+      "file": "pinta-map-images-regions-render-regression.log.gz",
+      "bytes": 429,
+      "sha256": "09255d3cd9cc15d96ca7f5b96e63e09399d8b6aa74812a54b7c2940c7747a78b",
+      "rawBytes": 1454,
+      "rawSha256": "dd9f47863289f14d96f2334ecf3df86e1a45e98c3acec01a5fbe13ee53bf2177"
+    },
+    {
+      "file": "pinta-map-images-regions-gallery-regression.log.gz",
+      "bytes": 693,
+      "sha256": "e1badd4962328820ebd832d8fd184efa111b5611081fbf9d4ebf94d6ad2b5974",
+      "rawBytes": 1975,
+      "rawSha256": "5ebdd8049af1c949e028a4b05d9dd8d4ce2ad636f72e9bb8b1c64d6b3fc602e6"
+    },
+    {
+      "file": "pinta-map-images-regions-final-biome.log.gz",
+      "bytes": 65,
+      "sha256": "5f6421f9b77fbc723c4d3aa68678b8c502705259c6940e6b96316b05e7415be0",
+      "rawBytes": 45,
+      "rawSha256": "a8e4835fa819a387b1f117cc2f8c493b9d69f79e4e5b54d8d68ed61fe1422fa3"
+    },
+    {
+      "file": "pinta-map-images-regions-last-probe-biome.log.gz",
+      "bytes": 52,
+      "sha256": "2374493436d0bac0adaa471cdaca4eab61b5e7fb42fcb4cd0ceca80762fc1772",
+      "rawBytes": 39,
+      "rawSha256": "b54f6d9a97ae47a789a18ae20db05a6ae833cd5f7b582ad677c3b1a3b88d5dca"
+    }
+  ]
+}

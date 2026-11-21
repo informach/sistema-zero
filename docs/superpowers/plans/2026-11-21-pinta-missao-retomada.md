@@ -203,3 +203,37 @@ Provas e revisão em `qa/minimapa-por-regioes-2026-11-21/`, no diretório da mis
 A API bruta antiga conserva recomputação; o cache por identidade é compartilhado
 pelos consumidores imutáveis. O componente real foi exercitado em host de QA,
 e a oficina pública continuou usando mapas densos. O item 2 permanece aberto.
+
+### Lote verificado do item 2: imagens de peças por regiões
+
+- [x] Acrescentar visita opcional em ordem global linha/coluna ao leitor comum,
+  sem visitar lacunas do mundo e sem mudar a ordem padrão dos consumidores atuais.
+  Isso conserva a composição das imagens quando chunks são deslocados/reordenados.
+- [x] Adaptar PNG/miniatura pixel ao mesmo leitor, subtraindo a origem lógica
+  apenas na imagem de saída. Folhas privadas e múltiplas passam pelo resolvedor comum.
+- [x] Adaptar SVG e raster vetorial, sem achatamento ou arrays de uma entrada por
+  casa do mundo. Reutilizar símbolos, máscaras, gradientes, transformações e fontes.
+  Conservar os bytes dos SVGs densos existentes no subconjunto verificado.
+- [x] Admitir as novas imagens antes de criar canvas/carregar fontes: até 8.192
+  pixels por lado e 16.777.216 pixels por imagem, mantendo o orçamento de área da
+  imagem de cena já existente. Miniaturas até 512 pixels; SVG por regiões até
+  8 Mi de unidades UTF-16, com recusa inteira. Não aumentar limites de destinos.
+- [x] Usar a visão geral limitada na miniatura de cores da galeria, conservando
+  estilos e o contrato público atual; o caminho 8 só entra após os demais consumidores.
+- [x] Reproduzir falhas em mapas pequenos antes das correções; validar mundos
+  esparsos grandes após admissão, fontes privadas, múltiplas folhas, offsets,
+  transparência, máscaras/gradientes e transforms no Chromium. Comparar resultados
+  densos históricos, revisar, executar suíte/tipos e registrar antes do commit.
+
+Estes renderizadores de peças mantêm o seu escopo anterior. A imagem de cena com
+objetos/conjuntos usa `sceneDrawing.ts` e depende do futuro adaptador Scene 4;
+não substituir esse compositor por um segundo sistema, nem declarar o item 2
+inteiro pronto apenas por adaptar as imagens de peças. Nada muda no escritor 7/8.
+
+Provas em `qa/imagens-por-regioes-2026-11-21/`, no diretório da missão: suíte
+2.449 aprovada, 121 testes focados, 12 ensaios de navegador e três controles
+Pygame reais. As 168 comparações de imagens conservam pixels; SVGs legados
+conservam hashes. O decoder recebe SVG com dimensões raster limitadas, pelo
+helper extraído do compositor portátil. Imagem achatada antiga e composição
+completa são contratos distintos, qualificados com referências correspondentes.
+O restante do item 2 depende de Scene 4. O trabalho segue ao item 3 das ferramentas.
