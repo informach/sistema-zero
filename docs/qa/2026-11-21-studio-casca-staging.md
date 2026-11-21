@@ -39,4 +39,27 @@ Curso "Cadê Todo Mundo?" (adulto), aula 2. Em 20/11 esta conferência tinha fic
   navegador, porque a autorização de 20/11 venceu. Gerar um código novo é criar uma chave de acesso
   e depende da dona. A página da casca é a mesma do Worker nos dois apps; em 20/11 o Kids rodou nela
   o 3D da Ilha do Farol.
-- **O Python novo com projeto novo:** pausar, avançar 1 quadro, medir e teclas.
+- **O Python novo com projeto novo** (ver abaixo): o que depende de quadros não deu para conferir
+  neste Chrome.
+
+## Python novo no staging (app adulto)
+
+Projeto novo "QA paineis python 21-11", com o ponto de partida Pygame Zero e um jogo mínimo escrito
+pela Ponte (um círculo que anda a cada quadro e imprime a tecla apertada).
+
+| Conferência | Resultado |
+|---|---|
+| Distribuição usada pelo projeto novo | a nova: os quadros "Pré-visualização Python" e de análise carregam `/v1/runtimes/cf021c32…/` do Worker de staging (release `2026-11-20-pinta-cenarios-6`) |
+| O jogo roda e a Ponte faz os blocos | sim |
+| Investigar | abre, mostra "O programa está rodando", "Valores agora" com `pos` e "Mostrar o bloco" |
+| Pausar e Avançar 1 quadro; Desempenho | **não verificável neste Chrome**: o Pausar não mudou o estado e a medida deu cerca de 1 quadro por segundo |
+
+**Por que não verificável.** A própria página do editor recebia 4 a 5 `requestAnimationFrame` em 2
+segundos, também com o jogo parado, embora `document.visibilityState` dissesse "visible" e a página
+tivesse o foco. O Chrome conectado roda em outra máquina, e a janela provavelmente estava coberta ou
+minimizada. Nesse estado, tudo o que depende de quadros sai errado: o jogo anda a cerca de 1 quadro
+por segundo, e a pausa, que espera a resposta do próximo quadro, não chega. As conferências da casca
+(teclas, foco, programa hostil, Parar) dependem de eventos e relógios e valem.
+
+A pausa, o avanço de 1 quadro e a medida do Python passam no CI com a distribuição hermética
+(lotes 6 e 11 dos painéis). No staging, faltam numa janela do Chrome visível na tela.
