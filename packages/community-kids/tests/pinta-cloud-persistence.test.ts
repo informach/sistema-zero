@@ -1479,7 +1479,7 @@ describe('formato mais novo que este código: o desenho fica intocado na conta',
  * que distingue a gravação de outro código da gravação deste.
  */
 describe('registro local cortado por código mais antigo não sobe por cima da conta', () => {
-  test('mapa fracionário conserva nativo/envelope 5 e declara a capacidade do gravador, sem confundir os eixos', async () => {
+  test('mapa fracionário sobe como nativo/envelope 5 e capacidade 4, sem confundir os eixos', async () => {
     const map = createAsset({
       kind: 'tilemap',
       name: 'fracao',
@@ -1499,7 +1499,7 @@ describe('registro local cortado por código mais antigo não sobe por cima da c
     })
     await mirrored.persistAsset(map)
     const result = await uploads.get(map.id)?.produce()
-    expect(result?.meta).toMatchObject({ formatVersion: pintaWriteFormatVersion('tilemap') })
+    expect(result?.meta).toMatchObject({ formatVersion: 4 })
     const native = JSON.parse(result?.json ?? '{}')
     expect(native.version).toBe(5)
     expect(native.assets[0]).toMatchObject({
@@ -1673,19 +1673,14 @@ describe('registro local cortado por código mais antigo não sobe por cima da c
       })
       wrappers.push(first)
       await first.persistAsset(complete)
-      expect((await uploads.get(complete.id)?.produce())?.meta?.formatVersion).toBe(
-        pintaWriteFormatVersion('tilemap'),
-      )
+      expect((await uploads.get(complete.id)?.produce())?.meta?.formatVersion).toBe(4)
       uploads.get(complete.id)?.onUploaded?.({ itemId: complete.id, updatedAt: 1000, revision: 2 })
       marks.flush?.()
       expect(memory.get(complete.id)?.schema).toBe(5)
       expect(rows.has(`${key}:formato`)).toBe(false)
       remote.set(complete.id, {
         json: assetToJson(complete),
-        summary: summaryOf(complete, {
-          revision: 2,
-          formatVersion: pintaWriteFormatVersion('tilemap'),
-        }),
+        summary: summaryOf(complete, { revision: 2, formatVersion: 4 }),
       })
       const requests = { downloads: 0, offline: false }
       const download = cloud.download
@@ -1778,7 +1773,7 @@ describe('registro local cortado por código mais antigo não sobe por cima da c
       expect(payload).not.toBeNull()
       remote.set(asset.id, {
         json: payload!.json,
-        summary: summaryOf(asset, { formatVersion: pintaWriteFormatVersion(asset.kind), revision }),
+        summary: summaryOf(asset, { formatVersion: 4, revision }),
       })
       queued.onUploaded?.({ itemId: asset.id, updatedAt: asset.updatedAt, revision })
     }
@@ -2075,7 +2070,7 @@ describe('registro local cortado por código mais antigo não sobe por cima da c
         await mirrored.persistAsset({ ...cut, updatedAt: 3000 })
         expect((await uploads.get(complete.id)!.produce())?.meta).toMatchObject({
           baseRevision: 2,
-          formatVersion: pintaWriteFormatVersion('tilemap'),
+          formatVersion: 4,
           updatedAt: 3000,
         })
         expect(requests.downloads).toBe(0)
@@ -2160,16 +2155,11 @@ describe('registro local cortado por código mais antigo não sobe por cima da c
       marks: createMemorySyncedMarks(),
     })
     await mirrored.persistAsset(complete)
-    expect((await uploads.get(complete.id)?.produce())?.meta?.formatVersion).toBe(
-      pintaWriteFormatVersion('tilemap'),
-    )
+    expect((await uploads.get(complete.id)?.produce())?.meta?.formatVersion).toBe(4)
     uploads.get(complete.id)?.onUploaded?.({ itemId: complete.id, updatedAt: 1000, revision: 1 })
     remote.set(complete.id, {
       json: assetToJson(complete),
-      summary: summaryOf(complete, {
-        formatVersion: pintaWriteFormatVersion('tilemap'),
-        revision: 1,
-      }),
+      summary: summaryOf(complete, { formatVersion: 4, revision: 1 }),
     })
     expect(memory.get(complete.id)?.schema).toBe(5)
     const cut = ler({
