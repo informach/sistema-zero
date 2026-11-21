@@ -1,0 +1,51 @@
+bun test v1.3.11 (af24e281)
+
+src\state\__tests__\persistence.cases.ts:
+1817 |       const before = structuredClone(record)
+1818 |       const writesBefore = fakeIdbWrites().length
+1819 |       idb.getMany.mockResolvedValueOnce([record, undefined, undefined])
+1820 |       await expect(
+1821 |         loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' }),
+1822 |       ).rejects.toMatchObject({ code: 'invalid-document' })
+                       ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\__tests__\persistence.cases.ts:1822:17)
+(fail) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud recusa nome repetido sem regravar uma lista parcial [31.00ms]
+1817 |       const before = structuredClone(record)
+1818 |       const writesBefore = fakeIdbWrites().length
+1819 |       idb.getMany.mockResolvedValueOnce([record, undefined, undefined])
+1820 |       await expect(
+1821 |         loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' }),
+1822 |       ).rejects.toMatchObject({ code: 'invalid-document' })
+                       ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\__tests__\persistence.cases.ts:1822:17)
+(fail) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud recusa tipo desconhecido sem regravar uma lista parcial [15.00ms]
+1817 |       const before = structuredClone(record)
+1818 |       const writesBefore = fakeIdbWrites().length
+1819 |       idb.getMany.mockResolvedValueOnce([record, undefined, undefined])
+1820 |       await expect(
+1821 |         loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' }),
+1822 |       ).rejects.toMatchObject({ code: 'invalid-document' })
+                       ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\__tests__\persistence.cases.ts:1822:17)
+(fail) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud recusa cena de versão mais nova sem regravar uma lista parcial [32.00ms]
+
+ 0 pass
+ 70 filtered out
+ 3 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [750.00ms]

@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-21T06:05:33.429Z",
+  "base": "bfe79e6c90ad1318ca2681e2df3c93eaba9efe78",
+  "reader": "66e3c54584e4eb4fdd1f37e144df30a1fe95eaff",
+  "writerDelta": [
+    "packages/community-kids/tests/pinta-cloud-persistence.test.ts",
+    "packages/core/src/creations/pinta-format.test.ts",
+    "packages/core/src/creations/pinta-format.ts",
+    "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+    "packages/member-shell/tests/pinta-local-authority.test.ts",
+    "packages/studio-runtime/wrangler.jsonc"
+  ],
+  "files": [
+    {
+      "file": "packages/community-kids/tests/pinta-cloud-persistence.test.ts",
+      "sha256": "3aa5a21f6166051d7ff3792ab8487763d48d507fad0bba68c4c2065138b2aa81"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "sha256": "59997f34aaa645b80461ba04ad883c13b0b8b4bd61a13d836a1276eb7840e3c6"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "sha256": "c03ae67523343498193a8b0d8ec869e031c62bb9d9666fb1c58dd73866bb15b2"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "sha256": "f11d50f89de28b830635ca0ce586de674dcccce2e8d8ed0c5d0038d6b568292e"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "sha256": "28e86f353d4be4e7b4c63874ba3070a90c305ebc44f46c1d48f7bdab3e884ad7"
+    },
+    {
+      "file": "packages/studio-runtime/wrangler.jsonc",
+      "sha256": "35474138853592f2247ad6e26eb2419794e171321eaaf775b56cb55fb25b3185"
+    },
+    {
+      "file": "packages/studio/src/asset-library/__tests__/personalSync.cases.ts",
+      "sha256": "6203af4a5334aac0c614b3c7d06b2300f0f383fe2a66451e47a4be2ad2337003"
+    },
+    {
+      "file": "packages/studio/src/state/projectStorageRead.ts",
+      "sha256": "526708052d52a4379210e75ff933561bfe8434396b1c1017b0f9375f81211d92"
+    }
+  ]
+}

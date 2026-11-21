@@ -41,6 +41,15 @@ recursos e colisões completos.
 
 ## Integração da preparação à fonte atual
 
+O alvo atual do leitor de rollback é `85d16fcd9`. A preparação incorporou sua
+proteção de materiais e o ajuste da fixture sem perda; a última incorporação
+preservou a árvore completa de packages, conforme os objetos de Git. Passaram
+treze categorias e o reforço de 73 casos de persistência, tipos e lint. As
+evidências estão em `qa/gravador-nuvem6-leitor85-2026-11-21/`, no diretório da
+missão. A CI verde e92 é histórica; os merges atuais exigem CI nova e continuam
+sem ativação até o rollout autenticado do leitor. As entradas abaixo preservam
+o histórico das preparações anteriores.
+
 A preparação foi integrada ao leitor `598824bd1`, incluindo o remoto publicado
 39fc e as correções verificadas de foco, publicação e tipos. Passaram novamente
 Core, host, formatos do backend, tipos completos e perfil. O runtime e os 126
