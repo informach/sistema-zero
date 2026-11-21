@@ -579,3 +579,21 @@ test('Enter breaks the line in a comment instead of accepting a document word', 
   }>
   expect(models.some((model) => model.content.endsWith('// sc\nx'))).toBe(true)
 })
+
+test('a file with mixed line breaks opens the map and keeps its problems', async ({ page }) => {
+  // R4 da revisão de 20/11/2026: o Monaco normaliza as quebras e o projeto guarda o original. O
+  // mapa ficava em "Lendo o mapa…" e o problema do arquivo sumia até a primeira edição.
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?lineBreaks=1`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
+  const map = page.getByRole('region', { name: 'Mapa do arquivo', exact: true })
+  await expect(map.getByRole('button', { name: /^score\b/ })).toBeVisible({ timeout: 30_000 })
+  await expect(map.getByText('Lendo o mapa…')).toBeHidden()
+  await page.getByRole('tab', { name: /Problemas/ }).click()
+  await expect(page.getByRole('button', { name: 'Ir para src/main.ts:3' })).toBeVisible({
+    timeout: 30_000,
+  })
+})

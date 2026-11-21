@@ -1,0 +1,114 @@
+[
+  {
+    "name": "esnext-fixture",
+    "exit": 0,
+    "started": "2026-11-21T02:08:07.720Z",
+    "finished": "2026-11-21T02:08:08.634Z",
+    "log": ".cache/pinta-39fc-type-r2-esnext-fixture.log"
+  },
+  {
+    "name": "symbols",
+    "exit": 0,
+    "started": "2026-11-21T02:08:09.170Z",
+    "finished": "2026-11-21T02:08:11.046Z",
+    "log": ".cache/pinta-39fc-type-r2-symbols.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-21T02:08:11.575Z",
+    "finished": "2026-11-21T02:08:12.275Z",
+    "log": ".cache/pinta-39fc-type-r2-profile.log"
+  },
+  {
+    "name": "studio-sdk",
+    "exit": 0,
+    "started": "2026-11-21T02:08:12.796Z",
+    "finished": "2026-11-21T02:08:13.664Z",
+    "log": ".cache/pinta-39fc-type-r2-studio-sdk.log"
+  },
+  {
+    "name": "molda-sdk",
+    "exit": 0,
+    "started": "2026-11-21T02:08:14.256Z",
+    "finished": "2026-11-21T02:08:15.028Z",
+    "log": ".cache/pinta-39fc-type-r2-molda-sdk.log"
+  },
+  {
+    "name": "python-closure",
+    "exit": 0,
+    "started": "2026-11-21T02:08:15.546Z",
+    "finished": "2026-11-21T02:08:17.149Z",
+    "log": ".cache/pinta-39fc-type-r2-python-closure.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-21T02:08:17.674Z",
+    "finished": "2026-11-21T02:11:31.543Z",
+    "log": ".cache/pinta-39fc-type-r2-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-21T02:11:32.137Z",
+    "finished": "2026-11-21T02:13:39.721Z",
+    "log": ".cache/pinta-39fc-type-r2-members-types.log"
+  },
+  {
+    "name": "shell-types",
+    "exit": 0,
+    "started": "2026-11-21T02:13:40.309Z",
+    "finished": "2026-11-21T02:16:22.368Z",
+    "log": ".cache/pinta-39fc-type-r2-shell-types.log"
+  },
+  {
+    "name": "hub-types",
+    "exit": 0,
+    "started": "2026-11-21T02:16:22.884Z",
+    "finished": "2026-11-21T02:16:27.584Z",
+    "log": ".cache/pinta-39fc-type-r2-hub-types.log"
+  },
+  {
+    "name": "gateway-types",
+    "exit": 0,
+    "started": "2026-11-21T02:16:28.113Z",
+    "finished": "2026-11-21T02:16:33.288Z",
+    "log": ".cache/pinta-39fc-type-r2-gateway-types.log"
+  },
+  {
+    "name": "runtime-types",
+    "exit": 0,
+    "started": "2026-11-21T02:16:33.813Z",
+    "finished": "2026-11-21T02:18:36.713Z",
+    "log": ".cache/pinta-39fc-type-r2-runtime-types.log"
+  },
+  {
+    "name": "native-controls",
+    "exit": 0,
+    "started": "2026-11-21T02:18:37.313Z",
+    "finished": "2026-11-21T02:19:01.030Z",
+    "log": ".cache/pinta-39fc-type-r2-native-controls.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T02:19:01.598Z",
+    "finished": "2026-11-21T02:19:30.991Z",
+    "log": ".cache/pinta-39fc-type-r2-biome.log"
+  },
+  {
+    "name": "pygame",
+    "exit": 0,
+    "started": "2026-11-21T02:19:31.562Z",
+    "finished": "2026-11-21T02:20:33.525Z",
+    "log": ".cache/pinta-39fc-type-r2-pygame.log"
+  },
+  {
+    "name": "shared",
+    "exit": 0,
+    "started": "2026-11-21T02:20:34.084Z",
+    "finished": "2026-11-21T02:23:40.541Z",
+    "log": ".cache/pinta-39fc-type-r2-shared.log"
+  }
+]

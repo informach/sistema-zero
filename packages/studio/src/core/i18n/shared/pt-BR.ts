@@ -557,7 +557,7 @@ export const ptBR: Record<string, string> = {
   'share.step.confirm.kidsLanguage':
     'Os textos do meu projeto estão em português e são adequados para todo mundo.',
   'share.step.confirm.irreversible':
-    'A versão publicada fica salva no Mural do jeito que está agora. Se você mudar o projeto aqui depois, a do Mural não muda, porque são cópias separadas.',
+    'Depois de publicar, você pode atualizar o jogo no Mural quando quiser: é só compartilhar de novo. O link e os comentários continuam os mesmos.',
   'share.step.describe.heading': 'Conte o que o seu projeto faz',
   'share.step.describe.help':
     'A gente preparou um rascunho para você. Leia, mude o que quiser e deixe do seu jeito (no máximo um parágrafo).',
@@ -618,5 +618,25 @@ export const ptBR: Record<string, string> = {
   'share.next': 'Avançar',
   'share.publish': 'Publicar',
   'share.retry': 'Tentar de novo',
+  'share.updateAction': 'Atualizar no Mural',
+  'share.update.title': 'Atualizar no Mural dos Criadores',
+  'share.update.intro':
+    'Este projeto já está no Mural. Atualizar troca o jogo do mesmo link pela versão de agora, e o post continua com os comentários e as jogadas.',
+  'share.update.action': 'Atualizar',
+  'share.update.publishing': 'Atualizando…',
+  'share.update.keeps':
+    'O post continua no mesmo lugar do Mural e ganha o selo "Atualizado". As versões antigas ficam guardadas.',
+  'share.update.hidden':
+    'A equipe deixou este post escondido por enquanto. A atualização fica guardada, mas ele não aparece no Mural.',
+  'share.unchanged':
+    'Seu jogo no Mural já está igual a este. Mude alguma coisa no projeto para atualizar.',
+  'share.status.loading': 'Conferindo se este projeto já está no Mural…',
+  'share.cover.keepCurrent': 'Manter a capa de agora',
+  'share.cover.usingCurrent': 'Usando a capa que o post já tem.',
+  'share.success.updatedHeading': 'Seu jogo foi atualizado! 🎉',
+  'share.success.updatedBody': 'O link de jogar continua o mesmo e já mostra a versão nova.',
+  'share.newPost.more': 'Outras formas de publicar',
+  'share.newPost.label': 'Publicar como jogo novo',
+  'share.newPost.hint': 'Cria outro post no Mural, com outro link. O post de antes fica como está.',
   'share.close': 'Fechar',
 }

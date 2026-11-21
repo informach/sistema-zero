@@ -65,7 +65,7 @@ export function ProPublicationHistory({
     active.current &&
     captureProjectStorageScope() === scope.current &&
     store.getState().project?.id === projectId
-  async function change(revision?: string, disabled = false) {
+  async function change(revision: string, disabled: boolean) {
     if (!state || busy || running.current || !current()) return
     const capturedScope = scope.current,
       capturedController = controller.current
@@ -77,24 +77,15 @@ export function ProPublicationHistory({
     try {
       await flushProjectOperations(store, projectId)
       if (!stillCurrent()) return
-      const project = store.getState().project
-      if (!project) return
-      const identity = JSON.stringify({
-        playId,
-        version: state.version,
-        revision,
-        disabled,
-        ...(revision ? {} : { project }),
-      })
+      if (!store.getState().project) return
+      const identity = JSON.stringify({ playId, version: state.version, revision, disabled })
       if (pending.current?.identity !== identity)
         pending.current = { identity, requestId: crypto.randomUUID() }
       const base = { playId, expectedVersion: state.version, requestId: pending.current.requestId }
-      const next = revision
-        ? await adapter.activate({ ...base, revision, disabled }, controller.current?.signal)
-        : await adapter.update(
-            { ...base, project: structuredClone(project) },
-            controller.current?.signal,
-          )
+      const next = await adapter.activate(
+        { ...base, revision, disabled },
+        controller.current?.signal,
+      )
       if (stillCurrent()) {
         setState(next)
         pending.current = null
@@ -116,9 +107,10 @@ export function ProPublicationHistory({
       aria-label="Versões do jogo publicado"
       className="mb-4 space-y-2 rounded-lg border border-sz-border p-3 text-sm"
     >
-      <p className="font-semibold">Jogo publicado</p>
+      <p className="font-semibold">Versões do jogo</p>
       <p className="text-sz-fg-soft">
-        Alterações no editor só chegam ao link quando você publica uma nova versão.
+        Para pôr a versão de agora no link, use o botão Atualizar. Aqui você volta a uma versão
+        antiga ou desliga o link.
       </p>
       {error && (
         <p role="alert" className="text-sz-error">
@@ -138,16 +130,6 @@ export function ProPublicationHistory({
         <>
           <p role="status">{state.disabled ? 'Link desativado' : 'Link ativo'}</p>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void change()}
-              className="rounded border border-sz-border px-3 py-2 disabled:opacity-50"
-            >
-              {state.disabled
-                ? 'Publicar versão atual e reativar link'
-                : 'Publicar versão atual neste link'}
-            </button>
             <button
               type="button"
               disabled={busy}

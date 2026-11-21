@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-21T02:27:20.137Z",
+  "file": "packages/studio-runtime/runtime/scene3d-pro.generated.mjs",
+  "published": "39fc593c306e9d32ef985104560ddf1eb835f3ee",
+  "lines": [66, 74, 82, 90],
+  "allFourLinesExactlyPublished": true,
+  "insideEmbeddedAuthorizedSdkString": true,
+  "sdkModuleSha256": "c2f73c7775d8a0b330c6dc6e3719f6ff37769fb6c565bb2f2bfd8135d9c8c84a",
+  "literalRange": [6, 454],
+  "artifactSha256": "d90800c18902487129d7ed8213642b7166e683011e570d643f0e5459df3b20b2",
+  "artifactModified": false,
+  "existingConvention": "python-playtest.generated.mjs whitespace=-blank-at-eol"
+}

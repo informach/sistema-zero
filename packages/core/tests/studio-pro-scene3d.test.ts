@@ -2,6 +2,11 @@ import { expect, test } from 'bun:test'
 import { parseStudioBuildSubmission } from '../src/studio/build-contract'
 import { createStudioProRevision } from '../src/studio/pro-revision'
 import { isStudioProBuildMaterialPath } from '../src/studio/pro-runtime-capabilities'
+import {
+  readStudioProScene3DModule,
+  renderStudioProScene3DModule,
+  type StudioProScene3DMaterial,
+} from '../src/studio/pro-scene3d'
 
 const modules = [
   'studio-generated/molda-cenarios.mjs',
@@ -70,4 +75,47 @@ test('o parser remoto preserva os três arquivos derivados com os limites e coli
       files: { ...request.files, [modules[0]!]: 'meu codigo' },
     }),
   ).toThrow('colidem')
+})
+
+const SDK = 'a'.repeat(64)
+const material: StudioProScene3DMaterial = {
+  id: 'praia',
+  name: 'Praia',
+  kind: 'scene3d',
+  source: 'upload',
+  dado3d: { versao: 1, cena: { pecas: [{ id: 'mar', x: 1 }] } },
+  url: 'studio-assets/0f.json',
+  mime: 'application/json',
+  bytes: 120,
+  sha256: 'b'.repeat(64),
+}
+
+test('o módulo do cenário sai sempre do mesmo modelo e volta com os mesmos dados (R3)', () => {
+  const module = renderStudioProScene3DModule([material], SDK)
+  expect(
+    module.startsWith(`// SDK ${SDK}\nimport { criarSDKPro } from './molda-cenarios-runtime.mjs'`),
+  ).toBe(true)
+  expect(readStudioProScene3DModule(module)).toEqual([material])
+  // Um material com acento no nome do arquivo antigo continua valendo.
+  const antigo = { ...material, url: 'imagens/Herói da praia.glb', mime: 'model/gltf-binary' }
+  expect(readStudioProScene3DModule(renderStudioProScene3DModule([antigo], SDK))).toEqual([antigo])
+})
+
+test('o servidor recusa o módulo com código além do modelo ou dados fora da regra (R3)', () => {
+  const module = renderStudioProScene3DModule([material], SDK)
+  for (const forged of [
+    `${module}fetch('https://exemplo.test')\n`,
+    `alert(1)\n${module}`,
+    module.replace('JSON.parse(', 'JSON.parse(globalThis.x||'),
+    renderStudioProScene3DModule([{ ...material, url: 'https://exemplo.test/x.glb' }], SDK),
+    renderStudioProScene3DModule([{ ...material, url: '../segredo.json' }], SDK),
+    renderStudioProScene3DModule([{ ...material, url: '/raiz.json' }], SDK),
+    renderStudioProScene3DModule([{ ...material, sha256: 'curto' }], SDK),
+    renderStudioProScene3DModule(
+      [{ ...material, extra: 'chave estranha' } as unknown as StudioProScene3DMaterial],
+      SDK,
+    ),
+  ])
+    expect(readStudioProScene3DModule(forged)).toBeNull()
+  expect(() => renderStudioProScene3DModule([material], 'nao-e-hash')).toThrow()
 })

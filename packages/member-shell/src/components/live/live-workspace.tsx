@@ -29,6 +29,10 @@ import { isTransientLiveFailure, sameLiveProject } from '../../lib/live/workspac
 import { type LiveDraft, LiveDraftJournal, liveDraftScope } from '../../lib/live/workspace-drafts'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { showcaseErrorMessage } from '../../lib/showcase-failure'
+import {
+  createStudioPublicationAdapter,
+  createStudioShareStatus,
+} from '../../lib/studio-publication-adapter'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { SectionProjectCheck } from '../studio/section-project-check'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
@@ -619,6 +623,11 @@ function WorkspaceEditor({
     teacher || !publishToMural
       ? undefined
       : {
+          // A oficina é um projeto só: compartilhar de novo ATUALIZA o mesmo post.
+          status: createStudioShareStatus(() =>
+            latest.current ? { kind: 'live', workspaceId: latest.current.id } : null,
+          ),
+          publication: createStudioPublicationAdapter(),
           async publish(input) {
             if (writingBlocked.current)
               throw new Error('Recupere o salvamento antes de compartilhar.')
@@ -655,7 +664,12 @@ function WorkspaceEditor({
                   'Não foi possível publicar. Seu projeto continua guardado.',
                 ),
               )
-            return { muralUrl: result.muralUrl, playUrl: result.playUrl }
+            return {
+              muralUrl: result.muralUrl,
+              playUrl: result.playUrl,
+              ...(result.publicationId ? { publicationId: result.publicationId } : {}),
+              ...(result.updated ? { updated: true } : {}),
+            }
           },
         },
   )

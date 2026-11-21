@@ -112,7 +112,8 @@ test('finalize requires reservation, exact snapshot, context and author; concurr
         await f.request('/prepare', { ...f.body, snapshotHash: 'c'.repeat(64) }),
       )
     ).state,
-  ).toBe('finalized')
+    // Outro snapshot do MESMO projeto da aula: o post existente é o que será atualizado.
+  ).toBe('existing')
 })
 
 for (const status of ['hidden', 'deleted', 'rejected'] as const)
@@ -129,7 +130,9 @@ for (const status of ['hidden', 'deleted', 'rejected'] as const)
     const notifyBefore = f.members.showcaseNotifications.length
     const replay = await readStudioPreparation(await f.request('/prepare'))
     if (replay.state === 'reserved') throw new Error('Terminal reservation revived')
-    expect(replay.state).toBe(status === 'hidden' ? 'finalized' : 'retired')
+    // Oculto continua sendo o post do projeto (atualizável, segue oculto); apagado/recusado
+    // perde o vínculo e a reserva fica aposentada.
+    expect(replay.state).toBe(status === 'hidden' ? 'existing' : 'retired')
     expect(replay.thread?.status).toBe(status)
     const late = await readStudioPublication(await f.request('', final))
     expect(late.thread.status).toBe(status)

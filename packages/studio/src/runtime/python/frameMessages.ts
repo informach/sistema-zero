@@ -110,6 +110,16 @@ export function readPythonFrameMessage(raw: unknown): PythonFrameMessage | undef
       },
     }
   }
+  if (raw.type === 'pause') {
+    if (
+      typeof raw.held !== 'boolean' ||
+      typeof raw.frame !== 'number' ||
+      !Number.isSafeInteger(raw.frame) ||
+      raw.frame < 0
+    )
+      return
+    return { ...common, type: 'pause', held: raw.held, frame: raw.frame }
+  }
   if (raw.type === 'mission-result') {
     if (!isPythonRequestId(raw.requestId)) return
     try {

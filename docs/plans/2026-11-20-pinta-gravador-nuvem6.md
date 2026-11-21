@@ -38,3 +38,13 @@ e os arquivos funcionais 3D permanecem fora desta alteração.
 Não mudar a programação do jogo ou achatar o cenário para contornar a recusa.
 Um mapa novo precisa continuar editável, com camadas, objetos, referências,
 recursos e colisões completos.
+
+## Integração da preparação à fonte atual
+
+A preparação foi integrada ao leitor `598824bd1`, incluindo o remoto publicado
+39fc e as correções verificadas de foco, publicação e tipos. Passaram novamente
+Core, host, formatos do backend, tipos completos e perfil. O runtime e os 126
+arquivos Python são byte a byte iguais ao leitor integrado; ver
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/gravador-nuvem6-integrado-598-2026-11-20/`.
+Isso ainda não ativa a escrita: falta receber a política final do leitor de
+rollback, concluir seu rollout e executar os critérios autenticados 6 e 7.

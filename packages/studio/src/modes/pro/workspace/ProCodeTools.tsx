@@ -5,6 +5,7 @@ import { cn, IconX, Modal } from '#ui'
 import { proFileBaseName } from '../../../components/code/proFileKinds'
 import { type ProExample, proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
+import { sameTextExceptLineBreaks } from '../../../monaco/lineBreaks'
 import { getMonacoModelPath } from '../../../monaco/modelPaths'
 import type { ProSymbol } from '../../../monaco/pro/languageService'
 import { useProjectStore } from '../../../state/projectStore'
@@ -167,7 +168,7 @@ export function ProCodeTools({
         const model = editor.current?.getModel()
         const matches =
           model &&
-          (model.getValue() === content ||
+          (sameTextExceptLineBreaks(model.getValue(), content) ||
             (language.documentOffset?.(content, model.getValue(), { lineNumber: 1, column: 1 }) ??
               null) !== null)
         if (
@@ -201,7 +202,7 @@ export function ProCodeTools({
       model && cursor
         ? language?.documentOffset
           ? language.documentOffset(content, model.getValue(), cursor)
-          : model.getValue() === content
+          : sameTextExceptLineBreaks(model.getValue(), content)
             ? model.getOffsetAt(cursor)
             : null
         : null

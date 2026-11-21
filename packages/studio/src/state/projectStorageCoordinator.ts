@@ -497,6 +497,14 @@ export async function bindProjectToDurableHead(
   project: { id: string },
   scope: ProjectStorageScope,
 ): Promise<void> {
+  // A migração da base v3 só troca o formato: a cabeça v3 vira a cabeça v4 e o conteúdo é o
+  // mesmo. Ela vem ANTES da captura; sem isso, a primeira substituição de um projeto que só
+  // existia em v3 via a cabeça migrada como "outra aba" e acusava um conflito falso (P4 da
+  // revisão de 20/11/2026). A recuperação de rascunhos, que MUDA o conteúdo, continua depois.
+  if (PROJECT_STORAGE_VERSION === 4) {
+    const { migrateLocalV3Projects } = await import('../project-migrations/localV3Projects')
+    await migrateLocalV3Projects(scope, undefined, project.id)
+  }
   let [head, meta] = await readValues(scope.store, [
     projectHeadKey(project.id),
     projectMetaKey(project.id),
@@ -505,8 +513,8 @@ export async function bindProjectToDurableHead(
     await ensureProjectHead(scope, project.id)
     ;[head] = await readValues(scope.store, [projectHeadKey(project.id)])
   }
-  // Capture the baseline before preparation: a restore must not inherit permission
-  // to overwrite a document that was newly migrated/recovered during this await.
+  // Capture the baseline before recovery: a restore must not inherit permission to
+  // overwrite a draft that was newly recovered into the document during this await.
   if (PROJECT_STORAGE_VERSION === 4) await recoverProjectWrites(scope, project.id)
   installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
 }

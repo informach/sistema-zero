@@ -199,9 +199,25 @@ def configure(transport, decoder, root, extension_mode='2d', *, checkpoint=None)
     _checkpoint = checkpoint
 
 
+#: O pedido curto de quem espera com o programa pausado pela aba Investigar do Estúdio (o mesmo
+#: do Pygame Zero, framePause.ts do quadro).
+HOLD_REQUEST = {'hold': True}
+_held = False
+
+
 def checkpoint():
+    """O ponto de checagem do quadro e, com o programa pausado pelo Estúdio, a espera.
+
+    A cada resposta com hold, o ponto de checagem roda de novo (responde a leitura dos valores) e
+    o pedido curto vai de novo; a resposta sem hold continua o programa."""
+    global _held
     if _checkpoint is not None:
         _checkpoint()
+    while _held:
+        reply, _ = _exchange(HOLD_REQUEST, b'')
+        _held = reply.get('hold') is True
+        if _checkpoint is not None:
+            _checkpoint()
 
 
 def new_id():
@@ -317,7 +333,7 @@ def _attachments():
 
 def present():
     """Manda o quadro desenhado e aplica a resposta (entrada, relógio, sons)."""
-    global _previous_payload
+    global _previous_payload, _held
     from . import _audio
     _audio.watch_music()
     w = window
@@ -360,6 +376,7 @@ def present():
     audio.clear()
     _previous_payload = payload
     _apply_reply(reply)
+    _held = reply.get('hold') is True
     return reply
 
 

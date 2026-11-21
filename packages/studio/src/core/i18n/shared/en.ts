@@ -511,7 +511,7 @@ export const en: Record<string, string> = {
   'share.step.confirm.concluded': 'My project is ready and working.',
   'share.step.confirm.kidsLanguage': 'The text in my project is appropriate for everyone.',
   'share.step.confirm.irreversible':
-    'The published version stays on the Wall exactly as it is now. Later changes here do not change it because they are separate copies.',
+    'After publishing, you can update the game on the Wall whenever you want: just share again. The link and comments stay the same.',
   'share.step.describe.heading': 'Tell us what your project does',
   'share.step.describe.help':
     'We prepared a draft for you. Read it, change anything you like, and make it yours (one paragraph at most).',
@@ -567,5 +567,26 @@ export const en: Record<string, string> = {
   'share.next': 'Next',
   'share.publish': 'Publish',
   'share.retry': 'Try again',
+  'share.updateAction': 'Update on the Wall',
+  'share.update.title': 'Update on the Creators Wall',
+  'share.update.intro':
+    'This project is already on the Wall. Updating replaces the game behind the same link with the current version, and the post keeps its comments and plays.',
+  'share.update.action': 'Update',
+  'share.update.publishing': 'Updating…',
+  'share.update.keeps':
+    'The post stays in the same place on the Wall and gets the "Updated" label. Older versions are kept.',
+  'share.update.hidden':
+    'The team has hidden this post for now. The update is saved, but it does not appear on the Wall.',
+  'share.unchanged':
+    'Your game on the Wall is already the same as this one. Change something to update it.',
+  'share.status.loading': 'Checking whether this project is already on the Wall…',
+  'share.cover.keepCurrent': 'Keep the current cover',
+  'share.cover.usingCurrent': 'Using the cover the post already has.',
+  'share.success.updatedHeading': 'Your game was updated! 🎉',
+  'share.success.updatedBody': 'The play link stays the same and already shows the new version.',
+  'share.newPost.more': 'Other ways to publish',
+  'share.newPost.label': 'Publish as a new game',
+  'share.newPost.hint':
+    'Creates another post on the Wall, with another link. The previous post stays as it is.',
   'share.close': 'Close',
 }

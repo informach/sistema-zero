@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/core
 
+## Publicação clássica com versões (20/11/2026)
+
+`studio/classic-publication.ts`: `StudioClassicPublication` (`publicationVersion: 1`,
+`programmingLanguage: 'javascript'`, `kind: 'classic'`, revisões `{id, sourceHash, artifactHash,
+createdAt, classic: true}`), `isStudioClassicPublication` e `studioClassicPublicationReceiptText`.
+Entrou na união `StudioPublication`/`isStudioPublication` (em `python-publication.ts`);
+`isStudioProPublication` continua recusando (a revisão clássica não tem `validation`). O serviço
+de versões (`studio-runtime`, `promote-classic`) e o BFF usam. Teste:
+`tests/studio-classic-publication.test.ts`.
+
 ## Respostas em percursos alternativos do Faísca (08/11/2026)
 
 - `try-cabin` recalcula a porta em cada comparação de `freeExploration`: trocar de “ou” para “e”

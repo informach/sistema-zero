@@ -995,14 +995,20 @@ for (const mode of ['synchronous', 'mirrored', 'native-only'] as const)
         await readValue(f.scope.store, projectRecoveryKey(draft.id, source.writer, 4)),
       ).toBeUndefined()
       expect(readSynchronousExitJournal(f.scope.exitJournalStorage, f.scope.identity)).toEqual([])
-      const backups = (await readAllKeys(f.scope.store)).filter((key) =>
-        String(key).startsWith(`sz:v4:project-backup:${draft.id}:recovery-`),
+      const keys = (await readAllKeys(f.scope.store)).map(String)
+      // O arquivo da cópia v3 tem chave própria desde 20/11/2026 (P1 da revisão): a chave do
+      // arquivo de origem de recuperação (`:recovery-`) fica livre para a revisão que a superar.
+      const backups = keys.filter((key) =>
+        key.startsWith(`sz:v4:project-backup:${draft.id}:v3-recovery-`),
       )
       expect(backups).toHaveLength(1)
       expect(await readValue(f.scope.store, backups[0]!)).toMatchObject({
         sourceVersion: 3,
         encoded: source.encoded,
       })
+      expect(
+        keys.filter((key) => key.startsWith(`sz:v4:project-backup:${draft.id}:recovery-`)),
+      ).toEqual([])
     } finally {
       f.close()
     }

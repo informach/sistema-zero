@@ -142,6 +142,10 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
     stop: (slot: string) => get(slot).controller.stop(),
     capture: (slot: string) => get(slot).controller.capture(),
     observe: (slot: string, path: string) => get(slot).controller.observe({ type: 'value', path }),
+    /** A aba Investigar: pausa (`true`) ou continua o programa na troca de quadro. */
+    pause: (slot: string, on: boolean) => get(slot).controller.pause(on),
+    /** A aba Investigar: avança 1 quadro com o programa pausado. */
+    step: (slot: string) => get(slot).controller.step(),
     /** A aba Meus testes: a tecla do teste no programa, pelo quadro do Python. */
     pressKey: (slot: string, key: string, down: boolean) =>
       get(slot).controller.pressKey(key, down),

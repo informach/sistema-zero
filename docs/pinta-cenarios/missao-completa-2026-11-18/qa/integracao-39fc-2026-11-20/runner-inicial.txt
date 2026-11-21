@@ -1,0 +1,45 @@
+const fs=require('node:fs'),cp=require('node:child_process'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const root=process.cwd(),rows=[],env={...process.env,NODE_OPTIONS:'--max-old-space-size=6144',PW_REUSE_SERVER:'0',E2E_PORT:'5511',E2E_OUT_DIR:'.cache/pinta-39fc-final-ui-dist'};
+delete env.PW_CHROMIUM;delete env.DEBUG;delete env.PWDEBUG;delete env.PLAYWRIGHT_JSON_OUTPUT_FILE;
+const git=args=>cp.execFileSync('git',args,{encoding:'utf8'}).trim(),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+assert.equal(git(['rev-parse','HEAD']),'4db9390c2ec732bbce034b4ffd7bee3be849489b');assert.equal(git(['rev-parse','MERGE_HEAD']),'39fc593c306e9d32ef985104560ddf1eb835f3ee');assert.equal(git(['diff','--name-only','--diff-filter=U']),'');
+const changed=()=>[...new Set([...git(['diff','--name-only','HEAD']).split(/\r?\n/),...git(['ls-files','--others','--exclude-standard']).split(/\r?\n/)])].filter(f=>f.startsWith('packages/')||f.startsWith('experiments/')||f==='biome.json').sort();
+const freeze={at:new Date().toISOString(),head:git(['rev-parse','HEAD']),mergeHead:git(['rev-parse','MERGE_HEAD']),profile:JSON.parse(fs.readFileSync('packages/studio-runtime/runtime/validation-profile.json')).runtimeFingerprint,files:changed().map(file=>({file,sha256:sha(fs.readFileSync(file))}))};
+fs.writeFileSync('.cache/pinta-39fc-final-source-freeze.json',JSON.stringify(freeze,null,2)+'\n',{flag:'wx'});
+const verify=()=>{assert.deepEqual(changed(),freeze.files.map(f=>f.file));for(const f of freeze.files)assert.equal(sha(fs.readFileSync(f.file)),f.sha256,f.file)};
+for(const[name,cwd,args,extra]of[
+ ['biome-initial','.', ['x','--no-install','biome','check','.','--diagnostic-level=error']],
+ ['profile','packages/studio-runtime',['run','check:validation-profile']],
+ ['studio-sdk','packages/studio',['run','check:scene3d-runtime']],
+ ['molda-sdk','packages/molda-cenarios',['run','conferir:runtime']],
+ ['host-publication','packages/member-shell',['test','tests/studio-python-publish.test.ts','tests/studio-publication.test.ts','tests/pinta-local-authority.test.ts','tests/showcase-updated.test.ts']],
+ ['hub-publication','packages/hub',['test','tests/integration/showcase-update.test.ts','tests/integration/showcase.test.ts','tests/integration/studio-reservations.test.ts','tests/unit/showcase-delivery.test.ts']],
+ ['gateway-publication','packages/api-gateway',['test','tests/integration/studio-publication-provenance.test.ts','tests/unit/kids-access-policy.test.ts']],
+ ['canonical-publication','packages/studio-runtime',['test','tests/classic-publications.test.ts','tests/publications.test.ts','tests/scene3d-pro-canonical.test.ts','tests/python-publications.test.ts','tests/python-distributions.test.ts','tests/python-sdk-contract.test.ts']],
+ ['published-qa-types','packages/molda-cenarios-agente',['x','--no-install','tsc','--noEmit']],
+ ['core','packages/core',['test']],
+ ['core-types','packages/core',['x','--no-install','tsc','--noEmit']],
+ ['studio','packages/studio',['run','test']],
+ ['members-unit','packages/members',['test','tests/unit/studio-student-tests.service.test.ts','tests/unit/studio-authoring-policy.test.ts','tests/unit/studio-runtime-hosts.test.ts']],
+ ['gateway-unit','packages/api-gateway',['test','tests/unit/config.test.ts']],
+ ['atlas','packages/molda-cenarios-motor',['test','tests/relevo-atlas.test.ts']],
+ ['runtime','packages/studio-runtime',['test','tests/runtime-handler.test.ts','tests/check.test.ts','tests/click-target-cdp.test.ts','tests/motion-observation.test.ts']],
+ ['native-observer','packages/studio-runtime',['test','tests/execution-observation-browser.test.ts'],{SZ_CHECK_CHROMIUM:'C:/Program Files/Google/Chrome/Application/chrome.exe'}],
+ ['browser','packages/studio',['x','--no-install','playwright','test','e2e/student-tests.spec.ts','e2e/preview-focus-policy.spec.ts','e2e/preview-shell.spec.ts','e2e/preview-shell-hostile.spec.ts','e2e/offscreen-lifecycle.spec.ts','--reporter=list,json']],
+ ['integration','packages/studio',['x','--no-install','playwright','test','--config','.cache/pinta-39fc-final-integration.config.ts']],
+ ['studio-types','packages/studio',['x','--no-install','tsc','--noEmit']],
+ ['members-types','packages/members',['x','--no-install','tsc','--noEmit']],
+ ['shell-types','packages/member-shell',['x','--no-install','tsc','--noEmit']],
+ ['hub-types','packages/hub',['x','--no-install','tsc','--noEmit']],
+ ['gateway-types','packages/api-gateway',['x','--no-install','tsc','--noEmit']],
+ ['runtime-types','packages/studio-runtime',['run','typecheck']],
+ ['native-controls','packages/studio',['test','src/check/__tests__/checkRunner.test.ts'],{SZ_CHECK_CHROMIUM:'C:/Program Files/Google/Chrome/Application/chrome.exe'}],
+ ['biome-final','.', ['x','--no-install','biome','check','.','--diagnostic-level=error']],
+ ['pygame','packages/studio',['x','--no-install','playwright','test','--config','.cache/pinta-39fc-final-pygame.config.ts']],
+ ['shared','packages/studio',['x','--no-install','playwright','test','--config','.cache/pinta-39fc-final-shared.config.ts']],
+]){
+ verify();const log='.cache/pinta-39fc-final-'+name+'.log',fd=fs.openSync(log,'wx'),started=new Date().toISOString();let result;const commandEnv={...env,...extra};
+ if(name==='browser'){commandEnv.PLAYWRIGHT_JSON_OUTPUT_FILE=path.join(root,'.cache/pinta-39fc-final-browser-report.json');commandEnv.PLAYWRIGHT_OUTPUT_DIR=path.join(root,'packages/studio/.cache/pinta-39fc-final-browser-results')}
+ try{result=cp.spawnSync('bun',['--no-env-file',...args],{cwd:path.resolve(root,cwd),env:commandEnv,stdio:['ignore',fd,fd],windowsHide:true})}finally{fs.closeSync(fd)}
+ verify();rows.push({name,exit:result.status,error:result.error?.message,started,finished:new Date().toISOString(),log});fs.writeFileSync('.cache/pinta-39fc-final-gates.json',JSON.stringify(rows,null,2)+'\n');console.log(JSON.stringify(rows.at(-1)));if(result.status!==0){process.exitCode=1;break}
+}

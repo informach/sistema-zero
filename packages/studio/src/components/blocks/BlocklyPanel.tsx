@@ -69,6 +69,7 @@ import { installExtension, reregisterInstalledExtensions } from '../../state/ext
 import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
 import { htmlSourceCompatible } from '../../state/htmlSourceCompatibility'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { decideSavedSource, type SavedSourceDecision } from '../../state/savedSourceDecision'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
@@ -393,6 +394,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     ir: ReturnType<typeof blockGenerationInput>['ir']
     jsHeader: string | undefined
   } | null>(null)
+  // A decisão de manter o CSS e o HTML salvos no lugar do gerado, por projeto
+  // (`state/savedSourceDecision.ts`, C5 da revisão de 20/11/2026).
+  const savedCssRef = useRef<{ projectId: string; decision: SavedSourceDecision } | null>(null)
+  const savedHtmlRef = useRef<{ projectId: string; decision: SavedSourceDecision } | null>(null)
   const isApplyingStateRef = useRef(false)
   // Uma carga agendada que ainda não começou (o quadro adiado e a espera pela fonte, até
   // 1,5 s). O canvas que está à vista vai ser trocado pelo estado salvo: nada feito nele conta
@@ -614,13 +619,31 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
       primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap, files['style.css'])
-      if (current && cssSourceCompatible(current.files['style.css'], files['style.css'])) {
-        files['style.css'] = current.files['style.css']
-      }
-      // O mesmo vale para o HTML que difere só na ordem dos atributos (o bloco guarda a classe à
-      // parte): manter o salvo evita regravar o arquivo e recarregar a prévia só por abrir.
-      if (current && htmlSourceCompatible(current.files['index.html'], files['index.html'])) {
-        files['index.html'] = current.files['index.html']
+      // O CSS que difere do gerado só na ordem das declarações e o HTML que difere só na ordem dos
+      // atributos (o bloco guarda a classe à parte) ficam como estão ao abrir: abrir não regrava o
+      // arquivo nem recarrega a prévia. A decisão é lembrada por par (gerado, salvo): uma edição
+      // que não mexe no arquivo gerado a reaproveita sem analisar de novo, e uma que mexe (até só
+      // na ordem dos blocos) vale como a criança fez.
+      if (current) {
+        const opening = options.force === true
+        const decide = (
+          ref: typeof savedCssRef,
+          file: 'style.css' | 'index.html',
+          compatible: (saved: string, canonical: string) => boolean,
+        ) => {
+          const previous = ref.current?.projectId === current.id ? ref.current.decision : null
+          const decision = decideSavedSource({
+            previous,
+            canonical: files[file],
+            saved: current.files[file],
+            opening,
+            compatible,
+          })
+          ref.current = decision ? { projectId: current.id, decision } : null
+          if (decision?.keep) files[file] = decision.saved
+        }
+        decide(savedCssRef, 'style.css', cssSourceCompatible)
+        decide(savedHtmlRef, 'index.html', htmlSourceCompatible)
       }
       const displayedMap = () =>
         getDisplayedSourceMap(ir, projectNameForGen, jsHeader, files['style.css'])

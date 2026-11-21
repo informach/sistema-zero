@@ -684,5 +684,24 @@ def update():
         self.assertTrue(any(len(payload) > 0 for payload in self.browser.payloads))
 
 
+class PauseFromTheStudio(Case):
+    """A aba Investigar pausa na troca de quadro: o quadro do navegador responde com hold e o
+    programa espera em pedidos curtos, rodando o ponto de checagem a cada volta (framePause.ts)."""
+
+    def test_a_held_frame_waits_in_short_requests_and_runs_the_checkpoint_each_time(self):
+        checks = []
+        self.sz.configure(self.browser, None, self.root, checkpoint=lambda: checks.append(1))
+        self.browser.replies = [{'hold': True}, {'hold': True}, {'hold': False}]
+        reply = self.present()
+        self.assertEqual(self.browser.headers[1:], [{'hold': True}, {'hold': True}])
+        # A checagem do quadro e uma por resposta com hold: as leituras dos valores pausados.
+        self.assertEqual(len(checks), 3)
+        self.assertTrue(reply['hold'])
+        # Sem hold, nenhum pedido curto.
+        before = len(self.browser.headers)
+        self.present()
+        self.assertEqual(len(self.browser.headers), before + 1)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=1)

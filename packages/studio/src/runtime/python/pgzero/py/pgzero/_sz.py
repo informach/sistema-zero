@@ -927,6 +927,23 @@ def _tick_saved_files():
         saved.tick()
 
 
+#: O pedido curto de quem espera com o programa pausado pela aba Investigar do Estúdio. O quadro
+#: do navegador responde quando chega uma leitura dos valores, quando a criança continua ou quando
+#: ela avança um quadro (framePause.ts). O mesmo texto que o quadro confere.
+HOLD_REQUEST = {'hold': True}
+
+
+def _hold(reply):
+    """O Estúdio pausou o programa neste quadro: ele espera aqui, sem andar.
+
+    A cada resposta com hold, o ponto de checagem roda (é ele que responde a leitura dos valores)
+    e o pedido curto vai de novo; a resposta sem hold continua o programa."""
+    while reply.get('hold') is True:
+        if _mission_checkpoint is not None:
+            _mission_checkpoint()
+        reply, _ = _exchange(HOLD_REQUEST, b'')
+
+
 def _exchange(header, payload):
     _tick_saved_files()
     text, pixels = _transport(json.dumps(header, separators=(',', ':')), payload)
@@ -1050,4 +1067,5 @@ def _send(width, height, title, extra=None, *, actors=None, cursor=None):
     audio_ended(reply.get('ended', ()))
     if _mission_checkpoint is not None:
         _mission_checkpoint()
+    _hold(reply)
     return reply

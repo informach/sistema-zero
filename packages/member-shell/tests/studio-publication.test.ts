@@ -330,11 +330,13 @@ test('publication mutations reject browser-supplied ownership and oversized enve
     (
       await f.routes.studioPublication.POST(
         request({
-          operation: 'update',
-          playId: crypto.randomUUID(),
-          requestId: crypto.randomUUID(),
-          expectedVersion: 1,
-          project: { content: 'x'.repeat(6 * 1024 * 1024 + 32768) },
+          operation: 'status',
+          compare: true,
+          context: {
+            kind: 'free',
+            projectId: 'meu-jogo',
+            project: { content: 'x'.repeat(6 * 1024 * 1024 + 32768) },
+          },
         }),
       )
     ).status,

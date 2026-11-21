@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+tests\unit\studio-authoring-policy.test.ts:
+(pass) private v3 examples use the same approved catalog and dependency policy as the canonical initial [32.00ms]
+(pass) discovery copies cannot alter approval, block curation or release lifecycle
+(pass) publication accepts approved javascript/classic without changing the document
+(pass) publication accepts approved javascript/pro without changing the document
+(pass) publication accepts approved python/classic without changing the document
+(pass) publication accepts approved python/pro without changing the document [15.00ms]
+(pass) authoring denies incompatible curation, templates, extensions, locks and unapproved runtime
+(pass) deployment policy verifies hashes, completeness and statuses before approving publication
+(pass) legacy JS remains authorable; historical or forged Python v2 cannot bypass the catalog
+
+tests\unit\studio-runtime-hosts.test.ts:
+(pass) runtime hosts validate exact releases and isolated deployment origins, never snapshot URLs
+(pass) publish and assist require the release declaration and the context grant [16.00ms]
+
+tests\unit\studio-student-tests.service.test.ts:
+(pass) StudioStudentTestsService > confere o acesso ao Pro e roda os testes no executor, com quem pediu e o modelo do projeto
+(pass) StudioStudentTestsService > roda um lote por pedido: mais de 8 testes ou de 40 segundos de espera é recusado
+(pass) StudioStudentTestsService > recusa sem acesso, projeto que não é Pro, teste fora dos limites do Pro e lista vazia
+(pass) StudioStudentTestsService > sem executor configurado, ou executor fora do ar, a criança lê que não deu para testar
+(pass) StudioStudentTestsService > a recusa do executor (o projeto não compila) volta como o motivo
+
+ 16 pass
+ 0 fail
+ 94 expect() calls
+Ran 16 tests across 3 files. [1192.00ms]

@@ -22,6 +22,7 @@ import activitySource from './activity-grader.py'
 import { createPythonActivityConsoleMatcher } from './activityConsole'
 import audioSource from './audio/sz_audio/__init__.py'
 import { type PythonCanvasExtension, pythonCanvasExtension } from './canvasExtension'
+import { PYTHON_HOLD_REQUEST } from './framePause'
 import bridgeSource from './interpreter.py'
 import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
@@ -123,6 +124,11 @@ async function loadPgzeroResources(base: URL, scope: AbortController) {
   scope.signal.throwIfAborted()
   return { protocol, sources }
 }
+
+/** A reply with bytes (pixels) reaches Python as [text, bytes]; a text reply stays text. */
+const pythonReply = (reply: PythonGraphicsReply) =>
+  typeof reply === 'string' ? reply : [reply.text, reply.bytes]
+
 /** pygame-ce draws; the Pygame Zero frame transport (_sz) carries its screen and sounds. */
 async function loadPygameResources(base: URL, scope: AbortController) {
   const [canvas, pygame] = await awaitWithSignal(
@@ -480,6 +486,9 @@ export async function createPythonInterpreter(options: {
           for (const [filename, bytes] of sources)
             runtime.FS.writeFile(`${directory}/${filename}`, bytes)
           installTurtle(directory, (raw: unknown) => {
+            // O pedido curto de quem espera com o programa pausado (aba Investigar) não é uma
+            // atualização do desenho: vai ao quadro como veio, sem dados (framePause.ts).
+            if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, [])
             const request = readTurtleGraphicsRequest(raw)
             const images: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
             let bytes = 0
@@ -534,6 +543,9 @@ export async function createPythonInterpreter(options: {
           installCanvas(
             directory,
             (raw: unknown, payload: unknown) => {
+              // O pedido curto de quem espera com o programa pausado (aba Investigar) não é um
+              // quadro: vai ao quadro da página como veio, sem dados (framePause.ts).
+              if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, []).then(pythonReply)
               const header = readPgzeroFrameHeader(raw)
               const attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
               // Python hands over a Uint8Array copy (to_js), never a proxy to free here. That
@@ -595,9 +607,7 @@ export async function createPythonInterpreter(options: {
                 })
               }
               // A reply with bytes (pixels) reaches Python as [text, bytes].
-              return options.graphics!(raw as string, attachments).then((reply) =>
-                typeof reply === 'string' ? reply : [reply.text, reply.bytes],
-              )
+              return options.graphics!(raw as string, attachments).then(pythonReply)
             },
             (path: unknown) => {
               if (typeof path !== 'string' || !inProject(path))
@@ -623,6 +633,8 @@ export async function createPythonInterpreter(options: {
           installRaylib(
             directory,
             (raw: unknown, payload: unknown) => {
+              // O pedido curto de quem espera com o programa pausado (aba Investigar).
+              if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, []).then(pythonReply)
               const header = readRaylibFrameHeader(raw)
               if (
                 !(payload instanceof Uint8Array) ||
@@ -665,9 +677,7 @@ export async function createPythonInterpreter(options: {
                   bytes: new Uint8Array(source),
                 })
               }
-              return options.graphics!(raw as string, attachments).then((reply) =>
-                typeof reply === 'string' ? reply : [reply.text, reply.bytes],
-              )
+              return options.graphics!(raw as string, attachments).then(pythonReply)
             },
             (path: unknown) => {
               if (typeof path !== 'string' || !inProject(path))

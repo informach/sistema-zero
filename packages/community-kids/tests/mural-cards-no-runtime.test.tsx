@@ -128,3 +128,20 @@ test('o módulo dos cards não alcança runtime, player nem o Estúdio', () => {
   expect(rendered.runtime).toEqual([])
   expect(deferredRuntime).toEqual([])
 })
+
+test('o card do jogo atualizado mostra o selo "Atualizado" com a data; o novo não', () => {
+  const view = render(
+    <div>
+      <ShowcaseCard
+        thread={{ ...thread(1), gameUpdatedAt: '2026-07-02T15:00:00.000Z' }}
+        viewerId="viewer"
+        onOpen={() => {}}
+      />
+      <ShowcaseCard thread={thread(2)} viewerId="viewer" onOpen={() => {}} />
+    </div>,
+  )
+  const [updated, fresh] = view.container.querySelectorAll('article')
+  expect(updated?.textContent).toContain('Atualizado')
+  expect(updated?.textContent).toContain('Atualizado em 02/07/2026')
+  expect(fresh?.textContent).not.toContain('Atualizado')
+})

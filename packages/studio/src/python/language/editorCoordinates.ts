@@ -1,16 +1,13 @@
 import { sourcePositions } from '@sistemazero/core/studio/python-source-positions'
 import type * as Monaco from 'monaco-editor'
+import { sameTextExceptLineBreaks } from '../../monaco/lineBreaks'
 
-/** Monaco normalizes mixed line endings on model creation; the saved source remains authoritative. */
-export function samePythonEditorText(source: string, buffer: string) {
-  return source === buffer || source.replace(/\r\n|\r/g, '\n') === buffer.replace(/\r\n|\r/g, '\n')
-}
 export function pythonDocumentOffset(
   source: string,
   buffer: string,
   position: { lineNumber: number; column: number },
 ): number | null {
-  if (!samePythonEditorText(source, buffer)) return null
+  if (!sameTextExceptLineBreaks(source, buffer)) return null
   try {
     return sourcePositions(source).offset({
       line: position.lineNumber - 1,

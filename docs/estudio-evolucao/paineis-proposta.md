@@ -244,4 +244,39 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
     e o motivo da recusa), a rota no gateway, a rota do BFF e o adaptador, os casos em JavaScript,
     as funções exportadas e a gaveta do Pro (a aba só com o servidor, o formulário do jogo e o da
     função, e os resultados com o tempo do servidor).
-- Próximos: Pausar no Python.
+- **Lote 11 (20/11, noite): Pausar e Avançar 1 quadro no Python.** Como a tabela pede, na troca
+  de quadro e nos quatro motores que desenham (Turtle, Pygame Zero, pygame-ce e Raylib); o
+  programa sem tela continua só com os valores do fim e o caminho até o erro.
+  - **No quadro do Python** (`framePause.ts`): com a pausa pedida, a resposta do próximo quadro
+    pintado leva `hold: true` e o resto da resposta igual. A ponte (o `present` do Pygame Zero, que
+    o pygame-ce usa, o ponto de checagem da Raylib e a troca do Turtle) espera num laço de pedidos
+    curtos (`{"hold":true}`) que o quadro só responde quando chega uma leitura dos valores (roda o
+    ponto de checagem e pede de novo, sem andar o programa), quando a criança continua ou quando
+    ela avança 1 quadro (solta e segura de novo no quadro seguinte). O programa da criança não
+    muda. O Turtle só pinta quando o desenho muda (o desenho pronto, parado no `mainloop`, não
+    pinta mais nada): nele a pausa vale na próxima resposta, e o quadro acorda a espera do Turtle
+    para essa resposta chegar. Parar encerra o worker inteiro: uma pausa nunca deixa o executor
+    preso.
+  - **Os comandos** `pause` (`on`) e `step` do quadro, a mensagem `pause` (`held`, `frame`), e
+    `pausePython`/`stepPython` na sessão (esperam o quadro em que o programa parou, até 2 s) e
+    `pause`/`step` no controlador, só para o dono da execução.
+  - **Na aba** (`runPythonInvestigation`, em `pythonInvestigation.ts`, baixado com a aba): no
+    programa que desenha, a aba pergunta ao quadro com o "continuar" sem efeito; o quadro que
+    conhece a pausa aceita e aparecem Pausar, Continuar e Avançar 1 quadro (o mesmo cartão do
+    JavaScript, com o número do quadro). Parado, os valores são lidos uma vez a cada Avançar. A
+    pausa que não segura quadro nenhum em 2 s (o programa esperando o `input()`) é desfeita e o
+    programa continua.
+  - ⚠️ **Fica dormente até a próxima versão da distribuição do runtime Python** (nenhum CI a
+    publica): o quadro publicado hoje recusa o comando ("Comando de execução inválido."), e a aba
+    segue dizendo que o Python ainda não pausa pelo Estúdio.
+  - Provas: o quadro (`framePause.test.ts`: o próximo quadro pintado, a leitura que solta uma volta,
+    Continuar, Avançar, os bytes, fechar, pedido de pixels, a próxima resposta do Turtle), a sessão
+    (pausar, avançar, continuar e a recusa), as pontes em CPython (o Pygame Zero, a Raylib e o
+    Turtle esperando e respondendo as leituras, provado por mutação no Turtle), o laço da aba
+    (pausar, avançar e continuar com os valores do quadro, o quadro antigo, a pausa desfeita e o
+    programa sem tela, provado por mutação) e, na suíte Python do navegador, o Pygame Zero (o
+    contador para, anda com Avançar e volta com Continuar) e o Turtle parado no `mainloop`. Foi essa
+    prova que achou o pedido curto barrado no worker: os transportes do Turtle, do Pygame Zero e da
+    Raylib conferiam todo pedido como quadro, e agora deixam o pedido curto ir ao quadro como veio.
+- Próximos: as etapas que faltam do plano (casca ligada em staging, linha de base, Pro em escala,
+  persistência, motores e streaming, Pinta e Molda, homologação final).

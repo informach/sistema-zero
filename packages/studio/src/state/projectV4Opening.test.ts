@@ -177,22 +177,64 @@ test('partial current v4 storage cannot fall back to an older portable project',
   }
 })
 
-test('binding a restore captures its baseline before upgrading and cannot overwrite the newly migrated document', async () => {
+// P4 da revisão de 20/11/2026: a migração v3 → v4 só troca o formato (a cabeça v3 vira a
+// cabeça v4, o conteúdo é o mesmo). Capturar a base ANTES dela fazia a primeira substituição
+// de um projeto que só existia em v3 acusar um conflito falso.
+test('substituir um projeto que só existe em v3 não acusa conflito: migrar não muda o conteúdo', async () => {
   const f = await fixture()
   try {
     await f.seed()
     const incoming = { ...f.project, name: 'Snapshot recebido depois' }
     await bindProjectToDurableHead(incoming, f.scope)
-    await expect(persistProject(incoming, {}, f.scope)).rejects.toThrow()
+    await persistProject(incoming, { replace: true }, f.scope)
     expect(await readValue(f.scope.store, projectMetaKey(f.project.id, 4))).toMatchObject({
-      name: f.project.name,
+      name: 'Snapshot recebido depois',
+      storageVersion: 4,
     })
-    expect(incoming.name).toBe('Snapshot recebido depois')
+    expect(await readValue(f.scope.store, projectMetaKey(f.project.id, 3))).toBeUndefined()
+    // O backup da migração continua lá: substituir não apaga o que a migração guardou.
     expect(
       (await readAllKeys(f.scope.store)).some((key) =>
         String(key).startsWith('sz:v4:project-backup:'),
       ),
     ).toBe(true)
+  } finally {
+    f.close()
+  }
+})
+
+test('um rascunho recuperado durante o vínculo continua protegido: a substituição não o apaga', async () => {
+  const f = await fixture()
+  try {
+    await f.seed()
+    // Uma aba v3 deixou um rascunho de saída mais novo do que o documento gravado.
+    const draft = { ...f.project, name: 'Edição que só a recuperação conhece' }
+    await writeInOneTransaction(f.scope.store, {
+      puts: [
+        [
+          projectRecoveryKey(f.project.id, 'aba-antiga', 3),
+          {
+            version: 1,
+            projectId: f.project.id,
+            head: {
+              version: 1,
+              token: 'rascunho',
+              writer: 'aba-antiga',
+              base: 'original-token',
+              sequence: 0,
+            },
+            applications: [],
+            write: { puts: projectStorageEntries(draft, 3) },
+          },
+        ],
+      ],
+    })
+    const incoming = { ...f.project, name: 'Snapshot recebido depois' }
+    await bindProjectToDurableHead(incoming, f.scope)
+    await expect(persistProject(incoming, { replace: true }, f.scope)).rejects.toThrow()
+    expect(await readValue(f.scope.store, projectMetaKey(f.project.id, 4))).toMatchObject({
+      name: draft.name,
+    })
   } finally {
     f.close()
   }
