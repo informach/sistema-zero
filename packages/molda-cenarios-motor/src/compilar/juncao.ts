@@ -17,6 +17,7 @@ import {
 import { type CacheDeImagens, lerGlb, type ModeloCarregado } from '../modelos'
 import { ArquivosDaCompilacao } from './arquivos'
 import { gravarGlbCompilado } from './arquivos-glb'
+import { assinaturaDoMaterial } from './assinatura-do-material'
 import { conferirConteudoCompilado } from './conteudo'
 import { pixelsDaTexturaCompilada } from './imagens'
 import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from './inspecao-glb'
@@ -164,6 +165,8 @@ export async function juntarEstaticosDoPacote(
     metadados = new Map(cena.arquivos.map((a) => [a.caminho, a])),
     // O atlas de um kit, repetido nos arquivos, é decodificado e contado uma vez.
     imagens: CacheDeImagens = new Map(),
+    // Materiais que desenham igual (o mesmo atlas em vários modelos) dividem o lote da região.
+    chavesDosMateriais = new WeakMap<Material, string>(),
     imagensContadas = new Set<string>(),
     // A geometria vai copiada para os lotes: o arquivo sai da memória depois do último nó que o
     // usa (os caminhos, um arquivo por caminho, ficavam todos juntos até o fim).
@@ -182,13 +185,27 @@ export async function juntarEstaticosDoPacote(
   let memoriaDosModelos = 0,
     memoriaDosLotes = 0,
     memoriaDosAtlas = 0,
+    maiorLote = 0,
     numero = 0
-  const conferirMemoria = (extra = 0) => {
+  // Até o fim do laço cada lote guarda só a sua entrada. A gravação finaliza um lote por vez, e
+  // só esse ganha as duas cópias de passagem (unida e dividida): a reserva é a entrada de todos
+  // mais duas vezes o maior lote, não três vezes a soma (que recusava uma ilha inteira).
+  const reservaDosLotes = (extra = 0, lote = 0) =>
+    memoriaDosLotes + extra + 2 * Math.max(maiorLote, lote + extra)
+  const conferirMemoria = (extra = 0, lote = 0) => {
     if (
-      memoriaDosModelos + memoriaDosAtlas + (memoriaDosLotes + extra) * 3 >
+      memoriaDosModelos + memoriaDosAtlas + reservaDosLotes(extra, lote) >
       LIMITES_DA_EXPORTACAO.malha.bytesDaFonte
     )
       throw Error('A junção excede o orçamento de memória. Divida a região ou exporte sem juntar.')
+  }
+  const chaveDoMaterial = (m: Material) => {
+    let chave = chavesDosMateriais.get(m)
+    if (chave === undefined) {
+      chave = assinaturaDoMaterial(m) ?? m.uuid
+      chavesDosMateriais.set(m, chave)
+    }
+    return chave
   }
   const adicionarAoGrupo = (
     chave: string,
@@ -198,8 +215,8 @@ export async function juntarEstaticosDoPacote(
     entidade: string | null,
     agua?: string,
   ) => {
-    conferirMemoria(bytesDaParteParaJuncao(fonte.geometria))
     let grupo = grupos.get(chave)
+    conferirMemoria(bytesDaParteParaJuncao(fonte.geometria), grupo?.lote.bytesDeEntrada ?? 0)
     if (!grupo) {
       if (grupos.size >= 8192)
         throw Error('A junção exige lotes demais. Divida a região de exportação.')
@@ -209,6 +226,7 @@ export async function juntarEstaticosDoPacote(
     const anterior = grupo.lote.bytesDeEntrada
     grupo.lote.adicionar(fonte, entidade)
     memoriaDosLotes += grupo.lote.bytesDeEntrada - anterior
+    maiorLote = Math.max(maiorLote, grupo.lote.bytesDeEntrada)
     conferirMemoria()
   }
   try {
@@ -249,7 +267,10 @@ export async function juntarEstaticosDoPacote(
           memoriaDosModelos +=
             r.bytesDeMaterializacao + (await pixelsDasImagensNovas(r.imagens, imagensContadas))
           materializacao.set(no.arquivo, r.bytesDeMaterializacao)
-          if (memoriaDosModelos + memoriaDosLotes * 3 > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
+          if (
+            memoriaDosModelos + memoriaDosAtlas + reservaDosLotes() >
+            LIMITES_DA_EXPORTACAO.malha.bytesDaFonte
+          )
             throw Error(
               'Os modelos excedem a memória disponível para juntar. Divida a região de exportação.',
             )
@@ -324,7 +345,7 @@ export async function juntarEstaticosDoPacote(
         }
         for (const p of modelo.partes)
           adicionarAoGrupo(
-            `${coluna}/${linha}/${p.material.uuid}/${layoutDaParteEstatica(p.geometria)}`,
+            `${coluna}/${linha}/${chaveDoMaterial(p.material)}/${layoutDaParteEstatica(p.geometria)}`,
             p.material,
             matriz,
             { geometria: p.geometria, matriz: relativa.clone().multiply(p.matriz) },
