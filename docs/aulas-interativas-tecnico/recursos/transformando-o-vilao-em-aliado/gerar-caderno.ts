@@ -38,10 +38,8 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
 import {
-  arteDoCurso,
   cabecalho,
   caixa,
-  capaHtml,
   criarBlocos,
   cssDoCaderno,
   entrega,
@@ -146,6 +144,8 @@ function grade(): string {
 
 function renderItem(item: Item): string {
   const text = item.text ?? ''
+  if (item.kind === 'certificate-preview')
+    return `<img style="display:block;width:100%;height:auto;margin:6mm 0" src="data:image/png;base64,${readFileSync(resolve(scriptDir, 'certificado.png')).toString('base64')}" alt="Modelo do certificado de conclusão do curso">`
   if (item.kind === 'map')
     return `<h3 class="titulo-secao">${item.title ?? ''}</h3><div class="mapa">${(item.cards ?? [])
       .map((c, i) => {
@@ -233,19 +233,12 @@ const folhas = pages.map((page, index) => {
     `<section class="page${tema}" data-id="${page.id}"><div class="inner">${topo}<div class="content">${corpo}</div></div>${rodape(curso, numero, material)}</section>`,
   )
 })
-const cover = capaHtml({
-  arte: arteDoCurso('capa-transformando-o-vilao-em-aliado.jpg'),
-  iconeSelo: 'livro',
-  linha1: 'Transformando',
-  linha2: 'o vilão em aliado',
-  frase: 'Como fazer das telas o maior aliado no desenvolvimento dos seus filhos.',
-  fraseBaixo: 'Um minicurso para pais, em sete aulas.',
-  tema: 'capa--vilao',
-  selo: material,
-})
+const cover = `<section class="page capa-fornecida"><img src="data:image/png;base64,${readFileSync(resolve(scriptDir, 'capa-apostila.png')).toString('base64')}" alt="Apostila do curso: Transformando o vilão em aliado"></section>`
 // Tema visual do curso (18/11/2026), puxado da ilustração da capa: roxo da sombra, lilás do chão,
 // rosa e amarelo dos blocos e o azul-marinho do painel. Os temas por aula variam dentro dessa paleta.
 const cursoCss = `
+.capa-fornecida { padding: 0; }
+.capa-fornecida img { display: block; width: 100%; height: 100%; object-fit: contain; background: #0f1b36; }
 body { --fundo: #fcf9f4; --tinta: #3a1547; --texto: #4a4252; --destaque: #60226c; --destaque-claro: #f2e5f6; --caminho: #60226c;
   --numero-raio: 9px; --numero-fundo: var(--destaque-claro); --numero-cor: var(--destaque);
   --entrega-fundo: #3a1547; --entrega-borda: #3a1547; --entrega-texto: #f4e9f7; --entrega-rotulo: #3a1547; --entrega-rotulo-fundo: #fdac03; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #fdac03; }
