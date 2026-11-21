@@ -1,36 +1,36 @@
 [
- {
-  "pedido": 2000,
-  "cpu": 6,
-  "blocosNoProjeto": 2002,
-  "blocosDesenhados": 106,
-  "abrirMs": 7248,
-  "editarCampo": {
-   "soma": 537,
-   "maior": 254,
-   "quantas": 5
+  {
+    "pedido": 2000,
+    "cpu": 6,
+    "blocosNoProjeto": 2002,
+    "blocosDesenhados": 106,
+    "abrirMs": 7248,
+    "editarCampo": {
+      "soma": 537,
+      "maior": 254,
+      "quantas": 5
+    },
+    "moverArea": {
+      "soma": 882,
+      "maior": 191,
+      "quantas": 12
+    }
   },
-  "moverArea": {
-   "soma": 882,
-   "maior": 191,
-   "quantas": 12
+  {
+    "pedido": 5000,
+    "cpu": 6,
+    "blocosNoProjeto": 5002,
+    "blocosDesenhados": 106,
+    "abrirMs": 19250,
+    "editarCampo": {
+      "soma": 636,
+      "maior": 520,
+      "quantas": 2
+    },
+    "moverArea": {
+      "soma": 3201,
+      "maior": 593,
+      "quantas": 14
+    }
   }
- },
- {
-  "pedido": 5000,
-  "cpu": 6,
-  "blocosNoProjeto": 5002,
-  "blocosDesenhados": 106,
-  "abrirMs": 19250,
-  "editarCampo": {
-   "soma": 636,
-   "maior": 520,
-   "quantas": 2
-  },
-  "moverArea": {
-   "soma": 3201,
-   "maior": 593,
-   "quantas": 14
-  }
- }
 ]
