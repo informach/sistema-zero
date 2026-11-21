@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "id": "cabana",
+  "name": "cabana",
+  "tileSize": 16,
+  "cols": 8,
+  "rows": 8,
+  "tilesets": [
+    {
+      "id": "vila-pecas",
+      "name": "terra-e-madeira",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABACAYAAADS1n9/AAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAUgSURBVHic7Zw9SBxBFIBn5YJFSGWOwOHBNcHFwkRBPEiVJggxzaYKQlKKEEhhoUkhwSKawiJJccTOgKQILoEYSNJYCSfCaSxkJY1gEPJjmpDCalOEPTfrzv+bndm9+Rpxd9+82Xlv33vzo87yvBe6Ay4SJdgNEE7ePwmo8v37CCtv9avX3yWjHCFy571uetsq9Vt5Ol08Dwe7dI9SidXPrp/l60dxB2BpnORtOHmWKKBSPytF0s9qfIQQcjbfPwqZn5YgrVO1ShkNHfdkqjMr/SxGUKGfx/i1SpkvBUSIeLvX7aJapfzftYOjHyLqhb+2outncfik/jMOoDIUsng7pH6RAZfV758EbUNkqR8XYWn6M0sBceKdZa0RcO2Q5FnDoWwfImqVsvBXrUteKAVEiIZCr9uVHnSeXKeqveT7yxhPlzzWAbKoiklOIJrnePST2pZ9fxyR88t+BFBgHUD3AgVrnoPWH+mQ7X8SUwyeRCoFZAlkyDdJl26oDpDFAgdNnqXC5YUmH+mEWP1T8eVDvT/VAXSngr2+fz9l59Ai8v4JfqMla1S9f25SQNYVsuoIwyuvyuGZHUBHKsgyF+MGjDUV0AZcVp6GqLzTaE6EtIdJOazVc6x88cLqV6e/S0Y5yunih5U/xZ4HyIF+yBlJEqIDJL9+3RVxJ+tXNSPBOkAWq1aslbKqYlC2Us9aP/Q4YM8D0Ixv6n540fXXKmXknwSg+s84QP8+vSHWUAQ5tYnv2OnQH0eX/kg+WhyD0O9M+177PIBI2M/7fjiLPOuZA1P7T8KZ9r1QNN8HuwGzN+YZ3PgU4f1LpJejhTp3wEW4J1jk0+AtdKL+69jBcwdctCeoV2e/4xh3HkB039zEvXYcJvU1N5tBLJg0sDhM66Ox5wFoA4Wr0FkHWMcaAKTxO+Y8QATPlCptoKHWAESRNb49D8D5wskB13keQMT49jxAxqjezzf2PIDs/wcYufnEERZGCP06eCv1hynf1z7KiCP3fqPd/8mxeli/VkEIIXTvoS/1XvG2ImTbVEFJ9w7bu9evpORHLlxC+3tfsff7+nuJ902l0Zw482FM1l+CO1AJukFebt25KyUvGwFMI83wyXuQjpCbIrATIBlf5DkWtEeANK54j1Ovf/bTr8uwPH+6GdbcOEq9TgIqrw+OD4dLL1roxu0q0/PTvhc+9eR1K3GALz+b2MG7fLEOnsf6+nuF72/+/gbdnVwh5ACkjR6S8aP70E4gVQRWz0F2RYjB8WGhkA4RBZgcIGlwnPEXZqfC1edvqO0tzE6FM3OLRkyJ4iF8cqwepl0vMqkOwGpwi5mQisTkDKKErMELA8vsIDmVLKECGFymCDRlFgDB0osWt4yR00De6V7ei8DtlS1HpBA0bho4M7foLMxOUV/ElALQRD6tHmaqDzwC0JzANOObMgvgjQLbK1sg/VOSAniMDLEZVBRYnQBn/Og6qY2krLADiJ76TQKxGSRTBJoGyYisXz1PdNAejuNhVweNtab2MdCJ9llA8tAEL82NI2IbtPuNNSn1ucduB3c41gE6HGwKOPxwvZ2bq6PrHZ0ni0yqA8SNH/2uygniy6+W7CEWgefdB+hP8ExpByCKQIs4xBpAtfEt+kmNANXRdSdPNQAtCtgogQebAqqj687g+HDIs6pUHbrKvKhz2NoBcyq7DiAO2EIQj/Gj5w9bO479OvVSiJVAizh2IajDAXMA3pwOWQNYxAFNAdao+UN7DWBzuF7+AsyhTmZU6CxdAAAAAElFTkSuQmCC",
+      "columns": 8,
+      "count": 28,
+      "solid": [17, 18, 20, 21],
+      "platform": [],
+      "tileProperties": {
+        "0": {
+          "terreno": "grama",
+          "atrito": {
+            "type": "float",
+            "value": 0.8
+          }
+        }
+      },
+      "terrains": [
+        {
+          "id": "grama",
+          "name": "Grama",
+          "mode": "corner",
+          "colors": ["#62b447"],
+          "tiles": {
+            "0": [0, 0, 0, 0, 0, 0, 0, 0],
+            "1": [0, 1, 0, 0, 0, 0, 0, 0],
+            "2": [0, 0, 0, 1, 0, 0, 0, 0],
+            "3": [0, 1, 0, 1, 0, 0, 0, 0],
+            "4": [0, 0, 0, 0, 0, 1, 0, 0],
+            "5": [0, 1, 0, 0, 0, 1, 0, 0],
+            "6": [0, 0, 0, 1, 0, 1, 0, 0],
+            "7": [0, 1, 0, 1, 0, 1, 0, 0],
+            "8": [0, 0, 0, 0, 0, 0, 0, 1],
+            "9": [0, 1, 0, 0, 0, 0, 0, 1],
+            "10": [0, 0, 0, 1, 0, 0, 0, 1],
+            "11": [0, 1, 0, 1, 0, 0, 0, 1],
+            "12": [0, 0, 0, 0, 0, 1, 0, 1],
+            "13": [0, 1, 0, 0, 0, 1, 0, 1],
+            "14": [0, 0, 0, 1, 0, 1, 0, 1],
+            "15": [0, 1, 0, 1, 0, 1, 0, 1]
+          }
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "cabana-chao",
+      "name": "Chão",
+      "visible": true,
+      "kind": "tiles",
+      "tilesetId": "vila-pecas",
+      "cells": [
+        27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+        27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+        27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27
+      ]
+    },
+    {
+      "id": "inside",
+      "name": "Lugares",
+      "visible": true,
+      "kind": "objects",
+      "objects": [
+        {
+          "id": "cabana-inicio",
+          "name": "Entrada",
+          "type": "",
+          "x": 32,
+          "y": 32,
+          "width": 0,
+          "height": 0,
+          "properties": {},
+          "role": "start"
+        },
+        {
+          "id": "cabana-saida",
+          "name": "Voltar à vila",
+          "type": "",
+          "x": 80,
+          "y": 32,
+          "width": 16,
+          "height": 32,
+          "properties": {
+            "destino": "vila-e-floresta"
+          },
+          "shape": "rect",
+          "role": "door"
+        }
+      ]
+    }
+  ]
+}
