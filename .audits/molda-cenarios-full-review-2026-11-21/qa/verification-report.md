@@ -69,6 +69,10 @@ O job agora prepara as fontes Ubuntu pelo helper existente e instala Chrome/FFmp
 do próprio `molda-cenarios` (1.60.0), em vez da CLI do Estúdio (1.65.1). Os contratos do CI
 incluem explicitamente o novo job e seu orçamento de 25 minutos, sem alterar os outros limites.
 
+O ciclo `44946156167` chegou ao lint global e apontou uma formatação no novo teste do instalador
+de browser. O arquivo foi formatado; o lint direcionado dos 95 arquivos alterados passou em
+286 ms, e os 12 contratos leves correspondentes passaram. As provas pesadas seguem no GitHub.
+
 Merge local em staging, push de todos os commits dessa branch, todos os jobs obrigatórios
 verdes e `deploy-staging` concluído pelo fluxo normal. Falhas novas devem ser corrigidas e
 verificadas no GitHub; não se executam novamente testes pesados na máquina do usuário.
