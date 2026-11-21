@@ -16,11 +16,13 @@ import {
   PINTA_MAP_FORMAT_LIMITS,
   sanitizeObjectExtras,
   sanitizeObjectProperties,
+  sanitizeRegionMapObject,
   type TilemapAsset,
   type TilemapObject,
   type TilemapObjectLayer,
   type TilemapObjectPropertyValue,
 } from '../core/project'
+import type { AuthorMap } from './mapCellEdits'
 import { objectContains } from './objectGeometry'
 import { withMapLayer } from './tilemapOps'
 
@@ -142,45 +144,69 @@ export function nextObjectName(layer: TilemapObjectLayer): string {
   return COPY.tiles.objectNamePrefix
 }
 
+/** Region authoring preserves signed fractional geometry or refuses the whole object. */
+export function createRegionMapObject(
+  input: Partial<Omit<TilemapObject, 'id'>> & { id?: string } = {},
+): TilemapObject | null {
+  return sanitizeRegionMapObject({
+    ...input,
+    id: input.id ?? newId(),
+    name: input.name ?? '',
+    type: input.type ?? '',
+    x: input.x ?? 0,
+    y: input.y ?? 0,
+    width: input.width ?? 0,
+    height: input.height ?? 0,
+    properties: input.properties ?? {},
+  })
+}
+
 /** A camada de OBJETOS com este id (`null` para peças ou id desconhecido). */
-export function objectLayerById(tilemap: TilemapAsset, layerId: string): TilemapObjectLayer | null {
+export function objectLayerById(tilemap: AuthorMap, layerId: string): TilemapObjectLayer | null {
   const layer = tilemap.layers.find((l) => l.id === layerId)
   return layer && isObjectLayer(layer) ? layer : null
 }
 
-function withObjectLayer(
-  tilemap: TilemapAsset,
+function withObjectLayer<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   update: (layer: TilemapObjectLayer) => TilemapObjectLayer,
-): TilemapAsset {
+): Map {
   return withMapLayer(tilemap, layerId, (layer) =>
     isObjectLayer(layer) && !effectiveLayer(tilemap, layer).locked ? update(layer) : layer,
   )
 }
 
 /** Acrescenta o objeto no TOPO da camada. No teto (`maxTilemapObjects`) devolve o mesmo asset. */
-export function addMapObject(
-  tilemap: TilemapAsset,
+export function addMapObject<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   object: TilemapObject,
-): TilemapAsset {
+): Map {
   return addMapObjects(tilemap, layerId, [object])
 }
 
 /** Insere o lote inteiro ou nada, com as mesmas guardas da inserção única. */
-export function addMapObjects(
-  tilemap: TilemapAsset,
+export function addMapObjects<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   objects: readonly TilemapObject[],
-): TilemapAsset {
+): Map {
   if (objects.length === 0) return tilemap
   return withObjectLayer(tilemap, layerId, (layer) => {
     if (layer.objects.length + objects.length > PINTA_LIMITS.maxTilemapObjects) return layer
-    const ids = new Set(layer.objects.map((object) => object.id))
+    const ids = new Set(
+      ('origin' in tilemap
+        ? tilemap.layers.filter(isObjectLayer).flatMap((l) => l.objects)
+        : layer.objects
+      ).map((object) => object.id),
+    )
     const added: TilemapObject[] = []
     for (const object of objects) {
       if (ids.has(object.id)) return layer
-      const normalized = createMapObject(object)
+      const normalized =
+        'origin' in tilemap ? createRegionMapObject(object) : createMapObject(object)
+      if (!normalized) return layer
       if (ids.has(normalized.id)) return layer
       ids.add(normalized.id)
       added.push(normalized)
@@ -196,17 +222,19 @@ export type MapObjectPatch = Partial<Omit<TilemapObject, 'id'>>
  * Muda campos de um objeto (posição, tamanho, nome, tipo, propriedades), com os
  * mesmos cortes da criação. Mesmo asset quando o resultado é igual.
  */
-export function updateMapObject(
-  tilemap: TilemapAsset,
+export function updateMapObject<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   objectId: string,
   patch: MapObjectPatch,
-): TilemapAsset {
+): Map {
   return withObjectLayer(tilemap, layerId, (layer) => {
     const index = layer.objects.findIndex((object) => object.id === objectId)
     const current = layer.objects[index]
     if (!current) return layer
-    const next = createMapObject({ ...current, ...patch, id: current.id })
+    const input = { ...current, ...patch, id: current.id }
+    const next = 'origin' in tilemap ? createRegionMapObject(input) : createMapObject(input)
+    if (!next) return layer
     if (sameObject(current, next)) return layer
     return { ...layer, objects: layer.objects.map((o, i) => (i === index ? next : o)) }
   })

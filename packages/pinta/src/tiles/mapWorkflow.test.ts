@@ -16,6 +16,15 @@ import { transformStamp } from './transform'
 
 const base = () => createTilemapAsset({ name: 'fase', tilesetId: 'ts', cols: 4, rows: 4 })
 describe('fluxo de criação do mapa', () => {
+  it('a distância admitida na edição sobrevive ao leitor sem corte na reabertura', () => {
+    const map = base(),
+      layerId = map.layers[0]!.id
+    const updated = updateMapLayer(map, layerId, { parallaxX: 16, parallaxY: 4 })
+    expect(updated.layers[0]!.parallaxX).toBe(4)
+    const reopened = sanitizePintaAsset(updated)
+    if (reopened?.kind !== 'tilemap') throw Error('Mapa esperado')
+    expect(reopened.layers).toEqual(updated.layers)
+  })
   it('reparentar, mover e destrancar conservam a árvore; grupo não fecha ciclo', () => {
     let m = addMapGroup(base(), 'Vila'),
       g = m.layers.at(-1)!.id,

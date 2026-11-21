@@ -85,6 +85,7 @@ export const PINTA_MAP_FORMAT_LIMITS = {
   maxLayerProperties: 16,
   /** Deslocamento de camada, em pixels do mapa, para cada lado. */
   maxLayerOffset: 256 * 48,
+  maxLayerParallax: 4,
   /** Maior coordenada de objeto em pixels do mapa (256 colunas × peça de 48). */
   maxObjectCoord: 256 * 48,
 } as const

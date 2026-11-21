@@ -20,6 +20,18 @@ para anunciar suporte de oficina antes de completar seus consumidores.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
 Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
 
+`RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
+separação usam células por regiões e o clonador comum; a separação esparsa conserva
+a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto
+global de chunks; recusa conserva o mesmo mapa. Inserção/atualização de objetos
+usam a admissão estrita para posições assinadas/fracionárias. Clipboard, templates,
+render e protocolo 3 ainda precisam ser integrados. Provas em
+`qa/conjuntos-por-regioes-2026-11-21/`, no diretório da missão.
+
+O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
+aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
+herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

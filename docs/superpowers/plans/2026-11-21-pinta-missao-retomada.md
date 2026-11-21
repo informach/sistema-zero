@@ -73,3 +73,15 @@ interno preserva vínculos explícitos de regiões, mantendo o legado denso.
 Relatório e resultados em `qa/referencias-de-conjuntos-2026-11-21/`, no diretório
 da missão. Isso não fecha as etapas 1 ou 4: conjuntos nativos esparsos e seus
 consumidores ainda precisam ser integrados.
+
+## Lote verificado: conjuntos internos por regiões (21/11)
+
+Contrato/codec de conjuntos 8, captura assinada por leitor comum, posicionamento
+vinculado e separação atômica em chunks. A árvore de grupos, propriedades,
+recursos e geometria fracionária são conservados; tetos globais e por gesto são
+recusados antes de substituir a instância. Inserção/atualização de objetos usam
+admissão estrita; o legado mantém sua normalização. A revisão corrigiu perda de
+parallax na separação e a edição acima do teto efetivo do leitor. Provas em
+`qa/conjuntos-por-regioes-2026-11-21/`, no diretório da missão. O formato 8 continua
+interno: seleção/clipboard, templates, geometria/render, IO e adaptadores seguem
+pendentes antes da promoção pública. As etapas 1 e 4 continuam abertas.

@@ -81,17 +81,17 @@ export function createMapLayerCellReader(
 }
 
 /** Troca UMA camada (qualquer tipo). Mesmo asset quando o `update` não muda nada. */
-export function withMapLayer(
-  tilemap: TilemapAsset,
+export function withMapLayer<Map extends TilemapAsset | RegionTilemapAsset>(
+  tilemap: Map,
   layerId: string,
-  update: (layer: TilemapLayer) => TilemapLayer,
-): TilemapAsset {
+  update: (layer: Map['layers'][number]) => Map['layers'][number],
+): Map {
   const index = tilemap.layers.findIndex((l) => l.id === layerId)
   const layer = tilemap.layers[index]
   if (!layer) return tilemap
   const next = update(layer)
   if (next === layer) return tilemap
-  return { ...tilemap, layers: tilemap.layers.map((l, i) => (i === index ? next : l)) }
+  return { ...tilemap, layers: tilemap.layers.map((l, i) => (i === index ? next : l)) } as Map
 }
 
 /** Troca UMA camada de PEÇAS; numa camada de objetos não faz nada. */

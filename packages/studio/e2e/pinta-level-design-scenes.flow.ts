@@ -225,6 +225,8 @@ test('autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrev
   await page.getByText(COPY.scene.deslocamentoEDistancia, { exact: true }).click()
   await field(COPY.scene.deslocarX, '2.5')
   await field(COPY.scene.distanciaX, '0.5')
+  await field(COPY.scene.distanciaY, '16')
+  await expect(page.getByLabel(COPY.scene.distanciaY, { exact: true })).toHaveValue('4')
   const opacity = page.getByRole('slider', { name: /^Opacidade/ })
   await opacity.focus()
   await opacity.press('End')
@@ -258,6 +260,7 @@ test('autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrev
   expect(layer).toMatchObject({
     offsetX: 2.5,
     parallaxX: 0.5,
+    parallaxY: 4,
     opacity: 0.5,
     properties: { bioma: 'vila' },
   })

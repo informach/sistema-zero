@@ -592,14 +592,20 @@ export interface RegionTilemapAsset extends TilemapAsset<PintaRegionCells> {
 }
 
 /** Um pedaço reutilizável do mapa; uma instância aponta para o id deste desenho. */
-export interface MapSetAsset extends PintaAssetBase {
+export interface MapSetAsset<Cells extends TilemapCells = Int16Array> extends PintaAssetBase {
   kind: 'map-set'
   /**
    * 4, ou 5 se o mapa interno usa offsets fracionários. O tipo aceita número para ler também
    * o 3 que as primeiras versões gravaram.
    */
   schema: number
-  map: TilemapAsset
+  map: TilemapAsset<Cells>
+}
+
+/** Internal native-8 set; deliberately excluded from the public gallery union. */
+export interface RegionMapSetAsset extends MapSetAsset<PintaRegionCells> {
+  schema: 8
+  map: RegionTilemapAsset
 }
 
 export function isTileLayer<Cells extends TilemapCells>(
@@ -1415,8 +1421,8 @@ function sanitizeLayerCommon(
   const offset = regions ? REGION_PIXEL_LIMIT : PINTA_MAP_FORMAT_LIMITS.maxLayerOffset
   const offsetX = numberIn(l.offsetX, -offset, offset)
   const offsetY = numberIn(l.offsetY, -offset, offset)
-  const parallaxX = numberIn(l.parallaxX, 0, 4)
-  const parallaxY = numberIn(l.parallaxY, 0, 4)
+  const parallaxX = numberIn(l.parallaxX, 0, PINTA_MAP_FORMAT_LIMITS.maxLayerParallax)
+  const parallaxY = numberIn(l.parallaxY, 0, PINTA_MAP_FORMAT_LIMITS.maxLayerParallax)
   const properties = sanitizeObjectProperties(l.properties)
   return {
     ...(typeof l.parentId === 'string' && l.parentId ? { parentId: l.parentId } : {}),
@@ -1601,6 +1607,12 @@ export function sanitizeTilemapObjects(raw: unknown): TilemapObject[] {
   return sanitizeTilemapObjectsFor(raw, false)
 }
 
+/** Strict authoring admission for one native-8 object; never repairs authored geometry. */
+export function sanitizeRegionMapObject(raw: unknown): TilemapObject | null {
+  const object = sanitizeTilemapObjectsFor([raw], true)[0]
+  return object && sameMapDocumentMetadata(raw, object) ? object : null
+}
+
 function sanitizeTilemapObjectsFor(raw: unknown, regions: boolean): TilemapObject[] {
   if (!Array.isArray(raw)) return []
   const objects: TilemapObject[] = []
@@ -1754,6 +1766,36 @@ export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | n
       layer.cells = cells
     }
     return map
+  } catch {
+    return null
+  }
+}
+
+/** A region template keeps the same strict map contract and cannot contain live nested sets. */
+export function sanitizeRegionMapSetAsset(raw: unknown): RegionMapSetAsset | null {
+  try {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+    const record = raw as Record<string, unknown>
+    if (record.kind !== 'map-set' || record.schema !== 8) return null
+    const base = sanitizeBase(record)
+    if (!base) return null
+    if (
+      typeof record.name === 'string' &&
+      record.name.trim() &&
+      record.name.length <= PINTA_LIMITS.maxNameChars
+    )
+      base.name = record.name
+    const { map: rawMap, ...metadata } = record
+    if (!sameMapDocumentMetadata(metadata, { ...base, kind: 'map-set', schema: 8 })) return null
+    const map = sanitizeRegionTilemapAsset(rawMap)
+    if (
+      !map ||
+      map.layers.some(
+        (l) => isObjectLayer(l) && l.objects.some((o) => o.setId || o.shape === 'set'),
+      )
+    )
+      return null
+    return { ...base, kind: 'map-set', schema: 8, map }
   } catch {
     return null
   }
