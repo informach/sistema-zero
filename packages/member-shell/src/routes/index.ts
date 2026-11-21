@@ -684,7 +684,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       req: Request,
       ctx: { params: Promise<{ slug: string; lessonId: string; attachmentId: string }> },
     ) => {
-      const user = await media.requireUploadSession(req)
+      const user = await media.requireUploadSession(req, { parentCourseDownload: true })
       if (user instanceof NextResponse) return user
 
       const { slug, lessonId, attachmentId } = await ctx.params
@@ -878,7 +878,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       req: Request,
       ctx: { params: Promise<{ slug: string; lessonId: string; blockId: string }> },
     ) => {
-      const user = await media.requireUploadSession(req)
+      const user = await media.requireUploadSession(req, { parentCourseDownload: true })
       if (user instanceof NextResponse) return user
 
       const { slug, lessonId, blockId } = await ctx.params
