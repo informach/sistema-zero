@@ -5,29 +5,38 @@ const port = Number(process.env.PINTA_MEMORY_PORT ?? 5570)
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('Porta inválida')
 const directory = resolve(import.meta.dir, `../.cache/memory-regions-${port}`)
 const probe = process.env.PINTA_MEMORY_PROBE ?? 'memory'
-if (probe !== 'memory' && probe !== 'layers') throw Error('Laboratório inválido')
+if (probe !== 'memory' && probe !== 'layers' && probe !== 'queries')
+  throw Error('Laboratório inválido')
 const selected =
-  probe === 'layers'
+  probe === 'queries'
     ? {
-        baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
-        entry: 'layers-regions-probe',
-        fn: 'runLayerRegionsProbe',
-        global: 'layers',
-        files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+        baseline: 'dd34e6f99b00a7e219c67e63e4535312d0a2a2da',
+        entry: 'queries-regions-probe',
+        fn: 'runQueriesRegionsProbe',
+        global: 'queries',
+        files: ['src/tiles/tilemapOps.ts'],
       }
-    : {
-        baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
-        entry: 'memory-regions-probe',
-        fn: 'runMemoryRegionsProbe',
-        global: 'memory',
-        files: [
-          'src/core/assetMemory.ts',
-          'src/core/mapResourceVersions.ts',
-          'src/core/project.ts',
-          'src/state/editorStore.ts',
-          'src/tiles/resourceVersions.ts',
-        ],
-      }
+    : probe === 'layers'
+      ? {
+          baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
+          entry: 'layers-regions-probe',
+          fn: 'runLayerRegionsProbe',
+          global: 'layers',
+          files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+        }
+      : {
+          baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
+          entry: 'memory-regions-probe',
+          fn: 'runMemoryRegionsProbe',
+          global: 'memory',
+          files: [
+            'src/core/assetMemory.ts',
+            'src/core/mapResourceVersions.ts',
+            'src/core/project.ts',
+            'src/state/editorStore.ts',
+            'src/tiles/resourceVersions.ts',
+          ],
+        }
 const baseline = selected.baseline,
   previousFiles = new Set(selected.files)
 const historical: Bun.BunPlugin = {

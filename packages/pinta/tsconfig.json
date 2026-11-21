@@ -30,6 +30,7 @@
     "test-setup.ts",
     "scripts/memory-regions-probe.ts",
     "scripts/layers-regions-probe.ts",
+    "scripts/queries-regions-probe.ts",
     "scripts/remap-regions-probe.ts",
     "scripts/tileset-remap-entry.tsx",
     "scripts/serve-tileset-remap-e2e.ts",

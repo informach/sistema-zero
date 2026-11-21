@@ -27,7 +27,13 @@ import {
 } from '../core/project'
 import { cellTile, isValidCellForTiles } from './cell'
 import { collectTileFloodFill } from './floodFill'
-import { createTileCellReader, readDenseTileCell, type TileCellReader } from './mapCells'
+import {
+  createTileCellReader,
+  mapCellBounds,
+  readDenseTileCell,
+  type TileCellReader,
+} from './mapCells'
+import { flattenWholeRegionMap } from './mapFlatten'
 import { REGION_EDIT_LIMIT, regionCellAt } from './regionCells'
 import { editRegionMapCells, fillRegionMapCells } from './regionMap'
 
@@ -440,11 +446,17 @@ export function usesMapTileset<Cells extends TilemapCells>(
  * não diz DE QUAL tileset é a peça: para desenhar um mapa com várias peças use
  * `flattenWithTilesets`.
  */
-export function flattenLayers(tilemap: TilemapAsset, include?: TileLayerFilter): Int16Array {
+export function flattenLayers<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+  include?: TileLayerFilter<Cells>,
+): Int16Array {
+  if ('origin' in tilemap) return flattenWholeRegionMap(tilemap, include).tiles
   const out = new Int16Array(tilemap.cols * tilemap.rows).fill(-1)
   for (const layer of tilemap.layers) {
     if (!isTileLayer(layer) || !isLayerShown(tilemap, layer)) continue
     if (include && !include(layer)) continue
+    if (!(layer.cells instanceof Int16Array))
+      throw new RangeError('Region map requires its logical origin')
     for (let i = 0; i < out.length; i += 1) {
       const value = cellTile(layer.cells[i] ?? -1)
       if (value >= 0) out[i] = value
@@ -476,17 +488,23 @@ export type DrawableTile = (tilesetId: string, tile: number) => boolean
  * filtro ela vencia antes de alguém saber se havia o que desenhar: a célula ficava vazia no
  * editor e nas miniaturas enquanto o jogo mostrava a camada de baixo.
  */
-export function flattenWithTilesets(
-  tilemap: TilemapAsset,
-  include?: TileLayerFilter,
+export function flattenWithTilesets<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+  include?: TileLayerFilter<Cells>,
   drawable?: DrawableTile,
 ): TilemapCellsWithTilesets {
+  if ('origin' in tilemap) {
+    const { tilesetIds, tiles, sources } = flattenWholeRegionMap(tilemap, include, drawable)
+    return { tilesetIds, tiles, sources }
+  }
   const tilesetIds = tilemapTilesetIds(tilemap)
   const tiles = new Int16Array(tilemap.cols * tilemap.rows).fill(-1)
   const sources = new Uint8Array(tiles.length)
   for (const layer of tilemap.layers) {
     if (!isTileLayer(layer) || !isLayerShown(tilemap, layer)) continue
     if (include && !include(layer)) continue
+    if (!(layer.cells instanceof Int16Array))
+      throw new RangeError('Region map requires its logical origin')
     const tilesetId = tileLayerTilesetId(tilemap, layer)
     const source = Math.max(0, tilesetIds.indexOf(tilesetId))
     for (let i = 0; i < tiles.length; i += 1) {
@@ -506,11 +524,11 @@ export function flattenWithTilesets(
  * o repaint incremental do mapa usa por célula durante o gesto (antes, cada pointermove
  * achatava cols × rows × camadas).
  */
-export function flattenCellAt(
-  tilemap: TilemapAsset,
+export function flattenCellAt<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
   col: number,
   row: number,
-  include?: TileLayerFilter,
+  include?: TileLayerFilter<Cells>,
   drawable?: DrawableTile,
 ): number {
   return topTileAt(tilemap, col, row, include, drawable)?.tile ?? -1
@@ -520,20 +538,39 @@ export function flattenCellAt(
  * A peça que aparece na célula e a camada dona dela (`null` = vazio). Com `drawable`, a
  * regra de `flattenWithTilesets`: a peça sem tileset que a desenhe não vence.
  */
-export function topTileAt(
-  tilemap: TilemapAsset,
+export function topTileAt<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
   col: number,
   row: number,
-  include?: TileLayerFilter,
+  include?: TileLayerFilter<Cells>,
   drawable?: DrawableTile,
-): { layer: TilemapTileLayer; tile: number } | null {
-  if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) return null
+): { layer: TilemapTileLayer<Cells>; tile: number } | null {
+  const regional = 'origin' in tilemap
+  if (regional) {
+    const source: TilemapAsset<Cells> = tilemap
+    const bounds = mapCellBounds(source)
+    if (
+      !Number.isInteger(col) ||
+      !Number.isInteger(row) ||
+      col < bounds.col ||
+      row < bounds.row ||
+      col >= bounds.col + bounds.cols ||
+      row >= bounds.row + bounds.rows
+    )
+      return null
+  } else if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) return null
   const index = row * tilemap.cols + col
-  let out: { layer: TilemapTileLayer; tile: number } | null = null
+  let out: { layer: TilemapTileLayer<Cells>; tile: number } | null = null
   for (const layer of tilemap.layers) {
     if (!isTileLayer(layer) || !isLayerShown(tilemap, layer)) continue
     if (include && !include(layer)) continue
-    const value = cellTile(layer.cells[index] ?? -1)
+    if (!(layer.cells instanceof Int16Array) && !regional)
+      throw new RangeError('Region map requires its logical origin')
+    const value = cellTile(
+      layer.cells instanceof Int16Array
+        ? (layer.cells[index] ?? -1)
+        : regionCellAt(layer.cells, col, row),
+    )
     if (value < 0) continue
     if (drawable && !drawable(tileLayerTilesetId(tilemap, layer), value)) continue
     out = { layer, tile: value }
@@ -542,12 +579,14 @@ export function topTileAt(
 }
 
 /** Achatado das camadas de FUNDO (tudo menos as marcadas "da frente"). */
-export function flattenBackground(tilemap: TilemapAsset): Int16Array {
+export function flattenBackground<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+): Int16Array {
   return flattenLayers(tilemap, (l) => l.front !== true)
 }
 
 /** Achatado só das camadas "da frente" (desenhadas por cima do jogador). */
-export function flattenFront(tilemap: TilemapAsset): Int16Array {
+export function flattenFront<Cells extends TilemapCells>(tilemap: TilemapAsset<Cells>): Int16Array {
   return flattenLayers(tilemap, (l) => l.front === true)
 }
 
@@ -555,13 +594,18 @@ export function flattenFront(tilemap: TilemapAsset): Int16Array {
  * Verdadeiro se o mapa tem ao menos uma camada da frente VISÍVEL e não-vazia
  * (entre as que `include` aceita, quando dado).
  */
-export function hasFrontLayer(tilemap: TilemapAsset, include?: TileLayerFilter): boolean {
+export function hasFrontLayer<Cells extends TilemapCells>(
+  tilemap: TilemapAsset<Cells>,
+  include?: TileLayerFilter<Cells>,
+): boolean {
   return tilemap.layers.some(
     (l) =>
       isTileLayer(l) &&
       l.front === true &&
-      l.visible &&
+      ('origin' in tilemap ? isLayerShown(tilemap, l) : l.visible) &&
       (!include || include(l)) &&
-      l.cells.some((v) => v >= 0),
+      (l.cells instanceof Int16Array
+        ? l.cells.some((v) => v >= 0)
+        : l.cells.chunks.some((chunk) => chunk.cells.some((v) => v >= 0))),
   )
 }

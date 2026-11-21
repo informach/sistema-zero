@@ -55,6 +55,12 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Suíte 2.622; ensaios distinguem controles atuais e falhas históricas esperadas.
    Próximo: leitores de consulta/achatamento orçado e demais consumidores antes
    da promoção do store, persistência física e adaptadores.
+   Consultas verificadas em `qa/consultas-por-regioes-2026-11-21/`: sete testes
+   novos, quatro falhas históricas reproduzidas, saída temporária com orçamento
+   fixo de 65.536 casas, mundo assinado consultado sem materializar lacunas e
+   192 comparações JSON densas idênticas no Chromium. Suíte 2.629 e 13 ensaios
+   de navegador, incluindo controles anteriores do laboratório e oficina real.
+   Prosseguir a crescimento/redimensionamento, curadoria, IO e adaptadores.
    Na promoção, exercitar também a edição de uma folha viva por um leitor que
    não entende um mapa consumidor futuro, inclusive com inventário parcial de
    nuvem. Verificar os guardas existentes e a recuperação antes de escolher a

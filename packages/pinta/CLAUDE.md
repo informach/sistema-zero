@@ -183,6 +183,14 @@ entre dois comandos antes do autosave. `commitLinked` informa aceitação efetiv
 para a seleção acompanhar somente a operação aceita. Mesmos estilos e tetos.
 Provas em `qa/remapeamento-por-regioes-2026-11-21/`. Isso não promove store/IO 3.
 
+Consultas por casa e detecção de frente admitem regiões internas. Os achatados
+aceitam a origem lógica, com recusa antes do payload acima de 65.536 casas;
+`flattenMapWindow` oferece recorte explícito com o mesmo teto fixo. Não aumentar
+esse teto ao ampliar o mundo autoral. A grade contém índices/folhas e não é cena
+estruturada nem substituto do documento. O ramo denso conserva os resultados
+anteriores. Provas em `qa/consultas-por-regioes-2026-11-21/`; promoção pública,
+crescimento/redimensionamento, curadoria, IO e adaptadores continuam no plano.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
