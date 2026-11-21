@@ -2,7 +2,7 @@ import { PINTA_REGION_LIMITS, type PintaRegionCells } from '@sistemazero/core/cr
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import { cloneMapIds } from '../core/mapClone'
-import { mergeMapResourceVersions } from '../core/mapResourceVersions'
+import { mergeMapResourceVersions, stampMapResourceVersions } from '../core/mapResourceVersions'
 import {
   effectiveLayer,
   isObjectLayer,
@@ -38,6 +38,16 @@ const boundsOf = (map: AuthorMap) => ({
   rows: map.rows,
 })
 
+export class MapSetCaptureError extends Error {
+  constructor(
+    readonly reason: 'crop-budget' | 'alignment' | 'nested-set' | 'metadata',
+    message: string,
+  ) {
+    super(message)
+    this.name = 'MapSetCaptureError'
+  }
+}
+
 /** Recorta todas as camadas e objetos. Referências de arte e propriedades continuam vivas. */
 export function createMapSet(
   map: RegionTilemapAsset,
@@ -67,10 +77,16 @@ export function createMapSet(
     !Number.isFinite(tileSize) ||
     tileSize <= 0
   )
-    throw new Error(
+    throw new MapSetCaptureError(
+      'crop-budget',
       COPY.scene.setCropBudget(PINTA_MAP_FORMAT_LIMITS.maxCols, PINTA_MAP_FORMAT_LIMITS.maxRows),
     )
   const now = Date.now()
+  if ('origin' in map && map.resources) {
+    const resources = stampMapResourceVersions(map)
+    if (!resources) throw new MapSetCaptureError('metadata', COPY.scene.setCaptureRefused)
+    map = { ...map, resources }
+  }
   // Não há meia célula no documento nativo: recusar antes de cortar uma peça em silêncio.
   if (
     map.layers.some((layer) => {
@@ -101,7 +117,7 @@ export function createMapSet(
       return overlap
     })
   )
-    throw new Error(COPY.scene.setCropAlignment)
+    throw new MapSetCaptureError('alignment', COPY.scene.setCropAlignment)
   if (
     map.layers.some((l) => {
       const e = effectiveLayer(map, l)
@@ -109,7 +125,7 @@ export function createMapSet(
         isObjectLayer(l) &&
         l.objects.some(
           (o) =>
-            o.setId &&
+            (o.setId || o.shape === 'set') &&
             o.x + e.offsetX >= rect.col * tileSize &&
             o.y + e.offsetY >= rect.row * tileSize &&
             o.x + e.offsetX < (rect.col + rect.cols) * tileSize &&
@@ -118,7 +134,7 @@ export function createMapSet(
       )
     })
   )
-    throw new Error(COPY.scene.nestedSet)
+    throw new MapSetCaptureError('nested-set', COPY.scene.nestedSet)
   const selectObjects = () =>
     map.layers.flatMap((l) => {
       const e = effectiveLayer(map, l)
@@ -228,7 +244,7 @@ export function createMapSet(
     },
   } as MapSetAsset | RegionMapSetAsset
   if ('origin' in result.map && !sanitizeRegionMapSetAsset(result))
-    throw new Error(COPY.scene.setCropAlignment)
+    throw new MapSetCaptureError('metadata', COPY.scene.setCaptureRefused)
   return result
 }
 
@@ -304,12 +320,16 @@ export function detachMapSet<Map extends AuthorMap>(
   const placedCols = turns % 2 === 1 ? set.map.rows : set.map.cols,
     placedRows = turns % 2 === 1 ? set.map.cols : set.map.rows
   if (placedCols > map.cols || placedRows > map.rows) return map
+  const sourceVersions =
+    'origin' in map ? stampMapResourceVersions(set.map) : (set.map.resources ?? [])
+  const targetVersions = 'origin' in map ? stampMapResourceVersions(map) : (map.resources ?? [])
+  if (!sourceVersions || !targetVersions) return map
   const copy = cloneMapIds(
-    set.map,
+    set.map.resources ? { ...set.map, resources: sourceVersions } : set.map,
     undefined,
     new Set(set.map.layers.filter(isObjectLayer).flatMap((l) => l.objects.map((o) => o.id))),
   )
-  const resources = mergeMapResourceVersions(map.resources ?? [], copy.resources ?? [])
+  const resources = mergeMapResourceVersions(targetVersions, copy.resources ?? [])
   if (!resources) return map
   const transform = (x: number, y: number) => {
     const px = instance.flipX ? instance.width - x : x,

@@ -47,6 +47,8 @@ export const COPY = {
       'Para guardar este pedaço, alinhe o deslocamento das camadas de peças à grade.',
     setCropBudget: (cols: number, rows: number) =>
       `Escolha um pedaço de até ${cols} × ${rows} casas para guardar como conjunto.`,
+    setCaptureRefused: 'Não foi possível guardar esse pedaço sem mudar suas posições.',
+    objectPasteFormat: 'Este mapa não consegue guardar esse grupo sem mudar suas posições.',
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>

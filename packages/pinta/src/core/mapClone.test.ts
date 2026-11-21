@@ -3,9 +3,11 @@ import { prepareMapRegions } from '../tiles/regionMap'
 import { cloneMapIds } from './mapClone'
 import {
   createTilemapAsset,
+  createTilesetAsset,
   isGroupLayer,
   isObjectLayer,
   isTileLayer,
+  isTilesetKind,
   remapTilemapTilesetIds,
   type TilemapAsset,
 } from './project'
@@ -50,6 +52,39 @@ test('layer and object IDs have separate namespaces when a map graph is cloned',
   expect(objects.parentId).toBe(group.id)
   expect(object.properties.target).toEqual({ type: 'object', value: object.id })
   expect(source).toEqual(before)
+})
+
+test('a fragment versions indirect dependents when an embedded object reference is rebound', () => {
+  const base = overlappingNamespaces(),
+    art = createTilesetAsset({ name: 'Peças', tileSize: 16 })
+  const direct = {
+    ...art,
+    id: 'direct',
+    tileProperties: { '0': { target: { type: 'object' as const, value: 'same' } } },
+  }
+  const dependent = {
+    ...art,
+    id: 'dependent',
+    tileProperties: { '0': { via: { type: 'asset' as const, value: 'direct' } } },
+  }
+  const map: TilemapAsset = {
+      ...base,
+      tilesetId: 'dependent',
+      resources: [
+        { sourceId: 'source-a', capturedAt: 1, asset: direct },
+        { sourceId: 'source-b', capturedAt: 1, asset: dependent },
+      ],
+    },
+    before = structuredClone(map)
+  const copy = cloneMapIds(map, undefined, new Set(['same'])),
+    a = copy.resources![0]!.asset,
+    b = copy.resources![1]!.asset
+  expect(a.id).not.toBe('direct')
+  expect(b.id).not.toBe('dependent')
+  if (!isTilesetKind(b)) throw Error('Tiles expected')
+  expect(b.tileProperties!['0']!.via).toEqual({ type: 'asset', value: a.id })
+  expect(copy.tilesetId).toBe(b.id)
+  expect(map).toEqual(before)
 })
 test('a fragment keeps external object references even when they match an old layer ID', () => {
   const source = overlappingNamespaces(),

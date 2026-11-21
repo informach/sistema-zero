@@ -12,6 +12,10 @@ homologados em staging. A edição feita durante o rollback foi conservada e sin
 intacta após a restauração. Serviço temporário removido e publicações compartilhadas
 preservadas. [Provas e alcance](missao-completa-2026-11-18/qa/rollback-publicado-2026-11-21/README.md).
 
+O lote de [seleção, clipboard e templates](missao-completa-2026-11-18/qa/objetos-por-regioes-2026-11-21/README.md)
+preserva geometria assinada e vínculos de objetos/arte privada, com histórico atômico.
+As regiões continuam internas; isso não fecha a integração dos formatos novos.
+
 O [checkpoint local de 21/11](missao-completa-2026-11-18/qa/fechamento-local-2026-11-21/README.md)
 registra a pausa solicitada, as publicações JavaScript e Python em staging,
 as exportações da mesma edição e a integração local das branches de preparação.

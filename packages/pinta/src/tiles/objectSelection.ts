@@ -1,39 +1,38 @@
 import { newId } from '../core/id'
+import { cloneObjectsWithResources } from '../core/mapClone'
+import { sameMapDocumentMetadata } from '../core/mapDocumentBoundary'
+import { mergeMapResourceVersions, stampMapResourceVersions } from '../core/mapResourceVersions'
 import {
   effectiveLayer,
   isObjectLayer,
   PINTA_LIMITS,
-  type TilemapAsset,
+  sanitizeRegionTilemapAsset,
   type TilemapObject,
+  type TilemapResourceVersion,
 } from '../core/project'
-import { updateMapObject } from './mapObjects'
+import type { AuthorMap } from './mapCellEdits'
+import { addMapObjects, createMapObject, type MapObjectPatch, updateMapObjects } from './mapObjects'
 import { objectBounds } from './objectGeometry'
+import { mapResourceVersionsForObjects } from './resourceVersions'
+export type ObjectCoordinates = 'legacy' | 'signed'
 export function cloneObjects(
   objects: readonly TilemapObject[],
   dx = 16,
   dy = 16,
   idFor: (sourceId: string, index: number) => string = newId,
+  coordinates: ObjectCoordinates = 'legacy',
 ): TilemapObject[] {
-  const ids = new Map(objects.map((o, index) => [o.id, idFor(o.id, index)]))
-  return objects.map((o) => ({
-    ...structuredClone(o),
-    id: ids.get(o.id)!,
-    x: Math.max(0, o.x + dx),
-    y: Math.max(0, o.y + dy),
-    properties: Object.fromEntries(
-      Object.entries(o.properties).map(([k, v]) => [
-        k,
-        typeof v === 'object' && v.type === 'object'
-          ? { ...v, value: ids.get(String(v.value)) ?? v.value }
-          : v,
-      ]),
-    ),
+  return cloneObjectsWithResources(objects, [], idFor).objects.map((o) => ({
+    ...o,
+    x: coordinates === 'signed' ? o.x + dx : Math.max(0, o.x + dx),
+    y: coordinates === 'signed' ? o.y + dy : Math.max(0, o.y + dy),
   }))
 }
 /** Quanto deslocar os objetos copiados para o MEIO do grupo cair em `target` (sem sair do mapa). */
 export function pasteOffset(
   objects: readonly TilemapObject[],
   target: { x: number; y: number },
+  coordinates: ObjectCoordinates = 'legacy',
 ): [number, number] {
   if (!objects.length) return [0, 0]
   const boxes = objects.map(objectBounds)
@@ -41,34 +40,84 @@ export function pasteOffset(
     minY = Math.min(...boxes.map((b) => b.y)),
     maxX = Math.max(...boxes.map((b) => b.x + b.width)),
     maxY = Math.max(...boxes.map((b) => b.y + b.height))
+  if (coordinates === 'signed') return [target.x - (minX + maxX) / 2, target.y - (minY + maxY) / 2]
   // Nenhum objeto pode passar de zero: o `cloneObjects` prenderia só ele e desmontaria o grupo.
   return [
     Math.max(-minX, Math.round(target.x - (minX + maxX) / 2)),
     Math.max(-minY, Math.round(target.y - (minY + maxY) / 2)),
   ]
 }
-export function pasteObjects(
-  map: TilemapAsset,
+export function pasteObjects<Map extends AuthorMap>(
+  map: Map,
   layerId: string,
   objects: readonly TilemapObject[],
   dx = 16,
   dy = 16,
-): TilemapAsset {
+  resources: readonly TilemapResourceVersion[] = [],
+  sourceCoordinates: ObjectCoordinates = 'legacy',
+): Map {
+  return pasteObjectSelection(map, layerId, objects, dx, dy, resources, sourceCoordinates).map
+}
+
+export type ObjectPasteRefusal =
+  | 'empty'
+  | 'layer'
+  | 'locked'
+  | 'object-budget'
+  | 'invalid-objects'
+  | 'resources'
+  | 'incompatible-format'
+export function pasteObjectSelection<Map extends AuthorMap>(
+  map: Map,
+  layerId: string,
+  objects: readonly TilemapObject[],
+  dx = 16,
+  dy = 16,
+  resources: readonly TilemapResourceVersion[] = [],
+  sourceCoordinates: ObjectCoordinates = 'legacy',
+): { map: Map; reason?: ObjectPasteRefusal } {
+  const unchanged = (reason: ObjectPasteRefusal) => ({ map, reason })
+  if (!objects.length) return unchanged('empty')
   const l = map.layers.find((l) => l.id === layerId)
+  if (!l || !isObjectLayer(l)) return unchanged('layer')
+  if (effectiveLayer(map, l).locked) return unchanged('locked')
+  if (l.objects.length + objects.length > PINTA_LIMITS.maxTilemapObjects)
+    return unchanged('object-budget')
   if (
-    !l ||
-    !isObjectLayer(l) ||
-    effectiveLayer(map, l).locked ||
-    l.objects.length + objects.length > PINTA_LIMITS.maxTilemapObjects
+    !Number.isFinite(dx) ||
+    !Number.isFinite(dy) ||
+    new Set(objects.map((o) => o.id)).size !== objects.length
   )
-    return map
-  const pasted = cloneObjects(objects, dx, dy)
-  return {
-    ...map,
-    layers: map.layers.map((layer) =>
-      layer === l ? { ...l, objects: [...l.objects, ...pasted] } : layer,
-    ),
+    return unchanged('invalid-objects')
+  const available = mergeMapResourceVersions(map.resources ?? [], resources)
+  if (!available) return unchanged('resources')
+  const needed = mapResourceVersionsForObjects({ resources: available }, objects),
+    graph = cloneObjectsWithResources(objects, needed)
+  const signed = 'origin' in map || sourceCoordinates === 'signed'
+  const pasted = graph.objects.map((o) => ({
+    ...o,
+    x: signed ? o.x + dx : Math.max(0, o.x + dx),
+    y: signed ? o.y + dy : Math.max(0, o.y + dy),
+  }))
+  if (
+    sourceCoordinates === 'signed' &&
+    !('origin' in map) &&
+    pasted.some((o) => !sameMapDocumentMetadata(o, createMapObject(o)))
+  )
+    return unchanged('incompatible-format')
+  const merged = mergeMapResourceVersions(map.resources ?? [], graph.resources)
+  if (!merged) return unchanged('resources')
+  const result = addMapObjects(map, layerId, pasted)
+  if (result === map) return unchanged('invalid-objects')
+  const candidate = merged.length ? { ...result, resources: merged } : result
+  if ('origin' in candidate) {
+    const stamped = stampMapResourceVersions(candidate)
+    if (!stamped) return unchanged('resources')
+    const prepared = candidate.resources ? { ...candidate, resources: stamped } : candidate
+    if (!sanitizeRegionTilemapAsset(prepared)) return unchanged('invalid-objects')
+    return { map: prepared }
   }
+  return { map: candidate }
 }
 export type ObjectArrange =
   | 'left'
@@ -79,12 +128,12 @@ export type ObjectArrange =
   | 'centerY'
   | 'distributeX'
   | 'distributeY'
-export function arrangeObjects(
-  map: TilemapAsset,
+export function arrangeObjects<Map extends AuthorMap>(
+  map: Map,
   layerId: string,
   ids: readonly string[],
   action: ObjectArrange,
-): TilemapAsset {
+): Map {
   const l = map.layers.find((l) => l.id === layerId)
   if (!l || !isObjectLayer(l) || effectiveLayer(map, l).locked) return map
   const selected = l.objects
@@ -97,7 +146,7 @@ export function arrangeObjects(
     maxY = Math.max(...selected.map((s) => s.b.y + s.b.height))
   const horizontal = action === 'distributeX',
     sorted = [...selected].sort((a, b) => (horizontal ? a.b.x - b.b.x : a.b.y - b.b.y))
-  let result = map
+  const patches = new Map<string, MapObjectPatch>()
   for (const { o, b } of selected) {
     const index = sorted.findIndex((s) => s.o.id === o.id)
     const dx =
@@ -124,7 +173,7 @@ export function arrangeObjects(
                 ((sorted.at(-1)!.b.y - sorted[0]!.b.y) * index) / (sorted.length - 1) -
                 b.y
               : 0
-    result = updateMapObject(result, layerId, o.id, { x: o.x + dx, y: o.y + dy })
+    patches.set(o.id, { x: o.x + dx, y: o.y + dy })
   }
-  return result
+  return updateMapObjects(map, layerId, patches)
 }

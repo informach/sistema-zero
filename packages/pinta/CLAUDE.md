@@ -24,9 +24,16 @@ Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
 separação usam células por regiões e o clonador comum; a separação esparsa conserva
 a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto
 global de chunks; recusa conserva o mesmo mapa. Inserção/atualização de objetos
-usam a admissão estrita para posições assinadas/fracionárias. Clipboard, templates,
-render e protocolo 3 ainda precisam ser integrados. Provas em
+usam a admissão estrita para posições assinadas/fracionárias. Render e protocolo 3
+ainda precisam ser integrados. Provas em
 `qa/conjuntos-por-regioes-2026-11-21/`, no diretório da missão.
+
+Seleção/clipboard e templates já usam o mesmo grafo e o modelo interno de regiões.
+Colar religa também dependentes indiretos das versões privadas, com admissão atômica
+de objetos/recursos; alinhar valida todos os destinos antes do gesto. O espelho de
+clipboard 3 conserva posições assinadas/fracionárias e é recusado pelo módulo antigo;
+1/2 mantêm os bytes anteriores. O template usa base neutra sem materializar o mundo.
+Isso não ativa formato 8 público. Provas em `qa/objetos-por-regioes-2026-11-21/`.
 
 O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
 aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax

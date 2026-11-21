@@ -17,7 +17,6 @@ import {
   sanitizeObjectExtras,
   sanitizeObjectProperties,
   sanitizeRegionMapObject,
-  type TilemapAsset,
   type TilemapObject,
   type TilemapObjectLayer,
   type TilemapObjectPropertyValue,
@@ -228,15 +227,31 @@ export function updateMapObject<Map extends AuthorMap>(
   objectId: string,
   patch: MapObjectPatch,
 ): Map {
+  return updateMapObjects(tilemap, layerId, new Map([[objectId, patch]]))
+}
+
+/** Admit every target first; one invalid object keeps the complete previous history value. */
+export function updateMapObjects<Map extends AuthorMap>(
+  tilemap: Map,
+  layerId: string,
+  patches: ReadonlyMap<string, MapObjectPatch>,
+): Map {
+  if (!patches.size) return tilemap
   return withObjectLayer(tilemap, layerId, (layer) => {
-    const index = layer.objects.findIndex((object) => object.id === objectId)
-    const current = layer.objects[index]
-    if (!current) return layer
-    const input = { ...current, ...patch, id: current.id }
-    const next = 'origin' in tilemap ? createRegionMapObject(input) : createMapObject(input)
-    if (!next) return layer
-    if (sameObject(current, next)) return layer
-    return { ...layer, objects: layer.objects.map((o, i) => (i === index ? next : o)) }
+    if (patches.size > layer.objects.length) return layer
+    const existing = new Map(layer.objects.map((object) => [object.id, object]))
+    const updates = new Map<string, TilemapObject>()
+    for (const [id, patch] of patches) {
+      const current = existing.get(id)
+      if (!current) return layer
+      const input = { ...current, ...patch, id: current.id }
+      const next = 'origin' in tilemap ? createRegionMapObject(input) : createMapObject(input)
+      if (!next) return layer
+      if (!sameObject(current, next)) updates.set(id, next)
+    }
+    return updates.size
+      ? { ...layer, objects: layer.objects.map((object) => updates.get(object.id) ?? object) }
+      : layer
   })
 }
 
@@ -284,11 +299,11 @@ function sameObject(a: TilemapObject, b: TilemapObject): boolean {
   )
 }
 
-export function removeMapObject(
-  tilemap: TilemapAsset,
+export function removeMapObject<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   objectId: string,
-): TilemapAsset {
+): Map {
   return withObjectLayer(tilemap, layerId, (layer) => {
     if (!layer.objects.some((object) => object.id === objectId)) return layer
     return { ...layer, objects: layer.objects.filter((object) => object.id !== objectId) }

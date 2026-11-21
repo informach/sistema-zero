@@ -85,3 +85,39 @@ parallax na separação e a edição acima do teto efetivo do leitor. Provas em
 `qa/conjuntos-por-regioes-2026-11-21/`, no diretório da missão. O formato 8 continua
 interno: seleção/clipboard, templates, geometria/render, IO e adaptadores seguem
 pendentes antes da promoção pública. As etapas 1 e 4 continuam abertas.
+
+## Lote verificado: seleção, clipboard e templates
+
+- [x] Acrescentar edição atômica de vários objetos em `tiles/mapObjects.ts`,
+  compartilhando a normalização da edição única; alinhar/distribuir deve calcular
+  todos os destinos antes de criar um novo valor de histórico.
+- [x] Reutilizar o grafo de `core/mapClone.ts` para copiar objetos e versões de arte
+  juntos, sem representar um fragmento como mapa persistível. Em regiões, preservar
+  deltas assinados/fracionários; o caminho denso mantém sua política de coordenadas.
+- [x] Integrar a admissão e a mescla de recursos no núcleo de `pasteObjects`;
+  retirar a mescla duplicada de `MapObjectSelectionPanel.tsx`. Referências de objeto
+  nas peças incorporadas devem apontar para as cópias corretas.
+- [x] Adaptar `tiles/objectTemplate.ts` ao contrato interno de conjuntos 8,
+  com base neutra por chunks, recorte orçado e conservação da geometria completa.
+- [x] Reproduzir as perdas antes da correção, executar testes direcionados,
+  suíte/tipos e ensaios reais de colagem/modelo; revisar, registrar provas e commitar.
+
+Esse lote segue o design de regiões aprovado em 20/11. Não altera a exposição
+pública do formato nem o estilo da oficina.
+
+Revisão e recibos em `qa/objetos-por-regioes-2026-11-21/`, no diretório da missão.
+Clipboard 3 protege coordenadas assinadas; os bytes 1/2 continuam iguais ao módulo
+histórico. A colagem religa dependências indiretas das versões imutáveis. Os testes
+de oficina usam o formato público denso; o teste entre abas de regiões usa apenas
+os módulos reais do clipboard em uma página de QA. Nenhuma ativação pública 8.
+
+## Próximo lote: espalhamento de objetos por regiões
+
+- [ ] Adaptar `tiles/objectScatter.ts` ao mapa autoral comum, com limites assinados
+  e geometria fracionária, preservando a saída densa e a ordem/semente existentes.
+- [ ] Admitir amostras antes de acumular/sortear, com teto de gesto de 65.536 casas,
+  e recusar excedentes atomicamente. Evitar coleções proporcionais ao mundo lógico.
+- [ ] Conservar grupos, offsets, vínculos vivos, autorreferências e versões de arte;
+  a repetição da prévia precisa gerar exatamente o mesmo documento.
+- [ ] Validar travas, posições, bordas, cancelamento e orçamentos; executar regressão
+  da oficina por mouse/toque e revisar antes do commit. Render/IO seguem no lote seguinte.
