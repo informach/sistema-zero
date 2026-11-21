@@ -8,6 +8,7 @@ import {
   IntencaoDeAguaSchema,
   ParametrosDeTerrenoSchema,
   ReceitaDeTerrenoSchema,
+  VistaDeCameraSchema,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { z } from 'zod'
 import { capturarPelaOficina, capturarSemJanela } from './captura'
@@ -471,7 +472,7 @@ export const FERRAMENTAS = [
   ferramenta({
     name: 'capturar_cenario',
     description:
-      'Fotografa o cenário. `modo` sem-janela (padrão): um Chrome local, sem tela, monta o palco da oficina; `vista` livre, cima, frente ou lado; `enquadrar` limita a foto a alguns ids; precisa do Chrome neste computador. `modo` oficina: espera a oficina aberta neste cenário (aba à vista) abrir a versão atual e fotografá-la com a câmera de quem está nela.',
+      'Fotografa o cenário. `modo` sem-janela (padrão): um Chrome local, sem tela, monta o palco da oficina; `vista` livre, cima, frente ou lado; `enquadrar` limita a foto a alguns ids; `camera` (posicao, alvo, campoDeVisao em graus) fotografa de um ponto escolhido; precisa do Chrome neste computador. `modo` oficina: espera a oficina aberta neste cenário (aba à vista) abrir a versão atual e fotografá-la com a câmera de quem está nela.',
     schema: z
       .object({
         cenarioId: id,
@@ -479,6 +480,7 @@ export const FERRAMENTAS = [
         vista: z.enum(['livre', 'cima', 'frente', 'lado']).default('livre'),
         largura: z.number().int().min(160).max(1920).default(960),
         enquadrar: z.array(idDoDocumento).max(200).optional(),
+        camera: VistaDeCameraSchema.optional(),
       })
       .strict(),
     executar: (c, a) => {
@@ -490,6 +492,7 @@ export const FERRAMENTAS = [
         vista: a.vista,
         largura: a.largura,
         ...(a.enquadrar ? { enquadrar: a.enquadrar } : {}),
+        ...(a.camera ? { camera: a.camera } : {}),
       })
     },
   }),

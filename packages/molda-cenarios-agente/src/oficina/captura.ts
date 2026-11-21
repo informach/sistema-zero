@@ -16,6 +16,8 @@ export interface OpcoesDaCaptura {
   vista?: PedidoDaPagina['vista']
   /** Ids a enquadrar; sem eles, o cenário inteiro. */
   enquadrar?: string[]
+  /** Uma câmera escolhida: posição, alvo e campo de visão (graus). Vence a vista. */
+  camera?: PedidoDaPagina['camera']
   /** Caminho de um Chrome/Chromium; sem ele, `MOLDA_CENARIOS_CHROMIUM` ou o Chrome instalado. */
   navegador?: string
 }
@@ -34,6 +36,7 @@ export async function capturarSemJanela(
     largura,
     vista: opcoes.vista ?? 'livre',
     ...(opcoes.enquadrar?.length ? { enquadrar: opcoes.enquadrar } : {}),
+    ...(opcoes.camera ? { camera: opcoes.camera } : {}),
   }
   const base64 = await comPaginaSemJanela(
     {

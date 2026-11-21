@@ -1,4 +1,4 @@
-import type { DocumentoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import type { DocumentoDeCenario, VistaDeCamera } from '@sistemazero/molda-cenarios-core/v2'
 import { criarPalco } from '@sistemazero/molda-cenarios-motor'
 
 /**
@@ -12,6 +12,8 @@ export interface PedidoDaPagina {
   largura: number
   vista: 'livre' | 'cima' | 'frente' | 'lado'
   enquadrar?: string[]
+  /** Uma câmera escolhida (posição, alvo e campo de visão); vence a vista e o enquadrar. */
+  camera?: VistaDeCamera
 }
 
 async function ler(endereco: string, sinal?: AbortSignal): Promise<ArrayBuffer> {
@@ -45,6 +47,7 @@ async function capturarNaPagina(pedido: PedidoDaPagina): Promise<string> {
     await palco.aguardarRecursos()
     palco.enquadrar(pedido.enquadrar)
     if (pedido.vista !== 'livre') palco.definirVista(pedido.vista)
+    if (pedido.camera) palco.restaurarCamera(pedido.camera)
     // Dois quadros: o laço ajusta o desenho ao tamanho do canvas antes da foto.
     await proximoQuadro()
     await proximoQuadro()
