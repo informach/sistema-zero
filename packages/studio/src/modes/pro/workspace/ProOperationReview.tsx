@@ -47,6 +47,14 @@ const textOf = (tree: ProjectTree, path: string) => {
   return node?.kind === 'file' ? node.content : ''
 }
 
+/** As duas árvores têm os mesmos caminhos, do mesmo tipo e com o mesmo texto? */
+function sameTree(left: ProjectTree, right: ProjectTree): boolean {
+  const paths = new Set([...Object.keys(left), ...Object.keys(right)])
+  return [...paths].every(
+    (path) => left[path]?.kind === right[path]?.kind && textOf(left, path) === textOf(right, path),
+  )
+}
+
 interface Comparison {
   version: ProHistoryVersion
   then: ProjectTree
@@ -67,11 +75,16 @@ export function ProOperationReview({
   const [path, setPath] = useState('')
   const [comparing, setComparing] = useState<Comparison | null>(null)
   const [historyError, setHistoryError] = useState<string | null>(null)
+  const [historyNotice, setHistoryNotice] = useState<string | null>(null)
+  // Sem versões (a aula, o Admin, sem armazenamento local) a janela mostra só as operações com
+  // arquivos e não promete versões (full review final de 21/11/2026).
+  const versioned = history?.enabled === true
   useEffect(() => {
     setPath(pending?.affected[0] ?? '')
   }, [pending])
   // biome-ignore lint/correctness/useExhaustiveDependencies: abrir a janela é o GATILHO de reler as versões.
   useEffect(() => {
+    setHistoryNotice(null)
     if (!operations.historyOpen) {
       setComparing(null)
       setHistoryError(null)
@@ -102,8 +115,15 @@ export function ProOperationReview({
   const restore = async (version: ProHistoryVersion) => {
     if (!history) return
     setHistoryError(null)
+    setHistoryNotice(null)
     try {
       const then = await history.treeOf(version.id)
+      // A versão igual a agora é avisada DENTRO da janela: o recado das operações fica atrás dela
+      // (full review final).
+      if (sameTree(then, store.getState().project?.tree ?? {})) {
+        setHistoryNotice('Esta versão é igual ao projeto de agora.')
+        return
+      }
       await operations.restoreVersion(
         then,
         `Voltar para a versão de ${absolute(version.createdAt)}`,
@@ -223,8 +243,9 @@ export function ProOperationReview({
         }
       >
         <p className="mb-3 text-sm">
-          As versões ficam guardadas neste computador. Voltar para uma versão guarda antes a de
-          agora, então nada se perde.
+          {versioned
+            ? 'As versões ficam guardadas neste computador. Voltar para uma versão guarda antes a de agora, então nada se perde.'
+            : 'Aqui ficam as operações com arquivos (trocar nome, mover, apagar, materiais), para recuperar o que mudou.'}
         </p>
         {comparing ? (
           <div className="space-y-3">
@@ -324,6 +345,11 @@ export function ProOperationReview({
         {(historyError || operations.error) && (
           <p role="alert" className="mt-3 text-sz-error">
             {historyError ?? operations.error}
+          </p>
+        )}
+        {historyNotice && !historyError && !operations.error && (
+          <p role="status" className="mt-3 text-sm">
+            {historyNotice}
           </p>
         )}
       </Modal>

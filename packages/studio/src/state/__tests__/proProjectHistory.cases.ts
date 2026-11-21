@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
-import { failNextFakeIdbWrite, fakeUseStore, resetFakeIdb } from '../../testing/fakeIdbStore'
+import {
+  failNextFakeIdbWrite,
+  fakeIdbPuts,
+  fakeIdbWrites,
+  fakeUseStore,
+  resetFakeIdb,
+} from '../../testing/fakeIdbStore'
 
 // Proposta aprovada em 21/11/2026: o Histórico do projeto do Pro. Banco de mentira por Map (o
 // IndexedDB não existe no happy-dom), num processo próprio (`proProjectHistory.test.ts`).
@@ -229,5 +235,82 @@ describe('o histórico depois da revisão', () => {
     expect(
       await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '2' }), 'operation'),
     ).toBeNull()
+  })
+})
+
+// Full review final (21/11/2026).
+describe('o histórico depois do full review final', () => {
+  it('ler o índice, decidir e gravar acontecem numa transação só (outra aba não grava no meio)', async () => {
+    const other = 'pro-atomico'
+    await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '1' }), 'operation')
+    resetFakeIdb()
+    await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '2' }), 'operation')
+    const write = fakeIdbWrites().at(-1)
+    const index = history.proHistoryIndexKey(other)
+    expect(write?.steps.some((step) => step.type === 'get' && step.key === index)).toBe(true)
+    expect(fakeIdbPuts(write).has(index)).toBe(true)
+  })
+
+  it('o projeto apagado noutra aba (a lápide) não ganha histórico de volta', async () => {
+    const { projectHeadKey } = await import('../projectStorageKeys')
+    const other = 'pro-lapide'
+    kvOf({ name: 'historico' }).set(projectHeadKey(other), { version: 1, deleted: true })
+    expect(
+      await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '1' }), 'operation'),
+    ).toBeNull()
+    expect(kvOf({ name: 'historico' }).has(history.proHistoryIndexKey(other))).toBe(false)
+  })
+
+  it('o limite de Rodar compara com a última versão de Rodar, mesmo com uma operação no meio', async () => {
+    const other = 'pro-rodar'
+    const run = (content: string, now: number, trigger: 'run' | 'operation' = 'run') =>
+      history.recordProHistoryVersion(scope, other, tree({ 'a.ts': content }), trigger, { now })
+    expect(await run('1', 0)).not.toBeNull()
+    expect(await run('2', 30_000, 'operation')).not.toBeNull()
+    expect(await run('3', 60_000)).toBeNull()
+    expect(await run('3', history.PRO_HISTORY_RUN_INTERVAL_MS)).not.toBeNull()
+  })
+
+  it('apagar espera a gravação que já estava em voo, e ela desiste sem deixar nada', async () => {
+    const other = 'pro-em-voo'
+    let terminou = false
+    const voo = history
+      .recordProHistoryVersion(scope, other, tree({ 'a.ts': '1' }), 'operation')
+      .then((saved) => {
+        terminou = true
+        return saved
+      })
+    await history.quiesceProHistory(scope, other)
+    // As chaves do apagar só são lidas depois disto: nada do histórico pode estar a caminho.
+    expect(terminou).toBe(true)
+    expect(await voo).toBeNull()
+    expect(kvOf({ name: 'historico' }).has(history.proHistoryIndexKey(other))).toBe(false)
+  })
+
+  it('uma versão sozinha maior que o teto de espaço fica', async () => {
+    const other = 'pro-enorme'
+    const enorme = 'x'.repeat(history.PRO_HISTORY_MAX_BYTES + 1)
+    await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': '1' }), 'operation', {
+      now: 1,
+    })
+    await history.recordProHistoryVersion(scope, other, tree({ 'a.ts': enorme }), 'operation', {
+      now: 2,
+    })
+    expect((await history.listProHistory(scope, other)).map((entry) => entry.createdAt)).toEqual([
+      2,
+    ])
+  })
+
+  it('apagar leva os arquivos pelas chaves do banco, mesmo com o índice num formato desconhecido', async () => {
+    const other = 'pro-orfao'
+    const kv = kvOf({ name: 'historico' })
+    const arquivo = history.proHistoryFileKey(other, 'a'.repeat(64))
+    kv.set(history.proHistoryIndexKey(other), { version: 9 })
+    kv.set(arquivo, 'conteúdo')
+    kv.set(history.proHistoryFileKey(`${other}-vizinho`, 'b'.repeat(64)), 'de outro projeto')
+    expect(await history.proHistoryStorageKeys(scope, other)).toEqual([
+      history.proHistoryIndexKey(other),
+      arquivo,
+    ])
   })
 })

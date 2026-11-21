@@ -1,6 +1,13 @@
 import { studioProDigest } from '@sistemazero/core/studio'
 import type { ProjectTree } from '../core/proProject'
-import { readValue, readValues, writeInOneTransaction } from './idbTransaction'
+import {
+  conditionalGeneration,
+  conditionalWrite,
+  readAllKeys,
+  readValue,
+  readValues,
+} from './idbTransaction'
+import { projectHeadKey } from './projectStorageKeys'
 import type { ProjectStorageScope } from './projectStorageRuntime'
 
 /**
@@ -9,8 +16,8 @@ import type { ProjectStorageScope } from './projectStorageRuntime'
  * é Git e não se apresenta como Git.
  *
  * - Uma versão é a árvore inteira (os arquivos de texto e as pastas) no momento em que o Estúdio
- *   a guardou: ao Rodar com mudanças (no máximo uma a cada 2 minutos), antes de aplicar uma
- *   mudança do Zappy, antes de uma operação com arquivos e antes de voltar a uma versão.
+ *   a guardou: ao Rodar com mudanças (no máximo uma de Rodar a cada 2 minutos), antes de aplicar
+ *   uma mudança do Zappy, antes de uma operação com arquivos e antes de voltar a uma versão.
  * - Cada arquivo é guardado uma vez pela impressão do conteúdo (SHA-256): só o que mudou ocupa
  *   espaço. Ficam as últimas 50 versões ou até 20 MB por projeto, o que vier primeiro; as mais
  *   antigas saem primeiro, e os arquivos que nenhuma versão usa saem junto.
@@ -142,6 +149,12 @@ const byteLength = (text: string) => new TextEncoder().encode(text).byteLength
 /**
  * Guarda a árvore de agora como uma versão nova. Devolve `null` quando não havia o que guardar:
  * nada mudou desde a última versão, ou (ao Rodar) a última versão de Rodar é de menos de 2 minutos.
+ *
+ * As impressões são calculadas antes; ler o índice, decidir e gravar acontecem numa transação só
+ * (`conditionalWrite`, full review final de 21/11/2026). Em duas transações, outra aba do mesmo
+ * projeto podia gravar no meio: uma podava um arquivo que a versão nova da outra usava, ou um
+ * arquivo gravado ficava sem dono no índice. Na mesma transação, a lápide do projeto (apagado
+ * noutra aba) impede recriar o histórico dele.
  */
 export function recordProHistoryVersion(
   scope: ProjectStorageScope,
@@ -153,16 +166,6 @@ export function recordProHistoryVersion(
   return serialized(scope, projectId, async () => {
     if (deleted.has(queueKey(scope, projectId))) return null
     const now = options.now ?? Date.now()
-    const read = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
-    if (!read.known) return null
-    const index = read.index
-    const last = index.versions.at(-1)
-    if (
-      trigger === 'run' &&
-      last?.trigger === 'run' &&
-      now - last.createdAt < PRO_HISTORY_RUN_INTERVAL_MS
-    )
-      return null
     const files: Record<string, string> = {}
     const contents = new Map<string, string>()
     const directories: string[] = []
@@ -175,51 +178,109 @@ export function recordProHistoryVersion(
       }
     }
     directories.sort()
-    const previous = last?.files ?? {}
-    const paths = new Set([...Object.keys(previous), ...Object.keys(files)])
-    const changedFiles = [...paths].filter((path) => previous[path] !== files[path]).length
-    if (last && changedFiles === 0 && last.directories.join('\n') === directories.join('\n'))
-      return null
-    const version: ProHistoryVersion = {
-      id: crypto.randomUUID(),
-      trigger,
-      ...(options.label ? { label: options.label.slice(0, 200) } : {}),
-      ...(options.restoredFrom !== undefined ? { restoredFrom: options.restoredFrom } : {}),
-      createdAt: now,
-      files,
-      directories,
-      changedFiles,
-      ...(last ? {} : { first: true as const }),
-    }
-    const sizes = { ...index.sizes }
-    const puts: Array<readonly [string, unknown]> = []
-    for (const [digest, content] of contents)
-      if (sizes[digest] === undefined) {
-        sizes[digest] = byteLength(content)
-        puts.push([proHistoryFileKey(projectId, digest), content])
-      }
-    const versions = [...index.versions, version]
-    const usedBytes = (list: ProHistoryVersion[]) => {
-      const used = new Set(list.flatMap((entry) => Object.values(entry.files)))
-      return [...used].reduce((sum, digest) => sum + (sizes[digest] ?? 0), 0)
-    }
-    // As mais antigas saem primeiro; a versão nova fica sempre.
-    while (
-      versions.length > 1 &&
-      (versions.length > PRO_HISTORY_MAX_VERSIONS || usedBytes(versions) > PRO_HISTORY_MAX_BYTES)
+    const sizeOf = new Map([...contents].map(([digest, content]) => [digest, byteLength(content)]))
+    if (deleted.has(queueKey(scope, projectId))) return null
+    return conditionalWrite(
+      scope.store,
+      scope.identity,
+      conditionalGeneration(scope.identity),
+      [proHistoryIndexKey(projectId), projectHeadKey(projectId)],
+      ([storedIndex, head]) => {
+        const nothing = { write: {}, result: null }
+        const tombstone =
+          !!head && typeof head === 'object' && (head as { deleted?: unknown }).deleted === true
+        const read = readIndex(storedIndex)
+        if (tombstone || !read.known) return nothing
+        const version = nextVersion(read.index, {
+          trigger,
+          now,
+          files,
+          directories,
+          label: options.label,
+          restoredFrom: options.restoredFrom,
+        })
+        if (!version) return nothing
+        return {
+          write: versionWrite(projectId, read.index, version, contents, sizeOf),
+          result: version,
+        }
+      },
     )
-      versions.shift()
-    const used = new Set(versions.flatMap((entry) => Object.values(entry.files)))
-    const deletes: string[] = []
-    for (const digest of Object.keys(sizes))
-      if (!used.has(digest)) {
-        delete sizes[digest]
-        deletes.push(proHistoryFileKey(projectId, digest))
-      }
-    puts.push([proHistoryIndexKey(projectId), { version: 1, versions, sizes }])
-    await writeInOneTransaction(scope.store, { puts, deletes })
-    return version
   })
+}
+
+/** A versão nova sobre o índice lido, ou `null` quando não há o que guardar. */
+function nextVersion(
+  index: ProHistoryIndex,
+  input: {
+    trigger: ProHistoryTrigger
+    now: number
+    files: Record<string, string>
+    directories: string[]
+    label?: string
+    restoredFrom?: number
+  },
+): ProHistoryVersion | null {
+  const { trigger, now, files, directories } = input
+  const last = index.versions.at(-1)
+  // O limite de Rodar compara com a última versão DE RODAR: uma operação no meio não zera a conta
+  // (full review final; antes, Rodar, operar e Rodar de novo em 60 s guardava duas de Rodar).
+  const lastRun = index.versions.filter((entry) => entry.trigger === 'run').at(-1)
+  if (trigger === 'run' && lastRun && now - lastRun.createdAt < PRO_HISTORY_RUN_INTERVAL_MS)
+    return null
+  const previous = last?.files ?? {}
+  const paths = new Set([...Object.keys(previous), ...Object.keys(files)])
+  const changedFiles = [...paths].filter((path) => previous[path] !== files[path]).length
+  if (last && changedFiles === 0 && last.directories.join('\n') === directories.join('\n'))
+    return null
+  return {
+    id: crypto.randomUUID(),
+    trigger,
+    ...(input.label ? { label: input.label.slice(0, 200) } : {}),
+    ...(input.restoredFrom !== undefined ? { restoredFrom: input.restoredFrom } : {}),
+    createdAt: now,
+    files,
+    directories,
+    changedFiles,
+    ...(last ? {} : { first: true as const }),
+  }
+}
+
+/** O que gravar: os arquivos novos, o índice com a versão nova e a poda das mais antigas. */
+function versionWrite(
+  projectId: string,
+  index: ProHistoryIndex,
+  version: ProHistoryVersion,
+  contents: Map<string, string>,
+  sizeOf: Map<string, number>,
+): { puts: Array<readonly [string, unknown]>; deletes: string[] } {
+  const sizes = { ...index.sizes }
+  const puts: Array<readonly [string, unknown]> = []
+  for (const [digest, content] of contents)
+    if (sizes[digest] === undefined) {
+      sizes[digest] = sizeOf.get(digest) ?? 0
+      puts.push([proHistoryFileKey(projectId, digest), content])
+    }
+  const versions = [...index.versions, version]
+  const usedBytes = (list: ProHistoryVersion[]) => {
+    const used = new Set(list.flatMap((entry) => Object.values(entry.files)))
+    return [...used].reduce((sum, digest) => sum + (sizes[digest] ?? 0), 0)
+  }
+  // As mais antigas saem primeiro; a versão nova fica sempre.
+  while (
+    versions.length > 1 &&
+    (versions.length > PRO_HISTORY_MAX_VERSIONS || usedBytes(versions) > PRO_HISTORY_MAX_BYTES)
+  )
+    versions.shift()
+  const used = new Set(versions.flatMap((entry) => Object.values(entry.files)))
+  const deletes: string[] = []
+  for (const digest of Object.keys(sizes))
+    if (!used.has(digest)) {
+      delete sizes[digest]
+      deletes.push(proHistoryFileKey(projectId, digest))
+    }
+  puts.push([proHistoryIndexKey(projectId), { version: 1, versions, sizes }])
+  return { puts, deletes }
 }
 
 /** A árvore de uma versão guardada, com o conteúdo de cada arquivo. */
@@ -247,16 +308,19 @@ export async function readProHistoryTree(
   return tree
 }
 
-/** As chaves do histórico de um projeto, para saírem junto quando o projeto é apagado. */
+/**
+ * As chaves do histórico de um projeto, para saírem junto quando o projeto é apagado. Pelas chaves
+ * do banco, não pelo índice (full review final): com um índice de formato desconhecido ou entradas
+ * corrompidas, os arquivos ficavam para sempre no banco depois de apagar o projeto.
+ */
 export async function proHistoryStorageKeys(
   scope: ProjectStorageScope,
   projectId: string,
 ): Promise<string[]> {
-  const { index } = readIndex(await readValue(scope.store, proHistoryIndexKey(projectId)))
-  return [
-    proHistoryIndexKey(projectId),
-    ...Object.keys(index.sizes)
-      .filter((digest) => DIGEST.test(digest))
-      .map((digest) => proHistoryFileKey(projectId, digest)),
-  ]
+  const prefix = proHistoryFileKey(projectId, '')
+  const files = (await readAllKeys(scope.store)).filter(
+    (key): key is string =>
+      typeof key === 'string' && key.startsWith(prefix) && DIGEST.test(key.slice(prefix.length)),
+  )
+  return [proHistoryIndexKey(projectId), ...files]
 }

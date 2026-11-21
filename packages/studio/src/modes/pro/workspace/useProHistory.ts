@@ -113,7 +113,9 @@ export function useProHistory(projectId: string | undefined) {
     },
     [scopeOf, projectId],
   )
-  return { versions, refresh, treeOf }
+  // A janela só fala de versões quando elas são guardadas mesmo (recurso ligado e armazenamento
+  // local); fora disso ela mostra só as operações com arquivos (full review final).
+  return { versions, refresh, treeOf, enabled: !!scopeOf() }
 }
 
 export type ProHistory = ReturnType<typeof useProHistory>

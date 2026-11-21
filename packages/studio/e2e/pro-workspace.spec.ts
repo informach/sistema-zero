@@ -358,6 +358,13 @@ test('updates language and removes obsolete markers when an open file changes ex
   await page.getByRole('button', { name: 'Mais', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
   await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
+  // Sem armazenamento local não há versões: a janela não as promete (full review final).
+  await expect(page.getByRole('dialog', { name: 'Histórico do projeto' })).toContainText(
+    'Aqui ficam as operações com arquivos',
+  )
+  await expect(page.getByRole('dialog', { name: 'Histórico do projeto' })).not.toContainText(
+    'As versões ficam guardadas',
+  )
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await expect(page.getByRole('treeitem', { name: 'src/closed.js', exact: true })).toBeVisible()
   await page
@@ -405,6 +412,8 @@ test('the project history keeps the version before an operation, compares and go
   await dialog.getByRole('button', { name: 'Voltar para esta versão', exact: true }).click()
   await expect(page.getByRole('treeitem', { name: 'src/closed.ts', exact: true })).toBeVisible()
   await expect(page.getByRole('treeitem', { name: 'src/fechado.ts', exact: true })).toHaveCount(0)
+  // A promessa da janela: voltar guarda antes a versão de agora (full review final).
+  await expect(dialog).toContainText('Antes de voltar para a versão de')
   expect(errors).toEqual([])
 })
 
