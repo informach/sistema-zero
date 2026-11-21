@@ -6,6 +6,23 @@
  */
 export const OFFSCREEN_BODIES_MIN_BLOCKS = 1500
 
+let onDemandMounting = true
+
+/**
+ * Só para a comparação de dois braços (lote 3 da missão, `scripts/measure-classic-opening.mjs` e o
+ * `?montagem=inteira` do playground): desliga a abertura adiada e a montagem sob demanda, e o
+ * MESMO build abre o projeto grande pelo caminho de sempre, o dos projetos pequenos. Assim o CI
+ * compara o estado e o código dos dois caminhos sem construir um segundo build.
+ */
+export function setOnDemandMountingForTests(enabled: boolean): void {
+  onDemandMounting = enabled
+}
+
+/** A abertura adiada e a montagem sob demanda podem ligar (sempre, fora da comparação acima). */
+export function onDemandMountingEnabled(): boolean {
+  return onDemandMounting
+}
+
 /**
  * "Procurar no programa" aparece a partir disto (lote 3 da missão, 21/11/2026). Mora aqui, e não
  * no módulo da busca, porque o `BlocklyPanel` já importa este arquivo: o módulo e o componente da

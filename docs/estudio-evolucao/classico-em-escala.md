@@ -529,9 +529,8 @@ Antes do conserto, o mesmo teste reprovava no Chromium: a edição não chegava 
   elos). Resolver isso pede o formato plano das cadeias e carregar, salvar e descartar elo a elo
   (o conserto B do plano, autorizado por ela se a medição pedisse). No formato dos jogos (eventos
   com corpo) o Blockly aguenta 12 mil blocos nos três.
-- **"O mesmo código do caminho sem montagem sob demanda" com 10 mil** ainda não foi comparado: a
-  comparação de dois braços (`scripts/measure-classic-opening.mjs`) é pesada e vai para um job do
-  CI.
+- **"O mesmo código do caminho sem montagem sob demanda" com 10 mil**: comparado no lote 3 (abaixo,
+  "Os dois caminhos dão o mesmo projeto").
 - O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo; com o formato dos jogos
   ele não estoura, e mexer nele muda bytes que a nuvem confere. Fica para o conserto B.
 
@@ -617,3 +616,82 @@ busca da paleta (blocos para pôr no programa).
   seguidos) e `e2e/classic-workspace-search.spec.ts` (2 mil blocos, um "marca do fim" no último
   evento, fora do desenho na abertura: a busca o acha e o põe à vista; na aula, nada aparece).
 - **Para a dona ver:** é tela nova; vai com as fotos no relatório do lote para aprovação ou ajuste.
+
+## Os dois caminhos dão o mesmo projeto, e quanto custa cada gesto (lote 3, 21/11/2026)
+
+Seção 6 da missão: "preservação do modelo completo para geração" e "salvamento sem serialização
+completa desnecessária a cada gesto".
+
+**Os dois braços num build só.** Comparar com e sem montagem sob demanda pedia dois builds (o de
+19/11 trocou arquivos à mão). Agora o mesmo build abre pelos dois caminhos:
+`setOnDemandMountingForTests(false)` (`blockly/offscreenThreshold.ts`, ligado pelo
+`?montagem=inteira` do playground) desliga a abertura adiada e a montagem sob demanda, e o projeto
+grande abre como abrem os pequenos. Fora do teste, nada muda (o interruptor nasce ligado).
+
+**O que o script confere** (`scripts/measure-classic-opening.mjs`, com `SZ_CLASSIC_OPEN_EDIT=1` e
+`SZ_CLASSIC_OPEN_ASSERT=1`), por tamanho:
+- o estado salvo e o código gerado depois de abrir são iguais em todas as amostras dos dois
+  braços (ids canonizados pela ordem; o estado é lido com pilha explícita, porque o
+  `JSON.stringify` do V8 recursa na cadeia de ~1.660 eventos);
+- depois de editar a largura do palco (480 para 500), a edição chega ao código nos dois braços e o
+  estado e o código continuam iguais entre eles;
+- nenhuma amostra com erro na página;
+- os braços seguiram caminhos diferentes de verdade (um abriu com blocos adiados, o outro sem
+  nenhum): dois braços iguais não provariam nada.
+
+**Job do CI:** `.github/workflows/studio-classic-equivalence.yml` (Chromium COMPLETO, 2 mil e 10
+mil blocos, um par por tamanho), a cada push na staging que mexa na abertura, na montagem, no
+salvar ou no script. O JSON bruto vai nos artefatos.
+
+**Medido nesta máquina** (Windows 11, Ryzen 5 5600G, Chromium 159 completo, estação compartilhada;
+evidência bruta em `evidencias/classico-equivalencia-2026-11-21/windows-local.json`): 12 amostras,
+`{"ok":true}`.
+
+| Blocos | Abrir, adiado | Abrir, inteiro | Desenhados | Gesto: maior tarefa, adiado | Gesto: maior tarefa, inteiro | Resumo do estado e do código (iguais nos dois) |
+|---|---|---|---|---|---|---|
+| 2 002 | 2,1 · 1,9 s | 3,4 · 3,1 s | 106 · 2 002 | nenhuma | 75 ms · nenhuma | `12c51686…` · `30ea420a…` |
+| 5 002 | 3,8 · 5,9 s | 10,2 · 8,8 s | 106 · 5 002 | 95 · 174 ms | 100 · 106 ms (5 tarefas) | `95bb441a…` · `45ddb464…` |
+| 10 000 | 13,3 · 18,8 s | 35,9 · 58,3 s | 106 · 10 000 | 220 · 354 ms | 243 · 322 ms (5 tarefas) | `85811b5a…` · `fe45032c…` |
+
+Os resumos de 2 002 e 5 002 são os mesmos de 20/11 (base contra candidato, dois builds): a leitura
+nova canoniza igual à antiga. Do clique ao código novo: ~0,3 s adiado (com os 120 ms do agrupador
+do Blockly) e 1,3 a 4,7 s inteiro.
+
+**De que é feito o gesto com 10 mil blocos.** Perfil de CPU só da janela do gesto
+(`SZ_CLASSIC_OPEN_EDIT_PROFILE=1`, build sem minificar, braço adiado; resumos em
+`evidencias/classico-equivalencia-2026-11-21/perfil-do-gesto-10mil-*.txt`). A tarefa é uma só,
+de 220 a 290 ms conforme a rodada:
+
+| Etapa | Antes | Depois |
+|---|---|---|
+| Avisos semânticos (`applySemanticDiagnostics`: o zod com as regras de referência) | 72 ms | 72 a 100 ms |
+| Ler a IR do workspace (`buildIRFromWorkspace`) | 31 ms | 31 a 45 ms |
+| Gerar os três arquivos (`generateProjectFilesWithMap`) | 35 ms | 35 a 44 ms |
+| Salvar o workspace (`saveWorkspaceState`, o `save` do Blockly) | ~11 ms | ~17 ms |
+| Serializar o estado inteiro em texto (`jsonStringify`) | **41 ms, três vezes** | **19 ms, uma vez** |
+| A régua do 3D da barra (`projectHas3DConsumer`) | **13 ms** | **6 ms** |
+| React (commit e efeitos) | ~27 ms | ~27 ms |
+
+As duas linhas em negrito foram consertadas aqui (a variação das outras é a máquina compartilhada):
+- **O painel serializava de novo o estado que ele mesmo tinha acabado de gravar.** O efeito de
+  restauração compara o estado que chega da store com o último aplicado, e fazia isso pelo texto.
+  A store guarda o objeto sem copiar e nunca o altera, então agora a volta do estado que o painel
+  gravou é reconhecida pela identidade (`lastAppliedBlocksStateObjectRef`, sempre em par com o
+  texto; `null` quando o texto veio de um estado que não foi à store).
+- **A régua do 3D serializava o estado inteiro para procurar `sz_t3d_`.** O cache por identidade
+  não ajuda num gesto (cada edição traz um estado novo). Agora anda o estado com pilha explícita e
+  para no primeiro bloco: só o TIPO conta (um campo de texto com "sz_t3d_" deixou de contar; teste
+  em `has3DConsumer.test.ts`, vermelho na versão antiga).
+- A serialização que sobrou é o resumo que evita gerar de novo quando nada mudou, e o texto que o
+  efeito de restauração usa para estados vindos de fora (a Ponte, outro aparelho).
+
+**O que fica, com os números.** "Processamento semântico incremental", "cache correto da IR" e
+"atualização localizada de blocos e código" pedem que a IR, os avisos e o código de cada evento
+sejam guardados e só o evento mexido seja refeito. É a mudança do caminho inteiro de geração (os
+avisos de referência dependem da tabela de símbolos do programa todo), e não entrou neste lote.
+Hoje, numa máquina de mesa: até 2 mil blocos o gesto não faz tarefa longa; com 5 mil, uma de 95 a
+174 ms; com 10 mil, uma de 220 a 354 ms. A meta de 50 ms da seção 16 vale até ~2 mil blocos.
+Mover só a organização visual (arrastar uma área sem mudar encaixes) já não refaz a análise
+(`persistWorkspaceLayout`): grava só o estado. A gravação no IndexedDB do Estúdio livre sai no
+autosave (1 s depois da última edição, no máximo 5 s), não a cada gesto, e não foi medida aqui com
+10 mil blocos.

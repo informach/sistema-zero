@@ -1,6 +1,14 @@
+import { setOnDemandMountingForTests } from '../src/blockly/offscreenThreshold'
+
 // A lista inicial carrega antes do editor. Guarde os parâmetros de demonstração
 // aqui para a importação tardia do editor não lê-los depois do pushState.
 const initialQuery = new URLSearchParams(window.location.search)
+
+// `&montagem=inteira` (lote 3, comparação de dois braços do `scripts/measure-classic-opening.mjs`):
+// o projeto grande abre pelo caminho dos pequenos, sem a abertura adiada nem a montagem sob
+// demanda. Pelo caminho RELATIVO, como o `?autosave-ms=`: é o mesmo módulo que o editor usa, e ele
+// não importa nada. Sem o parâmetro, nada muda.
+if (initialQuery.get('montagem') === 'inteira') setOnDemandMountingForTests(false)
 
 export const PLAYGROUND_DEMO_MISSION = initialQuery.get('missao')
 export const E2E_AUTOSAVE_MS = Number(initialQuery.get('autosave-ms'))

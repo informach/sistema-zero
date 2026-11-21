@@ -50,6 +50,7 @@ import {
   disposeDeferredDrawing,
   mayHaveManyBlocks,
   OFFSCREEN_BODIES_MIN_BLOCKS,
+  onDemandMountingEnabled,
   WORKSPACE_SEARCH_MIN_BLOCKS,
 } from '../../blockly/offscreenThreshold'
 import { blockFontSpec, waitForOpeningFonts } from '../../blockly/openingRender'
@@ -224,7 +225,7 @@ function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
  * grande, junto da espera da fonte. Se o download falhar, o projeto abre como sempre abriu.
  */
 function loadDeferredTail(serialized: string) {
-  if (!mayHaveManyBlocks(serialized)) return null
+  if (!onDemandMountingEnabled() || !mayHaveManyBlocks(serialized)) return null
   return import('../../blockly/deferredTail').catch((error: unknown) => {
     console.warn('Abrindo sem adiar o desenho:', error)
     return null
@@ -401,6 +402,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // Misturar os dois estados fazia um BLOCK_MOVE só-de-layout, entregue antes
   // do BLOCK_MOVE de conexão do mesmo gesto, envenenar o dedupe do compilador.
   const lastAppliedBlocksStateRef = useRef<string>('')
+  // O OBJETO cujo texto é o `lastAppliedBlocksStateRef`, quando ele é o mesmo que foi à store (lote
+  // 3, 21/11/2026). A store guarda o estado sem copiar e nunca o altera, então a volta do estado
+  // que este painel acabou de gravar é reconhecida pela identidade, sem serializar de novo: com 10
+  // mil blocos, a comparação pelo texto custava 14 ms de cada gesto. `null` quando o texto veio de
+  // um estado que não foi guardado (o que o workspace salvou depois de uma carga).
+  const lastAppliedBlocksStateObjectRef = useRef<object | null>(null)
   const lastRegeneratedBlocksStateRef = useRef<string>('')
   // One load checkpoint, paired with Blockly's own undo stack (not a second history).
   const loadedGenerationRef = useRef<{
@@ -566,6 +573,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const serialized = jsonStringify(state) ?? ''
       if (!options.force && serialized === lastRegeneratedBlocksStateRef.current) return
       lastAppliedBlocksStateRef.current = serialized
+      lastAppliedBlocksStateObjectRef.current = state
       lastRegeneratedBlocksStateRef.current = serialized
 
       const built = buildIRFromWorkspace(workspace)
@@ -782,6 +790,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // antes um movimento de coordenadas e depois o movimento de conexão; a IR
       // ainda precisa processar o estado final quando o segundo evento chegar.
       lastAppliedBlocksStateRef.current = serialized
+      lastAppliedBlocksStateObjectRef.current = state
       applyProjectState({ blocksState: state })
     },
     [applyProjectState],
@@ -890,6 +899,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           }
         }
         lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+        lastAppliedBlocksStateObjectRef.current = null
         // Regenera o IR/sourcemap a partir dos blocos recém-carregados também
         // em modo Ponte. Sem isso, um projeto salvo antes da introdução de
         // `ctorId`/`__declIds` no IR continuaria com o sourcemap incompleto
@@ -1205,6 +1215,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // O canvas foi trocado POR FORA: a pilha de desfazer de antes não vale mais.
       forgetBlocklyHistory(workspace)
       lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+      lastAppliedBlocksStateObjectRef.current = null
       scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
       queueMicrotask(() => {
         isApplyingStateRef.current = false
@@ -1213,6 +1224,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     }
     // A fronteira de abertura já entregou o documento atual.
     const stateToLoad = blocksState
+    // O estado que este painel acabou de gravar voltando da store: nada a carregar.
+    if (stateToLoad === lastAppliedBlocksStateObjectRef.current) return
     const serialized = jsonStringify(stateToLoad) ?? ''
     if (serialized === lastAppliedBlocksStateRef.current) return
     setIsLoadingWorkspace(true)
@@ -1239,6 +1252,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
       lastAppliedBlocksStateRef.current = serialized
+      lastAppliedBlocksStateObjectRef.current = null
       let deferredLoad: DeferredTailLoad | null | undefined = null
       try {
         // Projeto grande: a cauda de cada área longe da vista nasce sem desenho (fecha no `finally`).
@@ -1293,6 +1307,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
             }
           }
           lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+          lastAppliedBlocksStateObjectRef.current = null
           // Idem ao listener de FINISHED_LOADING: regenerar também em modo
           // Ponte garante que o IR no store contenha os ids do construtor,
           // métodos e declarações CSS — sem isso o sourcemap ficaria incompleto
@@ -1366,7 +1381,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     let offscreenDisposed = false
     let offscreenLoading = false
     const offscreenGate = (event: Blockly.Events.Abstract) => {
-      if (offscreenLoading || offscreenBodies) return
+      if (offscreenLoading || offscreenBodies || !onDemandMountingEnabled()) return
       if (
         event.type !== Blockly.Events.FINISHED_LOADING &&
         event.type !== Blockly.Events.BLOCK_CREATE
