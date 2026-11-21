@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-11-21T08:33:39.119Z",
+  "repository": "informach/sistema-zero",
+  "source": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "run": 44881202754,
+  "job": 136776667762,
+  "conclusion": "failure",
+  "rawBytes": 9277195,
+  "rawSha256": "59c551b5bd5b605425b5a6d5169e479f9e210a43800cbc1c62f8e7d4a54f235a",
+  "gzipBytes": 1466471,
+  "gzipSha256": "f2e2f45a3d2dce8d1545b603a1c89cf3401a1e127dc8361db3b688aefdf99937",
+  "decompressionVerified": true
+}
