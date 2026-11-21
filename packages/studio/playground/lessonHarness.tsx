@@ -74,7 +74,7 @@ interface BlocoSalvo {
  * ids novos) até passar de `alvo` blocos. Só para medir escala: mantém a forma de um jogo de
  * criança, com muitos eventos curtos. O mesmo que `scripts/profile-js-classic.ts` faz sem tela.
  */
-function ampliar(projeto: Project, alvo: number): Project {
+function ampliar(projeto: Project, alvo: number, marca = false): Project {
   const copia = structuredClone(projeto) as Project & {
     blocksState?: { blocks?: { blocks?: BlocoSalvo[] } }
   }
@@ -108,6 +108,15 @@ function ampliar(projeto: Project, alvo: number): Project {
     fim.next = { block: repetido }
     fim = repetido
     while (fim.next) fim = fim.next.block
+  }
+  if (marca) {
+    const corpo = Object.entries(fim.inputs ?? {}).find(([, entrada]) => entrada.block)?.[0]
+    let ultimo = corpo ? (fim.inputs?.[corpo]?.block as BlocoSalvo) : undefined
+    if (!ultimo) throw new Error('O último evento não tem corpo para receber a marca.')
+    while (ultimo.next) ultimo = ultimo.next.block
+    ultimo.next = {
+      block: { type: 'sz_adv_raw_js', id: 'marca-do-fim', fields: { CODE: '// marca do fim' } },
+    }
   }
   return copia
 }
@@ -158,6 +167,7 @@ async function carregar(
   chave: string | null,
   escala: number,
   forma: 'jogo' | 'sequencia' = 'jogo',
+  marca = false,
 ): Promise<Estado> {
   const caminho = caminhoDoManifesto(aula)
   const importar = caminho ? MANIFESTOS[caminho] : undefined
@@ -182,7 +192,7 @@ async function carregar(
         initialProject:
           forma === 'sequencia'
             ? sequencia(bloco.content.initialProject, escala)
-            : ampliar(bloco.content.initialProject, escala),
+            : ampliar(bloco.content.initialProject, escala, marca),
       },
     },
   }
@@ -210,7 +220,7 @@ export function LessonHarness(): JSX.Element {
       setEstado({ fase: 'erro', recado: 'Faltou ?aula=<curso>/<aula>.' })
       return
     }
-    carregar(pedido.aula, pedido.bloco, pedido.escala, pedido.forma)
+    carregar(pedido.aula, pedido.bloco, pedido.escala, pedido.forma, pedido.marca)
       .then((proximo) => {
         if (vivo) setEstado(proximo)
       })

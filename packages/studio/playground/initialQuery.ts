@@ -20,6 +20,9 @@ export const PLAYGROUND_LESSON =
         // numa sequência ÚNICA de instruções no corpo do primeiro evento.
         forma:
           initialQuery.get('forma') === 'sequencia' ? ('sequencia' as const) : ('jogo' as const),
+        // `&marca=1` (lote 3, "Procurar no programa"): um bloco com o texto "marca do fim" no corpo
+        // do último evento repetido, lá na cauda que nasce sem desenho.
+        marca: initialQuery.get('marca') === '1',
       }
     : null
 

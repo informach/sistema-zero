@@ -7,6 +7,14 @@
 export const OFFSCREEN_BODIES_MIN_BLOCKS = 1500
 
 /**
+ * "Procurar no programa" aparece a partir disto (lote 3 da missão, 21/11/2026). Mora aqui, e não
+ * no módulo da busca, porque o `BlocklyPanel` já importa este arquivo: o módulo e o componente da
+ * busca ficam fora do pacote de abertura do modo Blocos. Os jogos dos cursos têm de 70 a 80
+ * blocos, e a tela da aula não muda.
+ */
+export const WORKSPACE_SEARCH_MIN_BLOCKS = 300
+
+/**
  * A folga, em px de tela, que a primeira carga deixa acima dos blocos (`showBlocksFromTop`). Mora
  * aqui porque o plano da abertura adiada prevê essa vista: importar o `cornerSpacer` do módulo
  * carregado sob demanda partiria o pacote do modo Blocos em mais um arquivo.

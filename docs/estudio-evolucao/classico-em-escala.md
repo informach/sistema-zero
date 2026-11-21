@@ -593,3 +593,27 @@ os 10.000 blocos. As cinco aulas protegidas passam.
 - As migrações antigas (`migrateIfElse`, `migrateValueFields`) clonam por `JSON.parse(JSON.stringify())`
   e andam o estado com recursão; só rodam em projeto de formato antigo.
 - O `canonicalJson` do core (hashes das partes da nuvem) continua recursivo.
+
+## Procurar no programa (lote 3, 21/11/2026)
+
+Seção 6 da missão: "pesquisa e localização em projetos grandes". Até aqui o Clássico só tinha a
+busca da paleta (blocos para pôr no programa).
+
+- **Onde:** um botão "Procurar no programa" no canto de cima da área de blocos e o atalho Ctrl+F
+  nela. Só em projeto com 300 blocos ou mais (`WORKSPACE_SEARCH_MIN_BLOCKS`): os jogos dos cursos
+  têm de 70 a 80, e a tela das aulas gravadas não muda (o teste confere que a busca não aparece na
+  aula). O componente (`components/blocks/WorkspaceSearch.tsx`) é baixado sob demanda, com os
+  próprios textos: o pacote de abertura do modo Blocos e o dicionário da carga inicial não mudam
+  (o teste de orçamento dos pacotes passa).
+- **Como acha:** pelo MODELO (`blockly/workspaceSearch.ts`), não pelo desenho: num projeto grande
+  a cauda nasce sem desenho e o texto dela não está na página. O texto de um bloco é o que a
+  criança lê nele (rótulos e campos, mais o valor das sombras encaixadas), sem acento e com todas
+  as palavras procuradas. O percurso na ordem do programa usa pilha explícita (o `getAllBlocks(true)`
+  do Blockly 12 recursa na cadeia). Até 30 resultados na lista, com o total; Enter anda pelos
+  resultados; cada um diz a área ("Ao iniciar", "Quando acontecer"...) ou "Fora das áreas".
+- **Mostrar:** cada resultado usa o "Mostrar o bloco" de sempre (`highlightStore.revealBlock`),
+  que desenha a cauda adiada até o bloco e o centraliza.
+- **Testes:** `src/blockly/__tests__/workspaceSearch.test.ts` (texto, ordem, limite, 1.500 blocos
+  seguidos) e `e2e/classic-workspace-search.spec.ts` (2 mil blocos, um "marca do fim" no último
+  evento, fora do desenho na abertura: a busca o acha e o põe à vista; na aula, nada aparece).
+- **Para a dona ver:** é tela nova; vai com as fotos no relatório do lote para aprovação ou ajuste.

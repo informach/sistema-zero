@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { JSX } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import { javaScriptProject } from '../../core/editableProject'
 import 'blockly/blocks'
@@ -50,6 +50,7 @@ import {
   disposeDeferredDrawing,
   mayHaveManyBlocks,
   OFFSCREEN_BODIES_MIN_BLOCKS,
+  WORKSPACE_SEARCH_MIN_BLOCKS,
 } from '../../blockly/offscreenThreshold'
 import { blockFontSpec, waitForOpeningFonts } from '../../blockly/openingRender'
 import {
@@ -333,6 +334,9 @@ export interface BlocklyPanelProps {
   onWorkspaceReady?: (workspace: Blockly.WorkspaceSvg | null) => void
 }
 
+// Procurar no programa: só em projeto grande, baixado sob demanda (fora do pacote de abertura).
+const WorkspaceSearch = lazy(() => import('./WorkspaceSearch'))
+
 export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps): JSX.Element {
   const { blocksState, installedExtensions, projectMode, blocksHydration, projectToolsKey } =
     useProjectStore(
@@ -385,6 +389,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // carga dar certo, e a área de blocos diz que nada se perdeu.
   const [restoreFailed, setRestoreFailed] = useState(false)
   const restoreFailedRef = useRef(false)
+  const [searchAvailable, setSearchAvailable] = useState(false)
+  const [searchOpenRequest, setSearchOpenRequest] = useState(0)
 
   const blocklyRef = useRef<HTMLDivElement>(null)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
@@ -800,6 +806,33 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     registerClassesFlyout(workspace as Blockly.WorkspaceSvg, profile)
     return unregisterFunctionsFlyout
   }, [workspace, profile])
+
+  // "Procurar no programa" só aparece em projeto grande: a contagem é refeita (num quadro) quando
+  // blocos nascem ou somem, sem andar a árvore com recursão (`getAllBlocks(false)` é em largura).
+  useEffect(() => {
+    if (!workspace) return
+    let frame = 0
+    const check = () => {
+      frame = 0
+      setSearchAvailable(workspace.getAllBlocks(false).length >= WORKSPACE_SEARCH_MIN_BLOCKS)
+    }
+    const listener = (event: Blockly.Events.Abstract) => {
+      if (
+        frame ||
+        (event.type !== Blockly.Events.BLOCK_CREATE &&
+          event.type !== Blockly.Events.BLOCK_DELETE &&
+          event.type !== Blockly.Events.FINISHED_LOADING)
+      )
+        return
+      frame = requestAnimationFrame(check)
+    }
+    check()
+    workspace.addChangeListener(listener)
+    return () => {
+      workspace.removeChangeListener(listener)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [workspace])
 
   // Pilhas executáveis fora das Áreas do projeto são preservadas como rascunho,
   // mas precisam ficar inequivocamente diferentes do código que entra no preview.
@@ -1479,8 +1512,31 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const isHydrationPending = blocksState == null && blocksHydration === 'pending'
 
   return (
-    <div className={['relative h-full w-full', className].filter(Boolean).join(' ')}>
+    <div
+      className={['relative h-full w-full', className].filter(Boolean).join(' ')}
+      onKeyDownCapture={(event) => {
+        // Ctrl+F na área de blocos abre "Procurar no programa" (só onde a busca existe).
+        if (!searchAvailable || restoreFailed) return
+        if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'f') {
+          event.preventDefault()
+          setSearchOpenRequest((n) => n + 1)
+        }
+      }}
+    >
       <div ref={blocklyRef} className="h-full w-full" />
+      {searchAvailable && !restoreFailed && workspace && (
+        <div className="pointer-events-none absolute top-3 right-3 z-20 flex justify-end">
+          <Suspense fallback={null}>
+            <WorkspaceSearch
+              workspace={workspace}
+              openRequest={searchOpenRequest}
+              onReveal={(blockId) =>
+                highlightApi.getState().revealBlock({ kind: 'block', blockId })
+              }
+            />
+          </Suspense>
+        </div>
+      )}
       {(isLoadingWorkspace || isHydrationPending) && (
         <div
           aria-busy="true"
