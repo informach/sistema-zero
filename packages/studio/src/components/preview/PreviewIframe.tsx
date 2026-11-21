@@ -1088,6 +1088,13 @@ export function PreviewIframe(): JSX.Element {
   // batimento assim que o começo dele roda. Um documento que só demora (módulos 3D chegando,
   // tablet) já falou; o processo preso pelo jogo anterior não fala. Trocar o lento derrubava o
   // download e a execução e repetia o código de topo até três vezes.
+  // E só com o documento ANTERIOR já calado na hora do pedido (lote 2 da missão, 21/11/2026): com
+  // ele vivo, nada segura a entrada do novo, e um novo que não dá `load` está preso em si mesmo
+  // (um laço no topo). Trocar não adianta: o iframe novo roda o mesmo programa e prende de novo.
+  // O sinal de vida do novo não basta para ver isso: no Chromium, o batimento imediato de um
+  // documento que prende a tarefa logo no começo só sai quando a tarefa acaba (medido: em duas de
+  // três rodadas ele não chegou, e as três trocas atrasaram o aviso da guarda de laços ~15 s).
+  // O preso em si mesmo fica com o vigia de batimentos ("O preview parece travado" e o Parar).
   const swapRescueRef = useRef<{ doc: string; count: number } | null>(null)
   const lastFrameSignalRef = useRef(0)
   // biome-ignore lint/correctness/useExhaustiveDependencies: `frameGeneration` e `frameAbsent` são gatilhos (iframe novo que também não entra pede outra tentativa)
@@ -1095,6 +1102,7 @@ export function PreviewIframe(): JSX.Element {
     if (isolatedUrl || frameAbsent || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
     const rescued = swapRescueRef.current?.doc === effectiveDoc ? swapRescueRef.current.count : 0
     if (rescued >= FRAME_GAPS_MS.length) return
+    if (rescued === 0 && Date.now() - lastFrameSignalRef.current <= UNRESPONSIVE_AFTER_MS) return
     const requestedAt = Date.now()
     const timer = setTimeout(() => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return

@@ -335,6 +335,56 @@ describe('PreviewIframe', () => {
     }, 10_000)
   }
 
+  // Lote 2 da missão (21/11/2026): o programa que prende a si mesmo logo no começo (um laço no topo)
+  // não dá o batimento imediato a tempo no Chromium: a mensagem fica presa até a tarefa acabar.
+  // Com o documento ANTERIOR vivo na hora do pedido, nada o impedia de entrar; trocar o iframe
+  // não adianta, só roda o programa de novo e atrasa a guarda de laços (medido: três trocas e o
+  // aviso "laço interrompido" ~15 s depois, com a prévia dizendo "Rodando").
+  it('documento novo calado com o anterior vivo no pedido não é trocado', async () => {
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<PreviewIframe />)
+    fireEvent.load(screen.getByTitle('Pré-visualização'))
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+    const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+    antes.addEventListener(
+      'load',
+      (event) => {
+        if (antes.getAttribute('srcdoc')?.includes('Documento B')) event.stopImmediatePropagation()
+      },
+      true,
+    )
+    const contentWindow = antes.contentWindow
+    if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+    // O documento A está vivo: o batimento dele chega logo antes do pedido do B.
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: contentWindow,
+          origin: 'null',
+          data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+        }),
+      )
+    })
+    act(() =>
+      useProjectStore.setState({
+        project: {
+          ...project,
+          files: {
+            ...project.files,
+            'index.html': project.files['index.html'].replace('Preview automático', 'Documento B'),
+          },
+        },
+        isDirty: false,
+      }),
+    )
+    await waitFor(() => expect(getPreviewSrcDoc()).toContain('Documento B'), { timeout: 3000 })
+    // O B prende a si mesmo: nem batimento nem load.
+    await act(async () => Bun.sleep(3_600))
+    expect(document.querySelector('[data-sz-preview-gap]')).toBeNull()
+    expect(screen.queryByTitle('Pré-visualização')).toBe(antes)
+  }, 10_000)
+
   // Lote 3.1 (19/11/2026): com a prévia em outra origem o iframe usa `src`, e o `srcdoc` lido do
   // DOM era nulo. Resultado: o Parar nunca reconhecia o jogo preso e não abria o intervalo sem
   // iframe que libera o processo travado.

@@ -221,3 +221,54 @@ num endereço de outro site (hoje só a sala ao vivo publica um documento tempor
 **não foi implementado**: é decisão da dona, a ser levada como proposta com as fotos do app (o
 "jogar numa janela própria" só no WebKit), junto do que se perde. Até lá, a proteção do WebKit
 segue a de cima.
+
+## Lote 2 de 21/11/2026: os nove programas hostis da missão e uma troca de iframe que atrapalhava
+
+A seção 5 do texto original lista nove tipos de programa problemático. Os dois arquivos de teste
+(`preview-hostile-programs.spec.ts`, prévia no `srcdoc` direto, Chromium; e
+`preview-shell-hostile.spec.ts`, prévia na casca, Chromium e Firefox) passaram a usar os mesmos
+programas, em `e2e/helpers/hostilePrograms.ts`:
+
+| Programa | O que se confere além do editor sobreviver |
+|---|---|
+| laço infinito (`while (true)`) | a guarda corta em ~4 s e as Mensagens do jogo dizem "laço interrompido" |
+| recursão sem fim | o cartão "Opa, a página parou" |
+| trabalho síncrono de 30 s que não é laço | — |
+| memória crescendo sem parar | — |
+| renderização pesada (1920 por 1080, 120 mil retângulos e um desfoque da tela inteira por quadro) | — |
+| erro de compilação | o cartão "Opa, a página parou" |
+| erros de física no Jogo 2D (gravidade NaN, 1.500 caixas com velocidade NaN e infinita colidindo, um "Quando encostar" que lança) | o cartão "Opa, o jogo parou" e, em "O que o computador disse", "parei o bloco “Quando encostar”" |
+| enxurrada de eventos (500 ouvintes, 2.000 teclas falsas por volta e 2.000 mensagens forjadas para a página, com a forma das que o editor lê) | — |
+| enxurrada de mensagens no console | — |
+
+"O editor sobrevive" passou a incluir o pedido da missão de que ele **possa salvar o projeto**:
+com o programa hostil rodando, o Salvar do menu ⋯ responde e o selo volta a "Salvo" (o selo só
+volta depois que o banco confirma). Depois disso vale o de antes: relógio do editor abaixo de
+500 ms (1.000 ms nas duas enxurradas e na memória), Parar em menos de 5 s e o conserto rodando.
+
+Resultado local (Windows, Chromium 159 completo e Firefox do Playwright com o isolamento por site
+de mesa): 10 de 10 no `srcdoc` e 9 de 9 na casca nos dois navegadores. O WebKit continua fora (B4).
+
+### O defeito que o laço achou
+
+Com o laço no topo do programa, o aviso "laço interrompido" às vezes nunca aparecia, e a prévia
+seguia dizendo "Rodando". Medido com o efeito instrumentado: o vigia da troca (`swapRescueRef`,
+que troca o iframe quando um documento novo não dá `load` em 3 s) achava que o processo estava
+preso pelo jogo ANTERIOR e trocava o iframe três vezes. Cada iframe novo rodava o laço de novo e
+prendia antes de a guarda (4 s) cortar; o aviso só chegava ~15 s depois.
+
+A causa: o vigia distingue "processo preso pelo anterior" de "documento que só demora" pelo
+batimento imediato do documento novo (achado E3), mas no Chromium o batimento de um documento que
+prende a tarefa logo no começo só sai quando a tarefa acaba (em duas de três rodadas ele não
+chegou). Conserto (`PreviewIframe.tsx`): a primeira troca só arma com o documento anterior JÁ
+calado na hora do pedido. Com ele vivo, nada segura a entrada do novo, e o novo que não entra está
+preso em si mesmo; trocar não adianta. Esse caso fica com o vigia de batimentos ("O preview parece
+travado") e com o Parar. Teste: `PreviewIframe.test.tsx` "documento novo calado com o anterior
+vivo no pedido não é trocado" (vermelho antes: o iframe era trocado). O caso antigo ("calado é
+trocado", com o anterior sem sinal) segue passando.
+
+Efeito colateral visto no trace: o gravador do Playwright tira retrato de todos os quadros a cada
+passo e espera o iframe preso, então com `--trace` os passos ficam lentos enquanto o programa
+hostil roda (o trabalho síncrono de 30 s foi de 18 s para 37 s de teste). Medido sem o trace, o
+editor fica responsivo o tempo todo: `evaluate` de 1 a 3 ms e nenhum atraso de relógio acima de
+120 ms. Antes, as trocas indevidas matavam o iframe e escondiam isso.

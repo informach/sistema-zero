@@ -1,5 +1,12 @@
 import { expect, type Page, test } from '@playwright/test'
 import { applyCpuThrottle } from './helpers/cpuThrottle'
+import {
+  abrirMensagensDoJogo,
+  instalarJogo2D,
+  PROGRAMAS_HOSTIS,
+  salvarDuranteOPior,
+} from './helpers/hostilePrograms'
+import { maiorAtrasoDaPagina, replaceBridgeScript } from './helpers/previewShell'
 
 // A homologação de isolamento usa o Chromium completo, como measure-preview-isolation.mjs.
 // O headless shell padrão tem outro modelo de processos e não representa essa capacidade.
@@ -9,8 +16,9 @@ test.use({ channel: 'chromium' })
  * Programas hostis na prévia do Clássico (pacote B da evolução do Estúdio).
  *
  * O que se exige do EDITOR enquanto o jogo da criança faz o pior: a página continua respondendo
- * (o relógio dela não atrasa), o Parar funciona, e depois de consertar o código o jogo volta a
- * rodar. Não se exige que o programa hostil "funcione".
+ * (o relógio dela não atrasa), o projeto ainda salva, o Parar funciona, e depois de consertar o
+ * código o jogo volta a rodar. Não se exige que o programa hostil "funcione". Os programas são os
+ * da seção 5 da missão, em `helpers/hostilePrograms.ts`.
  *
  * Só Chromium por enquanto: a medição de `scripts/measure-preview-isolation.mjs` mostrou que ali
  * o iframe `srcdoc` com sandbox mantém o editor responsivo ali. Firefox/WebKit foram medidos
@@ -24,56 +32,33 @@ async function createProject(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 }
 
-async function replaceBridgeScript(page: Page, code: string): Promise<void> {
-  await page.getByRole('button', { name: 'Ponte' }).click()
-  await page.getByRole('button', { name: 'script.js' }).first().click()
-  const editor = page.locator('.monaco-editor').first()
-  await editor.waitFor({ state: 'visible', timeout: 15_000 })
-  const input = editor.getByRole('textbox', { name: 'Editor content' })
-  await editor.locator('.view-line').first().click()
-  await page.keyboard.press('Control+A')
-  await page.keyboard.press('Backspace')
-  await expect(input).toHaveValue('')
-  await page.evaluate((text) => navigator.clipboard.writeText(text), code)
-  await page.keyboard.press('Control+V')
-  await expect(input).toHaveValue(code)
-}
-
-/** O maior intervalo entre dois batimentos de 50 ms da página do editor, em `ms` de observação. */
-async function maiorAtrasoDaPagina(page: Page, ms: number): Promise<number> {
-  return page.evaluate(
-    (duracao) =>
-      new Promise<number>((resolve) => {
-        let ultimo = performance.now()
-        let maior = 0
-        const relogio = setInterval(() => {
-          const agora = performance.now()
-          maior = Math.max(maior, agora - ultimo)
-          ultimo = agora
-        }, 50)
-        setTimeout(() => {
-          clearInterval(relogio)
-          resolve(Math.round(maior))
-        }, duracao)
-      }),
-    ms,
-  )
-}
-
+// O ajudante de colar confere o programa INTEIRO pela área de transferência: o campo do Monaco
+// guarda só o trecho perto do cursor, e um programa longo (a física) não cabia na conferência.
 const rodar = (page: Page) => page.locator('[data-live-target="studio-run"]')
 const parar = (page: Page) => page.locator('[data-live-target="studio-stop"]')
 const corpoDoJogo = (page: Page) =>
   page.frameLocator('iframe[title="Pré-visualização"]').locator('body')
 
 const CONSERTADO = 'document.body.dataset.voltou = "sim";'
+const palco = (page: Page) => page.locator('#bridge-preview')
 
-/** Com o programa hostil rodando: a página responde, o Parar para, e o conserto volta a rodar. */
-async function editorSobrevive(page: Page, limiteDeAtrasoMs = 500): Promise<void> {
+/**
+ * Com o programa hostil rodando: a página responde, salva o projeto, o Parar para, e o conserto
+ * volta a rodar.
+ */
+async function editorSobrevive(
+  page: Page,
+  limiteDeAtrasoMs = 500,
+  /** Conferência do programa hostil, feita antes do Parar (o conserto limpa as mensagens). */
+  antesDeParar?: () => Promise<void>,
+): Promise<void> {
   // A prévia recarrega um instante depois de o código mudar; o pior já começou quando se mede.
   await page.waitForTimeout(1500)
   expect(await maiorAtrasoDaPagina(page, 3000), 'atraso do relógio do editor').toBeLessThan(
     limiteDeAtrasoMs,
   )
+  await salvarDuranteOPior(page)
+  await antesDeParar?.()
   await expect(parar(page)).toBeEnabled()
   await parar(page).click()
   await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 5_000 })
@@ -96,31 +81,61 @@ test.describe('programas hostis na prévia', () => {
 
   test('trabalho síncrono longo que não é laço não trava o editor', async ({ page }) => {
     await createProject(page)
-    await replaceBridgeScript(
-      page,
-      [
-        'const dados = Array.from({ length: 300000 }, (_, i) => (i * 7919) % 10007);',
-        'const fim = Date.now() + 30000;',
-        'function gastar() { if (Date.now() < fim) { dados.slice().sort((a, b) => a - b); gastar(); } }',
-        'gastar();',
-      ].join('\n'),
-    )
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.trabalhoSincrono)
     await editorSobrevive(page)
+  })
+
+  test('laço infinito: a guarda corta e avisa nas mensagens do jogo', async ({ page }) => {
+    await createProject(page)
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.laco)
+    await editorSobrevive(page, 500, async () => {
+      await abrirMensagensDoJogo(page)
+      await expect(page.getByText(/O código ficou preso em um laço/).first()).toBeVisible({
+        timeout: 10_000,
+      })
+    })
   })
 
   test('recursão sem fim vira erro do jogo, não do editor', async ({ page }) => {
     await createProject(page)
-    await replaceBridgeScript(page, 'function cair(n) { return cair(n + 1) + 1; }\ncair(0);')
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.recursao)
+    await expect(palco(page).getByText('Opa, a página parou')).toBeVisible({ timeout: 15_000 })
     await editorSobrevive(page)
   })
 
   test('enxurrada de mensagens não trava o editor', async ({ page }) => {
     await createProject(page)
-    await replaceBridgeScript(
-      page,
-      'setInterval(() => { for (let i = 0; i < 2000; i++) console.log("mensagem " + i); }, 0);',
-    )
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.enxurradaDeMensagens)
     await editorSobrevive(page, 1000)
+  })
+
+  test('enxurrada de eventos e de mensagens forjadas não trava o editor', async ({ page }) => {
+    await createProject(page)
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.eventos)
+    await editorSobrevive(page, 1000)
+  })
+
+  test('renderização pesada a cada quadro não trava o editor', async ({ page }) => {
+    await createProject(page)
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.renderizacao)
+    await editorSobrevive(page)
+  })
+
+  test('erro de compilação é do jogo, com o lugar, e o conserto roda', async ({ page }) => {
+    await createProject(page)
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.compilacao)
+    await expect(palco(page).getByText('Opa, a página parou')).toBeVisible({ timeout: 15_000 })
+    await editorSobrevive(page)
+  })
+
+  test('erros de física no motor do Jogo 2D: o editor segue e aponta o bloco', async ({ page }) => {
+    await createProject(page)
+    await instalarJogo2D(page)
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.fisica)
+    await expect(palco(page).getByText('Opa, o jogo parou')).toBeVisible({ timeout: 15_000 })
+    await palco(page).getByText('O que o computador disse').click()
+    await expect(palco(page).getByText(/parei o bloco “Quando encostar”/)).toBeVisible()
+    await editorSobrevive(page)
   })
 
   // Em navegador que não isola a prévia, a aba congela junto com o jogo, e o projeto travaria de
@@ -166,10 +181,7 @@ test.describe('programas hostis na prévia', () => {
 
   test('memória crescendo sem parar não derruba o editor', async ({ page }) => {
     await createProject(page)
-    await replaceBridgeScript(
-      page,
-      'const tudo = [];\nsetInterval(() => { tudo.push(new Array(500000).fill(Math.random())); }, 5);',
-    )
+    await replaceBridgeScript(page, PROGRAMAS_HOSTIS.memoria)
     await editorSobrevive(page, 1000)
   })
 })
