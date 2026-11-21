@@ -77,6 +77,18 @@ novo contrato usa composição completa das camadas. Provas em
 `qa/imagens-por-regioes-2026-11-21/`. Objetos/conjuntos na imagem 8 ainda dependem
 do adaptador Scene 4 existente no plano; não há outro compositor independente.
 
+Pincéis usam o escritor comum com resultado de recusa; linhas/retângulos são
+admitidos antes de gerar pontos e carimbos expandem blocos distintos. Cada coleção
+e traço aceita até 65.536 destinos; revisitas não gastam o teto, e o pincel fica
+estável até soltar. `replaceIfCurrent(expected, next)` é CAS **em RAM**: passe o
+snapshot produzido pelo próprio gesto, não uma leitura recente para legitimar uma
+proposta antiga. O retorno é o snapshot que sobreviveu aos assinantes, ou `null`.
+A fachada de conjuntos possui identidade por revisão externa e adapta essa mesma
+operação. Recusa/cancelamento não restaura a base sobre outra revisão do mesmo ID.
+O CAS persistente/local da issue 026 permanece separado. Outros gestos contínuos,
+geometria/câmera e ativação pública 8 continuam no plano. Provas e limites em
+`qa/pinceis-por-regioes-2026-11-21/`, no diretório da missão.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

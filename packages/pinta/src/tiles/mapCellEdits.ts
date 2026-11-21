@@ -1,15 +1,22 @@
 import {
+  effectiveLayer,
   PINTA_MAP_FORMAT_LIMITS,
   type RegionTilemapAsset,
   type TilemapAsset,
+  type TilemapCells,
 } from '../core/project'
 import { isValidCellForTiles } from './cell'
 import type { CellPos, CellRect } from './cellGeometry'
 import { REGION_EDIT_LIMIT, type RegionCellEdit } from './regionCells'
-import { editRegionMapCells } from './regionMap'
-import { withTileLayer } from './tilemapOps'
+import { editRegionMapCells, type RegionMapResult } from './regionMap'
+import { tileLayerById, withTileLayer } from './tilemapOps'
 
 export type AuthorMap = TilemapAsset | RegionTilemapAsset
+export type MapCellEditFailure = Extract<RegionMapResult, { ok: false }>['reason']
+export interface MapCellEditResult<Map extends AuthorMap> {
+  map: Map
+  failure?: MapCellEditFailure
+}
 
 export function isCellPosition(pos: CellPos): boolean {
   return Number.isSafeInteger(pos.col) && Number.isSafeInteger(pos.row)
@@ -35,14 +42,28 @@ export function editMapCellBatch<Map extends AuthorMap>(
   layerId: string,
   edits: readonly RegionCellEdit[],
 ): Map {
+  return tryEditMapCellBatch(map, layerId, edits).map
+}
+
+/** Same writer, with refusal information for gestures and user feedback. */
+export function tryEditMapCellBatch<Map extends AuthorMap>(
+  map: Map,
+  layerId: string,
+  edits: readonly RegionCellEdit[],
+): MapCellEditResult<Map> {
+  if (edits.length > REGION_EDIT_LIMIT) return { map, failure: 'work-budget' }
   if (
-    edits.length > REGION_EDIT_LIMIT ||
     edits.some(
       (edit) =>
-        !isCellPosition(edit) || !isValidCellForTiles(edit.cell, PINTA_MAP_FORMAT_LIMITS.maxTiles),
+        !edit ||
+        !isCellPosition(edit) ||
+        !isValidCellForTiles(edit.cell, PINTA_MAP_FORMAT_LIMITS.maxTiles),
     )
   )
-    return map
+    return { map, failure: 'invalid-edit' }
+  const target = tileLayerById<TilemapCells>(map, layerId)
+  if (!target) return { map, failure: 'invalid-layer' }
+  if (effectiveLayer(map, target).locked) return { map, failure: 'locked' }
   const origin = 'origin' in map ? map.origin : { col: 0, row: 0 }
   const clipped = edits.filter(
     ({ col, row }) =>
@@ -54,16 +75,18 @@ export function editMapCellBatch<Map extends AuthorMap>(
   if ('origin' in map) {
     const result = editRegionMapCells(map, layerId, clipped)
     // The writer preserves the supplied model, IDs and all additional map fields.
-    return (result.ok ? result.map : map) as Map
+    return result.ok ? { map: result.map as Map } : { map, failure: result.reason }
   }
-  return withTileLayer(map, layerId, (layer) => {
-    let cells: Int16Array | null = null
-    for (const edit of clipped) {
-      const at = edit.row * map.cols + edit.col
-      if ((cells ?? layer.cells)[at] === edit.cell) continue
-      if (!cells) cells = new Int16Array(layer.cells)
-      cells[at] = edit.cell
-    }
-    return cells ? { ...layer, cells } : layer
-  }) as Map
+  return {
+    map: withTileLayer(map, layerId, (layer) => {
+      let cells: Int16Array | null = null
+      for (const edit of clipped) {
+        const at = edit.row * map.cols + edit.col
+        if ((cells ?? layer.cells)[at] === edit.cell) continue
+        if (!cells) cells = new Int16Array(layer.cells)
+        cells[at] = edit.cell
+      }
+      return cells ? { ...layer, cells } : layer
+    }) as Map,
+  }
 }

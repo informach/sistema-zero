@@ -1,0 +1,461 @@
+{
+  "at": "2026-11-21T18:07:28.808Z",
+  "sourceBase": "83e16c1745c029909af63d818e17875bfd1d2f5c",
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "focused": {
+      "passed": 101,
+      "failed": 0,
+      "assertions": 1240
+    },
+    "pinta": {
+      "passed": 2469,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 29081
+    },
+    "nativeControls": {
+      "passed": 3,
+      "failed": 0,
+      "assertions": 4372
+    },
+    "browser": {
+      "passed": 51,
+      "failed": 0,
+      "retries": 0,
+      "controller": 18,
+      "publicWorkshop": 33,
+      "exactSetNativeComparisons": 12,
+      "profiles": [
+        {
+          "profile": "desktop",
+          "scenario": "cancel",
+          "cpuSlowdown": 1,
+          "touch": false,
+          "nativeSha256": "07870dfef077ed0c1def8be72f5ac58a7d2148730ddc012172cdc52ec67579cd"
+        },
+        {
+          "profile": "touch",
+          "scenario": "cancel",
+          "cpuSlowdown": 1,
+          "touch": true,
+          "nativeSha256": "804461286f6fe1288288bbe27b4d0ad748cf7d7d78b06c5c0b4b8507bb405d88"
+        },
+        {
+          "profile": "cpu-4x",
+          "scenario": "cancel",
+          "cpuSlowdown": 4,
+          "touch": false,
+          "nativeSha256": "57d8d4bb9a87ff0d4fa637317fd9569d6345168781cfe71364100aacca34f7e6"
+        },
+        {
+          "profile": "desktop",
+          "scenario": "move",
+          "cpuSlowdown": 1,
+          "touch": false,
+          "nativeSha256": "dbe2366899cb85612c8fac95a4c4cdd20e6b46ef516a71f14cc3492541bca690"
+        },
+        {
+          "profile": "touch",
+          "scenario": "move",
+          "cpuSlowdown": 1,
+          "touch": true,
+          "nativeSha256": "c0ee62ad1e154d6a0e4618c673506dbebe2a44183955ab4c3f1aaba4f0146f83"
+        },
+        {
+          "profile": "cpu-4x",
+          "scenario": "move",
+          "cpuSlowdown": 4,
+          "touch": false,
+          "nativeSha256": "ff8b18f0627c4f3ab471ee4b362590278c6098d9f1dbc834a1c20a31b4a4d8b3"
+        },
+        {
+          "profile": "desktop",
+          "scenario": "release",
+          "cpuSlowdown": 1,
+          "touch": false,
+          "nativeSha256": "20afcc04d7c63d11e2d13739239ff5191bd1a6bcdff2f039cadac286390a46c5"
+        },
+        {
+          "profile": "touch",
+          "scenario": "release",
+          "cpuSlowdown": 1,
+          "touch": true,
+          "nativeSha256": "e52dde93117ba1708ddb82c5dd8ae6f41c0701d25d4c0867c216d0eedcec7b09"
+        },
+        {
+          "profile": "cpu-4x",
+          "scenario": "release",
+          "cpuSlowdown": 4,
+          "touch": false,
+          "nativeSha256": "b76ebb0baca8b48ccd8a414b77f4b9bb9b3fc272b4f87395950dd15b401f2542"
+        },
+        {
+          "profile": "desktop",
+          "scenario": "stamp",
+          "cpuSlowdown": 1,
+          "touch": false,
+          "nativeSha256": "c9ea0eda6f4eadb7e0948ba34603b39e2c38afd72656faebbcf1a4b27c25dc26"
+        },
+        {
+          "profile": "touch",
+          "scenario": "stamp",
+          "cpuSlowdown": 1,
+          "touch": true,
+          "nativeSha256": "186d73c1f7d20fc31727affaa7f9437401ddb0385fddf0321efada2cc09fc660"
+        },
+        {
+          "profile": "cpu-4x",
+          "scenario": "stamp",
+          "cpuSlowdown": 4,
+          "touch": false,
+          "nativeSha256": "e16ca763b46ec644e09864ab718fae0c3d62ecd5279c71e615662d5714d3c1b9"
+        },
+        {
+          "profile": "desktop",
+          "scenario": "host",
+          "cpuSlowdown": 1,
+          "touch": false,
+          "nativeSha256": "94ec9753034e56b44e71a9f73bf8bcac8dc4b466aced763f0779c311b7005b58"
+        },
+        {
+          "profile": "touch",
+          "scenario": "host",
+          "cpuSlowdown": 1,
+          "touch": true,
+          "nativeSha256": "0cb81119bad72ad48dcaeb4d5511cd9493517a9c4613968e67aa808ec6b98257"
+        },
+        {
+          "profile": "cpu-4x",
+          "scenario": "host",
+          "cpuSlowdown": 4,
+          "touch": false,
+          "nativeSha256": "3875fa20dc454c1e6e822334ac9a8413ae30d00dafb9721fd7e06759933e207b"
+        },
+        {
+          "profile": "desktop",
+          "scenario": "undo",
+          "cpuSlowdown": 1,
+          "touch": false,
+          "nativeSha256": "ae7b692977b4f078068158a50ded1dacae0cd453a95751d1dd442c0a94fa2aef"
+        },
+        {
+          "profile": "touch",
+          "scenario": "undo",
+          "cpuSlowdown": 1,
+          "touch": true,
+          "nativeSha256": "eb3853b1cffc242d87e2bd859f2c69e2fea09d33d5bc5308a13e096878d74e82"
+        },
+        {
+          "profile": "cpu-4x",
+          "scenario": "undo",
+          "cpuSlowdown": 4,
+          "touch": false,
+          "nativeSha256": "5b8715daa3155981f7ab9dee6c61d1c053c7a4712ad0522d36e9d24a0f9eb01e"
+        }
+      ]
+    },
+    "historicalProducer": {
+      "passedControl": 3,
+      "expectedFailures": 15,
+      "wholeDistribution": false
+    },
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "studioTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1,
+    "children": false,
+    "latencyQualified": false,
+    "heapMeasured": false
+  },
+  "review": {
+    "boundedInputBeforeAllocation": true,
+    "uniqueStampBlocks": true,
+    "atomicStrokeRefusal": true,
+    "ramConditionalOwnership": true,
+    "persistenceCasUnchanged": true,
+    "mapSetRevisionFacade": true,
+    "otherContinuousGesturesPending": true,
+    "stylesChanged": false
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/homologacao/brushGestures.tsx",
+      "sha256": "9fc030693e47cd648d00e36f203c1a45cd474cd8d6f09c70834cbcc81b059d5c"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-brush-e2e.ts",
+      "sha256": "e76f16acff5ca08d88ea15bbae1fd8c614b7a0c9e787cdb00f2df62cf644c3a6"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapSetEditor.tsx",
+      "sha256": "42902f0638fd84f91e11e3408b116b56e4ce0922bbd7e902933d04283c8a36e7"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/keyboardPainting.ts",
+      "sha256": "239e06c385a0ea0e0cb533801b86f02ecaec6d8d310e42156b04e64dd6d90bce"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapBrush.ts",
+      "sha256": "d69e4cdb7406204c71601081dd276d857bee50ed749e467fae1c54e865fceaf6"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapBrushMessages.ts",
+      "sha256": "e0e91cfd12dbc4a8ceca960b9dc3a9c3161cf3faad393c1da02667cafa967a6c"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapBrushRegions.test.ts",
+      "sha256": "7141d3be9f9de57ce08d3cdd48fb7a4a332711bb2aa27404d550423b1907e114"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/tileGestures.test.ts",
+      "sha256": "a5552410bd1e96a962b64ac4c764b36769659174e3f7e87f3b255f508decba08"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/tileGestures.ts",
+      "sha256": "35d47c245a42b4c786ab0851b2638fd3d3a41831a7433056de1d2797f3d1307e"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useKeyboardPainting.ts",
+      "sha256": "c2399f84754b1f7647a27f7ab0f0c9878eb617623258e5f357ef60b59c3ab5a4"
+    },
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "sha256": "24ca78387a56430fcbf0157eea4b482d4062ad6af69b82d8d40c103022f1205e"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.test.ts",
+      "sha256": "25d53af9754c4d9dba12d8911355cc4d69257a85a3646c40f426794cb4f959b6"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "sha256": "bfaec510045a26c52d630ba0cdcac97a7c222b24d52a282cf7c8582022006275"
+    },
+    {
+      "file": "packages/pinta/src/state/mapSetEditorStore.test.ts",
+      "sha256": "de9e6c14e65e9a9a9ba18c5aa280659679b0275cce45d0b1291bf7751b9cd0d5"
+    },
+    {
+      "file": "packages/pinta/src/state/mapSetEditorStore.ts",
+      "sha256": "1ad9b1b66b95c99ed680c916a0b815277877ff7bad276af9e9cc740d95193934"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellEdits.ts",
+      "sha256": "198291bd341c0397e6e28f29692c08676c3772c6884de4556b6d6e867cc99bcc"
+    },
+    {
+      "file": "packages/pinta/src/tiles/scatter.ts",
+      "sha256": "f95597b40b22d3099f4b512dff573a90d64e8f3547f69ab9fd0ae1e9a904ebca"
+    },
+    {
+      "file": "packages/pinta/src/tiles/stamp.ts",
+      "sha256": "1d50c42fc31fa89294749b353ba21a1dd26bf6ec2ecfa19137ba6b9e8c473adc"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-brush-regions.flow.ts",
+      "sha256": "fda1fd0f038593d3cf06500fea2c4d84b4be6b771e65f51413fbb3b4ef0f63f6"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-brush-workshop-scenes.flow.ts",
+      "sha256": "4a0017a1f2bcfdf8887da2cac28018bd8434020af983c816de09fdbe259b8828"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-brush-workshop.config.ts",
+      "sha256": "d0d553958c8dfacf2382ecb9081507e15585653540da702f9439343396b92514"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-brush.config.ts",
+      "sha256": "977e4f619b04c56904533e2c90a8837b4cef9e37f48fde61c32978cbdff52b00"
+    }
+  ],
+  "historicalSources": [
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/tileGestures.ts",
+      "commit": "83e16c1745c029909af63d818e17875bfd1d2f5c",
+      "sha256": "44e84c1e214afe6a98aa462abfc2281b080c8cb343d64c47c77c3a21ca1deb66"
+    }
+  ],
+  "records": [
+    {
+      "file": "controller-desktop.png",
+      "bytes": 52374,
+      "sha256": "f59354e65efd649ea95e773ab98387e66ac2550f62a77d585feb3b07b6d9d223"
+    },
+    {
+      "file": "controller-touch.png",
+      "bytes": 239614,
+      "sha256": "2d4ea02dc8a2f5e1697f23e5cdc83f3dd8ddb959bc3e99ff40f53349a3906732"
+    },
+    {
+      "file": "controller-cpu-4x.png",
+      "bytes": 52274,
+      "sha256": "20e27cb79567c06bf4669309d586a284b4bd8cef90cebd05c00acec32f63400f"
+    },
+    {
+      "file": "workshop-set-desktop.png",
+      "bytes": 60117,
+      "sha256": "7923f03ef4e7b0aa0ec25ff8672a982cb75f2b4b480d2deade3a178a2c3ea09b"
+    },
+    {
+      "file": "workshop-set-touch.png",
+      "bytes": 85304,
+      "sha256": "62cad61f88a030e81f8c15730267a00197ec581623c841da5ab02cdca1bb0c0f"
+    },
+    {
+      "file": "workshop-set-cpu-4x.png",
+      "bytes": 60117,
+      "sha256": "7923f03ef4e7b0aa0ec25ff8672a982cb75f2b4b480d2deade3a178a2c3ea09b"
+    },
+    {
+      "file": "playwright-controller-report.json.gz",
+      "bytes": 2037830,
+      "sha256": "ff3a22714a333aa8b59a7f2dd470c3c55e1a353ec47f28a310b4c97949998946",
+      "rawBytes": 2997070,
+      "rawSha256": "1007eb2aa7507df5d03a6085f9e9d87a95dfaffaa7770cb9fb1c2aebd5bcd7e8"
+    },
+    {
+      "file": "playwright-workshop-report.json.gz",
+      "bytes": 2990056,
+      "sha256": "a3cbe2aa12df21fe846585574384819bc270164a03980465dc3692705edaf12c",
+      "rawBytes": 4418598,
+      "rawSha256": "8645fd5d2d9079ca1384f82282dcec11869ec360f402dc9144c3293c057bb2e5"
+    },
+    {
+      "file": "playwright-historical-producer-report.json.gz",
+      "bytes": 329163,
+      "sha256": "ecbcdaa6fff7bc76b645937a25d1ee290cea3c81793e25067fafb7735ec794ce",
+      "rawBytes": 580188,
+      "rawSha256": "c90b17eadce2deb3fe8a37e96a9297ae62fd25e086e1aed273fdabb16d2405ae"
+    },
+    {
+      "file": "pinta-brush-regions-red.log.gz",
+      "bytes": 2475,
+      "sha256": "570b97dff42c19b3e996489b8a73b5d0edb872bb3a92b533ced7accf91bce05c",
+      "rawBytes": 12886,
+      "rawSha256": "3a09b2b3c99e0e27c09552717b12e5fbab62cd2fa7d610b3647913510d014054"
+    },
+    {
+      "file": "pinta-brush-regions-ui-first.log.gz",
+      "bytes": 6557,
+      "sha256": "c736610a14a05f4276d16b8a20a8ce22dd981e05a09d5e612e6a184960bda74e",
+      "rawBytes": 22698,
+      "rawSha256": "418c95f60038a6833aab16c9c2f47d6f94d33abfedea9f103cd77a559a72dc44"
+    },
+    {
+      "file": "pinta-brush-regions-set-review.log.gz",
+      "bytes": 353,
+      "sha256": "4fe7e84406a6724bebad263dcb7f37741a21d73257f9ec0d5054f6aac6eafb00",
+      "rawBytes": 518,
+      "rawSha256": "20e28c1c99402519d181629fe98549e5a2826da047f27bb9ee5a60f2611f865b"
+    },
+    {
+      "file": "pinta-brush-regions-focused-final.log.gz",
+      "bytes": 3623,
+      "sha256": "46701b9ff9217e54ea05e5446407dd77b6dccb572b081e40540b743ea6122d80",
+      "rawBytes": 10404,
+      "rawSha256": "b59f915779f88955956e2b6a19f5b58057ac9e59b29b9a9cba1bbbba47318af6"
+    },
+    {
+      "file": "pinta-brush-regions-types-first.log.gz",
+      "bytes": 126,
+      "sha256": "848192e8dd5401a8f8b71209370ca40073092801818b1ff334230cdc1f42a47d",
+      "rawBytes": 120,
+      "rawSha256": "90ea9f8eb41b783bc541f5dd21c092c1b85f815f86d08dc19f0751e3c90cc176"
+    },
+    {
+      "file": "pinta-brush-regions-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-brush-regions-studio-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-brush-regions-suite-final.log.gz",
+      "bytes": 75570,
+      "sha256": "5ee07641af3873caf871c64d3012e63732b1adcfd38e570b828b4af9d700bee3",
+      "rawBytes": 279687,
+      "rawSha256": "c72d74377542820d466952f709908c0c6dc870e22dcab9479312a4283dea4c2f"
+    },
+    {
+      "file": "pinta-brush-regions-native.log.gz",
+      "bytes": 329,
+      "sha256": "d8a3b9229f14dc18dffac609f0dfc2d4456a53b6e21c0c0b82f1e65461436fce",
+      "rawBytes": 507,
+      "rawSha256": "b81ee7fcde8f64e04aa38a5579799ec7d631f019bb2773e95418f9bc4834b4f0"
+    },
+    {
+      "file": "pinta-brush-regions-browser-first-report.json.gz",
+      "bytes": 331303,
+      "sha256": "01821f0f0312783c5b7d2d6d3b703b95d82b9605a7bd3d9e7aef41cd73918979",
+      "rawBytes": 584132,
+      "rawSha256": "d318c7fd37de975e650aed8b66931fb1b67079909608643e08ea9245c2448369"
+    },
+    {
+      "file": "pinta-brush-regions-save-diagnostic.log.gz",
+      "bytes": 294,
+      "sha256": "4a3e7cc05b8e44b6ed2b9c44431cfd5eccf9e55c2fbe9785960564f3dd4dcf59",
+      "rawBytes": 643,
+      "rawSha256": "0a442abb1dad298d14fa23e00de5f63b9d0660ca4be8813422da1ce508d50cd2"
+    },
+    {
+      "file": "pinta-brush-regions-save-diagnostic.json.gz",
+      "bytes": 685,
+      "sha256": "41b92a5c812f9b913e3c74bf9e27f7441f1736a4c34ee4f460b025de79a8806d",
+      "rawBytes": 3004,
+      "rawSha256": "4e17f1fe80f203e1756658c25f653a71bc32ba41bd2f7b99189265b00b002221"
+    },
+    {
+      "file": "pinta-brush-regions-browser-final.log.gz",
+      "bytes": 500,
+      "sha256": "64e985f54ce5544136bc37762901e17a9d988afb5214305cbae47475b4ee0deb",
+      "rawBytes": 2914,
+      "rawSha256": "0cca917e7fd5e7baed6c2d8dae1d769ba14bb081ccdee3aabaaaeeea11eb82bf"
+    },
+    {
+      "file": "pinta-brush-regions-legacy-browser.log.gz",
+      "bytes": 330965,
+      "sha256": "9edde757b785adb03935d838529da08e350cd715f38c0bb819dfcea1199f9c3d",
+      "rawBytes": 627142,
+      "rawSha256": "d390163c4061c388baa7706e0129bc50eb179b64e214a979c2a2379ee33eaa21"
+    },
+    {
+      "file": "pinta-brush-workshop-first-report.json.gz",
+      "bytes": 2806967,
+      "sha256": "b78b0fdeaada71dd0b49220b468220309c659f718c6e9bccfd2d74cfeb82b6fa",
+      "rawBytes": 4171227,
+      "rawSha256": "449a6a4209d6be4422fcba864072a72d21641e682b670b9fdbac8747bef58bb1"
+    },
+    {
+      "file": "pinta-brush-regions-workshop-final.log.gz",
+      "bytes": 1332,
+      "sha256": "21cbe7c1e4e90872c0e395e206a00784fec98e2e5fc68dbe295252406fe77661",
+      "rawBytes": 6321,
+      "rawSha256": "6a8ed869d176dc12b2a11772ddc81b71b6276be532640583ed7c579d3dd4fe7d"
+    },
+    {
+      "file": "pinta-brush-regions-final-biome.log.gz",
+      "bytes": 769,
+      "sha256": "3b7c1084298b1a5ff7da879f65648ff2c52eb8d6d549e93f1d73950f8ec1ae5f",
+      "rawBytes": 2105,
+      "rawSha256": "af5f43695f89b6d507e8ddb7d583677a9e3bef3881bb7eb7fcd9996530491860"
+    },
+    {
+      "file": "pinta-brush-regions-final-biome-green.log.gz",
+      "bytes": 65,
+      "sha256": "7923c36f80c4aa739b9094cc67ded4473d1173da80d61bcc40e0d962b3c0ff60",
+      "rawBytes": 45,
+      "rawSha256": "6c35c7b5e0bbbe646c535cb834c922af660acc5f15822081873adc2fbfb9fa75"
+    }
+  ]
+}

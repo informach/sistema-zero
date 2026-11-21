@@ -10,6 +10,7 @@ import { isPintaModalOpen } from '../useActionShortcuts'
 import { commitIfChanged } from './commitGuard'
 import { keyboardCellBounds, keyboardPaintCandidate } from './keyboardPainting'
 import { brushTerrain, type MapBrushContext } from './mapBrush'
+import { mapBrushMessage } from './mapBrushMessages'
 
 export type KeyboardMapPreview = { base: TilemapAsset; map: TilemapAsset }
 interface Options {
@@ -268,7 +269,9 @@ export function useKeyboardPainting(options: Options) {
     const candidate = keyboardPaintCandidate(map, tool, at, gesture?.at ?? null, brush)
     cancel()
     if (!candidate) return
-    if (candidate.unmatched) d.showToast(COPY.scene.faltamPecasDeBordaOuCantoNeste)
+    const message = mapBrushMessage(candidate)
+    if (message) d.showToast(message)
+    if (candidate.failure) return
     if (
       tool !== 'eraser' &&
       tool !== 'fill' &&

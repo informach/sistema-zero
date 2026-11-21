@@ -237,3 +237,49 @@ conservam hashes. O decoder recebe SVG com dimensões raster limitadas, pelo
 helper extraído do compositor portátil. Imagem achatada antiga e composição
 completa são contratos distintos, qualificados com referências correspondentes.
 O restante do item 2 depende de Scene 4. O trabalho segue ao item 3 das ferramentas.
+
+### Lote verificado do item 3: admissão e pincéis na oficina
+
+- [x] Expor o resultado detalhado do escritor comum de células, mantendo o
+  wrapper que devolve o mesmo mapa ao recusar. Reutilizar as operações atuais de
+  terreno, espalhamento e carimbo, sem segundo escritor ou perda de flags.
+- [x] Admitir linha/retângulo antes de gerar pontos e trabalhar com origem
+  assinada. Limitar cada coleção a 65.536 casas; não recortar a linha alterando
+  a fase de Bresenham. Recusar coordenadas inválidas e retângulos excessivos.
+- [x] Expandir carimbos por blocos distintos, sem repetir o mesmo bloco para
+  cada casa do trajeto. Admitir o trabalho antes da alocação e conservar a ordem
+  da primeira visita, a ancoragem, os buracos e a saída visual anterior.
+- [x] Adaptar `mapBrush.ts` ao mapa autoral comum. Propagar recusa do balde,
+  terreno e armazenamento, distinguindo-a de um gesto vazio ou sem mudanças.
+- [x] Integrar coletores/resultados ao ponteiro e teclado da oficina atual,
+  com mensagens curtas pelo Toast existente. Uma recusa durante o traço deve
+  cancelar o gesto inteiro; prévia/teclado não devem gravar um pedaço recusado.
+- [x] Contar destinos distintos acumulados do traço livre, sem cobrar revisitas,
+  com teto explícito de 65.536. Cada gesto usa o snapshot do pincel do começo.
+  Conservar
+  a revisão produzida pelo próprio gesto. Cancelar/recusar não pode restaurar
+  a base por cima de outra revisão, inclusive quando ela conserva o mesmo ID.
+- [x] Reproduzir falhas de origem, duplicação e recusa em fixtures pequenas;
+  provar atomicidade, limite anterior à leitura/alocação, cancelamento, histórico
+  e conservação de documentos legados. Exercitar a oficina no Chromium com
+  mouse/toque, executar suíte/tipos, revisar e registrar antes do commit.
+
+Esse lote não promove o formato 8. Câmera/seleção/movimento, editor de recursos,
+IO e adaptadores continuam no restante dos itens 1–3 e no plano principal.
+
+Provas em `qa/pinceis-por-regioes-2026-11-21/`, no diretório da missão. Escrita
+condicional em RAM retém a revisão produzida pelo próprio gesto, inclusive na
+fachada de conjuntos; não substitui o CAS da autoridade local. O módulo anterior
+do controlador falha nos cinco cenários corrigidos em três perfis; o controle
+positivo continua passando. Versão atual: 51 ensaios de navegador aprovados,
+101 testes focados, suíte 2.469 + três controles Pygame reais e tipos/lint.
+
+### Continuação do item 3
+
+- [ ] Revisar os demais gestos de objetos, transformações e controles contínuos
+  de camada/recursos, adotando a escrita condicional com sua revisão de origem.
+  Reproduzir cancelamento/admissão tardios com o mesmo ID e com conjuntos.
+- [ ] Completar geometria, seleção, movimento e edição de versões em coordenadas
+  assinadas; integrar câmera, palco, viewport e navegação antes da promoção 8.
+- [ ] Prosseguir ao perfil de render estabilizado e aos adaptadores/IO, conforme
+  os itens anteriores. O contrato público e as etapas macro continuam abertos.

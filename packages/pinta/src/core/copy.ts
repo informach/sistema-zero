@@ -50,6 +50,10 @@ export const COPY = {
     setCaptureRefused: 'Não foi possível guardar esse pedaço sem mudar suas posições.',
     objectPasteFormat: 'Este mapa não consegue guardar esse grupo sem mudar suas posições.',
     scatterWorkLimit: 'Esta pincelada ficou muito grande. Espalhe em pedaços menores.',
+    brushWorkLimit: 'Esta pincelada ficou muito grande. Pinte em pedaços menores.',
+    brushStorageLimit: 'Não coube mais neste cenário. Apague um trecho ou crie outro mapa.',
+    brushRefused: 'Não consegui pintar este trecho. Escolha a ferramenta de novo.',
+    brushChanged: 'O cenário mudou. Comece a pincelada de novo.',
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>
