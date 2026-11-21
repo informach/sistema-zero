@@ -142,7 +142,50 @@ exportados. Publicar no Arquipélago continua só pela tela, por decisão sua.
 **Produção**, depois da sua conferência: criar `CENARIOS_MODO=equipe` no Railway de produção (e
 então em `.railway/variables.ts`), PR de staging para main e o `deploy-production.yml`.
 
-## 5. Notas técnicas
+## 5. 21/11: o editor completo e a Faísca nova
+
+**Os dez itens que faltavam no editor estão prontos**, cada um com teste, em staging:
+
+1. levar a publicação da staging ao `/macro` (`scripts/levar-publicacao-ao-macro.ts`, confere
+   o hash de cada arquivo);
+2. conferir a implantação (flutuando, enterrado, sólido no caminho, quase no mesmo plano e os
+   campos do Arquipélago), na tela e no agente (`conferir_implantacao`);
+3. gaveta com filtro por categoria, o pacote no cartão e o Adventure Land primeiro;
+4. baixar e abrir o documento em JSON (provado com a Faísca: o arquivo de 1 MB reabre igual);
+5. aviso do modelo que não carregou;
+6. pontos de encaixe: achados na geometria, encaixe ao arrastar, o botão "Encaixar na vizinha",
+   a correção à mão dos pontos do modelo e o comando `encaixar_pecas` do agente;
+7. inclinar com a encosta (painel e espalhar);
+8. prévia do modelo ao arrastar da gaveta;
+9. campos do Arquipélago no painel do objeto (equipe);
+10. lista das versões publicadas de cada ilha e "Voltar para esta versão".
+
+**A Faísca foi refeita do zero e publicada** (versão 3 = revisão 152): coração no meio da ilha,
+como a imagem e o caderno; relevo novo com platôs, colina do Farol, lago com cachoeira, praia a
+sudoeste; 1.131 objetos de 86 modelos. Andada no `/macro` com o avatar real: todos os trechos
+chegam (praça, horta, Pátio, topo do Farol, nado no lago, praia, píer), 48 a 58 quadros por
+segundo, nenhum erro. Fotos em `output/cenarios-reforma/faisca-nova/macro-v3/`.
+
+**Para publicar uma ilha inteira, três correções no motor** (`0a881cf00`): o chão pintado só de
+cores passou a ser assado com 2 pixels por passo (eram 256 MiB só de chão); a reserva de memória
+da junção conta a entrada mais duas vezes o maior lote (e não três vezes a soma); e os lotes se
+juntam pelo material equivalente, não pelo material de cada arquivo (232 → 118 MiB, 483 → 234
+lotes, menos chamadas de desenho).
+
+**O que a caminhada corrigiu no cenário:** árvores seguradas pelo tronco
+(`arquipelago.fisica: tronco`), porque a caixa da copa virava parede; rochas e barcos com caixa,
+porque a malha passava do teto de colisão do jogo; arcos com malha, porque a caixa tapava a
+passagem. O mar saiu do documento (o oceano é o do jogo) e o fundo foi pintado.
+
+**Para a frente do Arquipélago** ficou o documento
+`para-a-frente-do-arquipelago-faisca-nova.md`, com os lugares novos: o `/macro` ainda faz o
+avatar nascer na casa do código antigo e o painel de teleporte usa a tabela antiga.
+
+**Ainda pendente:** decidir o peso do pacote (118 MiB; cada lote leva uma cópia da textura, e
+dividir as imagens muda o formato que o jogo lê); a medição num aparelho modesto; a sua revisão
+da Faísca na oficina; e produção depois dela.
+
+## 6. Notas técnicas
 
 - **Divisão das faixas** (minha, a especificação só dizia básico × resto), nas mesmas três faixas
   do Molda:
