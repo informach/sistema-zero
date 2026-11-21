@@ -7040,19 +7040,22 @@ function methodToBlock(m: {
  * Pós-passo do round-trip código→blocos: dentro do escopo de um
  * construtor/método, um `sz_val_variable` cujo nome é um parâmetro vira o
  * relator de parâmetro `sz_val_arg` (bloco cinza estilo MakeCode). Percorre a
- * subárvore serializada (inputs + next).
+ * subárvore serializada (inputs + next), sem recursão: o corpo pode ser uma cadeia longa.
  */
-function retypeParamsAsArgs(node: SerializedBlocklyBlock, params: Set<string>): void {
-  if (params.size > 0 && node.type === 'sz_val_variable') {
-    const name = node.fields?.NAME
-    if (typeof name === 'string' && params.has(name)) node.type = 'sz_val_arg'
-  }
-  if (node.inputs) {
-    for (const input of Object.values(node.inputs)) {
-      if (input?.block) retypeParamsAsArgs(input.block, params)
+function retypeParamsAsArgs(root: SerializedBlocklyBlock, params: Set<string>): void {
+  if (params.size === 0) return
+  const pending: SerializedBlocklyBlock[] = [root]
+  while (pending.length > 0) {
+    const node = pending.pop() as SerializedBlocklyBlock
+    if (node.type === 'sz_val_variable') {
+      const name = node.fields?.NAME
+      if (typeof name === 'string' && params.has(name)) node.type = 'sz_val_arg'
     }
+    if (node.inputs) {
+      for (const input of Object.values(node.inputs)) if (input?.block) pending.push(input.block)
+    }
+    if (node.next?.block) pending.push(node.next.block)
   }
-  if (node.next?.block) retypeParamsAsArgs(node.next.block, params)
 }
 
 /**

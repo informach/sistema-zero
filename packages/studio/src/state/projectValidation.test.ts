@@ -5,6 +5,7 @@ import { documentFixture } from './fixtures/projectDocuments'
 import {
   prepareProjectForHost,
   sanitizeCoverAssetName,
+  sanitizeStoredBlocksState,
   sanitizeStoredProject,
   validateEditableStudioCreationSnapshot,
   validateStudioCreationSnapshot,
@@ -184,5 +185,28 @@ describe('studentTests ("Meus testes") viajam no projeto clássico em JavaScript
     }
     const lido = await validateEditableStudioCreationSnapshot(documento, documento.id)
     expect('studentTests' in lido ? lido.studentTests : undefined).toEqual([teste])
+  })
+})
+
+describe('a explicação de uma recusa numa cadeia longa', () => {
+  it('aponta o bloco desconhecido no fim de 20 mil blocos, sem estourar a pilha', () => {
+    type Node = { type: string; id: string; next?: { block: Node } }
+    const root: Node = { type: 'sz_som_stop', id: 'b0' }
+    let tail = root
+    for (let index = 1; index < 20_000; index++) {
+      const block: Node = { type: 'sz_som_stop', id: `b${index}` }
+      tail.next = { block }
+      tail = block
+    }
+    tail.type = 'tipo_que_nao_existe'
+    const state = { blocks: { languageVersion: 0, blocks: [root] }, szBehaviorAreasVersion: 7 }
+    let message = ''
+    try {
+      sanitizeStoredBlocksState(state, [])
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error)
+    }
+    expect(message).toContain('tipo "tipo_que_nao_existe" fora da allowlist')
+    expect(message).toContain('(sz_som_stop).next[0]')
   })
 })
