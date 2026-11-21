@@ -8,7 +8,7 @@ import {
   SRGBColorSpace,
 } from 'three'
 import { pixelsDaTexturaCompilada } from '../src/compilar/imagens'
-import { prepararSoloCompilado } from '../src/compilar/solo'
+import { pixelsPorMetroDoSolo, prepararSoloCompilado } from '../src/compilar/solo'
 
 test('solo sem camadas mantém cores autorais e descarte não altera o material original', async () => {
   const g = new BoxGeometry(),
@@ -59,4 +59,16 @@ test('pixels RGBA já decodificados são próprios e mantêm a orientação do s
   } finally {
     t.dispose()
   }
+})
+
+test('chão só de cores assa dois pixels por passo; com textura, os 8 de sempre', () => {
+  const grama = { id: 'grama', nome: 'Grama', cor: '#7cbf52' },
+    areia = { id: 'areia', nome: 'Areia', cor: '#efdcaa' }
+  expect(pixelsPorMetroDoSolo([grama, areia], 4)).toBe(1)
+  expect(pixelsPorMetroDoSolo([grama, areia], 1)).toBe(2)
+  expect(pixelsPorMetroDoSolo([grama, areia], 0.25)).toBe(8)
+  expect(
+    pixelsPorMetroDoSolo([grama, { ...areia, textura: { id: 't', repeticaoMetros: 2 } }], 4),
+  ).toBe(8)
+  expect(pixelsPorMetroDoSolo(undefined, 4)).toBe(8)
 })

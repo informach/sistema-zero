@@ -13,6 +13,20 @@ import { conferirGeometriaEstatica } from './geometria'
 import { codificarPngCompilado } from './imagens'
 import { type PixelsDaTextura, rasterizarSoloCompilado } from './pintura'
 
+/**
+ * Quantos pixels por metro o chão assado precisa. Com textura numa camada, os 8 de sempre: o
+ * desenho da textura aparece. Só com cores, a mistura é linear entre os vértices do relevo e
+ * dois pixels por passo reproduzem o mesmo chão (a Faísca, 1 km de relevo, caía de 256 MiB de
+ * pixels para 4 MiB).
+ */
+export function pixelsPorMetroDoSolo(
+  camadas: readonly CamadaDeSolo[] | undefined,
+  passo: number,
+): number {
+  if (!camadas || camadas.some((c) => c.textura) || !(passo > 0)) return 8
+  return Math.min(8, Math.max(1, Math.ceil(2 / passo)))
+}
+
 /** Acabamento portátil por parte de setor; mantém geometria/altura e dono do palco intactos. */
 export async function prepararSoloCompilado(
   fonte: { geometria: BufferGeometry; matriz: Matrix4; material: MeshStandardMaterial },

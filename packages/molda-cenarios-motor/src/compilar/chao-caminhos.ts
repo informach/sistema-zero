@@ -9,7 +9,7 @@ import { cederDuranteCompilacao, type MontagemDaCompilacao } from './montagem'
 import type { PixelsDaTextura } from './pintura'
 import { RecortesDoSoloCompilado } from './recortes-caminhos'
 import { particionarTerrenoCompilado } from './setores'
-import { prepararSoloCompilado } from './solo'
+import { pixelsPorMetroDoSolo, prepararSoloCompilado } from './solo'
 import type { montarSuperficiesDaCompilacao } from './superficies'
 
 export type SuperficiesDaCompilacao = ReturnType<typeof montarSuperficiesDaCompilacao>
@@ -107,6 +107,8 @@ export async function compilarChaoECaminhos(
   const recortes = new RecortesDoSoloCompilado(fontesDoRecorte(), s.alturas, {
     incluirSolidos: base.tipo === 'plano',
   })
+  const camadas = base.tipo === 'terreno' ? base.solo?.camadas : undefined,
+    pixelsPorMetro = pixelsPorMetroDoSolo(camadas, base.tipo === 'terreno' ? base.passo : 1)
   let numero = 0,
     plano: CenaCompilada['plano']
   const gravarParte = async (g: BufferGeometry, matriz: Matrix4, material: Material) => {
@@ -131,9 +133,10 @@ export async function compilarChaoECaminhos(
         for (const geometria of partes) {
           const preparada = await prepararSoloCompilado(
             { geometria, matriz, material },
-            base.tipo === 'terreno' ? base.solo?.camadas : undefined,
+            camadas,
             imagens,
             saida.sinal,
+            pixelsPorMetro,
           )
           try {
             preparada.material.polygonOffset = false
