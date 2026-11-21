@@ -22,9 +22,13 @@ das cenas do Pinta, `pinta-scene-player.ts`).
 | Persistência do jogo | não | sim (slots validados) | não | não | sim (`localStorage` com prefixo) |
 
 As cenas do Pinta ("Criar cenário do meu desenho", Jogo 2D e Avançado): os tiles são recortados
-pela câmera (`CORE/pinta-scene-player.ts`), mas as camadas de objetos e de arte são desenhadas
-inteiras, e dentro de um conjunto o recorte não segue a câmera. A cena inteira é preparada de uma
-vez (256×256 células, 32 camadas, 512 objetos por camada no máximo).
+pela câmera (`CORE/pinta-scene-player.ts`), e desde `719fade30` os objetos de arte também: só os
+que estão perto da câmera são desenhados (16.384 para 1.358 desenhos por quadro numa cena no
+limite). A instância de CONJUNTO fica fora do recorte (full review final de 21/11): o conteúdo dela
+pode passar do retângulo nominal, e o raio do retângulo cortava um filho à vista. Dentro de um
+conjunto o recorte não segue a câmera. As imagens do cenário são pedidas ao criar o cenário, para a
+arte de um objeto distante não chegar atrasada. A cena inteira é preparada de uma vez (256×256
+células, 32 camadas, 512 objetos por camada no máximo).
 
 O orçamento de desenho dos três motores 3D (`OE/threeRenderBudgetRuntime.ts`) cuida do pixel
 ratio, do tamanho da tela, do mapa de sombra e dos efeitos, e passa ao nível leve uma vez abaixo
@@ -154,9 +158,8 @@ com as aulas conferidas no navegador: fica registrado como pendente. Evidência:
   proposta aprovada por ela antes de existir.
 - **Recorte de sprites fora do palco no Jogo 2D**: medido (0,45 ms por grupo cheio fora da tela num
   computador de mesa), não feito; pede separar o estado do quadro do desenho (seção acima).
-- **Recorte das camadas de objetos das cenas do Pinta** (no `packages/core`, da frente do Pinta):
-  uma cena pode ter 32 camadas de até 512 objetos, todos desenhados a cada quadro. Medir pede uma
-  cena grande do Pinta como fixture, combinada com aquela frente.
+- **Recorte das instâncias de conjunto das cenas do Pinta**: pede a caixa real do conteúdo de cada
+  conjunto, calculada ao preparar a cena (os objetos de arte já são recortados, `719fade30`).
 - **Jogos de homologação D e E inteiros**: o que foi medido aqui usa os exemplos e uma bancada; o
   jogo 2D extenso (vila, floresta, cavernas, interiores) e o 3D com regiões dependem das regiões.
 - **Instancing no Jogo 3D e no 3D Avançado**: só se um perfil apontar.

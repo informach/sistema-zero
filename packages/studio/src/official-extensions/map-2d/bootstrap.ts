@@ -33,7 +33,10 @@ export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 397_000, gk: 437_000 } 
 // Medidos 26.410 / 26.406 caracteres sobre o legado. Folga inferior a 1%; motores
 // sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
 // Reproduzir: bun packages/studio/scripts/measure-pinta-runtime.ts.
-export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 26_600
+// 21/11/2026 (full review final): o recorte de objetos levou o fragmento a 26.598 / 26.594; as
+// buscas por id num ajudante só (com o conjunto fora do recorte e as imagens pedidas ao criar o
+// cenário) deixaram 26.471 / 26.467, e o teto desceu de 26.600.
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 26_500
 function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `

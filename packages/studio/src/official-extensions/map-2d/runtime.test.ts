@@ -672,6 +672,124 @@ it('objects far from the camera are not drawn, and a rotation that brings one in
   expect(drawn({ x: 480, y: 0 })).toBe(1)
 })
 
+// Full review final (21/11/2026): o conteúdo de um CONJUNTO pode passar do retângulo nominal (a
+// seleção escolhe os objetos pela origem; a geometria aceita o filho deslocado para fora). O raio do
+// retângulo cortava um conjunto cujo filho estava à vista; a instância de conjunto não é recortada.
+it('a set instance whose content spills past its nominal box is drawn near the screen edge', () => {
+  const sample = PintaSceneSchema.parse({
+    ...scene,
+    version: 2,
+    art: [{ id: 'tree', image: 'tree', width: 16, height: 16 }],
+    layers: [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'Conjuntos',
+        visible: true,
+        objects: [
+          {
+            id: 'instancia',
+            name: 'Árvore alta',
+            type: '',
+            shape: 'set',
+            setId: 'set',
+            // O retângulo nominal (16×16, raio 22,6) termina antes da tela; o filho, 32,5 adiante,
+            // ocupa x de 7,5 a 23,5: inteiro à vista numa tela de 32.
+            x: -25,
+            y: 0,
+            width: 16,
+            height: 16,
+            properties: {},
+          },
+        ],
+      },
+    ],
+    sets: [
+      {
+        id: 'set',
+        cols: 1,
+        rows: 1,
+        layers: [
+          {
+            id: 'arte',
+            kind: 'objects',
+            name: 'Arte',
+            visible: true,
+            offsetX: 32.5,
+            objects: [
+              {
+                id: 'tronco',
+                name: 'Tronco',
+                type: '',
+                x: 0,
+                y: 0,
+                width: 16,
+                height: 16,
+                properties: {},
+                art: { assetId: 'tree' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  })
+  const ctx = contextoDeMentira()
+  const { api } = tocador(
+    ctx,
+    { complete: true, naturalWidth: 16 },
+    { meta: () => ({ scene: sample }) },
+  )
+  api.createMapScene('map', 'asset')
+  api.drawMapScene('map', 'back')
+  expect(ctx.desenhos).toHaveLength(1)
+})
+
+// Full review final: com o recorte, a imagem de um objeto longe só era pedida quando ele chegava
+// perto, e aparecia com quadros de atraso. As imagens do cenário são pedidas ao criar o cenário.
+it('creating the scene requests every art and tileset image, even for objects far away', () => {
+  const sample = PintaSceneSchema.parse({
+    ...scene,
+    version: 2,
+    art: [{ id: 'longe', image: 'imagem-longe', width: 16, height: 16 }],
+    layers: [
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'Longe',
+        visible: true,
+        objects: [
+          {
+            id: 'arvore-longe',
+            name: 'Árvore longe',
+            type: '',
+            x: 900,
+            y: 900,
+            width: 16,
+            height: 16,
+            properties: {},
+            art: { assetId: 'longe' },
+          },
+        ],
+      },
+    ],
+  })
+  const pedidas: string[] = []
+  const { api } = tocador(
+    contextoDeMentira(),
+    { complete: false, naturalWidth: 0 },
+    {
+      meta: () => ({ scene: sample }),
+      image: (url: string) => {
+        pedidas.push(url)
+        return { complete: false, naturalWidth: 0 }
+      },
+    },
+  )
+  api.createMapScene('map', 'asset')
+  expect(pedidas).toEqual(expect.arrayContaining(['pixels', 'imagem-longe']))
+})
+
 it('tile objects animate in scene 2 while published scene 1 keeps its static behavior', () => {
   for (const version of [1, 2]) {
     const sample = PintaSceneSchema.parse({
