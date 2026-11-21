@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-21T05:28:43.494Z",
+  "files": [
+    "docs/estudio-evolucao/evidencias/pro-modular-2026-11-20/linux-chromium.json",
+    "docs/estudio-evolucao/evidencias/pro-modular-2026-11-20/windows-chromium.json"
+  ],
+  "parsedDataExactlyEqual": true,
+  "formattingOnly": true
+}

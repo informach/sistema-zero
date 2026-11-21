@@ -172,6 +172,14 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   Worker e os 126 arquivos do guest continuam idênticos à fonte qualificada.
   Ver `qa/leitor-48a8-2026-11-21/`. Isso exige nova CI da revisão integrada;
   ativação, ciclo autenticado e rollback continuam pendentes.
+  A CI completa 44863963656 da fonte 13e88e9c8 terminou com sucesso. Antes do
+  merge local, staging recebeu os três commits concorrentes até dbd736865,
+  incluindo a trava que conserva cenas desconhecidas durante a sincronia de
+  desenhos. O merge sem conflitos passou nos 47 testes externos de armazenamento
+  (com 91 casos isolados de sincronia), tipos completos e doze fluxos locais de
+  navegador. Core, Pinta, Worker e Python ficaram intactos; a fonte integrada
+  precisa de sua própria CI geral. Ver `qa/leitor-dbd-2026-11-21/`. Rollout e
+  ciclo autenticado permanecem abertos.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

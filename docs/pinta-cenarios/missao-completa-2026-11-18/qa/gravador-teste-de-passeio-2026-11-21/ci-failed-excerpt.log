@@ -1,0 +1,18 @@
+2026-11-21T04:36:03.6780696Z @sistemazero/studio test: 538 |     const body = scene.children.find((c) => !known.has(c))
+2026-11-21T04:36:03.6781917Z @sistemazero/studio test: 539 |     if (!body) throw new Error('o amigo não entrou na cena')
+2026-11-21T04:36:03.6782342Z @sistemazero/studio test: 540 |     step(300)
+2026-11-21T04:36:03.6782941Z @sistemazero/studio test: 541 |     const moved = Math.hypot(body.position.x - 20, body.position.z - 20)
+2026-11-21T04:36:03.6783561Z @sistemazero/studio test: 542 |     expect(moved).toBeGreaterThan(0.5)
+2026-11-21T04:36:03.6783950Z @sistemazero/studio test:                         ^
+2026-11-21T04:36:03.6784310Z @sistemazero/studio test: error: expect(received).toBeGreaterThan(expected)
+2026-11-21T04:36:03.6784537Z @sistemazero/studio test: 
+2026-11-21T04:36:03.6784708Z @sistemazero/studio test: Expected: > 0.5
+2026-11-21T04:36:03.6784918Z @sistemazero/studio test: Received: 0.2589444946426133
+2026-11-21T04:36:03.6785100Z @sistemazero/studio test: 
+2026-11-21T04:36:03.6785581Z @sistemazero/studio test:       at <anonymous> (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/official-extensions/world-3d/__tests__/reviewFindings.test.ts:542:19)
+2026-11-21T04:36:03.6785986Z @sistemazero/studio test: 
+2026-11-21T04:36:03.6787018Z @sistemazero/studio test: ::error file=packages/studio/src/official-extensions/world-3d/__tests__/reviewFindings.test.ts,line=542,col=19,title=error: expect(received).toBeGreaterThan(expected)::Expected: > 0.5%0AReceived: 0.2589444946426133%0A%0A      at <anonymous> (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/official-extensions/world-3d/__tests__/reviewFindings.test.ts:542:19)
+2026-11-21T04:36:03.6790134Z @sistemazero/studio test: (fail) Mundo 3D — amigos, mapa, céu e chão > amigo que nasce durante o jogo passeia (o "passear" veio no Ao iniciar) [32.00ms]
+2026-11-21T04:36:03.7088635Z @sistemazero/studio test: (pass) Mundo 3D — amigos, mapa, céu e chão > tirar o amigo fecha a pergunta dele (e o próximo amigo consegue perguntar) [30.00ms]
+2026-11-21T04:36:03.7364890Z @sistemazero/studio test: (pass) Mundo 3D — amigos, mapa, céu e chão > teleporte do mapa grande a bordo do barco leva o BARCO [28.00ms]
+2026-11-21T04:36:03.7659227Z @sistemazero/studio test: (pass) Mundo 3D — amigos, mapa, céu e chão > lua e nuvens seguem o jogador a pé, não o carro estacionado [29.00ms]
