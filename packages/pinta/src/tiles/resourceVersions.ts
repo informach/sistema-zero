@@ -3,6 +3,7 @@ import { newId } from '../core/id'
 import {
   isVersionablePintaAsset,
   type MapResourceSource,
+  prepareMapResourceVersions,
   withMapResourceVersions,
 } from '../core/mapResourceVersions'
 import {
@@ -14,12 +15,15 @@ import {
   type PintaAsset,
   pintaAssetReferenceIds,
   remapTilemapTilesetIds,
+  sanitizePintaAsset,
   type TilemapAsset,
+  type TilemapCells,
   type TilemapObject,
   type TilemapResourceVersion,
   tilemapTilesetIds,
 } from '../core/project'
-import { PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
+import { PINTA_MAX_SCHEMA, PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
+import type { AuthorMap } from './mapCellEdits'
 import { updateMapObject } from './mapObjects'
 
 export type ResourceVersionFailure =
@@ -30,8 +34,9 @@ export type ResourceVersionFailure =
   | 'memory-budget'
   | 'animation-missing'
   | 'layout-changed'
-export type ResourceVersionEdit =
-  | { ok: true; map: TilemapAsset }
+  | 'invalid-resource'
+export type ResourceVersionEdit<Map extends AuthorMap = TilemapAsset> =
+  | { ok: true; map: Map }
   | { ok: false; reason: ResourceVersionFailure }
 
 /** IDs são preservados ao editar; na cópia importada, a animação mantém seu nome único. */
@@ -50,14 +55,27 @@ function animationInSource(
   return name ? (source.animations.find((animation) => animation.name === name)?.id ?? null) : null
 }
 
-export function captureMapResourceVersion(
-  map: TilemapAsset,
+export function captureMapResourceVersion<Map extends AuthorMap>(
+  map: Map,
   source: PintaAsset,
   now = Date.now(),
 ):
-  | { ok: true; map: TilemapAsset; version: TilemapResourceVersion }
+  | { ok: true; map: Map; version: TilemapResourceVersion }
   | { ok: false; reason: ResourceVersionFailure } {
   if (!isVersionablePintaAsset(source)) return { ok: false, reason: 'unsupported' }
+  const schema = 'schema' in source ? source.schema : undefined
+  if (
+    !source.id.trim() ||
+    source.id.length > 128 ||
+    !Number.isSafeInteger(now) ||
+    now < 0 ||
+    (schema !== undefined &&
+      (typeof schema !== 'number' ||
+        !Number.isSafeInteger(schema) ||
+        schema < 0 ||
+        schema > PINTA_MAX_SCHEMA))
+  )
+    return { ok: false, reason: 'invalid-resource' }
   if ((map.resources?.length ?? 0) >= PINTA_RESOURCE_LIMITS.maxVersions)
     return { ok: false, reason: 'version-limit' }
   const bytes =
@@ -70,18 +88,25 @@ export function captureMapResourceVersion(
       for (const [key, value] of Object.entries(properties))
         if (typeof value === 'object' && value.type === 'asset' && value.value === source.id)
           properties[key] = { ...value, value: asset.id }
-  const version: TilemapResourceVersion = { sourceId: source.id, capturedAt: now, asset }
+  let version: TilemapResourceVersion = { sourceId: source.id, capturedAt: now, asset }
+  if ('origin' in map) {
+    // Native 8 refuses normalization that would lose authorial data. Validate only
+    // the new snapshot: map chunks and existing immutable versions stay shared.
+    const canonical = prepareMapResourceVersions({ resources: [version] }, sanitizePintaAsset)?.[0]
+    if (!canonical) return { ok: false, reason: 'invalid-resource' }
+    version = canonical
+  }
   return { ok: true, version, map: { ...map, resources: [...(map.resources ?? []), version] } }
 }
 
 /** Guardar/atualizar uma versão não modifica as outras instâncias nem a biblioteca. */
-export function freezeObjectResource(
-  map: TilemapAsset,
+export function freezeObjectResource<Map extends AuthorMap>(
+  map: Map,
   layerId: string,
   objectId: string,
   find: (id: string) => PintaAsset | null,
   now = Date.now(),
-): ResourceVersionEdit {
+): ResourceVersionEdit<Map> {
   const layer = map.layers.find((entry) => entry.id === layerId)
   if (!layer || !isObjectLayer(layer)) return { ok: false, reason: 'missing' }
   if (effectiveLayer(map, layer).locked) return { ok: false, reason: 'locked' }
@@ -94,24 +119,22 @@ export function freezeObjectResource(
   if (animationId === null) return { ok: false, reason: 'animation-missing' }
   const captured = captureMapResourceVersion(map, source, now)
   if (!captured.ok) return captured
-  return {
-    ok: true,
-    map: updateMapObject(captured.map, layerId, objectId, {
-      art: {
-        ...object.art,
-        assetId: captured.version.asset.id,
-        ...(animationId ? { animationId } : {}),
-      },
-    }),
-  }
+  const next = updateMapObject(captured.map, layerId, objectId, {
+    art: {
+      ...object.art,
+      assetId: captured.version.asset.id,
+      ...(animationId ? { animationId } : {}),
+    },
+  })
+  return next === captured.map ? { ok: false, reason: 'invalid-resource' } : { ok: true, map: next }
 }
 
-export function linkObjectResource(
-  map: TilemapAsset,
+export function linkObjectResource<Map extends AuthorMap>(
+  map: Map,
   layerId: string,
   objectId: string,
   find: (id: string) => PintaAsset | null,
-): ResourceVersionEdit {
+): ResourceVersionEdit<Map> {
   const layer = map.layers.find((entry) => entry.id === layerId)
   if (!layer || !isObjectLayer(layer)) return { ok: false, reason: 'missing' }
   if (effectiveLayer(map, layer).locked) return { ok: false, reason: 'locked' }
@@ -122,21 +145,23 @@ export function linkObjectResource(
   if (!source) return { ok: false, reason: 'missing' }
   const animationId = animationInSource(object.art.animationId, version.asset, source)
   if (animationId === null) return { ok: false, reason: 'animation-missing' }
-  return {
-    ok: true,
-    map: updateMapObject(map, layerId, objectId, {
-      art: { ...object.art, assetId: version.sourceId, ...(animationId ? { animationId } : {}) },
-    }),
-  }
+  const next = updateMapObject(map, layerId, objectId, {
+    art: { ...object.art, assetId: version.sourceId, ...(animationId ? { animationId } : {}) },
+  })
+  return next === map ? { ok: false, reason: 'invalid-resource' } : { ok: true, map: next }
 }
 
 /** Uma operação para todas as peças das camadas; a grade fica independente de mudanças futuras. */
-export function freezeMapTilesets(
-  map: TilemapAsset,
+export function freezeMapTilesets<Map extends AuthorMap>(
+  map: Map,
   find: (id: string) => PintaAsset | null,
   now = Date.now(),
-): ResourceVersionEdit {
-  if (map.layers.some((layer) => isTileLayer(layer) && effectiveLayer(map, layer).locked))
+): ResourceVersionEdit<Map> {
+  if (
+    map.layers.some(
+      (layer) => isTileLayer<TilemapCells>(layer) && effectiveLayer(map, layer).locked,
+    )
+  )
     return { ok: false, reason: 'locked' }
   const lookup = withMapResourceVersions(map, find),
     base = lookup(map.tilesetId)
@@ -156,11 +181,15 @@ export function freezeMapTilesets(
   return { ok: true, map: remapTilemapTilesetIds(next, (id) => ids.get(id) ?? id) }
 }
 
-export function linkMapTilesets(
-  map: TilemapAsset,
+export function linkMapTilesets<Map extends AuthorMap>(
+  map: Map,
   find: (id: string) => PintaAsset | null,
-): ResourceVersionEdit {
-  if (map.layers.some((layer) => isTileLayer(layer) && effectiveLayer(map, layer).locked))
+): ResourceVersionEdit<Map> {
+  if (
+    map.layers.some(
+      (layer) => isTileLayer<TilemapCells>(layer) && effectiveLayer(map, layer).locked,
+    )
+  )
     return { ok: false, reason: 'locked' }
   const base = withMapResourceVersions(map, find)(map.tilesetId)
   if (!base || !isTilesetKind(base)) return { ok: false, reason: 'missing' }
@@ -207,10 +236,12 @@ export function mapResourceVersionsForObjects(
   return reachableResourceVersions(map, roots)
 }
 
-export function removeUnusedMapResourceVersions(map: TilemapAsset): TilemapAsset {
+export function removeUnusedMapResourceVersions<Map extends AuthorMap>(map: Map): Map {
   if (!map.resources?.length) return map
   const resources = reachableResourceVersions(map, pintaAssetReferenceIds(map))
   if (resources.length === map.resources.length) return map
-  const { resources: _old, ...rest } = map
-  return resources.length ? { ...rest, resources } : rest
+  const next = { ...map }
+  if (resources.length) next.resources = resources
+  else delete next.resources
+  return next
 }

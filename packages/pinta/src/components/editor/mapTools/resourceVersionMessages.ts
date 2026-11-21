@@ -9,4 +9,5 @@ export const RESOURCE_VERSION_MESSAGES: Readonly<Record<ResourceVersionFailure, 
   'memory-budget': COPY.scene.resourceMemoryLimit,
   'animation-missing': COPY.scene.resourceAnimationMissing,
   'layout-changed': COPY.scene.resourceLayoutChanged,
+  'invalid-resource': COPY.scene.resourceInvalid,
 }

@@ -14,7 +14,10 @@ export function isVersionablePintaAsset(asset: PintaAsset): asset is Versionable
   return asset.kind !== 'tilemap' && asset.kind !== 'map-set'
 }
 
-export function embeddedTilesetOf(map: TilemapAsset, id = map.tilesetId): AnyTilesetAsset | null {
+export function embeddedTilesetOf(
+  map: MapResourceSource & Pick<TilemapAsset, 'tilesetId'>,
+  id = map.tilesetId,
+): AnyTilesetAsset | null {
   const asset = map.resources?.find((version) => version.asset.id === id)?.asset
   return asset && (asset.kind === 'tileset' || asset.kind === 'vector-tileset') ? asset : null
 }
@@ -121,6 +124,17 @@ export function stampMapResourceVersions(
     result.push({ ...version, asset: withPintaSchemaStamp(version.asset) })
   }
   return result
+}
+
+/** Strict authoring admits canonical labels, never a lossy repair of a snapshot. */
+export function prepareMapResourceVersions(
+  source: MapResourceSource,
+  sanitize: (value: unknown) => PintaAsset | null,
+): TilemapResourceVersion[] | null {
+  const stamped = stampMapResourceVersions(source)
+  if (!stamped) return null
+  const read = sanitizeMapResourceVersions(stamped, sanitize)
+  return read && pintaValuesEqual(stamped, read) ? stamped : null
 }
 
 export function withMapResourceVersions(

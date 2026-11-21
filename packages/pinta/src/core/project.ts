@@ -727,7 +727,9 @@ export function tilemapUsesTileset(
 export const PINTA_DEPENDENCY_ASSET_LIMIT = 225
 
 /** Dependências diretas visuais e tipadas. A travessia e a transação pertencem ao adaptador. */
-export function pintaAssetReferenceIds(asset: PintaAsset): string[] {
+export function pintaAssetReferenceIds(
+  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
+): string[] {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   const ids = new Set<string>(map ? tilemapTilesetIds(map) : [])
   const addProperties = (properties: Record<string, TilemapObjectPropertyValue> | undefined) => {
@@ -754,7 +756,9 @@ export function pintaAssetReferenceIds(asset: PintaAsset): string[] {
 }
 
 /** Dependências externas: versões autocontidas não exigem um registro mutável na galeria. */
-export function pintaAssetDependencyIds(asset: PintaAsset): string[] {
+export function pintaAssetDependencyIds(
+  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
+): string[] {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   const ids = new Set(pintaAssetReferenceIds(asset))
   for (const version of map?.resources ?? [])
@@ -1014,7 +1018,9 @@ export interface TilemapResourceVersion {
   asset: VersionablePintaAsset
 }
 
-export function isTilesetKind(asset: PintaAsset): asset is AnyTilesetAsset {
+export function isTilesetKind(
+  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
+): asset is AnyTilesetAsset {
   return asset.kind === 'tileset' || asset.kind === 'vector-tileset'
 }
 

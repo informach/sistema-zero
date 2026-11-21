@@ -21,6 +21,27 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
 - [ ] 9. Executar os dez passos da Vila e Floresta, variantes e PyDew Valley;
   revisar, atualizar guias, registrar evidências e preparar PR, sem merge automático.
 
+## Continuação dos consumidores de recursos e histórico
+
+1. [x] Capturar, atualizar, reconectar e limpar versões no mesmo núcleo genérico de
+   mapas. O ramo 8 deve carimbar e conferir a nova versão sem normalização com
+   perda, compartilhar os chunks e recusar atomicamente uma referência inválida.
+   Manter a política densa existente e verificar seus controles reais na oficina.
+   Fechado em `qa/versoes-de-recursos-por-regioes-2026-11-21/`, no diretório da
+   missão: dez regressões novas, oito falhas históricas reproduzidas, 2.592 testes
+   completos e sete ensaios de navegador. A migração conserva IDs/buffers e recusa
+   snapshots não preserváveis. O formato 8 continua interno.
+2. Adaptar a estimativa de memória e a enumeração das partes compartilhadas para
+   medir buffers dos chunks, sem materializar a extensão lógica. O histórico deve
+   contar uma vez os mesmos buffers entre mapas, conjuntos e revisões, mantendo
+   seus tetos. Demonstrar desfazer/refazer sobre o núcleo real de histórico; isso
+   não promove regiões artificialmente para o store público antes do IO.
+3. Completar operações de árvore de camadas, remapeamento de peças e dependentes
+   pelo contrato comum antes de ampliar store, protocolo físico e adaptadores.
+
+Cada item conserva revisão, provas e commit próprios. Não acrescentar outro
+editor, estilo, teto de memória ou implementação paralela de histórico.
+
 ## Decisões aprovadas
 
 Autorregras visuais próprias do Pinta, por exemplos de entrada/saída, com ordem

@@ -5,11 +5,14 @@ import {
   type PintaRegionCells,
   parsePintaRegionBounds,
 } from '@sistemazero/core/creations'
+import { prepareMapResourceVersions } from '../core/mapResourceVersions'
 import {
   effectiveLayer,
   isTileLayer,
   PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAX_SCHEMA,
   type RegionTilemapAsset,
+  sanitizePintaAsset,
   type TilemapAsset,
   type TilemapLayer,
 } from '../core/project'
@@ -42,6 +45,8 @@ export function prepareMapRegions(map: TilemapAsset): RegionMapResult {
     !tiles.length ||
     map.cols > PINTA_MAP_FORMAT_LIMITS.maxCols ||
     map.rows > PINTA_MAP_FORMAT_LIMITS.maxRows ||
+    (map.schema !== undefined &&
+      (!Number.isSafeInteger(map.schema) || map.schema < 0 || map.schema > PINTA_MAX_SCHEMA)) ||
     map.layers.length > PINTA_REGION_LIMITS.maxLayers
   )
     return { ok: false, reason: 'invalid-map' }
@@ -55,6 +60,8 @@ export function prepareMapRegions(map: TilemapAsset): RegionMapResult {
     upperChunks > PINTA_REGION_LIMITS.maxChunks
   )
     return { ok: false, reason: 'cell-budget' }
+  const resources = prepareMapResourceVersions(map, sanitizePintaAsset)
+  if (!resources) return { ok: false, reason: 'invalid-map' }
   for (const layer of tiles) {
     if (layer.cells.length !== cellCount) return { ok: false, reason: 'invalid-map' }
     for (const cell of layer.cells)
@@ -71,7 +78,16 @@ export function prepareMapRegions(map: TilemapAsset): RegionMapResult {
     if (!cells) return { ok: false, reason: 'invalid-map' }
     layers.push({ ...layer, cells })
   }
-  return { ok: true, map: { ...map, schema: 8, origin: { col: 0, row: 0 }, layers } }
+  return {
+    ok: true,
+    map: {
+      ...map,
+      schema: 8,
+      origin: { col: 0, row: 0 },
+      layers,
+      ...(map.resources !== undefined ? { resources } : {}),
+    },
+  }
 }
 
 export function regionMapBounds(map: RegionTilemapAsset): PintaRegionBounds {

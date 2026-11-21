@@ -32,6 +32,8 @@ export const COPY = {
     resourceAnimationMissing:
       'O original não tem esta animação. Escolha "Sem animação" para voltar a acompanhar a biblioteca.',
     resourceUnsupported: 'Você pode guardar versões de personagens, desenhos e peças.',
+    resourceInvalid:
+      'Não consegui guardar este desenho sem perder informações. O mapa continua como estava.',
     resourcePasteFailed:
       'Não consegui juntar as versões copiadas neste mapa. Tire versões sem uso e tente novamente.',
     clearUnusedVersions: 'Tirar versões que não uso',

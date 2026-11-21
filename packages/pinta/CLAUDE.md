@@ -150,6 +150,15 @@ a API de array. Formato 8 público, protocolo 3 e mensagens da oficina expansív
 continuam condicionados aos demais consumidores. Provas e limites em
 `qa/terrenos-por-regioes-2026-11-21/`, no diretório da missão.
 
+Versões de recursos usam o mesmo núcleo para mapas densos e regiões internas.
+A captura 8 e a migração densa conferem snapshots canônicos integralmente, sem
+normalização com perda nem cópia dos buffers já guardados. Troca de objeto
+recusada não deixa snapshot solto. Origem/horário inválidos e carimbos futuros
+não geram uma versão ilegível. Dependências e limpeza conservam cadeias privadas.
+Provas em `qa/versoes-de-recursos-por-regioes-2026-11-21/`, no diretório da missão.
+O formato 8 continua interno; memória por chunks, store/IO e adaptadores seguem
+condicionados aos consumidores completos.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
