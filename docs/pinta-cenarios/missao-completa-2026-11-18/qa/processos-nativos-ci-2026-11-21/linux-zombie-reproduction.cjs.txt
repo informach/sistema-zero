@@ -1,0 +1,16 @@
+const {spawn}=require('node:child_process'),{readFile}=require('node:fs/promises'),{createInterface}=require('node:readline'),assert=require('node:assert/strict');
+const parentCode=`const{spawn}=require('node:child_process');(async()=>{const c=spawn(process.execPath,['-e',"process.stdout.write('ready');setInterval(()=>{},1000)"],{stdio:['ignore','pipe','inherit']});await new Promise((r,j)=>{c.once('error',j);c.stdout.once('data',r)});console.log(JSON.stringify({parent:process.pid,child:c.pid}));await new Promise(r=>c.once('exit',r));console.log('reaped')})()`;
+const timeout=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>{const t=setTimeout(()=>reject(Error('Probe deadline')),ms);t.unref()})]);
+(async()=>{
+assert.equal(process.platform,'linux');const parent=spawn(process.execPath,['-e',parentCode],{detached:true,stdio:['ignore','pipe','inherit']}),exited=new Promise((resolve,reject)=>{parent.once('error',reject);parent.once('exit',resolve)}),lines=createInterface({input:parent.stdout})[Symbol.asyncIterator]();let evidence;
+try{
+ evidence=JSON.parse((await timeout(lines.next(),5000)).value);process.kill(parent.pid,'SIGSTOP');process.kill(evidence.child,'SIGKILL');
+ let state;const until=Date.now()+3000;
+ do{const stat=await readFile('/proc/'+evidence.child+'/stat','utf8');state=stat.slice(stat.lastIndexOf(')')+1).trim()[0];if(state==='Z')break;await new Promise(r=>setTimeout(r,10))}while(Date.now()<until);
+ assert.equal(state,'Z');assert.equal(process.kill(evidence.child,0),true);
+ console.log(JSON.stringify({linux:true,node:process.version,controlledZombie:true,state,signalZeroSucceeded:true,oldAbsenceAssertionWouldFail:true}));
+}finally{
+ try{process.kill(parent.pid,'SIGCONT')}catch(error){if(error.code!=='ESRCH')throw error}
+ try{await timeout(exited,5000)}catch(error){try{process.kill(-parent.pid,'SIGKILL')}catch(e){if(e.code!=='ESRCH')throw e}await timeout(exited,5000);throw error}
+}
+})().catch(error=>{console.error(JSON.stringify({failed:true,name:error.name,message:error.message}));process.exitCode=1});

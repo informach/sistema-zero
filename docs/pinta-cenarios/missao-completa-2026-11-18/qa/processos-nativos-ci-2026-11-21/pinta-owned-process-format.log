@@ -1,0 +1,49 @@
+packages\studio-runtime\tests\native-process-state.test.ts:79:11 lint/correctness/noUnsafeFinally ━━━━━━━━━━
+
+  × Unsafe usage of 'throw'.
+  
+    77 │       } catch (error) {
+    78 │         if (!(error && typeof error === 'object' && 'code' in error && error.code === 'ESRCH'))
+  > 79 │           throw error
+       │           ^^^^^^^^^^^
+    80 │       }
+    81 │       try {
+  
+  i 'throw' in 'finally' overwrites the control flow statements inside 'try' and 'catch'.
+  
+
+packages\studio-runtime\tests\native-process-state.test.ts:95:13 lint/correctness/noUnsafeFinally ━━━━━━━━━━
+
+  × Unsafe usage of 'throw'.
+  
+    93 │             )
+    94 │           )
+  > 95 │             throw killError
+       │             ^^^^^^^^^^^^^^^
+    96 │         }
+    97 │         await bounded(exited)
+  
+  i 'throw' in 'finally' overwrites the control flow statements inside 'try' and 'catch'.
+  
+
+packages\studio-runtime\tests\native-process-state.test.ts:98:9 lint/correctness/noUnsafeFinally ━━━━━━━━━━
+
+  × Unsafe usage of 'throw'.
+  
+     96 │         }
+     97 │         await bounded(exited)
+   > 98 │         throw error
+        │         ^^^^^^^^^^^
+     99 │       } finally {
+    100 │         reader.close()
+  
+  i 'throw' in 'finally' overwrites the control flow statements inside 'try' and 'catch'.
+  
+
+Checked 4 files in 67ms. Fixed 3 files.
+Found 3 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+

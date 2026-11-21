@@ -1,0 +1,5 @@
+FROM oven/bun:1.3.11 AS bun
+FROM node:24.22.3-bookworm-slim
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
+WORKDIR /qa
+ENTRYPOINT ["bun"]

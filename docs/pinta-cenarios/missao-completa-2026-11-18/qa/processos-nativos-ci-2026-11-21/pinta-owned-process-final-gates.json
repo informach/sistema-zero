@@ -1,0 +1,58 @@
+[
+  {
+    "name": "negative",
+    "started": "2026-11-21T08:27:29.618Z",
+    "finished": "2026-11-21T08:27:30.391Z",
+    "exit": 1,
+    "expectedExit": 1,
+    "log": ".cache/pinta-owned-process-final-negative.log"
+  },
+  {
+    "name": "linux-repeat",
+    "started": "2026-11-21T08:27:30.393Z",
+    "finished": "2026-11-21T08:28:12.716Z",
+    "exit": 0,
+    "expectedExit": 0,
+    "log": ".cache/pinta-owned-process-final-linux-repeat.log"
+  },
+  {
+    "name": "windows",
+    "started": "2026-11-21T08:28:12.717Z",
+    "finished": "2026-11-21T08:28:17.448Z",
+    "exit": 0,
+    "expectedExit": 0,
+    "log": ".cache/pinta-owned-process-final-windows.log"
+  },
+  {
+    "name": "types",
+    "started": "2026-11-21T08:28:17.450Z",
+    "finished": "2026-11-21T08:30:15.631Z",
+    "exit": 0,
+    "expectedExit": 0,
+    "log": ".cache/pinta-owned-process-final-types.log"
+  },
+  {
+    "name": "profile",
+    "started": "2026-11-21T08:30:15.632Z",
+    "finished": "2026-11-21T08:30:15.846Z",
+    "exit": 0,
+    "expectedExit": 0,
+    "log": ".cache/pinta-owned-process-final-profile.log"
+  },
+  {
+    "name": "worker",
+    "started": "2026-11-21T08:30:15.934Z",
+    "finished": "2026-11-21T08:30:17.301Z",
+    "exit": 0,
+    "expectedExit": 0,
+    "log": ".cache/pinta-owned-process-final-worker.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T08:30:17.304Z",
+    "finished": "2026-11-21T08:30:17.426Z",
+    "exit": 0,
+    "expectedExit": 0,
+    "log": ".cache/pinta-owned-process-final-biome.log"
+  }
+]
