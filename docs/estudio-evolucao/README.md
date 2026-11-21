@@ -1,5 +1,10 @@
 # Evolução do Estúdio (Clássico e Pro)
 
+**Régua principal desde 21/11/2026:** o texto original da missão, com as 21 seções, em
+[`missao-original.md`](missao-original.md), com as decisões posteriores da dona anotadas no topo.
+O plano vigente, que mapeia cada seção ao estado real, está em
+`~/.claude/plans/foi-feito-um-plano-transient-rabin.md`.
+
 **Retomada de 20/11/2026** (Claude Code, a pedido da dona: revisão completa e conclusão da missão).
 O plano vigente está em `~/.claude/plans/foi-feito-um-plano-transient-rabin.md` (etapas 1 a 11) e a
 régua é este `plano-execucao.md` mais o relatório de 20/11 que ela trouxe. A revisão completa do que
