@@ -156,8 +156,16 @@ normalização com perda nem cópia dos buffers já guardados. Troca de objeto
 recusada não deixa snapshot solto. Origem/horário inválidos e carimbos futuros
 não geram uma versão ilegível. Dependências e limpeza conservam cadeias privadas.
 Provas em `qa/versoes-de-recursos-por-regioes-2026-11-21/`, no diretório da missão.
-O formato 8 continua interno; memória por chunks, store/IO e adaptadores seguem
-condicionados aos consumidores completos.
+O formato 8 continua interno; store/IO e adaptadores seguem condicionados aos
+consumidores completos.
+
+Memória de regiões é contada por buffer de chunk; `snapshotShared` delega para
+`sharedAssetParts`, sem outro histórico. `retainedAssetBytes` inclui regras e
+propriedades nas edições/capturas. O leitor legado conserva a métrica de payload
+de `assetBytes`: não recusar retroativamente seus catálogos por uma estimativa
+nova. O leitor interno 8 e a migração usam a métrica ampliada. Tetos preservados;
+isso não é medição de heap nem ativação de store/IO 3. Provas em
+`qa/memoria-por-regioes-2026-11-21/`, no diretório da missão.
 
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 

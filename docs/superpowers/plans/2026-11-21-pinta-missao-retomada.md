@@ -31,13 +31,24 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    missão: dez regressões novas, oito falhas históricas reproduzidas, 2.592 testes
    completos e sete ensaios de navegador. A migração conserva IDs/buffers e recusa
    snapshots não preserváveis. O formato 8 continua interno.
-2. Adaptar a estimativa de memória e a enumeração das partes compartilhadas para
+2. [x] Adaptar a estimativa de memória e a enumeração das partes compartilhadas para
    medir buffers dos chunks, sem materializar a extensão lógica. O histórico deve
    contar uma vez os mesmos buffers entre mapas, conjuntos e revisões, mantendo
    seus tetos. Demonstrar desfazer/refazer sobre o núcleo real de histórico; isso
    não promove regiões artificialmente para o store público antes do IO.
+   Fechado em `qa/memoria-por-regioes-2026-11-21/`: medição finita de buffers,
+   50 gestos no documento de 4 MiB e descarte por orçamento, sem perder redo.
+   Metadados passam a participar da estimativa de edição/captura, preservando a
+   métrica do leitor legado e seu backup. Suíte 2.600, 62 testes focados e dez
+   ensaios de navegador; tipos completos dos dois pacotes aprovados.
 3. Completar operações de árvore de camadas, remapeamento de peças e dependentes
    pelo contrato comum antes de ampliar store, protocolo físico e adaptadores.
+   Começar pelas operações de camadas: criar camada regional vazia sem alocar a
+   extensão, preservar defaults explícitos, frações e offsets do contrato 8,
+   admitir propriedades/árvore sem normalização com perda e comparar apenas
+   metadados ao alterar um cabeçalho. Depois remapear índices/flags nos chunks
+   armazenados e nos objetos, compartilhando regiões intactas e recusando lotes
+   inválidos integralmente. Manter a política densa e provar ambas no navegador.
 
 Cada item conserva revisão, provas e commit próprios. Não acrescentar outro
 editor, estilo, teto de memória ou implementação paralela de histórico.

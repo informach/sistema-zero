@@ -24,6 +24,12 @@
     "noEmit": true,
     "types": ["bun"]
   },
-  "include": ["src", "playground", "test-setup.ts"],
+  "include": [
+    "src",
+    "playground",
+    "test-setup.ts",
+    "scripts/memory-regions-probe.ts",
+    "scripts/serve-memory-regions-e2e.ts"
+  ],
   "exclude": ["node_modules"]
 }

@@ -1,4 +1,4 @@
-import { assetBytes } from '../core/assetMemory'
+import { retainedAssetBytes } from '../core/assetMemory'
 import { newId } from '../core/id'
 import {
   isVersionablePintaAsset,
@@ -79,8 +79,8 @@ export function captureMapResourceVersion<Map extends AuthorMap>(
   if ((map.resources?.length ?? 0) >= PINTA_RESOURCE_LIMITS.maxVersions)
     return { ok: false, reason: 'version-limit' }
   const bytes =
-    assetBytes(source) +
-    (map.resources ?? []).reduce((sum, version) => sum + assetBytes(version.asset), 0)
+    retainedAssetBytes(source) +
+    (map.resources ?? []).reduce((sum, version) => sum + retainedAssetBytes(version.asset), 0)
   if (bytes > PINTA_RESOURCE_LIMITS.maxSnapshotBytes) return { ok: false, reason: 'memory-budget' }
   const asset = { ...structuredClone(source), id: newId() }
   if (asset.kind === 'tileset' || asset.kind === 'vector-tileset')

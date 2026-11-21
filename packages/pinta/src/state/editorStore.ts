@@ -6,9 +6,9 @@
  * confirmado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import { assetBytes } from '../core/assetMemory'
+import { type PintaMemoryAsset, retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
 import { createHistory, type SharedPart } from '../core/history'
-import { isTileLayer, type PintaAsset } from '../core/project'
+import type { PintaAsset } from '../core/project'
 
 export { assetBytes } from '../core/assetMemory'
 
@@ -80,8 +80,9 @@ function mergeLinkedAssets(
 
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
 function snapshotBytes(snapshot: EditorSnapshot): number {
-  let bytes = assetBytes(snapshot.asset, false)
-  if (snapshot.linkedMaps) for (const map of snapshot.linkedMaps) bytes += assetBytes(map, false)
+  let bytes = retainedAssetBytes(snapshot.asset, false)
+  if (snapshot.linkedMaps)
+    for (const map of snapshot.linkedMaps) bytes += retainedAssetBytes(map, false)
   return bytes
 }
 
@@ -90,18 +91,12 @@ function snapshotBytes(snapshot: EditorSnapshot): number {
  * que o gesto tocou, então os passos do histórico dividem todas as outras: contar cada buffer uma
  * vez é o que a memória gasta de verdade.
  */
-export function* snapshotShared(
-  snapshot: Pick<EditorSnapshot, 'asset' | 'linkedMaps'>,
-): Iterable<SharedPart> {
+export function* snapshotShared(snapshot: {
+  asset: PintaMemoryAsset
+  linkedMaps: readonly PintaMemoryAsset[] | null
+}): Iterable<SharedPart> {
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
-  for (const asset of maps) {
-    if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') continue
-    const map = asset.kind === 'map-set' ? asset.map : asset
-    for (const resource of map.resources ?? [])
-      yield { key: resource.asset, bytes: assetBytes(resource.asset) }
-    for (const layer of map.layers)
-      if (isTileLayer(layer)) yield { key: layer.cells, bytes: layer.cells.byteLength }
-  }
+  for (const asset of maps) yield* sharedAssetParts(asset)
 }
 
 export function createEditorStore(options: {

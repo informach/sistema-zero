@@ -18,6 +18,7 @@ import { cellTile, isValidCell } from '../tiles/cell'
 import { unpackCells } from '../tiles/cellCodec'
 import { sanitizeMaskReferences } from '../vector/mask'
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
+import { retainedAssetBytes } from './assetMemory'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
@@ -1687,7 +1688,11 @@ export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | n
       return null
     if (!Array.isArray(record.layers) || record.layers.length > PINTA_REGION_LIMITS.maxLayers)
       return null
-    const resources = sanitizeMapResourceVersions(record.resources, sanitizePintaAsset)
+    const resources = sanitizeMapResourceVersions(
+      record.resources,
+      sanitizePintaAsset,
+      retainedAssetBytes,
+    )
     if (!resources || resources.some((version) => version.asset.id === base.id)) return null
     const layers: TilemapLayer<PintaRegionCells>[] = []
     const rawCells: unknown[] = []

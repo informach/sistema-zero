@@ -1,5 +1,5 @@
 import { pintaValuesEqual } from './assetEquality'
-import { assetBytes } from './assetMemory'
+import { assetBytes, retainedAssetBytes } from './assetMemory'
 import type {
   AnyTilesetAsset,
   PintaAsset,
@@ -26,6 +26,7 @@ export function embeddedTilesetOf(
 export function sanitizeMapResourceVersions(
   raw: unknown,
   sanitize: (value: unknown) => PintaAsset | null,
+  measure: (asset: PintaAsset) => number = assetBytes,
 ): TilemapResourceVersion[] | null {
   if (raw === undefined) return []
   if (!Array.isArray(raw) || raw.length > PINTA_RESOURCE_LIMITS.maxVersions) return null
@@ -59,7 +60,7 @@ export function sanitizeMapResourceVersions(
       ids.has(asset.id)
     )
       return null
-    bytes += assetBytes(asset)
+    bytes += measure(asset)
     if (bytes > PINTA_RESOURCE_LIMITS.maxSnapshotBytes) return null
     ids.add(asset.id)
     out.push({ sourceId: entry.sourceId, capturedAt: entry.capturedAt, asset })
@@ -133,7 +134,7 @@ export function prepareMapResourceVersions(
 ): TilemapResourceVersion[] | null {
   const stamped = stampMapResourceVersions(source)
   if (!stamped) return null
-  const read = sanitizeMapResourceVersions(stamped, sanitize)
+  const read = sanitizeMapResourceVersions(stamped, sanitize, retainedAssetBytes)
   return read && pintaValuesEqual(stamped, read) ? stamped : null
 }
 
