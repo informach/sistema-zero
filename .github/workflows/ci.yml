@@ -31,7 +31,9 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Staging deve terminar a validação e a onda de deploy ativas. O próximo push aguarda;
+  # novos pushes substituem só o pendente. PRs continuam cancelando a revisão anterior.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/staging' }}
 
 jobs:
   ci:

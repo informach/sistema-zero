@@ -18,6 +18,12 @@ const { jobs } = Bun.YAML.parse(workflow) as {
 const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
 
+test('a new push cannot cancel an active staging validation or deployment wave', () => {
+  const { concurrency } = Bun.YAML.parse(workflow) as { concurrency: Record<string, unknown> }
+  expect(concurrency.group).toBe('ci-${{ github.ref }}')
+  expect(concurrency['cancel-in-progress']).toBe("${{ github.ref != 'refs/heads/staging' }}")
+})
+
 test.each([
   'success',
   'retirement-failure',
