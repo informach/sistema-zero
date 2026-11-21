@@ -8,6 +8,7 @@ import { digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
 import { CenariosService } from '../../src/application/cenarios/cenarios.service'
 import { PublicacoesDeCenariosService } from '../../src/application/cenarios/publicacoes.service'
 import type { Ator } from '../../src/domain/cenarios/cenarios'
+import { PublicacaoSemArquivosError } from '../../src/domain/cenarios/publicacoes'
 import { CenariosEmMemoria } from '../fakes/cenarios-in-memory'
 import { PublicacoesEmMemoria } from '../fakes/cenarios-publicacoes-in-memory'
 
@@ -405,4 +406,185 @@ test('o jogo lê em lote só arquivos da versão, e só da atual ou da anterior 
   await expect(
     b.servico.arquivosDoJogo(v1.publicacao.id, [b.pedido.manifesto.digest]),
   ).rejects.toThrow()
+})
+
+/** Duas versões com manifestos diferentes na mesma ilha: a v1 (meio-dia) e a v2 (fim de tarde). */
+async function duasVersoes() {
+  const b = await montar()
+  const v1 = await b.servico.publicarConferido(equipe, b.pedido, b.resumo, b.conferidos)
+  const bytes = new TextEncoder().encode(JSON.stringify({ ...b.cena, ambiente: { hora: 18 } }))
+  const pedido = {
+    ...b.pedido,
+    operacaoId: crypto.randomUUID(),
+    versaoEsperada: 1,
+    manifesto: { digest: await digestDosBytes(bytes), bytes: bytes.length },
+  }
+  const v2 = await b.servico.publicarConferido(equipe, pedido, await resumoDe(pedido, bytes), [
+    { ...pedido.manifesto, tipoDoConteudo: 'application/vnd.sistemazero.cena-compilada+json' },
+  ])
+  const volta = {
+    operacaoId: crypto.randomUUID(),
+    perfil: b.pedido.perfil,
+    versaoEsperada: 2,
+    publicacaoId: v1.publicacao.id,
+  }
+  return { ...b, v1: v1.publicacao, v2: v2.publicacao, volta }
+}
+
+test('lista as versões da ilha da mais nova à mais antiga, com só a atual no ar', async () => {
+  const b = await duasVersoes()
+  const lista = await b.servico.listarVersoes(equipe, b.pedido.perfil)
+  expect(lista.perfil).toEqual(b.pedido.perfil)
+  expect(lista.versoes.map((v) => [v.versao, v.atual])).toEqual([
+    [2, true],
+    [1, false],
+  ])
+  expect(lista.versoes[1]).toEqual({
+    id: b.v1.id,
+    versao: 1,
+    fonte: { cenario: b.cenario.id, revisao: 0 },
+    manifesto: b.pedido.manifesto,
+    publicadaEm: agora.toISOString(),
+    autorId: equipe.usuarioId,
+    atual: false,
+  })
+  expect(lista.versoes[0]).not.toHaveProperty('espacoId')
+  const vazia = await b.servico.listarVersoes(equipe, { tipo: 'arquipelago-v2', ilha: 'bosque' })
+  expect(vazia.versoes).toEqual([])
+  await expect(
+    b.servico.listarVersoes(equipe, { tipo: 'arquipelago-v2', ilha: 'inexistente' }),
+  ).rejects.toThrow(/destino/i)
+})
+
+test('listar e voltar exigem a equipe na própria conta, fora de suporte e de perfil do Kids', async () => {
+  const b = await duasVersoes()
+  const filho = crypto.randomUUID()
+  for (const ator of [
+    { ...equipe, equipe: false },
+    { ...equipe, suporte: true },
+    { ...equipe, perfil: true },
+    // Perfil de criança de alguém da equipe: o usuário não é a conta.
+    { ...equipe, usuarioId: filho },
+  ]) {
+    await expect(b.servico.listarVersoes(ator, b.pedido.perfil)).rejects.toThrow(/equipe/i)
+    await expect(b.servico.voltarParaVersao(ator, b.volta)).rejects.toThrow(/equipe/i)
+  }
+  expect(b.publicacoes.versoes.size).toBe(2)
+  expect((await b.publicacoes.atual(b.pedido.perfil))?.id).toBe(b.v2.id)
+})
+
+test('voltar publica o manifesto da versão escolhida como versão atual + 1', async () => {
+  const b = await duasVersoes()
+  const r = await b.servico.voltarParaVersao(equipe, b.volta)
+  expect(r.repetido).toBe(false)
+  expect(r.publicacao).toMatchObject({
+    versao: 3,
+    perfil: b.pedido.perfil,
+    espacoId: b.espaco.id,
+    fonte: b.v1.fonte,
+    manifesto: b.v1.manifesto,
+    autorId: equipe.usuarioId,
+  })
+  expect(r.publicacao.id).not.toBe(b.v1.id)
+  // O jogo lê a versão nova como qualquer publicação, com os mesmos arquivos da escolhida.
+  expect((await b.servico.perfilDoJogo(b.pedido.perfil))?.id).toBe(r.publicacao.id)
+  expect(await b.publicacoes.recursos(r.publicacao.id)).toEqual(
+    await b.publicacoes.recursos(b.v1.id),
+  )
+  expect((await b.servico.arquivoDoJogo(r.publicacao.id, b.pedido.manifesto.digest)).chave).toBe(
+    `cenarios/${b.espaco.id}/blobs/${b.pedido.manifesto.digest}`,
+  )
+  const lista = await b.servico.listarVersoes(equipe, b.pedido.perfil)
+  expect(lista.versoes.map((v) => [v.versao, v.atual])).toEqual([
+    [3, true],
+    [2, false],
+    [1, false],
+  ])
+  // As versões guardadas não mudam: só cresce a numeração.
+  expect(await b.publicacoes.porId(b.v1.id)).toEqual(b.v1)
+})
+
+test('versão esperada vencida é recusada sem trocar a versão no ar', async () => {
+  const b = await duasVersoes()
+  await expect(
+    b.servico.voltarParaVersao(equipe, { ...b.volta, versaoEsperada: 1 }),
+  ).rejects.toThrow(/destino/i)
+  expect(b.publicacoes.versoes.size).toBe(2)
+  expect((await b.publicacoes.atual(b.pedido.perfil))?.id).toBe(b.v2.id)
+})
+
+test('a mesma operação repetida devolve a mesma versão; com outro conteúdo ou autor, não', async () => {
+  const b = await duasVersoes()
+  const primeira = await b.servico.voltarParaVersao(equipe, b.volta)
+  const segunda = await b.servico.voltarParaVersao(equipe, b.volta)
+  expect(segunda).toEqual({ ...primeira, repetido: true })
+  expect(b.publicacoes.versoes.size).toBe(3)
+  await expect(
+    b.servico.voltarParaVersao(equipe, { ...b.volta, publicacaoId: b.v2.id }),
+  ).rejects.toThrow(/operação/i)
+  const outra = crypto.randomUUID()
+  await expect(
+    b.servico.voltarParaVersao({ ...equipe, usuarioId: outra, contaId: outra }, b.volta),
+  ).rejects.toThrow(/operação/i)
+  // O id de uma publicação não serve para voltar uma versão.
+  await expect(
+    b.servico.voltarParaVersao(equipe, { ...b.volta, operacaoId: b.pedido.operacaoId }),
+  ).rejects.toThrow(/operação/i)
+  expect(b.publicacoes.versoes.size).toBe(3)
+})
+
+test('arquivo da versão que saiu do espaço impede a volta com aviso claro', async () => {
+  const b = await duasVersoes()
+  b.publicacoes.soltos.add(`${b.espaco.id}|${b.pedido.manifesto.digest}`)
+  const erro = await b.servico.voltarParaVersao(equipe, b.volta).then(
+    () => null,
+    (e) => e,
+  )
+  expect(erro).toBeInstanceOf(PublicacaoSemArquivosError)
+  expect(erro.message).toMatch(/arquivos desta versão já saíram/)
+  expect(erro.digests).toEqual([b.pedido.manifesto.digest])
+  expect(b.publicacoes.versoes.size).toBe(2)
+  expect((await b.publicacoes.atual(b.pedido.perfil))?.id).toBe(b.v2.id)
+})
+
+test('a versão no ar, a de outra ilha ou um id desconhecido não voltam', async () => {
+  const b = await duasVersoes()
+  await expect(
+    b.servico.voltarParaVersao(equipe, { ...b.volta, publicacaoId: b.v2.id }),
+  ).rejects.toThrow(/já está no ar/)
+  await expect(
+    b.servico.voltarParaVersao(equipe, {
+      ...b.volta,
+      operacaoId: crypto.randomUUID(),
+      perfil: { tipo: 'arquipelago-v2', ilha: 'bosque' },
+    }),
+  ).rejects.toThrow(/versão não existe/)
+  await expect(
+    b.servico.voltarParaVersao(equipe, {
+      ...b.volta,
+      operacaoId: crypto.randomUUID(),
+      publicacaoId: crypto.randomUUID(),
+    }),
+  ).rejects.toThrow(/versão não existe/)
+  await expect(
+    b.servico.voltarParaVersao(equipe, { ...b.volta, versaoEsperada: 0 }),
+  ).rejects.toThrow(/inválido/)
+  expect(b.publicacoes.versoes.size).toBe(2)
+})
+
+test('voltar e publicar ao mesmo tempo, da mesma versão esperada, admitem uma única troca', async () => {
+  const b = await duasVersoes()
+  const resultados = await Promise.allSettled([
+    b.servico.voltarParaVersao(equipe, b.volta),
+    b.servico.publicarConferido(
+      equipe,
+      { ...b.pedido, operacaoId: crypto.randomUUID(), versaoEsperada: 2 },
+      b.resumo,
+      b.conferidos,
+    ),
+  ])
+  expect(resultados.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
+  expect(resultados.filter((r) => r.status === 'rejected')).toHaveLength(1)
+  expect(b.publicacoes.versoes.size).toBe(3)
+  expect((await b.publicacoes.atual(b.pedido.perfil))?.versao).toBe(3)
 })

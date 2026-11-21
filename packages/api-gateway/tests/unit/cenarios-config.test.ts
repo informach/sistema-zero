@@ -21,6 +21,7 @@ const DA_OFICINA: ReadonlyArray<readonly [string, string]> = [
   ['GET', '/members/cenarios/acesso'],
   ['GET', '/members/cenarios/espacos'],
   ['GET', '/members/cenarios/publicacoes/perfis/sua-ilha'],
+  ['GET', '/members/cenarios/publicacoes/perfis/sua-ilha/versoes'],
   ['POST', '/members/cenarios/publicacoes/preparar'],
   ['POST', '/members/cenarios/publicacoes/manifesto/reservar'],
   ['GET', `/members/cenarios/espacos/${ID}/bibliotecas`],
@@ -133,6 +134,7 @@ describe('Molda Cenários na borda', () => {
       '/members/internal/cenarios/conjuntos/miniatura',
       '/members/internal/cenarios/publicacoes/recursos',
       '/members/internal/cenarios/publicacoes/confirmar',
+      '/members/internal/cenarios/publicacoes/voltar',
       '/members/internal/cenarios/publicacoes/jogo/perfil',
       '/members/internal/cenarios/publicacoes/jogo/arquivo',
       '/members/internal/cenarios/publicacoes/jogo/arquivos',
@@ -165,6 +167,11 @@ describe('Molda Cenários na borda', () => {
       expect(kidsMayAccess(responsavel, caminho, metodo, ID)).toBe(false)
     }
     expect(kidsMayAccess(crianca, '/members/internal/cenarios/modelos', 'POST', ID)).toBe(false)
+    // Voltar uma versão troca o que o jogo mostra: a criança e o responsável nunca chegam lá.
+    for (const sessao of [crianca, responsavel])
+      expect(
+        kidsMayAccess(sessao, '/members/internal/cenarios/publicacoes/voltar', 'POST', ID),
+      ).toBe(false)
   })
 
   test('o manifesto compilado não atravessa a borda: só o resumo, dentro do teto padrão', () => {
@@ -180,5 +187,21 @@ describe('Molda Cenários na borda', () => {
       resolver('POST', '/members/cenarios/publicacoes/preparar')?.maxBodyBytes,
     ).toBeLessThanOrEqual(64 * 1024)
     expect(resolver('POST', '/members/cenarios/publicacoes/confirmar')).toBeUndefined()
+  })
+
+  test('voltar uma versão é rota interna de corpo pequeno; a lista é só leitura', () => {
+    const voltar = resolver('POST', '/members/internal/cenarios/publicacoes/voltar')
+    expect(voltar?.id).toBe('members-cenarios-interno-publicacao-voltar')
+    expect(voltar?.maxBodyBytes).toBeLessThanOrEqual(1024 * 1024)
+    expect(voltar?.maxBodyBytes).toBeLessThanOrEqual(16 * 1024)
+    // Pela borda pública, sem HMAC, não há como trocar a versão no ar.
+    expect(resolver('POST', '/members/cenarios/publicacoes/voltar')).toBeUndefined()
+    const versoes = resolver('GET', '/members/cenarios/publicacoes/perfis/bosque/versoes')
+    expect(versoes?.id).toBe('members-cenarios-publicacao-versoes')
+    expect(resolver('POST', '/members/cenarios/publicacoes/perfis/bosque/versoes')).toBeUndefined()
+    // A rota do destino atual continua sendo a dela, sem engolir a lista.
+    expect(resolver('GET', '/members/cenarios/publicacoes/perfis/bosque')?.id).toBe(
+      'members-cenarios-publicacao-perfil',
+    )
   })
 })

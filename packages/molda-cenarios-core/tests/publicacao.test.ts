@@ -3,12 +3,18 @@ import type { CenaCompilada } from '../src/compilar/schema'
 import {
   conferirPreparacaoDePublicacao,
   criarSnapshotDePublicacao,
+  digestDoPedidoDePublicacao,
+  digestDoPedidoDeVolta,
+  LIMITE_DE_VERSOES_LISTADAS,
   lerResultadoDaPublicacao,
+  lerResultadoDaVolta,
   lerResumoDaPublicacao,
+  lerVersoesPublicadas,
   MAX_BYTES_DO_RESUMO_DE_PUBLICACAO,
   PERFIS_DE_ILHA,
   type PedidoDePublicacao,
   PedidoDePublicacaoSchema,
+  PedidoDeVoltaSchema,
   RecursosAReservarSchema,
   resumirPublicacao,
 } from '../src/publicacao'
@@ -243,4 +249,66 @@ test('o resumo leva inventário e procedência, nunca o manifesto, e confere o m
     false,
   )
   expect(RecursosAReservarSchema.safeParse([resumo.recursos[1]]).success).toBe(true)
+})
+
+test('a lista de versões vem da mais nova à mais antiga, com só a primeira no ar', async () => {
+  const { pedido } = await preparo()
+  const versao = (n: number, atual = false) => ({
+    id: `00000000-0000-4000-8000-00000000000${n}`,
+    versao: n,
+    fonte: { cenario: pedido.fonte.cenario, revisao: n },
+    manifesto: pedido.manifesto,
+    publicadaEm: '2026-11-21T12:00:00.000Z',
+    autorId: '00000000-0000-4000-8000-000000000009',
+    atual,
+  })
+  const lista = { perfil: pedido.perfil, versoes: [versao(3, true), versao(2), versao(1)] }
+  expect(lerVersoesPublicadas(pedido.perfil, lista).versoes.map((v) => v.versao)).toEqual([3, 2, 1])
+  expect(
+    lerVersoesPublicadas(pedido.perfil, { perfil: pedido.perfil, versoes: [] }).versoes,
+  ).toEqual([])
+  for (const errada of [
+    { ...lista, versoes: [versao(2), versao(3, true)] },
+    { ...lista, versoes: [versao(3), versao(2, true)] },
+    { ...lista, versoes: [versao(3, true), versao(3)] },
+    { ...lista, versoes: [{ ...versao(3, true), espacoId: 'privado' }] },
+    { ...lista, versoes: Array.from({ length: LIMITE_DE_VERSOES_LISTADAS + 1 }, () => versao(1)) },
+  ])
+    expect(() => lerVersoesPublicadas(pedido.perfil, errada)).toThrow()
+  expect(() => lerVersoesPublicadas({ tipo: 'arquipelago-v2', ilha: 'bosque' }, lista)).toThrow()
+})
+
+test('voltar a uma versão anterior cria a seguinte com o mesmo conteúdo, numa operação própria', async () => {
+  const { pedido } = await preparo()
+  const volta = PedidoDeVoltaSchema.parse({
+    operacaoId: pedido.operacaoId,
+    perfil: pedido.perfil,
+    versaoEsperada: 3,
+    publicacaoId: '00000000-0000-4000-8000-000000000001',
+  })
+  expect(() => PedidoDeVoltaSchema.parse({ ...volta, versaoEsperada: 0 })).toThrow()
+  expect(() => PedidoDeVoltaSchema.parse({ ...volta, autorId: 'x' })).toThrow()
+  // O mesmo id de operação não confunde volta com publicação.
+  expect(await digestDoPedidoDeVolta(volta)).not.toBe(await digestDoPedidoDePublicacao(pedido))
+  const alvo = { fonte: { cenario: pedido.fonte.cenario, revisao: 3 }, manifesto: pedido.manifesto }
+  const publicacao = {
+    id: '00000000-0000-4000-8000-000000000004',
+    perfil: pedido.perfil,
+    versao: 4,
+    fonte: { ...alvo.fonte, digest: pedido.fonte.digest },
+    manifesto: pedido.manifesto,
+  }
+  expect(lerResultadoDaVolta(volta, { publicacao, repetido: false }, alvo).publicacao).toEqual(
+    publicacao,
+  )
+  for (const patch of [
+    { versao: 3 },
+    { id: volta.publicacaoId },
+    { perfil: { tipo: 'arquipelago-v2', ilha: 'bosque' } },
+    { manifesto: { ...pedido.manifesto, digest: 'f'.repeat(64) } },
+    { fonte: { ...publicacao.fonte, revisao: 9 } },
+  ])
+    expect(() =>
+      lerResultadoDaVolta(volta, { publicacao: { ...publicacao, ...patch }, repetido: true }, alvo),
+    ).toThrow()
 })

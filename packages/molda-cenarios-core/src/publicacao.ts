@@ -79,6 +79,83 @@ export function lerResultadoDaPublicacao(
     throw Error('A publicação respondeu com outra revisão, versão ou destino.')
   return resultado
 }
+/** Quantas versões a oficina lista por ilha: a atual primeiro, depois as anteriores. */
+export const LIMITE_DE_VERSOES_LISTADAS = 20
+/** Uma versão guardada da ilha, como a equipe vê na oficina (o autor é só o id da conta). */
+export const VersaoPublicadaSchema = z
+  .object({
+    id: z.uuid(),
+    versao: z.number().int().positive().max(2147483647),
+    fonte: FonteDaCompilacaoSchema,
+    manifesto: PedidoDePublicacaoSchema.shape.manifesto,
+    publicadaEm: z.iso.datetime({ offset: true }),
+    autorId: z.uuid(),
+    atual: z.boolean(),
+  })
+  .strict()
+export type VersaoPublicada = z.infer<typeof VersaoPublicadaSchema>
+export const VersoesPublicadasSchema = z
+  .object({
+    perfil: PerfilDePublicacaoSchema,
+    versoes: z.array(VersaoPublicadaSchema).max(LIMITE_DE_VERSOES_LISTADAS),
+  })
+  .strict()
+  .superRefine((r, ctx) => {
+    if (r.versoes.some((v, i) => i > 0 && v.versao >= r.versoes[i - 1]!.versao))
+      ctx.addIssue({
+        code: 'custom',
+        message: 'As versões precisam vir da mais nova à mais antiga.',
+      })
+    if (r.versoes.some((v, i) => v.atual && i > 0))
+      ctx.addIssue({ code: 'custom', message: 'Só a versão mais nova pode estar no ar.' })
+  })
+export type VersoesPublicadas = z.infer<typeof VersoesPublicadasSchema>
+export function lerVersoesPublicadas(
+  perfil: PerfilDePublicacao,
+  entrada: unknown,
+): VersoesPublicadas {
+  const lidas = VersoesPublicadasSchema.parse(entrada)
+  if (canonicalJson(lidas.perfil) !== canonicalJson(PerfilDePublicacaoSchema.parse(perfil)))
+    throw Error('A lista de versões é de outra ilha.')
+  return lidas
+}
+
+/** Voltar a ilha para uma versão anterior: o manifesto dela entra como versão nova (atual + 1). */
+export const PedidoDeVoltaSchema = z
+  .object({
+    operacaoId: z.uuid(),
+    perfil: PerfilDePublicacaoSchema,
+    versaoEsperada: z.number().int().min(1).max(2147483646),
+    publicacaoId: z.uuid(),
+  })
+  .strict()
+export type PedidoDeVolta = z.infer<typeof PedidoDeVoltaSchema>
+/** Separado do digest da publicação: o mesmo `operacaoId` nunca serve às duas operações. */
+export async function digestDoPedidoDeVolta(entrada: unknown): Promise<string> {
+  const pedido = PedidoDeVoltaSchema.parse(entrada)
+  return sha256Hex(canonicalJson({ volta: pedido }))
+}
+/** A versão nova precisa ser a seguinte à esperada, na mesma ilha e com o conteúdo da escolhida. */
+export function lerResultadoDaVolta(
+  pedido: PedidoDeVolta,
+  entrada: unknown,
+  alvo?: Pick<VersaoPublicada, 'fonte' | 'manifesto'>,
+): ResultadoDaPublicacao {
+  const resultado = ResultadoDaPublicacaoSchema.parse(entrada),
+    p = resultado.publicacao
+  if (
+    p.versao !== pedido.versaoEsperada + 1 ||
+    p.id === pedido.publicacaoId ||
+    canonicalJson(p.perfil) !== canonicalJson(pedido.perfil) ||
+    (alvo &&
+      (p.fonte.cenario !== alvo.fonte.cenario ||
+        p.fonte.revisao !== alvo.fonte.revisao ||
+        canonicalJson(p.manifesto) !== canonicalJson(alvo.manifesto)))
+  )
+    throw Error('A volta respondeu com outra versão, conteúdo ou destino.')
+  return resultado
+}
+
 export const PreparacaoDePublicacaoSchema = z
   .object({
     espacoId: z.uuid(),

@@ -242,3 +242,147 @@ test('o manifesto nunca entra no corpo interno: só o resumo, e os pedidos públ
     ).status,
   ).toBe(413)
 })
+
+/** A v1 da fonte e uma v2 com outro manifesto (fim de tarde), as duas confirmadas pelo BFF. */
+async function duasVersoes() {
+  const b = await fonte()
+  const interno = '/members/internal/cenarios/publicacoes/confirmar'
+  const v1 = (await (await pedir(b.ctx, 'POST', interno, b.confirmacao, bff)).json()) as {
+    publicacao: { id: string; versao: number }
+  }
+  const cena = { ...JSON.parse(b.manifesto), ambiente: { hora: 18 } }
+  const bytes = new TextEncoder().encode(JSON.stringify(cena))
+  const pedido = {
+    ...b.pedido,
+    operacaoId: crypto.randomUUID(),
+    versaoEsperada: 1,
+    manifesto: { digest: await digestDosBytes(bytes), bytes: bytes.length },
+  }
+  const v2 = await pedir(
+    b.ctx,
+    'POST',
+    interno,
+    {
+      ator,
+      pedido,
+      resumo: resumirPublicacao(await criarSnapshotDePublicacao(pedido, bytes)),
+      conferidos: [
+        { ...pedido.manifesto, tipoDoConteudo: 'application/vnd.sistemazero.cena-compilada+json' },
+      ],
+    },
+    bff,
+  )
+  expect(v2.status).toBe(200)
+  const volta = {
+    operacaoId: crypto.randomUUID(),
+    perfil: b.pedido.perfil,
+    versaoEsperada: 2,
+    publicacaoId: v1.publicacao.id,
+  }
+  return { ...b, v1: v1.publicacao, volta }
+}
+
+test('a lista das versões é da equipe na própria conta, nunca de um perfil do Kids', async () => {
+  const b = await duasVersoes(),
+    caminho = '/members/cenarios/publicacoes/perfis/sua-ilha/versoes'
+  const r = await pedir(b.ctx, 'GET', caminho)
+  expect(r.status).toBe(200)
+  const lista = (await r.json()) as {
+    perfil: unknown
+    versoes: { versao: number; atual: boolean; autorId: string; fonte: unknown }[]
+  }
+  expect(lista.perfil).toEqual(b.pedido.perfil)
+  expect(lista.versoes.map((v) => [v.versao, v.atual])).toEqual([
+    [2, true],
+    [1, false],
+  ])
+  expect(lista.versoes[1]).toMatchObject({
+    autorId: EQUIPE,
+    fonte: { cenario: b.pedido.fonte.cenario, revisao: 0 },
+  })
+  expect(lista.versoes[0]).not.toHaveProperty('espacoId')
+  expect(
+    (await pedir(b.ctx, 'GET', caminho, undefined, { ...admin, 'x-auth-user-role': 'customer' }))
+      .status,
+  ).toBe(403)
+  // A equipe numa sessão de perfil (o Kids): o gateway injeta a conta.
+  expect(
+    (
+      await pedir(b.ctx, 'GET', caminho, undefined, {
+        ...admin,
+        'x-auth-account-id': crypto.randomUUID(),
+        'x-auth-kids-context': 'student',
+      })
+    ).status,
+  ).toBe(403)
+  expect(
+    (await pedir(b.ctx, 'GET', '/members/cenarios/publicacoes/perfis/inexistente/versoes')).status,
+  ).toBe(400)
+})
+
+test('voltar para uma versão só pelo HMAC do BFF, com CAS, repetição e a numeração crescendo', async () => {
+  const b = await duasVersoes(),
+    interno = '/members/internal/cenarios/publicacoes/voltar'
+  // Pela borda pública não existe; sem o consumidor do BFF, recusa.
+  expect(
+    (await pedir(b.ctx, 'POST', '/members/cenarios/publicacoes/voltar', { pedido: b.volta }))
+      .status,
+  ).toBe(404)
+  expect((await pedir(b.ctx, 'POST', interno, { ator, pedido: b.volta })).status).toBe(401)
+  expect(
+    (
+      await pedir(
+        b.ctx,
+        'POST',
+        interno,
+        { ator: { ...ator, suporte: true }, pedido: b.volta },
+        bff,
+      )
+    ).status,
+  ).toBe(403)
+  expect(
+    (await pedir(b.ctx, 'POST', interno, { ator: { ...ator, perfil: true }, pedido: b.volta }, bff))
+      .status,
+  ).toBe(403)
+  expect(
+    (await pedir(b.ctx, 'POST', interno, { ator, pedido: { ...b.volta, versaoEsperada: 1 } }, bff))
+      .status,
+  ).toBe(409)
+  const r = await pedir(b.ctx, 'POST', interno, { ator, pedido: b.volta }, bff)
+  expect(r.status).toBe(200)
+  const resultado = (await r.json()) as {
+    publicacao: { id: string; versao: number; manifesto: unknown }
+    repetido: boolean
+  }
+  expect(resultado.publicacao.versao).toBe(3)
+  expect(resultado.publicacao.manifesto).toEqual(b.pedido.manifesto)
+  expect(resultado.publicacao).not.toHaveProperty('autorId')
+  expect(resultado.repetido).toBe(false)
+  const repetida = await pedir(b.ctx, 'POST', interno, { ator, pedido: b.volta }, bff)
+  expect(((await repetida.json()) as { repetido: boolean }).repetido).toBe(true)
+  // Um manifesto no corpo não vale nada: o conteúdo vem sempre da versão guardada.
+  const outra = await pedir(
+    b.ctx,
+    'POST',
+    interno,
+    {
+      ator,
+      pedido: { ...b.volta, operacaoId: crypto.randomUUID(), versaoEsperada: 3 },
+      manifesto: { digest: 'f'.repeat(64), bytes: 1 },
+    },
+    bff,
+  )
+  expect(outra.status).toBe(200)
+  expect(await outra.json()).toMatchObject({
+    publicacao: { versao: 4, manifesto: b.pedido.manifesto },
+    repetido: false,
+  })
+  const jogo = await pedir(
+    b.ctx,
+    'POST',
+    '/members/internal/cenarios/publicacoes/jogo/perfil',
+    { ator, perfil: b.pedido.perfil },
+    bff,
+  )
+  expect(((await jogo.json()) as { versao: number }).versao).toBe(4)
+})

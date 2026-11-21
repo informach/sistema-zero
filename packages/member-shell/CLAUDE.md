@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Versões das ilhas do Molda Cenários (21/11/2026)
+
+`routes/cenarios-publicacoes.ts`: `GET /api/cenarios/publicacoes/perfis/:ilha/versoes` repassa com a
+sessão (ou o token do agente) e confere a lista (`lerVersoesPublicadas`); `POST
+/api/cenarios/publicacoes/voltar` recebe só `PedidoDeVoltaSchema` (16 KB), segue por HMAC com o ator
+da sessão para `/members/internal/cenarios/publicacoes/voltar` e confere a resposta
+(`lerResultadoDaVolta`). Nada lê o armazenamento: os arquivos já estão no espaço. Suporte só de
+leitura e `x-sz-viewer` trocado são recusados como nas outras escritas. Testes no fim de
+`tests/cenarios-publicacoes-routes.test.ts`.
+
 ## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
 
 Pedido dela: compartilhar o mesmo projeto não cria mais outro post no Mural; ATUALIZA o que ele já

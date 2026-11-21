@@ -164,6 +164,17 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(student, path, 'GET', 'aluno')).toBe(false)
     }
   })
+  test('versões publicadas das ilhas: a lista vai ao members (que só responde à equipe na própria conta); voltar uma versão é rota interna', () => {
+    const versoes = '/members/cenarios/publicacoes/perfis/sua-ilha/versoes'
+    // A borda deixa a criança chegar como em toda a oficina; o members recusa a sessão de perfil.
+    expect(kidsMayAccess(student, versoes, 'GET', 'aluno')).toBe(true)
+    expect(kidsMayAccess(parent, versoes, 'GET', 'responsavel')).toBe(false)
+    for (const sessao of [student, parent])
+      for (const method of ['POST', 'GET'])
+        expect(
+          kidsMayAccess(sessao, '/members/internal/cenarios/publicacoes/voltar', method, 'x'),
+        ).toBe(false)
+  })
   test('a seção Jogo do Admin nunca abre para aluno nem responsável', () => {
     for (const path of [
       '/arquipelago/admin/desafios',

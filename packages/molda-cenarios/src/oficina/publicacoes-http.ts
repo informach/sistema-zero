@@ -2,12 +2,15 @@ import { conferirInventarioCompilado } from '@sistemazero/molda-cenarios-core/co
 import {
   conferirPreparacaoDePublicacao,
   lerResultadoDaPublicacao,
+  lerResultadoDaVolta,
+  lerVersoesPublicadas,
+  PedidoDeVoltaSchema,
   PerfilDePublicacaoSchema,
   PublicacaoParaOJogoSchema,
 } from '@sistemazero/molda-cenarios-core/publicacao'
 import type { Reserva } from './host-http'
 import { prepararPacoteDaPublicacao } from './publicacao-pacote'
-import type { PublicacoesDeCenariosHost } from './publicacoes'
+import { type PublicacoesDeCenariosHost, pedidoDaVolta } from './publicacoes'
 
 export function criarPublicacoesHttp(deps: {
   pedir<T>(
@@ -35,6 +38,23 @@ export function criarPublicacoesHttp(deps: {
       if (atual && (atual.perfil.tipo !== perfil.tipo || atual.perfil.ilha !== perfil.ilha))
         throw Error('A oficina respondeu com outro destino.')
       return atual
+    },
+    async listarVersoes(entrada, sinal) {
+      const perfil = PerfilDePublicacaoSchema.parse(entrada)
+      return lerVersoesPublicadas(
+        perfil,
+        await deps.pedir('GET', `publicacoes/perfis/${perfil.ilha}/versoes`, undefined, sinal),
+      )
+    },
+    async voltarParaVersao(destino, sinal) {
+      const pedido = PedidoDeVoltaSchema.parse(pedidoDaVolta(destino)),
+        alvo = structuredClone({ fonte: destino.versao.fonte, manifesto: destino.versao.manifesto })
+      sinal?.throwIfAborted()
+      return lerResultadoDaVolta(
+        pedido,
+        await deps.pedir('POST', 'publicacoes/voltar', pedido, sinal),
+        alvo,
+      )
     },
     async publicar(pacote, destino, sinal, progresso) {
       const { manifesto, snapshot } = await prepararPacoteDaPublicacao(pacote, destino, sinal),

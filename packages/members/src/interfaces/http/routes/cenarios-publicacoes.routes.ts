@@ -33,6 +33,16 @@ const PEDIDO = t.Object(
   },
   { additionalProperties: false },
 )
+/** Voltar a ilha para uma versão anterior: o conteúdo vem da versão guardada, não do corpo. */
+const PEDIDO_DE_VOLTA = t.Object(
+  {
+    operacaoId: UUID,
+    perfil: PERFIL,
+    versaoEsperada: t.Integer({ minimum: 1, maximum: 2147483646 }),
+    publicacaoId: UUID,
+  },
+  { additionalProperties: false },
+)
 const ATOR = t.Object(
   {
     usuarioId: UUID,
@@ -80,6 +90,15 @@ export function cenariosPublicacoesRoutes(
                 ilha: params.ilha,
               }),
             ),
+          { params: t.Object({ ilha: ILHA }) },
+        )
+        .get(
+          '/perfis/:ilha/versoes',
+          async ({ headers, params }) =>
+            s.listarVersoes(atorDosCenarios(headers), {
+              tipo: 'arquipelago-v2',
+              ilha: params.ilha,
+            }),
           { params: t.Object({ ilha: ILHA }) },
         )
         .post('/preparar', ({ headers, body }) => s.preparar(atorDosCenarios(headers), body), {
@@ -144,6 +163,23 @@ export function cenariosPublicacoesRoutes(
                   maxItems: LIMITES_DA_EXPORTACAO.arquivos + 1,
                 }),
               },
+              { additionalProperties: false },
+            ),
+          },
+        )
+        // Troca o apontador como a confirmação: só pelo BFF, com o ator da sessão verificada.
+        .post(
+          '/voltar',
+          async ({ body }) => {
+            const resultado = await s.voltarParaVersao(body.ator, body.pedido)
+            return {
+              publicacao: publicacaoParaOJogo(resultado.publicacao),
+              repetido: resultado.repetido,
+            }
+          },
+          {
+            body: t.Object(
+              { ator: ATOR, pedido: PEDIDO_DE_VOLTA },
               { additionalProperties: false },
             ),
           },

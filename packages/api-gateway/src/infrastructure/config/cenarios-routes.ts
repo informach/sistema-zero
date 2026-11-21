@@ -63,6 +63,8 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     ler('acesso', '/acesso'),
     ler('espacos', '/espacos'),
     ler('publicacao-perfil', '/publicacoes/perfis/:ilha'),
+    // As versões guardadas da ilha (a atual primeiro): o members só responde à equipe.
+    ler('publicacao-versoes', '/publicacoes/perfis/:ilha/versoes'),
     escrever('publicacao-preparar', 'POST', '/publicacoes/preparar'),
     escrever('publicacao-manifesto-reservar', 'POST', '/publicacoes/manifesto/reservar'),
 
@@ -143,6 +145,8 @@ export function cenariosRoutes(transforms: Route['transforms']): Route[] {
     interna('publicacao-recursos', '/publicacoes/recursos', 64 * 1024),
     // Inventário e procedência do pacote (o BFF lê o manifesto no armazenamento).
     interna('publicacao-confirmar', '/publicacoes/confirmar', MAX_BYTES_DO_RESUMO_DE_PUBLICACAO),
+    // Voltar a ilha para uma versão guardada: só ids e a versão esperada, nunca o manifesto.
+    interna('publicacao-voltar', '/publicacoes/voltar', 16 * 1024),
     interna('publicacao-jogo-perfil', '/publicacoes/jogo/perfil', 16 * 1024),
     interna('publicacao-jogo-arquivo', '/publicacoes/jogo/arquivo', 16 * 1024),
     // Até 100 hashes de uma vez: o pacote publicado não gasta um pedido por arquivo.

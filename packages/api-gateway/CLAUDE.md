@@ -1,5 +1,14 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Versões das ilhas do Molda Cenários (21/11/2026)
+
+`members-cenarios-publicacao-versoes` (`GET /members/cenarios/publicacoes/perfis/:ilha/versoes`,
+leitura da oficina; quem responde só à equipe na própria conta é o members) e
+`members-cenarios-interno-publicacao-voltar` (`POST /members/internal/cenarios/publicacoes/voltar`,
+HMAC do `member-shell`, corpo de 16 KB). Voltar uma versão troca o que o jogo mostra: não existe pela
+borda pública, e o Kids nunca alcança a interna. Testes: `cenarios-config.test.ts` e
+`kids-access-policy.test.ts`.
+
 ## Atualizar a publicação do Mural (20/11/2026)
 
 Quatro rotas exatas do hub na régua das de publicação (JWT de aluno ativo + HMAC

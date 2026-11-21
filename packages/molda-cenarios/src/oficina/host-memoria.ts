@@ -947,6 +947,8 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         for (const digest of arquivos.keys()) referenciasPublicadas.add(`${espacoId}:${digest}`)
         espaco.usadoBytes += bytes
       },
+      // Voltar uma versão confere que os arquivos dela continuam no espaço.
+      presente: (espacoId, digest) => conteudos.has(`${espacoId}:${digest}`),
     })
   return host
 }

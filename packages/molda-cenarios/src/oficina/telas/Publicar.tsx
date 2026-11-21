@@ -8,6 +8,7 @@ import { ArrowRight, Loader2 } from 'lucide-react'
 import { type JSX, useEffect, useRef, useState } from 'react'
 import type { CenariosHost } from '../portas'
 import type { useExportacao } from '../useExportacao'
+import VersoesDaIlha from './VersoesDaIlha'
 
 const ILHAS: Record<PerfilDePublicacao['ilha'], string> = {
   'sua-ilha': 'Faísca',
@@ -48,7 +49,8 @@ export default function Publicar({
   const [ilha, setIlha] = useState<PerfilDePublicacao['ilha']>('sua-ilha')
   const [consulta, setConsulta] = useState<Consulta>({ tipo: 'carregando' })
   const [aceite, setAceite] = useState(false),
-    [volta, setVolta] = useState(0)
+    [volta, setVolta] = useState(0),
+    [voltando, setVoltando] = useState(false)
   const operacao = useRef<{ chave: string; id: string } | null>(null)
   const cenarioId = preparo?.fonte.cenario,
     revisao = preparo?.fonte.revisao,
@@ -81,7 +83,15 @@ export default function Publicar({
     setVolta((v) => v + 1)
   }
   const publicar = () => {
-    if (!preparo || consulta.tipo !== 'pronto' || !aceite || !autorizado || tarefa.pendente) return
+    if (
+      !preparo ||
+      consulta.tipo !== 'pronto' ||
+      !aceite ||
+      !autorizado ||
+      tarefa.pendente ||
+      voltando
+    )
+      return
     const versaoEsperada = consulta.atual?.versao ?? 0
     const chave = JSON.stringify([
       preparo.fonte.cenario,
@@ -106,6 +116,7 @@ export default function Publicar({
       aceite &&
       consulta.tipo === 'pronto' &&
       !tarefa.pendente &&
+      !voltando &&
       !mudou &&
       !divergente,
   )
@@ -145,6 +156,7 @@ export default function Publicar({
             <span>Ilha do Arquipélago</span>
             <select
               value={ilha}
+              disabled={voltando}
               onChange={(ev) => {
                 const destino = PerfilDePublicacaoSchema.safeParse({
                   tipo: 'arquipelago-v2',
@@ -163,6 +175,23 @@ export default function Publicar({
               ))}
             </select>
           </label>
+          {porta && autorizado ? (
+            <VersoesDaIlha
+              key={ilha}
+              porta={porta}
+              ilha={ilha}
+              nomeDaIlha={ILHAS[ilha]}
+              cenarioAberto={cenarioId}
+              recarga={volta}
+              bloqueado={tarefa.pendente}
+              aoMudar={() => {
+                operacao.current = null
+                setAceite(false)
+                setVolta((v) => v + 1)
+              }}
+              aoOcupar={setVoltando}
+            />
+          ) : null}
           {consulta.tipo === 'carregando' && autorizado && preparo ? (
             <p role="status" className="text-mld-muted text-sm">
               Conferindo a versão publicada…
@@ -191,7 +220,7 @@ export default function Publicar({
                 <input
                   type="checkbox"
                   checked={aceite}
-                  disabled={tarefa.pendente || !autorizado}
+                  disabled={tarefa.pendente || voltando || !autorizado}
                   onChange={(ev) => setAceite(ev.target.checked)}
                 />
                 <span>
@@ -229,7 +258,7 @@ export default function Publicar({
               Fechar
             </Button>
             {!pendente && autorizado ? (
-              <Button variant="outline" onClick={atualizar}>
+              <Button variant="outline" disabled={voltando} onClick={atualizar}>
                 Atualizar destino
               </Button>
             ) : null}

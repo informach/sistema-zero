@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/members
 
+## Molda Cenários: versões de cada ilha e "Voltar para esta versão" (21/11/2026)
+
+- `GET /members/cenarios/publicacoes/perfis/:ilha/versoes` (JWT) → `VersoesPublicadas` do core:
+  até `LIMITE_DE_VERSOES_LISTADAS` (20) versões, da mais nova à mais antiga, `atual` lido do
+  apontador na MESMA consulta (`listarVersoes`). Autor = só o `autorId`.
+- `POST /members/internal/cenarios/publicacoes/voltar` (HMAC do `member-shell`, `{ator, pedido}`,
+  `PedidoDeVoltaSchema`: `operacaoId`, `perfil`, `versaoEsperada`, `publicacaoId`): copia manifesto,
+  fonte e arquivos da versão escolhida numa versão NOVA (`versaoEsperada + 1`). Mesma autorização
+  (`exigirEquipe`), mesmo CAS e mesmas travas da publicação (espaço, depois perfil); repetição por
+  `operacaoId` precede o CAS (digest próprio, `digestDoPedidoDeVolta`). Arquivo sem confirmação ou
+  com lápide em `cenario_blobs_saindo` → 409 `PUBLICACAO_CENARIO_SEM_ARQUIVOS`. Sem migration.
+- ⚠️ Não existe poda de versões: TODAS guardam referências aos blobs (o jogo só LÊ a atual e a anterior).
+- Testes: `tests/unit|integration|db/cenarios-publicacoes.test.ts` (o de banco com `CENARIOS_TEST_DATABASE_URL`).
+
 ## Meus testes no Pro do Estúdio Completo (20/11/2026)
 
 `POST /members/studio/student-tests?audience=` (`StudioStudentTestsService`,

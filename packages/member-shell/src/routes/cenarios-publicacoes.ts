@@ -2,7 +2,10 @@ import 'server-only'
 import {
   conferirPreparacaoDePublicacao,
   lerResultadoDaPublicacao,
+  lerResultadoDaVolta,
+  lerVersoesPublicadas,
   PedidoDePublicacaoSchema,
+  PedidoDeVoltaSchema,
   PerfilDePublicacaoSchema,
   type PreparacaoDePublicacao,
   PublicacaoParaOJogoSchema,
@@ -24,6 +27,8 @@ const Recursos = Confirmacao.extend({
     .min(1)
     .max(50),
 })
+/** Voltar uma versão leva só ids e a versão esperada: o conteúdo é o da versão guardada. */
+const CORPO_DA_VOLTA = 16 * 1024
 const caminhos = new Set([
   'publicacoes/manifesto/reservar',
   'publicacoes/recursos/reservar',
@@ -47,6 +52,57 @@ export function criarPublicacoesDeCenariosBff(deps: {
     req: Request,
     user: SessionUser | null,
   ): Promise<NextResponse | null> => {
+    const versoes = /^publicacoes\/perfis\/([^/]+)\/versoes$/.exec(caminho)
+    if (metodo === 'GET' && versoes) {
+      if (!user) return deps.erro(401, 'UNAUTHENTICATED', 'Entre de novo para continuar.')
+      const perfil = PerfilDePublicacaoSchema.safeParse({
+        tipo: 'arquipelago-v2',
+        ilha: versoes[1],
+      })
+      if (!perfil.success) return deps.erro(404, 'NOT_FOUND', 'Não achei isso')
+      // Quem pode ver (a equipe na própria conta) é o members que decide, como ao publicar.
+      const resposta = await deps.gateway.gatewayFetch(
+        `/members/cenarios/publicacoes/perfis/${perfil.data.ilha}/versoes`,
+        { method: 'GET', signal: req.signal },
+      )
+      if (resposta.status !== 200) return deps.responder(resposta)
+      try {
+        return deps.responder({
+          status: 200,
+          body: lerVersoesPublicadas(perfil.data, resposta.body),
+        })
+      } catch {
+        return deps.erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
+      }
+    }
+    if (metodo === 'POST' && caminho === 'publicacoes/voltar') {
+      if (!user) return deps.erro(401, 'UNAUTHENTICATED', 'Entre de novo para continuar.')
+      const lido = await deps.lerCorpo(req, CORPO_DA_VOLTA)
+      const pedido = lido.ok ? PedidoDeVoltaSchema.safeParse(lido.corpo) : null
+      if (!pedido?.success) return deps.erro(400, 'VALIDATION_ERROR', 'Requisição inválida')
+      // Troca o que o jogo mostra: como a confirmação, só pela rota interna com o ator da sessão.
+      const resposta = await deps.gateway.gatewayFetchHmac(
+        '/members/internal/cenarios/publicacoes/voltar',
+        {
+          method: 'POST',
+          signal: req.signal,
+          body: { ator: deps.ator(user), pedido: pedido.data },
+        },
+      )
+      if (resposta.status !== 200) return deps.responder(resposta)
+      try {
+        return deps.responder({
+          status: 200,
+          body: lerResultadoDaVolta(pedido.data, resposta.body),
+        })
+      } catch {
+        return deps.erro(
+          502,
+          'CENARIOS_INDISPONIVEL',
+          'A volta respondeu com outra versão ou destino.',
+        )
+      }
+    }
     const destino = /^publicacoes\/perfis\/([^/]+)$/.exec(caminho)
     if (metodo === 'GET' && destino) {
       if (!user) return deps.erro(401, 'UNAUTHENTICATED', 'Entre de novo para continuar.')

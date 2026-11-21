@@ -1,15 +1,20 @@
 import { randomUUID } from 'node:crypto'
 import {
   digestDoPedidoDePublicacao,
+  digestDoPedidoDeVolta,
+  LIMITE_DE_VERSOES_LISTADAS,
   lerResumoDaPublicacao,
   MIME_DO_MANIFESTO,
   type PedidoDePublicacao,
   PedidoDePublicacaoSchema,
+  PedidoDeVoltaSchema,
   PerfilDePublicacaoSchema,
   PublicacaoParaOJogoSchema,
   type RecursoDaPublicacao,
   RecursosAReservarSchema,
   ReferenciaDeArquivoPublicadoSchema,
+  type VersoesPublicadas,
+  VersoesPublicadasSchema,
 } from '@sistemazero/molda-cenarios-core/publicacao'
 import { z } from 'zod'
 import {
@@ -17,6 +22,7 @@ import {
   chaveDoBlob,
   equipeNaPropriaConta,
   LIMITES_DOS_CENARIOS,
+  podeNoEspaco,
 } from '../../domain/cenarios/cenarios'
 import {
   CenarioInvalidoError,
@@ -44,6 +50,16 @@ function lerPedido(entrada: unknown) {
   const r = PedidoPersistidoSchema.safeParse(entrada)
   if (!r.success) throw new CenarioInvalidoError(['O pedido de publicação é inválido'])
   return r.data
+}
+function lerPedidoDeVolta(entrada: unknown) {
+  const r = PedidoDeVoltaSchema.safeParse(entrada)
+  if (!r.success) throw new CenarioInvalidoError(['O pedido para voltar a versão é inválido'])
+  return r.data
+}
+function lerPerfil(entrada: unknown) {
+  const perfil = PerfilDePublicacaoSchema.safeParse(entrada)
+  if (!perfil.success) throw new CenarioInvalidoError(['O destino da publicação é inválido'])
+  return perfil.data
 }
 /** O inventário e a procedência que o BFF tirou do manifesto conferido no armazenamento. */
 function resumoDe(pedido: PedidoDePublicacao, entrada: unknown) {
@@ -133,10 +149,69 @@ export class PublicacoesDeCenariosService {
 
   /** Somente pelas rotas HMAC de leitura: o BFF exige antes o acesso existente ao jogo. */
   async perfilDoJogo(entrada: unknown) {
-    const perfil = PerfilDePublicacaoSchema.safeParse(entrada)
-    if (!perfil.success) throw new CenarioInvalidoError(['O destino da publicação é inválido'])
-    const atual = await this.repo.atual(perfil.data)
+    const atual = await this.repo.atual(lerPerfil(entrada))
     return atual ? publicacaoParaOJogo(atual) : null
+  }
+
+  /** As versões guardadas da ilha, a atual primeiro. Mesma autorização de quem publica. */
+  async listarVersoes(identidade: Ator, entrada: unknown): Promise<VersoesPublicadas> {
+    this.exigirEquipe(identidade)
+    const perfil = lerPerfil(entrada)
+    const versoes = await this.repo.listarVersoes(perfil, LIMITE_DE_VERSOES_LISTADAS)
+    return VersoesPublicadasSchema.parse({
+      perfil,
+      versoes: versoes.map((v) => ({
+        id: v.id,
+        versao: v.versao,
+        fonte: { cenario: v.fonte.cenario, revisao: v.fonte.revisao },
+        manifesto: v.manifesto,
+        publicadaEm: v.criadoEm.toISOString(),
+        autorId: v.autorId,
+        atual: v.atual,
+      })),
+    })
+  }
+
+  /**
+   * "Voltar para esta versão": o manifesto de uma versão anterior entra como versão nova
+   * (atual + 1), com a mesma autorização, o mesmo CAS e a mesma repetição por `operacaoId` de
+   * uma publicação. Os arquivos já estão no espaço; a transação confere que nenhum saiu.
+   */
+  async voltarParaVersao(identidade: Ator, entrada: unknown): Promise<PublicacaoGravada> {
+    const ator = this.exigirEquipe(identidade),
+      pedido = lerPedidoDeVolta(entrada)
+    const digestDaOperacao = await digestDoPedidoDeVolta(pedido)
+    const repetida = await this.repo.operacao(pedido.operacaoId)
+    if (repetida) {
+      if (
+        repetida.digestDaOperacao !== digestDaOperacao ||
+        repetida.publicacao.autorId !== ator.usuarioId
+      )
+        throw new PublicacaoDeCenarioConflitanteError('Esta operação já publicou outro conteúdo')
+      return { publicacao: repetida.publicacao, repetido: true }
+    }
+    const alvo = await this.repo.porId(pedido.publicacaoId)
+    if (!alvo || alvo.perfil.tipo !== pedido.perfil.tipo || alvo.perfil.ilha !== pedido.perfil.ilha)
+      throw new CenarioNaoEncontradoError('A versão')
+    const espaco = await this.autoria.espaco(alvo.espacoId)
+    if (espaco?.tipo !== 'equipe' || !podeNoEspaco(espaco, ator))
+      throw new CenarioInvalidoError([
+        'O mundo compartilhado deve ser publicado a partir do espaço da equipe',
+      ])
+    const atual = await this.repo.atual(pedido.perfil)
+    if ((atual?.versao ?? 0) !== pedido.versaoEsperada)
+      throw new PublicacaoDeCenarioConflitanteError()
+    if (atual?.id === alvo.id) throw new CenarioInvalidoError(['Esta versão já está no ar'])
+    return this.repo.voltar(
+      {
+        id: this.novoId(),
+        espacoId: alvo.espacoId,
+        autorId: ator.usuarioId,
+        pedido,
+        digestDaOperacao,
+      },
+      this.clock(),
+    )
   }
 
   /** O jogo lê a versão atual da ilha e a imediatamente anterior (quem estava jogando quando a
