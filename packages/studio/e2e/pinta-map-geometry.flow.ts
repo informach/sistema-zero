@@ -36,7 +36,15 @@ test('canvas da oficina: geometria assinada, recorte e conservação do produtor
     }),
     contentType: 'application/json',
   })
-  expect(after).toEqual(before)
+  // Submitted offscreen grid commands are work diagnostics, not visual output.
+  const semantic = (probe: typeof after) => ({
+    ...probe,
+    images: probe.images.map((row) => ({
+      ...row,
+      image: { ...row.image, gridMoves: undefined },
+    })),
+  })
+  expect(semantic(after)).toEqual(semantic(before))
   expect(after.images).toHaveLength(32)
   expect(after.placements).toHaveLength(24)
   expect(regions.cases).toHaveLength(48)

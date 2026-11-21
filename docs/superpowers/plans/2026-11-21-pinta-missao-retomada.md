@@ -357,3 +357,24 @@ adoção durante a confirmação, com 12 controles positivos. A revisão incluiu
 auditoria do novo coletor e repetição da suíte sem aumentar o timeout do percurso
 que o havia atingido sob carga concorrente. Seguir ao perfil de render/culling;
 as etapas macro, IO e a promoção pública continuam abertas.
+
+Lote em execução: recorte da grade pelo viewport. Perfil anterior à alteração,
+sem contador nos trechos medidos: em mundo esparso 10.000², `moveTo`/`lineTo`
+e o laço da grade dominam as amostras; 20.002 linhas por frame. O controle denso
+de 32 camadas é dominado por `drawImage` e pressão do cache, problema separado.
+Matriz: impacto 1 × confiança 5 ÷ esforço 1 = 5 para a grade (não resolve a
+fluidez densa). Uma única alavanca: limitar os índices das linhas, conservando
+coordenadas, pontas, ordem, path, alpha e traço originais. Margem conservadora
+de um pixel para antialiasing. Preservar todos os hashes RGBA; contador de linhas
+é diagnóstico de trabalho, não parte da imagem. Não ampliar cache/formatos.
+Medir novamente sem outros jobs desta sessão; submissão CPU do renderer não é
+latência ponta a ponta da oficina, composição GPU ou abertura/IO.
+
+Recorte verificado em `qa/recorte-da-grade-2026-11-21/`: 93 testes de render,
+12 ensaios de navegador e 840 comparações RGBA aprovados, com tipos/lint.
+Em 1024 × 768, o caso esparso passa de 20.002 para 114 linhas. O controle ABBA
+confirma a redução do custo esparso; o denso continua lento e apresentou cauda
+maior com CPU 4×. A causalidade dessa variação e a latência global não foram
+qualificadas. Não declarar fluidez de mapas cheios: seguir ao cache/composição,
+com novo perfil, orçamento igual e conservação exata de pixels. A suíte completa
+2.570 pertence à base anterior; neste lote foi executada a regressão de render.

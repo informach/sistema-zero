@@ -4,14 +4,60 @@ import {
   makeRegionRenderFixture,
   translatedRegionRenderMap,
 } from '../../../../scripts/homologacao/regionRendering'
+import { createTilemapAsset } from '../../../core/project'
 import { TileChunkCache } from '../../../tiles/chunks'
 import type { AuthorMap } from '../../../tiles/mapCellEdits'
+import { expandRegionMap, prepareMapRegions } from '../../../tiles/regionMap'
 import { paintMapCanvas } from './mapCanvas'
 
 const makeCanvas = (width: number, height: number) =>
   Object.assign(createCanvas(width, height), {
     style: { transform: '' },
   }) as unknown as HTMLCanvasElement
+
+test('a grade de um mundo extenso visita somente linhas que podem atingir o canvas', () => {
+  const p = prepareMapRegions(
+    createTilemapAsset({ name: 'mundo', tilesetId: 'tiles', cols: 2, rows: 2 }),
+  )
+  if (!p.ok) throw Error(p.reason)
+  const e = expandRegionMap(p.map, { col: -100, row: -100, cols: 10000, rows: 10000 })
+  if (!e.ok) throw Error(e.reason)
+  const before = structuredClone(e.map)
+  for (const cellPx of [0.5, 4, 16, 32]) {
+    const canvas = makeCanvas(1, 1),
+      context = canvas.getContext('2d')!,
+      original = context.moveTo.bind(context),
+      cache = new TileChunkCache()
+    let moves = 0
+    context.moveTo = (x, y) => {
+      moves++
+      original(x, y)
+    }
+    paintMapCanvas({
+      canvas,
+      map: e.map,
+      cache,
+      tileSize: 16,
+      cellPx,
+      pad: 1,
+      time: 0,
+      stage: {
+        clientWidth: 180,
+        clientHeight: 128,
+        scrollLeft: 2511,
+        scrollTop: 2033,
+      } as HTMLElement,
+      tilesetById: new Map(),
+      sheetOf: () => null,
+      showCollision: false,
+    })
+    expect(moves).toBeLessThanOrEqual(
+      Math.ceil((180 + 2) / cellPx) + Math.ceil((128 + 2) / cellPx) + 2,
+    )
+    expect(e.map).toEqual(before)
+    cache.clear()
+  }
+})
 function render(
   map: AuthorMap,
   data: ReturnType<typeof makeRegionRenderFixture>,

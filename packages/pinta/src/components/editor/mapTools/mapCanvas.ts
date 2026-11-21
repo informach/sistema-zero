@@ -131,11 +131,17 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
   ctx.strokeStyle = GRID_STROKE
   ctx.lineWidth = 1
   ctx.beginPath()
-  for (let col = 0; col <= map.cols; col += 1) {
+  // Keep original endpoints/order; only omit strokes outside the canvas, including
+  // a conservative pixel of antialiasing reach around each viewport edge.
+  const firstCol = Math.max(0, Math.ceil((x - 1.5) / cellPx - pad)),
+    lastCol = Math.min(map.cols, Math.floor((x + width + 0.5) / cellPx - pad)),
+    firstRow = Math.max(0, Math.ceil((y - 1.5) / cellPx - pad)),
+    lastRow = Math.min(map.rows, Math.floor((y + height + 0.5) / cellPx - pad))
+  for (let col = firstCol; col <= lastCol; col += 1) {
     ctx.moveTo((col + pad) * cellPx + 0.5, pad * cellPx)
     ctx.lineTo((col + pad) * cellPx + 0.5, (map.rows + pad) * cellPx)
   }
-  for (let row = 0; row <= map.rows; row += 1) {
+  for (let row = firstRow; row <= lastRow; row += 1) {
     ctx.moveTo(pad * cellPx, (row + pad) * cellPx + 0.5)
     ctx.lineTo((map.cols + pad) * cellPx, (row + pad) * cellPx + 0.5)
   }

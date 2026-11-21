@@ -102,7 +102,10 @@ Seleção, cursor, destinos do minimapa e ponto de inserção descontam a origem
 O canvas de oficina aceita o documento interno por regiões, com colisões pelo
 leitor comum e bitmap limitado ao viewport. A biblioteca conserva coordenadas
 assinadas/fracionárias e o deslocamento herdado; o legado conserva sua régua.
-A grade ainda percorre as linhas do mundo: perfil e culling ficam em lote isolado.
+A grade passou a visitar somente linhas que podem atingir o canvas, com margem
+de antialiasing em pixels e pontas/coordenadas originais. O lote isolado conserva
+RGBA e orçamento; não resolve a pressão do cache em mapas densos. Provas e escopo
+do perfil em `qa/recorte-da-grade-2026-11-21/`, no diretório da missão.
 Isso não ativa edição pública 8: movimento SVG de objetos, recursos, modelos de
 store/IO e adaptadores continuam no plano. Provas em
 `qa/geometria-do-papel-2026-11-21/`, no diretório da missão.

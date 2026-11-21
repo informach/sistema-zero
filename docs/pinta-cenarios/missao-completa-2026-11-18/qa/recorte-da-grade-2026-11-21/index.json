@@ -1,0 +1,506 @@
+{
+  "at": "2026-11-21T20:15:46.716Z",
+  "sourceBase": "0e377ac1b25f7fa1073e02dca048f12de4a278a7",
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "focused": {
+      "passed": 11,
+      "failed": 0,
+      "assertions": 85
+    },
+    "renderSuite": {
+      "passed": 93,
+      "failed": 0,
+      "assertions": 476
+    },
+    "fullPintaSuiteRepeated": false,
+    "lastFullPintaSuite": {
+      "commit": "0e377ac1b25f7fa1073e02dca048f12de4a278a7",
+      "passed": 2570,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 29603
+    },
+    "browser": {
+      "passed": 12,
+      "failed": 0,
+      "retries": 0,
+      "grid": 3,
+      "geometryControl": 3,
+      "publicWorkshop": 6,
+      "rgbaComparisons": 840,
+      "profiles": [
+        {
+          "profile": "desktop",
+          "cpuSlowdown": 1,
+          "rgbaComparisons": 200,
+          "beforeWorldMoves": 20002,
+          "afterWorldMoves": 20
+        },
+        {
+          "profile": "touch",
+          "cpuSlowdown": 1,
+          "rgbaComparisons": 200,
+          "beforeWorldMoves": 20002,
+          "afterWorldMoves": 20
+        },
+        {
+          "profile": "cpu-4x",
+          "cpuSlowdown": 4,
+          "rgbaComparisons": 200,
+          "beforeWorldMoves": 20002,
+          "afterWorldMoves": 20
+        }
+      ]
+    },
+    "pintaAndChangedQaTypecheck": {
+      "exitCode": 0
+    },
+    "fullStudioTypesRepeated": false,
+    "physicalDevices": 1,
+    "children": false,
+    "overallLatencyQualified": false,
+    "heapQualified": false,
+    "nativeControlsRepeated": false
+  },
+  "benchmark": {
+    "protocol": "ABBA; three warmup and 15 timed frames per block, await rAF before each; 30 samples per version/case/CPU; readback and GC outside measured rendering; no other session QA jobs",
+    "browser": "159.0.8154.6",
+    "ab": [
+      {
+        "cpu": 1,
+        "kind": "sparse",
+        "version": "Reference",
+        "samples": 30,
+        "p50": 0.7999999970197678,
+        "p95": 1,
+        "p99": 1.1000000089406967,
+        "sha256": "8a43cdf41a0a238b73cce39dd4f8b37ce55f3f89cbaba636f36ad29339ff3dcb",
+        "moves": 20002
+      },
+      {
+        "cpu": 1,
+        "kind": "sparse",
+        "version": "Current",
+        "samples": 30,
+        "p50": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "p99": 0.4000000059604645,
+        "sha256": "8a43cdf41a0a238b73cce39dd4f8b37ce55f3f89cbaba636f36ad29339ff3dcb",
+        "moves": 114
+      },
+      {
+        "cpu": 1,
+        "kind": "dense",
+        "version": "Reference",
+        "samples": 30,
+        "p50": 270.29999999701977,
+        "p95": 304.3999999910593,
+        "p99": 315.8999999910593,
+        "sha256": "ccaa817786214428d0d7d49a92d9fe80527cf94a4c4814b1d7282a7cf705b923",
+        "moves": 514
+      },
+      {
+        "cpu": 1,
+        "kind": "dense",
+        "version": "Current",
+        "samples": 30,
+        "p50": 265.59999999403954,
+        "p95": 274.20000000298023,
+        "p99": 275.70000000298023,
+        "sha256": "ccaa817786214428d0d7d49a92d9fe80527cf94a4c4814b1d7282a7cf705b923",
+        "moves": 114
+      },
+      {
+        "cpu": 4,
+        "kind": "sparse",
+        "version": "Reference",
+        "samples": 30,
+        "p50": 3.2999999970197678,
+        "p95": 4.0999999940395355,
+        "p99": 4.200000002980232,
+        "sha256": "8a43cdf41a0a238b73cce39dd4f8b37ce55f3f89cbaba636f36ad29339ff3dcb",
+        "moves": 20002
+      },
+      {
+        "cpu": 4,
+        "kind": "sparse",
+        "version": "Current",
+        "samples": 30,
+        "p50": 0.6000000089406967,
+        "p95": 1,
+        "p99": 1,
+        "sha256": "8a43cdf41a0a238b73cce39dd4f8b37ce55f3f89cbaba636f36ad29339ff3dcb",
+        "moves": 114
+      },
+      {
+        "cpu": 4,
+        "kind": "dense",
+        "version": "Reference",
+        "samples": 30,
+        "p50": 1286.7000000029802,
+        "p95": 1377.699999988079,
+        "p99": 1416.7999999970198,
+        "sha256": "ccaa817786214428d0d7d49a92d9fe80527cf94a4c4814b1d7282a7cf705b923",
+        "moves": 514
+      },
+      {
+        "cpu": 4,
+        "kind": "dense",
+        "version": "Current",
+        "samples": 30,
+        "p50": 1341.300000011921,
+        "p95": 1962,
+        "p99": 2064.5999999940395,
+        "sha256": "ccaa817786214428d0d7d49a92d9fe80527cf94a4c4814b1d7282a7cf705b923",
+        "moves": 114
+      }
+    ],
+    "denseTailIncreasedCpu4": true,
+    "denseTailCausalityEstablished": false,
+    "initialInstrumentedRunExcluded": true,
+    "cacheBudgetUnchanged": true
+  },
+  "review": {
+    "singleLever": "offscreen grid line culling",
+    "orderAndEndpointsPreserved": true,
+    "floatCoordinatesUnchanged": true,
+    "seedChanged": false,
+    "score": 5,
+    "pixelMarginScalesWithZoom": true,
+    "stylesChanged": false,
+    "denseCacheAndLatencyPending": true
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/map-grid-edge-probe.ts",
+      "sha256": "02eeb194110ae8775a7172235826e579fcd4201c5620ab19bd73de2586878ae0"
+    },
+    {
+      "file": "packages/pinta/scripts/map-grid-probe.ts",
+      "sha256": "ef6ebe8619517016684e885ab3a7aced1cca33f8844ffed2d97e0b5ee1785dee"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-grid-e2e.ts",
+      "sha256": "eb2e831cb08eb557e3ceb06794758498157d56e621f5f3e12ed71f3d534fa1a1"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvas.ts",
+      "sha256": "68066004983158c818817e3714c5151a9d111f4a4ab9a077ee6ae66638006986"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvasRegions.test.ts",
+      "sha256": "7d4a92f27181ce75a5fdd0b11a707c995e0b59dc8bbd456764f94c8e4d97c414"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-geometry.flow.ts",
+      "sha256": "8ab2c4e3d222167733f8854f726d8b87ad9c2c0d86ab2918c732bf1c92920e20"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-grid.flow.ts",
+      "sha256": "59371b4ba9954c46c98e72bb939ed96a162b10b9cc7af0a9a643c7fee03f3a86"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-grid.config.ts",
+      "sha256": "5c47993d84e0eb0847484a389bbf50fd67ed34bb628d3ff4fcc65b4ca8832448"
+    }
+  ],
+  "historicalSources": [
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvas.ts",
+      "commit": "0e377ac1b25f7fa1073e02dca048f12de4a278a7",
+      "sha256": "5bc47825768bb656f53a8648b4af7b02f5d1795f211362db9f1ed7b55a85206f"
+    }
+  ],
+  "records": [
+    {
+      "file": "canvas-desktop.png",
+      "bytes": 3596,
+      "sha256": "0d9fd9ed52c550443e80c8be2b7b13aad75f844047d66355eafb4d41d3735104"
+    },
+    {
+      "file": "canvas-touch.png",
+      "bytes": 3596,
+      "sha256": "0d9fd9ed52c550443e80c8be2b7b13aad75f844047d66355eafb4d41d3735104"
+    },
+    {
+      "file": "canvas-cpu-4x.png",
+      "bytes": 3596,
+      "sha256": "0d9fd9ed52c550443e80c8be2b7b13aad75f844047d66355eafb4d41d3735104"
+    },
+    {
+      "file": "playwright-grid-report.json.gz",
+      "bytes": 124279,
+      "sha256": "b0647f463830341a7e3343a38b843b7ff57eaab76e55cb285ce7ee3238c6daf6",
+      "rawBytes": 530410,
+      "rawSha256": "8b89e8fa26dc8cb764e2f394e7c454eec0a587c3b85b4b7c208430198c43730d"
+    },
+    {
+      "file": "playwright-geometry-report.json.gz",
+      "bytes": 45136,
+      "sha256": "c6d03940bc27531c43b4ad5fb6054d2d5c07b50eb65c6a3d0b104fe23d755a55",
+      "rawBytes": 235871,
+      "rawSha256": "3ac01eef32c2b909c6b2dc20efba3d1a3b6f3f7066937489eb39e68f0a0821ac"
+    },
+    {
+      "file": "playwright-workshop-report.json.gz",
+      "bytes": 548660,
+      "sha256": "ae661c53b07681a54f17fe86b0a1cb1e36942ded7165ad1b526e54975b83c67f",
+      "rawBytes": 797455,
+      "rawSha256": "c3ec03945d06ba0b4f435fbda6564900e8164ce246b24bd99673eafb8f4c5daf"
+    },
+    {
+      "file": "pinta-grid-before.json.gz",
+      "bytes": 2646,
+      "sha256": "bbc10dbe2f5c2c69adf0bf13c9d9c6da34ca2647ad6b62f4b9b4508a56a77c69",
+      "rawBytes": 15831,
+      "rawSha256": "ff6c0a55898cd572e8a305dd63e0bfc98b7512cfa5b6c42f1c207598a303cf5d"
+    },
+    {
+      "file": "pinta-grid-before-sparse-cpu1.cpuprofile.gz",
+      "bytes": 3786,
+      "sha256": "0a752d202951c41482288749213216993fd7337b68d01fb99e1890215fac9cfe",
+      "rawBytes": 18260,
+      "rawSha256": "6ca3145a5425e689aec9d793dc48034230f4c324a61ddd1463eb7eb47c148d50"
+    },
+    {
+      "file": "pinta-grid-before-sparse-cpu4.cpuprofile.gz",
+      "bytes": 17243,
+      "sha256": "e1b1cc32e332eb3c75178dfb3108f2ee59b2a350657166ab8f4cbc151625e063",
+      "rawBytes": 76539,
+      "rawSha256": "1c745fef1b18f1a8c13673e57c6ad77ee3d42a8e1cd0b3a49a9acf2d140a910f"
+    },
+    {
+      "file": "pinta-grid-before-dense-cpu1.cpuprofile.gz",
+      "bytes": 9240,
+      "sha256": "8da2f246a68bb1e2e98ef13c02aee8f5a8bb00c6bfffed100a991f08cc4e4d8e",
+      "rawBytes": 46909,
+      "rawSha256": "143e0b3817f8e20580d8cedf5fc4158ab374ef17c670ab15e710a18b490aa17c"
+    },
+    {
+      "file": "pinta-grid-before-dense-cpu4.cpuprofile.gz",
+      "bytes": 50825,
+      "sha256": "4695e58ba806118d7b5a03bcfb8bc81573445b68e71395dad865c79935d2fcb8",
+      "rawBytes": 286495,
+      "rawSha256": "d3e01877a917cc0d6f0e99d593f097d40adf003cfcc8844d82642e47ca83f011"
+    },
+    {
+      "file": "pinta-grid-after.json.gz",
+      "bytes": 2485,
+      "sha256": "aaff05e0379893062b338d7cd3c90a6e2b1c7c76794a05442bb759cc27531b13",
+      "rawBytes": 16230,
+      "rawSha256": "bfc2a58f51b24eef184aa7fc3f8bf53e95b24b689dd995e471257f5ca0a78a4f"
+    },
+    {
+      "file": "pinta-grid-after-sparse-cpu1.cpuprofile.gz",
+      "bytes": 1507,
+      "sha256": "763a1db1e786c8932d8a4f264d9756478f39943c7acf8bdfb1052d2b5bac15e8",
+      "rawBytes": 8038,
+      "rawSha256": "2e8e990454fc0d1b0e444605b60cfa2c1666ef610f8fb833ed13dbfc874b4667"
+    },
+    {
+      "file": "pinta-grid-after-sparse-cpu4.cpuprofile.gz",
+      "bytes": 3098,
+      "sha256": "3083fcc6b1ed0797a4ae35aee9488f5be31864ee429a3822e94a27be00912543",
+      "rawBytes": 15470,
+      "rawSha256": "5077d1fff012becf5420889f12d8db64de64a9439efdd63abebe36fc91f1610e"
+    },
+    {
+      "file": "pinta-grid-after-dense-cpu1.cpuprofile.gz",
+      "bytes": 10355,
+      "sha256": "bedcb95c8e0de69212e63585848a7cbbb5a433815df51dfb6d1ac482cdc3a087",
+      "rawBytes": 52425,
+      "rawSha256": "d59405692f7fca155061941f681b7d56b135e52e0acd5d4c252520d3cd9bfda6"
+    },
+    {
+      "file": "pinta-grid-after-dense-cpu4.cpuprofile.gz",
+      "bytes": 49831,
+      "sha256": "aa6f4e82ba1f6c94eae14e90044f617df6b751ecd7a82f78760b1dec9e7efe17",
+      "rawBytes": 286471,
+      "rawSha256": "b058b23b83d671425d95a4ae3435a6d727eb6818879feaf645d6dddce72d294e"
+    },
+    {
+      "file": "pinta-grid-instrumented.json.gz",
+      "bytes": 2825,
+      "sha256": "ce088e71a6022c7b9c202f6b1b3b1b5efd66a6565116fc0749854ced296a6c14",
+      "rawBytes": 17246,
+      "rawSha256": "443f595a317243a8a33969ed9c2f0e69e2fea95dbf3514338a24bac55c191cdf"
+    },
+    {
+      "file": "pinta-grid-instrumented-sparse-cpu1.cpuprofile.gz",
+      "bytes": 3912,
+      "sha256": "438cc0b4e0c66bc75a39c70c388365167c4c8a7c4b5641be2b2b91a2bc543d31",
+      "rawBytes": 18265,
+      "rawSha256": "94f01254a69f016901295638ec3adf866af3b0fecd3900e4055a58eafc0e24a1"
+    },
+    {
+      "file": "pinta-grid-instrumented-sparse-cpu4.cpuprofile.gz",
+      "bytes": 18893,
+      "sha256": "f4a50f31726de62581ba514d10d77cd844924f50231b566adbefdbc899806d79",
+      "rawBytes": 84966,
+      "rawSha256": "bf02a9cb9310fcd15828b0794713ddac7e80cc307b29bc164ece21b8c372c8ec"
+    },
+    {
+      "file": "pinta-grid-instrumented-dense-cpu1.cpuprofile.gz",
+      "bytes": 22938,
+      "sha256": "60d6a6698cec8fbdbe8d88ae4085541022b0d4c9289a672b45a8c2631f30778c",
+      "rawBytes": 123666,
+      "rawSha256": "db771264ff4d8307e707f3349d622bdd9ec03eee961a2298285282dc7608ef51"
+    },
+    {
+      "file": "pinta-grid-instrumented-dense-cpu4.cpuprofile.gz",
+      "bytes": 97311,
+      "sha256": "f4651dbff9c81bca0e4415358e55b8564d5a59e939e9cc97fb99acb45835dc14",
+      "rawBytes": 572960,
+      "rawSha256": "e9d836ccae917e3a04545a6657d5104c567791f1dbb43fbe3eb65f249b2fe4d6"
+    },
+    {
+      "file": "pinta-grid-ab.json.gz",
+      "bytes": 1911,
+      "sha256": "0b01bcc8a4ee09ce5109ee18e3b9ceb14706d43a2fa4f6283d29eb1ad6134391",
+      "rawBytes": 16904,
+      "rawSha256": "46430c5ee423e9c1b25d0bfbabfd8cea7834a66db0dfdd19147bffa1695c69b9"
+    },
+    {
+      "file": "pinta-grid-ab.log.gz",
+      "bytes": 788,
+      "sha256": "a3c0a91e461bcd08bc8602c448d60d22b8d0504f0abaf62544d005c61fbede9e",
+      "rawBytes": 6692,
+      "rawSha256": "437101130f6a0f50c743bebace5cb34ce87b4a604f722e2201458b1dca7e8b79"
+    },
+    {
+      "file": "pinta-grid-instrumented.log.gz",
+      "bytes": 1164,
+      "sha256": "854ca53801b61a0e15114ff3a2adfb01439f50b15c63b1d74f43ca25bac913f8",
+      "rawBytes": 4546,
+      "rawSha256": "a454ffba2024c9d7f8d7f777824eebb53ee750b67ea2b613b01d1e6e88a7261c"
+    },
+    {
+      "file": "pinta-grid-instrumented-probe.ts.gz",
+      "bytes": 1661,
+      "sha256": "9082da20b769ce3d6db28643d157479c2355cb92b078b4d72679f48570148f59",
+      "rawBytes": 3735,
+      "rawSha256": "800a63dee5640e9ea092efb625146cc726f1cd3a57094875c506f0a3554bc43c"
+    },
+    {
+      "file": "pinta-grid-instrumented-runner.cjs.gz",
+      "bytes": 1772,
+      "sha256": "c3ff0f693f289a95e72709a5dda8e5d3969c053406b29de1eb159a0e4fb40ca1",
+      "rawBytes": 3841,
+      "rawSha256": "98fd40a4bbef8ad3e2983994ad482bb87faf1e48bb4613ab0be514b65a15fd51"
+    },
+    {
+      "file": "pinta-grid-before-verified.log.gz",
+      "bytes": 1194,
+      "sha256": "a6db851577b2ee1e448a1a93a9a3adba61ca1e115af4d2ee16a2aa5642cdce2a",
+      "rawBytes": 4555,
+      "rawSha256": "43a808ac57129d10bad7b694ac0f9620a214672fd877b64d74e857b2d41c6ff2"
+    },
+    {
+      "file": "pinta-grid-after.log.gz",
+      "bytes": 1165,
+      "sha256": "268a4150abf5cea401bbbfa5a007146bd33b0ed292f7f682b0956fdfb68c57d1",
+      "rawBytes": 4740,
+      "rawSha256": "47b8b0bca7778816f8abf3984a32bd3c09d16187f6b3191f3a9107167e959343"
+    },
+    {
+      "file": "pinta-grid-red.log.gz",
+      "bytes": 694,
+      "sha256": "6976a52dab44804bfafb3671072ebcdfd7399e3b5df466c84392fa8b455b8c42",
+      "rawBytes": 1132,
+      "rawSha256": "478b7bb71fd0d5f10020364627aa53ae76d18b7e552b932723a6e244d92569c3"
+    },
+    {
+      "file": "pinta-grid-focused-first.log.gz",
+      "bytes": 879,
+      "sha256": "62ef51ad7df843b00d253b3e57a265ea8ff9732777d87a448503e353b3934144",
+      "rawBytes": 2052,
+      "rawSha256": "7820b80d4a2af5baa7c75808d54699cb17a4f1a3e4e61b25d579777f21d4cf38"
+    },
+    {
+      "file": "pinta-grid-focused.log.gz",
+      "bytes": 401,
+      "sha256": "949919969279d9201e6de4a37c16dfebd34822d5a9afea1e15a4f383302349a6",
+      "rawBytes": 1190,
+      "rawSha256": "60220f8256e29f5170aac8e294e0ef22c59e0a24ab4639dddb67bb67fc52877f"
+    },
+    {
+      "file": "pinta-grid-render-suite.log.gz",
+      "bytes": 1616,
+      "sha256": "2dc409ec6767a1ef0d0a07c2a49ee2af1923a12d0704f19451416123d6380c61",
+      "rawBytes": 8936,
+      "rawSha256": "d5b09a0a7a5dc51eb9210914db62f1a1326b6f0c00108c215149ee08acf0bb78"
+    },
+    {
+      "file": "pinta-grid-browser.log.gz",
+      "bytes": 348,
+      "sha256": "5a8cbf1b42508168dac734b32c8d66512574337c8b9d67a1348ca7a9a4486b06",
+      "rawBytes": 1018,
+      "rawSha256": "55e7dcb357da87e127d45919e523d8db7a0a7894d6ba8c55442e53aa1a211094"
+    },
+    {
+      "file": "pinta-grid-geometry-control.log.gz",
+      "bytes": 346,
+      "sha256": "bf9d57d578cf6635c744681556e83ea1e6a3765989d3f18ceb9f352b5a9a45ca",
+      "rawBytes": 1037,
+      "rawSha256": "34eda668b42c5f534b45d620c290a08fc30dbb5a859ff01ee86c9727db40c60c"
+    },
+    {
+      "file": "pinta-grid-workshop-control.log.gz",
+      "bytes": 386,
+      "sha256": "acf9ef7206425be6537350dfbe2ba525f4509f8e36ac797f2f537574056eb289",
+      "rawBytes": 640,
+      "rawSha256": "545d9e2a95b043347d2ff5edcfbb6ca34915c8b80214752b1ec168425e55df72"
+    },
+    {
+      "file": "pinta-grid-workshop-control-final.log.gz",
+      "bytes": 659,
+      "sha256": "58aef3739307b80d5c9d2291c8f4746d7b13d7e5022e8ec1ff2235f07c8c6cf1",
+      "rawBytes": 2077,
+      "rawSha256": "c45a01dc4c4282a89b66101b54260e06dcd66d9be306adfd9ed2ad8c5a9efc1f"
+    },
+    {
+      "file": "pinta-grid-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-grid-qa-tsconfig.json.gz",
+      "bytes": 192,
+      "sha256": "74b92adc35d51566c1ecbd5a39b3528300f973821dfdab37fe0a2acff55c4f73",
+      "rawBytes": 508,
+      "rawSha256": "6d3b46848970fe4c19dc7e33c1cf8968d23cbcbd2fe517d7088c713ace7c0c6f"
+    },
+    {
+      "file": "pinta-grid-biome.log.gz",
+      "bytes": 57,
+      "sha256": "f04d5936d54b88c4bcc5e6d0cb86403c35e254cb5b34923aa8072441114c25d1",
+      "rawBytes": 41,
+      "rawSha256": "eb31f7f05fd13c4a7d8c6590f5b9365113487df18606e45c7e17d0593903739b"
+    },
+    {
+      "file": "run-grid-profile.cjs.gz",
+      "bytes": 1796,
+      "sha256": "88ac17039876b003202be63e57e946e26bd29f5d51086b57334cf6eafb4c96a4",
+      "rawBytes": 3950,
+      "rawSha256": "35d529e7a0cce2687e6737b3ba9f1c6aa82288ef17bc8cde871346ed6efea292"
+    },
+    {
+      "file": "run-grid-ab.cjs.gz",
+      "bytes": 1713,
+      "sha256": "1c3a7e318e9c80861361e95ea3557d398ab88e887f4cb10b063329f9b29ef59c",
+      "rawBytes": 3613,
+      "rawSha256": "97cef21bc324ab4c2ee9ea7472d6050b35d8a1db6cb96a054995a96520811580"
+    },
+    {
+      "file": "build-grid-profiles.ts.gz",
+      "bytes": 832,
+      "sha256": "596873c91a0c13d9c36586145fd1c3e80e01a559daa10d449b7c4385188c1eb6",
+      "rawBytes": 1463,
+      "rawSha256": "e3850b7afae742d59e78384296520634587081ed6ad618670df618b27cf28a58"
+    }
+  ]
+}
