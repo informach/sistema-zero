@@ -455,6 +455,13 @@ export const FERRAMENTAS = [
       c.intencoes.consultarRegiao(a.cenarioId, { x0: a.x0, z0: a.z0, x1: a.x1, z1: a.z1 }),
   }),
   ferramenta({
+    name: 'conferir_implantacao',
+    description:
+      'Confere onde cada objeto ficou, sem gravar nada: flutuando (um canto da base mais de 15 cm acima do chão), enterrado (mais de 30% da altura abaixo do chão), sólido no meio de trilha, praça, estrada ou ponte, peça fina colada no chão, num caminho ou na água (pode piscar), e os campos `arquipelago.*` que o jogo recusaria (Íris repetida, placa incompleta, física, raio do tronco, fundação, papel inclinado). Devolve a contagem por tipo e até 50 exemplos repartidos entre os tipos.',
+    schema: z.object({ cenarioId: id }).strict(),
+    executar: (c, a) => c.intencoes.conferirImplantacao(a.cenarioId),
+  }),
+  ferramenta({
     name: 'orcamento',
     description:
       'Conta objetos, triângulos e bytes do cenário (a partir dos dados de cada modelo) e diz em quais destinos ele cabe: oficina, three (pacote), glb (arquivo único), estudio e arquipelago. É uma estimativa.',

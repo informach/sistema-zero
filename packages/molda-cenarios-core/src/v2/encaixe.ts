@@ -24,6 +24,8 @@ export const EncaixeDeComposicaoSchema = z
       .nullable()
       .default(null),
     superficie: z.boolean().default(false),
+    /** Peças modulares (caminho, ponte, rampa, escada, cerca) se juntam pelos pontos de encaixe. */
+    pecas: z.boolean().default(true),
   })
   .strict()
 export type EncaixeDeComposicao = z.infer<typeof EncaixeDeComposicaoSchema>

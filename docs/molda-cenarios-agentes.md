@@ -63,8 +63,27 @@ Intenções (um passo de desfazer cada):
 | `desfazer`, `refazer` | O histórico da oficina. |
 
 Consultas (não gravam nada): `consultar_pontos` (há chão? altura? água?), `consultar_regiao`
-(o que existe num retângulo), `validar_lote` (passaria no servidor?), `orcamento` (objetos,
-triângulos e bytes contra os tetos de cada destino) e `capturar_cenario` (foto).
+(o que existe num retângulo), `conferir_implantacao` (objetos mal assentados e campos do jogo),
+`validar_lote` (passaria no servidor?), `orcamento` (objetos, triângulos e bytes contra os tetos
+de cada destino) e `capturar_cenario` (foto).
+
+### Conferir a implantação
+
+`conferir_implantacao` (`cenarioId`) lê o cenário e o relevo guardado e aponta, objeto por objeto:
+
+| Tipo | Quando |
+|---|---|
+| `flutuando` | Um canto da base fica mais de 15 cm acima do chão. Só para quem pisa no relevo: apoio em outro objeto, na água ou absoluto fica de fora. |
+| `enterrado` | Mais de 30% da altura abaixo do chão, no centro da base. Com `arquipelago.enterrada`, o limite passa a ser a parte marcada mais 10%. |
+| `solido-no-caminho` | Objeto com colisão invade a faixa de uma trilha, praça, estrada ou ponte, entre 10 cm e 2 m acima do piso. Cerca e muro não contam; peças com `arquipelago.fisica` `ponte`, `escada` ou `solo` também não (fazem parte do piso). O tronco (`tronco`) conta pelo cilindro do jogo, não pela copa. |
+| `quase-no-mesmo-plano` | Peça com menos de 6 cm de altura cujo topo fica a até 2 cm do chão, do piso de um caminho ou da água: pode piscar. |
+| `ator-repetido`, `ator-invalido`, `placa-incompleta`, `fisica-invalida`, `raio-do-tronco-invalido`, `enterrada-invalida`, `fundacao-invalida` | Campos `arquipelago.*` que o jogo recusaria ao abrir o cenário (o campo vai em `campo`). |
+| `transformacao-do-papel` | A Íris, o tronco ou a fundação inclinados, ou com escala que o jogo não aceita. |
+
+A resposta traz `total`, `mostrados` e `grupos` (`tipo`, `quantidade` e até 50 exemplos no
+total, repartidos entre os tipos). A faixa dos caminhos é medida em trechos retos da curva já
+suavizada: as esquinas ficam arredondadas. Peças de conjuntos entram com o id da peça e o
+`conjunto` de onde vieram.
 
 ### Captura
 

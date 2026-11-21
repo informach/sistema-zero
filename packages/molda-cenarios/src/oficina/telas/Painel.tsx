@@ -96,16 +96,18 @@ export function CampoNumero({
   )
 }
 
-function CampoTexto({
+export function CampoTexto({
   rotulo,
   valor,
   aoMudar,
   desligado = false,
+  maximo = 120,
 }: {
   rotulo: string
   valor: string
   aoMudar(valor: string): void
   desligado?: boolean
+  maximo?: number
 }): JSX.Element {
   const id = useId()
   const [texto, setTexto] = useState(valor)
@@ -122,7 +124,7 @@ function CampoTexto({
         id={id}
         value={texto}
         disabled={desligado}
-        maxLength={120}
+        maxLength={maximo}
         autoComplete="off"
         onChange={(evento) => setTexto(evento.target.value)}
         onBlur={gravar}

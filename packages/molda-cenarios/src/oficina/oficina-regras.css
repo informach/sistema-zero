@@ -1068,6 +1068,92 @@
     outline: 2px solid var(--color-mld-accent);
     outline-offset: 2px;
   }
+  .mcn-implantacao-ok {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    color: color-mix(in oklab, var(--color-mld-accent) 70%, var(--color-mld-text));
+  }
+  .mcn-implantacao-grupo {
+    margin-top: 12px;
+  }
+  .mcn-implantacao-grupo h3 {
+    margin: 0 0 6px;
+    font-size: 0.9375rem;
+    font-weight: 800;
+  }
+  .mcn-implantacao-grupo h3 span {
+    color: var(--color-mld-muted);
+    font-weight: 700;
+  }
+  .mcn-implantacao-grupo ul {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mcn-implantacao-aviso {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+    text-align: left;
+    cursor: pointer;
+  }
+  .mcn-implantacao-aviso:hover {
+    border-color: var(--color-mld-accent);
+    background: color-mix(in oklab, var(--color-mld-accent) 8%, var(--color-mld-bg));
+  }
+  .mcn-implantacao-aviso:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mcn-implantacao-aviso > span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .mcn-implantacao-aviso small {
+    color: var(--color-mld-muted);
+  }
+  .mcn-arquipelago > summary {
+    cursor: pointer;
+    font-weight: 800;
+  }
+  .mcn-arquipelago-campos {
+    display: grid;
+    gap: 8px;
+    margin: 8px 0 0;
+    padding: 0;
+    border: 0;
+  }
+  .mcn-arquipelago-campos select {
+    height: 36px;
+    padding: 0 8px;
+    border: 2px solid var(--color-mld-border);
+    border-radius: 10px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+    font: inherit;
+  }
+  .mcn-arquipelago-fundacao {
+    display: grid;
+    gap: 6px;
+  }
+  .mcn-arquipelago-avisos {
+    margin: 8px 0 0;
+    padding: 8px 10px 8px 26px;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--color-mld-accent) 10%, var(--color-mld-bg));
+    font-size: 0.8125rem;
+  }
   .mcn-brinquedo--mais {
     align-items: center;
     justify-content: center;
@@ -1342,6 +1428,84 @@
     border-radius: 12px;
     padding: 16px;
     background: var(--color-mld-surface);
+  }
+  /* As versões guardadas da ilha: a que está no ar no alto, as outras com "Voltar para esta versão". */
+  .mcn-publicar-versoes {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  .mcn-publicar-versoes-titulo {
+    font-size: 0.9375rem;
+    font-weight: 800;
+  }
+  .mcn-publicar-versoes-lista {
+    display: grid;
+    gap: 6px;
+    max-height: 20rem;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+  }
+  .mcn-publicar-versao {
+    display: grid;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+    background: var(--color-mld-surface);
+  }
+  .mcn-publicar-versao[data-atual] {
+    border-color: color-mix(in oklab, var(--color-mld-accent) 55%, var(--color-mld-border));
+    background: color-mix(in oklab, var(--color-mld-accent) 6%, var(--color-mld-surface));
+  }
+  .mcn-publicar-versao-linha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    min-width: 0;
+  }
+  .mcn-publicar-versao-nome {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mcn-publicar-versao-detalhe {
+    flex: 1 1 12rem;
+    min-width: 0;
+    color: var(--color-mld-muted);
+    font-size: 0.8125rem;
+  }
+  .mcn-publicar-no-ar {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-mld-accent) 18%, var(--color-mld-surface));
+    color: var(--color-mld-text);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+  .mcn-publicar-versao-confirmar {
+    display: grid;
+    gap: 8px;
+  }
+  .mcn-publicar-versao-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .mcn-publicar-versao-feito {
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-mld-accent) 10%, var(--color-mld-surface));
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .mcn-publicar-versao-feito:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
   }
   .mcn-exportar-opcoes {
     display: grid;

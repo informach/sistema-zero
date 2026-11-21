@@ -21,6 +21,7 @@ import {
   aplicarFerramentaDeTerreno,
   type ComandoDeCenario,
   clonarEstadoDoTerreno,
+  conferirImplantacao,
   criarAmostradorDeEspalhamento,
   type DocumentoDeCenario,
   dominioDoChao,
@@ -505,6 +506,41 @@ export function criarIntencoes(host: CenariosHost) {
         }
         return { x: p.x, z: p.z, chao, altura: chao ? altura : null, agua }
       })
+    },
+
+    /**
+     * Confere a implantação dos objetos (flutuando, enterrado, sólido no caminho, peça fina colada
+     * numa superfície) e os campos `arquipelago.*`, com o relevo guardado. Devolve a contagem por
+     * tipo e até `limite` exemplos, repartidos entre os tipos para o agente ver um pouco de cada.
+     */
+    async conferirImplantacao(cenarioId: string, limite = 50) {
+      const aberto = await abrirParaEditar(host, cenarioId)
+      const avisos = conferirImplantacao(aberto.documento, aberto.terreno?.fonte ?? null)
+      const porTipo = new Map<string, typeof avisos>()
+      for (const a of avisos) {
+        const lista = porTipo.get(a.tipo)
+        if (lista) lista.push(a)
+        else porTipo.set(a.tipo, [a])
+      }
+      const grupos = [...porTipo].map(([tipo, lista]) => ({
+        tipo,
+        quantidade: lista.length,
+        itens: [] as Omit<(typeof avisos)[number], 'tipo'>[],
+      }))
+      let restam = limite
+      for (let rodada = 0; restam > 0; rodada++) {
+        let algum = false
+        for (const g of grupos) {
+          const a = porTipo.get(g.tipo)![rodada]
+          if (!a || restam <= 0) continue
+          const { tipo: _tipo, ...item } = a
+          g.itens.push(item)
+          restam--
+          algum = true
+        }
+        if (!algum) break
+      }
+      return { revisao: aberto.revisao, total: avisos.length, mostrados: limite - restam, grupos }
     },
 
     /** O que existe numa região retangular do chão (objetos, conjuntos, água, caminhos, marcadores). */

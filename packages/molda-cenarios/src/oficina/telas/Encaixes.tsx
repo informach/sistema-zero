@@ -175,6 +175,19 @@ export function Encaixes({
           A superfície real tem prioridade sobre a grade. Ao mover, o objeto procura apoio sob sua
           base.
         </p>
+        <label className="mcn-opcao-encaixe">
+          <span>Juntar peças pelos pontos de encaixe</span>
+          <input
+            type="checkbox"
+            checked={valor.pecas}
+            onChange={(e) => aoMudar({ ...valor, pecas: e.target.checked })}
+          />
+        </label>
+        <p className="text-sm">
+          Caminhos, pontes, rampas, escadas e cercas se juntam quando a ponta de uma chega perto da
+          outra: as bolinhas mostram os pontos, e a verde é onde encaixou. Segure Shift para mover
+          sem encaixar.
+        </p>
         <button
           type="button"
           className="sz-tool-pill sz-tool-pill--outline"

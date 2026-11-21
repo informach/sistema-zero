@@ -76,6 +76,22 @@ export const CamadaSchema = z
 /** Uma imagem de biblioteca fixada pelo conteúdo; endereços de download não são autorais. */
 export const TexturaDoCenarioSchema = z.object({ ...origemDeRecurso, textura: id }).strict()
 
+/**
+ * Um ponto de encaixe de peça modular, no espaço do modelo: onde a peça se liga à vizinha, para
+ * que lado (horizontal, para fora) e com que largura de passagem.
+ */
+export const PontoDeEncaixeSchema = z
+  .object({
+    posicao: VetorSchema,
+    direcao: z
+      .object({ x: z.number().finite().min(-1).max(1), z: z.number().finite().min(-1).max(1) })
+      .strict()
+      .refine((d) => Math.hypot(d.x, d.z) > 0.5, 'A direção do encaixe precisa apontar para fora'),
+    largura: z.number().finite().positive().max(100),
+  })
+  .strict()
+export type PontoDeEncaixe = z.infer<typeof PontoDeEncaixeSchema>
+
 /** Um modelo de biblioteca usado pelo cenário, fixado pelo conteúdo do arquivo. */
 export const ModeloDoCenarioSchema = z
   .object({
@@ -89,6 +105,11 @@ export const ModeloDoCenarioSchema = z
         message: 'O volume do modelo tem limites invertidos',
       })
       .optional(),
+    /**
+     * Pontos de encaixe escritos à mão. Sem o campo, a oficina os acha na geometria; com a lista
+     * vazia, a peça não encaixa em nada.
+     */
+    encaixes: z.array(PontoDeEncaixeSchema).max(16).optional(),
   })
   .strict()
 

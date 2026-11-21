@@ -62,6 +62,7 @@ import {
   Route,
   Scaling,
   Scan,
+  ScanSearch,
   Sun,
   Sunrise,
   Sunset,
@@ -131,11 +132,13 @@ import { useTerreno } from '../useTerreno'
 import { Agua, FERRAMENTAS_AGUA } from './Agua'
 import { Aparencia } from './Aparencia'
 import { Caminhos, FERRAMENTAS_CAMINHOS } from './Caminhos'
+import { CamposDoArquipelago } from './CamposDoArquipelago'
 import { Encaixes } from './Encaixes'
 import { Espalhar } from './Espalhar'
 import Exportar from './Exportar'
 import { Formas } from './Formas'
 import { ARRASTO_DE_MODELO, Gaveta } from './Gaveta'
+import { Implantacao } from './Implantacao'
 import { FERRAMENTAS_JOGO, FERRAMENTAS_LUZ, Jogo } from './Jogo'
 import { LuzECeu } from './LuzECeu'
 import { EscolherBibliotecas } from './Mundo'
@@ -363,6 +366,7 @@ function OficinaAberta({
     origem: { x: 0, y: 0, z: 0 },
     andar: null,
     superficie: false,
+    pecas: true,
   })
   const [vista, setVista] = useState<Vista>('livre')
   // Em tela estreita o painel é uma folha por cima do palco: começa recolhido.
@@ -410,6 +414,20 @@ function OficinaAberta({
   const [escolhendo, setEscolhendo] = useState(false)
   const [saindo, setSaindo] = useState(false)
   const [versoesAbertas, setVersoesAbertas] = useState(false)
+  const [implantacaoAberta, setImplantacaoAberta] = useState(false)
+  // Os campos do Arquipélago só aparecem no espaço da equipe: publicar no jogo é da equipe.
+  const [naEquipe, setNaEquipe] = useState(false)
+  useEffect(() => {
+    let vivo = true
+    host.espacos().then(
+      (lista) =>
+        vivo && setNaEquipe(lista.some((e) => e.id === mundo.espacoId && e.tipo === 'equipe')),
+      () => {},
+    )
+    return () => {
+      vivo = false
+    }
+  }, [host, mundo.espacoId])
   const [formasAbertas, setFormasAbertas] = useState(false)
   const [gavetaAberta, setGavetaAberta] = useState(true)
   const [transferenciaAberta, setTransferenciaAberta] = useState(false)
@@ -1618,6 +1636,16 @@ function OficinaAberta({
             <button
               type="button"
               className="sz-tool-icon-btn"
+              aria-label="Conferir a implantação"
+              title="Conferir a implantação"
+              disabled={edicaoAberta}
+              onClick={() => setImplantacaoAberta(true)}
+            >
+              <ScanSearch aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="sz-tool-icon-btn"
               disabled={!estado.podeDesfazer || edicaoAberta}
               onClick={controlador.desfazer}
               aria-label={COPY.oficina.desfazer}
@@ -2461,6 +2489,28 @@ function OficinaAberta({
                           )
                         }
                       />
+                      {naEquipe && 'modelo' in entidade ? (
+                        <CamposDoArquipelago
+                          key={`arquipelago:${entidade.id}`}
+                          propriedades={entidade.propriedades}
+                          desligado={
+                            estado.ocupado ||
+                            !relevoPronto ||
+                            Boolean(
+                              indiceDaOrganizacao(documento).flags.get(entidade.id)?.bloqueado,
+                            )
+                          }
+                          aoGuardar={(p) =>
+                            executar(
+                              comandosParaPropriedades(
+                                controlador.getState().documento,
+                                entidade.id,
+                                p,
+                              ),
+                            )
+                          }
+                        />
+                      ) : null}
                     </div>
                   ) : null
                 })()
@@ -2501,6 +2551,29 @@ function OficinaAberta({
             controlador.definirFerramenta('mover')
             return true
           }}
+        />
+      ) : null}
+      {implantacaoAberta ? (
+        <Implantacao
+          documento={documento}
+          fonte={palco.current?.fonteDeAlturas()}
+          nomeDe={(id) =>
+            documento.instancias.find((o) => o.id === id)?.nome ??
+            documento.montagens?.find((m) => m.id === id)?.nome ??
+            'Objeto'
+          }
+          aoMostrar={(id) => {
+            setImplantacaoAberta(false)
+            setModoPainel('escolha')
+            controlador.selecionar([id])
+            palco.current?.enquadrar([id])
+          }}
+          aoEscolherTodos={(ids) => {
+            setImplantacaoAberta(false)
+            setModoPainel('escolha')
+            controlador.selecionar(ids)
+          }}
+          aoFechar={() => setImplantacaoAberta(false)}
         />
       ) : null}
       {versoesAbertas ? (

@@ -5,6 +5,7 @@ import {
 } from '@sistemazero/molda/palco'
 import {
   type ArquivoDeTerreno,
+  acharEncaixe,
   alturaDoChao,
   apoioNaSuperficie,
   chaveDaBase,
@@ -26,6 +27,9 @@ import {
   marcadorRedimensionavel,
   type OperacaoDeAguaPreparada,
   type OperacaoDeCaminhoPreparada,
+  type PontoDeEncaixe,
+  type PontoNoMundo,
+  pontosNoMundo,
   type RecursoDeTerreno,
   referenciasDoTerreno,
   resolverConjuntos,
@@ -41,6 +45,7 @@ import {
   LineSegments,
   Matrix4,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   PCFShadowMap,
@@ -51,6 +56,7 @@ import {
   Raycaster,
   Scene,
   Sphere,
+  SphereGeometry,
   Vector2,
   Vector3,
   WebGLRenderer,
@@ -85,6 +91,7 @@ import {
 import { conferirConteudoDoModelo, lerGlb, type ModeloCarregado } from './modelos'
 import { criarPlanoDoCenario } from './plano'
 import { PontosDeAutoria } from './pontos-de-autoria'
+import { pontosDeEncaixeDaGeometria } from './pontos-de-encaixe'
 import { PreviaDeArrasto } from './previa-de-arrasto'
 import { prepararPreviaDosApoios } from './previa-dos-apoios'
 import { limitesDaBase, recorteDaCamera } from './recorte-da-camera'
@@ -136,7 +143,12 @@ interface Gesto {
   apoios: Map<string, InstanciaDeCenario['apoio']>
   atualizarApoios(): void
   atualizarSuperficies(): void
+  /** Mover uma peça modular sozinha: os pontos dela e os das vizinhas, para encaixar. */
+  encaixe?: { id: string; pontos: PontoDeEncaixe[]; vizinhos: PontoNoMundo[] }
 }
+
+/** Até onde procurar vizinhas para o encaixe de peças. */
+const RAIO_DAS_VIZINHAS = 25
 
 class PalcoThree implements Palco {
   volumeDoModelo(id: string) {
@@ -176,6 +188,24 @@ class PalcoThree implements Palco {
   private aspectoDasGuias = 0
   private readonly contornos: Contornos
   private readonly fantasma = criarPartesDoFantasma()
+  /** Os pontos de encaixe achados na geometria, pelo hash do modelo. */
+  private readonly encaixesPorDigest = new Map<string, PontoDeEncaixe[]>()
+  /** Shift segurado durante o arraste: mover sem encaixar. */
+  private shiftApertado = false
+  private readonly marcasDeEncaixe = new Group()
+  private readonly bolinhaDoEncaixe = new SphereGeometry(0.12, 12, 8)
+  private readonly corDoPonto = new MeshBasicMaterial({
+    color: 0xffffff,
+    depthTest: false,
+    transparent: true,
+    opacity: 0.9,
+  })
+  private readonly corDoEncaixe = new MeshBasicMaterial({
+    color: 0x2fbf71,
+    depthTest: false,
+    transparent: true,
+    opacity: 0.95,
+  })
   /** O modelo arrastado da gaveta, translúcido onde vai pousar. */
   private readonly previaDeArrasto = new PreviaDeArrasto(
     (modelo, sinal) => this.opcoes.carregarModelo(modelo, sinal),
@@ -324,6 +354,9 @@ class PalcoThree implements Palco {
       this.renderer.capabilities.maxTextureSize,
     )
     this.cena.add(this.chao, this.objetos, this.pivo, this.grade, this.previaDeArrasto.grupo)
+    this.marcasDeEncaixe.name = 'marcas-de-encaixe'
+    this.marcasDeEncaixe.renderOrder = 10
+    this.cena.add(this.marcasDeEncaixe)
 
     this.loteFantasma = new LoteDoModelo(this.objetos, this.fantasma.partes)
     this.contornos = new Contornos(this.cena, COR_DA_SELECAO)
@@ -478,6 +511,7 @@ class PalcoThree implements Palco {
 
     canvas.addEventListener('pointerdown', this.aoApertar)
     canvas.addEventListener('pointerdown', this.protegerGestoDaAlca, true)
+    canvas.addEventListener('pointermove', this.lerShift, true)
     canvas.addEventListener('pointerup', this.aoSoltar)
     canvas.addEventListener('pointercancel', this.aoCancelar)
     canvas.ownerDocument.defaultView?.addEventListener('keydown', this.cancelarAlcaPelaTecla, true)
@@ -1320,6 +1354,10 @@ class PalcoThree implements Palco {
     this.ambiente.descartar()
     this.canvas.removeEventListener('pointerdown', this.aoApertar)
     this.canvas.removeEventListener('pointerdown', this.protegerGestoDaAlca, true)
+    this.canvas.removeEventListener('pointermove', this.lerShift, true)
+    this.bolinhaDoEncaixe.dispose()
+    this.corDoPonto.dispose()
+    this.corDoEncaixe.dispose()
     this.canvas.removeEventListener('pointerup', this.aoSoltar)
     this.canvas.removeEventListener('pointercancel', this.aoCancelar)
     this.canvas.ownerDocument.defaultView?.removeEventListener(
@@ -2014,11 +2052,14 @@ class PalcoThree implements Palco {
             }
         },
       }
+      const encaixe = this.prepararEncaixeDePecas([...inicio.keys()])
+      if (encaixe) this.gesto.encaixe = encaixe
       this.informarGesto('alca', true)
       return
     }
     const gesto = this.gesto
     this.gesto = null
+    this.marcasDeEncaixe.clear()
     this.ponteiroDaAlca = null
     this.informarGesto('alca', false)
     // Uma cabeça nova invalida o gesto iniciado na anterior, como no pincel de objetos.
@@ -2108,14 +2149,31 @@ class PalcoThree implements Palco {
         const chao = alturaDoChao(this.documento.base, p.x, p.z, this.fonteDeAlturas())
         const usarObjeto = acerto && acerto.ponto.y >= chao
         local.matriz.elements[13]! += (usarObjeto ? acerto.ponto.y : chao) - caixa.min.y
+        // Voltar ao relevo conserva a escolha de inclinar com a encosta.
+        const apoioAtual = this.documento.instancias.find((i) => i.id === id)?.apoio
         gesto.apoios.set(
           id,
           usarObjeto
             ? this.apoiarNaSuperficie(acerto.id, acerto.ponto, acerto.parte)
-            : { tipo: 'terreno', deslocamento: 0, inclinar: false, referencia: 'volume' },
+            : {
+                tipo: 'terreno',
+                deslocamento: 0,
+                inclinar: apoioAtual?.tipo === 'terreno' ? apoioAtual.inclinar : false,
+                referencia: 'volume',
+              },
         )
       }
       local.atualizar()
+    }
+    // Peça modular sozinha: encaixa na vizinha mais perto que estiver de frente.
+    if (gesto.encaixe) {
+      const encaixou = this.encaixarPeca(gesto)
+      const local = this.alvos.get(gesto.encaixe.id)
+      if (local) {
+        if (!encaixou && gesto.apoios.get(gesto.encaixe.id)?.tipo === 'absoluto')
+          gesto.apoios.delete(gesto.encaixe.id)
+        local.atualizar()
+      }
     }
     gesto.atualizarApoios()
     gesto.atualizarSuperficies()
@@ -2170,6 +2228,91 @@ class PalcoThree implements Palco {
       this.aoCancelar()
       e.stopImmediatePropagation()
     }
+  }
+
+  private readonly lerShift = (e: PointerEvent): void => {
+    this.shiftApertado = e.shiftKey
+  }
+
+  /** Os pontos de encaixe de um modelo do cenário: os escritos à mão ou os da geometria. */
+  private encaixesDoModelo(ref: ModeloDoCenario | undefined): PontoDeEncaixe[] | null {
+    if (!ref) return null
+    if (ref.encaixes) return ref.encaixes
+    const guardado = this.encaixesPorDigest.get(ref.digest)
+    if (guardado) return guardado
+    const estado = this.modelos.get(ref.digest)
+    if (estado?.estado !== 'pronto') return null
+    const pontos = pontosDeEncaixeDaGeometria(estado.modelo.partes)
+    this.encaixesPorDigest.set(ref.digest, pontos)
+    return pontos
+  }
+
+  /** Prepara o encaixe de peças quando uma peça modular é movida sozinha. */
+  private prepararEncaixeDePecas(ids: readonly string[]): Gesto['encaixe'] {
+    const doc = this.documento
+    if (!doc || !this.encaixe.pecas || this.ferramenta !== 'mover' || ids.length !== 1) return
+    const id = ids[0]!
+    const modeloDe = (instanciaId: string) => {
+      const o = doc.instancias.find((i) => i.id === instanciaId)
+      return o ? doc.modelos.find((m) => m.id === o.modelo) : undefined
+    }
+    const pontos = this.encaixesDoModelo(modeloDe(id))
+    const alvo = this.alvos.get(id)
+    if (!pontos?.length || !alvo) return
+    const centro = new Vector3().setFromMatrixPosition(alvo.matriz)
+    const vizinhos: PontoNoMundo[] = []
+    for (const o of doc.instancias) {
+      if (o.id === id || o.oculto) continue
+      const outro = this.alvos.get(o.id)
+      if (!outro) continue
+      const p = new Vector3().setFromMatrixPosition(outro.matriz)
+      if (p.distanceTo(centro) > RAIO_DAS_VIZINHAS) continue
+      const seus = this.encaixesDoModelo(modeloDe(o.id))
+      if (seus?.length) vizinhos.push(...pontosNoMundo(seus, outro.matriz.elements))
+    }
+    return vizinhos.length ? { id, pontos, vizinhos } : undefined
+  }
+
+  /** Puxa a peça movida até o ponto da vizinha, girando no próprio eixo; devolve se encaixou. */
+  private encaixarPeca(gesto: Gesto): boolean {
+    const encaixe = gesto.encaixe
+    const local = encaixe && this.alvos.get(encaixe.id)
+    if (!encaixe || !local) return false
+    let mundo = pontosNoMundo(encaixe.pontos, local.matriz.elements)
+    const achado = this.shiftApertado ? null : acharEncaixe(mundo, encaixe.vizinhos)
+    if (achado) {
+      const origem = new Vector3().setFromMatrixPosition(local.matriz)
+      if (Math.abs(achado.giro) > 1e-6) {
+        const giro = new Matrix4()
+          .makeTranslation(origem.x, origem.y, origem.z)
+          .multiply(new Matrix4().makeRotationY(achado.giro))
+          .multiply(new Matrix4().makeTranslation(-origem.x, -origem.y, -origem.z))
+        local.matriz.premultiply(giro)
+        mundo = pontosNoMundo(encaixe.pontos, local.matriz.elements)
+      }
+      const a = mundo[achado.de]!.posicao,
+        b = encaixe.vizinhos[achado.para]!.posicao
+      local.matriz.premultiply(new Matrix4().makeTranslation(b.x - a.x, b.y - a.y, b.z - a.z))
+      mundo = pontosNoMundo(encaixe.pontos, local.matriz.elements)
+      // A peça encaixada fica onde ficou: o relevo não a puxa de volta para o chão.
+      gesto.apoios.set(encaixe.id, { tipo: 'absoluto' })
+    }
+    this.mostrarMarcasDeEncaixe(mundo, achado ? achado.de : -1)
+    return Boolean(achado)
+  }
+
+  private mostrarMarcasDeEncaixe(pontos: readonly PontoNoMundo[], encaixado: number) {
+    this.marcasDeEncaixe.clear()
+    pontos.forEach((p, i) => {
+      const bolinha = new Mesh(
+        this.bolinhaDoEncaixe,
+        i === encaixado ? this.corDoEncaixe : this.corDoPonto,
+      )
+      bolinha.position.set(p.posicao.x, p.posicao.y + 0.05, p.posicao.z)
+      bolinha.renderOrder = 10
+      bolinha.raycast = () => {}
+      this.marcasDeEncaixe.add(bolinha)
+    })
   }
 
   private readonly cancelarAlcaPelaTecla = (e: KeyboardEvent): void => {
