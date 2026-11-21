@@ -160,7 +160,7 @@ então em `.railway/variables.ts`), PR de staging para main e o `deploy-producti
 9. campos do Arquipélago no painel do objeto (equipe);
 10. lista das versões publicadas de cada ilha e "Voltar para esta versão".
 
-**A Faísca foi refeita do zero e publicada** (versão 3 = revisão 152): coração no meio da ilha,
+**A Faísca foi refeita do zero e publicada** (versão 4 = revisão 153; a 3 foi a andada): coração no meio da ilha,
 como a imagem e o caderno; relevo novo com platôs, colina do Farol, lago com cachoeira, praia a
 sudoeste; 1.131 objetos de 86 modelos. Andada no `/macro` com o avatar real: todos os trechos
 chegam (praça, horta, Pátio, topo do Farol, nado no lago, praia, píer), 48 a 58 quadros por

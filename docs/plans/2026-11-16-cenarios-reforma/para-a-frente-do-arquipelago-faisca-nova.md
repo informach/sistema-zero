@@ -10,7 +10,7 @@ saber e o que fica para ela alinhar no código do jogo. Nada em `packages/arquip
   imagem de referência e o caderno "A Ilha Faísca" (decisão da Helena em 21/11).
 - A costa, o raio (260 m) e as seis cabeceiras continuam os da geografia do `/macro`
   (`geografia-do-arquipelago.ts`). O que mudou é o arranjo dos distritos por dentro e o relevo.
-- Publicada na staging pela tela de publicar: **versão 3 = revisão 152** (1.131 objetos, 86
+- Publicada na staging pela tela de publicar: **versão 4 = revisão 153** (a 3, revisão 152, foi a andada; a 4 só corrige o marcador da horta) (1.131 objetos, 86
   modelos dos pacotes Reino, Adventure Land, Morada, Fantasy, Fazenda e Cidade).
 - Andada no `/macro` local com o avatar real: chegada em ~30 s, 48 a 58 quadros por segundo,
   nenhum erro na página. Fotos em `output/cenarios-reforma/faisca-nova/macro-v3/`.
