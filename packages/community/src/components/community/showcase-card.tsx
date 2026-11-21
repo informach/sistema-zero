@@ -2,13 +2,14 @@
 
 import { importCreatorRemix } from '@sistemazero/member-shell/lib/import-creator-remix'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
+import { showcaseUpdatedLabel } from '@sistemazero/member-shell/lib/showcase-updated'
 import {
   remixRequirementFromSnapshot,
   type StudioRemixCapability,
   studioRemixCovered,
 } from '@sistemazero/member-shell/lib/studio-tier'
 import type { HubThreadView } from '@sistemazero/member-shell/lib/types'
-import { Gamepad2, Lock, MessageCircle, Play, Repeat2, Trophy } from 'lucide-react'
+import { Gamepad2, Lock, MessageCircle, Play, RefreshCw, Repeat2, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLayoutEffect, useRef, useState } from 'react'
@@ -137,6 +138,7 @@ export function ShowcaseCard({
     capability && thread.studioMeta && !studioRemixCovered(capability, thread.studioMeta),
   )
   const lockNoteId = `remix-trava-${thread.id}`
+  const updated = showcaseUpdatedLabel(thread)
   return (
     <article className="sz-card flex flex-col overflow-hidden">
       {thread.coverImageUrl ? (
@@ -155,11 +157,23 @@ export function ShowcaseCard({
         </div>
       )}
       <div className="flex flex-1 flex-col gap-2.5 p-5 md:p-6">
-        {thread.challengeKey ? (
-          <span className="sz-chip sz-chip-aviso self-start">
-            <Trophy aria-hidden />
-            {challengeMonth ? `Desafio de ${challengeMonth}` : 'Desafio do mês'}
-          </span>
+        {thread.challengeKey || updated ? (
+          <div className="flex flex-wrap gap-2">
+            {thread.challengeKey ? (
+              <span className="sz-chip sz-chip-aviso">
+                <Trophy aria-hidden />
+                {challengeMonth ? `Desafio de ${challengeMonth}` : 'Desafio do mês'}
+              </span>
+            ) : null}
+            {/* O jogo foi trocado por uma versão nova; a data e a ordem do Mural não mudam. */}
+            {updated ? (
+              <span className="sz-chip" title={updated}>
+                <RefreshCw aria-hidden />
+                Atualizado
+                <span className="sr-only">: {updated}</span>
+              </span>
+            ) : null}
+          </div>
         ) : null}
         <h2 className="sz-h3">{thread.title}</h2>
         <div className="flex items-center gap-3">

@@ -172,6 +172,11 @@ export const threads = hub.table(
     // publish, COSMÉTICO (selo "remix a partir do nível X" no card). O gate real do
     // remix é do cliente (snapshot jogável) + do próprio Estúdio na abertura.
     studioMeta: jsonb('studio_meta').$type<ThreadStudioMeta>(),
+    // Identidade do PROJETO (hash autor+aula/oficina/projeto): republicar o mesmo
+    // projeto ATUALIZA este post. Zerada quando o post é apagado/recusado.
+    showcaseSourceKey: text('showcase_source_key'),
+    // Última atualização do jogo pela criança (selo "Atualizado"); não mexe na ordem.
+    gameUpdatedAt: timestamp('game_updated_at', { withTimezone: true }),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     editedAt: timestamp('edited_at', { withTimezone: true }),
@@ -184,6 +189,9 @@ export const threads = hub.table(
     index('threads_author_status_idx').on(t.authorId, t.status),
     // Dedupe da auto-publicação da vitrine (NULL = posts normais, distintos).
     uniqueIndex('threads_showcase_key_uq').on(t.showcaseIdempotencyKey),
+    uniqueIndex('threads_showcase_source_uq')
+      .on(t.showcaseSourceKey)
+      .where(sql`${t.showcaseSourceKey} is not null`),
     // Resolve do /jogar por playId (parcial: só vitrines com link têm a chave).
     index('threads_play_id_idx').on(t.playId).where(sql`${t.playId} is not null`),
     // Prateleira do desafio do mês por canal (parcial: só quem entrou no desafio).

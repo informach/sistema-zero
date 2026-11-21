@@ -3,6 +3,8 @@
  * seletores, allowlist, geração e validação leem estes metadados para que um
  * bloco novo não precise ser classificado à mão em cada camada.
  */
+import type { ReadonlyNames } from '../ir/symbolNames'
+
 export const CANVAS3D_BLOCK_TYPES = [
   'sz_t3d_import',
   'sz_t3d_new_var',
@@ -403,7 +405,7 @@ export function isCanvas3DResourceCreatorExpression(
     className?: string
     namespace?: string
   },
-  importedClassNames: Pick<ReadonlySet<string>, 'has'> = new Set(),
+  importedClassNames: ReadonlyNames<string> = new Set(),
 ): boolean {
   if (expression.type !== 'newExpr') return false
   const className = expression.className?.trim() ?? ''
@@ -654,7 +656,7 @@ export function isCanvas3DResourceCreatorStatement(
     namespace?: string
     className?: string
   },
-  importedClassNames: Pick<ReadonlySet<string>, 'has'> = new Set(),
+  importedClassNames: ReadonlyNames<string> = new Set(),
 ): boolean {
   return (
     CANVAS3D_RESOURCE_CREATOR_TYPES.has(statement.type) ||

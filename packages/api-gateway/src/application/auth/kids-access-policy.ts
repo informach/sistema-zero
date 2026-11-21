@@ -30,6 +30,10 @@ export function kidsMayAccess(
         '/hub/internal/showcase-thread-studio/prepare',
         '/hub/internal/showcase-thread-studio-standalone',
         '/hub/internal/showcase-thread-studio-standalone/prepare',
+        '/hub/internal/showcase-thread-studio/update',
+        '/hub/internal/showcase-thread-studio-standalone/update',
+        '/hub/internal/showcase-thread-studio/touch',
+        '/hub/internal/showcase-source',
       ].includes(pathname)
     )
       return true

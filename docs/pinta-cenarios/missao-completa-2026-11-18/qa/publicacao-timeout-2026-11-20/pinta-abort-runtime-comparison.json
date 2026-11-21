@@ -1,0 +1,79 @@
+[
+  {
+    "name": "bun1311",
+    "exit": null,
+    "error": "ETIMEDOUT",
+    "signal": "SIGTERM",
+    "progress": [
+      {
+        "phase": "before",
+        "level": 0
+      }
+    ],
+    "stderr": ""
+  },
+  {
+    "name": "bun143",
+    "exit": 0,
+    "signal": null,
+    "progress": [
+      {
+        "phase": "before",
+        "level": 0
+      },
+      {
+        "phase": "after",
+        "level": 0,
+        "elapsedMs": 25.530700000000003,
+        "aborted": true,
+        "error": "TimeoutError"
+      },
+      {
+        "phase": "before",
+        "level": 1
+      },
+      {
+        "phase": "after",
+        "level": 1,
+        "elapsedMs": 25.5058,
+        "aborted": true,
+        "error": "TimeoutError"
+      },
+      {
+        "phase": "before",
+        "level": 2
+      },
+      {
+        "phase": "after",
+        "level": 2,
+        "elapsedMs": 25.639799999999994,
+        "aborted": true,
+        "error": "TimeoutError"
+      },
+      {
+        "phase": "before",
+        "level": 3
+      },
+      {
+        "phase": "after",
+        "level": 3,
+        "elapsedMs": 25.608799999999988,
+        "aborted": true,
+        "error": "TimeoutError"
+      }
+    ],
+    "stderr": ""
+  },
+  {
+    "name": "node24",
+    "exit": 13,
+    "signal": null,
+    "progress": [
+      {
+        "phase": "before",
+        "level": 0
+      }
+    ],
+    "stderr": "Warning: Detected unsettled top-level await at file:///C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/.cache/pinta-abort-any-probe.mjs:8\r\n try{await new Promise((_,reject)=>signal.addE"
+  }
+]

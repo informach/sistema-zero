@@ -61,6 +61,26 @@ export interface CreateShowcaseThreadInput {
   studioMeta?: ThreadStudioMeta | null
   /** Chave de idempotência (hash perfil:curso:cadeia[:clientKey]) — UNIQUE; conflito devolve o existente. */
   idempotencyKey: string
+  /**
+   * Identidade do PROJETO (hash derivado no service): o post que a próxima publicação
+   * do mesmo projeto ATUALIZA. Ao criar, a chave é tirada de qualquer post que a tinha
+   * (é assim que "Publicar como jogo novo" passa o vínculo ao post novo).
+   */
+  showcaseSourceKey?: string | null
+  now: Date
+}
+
+/** Atualização do post de vitrine pela própria criança (republicar o mesmo projeto). */
+export interface UpdateShowcaseThreadInput {
+  authorId: string
+  sourceKey: string
+  playId: string
+  /** Só no Estúdio livre (na aula o título segue autoritativo do members). */
+  title?: string
+  body: string
+  /** `null`/ausente = mantém a capa atual. */
+  coverImageUrl?: string | null
+  studioMeta: ThreadStudioMeta | null
   now: Date
 }
 
@@ -211,6 +231,25 @@ export interface ThreadRepository {
     }>
   >
   findThreadById(id: string): Promise<Thread | null>
+  /** Post de vitrine (não apagado/recusado) que hoje representa o projeto. */
+  findShowcaseBySourceKey(sourceKey: string): Promise<Thread | null>
+  /**
+   * Vincula um post ANTIGO do próprio autor ao projeto (adoção): o post precisa ser
+   * vitrine do autor, com aquele `playId`, sem estar apagado/recusado e sem outro vínculo.
+   */
+  adoptShowcaseSource(authorId: string, playId: string, sourceKey: string): Promise<Thread | null>
+  /** Thread da última reserva finalizada do autor num contexto (adoção de posts de aula antigos). */
+  findFinalizedReservationThread(authorId: string, context: string): Promise<Thread | null>
+  /**
+   * Atualiza o post do projeto (descrição, capa, título, metadado) e carimba
+   * `gameUpdatedAt`. Mantém id, playId, createdAt, lastActivityAt, challengeKey, jogadas,
+   * comentários e reações. `null` quando o post não é mais do autor/projeto.
+   */
+  updateShowcaseThread(
+    input: UpdateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; previousCoverUrl: string | null } | null>
+  /** Só carimba `gameUpdatedAt` (restaurar uma versão antiga). `false` se não é do autor. */
+  touchShowcaseGame(authorId: string, playId: string, now: Date): Promise<boolean>
   /**
    * Tópicos VISÍVEIS do autor (mais recentes por `lastActivityAt`) — alimenta o sino
    * "novas respostas nas suas conversas" (o app compara `commentCount` com um baseline

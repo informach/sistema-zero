@@ -61,7 +61,7 @@ describe('ShareDialog', () => {
     setProjectStorageNamespace('')
   })
 
-  it('Python Classic persists its publication link, reopens history, updates, restores and disables that link', async () => {
+  it('Python Classic persists its publication link, reopens history, restores and disables that link', async () => {
     setProjectStorageNamespace(`classic-share-${crypto.randomUUID()}`)
     const scope = captureProjectStorageScope()
     const stores = createStudioStores()
@@ -96,7 +96,6 @@ describe('ShareDialog', () => {
     }
     const history: NonNullable<StudioShareAdapter['publication']> = {
       get: mock(async () => publication),
-      update: mock(async () => ({ ...publication, version: 3 })),
       activate: mock(async (input) => ({
         ...publication,
         version: input.expectedVersion + 1,
@@ -132,13 +131,6 @@ describe('ShareDialog', () => {
     )
     await screen.findByText('Link ativo')
     const sourceBefore = JSON.stringify(reopened.project.getState().project)
-    fireEvent.click(screen.getByRole('button', { name: 'Publicar versão atual neste link' }))
-    await waitFor(() => expect(history.update).toHaveBeenCalledTimes(1))
-    expect((history.update as ReturnType<typeof mock>).mock.calls[0]?.[0]).toMatchObject({
-      playId,
-      expectedVersion: 2,
-      project: { id: project.id, programmingLanguage: 'python', kind: 'classic' },
-    })
     await waitFor(() =>
       expect(
         (screen.getByRole('button', { name: 'Restaurar no link' }) as HTMLButtonElement).disabled,
@@ -148,7 +140,7 @@ describe('ShareDialog', () => {
     await waitFor(() => expect(history.activate).toHaveBeenCalledTimes(1))
     expect((history.activate as ReturnType<typeof mock>).mock.calls[0]?.[0]).toMatchObject({
       playId,
-      expectedVersion: 3,
+      expectedVersion: 2,
       revision: '1'.repeat(64),
       disabled: false,
     })
@@ -430,5 +422,112 @@ describe('ShareDialog', () => {
     await screen.findByText('Ver no Mural')
     expect(pubArg(adapter)?.useAdminCover).toBe(true)
     expect(pubArg(adapter)?.coverDataUrl).toBeNull()
+  })
+})
+
+describe('ShareDialog: republicar atualiza o post do projeto', () => {
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    setProjectStorageNamespace('')
+  })
+  const published = {
+    published: true,
+    playId: '11111111-1111-4111-8111-111111111111',
+    title: 'Nave no Mural',
+    description: 'A descrição que está no Mural.',
+    coverUrl: 'https://cover.test/now.png',
+    history: false,
+  }
+
+  it('abre com o post de agora, mantém a capa e manda keepCover ao atualizar', async () => {
+    seedProject()
+    const status = mock(async () => ({ ...published, unchanged: false }))
+    const adapter = makeAdapter({
+      status,
+      publish: mock(async () => ({ playUrl: '/jogar/x', updated: true })),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    await screen.findByText('Atualizar no Mural dos Criadores')
+    expect((status.mock.calls[0] as unknown[])[0]).toMatchObject({ compare: true })
+    expect(
+      (screen.getByRole('textbox', { name: 'Resumo do projeto' }) as HTMLTextAreaElement).value,
+    ).toBe('A descrição que está no Mural.')
+    expect(screen.getByText('Usando a capa que o post já tem.')).toBeTruthy()
+    // A descrição já existe: a IA não rascunha outra.
+    expect(adapter.generateDescription).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+    await screen.findByText('Seu jogo foi atualizado! 🎉')
+    expect(pubArg(adapter)).toMatchObject({ keepCover: true, coverDataUrl: null })
+    expect(pubArg(adapter).asNewPost).toBeUndefined()
+  })
+
+  it('a capa escolhida enquanto o status carrega não é trocada pela do post', async () => {
+    seedProject()
+    let answer!: (value: typeof published & { unchanged: boolean }) => void
+    const adapter = makeAdapter({
+      status: () =>
+        new Promise((done) => {
+          answer = done
+        }),
+      publish: mock(async () => ({ playUrl: '/jogar/x', updated: true })),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+    await waitFor(() => expect(document.querySelector('img[src^="data:image/png"]')).toBeTruthy())
+    answer({ ...published, unchanged: false })
+    await screen.findByText('Atualizar no Mural dos Criadores')
+    expect(screen.queryByText('Usando a capa que o post já tem.')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+    await waitFor(() => expect(adapter.publish).toHaveBeenCalledTimes(1))
+    expect(pubArg(adapter)).toMatchObject({ coverDataUrl: 'data:image/png;base64,FAKECOVER' })
+    expect(pubArg(adapter).keepCover).toBeUndefined()
+  })
+
+  it('jogo igual ao do Mural: avisa e não deixa atualizar', async () => {
+    seedProject()
+    const adapter = makeAdapter({
+      status: mock(async () => ({ ...published, unchanged: true })),
+      unchangedMessage: 'Envie a nova versão à equipe para atualizar no Mural.',
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    await screen.findByText('Envie a nova versão à equipe para atualizar no Mural.')
+    expect((screen.getByRole('button', { name: 'Atualizar' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    )
+  })
+
+  it('"Publicar como jogo novo" fica escondido e volta ao fluxo de publicar', async () => {
+    seedProject()
+    const adapter = makeAdapter({
+      allowNewPost: true,
+      status: mock(async () => ({ ...published, unchanged: true })),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    await screen.findByText('Outras formas de publicar')
+    fireEvent.click(screen.getByRole('checkbox', { name: /Publicar como jogo novo/ }))
+    await screen.findByText('Compartilhar no Mural dos Criadores')
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+    await waitFor(() =>
+      expect((screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+    await waitFor(() => expect(adapter.publish).toHaveBeenCalledTimes(1))
+    expect(pubArg(adapter)).toMatchObject({ asNewPost: true })
+    expect(pubArg(adapter).keepCover).toBeUndefined()
+  })
+
+  it('sem post ainda, o diálogo é o de publicar e não mostra a opção escondida', async () => {
+    seedProject()
+    const adapter = makeAdapter({
+      allowNewPost: true,
+      status: mock(async () => ({ published: false })),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    await screen.findByText('Compartilhar no Mural dos Criadores')
+    await waitFor(() => expect(adapter.generateDescription).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText('Outras formas de publicar')).toBeNull()
   })
 })

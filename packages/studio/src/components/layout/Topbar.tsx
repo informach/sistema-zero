@@ -195,6 +195,24 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     }
   }, [projectId, stores])
   const [showShare, setShowShare] = useState(false)
+  // O projeto já tem post no Mural? O botão diz "Atualizar no Mural". Consulta leve
+  // (sem comparar o jogo), refeita ao trocar de projeto e ao fechar o diálogo.
+  const [sharePublished, setSharePublished] = useState(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o projeto é lido da store na hora; trocar de projeto (projectId) refaz a consulta.
+  useEffect(() => {
+    setSharePublished(false)
+    const status = share?.status
+    if (!status || showShare) return
+    const project = (stores?.project ?? useProjectStore).getState().project
+    if (!project) return
+    const abort = new AbortController()
+    status({ project, compare: false }, abort.signal)
+      .then((value) => {
+        if (!abort.signal.aborted) setSharePublished(value.published)
+      })
+      .catch(() => {})
+    return () => abort.abort()
+  }, [share, projectId, showShare, stores])
   const [showExport, setShowExport] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
@@ -572,7 +590,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 // Não usar `disabled` nativo: bloqueia só a AÇÃO (guard no onClick) mas
                 // mantém o botão focável/tocável p/ revelar a bolha de dica.
                 aria-disabled={Boolean(shareDisabledReason)}
-                aria-label={shareDisabledReason ?? t('share.action')}
+                aria-label={
+                  shareDisabledReason ?? t(sharePublished ? 'share.updateAction' : 'share.action')
+                }
                 className={cn(
                   'sz-bar-pill',
                   // O azul é do Rodar: o Compartilhar ganha o amarelo da alegria.
@@ -581,7 +601,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 )}
               >
                 <IconShare />
-                {!iconOnly ? <span>{t('share.action')}</span> : null}
+                {!iconOnly ? (
+                  <span>{t(sharePublished ? 'share.updateAction' : 'share.action')}</span>
+                ) : null}
               </button>
               {shareDisabledReason ? (
                 // Bolha visível (não depende do `title` nativo): aparece no hover/foco/toque.

@@ -1,0 +1,183 @@
+ci	Typecheck (todos os pacotes)	﻿2026-11-21T01:28:49.7751969Z ##[group]Run bun run --sequential --no-exit-on-error --filter '*' typecheck
+ci	Typecheck (todos os pacotes)	2026-11-21T01:28:49.7752427Z bun run --sequential --no-exit-on-error --filter '*' typecheck
+ci	Typecheck (todos os pacotes)	2026-11-21T01:28:49.7779786Z shell: /usr/bin/bash -e {0}
+ci	Typecheck (todos os pacotes)	2026-11-21T01:28:49.7779997Z env:
+ci	Typecheck (todos os pacotes)	2026-11-21T01:28:49.7780169Z   NODE_OPTIONS: --max-old-space-size=6144
+ci	Typecheck (todos os pacotes)	2026-11-21T01:28:49.7780376Z ##[endgroup]
+ci	Typecheck (todos os pacotes)	2026-11-21T01:31:12.7783021Z @sistemazero/admin:typecheck                    | Done in 142.99s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:31:13.6522245Z @sistemazero/agent-core:typecheck               | Done in 874ms
+ci	Typecheck (todos os pacotes)	2026-11-21T01:31:16.3750983Z @sistemazero/agent-integrations:typecheck       | Done in 2.72s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:31:20.0599059Z @sistemazero/agent-runtime:typecheck            | Done in 3.68s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:31:24.0787526Z @sistemazero/api-gateway:typecheck              | Done in 4.02s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:31:49.0063820Z @sistemazero/arquipelago:typecheck              | Done in 24.93s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:33:42.1272346Z @sistemazero/arquipelago-admin:typecheck        | Done in 113.12s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:34:00.0927790Z @sistemazero/arquipelago-api:typecheck          | Done in 17.97s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:34:02.4666930Z @sistemazero/arquipelago-contracts:typecheck    | Done in 2.37s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:34:06.4309539Z @sistemazero/auth:typecheck                     | Done in 3.96s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:34:09.5482430Z @sistemazero/avatar-quarto:typecheck            | Done in 3.12s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:34:11.9863600Z @sistemazero/catalog:typecheck                  | Done in 2.44s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:36:26.7144795Z @sistemazero/community:typecheck                | Done in 134.73s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:42.1013705Z @sistemazero/community-kids:typecheck           | Done in 135.39s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:48.6987260Z @sistemazero/core:typecheck                     | Done in 6.60s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:49.4796509Z @sistemazero/creation-cleanup-cron:typecheck    | Done in 781ms
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:50.5197740Z @sistemazero/edisvg:typecheck                   | Done in 1.04s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:52.9096673Z @sistemazero/fiscal:typecheck                   | Done in 2.39s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:53.9118163Z @sistemazero/funnel:typecheck                   | 01:38:53 [@astrojs/node] Enabling sessions with filesystem storage
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:54.5135267Z @sistemazero/funnel:typecheck                   | 01:38:54 [types] Generated 600ms
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:54.5189888Z @sistemazero/funnel:typecheck                   | 01:38:54 [check] Getting diagnostics for Astro files in /home/runner/work/sistema-zero/sistema-zero/packages/funnel...
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:59.0124990Z @sistemazero/funnel:typecheck                   | src/analytics/collector.ts:30:9 - warning ts(80006): This may be converted to an async function.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:59.0126258Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:59.0127140Z @sistemazero/funnel:typecheck                   | 30   const post = (action: string, body: unknown, detached = false) => {
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:59.0127990Z @sistemazero/funnel:typecheck                   |            ~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:38:59.0128937Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.0602243Z @sistemazero/funnel:typecheck                   | src/pages/[audience]/termos.astro:2:1 - warning ts(6133): 'COMUNIDADE_DOS_CRIADORES' is declared but its value is never read.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.0602931Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.0603533Z @sistemazero/funnel:typecheck                   | 2 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.0604258Z @sistemazero/funnel:typecheck                   |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.2255452Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.2257031Z @sistemazero/funnel:typecheck                   | src/pages/[audience]/[produto]/resultado.astro:38:7 - warning ts(6133): 'leadQuizUrl' is declared but its value is never read.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.2258489Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.2259216Z @sistemazero/funnel:typecheck                   | 38 const leadQuizUrl =
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.2259993Z @sistemazero/funnel:typecheck                   |          ~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:05.2260573Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2464738Z @sistemazero/funnel:typecheck                   | tests/integration/member-commerce.test.ts:614:5 - warning ts(80007): 'await' has no effect on the type of this expression.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2465914Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2467894Z @sistemazero/funnel:typecheck                   | 614     await expect(handleMemberCommerce(request({ ...base, data }), 'pay', deps)).rejects.toThrow(
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2469336Z @sistemazero/funnel:typecheck                   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2470238Z @sistemazero/funnel:typecheck                   | 615       'Falha local',
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2470978Z @sistemazero/funnel:typecheck                   |     ~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2471631Z @sistemazero/funnel:typecheck                   | 616     )
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2472532Z @sistemazero/funnel:typecheck                   |     ~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2473853Z @sistemazero/funnel:typecheck                   | tests/integration/member-commerce.test.ts:235:5 - warning ts(80007): 'await' has no effect on the type of this expression.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2474772Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2475766Z @sistemazero/funnel:typecheck                   | 235     await expect(handleMemberCommerce(request({ ...base, data }), 'pay', deps)).rejects.toThrow(
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2477105Z @sistemazero/funnel:typecheck                   |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2478032Z @sistemazero/funnel:typecheck                   | 236       'Falha de limpeza',
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2478817Z @sistemazero/funnel:typecheck                   |     ~~~~~~~~~~~~~~~~~~~~~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2479491Z @sistemazero/funnel:typecheck                   | 237     )
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2480139Z @sistemazero/funnel:typecheck                   |     ~~~~~
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:07.2480644Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:08.0267679Z @sistemazero/funnel:typecheck                   | Result (399 files):
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:08.0268153Z @sistemazero/funnel:typecheck                   | - 0 errors
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:08.0268837Z @sistemazero/funnel:typecheck                   | - 0 warnings
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:08.0269162Z @sistemazero/funnel:typecheck                   | - 5 hints
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:08.0269459Z @sistemazero/funnel:typecheck                   |
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:08.0856337Z @sistemazero/funnel:typecheck                   | Done in 15.18s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:11.5358064Z @sistemazero/helpdesk:typecheck                 | Done in 3.45s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:13.9221693Z @sistemazero/helpdesk-app:typecheck             | Done in 2.39s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:14.6498507Z @sistemazero/helpdesk-contracts:typecheck       | Done in 728ms
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:18.0302927Z @sistemazero/hub:typecheck                      | Done in 3.38s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:19.5696877Z @sistemazero/live-recorder:typecheck            | Done in 1.54s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:20.4002847Z @sistemazero/live-supervisor:typecheck          | Done in 831ms
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:27.3790381Z @sistemazero/marketing:typecheck                | Done in 6.98s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:33.3277689Z @sistemazero/marketing-app:typecheck            | Done in 5.95s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:39:34.6502256Z @sistemazero/marketing-contracts:typecheck      | Done in 1.32s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:40:46.9857762Z @sistemazero/marketing-desktop:typecheck        | Done in 72.34s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:40:48.6879177Z @sistemazero/marketing-import:typecheck         | Done in 1.70s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:40:50.6309837Z @sistemazero/marketing-production:typecheck     | Done in 1.94s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:40:55.2339174Z @sistemazero/marketing-workbench:typecheck      | Done in 4.60s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:43:07.8471737Z @sistemazero/member-shell:typecheck             | Done in 132.61s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1729937Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(402,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1731515Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1733037Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1733999Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1734535Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1735350Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1736847Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(412,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1737837Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1738796Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1739683Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1740205Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1741007Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1742766Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(422,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1743742Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1744741Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1745638Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1746162Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1747067Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1748289Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(432,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1749213Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1750234Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1751124Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1751644Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1752597Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1753737Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(502,7): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1754639Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1755638Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1756524Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1757129Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1757953Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1759185Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(505,7): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1760084Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1761068Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1762070Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1762601Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1763407Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1764656Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(515,7): error TS2322: Type 'ReadonlyNames<string> | SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1765725Z @sistemazero/members:typecheck                  |   Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1766254Z @sistemazero/members:typecheck                  |     Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1767214Z @sistemazero/members:typecheck                  |       Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1768132Z @sistemazero/members:typecheck                  |         Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1768659Z @sistemazero/members:typecheck                  |           Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1769465Z @sistemazero/members:typecheck                  |             Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1770591Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(529,7): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1771490Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1772569Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1773469Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1773988Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1774786Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1776045Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(630,7): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1776996Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1777938Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1778846Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1779362Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1780158Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1781618Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(1028,5): error TS2322: Type 'Record<Canvas3DSymbolKind, SymbolNames<string>>' is not assignable to type 'Readonly<Record<Canvas3DSymbolKind, ReadonlyNames<string>>>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1783048Z @sistemazero/members:typecheck                  |   The types of 'scene3d.forEach' are incompatible between these types.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1784084Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1785002Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1785554Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1786358Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1787504Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(1029,5): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1788416Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1789361Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1790244Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1790765Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1791571Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1792944Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/programmingReferences.ts(1209,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1793903Z @sistemazero/members:typecheck                  |   Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1794858Z @sistemazero/members:typecheck                  |     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1795753Z @sistemazero/members:typecheck                  |       Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1796302Z @sistemazero/members:typecheck                  |         Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1797192Z @sistemazero/members:typecheck                  |           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1798504Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/symbolNames.ts(71,3): error TS2416: Property 'forEach' in type 'SymbolNames<T>' is not assignable to the same property in base type 'ReadonlyNames<T>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1799900Z @sistemazero/members:typecheck                  |   Type '(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1800793Z @sistemazero/members:typecheck                  |     Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1801332Z @sistemazero/members:typecheck                  |       Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1802226Z @sistemazero/members:typecheck                  |         Type 'ReadonlyNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1803370Z ##[error]@sistemazero/members:typecheck                  | ../studio/src/ir/symbolNames.ts(73,44): error TS2345: Argument of type 'this' is not assignable to parameter of type 'ReadonlyNames<T>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1804340Z @sistemazero/members:typecheck                  |   Type 'SymbolNames<T>' is not assignable to type 'ReadonlyNames<T>'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1804847Z @sistemazero/members:typecheck                  |     Types of property 'forEach' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1805749Z @sistemazero/members:typecheck                  |       Type '(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any) => void'.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1806579Z @sistemazero/members:typecheck                  |         Types of parameters 'callback' and 'callbackfn' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1807114Z @sistemazero/members:typecheck                  |           Types of parameters 'set' and 'set' are incompatible.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.1807939Z @sistemazero/members:typecheck                  |             Type 'ReadonlyNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more.
+ci	Typecheck (todos os pacotes)	2026-11-21T01:44:57.3664542Z @sistemazero/members:typecheck                  | Exited with code 2
+ci	Typecheck (todos os pacotes)	2026-11-21T01:45:00.3691092Z @sistemazero/messaging:typecheck                | Done in 3.00s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:45:15.7407708Z @sistemazero/molda:typecheck                    | Done in 15.37s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:45:22.0761222Z @sistemazero/molda-cenarios:typecheck           | Done in 6.34s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:45:26.6217424Z @sistemazero/molda-cenarios-agente:typecheck    | Done in 4.55s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:45:29.3498327Z @sistemazero/molda-cenarios-core:typecheck      | Done in 2.73s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:45:33.5741252Z @sistemazero/molda-cenarios-motor:typecheck     | Done in 4.22s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:47:26.0694849Z @sistemazero/palco-gravacao:typecheck           | Done in 112.50s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:47:30.2330289Z @sistemazero/payments:typecheck                 | Done in 4.16s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:47:32.8837452Z @sistemazero/pensa:typecheck                    | Done in 2.65s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:47:41.4304573Z @sistemazero/pinta:typecheck                    | Done in 8.55s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:47:44.3465606Z @sistemazero/referrals:typecheck                | Done in 2.92s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:50:20.5699069Z @sistemazero/studio:typecheck                   | Done in 156.22s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:50:21.4284666Z @sistemazero/studio-ai-reconcile-cron:typecheck | Done in 859ms
+ci	Typecheck (todos os pacotes)	2026-11-21T01:50:25.5697721Z @sistemazero/studio-language-service:typecheck  | Done in 4.14s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:52:05.5648537Z @sistemazero/studio-runtime:typecheck           | Done in 100.00s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:52:07.4742828Z @sistemazero/tui:typecheck                      | Done in 1.91s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:52:09.4472150Z @sistemazero/ui:typecheck                       | Done in 1.97s
+ci	Typecheck (todos os pacotes)	2026-11-21T01:52:09.4484735Z ##[error]Process completed with exit code 2.

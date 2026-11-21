@@ -129,9 +129,19 @@ function shellScript(parentOrigins: readonly string[]): string {
     if (relayed && typeof relayed.type === 'string' && relayed.type.indexOf('sz-shell:') === 0) return;
     parent.postMessage(relayed, host);
   });
+  // O foco na própria casca (não no jogo dentro dela): o 'focus' e o 'blur' da janela. Só com ele
+  // a casca puxa o foco para o jogo. No WebKit, soltar e focar o quadro do jogo dispara de novo o
+  // 'focus' da casca; sem conferir, cada volta agendava a próxima, o jogo trocava de foco sem
+  // parar e as teclas se perdiam (homologação 44833799563, WebKit do Linux). O foco que entra no
+  // jogo dispara o 'blur' da casca, e a volta agendada não faz nada.
+  let cascaComFoco = false;
+  addEventListener('blur', () => { cascaComFoco = false; });
   // Na tarefa seguinte: o evento chega enquanto o navegador ainda leva o foco até a casca, e um
   // foco dado aqui mesmo terminava de volta na casca (as setas iam para a página vazia dela).
-  addEventListener('focus', () => setTimeout(focarJogo, 0));
+  addEventListener('focus', () => {
+    cascaComFoco = true;
+    setTimeout(() => { if (cascaComFoco) focarJogo(); }, 0);
+  });
   for (const origin of allowed) parent.postMessage({ type: ${JSON.stringify(CLASSIC_SHELL_READY)} }, origin);
 })();`
 }

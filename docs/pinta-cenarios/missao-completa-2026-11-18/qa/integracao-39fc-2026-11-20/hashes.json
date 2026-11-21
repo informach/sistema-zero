@@ -1,0 +1,315 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2695,
+      "sha256": "51699da1ca27d6c1b76b140b488aff9d6c8ab6718adcbb7298b9ab27d1247e67"
+    },
+    {
+      "file": "browser.json",
+      "bytes": 48666,
+      "sha256": "b24110d2b441576644f5ef25e056b91ebbaf8ff0664481f31df1e47626c61a29"
+    },
+    {
+      "file": "ci-publicado-vermelho.txt",
+      "bytes": 33580,
+      "sha256": "1f350566ea438f23cb5b5f05907725ee96782ebdefbc9024efe6924c204a74e2"
+    },
+    {
+      "file": "cobertura-de-verificacao.json",
+      "bytes": 7111,
+      "sha256": "b102fc1e3a4bee03a1d894f6fdc16b4ec67bb929bcb3bcd9b1b61f6ce09b3c0c"
+    },
+    {
+      "file": "correcao-biome.txt",
+      "bytes": 46,
+      "sha256": "e918294585ce6cffdb46b9a4d84167dea5a3b1324ca6fd7c9a110788ada4cbf2"
+    },
+    {
+      "file": "correcao-esnext-fixture.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "correcao-gateway-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "correcao-hub-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "correcao-members-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "correcao-molda-sdk.txt",
+      "bytes": 183,
+      "sha256": "797c0cf997f7157204941356312da47db54e0db990341082024c1a69885a3653"
+    },
+    {
+      "file": "correcao-native-controls.txt",
+      "bytes": 648,
+      "sha256": "cd2ff50e74a640043c42b480aacf4ccb95f3b505b957c149b95a514d82b8e786"
+    },
+    {
+      "file": "correcao-profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "correcao-pygame.txt",
+      "bytes": 3210,
+      "sha256": "0bf8a4060dc1beb44579d37b94fde96686a8e053c425956f7c9cf2daf3d6876b"
+    },
+    {
+      "file": "correcao-python-closure.txt",
+      "bytes": 980,
+      "sha256": "66783340eb84bd71a556a00bd9e867b85db6b7d9f0b9925213e28bd866ccc3f5"
+    },
+    {
+      "file": "correcao-runtime-types.txt",
+      "bytes": 60,
+      "sha256": "57abcdb89ee6ec288ff0c7c6a13f657e7da934050645ca9d9c843c2ac53c515d"
+    },
+    {
+      "file": "correcao-shared.txt",
+      "bytes": 12105,
+      "sha256": "68c9d2d18c848e2b56022cf3047038012b134b314f0ccddd53e06c3978be18a5"
+    },
+    {
+      "file": "correcao-shell-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "correcao-studio-sdk.txt",
+      "bytes": 338,
+      "sha256": "782675114f04ad5f5857906d9708308f401a4de6897968ad99bcb279d027db48"
+    },
+    {
+      "file": "correcao-studio-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "correcao-symbols.txt",
+      "bytes": 4370,
+      "sha256": "fcbc6c2b3b2779b6bf5fa9b560ad0b52819ff27947b8c6c0411f36b9d54f9b3a"
+    },
+    {
+      "file": "fontes-finais.json",
+      "bytes": 22371,
+      "sha256": "d5bfada1d316ec01357dbd3c2b29ab4cad848aa77a3dd6e42a1dcc6123558624"
+    },
+    {
+      "file": "fontes-iniciais.json",
+      "bytes": 21285,
+      "sha256": "b29c43d7831b26827a86533bf0a0da3ee2b8d758657b9aa8b31080fa3513af88"
+    },
+    {
+      "file": "gates-correcao.json",
+      "bytes": 3067,
+      "sha256": "33b47a4927c3f225ce5fc99f8bc218568496094521041c60bec68918ce2da24f"
+    },
+    {
+      "file": "gates-iniciais.json",
+      "bytes": 4036,
+      "sha256": "58e50c610245dd28f91e651a7e4b71fe174718db99835fec932bb247f582b3ec"
+    },
+    {
+      "file": "inicial-atlas.txt",
+      "bytes": 945,
+      "sha256": "f83233e081ea229c040ead5e83bdb23e7f384ecbacea962be9ea7cb4854258ae"
+    },
+    {
+      "file": "inicial-biome-initial.txt",
+      "bytes": 46,
+      "sha256": "dcb87fc6c9649c529e30f0f1eb96fb50b336b760a648f76ce2e03c9979c0688b"
+    },
+    {
+      "file": "inicial-browser.txt",
+      "bytes": 107702,
+      "sha256": "706e74e2bfea0bc73c56ecd3f19f9178649fb567188c58e574bb11829d06cace"
+    },
+    {
+      "file": "inicial-canonical-publication.txt",
+      "bytes": 4840,
+      "sha256": "0bbd8418df52fadf42d830a03e1bcc805d1cfe6e71d90678f871dc3b6d840992"
+    },
+    {
+      "file": "inicial-core-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "inicial-core.txt",
+      "bytes": 374639,
+      "sha256": "76cecc86ef560d056bf56a2054296d0faa70f65ab14f969e233e5134f1165dbe"
+    },
+    {
+      "file": "inicial-gateway-publication.txt",
+      "bytes": 67991,
+      "sha256": "32ee15646dd390b968242d345434cbc1dec7208051cc878791c59a2a02f7a4b4"
+    },
+    {
+      "file": "inicial-gateway-unit.txt",
+      "bytes": 6791,
+      "sha256": "27e105196be5307512919ac5ed4c6df9a7d29a0c936884dc80d48eb9c6c91d85"
+    },
+    {
+      "file": "inicial-host-publication.txt",
+      "bytes": 10511,
+      "sha256": "a20bf02378007103dff7a9e37affce471b693d88324188dab172fe1678556319"
+    },
+    {
+      "file": "inicial-hub-publication.txt",
+      "bytes": 8136,
+      "sha256": "9e190d7378fcf6128b8203be29f094c03ee9be2202b39fa74b1879de5d7620e5"
+    },
+    {
+      "file": "inicial-integration.txt",
+      "bytes": 7384,
+      "sha256": "4201c31eeaabad5385f063144766467cb10a538f5088f3034ed43413c2eaf263"
+    },
+    {
+      "file": "inicial-members-types.txt",
+      "bytes": 10752,
+      "sha256": "4710a7d4b7242058a0801f3b070c01ee5a9ad8fee3f4a2a1e269945970b3d1bc"
+    },
+    {
+      "file": "inicial-members-unit.txt",
+      "bytes": 1844,
+      "sha256": "915d90d72a546542e034cdf7fb1f99217d4771af58b2997b725197c303c54168"
+    },
+    {
+      "file": "inicial-molda-sdk.txt",
+      "bytes": 183,
+      "sha256": "797c0cf997f7157204941356312da47db54e0db990341082024c1a69885a3653"
+    },
+    {
+      "file": "inicial-native-observer.txt",
+      "bytes": 8885,
+      "sha256": "161eb8982433e79842fa97249e9a2d24804fd782e9280f9a978f79c9fb940048"
+    },
+    {
+      "file": "inicial-profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "inicial-published-qa-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "inicial-runtime.txt",
+      "bytes": 5942,
+      "sha256": "da0b65d43417e2a5b454e99a76f7b55e5b6c50366beb4e8ad91014d56e24e8fa"
+    },
+    {
+      "file": "inicial-studio-sdk.txt",
+      "bytes": 338,
+      "sha256": "782675114f04ad5f5857906d9708308f401a4de6897968ad99bcb279d027db48"
+    },
+    {
+      "file": "inicial-studio-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "inicial-studio.txt",
+      "bytes": 1810691,
+      "sha256": "dfe241f2499e012b175f9e1d11c1278ea3e0a49eed4796d8bc3101e815b78151"
+    },
+    {
+      "file": "integracao.json",
+      "bytes": 1286737,
+      "sha256": "7b735dbb589aca73456259cfae6fd233fc054fb46a500bf360c7c97c248f8597"
+    },
+    {
+      "file": "integration-config.txt",
+      "bytes": 761,
+      "sha256": "071c1c32e36c355ed633715a702769d74582626de956a945470513fcddae8dcb"
+    },
+    {
+      "file": "pygame-config.txt",
+      "bytes": 683,
+      "sha256": "42cc165ff12f6a107490d8fac48f18f2e4c81f30e2b51975b01288acf36722a1"
+    },
+    {
+      "file": "pygame.json",
+      "bytes": 1208221,
+      "sha256": "5cbdda290bd8614c4034ae717e08e3767a6c33bd0d8ee3eafe18da70c8a754f4"
+    },
+    {
+      "file": "python-compartilhado.json",
+      "bytes": 3227178,
+      "sha256": "4f9f2d3143a71176e249be214a201205ff39b093dc7066b6e62108d670f58613"
+    },
+    {
+      "file": "python-igualdade.json",
+      "bytes": 317,
+      "sha256": "dfe1af86ffa5fb07adad7b7fb7fa5a40431ab716108e9f0c3cd5365ff6a30541"
+    },
+    {
+      "file": "python-lista.txt",
+      "bytes": 9322,
+      "sha256": "4d4c441705f52a6c456311b91635f18ad969ccea537a3345c6048cc9f46804cd"
+    },
+    {
+      "file": "python-windows.json",
+      "bytes": 1003,
+      "sha256": "33f0378542c72d13f103d6003e5e44a2b170f9663dd734f977b4f8c11e747c5f"
+    },
+    {
+      "file": "runner-correcao.txt",
+      "bytes": 4479,
+      "sha256": "836510deb8a27f1652b0138c2decff74a771959ea4bbb5a3139dad8674df7f27"
+    },
+    {
+      "file": "runner-inicial.txt",
+      "bytes": 5966,
+      "sha256": "7014306649b5480d9f7ae5893b0fee1028b5d91d12c1415dd03f97ac322ba9c6"
+    },
+    {
+      "file": "sdk-derivado.json",
+      "bytes": 871,
+      "sha256": "aa2e03e2c120344baf5f8382eca354f41246464b4ba2d8e6d5fb3fd467de5bfc"
+    },
+    {
+      "file": "sdk-whitespace.json",
+      "bytes": 599,
+      "sha256": "af8f5cc578112fa7e1ca14f8b15e1adb93e61154c12d874bfbafc96d4de7e6d0"
+    },
+    {
+      "file": "shared-config.txt",
+      "bytes": 677,
+      "sha256": "b24bda6ec5dff44d314688d18e40389d2dbb15c1c28ec460659bc1e105c66bbf"
+    },
+    {
+      "file": "tipos-conflitos.json",
+      "bytes": 1518,
+      "sha256": "b32b7d177542d47ca16c2b5d026a81fe5a273a7fce36cadcefed1a1e23d85240"
+    },
+    {
+      "file": "tipos-esnext-reproducao.txt",
+      "bytes": 2182,
+      "sha256": "29464a893e3a4392dd2cb9a3ef0d7acab8ae2366382242c69b1a91d3804b1132"
+    },
+    {
+      "file": "tipos-javascript.json",
+      "bytes": 691,
+      "sha256": "b3bb9e006646573e60b707e33359b24b343a886c03bc73d5b258a72772a6b1c1"
+    },
+    {
+      "file": "tipos-regressao-vermelha.txt",
+      "bytes": 3107,
+      "sha256": "78d9ba96ed554e5e0b1cbe2dfa6c7752008b99da09a586a70f67d1543d90b8fc"
+    }
+  ]
+}

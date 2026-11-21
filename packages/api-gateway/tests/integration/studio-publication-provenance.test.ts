@@ -14,6 +14,10 @@ const ids = [
   'hub-showcase-create-studio-standalone',
   'hub-showcase-create-studio-prepare',
   'hub-showcase-create-studio-standalone-prepare',
+  'hub-showcase-update-studio',
+  'hub-showcase-update-studio-standalone',
+  'hub-showcase-touch-studio',
+  'hub-showcase-source',
 ]
 
 test('both actual Studio publication routes require the BFF and retain current authorization policy', () => {

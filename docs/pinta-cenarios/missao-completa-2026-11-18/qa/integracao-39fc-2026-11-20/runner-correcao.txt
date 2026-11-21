@@ -1,0 +1,41 @@
+const fs=require('node:fs'),cp=require('node:child_process'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const original=JSON.parse(fs.readFileSync('.cache/pinta-39fc-final-gates.json'));
+assert(original.some(g=>g.name==='members-types'&&g.exit!==0),'Wait for the original typecheck result');
+assert(original.filter(g=>g.exit!==0).every(g=>g.name==='members-types'));
+const root=process.cwd(),rows=[],env={...process.env,NODE_OPTIONS:'--max-old-space-size=6144'};
+delete env.PW_CHROMIUM;delete env.DEBUG;delete env.PWDEBUG;delete env.PLAYWRIGHT_JSON_OUTPUT_FILE;
+const git=args=>cp.execFileSync('git',args,{encoding:'utf8',windowsHide:true}).trim(),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+assert.equal(git(['rev-parse','HEAD']),'4db9390c2ec732bbce034b4ffd7bee3be849489b');
+assert.equal(git(['rev-parse','MERGE_HEAD']),'39fc593c306e9d32ef985104560ddf1eb835f3ee');
+const changed=()=>[...new Set([...git(['diff','--name-only','HEAD']).split(/\r?\n/),...git(['ls-files','--others','--exclude-standard']).split(/\r?\n/)])].filter(f=>f.startsWith('packages/')||f.startsWith('experiments/')||f==='biome.json').sort();
+const previous=JSON.parse(fs.readFileSync('.cache/pinta-39fc-final-source-freeze.json'));
+const proof=JSON.parse(fs.readFileSync('.cache/pinta-readonly-names-js-proof.json'));
+assert(proof.emittedJavaScriptExactlyEqual&&proof.onlyTypeDeclarationChanged);
+for(const f of previous.files)assert.equal(sha(fs.readFileSync(f.file)),f.file===proof.file?proof.afterSha256:f.sha256,f.file);
+const added=changed().filter(file=>!previous.files.some(f=>f.file===file));
+assert.deepEqual(added,['packages/studio/src/ir/__tests__/fixtures/symbol-names-contract.ts','packages/studio/src/ir/__tests__/symbolNamesTypes.test.ts']);
+const freeze={at:new Date().toISOString(),head:git(['rev-parse','HEAD']),mergeHead:git(['rev-parse','MERGE_HEAD']),profile:previous.profile,typeOnlyDelta:proof,files:changed().map(file=>({file,sha256:sha(fs.readFileSync(file))}))};
+fs.writeFileSync('.cache/pinta-39fc-type-r2-source-freeze.json',JSON.stringify(freeze,null,2)+'\n',{flag:'wx'});
+const verify=()=>{assert.deepEqual(changed(),freeze.files.map(f=>f.file));for(const f of freeze.files)assert.equal(sha(fs.readFileSync(f.file)),f.sha256,f.file)};
+for(const[name,cwd,args,extra]of[
+ ['esnext-fixture','packages/studio',['x','--no-install','tsc','--project','../../.cache/pinta-readonly-names.tsconfig.json']],
+ ['symbols','packages/studio',['test','src/ir/__tests__/symbolNamesTypes.test.ts','src/ir/__tests__/symbolNames.test.ts','src/ir/__tests__/programmingSymbols.test.ts']],
+ ['profile','packages/studio-runtime',['run','check:validation-profile']],
+ ['studio-sdk','packages/studio',['run','check:scene3d-runtime']],
+ ['molda-sdk','packages/molda-cenarios',['run','conferir:runtime']],
+ ['python-closure','.', ['.cache/prove-pinta-39fc-type-python.ts']],
+ ['studio-types','packages/studio',['x','--no-install','tsc','--noEmit']],
+ ['members-types','packages/members',['x','--no-install','tsc','--noEmit']],
+ ['shell-types','packages/member-shell',['x','--no-install','tsc','--noEmit']],
+ ['hub-types','packages/hub',['x','--no-install','tsc','--noEmit']],
+ ['gateway-types','packages/api-gateway',['x','--no-install','tsc','--noEmit']],
+ ['runtime-types','packages/studio-runtime',['run','typecheck']],
+ ['native-controls','packages/studio',['test','src/check/__tests__/checkRunner.test.ts'],{SZ_CHECK_CHROMIUM:'C:/Program Files/Google/Chrome/Application/chrome.exe'}],
+ ['biome','.', ['x','--no-install','biome','check','.','--diagnostic-level=error']],
+ ['pygame','packages/studio',['x','--no-install','playwright','test','--config','.cache/pinta-39fc-final-pygame.config.ts']],
+ ['shared','packages/studio',['x','--no-install','playwright','test','--config','.cache/pinta-39fc-final-shared.config.ts']],
+]){
+ verify();const log='.cache/pinta-39fc-type-r2-'+name+'.log',fd=fs.openSync(log,'wx'),started=new Date().toISOString();let result;
+ try{result=cp.spawnSync('bun',['--no-env-file',...args],{cwd:path.resolve(root,cwd),env:{...env,...extra},stdio:['ignore',fd,fd],windowsHide:true})}finally{fs.closeSync(fd)}
+ verify();rows.push({name,exit:result.status,error:result.error?.message,started,finished:new Date().toISOString(),log});fs.writeFileSync('.cache/pinta-39fc-type-r2-gates.json',JSON.stringify(rows,null,2)+'\n');console.log(JSON.stringify(rows.at(-1)));if(result.status!==0){process.exitCode=1;break}
+}

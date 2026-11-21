@@ -94,6 +94,12 @@ export type PythonFrameCommand = {
    * como o teclado faria: o quadro despacha o KeyboardEvent no desenho (que sobe até a janela).
    */
   | { type: 'key'; key: string; down: boolean }
+  /**
+   * A aba Investigar pausa (`on`) ou continua o programa na troca de quadro, e avança 1 quadro
+   * (`step`), pelo `framePause.ts` do quadro. O programa sem tela recusa (não tem quadros).
+   */
+  | { type: 'pause'; on: boolean }
+  | { type: 'step' }
 )
 export type PythonFrameMessage = {
   protocol: 1
@@ -111,6 +117,8 @@ export type PythonFrameMessage = {
       type: 'perf'
       slice: { fps: number; frameMsAvg: number; frameMsMax: number; canvas: boolean }
     }
+  /** O programa parou no quadro `frame` (os quadros pintados desde o começo). */
+  | { type: 'pause'; held: boolean; frame: number }
   | {
       type: 'ack'
       commandId: number

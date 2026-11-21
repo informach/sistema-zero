@@ -60,6 +60,33 @@ def _tick_saved_files():
         saved.tick()
 
 
+#: O pedido curto de quem espera com o programa pausado pela aba Investigar do Estúdio (o mesmo
+#: do Pygame Zero e da Raylib, framePause.ts do quadro).
+HOLD_REQUEST = '{"hold":true}'
+
+
+def _transport_text(raw):
+    result = _transport(raw)
+    if not isinstance(result, str):
+        from pyodide.ffi import run_sync
+        result = run_sync(result)
+    if len(result) > 128_000:
+        raise RuntimeError('Turtle response exceeds the limit')
+    return result
+
+
+def _hold(response):
+    """O Estúdio pausou o programa nesta troca com o navegador: ele espera aqui, sem andar.
+
+    No Turtle a pausa vale na próxima resposta (o desenho parado não pinta quadro nenhum). A cada
+    resposta com hold, o ponto de checagem roda (é ele que responde a leitura dos valores) e o
+    pedido curto vai de novo; a resposta sem hold continua o programa."""
+    while response.get('hold') is True:
+        if _activity_checkpoint is not None:
+            _activity_checkpoint()
+        response = json.loads(_transport_text(HOLD_REQUEST))
+
+
 def _exchange(operations, query=None):
     _tick_saved_files()
     if _transport is None:
@@ -67,13 +94,8 @@ def _exchange(operations, query=None):
     raw = '{"version":1,"operations":[' + ','.join(operations) + '],"query":' + _encode(query) + '}'
     if len(raw) > LIMITS['requestBytes']:
         raise RuntimeError('A atualização Turtle excedeu o limite de bytes')
-    result = _transport(raw)
-    if not isinstance(result, str):
-        from pyodide.ffi import run_sync
-        result = run_sync(result)
-    if len(result) > 128_000:
-        raise RuntimeError('Turtle response exceeds the limit')
-    response = json.loads(result)
+    response = json.loads(_transport_text(raw))
+    _hold(response)
     if response.get('error'):
         if isinstance(response['error'], dict) and response['error'].get('kind') == 'image':
             raise TclError(response['error']['message'])

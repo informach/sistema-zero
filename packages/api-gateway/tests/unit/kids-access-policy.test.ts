@@ -71,6 +71,10 @@ describe('áreas separadas no servidor', () => {
       '/hub/internal/showcase-thread-studio/prepare',
       '/hub/internal/showcase-thread-studio-standalone',
       '/hub/internal/showcase-thread-studio-standalone/prepare',
+      '/hub/internal/showcase-thread-studio/update',
+      '/hub/internal/showcase-thread-studio-standalone/update',
+      '/hub/internal/showcase-thread-studio/touch',
+      '/hub/internal/showcase-source',
     ]) {
       expect(kidsMayAccess(student, path, 'POST', 'andre')).toBe(true)
       expect(kidsMayAccess(student, path, 'DELETE', 'andre')).toBe(false)
@@ -81,6 +85,8 @@ describe('áreas separadas no servidor', () => {
       '/hub/internal/showcase-thread-studio/prepare/retire',
       '/hub/internal/showcase-thread-studio-standalone/prepare/extra',
       '/hub/internal/showcase-thread-studio-standalone/retire',
+      '/hub/internal/showcase-thread-studio/update/extra',
+      '/hub/internal/showcase-source/other',
     ])
       expect(kidsMayAccess(student, path, 'POST', 'andre')).toBe(false)
   })

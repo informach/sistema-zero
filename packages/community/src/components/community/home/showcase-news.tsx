@@ -5,6 +5,7 @@ import {
   collectAuthorIds,
   redactAuthors,
 } from '@sistemazero/member-shell/lib/hub-redact'
+import { showcaseUpdatedLabel } from '@sistemazero/member-shell/lib/showcase-updated'
 import { Play } from 'lucide-react'
 import Link from 'next/link'
 import type { HubPage, HubThreadView } from '@/lib/types'
@@ -88,6 +89,11 @@ export async function ShowcaseNews({ viewerId }: { viewerId: string | null }) {
                       ? 'ainda sem jogadas'
                       : `${plays} ${plays === 1 ? 'jogada' : 'jogadas'}`}
                   </span>
+                  {game.gameUpdatedAt ? (
+                    <span className="text-[0.85rem] text-muted-foreground">
+                      {showcaseUpdatedLabel(game)}
+                    </span>
+                  ) : null}
                   {game.authorJourney ? <StageLine badge={game.authorJourney} /> : null}
                   <div className="mt-auto pt-2.5">
                     {game.playId ? (

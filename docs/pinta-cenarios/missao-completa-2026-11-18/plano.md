@@ -136,6 +136,19 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   e verificados. Passaram novamente 22 casos Pygame/Pinta e 88 compartilhados
   no guest Linux exato. A nova política deve estar empacotada no leitor de
   rollback antes de qualquer ativação; o ciclo autenticado continua pendente.
+  A integração seguinte incorpora o remoto publicado 39fc593c3, conservando
+  pausa Python e republicação no mesmo link. A CI desse remoto revelou uma
+  assinatura herdada de `forEach` incompatível com ESNext: a falha foi reproduzida
+  localmente e corrigida somente no tipo, com JavaScript idêntico em TypeScript
+  e Bun. A regressão compila o consumidor nos dois alvos e impede prometer
+  operações ausentes no snapshot. A primeira rodada passou em 20 gates e falhou
+  no Members; os 16 controles posteriores passaram, cobrindo as 29 categorias,
+  com 35 ensaios de navegador, 12 Pinta/Estúdio, 22 Pygame/Pinta e 90 Python.
+  O timeout de publicação passou a usar IO HTTP real, mantendo todos os prazos.
+  Ver `qa/integracao-39fc-2026-11-20/` e `qa/publicacao-timeout-2026-11-20/`.
+  O perfil combinado é da629a58…; o guest Windows 5667348a… manteve os 126 arquivos
+  idênticos após a correção de tipos. Esta fonte exige sua própria qualificação
+  Linux e CI geral. Não houve ativação de distribuição, política ou gravador.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

@@ -7,6 +7,7 @@ import type * as Monaco from 'monaco-editor'
 import type { ProjectTree } from '../../core/proProject'
 import type { ProWorkspaceLanguage, ProWorkspaceQueries } from '../../modes/pro/workspace/language'
 import { inferLanguage } from '../../monaco/languages'
+import { sameTextExceptLineBreaks } from '../../monaco/lineBreaks'
 import {
   buildMonacoModelPath,
   findMonacoModel,
@@ -20,11 +21,7 @@ import type { ProTextEdit } from '../../monaco/pro/languageService'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
 import { studioTutorSourceHash } from '../../studio/tutorSafety'
 import { createPythonLanguageClient, PythonLanguageStale } from './client'
-import {
-  pythonDocumentCoordinates,
-  pythonDocumentOffset,
-  samePythonEditorText,
-} from './editorCoordinates'
+import { pythonDocumentCoordinates, pythonDocumentOffset } from './editorCoordinates'
 import { type PythonEditorAnswer, registerPythonEditorProviders } from './providers'
 
 type Model = Monaco.editor.ITextModel
@@ -98,7 +95,7 @@ export function attachPythonEditorLanguage(input: {
       const path = pathOf(model),
         value = model.getValue()
       const saved = tree[path]
-      if (saved?.kind === 'file' && samePythonEditorText(saved.content, value)) continue
+      if (saved?.kind === 'file' && sameTextExceptLineBreaks(saved.content, value)) continue
       if (expected) throw new PythonLanguageStale('O código mudou. Abra a operação novamente.')
       result[path] = { kind: 'file', content: value }
     }
@@ -406,7 +403,7 @@ export function attachPythonEditorLanguage(input: {
         }
         const file = tree[path]
         monaco.editor.setModelMarkers(model, MARKER_OWNER, [])
-        if (file?.kind === 'file' && !samePythonEditorText(file.content, model.getValue()))
+        if (file?.kind === 'file' && !sameTextExceptLineBreaks(file.content, model.getValue()))
           synchronizeMonacoModel(model, () => model.setValue(file.content))
       }
       const active = editor.getModel()

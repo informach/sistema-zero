@@ -45,8 +45,10 @@ function IconStep(): JSX.Element {
  *
  * No Python clássico (lote 7): o programa recomeça no modo de observação, os valores vêm do
  * observador das missões (a cada quadro; no programa sem tela, no fim) e o caminho até o erro
- * vem do traceback, com o arquivo e a linha de cada passo. Pausar no Python chega com a próxima
- * versão da distribuição do runtime (o quadro dele precisa da pausa).
+ * vem do traceback, com o arquivo e a linha de cada passo. Pausar e Avançar 1 quadro (lote 11)
+ * valem no programa que desenha na tela, pelo quadro do Python que conhece a pausa
+ * (`runPythonInvestigation`); com o quadro publicado antes dela, a aba diz que o Python ainda não
+ * pausa pelo Estúdio.
  */
 export function InvestigatePanel(): JSX.Element {
   const t = useInvestigateT()

@@ -37,7 +37,7 @@ function pagina(
       const url = `http://127.0.0.1/${caminho.replace(/^\//, '')}`
       const r = await rotas(
         new URL(url),
-        new Request(url, corpo ? { method: 'POST', body: corpo } : {}),
+        new Request(url, corpo ? { method: 'POST', body: new Blob([corpo.slice()]) } : {}),
       )
       if (!r) throw Error(`rota ausente: ${caminho}`)
       return r

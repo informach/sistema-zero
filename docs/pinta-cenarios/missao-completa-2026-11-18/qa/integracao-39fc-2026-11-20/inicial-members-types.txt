@@ -1,0 +1,85 @@
+../studio/src/ir/programmingReferences.ts(402,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(412,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(422,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(432,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(502,7): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(505,7): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(515,7): error TS2322: Type 'ReadonlyNames<string> | SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+  Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+    Types of property 'forEach' are incompatible.
+      Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+        Types of parameters 'callback' and 'callbackfn' are incompatible.
+          Types of parameters 'set' and 'set' are incompatible.
+            Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(529,7): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(630,7): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(1028,5): error TS2322: Type 'Record<Canvas3DSymbolKind, SymbolNames<string>>' is not assignable to type 'Readonly<Record<Canvas3DSymbolKind, ReadonlyNames<string>>>'.
+  The types of 'scene3d.forEach' are incompatible between these types.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(1029,5): error TS2322: Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/programmingReferences.ts(1209,9): error TS2345: Argument of type 'SymbolNames<string>' is not assignable to parameter of type 'ReadonlyNames<string>'.
+  Types of property 'forEach' are incompatible.
+    Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
+      Types of parameters 'callback' and 'callbackfn' are incompatible.
+        Types of parameters 'set' and 'set' are incompatible.
+          Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/symbolNames.ts(71,3): error TS2416: Property 'forEach' in type 'SymbolNames<T>' is not assignable to the same property in base type 'ReadonlyNames<T>'.
+  Type '(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any) => void'.
+    Types of parameters 'callback' and 'callbackfn' are incompatible.
+      Types of parameters 'set' and 'set' are incompatible.
+        Type 'ReadonlyNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more.
+../studio/src/ir/symbolNames.ts(73,44): error TS2345: Argument of type 'this' is not assignable to parameter of type 'ReadonlyNames<T>'.
+  Type 'SymbolNames<T>' is not assignable to type 'ReadonlyNames<T>'.
+    Types of property 'forEach' are incompatible.
+      Type '(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any) => void'.
+        Types of parameters 'callback' and 'callbackfn' are incompatible.
+          Types of parameters 'set' and 'set' are incompatible.
+            Type 'ReadonlyNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more.

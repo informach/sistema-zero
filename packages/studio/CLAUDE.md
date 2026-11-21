@@ -1,5 +1,26 @@
 # @sistemazero/studio
 
+## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
+
+O adapter do Compartilhar ganhou `status?({project, compare}, signal)` (`StudioShareStatus`,
+exportado), `allowNewPost?` e `unchangedMessage?`; `StudioSharePublishInput` ganhou `keepCover?` e
+`asNewPost?`; `StudioShareResult` ganhou `updated?`. O `publication.update` SAIU (o histórico só
+restaura e desativa; pôr a versão de agora no link é o botão principal).
+- **Topbar**: com `status` dizendo `published`, o botão vira "Atualizar no Mural"
+  (`share.updateAction`; consulta leve `compare: false`, refeita ao trocar de projeto e ao fechar o
+  diálogo).
+- **ShareDialog**: abre pedindo `status({compare: true})`; já publicado vira "Atualizar no Mural dos
+  Criadores" com a descrição, o título e a capa do post (`Cover` `current`, "Manter a capa de
+  agora"), sem rascunho da IA, sem o desafio do mês (fica no mês da 1ª publicação) e com o aviso
+  `share.unchanged` (ou o `unchangedMessage` do host) quando o jogo não mudou, que desliga o
+  "Atualizar". "Publicar como jogo novo" mora num `<details>` "Outras formas de publicar", só com
+  `allowNewPost`. ⚠️ Não use "Mais opções" ali: é o nome do menu ⋯ da barra. Uma atualização
+  mostra sempre a própria tela de sucesso, mesmo com `onPublished`.
+- **ProPublicationHistory**: "Versões do jogo", só restaurar e desativar; aparece também para o
+  jogo clássico (o `playId` vem do `status.history`).
+- Testes: `ShareDialog.test.tsx` (bloco "republicar atualiza"), `Topbar.test.tsx` e
+  `ProPublicationHistory.test.tsx`.
+
 ## Cenários do Pinta nos jogos 2D: correções da revisão (18/11/2026)
 
 O fragmento `map-2d` (blocos "Criar cenário do meu desenho", "Desenhar cenário", "Colidir com

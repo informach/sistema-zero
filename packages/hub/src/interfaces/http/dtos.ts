@@ -24,6 +24,11 @@ const SPACE_STATUS = t.Union([t.Literal('active'), t.Literal('archived')])
 const POSTING_POLICY = t.Union([t.Literal('members'), t.Literal('staff_only')])
 
 const SLUG = t.String({ minLength: 1, maxLength: 120, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' })
+const STUDIO_PROJECT_ID = t.String({
+  minLength: 1,
+  maxLength: 128,
+  pattern: '^[A-Za-z0-9_-]{1,128}$',
+})
 const NAME = t.String({ minLength: 1, maxLength: 200 })
 const VERSION = t.Integer({ minimum: 0 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 5000 }), t.Null()]))
@@ -258,6 +263,12 @@ export const ShowcaseThreadStudioStandaloneBody = t.Object({
   // (um 400 aqui falharia a publicação da criança por causa do desafio).
   challengeKey: t.Optional(t.Union([t.String({ maxLength: 16 }), t.Null()])),
   studioMeta: t.Optional(t.Union([StudioMetaBody, t.Null()])),
+  // Identidade do projeto no Estúdio livre: republicar o mesmo projeto atualiza o post.
+  sourceProjectId: t.Optional(t.Union([STUDIO_PROJECT_ID, t.Null()])),
+  // Link local de publicação antiga (Pro/Python) para adotar o post de antes.
+  adoptPlayId: t.Optional(t.Union([UUID, t.Null()])),
+  // "Publicar como jogo novo" (opção escondida do Estúdio Completo).
+  asNewPost: t.Optional(t.Boolean()),
 })
 
 export const ShowcaseThreadStudioPrepareBody = t.Omit(ShowcaseThreadStudioBody, [
@@ -269,6 +280,33 @@ export const ShowcaseThreadStudioStandalonePrepareBody = t.Omit(
   ShowcaseThreadStudioStandaloneBody,
   ['reservationId', 'playId', 'coverImageUrl'],
 )
+
+/** Atualizar o post do projeto: `playId` é o do post existente; capa ausente/null = mantém. */
+export const ShowcaseThreadStudioUpdateBody = t.Omit(ShowcaseThreadStudioBody, [
+  'reservationId',
+  'snapshotHash',
+])
+export const ShowcaseThreadStudioStandaloneUpdateBody = t.Omit(ShowcaseThreadStudioStandaloneBody, [
+  'reservationId',
+  'snapshotHash',
+  'challengeKey',
+  'asNewPost',
+  'adoptPlayId',
+])
+
+/** Qual projeto o botão Compartilhar consulta (o post volta só se for do próprio ator). */
+export const ShowcaseSourceBody = t.Union([
+  t.Object({ kind: t.Literal('lesson'), lessonId: UUID, blockId: UUID }),
+  t.Object({
+    kind: t.Literal('free'),
+    spaceSlug: SLUG,
+    projectId: STUDIO_PROJECT_ID,
+    adoptPlayId: t.Optional(t.Union([UUID, t.Null()])),
+  }),
+  t.Object({ kind: t.Literal('live'), workspaceId: UUID }),
+])
+
+export const ShowcaseTouchBody = t.Object({ playId: UUID })
 
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({

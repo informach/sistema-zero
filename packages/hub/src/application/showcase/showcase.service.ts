@@ -145,7 +145,24 @@ export interface CreateStandaloneShowcaseCommand {
   challengeKey?: string | null
   /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix (cosmético). */
   studioMeta?: ThreadStudioMeta | null
+  /**
+   * Id do projeto no Estúdio livre: com ele, republicar o mesmo projeto ATUALIZA o post.
+   * Ausente (cliente antigo) = cada publicação cria um post, como antes.
+   */
+  sourceProjectId?: string | null
+  /** Link local de uma publicação antiga do projeto (Pro/Python) — adoção do post antigo. */
+  adoptPlayId?: string | null
+  /** "Publicar como jogo novo": cria um post e passa a ele o vínculo do projeto. */
+  asNewPost?: boolean
 }
+
+/** Qual projeto o status do botão Compartilhar pergunta (o post vem só do próprio autor). */
+export type ShowcaseSourceQuery =
+  | { kind: 'lesson'; lessonId: string; blockId: string }
+  | { kind: 'free'; spaceSlug: string; projectId: string; adoptPlayId?: string | null }
+  | { kind: 'live'; workspaceId: string }
+
+type PublishMode = 'prepare' | 'finalize' | 'update'
 
 /**
  * Auto-publicação de um post de PROJETO no Mural dos Criadores.
@@ -247,7 +264,7 @@ export class ShowcaseService {
     return outcome
   }
   async prepareFromStudio(actor: Actor, cmd: CreateShowcaseFromStudioCommand) {
-    const result = await this.executeFromStudio(actor, cmd, true)
+    const result = await this.executeFromStudio(actor, cmd, 'prepare')
     if (!('state' in result)) throw new Error('Invalid publication preparation')
     return result
   }
@@ -255,12 +272,19 @@ export class ShowcaseService {
     actor: Actor,
     cmd: CreateShowcaseFromStudioCommand,
   ): Promise<{ thread: ThreadView; deduped: boolean }> {
-    const result = await this.executeFromStudio(actor, cmd, false)
-    if ('state' in result) throw new Error('Invalid publication finalization')
+    const result = await this.executeFromStudio(actor, cmd, 'finalize')
+    if ('state' in result || 'updated' in result)
+      throw new Error('Invalid publication finalization')
+    return result
+  }
+  /** Republicar o mesmo projeto da aula: atualiza o post (mesmas guardas da criação). */
+  async updateFromStudio(actor: Actor, cmd: CreateShowcaseFromStudioCommand) {
+    const result = await this.executeFromStudio(actor, cmd, 'update')
+    if (!('updated' in result)) throw new Error('Invalid publication update')
     return result
   }
   async prepareStandaloneShowcase(actor: Actor, cmd: CreateStandaloneShowcaseCommand) {
-    const result = await this.executeStandaloneShowcase(actor, cmd, true)
+    const result = await this.executeStandaloneShowcase(actor, cmd, 'prepare')
     if (!('state' in result)) throw new Error('Invalid publication preparation')
     return result
   }
@@ -268,9 +292,126 @@ export class ShowcaseService {
     actor: Actor,
     cmd: CreateStandaloneShowcaseCommand,
   ): Promise<{ thread: ThreadView; deduped: boolean }> {
-    const result = await this.executeStandaloneShowcase(actor, cmd, false)
-    if ('state' in result) throw new Error('Invalid publication finalization')
+    const result = await this.executeStandaloneShowcase(actor, cmd, 'finalize')
+    if ('state' in result || 'updated' in result)
+      throw new Error('Invalid publication finalization')
     return result
+  }
+  /** Republicar o mesmo projeto do Estúdio livre ou da oficina: atualiza o post. */
+  async updateStandaloneShowcase(actor: Actor, cmd: CreateStandaloneShowcaseCommand) {
+    const result = await this.executeStandaloneShowcase(actor, cmd, 'update')
+    if (!('updated' in result)) throw new Error('Invalid publication update')
+    return result
+  }
+
+  /**
+   * O post que hoje representa o projeto do próprio ator (ou `null`). Só leitura de
+   * identidade: não publica nada, então não repete as guardas de posse — o post já é
+   * dele. Na aula, sem entrega (inelegível) não há o que compartilhar: `null`.
+   */
+  async showcaseSource(actor: Actor, query: ShowcaseSourceQuery) {
+    if (query.kind === 'lesson') {
+      const elig = await this.members.getShowcaseEligibility({
+        userId: actor.userId,
+        accountId: actor.accountId,
+        lessonId: query.lessonId,
+        blockId: query.blockId,
+        privileged: actor.privileged,
+      })
+      if (!elig.eligible) return { thread: null }
+      const found = await this.existingSource(
+        actor,
+        this.lessonSourceKey(actor, elig.courseId, elig.chain ?? query.blockId),
+        { context: this.lessonContext(query.lessonId, query.blockId) },
+      )
+      return { thread: found?.thread ?? null }
+    }
+    if (query.kind === 'live') {
+      const found = await this.existingSource(
+        actor,
+        this.liveSourceKey(actor, query.workspaceId),
+        {},
+      )
+      return { thread: found?.thread ?? null }
+    }
+    const audience: 'adult' | 'kids' = this.adult?.walls.has(query.spaceSlug) ? 'adult' : 'kids'
+    const found = await this.existingSource(
+      actor,
+      this.freeSourceKey(actor, audience, query.projectId),
+      { playId: query.adoptPlayId ?? undefined },
+    )
+    return { thread: found?.thread ?? null }
+  }
+
+  /** Restaurar uma versão antiga do jogo também conta como atualização (selo). */
+  async touchShowcase(actor: Actor, playId: string) {
+    return { touched: await this.threads.touchShowcaseGame(actor.userId, playId, this.clock()) }
+  }
+
+  private sourceKey(actor: Actor, parts: readonly string[]) {
+    return createHash('sha256')
+      .update(canonicalJson(['showcase-source:v1', actor.userId, ...parts]))
+      .digest('hex')
+  }
+  private lessonSourceKey(actor: Actor, courseId: string, chainOrBlock: string) {
+    return this.sourceKey(actor, ['lesson', courseId, chainOrBlock])
+  }
+  private liveSourceKey(actor: Actor, workspaceId: string) {
+    return this.sourceKey(actor, ['live', workspaceId])
+  }
+  private freeSourceKey(actor: Actor, audience: 'adult' | 'kids', projectId: string) {
+    return this.sourceKey(actor, ['free', audience, projectId])
+  }
+  private lessonContext(lessonId: string, blockId: string) {
+    return canonicalJson({ kind: 'lesson', lessonId, blockId })
+  }
+
+  /** Post atual do projeto; adota um post antigo do próprio autor quando ainda não há vínculo. */
+  private async existingSource(
+    actor: Actor,
+    sourceKey: string,
+    adopt: { context?: string; playId?: string },
+  ) {
+    let thread = await this.threads.findShowcaseBySourceKey(sourceKey)
+    if (!thread && adopt.context) {
+      const legacy = await this.threads.findFinalizedReservationThread(actor.userId, adopt.context)
+      if (legacy?.playId)
+        thread = await this.threads.adoptShowcaseSource(actor.userId, legacy.playId, sourceKey)
+    }
+    if (!thread && adopt.playId)
+      thread = await this.threads.adoptShowcaseSource(actor.userId, adopt.playId, sourceKey)
+    if (!thread?.playId || thread.authorId !== actor.userId) return null
+    return { state: 'existing' as const, playId: thread.playId, thread: toThreadView(thread) }
+  }
+
+  private async applyUpdate(
+    actor: Actor,
+    sourceKey: string,
+    input: {
+      playId: string
+      title?: string
+      body: string
+      coverImageUrl: string | null
+      studioMeta: ThreadStudioMeta | null
+    },
+  ) {
+    const result = await this.threads.updateShowcaseThread({
+      authorId: actor.userId,
+      sourceKey,
+      playId: input.playId,
+      ...(input.title ? { title: input.title } : {}),
+      body: input.body,
+      coverImageUrl: input.coverImageUrl,
+      studioMeta: input.studioMeta,
+      now: this.clock(),
+    })
+    if (!result) throw new PostingNotAllowedError('Esta publicação não pode mais ser atualizada')
+    // Sem notificação ao members: atualizar não é publicar de novo (sem XP, marco nem desafio).
+    return {
+      thread: toThreadView(result.thread),
+      previousCoverUrl: result.previousCoverUrl,
+      updated: true as const,
+    }
   }
 
   async adultCommunityAvailable(userId: string, accountId: string): Promise<boolean> {
@@ -589,7 +730,7 @@ export class ShowcaseService {
   private async executeFromStudio(
     actor: Actor,
     cmd: CreateShowcaseFromStudioCommand,
-    prepare: boolean,
+    mode: PublishMode,
   ) {
     actor = { ...actor }
     cmd = structuredClone(cmd)
@@ -657,13 +798,30 @@ export class ShowcaseService {
         audience: elig.audience,
       },
       idempotencyKey,
+      showcaseSourceKey: this.lessonSourceKey(actor, elig.courseId, elig.chain ?? cmd.blockId),
       now: this.clock(),
+    }
+    const sourceKey = candidate.showcaseSourceKey as string
+    if (mode === 'update')
+      return this.applyUpdate(actor, sourceKey, {
+        playId: cmd.playId,
+        title,
+        body,
+        coverImageUrl: cmd.coverImageUrl,
+        studioMeta: candidate.studioMeta ?? null,
+      })
+    const prepare = mode === 'prepare'
+    if (prepare) {
+      const existing = await this.existingSource(actor, sourceKey, {
+        context: this.lessonContext(cmd.lessonId, cmd.blockId),
+      })
+      if (existing) return existing
     }
     const reservation = this.reservationInput(
       actor,
       cmd,
       candidate,
-      canonicalJson({ kind: 'lesson', lessonId: cmd.lessonId, blockId: cmd.blockId }),
+      this.lessonContext(cmd.lessonId, cmd.blockId),
     )
     if (prepare)
       return this.reservationView(
@@ -706,7 +864,7 @@ export class ShowcaseService {
   private async executeStandaloneShowcase(
     actor: Actor,
     cmd: CreateStandaloneShowcaseCommand,
-    prepare: boolean,
+    mode: PublishMode,
   ) {
     actor = { ...actor }
     cmd = structuredClone(cmd)
@@ -738,7 +896,8 @@ export class ShowcaseService {
         ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
         workspaceId: cmd.liveWorkspace.id,
         revision: cmd.liveWorkspace.revision,
-        playId: cmd.playId,
+        // Na atualização o token prova a revisão nova; o post mantém o próprio playId.
+        playId: cmd.liveWorkspace.playId ?? cmd.playId,
         publicationToken: cmd.liveWorkspace.publicationToken,
       })
       owns = eligibility.eligible && (audience !== 'adult' || eligibility.audience === 'adult')
@@ -777,7 +936,9 @@ export class ShowcaseService {
     // Tag do desafio: formato + mês CORRENTE (SP, recomputado aqui — o corpo não
     // dita o mês) + posse do Clube. Reprovada → post SEM a tag (drop SILENCIOSO:
     // a publicação da criança nunca falha por causa do desafio).
+    // O desafio é do mês da 1ª publicação: atualizar nunca entra, sai ou troca de mês.
     const challengeKey =
+      mode !== 'update' &&
       wantsChallenge &&
       cmd.challengeKey &&
       CHALLENGE_KEY_RE.test(cmd.challengeKey) &&
@@ -857,7 +1018,30 @@ export class ShowcaseService {
       ],
       studioMeta: sanitizeStudioMeta(cmd.studioMeta),
       idempotencyKey,
+      showcaseSourceKey: cmd.liveWorkspace
+        ? this.liveSourceKey(actor, cmd.liveWorkspace.id)
+        : cmd.sourceProjectId
+          ? this.freeSourceKey(actor, audience, cmd.sourceProjectId)
+          : null,
       now: this.clock(),
+    }
+    const sourceKey = candidate.showcaseSourceKey
+    if (mode === 'update') {
+      if (!sourceKey) throw new ValidationError('Informe o projeto para atualizar a publicação.')
+      return this.applyUpdate(actor, sourceKey, {
+        playId: cmd.playId,
+        title,
+        body,
+        coverImageUrl,
+        studioMeta: candidate.studioMeta ?? null,
+      })
+    }
+    const prepare = mode === 'prepare'
+    if (prepare && sourceKey && !cmd.asNewPost) {
+      const existing = await this.existingSource(actor, sourceKey, {
+        playId: cmd.adoptPlayId ?? undefined,
+      })
+      if (existing) return existing
     }
     const reservation = this.reservationInput(
       actor,

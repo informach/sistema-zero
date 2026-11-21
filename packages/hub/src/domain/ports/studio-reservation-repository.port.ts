@@ -19,3 +19,5 @@ export type StudioReservationOutcome =
   | { state: 'reserved'; reservationId: string; playId: string; snapshotHash: string }
   | { state: 'finalized'; thread: Thread; deduped: true }
   | { state: 'retired'; playId: string; thread: Thread | null }
+  /** O projeto já tem post: a próxima publicação ATUALIZA este, sem reserva. */
+  | { state: 'existing'; playId: string; thread: Thread }

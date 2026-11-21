@@ -18,6 +18,7 @@ import type {
   ListCommentsOpts,
   ListThreadsOpts,
   ThreadRepository,
+  UpdateShowcaseThreadInput,
 } from '../../../domain/ports/thread-repository.port'
 import type { Comment, Thread } from '../../../domain/thread/thread'
 import type { Database } from './db'
@@ -38,6 +39,9 @@ import {
 } from './schema'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
+
+/** Estados em que um post de vitrine ainda representa o projeto (pode ser atualizado). */
+const LINKABLE_STATUSES: Thread['status'][] = ['visible', 'hidden', 'pending']
 
 export async function lockStudioAccount(tx: Transaction, accountId: string) {
   await tx.execute(
@@ -76,6 +80,7 @@ const toThread = (r: ThreadRow): Thread => ({
   playsCount: r.playsCount,
   challengeKey: r.challengeKey,
   studioMeta: r.studioMeta ?? null,
+  gameUpdatedAt: r.gameUpdatedAt ?? null,
   lastActivityAt: r.lastActivityAt,
   createdAt: r.createdAt,
   editedAt: r.editedAt,
@@ -172,6 +177,20 @@ export class DrizzleThreadRepository implements ThreadRepository {
   }
 
   private async createShowcaseInTransaction(tx: Transaction, input: CreateShowcaseThreadInput) {
+    // O post novo passa a representar o projeto: quem tinha a chave vira post comum
+    // ("Publicar como jogo novo", ou duas primeiras publicações em corrida).
+    if (input.showcaseSourceKey) {
+      const [holder] = await tx
+        .select({ key: threads.showcaseIdempotencyKey })
+        .from(threads)
+        .where(eq(threads.showcaseSourceKey, input.showcaseSourceKey))
+        .limit(1)
+      if (holder && holder.key !== input.idempotencyKey)
+        await tx
+          .update(threads)
+          .set({ showcaseSourceKey: null })
+          .where(eq(threads.showcaseSourceKey, input.showcaseSourceKey))
+    }
     // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
     // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
     const inserted = await tx
@@ -197,6 +216,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
         challengeKey: input.challengeKey ?? null,
         studioMeta: input.studioMeta ?? null,
         showcaseIdempotencyKey: input.idempotencyKey,
+        showcaseSourceKey: input.showcaseSourceKey ?? null,
         lastActivityAt: input.now,
         createdAt: input.now,
         editedAt: null,
@@ -696,6 +716,120 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return row ? toThread(row) : null
   }
 
+  async findShowcaseBySourceKey(sourceKey: string): Promise<Thread | null> {
+    const [row] = await this.db
+      .select()
+      .from(threads)
+      .where(
+        and(
+          eq(threads.showcaseSourceKey, sourceKey),
+          eq(threads.isShowcase, true),
+          inArray(threads.status, LINKABLE_STATUSES),
+        ),
+      )
+      .limit(1)
+    return row ? toThread(row) : null
+  }
+
+  async adoptShowcaseSource(
+    authorId: string,
+    playId: string,
+    sourceKey: string,
+  ): Promise<Thread | null> {
+    try {
+      const [row] = await this.db
+        .update(threads)
+        .set({ showcaseSourceKey: sourceKey })
+        .where(
+          and(
+            eq(threads.authorId, authorId),
+            eq(threads.playId, playId),
+            eq(threads.isShowcase, true),
+            inArray(threads.status, LINKABLE_STATUSES),
+            sql`${threads.showcaseSourceKey} is null`,
+          ),
+        )
+        .returning()
+      return row ? toThread(row) : null
+    } catch (error) {
+      // Outro post já representa o projeto (corrida): ele vence, este fica como está.
+      if (isUniqueViolation(error)) return this.findShowcaseBySourceKey(sourceKey)
+      throw error
+    }
+  }
+
+  async findFinalizedReservationThread(authorId: string, context: string): Promise<Thread | null> {
+    const [row] = await this.db
+      .select({ thread: threads })
+      .from(studioPublicationReservations)
+      .innerJoin(threads, eq(threads.id, studioPublicationReservations.threadId))
+      .where(
+        and(
+          eq(studioPublicationReservations.authorId, authorId),
+          eq(studioPublicationReservations.context, context),
+          eq(studioPublicationReservations.phase, 'finalized'),
+          eq(threads.isShowcase, true),
+          inArray(threads.status, LINKABLE_STATUSES),
+        ),
+      )
+      .orderBy(desc(threads.createdAt))
+      .limit(1)
+    return row ? toThread(row.thread) : null
+  }
+
+  async updateShowcaseThread(
+    input: UpdateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; previousCoverUrl: string | null } | null> {
+    return this.db.transaction(async (tx) => {
+      const [current] = await tx
+        .select()
+        .from(threads)
+        .where(
+          and(
+            eq(threads.showcaseSourceKey, input.sourceKey),
+            eq(threads.authorId, input.authorId),
+            eq(threads.playId, input.playId),
+            eq(threads.isShowcase, true),
+            inArray(threads.status, LINKABLE_STATUSES),
+          ),
+        )
+        .for('update')
+        .limit(1)
+      if (!current) return null
+      const set: Partial<typeof threads.$inferInsert> = {
+        body: input.body,
+        studioMeta: input.studioMeta,
+        gameUpdatedAt: input.now,
+        version: current.version + 1,
+      }
+      if (input.title) set.title = input.title
+      if (input.coverImageUrl) set.coverImageUrl = input.coverImageUrl
+      const [row] = await tx.update(threads).set(set).where(eq(threads.id, current.id)).returning()
+      if (!row) return null
+      const replaced =
+        input.coverImageUrl && current.coverImageUrl !== input.coverImageUrl
+          ? current.coverImageUrl
+          : null
+      return { thread: toThread(row), previousCoverUrl: replaced }
+    })
+  }
+
+  async touchShowcaseGame(authorId: string, playId: string, now: Date): Promise<boolean> {
+    const rows = await this.db
+      .update(threads)
+      .set({ gameUpdatedAt: now })
+      .where(
+        and(
+          eq(threads.authorId, authorId),
+          eq(threads.playId, playId),
+          eq(threads.isShowcase, true),
+          inArray(threads.status, LINKABLE_STATUSES),
+        ),
+      )
+      .returning({ id: threads.id })
+    return rows.length > 0
+  }
+
   async listByAuthor(authorId: string, limit: number): Promise<Thread[]> {
     // Só VISÍVEIS do próprio autor (usa o threads_author_status_idx), mais recentes
     // primeiro. Alimenta o sino "novas respostas nas suas conversas" — o app diffa o
@@ -842,6 +976,9 @@ export class DrizzleThreadRepository implements ThreadRepository {
           .limit(1)
         return existing ? 'invalid_state' : 'not_found'
       }
+      if ((status === 'deleted' || status === 'rejected') && changed.showcaseSourceKey)
+        // Post terminal deixa de representar o projeto: a próxima publicação cria um novo.
+        await tx.update(threads).set({ showcaseSourceKey: null }).where(eq(threads.id, changed.id))
       if ((status === 'deleted' || status === 'rejected') && changed.isShowcase && changed.playId) {
         if (reservation)
           await tx

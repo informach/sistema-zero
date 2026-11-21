@@ -205,42 +205,27 @@ export function PythonEditorPreview() {
     // O programa sem tela só responde no fim: perguntar enquanto ele roda prenderia a sonda.
     if (drawsOnCanvas === false && !completedNow) return
     let gone = false
-    void import('../../components/devtools/pythonInvestigation').then(async (help) => {
-      const { investigationWindowFor } = await import('../../state/devtools')
-      const names = help.pythonTopLevelNames(entrySource)
-      const window = investigationWindowFor(ui)
-      const read = async () => {
-        const values: { name: string; text: string }[] = []
-        for (const name of names) {
-          if (gone) return
-          const result = await controller.observe({ type: 'value', path: name })
-          const observed = result.observation.type === 'value' ? result.observation.observed : null
-          if (observed?.found) values.push({ name, text: help.pythonValueText(observed.value) })
-        }
-        if (!gone)
-          window.getState().receive({
-            frame: null,
-            paused: false,
-            canPause: false,
-            pauseLater: false,
-            values,
-            error: null,
-          })
-      }
-      // Rodando, a leitura volta a cada meio segundo; terminado, uma vez (os valores do fim).
-      while (!gone) {
-        try {
-          await read()
-        } catch {
-          // A execução acabou no meio da leitura (Parar, erro): a próxima execução lê de novo.
-          return
-        }
-        if (completedNow) return
-        await new Promise((resolve) => setTimeout(resolve, 500))
-      }
+    let stop: (() => void) | null = null
+    void Promise.all([
+      import('../../components/devtools/pythonInvestigation'),
+      import('../../state/devtools'),
+    ]).then(([help, devtools]) => {
+      if (gone) return
+      const window = devtools.investigationWindowFor(ui)
+      // Os valores e Pausar e Avançar 1 quadro (no programa que desenha na tela, pelo quadro do
+      // Python que conhece a pausa).
+      stop = help.runPythonInvestigation({
+        controller,
+        names: help.pythonTopLevelNames(entrySource),
+        draws: drawsOnCanvas === true,
+        completed: completedNow,
+        receive: (reading) => window.getState().receive(reading),
+        setSender: (sender) => devtools.setDevtoolsSender(ui, sender),
+      })
     })
     return () => {
       gone = true
+      stop?.()
     }
   }, [investigatedRun, completedNow, drawsOnCanvas, entrySource, ui, runId])
   // O erro que parou o programa vira o caminho até o erro (os passos do traceback do projeto).

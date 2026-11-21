@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-21T01:29:30.375Z",
+  "exit": null,
+  "error": "ETIMEDOUT",
+  "signal": "SIGTERM",
+  "originalTestUnmodified": true,
+  "log": ".cache/pinta-39fc-python-publication-file-alone.log"
+}

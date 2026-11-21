@@ -24,6 +24,8 @@ import type { EditableStudioProject as Project } from '../core/editableProject'
 /** Links devolvidos pela publicação (o que a tela de sucesso mostra). */
 export interface StudioShareResult {
   publicationId?: string
+  /** `true` quando a publicação ATUALIZOU o post que o projeto já tinha no Mural. */
+  updated?: boolean
   /** Página do Mural onde o projeto aparece (fechado, só comunidade). Opcional. */
   muralUrl?: string
   /** Página PÚBLICA de jogar (sem login), só o jogo + título. Opcional. */
@@ -61,6 +63,30 @@ export interface StudioSharePublishInput {
    * gate REAL (posse + mês) é do servidor, com drop silencioso da tag.
    */
   challengeKey?: string
+  /** `true` = manter a capa que o post já tem (só ao atualizar). Exclusivo com as outras capas. */
+  keepCover?: boolean
+  /** "Publicar como jogo novo": cria outro post em vez de atualizar o que o projeto tem. */
+  asNewPost?: boolean
+}
+
+/**
+ * O que o host sabe do post do projeto no Mural. `unchanged` só vem quando o host
+ * comparou o jogo (pedido com `compare`): `true` = nada mudou desde a última publicação.
+ */
+export interface StudioShareStatus {
+  published: boolean
+  playId?: string
+  muralUrl?: string
+  playUrl?: string
+  title?: string
+  description?: string
+  coverUrl?: string | null
+  /** O post foi ocultado pela equipe: a atualização segue valendo, mas ele não aparece. */
+  hidden?: boolean
+  gameUpdatedAt?: string | null
+  /** O link guarda versões (o histórico aparece no diálogo). */
+  history?: boolean
+  unchanged?: boolean
 }
 
 /**
@@ -72,10 +98,6 @@ export interface StudioShareAdapter {
   proVerifiedCover?: boolean
   publication?: {
     get(playId: string, signal?: AbortSignal): Promise<StudioPublication | null>
-    update(
-      input: { playId: string; requestId: string; expectedVersion: number; project: Project },
-      signal?: AbortSignal,
-    ): Promise<StudioPublication>
     activate(
       input: {
         playId: string
@@ -87,6 +109,22 @@ export interface StudioShareAdapter {
       signal?: AbortSignal,
     ): Promise<StudioPublication>
   }
+  /**
+   * O post que o projeto já tem no Mural. Presente → o botão vira "Atualizar no Mural"
+   * quando já publicado, e o diálogo abre com a descrição e a capa de agora. `compare`
+   * pede ao host para dizer se o jogo mudou (envia o projeto; mais caro).
+   */
+  status?(
+    input: { project: Project; compare: boolean },
+    signal?: AbortSignal,
+  ): Promise<StudioShareStatus>
+  /** Mostra a opção escondida "Publicar como jogo novo" (Estúdio Completo). */
+  allowNewPost?: boolean
+  /**
+   * Frase quando o jogo não mudou. Na aula o que vai ao Mural é o ENVIO, então a frase
+   * pede para enviar a nova versão à equipe primeiro.
+   */
+  unchangedMessage?: string
   /**
    * DESAFIO do mês (game jam): presente → o ShareDialog mostra o checkbox
    * "🏆 Participar do Desafio: <title>"; marcado, o publish leva `challengeKey`.

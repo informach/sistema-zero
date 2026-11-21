@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { canonicalJson } from '../creations/content-fingerprint'
 import {
+  isStudioClassicPublication,
+  type StudioClassicPublication,
+  type StudioClassicPublishedRevision,
+} from './classic-publication'
+import {
   isStudioProPublication,
   isStudioPublicationId,
   STUDIO_PRO_PUBLICATION_LIMITS,
@@ -151,14 +156,22 @@ export const StudioPythonPublicationSchema = z
       context.addIssue({ code: 'custom', message: 'A revisão ativa não pertence à publicação.' })
   })
 export type StudioPythonPublication = z.infer<typeof StudioPythonPublicationSchema>
-export type StudioPublication = StudioProPublication | StudioPythonPublication
+export type StudioPublication =
+  | StudioProPublication
+  | StudioPythonPublication
+  | StudioClassicPublication
 export type StudioPublishedRevision =
   | StudioProPublication['revisions'][number]
   | StudioPythonPublishedRevision
+  | StudioClassicPublishedRevision
 
 export function isStudioPythonPublication(value: unknown): value is StudioPythonPublication {
   return StudioPythonPublicationSchema.safeParse(value).success
 }
 export function isStudioPublication(value: unknown): value is StudioPublication {
-  return isStudioProPublication(value) || isStudioPythonPublication(value)
+  return (
+    isStudioProPublication(value) ||
+    isStudioPythonPublication(value) ||
+    isStudioClassicPublication(value)
+  )
 }
