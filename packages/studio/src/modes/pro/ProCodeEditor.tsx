@@ -5,7 +5,7 @@ import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioTutor } from '../../studio/tutor'
 import { resolveStudioTutorReference } from '../../studio/tutorProContext'
 import { studioTutorSourceHash } from '../../studio/tutorSafety'
-import { readDependencyDeclarations } from './dependencyDeclarations'
+import { dependencyIndexIssue, readDependencyDeclarations } from './dependencyDeclarations'
 import { useProWebContainer } from './ProWebContainerProvider'
 
 // Register the Pro context menu before constructing an editor, within its lazy chunk.
@@ -167,7 +167,7 @@ export function ProCodeEditor(props: MonacoTabsProps) {
           )
         })
         .catch((error: unknown) => {
-          if (active) setIssue(error instanceof Error ? error.message : String(error))
+          if (active) setIssue(dependencyIndexIssue(error))
         })
         .finally(() => {
           if (active) setIndexing(false)
