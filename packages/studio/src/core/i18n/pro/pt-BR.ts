@@ -175,7 +175,7 @@ export const ptBR: Record<string, string> = {
   'pro.showWhitespace': 'Mostrar espaços',
   'pro.back': 'Voltar para onde eu estava',
   'pro.materialsCommand': 'Trazer materiais',
-  'pro.recoverCommand': 'Recuperar arquivos e materiais',
+  'pro.recoverCommand': 'Histórico do projeto',
   'pro.insertExample': 'Inserir exemplo: {label}',
   'pro.backToCode': 'Voltar ao código',
   'pro.cancel': 'Cancelar',

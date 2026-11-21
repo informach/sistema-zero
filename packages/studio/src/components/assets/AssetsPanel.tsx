@@ -610,7 +610,7 @@ export function AssetsPanel({
           setMaterialNotice(
             receipt.status === 'pending'
               ? 'Material removido; falta guardar neste aparelho. A recuperação continua disponível nesta sessão.'
-              : 'Material removido. Use Ferramentas → Recuperar arquivos e materiais no editor para desfazer.',
+              : 'Material removido. Para desfazer, abra o Histórico do projeto (menu Mais do editor).',
           )
           setPendingMaterialSave(
             receipt.status === 'pending'

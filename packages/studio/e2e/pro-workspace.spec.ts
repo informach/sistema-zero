@@ -357,17 +357,54 @@ test('updates language and removes obsolete markers when an open file changes ex
   })
   await page.getByRole('button', { name: 'Mais', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
-  await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
+  await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await expect(page.getByRole('treeitem', { name: 'src/closed.js', exact: true })).toBeVisible()
   await page
-    .getByRole('dialog', { name: 'Recuperar arquivos e materiais' })
+    .getByRole('dialog', { name: 'Histórico do projeto' })
     .getByRole('button', { name: /Fechar/ })
     .click()
   expect(await inspect('src/closed.js')).toMatchObject({
     id: original.id,
     language: 'sz-pro-javascript',
   })
+  expect(errors).toEqual([])
+})
+
+// Proposta aprovada em 21/11/2026: o Histórico do projeto guarda a versão de antes de cada
+// operação com arquivos, compara com agora e volta para ela pelo caminho das operações.
+test('the project history keeps the version before an operation, compares and goes back', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?historico`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Opções de src/closed.ts' }).click()
+  await page.getByRole('menuitem', { name: 'Mudar o nome' }).click()
+  const field = page.getByLabel('Renomear closed.ts')
+  await field.fill('src/fechado.ts')
+  await field.press('Enter')
+  await page.getByRole('button', { name: 'Aplicar mudança', exact: true }).click()
+  await expect(page.getByRole('treeitem', { name: 'src/fechado.ts', exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
+  await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Histórico do projeto' })
+  await expect(dialog).toContainText('As versões ficam guardadas neste computador.')
+  // A versão de antes da operação: a mais recente (se nada mudou desde o Rodar, é a do Rodar; o
+  // histórico não repete versão igual).
+  await dialog.getByRole('button', { name: 'Ver mudanças', exact: true }).first().click()
+  await expect(dialog).toContainText('À esquerda, esta versão; à direita, o projeto agora.')
+  await expect(dialog.getByRole('combobox', { name: 'Arquivo para comparar' })).toContainText(
+    'src/closed.ts',
+  )
+  await dialog.getByRole('button', { name: 'Voltar para esta versão', exact: true }).click()
+  await expect(page.getByRole('treeitem', { name: 'src/closed.ts', exact: true })).toBeVisible()
+  await expect(page.getByRole('treeitem', { name: 'src/fechado.ts', exact: true })).toHaveCount(0)
   expect(errors).toEqual([])
 })
 
@@ -467,10 +504,10 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await expect(page.getByLabel('Buffers da sessão')).toContainText('./settings')
   await page.getByRole('button', { name: 'Mais', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
-  await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
+  await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await page
-    .getByRole('dialog', { name: 'Recuperar arquivos e materiais' })
+    .getByRole('dialog', { name: 'Histórico do projeto' })
     .getByRole('button', { name: /Fechar/ })
     .click()
   await expect(page.getByRole('treeitem', { name: 'src/config.ts' })).toBeVisible()

@@ -172,7 +172,7 @@ export const en: Record<string, string> = {
   'pro.showWhitespace': 'Show spaces',
   'pro.back': 'Back to where I was',
   'pro.materialsCommand': 'Bring materials',
-  'pro.recoverCommand': 'Recover files and materials',
+  'pro.recoverCommand': 'Project history',
   'pro.insertExample': 'Insert example: {label}',
   'pro.backToCode': 'Back to the code',
   'pro.cancel': 'Cancel',

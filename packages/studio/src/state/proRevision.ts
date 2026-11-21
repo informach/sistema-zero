@@ -16,6 +16,7 @@ import {
 import { buildProAssetBundle } from '../core/proAssets'
 import { digestProAssistance, getProAssistance } from '../core/proAssistance'
 import type { ProjectTree } from '../core/proProject'
+import { proHistoryRecorder } from './proHistoryRecorder'
 import { flushProjectOperations, projectPersistence } from './projectOperations'
 import { listProApplications, PRO_APPLICATION_LIMITS } from './projectStorageCoordinator'
 import {
@@ -353,6 +354,14 @@ async function applyProDocument(
       )
   }
   validateApplication(input)
+  // O Histórico do projeto guarda a árvore de ANTES (proposta aprovada em 21/11/2026). Só com a
+  // área de trabalho do Pro aberta há quem guarde; uma falha nunca impede a aplicação.
+  if (entryProject.kind === 'pro' && 'tree' in entryProject && entryProject.tree)
+    proHistoryRecorder(store)?.(
+      entryProject.tree,
+      input.source === 'zappy' ? 'zappy' : 'operation',
+      input.change.summary,
+    )
   const adapter = entryAdapter
   const localScope = adapter?.localScope
   listProSessionApplications(store, projectId)

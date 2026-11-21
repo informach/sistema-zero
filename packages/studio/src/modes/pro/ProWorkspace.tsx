@@ -39,6 +39,7 @@ import { ProOperationReview } from './workspace/ProOperationReview'
 import { ProQuickOpen } from './workspace/ProQuickOpen'
 import { ProWorkspaceLayout } from './workspace/ProWorkspaceLayout'
 import { proSourcePosition } from './workspace/search'
+import { useProHistory } from './workspace/useProHistory'
 import { useProOperations } from './workspace/useProOperations'
 import { useProWorkspace } from './workspace/useProWorkspace'
 
@@ -164,6 +165,8 @@ export function ProWorkspace({
         : [...previous.slice(-39), location]
     })
   }, [])
+  // O Histórico do projeto (proposta aprovada em 21/11/2026): as versões guardadas neste computador.
+  const history = useProHistory(projectId)
   const operations = useProOperations(projectId, (next, pathMap) => {
     changeWorkspace((previous) => {
       const mapped = reconcileWorkspace(remapWorkspace(previous, pathMap), next)
@@ -381,7 +384,7 @@ export function ProWorkspace({
         }
       }}
     >
-      <ProOperationReview operations={operations} />
+      <ProOperationReview operations={operations} history={history} />
       {editError && (
         <p role="alert" className="px-3 py-2 text-sm">
           {editError}

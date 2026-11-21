@@ -2,6 +2,7 @@ import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createEmptyProject } from '../../../src/core/project'
 import { getMonacoModelPath } from '../../../src/monaco/modelPaths'
+import { createLocalPersistenceAdapter } from '../../../src/state/projectStore'
 import { StudioEditor } from '../../../src/studio/StudioEditor'
 import type { StudioTutorConfig } from '../../../src/studio/tutor'
 import { modularProjectFiles } from './modularProject'
@@ -312,7 +313,13 @@ function Fixture() {
           initialProject={
             new URLSearchParams(location.search).has('startup') ? startupProject : project
           }
-          persistence="none"
+          // `?historico`: o armazenamento local de verdade, que o Histórico do projeto usa (as
+          // versões ficam "neste computador"; com `none` não há onde guardar).
+          persistence={
+            new URLSearchParams(location.search).has('historico')
+              ? createLocalPersistenceAdapter()
+              : 'none'
+          }
           features={{ terminal: false }}
           proRuntime={runtime}
           editingAccess={
