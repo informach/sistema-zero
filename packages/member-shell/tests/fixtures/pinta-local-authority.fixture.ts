@@ -1,4 +1,5 @@
 import { beforeEach, expect, test } from 'bun:test'
+import { pintaWriteFormatVersion } from '@sistemazero/core/creations'
 import { pintaLocalRevisionOf } from '../../../pinta/src/core/localAssetOrigin'
 import {
   createTilemapAsset,
@@ -74,7 +75,7 @@ function fakeCloud(
   return { cloud, queued, producers, acknowledgements }
 }
 
-test('o gravador B sobe a autoridade nativa 7 inteira com nuvem 6 e só confirma após o commit', async () => {
+test('o leitor A conserva nativo 7 local; B só confirma a subida inteira em nuvem 6 após o commit', async () => {
   const source = createTilemapAsset({
     name: 'parede-autoral',
     cols: 2,
@@ -121,6 +122,14 @@ test('o gravador B sobe a autoridade nativa 7 inteira com nuvem 6 e só confirma
     const saved = await local.loadAssetById(rich.id)
     const produce = producers.get(rich.id)
     expect(produce).toBeDefined()
+    const declared = pintaWriteFormatVersion(rich.kind)
+    if (declared === 4) {
+      await expect(produce!()).rejects.toMatchObject({ code: 'CREATION_CLIENT_OUTDATED' })
+      expect(marks.revision(rich.id)).toBeUndefined()
+      expect(assetToJson((await local.loadAssetById(rich.id))!)).toBe(assetToJson(saved!))
+      return
+    }
+    expect(declared).toBe(6)
     const snapshot = await produce!()
     expect(snapshot?.meta).toMatchObject({ formatVersion: 6, baseRevision: 0 })
     const imported = assetFromJson(snapshot!.json)
