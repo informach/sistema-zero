@@ -62,7 +62,7 @@ try {
       }
     },
     {
-      three: modulo('node_modules/three/build/three.module.js'),
+      three: modulo('packages/molda-cenarios-motor/node_modules/three/build/three.module.js'),
       arquivos: modulo('packages/molda-cenarios-motor/src/compilar/arquivos.ts'),
       glb: modulo('packages/molda-cenarios-motor/src/compilar/arquivos-glb.ts'),
       modelos: modulo('packages/molda-cenarios-motor/src/modelos.ts'),

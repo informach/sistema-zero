@@ -259,7 +259,12 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
         () => null,
         (e) => e,
       )
-    expect(bloqueio?.code).toBe('23503')
+    // PostgreSQL 18 distingue RESTRICT (23001); versões anteriores usam foreign_key_violation.
+    // Exigimos a FK dos blobs publicados, para outro erro não passar por proteção de histórico.
+    expect(['23503', '23001']).toContain(bloqueio?.code)
+    expect(['cenario_publicacao_arquivos_blob_fk', 'cenario_publicacoes_manifesto_fk']).toContain(
+      bloqueio?.constraint_name,
+    )
     expect(await repo.porId(a.publicacao.id)).toEqual(a.publicacao)
   })
 

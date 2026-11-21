@@ -2635,7 +2635,11 @@ export default function Oficina({
   conjuntoId?: string
   aoEditarConjunto?(id: string): Promise<void>
 }): JSX.Element {
-  const aberto = useCarga(() => host.abrirCenario(cenarioId), [host, cenarioId])
+  const aberto = useCarga(async () => {
+    const cenario = await host.abrirCenario(cenarioId)
+    if (cenario.resumo.mundoId !== mundoId) throw new Error('O cenário não pertence a este mundo')
+    return cenario
+  }, [host, cenarioId, mundoId])
   const mundo = useCarga(async () => {
     const [doMundo, bibliotecas, conjunto] = await Promise.all([
       host.obterMundo(mundoId),
@@ -2675,6 +2679,7 @@ export default function Oficina({
     !aberto.dados ||
     !mundo.dados ||
     aberto.dados.resumo.id !== cenarioId ||
+    aberto.dados.resumo.mundoId !== mundoId ||
     mundo.dados.mundo.id !== mundoId ||
     (mundo.dados.conjunto?.id !== conjuntoId && (mundo.dados.conjunto || conjuntoId))
   )

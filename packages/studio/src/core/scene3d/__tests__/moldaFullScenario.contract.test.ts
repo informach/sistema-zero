@@ -574,15 +574,9 @@ describe('Molda Cenários → Estúdio: um cenário real com tudo o que a missã
     })
   })
 
-  test.todo(
-    'streaming: índice de regiões para carregar e descartar sob demanda — depende de entrega externa: o formato `molda-cena-compilada` v1 não tem lista de regiões (`CenaCompiladaSchema`, molda-cenarios-core/src/compilar/schema.ts) e o Estúdio carrega a cena inteira de uma vez (`carregarCena3DDoProjeto` → `carregarCenaNoThree`); "regiões e streaming genéricos" pedem proposta aprovada (mapa-da-missao, Etapa 4)',
-  )
-  test.todo(
-    'textura de biblioteca no material (`textura.definir` → `cena.texturas` → material `image`): o formato e a importação a representam, mas o compilador decodifica a imagem por <img> (`decodificarImagem`, molda-cenarios-motor/src/texturas.ts) e o happy-dom não carrega imagens; a prova é no navegador',
-  )
-  test.todo(
-    'carga no Three do cenário completo: `carregarCena3DDoProjeto` não termina no bun porque o GLB da água embute um PNG lido por <img> (`novoLeitor`, molda-cenarios-motor/src/modelos.ts); a prova no navegador é `e2e/scene3d-document.flow.ts` (cenário mais simples)',
-  )
+  test.todo('streaming: índice de regiões para carregar e descartar sob demanda — depende de entrega externa: o formato `molda-cena-compilada` v1 não tem lista de regiões (`CenaCompiladaSchema`, molda-cenarios-core/src/compilar/schema.ts) e o Estúdio carrega a cena inteira de uma vez (`carregarCena3DDoProjeto` → `carregarCenaNoThree`); "regiões e streaming genéricos" pedem proposta aprovada (mapa-da-missao, Etapa 4)', () => {})
+  test.todo('textura de biblioteca no material (`textura.definir` → `cena.texturas` → material `image`): o formato e a importação a representam, mas o compilador decodifica a imagem por <img> (`decodificarImagem`, molda-cenarios-motor/src/texturas.ts) e o happy-dom não carrega imagens; a prova é no navegador', () => {})
+  test.todo('carga no Three do cenário completo: `carregarCena3DDoProjeto` não termina no bun porque o GLB da água embute um PNG lido por <img> (`novoLeitor`, molda-cenarios-motor/src/modelos.ts); a prova no navegador é `e2e/scene3d-document.flow.ts` (cenário mais simples)', () => {})
 })
 
 describe('com "Juntar peças" (regiões de 128 m do Estúdio)', () => {

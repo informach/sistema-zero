@@ -44,7 +44,7 @@ import { useProWorkspace } from './workspace/useProWorkspace'
 
 const EMPTY_TREE: ProjectTree = {}
 export type ProWorkspaceEditorProps = Omit<MonacoTabsProps, 'onProLanguageReady'> & {
-  onProLanguageReady?: (session: ProWorkspaceLanguage | null) => void
+  onProLanguageReady?: (session: ProWorkspaceLanguage | ProLanguageSession | null) => void
 }
 
 /** Shared file operations, navigation and history; language-specific editors own their services. */
@@ -96,9 +96,8 @@ export function ProWorkspace({
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [languageSession, setLanguageSession] = useState<ProWorkspaceLanguage | null>(null)
-  // A sessão inteira do serviço de linguagem (as consultas por arquivo, como organizar as
-  // importações); a `languageSession` acima é só o contrato das operações do projeto.
-  const proSessionRef = useRef<ProLanguageSession | null>(null)
+  // Python entrega só as operações do projeto; a sessão do TypeScript também consulta modelos.
+  const proSessionRef = useRef<ProWorkspaceLanguage | ProLanguageSession | null>(null)
   // Organizar as importações do arquivo aberto (lote 6 da missão, seção 7.2): o serviço do
   // TypeScript calcula as mudanças e o editor as aplica como UM passo de desfazer. A contribuição de
   // code actions do Monaco não é carregada no Estúdio, então a ação dele não existiria aqui.
@@ -106,7 +105,7 @@ export function ProWorkspace({
     const editor = editorRef.current
     const model = editor?.getModel()
     const session = proSessionRef.current
-    if (!editor || !model || !session) return
+    if (!editor || !model || !session || !('query' in session)) return
     const version = model.getVersionId()
     const edits = await session.query('organizeImports', model)
     if (!edits.length || model.isDisposed() || editor.getModel() !== model) return

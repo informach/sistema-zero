@@ -1,7 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { basename, posix, resolve } from 'node:path'
+import { prepararPonteFaisca } from '../packages/arquipelago/scripts/acabamento-ponte-faisca'
 import { medirVolumeGlb } from '../packages/arquipelago/scripts/medir-volume-glb'
+import { ARTE_DA_FAISCA } from '../packages/arquipelago/src/mundo/faisca/arte.generated'
 import { catalogoInicialDaFaisca } from '../packages/arquipelago/src/sistemas/cenario-inicial'
 import { type ModeloDeCatalogo, ModeloDeCatalogoSchema } from '../packages/molda-cenarios-core/src'
 import { validarArteCenario } from './molda-cenarios-arte'
@@ -30,6 +32,16 @@ const caminhos = git(
 const modelos: ModeloDeCatalogo[] = catalogoInicialDaFaisca(),
   conhecidos = new Set(modelos.map((m) => m.digest)),
   dependencias: { caminho: string; motivo: string }[] = []
+// Esses modelos já entram no catálogo antes da varredura e a deduplicação os pula. Num
+// checkout novo, materialize também seus GLBs, pela procedência fixada de cada peça.
+for (const modelo of modelos) {
+  const fonte = git('show', `${modelo.commit}:${modelo.caminho}`)
+  const peca = Object.values(ARTE_DA_FAISCA.pecas).find((p) => p.arquivo === modelo.arquivo)
+  const bytes = peca?.acabamento ? await prepararPonteFaisca(fonte) : fonte
+  validarArteCenario(`${modelo.digest}.glb`, bytes)
+  if (bytes.length !== modelo.bytes) throw Error(`Tamanho divergente: ${modelo.arquivo}`)
+  await Bun.write(resolve(destino, modelo.arquivo), bytes)
+}
 const cacheArquivo = Bun.file(resolve(destino, 'catalogo.json'))
 const cache = new Map<string, ModeloDeCatalogo>(
   ((await cacheArquivo.exists()) ? (await cacheArquivo.json()).modelos : []).map(

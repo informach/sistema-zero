@@ -25,7 +25,13 @@ test('quanto custa desenhar 400 sprites fora do palco no Jogo 2D', async ({
   await page.setContent('<!doctype html><html><body style="margin:0"></body></html>')
   await page.addScriptTag({ content: gameTwoDRuntime })
   const result = await page.evaluate(async () => {
-    type Api = Record<string, (...args: unknown[]) => unknown>
+    type Group = { items: Array<{ x: number; y: number }> }
+    interface Api {
+      setupStage(width: number, height: number, color: string): void
+      createGroup(): Group
+      spawn(group: Group, options: Record<string, unknown>): unknown
+      drawGroup(ctx: CanvasRenderingContext2D, group: Group): void
+    }
     const g = (window as unknown as { SZGame2D: Api }).SZGame2D
     g.setupStage(800, 480, '#87ceeb')
     // O `ctx` do Jogo 2D é um global preguiçoso (o mesmo que o jogo da criança usa).
@@ -39,7 +45,7 @@ test('quanto custa desenhar 400 sprites fora do palco no Jogo 2D', async ({
     // O runtime carrega a imagem pelo ENDEREÇO: um elemento caía no retângulo de cor (revisão do
     // lote 4). O desenho com imagem é conferido pela contagem de `drawImage` abaixo.
     const image = art.toDataURL()
-    const group = g.createGroup() as { items: Array<{ x: number; y: number }> }
+    const group = g.createGroup()
     for (let index = 0; index < 400; index++)
       g.spawn(
         group,
@@ -72,7 +78,7 @@ test('quanto custa desenhar 400 sprites fora do palco no Jogo 2D', async ({
     let drawn = 0
     ctx.drawImage = ((...args: Parameters<CanvasRenderingContext2D['drawImage']>) => {
       drawn++
-      return original(...(args as [CanvasImageSource, number, number]))
+      return Reflect.apply(original, ctx, args)
     }) as CanvasRenderingContext2D['drawImage']
     for (let attempt = 0; attempt < 100; attempt++) {
       drawn = 0

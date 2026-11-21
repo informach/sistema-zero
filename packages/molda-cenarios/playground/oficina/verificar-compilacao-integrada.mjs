@@ -498,8 +498,12 @@ try {
             u.compilar.replace('compilar.ts', 'juncao.ts')
           ),
           outra = await juntarEstaticosDoPacote(pacote, new AbortController().signal)
-        if (JSON.stringify(outra.cena) !== JSON.stringify(pacote.cena))
-          throw Error('Repetir a junção alterou uma cena já reunida.')
+        if (JSON.stringify(outra.cena) !== JSON.stringify(pacote.cena)) {
+          const campos = Object.keys(pacote.cena).filter(
+            (k) => JSON.stringify(outra.cena[k]) !== JSON.stringify(pacote.cena[k]),
+          )
+          throw Error(`Repetir a junção alterou uma cena já reunida: ${campos.join(', ')}.`)
+        }
       }
       const { carregarRecursosDaCompilacao } = await import(
           u.compilar.replace('compilar.ts', 'recursos.ts')
