@@ -241,6 +241,10 @@ jobs:
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
         run: bunx playwright test --config playwright.scene3d-document.config.ts
+      - name: Real 2D Pinta scene runs as data in the preview and the exported site
+        if: ${{ !cancelled() && contains(fromJSON('["linux-chromium-1","linux-firefox","linux-webkit"]'), matrix.id) }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.scene2d-export.config.ts --project=${{ matrix.project }}
       - name: Actual Studio consumes Pinta scenes and versioned art updates
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         working-directory: packages/studio
