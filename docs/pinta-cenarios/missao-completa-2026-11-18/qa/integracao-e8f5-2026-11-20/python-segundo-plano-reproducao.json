@@ -1,0 +1,181 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      ".cache/pinta-hidden-python-focus.config.ts"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-hidden-python-focus-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache",
+        "testIgnore": [],
+        "testMatch": ["pinta-hidden-python-focus.spec.ts"],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache",
+        "testIgnore": [],
+        "testMatch": "pinta-hidden-python-focus.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5595",
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-hidden-python-focus-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "pinta-hidden-python-focus.spec.ts",
+      "file": "pinta-hidden-python-focus.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a real Pinta/Pygame background frame preserves host editor focus",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2922,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus.spec.ts:36:23",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus.spec.ts",
+                      "column": 23,
+                      "line": 36
+                    },
+                    "snippet": " \u001b[90m 34 |\u001b[39m  \u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'background-focus'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify({distribution\u001b[33m:\u001b[39mdistribution\u001b[33m.\u001b[39mhash\u001b[33m,\u001b[39m\u001b[33m...\u001b[39mresult\u001b[33m,\u001b[39merrors})\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\n \u001b[90m 35 |\u001b[39m  expect(errors)\u001b[33m.\u001b[39mtoEqual([])\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 36 |\u001b[39m  expect(result\u001b[33m.\u001b[39mtaken)\u001b[33m.\u001b[39mtoEqual([])\n \u001b[90m    |\u001b[39m                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 37 |\u001b[39m  expect(result\u001b[33m.\u001b[39mhostFocused)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\n \u001b[90m 38 |\u001b[39m })\n \u001b[90m 39 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus.spec.ts",
+                        "column": 23,
+                        "line": 36
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 8\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+   \"Teste do programa\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  34 |  await info.attach('background-focus',{body:JSON.stringify({distribution:distribution.hash,...result,errors}),contentType:'application/json'})\n  35 |  expect(errors).toEqual([])\n> 36 |  expect(result.taken).toEqual([])\n     |                       ^\n  37 |  expect(result.hostFocused).toBe(true)\n  38 | })\n  39 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus.spec.ts:36:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T22:35:17.927Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "background-focus",
+                      "contentType": "application/json",
+                      "body": "eyJkaXN0cmlidXRpb24iOiI1MmVjN2JiNWI3ZjRhMTFkZDNhZDkxNTA2NGE2YjZiOWIwZjMyYmIzM2I4MzM1ZGJhNGRiZmViYzM4OWRjZDEzIiwidGFrZW4iOlsiVGVzdGUgZG8gcHJvZ3JhbWEiLCJUZXN0ZSBkbyBwcm9ncmFtYSIsIlRlc3RlIGRvIHByb2dyYW1hIiwiVGVzdGUgZG8gcHJvZ3JhbWEiLCJUZXN0ZSBkbyBwcm9ncmFtYSIsIlRlc3RlIGRvIHByb2dyYW1hIl0sImhvc3RGb2N1c2VkIjpmYWxzZSwiYWxsb3ciOiJmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiIsInN0YXR1cyI6InJ1bm5pbmciLCJlcnJvcnMiOltdfQ=="
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus-results\\pinta-hidden-python-focus--f0184-preserves-host-editor-focus\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus-results\\pinta-hidden-python-focus--f0184-preserves-host-editor-focus\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-hidden-python-focus.spec.ts",
+                    "column": 23,
+                    "line": 36
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c290d169f5b831881710-ea1d72be9add0ef2f774",
+          "file": "pinta-hidden-python-focus.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T22:35:17.112Z",
+    "duration": 5319.75,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -206,6 +206,10 @@ export function buildApp(
     /** Para quem a oficina de cenários está aberta (padrão dos testes: `equipe`). */
     cenariosModo?: import('../src/domain/cenarios/cenarios').ModoDosCenarios
     cenariosLista?: string[]
+    /** O Molda de quem não é da equipe (padrão dos testes: tem). */
+    cenariosProduto?: import('../src/domain/cenarios/cenarios').AberturaDosCenarios['produto']
+    /** As faixas de ferramentas de quem não é da equipe (padrão dos testes: todas). */
+    cenariosFaixas?: import('../src/domain/cenarios/cenarios').AberturaDosCenarios['faixas']
   } = {},
 ) {
   // Cache de posse das criações é por processo: cada app de teste começa limpo.
@@ -218,6 +222,8 @@ export function buildApp(
   const cenariosService = new CenariosService(cenariosRepo, clock, {
     modo: opts.cenariosModo ?? 'equipe',
     lista: new Set(opts.cenariosLista ?? []),
+    produto: 'cenariosProduto' in opts ? opts.cenariosProduto : async () => true,
+    faixas: opts.cenariosFaixas ?? (async () => ['basic', 'intermediate', 'professional']),
   })
   const courses = new InMemoryCourseRepository()
   // O fake de progresso enxerga as aulas p/ espelhar o join das contagens `*Published`.

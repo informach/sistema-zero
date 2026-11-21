@@ -1,0 +1,12 @@
+module.exports=async function(qa){const page=qa.vilaPage;if(!qa.ownedVila||new URL(page.url()).pathname!=='/pinta')throw Error('Owned Vila editor missing');
+await page.getByRole('button',{name:'Jogar meu mapa',exact:true}).click();await page.waitForURL(u=>u.pathname==='/estudio',{timeout:30000});
+await page.getByRole('button',{name:'Abrir projeto qa-vila-floresta-20261120',exact:true}).click();await page.locator('[data-live-target="studio-run"]:visible').waitFor({state:'visible',timeout:30000});
+const result=await page.evaluate(async({namespace,rootId,cabanaId})=>{const dbName='sistema-zero-studio-'+namespace;if(!(await indexedDB.databases()).some(d=>d.name===dbName))throw Error('Owned Studio DB missing');
+const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(dbName);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});const req=r=>new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+try{const store=db.transaction('kv','readonly').objectStore('kv'),keys=await req(store.getAllKeys());const metas=await Promise.all(keys.filter(k=>typeof k==='string'&&k.startsWith('sz:v4:project-meta:')).map(k=>req(store.get(k))));
+const candidates=metas.filter(m=>m?.name==='qa-vila-floresta-20261120');if(candidates.length!==1)throw Error('Owned Vila project not unique');const meta=candidates[0];const record=await req(store.get('sz:v4:project-assets:'+meta.id));
+const assets=record?.assets??[];const root=assets.find(a=>a.libId==='personal:'+rootId),cabana=assets.find(a=>a.libId==='personal:'+cabanaId);
+if(assets.length!==2||root?.scene?.version!==3||root.scene.layers.length!==18||root.scene.tilesets.length!==2||cabana?.scene?.version!==3)throw Error('World arrived incomplete');
+return {projectId:meta.id,assets:assets.map(a=>({name:a.name,libId:a.libId,sceneVersion:a.scene.version,layers:a.scene.layers.length,tilesets:a.scene.tilesets.length,sets:a.scene.sets?.length??0,objects:a.scene.layers.filter(l=>l.kind==='objects').reduce((sum,l)=>sum+l.objects.length,0)})),rootId,cabanaId,completeWorld:true};
+}finally{db.close()}},{namespace:qa.ownedStorageNamespace,rootId:qa.ownedVila.mapId,cabanaId:qa.ownedVila.cabanaId});
+qa.ownedVilaGame=result;return {...result,createdByPlayMapButton:true,realAuthenticatedStudio:true,cloudWriter6Activated:false};};

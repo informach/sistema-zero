@@ -1,0 +1,30 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "88d13673e01e759bc7245ea1aaf7b1e5b1bc3f91ed7e7cfcbfd00a4ce38f7cc4"
+  },
+  {
+    "file": "biome.txt",
+    "sha256": "f4462666653424f232594499cf54b60f7b47266c75501c0c156e115de227e6f2"
+  },
+  {
+    "file": "componentes.txt",
+    "sha256": "8f28ce354d14d00daba08742895f23ff2e8945fc24019a82848e4792e456d5e2"
+  },
+  {
+    "file": "origem.json",
+    "sha256": "b93a684cdb9a107690e99b677dcc6a5819d53472fec896c9236f5bad2d336c17"
+  },
+  {
+    "file": "regressao-verde.txt",
+    "sha256": "661080ca3f02684f68f17a459245b75f9424cd6f3af8cdd2982c4fe2dcb90af3"
+  },
+  {
+    "file": "regressao-vermelha.txt",
+    "sha256": "ef5122e8a4c0f823e0adaff5891a63c4b72e626051ecc6b2bfbe0403181dba65"
+  },
+  {
+    "file": "tipos.txt",
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  }
+]

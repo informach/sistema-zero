@@ -1,4 +1,4 @@
-import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocument'
+import { ProjectDocumentError } from '../core/projectDocument'
 import { readAllKeys, readValues } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
 import { nativeRecovery, synchronousRecovery } from '../state/projectRecoveryGuards'
@@ -13,6 +13,7 @@ import { readSynchronousExitJournal } from '../state/synchronousExitJournalRead'
 import { localSnapshotsEqual, promoteLocalMigration } from './localTransaction'
 import { migrateLocalV3Project } from './localV3'
 import { archiveLocalV3Recovery, prepareLocalV3Recovery } from './localV3Recovery'
+import { isV3ExitCopy } from './localV3RecoveryArchive'
 
 interface Source {
   entry: ExitJournalEntry
@@ -24,19 +25,6 @@ const identity = (entry: ExitJournalEntry) =>
   JSON.stringify([entry.projectId, entry.writer, entry.token])
 const pending = (id: string, message: string) =>
   new ProjectDocumentError('migration-pending', message, id)
-
-function isLegacy(entry: ExitJournalEntry): boolean {
-  const value = entry.value
-  if (!isDocumentRecord(value) || !isDocumentRecord(value.write)) return false
-  const puts = value.write.puts
-  return (
-    Array.isArray(puts) &&
-    puts.some(
-      (pair) =>
-        Array.isArray(pair) && typeof pair[0] === 'string' && pair[0].startsWith('sz:v3:project-'),
-    )
-  )
-}
 
 /** Read support precedes activation: consumes v3 sources only after confirmed v4 replay. */
 export async function recoverLocalV3ProjectWrites(
@@ -53,7 +41,7 @@ export async function recoverLocalV3ProjectWrites(
     scope.identity,
     projectId,
   )) {
-    if (!isLegacy(entry)) {
+    if (!isV3ExitCopy(entry.value)) {
       synchronousRecovery(entry, 4)
       current.push(entry)
       continue

@@ -110,6 +110,28 @@ test('falha conserva a base vigente e descarte durante preparo não instala o re
   }
 })
 
+test('sem laço da criança o cenário ainda aparece: carregar liga o desenho de cada quadro', async () => {
+  // Staging, 20/11: "Criar cena" + "Usar o cenário" (sem "A cada quadro") deixava a tela no fundo.
+  // A cena só era desenhada antes da carga, vazia, e nunca mais; a água viva também parava.
+  const { api, plano, instalador, mundo } = await preparar(),
+    desenhos: Scene[] = [],
+    renderer = mundo.renderer as Mundo['renderer'] & { render(cena: Scene): void }
+  renderer.render = (cena) => {
+    desenhos.push(cena)
+  }
+  try {
+    expect(await call(api, 'loadScene', mundo, plano.assetId)).toBe(true)
+    expect(renderer._loop).not.toBeNull()
+    renderer._loop?.(16)
+    renderer._loop?.(32)
+    expect(desenhos.length).toBe(2)
+    expect(desenhos.every((c) => c === mundo.scene)).toBe(true)
+  } finally {
+    call(api, 'disposeAll')
+    instalador.descartar()
+  }
+})
+
 test('o loop autoral espera a primeira carga e o descarte libera somente o cenário daquele mundo', async () => {
   const { api, plano, instalador, mundo } = await preparar(),
     outro: Mundo = call(api, 'createScene', 'outra-tela')

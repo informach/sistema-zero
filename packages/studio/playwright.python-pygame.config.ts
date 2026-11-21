@@ -12,6 +12,7 @@ export default defineConfig({
     'python-pygame-performance.spec.ts',
     'python-pinta-world.spec.ts',
     'python-pinta-physics.spec.ts',
+    'python-background-focus.spec.ts',
   ],
   fullyParallel: false,
   workers: 1,
@@ -20,5 +21,5 @@ export default defineConfig({
   outputDir: `${outputDirectory}/artifacts`,
   reporter: [['list']],
   use: { baseURL: `http://127.0.0.1:${port}`, headless: true, trace: 'retain-on-failure' },
-  projects: [{ name: 'chrome', use: { channel: 'chrome' } }],
+  projects: [{ name: 'chrome', use: { channel: 'chrome' } }, { name: 'chromium' }],
 })

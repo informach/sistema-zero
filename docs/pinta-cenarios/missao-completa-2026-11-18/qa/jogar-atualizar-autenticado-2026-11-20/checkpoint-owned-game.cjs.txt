@@ -1,0 +1,15 @@
+module.exports=async function(qa){if(!qa.ownedGeneratedGameRan)throw Error('Owned game has not run');
+const result=await qa.modern.evaluate(async namespace=>{
+const name='sistema-zero-studio-'+namespace;if(!(await indexedDB.databases()).some(d=>d.name===name))throw Error('Expected owned database missing');
+const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+const request=r=>new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+try{const tx=db.transaction('kv','readonly'),store=tx.objectStore('kv');const keys=await request(store.getAllKeys());
+const metas=await Promise.all(keys.filter(k=>typeof k==='string'&&k.startsWith('sz:v4:project-meta:')).map(k=>request(store.get(k))));
+const owned=metas.filter(m=>m?.name==='homologacao-aba-nklptd');if(owned.length!==1)throw Error('Owned project not unique');const meta=owned[0];
+const [files,state,blocks,assets]=await Promise.all(['files','state','blocks','assets'].map(part=>request(store.get('sz:v4:project-'+part+':'+meta.id))));
+const drawing=assets?.assets?.find(a=>a.libId==='personal:1cb291ea-b512-4e46-b3cd-e5d783454c3a');if(!drawing?.scene)throw Error('Structured drawing missing');
+function canonical(v){if(ArrayBuffer.isView(v))return Array.from(v);if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>[k,canonical(v[k])]));return v}
+async function sha(value){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value)))))).map(v=>v.toString(16).padStart(2,'0')).join('')}
+return {id:meta.id,mode:meta.mode,programSha256:await sha({files,state,blocks}),filesSha256:await sha(files),irSha256:await sha(state),blocksSha256:await sha(blocks),customMarkerInFiles:JSON.stringify(files).includes('qaPinta20261120'),customMarkerInIR:JSON.stringify(state).includes('qaPinta20261120'),sceneSha256:await sha(drawing.scene),sceneVersion:drawing.scene.version,layers:drawing.scene.layers.length,tilesets:drawing.scene.tilesets.length,libId:drawing.libId,libRevision:drawing.libRevision,readOnly:true};
+}finally{db.close()}},qa.ownedStorageNamespace);
+qa.ownedGeneratedGameId=result.id;return result;};

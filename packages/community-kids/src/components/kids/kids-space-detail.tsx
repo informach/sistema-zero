@@ -7,7 +7,19 @@ import {
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
 import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
-import { Copy, Flag, Gamepad2, Hammer, Lock, MessageCircle, Play, QrCode, Send } from 'lucide-react'
+import { showcaseUpdatedLabel } from '@sistemazero/member-shell/lib/showcase-updated'
+import {
+  Copy,
+  Flag,
+  Gamepad2,
+  Hammer,
+  Lock,
+  MessageCircle,
+  Play,
+  QrCode,
+  RefreshCw,
+  Send,
+} from 'lucide-react'
 import { memo, type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
@@ -243,6 +255,8 @@ export function ShowcaseCard({
 }) {
   const playUrl = playPathFor(thread)
   const plays = thread.playsCount ?? 0
+  // O jogo foi atualizado depois de publicado: o selo avisa; data e ordem não mudam.
+  const updated = showcaseUpdatedLabel(thread)
   // O cartão do Mural das telas-modelo (11/09/2026): branco liso, capa em cima (2:1),
   // título em Baloo, autor com a bolinha, a descrição em até 4 linhas, os contadores e
   // as pílulas de jogar embaixo.
@@ -297,6 +311,16 @@ export function ShowcaseCard({
               <span className="inline-flex items-center gap-1.5">
                 <Gamepad2 className="size-4" aria-hidden /> {plays}{' '}
                 {plays === 1 ? 'jogada' : 'jogadas'}
+              </span>
+            ) : null}
+            {updated ? (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-(--band-ceu) px-2 py-0.5 font-semibold text-foreground"
+                title={updated}
+              >
+                <RefreshCw className="size-3.5" aria-hidden />
+                Atualizado
+                <span className="sr-only">: {updated}</span>
               </span>
             ) : null}
           </p>
@@ -498,6 +522,11 @@ export function ThreadDetail({
           {isWall && plays > 0 ? (
             <span className="inline-flex items-center gap-1">
               <Gamepad2 className="size-3" /> {plays} {plays === 1 ? 'jogada' : 'jogadas'}
+            </span>
+          ) : null}
+          {isWall && showcaseUpdatedLabel(thread) ? (
+            <span className="inline-flex items-center gap-1">
+              <RefreshCw className="size-3" aria-hidden /> {showcaseUpdatedLabel(thread)}
             </span>
           ) : null}
         </p>

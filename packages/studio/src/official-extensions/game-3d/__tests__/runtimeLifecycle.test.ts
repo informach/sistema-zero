@@ -36,6 +36,8 @@ it('recomeça no mesmo canvas sem perder seu contexto WebGL, liberando-o no ence
 })
 
 it('o recomeço com o renderer mantido solta o mapa de sombra das luzes da partida anterior', async () => {
+  // Do 88c6dfb50 (frente dos cenários), retirado no 72e091418 só para caber na catraca e
+  // devolvido pela missão do Estúdio: um vazamento de GPU não sai para caber num teto.
   const { api } = loadRuntime(),
     partidas: RuntimeWorld[] = [],
     sombrasSoltas: number[] = []

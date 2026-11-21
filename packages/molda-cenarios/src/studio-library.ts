@@ -41,6 +41,9 @@ export async function listarCenariosParaStudio(
   )
 }
 
+/** Região da junção quando o Estúdio pede para juntar peças (ver relevo-atlas no motor). */
+export const REGIAO_DE_JUNCAO_DO_ESTUDIO = 128
+
 export async function prepararCenarioParaStudio(
   host: CenariosHost,
   id: string,
@@ -77,7 +80,11 @@ export async function prepararCenarioParaStudio(
       {
         progresso,
         preservarHierarquia: (o) => Object.keys(o.propriedades ?? {}).length > 0,
-        ...(juntar ? { juncaoEstatica: { tamanhoDaRegiao: tamanhoDaRegiao ?? 64 } } : {}),
+        // 128 m: cada região junta 2x2 peças do relevo num atlas de 1024 px (sem perder resolução),
+        // o bastante para uma ilha comum caber no orçamento de malhas do Estúdio.
+        ...(juntar
+          ? { juncaoEstatica: { tamanhoDaRegiao: tamanhoDaRegiao ?? REGIAO_DE_JUNCAO_DO_ESTUDIO } }
+          : {}),
       },
     )
     sinal.throwIfAborted()

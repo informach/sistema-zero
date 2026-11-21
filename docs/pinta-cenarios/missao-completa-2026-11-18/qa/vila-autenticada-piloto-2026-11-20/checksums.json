@@ -1,0 +1,70 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "c2deb5ba07d581f6478a973548f15051868ee485486bfc9c02393e1f91f53dad"
+  },
+  {
+    "file": "animacao-e-primeiro-plano.json",
+    "sha256": "da51d247f488c5c0045bf75784cbfa2df55b6471f1554ebc4f6809b67a71c77c"
+  },
+  {
+    "file": "cabana.png",
+    "sha256": "68f6084c57441025966c9d3e846878b68803e8a20895735313f3b05a1202ee12"
+  },
+  {
+    "file": "check-owned-vila-animation-front.cjs.txt",
+    "sha256": "b232845c9bbd946f6a9d8f7d260e2cc3b705ec9848c549e748e1a67c0e3934b9"
+  },
+  {
+    "file": "checkpoint-owned-vila.cjs.txt",
+    "sha256": "bb50cdf2c9ede08f3125adcc4554cf9a69c6dba67a03b6c540b47c5986532db1"
+  },
+  {
+    "file": "exportacao-incompleta-baseline.json",
+    "sha256": "c098807f847259d789ffb89f438b3c7724ada3b206e96448878f27d2a1794946"
+  },
+  {
+    "file": "import-owned-vila.cjs.txt",
+    "sha256": "2875aac3c974be5340d5d3fb9c2999d45222a18b0fd7bbc63675a6bc5e0d3246"
+  },
+  {
+    "file": "importacao.json",
+    "sha256": "ffce85b013a7625a51b07c580218fa29000a9a8065a1810cb24031108eefc20b"
+  },
+  {
+    "file": "movimento-e-colisao.json",
+    "sha256": "0c892ed55904886d8061cff2959ae5dd6f69c76dd30ed51f42d2b9ac818ec6d2"
+  },
+  {
+    "file": "mundo-no-estudio.json",
+    "sha256": "e29784d0105e23841e6b7201a1f976933b608ffa642c6547d20095a1ee1522ea"
+  },
+  {
+    "file": "percurso-das-portas.json",
+    "sha256": "d3abcefc0522c0ebfcc6de964be50a1882b94a4cfad9e66102b2131bced6def3"
+  },
+  {
+    "file": "play-owned-vila.cjs.txt",
+    "sha256": "3dca7457adf5caf8471dfb455589e6a8e91c44f3ad3739ebf281c32975040e7b"
+  },
+  {
+    "file": "primeiro-plano.png",
+    "sha256": "540e7588abf91814630a578e8ad1b925190ac21014ed1a23085662d503ebdf6c"
+  },
+  {
+    "file": "reabertura-nativa.json",
+    "sha256": "92520ffe5c3462e1471a2e7b1eb440510c5e157d7a0c5f4762b903fe407ecf55"
+  },
+  {
+    "file": "reopen-owned-vila-native.cjs.txt",
+    "sha256": "6ef67e92e9476cdb63337265f1a36bf056ce5214b9c3c1fafba27a7e134cfa18"
+  },
+  {
+    "file": "vila.png",
+    "sha256": "c27ecd257bf3996bc183e159281d6914be0fd567d15d618c1edd6ad684a67c86"
+  },
+  {
+    "file": "walk-owned-vila-doors.cjs.txt",
+    "sha256": "0845e172b6fc1cd0be5e4f3834d690a86d9909731d0aec108b866979d7c20832"
+  }
+]

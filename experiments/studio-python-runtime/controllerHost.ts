@@ -2,6 +2,7 @@ import {
   createStudioRuntimeCatalog,
   StudioRuntimeReleaseSchema,
 } from '../../packages/core/src/studio/runtime-catalog'
+import type { StudioStudentTest } from '../../packages/core/src/studio/student-tests'
 import type { PythonProjectDocument } from '../../packages/studio/src/core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../packages/studio/src/runtime/environment'
 import {
@@ -15,6 +16,7 @@ import type {
   StudioRuntimeProvider,
 } from '../../packages/studio/src/runtime/types'
 import { refinePythonProjectDocument } from '../../packages/studio/src/state/pythonProjectValidation'
+import { runPythonStudentTest } from '../../packages/studio/src/studentTests/pythonRunner'
 
 export async function createControllerProbe(provider: StudioRuntimeProvider) {
   const distribution = await (await fetch('/distribution')).json()
@@ -60,8 +62,44 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
       await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json(),
     )
   }
+  /**
+   * O ambiente da prova: concede a Turtle (as provas de sempre) e as extensões do projeto aberto
+   * (o jogo de Pygame Zero das provas de Investigar e de Meus testes).
+   */
+  function environmentFor(
+    allowed: () => boolean,
+    project: () => PythonProjectDocument,
+  ): StudioRuntimeEnvironment {
+    return {
+      catalog,
+      registry,
+      access: () => ({
+        releaseStatus: 'active',
+        grantedCapabilities: ['execute', 'python-repl'],
+        grantedExtensionIds: allowed()
+          ? [
+              ...new Set([
+                'python-turtle',
+                ...project().installedExtensions.map((extension) => extension.id),
+              ]),
+            ]
+          : [],
+        hostOperations: [
+          {
+            capability: 'execute',
+            state: allowed() ? 'available' : 'unavailable',
+            ...(allowed() ? {} : { reasonCode: 'observer' }),
+          },
+        ],
+        curation: null,
+      }),
+      resolvePythonAnalysis: async () => {
+        throw new Error('Not part of this probe')
+      },
+    }
+  }
   return {
-    async create(slot: string, fixture: string) {
+    async create(slot: string, fixture: string, options: { observation?: boolean } = {}) {
       const previous = entries.get(slot)
       if (previous) {
         await previous.controller.dispose()
@@ -70,32 +108,18 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
       const project = await readFixture(fixture)
       const container = document.createElement('div')
       document.body.append(container)
-      const environment: StudioRuntimeEnvironment = {
-        catalog,
-        registry,
-        access: () => ({
-          releaseStatus: 'active',
-          grantedCapabilities: ['execute', 'python-repl'],
-          grantedExtensionIds: get(slot).allowed ? ['python-turtle'] : [],
-          hostOperations: [
-            {
-              capability: 'execute',
-              state: get(slot).allowed ? 'available' : 'unavailable',
-              ...(get(slot).allowed ? {} : { reasonCode: 'observer' }),
-            },
-          ],
-          curation: null,
-        }),
-        resolvePythonAnalysis: async () => {
-          throw new Error('Not part of this probe')
-        },
-      }
+      const environment = environmentFor(
+        () => get(slot).allowed,
+        () => get(slot).project,
+      )
       const controller = createPythonExecutionController({
         instanceId: slot,
         project: () => get(slot).project,
         environment: () => environment,
         canExecute: () => get(slot).allowed,
         writerEpoch: () => get(slot).writerEpoch,
+        // A aba Investigar do editor: cada Rodar no modo de observação.
+        observation: () => options.observation === true,
         onEvent: (event) => {
           if (get(slot).events.length < 2048) get(slot).events.push(event)
         },
@@ -117,6 +141,40 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
     run: (slot: string) => get(slot).controller.run(),
     stop: (slot: string) => get(slot).controller.stop(),
     capture: (slot: string) => get(slot).controller.capture(),
+    observe: (slot: string, path: string) => get(slot).controller.observe({ type: 'value', path }),
+    /** A aba Investigar: pausa (`true`) ou continua o programa na troca de quadro. */
+    pause: (slot: string, on: boolean) => get(slot).controller.pause(on),
+    /** A aba Investigar: avança 1 quadro com o programa pausado. */
+    step: (slot: string) => get(slot).controller.step(),
+    /** A aba Meus testes: a tecla do teste no programa, pelo quadro do Python. */
+    pressKey: (slot: string, key: string, down: boolean) =>
+      get(slot).controller.pressKey(key, down),
+    /** A aba Meus testes: a função do programa chamada com os casos. */
+    call: (slot: string, name: string, args: unknown[][]) =>
+      get(slot).controller.observe({
+        id: 'chamada',
+        type: 'functionReturns',
+        name,
+        args: args as never,
+      }),
+    /** O executor inteiro da aba Meus testes, numa execução escondida só dele. */
+    async studentTest(fixture: string, test: StudioStudentTest) {
+      const project = await readFixture(fixture)
+      if (project.kind !== 'classic') throw new Error('O teste da aba é do Python clássico.')
+      const environment = environmentFor(
+        () => true,
+        () => project,
+      )
+      return runPythonStudentTest({
+        test,
+        host: {
+          environment: () => environment,
+          project: () => project,
+          writerEpoch: () => null,
+          canExecute: () => true,
+        },
+      })
+    },
     input: (slot: string, requestId: string, response: StudioRuntimeInput) =>
       get(slot).controller.input(requestId, response),
     evaluate: (slot: string, requestId: string, source: string) =>

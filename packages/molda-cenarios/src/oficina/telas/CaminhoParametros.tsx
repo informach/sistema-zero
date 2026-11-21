@@ -1,4 +1,5 @@
 import type { CaminhoDeCenario, FonteDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
+import { useFerramentas } from '../faixas'
 import { CampoNumero } from './Painel'
 
 export function CaminhoParametros({
@@ -10,6 +11,7 @@ export function CaminhoParametros({
   mudar(c: CaminhoDeCenario): void
   fonte?: FonteDeAlturas
 }) {
+  const { pode } = useFerramentas()
   return (
     <>
       <CampoNumero
@@ -23,14 +25,16 @@ export function CaminhoParametros({
       />
       {c.tipo !== 'ponte' ? (
         <>
-          <label className="mcn-opcao-encaixe">
-            Curva suave
-            <input
-              type="checkbox"
-              checked={c.suave ?? false}
-              onChange={(e) => mudar({ ...c, suave: e.target.checked })}
-            />
-          </label>
+          {pode('caminhos.curvas') ? (
+            <label className="mcn-opcao-encaixe">
+              Curva suave
+              <input
+                type="checkbox"
+                checked={c.suave ?? false}
+                onChange={(e) => mudar({ ...c, suave: e.target.checked })}
+              />
+            </label>
+          ) : null}
           {c.tipo !== 'praca' ? (
             <label className="mcn-opcao-encaixe">
               Circuito fechado

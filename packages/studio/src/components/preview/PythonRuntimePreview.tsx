@@ -22,6 +22,8 @@ export interface PythonRuntimePreviewProps {
   muted?: boolean
   canExecuteNow?(): boolean
   autoRun?: boolean
+  /** A aba Investigar do editor: cada Rodar começa no modo de observação. */
+  observation?: boolean
   writerEpoch?: number | null
   capture?: StudioRuntimeCapture | null
   /** Allows a synchronous editor-buffer flush before capturing the run document. */
@@ -100,6 +102,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
       canExecute: () => latest.current.canExecute && (latest.current.canExecuteNow?.() ?? true),
       writerEpoch: () => latest.current.writerEpoch ?? null,
       audioMuted: () => latest.current.muted ?? false,
+      observation: () => latest.current.observation === true,
       onEvent: (event) => latest.current.onEvent?.(event),
       mountFrame: () => {
         if (!mount.current) throw new Error('A área de execução foi fechada.')

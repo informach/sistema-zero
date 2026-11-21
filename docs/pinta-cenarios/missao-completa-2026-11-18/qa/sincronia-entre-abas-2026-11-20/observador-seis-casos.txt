@@ -1,0 +1,9 @@
+bun test v1.3.11 (af24e281)
+
+src\components\assets\DrawingSyncWatcher.test.ts:
+Isolated ./src/components/assets/__tests__/DrawingSyncWatcher.cases.tsx: 6 pass, 0 fail, 33 expect() calls
+(pass) DrawingSyncWatcher keeps its IndexedDB fixture in an isolated module realm [1156.00ms]
+
+ 1 pass
+ 0 fail
+Ran 1 test across 1 file. [1.65s]

@@ -257,7 +257,7 @@ test('ferramenta desligada bloqueia publicação mesmo para equipe e operações
     b.publicacoes,
     b.repo,
     {
-      aberto: () => false,
+      modoAdmite: () => false,
       exportacao: b.cenarios.exportacao,
     },
     () => agora,

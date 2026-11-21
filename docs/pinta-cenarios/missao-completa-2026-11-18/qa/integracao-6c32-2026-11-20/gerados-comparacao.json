@@ -1,0 +1,32 @@
+[
+  {
+    "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+    "bytesBefore": 544239,
+    "bytesAfter": 547754,
+    "deltaBytes": 3515,
+    "sha256Before": "770f4a9c4bc741ee624fa99f07bb22a92e29ed3ccd6adf8b7769739fcbe3b5d5",
+    "sha256After": "8a2c2bfbe6f919ccdb7b9788e32e5bc560aa50217b8b81c221c424ee5b6f6fc8",
+    "importsUnchanged": true,
+    "licensesUnchanged": true
+  },
+  {
+    "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+    "bytesBefore": 544481,
+    "bytesAfter": 547996,
+    "deltaBytes": 3515,
+    "sha256Before": "93864b7a209a3b9e8a022482c4780b5c6a2662e98344e9d6a088b3af6fb5a046",
+    "sha256After": "ba0cda6f7bd4c4e14ac16904ce51b579a17f0990b86358de296ff5a0fada0822",
+    "importsUnchanged": true,
+    "licensesUnchanged": true
+  },
+  {
+    "file": "packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+    "bytesBefore": 1162001,
+    "bytesAfter": 1165485,
+    "deltaBytes": 3484,
+    "sha256Before": "351f6ce5f1911f04ce25688d5f1f3b8bdb5e78e176ff5c4d98c811a72666fc67",
+    "sha256After": "6ff16a41015f6b99b9f312040e1084eb866d3797af2ca9ff1e12609d3cc6caad",
+    "importsUnchanged": true,
+    "licensesUnchanged": true
+  }
+]

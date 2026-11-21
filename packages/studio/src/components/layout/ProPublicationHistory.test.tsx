@@ -36,7 +36,6 @@ function fixture() {
   }
   const adapter: NonNullable<StudioShareAdapter['publication']> = {
     get: mock(async () => publication),
-    update: mock(async () => ({ ...publication, version: 3 })),
     activate: mock(async (input) => ({
       ...publication,
       version: 3,
@@ -76,12 +75,12 @@ test('rollback and disable use explicit CAS and preserve the local working copy'
   })
   expect(useProjectStore.getState().project).toEqual(f.project)
 })
-test('retry after a lost update response reuses the operation and exact working snapshot', async () => {
+test('retry after a lost restore response reuses the operation id', async () => {
   const f = fixture()
   let attempts = 0
-  f.adapter.update = mock(async () => {
+  f.adapter.activate = mock(async (input) => {
     if (++attempts === 1) throw new Error('Resposta perdida')
-    return { ...f.publication, version: 3 }
+    return { ...f.publication, version: 3, activeRevision: input.revision }
   })
   render(
     <ProPublicationHistory
@@ -91,13 +90,14 @@ test('retry after a lost update response reuses the operation and exact working 
     />,
   )
   await screen.findByText('Link ativo')
-  fireEvent.click(screen.getByRole('button', { name: 'Publicar versão atual neste link' }))
+  // Pôr a versão de agora no link é o botão Atualizar do Compartilhar, não o histórico.
+  expect(screen.queryByRole('button', { name: /Publicar versão atual/ })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Restaurar no link' }))
   await screen.findByText('Resposta perdida')
-  fireEvent.click(screen.getByRole('button', { name: 'Publicar versão atual neste link' }))
-  await waitFor(() => expect(f.adapter.update).toHaveBeenCalledTimes(2))
-  const calls = (f.adapter.update as ReturnType<typeof mock>).mock.calls
+  fireEvent.click(screen.getByRole('button', { name: 'Restaurar no link' }))
+  await waitFor(() => expect(f.adapter.activate).toHaveBeenCalledTimes(2))
+  const calls = (f.adapter.activate as ReturnType<typeof mock>).mock.calls
   expect(calls[0]?.[0]).toEqual(calls[1]?.[0])
-  expect(calls[0]?.[0].project.tree['src/main.ts'].content).toBe('latest')
 })
 test('a late history response cannot cross a profile round trip', async () => {
   const f = fixture()
@@ -119,5 +119,5 @@ test('a late history response cannot cross a profile round trip', async () => {
   resolve(f.publication)
   await new Promise((done) => setTimeout(done, 0))
   expect(screen.queryByText('Link ativo')).toBeNull()
-  expect(f.adapter.update).not.toHaveBeenCalled()
+  expect(f.adapter.activate).not.toHaveBeenCalled()
 })

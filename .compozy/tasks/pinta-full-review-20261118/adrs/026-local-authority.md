@@ -43,4 +43,5 @@ incremental existente. A medição com502 assets fica no relatório específico 
 
 Execução: regressão vermelha → núcleo/IO transacional → integração das leituras/escritas e
 feedback existente → casos de concorrência/falha/perfil → IndexedDB real e baseline antigo
-real → gates e atualização do PR. Nenhuma alteração da identidade visual ou de Molda 3D.
+real → gates e registro da entrega. A instrução posterior do usuário determina
+integração em staging sem PR. Nenhuma alteração da identidade visual ou de Molda 3D.

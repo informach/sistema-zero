@@ -1,0 +1,226 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\game-2d\__tests__\bundle.test.ts:
+(pass) bundle inicial do Jogo 2D > mantém runtime e exemplos em chunks sob demanda [110.00ms]
+(pass) payload do runtime do Jogo 2D > compacta sem modificar tokens executáveis ou suas quebras de linha [62.00ms]
+(pass) payload do runtime do Jogo 2D > o runtime não tem template literal fora dos comentários
+(pass) payload do runtime do Jogo 2D > não cresce sem alguém decidir [16.00ms]
+
+src\official-extensions\game-2d\__tests__\lifecycle.test.ts:
+(pass) gameTwoDRuntime — ciclo de vida didático > destruir um sprite encerra clique e remove o texto do leitor de tela [16.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > ação com recarga conta quadros, congela na pausa e nunca agenda execução [16.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > mantém dois blocos “a cada quadro” ativos ao mesmo tempo
+(pass) gameTwoDRuntime — ciclo de vida didático > substitui o registro do mesmo bloco sem multiplicar cliques
+(pass) gameTwoDRuntime — ciclo de vida didático > preserva dois eventos de tecla com closures iguais e blocos diferentes
+(pass) gameTwoDRuntime — ciclo de vida didático > normaliza WASD com Caps Lock e e.code
+(pass) gameTwoDRuntime — ciclo de vida didático > reinicia em memória, executa o início novamente e não duplica eventos [15.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > mantém um único scheduler ao reiniciar de dentro do próprio quadro
+(pass) gameTwoDRuntime — ciclo de vida didático > trata o reinício como fronteira terminal do callback antigo
+(pass) gameTwoDRuntime — ciclo de vida didático > não executa handlers da nova partida no restante do quadro reiniciado
+(pass) gameTwoDRuntime — ciclo de vida didático > não entrega o mesmo teclado ou ponteiro aos handlers da partida nova
+(pass) gameTwoDRuntime — ciclo de vida didático > não executa contatos da partida nova no restante do quadro reiniciado
+(pass) gameTwoDRuntime — ciclo de vida didático > interrompe a iteração síncrona quando o callback reinicia a partida
+(pass) gameTwoDRuntime — ciclo de vida didático > mantém um único scheduler ao pausar e continuar dentro do próprio quadro
+(pass) gameTwoDRuntime — ciclo de vida didático > libera a recarga exatamente no N-ésimo quadro
+(pass) gameTwoDRuntime — ciclo de vida didático > normaliza recarga fracionária para ao menos um quadro
+(pass) gameTwoDRuntime — ciclo de vida didático > a pausa não consome a recarga mesmo depois de muito tempo de parede [16.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > reiniciar cria um sprite com a recarga pronta novamente
+(pass) gameTwoDRuntime — ciclo de vida didático > desativa somente o quadro defeituoso e registra o erro uma vez
+(pass) gameTwoDRuntime — ciclo de vida didático > desativa o handler que falha mesmo quando ele pausa e retoma o driver
+(pass) gameTwoDRuntime — ciclo de vida didático > desativa um “Ao iniciar” defeituoso sem repeti-lo no reinício
+(pass) gameTwoDRuntime — ciclo de vida didático > erro dentro de um bloco composto sobe até o driver e desativa a raiz culpada
+(pass) gameTwoDRuntime — ciclo de vida didático > usa passo fixo: 120 Hz e 60 Hz executam a mesma quantidade de atualizações
+(pass) gameTwoDRuntime — ciclo de vida didático > não tenta recuperar quadros nem avisa ao voltar de uma aba suspensa
+(pass) gameTwoDRuntime — ciclo de vida didático > só diagnostica atraso sustentado, não uma pausa isolada do navegador
+(pass) gameTwoDRuntime — ciclo de vida didático > prepara o canvas para toque e solta o gesto em pointercancel
+(pass) gameTwoDRuntime — ciclo de vida didático > mapeia o ponteiro pela área desenhável quando o palco tem moldura [15.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > limita o backing store por DPR, dimensão e orçamento de pixels
+SZGame2D: reduzi o tamanho do palco para manter coordenadas seguras para o jogo.
+(pass) gameTwoDRuntime — ciclo de vida didático > limita o tamanho lógico antes da primeira atribuição ao canvas
+(pass) gameTwoDRuntime — ciclo de vida didático > permite descrever objetivo e controles do jogo para leitores de tela
+(pass) gameTwoDRuntime — ciclo de vida didático > preserva a descrição acessível quando ela vem antes da preparação do palco
+(pass) gameTwoDRuntime — ciclo de vida didático > não perde uma descrição explícita ao preparar o palco novamente
+(pass) gameTwoDRuntime — ciclo de vida didático > anuncia HUD em região própria, somente por mudança e com frequência limitada [16.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > agrupa o HUD acessível mesmo sem limpar o canvas antes de desenhar
+(pass) gameTwoDRuntime — ciclo de vida didático > congela o anúncio pendente na pausa e cancela o timer ao reiniciar
+(pass) gameTwoDRuntime — ciclo de vida didático > inclui o texto desenhado no HUD acessível
+(pass) gameTwoDRuntime — ciclo de vida didático > mantém os corações legados no HUD acessível de projetos salvos [16.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > anuncia o fim de jogo pela descrição viva do palco
+(pass) gameTwoDRuntime — ciclo de vida didático > rearma o mesmo anúncio terminal depois de reiniciar a partida
+(pass) gameTwoDRuntime — ciclo de vida didático > remove do HUD acessível os elementos que sumiram após limpar o quadro
+(pass) gameTwoDRuntime — ciclo de vida didático > remove do leitor de tela os valores da tela anterior ao mudar de cena
+(pass) gameTwoDRuntime — ciclo de vida didático > bloqueia o overflow da viewport nos dois modos de palco responsivo
+(pass) gameTwoDRuntime — ciclo de vida didático > usa unidades dinâmicas quando o navegador oferece suporte [15.00ms]
+(pass) gameTwoDRuntime — ciclo de vida didático > anuncia pausa e retomada sem apagar a descrição do jogo
+
+src\official-extensions\game-2d\__tests__\runtime.test.ts:
+(pass) gameTwoDRuntime > createSprite preenche defaults [16.00ms]
+(pass) gameTwoDRuntime > fronteiras públicas não deixam NaN ou Infinity contaminar o mundo
+(pass) gameTwoDRuntime > todas as famílias públicas normalizam números não finitos na entrada
+(pass) gameTwoDRuntime > randomBetween sempre devolve um inteiro, inclusive com limites fracionários
+(pass) gameTwoDRuntime > randomBetween continua finito e inteiro com os maiores limites numéricos
+(pass) gameTwoDRuntime > velocidade: spriteVx/Vy/Speed + isMoving(H/V) leem a velocidade do sprite
+(pass) gameTwoDRuntime > movers 2D gravam vx/vy → os getters de velocidade refletem o movimento real
+(pass) gameTwoDRuntime > moveToward para exatamente no alvo e registra o deslocamento real
+SZGame2D: a imagem "tiles" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+SZGame2D: não consegui carregar a imagem "tiles".
+(pass) gameTwoDRuntime > mapa de tiles ENCAIXA no canvas (tamanho na tela ≠ tamanho da arte)
+SZGame2D: a imagem "tiles" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+SZGame2D: não consegui carregar a imagem "tiles".
+(pass) gameTwoDRuntime > tilemap grande desenha somente as células que cruzam a viewport [16.00ms]
+(pass) gameTwoDRuntime > isColliding detecta sobreposição AABB
+(pass) gameTwoDRuntime > setupStage cria a tela com id "tela", centraliza e aplica a cor de fundo
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > expõe as funções do kit dino e do pulo genérico
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > createDino cria um sprite com skin de dino
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > spawnObstacle põe o obstáculo no grupo; o pássaro nasce mais alto que o cacto
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > spawnEgg põe um ovo (bônus) no grupo
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > drawSprite desenha dino/obstáculo/ovo e drawForest roda sem lançar
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > drawForest termina mesmo quando a velocidade calculada não é finita [46.00ms]
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > controlDino pousa na linha do chão quando a gravidade é aplicada por fora
+(pass) gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0) > controlDino usa o teto como chão e pula para baixo com gravidade negativa
+(pass) gameTwoDRuntime — palco implícito (ctx escondido) > expõe SZGame2D.clear() e o global lazy "ctx" sem lançar
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > createSprite com image anexa um handle de imagem e anim nulo
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > loadImage expõe o estado real do handle e devolve null para fonte vazia
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > drawSprite preserva o cenário enquanto a imagem ainda está carregando [16.00ms]
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > um desenho ÚNICO redesenha a imagem quando ela termina de carregar (sem loop)
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > o reinício descarta o redraw de imagem pertencente à partida anterior
+SZGame2D: não consegui carregar a imagem "heroi".
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > falha de carga desenha o retângulo de fallback sem apagar o cenário
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > ignora o load atrasado de uma imagem que já foi trocada no sprite
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > trocar a imagem por figura ou animação libera o redraw pendente imediatamente
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > remover sprites do grupo cancela o redraw e impede desenho fantasma
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > destruir libera o carregamento pendente e uma imagem tardia não reaparece
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > mutações públicas de group.items também cancelam redraws removidos
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > remover de um grupo preserva o redraw enquanto outro grupo ainda possui o sprite
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > atribuição, length e delete descartam só quem deixou o grupo
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > reordenar o grupo preserva o redraw pendente dos sprites
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > redraw assíncrono da imagem atual passa pela câmera e transformação do sprite
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > drawSprite usa drawImage quando a imagem está carregada
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > animação avança o quadro pelo tempo (índice determinístico)
+(pass) gameTwoDRuntime — imagens / spritesheet / animação > animação não avança enquanto o jogo está pausado
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > platformer: direita move e a gravidade explícita puxa pra baixo
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > platformer: pousa no chão e pula quando seta pra cima
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > topDown: diagonal não fica mais rápida que andar reto
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > followPointer: anda em direção ao ponteiro
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > clampToScreen: gruda nas bordas do canvas
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > movimento, chão, ponteiro e limites acompanham o viewport da câmera
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > flash: pinta a tela inteira
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > emitParticles + drawParticles: cria e desenha cada partícula
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > shake: agenda um RAF e sacode o transform do canvas, parando sozinho
+(pass) gameTwoDRuntime — movimento e efeitos (v0.4.0) > shake congela durante a pausa e continua ao retomar [16.00ms]
+(pass) gameTwoDRuntime — música e pausa > não reinicia a mesma música quando o comando é repetido
+(pass) gameTwoDRuntime — música e pausa > suspende o agendamento da música na pausa e continua ao retomar
+(pass) gameTwoDRuntime — música e pausa > começa pela primeira nota quando a música é declarada antes do primeiro gesto
+(pass) gameTwoDRuntime — música e pausa > suspende o AudioContext inteiro na pausa e o retoma com a partida
+(pass) gameTwoDRuntime — música e pausa > mantém o AudioContext suspenso quando há gesto ou efeito durante a pausa
+(pass) gameTwoDRuntime — música e pausa > interrompe fontes de áudio ainda ativas quando a partida reinicia [15.00ms]
+(pass) gameTwoDRuntime — música e pausa > playJump executa o oscilador real após o gesto de áudio
+(pass) gameTwoDRuntime — música e pausa > trata nomes herdados do protótipo como músicas desconhecidas
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > createTileMap lê a grade (linhas por ";", vazio = ".") e os índices sólidos
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > createTileMap limita grades e listas manuais grandes com aviso único [16.00ms]
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > tileAt devolve o índice do tile no pixel (e -1 fora/vazio)
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > tileAtSprite devolve o índice do tile onde está o CENTRO do sprite
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > drawTileMap desenha uma vez por célula NÃO vazia (placeholder até o tileset carregar)
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > drawTileMap com tamanho manual usa o tamanho pedido; 0 volta ao encaixe automático
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > drawTileMap usa o palco lógico, não o backing store ampliado pelo DPR
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+SZGame2D: prepare o mapa antes da colisão com “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles”.
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > collideTileMap pousa o sprite sobre o chão sólido e zera a velocidade vertical
+SZGame2D: a imagem "tileset" não está no projeto. Confira o nome em "Imagens" (maiúsculas e espaços contam).
+SZGame2D: prepare o mapa antes da colisão com “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles”.
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > collideTileMap não mexe no sprite quando não há tile sólido por perto
+SZGame2D: prepare o mapa antes da colisão com “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles”.
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > collideTileMap consulta a lista de sólidos uma vez por varredura, não por célula
+SZGame2D: prepare o mapa antes da colisão com “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles”.
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > reindexa listas públicas alteradas no modo código
+SZGame2D: prepare o mapa antes da colisão com “Preparar o mapa encaixado na tela” ou “Preparar o mapa em x y com tiles”.
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > collideTileMap termina com geometria não finita e limita a busca ao mapa real [47.00ms]
+(pass) gameTwoDRuntime — tiles / tilemaps (v0.5.0) > createTileMap chamado 61+ vezes (sinal de laço no "a cada quadro") avisa uma única vez
+(pass) gameTwoDRuntime.gameLoop > devolve uma função que para o loop [15.00ms]
+SZGame2D: parei o bloco “A cada quadro” porque aconteceu um erro: boom
+(pass) gameTwoDRuntime.gameLoop > isola erros e desativa somente o loop defeituoso
+(pass) gameTwoDRuntime.gameLoop > compõe múltiplos loops num único scheduler
+(pass) gameTwoDRuntime.gameLoop > cancela o driver durante a pausa e agenda um novo frame ao continuar
+(pass) gameTwoDRuntime.onPointer > registrar a MESMA fn duas vezes mantém um único handler
+(pass) gameTwoDRuntime.onPointer > o ponteiro sintético conserva o foco do editor e os callbacks; o toque real foca o palco
+(pass) gameTwoDRuntime.onPointer > funções DIFERENTES continuam acumulando (API compatível)
+(pass) gameTwoDRuntime.onPointer > ignora clique em controles HTML e em outro canvas fora do palco [16.00ms]
+(pass) gameTwoDRuntime.onPointer > associa um canvas existente ao registrar o evento, sem exigir setupStage
+(pass) gameTwoDRuntime.onPointer > onAnyInput também prepara o palco para receber toque
+(pass) gameTwoDRuntime.onPointer > ignora hover estrangeiro e continua somente o pointerId iniciado no palco
+(pass) gameTwoDRuntime.onPointer > ignora valores que não são função
+(pass) gameTwoDRuntime.onPointer > o id estável do bloco substitui arrows novos sem multiplicar o clique [31.00ms]
+(pass) gameTwoDRuntime.onPointer > não impõe teto artificial a eventos legítimos de blocos diferentes [16.00ms]
+(pass) gameTwoDRuntime.onPointer > poucos handlers distintos continuam todos disparando
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > createGroup começa vazio; spawn adiciona sprites e devolve cada um
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > cada mutação pública avança a revisão do grupo exatamente uma vez
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > updateGroup move cada sprite pela velocidade; clear/remove tiram do grupo
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > forEachInGroup roda em ordem reversa e tolera remoção no corpo
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > forEachInGroup não repete o item atual quando o corpo remove outro sprite
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > forEachInGroup não visita item removido por mutação pública de group.items
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > forEachInGroup encerra com segurança quando o corpo esvazia o grupo
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > pruneOffscreen tira quem saiu da tela e chama onLeave para cada um
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > pruneOffscreen usa o viewport deslocado da câmera nos quatro lados
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > pruneOffscreen NÃO tira o obstáculo que nasceu fora e ainda vem entrando
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > pruneOffscreen tira o MESMO sprite quando ele passa a se afastar, e avisa no ato
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > pruneOffscreen decide por LADO: vir entrando num eixo não salva quem cai pelo outro
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > pruneOffscreen trata sprite PARADO fora da tela como saído (a câmera deixou p/ trás)
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups chama fn para cada par que se encosta
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups não faz buscas lineares de pertencimento dentro da varredura N×M
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups usa fase ampla para grupos grandes e esparsos [16.00ms]
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > a fase ampla usa a hitbox efetiva nos dois lados do limiar de 2.048 pares
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > a fase ampla preserva a semântica ao vivo quando o callback move sprites [15.00ms]
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > a fase ampla não cria contato quando a hitbox efetiva foi reduzida
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > a fase ampla preserva a ordem reversa e a remoção durante o callback
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups ignora item substituído diretamente no array durante o callback
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups no mesmo grupo ignora o próprio sprite e visita cada par uma vez
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups: se o corpo REMOVE o tiro, ele não perfura os inimigos encostados (R1/A3)
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > overlapGroups: se o corpo NÃO remove o sprite, ele PERFURA de propósito (R1/A3)
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > everyFrames dispara a cada N quadros (por chave)
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > everyFrames normaliza intervalos fracionários e não finitos para ao menos um quadro
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > everySeconds respeita o relógio (1ª chamada arma; dispara após o período)
+(pass) gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0) > everySeconds desconta todo o tempo em que o jogo ficou pausado
+(pass) gameTwoDRuntime — HUD no canvas + estado/cenas (v0.6.0) > drawScore escreve "rótulo valor" na tela
+(pass) gameTwoDRuntime — HUD no canvas + estado/cenas (v0.6.0) > drawHearts desenha um coração por vida (cap 20)
+(pass) gameTwoDRuntime — HUD no canvas + estado/cenas (v0.6.0) > drawBar desenha fundo + preenchimento proporcional (value/max) [16.00ms]
+(pass) gameTwoDRuntime — HUD no canvas + estado/cenas (v0.6.0) > setScene / sceneIs controlam a cena atual
+(pass) gameTwoDRuntime — HUD no canvas + estado/cenas (v0.6.0) > showScreen cobre a tela e escreve o título (sem lançar)
+(pass) gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo > createShip cria um sprite com skin de nave (cores guardadas)
+(pass) gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo > spawnAsteroid coloca um asteroide no grupo e drawGroup o desenha (polígono + crateras)
+(pass) gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo > explodeSprite solta partículas no centro do sprite
+(pass) gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo > overlapSpriteGroup chama fn para cada sprite do grupo que encosta na nave
+(pass) gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo > overlapSpriteGroup não repete uma colisão quando o corpo remove outro sprite
+(pass) gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, colisão sprite×grupo > overlapSpriteGroup ignora item removido diretamente do array durante o callback
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > rotateSprite acumula em graus (horário) e pointSprite fixa o ângulo
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > thrust acelera na direção apontada (0=cima, 90=direita)
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > applyFriction multiplica a velocidade pelo fator e limita o atrito a 0..1
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > steerThrust: ↑ acelera na frente e integra a posição; ← → giram
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > shootFrom cria o tiro na frente do sprite, com velocidade pra frente
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > spawnAsteroidFromEdge nasce numa borda e vai rumo ao centro
+(pass) gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0) > spawnAsteroidFromEdge usa as bordas e o centro visíveis quando há câmera
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > expõe as funções do kit gorilas
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > o robô (computerTurn) mira e joga sozinho — a banana resolve
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > createCity gera uma fileira de prédios (com largura/altura)
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > newWind sorteia um vento dentro do limite [15.00ms]
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > placeThrower devolve um gorila no lado pedido
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > bananaHitCity abre uma cratera quando a banana cai no prédio
+(pass) gameTwoDRuntime — Kit gorilas (v0.11.0) > bananaHitThrower acerta o gorila e some com a banana (uma vez)
+(pass) gameTwoDRuntime — nitidez de pixel art > imagem fixa AMPLIADA desenha com smoothing OFF e restaura depois
+(pass) gameTwoDRuntime — nitidez de pixel art > SVG ampliado continua suave e restaura o estado anterior
+(pass) gameTwoDRuntime — nitidez de pixel art > imagem grande REDUZIDA continua suave (vetor/foto não serrilham)
+(pass) gameTwoDRuntime — nitidez de pixel art > drawFrame amplia quadro de spritesheet com smoothing OFF
+(pass) gameTwoDRuntime — nitidez de pixel art > drawFrame de spritesheet SVG ampliada continua suave
+(pass) gameTwoDRuntime — nitidez de pixel art > drawFrame que REDUZ o quadro segue suave
+(pass) gameTwoDRuntime — nitidez de pixel art > restaura smoothing OFF que o chamador já tinha escolhido
+(pass) gameTwoDRuntime — nitidez de pixel art > drawImage que LANÇA cai no placeholder (retângulo da cor)
+
+ 194 pass
+ 0 fail
+ 599 expect() calls
+Ran 194 tests across 3 files. [1255.00ms]

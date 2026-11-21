@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react'
-import { CanvasTexture, MeshStandardMaterial, SRGBColorSpace } from 'three'
+import { CanvasTexture, MeshStandardMaterial, type Plane, SRGBColorSpace } from 'three'
 import type { RotaDaFaisca } from '../../sistemas/faisca'
 import { SOLOS_DA_FAISCA } from '../../sistemas/implantacao-da-faisca'
 
@@ -84,10 +84,15 @@ export function PinturaDoSolo({
   return <Pintura.Provider value={textura}>{children}</Pintura.Provider>
 }
 /** Extensão de material, como a pintura existente das ilhas. Só altera o terreno da Faísca. */
-export function MaterialDoSolo({ faisca }: { faisca: boolean }) {
+export function MaterialDoSolo({ faisca, planos }: { faisca: boolean; planos?: Plane[] }) {
   const textura = useContext(Pintura)
   const material = useMemo(() => {
-    const m = new MeshStandardMaterial({ vertexColors: true, roughness: 1 })
+    const m = new MeshStandardMaterial({
+      vertexColors: true,
+      roughness: 1,
+      clippingPlanes: planos ?? null,
+      clipShadows: true,
+    })
     if (faisca && textura) {
       m.onBeforeCompile = (s) => {
         s.uniforms.uSoloFaisca = { value: textura }
@@ -107,7 +112,7 @@ export function MaterialDoSolo({ faisca }: { faisca: boolean }) {
       m.customProgramCacheKey = () => 'faisca-solo-material-1'
     }
     return m
-  }, [textura, faisca])
+  }, [textura, faisca, planos])
   useEffect(() => () => material.dispose(), [material])
   return <primitive object={material} attach="material" />
 }

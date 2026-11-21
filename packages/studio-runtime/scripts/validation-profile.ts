@@ -13,6 +13,10 @@ for (const [entry, output, label] of [
     'execution-observation.generated.mjs',
     'observação dos objetivos',
   ],
+  // O clique no sprite de um grupo: a mesma fonte do piloto de "Meus testes" do Estúdio.
+  ['../studio/src/check/clickTargetInPage.ts', 'click-target.generated.mjs', 'clique no sprite'],
+  // Os cenários do Molda no Pro: o runtime, os tipos e o modelo do módulo (R3).
+  ['scripts/scene3d-pro-contract.ts', 'scene3d-pro.generated.mjs', 'cenários do Pro'],
 ]) {
   const build = await Bun.build({
     entrypoints: [path.join(root, entry)],

@@ -1,3 +1,4 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
 import type { WebContainerProcess } from '@webcontainer/api'
@@ -20,6 +21,7 @@ import { useStudioProDependencies, useStudioProRuntime } from '../../studio/pro-
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { useProWebContainer } from './ProWebContainerProvider'
 import { isProConsoleMessage } from './proConsoleBridge'
+import { useProPreviewDevtools } from './proPreviewDevtools'
 import { RemoteProPreview } from './RemoteProPreview'
 import { useProGameStorage } from './useProGameStorage'
 
@@ -271,6 +273,14 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   // Origem do dev-server CORRENTE (setada no server-ready): o listener de
   // console só aceita mensagens vindas exatamente dela.
   const previewOriginRef = useRef<string | null>(null)
+  // A aba Desempenho mede o jogo pela ponte da página (o erro já chega pelo `preview-message`).
+  useProPreviewDevtools({
+    frame: () => iframeRef.current,
+    origin: () => previewOriginRef.current,
+    errors: false,
+    active: Boolean(active && url && phase === 'ready' && started),
+    documentKey: storageName,
+  })
 
   // `attempt` é dep PROPOSITAL: "Tentar de novo" (fase de erro) e "⏻ Reiniciar"
   // (barra do ready) o incrementam para re-disparar o boot/install/dev — a
@@ -567,6 +577,7 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
             ref={iframeRef}
             name={storageName}
             src={url}
+            allow={GAME_FRAME_FOCUS_ALLOW}
             title="Pré-visualização (dev-server)"
             className="h-full w-full border-0"
           />

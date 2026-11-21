@@ -1,0 +1,2 @@
+SCENE3D_RUNTIME: 508795 caracteres, 3 imports Three compartilhados, SHA-256 9713872ecff5f659efa6ecd3b556dd3753309d03b223f00d767b07bc8f0902e7.
+SCENE3D_PRO_RUNTIME: 509032 caracteres, 3 imports Three compartilhados, SHA-256 deb461caa638430966f4f4c75be5d8ad1bc2881a1a9a901c7eca2662d5676031.

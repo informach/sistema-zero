@@ -41,11 +41,13 @@ import {
 } from './check'
 import { serveClassicShell } from './classic-shell'
 import {
+  hasStudioProScene3DFiles,
   InvalidBuildRequestError,
   PRO_BUILD_LIMITS,
   type ProBuildFailure,
   type ProBuildResponse,
   parseBuildRequest,
+  SCENE3D_CANONICAL_COMMAND,
   trustedPackageJson,
   trustedViteConfig,
   verifyBuildBinaries,
@@ -59,6 +61,7 @@ import {
   type PublicationBucket,
   PublicationError,
   publicationCommand,
+  publishedStatus,
   purgePublication,
   retirePublicationReservation,
   servePublishedArtifact,
@@ -514,7 +517,9 @@ export function createStudioRuntimeHandler(
             body &&
             typeof body === 'object' &&
             'operation' in body &&
-            ['promote', 'promote-python', 'activate'].includes(String(body.operation)) &&
+            ['promote', 'promote-python', 'promote-classic', 'activate'].includes(
+              String(body.operation),
+            ) &&
             'owner' in body &&
             isStudioPublicationHash(body.owner)
           ) {
@@ -528,6 +533,17 @@ export function createStudioRuntimeHandler(
                 429,
               )
           }
+          if (
+            body &&
+            typeof body === 'object' &&
+            'operation' in body &&
+            body.operation === 'resolve-status' &&
+            'playId' in body &&
+            isStudioPublicationId(body.playId)
+          )
+            return Response.json(await publishedStatus(env.PRO_ARTIFACTS, body.playId), {
+              headers: { 'Cache-Control': 'no-store' },
+            })
           if (
             body &&
             typeof body === 'object' &&
@@ -644,6 +660,17 @@ export function createStudioRuntimeHandler(
               recursive: true,
             })
             await sandbox.writeFile(`${cwd}/${path}`, entry.base64, { encoding: 'base64' })
+          }
+          // R3: os arquivos derivados dos cenários saem da imagem, nunca do pedido.
+          if (hasStudioProScene3DFiles(input.binaries)) {
+            const canonical = await sandbox.exec(SCENE3D_CANONICAL_COMMAND, {
+              cwd,
+              timeout: 15_000,
+            })
+            if (!canonical.success)
+              throw new InvalidBuildRequestError(
+                'Os cenários do projeto não conferem com o Estúdio. Abra o projeto de novo e tente outra vez.',
+              )
           }
 
           if (input.validate) {
@@ -958,6 +985,11 @@ async function runProjectCheck(
       for (const [path, entry] of Object.entries(build.binaries ?? {})) {
         await sandbox.mkdir(`${cwd}/${path.slice(0, path.lastIndexOf('/'))}`, { recursive: true })
         await sandbox.writeFile(`${cwd}/${path}`, entry.base64, { encoding: 'base64' })
+      }
+      // R3: os arquivos derivados dos cenários saem da imagem, nunca do pedido.
+      if (hasStudioProScene3DFiles(build.binaries)) {
+        const canonical = await sandbox.exec(SCENE3D_CANONICAL_COMMAND, { cwd, timeout: 15_000 })
+        if (!canonical.success) return checkFailed()
       }
       const compiled = await sandbox.exec(
         'ln -s /opt/sz-runtime/node_modules ./node_modules && node /opt/sz-runtime/node_modules/vite/bin/vite.js build --config ./vite.config.mjs --configLoader native',

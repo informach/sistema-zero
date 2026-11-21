@@ -2,6 +2,7 @@ import type * as Monaco from 'monaco-editor'
 import type { ProjectTree } from '#core'
 import { studioTutorSourceHash } from '../../studio/tutorSafety'
 import { inferLanguage } from '../languages'
+import { sameTextExceptLineBreaks } from '../lineBreaks'
 import {
   buildMonacoModelPath,
   findMonacoModel,
@@ -212,7 +213,11 @@ export function attachProLanguageService(
     // The active Monaco buffer can precede React's next commit by one event.
     for (const model of monaco.editor.getModels())
       if (isModelInPathPrefix(model, prefix) && tree[pathOf(model)]?.kind === 'file') {
-        if (expectedTree && next[pathOf(model)] !== model.getValue())
+        const expected = next[pathOf(model)]
+        if (
+          expectedTree &&
+          (expected === undefined || !sameTextExceptLineBreaks(expected, model.getValue()))
+        )
           throw new Error('O código está sendo atualizado. Confira o arquivo e tente novamente.')
         next[pathOf(model)] = model.getValue()
       }
@@ -290,7 +295,14 @@ export function attachProLanguageService(
         const lines = source.slice(0, item.start).split(/\r\n|\r|\n/)
         let sourceHash = sourceHashes.get(item.path)
         if (sourceHash === undefined) {
-          sourceHash = studioTutorSourceHash(source)
+          // A marca é do arquivo do projeto: o editor pode mostrar o mesmo texto com as quebras
+          // de linha normalizadas, e a linha e a coluna acima não mudam com elas.
+          const saved = input().tree[item.path]
+          sourceHash = studioTutorSourceHash(
+            saved?.kind === 'file' && sameTextExceptLineBreaks(saved.content, source)
+              ? saved.content
+              : source,
+          )
           sourceHashes.set(item.path, sourceHash)
         }
         gathered.push({
@@ -361,7 +373,7 @@ export function attachProLanguageService(
           monaco.editor.setModelMarkers(model, 'sz-pro-typescript', [])
         }
         const node = tree[path]
-        if (node?.kind === 'file' && model.getValue() !== node.content)
+        if (node?.kind === 'file' && !sameTextExceptLineBreaks(model.getValue(), node.content))
           // A document operation has its own guarded recovery. Reset only edited buffers'
           // text undo so Ctrl+Z cannot undo one import out of a multi-file operation.
           synchronizeMonacoModel(model, () => model.setValue(node.content))

@@ -120,3 +120,28 @@ test('água estática conserva a física e o material portátil; fundo ausente u
     agua.descartar()
   }
 })
+
+test('hospedeiro com oceano compartilhado mantém lagos compilados sem importar outro mar', () => {
+  const d = dados()
+  d.cena.aguas.push(
+    AguaSchema.parse({
+      id: 'mar',
+      nome: 'Mar',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      tipo: 'mar',
+      nivel: 6,
+    }),
+  )
+  const completo = new AguaDaCenaCompilada(d, new Map(), undefined, 1024, false),
+    local = new AguaDaCenaCompilada(d, new Map(), undefined, 1024, false, true)
+  try {
+    expect(completo.consulta.nivel(100, 100)?.nivel).toBe(6)
+    expect(local.consulta.nivel(100, 100)).toBeNull()
+    expect(local.consulta.nivel(10, 10)?.nivel).toBe(2)
+  } finally {
+    completo.descartar()
+    local.descartar()
+  }
+})

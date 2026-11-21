@@ -176,6 +176,8 @@ export interface Palco {
   definirEspalhamento(configuracao: ConfiguracaoDoEspalhamento | null): void
   recarregarModelos(): void
   definirEncaixe(encaixe: Encaixe): void
+  /** Sem a ferramenta de medidas por eixo (faixa básica), as alças do tamanho só mudam por igual. */
+  definirTamanhoSoUniforme(soUniforme: boolean): void
   definirTema(tema: Tema): void
   definirVista(vista: Vista): void
   /** O ponto do chão debaixo de uma posição da tela, já no encaixe da grade. */

@@ -25,7 +25,7 @@ import {
   type ProgrammingReferenceField,
 } from './programmingReferenceContract'
 import type { JSStatement } from './schema'
-import { SymbolNames } from './symbolNames'
+import { type ReadonlyNames, SymbolNames } from './symbolNames'
 
 export { PROGRAMMING_REFERENCE_FIELDS } from './programmingReferenceContract'
 
@@ -370,8 +370,8 @@ function missingIssue(
 
 function validateName(
   value: unknown,
-  names: ReadonlySet<string>,
-  implicit: ReadonlySet<string>,
+  names: ReadonlyNames<string>,
+  implicit: ReadonlyNames<string>,
   kind: 'variável' | 'lista' | 'classe' | 'função',
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
@@ -477,7 +477,7 @@ const CANVAS3D_REFERENCE_LABELS: Readonly<Record<Canvas3DSymbolKind, string>> = 
   'physics-world': 'mundo físico',
 }
 
-const EMPTY_NAMES: ReadonlySet<string> = new Set()
+const EMPTY_NAMES: ReadonlyNames<string> = new Set()
 
 function validateCanvas3DReferences(
   type: string,
@@ -496,7 +496,7 @@ function validateCanvas3DReferences(
     const value = record[reference.field]
     if (typeof value !== 'string' || !value.trim()) continue
     const name = value.trim()
-    let available: ReadonlySet<string>
+    let available: ReadonlyNames<string>
     let label: string
     if (reference.kind === 'canvas') {
       available = symbols.canvasIds
@@ -1017,8 +1017,8 @@ function updateAssignedInstance(statement: JSStatement, symbols: ProgrammingSymb
  * pelos seletores, sem inferir o domínio pela presença global de Three.js.
  */
 export interface Canvas3DStatementContext {
-  symbols: Readonly<Record<Canvas3DSymbolKind, ReadonlySet<string>>>
-  importedClasses: ReadonlySet<string>
+  symbols: Readonly<Record<Canvas3DSymbolKind, ReadonlyNames<string>>>
+  importedClasses: ReadonlyNames<string>
 }
 
 export type Canvas3DStatementContextIndex = WeakMap<JSStatement, Canvas3DStatementContext>

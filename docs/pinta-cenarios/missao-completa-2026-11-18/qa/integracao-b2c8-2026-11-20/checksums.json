@@ -1,0 +1,102 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "de5e3ca53fb5ea7d52151b0232c0acd467c3c4f8ad2897ab6b7ead05cdf6c774"
+  },
+  {
+    "file": "bff-cenarios.txt",
+    "sha256": "6c9bd544aa9ed5a969f64ee0380d0ac195083b4b0332ab65b2a5ca8eea3e6849"
+  },
+  {
+    "file": "biome.txt",
+    "sha256": "b7b439894d68842462f6aebe10c99d104c8d1737afea6084a641cccfb3f39aa7"
+  },
+  {
+    "file": "ci-anterior.json",
+    "sha256": "52b5e1079a5e2dde3776a028988fe05c4d2efeafba501a018bba5a9d27aed5e7"
+  },
+  {
+    "file": "components.txt",
+    "sha256": "64c701515b79b359133e4df3f3ea843c8d35be4b05bc9626ded00d83a62b0281"
+  },
+  {
+    "file": "firefox.txt",
+    "sha256": "12ae7e306eec064b39f86e080e221961d2bb4be50daaa5fe80ae6f91dfbab991"
+  },
+  {
+    "file": "foco-157.json",
+    "sha256": "b63d868621feec763f623b372796ee959819cd5797f862b653566816cc441542"
+  },
+  {
+    "file": "foco-159.json",
+    "sha256": "9a70f48d915e0f55e1c6b743bf8687230cb280161e0fd2c65aed471623510147"
+  },
+  {
+    "file": "fontes.json",
+    "sha256": "a058f6083fa7fabee66725f9367ee0365a467c9ab6571cb0444057d7f3d4249b"
+  },
+  {
+    "file": "gates-finais.json",
+    "sha256": "b9bb75655972a7da94b4cae947d8f7414e0212bfe7da6908628cebf52c264465"
+  },
+  {
+    "file": "generated-studio.txt",
+    "sha256": "5cef7da7e96c9f5f2ad793ef658bdd25b40c947c1d5a1f73d008fa1dd4339d70"
+  },
+  {
+    "file": "imagem-linux.json",
+    "sha256": "ce21bbd0e732e5953615ee01fd90c38453eee15d99807379d72409b16470903f"
+  },
+  {
+    "file": "imagem-registry.json",
+    "sha256": "15df134c21cf9e2fa05db1dc50646f44fae535abfcbcda2c687a0f8b8f76e969"
+  },
+  {
+    "file": "integration.txt",
+    "sha256": "72d8e7322a0574336ff90e80047ebd3c0a9438d75307528239d72b83b898d7ec"
+  },
+  {
+    "file": "members-cenarios.txt",
+    "sha256": "faab56abd275580dd99e883bdd1caeedb0a62e4297190678f7d342a76581e4a2"
+  },
+  {
+    "file": "motion-wrapper.txt",
+    "sha256": "9a53a1037042d8581c4f60245fc4b62711371bbff3427068802d4a759193e5f9"
+  },
+  {
+    "file": "movimento-verde.txt",
+    "sha256": "d1458647fd23db10cdd772b17c1121b6834fe31d7e57a569722467a6054f66b4"
+  },
+  {
+    "file": "movimento-vermelho.txt",
+    "sha256": "7b8ae44f14ac5ae9cf9e228a4a691cf2dd558e8fa2b59d5dd121d12ba7f6133c"
+  },
+  {
+    "file": "reino-zero.txt",
+    "sha256": "11c99eb46138d5f6cd4d096c44236c79ae017d2a169291acf771ceb5f5345fec"
+  },
+  {
+    "file": "runtime-profile.txt",
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+  },
+  {
+    "file": "startup.txt",
+    "sha256": "07f5fb0728d3052b73916051b853fbb6a441ab1dcd6764c1bd1b94bd81587410"
+  },
+  {
+    "file": "teclado-nativo.json",
+    "sha256": "a1dd041d7d8a3731ed4b2efa0ddb76fdb2bbf78835b9b86b8a04c5135c1a8cde"
+  },
+  {
+    "file": "teclado-nativo.txt",
+    "sha256": "41b52bd2e272d6588d6e5b7cce9de5a41a5eea87a426bd242baf0a0e196c38f2"
+  },
+  {
+    "file": "tentativa-inicial.json",
+    "sha256": "2d452c72222f7ec97d3851c238be51925f15ea830a9aaed870d0ad17a9d9385d"
+  },
+  {
+    "file": "three-diagnostics.txt",
+    "sha256": "6289db109a966ff900a05b0e6dbd9b19a6e6e0c2561f54f7c5da320fe6c241c8"
+  }
+]

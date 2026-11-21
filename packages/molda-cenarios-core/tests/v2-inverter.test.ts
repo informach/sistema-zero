@@ -209,3 +209,39 @@ describe('desfazer (inverso de um lote)', () => {
     expect(normal(refeito.documento)).toEqual(normal(depois))
   })
 })
+
+describe('ordem dos caminhos', () => {
+  test('desfazer a remoção devolve o caminho ao lugar dele (a ordem decide os encontros)', () => {
+    const antes = { ...base(), caminhos: [trilha('t1'), trilha('t2'), trilha('t3')] }
+    const depois = executarLote(
+      { documento: antes, revisao: 0 },
+      {
+        revisaoEsperada: 0,
+        comandos: [
+          { tipo: 'caminho.remover', id: 't1' },
+          { tipo: 'caminho.remover', id: 't3' },
+          { tipo: 'caminho.definir', caminho: trilha('novo') },
+        ],
+      },
+    ).documento
+    const volta = executarLote(
+      { documento: depois, revisao: 1 },
+      { revisaoEsperada: 1, comandos: inverterLote(antes, depois) },
+    ).documento
+    expect(volta.caminhos.map((c) => c.id)).toEqual(['t1', 't2', 't3'])
+  })
+
+  test('a posição só vale para um caminho novo', () => {
+    const antes = { ...base(), caminhos: [trilha('t1'), trilha('t2')] }
+    const lote = (comandos: ComandoDeCenario[]) =>
+      executarLote({ documento: antes, revisao: 0 }, { revisaoEsperada: 0, comandos }).documento
+    expect(
+      lote([{ tipo: 'caminho.definir', caminho: trilha('novo'), posicao: 0 }]).caminhos.map(
+        (c) => c.id,
+      ),
+    ).toEqual(['novo', 't1', 't2'])
+    expect(() => lote([{ tipo: 'caminho.definir', caminho: trilha('t2', 4), posicao: 0 }])).toThrow(
+      'A posição só vale para um caminho novo',
+    )
+  })
+})

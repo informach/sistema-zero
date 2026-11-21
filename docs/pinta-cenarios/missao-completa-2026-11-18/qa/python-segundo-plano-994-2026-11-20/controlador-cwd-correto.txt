@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src\runtime\python\controller.test.ts:
+(pass) classic: background=false is host presentation and preserves the program revision [31.00ms]
+(pass) classic: background=true is host presentation and preserves the program revision [16.00ms]
+(pass) pro: background=false is host presentation and preserves the program revision
+(pass) pro: background=true is host presentation and preserves the program revision
+(pass) host audio preference follows pending prepare without restarting and retired capabilities cannot unmute [16.00ms]
+(pass) context disposal stops an existing run and prevents starting another in the revoked environment
+(pass) revocation and Stop during ready prevent dispatch of the old run
+(pass) a restart during ready runs only the replacement generation
+(pass) late preparation after Stop or a source change cannot start a stale program [15.00ms]
+(pass) writer epochs and fresh grants protect commands after a successful start
+(pass) automatic and explicit cover requests share one capture, and Stop revokes both
+(pass) REPL checks its own grant and current project independently of execute permission [16.00ms]
+(pass) context authorization receives the real snapshot revision before a frame or run exists [16.00ms]
+(pass) late authorization after Stop or editing cannot start the captured project
+
+ 14 pass
+ 0 fail
+ 97 expect() calls
+Ran 14 tests across 1 file. [772.00ms]

@@ -86,6 +86,40 @@ export function readPythonFrameMessage(raw: unknown): PythonFrameMessage | undef
     identity,
   }
   if (raw.type === 'prepared') return { ...common, type: 'prepared' }
+  if (raw.type === 'perf') {
+    const slice = raw.slice
+    const measure = (value: unknown, max: number): value is number =>
+      typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max
+    if (
+      !record(slice) ||
+      Object.keys(slice).length !== 4 ||
+      !measure(slice.fps, 1000) ||
+      !measure(slice.frameMsAvg, 60_000) ||
+      !measure(slice.frameMsMax, 60_000) ||
+      typeof slice.canvas !== 'boolean'
+    )
+      return
+    return {
+      ...common,
+      type: 'perf',
+      slice: {
+        fps: slice.fps,
+        frameMsAvg: slice.frameMsAvg,
+        frameMsMax: slice.frameMsMax,
+        canvas: slice.canvas,
+      },
+    }
+  }
+  if (raw.type === 'pause') {
+    if (
+      typeof raw.held !== 'boolean' ||
+      typeof raw.frame !== 'number' ||
+      !Number.isSafeInteger(raw.frame) ||
+      raw.frame < 0
+    )
+      return
+    return { ...common, type: 'pause', held: raw.held, frame: raw.frame }
+  }
   if (raw.type === 'mission-result') {
     if (!isPythonRequestId(raw.requestId)) return
     try {

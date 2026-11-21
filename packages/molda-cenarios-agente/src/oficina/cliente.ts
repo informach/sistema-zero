@@ -1,76 +1,71 @@
-import { type ComandoDeCenario, ComandoDeCenarioSchema } from '@sistemazero/molda-cenarios-core/v2'
-import { z } from 'zod'
+import type { CenariosHost } from '@sistemazero/molda-cenarios/oficina/autoria'
+import { criarHostHttp } from '@sistemazero/molda-cenarios/oficina/host-http'
 
 /**
- * Cliente da oficina de cenários para agentes: fala com a plataforma pelo gateway, nas MESMAS
- * rotas que a edição à mão usa (`/members/cenarios/*`). Não precisa de aba aberta: o lote de
- * comandos roda no servidor, com a mesma conferência de revisão e de espaço.
+ * Cliente da oficina de cenários para agentes. É o MESMO cliente que a oficina usa no navegador
+ * (`criarHostHttp`), falando com o servidor do app (`/api/cenarios`), com o token de acesso no
+ * cabeçalho `Authorization` em vez do cookie. Assim o agente faz o caminho da mão inteiro:
+ * reserva, envio direto ao armazenamento e conferência das peças do relevo, e o lote de
+ * comandos com a revisão esperada. Não precisa de aba aberta.
  */
 
 export interface AcessoDaOficina {
-  /** O endereço do gateway da plataforma. */
-  url: string
+  /** O endereço do app que serve a oficina (o da comunidade adulta para a equipe). */
+  app: string
+  /** O gateway da plataforma: só para entrar com e-mail e senha ou renovar o token. */
+  gateway?: string
   /** Um token de acesso já emitido (vale pouco tempo), ou o e-mail e a senha de quem é da equipe. */
   token?: string
   email?: string
   senha?: string
 }
 
-const UUID = z.uuid()
-const NOME = z.string().trim().min(1).max(120)
+type Buscar = (endereco: string, opcoes?: RequestInit) => Promise<Response>
 
-/** Recusa do serviço, com a frase dele e o que ele mandou junto (a revisão atual, os problemas). */
-export class RecusaDaOficina extends Error {
-  constructor(
-    mensagem: string,
-    readonly status: number,
-    readonly codigo: string | null,
-    readonly detalhes: Record<string, unknown> | null,
-  ) {
-    super(mensagem)
-    this.name = 'RecusaDaOficina'
-  }
+/** Confere um endereço de serviço: HTTPS fora do computador local, sem usuário, consulta ou âncora. */
+function enderecoDeServico(valor: string, nome: string): string {
+  const url = new URL(valor)
+  if (
+    !['http:', 'https:'].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash
+  )
+    throw Error(`O endereço ${nome} é inválido`)
+  if (url.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))
+    throw Error(`Use HTTPS no endereço ${nome} fora do computador local`)
+  return url.toString().replace(/\/$/, '')
 }
 
 export function criarClienteDaOficina(
   acesso: AcessoDaOficina,
-  buscar: (endereco: string, opcoes: RequestInit) => Promise<Response> = (endereco, opcoes) =>
-    fetch(endereco, opcoes),
-) {
-  const base = new URL(acesso.url)
-  if (
-    !['http:', 'https:'].includes(base.protocol) ||
-    base.username ||
-    base.password ||
-    base.search ||
-    base.hash
-  )
-    throw Error('URL de serviço inválida')
-  if (base.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(base.hostname))
-    throw Error('Use HTTPS fora do ambiente local')
+  buscar: Buscar = (endereco, opcoes) => fetch(endereco, opcoes),
+): { host: CenariosHost; app: string; baixar(endereco: string): Promise<Uint8Array> } {
+  const app = enderecoDeServico(acesso.app, 'do app')
+  const gateway = acesso.gateway ? enderecoDeServico(acesso.gateway, 'do gateway') : null
   if (!acesso.token && !(acesso.email && acesso.senha))
     throw Error('Informe um token de acesso, ou o e-mail e a senha de uma conta da equipe')
-  const raiz = base.toString().replace(/\/$/, '')
+  if (!acesso.token && !gateway)
+    throw Error('Para entrar com e-mail e senha, informe também o endereço do gateway')
 
   let token = acesso.token ?? null
   let renovacao: string | null = null
   let entrando: Promise<void> | null = null
 
-  async function json(resposta: Response): Promise<Record<string, unknown> | unknown[] | null> {
-    return (await resposta.json().catch(() => null)) as Record<string, unknown> | unknown[] | null
-  }
   async function autenticar(caminho: string, corpo: unknown): Promise<boolean> {
-    const resposta = await buscar(`${raiz}${caminho}`, {
+    if (!gateway) return false
+    const resposta = await buscar(`${gateway}${caminho}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(corpo),
       redirect: 'error',
       signal: AbortSignal.timeout(20_000),
     })
-    const lido = await json(resposta)
-    const tokens = !Array.isArray(lido)
-      ? (lido?.tokens as Record<string, unknown> | undefined)
-      : null
+    const lido = (await resposta.json().catch(() => null)) as {
+      tokens?: { accessToken?: unknown; refreshToken?: unknown }
+    } | null
+    const tokens = lido?.tokens
     if (!resposta.ok || typeof tokens?.accessToken !== 'string') return false
     token = tokens.accessToken
     renovacao = typeof tokens.refreshToken === 'string' ? tokens.refreshToken : null
@@ -92,110 +87,58 @@ export function criarClienteDaOficina(
     return entrando
   }
 
-  async function pedir<T>(
-    metodo: 'GET' | 'POST' | 'PATCH' | 'DELETE',
-    caminho: string,
-    corpo?: unknown,
-  ): Promise<T> {
+  /** Os pedidos ao app levam o token; um 401 renova uma vez e repete o MESMO pedido. */
+  const comToken: Buscar = async (endereco, opcoes = {}) => {
     if (!token) await entrar()
-    const enviar = () =>
-      buscar(`${raiz}/members/cenarios${caminho}`, {
-        method: metodo,
-        headers: {
-          authorization: `Bearer ${token}`,
-          ...(corpo === undefined ? {} : { 'content-type': 'application/json' }),
-        },
-        ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
-        redirect: 'error',
-        signal: AbortSignal.timeout(65_000),
-      })
-    let resposta = await enviar()
-    if (resposta.status === 401) {
-      await entrar()
-      resposta = await enviar()
+    const enviar = () => {
+      const cabecalhos = new Headers(opcoes.headers)
+      cabecalhos.set('authorization', `Bearer ${token}`)
+      return buscar(endereco, { ...opcoes, headers: cabecalhos, redirect: 'error' })
     }
-    const lido = await json(resposta)
-    if (resposta.ok) return lido as T
-    const envelope = Array.isArray(lido) ? null : lido
-    const erro = envelope?.error as Record<string, unknown> | undefined
-    throw new RecusaDaOficina(
-      typeof erro?.message === 'string' ? erro.message : `O serviço respondeu ${resposta.status}`,
-      resposta.status,
-      typeof erro?.code === 'string' ? erro.code : null,
-      (envelope?.details as Record<string, unknown> | undefined) ?? null,
-    )
+    const resposta = await enviar()
+    if (resposta.status !== 401 || (!renovacao && !(acesso.email && acesso.senha))) return resposta
+    await entrar()
+    return enviar()
   }
 
-  const id = (valor: string) => UUID.parse(valor)
+  /** Um arquivo do app (o retrato de uma revisão): pede o endereço assinado e baixa direto. */
+  async function baixar(endereco: string): Promise<Uint8Array> {
+    if (!endereco.startsWith(`${app}/api/cenarios/`)) throw Error('Endereço de arquivo inesperado')
+    const resposta = await comToken(`${endereco}?como=endereco`, {
+      headers: { accept: 'application/json' },
+    })
+    const lido = (await resposta.json().catch(() => null)) as { url?: unknown } | null
+    if (!resposta.ok || typeof lido?.url !== 'string')
+      throw Error('Não consegui o endereço da imagem.')
+    const arquivo = await buscar(lido.url, { redirect: 'error' })
+    if (!arquivo.ok) throw Error('Não consegui baixar a imagem.')
+    return new Uint8Array(await arquivo.arrayBuffer())
+  }
+
   return {
-    /** A oficina está aberta para esta conta? */
-    acesso: async () => pedir<{ aberto: boolean }>('GET', '/acesso'),
-    espacos: async () => pedir<unknown[]>('GET', '/espacos'),
-    bibliotecas: async (espacoId: string) =>
-      pedir<unknown[]>('GET', `/espacos/${id(espacoId)}/bibliotecas`),
-    async modelos(
-      bibliotecaId: string,
-      filtro: { busca?: string; pasta?: string; cursor?: string; limite?: number } = {},
-    ) {
-      const consulta = new URLSearchParams()
-      if (filtro.busca?.trim()) consulta.set('busca', filtro.busca.trim().slice(0, 120))
-      if (filtro.pasta !== undefined) consulta.set('pasta', filtro.pasta)
-      if (filtro.cursor) consulta.set('cursor', filtro.cursor)
-      if (filtro.limite) consulta.set('limite', String(filtro.limite))
-      return pedir<{ itens: unknown[]; total: number; proximo: string | null }>(
-        'GET',
-        `/bibliotecas/${id(bibliotecaId)}/modelos${consulta.size ? `?${consulta}` : ''}`,
-      )
-    },
-    mundos: async (espacoId: string) => pedir<unknown[]>('GET', `/espacos/${id(espacoId)}/mundos`),
-    criarMundo: async (espacoId: string, nome: string) =>
-      pedir<{ id: string }>('POST', `/espacos/${id(espacoId)}/mundos`, { nome: NOME.parse(nome) }),
-    ligarBibliotecas: async (mundoId: string, bibliotecas: string[]) =>
-      pedir<unknown>('PATCH', `/mundos/${id(mundoId)}`, { bibliotecas: bibliotecas.map(id) }),
-    cenarios: async (mundoId: string) => pedir<unknown[]>('GET', `/mundos/${id(mundoId)}/cenarios`),
-    criarCenario: async (mundoId: string, nome: string) =>
-      pedir<{ id: string; revisao: number }>('POST', `/mundos/${id(mundoId)}/cenarios`, {
-        nome: NOME.parse(nome),
-      }),
-    cenario: async (cenarioId: string) =>
-      pedir<{ id: string; revisao: number; documento: unknown }>(
-        'GET',
-        `/cenarios/${id(cenarioId)}`,
-      ),
-    /**
-     * Aplica um lote de comandos, inteiro ou nada. `revisaoEsperada` é a revisão lida por último;
-     * repetir o MESMO `operacaoId` depois de uma resposta perdida não aplica duas vezes.
-     */
-    async editar(
-      cenarioId: string,
-      revisaoEsperada: number,
-      comandos: ComandoDeCenario[],
-      operacaoId: string = crypto.randomUUID(),
-    ) {
-      return pedir<{ revisao: number }>('POST', `/cenarios/${id(cenarioId)}/lotes`, {
-        revisaoEsperada: z.number().int().min(0).parse(revisaoEsperada),
-        comandos: z.array(ComandoDeCenarioSchema).min(1).max(500).parse(comandos),
-        operacaoId: z
-          .string()
-          .regex(/^[A-Za-z0-9_-]{8,80}$/)
-          .parse(operacaoId),
-      })
-    },
-    duplicar: async (cenarioId: string) =>
-      pedir<{ id: string }>('POST', `/cenarios/${id(cenarioId)}/duplicar`),
+    app,
+    baixar,
+    host: criarHostHttp({
+      base: `${app}/api/cenarios`,
+      buscar: comToken,
+      // O envio ao armazenamento vai por endereço assinado: nunca leva o token.
+      enviar: buscar,
+    }),
   }
 }
 
-export type ClienteDaOficina = ReturnType<typeof criarClienteDaOficina>
-
 /** Lê o acesso do ambiente. Nada de segredo em arquivo do repositório nem em documento. */
-export function lerAcessoDaOficina(ambiente: Record<string, string | undefined> = process.env) {
-  const url = ambiente.MOLDA_CENARIOS_URL
-  if (!url) throw Error('Informe MOLDA_CENARIOS_URL (o endereço do gateway da plataforma)')
+export function lerAcessoDaOficina(
+  ambiente: Record<string, string | undefined> = process.env,
+): AcessoDaOficina {
+  const app = ambiente.MOLDA_CENARIOS_APP
+  if (!app)
+    throw Error('Informe MOLDA_CENARIOS_APP (o endereço do app que serve a oficina de cenários)')
   return {
-    url,
+    app,
+    ...(ambiente.MOLDA_CENARIOS_GATEWAY ? { gateway: ambiente.MOLDA_CENARIOS_GATEWAY } : {}),
     ...(ambiente.MOLDA_CENARIOS_TOKEN ? { token: ambiente.MOLDA_CENARIOS_TOKEN } : {}),
     ...(ambiente.MOLDA_CENARIOS_EMAIL ? { email: ambiente.MOLDA_CENARIOS_EMAIL } : {}),
     ...(ambiente.MOLDA_CENARIOS_SENHA ? { senha: ambiente.MOLDA_CENARIOS_SENHA } : {}),
-  } satisfies AcessoDaOficina
+  }
 }

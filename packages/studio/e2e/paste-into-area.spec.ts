@@ -88,13 +88,24 @@ async function pasteBlocks(
 async function dragOnto(page: Page, de: string, para: string): Promise<void> {
   const origem = page.locator('.blocklyBlockCanvas').getByText(de, { exact: false }).first()
   const destino = page.locator('.blocklyBlockCanvas').getByText(para, { exact: false }).first()
+  // O diagnóstico é aplicado depois da colagem e desloca os campos ao criar o
+  // ícone. Leia as coordenadas somente depois desse estado e da estabilidade
+  // visual que o hover do Playwright confere.
+  await expect(
+    page.locator('.blocklyBlockCanvas .sz-draft-block').getByText(de, { exact: false }).first(),
+  ).toBeVisible()
+  await origem.hover()
   const a = await origem.boundingBox()
   const b = await destino.boundingBox()
   if (!a || !b) throw new Error(`sem bounding box: ${de} / ${para}`)
-  await page.mouse.move(a.x + 8, a.y + a.height / 2)
+  // O aviso de rascunho ocupa a borda esquerda depois da colagem. Começar ali
+  // pode acionar o ícone/fundo e arrastar o espaço, em vez do bloco. Agarra o
+  // centro do texto e compensa a mudança do ponto de pega na chegada.
+  const gripOffset = a.width / 2 - 8
+  await page.mouse.move(a.x + 8 + gripOffset, a.y + a.height / 2)
   await page.mouse.down()
   // O encaixe do CHILDREN fica abaixo e à direita do rótulo da área.
-  await page.mouse.move(b.x + 34, b.y + b.height + 26, { steps: 24 })
+  await page.mouse.move(b.x + 34 + gripOffset, b.y + b.height + 26, { steps: 24 })
   await page.mouse.up()
 }
 

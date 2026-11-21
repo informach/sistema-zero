@@ -1,4 +1,5 @@
 import { expect, type FrameLocator, type Page, test } from '@playwright/test'
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import type { Project } from '../src/core/project'
 import {
   EXAMPLE_QA_CONTRACTS,
@@ -516,16 +517,20 @@ SZGameKit3D.start();
   const srcdoc = await renderProjectToPreviewDocAsync(project)
 
   await page.goto('/')
-  await page.evaluate((documentSource) => {
-    document.body.replaceChildren()
-    const iframe = document.createElement('iframe')
-    iframe.id = 'asset-preview'
-    iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
-    iframe.style.width = '800px'
-    iframe.style.height = '500px'
-    iframe.srcdoc = documentSource
-    document.body.appendChild(iframe)
-  }, srcdoc)
+  await page.evaluate(
+    ([documentSource, allow]) => {
+      document.body.replaceChildren()
+      const iframe = document.createElement('iframe')
+      iframe.id = 'asset-preview'
+      iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.allow = allow
+      iframe.style.width = '800px'
+      iframe.style.height = '500px'
+      iframe.srcdoc = documentSource
+      document.body.appendChild(iframe)
+    },
+    [srcdoc, GAME_FRAME_FOCUS_ALLOW] as const,
+  )
 
   const preview = page.frameLocator('#asset-preview')
   const canvas = preview.locator('canvas').first()
@@ -607,13 +612,17 @@ SZGameKit3D.start();
   // Segunda instância: remove o iframe assim que o canvas nasce, enquanto os
   // addons/assets ainda podem estar concluindo. O navegador real não deve emitir
   // pageerror nem deixar o runtime tardio religar um loop fora do documento.
-  await page.evaluate((documentSource) => {
-    const iframe = document.createElement('iframe')
-    iframe.id = 'pending-assets-preview'
-    iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
-    iframe.srcdoc = documentSource
-    document.body.appendChild(iframe)
-  }, srcdoc)
+  await page.evaluate(
+    ([documentSource, allow]) => {
+      const iframe = document.createElement('iframe')
+      iframe.id = 'pending-assets-preview'
+      iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.allow = allow
+      iframe.srcdoc = documentSource
+      document.body.appendChild(iframe)
+    },
+    [srcdoc, GAME_FRAME_FOCUS_ALLOW] as const,
+  )
   await expect(page.frameLocator('#pending-assets-preview').locator('canvas')).toBeAttached({
     timeout: 20_000,
   })
@@ -684,16 +693,17 @@ function moldaAssetsProject(
 
 async function mountAssetPreview(page: Page, srcdoc: string, id: string): Promise<FrameLocator> {
   await page.evaluate(
-    ([documentSource, frameId]) => {
+    ([documentSource, frameId, allow]) => {
       const iframe = document.createElement('iframe')
       iframe.id = frameId
       iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.allow = allow
       iframe.style.width = '800px'
       iframe.style.height = '500px'
       iframe.srcdoc = documentSource
       document.body.appendChild(iframe)
     },
-    [srcdoc, id] as const,
+    [srcdoc, id, GAME_FRAME_FOCUS_ALLOW] as const,
   )
   return page.frameLocator(`#${id}`)
 }

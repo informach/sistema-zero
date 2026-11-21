@@ -1,10 +1,18 @@
 import type * as Blockly from 'blockly/core'
 import type { JSX } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { useProjectStore } from '../../state/projectStore'
 import { Tabs } from '../layout/TabStrip'
 import { BlocklyPanel } from './BlocklyPanel'
-import { WorldComposerPanel } from './WorldComposerPanel'
+
+/**
+ * O editor de mundo 3D só existe no projeto com o Mundo 3D e traz o three.js inteiro (~840 KB):
+ * importado direto, ele ia no pacote de abertura do modo Blocos de TODO projeto (medido em
+ * 20/11/2026). Baixado sob demanda, chega quando o projeto com o Mundo 3D monta a aba.
+ */
+const WorldComposerPanel = lazy(() =>
+  import('./WorldComposerPanel').then((module) => ({ default: module.WorldComposerPanel })),
+)
 
 export function BlocksWorkspaceEditor(): JSX.Element {
   const hasWorld3D = useProjectStore((state) =>
@@ -40,7 +48,9 @@ export function BlocksWorkspaceEditor(): JSX.Element {
         id === 'blocks' ? (
           <BlocklyPanel onWorkspaceReady={onWorkspaceReady} />
         ) : (
-          <WorldComposerPanel workspace={workspace} />
+          <Suspense fallback={null}>
+            <WorldComposerPanel workspace={workspace} />
+          </Suspense>
         )
       }
     />

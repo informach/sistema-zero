@@ -140,3 +140,49 @@ describe('coverAssetName (a capa escolhida) é saneada por FORMA, não pela exis
     expect(validateStudioCreationSnapshot(manifest, project.id).coverAssetName).toBe('tela-inicial')
   })
 })
+
+describe('studentTests ("Meus testes") viajam no projeto clássico em JavaScript', () => {
+  const teste = {
+    id: 'moeda-ponto',
+    name: 'Encostar na moeda dá ponto',
+    rule: {
+      type: 'behavior' as const,
+      steps: [{ action: 'press' as const, key: 'Enter' as const }],
+      expect: { target: { kind: 'value' as const, path: 'pontos' }, compare: 'increased' as const },
+    },
+  }
+
+  it('sanitizeStoredProject guarda os testes na forma e OMITE a chave sem nenhum', () => {
+    // Teste fora da forma (de uma versão mais nova, ou mexido à mão) sai sem impedir a abertura do
+    // projeto: os testes não são o conteúdo do jogo.
+    const project = createEmptyProject('01J0000000000000000000TEST', 'Moedas')
+    const com = sanitizeStoredProject({ ...project, studentTests: [teste] }, project.id)
+    expect(com?.studentTests).toEqual([teste])
+    const ruins = sanitizeStoredProject(
+      { ...project, studentTests: [{ ...teste, name: '' }, { nada: 1 }] },
+      project.id,
+    )
+    expect(ruins && 'studentTests' in ruins).toBe(false)
+    const sem = sanitizeStoredProject(project, project.id)
+    expect(sem && 'studentTests' in sem).toBe(false)
+  })
+
+  it('o programa do manifesto da nuvem e o documento do projeto PRESERVAM os testes', async () => {
+    const project = createEmptyProject('manifesto-testes', 'Moedas')
+    const manifest = {
+      format: 'sz-studio-parts',
+      version: 1,
+      program: { ...project, assets: [], studentTests: [teste] },
+      assets: ['a'.repeat(64)],
+    }
+    expect(validateStudioCreationSnapshot(manifest, project.id).studentTests).toEqual([teste])
+    // O documento v3 de teste, sem materiais (o assunto aqui são os testes).
+    const documento = {
+      ...documentFixture('javascript', 'classic'),
+      assets: [],
+      studentTests: [teste],
+    }
+    const lido = await validateEditableStudioCreationSnapshot(documento, documento.id)
+    expect('studentTests' in lido ? lido.studentTests : undefined).toEqual([teste])
+  })
+})

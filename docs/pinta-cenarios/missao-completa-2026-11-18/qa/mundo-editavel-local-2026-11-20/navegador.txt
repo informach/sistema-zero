@@ -1,0 +1,8 @@
+(node:34316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › e2e\pinta-native-world-scenes.flow.ts:46:1 › arquivo editável: Vila e cabana completas, restauro e reabertura sem perda (3.6s)
+(node:32304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [touch] › e2e\pinta-native-world-scenes.flow.ts:46:1 › arquivo editável: Vila e cabana completas, restauro e reabertura sem perda (3.4s)
+
+  2 passed (13.2s)

@@ -427,3 +427,27 @@ test('contact observation reads collision geometry without mutating sprites or i
   expect(result.proxySprite).toBeNull()
   expect(result.calls).toBe(0)
 })
+
+test('the lifecycle reports how many sprites were drawn between two clears (aba Desempenho)', () => {
+  const result = vm.runInContext(
+    `(() => {
+      const inspect=__SZSTUDIO_RUNTIME_INSPECTORS['game-2d:observation']();
+      const ctx=new Proxy({}, { get: (target, key) => key in target ? target[key] : function(){ return { width: 0 } },
+        set: (target, key, value) => { target[key]=value; return true } });
+      const a=SZGame2D.createSprite({x:0,y:0,w:10,h:10}), b=SZGame2D.createSprite({x:20,y:0,w:10,h:10});
+      const before=inspect.lifecycle().drawn;
+      SZGame2D.clear(); SZGame2D.drawSprite(ctx,a); SZGame2D.drawSprite(ctx,b); SZGame2D.clear();
+      const two=inspect.lifecycle().drawn;
+      SZGame2D.drawSprite(ctx,a); SZGame2D.clear();
+      const one=inspect.lifecycle().drawn;
+      SZGame2D.clear();
+      return {before,two,one,none:inspect.lifecycle().drawn};
+    })()`,
+    canvasContext(
+      `for (const name of ['clearRect','fillRect','save','restore','drawImage','beginPath','rect','fill','stroke','translate','scale','fillText','strokeRect'])
+        CanvasRenderingContext2D.prototype[name]=function(){};
+      CanvasRenderingContext2D.prototype.measureText=function(){return {width:0}};`,
+    ),
+  )
+  expect({ ...result }).toEqual({ before: 0, two: 2, one: 1, none: 0 })
+})

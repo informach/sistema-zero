@@ -270,9 +270,24 @@ export interface AberturaDosCenarios {
   modo: ModoDosCenarios
   /** Contas liberadas no modo `lista`. */
   lista: ReadonlySet<string>
+  /**
+   * Nos modos `lista` e `aberto`, quem não é da equipe precisa também do Molda: o produto da
+   * conta e a ferramenta liberada na jornada de quem pede (no Kids, a do perfil da criança). Sem
+   * esta conferência, a ferramenta fica só para a equipe.
+   */
+  produto?: (ator: Ator) => Promise<boolean>
+  /**
+   * As faixas de ferramentas da oficina (`FAIXAS_DA_OFICINA`) de quem não é da equipe: a mesma
+   * régua das faixas do Molda. Sem esta conferência, só o básico. A equipe tem todas.
+   */
+  faixas?: (ator: Ator) => Promise<readonly string[]>
+  /** A cota de cada conta em bytes (padrão: `LIMITES_DOS_CENARIOS.bytesDaConta`). Vale também
+   * para os espaços que já existem: a cota guardada é trocada no próximo uso. */
+  cotaDaContaBytes?: number
 }
 
-/** A ferramenta está aberta para esta pessoa? A equipe entra em qualquer modo, menos desligado. */
+/** O modo admite esta pessoa? A equipe entra em qualquer modo, menos desligado. O produto Molda
+ * de quem não é da equipe é conferido à parte (`AberturaDosCenarios.produto`). */
 export function podeUsarCenarios(abertura: AberturaDosCenarios, ator: Ator): boolean {
   if (abertura.modo === 'desligado') return false
   if (abertura.modo === 'aberto') return true
@@ -289,6 +304,17 @@ export function podeUsarCenarios(abertura: AberturaDosCenarios, ator: Ator): boo
 export function equipeNaPropriaConta(ator: Ator): boolean {
   const perfil = ator.perfil ?? ator.usuarioId !== ator.contaId
   return ator.equipe && !ator.suporte && !perfil
+}
+
+/**
+ * No Kids, cada criança tem os PRÓPRIOS mundos (os que o perfil dela criou); as bibliotecas, e
+ * os rascunhos de conjunto delas, seguem da família. Fora de uma sessão de perfil (o adulto, a
+ * equipe na própria conta) a conta vê todos. O espaço já foi conferido por `podeNoEspaco`.
+ */
+export function podeNoMundo(mundo: Mundo, espaco: Espaco, ator: Ator): boolean {
+  if (espaco.tipo !== 'conta' || mundo.bibliotecaConjuntosId) return true
+  const perfil = ator.perfil ?? ator.usuarioId !== ator.contaId
+  return !perfil || mundo.criadoPor === ator.usuarioId
 }
 
 /** Este ator pode mexer neste espaço? */

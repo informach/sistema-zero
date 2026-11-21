@@ -35,7 +35,7 @@ describe('BlocksWorkspaceEditor', () => {
     expect(screen.queryByRole('tab', { name: 'Editor de mundo 3D' })).toBeNull()
   })
 
-  it('oferece o editor visual somente ao projeto que instalou Mundo 3D', () => {
+  it('oferece o editor visual somente ao projeto que instalou Mundo 3D', async () => {
     const project = createEmptyProject('world', 'Mundo')
     project.installedExtensions = [{ id: 'world-3d', version: '4.0.0', installedAt: 0 }]
     useProjectStore.setState({ project })
@@ -45,8 +45,11 @@ describe('BlocksWorkspaceEditor', () => {
     expect(worldTab.getAttribute('aria-selected')).toBe('false')
     fireEvent.click(worldTab)
     expect(worldTab.getAttribute('aria-selected')).toBe('true')
+    // O editor de mundo é baixado sob demanda (traz o three.js): chega um instante depois.
     expect(
-      screen.getByTestId('world-composer').closest('[role="tabpanel"]')?.hasAttribute('hidden'),
+      (await screen.findByTestId('world-composer'))
+        .closest('[role="tabpanel"]')
+        ?.hasAttribute('hidden'),
     ).toBe(false)
   })
 

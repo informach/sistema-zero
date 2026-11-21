@@ -133,10 +133,11 @@ nativeTest(
         'check-models-ready.mjs',
       ])
         await writeFile(path.join(temporary, file), await readFile(path.join(runtime, file)))
-      await writeFile(
-        path.join(temporary, 'execution-observation.generated.mjs'),
-        await readFile(path.join(runtime, 'execution-observation.generated.mjs')),
-      )
+      for (const generated of ['execution-observation.generated.mjs', 'click-target.generated.mjs'])
+        await writeFile(
+          path.join(temporary, generated),
+          await readFile(path.join(runtime, generated)),
+        )
       await writeFile(
         path.join(temporary, 'check-options.json'),
         JSON.stringify({

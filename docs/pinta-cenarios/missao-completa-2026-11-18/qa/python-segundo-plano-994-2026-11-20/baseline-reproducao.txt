@@ -1,0 +1,46 @@
+
+Running 1 test using 1 worker
+
+(node:26160) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 .cache\pinta-hidden-python-focus.spec.ts:3:1 › a real Pinta/Pygame background frame preserves host editor focus (2.9s)
+
+
+  1) .cache\pinta-hidden-python-focus.spec.ts:3:1 › a real Pinta/Pygame background frame preserves host editor focus
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 8
+
+    - Array []
+    + Array [
+    +   "Teste do programa",
+    +   "Teste do programa",
+    +   "Teste do programa",
+    +   "Teste do programa",
+    +   "Teste do programa",
+    +   "Teste do programa",
+    + ]
+
+      34 |  await info.attach('background-focus',{body:JSON.stringify({distribution:distribution.hash,...result,errors}),contentType:'application/json'})
+      35 |  expect(errors).toEqual([])
+    > 36 |  expect(result.taken).toEqual([])
+         |                       ^
+      37 |  expect(result.hostFocused).toBe(true)
+      38 | })
+      39 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-hidden-python-focus.spec.ts:36:23
+
+    Error Context: .cache\pinta-hidden-python-focus-results\pinta-hidden-python-focus--f0184-preserves-host-editor-focus\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-hidden-python-focus-results\pinta-hidden-python-focus--f0184-preserves-host-editor-focus\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-hidden-python-focus-results\pinta-hidden-python-focus--f0184-preserves-host-editor-focus\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    .cache\pinta-hidden-python-focus.spec.ts:3:1 › a real Pinta/Pygame background frame preserves host editor focus

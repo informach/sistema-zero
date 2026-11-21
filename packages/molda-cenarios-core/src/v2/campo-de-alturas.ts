@@ -2,9 +2,11 @@ import { interpolarAlturasDaCelula } from './interpolacao-de-alturas'
 import {
   AMOSTRAS_DA_PECA,
   type BaseDeTerreno,
+  BaseDeTerrenoSchema,
   CELULAS_DA_PECA,
   LADO_DAS_AMOSTRAS,
   type PecaDeAlturas,
+  pecasConferidasDaBase,
   TerrenoInvalido,
 } from './terreno'
 
@@ -83,24 +85,22 @@ export const clonarCampo = (c: CampoDeAlturas): CampoDeAlturas => ({
   alturas: c.alturas.slice(),
 })
 
-/** Abre a base inteira num campo. Onde não há peça, vale a altura de fundo. */
+/**
+ * Abre a base inteira num campo. Onde não há peça, vale a altura de fundo. Peça fora da grade
+ * ou com borda diferente da vizinha é recusada, como no palco e na compilação: aqui ela
+ * passaria calada, com a última peça vencendo na borda.
+ */
 export function campoDaBase(
-  base: BaseDeTerreno,
+  entrada: BaseDeTerreno,
   recursos: ReadonlyMap<string, PecaDeAlturas>,
 ): CampoDeAlturas {
+  const base = BaseDeTerrenoSchema.parse(entrada)
   const campo = criarCampoDeAlturas(base, base.fundo)
   const largura = base.colunas + 1
-  for (const p of base.pecas) {
-    const dados = recursos.get(p.digest)
-    if (!dados) return invalidar(`Falta a peça de terreno ${p.digest}`)
-    if (
-      dados.min !== base.min ||
-      dados.max !== base.max ||
-      dados.amostras.length !== AMOSTRAS_DA_PECA
-    )
-      invalidar('A peça não corresponde ao intervalo e à resolução do terreno')
-    const ox = p.coluna * CELULAS_DA_PECA,
-      oz = p.linha * CELULAS_DA_PECA
+  const larguraEmPecas = base.colunas / CELULAS_DA_PECA
+  for (const [chave, dados] of pecasConferidasDaBase(base, recursos)) {
+    const ox = (chave % larguraEmPecas) * CELULAS_DA_PECA,
+      oz = Math.floor(chave / larguraEmPecas) * CELULAS_DA_PECA
     for (let z = 0; z < LADO_DAS_AMOSTRAS; z++)
       for (let x = 0; x < LADO_DAS_AMOSTRAS; x++)
         campo.alturas[(oz + z) * largura + ox + x] =

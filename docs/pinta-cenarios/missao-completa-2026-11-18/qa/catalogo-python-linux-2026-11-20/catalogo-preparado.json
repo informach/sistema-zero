@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-20T20:51:54.142Z",
+  "planSha256": "f383fe6b5b7fd4151fff68de011a5eca71569f5d6edef7902c7e420866392e95",
+  "distributionSha256": "52ec7bb5b7f4a11dd3ad915064a6b6b9b0f32bb33b8335dba4dbfebc389dcd13",
+  "releaseManifestSha256": "79363b5a891b19368c6703217f4396d7e44ded0eb00663d4636a12f63e8c649d",
+  "previousMembersPolicySha256": "022e5b54bce19be4a83b90fad0049b8d951e0d88d9e9cdb2eb6a896bf17544d8",
+  "preparedMembersPolicy": {
+    "sha256": "87a8e72812995c056381fcae6a76298fc5ca4c817f70808095c931df3fa94985",
+    "bytes": 135672
+  },
+  "previousWorkerSelector": "f69814b9412125e9bb8f8f33aea2b682cf1e7dfdeb59f593c2067466ce140553",
+  "preparedWorkerSelector": "8251af12713ba1529276d62796d66051ad076347f2dd5d53ed344aced1142d0b",
+  "previousReleasesPreserved": 2,
+  "candidateReleases": 3,
+  "canonicalLoadPassed": true,
+  "activated": false
+}

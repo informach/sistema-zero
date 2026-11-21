@@ -473,6 +473,8 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
 
   /** Limpa a tela inteira do palco (use no começo de cada quadro). */
   function clear() {
+    _paintedLastFrame = _spritePaintOrder - _paintOrderAtClear;
+    _paintOrderAtClear = _spritePaintOrder;
     _spritePaintEpoch++;
     _beginAccessibleHudFrame();
     var c = ensureStage();

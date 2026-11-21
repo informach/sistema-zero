@@ -6,7 +6,10 @@ import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-c
 import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { showcaseErrorMessage } from '../../lib/showcase-failure'
-import { createStudioPublicationAdapter } from '../../lib/studio-publication-adapter'
+import {
+  createStudioPublicationAdapter,
+  createStudioShareStatus,
+} from '../../lib/studio-publication-adapter'
 import { useLessonRuntime } from './use-lesson-runtime'
 
 import '@sistemazero/studio/styles.css'
@@ -84,29 +87,6 @@ import {
   swapOtherVersion,
 } from './lesson-studio-draft'
 import { SectionProjectCheck } from './section-project-check'
-
-// "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
-// criança termina, publica no Mural, pronto — não fica republicando (cada republish
-// hoje cria um post NOVO). Trava persistida LOCAL por (perfil, bloco) via a chave do
-// projeto (sobrevive a refresh). O Estúdio Completo (projeto livre) NÃO passa por
-// aqui — lá o compartilhar segue ilimitado. Guardado contra ambiente sem localStorage.
-const SHARED_FLAG_PREFIX = 'sz:studio:shared:'
-function readSharedFlag(projectId: string): boolean {
-  if (typeof window === 'undefined') return false
-  try {
-    return window.localStorage.getItem(SHARED_FLAG_PREFIX + projectId) === '1'
-  } catch {
-    return false
-  }
-}
-function writeSharedFlag(projectId: string): void {
-  if (typeof window === 'undefined') return
-  try {
-    window.localStorage.setItem(SHARED_FLAG_PREFIX + projectId, '1')
-  } catch {
-    // Sem localStorage (modo privado): a trava vale só nesta sessão (estado em memória).
-  }
-}
 
 // "Expandir" (overlay de tela cheia) é estado de VISTA efêmero, mas precisa SOBREVIVER a uma
 // remontagem do bloco na mesma página (ex.: a revisão do bloco mudou): um useState comum voltaria a
@@ -421,8 +401,6 @@ function LessonStudioBlockView({
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
-  // "Compartilhar" da aula é 1 vez só (ver helper): trava depois do 1º publish bem-sucedido.
-  const [alreadyShared, setAlreadyShared] = useState<boolean>(() => readSharedFlag(projectId))
   // "O professor já conferiu": some ao reenviar (a versão nova ainda não foi vista).
   const [reviewed, setReviewed] = useState<boolean>(studioState?.reviewed ?? false)
   const [error, setError] = useState<string | null>(null)
@@ -991,7 +969,19 @@ function LessonStudioBlockView({
       presetCoverUrl,
       proVerifiedCover: true,
       publication: createStudioPublicationAdapter(),
-      async publish({ project, coverDataUrl, useAdminCover, title, description, requestId }) {
+      // A aula é um projeto só: compartilhar de novo ATUALIZA o post. O que vai ao Mural é
+      // o ENVIO, então "jogo igual" quer dizer: envie a versão nova à equipe primeiro.
+      status: createStudioShareStatus(() => ({ kind: 'lesson', lessonId, blockId })),
+      unchangedMessage: estudio.compartilharIgual,
+      async publish({
+        project,
+        coverDataUrl,
+        useAdminCover,
+        keepCover,
+        title,
+        description,
+        requestId,
+      }) {
         const form = new FormData()
         form.set('lessonId', lessonId)
         form.set('blockId', blockId)
@@ -1006,7 +996,7 @@ function LessonStudioBlockView({
           // ⚠️ NÃO usar fetch(data:) — a CSP (connect-src) bloqueia → "Failed to fetch".
           const blob = dataUrlBase64ToBlob(coverDataUrl)
           form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
-        } else if (useAdminCover) {
+        } else if (useAdminCover && !keepCover) {
           // Sem print/upload: o servidor usa a capa padrão do curso (resolve a URL lá).
           form.set('useDefaultCover', '1')
         }
@@ -1015,21 +1005,21 @@ function LessonStudioBlockView({
           muralUrl?: string
           playUrl?: string
           publicationId?: string
+          updated?: boolean
         } | null
         if (!res.ok) throw new Error(showcaseErrorMessage(body))
         return {
           muralUrl: body?.muralUrl,
           playUrl: body?.playUrl,
           publicationId: body?.publicationId,
+          ...(body?.updated ? { updated: true } : {}),
         }
       },
-      // Publicou: TRAVA o compartilhar da aula (1 vez só, persistido local) e entrega os
-      // links ao host. O kids abre a celebração e o ShareDialog fecha sozinho; o adulto não tem
-      // celebração, então o dialog mostra a própria tela com o link (Seu jogo está no Mural!, Copiar link de jogar).
+      // Publicou pela 1ª vez: o kids abre a celebração e o ShareDialog fecha sozinho; o
+      // adulto não tem celebração, então o dialog mostra a própria tela com o link. Uma
+      // ATUALIZAÇÃO mostra sempre a tela do dialog ("Seu jogo foi atualizado!").
       onPublished: (result) => {
-        setAlreadyShared(true)
-        writeSharedFlag(projectId)
-        onSharedRef.current?.(result)
+        if (!result.updated) onSharedRef.current?.(result)
       },
       showPublishedScreen: !temCelebracao,
     }
@@ -1037,7 +1027,7 @@ function LessonStudioBlockView({
     enableShare,
     lessonId,
     blockId,
-    projectId,
+    estudio.compartilharIgual,
     presetTitle,
     presetDescription,
     presetCoverUrl,
@@ -1218,20 +1208,10 @@ function LessonStudioBlockView({
             proRuntime={proRuntime}
             runtimeEnvironment={lessonRuntime.environment}
             share={share}
-            // O "Compartilhar" da aula: (1) só habilita DEPOIS de enviar ao professor
-            // (publicar exige a entrega; o members também barra com SHOWCASE_NOT_ELIGIBLE);
-            // (2) é UMA vez só — depois de publicado, trava (o projeto da aula tem fim; o
-            // Estúdio Completo não usa isso e segue ilimitado). Botão VISÍVEL porém
-            // desabilitado com a dica em cada caso.
-            shareDisabledReason={
-              share
-                ? !submitted
-                  ? estudio.compartilharDepois
-                  : alreadyShared
-                    ? 'Você já compartilhou este jogo no Mural. 🎉'
-                    : undefined
-                : undefined
-            }
+            // O "Compartilhar" da aula só habilita DEPOIS de enviar à equipe (publicar exige
+            // a entrega; o members também barra com SHOWCASE_NOT_ELIGIBLE). Depois dele,
+            // compartilhar de novo ATUALIZA o mesmo post (sem trava de uma vez só).
+            shareDisabledReason={share && !submitted ? estudio.compartilharDepois : undefined}
             // Item ⋯ → "Trazer o que eu enviei" (só na aula; abre a confirmação).
             onCloudSync={lessonId ? openSync : undefined}
             persistence={persistence}

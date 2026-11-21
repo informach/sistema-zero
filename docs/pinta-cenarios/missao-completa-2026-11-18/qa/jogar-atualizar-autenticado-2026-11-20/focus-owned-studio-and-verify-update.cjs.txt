@@ -1,0 +1,9 @@
+module.exports=async function(qa){const expected=qa.ownedProgramBeforeMapUpdate,changed=qa.currentProtectedCheckpoint;if(!expected?.customMarkerInIR||changed?.secondCell!==-1)throw Error('Owned update not committed');
+// Headless Chrome reports both tabs visible. Exercise the same normal focus
+// event consumed by DrawingSyncWatcher; do not call any application store/API.
+await qa.modern.bringToFront();await qa.modern.evaluate(()=>window.dispatchEvent(new Event('focus')));
+let after;for(let i=0;i<80;i++){await qa.modern.waitForTimeout(250);after=await require('./checkpoint-owned-game.cjs')(qa);if(after.sceneSha256!==expected.sceneSha256&&after.libRevision>expected.libRevision)break}
+if(!after||after.sceneSha256===expected.sceneSha256||after.libRevision<=expected.libRevision)return {failed:true,phase:'drawing-not-updated',after};
+if(after.programSha256!==expected.programSha256||!after.customMarkerInFiles||!after.customMarkerInIR)return {failed:true,phase:'program-changed',after};
+qa.ownedMapUpdate={mapBefore:'00d8e2c2a16fd54be9843e721ae381b44d726ecbb3c6c6bfbf255bdabbe31a7e',mapAfter:changed.sha256,programBefore:expected.programSha256,programAfter:after.programSha256,sceneBefore:expected.sceneSha256,sceneAfter:after.sceneSha256,libRevisionBefore:expected.libRevision,libRevisionAfter:after.libRevision,customProgramPreserved:true,precisePhysics:true,nativeSchema:7,firstCell:changed.firstCell,secondCell:changed.secondCell,oldPagePreserved:!qa.old.isClosed(),authenticatedHost:true,focusEventEmulated:true,cloudWriter6Activated:false};
+return qa.ownedMapUpdate;};

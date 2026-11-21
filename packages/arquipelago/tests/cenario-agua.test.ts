@@ -4,8 +4,7 @@ import {
   escalaUniformeDoGesto,
   executarLote,
 } from '@sistemazero/molda-cenarios-core'
-import { assentarInstancias } from '../src/cenarios/apoio'
-import { geometriaDaBacia } from '../src/cenarios/bacia'
+import { assentarInstancias } from '../src/molda/importacao-v1/apoio'
 import { catalogoInicialDaFaisca, cenarioInicialDaFaisca } from '../src/sistemas/cenario-inicial'
 
 test('mover, girar e escalar o lago leva a ponte vinculada sem perder a intenção de apoio', () => {
@@ -37,22 +36,6 @@ test('mover, girar e escalar o lago leva a ponte vinculada sem perder a intenç�
       { revisaoEsperada: 0, comandos: [{ tipo: 'agua.remover', id: a.id }] },
     ),
   ).toThrow('Água de apoio')
-})
-test('água sem GLB tem fundo e margens físicos na mesma profundidade do desenho', () => {
-  const a = cenarioInicialDaFaisca('a'.repeat(64)).aguas[0]!
-  a.modelo = null
-  a.escala = 2
-  a.profundidade = 2
-  const b = geometriaDaBacia(a, () => 4)
-  expect(b.vertices.length).toBe(a.recorte.length * 6)
-  expect(
-    Math.min(...Array.from({ length: b.vertices.length / 3 }, (_, i) => b.vertices[i * 3 + 1]!)) *
-      a.escala +
-      a.nivel,
-  ).toBeCloseTo(a.nivel - 2)
-  expect(b.geo.getAttribute('position').array).toEqual(b.vertices)
-  expect([...b.geo.index!.array]).toEqual([...b.indices])
-  b.geo.dispose()
 })
 test('escala uniforme aceita diminuir pelo manipulador e apoio considera inclinação completa', () => {
   expect(escalaUniformeDoGesto({ x: 0.7, y: 1, z: 1 }, 1)).toBeCloseTo(0.7)

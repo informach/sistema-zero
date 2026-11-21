@@ -1,0 +1,18 @@
+{
+  "projectId": "01M7WPNJ5QN6GWD26KXGSPX527",
+  "programSha256": "05eb9deebfed36531f6eda77f4a9b858f246567ba2ceae94693dd54967351302",
+  "filesSha256": "29c0cab5f713538da1e07241fb61c974d15b4d1aa4473dcda9d049a7e5bbd8b3",
+  "irSha256": "efdb47b6fd6da19404d3acd44c302a8f4b38f59a7f3a30a7dc1c64a47cd4865b",
+  "blocksSha256": "c07c81530fe51f171bd62752a5b6bfb20d3f9dee0ef1ff5da6f9c27ccef921a8",
+  "markerInFiles": true,
+  "markerInIR": true,
+  "sceneSha256": "cd10e6317f05c0fbeca9c556b886ad2f3b726748026d96d02eb844b3596ffb7d",
+  "sceneVersion": 3,
+  "layers": 18,
+  "tilesets": 2,
+  "libRevision": 1795185886905,
+  "linkedMaps": 2,
+  "readOnly": true,
+  "keyboardEdit": true,
+  "oldPagePreserved": true
+}

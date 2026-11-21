@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-20T14:19:28.866Z",
+  "source": "132343b7ca7ed342f7bf26ea54946996b19ed3b4",
+  "integratedRemote": "9456c3da31ef34babed9a7012c78f9af1bbabca8",
+  "ci": {
+    "run": 44749541850,
+    "rootJob": "failure",
+    "reason": "Biome: JSON de QA remoto sem formatação canônica"
+  },
+  "qaFixes": {
+    "fixtureEventSource": true,
+    "evidenceJsonSemanticEqual": true
+  },
+  "logs": [
+    {
+      "file": "pinta-post-945-components.log",
+      "sha256": "c853caa3ec529427b243e9f03d279556a1a1fa6ed84897b9bc5aabed5bf82c89",
+      "summary": "componentes.txt"
+    },
+    {
+      "file": "pinta-post-945-event-source-tests.log",
+      "sha256": "b7e338202283421f32e09f3f4899d704ff8229937c457bf5e054598c420e03c0",
+      "summary": "previa-pos-ajuste.txt"
+    },
+    {
+      "file": "pinta-post-945-core-shell-tests.log",
+      "sha256": "064211866f799a82de4baa6ba9b6ddcbf33d9904c363fb5542db0d8d8b37dd2b",
+      "summary": "casca-core.txt"
+    },
+    {
+      "file": "pinta-post-945-event-source-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": "tipos-estudio.txt"
+    },
+    {
+      "file": "pinta-post-945-root-biome-r2.log",
+      "sha256": "3fb71eecf02cd80f887ce105ff63f082befcf00e7d2dd67f3dd113c2cfc1473a",
+      "summary": "biome-raiz.txt"
+    },
+    {
+      "file": "pinta-post-945-profile.log",
+      "sha256": "2c5f1ad158eb28e5ffca99d80ad94a0da6fce05645ccd90e71046d6c2c663228",
+      "summary": "perfil.txt"
+    },
+    {
+      "file": "pinta-post-945-portable-check.log",
+      "sha256": "3bccc0e147f77fcea6dce72842fa2e226d56998ee244de805d5e69f07f4bc114",
+      "summary": "gerado-portatil.txt"
+    },
+    {
+      "file": "pinta-post-945-loaders-check.log",
+      "sha256": "ede175613f80a8c009bb7346557842eeecf5ccd8e3b6f675b66751d64515ae37",
+      "summary": "gerados-iframe.txt"
+    }
+  ],
+  "fullCiRequalificationPending": true,
+  "pintaVisualChanged": false,
+  "functional3dSourcesEdited": false
+}

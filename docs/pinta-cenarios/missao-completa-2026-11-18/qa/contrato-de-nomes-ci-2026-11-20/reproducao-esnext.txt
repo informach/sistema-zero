@@ -1,0 +1,2 @@
+src/ir/symbolNames.ts(6,14): error TS2420: Class 'SymbolNames<T>' incorrectly implements interface 'ReadonlySet<T>'.
+  Type 'SymbolNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more.

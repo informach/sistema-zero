@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/members
 
+## Meus testes no Pro do Estúdio Completo (20/11/2026)
+
+`POST /members/studio/student-tests?audience=` (`StudioStudentTestsService`,
+`application/studio/studio-student-tests.service.ts`): os testes que a criança escreve na aba
+"Meus testes" do Pro em JavaScript, `{project, tests}`. Confere o acesso ao Pro do Estúdio Completo
+(`FreeStudioAccessService.execute(actor, 'existing-pro', 'javascript')`), o projeto Pro com modelo
+conhecido, cada teste pela régua do Pro (`isRunnableStudentTestRule(rule, 'javascript', 'pro')`:
+texto, mensagens, estado do kit ou função exportada de `src`) e roda no MESMO
+`ProjectExecutionChecker` do "Verificar projeto" (`requester` = o perfil). UM lote por pedido
+(`studentTestServerBatches` do core: até 8 testes e 40 s de espera); mais que isso é 400 (o
+Estúdio manda em sequência). A recusa do executor (não compila) volta como 400 com o motivo, a
+criança lê; fora do ar e ocupado seguem 424/429. Nada é guardado. Corpo até o teto do Estúdio
+(`bodyLimitForPath`). Teste: `tests/unit/studio-student-tests.service.test.ts`.
+
 ## Identidade pública e certificado (full review da Aula 7, 19/11/2026)
 
 O emissor recebe `profileSession` obrigatório da fronteira autenticada: `kids-context=student`,
@@ -22,6 +36,28 @@ Regressões: `live-public-identities`, `live-contract-1410`, `certificate` e `pu
 - `gravarLote` confirma recursos e grava a edição na mesma transação, depois do CAS/idempotência, sob a trava do espaço. A base precisa referir todas as peças confirmadas, com mínimo/máximo iguais ao cabeçalho. Falhas fazem rollback.
 - Histórico, fotografias e cópias protegem os hashes de terreno. Apagar mundo/cenário devolve `{apagar: chaves[]}` só dos arquivos sem referências, para a limpeza do BFF. Outra conta nunca divide o mesmo objeto de armazenamento.
 - `ehImagemDeCenario` enumera os papéis de imagem explicitamente; um terreno não pode servir de capa. O núcleo e os testes de fronteira continuam sem Three/React/IO.
+
+## Molda Cenários: abertura pronta, faixas e mundos por criança (20/11/2026, lote 10)
+
+- **Abertura com o Molda.** Nos modos `lista` e `aberto`, quem não é da equipe precisa também do
+  Molda (`AberturaDosCenarios.produto`, `application/cenarios/molda-dos-cenarios.ts`): o produto
+  pela conta (`creativeToolAccessRef('molda', público)`, o cache curto da posse das criações, que a
+  revogação de matrícula apaga) e a capacidade `molda` na jornada de quem pede (Kids: a do perfil;
+  adulto: a jornada adulta). Sem a conferência ligada, só a equipe. O "pode" fica 60 s na memória.
+- **Faixas de ferramentas.** O catálogo é `FAMILIAS_DA_OFICINA` de `molda-cenarios-core/v2`
+  (`faixas.ts`), com as três faixas do Molda. `aplicarMudanca` compara o documento antes e depois
+  (`familiasTrancadas`) e recusa com 403 `CENARIO_FERRAMENTA_TRANCADA` (`details.familias`) o lote
+  de quem não é da equipe que cria ou muda uma família fora das faixas
+  (`AberturaDosCenarios.faixas`, a régua do Molda: no adulto sem currículo, `molda` dá todas).
+  Desfazer, refazer e voltar a uma versão (`restaurarRevisao`) não passam pela conferência.
+  Criar, editar e publicar conjuntos exigem `objetos.conjuntos` (intermediário). O relevo
+  esculpido não diz qual ferramenta o fez: rampa, platô, ruído e erosão só a tela tranca.
+- **Mundos por criança.** Numa sessão de perfil, o espaço da família lista e abre só os mundos que
+  o perfil criou (`podeNoMundo`); o de um irmão responde "não existe". Bibliotecas e os rascunhos
+  de conjunto delas seguem da família; fora de sessão de perfil, a conta vê todos.
+- **Cota da conta.** `CENARIOS_COTA_DA_CONTA_MB` (opcional, padrão 2048; criar no Railway antes de
+  pôr no `.railway/variables.ts`). Vale também para os espaços que já existem: a cota guardada é
+  trocada no próximo uso (`definirLimiteDaConta`). O espaço da equipe não muda.
 
 ## Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026, migration `0151`)
 

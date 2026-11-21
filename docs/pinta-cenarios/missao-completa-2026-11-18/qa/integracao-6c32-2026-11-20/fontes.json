@@ -1,0 +1,27 @@
+{
+  "parents": [
+    "6c32a1fb37702cfdae0ebc6ae5c2eac99d9120f3",
+    "c080755471f07dd36af836ce2dd518ebd9ab1ecf"
+  ],
+  "runtimeFingerprint": "db27c95b58f613206c380e9dbc1b2a9c1c7ea1416844747cb052e353cf1d2d30",
+  "qualificationStillRequired": true,
+  "codeHashEncoding": "UTF-8 with LF",
+  "code": [
+    {
+      "file": "packages/studio/src/asset-library/personal.ts",
+      "sha256": "c78a0cb9580ff199d2b7c4660c0752b082584644ee3af4c92618151ab2bcfd9f"
+    },
+    {
+      "file": "packages/studio/src/asset-library/personalSync.ts",
+      "sha256": "f5450675210b4b019a4025081f5156bd888f59e1cc7072bf2d6636c1203857af"
+    },
+    {
+      "file": "packages/studio/src/asset-library/__tests__/personal.cases.ts",
+      "sha256": "090fb468cdc55f07c1c0856c60903d55ccc2d1e88f1755d41aec4d0d61d80426"
+    },
+    {
+      "file": "packages/studio/src/asset-library/__tests__/personalSync.cases.ts",
+      "sha256": "d9a56c054d578a340cdbede5e7060cc66486c27d6ee34f540de1889db9d60945"
+    }
+  ]
+}

@@ -7,7 +7,15 @@ export interface FonteDeColisao {
   geometria: BufferGeometry
   matriz: Matrix4
 }
+/** Referências transitórias em coordenadas globais: o predicado só lê e não as retém. */
+export interface TrianguloDaConsulta {
+  readonly objeto?: string
+  readonly a: Readonly<Pick<Vector3, 'x' | 'y' | 'z'>>
+  readonly b: Readonly<Pick<Vector3, 'x' | 'y' | 'z'>>
+  readonly c: Readonly<Pick<Vector3, 'x' | 'y' | 'z'>>
+}
 interface Entrada {
+  objeto?: string
   arvore: MeshBVH
   matriz: Matrix4
   inversa: Matrix4
@@ -66,6 +74,7 @@ export class MundoDoTeste {
         }
         if (!entrada.copia.boundingBox) entrada.copia.computeBoundingBox()
         this.entradas.push({
+          objeto: f.objeto,
           arvore: entrada.arvore,
           matriz: f.matriz.clone(),
           inversa: f.matriz.clone().invert(),
@@ -146,7 +155,7 @@ export class MundoDoTeste {
   triangulosNaCaixa(
     caixa: Box3,
     maximo = 20_000,
-    incluir?: (instancia: number, triangulo: number) => boolean,
+    incluir?: (instancia: number, triangulo: number, contexto: TrianguloDaConsulta) => boolean,
   ): Float64Array {
     if (this.descartado) throw new Error('A consulta de superfícies já foi encerrada')
     if (!Number.isSafeInteger(maximo) || maximo < 1 || maximo > 100_000)
@@ -159,6 +168,12 @@ export class MundoDoTeste {
     for (const i of this.indice.sobrepor(caixa)) {
       const entrada = this.entradas[i]!,
         local = caixa.clone().applyMatrix4(entrada.inversa)
+      const contexto: TrianguloDaConsulta = {
+        objeto: entrada.objeto,
+        a: this.triangulo.a,
+        b: this.triangulo.b,
+        c: this.triangulo.c,
+      }
       entrada.arvore.shapecast({
         intersectsBounds: (b) => b.intersectsBox(local),
         intersectsTriangle: (t, triangulo) => {
@@ -172,7 +187,7 @@ export class MundoDoTeste {
           if (!this.caixa.intersectsBox(caixa)) return false
           // Identidade estável da instância/BVH: setores vizinhos podem compartilhar
           // triângulos sem duplicá-los ou comparar coordenadas arredondadas.
-          if (incluir && !incluir(i, triangulo)) return false
+          if (incluir && !incluir(i, triangulo, contexto)) return false
           for (const p of [this.triangulo.a, this.triangulo.b, this.triangulo.c])
             posicoes.push(p.x, p.y, p.z)
           return false
@@ -192,7 +207,8 @@ export class MundoDoTeste {
     if (tamanho < 1e-9) return null
     this.raio.set(de, ate.clone().sub(de).normalize())
     let resposta: { ponto: Vector3; normal: Vector3; distancia: number } | null = null
-    for (const i of this.indice.consultar(this.raio)) {
+    // Só o que o trecho alcança: além de `tamanho` nenhuma face seria aceita mesmo.
+    for (const i of this.indice.consultar(this.raio, 0, tamanho)) {
       const e = this.entradas[i]!,
         local = this.raio.clone().applyMatrix4(e.inversa)
       const hit = e.arvore.raycastFirst(local, DoubleSide)

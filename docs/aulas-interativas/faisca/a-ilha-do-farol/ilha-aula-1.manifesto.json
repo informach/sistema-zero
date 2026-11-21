@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas para andar e explore a ilha. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1661,7 +1661,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -1684,7 +1684,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Consulte seu Passo a passo do projeto quando quiser. Para seguir, clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
@@ -1739,31 +1739,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Confira seu primeiro percurso\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
-      }
-    },
-    {
-      "key": "video-fecho",
-      "plannedVideo": "Título: Seu personagem já explora a ilha\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-fecho. Gravação pendente."
-    },
-    {
-      "key": "ponte-fecho",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você concluiu os testes desta aula. Clique em Concluir aula."
+        "text": "Hora de fazer o seu personagem andar! Coloque o movimento no começo de A cada quadro da cena e troque a velocidade por 4. Teste as quatro setas e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -3128,7 +3104,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -4459,7 +4435,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -5813,7 +5789,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -5822,10 +5798,6 @@
           "sections": {
             "movimento": {
               "entryExampleId": "1fa00000-0000-4000-8000-000000000001",
-              "solutionExampleId": "1fa00000-0000-4000-8000-000000000002"
-            },
-            "entrega": {
-              "entryExampleId": "1fa00000-0000-4000-8000-000000000002",
               "solutionExampleId": "1fa00000-0000-4000-8000-000000000002"
             }
           }
@@ -5842,7 +5814,7 @@
           {
             "id": "passos",
             "kind": "text",
-            "markdown": "## Uma ilha com profundidade\n\n### Faça o personagem andar\n\n1. Em Enquanto estiver rodando, deixe à vista o bloco A cada quadro da cena. Dentro dele, encontre Escrever na tela: o novo bloco vai logo antes dele.\n2. Abra Jogo 3D → Movimento → Andar com o teclado. Pegue Fazer personagem andar com as setas (ou WASD) e solte antes de Escrever na tela.\n3. Confira se o nome do bloco é personagem. Clique no número 3 e troque por 4.\n4. Clique em Rodar de novo. Clique dentro do jogo e segure cada seta por um tempo: o personagem anda nas quatro direções e para quando você solta. Leve-o até a ponte e até a beirada.\n5. Clique em Verificar projeto, corrija se necessário e espere Salvo.\n\n### Confira seu primeiro percurso\n\n1. Segure cada seta e solte para parar: ande nas quatro direções.\n2. Atravesse a ponte e volte. Toque na tecla R para começar de novo.\n3. Verificar projeto → aguardar Salvo → Enviar meu projeto → Enviar → Projeto enviado!.\n\n## A chave está ao seu alcance\n\n### Coloque a chave na ilha\n\n1. Em Ao iniciar, deixe à vista Colocar o objeto chave em x −2 y 1 z −3.\n2. Clique no −2 depois de x e troque por −3. Clique em Rodar de novo e observe para onde a chave foi.\n3. Clique no −3 depois de z e troque por −2. Deixe y em 1.\n4. Clique em Rodar de novo e leve o personagem até perto da chave.\n\n### Recolha a chave\n\n1. Em Quando acontecer, deixe à vista o espaço logo abaixo do evento da tecla R, fora do fazer dele.\n2. Abra Jogo 3D → Encostar → Encostar. Pegue Quando personagem encostar em chave e solte nesse espaço.\n3. Deixe à vista o fazer do novo encontro. Abra Jogo 3D → Objetos → Aparência, pegue Mostrar o objeto e solte dentro desse fazer.\n4. Clique em Mostrar e escolha Esconder. Clique no nome do objeto e escolha chave.\n5. Clique em Rodar de novo e caminhe até a chave: ela some só no encontro. Toque na tecla R e repita por outro caminho.\n\n### Guarde que você pegou a chave\n\n1. Deixe à vista Ao iniciar, depois da linha que cria aviso. Em Programação → Variáveis, pegue Criar variável e encaixe ali. Ele chega com o nome contador: clique em contador e escreva temChave.\n2. Em Programação → Lógica e Se, pegue o bloco verdadeiro e solte em cima do 0, no valor da variável. Clique em verdadeiro e escolha falso: a partida começa sem chave.\n3. Deixe à vista o encontro com chave, depois de Esconder o objeto chave. Em Programação → Variáveis, pegue Alterar variável para e encaixe ali. Repare que ele chega com o nome contador. Clique em contador e escolha temChave.\n4. Em Programação → Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1, no valor. Deixe verdadeiro.\n5. Confira os dois lugares: ao começar, falso; ao recolher, verdadeiro.\n\n### Conte que a chave foi recolhida\n\n1. Deixe à vista o encontro com chave, depois de temChave verdadeiro. Em Programação → Variáveis, pegue Alterar variável para e encaixe ali. Repare que ele chega com o nome contador. Clique em contador e escolha aviso.\n2. Em Programação → Valores, pegue o bloco texto e solte em cima do 1, no valor. Ele chega com Olá: apague Olá e escreva Você pegou a chave! Agora vá ao farol.\n3. Clique em Rodar de novo, recolha a chave e se afaste: o aviso continua. Toque na tecla R: a chave e o aviso inicial voltam.\n4. Verifique, aguarde Salvo e envie o projeto com confirmação.\n\n## A luz volta ao farol\n\n### O farol precisa conferir a chave\n\n1. Em Quando acontecer, deixe à vista o espaço logo abaixo do encontro com chave, fora do fazer dele.\n2. Abra Jogo 3D → Encostar → Encostar. Pegue Quando personagem encostar em chave e solte nesse espaço. Clique em chave e escolha farol.\n3. No fazer desse encontro, solte Se, de Programação → Lógica e Se.\n4. Arraste a pergunta x maior que 0 do Se até a lixeira. No lugar vazio, solte valor da variável, de Programação → Valores. Clique no x e escolha temChave.\n5. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.\n6. Dentro do senão, solte Alterar variável para, de Programação → Variáveis, e escolha aviso. Em cima do 1, no valor, solte texto, de Programação → Valores, com Falta a chave. Procure na ilha antes de voltar. Deixe o então vazio nesta parte.\n7. Clique em Rodar de novo e vá direto ao farol, sem recolher a chave: a luz continua apagada e o aviso pede a chave.\n\n### Acenda o farol com a chave\n\n1. No encontro com farol, deixe à vista o então do Se temChave.\n2. Jogo 3D → Objetos → 🎬 Animação do modelo: solte Tocar a animação dentro do então.\n3. No primeiro espaço, escolha acender. No objeto, escolha farol. No último, escolha uma vez.\n4. Logo abaixo, solte Alterar variável para, de Programação → Variáveis. Repare que ele chega com o nome contador. Clique em contador e escolha ganhou. Em cima do 1, no valor, solte o bloco verdadeiro, de Programação → Lógica e Se.\n5. Ainda no então, solte mais um Alterar variável para e escolha aviso. Em cima do 1, no valor, solte texto, de Programação → Valores, e escreva Você acendeu o farol! O barco pode chegar.\n6. Clique em Rodar de novo. Vá ao farol sem a chave; depois recolha a chave e volte. Confira a luz acendendo, o feixe girando e a chegada do barco.\n\n### O farol acende uma vez só\n\n1. Teste antes de montar: clique em Rodar de novo, pegue a chave e acenda o farol. Ande para trás pelo cais e volte ao farol. Repare: a luz apaga e acende de novo.\n2. Em Quando acontecer, deixe à vista o encontro com farol e um espaço vazio ao lado dele, fora do fazer.\n3. Em Programação → Lógica e Se, pegue Se e solte nesse espaço vazio.\n4. Arraste a pergunta x maior que 0 do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e solte no lugar vazio da pergunta.\n5. Em Programação → Valores, pegue valor da variável e solte no espaço do não. Clique no x e escolha ganhou.\n6. No encontro com farol, segure o Se temChave pela palavra Se e arraste até o então do Se novo. Tudo o que está dentro dele vai junto.\n7. Segure o Se novo pela palavra Se e solte dentro do fazer do encontro com farol, que ficou vazio.\n8. Clique em Rodar de novo. Pegue a chave, acenda o farol, ande para trás pelo cais e volte: a luz continua acesa e o feixe segue girando. Toque na tecla R e vá ao farol sem a chave: ele continua pedindo a chave.\n\n### Deixe o jogo com a sua cara\n\n1. Em Ao iniciar, deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique em aventureiro e escolha outro personagem da lista.\n2. Faça o mesmo em Criar o objeto barco, chave e farol: clique no nome do modelo e escolha outro.\n3. Em Criar o objeto cenario, troque praia-tropical por outro cenário: costa-rochosa, ilha-nevada ou noite-na-ilha.\n4. Troque só o modelo. Deixe o nome do objeto, a cena e o tamanho como estão.\n5. Clique em Rodar de novo e teste a combinação: vá ao farol sem a chave, depois busque a chave e volte. Confira a luz e o barco.\n6. Verifique o projeto e aguarde Salvo.\n\n### Escolha seu esconderijo e teste de verdade\n\n1. Em Ao iniciar → Colocar o objeto chave, escolha x e z dentro da ilha. Mantenha uma altura que o personagem alcance.\n2. Se quiser, escreva seus próprios avisos nas linhas de atribuição, conservando a função de cada mensagem.\n3. Clique em Rodar de novo. Vá ao farol sem chave. Depois alcance a chave escolhida e volte ao farol.\n4. Toque na tecla R depois de vencer: o farol apaga, a chave volta e você pode jogar novamente.\n5. Verifique, aguarde Salvo, envie o projeto e confirme o envio."
+            "markdown": "## Uma ilha com profundidade\n\n### Faça o personagem andar\n\n1. Clique em Rodar de novo e segure uma seta: o personagem ainda fica parado.\n2. Em Enquanto estiver rodando, deixe à vista o bloco A cada quadro da cena. Dentro dele já está Escrever na tela.\n3. Abra Jogo 3D → Movimento → Andar com o teclado. Pegue Fazer personagem andar com as setas (ou WASD) e solte no espaço ao lado de fazer. Escrever na tela desce e fica logo abaixo.\n4. Clique no 3 e troque por 4.\n5. Clique em Rodar de novo e segure cada seta: o personagem anda e para quando você solta. Leve-o até a ponte e até a beirada.\n6. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.\n\n## A chave está ao seu alcance\n\n### Coloque a chave na ilha\n\n1. Em Ao iniciar, encontre Colocar o objeto chave em x −2 y 1 z −3.\n2. Clique no −3 depois de z e troque por −2. Clique em Rodar de novo: a chave vem um pouco para a frente.\n3. Clique no −2 depois de x e troque por −3. Deixe o y em 1.\n4. Clique em Rodar de novo e leve o personagem até perto da chave.\n5. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### Recolha a chave\n\n1. Clique em Rodar de novo e leve o personagem até a chave: ela continua ali.\n2. Em Quando acontecer, deixe à vista o espaço logo abaixo do evento da tecla R, fora do fazer dele.\n3. Abra Jogo 3D → Encostar → Encostar. Pegue Quando personagem encostar em chave e solte nesse espaço.\n4. Abra Jogo 3D → Objetos → Aparência. Pegue Mostrar o objeto e solte no espaço ao lado de fazer do encontro novo.\n5. Clique em Mostrar e escolha Esconder. Clique em objeto e escolha chave.\n6. Clique em Rodar de novo e caminhe até a chave: ela some no encontro. Toque na tecla R e pegue de novo por outro caminho.\n7. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### Guarde que você pegou a chave\n\n1. Em Ao iniciar, deixe à vista o bloco que cria aviso. Em Programação → Variáveis, pegue Criar variável e solte logo abaixo dele.\n2. Clique em contador e escreva temChave.\n3. Em Programação → Lógica e Se, pegue verdadeiro e solte em cima do 0. Clique em verdadeiro e escolha falso: a partida começa sem a chave.\n4. No encontro com a chave, deixe à vista o lugar logo abaixo de Esconder o objeto chave. Em Programação → Variáveis, pegue Alterar variável para e solte ali.\n5. Clique em contador e escolha temChave. Em Programação → Lógica e Se, pegue verdadeiro e solte em cima do 1. Deixe verdadeiro.\n6. Confira os dois lugares e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### Conte que a chave foi recolhida\n\n1. Clique em Rodar de novo e pegue a chave: o aviso ainda não muda.\n2. No encontro com a chave, deixe à vista o lugar logo abaixo de Alterar variável temChave. Em Programação → Variáveis, pegue Alterar variável para e solte ali.\n3. Clique em contador e escolha aviso.\n4. Em Programação → Valores, pegue texto e solte em cima do número. Clique em Olá, apague e escreva Você pegou a chave! Agora vá ao farol.\n5. Clique em Rodar de novo e pegue a chave: o aviso novo aparece. Toque na tecla R: a chave e o aviso do começo voltam.\n6. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.\n\n## A luz volta ao farol\n\n### O farol precisa conferir a chave\n\n1. Clique em Rodar de novo e vá ao farol sem pegar a chave: nada acontece.\n2. Em Quando acontecer, deixe à vista o espaço logo abaixo do encontro com a chave, fora do fazer dele.\n3. Abra Jogo 3D → Encostar → Encostar. Pegue Quando personagem encostar em chave e solte nesse espaço. Clique em chave e escolha farol.\n4. Em Programação → Lógica e Se, pegue Se e solte no espaço ao lado de fazer do encontro novo.\n5. Arraste a pergunta x maior que 0 até a lixeira. Em Programação → Valores, pegue valor da variável e solte no lugar vazio ao lado de Se. Clique no x e escolha temChave.\n6. Na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra senão.\n7. Em Programação → Variáveis, pegue Alterar variável para e solte dentro do senão. Clique em contador e escolha aviso.\n8. Em Programação → Valores, pegue texto e solte em cima do número. Escreva Falta a chave. Procure na ilha antes de voltar. Deixe o então vazio.\n9. Clique em Rodar de novo e vá direto ao farol: ele continua apagado e o aviso pede a chave.\n10. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### Acenda o farol com a chave\n\n1. Clique em Rodar de novo, pegue a chave e vá ao farol: a luz ainda não acende.\n2. No Se do encontro com o farol, deixe à vista o espaço do então.\n3. Abra Jogo 3D → Objetos → Animação do modelo. Pegue Tocar a animação e solte dentro do então.\n4. Clique em heroi e escolha farol. Clique em Andar e escolha acender. Clique em repetindo e escolha uma vez.\n5. Logo abaixo, solte Alterar variável para, de Programação → Variáveis. Clique em contador e escolha ganhou. Em cima do número, solte verdadeiro, de Programação → Lógica e Se.\n6. Logo abaixo de ganhou, solte outro Alterar variável para e escolha aviso. Em cima do número, solte texto, de Programação → Valores, e escreva Você acendeu o farol! O barco pode chegar.\n7. Clique em Rodar de novo. Vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte: a luz acende, o feixe gira e o barco chega.\n8. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### O farol acende uma vez só\n\n1. Clique em Rodar de novo, pegue a chave e acenda o farol. Ande para trás pelo cais e volte: a luz apaga e acende de novo.\n2. Em Quando acontecer, deixe à vista o encontro com o farol.\n3. Em Programação → Lógica e Se, pegue Se e solte no espaço ao lado de fazer do encontro com o farol. O Se temChave desce e fica logo abaixo do Se novo.\n4. Arraste a pergunta x maior que 0 do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e solte no lugar vazio ao lado do Se novo.\n5. Em Programação → Valores, pegue valor da variável e solte no espaço do não. Clique no x e escolha ganhou.\n6. Segure o Se temChave pela palavra Se e arraste até o espaço do então do Se novo. Tudo o que está dentro dele vai junto.\n7. Clique em Rodar de novo. Pegue a chave, acenda o farol, ande para trás e volte: a luz continua acesa. Toque na tecla R e vá ao farol sem a chave: ele continua pedindo a chave.\n8. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### Deixe o jogo com a sua cara\n\n1. Em Ao iniciar, deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique em aventureiro e escolha outro personagem.\n2. Faça o mesmo em Criar o objeto barco, chave e farol: clique no nome do modelo e escolha outro.\n3. Em Criar o objeto cenario, troque praia-tropical por costa-rochosa, ilha-nevada ou noite-na-ilha.\n4. Troque só o modelo. Deixe o nome do objeto, a cena e o tamanho como estão.\n5. Clique em Rodar de novo, pegue a chave e vá ao farol. Confira a luz e o barco.\n6. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.\n\n### Escolha seu esconderijo e teste de verdade\n\n1. Em Ao iniciar, no bloco Colocar o objeto chave, mude o x e o z para um lugar no chão da ilha. Exemplo: x −8 e z 3, perto da praia. Deixe o y em 1.\n2. Clique em Rodar de novo e vá até a chave: o personagem precisa alcançar e pegar.\n3. Se não conseguir, mude um número de cada vez e teste de novo.\n4. Se quiser, escreva os seus avisos nos blocos que mudam aviso, sem mudar o papel de cada um: começo, chave pega, falta a chave e vitória.\n5. Toque na tecla R e vá ao farol sem a chave: ele pede a chave. Depois pegue a chave e volte: o farol acende.\n6. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
           },
           {
             "id": "como-estudio",
@@ -5924,200 +5896,15 @@
     {
       "key": "movimento",
       "title": "Faça o personagem andar",
-      "intent": "application",
-      "objective": "Faça o personagem andar.",
-      "blockKeys": ["video-movimento", "ponte-movimento"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-movimento"],
-        "projectChecks": [
-          {
-            "id": "movimento-no-quadro",
-            "label": "Dentro de A cada quadro, coloque o comando que move personagem com o teclado.",
-            "rule": {
-              "type": "usesBlock",
-              "area": "loops",
-              "blockType": "sz_g3d_animate",
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g3d_top_down",
-                  "fields": {
-                    "OBJ": "personagem"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "andar-0",
-            "label": "Faça o personagem andar para a direita com a seta correspondente.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 250
-                },
-                {
-                  "action": "wait",
-                  "ms": 90
-                }
-              ],
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.userData.sz.vx"
-                    },
-                    "compare": "equals",
-                    "value": 0
-                  }
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "personagem.position.x"
-                },
-                "compare": "increased"
-              }
-            }
-          },
-          {
-            "id": "andar-1",
-            "label": "Faça o personagem andar para a esquerda com a seta correspondente.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 250
-                },
-                {
-                  "action": "wait",
-                  "ms": 90
-                }
-              ],
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.userData.sz.vx"
-                    },
-                    "compare": "equals",
-                    "value": 0
-                  }
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "personagem.position.x"
-                },
-                "compare": "decreased"
-              }
-            }
-          },
-          {
-            "id": "andar-2",
-            "label": "Faça o personagem andar para o fundo com a seta correspondente.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowUp",
-                  "holdMs": 250
-                },
-                {
-                  "action": "wait",
-                  "ms": 90
-                }
-              ],
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.userData.sz.vz"
-                    },
-                    "compare": "equals",
-                    "value": 0
-                  }
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "personagem.position.z"
-                },
-                "compare": "decreased"
-              }
-            }
-          },
-          {
-            "id": "andar-3",
-            "label": "Faça o personagem andar para a frente com a seta correspondente.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowDown",
-                  "holdMs": 250
-                },
-                {
-                  "action": "wait",
-                  "ms": 90
-                }
-              ],
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.userData.sz.vz"
-                    },
-                    "compare": "equals",
-                    "value": 0
-                  }
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "personagem.position.z"
-                },
-                "compare": "increased"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Confira seu primeiro percurso",
       "intent": "delivery",
-      "objective": "Confira seu primeiro percurso.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "Faça o personagem andar.",
+      "blockKeys": ["video-movimento", "ponte-movimento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-movimento", "projeto"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -6290,20 +6077,6 @@
           }
         ],
         "submissionUpToDate": true
-      }
-    },
-    {
-      "key": "fecho",
-      "title": "Seu personagem já explora a ilha",
-      "intent": "closing",
-      "objective": "Seu personagem já explora a ilha.",
-      "blockKeys": ["video-fecho", "ponte-fecho"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-fecho"]
       }
     }
   ]

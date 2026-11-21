@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+src\examples\reinoZeroUltraExample.test.ts:
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > está no catálogo core, é asset-free e sua IR é válida [1140.00ms]
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > entrega 8 mundos × 4 fases estritas, encadeadas e tematicamente distintas [125.00ms]
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > rejeita dados de fase adulterados antes de chegarem ao motor [94.00ms]
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > rejeita rota bloqueada por uma parede sólida do piso ao teto
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > cobre campanha, controles, persistência, replay e som apenas com IR nativa
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > mantém ponto fixo IR → código → parser sem bloco bruto [172.00ms]
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > mantém a IR publicada em sincronia com o fonte canônico [62.00ms]
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > preserva o motor inteiro no round-trip IR → blocos → IR [6016.00ms]
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > mantém catálogo leve em sincronia e resolve a IR só pelo carregador
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > mantém a campanha no chunk sob demanda dentro do orçamento comprimido
+(pass) Reino Zero Ultra — plataforma profissional sem extensão > separa o estado de automação dos anúncios acessíveis
+
+ 11 pass
+ 0 fail
+ 115 expect() calls
+Ran 11 tests across 1 file. [8.94s]

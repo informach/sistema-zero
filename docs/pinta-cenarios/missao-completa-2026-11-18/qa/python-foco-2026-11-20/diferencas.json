@@ -1,0 +1,24 @@
+{
+  "changed": [
+    {
+      "path": "_http/gzip/125538be0c2f6e9ad05dcbc3a9dcacc8c60cf8b0ab02de5e97f2b2bcaacb87dc.gz",
+      "bytes": 187686,
+      "sha256": "125538be0c2f6e9ad05dcbc3a9dcacc8c60cf8b0ab02de5e97f2b2bcaacb87dc"
+    },
+    {
+      "path": "_http/gzip/9ce1499b76cd099bfcf8941474d1f03db65cf232cf54c6fb7c70c6dde3f0ac2c.gz",
+      "bytes": 188310,
+      "sha256": "9ce1499b76cd099bfcf8941474d1f03db65cf232cf54c6fb7c70c6dde3f0ac2c"
+    },
+    {
+      "path": "playtest.mjs",
+      "bytes": 747528,
+      "sha256": "4fb3d3f5253786317c8169ba3c66d97a3a814a9a39abe82022114214a3591bff"
+    },
+    {
+      "path": "standalone.mjs",
+      "bytes": 745335,
+      "sha256": "bf67cb0dfed4671d5f257f7ef412c1e8e0da7d2ea5719e81b7a22597619c6499"
+    }
+  ]
+}

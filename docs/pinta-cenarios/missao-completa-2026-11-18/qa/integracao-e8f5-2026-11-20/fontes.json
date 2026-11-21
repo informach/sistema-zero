@@ -1,0 +1,309 @@
+{
+  "parents": [
+    "68f3cc4251c70bc41cc70ba07561ebccac3c1bc2",
+    "e8f5241b0949084848292b09dd39c558b3c5e6d2"
+  ],
+  "protectedPublished3DBytesUnchanged": true,
+  "files": [
+    {
+      "file": "packages/core/src/learning/index.ts",
+      "sha256": "98383756de060e074b91b44d79f24e08c92d7967a49af721b924d477fde9ad01"
+    },
+    {
+      "file": "packages/core/tests/studio-student-tests.test.ts",
+      "sha256": "6b062c21f2bee956d4e9936eb81787188fdd94a552e29df0c25486f073f926f4"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/compilar/juncao.ts",
+      "sha256": "e95670835ab5b8dd15f87108aa253d9e7195a7b38c2c9e7eea8720d1fa4f4a89"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/compilar/relevo-atlas.ts",
+      "sha256": "529aab50162928887b838d31f901b700d76f405ee8567823dc1f1d08ee6b641a"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/tests/relevo-atlas.test.ts",
+      "sha256": "265db9b18a0478999fed2c99f290930ceba68a64b1311f6ff567ae9edb68fbca"
+    },
+    {
+      "file": "packages/molda-cenarios/src/studio-library.ts",
+      "sha256": "f5261be7ff67adeba61c62aad52639d03a065f048a2c4730e65ec9f8dcb599b1"
+    },
+    {
+      "file": "packages/studio-runtime/Dockerfile",
+      "sha256": "a55a19d1f9f7697a82b250a4a10db54485a1193fcf8d0d50cb7ff5ce597b8468"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/check-click-target.mjs",
+      "sha256": "61f13d245efbb7f0e59c0cdab8d769a22b252c4b82c7e3d2f6a0be29ade47bbf"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/click-target.generated.mjs",
+      "sha256": "afacefe9c5a6da3fe5d84d8195a81a75efa643ec9bbe9bea9a4113995353887f"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "a497dc2b5c93724b0e06ede8dd944227b44bd9b35be84179e306901978ac6305"
+    },
+    {
+      "file": "packages/studio-runtime/scripts/validation-profile.ts",
+      "sha256": "1fdd69bad69533f5449f44e81a55fdb8c39b287d98adb281e5628320eff709e1"
+    },
+    {
+      "file": "packages/studio-runtime/tests/execution-observation-browser.test.ts",
+      "sha256": "c0a57b53f7960b26350deed03c6bb91152969e73ce8e3438500c66b443aa65b6"
+    },
+    {
+      "file": "packages/studio-runtime/tests/motion-observation.cases.mjs",
+      "sha256": "4104a77e8d46be504cbc760fbf5adeda1f370a654ade857b27bbb087716d65bf"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-provider.spec.ts",
+      "sha256": "f6ac66ad730ee46fc93a4396a05560dd19df598c464e44b53701741ef5b10431"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/pythonBrowserErrors.ts",
+      "sha256": "10e2293143696d943b676ce14443767ac92f9185781b90c9c1913b9b6b2aed3f"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/firefoxNativeKeys.ts",
+      "sha256": "a7399ae7f14bde357bae15bb8106b7243325c29ab2d0d1c66b7fe9a1287b476c"
+    },
+    {
+      "file": "packages/studio/e2e/student-tests.spec.ts",
+      "sha256": "ecfee987e795dfeb7a9228b0e7870028fccb688573007acf6d63bc9129e0f200"
+    },
+    {
+      "file": "packages/studio/playground/vite.config.ts",
+      "sha256": "e8112362cc259042ef42329c1fa241b438746a0184dd64f1f7296d12822d3ef7"
+    },
+    {
+      "file": "packages/studio/playwright.config.ts",
+      "sha256": "51f7cb337aa9628c43e624e9e075319d711b4b8f0697fdb1f95584f7952d824f"
+    },
+    {
+      "file": "packages/studio/src/blockly/fields/FieldNamePicker.ts",
+      "sha256": "aafb0d4972cda601d3e368e05955b959e30e7bb02069a3988dbf1b77e53d3d8a"
+    },
+    {
+      "file": "packages/studio/src/blockly/fields/FieldSpritePicker.ts",
+      "sha256": "c775f258c7fd500ae8d3a38e5303d075b9328c20d53b9e2c68eb5a3cf4fa6889"
+    },
+    {
+      "file": "packages/studio/src/blockly/fields/declaringBlocks.ts",
+      "sha256": "8d10401b5fea2a5170090c1787e563efdd9f1d4f88a59a479e11c7325400f8dc"
+    },
+    {
+      "file": "packages/studio/src/check/clickTargetInPage.ts",
+      "sha256": "2a6e5ef0ea133041b1c058f1e26f580212746adfe3bdf8888668b6cf22e7511e"
+    },
+    {
+      "file": "packages/studio/src/check/instrumentCheckScript.ts",
+      "sha256": "6bbd0f8cd6d69f830943cfe75bd23b235637485ce21220226bcbfbe5eea068f1"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/BlocklyPanel.tsx",
+      "sha256": "a9097d8f30355219577b37d535fe297a1c26f69b915b630123a01641af50c30e"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/PythonBlocklyEditor.tsx",
+      "sha256": "1887cf1bea1b4190b0b91b7edab97cfbe3839a7434c86b485cba4efd5e67414f"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/DevtoolsTabs.tsx",
+      "sha256": "a27ef40196d5e77b6d24701596f26779aa5270100f38a587ed0348f6346a4b4f"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/InvestigatePanel.tsx",
+      "sha256": "e7b2b22f3efd9ea9b89a2d7c69f3c6d727bef26fc752c1bbfb2e01563fe9444d"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/PerformancePanel.tsx",
+      "sha256": "ce23fa48d48bad2cbfef875b2de8b37932a046fb3b5920ce63b8e5309fe31532"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/StudentTestsPanel.test.tsx",
+      "sha256": "267f049a503f1e09de9fa5c660afb026057812725380be1a078080916f457d86"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/StudentTestsPanel.tsx",
+      "sha256": "99ee29ed34a060e33b160f637e50cd0efcc8be9ca300d8e94b208d5ddc76c6c4"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/investigateCopy.ts",
+      "sha256": "52ed6f3ab4d1b38e36a4fc46061a0d097659f5b3b8464b03ee103a6078fb80e0"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/performanceCopy.ts",
+      "sha256": "1433173fa8f69af44b2de80481c6732266e2068864898733dc384d32f605c695"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/pythonInvestigation.test.ts",
+      "sha256": "9b85c0a93a5b0fbec61a93f96c42999e7088120786e60e6025fab77e1e138ca0"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/pythonInvestigation.ts",
+      "sha256": "d505b7c0e200f39fc5bd578a5d9d29a0783540b44a705552fde9d96bf261460e"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsCopy.ts",
+      "sha256": "5ed2db821e0dd4d5700649dca347cb74f4dbe112f63d8c3b1ee7c07d92c47c83"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsNames.test.ts",
+      "sha256": "4882aaeb9b690a29e021dc91ff77786418bf01f8d6ee39ba27be7d58f06a59a0"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsNames.ts",
+      "sha256": "6c38286b81780824c9cd43ef221aae7c90c4cb4d080804d51fc8e485c93d83dd"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsText.test.ts",
+      "sha256": "b268836cf41af67af4cf0a7f49993538e5836d47906174ad719b26733a011461"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/studentTestsText.ts",
+      "sha256": "fa859f0acd331b4018b233492c2a764f9ca3aad9e063fd7222314d38cf9e1e75"
+    },
+    {
+      "file": "packages/studio/src/components/layout/ClassicDock.test.tsx",
+      "sha256": "393dcdf86379e8827c0442e6292f8fe8ad00f9e785616cb1c06d44cc792c7206"
+    },
+    {
+      "file": "packages/studio/src/components/layout/ClassicDock.tsx",
+      "sha256": "3a92f7886f6f7f69140bd801fcab6f62ace23666ff2ed7f7ee9bdc14d470ce0a"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PreviewIframe.tsx",
+      "sha256": "bec1152e862b8e167d7a5f4341a5eb3720fafc0ecdcad5a4e28d9f7f92d4abd9"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PythonEditorPreview.tsx",
+      "sha256": "1557ee6225ec037dc8bfc0291fc89ce4a409d4d8ac3dc1efa0e5638a8371dab7"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PythonRuntimePreview.tsx",
+      "sha256": "84b5fa900c5e0928fdd03ec883e28f497921358e1abfca8c329d4ab8e8f7eaa9"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/pro/en.ts",
+      "sha256": "6efc1c237faea71ac43f4b05d6c7eb47aa0bb232541a7cdbcfb66b2b0baaeadb"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/pro/pt-BR.ts",
+      "sha256": "efdfa152dc5ae78ee99a70ffe7ae6b99eb7cf058b329a353dffc3f95b74284f3"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/__tests__/runtime.test.ts",
+      "sha256": "5345392bb08f28302d792307b833b449711c7af056e830c0f572f53737496410"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/inputAndMotion.ts",
+      "sha256": "c255c4f732396c548f88b9da77fe72ae972b678f0928851a31d3c6b79a3fddcb"
+    },
+    {
+      "file": "packages/studio/src/preview/devtoolsBridge.ts",
+      "sha256": "cdaadde28b3a4ba6d4792a9012a2b5e2f4d822f3598cfdd0ef2b792798d77b62"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/controller.ts",
+      "sha256": "e70f9cb84f6b91638a6fa97fb0f1dca150a90e62ed4260e552c3896d2aca114a"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frame.ts",
+      "sha256": "356b152f2b660d0248bec8a2963850ccc5b85ef0d70ef611886f89c18d4e4cbb"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frameMessages.test.ts",
+      "sha256": "e0d451e71f1c4383b33ae080507453e0c56d2b2b92056b6582621a6bd745de04"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frameMessages.ts",
+      "sha256": "56521eed04fcc926fab0101837d770b0e4e1810f8c99d3b1c1732347663428e2"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frameProtocol.ts",
+      "sha256": "83ca93463e8a840341ce75ce4b225790803b99ea6e430346edca9dc442557fe9"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.ts",
+      "sha256": "66c4d0ceb0cf75c60cebe999ae79e3acd57e45b3e1db0520c4a99df76b8d71ce"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/renderer.ts",
+      "sha256": "94ef743cb6d9a66cd082f345a15a3936e353ecc347e0faae78f844ebe8ea7dda"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/session.ts",
+      "sha256": "fd1e3cab56c8dc590a6252a2b374b97001e0e053b4aa2600abbefe9e7445a102"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/turtle/renderer.ts",
+      "sha256": "97263ce36958135ffa6a828ec561e1913406d569d746279bbfd23f763bebffdd"
+    },
+    {
+      "file": "packages/studio/src/runtime/types.ts",
+      "sha256": "ce0d7f494b0a6b0499844e4ff721952d7f9ae4d710e668aa1a10cfaff15f410b"
+    },
+    {
+      "file": "packages/studio/src/state/devtools.ts",
+      "sha256": "c815faa04a96d433dabf490c28fd1e4741e708bb07ef5f72cdeebdb1135d2780"
+    },
+    {
+      "file": "packages/studio/src/state/highlightStore.ts",
+      "sha256": "e4fa60fb97951ed2afa19622c0c7c413c615b901562e2f0502b4896b20a5678b"
+    },
+    {
+      "file": "packages/studio/src/state/previewDocumentFactory.ts",
+      "sha256": "65e2e05d96cac565fdf3a026bb72fac41d81f46de485a148921fe877a7ff0b58"
+    },
+    {
+      "file": "packages/studio/src/state/projectStore.studentTests.test.ts",
+      "sha256": "5ced808da3690d27f9e13355c4ca573a481fae133289124d4f40e14ff5b59f0b"
+    },
+    {
+      "file": "packages/studio/src/state/projectStore.ts",
+      "sha256": "35ec1dbe4d0b9873e6347931c4a3e4dd9d9952e0e9920c8e5e1d093b9027c682"
+    },
+    {
+      "file": "packages/studio/src/state/studentTestResults.ts",
+      "sha256": "8231f56450e01a0a592a5a068bee114d26675d2810a147f4340b3d84b9b2eecc"
+    },
+    {
+      "file": "packages/studio/src/state/studioStores.ts",
+      "sha256": "a6570bddd292f0935bc66edcdf2540ee7ea077300464c7ad73a5382034a46495"
+    },
+    {
+      "file": "packages/studio/src/state/uiStore.ts",
+      "sha256": "90c91592152ecc4ba595f3dfd3a9ab6e7db70f76ea77273d81890423150e45a5"
+    },
+    {
+      "file": "packages/studio/src/studentTests/driver.test.ts",
+      "sha256": "aa1d32033a44db5f3a2aa46ffbc0f2f47e20735e69127837db0ad451c2ff25cb"
+    },
+    {
+      "file": "packages/studio/src/studentTests/driver.ts",
+      "sha256": "07e69d79fadaffff94e07d311564a8c91a9566c9962dc4b62394300f2c9cd654"
+    },
+    {
+      "file": "packages/studio/src/studentTests/runner.test.ts",
+      "sha256": "623fcb2e8c845ab0ddc691f63baac3b5f4ab9dc32b1ec62192cbfabad131f9bd"
+    },
+    {
+      "file": "packages/studio/src/studentTests/runner.ts",
+      "sha256": "51337bdfc27c1a1be01fc33906d72326e5263a9831293c0578e914187a2acd8a"
+    },
+    {
+      "file": "packages/studio/src/styles/studio.css",
+      "sha256": "09547f2c4d769eea7a019108d2277365bd111242445987c93554b7c467fa14f6"
+    },
+    {
+      "file": "packages/studio/e2e/helpers/cleanBrowser.ts",
+      "sha256": "142add9d0c19dc3775866459233d78582185a47c492d859faaba4889924f65f6"
+    },
+    {
+      "file": "biome.json",
+      "sha256": "2a65309c289e00908a4f944fbffc449f63f453cce146437568d84ac11e7cf7f5"
+    }
+  ]
+}

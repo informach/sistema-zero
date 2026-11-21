@@ -12,7 +12,12 @@ import { useProjectStore } from '../../state/projectStore'
 import { useProRun } from '../../state/proRun'
 import { useUIStore } from '../../state/uiStore'
 import { StudioExecutionProvider } from '../../studio/observation'
-import { chosenCoverPausesSnapshots, extractDocumentTitle, PreviewIframe } from './PreviewIframe'
+import {
+  chosenCoverPausesSnapshots,
+  extractDocumentTitle,
+  heldPreviewDocument,
+  PreviewIframe,
+} from './PreviewIframe'
 
 const PAUSED_PREVIEW_DOC = '<!doctype html><html lang="pt-BR"><body></body></html>'
 
@@ -272,6 +277,64 @@ describe('PreviewIframe', () => {
     })
   }
 
+  // Revisão da missão (achado E3): o vigia da troca derrubava até três vezes um documento que só
+  // demora a dar `load`. Ele agora exige silêncio: com sinal de vida do iframe, espera.
+  for (const sinalDeVida of [true, false] as const) {
+    it(`documento novo sem load ${sinalDeVida ? 'que dá sinal de vida é esperado' : 'e calado é trocado'}`, async () => {
+      const project = createPreviewProject()
+      useProjectStore.setState({ project, isDirty: false, saveError: null })
+      render(<PreviewIframe />)
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
+      const antes = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+      // O documento B nunca dá load (módulos chegando, ou o processo preso pelo A).
+      antes.addEventListener(
+        'load',
+        (event) => {
+          if (antes.getAttribute('srcdoc')?.includes('Documento B'))
+            event.stopImmediatePropagation()
+        },
+        true,
+      )
+      act(() =>
+        useProjectStore.setState({
+          project: {
+            ...project,
+            files: {
+              ...project.files,
+              'index.html': project.files['index.html'].replace(
+                'Preview automático',
+                'Documento B',
+              ),
+            },
+          },
+          isDirty: false,
+        }),
+      )
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Documento B'), { timeout: 3000 })
+      const contentWindow = antes.contentWindow
+      if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
+      if (sinalDeVida)
+        act(() => {
+          window.dispatchEvent(
+            new MessageEvent('message', {
+              source: contentWindow,
+              origin: 'null',
+              data: { source: 'sz-preview', kind: 'heartbeat', parts: [], timestamp: Date.now() },
+            }),
+          )
+        })
+      await act(async () => Bun.sleep(3_600))
+      const depois = screen.queryByTitle('Pré-visualização')
+      if (sinalDeVida) {
+        expect(document.querySelector('[data-sz-preview-gap]')).toBeNull()
+        expect(depois).toBe(antes)
+      } else {
+        expect(depois === antes && !document.querySelector('[data-sz-preview-gap]')).toBe(false)
+      }
+    }, 10_000)
+  }
+
   // Lote 3.1 (19/11/2026): com a prévia em outra origem o iframe usa `src`, e o `srcdoc` lido do
   // DOM era nulo. Resultado: o Parar nunca reconhecia o jogo preso e não abria o intervalo sem
   // iframe que libera o processo travado.
@@ -326,6 +389,125 @@ describe('PreviewIframe', () => {
     }
   })
 
+  it('a casca em outro site que nunca fica pronta volta ao documento direto e avisa', async () => {
+    // Revisão da missão (achado E5): sem `sz-shell:ready` o documento nunca era enviado e o palco
+    // ficava vazio com a barra dizendo "rodando".
+    useProjectStore.setState({ project: createPreviewProject(), isDirty: false, saveError: null })
+    const happyDOM = (window as unknown as { happyDOM?: { setURL(url: string): void } }).happyDOM
+    const previousURL = window.location.href
+    happyDOM?.setURL('http://localhost:5173/estudio')
+    useLogsStore.setState({ entries: [] })
+    try {
+      render(
+        <StudioExecutionProvider
+          value={{
+            editingAccess: 'author',
+            autoRun: true,
+            requireIsolatedPreview: false,
+            muted: false,
+            shellUrl: 'https://casca.exemplo.test/v1/classic-shell/1.html',
+          }}
+        >
+          <PreviewIframe />
+        </StudioExecutionProvider>,
+      )
+      expect(screen.getByTitle('Pré-visualização').getAttribute('src')).toBe(
+        'https://casca.exemplo.test/v1/classic-shell/1.html',
+      )
+      await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'), {
+        timeout: 6000,
+      })
+      expect(screen.getByTitle('Pré-visualização').getAttribute('src')).toBeNull()
+      expect(
+        useLogsStore.getState().entries.some((entry) => entry.text.includes('prévia isolada')),
+      ).toBe(true)
+    } finally {
+      happyDOM?.setURL(previousURL)
+    }
+  }, 10_000)
+
+  it('na casca, o "carregou" de um documento já trocado não vale pelo atual', async () => {
+    // Achado E7 da revisão de 20/11: o aviso não dizia qual documento carregou.
+    const project = createPreviewProject()
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    const happyDOM = (window as unknown as { happyDOM?: { setURL(url: string): void } }).happyDOM
+    const previousURL = window.location.href
+    happyDOM?.setURL('http://localhost:5173/estudio')
+    const origin = 'https://casca.exemplo.test'
+    try {
+      render(
+        <StudioExecutionProvider
+          value={{
+            editingAccess: 'author',
+            autoRun: true,
+            requireIsolatedPreview: false,
+            muted: false,
+            shellUrl: `${origin}/v1/classic-shell/1.html`,
+          }}
+        >
+          <PreviewIframe />
+        </StudioExecutionProvider>,
+      )
+      const frame = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
+      // O happy-dom não dá janela a um iframe com `src` de outro site: uma janela falsa no próprio
+      // elemento (é o que o componente consulta para mandar e para autenticar a origem do aviso).
+      const enviados: { type?: string; seq?: number; document?: string }[] = []
+      // Uma porta de mensagens de verdade faz o papel da janela da casca (é uma origem de
+      // mensagem válida), com o envio anotado no lugar de entregue.
+      const casca = new MessageChannel().port1
+      casca.postMessage = (data: { type?: string; seq?: number; document?: string }) => {
+        enviados.push(data)
+      }
+      Object.defineProperty(frame, 'contentWindow', { configurable: true, get: () => casca })
+      const daCasca = (data: unknown) =>
+        act(() => {
+          const event = new MessageEvent('message', { origin, data })
+          // Match the contentWindow fixture without pretending it is a complete Window.
+          Object.defineProperty(event, 'source', { value: casca })
+          window.dispatchEvent(event)
+        })
+      fireEvent.load(frame)
+      daCasca({ type: 'sz-shell:ready' })
+      const pedidos = () => enviados.filter((message) => message.type === 'sz-shell:load')
+      // A casca carrega o primeiro documento (a prévia parada) e avisa, como a página dela faria.
+      await waitFor(() => expect(pedidos().length).toBeGreaterThan(0))
+      daCasca({ type: 'sz-shell:loaded', seq: pedidos().at(-1)?.seq })
+      await waitFor(() => expect(pedidos().at(-1)?.document).toContain('Preview automático'), {
+        timeout: 3000,
+      })
+      const antigo = pedidos().at(-1)?.seq
+      act(() =>
+        useProjectStore.setState({
+          project: {
+            ...project,
+            files: {
+              ...project.files,
+              'index.html': project.files['index.html'].replace(
+                'Preview automático',
+                'Documento B',
+              ),
+            },
+          },
+          isDirty: false,
+        }),
+      )
+      await waitFor(() => expect(pedidos().at(-1)?.document).toContain('Documento B'), {
+        timeout: 3000,
+      })
+      const atual = pedidos().at(-1)?.seq
+      expect(typeof antigo).toBe('number')
+      expect(atual).toBe((antigo ?? 0) + 1)
+      const avisosDeSom = () => enviados.filter((message) => message.type === 'sz:audio').length
+      const antes = avisosDeSom()
+      daCasca({ type: 'sz-shell:loaded', seq: antigo })
+      expect(avisosDeSom()).toBe(antes)
+      daCasca({ type: 'sz-shell:loaded', seq: atual })
+      expect(avisosDeSom()).toBe(antes + 1)
+    } finally {
+      happyDOM?.setURL(previousURL)
+    }
+  }, 10_000)
+
   // Um jogo preso num cálculo sem fim segura o processo da prévia: trocar o `srcDoc` do mesmo
   // iframe espera o cálculo, um iframe novo roda na hora (medido no navegador, ver
   // `e2e/preview-hostile-programs.spec.ts`). No caminho normal o iframe NÃO pode ser trocado.
@@ -356,25 +538,46 @@ describe('PreviewIframe', () => {
 
   // Em navegador que não isola a prévia, um jogo que congela a aba congelaria de novo a cada
   // abertura do projeto (a prévia roda sozinha). A marca de execução quebra o laço.
+  // Desde o achado E6 (20/11) a marca é por aba: `sz:run-tripwire:<projeto>#<aba>`.
+  const marcaDaAba = (projectId: string) => {
+    const key = Object.keys(window.localStorage).find((k) =>
+      k.startsWith(`sz:run-tripwire:${projectId}#`),
+    )
+    return key === undefined ? null : window.localStorage.getItem(key)
+  }
   it('a marca já existe quando o documento executável é observado no DOM', async () => {
     const project = createPreviewProject()
     const key = `sz:run-tripwire:${project.id}`
     window.localStorage.removeItem(key)
     useProjectStore.setState({ project, isDirty: false, saveError: null })
-    render(<PreviewIframe />)
-    const frame = screen.getByTitle('Pré-visualização')
+    // Observe antes da montagem e em qualquer iframe que entrar no contêiner:
+    // o documento pode aparecer no primeiro commit ou num quadro substituto.
+    // A microtarefa lê a marca após o commit, antes da tarefa que carrega o documento.
+    // O MutationObserver do happy-dom perde callbacks em WeakRef durante o GC.
+    // Este ensaio não distingue layout/passivo quando o React roda ambos no commit.
+    const container = document.createElement('div')
+    document.body.appendChild(container)
     const observed: Array<string | null> = []
-    const observer = new MutationObserver(() => {
-      if (frame.getAttribute('srcdoc')?.includes('Preview automático'))
-        observed.push(window.localStorage.getItem(key))
-    })
-    observer.observe(frame, { attributes: true, attributeFilter: ['srcdoc'] })
+    const setAttribute = HTMLIFrameElement.prototype.setAttribute
+    const attributeWrites = spyOn(HTMLIFrameElement.prototype, 'setAttribute').mockImplementation(
+      function (this: HTMLIFrameElement, name: string, value: string) {
+        setAttribute.call(this, name, value)
+        if (name.toLowerCase() === 'srcdoc' && String(value).includes('Preview automático'))
+          queueMicrotask(() => {
+            if (container.contains(this)) observed.push(marcaDaAba(project.id))
+          })
+      },
+    )
+    let unmount: (() => void) | undefined
     try {
-      fireEvent.load(frame)
+      unmount = render(<PreviewIframe />, { container }).unmount
+      fireEvent.load(screen.getByTitle('Pré-visualização'))
       await waitFor(() => expect(observed.length).toBeGreaterThan(0))
       expect(observed.every((mark) => mark !== null)).toBe(true)
     } finally {
-      observer.disconnect()
+      attributeWrites.mockRestore()
+      unmount?.()
+      container.remove()
     }
   })
 
@@ -388,7 +591,7 @@ describe('PreviewIframe', () => {
       fireEvent.load(screen.getByTitle('Pré-visualização'))
       await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
       const iframe = screen.getByTitle('Pré-visualização') as HTMLIFrameElement
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
 
       const contentWindow = iframe.contentWindow
       if (!contentWindow) throw new Error('O happy-dom não deu janela ao iframe')
@@ -404,15 +607,16 @@ describe('PreviewIframe', () => {
         })
       batimento()
       batimento()
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
       batimento()
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
       // Um jogo pode travar depois de já ter enviado batimentos. Encerrar corretamente,
       // não um batimento anterior, é o que permite a próxima abertura automática.
 
       // A aba congelou com o jogo rodando: nada desmontou, a marca ficou. Na abertura seguinte...
       montada.unmount()
-      expect(window.localStorage.getItem(chave)).toBeNull()
+      expect(marcaDaAba(project.id)).toBeNull()
+      // A marca que uma aba congelada deixa (aqui no formato sem dono, que conta como parada).
       window.localStorage.setItem(chave, String(Date.now()))
       useUIStore.setState({ previewRunning: true })
       render(<PreviewIframe />)
@@ -424,7 +628,7 @@ describe('PreviewIframe', () => {
       // ...a prévia espera o Rodar, e aí roda (com a marca posta de novo).
       act(() => useProRun.getState().actions?.run())
       await waitFor(() => expect(getPreviewSrcDoc()).toContain('Preview automático'))
-      expect(window.localStorage.getItem(chave)).not.toBeNull()
+      expect(marcaDaAba(project.id)).not.toBeNull()
     }))
 
   it('o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa', async () => {
@@ -551,6 +755,26 @@ function titleViaFullParse(html: string): string | null {
   }
   return null
 }
+
+describe('heldPreviewDocument (achado E4): o iframe trocado não recebe o documento que travou', () => {
+  it('enquanto o próximo prepara, segura o documento que já estava', () => {
+    expect(
+      heldPreviewDocument({ holding: true, held: 'jogo-a', stuck: null, candidate: 'jogo-b' }),
+    ).toBe('jogo-a')
+  })
+
+  it('mas não o que travou o iframe que acabou de ser trocado', () => {
+    expect(
+      heldPreviewDocument({ holding: true, held: 'preso', stuck: 'preso', candidate: 'novo' }),
+    ).toBe(PAUSED_PREVIEW_DOC)
+  })
+
+  it('pronto o próximo, vale o próximo', () => {
+    expect(
+      heldPreviewDocument({ holding: false, held: 'preso', stuck: 'preso', candidate: 'novo' }),
+    ).toBe('novo')
+  })
+})
 
 describe('extractDocumentTitle (paridade com o parse completo)', () => {
   const cases: string[] = [

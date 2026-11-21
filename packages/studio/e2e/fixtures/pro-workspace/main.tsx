@@ -4,6 +4,7 @@ import { createEmptyProject } from '../../../src/core/project'
 import { getMonacoModelPath } from '../../../src/monaco/modelPaths'
 import { StudioEditor } from '../../../src/studio/StudioEditor'
 import type { StudioTutorConfig } from '../../../src/studio/tutor'
+import { modularProjectFiles } from './modularProject'
 import '../../../playground/styles.css'
 
 const project = {
@@ -44,11 +45,27 @@ if (new URLSearchParams(location.search).has('performance')) {
     })
   }
 }
+if (new URLSearchParams(location.search).has('modular')) {
+  // O projeto modular de 60 arquivos que se importam (etapa 3 do plano, Pro em escala).
+  const tree: Record<string, { kind: 'dir' } | { kind: 'file'; content: string }> = {}
+  for (const [path, content] of Object.entries(modularProjectFiles())) {
+    const parts = path.split('/')
+    for (let depth = 1; depth < parts.length; depth++)
+      tree[parts.slice(0, depth).join('/')] = { kind: 'dir' }
+    tree[path] = { kind: 'file', content }
+  }
+  Object.assign(project, { tree })
+}
 if (new URLSearchParams(location.search).has('symbols')) {
   project.tree['src/main.ts'].content = [
     ...Array.from({ length: 350 }, (_, index) => `export const item${index} = ${index};`),
     'export function zzUpdate() { return item349; }',
   ].join('\n')
+}
+if (new URLSearchParams(location.search).has('lineBreaks')) {
+  // Um arquivo trazido de fora com CRLF e LF juntos (o Monaco mostra com uma quebra só).
+  project.tree['src/main.ts'].content =
+    'import { speed } from "./config"\r\nexport const score = speed + 1\nexport const mixed: number = "text"\r\n'
 }
 if (new URLSearchParams(location.search).has('references')) {
   project.tree['src/main.ts'].content = [

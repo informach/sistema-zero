@@ -8,6 +8,16 @@ export class CenariosFechadosError extends DomainError {
   }
 }
 
+/** Não deu para conferir o Molda de quem pede agora (banco ou jornada fora). → 424 (não 5xx: o
+ * disjuntor do gateway contaria contra o members inteiro); tentar de novo resolve, ao contrário
+ * do "fechado". */
+export class CenariosIndisponiveisError extends DomainError {
+  readonly code = 'CENARIOS_INDISPONIVEIS'
+  constructor(readonly causa?: unknown) {
+    super('Não consegui conferir o seu acesso agora. Tente de novo em instantes.')
+  }
+}
+
 /** Não existe, ou é de outro espaço (nunca vaza existência). → 404. */
 export class CenarioNaoEncontradoError extends DomainError {
   readonly code = 'CENARIO_NAO_ENCONTRADO'
@@ -54,6 +64,17 @@ export class CenarioArquivoSaindoError extends DomainError {
   readonly code = 'CENARIO_ARQUIVO_SAINDO'
   constructor() {
     super('Este arquivo acabou de ser apagado. Tente de novo em instantes.')
+  }
+}
+
+/** O lote cria ou muda uma ferramenta que o posto de quem pede ainda não liberou. → 403, com as
+ * famílias trancadas. Desfazer, refazer e voltar a uma versão nunca caem aqui. */
+export class CenarioFerramentaTrancadaError extends DomainError {
+  readonly code = 'CENARIO_FERRAMENTA_TRANCADA'
+  constructor(readonly familias: readonly { id: string; rotulo: string }[]) {
+    super(
+      `Esta ferramenta ainda não está liberada para você: ${familias.map((f) => f.rotulo).join(', ')}`,
+    )
   }
 }
 

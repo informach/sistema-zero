@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { inspecionarGlbDaCompilacao } from '../src/compilar/inspecao-glb'
+import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from '../src/compilar/inspecao-glb'
 
 import { exemplo, glb } from './fixtures/glb-compilacao'
 
@@ -119,4 +119,37 @@ test('GLB compacto não autoriza materialização multiplicada acima do orçamen
   j.nodes = Array.from({ length: 512 }, () => ({ mesh: 0 }))
   j.scenes = [{ nodes: j.nodes.map((_, i) => i) }]
   expect(() => inspecionarGlbDaCompilacao(glb(j, bin), { fonte: true })).toThrow(/materialização/)
+})
+
+test('a mesma imagem embutida em dois modelos conta uma vez no orçamento da compilação', async () => {
+  const { j, bin } = exemplo(),
+    png = new Uint8Array(
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVR4AWL6z8DwHwSZGEEkw38GAAAAAP//4+5legAAAAZJREFUAwBBDwb/5c5bAAAAAABJRU5ErkJggg==',
+        'base64',
+      ),
+    ),
+    completo = new Uint8Array(bin.length + 100)
+  completo.set(bin)
+  completo.set(png, bin.length)
+  const modelo = () =>
+    glb(
+      {
+        ...j,
+        buffers: [{ byteLength: completo.length }],
+        bufferViews: [...j.bufferViews, { buffer: 0, byteOffset: bin.length, byteLength: 100 }],
+        images: [{ bufferView: 1, mimeType: 'image/png' }],
+      },
+      completo,
+    )
+  const a = inspecionarGlbDaCompilacao(modelo(), { fonte: true }),
+    b = inspecionarGlbDaCompilacao(modelo(), { fonte: true })
+  expect(a.imagens).toHaveLength(1)
+  expect(a.imagens[0]!.pixels).toBe(16)
+  const contadas = new Set<string>()
+  expect(await pixelsDasImagensNovas(a.imagens, contadas)).toBe(16)
+  expect(await pixelsDasImagensNovas(b.imagens, contadas)).toBe(0)
+  expect(
+    await pixelsDasImagensNovas([{ bytes: new Uint8Array([1, 2, 3]), pixels: 4 }], contadas),
+  ).toBe(4)
 })

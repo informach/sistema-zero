@@ -1,0 +1,52 @@
+bun test v1.3.11 (af24e281)
+
+src\ir\__tests__\symbolNamesTypes.test.ts:
+(pass) lexical snapshots keep their own readonly callback contract with lib.es2022.d.ts [375.00ms]
+15 |         skipLibCheck: true,
+16 |         noEmit: true,
+17 |       },
+18 |     })
+19 |     const errors = ts.getPreEmitDiagnostics(program).filter(d => d.category === ts.DiagnosticCategory.Error)
+20 |     expect(errors.map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n'))).toEqual([])
+                                                                                       ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++
++ "Type 'SymbolNames<string>' is not assignable to type 'ReadonlyNames<string>'.
++   Types of property 'forEach' are incompatible.
++     Type '(callback: (value: string, key: string, set: ReadonlyNames<string>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: any) => void'.
++       Types of parameters 'callback' and 'callbackfn' are incompatible.
++         Types of parameters 'set' and 'set' are incompatible.
++           Type 'ReadonlyNames<string>' is missing the following properties from type 'ReadonlySet<string>': union, intersection, difference, symmetricDifference, and 3 more."
++ ,
++   "Unused '@ts-expect-error' directive.",
++
++ "Property 'forEach' in type 'SymbolNames<T>' is not assignable to the same property in base type 'ReadonlyNames<T>'.
++   Type '(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any) => void'.
++     Types of parameters 'callback' and 'callbackfn' are incompatible.
++       Types of parameters 'set' and 'set' are incompatible.
++         Type 'ReadonlyNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more."
++ ,
++
++ "Argument of type 'this' is not assignable to parameter of type 'ReadonlyNames<T>'.
++   Type 'SymbolNames<T>' is not assignable to type 'ReadonlyNames<T>'.
++     Types of property 'forEach' are incompatible.
++       Type '(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown) => void' is not assignable to type '(callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void, thisArg?: any) => void'.
++         Types of parameters 'callback' and 'callbackfn' are incompatible.
++           Types of parameters 'set' and 'set' are incompatible.
++             Type 'ReadonlyNames<T>' is missing the following properties from type 'ReadonlySet<T>': union, intersection, difference, symmetricDifference, and 3 more."
++ ,
++ ]
+
+- Expected  - 1
++ Received  + 27
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\ir\__tests__\symbolNamesTypes.test.ts:20:83)
+(fail) lexical snapshots keep their own readonly callback contract with lib.esnext.d.ts [266.00ms]
+
+ 1 pass
+ 1 fail
+ 2 expect() calls
+Ran 2 tests across 1 file. [1291.00ms]

@@ -2,6 +2,7 @@ import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
 import { createPgzeroFramePacer } from '../pgzero/pacing'
 import type { PgzeroAudioCommand } from '../pgzero/protocol'
+import { createPythonRendererFocus, type PythonRendererFocusOptions } from '../rendererFocus'
 import { DEFAULT_FONT_RECS, DEFAULT_FONT_WORDS } from './defaultFont.generated'
 import {
   findGlyphIndex,
@@ -37,6 +38,8 @@ export interface RaylibRenderer {
     attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
   ): Promise<string>
   capture(): Promise<StudioRuntimeImage | null>
+  /** Quantos quadros já pintou (a aba Desempenho conta por aqui; não toca no programa). */
+  paintedFrames(): number
   dispose(): void
 }
 
@@ -217,12 +220,13 @@ export function compileProgram(gl: WebGL2RenderingContext, vertex: string, fragm
  */
 export function createRaylibRenderer(
   container: HTMLElement,
-  options: {
+  options: PythonRendererFocusOptions & {
     onAudio?(commands: readonly PgzeroAudioCommand[], watch: boolean): void
     takeEndedVoices?(limit: number): number[]
     onTitle?(title: string): void
   } = {},
 ): RaylibRenderer {
+  const focusCanvas = createPythonRendererFocus(options)
   const listeners = new AbortController()
   const textures = new Map<number, Texture>()
   const fonts = new Map<number, FontAtlas>()
@@ -299,7 +303,7 @@ export function createRaylibRenderer(
     gl = context
     container.append(canvas)
     installInput(canvas)
-    canvas.focus({ preventScroll: true })
+    focusCanvas(canvas)
     program = compileProgram(gl, VERTEX_2D, FRAGMENT_2D)
     mvpLocation = gl.getUniformLocation(program, 'uMvp')
     vao = gl.createVertexArray()
@@ -499,7 +503,7 @@ export function createRaylibRenderer(
     element.addEventListener(
       'pointerdown',
       (event) => {
-        element.focus({ preventScroll: true })
+        focusCanvas(element)
         if (pointerWanted && !locked()) {
           // The browser only grants the lock from a click; without it the mouse still steers.
           const request = element.requestPointerLock?.() as Promise<void> | undefined
@@ -1991,6 +1995,9 @@ export function createRaylibRenderer(
       } finally {
         busy = false
       }
+    },
+    paintedFrames() {
+      return frameSequence
     },
     async capture() {
       active()

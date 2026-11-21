@@ -11,6 +11,11 @@ import {
   studioProTemplate,
 } from '@sistemazero/core/studio'
 import {
+  isStudioProScene3DFile,
+  readStudioProScene3DModule,
+  STUDIO_PRO_SCENE3D_MODULE,
+} from '@sistemazero/core/studio/pro-scene3d'
+import {
   STUDIO_THREE_TYPES_VERSION,
   STUDIO_THREE_VERSION,
 } from '@sistemazero/core/studio/three-version'
@@ -143,7 +148,7 @@ function verifyRemoteLock(raw: string, packageJson: string): void {
 }
 
 export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries']): Promise<void> {
-  for (const entry of Object.values(binaries ?? {})) {
+  for (const [path, entry] of Object.entries(binaries ?? {})) {
     const bytes = Uint8Array.from(atob(entry.base64), (character) => character.charCodeAt(0))
     const digest = await crypto.subtle.digest('SHA-256', bytes)
     const hash = Array.from(new Uint8Array(digest), (byte) =>
@@ -151,8 +156,30 @@ export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries'])
     ).join('')
     if (hash !== entry.sha256)
       throw new InvalidBuildRequestError('O material recebido está incompleto ou foi alterado.')
+    // R3 da revisão de 20/11/2026: o módulo dos cenários só passa no modelo do Estúdio, só com
+    // dados. O contêiner o escreve de novo e troca o runtime e os tipos pelos da imagem.
+    if (path === STUDIO_PRO_SCENE3D_MODULE) {
+      let text: string | null = null
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+      } catch {
+        // Texto que não é UTF-8 não é o módulo do Estúdio.
+      }
+      if (text === null || readStudioProScene3DModule(text) === null)
+        throw new InvalidBuildRequestError(
+          'Os cenários do projeto não conferem com o Estúdio. Abra o projeto de novo e tente outra vez.',
+        )
+    }
   }
 }
+
+/** O pedido traz algum dos arquivos derivados dos cenários do Molda. */
+export function hasStudioProScene3DFiles(binaries: ProBuildRequest['binaries']): boolean {
+  return Object.keys(binaries ?? {}).some(isStudioProScene3DFile)
+}
+
+/** O script da imagem que troca os arquivos derivados dos cenários pelos confiáveis (R3). */
+export const SCENE3D_CANONICAL_COMMAND = 'node /opt/sz-runtime/scene3d-pro-canonical.mjs'
 
 export const normalizeBuildPath = normalizeStudioProBuildPath
 

@@ -6,17 +6,9 @@ import {
   RigidBody,
   TrimeshCollider,
 } from '@react-three/rapier'
+import type { AtorDaCenaCompilada } from '@sistemazero/molda-cenarios-motor/runtime'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import {
-  AnimationMixer,
-  type Group,
-  type InstancedMesh,
-  type Matrix4,
-  type Mesh,
-  Object3D,
-  Vector3,
-} from 'three'
-import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import { type Group, type InstancedMesh, type Matrix4, type Mesh, Object3D, Vector3 } from 'three'
 import { useEstado, useJogo } from '../../estado/contexto'
 import { assentamentoDaPeca, pisoDaFaisca } from '../../sistemas/assentamento-da-faisca'
 import {
@@ -24,7 +16,6 @@ import {
   IRIS_DE_ESTUDO,
   type PecaNaFaisca,
 } from '../../sistemas/composicao-faisca'
-import { alturaDoArquipelago } from '../../sistemas/geografia-do-arquipelago'
 import { LAGO_DA_FAISCA } from '../../sistemas/lago-da-faisca'
 import { jogoPausado } from '../../sistemas/pausa'
 import { PECAS_DO_ACERVO, PECAS_DO_CAMINHO } from '../../sistemas/prova-curadoria-faisca'
@@ -43,6 +34,7 @@ import { preencherInstancias } from './instancias'
 import { LagoComFormaAtual, LagoDaFaisca } from './lago'
 import { PisosDeCatalogo } from './pisos-de-catalogo'
 import { prepararGpuDaFaisca } from './preparar-gpu'
+import { recursosDaIris } from './recursos-da-iris'
 
 type IdDaPeca = keyof typeof ARTE_DA_FAISCA.pecas
 const itens = COMPOSICAO_DA_FAISCA
@@ -257,57 +249,42 @@ function Colisores({ arte, colecao }: { arte: ArteDoPiloto | null; colecao: Peca
 }
 export function Iris({
   arte,
+  ator,
   origem = IRIS_DE_ESTUDO,
   piso = pisoDaFaisca,
   ativo = true,
   escala = 1,
   giro = 0,
 }: {
-  arte: ArteDoPiloto
   origem?: { x: number; z: number }
   piso?: (x: number, z: number) => number
   ativo?: boolean
   escala?: number
   giro?: number
-}) {
+} & ({ arte: ArteDoPiloto; ator?: never } | { arte?: never; ator: AtorDaCenaCompilada })) {
   const { loja, pedidos } = useJogo(),
     pausado = useEstado(jogoPausado)
   const grupo = useRef<Group>(null),
     corpo = useRef<RapierRigidBody>(null)
   const p = useRef({ x: origem.x, z: origem.z })
-  const original = arte.modelos.get('coelho')!
-  const cena = useMemo(() => {
-    const c = clone(original.scene)
-    c.traverse((o) => {
-      const m = o as Mesh
-      if (m.isMesh) m.castShadow = true
-    })
-    return c
-  }, [original])
+  const original = arte?.modelos.get('coelho')
   const anim = useMemo(() => {
-    const mixer = new AnimationMixer(cena),
-      andar = mixer.clipAction(original.animations.find((a) => a.name === 'andar')!),
-      parado = mixer.clipAction(original.animations.find((a) => a.name === 'parado')!)
-    andar.play()
-    parado.play()
-    return { mixer, andar, parado }
-  }, [cena, original])
+    if (ator) return recursosDaIris(ator)
+    if (!original) throw Error('O modelo da Íris não está disponível.')
+    return recursosDaIris({ cena: original.scene, animacoes: original.animations })
+  }, [ator, original])
+  const cena = anim.cena
   const tempo = useRef(0),
     cabeca = useMemo(() => ({ x: p.current.x, y: 0, z: p.current.z, miolo: { x: 0, z: 135 } }), [])
   const vetor = useMemo(() => new Vector3(), [])
   const osso = cena.getObjectByName('Head')
   useEffect(
     () => () => {
-      anim.mixer.stopAllAction()
-      anim.mixer.uncacheRoot(cena)
-      cena.traverse((o) => {
-        const m = o as Mesh & { skeleton?: { dispose(): void } }
-        m.skeleton?.dispose()
-      })
+      anim.descartar()
       if (pedidos.conversa === cabeca) pedidos.conversa = null
       if (loja.getState().painelAberto === 'faisca-iris') loja.getState().abrirPainel(null)
     },
-    [anim, cena, pedidos, cabeca, loja],
+    [anim, pedidos, cabeca, loja],
   )
   useInterativo('faisca-iris', {
     get x() {
@@ -357,9 +334,9 @@ export function Iris({
         ref={corpo}
         type="kinematicPosition"
         colliders={false}
-        position={[p.current.x, alturaDoArquipelago(p.current.x, p.current.z), p.current.z]}
+        position={[p.current.x, piso(p.current.x, p.current.z), p.current.z]}
       >
-        <CylinderCollider args={[0.38, 0.23]} position={[0, 0.38, 0]} />
+        <CylinderCollider args={[0.38 * escala, 0.23 * escala]} position={[0, 0.38 * escala, 0]} />
       </RigidBody>
     </>
   )

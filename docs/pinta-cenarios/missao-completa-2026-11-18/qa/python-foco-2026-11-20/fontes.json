@@ -1,0 +1,29 @@
+{
+  "base": "2662cb845b7326ac8046c716798ac23cd177a3dc",
+  "files": [
+    {
+      "file": "packages/studio/e2e-runtime/python-pinta-physics.spec.ts",
+      "sha256": "fa78305121e329f10e48a2cabb8772a2f3f404394c56ea58476574114076270b"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-pinta-world.spec.ts",
+      "sha256": "81111e1cff398762e912082f0ce07c7ff19d36e2523d664fc8b217f8e2c4f34f"
+    },
+    {
+      "file": "packages/studio/playwright.python-pygame.config.ts",
+      "sha256": "c14f1d95f806f35299cd315da2f598691a29e319fecc54bf21d9fc2b7beab5cc"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/session.test.ts",
+      "sha256": "92774b24c40b2dbdd04beb86f31a4aa406e0ccb46acbffde9dda3a5ab0c5ba3b"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/session.ts",
+      "sha256": "1f59ad12c82b00aa7dfe11be7c12f9f2f7ec8686873601feeb5344426f2c9244"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/pythonBrowserErrors.ts",
+      "sha256": "80f96609d85976f393c793d1e775199a060ab7bfbb6509b55a153af23bd84149"
+    }
+  ]
+}

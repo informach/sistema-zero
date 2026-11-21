@@ -12,7 +12,6 @@ import {
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import { type AnyElysia, Elysia } from 'elysia'
-import type { CatalogosDeCenarios } from '../../application/catalogo-de-cenarios'
 import {
   AcessoBloqueadoError,
   AparenciaNaoCompradaError,
@@ -56,14 +55,12 @@ import type { ServicoDasVendas } from '../../application/servico-das-vendas'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
 import type { ServicoDasVisitasDeAmigos } from '../../application/servico-das-visitas-de-amigos'
-import type { ServicoDeCenarios } from '../../application/servico-de-cenarios'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
 import type { ServicoDosFantasmas } from '../../application/servico-dos-fantasmas'
 import type { ServicoDosInsumos } from '../../application/servico-dos-insumos'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
 import type { ServicoDosPedidos } from '../../application/servico-dos-pedidos'
-import type { SessoesDeCenarios } from '../../application/sessoes-de-cenarios'
 import { RecordeDoFantasmaMudouError } from '../../domain/fantasmas.port'
 import {
   CompraDesatualizadaError,
@@ -106,7 +103,6 @@ import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
 import { rotasDasVisitasDeAmigos } from './rotas-das-visitas-de-amigos'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
-import { rotasDosCenarios } from './rotas-dos-cenarios'
 import { rotasDosDesafios } from './rotas-dos-desafios'
 import { rotasDosFantasmas } from './rotas-dos-fantasmas'
 import { rotasDosInsumos } from './rotas-dos-insumos'
@@ -114,9 +110,6 @@ import { rotasDosMinijogos } from './rotas-dos-minijogos'
 import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
-  cenarios?: ServicoDeCenarios
-  catalogos?: CatalogosDeCenarios
-  sessoesDeCenarios?: SessoesDeCenarios
   /** Visitas de outras crianças (N08a); sem ele, as rotas não existem. */
   amigos?: ServicoDasVisitasDeAmigos
   visitasAdultas?: ServicoDasVisitasAdultas
@@ -165,7 +158,6 @@ const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/(verificar|ambiente)$/
 
 /** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
 function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
-  if (caminho.startsWith('/arquipelago/admin/cenarios/')) return 9 * 1024 * 1024
   if (caminho.startsWith('/arquipelago/visitas-adultas/')) return 1024
   if (caminho === '/arquipelago/fantasmas') return CORPO_DO_FANTASMA_MAX_BYTES
   if (caminho === '/arquipelago/obra-estendida') return CORPO_DA_OBRA_ESTENDIDA_MAX_BYTES
@@ -185,12 +177,7 @@ function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
  */
 export function createServer(deps: DependenciasHttp): AnyElysia {
   const tetoDoJogo = deps.maxRequestBodyBytes ?? 96 * 1024
-  const tetoDoServidor = Math.max(
-    tetoDoJogo,
-    CORPO_DA_EQUIPE,
-    CORPO_DA_CONFERENCIA,
-    9 * 1024 * 1024,
-  )
+  const tetoDoServidor = Math.max(tetoDoJogo, CORPO_DA_EQUIPE, CORPO_DA_CONFERENCIA)
   return new Elysia({ serve: { maxRequestBodySize: tetoDoServidor } })
     .onRequest(({ request, set }) => {
       // O servidor aceita até o maior teto; cada caminho tem o seu (o jogo, o pequeno).
@@ -518,16 +505,6 @@ export function createServer(deps: DependenciasHttp): AnyElysia {
     .use(
       deps.revisoes
         ? rotasDasRevisoesHumanas({ revisoes: deps.revisoes, tokenInterno: deps.tokenInterno })
-        : new Elysia(),
-    )
-    .use(
-      deps.cenarios
-        ? rotasDosCenarios({
-            cenarios: deps.cenarios,
-            catalogos: deps.catalogos,
-            sessoes: deps.sessoesDeCenarios,
-            tokenInterno: deps.tokenInterno,
-          })
         : new Elysia(),
     )
     .get('/healthz', () => ({ status: 'ok' }))

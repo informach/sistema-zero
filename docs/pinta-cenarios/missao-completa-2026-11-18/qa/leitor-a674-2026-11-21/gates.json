@@ -1,0 +1,79 @@
+[
+  {
+    "name": "symbols",
+    "exit": 0,
+    "started": "2026-11-21T03:07:48.935Z",
+    "finished": "2026-11-21T03:07:51.323Z",
+    "log": ".cache/pinta-a674-symbols.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-21T03:07:51.892Z",
+    "finished": "2026-11-21T03:07:52.665Z",
+    "log": ".cache/pinta-a674-profile.log"
+  },
+  {
+    "name": "studio-sdk",
+    "exit": 0,
+    "started": "2026-11-21T03:07:53.208Z",
+    "finished": "2026-11-21T03:07:54.099Z",
+    "log": ".cache/pinta-a674-studio-sdk.log"
+  },
+  {
+    "name": "molda-sdk",
+    "exit": 0,
+    "started": "2026-11-21T03:07:54.621Z",
+    "finished": "2026-11-21T03:07:55.440Z",
+    "log": ".cache/pinta-a674-molda-sdk.log"
+  },
+  {
+    "name": "policy",
+    "exit": 0,
+    "started": "2026-11-21T03:07:56.043Z",
+    "finished": "2026-11-21T03:07:58.056Z",
+    "log": ".cache/pinta-a674-policy.log"
+  },
+  {
+    "name": "python-closure",
+    "exit": 0,
+    "started": "2026-11-21T03:07:58.607Z",
+    "finished": "2026-11-21T03:08:00.189Z",
+    "log": ".cache/pinta-a674-python-closure.log"
+  },
+  {
+    "name": "runtime-closure",
+    "exit": 0,
+    "started": "2026-11-21T03:08:00.739Z",
+    "finished": "2026-11-21T03:08:02.816Z",
+    "log": ".cache/pinta-a674-runtime-closure.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-21T03:08:03.368Z",
+    "finished": "2026-11-21T03:12:05.942Z",
+    "log": ".cache/pinta-a674-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-21T03:12:06.650Z",
+    "finished": "2026-11-21T03:15:12.997Z",
+    "log": ".cache/pinta-a674-members-types.log"
+  },
+  {
+    "name": "pro-performance",
+    "exit": 0,
+    "started": "2026-11-21T03:15:13.536Z",
+    "finished": "2026-11-21T03:16:31.486Z",
+    "log": ".cache/pinta-a674-pro-performance.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T03:16:32.005Z",
+    "finished": "2026-11-21T03:17:04.850Z",
+    "log": ".cache/pinta-a674-biome.log"
+  }
+]

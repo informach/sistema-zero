@@ -1,0 +1,237 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/preview-shell.spec.ts",
+      "--project=webkit",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\playwright.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-a2f-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-a2f-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/preview-security\\.spec\\.ts/",
+          "/preview-executes-user-code\\.spec\\.ts/",
+          "/preview-shell(?:-performance|-hostile)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-a2f-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/reload-flush\\.spec\\.ts/",
+          "/preview-shell(?:-performance)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-a2f-webkit-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "webkit",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": [{}, {}, {}],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5498",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1792,
+            "height": 1120
+          },
+          "deviceScaleFactor": 2,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "webkit"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "webkit"
+      }
+    ],
+    "quiet": false,
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "bun run serve:e2e",
+      "env": {
+        "E2E_PORT": "5498"
+      },
+      "url": "http://127.0.0.1:5498",
+      "reuseExistingServer": true,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "preview-shell.spec.ts",
+      "file": "preview-shell.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "prévia dentro da casca em outro site",
+          "file": "preview-shell.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7696,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:54:55.193Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-4335cced4cd85756a55c",
+              "file": "preview-shell.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "depois de Rodar, as setas chegam ao jogo sem clicar no palco",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T19:55:02.971Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-fa1dc5839ca3a507f8e9",
+              "file": "preview-shell.spec.ts",
+              "line": 59,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T19:54:54.728Z",
+    "duration": 15593.535,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "2b8e6e6f46302fa733ee947f9bde3eccd0e538b73318a17f3e7ca9d3a58da509"
+  },
+  {
+    "file": "add-owned-program-marker.cjs.txt",
+    "sha256": "062924b7cfe7d1013600f77aea0965042f2551aea08d28571a0e59df586c6026"
+  },
+  {
+    "file": "atualizacao-sem-perda.json",
+    "sha256": "7a8328851e3c32ee2bf86fcbadb2c204afd95465c07ecf5033ca24504491b772"
+  },
+  {
+    "file": "checkpoint-owned-game.cjs.txt",
+    "sha256": "e94801e7b052b7f51233e8aef6b2f99ede4450e2a313f0329434165a9e4e0f09"
+  },
+  {
+    "file": "chunks-antigos-indisponiveis.json",
+    "sha256": "cd5783ded4546cc116a06a77229844da8916a36bd099cf45a8e71e3178309a35"
+  },
+  {
+    "file": "execucao-apos-atualizar.json",
+    "sha256": "98c166603c1a0adf2bc0c7ded8743675d04e74561ae1404b8562945b34c432db"
+  },
+  {
+    "file": "focus-owned-studio-and-verify-update.cjs.txt",
+    "sha256": "128531a94207722b44cf522d6585130fc397d46912f7d6bfc32adcbd676099b0"
+  },
+  {
+    "file": "origem.json",
+    "sha256": "4e44d91c10528e6c161909a924472bea304acef9a4847f5cf8c870a1539ae609"
+  },
+  {
+    "file": "play-owned-protected-map.cjs.txt",
+    "sha256": "7b39cbb677e8b3e46ba3238abdc798e920dfc7e95cc2873c2d6f2943b70f1f1c"
+  },
+  {
+    "file": "primeira-execucao.json",
+    "sha256": "6c4bd48b03564ce312e85ad441620a3e2e0b39b0029d831922e55f7dc2ecc490"
+  },
+  {
+    "file": "programacao-acrescentada.json",
+    "sha256": "71ebbca5b7a0d9b404fd291c81b323fc9793c7ba4a54571e1ea4d8b0be17fc55"
+  },
+  {
+    "file": "projeto-criado.json",
+    "sha256": "bd9de7304ebb4e644b1f296fa36772a09cf464692e1d068c25a39653ed50a097"
+  },
+  {
+    "file": "reabertura.json",
+    "sha256": "9e4bcfc92d3ad36f9d0e847c1bc78ae30c6e319ba2e840de0bfdd1ff70f9a04e"
+  },
+  {
+    "file": "run-owned-generated-game.cjs.txt",
+    "sha256": "05ed65085ceb2c117882e96f8aa42067026585fa618cbbed0a7ea5a997243231"
+  },
+  {
+    "file": "update-owned-map-preserve-program.cjs.txt",
+    "sha256": "654d9168f3173349272b91c23068356e08e9f221968ca4c8c1bc29dc5b78bb3c"
+  },
+  {
+    "file": "verify-reopened-owned-game.cjs.txt",
+    "sha256": "6106dbc5e7f7b8d13e256465c07be29d772a3574da1b775cc51800466171dd19"
+  }
+]

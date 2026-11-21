@@ -6,6 +6,7 @@ import {
   type EncaixeDeComposicao,
   entidadesSelecionaveis,
   entidadesTransformaveis,
+  FAMILIA_DA_FERRAMENTA,
   indiceDaOrganizacao,
   type ModeloDoCenario,
 } from '@sistemazero/molda-cenarios-core/v2'
@@ -19,7 +20,6 @@ import {
   type EstadoDoAmbiente,
   type EstadoDosCaminhos,
   type EstadoDosMarcadores,
-  type EstadoDoTeste,
   type Estatisticas,
   type Ferramenta,
   type ModoDeSelecao,
@@ -103,6 +103,8 @@ import { NOMES_CAMINHO } from '../caminho-formulario'
 import { comandosParaRemoverCaminho } from '../caminho-remocao'
 import { type ControladorDaOficina, criarControlador } from '../controlador'
 import { COPY } from '../copy'
+import { useEdicaoAoVivo } from '../edicao-ao-vivo'
+import { FerramentasPorVir, useFerramentas } from '../faixas'
 import { encerrarPreparacao } from '../importar'
 import { NOMES_JOGO } from '../jogo-formulario'
 import { Chegando, Dialogo, Falhou, useCarga } from '../pecas'
@@ -141,7 +143,7 @@ import { Organizar } from './Organizar'
 import { Painel } from './Painel'
 import { Propriedades } from './Propriedades'
 import { FERRAMENTAS_TERRENO_RAIL, NOMES_TERRENO, Terreno } from './Terreno'
-import { ControlesTeste, PrepararTeste } from './Testar'
+import { ControlesDoTesteAoVivo, criarLojaDoTeste, PrepararTeste } from './Testar'
 import { Versoes } from './Versoes'
 
 type Aba = 'terreno' | 'agua' | 'objetos' | 'caminhos' | 'jogo' | 'luz'
@@ -280,6 +282,13 @@ function OficinaAberta({
 }): JSX.Element {
   const controlador = useMemo(() => criarControlador(host, aberto), [host, aberto])
   const estado = useSyncExternalStore(controlador.subscribe, controlador.getState)
+  // As faixas do posto: a ferramenta trancada some do trilho e dos painéis.
+  const ferramentas = useFerramentas()
+  const tamanhoSoUniforme = useRef(false)
+  const liberada = (aba: keyof typeof FAMILIA_DA_FERRAMENTA, ferramenta: string) => {
+    const familia = FAMILIA_DA_FERRAMENTA[aba][ferramenta]
+    return !familia || ferramentas.pode(familia)
+  }
   // Fechar a aba ou recarregar com algo ainda não guardado pede confirmação; ao sair da tela por
   // outro caminho (menu, voltar do navegador), a fila que estava guardando termina de enviar.
   useEffect(() => {
@@ -297,7 +306,9 @@ function OficinaAberta({
   const canvas = useRef<HTMLCanvasElement>(null)
   const previaDaArea = useRef<SVGPolygonElement>(null)
   const palco = useRef<Palco | null>(null)
-  const [teste, setTeste] = useState<EstadoDoTeste | null>(null)
+  // O estado do teste (a cada 100 ms) mora numa loja: a oficina só guarda se está testando.
+  const [lojaDoTeste] = useState(criarLojaDoTeste)
+  const [testando, setTestando] = useState(false)
   const [escolhendoPersonagem, setEscolhendoPersonagem] = useState(false)
   const [personagemDaBiblioteca, setPersonagemDaBiblioteca] = useState<ModeloDoCenario | null>(null)
   const [janelaTeste, setJanelaTeste] = useState(false)
@@ -306,12 +317,13 @@ function OficinaAberta({
   const [erroTeste, setErroTeste] = useState<string | null>(null)
   const [conjuntosCarregando, setConjuntosCarregando] = useState(0)
   const controleDoTeste = useRef<AbortController | null>(null)
-  const emEnsaio = Boolean(teste) || preparandoTeste
+  const emEnsaio = testando || preparandoTeste
   const ensaioAtivo = useRef(false)
   ensaioAtivo.current = emEnsaio || janelaTeste || escolhendoPersonagem
   // biome-ignore lint/correctness/useExhaustiveDependencies: outra conexão/controlador encerra a sessão transitória anterior
   useEffect(() => {
-    setTeste(null)
+    lojaDoTeste.definir(null)
+    setTestando(false)
     setJanelaTeste(false)
     setPreparandoTeste(false)
     setErroTeste(null)
@@ -620,6 +632,15 @@ function OficinaAberta({
     emGesto: gestoAtivo || emEnsaio || janelaTeste || terreno.ocupado || edicaoAberta,
   })
 
+  // Edição ao vivo: a versão que um agente (ou outra aba) guardou abre sozinha, sem nada
+  // local pendente e fora de gesto, ensaio, ferramenta aberta ou prévia de água e caminho.
+  useEdicaoAoVivo({
+    host,
+    controlador,
+    cenarioId: estado.documento.id,
+    livre: () => !(gestoAtivo || emEnsaio || janelaTeste || terrenoOcupado.current || edicaoAberta),
+  })
+
   const executar = useCallback(
     (comandos: ComandoDeCenario[]) => {
       if (
@@ -695,7 +716,8 @@ function OficinaAberta({
       aoGesto: setGestoAtivo,
       aoTeste: (estado) => {
         if (estado) alturaNativa.current = estado.altura
-        setTeste(estado)
+        lojaDoTeste.definir(estado)
+        setTestando(estado !== null)
       },
       aoPreverSelecao: (pontos) =>
         previaDaArea.current?.setAttribute('points', pontos.map(([x, y]) => `${x},${y}`).join(' ')),
@@ -718,6 +740,7 @@ function OficinaAberta({
       movimentoReduzido: globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
     })
     palco.current = novo
+    novo.definirTamanhoSoUniforme(tamanhoSoUniforme.current)
     novo.definirDocumento(controlador.getState().documento)
     if (entidadesTransformaveis(controlador.getState().documento).length) novo.enquadrar()
     return () => {
@@ -727,6 +750,7 @@ function OficinaAberta({
   }, [
     host,
     controlador,
+    lojaDoTeste,
     aberto.resumo.id,
     mundo.espacoId,
     aoAplicarPincel,
@@ -820,6 +844,11 @@ function OficinaAberta({
     [encaixe, configuracaoDoEncaixe],
   )
   useEffect(() => palco.current?.definirTema(tema), [tema])
+  // Sem a faixa do tamanho por eixo, o puxador de tamanho do palco escala por igual (também no
+  // palco recriado: ele lê a referência ao nascer).
+  const tamanhoPorEixo = ferramentas.pode('objetos.precisao')
+  tamanhoSoUniforme.current = !tamanhoPorEixo
+  useEffect(() => palco.current?.definirTamanhoSoUniforme(!tamanhoPorEixo), [tamanhoPorEixo])
 
   const por = useCallback(
     (modelo: ModeloDeBiblioteca, ponto: LocalDeColocacao | null) => {
@@ -1145,7 +1174,8 @@ function OficinaAberta({
     controleDoTeste.current?.abort()
     controleDoTeste.current = null
     palco.current?.encerrarTeste()
-    setTeste(null)
+    lojaDoTeste.definir(null)
+    setTestando(false)
     setJanelaTeste(false)
     setPreparandoTeste(false)
   }
@@ -1498,7 +1528,7 @@ function OficinaAberta({
               escolhendoPersonagem
             }
             onClick={() => {
-              if (teste) encerrarTeste()
+              if (testando) encerrarTeste()
               else {
                 setErroTeste(null)
                 setJanelaTeste(true)
@@ -1506,7 +1536,7 @@ function OficinaAberta({
             }}
           >
             <Play aria-hidden="true" />
-            {teste ? 'Editar' : COPY.oficina.testar}
+            {testando ? 'Editar' : COPY.oficina.testar}
           </button>
           <div
             className="contents"
@@ -1698,12 +1728,14 @@ function OficinaAberta({
                 aoTocar={apagar}
               />
               <hr className="mcn-fio" />
-              <Ladrilho
-                icone={Blocks}
-                rotulo="Blocos"
-                desligado={!relevoPronto || estado.ocupado}
-                aoTocar={() => setFormasAbertas(true)}
-              />
+              {ferramentas.pode('objetos.formas') ? (
+                <Ladrilho
+                  icone={Blocks}
+                  rotulo="Blocos"
+                  desligado={!relevoPronto || estado.ocupado}
+                  aoTocar={() => setFormasAbertas(true)}
+                />
+              ) : null}
               <Ladrilho
                 icone={Magnet}
                 rotulo={COPY.oficina.grade}
@@ -1713,7 +1745,7 @@ function OficinaAberta({
               />
             </>
           ) : aba === 'terreno' ? (
-            FERRAMENTAS_TERRENO_RAIL.map(([f, Icone]) => (
+            FERRAMENTAS_TERRENO_RAIL.filter(([f]) => liberada('terreno', f)).map(([f, Icone]) => (
               <Ladrilho
                 key={f}
                 icone={Icone}
@@ -1728,7 +1760,7 @@ function OficinaAberta({
               />
             ))
           ) : aba === 'agua' ? (
-            FERRAMENTAS_AGUA.map(([tipo, Icone]) => (
+            FERRAMENTAS_AGUA.filter(([tipo]) => liberada('agua', tipo)).map(([tipo, Icone]) => (
               <Ladrilho
                 key={tipo}
                 icone={Icone}
@@ -1743,24 +1775,28 @@ function OficinaAberta({
               />
             ))
           ) : aba === 'caminhos' ? (
-            FERRAMENTAS_CAMINHOS.map(([tipo, Icone]) => (
-              <Ladrilho
-                key={tipo}
-                icone={Icone}
-                rotulo={NOMES_CAMINHO[tipo]}
-                ligado={caminhos.rascunho?.tipo === tipo}
-                desligado={caminhos.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
-                aoTocar={() => {
-                  caminhos.iniciar(tipo)
-                  setGavetaAberta(false)
-                  setModoPainel('escolha')
-                  setPainelAberto(true)
-                }}
-              />
-            ))
+            FERRAMENTAS_CAMINHOS.filter(([tipo]) => liberada('caminhos', tipo)).map(
+              ([tipo, Icone]) => (
+                <Ladrilho
+                  key={tipo}
+                  icone={Icone}
+                  rotulo={NOMES_CAMINHO[tipo]}
+                  ligado={caminhos.rascunho?.tipo === tipo}
+                  desligado={
+                    caminhos.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado
+                  }
+                  aoTocar={() => {
+                    caminhos.iniciar(tipo)
+                    setGavetaAberta(false)
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ),
+            )
           ) : aba === 'jogo' ? (
             <>
-              {FERRAMENTAS_JOGO.map(([tipo, Icone]) => (
+              {FERRAMENTAS_JOGO.filter(([tipo]) => liberada('jogo', tipo)).map(([tipo, Icone]) => (
                 <Ladrilho
                   key={tipo}
                   icone={Icone}
@@ -1838,24 +1874,32 @@ function OficinaAberta({
                   ['ceu', Cloud, 'Céu'],
                   ['nevoa', Haze, 'Névoa'],
                 ] as const
-              ).map(([secao, Icone, rotulo]) => (
-                <Ladrilho
-                  key={secao}
-                  icone={Icone}
-                  rotulo={rotulo}
-                  ligado={Boolean(ambiente.rascunho) && ambiente.secao === secao}
-                  desligado={
-                    jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
-                  }
-                  aoTocar={() => {
-                    jogo.cancelar()
-                    ambiente.abrir(secao)
-                    setModoPainel('escolha')
-                    setPainelAberto(true)
-                  }}
-                />
-              ))}
-              {FERRAMENTAS_LUZ.map(([tipo, Icone]) => (
+              )
+                // A hora mora na seção do sol: sem o sol liberado, o ladrilho dele some, mas as
+                // horas do topo seguem abrindo só a hora.
+                .filter(([secao]) =>
+                  secao === 'sol' || secao === 'ambiente'
+                    ? ferramentas.pode('luz.sol-e-ambiente')
+                    : true,
+                )
+                .map(([secao, Icone, rotulo]) => (
+                  <Ladrilho
+                    key={secao}
+                    icone={Icone}
+                    rotulo={rotulo}
+                    ligado={Boolean(ambiente.rascunho) && ambiente.secao === secao}
+                    desligado={
+                      jogo.aplicando || ambiente.aplicando || estado.ocupado || !relevoPronto
+                    }
+                    aoTocar={() => {
+                      jogo.cancelar()
+                      ambiente.abrir(secao)
+                      setModoPainel('escolha')
+                      setPainelAberto(true)
+                    }}
+                  />
+                ))}
+              {FERRAMENTAS_LUZ.filter(([tipo]) => liberada('luzes', tipo)).map(([tipo, Icone]) => (
                 <Ladrilho
                   key={tipo}
                   icone={Icone}
@@ -1917,9 +1961,9 @@ function OficinaAberta({
             >
               <polygon ref={previaDaArea} points="" vectorEffect="non-scaling-stroke" />
             </svg>
-            {teste ? (
-              <ControlesTeste
-                estado={teste}
+            {testando ? (
+              <ControlesDoTesteAoVivo
+                loja={lojaDoTeste}
                 comandar={(c) => palco.current?.comandarTeste(c)}
                 entrada={(e) => palco.current?.entradaDoTeste(e)}
                 fechar={encerrarTeste}
@@ -2064,7 +2108,9 @@ function OficinaAberta({
           <div style={emEnsaio ? { display: 'none' } : undefined} inert={emEnsaio}>
             <Gaveta
               atualizacaoDosConjuntos={conjuntos.atualizacao}
-              aoPorConjunto={porConjunto}
+              // Montar conjunto é do intermediário: a biblioteca da família pode ter conjuntos
+              // de um irmão que já chegou lá.
+              {...(ferramentas.pode('objetos.conjuntos') ? { aoPorConjunto: porConjunto } : {})}
               conjuntoEmEdicao={conjunto?.id}
               modo={
                 escolhendoPersonagem
@@ -2269,7 +2315,7 @@ function OficinaAberta({
                     executar={executar}
                     fonte={fonte}
                     aoEditarConjunto={
-                      aoEditarConjunto
+                      aoEditarConjunto && ferramentas.pode('objetos.conjuntos')
                         ? (id) => {
                             void controlador
                               .terminar()
@@ -2290,7 +2336,8 @@ function OficinaAberta({
                 ) : null}
                 {relevoPronto && aba === 'objetos' && selecao.length > 0 ? (
                   <>
-                    {!documento.montagens?.some((m) => selecao.includes(m.id)) ? (
+                    {!documento.montagens?.some((m) => selecao.includes(m.id)) &&
+                    ferramentas.pode('objetos.aparencia') ? (
                       <Aparencia
                         documento={documento}
                         selecao={selecao}
@@ -2299,25 +2346,27 @@ function OficinaAberta({
                         bibliotecas={bibliotecas}
                       />
                     ) : null}
-                    <Organizar
-                      documento={documento}
-                      selecao={selecao}
-                      executar={executar}
-                      medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
-                      fonte={fonte}
-                      aoTrocar={() => {
-                        if (!preparandoMolde) {
-                          troca.current = [...selecao]
-                          setTrocando(selecao.length)
-                          setErroDoMolde(null)
-                          if (globalThis.matchMedia?.('(max-width: 899px)').matches)
-                            setPainelAberto(false)
-                        }
-                      }}
-                    />
+                    {ferramentas.pode('objetos.precisao') ? (
+                      <Organizar
+                        documento={documento}
+                        selecao={selecao}
+                        executar={executar}
+                        medir={(id) => palco.current?.volumeDoModelo(id) ?? null}
+                        fonte={fonte}
+                        aoTrocar={() => {
+                          if (!preparandoMolde) {
+                            troca.current = [...selecao]
+                            setTrocando(selecao.length)
+                            setErroDoMolde(null)
+                            if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                              setPainelAberto(false)
+                          }
+                        }}
+                      />
+                    ) : null}
                   </>
                 ) : null}
-                {relevoPronto && aba === 'objetos' ? (
+                {relevoPronto && aba === 'objetos' && ferramentas.pode('objetos.precisao') ? (
                   <Encaixes
                     documento={documento}
                     selecao={selecao}
@@ -2332,7 +2381,7 @@ function OficinaAberta({
                 ) : null}
               </>
             )}
-            {!edicaoAberta && escolha.length === 1
+            {!edicaoAberta && escolha.length === 1 && ferramentas.pode('jogo.propriedades')
               ? (() => {
                   const entidade = entidadesSelecionaveis(documento).find(
                     (e) => e.id === escolha[0],
@@ -2361,6 +2410,7 @@ function OficinaAberta({
                   ) : null
                 })()
               : null}
+            {modoPainel !== 'organizacao' ? <FerramentasPorVir aba={aba} /> : null}
           </aside>
         ) : null}
       </div>

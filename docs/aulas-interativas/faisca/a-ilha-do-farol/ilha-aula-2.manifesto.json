@@ -59,7 +59,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora escolha um lugar novo para a chave! No bloco Colocar o objeto chave, troque o z por −2 e o x por −3. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -116,7 +116,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora faça o personagem pegar a chave! Coloque o encontro logo abaixo do evento da tecla R e, dentro dele, Esconder o objeto chave. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -128,7 +128,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Agora faça o jogo guardar que o personagem pegou a chave! Crie temChave com falso em Ao iniciar e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -140,19 +140,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
-      }
-    },
-    {
-      "key": "video-fecho",
-      "plannedVideo": "Título: A chave já pode ser encontrada\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-fecho. Gravação pendente."
-    },
-    {
-      "key": "ponte-fecho",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você concluiu os testes desta aula. Clique em Concluir aula."
+        "text": "Agora mostre na tela que a chave foi pega! No encontro com a chave, mude o aviso para Você pegou a chave! Agora vá ao farol. Teste e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -1543,7 +1531,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -2900,7 +2888,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -4254,7 +4242,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -5640,7 +5628,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -7078,7 +7066,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -8542,7 +8530,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -10444,20 +10432,6 @@
           }
         ],
         "submissionUpToDate": true
-      }
-    },
-    {
-      "key": "fecho",
-      "title": "A chave já pode ser encontrada",
-      "intent": "closing",
-      "objective": "A chave já pode ser encontrada.",
-      "blockKeys": ["video-fecho", "ponte-fecho"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-fecho"]
       }
     }
   ],

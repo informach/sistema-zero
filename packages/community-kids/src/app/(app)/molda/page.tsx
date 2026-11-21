@@ -12,6 +12,7 @@ import { moldaToolAccessFor } from '@/lib/molda-tool-access'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
 import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import {
+  checkCenariosAccessReadonly,
   checkMoldaAccessReadonly,
   getGamificationReadonly,
   getStudioUnlocksReadonly,
@@ -38,11 +39,13 @@ export const dynamic = 'force-dynamic'
  */
 export default async function MoldaPage() {
   const session = await getSession()
-  const [res, gam, unlocksRes] = await Promise.all([
+  const [res, gam, unlocksRes, cenarios] = await Promise.all([
     checkMoldaAccessReadonly(),
     getGamificationReadonly().catch(() => null),
     // Só decide o "Levar ao Estúdio": sem bloco conquistado o Estúdio livre está trancado.
     getStudioUnlocksReadonly().catch(() => null),
+    // O atalho da oficina de cenários: só para quem o members abre (hoje, a equipe).
+    checkCenariosAccessReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
@@ -70,6 +73,7 @@ export default async function MoldaPage() {
       key={session?.id ?? 'local'}
       viewerId={session?.id ?? null}
       studioAvailable={studioAvailable}
+      cenariosAvailable={cenarios?.status === 200 && cenarios.body?.aberto === true}
       toolAccess={toolAccess ?? null}
       narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
     />

@@ -1,0 +1,4 @@
+import {defineConfig} from '@playwright/test'
+import {resolve} from 'node:path'
+const output=resolve(import.meta.dirname,'../../../.cache/pinta-39fc-final-shared')
+export default defineConfig({testDir:resolve(import.meta.dirname,'../e2e-runtime'),testMatch:['python-runtime.spec.ts','python-provider.spec.ts','python-turtle.spec.ts','python-audio.spec.ts','python-inspection.spec.ts','python-raylib.spec.ts'],fullyParallel:false,workers:1,retries:0,timeout:60000,expect:{timeout:20000},outputDir:output+'/artifacts',reporter:[['list'],['json',{outputFile:output+'/report.json'}]],use:{baseURL:'http://127.0.0.1:5605',headless:true,channel:'chrome',trace:'retain-on-failure'}})

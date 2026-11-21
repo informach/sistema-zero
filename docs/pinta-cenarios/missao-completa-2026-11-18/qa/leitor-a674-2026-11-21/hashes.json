@@ -1,0 +1,115 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2008,
+      "sha256": "a106d6543f612d56b47e8568bd3e5ec96333172b1b515ce6ef424975231df9bf"
+    },
+    {
+      "file": "biome.txt",
+      "bytes": 46,
+      "sha256": "d788d8ac3621593c4c03af81156626116506045bf353c95122c54bdf7273bbb7"
+    },
+    {
+      "file": "browser.json",
+      "bytes": 12237,
+      "sha256": "2ec34956fed449bb31a97698e2b0f1fd0ef7deb856a00a5eefebf8775e3785fa"
+    },
+    {
+      "file": "fontes.json",
+      "bytes": 1078,
+      "sha256": "3394b9575af76dddfaa4c05cd30a242c185b58a8bd6035c33ed15c263e15b84c"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 2022,
+      "sha256": "c5a4276c485d34893ca591035d479106578f87a749b8ea184a481411e3bde877"
+    },
+    {
+      "file": "medicao-browser.json",
+      "bytes": 10652,
+      "sha256": "2b169e6858cbd7c670e542e6306e6dc5c2628125c9871d1deaaa95fc7bd3c8ee"
+    },
+    {
+      "file": "medicao-modular.json",
+      "bytes": 7027,
+      "sha256": "68d7e4ede017820a5b54a18b947601dc218d75af4a9de78908174c0c82a8e8e1"
+    },
+    {
+      "file": "members-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "molda-sdk.txt",
+      "bytes": 183,
+      "sha256": "797c0cf997f7157204941356312da47db54e0db990341082024c1a69885a3653"
+    },
+    {
+      "file": "policy.txt",
+      "bytes": 1854,
+      "sha256": "2bd257883b9f9ff5d4a502fe304de6cc9d17a6cc8e88136864553071c3afee84"
+    },
+    {
+      "file": "pro-performance.txt",
+      "bytes": 104058,
+      "sha256": "9f123373a3598d0b605eaef17fe24239b79bc2a15a30d7d2a344367c3559b1ec"
+    },
+    {
+      "file": "profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "publicado-equivalencia.json",
+      "bytes": 879,
+      "sha256": "dbb1b116d9018ed6f4e27649b705773679f21591e4c33342ee269c4ddb421e71"
+    },
+    {
+      "file": "python-closure.txt",
+      "bytes": 970,
+      "sha256": "f6ceced33a475bce924118d8cbd87e3e2ca22caa40c9ba44632a0cbfd977540d"
+    },
+    {
+      "file": "python.json",
+      "bytes": 317,
+      "sha256": "5767411f1f35636039bae11a05d519a72686555ee93b475dabfef3cd11dceb4a"
+    },
+    {
+      "file": "resolucao-tipos.json",
+      "bytes": 555,
+      "sha256": "c10431884eaf59817084370f449c1dbf121a395f6629dbdbd2e20c23a20b4578"
+    },
+    {
+      "file": "runner.txt",
+      "bytes": 3581,
+      "sha256": "89daa106e6d9dec1e951678bd1c8088df68a8a79f19f14898cd32ec4c7f04921"
+    },
+    {
+      "file": "runtime-closure.txt",
+      "bytes": 358,
+      "sha256": "2dcffd1e99bce16bdb7ce5eabae19de8f4df5d126f7b8c1ca6b5a8a617c9a924"
+    },
+    {
+      "file": "runtime.json",
+      "bytes": 395,
+      "sha256": "a6d2f04e9a9b6327e633dfc10aed1f9165df4ef805ef34e21bf0676ba5c8966d"
+    },
+    {
+      "file": "studio-sdk.txt",
+      "bytes": 338,
+      "sha256": "782675114f04ad5f5857906d9708308f401a4de6897968ad99bcb279d027db48"
+    },
+    {
+      "file": "studio-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "symbols.txt",
+      "bytes": 4376,
+      "sha256": "0788ff1854781fa2994e11de482360ce91223994a737e60bb3437720adb0c392"
+    }
+  ]
+}

@@ -48,6 +48,9 @@ interface Repasse {
   consulta?: readonly string[]
 }
 const exato = (padrao: string) => new RegExp(`^${padrao}$`, 'i')
+/** A lista de ids da busca no espaço leva até 200 ids de 36 caracteres e as vírgulas. */
+const TETO_DA_CONSULTA: Readonly<Record<string, number>> = { ids: 200 * 37 }
+
 const REPASSES: readonly Repasse[] = [
   { metodo: 'GET', caminho: exato('acesso') },
   { metodo: 'GET', caminho: exato('espacos') },
@@ -61,6 +64,23 @@ const REPASSES: readonly Repasse[] = [
     metodo: 'GET',
     caminho: exato(`bibliotecas/${U}/modelos`),
     consulta: ['busca', 'pasta', 'digest', 'cursor', 'limite'],
+  },
+  // A busca dos agentes no espaço inteiro (tamanho pela caixa, ou os ids de um cenário).
+  {
+    metodo: 'GET',
+    caminho: exato(`espacos/${U}/modelos`),
+    consulta: [
+      'busca',
+      'pasta',
+      'etiqueta',
+      'ids',
+      'alturaMin',
+      'alturaMax',
+      'ladoMin',
+      'ladoMax',
+      'cursor',
+      'limite',
+    ],
   },
   { metodo: 'PATCH', caminho: exato(`modelos/${U}`) },
   { metodo: 'PATCH', caminho: exato(`texturas/${U}`) },
@@ -171,6 +191,8 @@ const Reserva = z.object({
       tipoDoConteudo: z.string(),
     }),
   ),
+  /** Só na reserva da capa: o retrato que a versão já tem (então não há nada a enviar). */
+  retrato: Digest.nullable().optional(),
 })
 const Apagados = z.object({ apagar: z.array(z.string()) })
 const CHAVE_DE_ARQUIVO = /^cenarios\/([0-9a-f-]{36})\/blobs\/([a-f0-9]{64})$/
@@ -347,7 +369,7 @@ export function createCenariosRoutes(deps: {
     const reserva = Reserva.safeParse(r.body)
     if (!reserva.success)
       return erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
-    const { espacoId, enviar } = reserva.data
+    const { espacoId, enviar, retrato } = reserva.data
     const arquivos = await Promise.all(
       enviar.map(async (a) => {
         // A chave vem do members, mas só assino a que é mesmo deste espaço e deste conteúdo.
@@ -370,7 +392,15 @@ export function createCenariosRoutes(deps: {
     )
     if (arquivos.some((a) => a === null))
       return erro(502, 'CENARIOS_INDISPONIVEL', 'A oficina respondeu fora do combinado.')
-    return privado(NextResponse.json({ espacoId, enviar: arquivos }))
+    // O retrato que a versão já tem volta junto: sem ele, a oficina tentava confirmar uma
+    // imagem que não enviou (a reserva não pede envio) e recebia 409.
+    return privado(
+      NextResponse.json({
+        espacoId,
+        enviar: arquivos,
+        ...(retrato !== undefined ? { retrato } : {}),
+      }),
+    )
   }
 
   /** Só confirma bytes recebidos, por hash e formato. Nunca basta a existência da chave. */
@@ -540,7 +570,11 @@ export function createCenariosRoutes(deps: {
     if (portador !== null) {
       const token = /^Bearer ([A-Za-z0-9._-]{16,4096})$/.exec(portador)?.[1]
       if (!token) return erro(401, 'UNAUTHENTICATED', 'Token de acesso inválido.')
-      const veredito = await session.verifyAccessTokenLocally(token)
+      // A verificação COMPLETA: o pedido do agente chega também às confirmações por HMAC e à
+      // leitura dos arquivos, que o gateway não confere em nome de uma sessão do Kids; sem ela,
+      // um token do Kids com o acesso já encerrado pelos pais valeria até vencer. Token de
+      // adulto (a equipe) não faz a ida extra ao Auth.
+      const veredito = await session.verifyAccessToken(token)
       if (!veredito.ok)
         return veredito.unavailable
           ? erro(503, 'AUTH_UNAVAILABLE', 'Não consegui conferir o acesso agora.')
@@ -828,7 +862,8 @@ export function createCenariosRoutes(deps: {
       const pedida = new URL(req.url).searchParams
       for (const nome of rota.consulta) {
         const valor = pedida.get(nome)
-        if (valor !== null && valor !== '') consulta[nome] = valor.slice(0, 240)
+        if (valor !== null && valor !== '')
+          consulta[nome] = valor.slice(0, TETO_DA_CONSULTA[nome] ?? 240)
       }
     }
     let body: unknown

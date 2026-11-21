@@ -1,4 +1,5 @@
 export * from './build-contract'
+export * from './classic-publication'
 export * from './pinta-scene'
 export * from './pro-artifact'
 export * from './pro-assistance'

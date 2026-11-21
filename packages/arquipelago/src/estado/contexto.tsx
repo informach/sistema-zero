@@ -4,6 +4,7 @@ import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
 import type { VistaDaLuneta } from '../mundo/vista-da-luneta'
+import type { ConsultaNivelDaAgua } from '../sistemas/agua'
 import type { Voo } from '../sistemas/balao'
 import type { PortoId, RotaDoBarco, Travessia } from '../sistemas/barco'
 import type { Ponto } from '../sistemas/cipo'
@@ -90,6 +91,9 @@ export interface AguaRasa {
   y: number
   /** Contorno local extraído do modelo; sem ele continua a elipse existente. */
   contorno?: readonly { x: number; z: number }[]
+  consultaNivel?: ConsultaNivelDaAgua
+  /** Esta água responde por toda a região: as outras não valem dentro dela (`aguaCobertaEm`). */
+  cobre?: (x: number, z: number) => boolean
 }
 
 export interface TroncoVivo {

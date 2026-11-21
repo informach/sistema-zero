@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import { PROJECT_AREA_LAYOUT_ROWS, PROJECT_AREAS } from '../core/behaviorAreas'
 import { areaForBlockType, type ProjectAreaKind } from './blockContracts'
+import { drawDeferredBlocks } from './offscreenThreshold'
 
 /** Espaço inicial e folgas (em px de workspace) do layout em colunas. */
 const START_X = 32
@@ -33,6 +34,8 @@ function categoryOf(type: string): ProjectAreaKind {
  */
 export function organizeBlocks(workspace: Blockly.Workspace | null | undefined): void {
   if (!workspace) return
+  // A altura de cada área conta no arranjo: o que a abertura deixou sem desenhar entra antes.
+  drawDeferredBlocks(workspace)
   const tops = workspace.getTopBlocks(true) as Blockly.BlockSvg[]
   if (tops.length === 0) return
   // Em workspace headless (testes) os blocos não têm geometria — nada a fazer.

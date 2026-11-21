@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { verifyFirefoxNativeKeys } from './helpers/firefoxNativeKeys'
 import {
   CONSERTADO,
   casca,
@@ -53,5 +54,51 @@ test.describe('prévia dentro da casca em outro site', () => {
     await expect.poll(() => previewPixel(page)).toEqual([255, 255, 255])
     await rodar(page).click()
     await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
+  })
+
+  test('depois de Rodar, as setas chegam ao jogo sem clicar no palco', async ({
+    page,
+    browserName,
+    baseURL,
+  }, testInfo) => {
+    if (browserName === 'firefox') {
+      if (!baseURL) throw new Error('Local Studio origin required')
+      const report = await verifyFirefoxNativeKeys(baseURL)
+      await testInfo.attach('teclado-nativo-firefox', {
+        body: JSON.stringify(report),
+        contentType: 'application/json',
+      })
+      return
+    }
+    // Conferência em staging (20/11/2026): o editor focava o quadro da casca, a casca trocava o
+    // quadro do jogo e as setas iam para a casca vazia. Sem a casca, a prévia já focava o jogo.
+    await createProject(page)
+    await replaceBridgeScript(
+      page,
+      `${CONSERTADO}
+document.addEventListener("keydown", (e) => console.log("tecla " + e.key));
+addEventListener("focus", () => console.log("jogo com foco"));`,
+    )
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
+    await parar(page).click()
+    await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 5_000 })
+    await rodar(page).click()
+    await expect.poll(() => previewPixel(page), { timeout: 15_000 }).toEqual([0, 128, 0])
+    // O editor passa o foco ao quadro da prévia quando o jogo novo carrega; a casca, ao jogo.
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement?.getAttribute('title')))
+      .toBe('Pré-visualização')
+    const saida = page.getByRole('region', { name: 'Problemas e saída do jogo' })
+    // O jogo novo recebeu o foco (as mensagens recomeçam a cada Rodar: é o jogo deste Rodar). O
+    // WebKit avisa o foco mais de uma vez (a casca solta e foca o quadro): basta ter chegado.
+    await expect(saida.getByText('jogo com foco', { exact: true }).first()).toBeAttached({
+      timeout: 10_000,
+    })
+    // O Firefox já passou pelo ramo WebDriver acima, que exige foco e teclas
+    // confiáveis em três ciclos. Aqui Chromium/WebKit usam suas ações nativas.
+    await page.keyboard.press('ArrowUp')
+    await expect(saida.getByText('tecla ArrowUp', { exact: true })).toBeAttached({
+      timeout: 10_000,
+    })
   })
 })

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "studio-resume",
+    "exit": 0,
+    "started": "2026-11-20T20:44:16.832Z",
+    "finished": "2026-11-20T20:45:30.871Z",
+    "log": ".cache/pinta-5547-reader-r2-studio-resume.log"
+  },
+  {
+    "name": "members-policy",
+    "exit": 0,
+    "started": "2026-11-20T20:45:30.874Z",
+    "finished": "2026-11-20T20:45:31.943Z",
+    "log": ".cache/pinta-5547-reader-r2-members-policy.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-20T20:45:31.944Z",
+    "finished": "2026-11-20T20:48:29.391Z",
+    "log": ".cache/pinta-5547-reader-r2-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-20T20:48:29.392Z",
+    "finished": "2026-11-20T20:50:43.390Z",
+    "log": ".cache/pinta-5547-reader-r2-members-types.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T20:50:43.391Z",
+    "finished": "2026-11-20T20:50:43.610Z",
+    "log": ".cache/pinta-5547-reader-r2-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-20T20:50:43.611Z",
+    "finished": "2026-11-20T20:51:14.710Z",
+    "log": ".cache/pinta-5547-reader-r2-biome.log"
+  }
+]

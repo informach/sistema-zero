@@ -1,0 +1,9 @@
+{
+  "workerName": "sistemazero-python-promoter-staging-0148c46f6c0a",
+  "deletedVersion": "82648b78-c4b5-4b5b-8219-a09969a39b3d",
+  "workerAbsenceVerified": true,
+  "cloudflareErrorCode": 10007,
+  "localTemporaryKeysRemoved": 1,
+  "immutableR2ObjectsPreserved": true,
+  "activationPerformed": false
+}

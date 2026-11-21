@@ -1,8 +1,10 @@
 import {
   CLASSIC_SHELL_LOAD,
+  classicShellLoadedSeq,
   isClassicShellLoaded,
   isClassicShellReady,
 } from '@sistemazero/core/studio/classic-shell'
+import { CLASSIC_GAME_FRAME_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -46,10 +48,15 @@ import { glossErrorMessage } from '../../state/errorGloss'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useHighlightStoreApi } from '../../state/highlightStore'
 import { previewErrorLocation, useLogsStore } from '../../state/logsStore'
+import type { PreviewDocumentFactory } from '../../state/previewDocumentFactory'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
-import { usePendingEditorEdits, useStudioPersistence } from '../../state/studioStores'
-import { useUIStore } from '../../state/uiStore'
+import {
+  usePendingEditorEdits,
+  usePreviewDocumentSource,
+  useStudioPersistence,
+} from '../../state/studioStores'
+import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
@@ -62,7 +69,12 @@ import {
   type PreviewBudgetInput,
   shouldPausePreviewRender,
 } from './previewBudget'
-import { armRunTripwire, disarmRunTripwire, wasRunInterrupted } from './runTripwire'
+import {
+  armRunTripwire,
+  disarmRunTripwire,
+  forgetInterruptedRuns,
+  wasRunInterrupted,
+} from './runTripwire'
 import {
   projectUsesKeyboardControls,
   useTouchInput,
@@ -91,11 +103,20 @@ export function chosenCoverPausesSnapshots(
   return project ? resolveCoverAsset(project) !== null : false
 }
 
+/** A ponte das abas Investigar e Desempenho, baixada só quando a medida liga. */
+type DevtoolsBridgeModule = typeof import('../../preview/devtoolsBridge')
+
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
+  // As abas Desempenho e Investigar: o jogo é montado com a ponte (e recomeça ao ligar/desligar).
+  const measuring = useUIStore((s) => s.measuring)
+  const investigating = useUIStore((s) => s.investigating)
+  const devtoolsOn = measuring || investigating
+  const ui = useUIStoreApi()
+  const locale = useT().locale
   // Casca em outro site (lote 3.2): o jogo roda num `srcdoc` dentro de uma página de outra
   // origem. Desligada sem `shellUrl`; nunca junto do adaptador de origem nem da sala isolada.
-  const shell = useMemo(() => {
+  const configuredShell = useMemo(() => {
     if (!execution.shellUrl || execution.originAdapter || execution.requireIsolatedPreview)
       return null
     if (typeof window === 'undefined') return null
@@ -106,6 +127,11 @@ export function PreviewIframe(): JSX.Element {
       return null
     }
   }, [execution.shellUrl, execution.originAdapter, execution.requireIsolatedPreview])
+  // A casca que não avisa que está pronta (rota sem as origens, origem barrada, rede) não pode
+  // deixar o palco mudo com a barra dizendo "rodando" (revisão da missão, achado E5): depois de
+  // `SHELL_READY_TIMEOUT_MS` a prévia volta ao documento direto e avisa no console do jogo.
+  const [shellFailedFor, setShellFailedFor] = useState<string | null>(null)
+  const shell = configuredShell && shellFailedFor !== configuredShell.url ? configuredShell : null
   const projectStore = useProjectStoreApi()
   const persistence = useStudioPersistence()
   const pendingEdits = usePendingEditorEdits()
@@ -158,6 +184,35 @@ export function PreviewIframe(): JSX.Element {
   const previewRunning = useUIStore((s) => s.previewRunning)
   const setPreviewRunning = useUIStore((s) => s.setPreviewRunning)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  // A ponte (e quem escuta o que ela manda) só é baixada quando uma das abas liga: no pacote de
+  // abertura do modo Blocos ela pesaria para todos. As mensagens chegam do MESMO iframe, e os
+  // comandos do painel (Pausar, Continuar, Avançar) vão a ele.
+  const [devtoolsBridge, setDevtoolsBridge] = useState<DevtoolsBridgeModule | null>(null)
+  useEffect(() => {
+    if (!devtoolsOn) return
+    let module: DevtoolsBridgeModule | null = null
+    let stop: (() => void) | undefined
+    let alive = true
+    void import('../../preview/devtoolsBridge').then((m) => {
+      if (!alive) return
+      module = m
+      setDevtoolsBridge(m)
+      stop = m.listenToDevtools(() => iframeRef.current?.contentWindow, ui)
+      m.setDevtoolsSender(ui, (cmd) =>
+        iframeRef.current?.contentWindow?.postMessage(m.commandMessage(cmd), '*'),
+      )
+    })
+    return () => {
+      alive = false
+      stop?.()
+      module?.setDevtoolsSender(ui, null)
+    }
+  }, [devtoolsOn, ui])
+  // O nome do leitor das variáveis desta prévia (sorteado uma vez).
+  const investigationScope = useMemo(
+    () => devtoolsBridge?.createInvestigationScope() ?? null,
+    [devtoolsBridge],
+  )
   const touchInput = useTouchInput()
   const usesKeyboardControls = useMemo(() => projectUsesKeyboardControls(ir), [ir])
   const sendVirtualGamepadInput = useCallback((input: VirtualGamepadInput) => {
@@ -189,11 +244,15 @@ export function PreviewIframe(): JSX.Element {
   const [frameAbsent, setFrameAbsent] = useState(false)
   const frameGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const frameGapStepRef = useRef(0)
+  // O documento que travou o iframe trocado (achado E4): enquanto o próximo carrega os recursos,
+  // a prévia segura o documento anterior, e o iframe novo não pode recebê-lo de novo.
+  const stuckDocumentRef = useRef<string | null>(null)
   const swapFrame = useCallback((stuck: boolean) => {
     if (!stuck) {
       setFrameGeneration((n) => n + 1)
       return
     }
+    stuckDocumentRef.current = attemptedDocumentRef.current
     const step = Math.min(frameGapStepRef.current, FRAME_GAPS_MS.length - 1)
     frameGapStepRef.current += 1
     setFrameAbsent(true)
@@ -448,10 +507,13 @@ export function PreviewIframe(): JSX.Element {
       timestamp: Date.now(),
     })
   }, [cenas, pushLog])
+  // Com uma aba da gaveta ligada (e a ponte já baixada), os motores 3D vêm na variante
+  // `investigar`, que só a ponte sabe pedir (`loadDevtoolsExtensionScripts`).
+  const devtoolsEngines = devtoolsOn && devtoolsBridge ? devtoolsBridge : null
   const runtimeKey = useMemo(
     () =>
-      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}`,
-    [debouncedIds, extensionContext, bootstrapContext, comCenas3D],
+      `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}|abas:${devtoolsEngines !== null}`,
+    [debouncedIds, extensionContext, bootstrapContext, comCenas3D, devtoolsEngines],
   )
 
   useEffect(() => {
@@ -464,7 +526,9 @@ export function PreviewIframe(): JSX.Element {
     let active = true
     setExtensionRuntimeState({ key: runtimeKey, status: 'loading', scripts: [] })
     void Promise.all([
-      loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current),
+      devtoolsEngines
+        ? devtoolsEngines.loadDevtoolsExtensionScripts(extensions, bootstrapContextRef.current)
+        : loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current),
       comCenas3D ? carregarModuloDeCenas3D() : undefined,
     ]).then(
       ([scripts, cenas3d]) => {
@@ -477,7 +541,7 @@ export function PreviewIframe(): JSX.Element {
     return () => {
       active = false
     }
-  }, [runtimeKey, runtimeAttempt, extensionContext, comCenas3D])
+  }, [runtimeKey, runtimeAttempt, extensionContext, comCenas3D, devtoolsEngines])
 
   // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
   // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
@@ -616,7 +680,7 @@ export function PreviewIframe(): JSX.Element {
     // A última execução deste projeto nunca deu sinal de vida (a aba congelou ou caiu com o
     // jogo rodando): desta vez a prévia espera o Rodar em vez de rodar sozinha.
     if (wasRunInterrupted(projectId)) {
-      disarmRunTripwire(projectId)
+      forgetInterruptedRuns(projectId)
       setPreviewRunning(false)
       return
     }
@@ -684,21 +748,39 @@ export function PreviewIframe(): JSX.Element {
     if (previewPaused) return PAUSED_PREVIEW_DOC
     if (!currentProjectHasRun) return PAUSED_PREVIEW_DOC
     if (!documentResourcesReady) return PAUSED_PREVIEW_DOC
+    // Na casca, o `parent` do jogo é a casca: as mensagens do jogo vão a ela, que as repassa.
+    const parentOrigin =
+      shell?.origin ?? (typeof window !== 'undefined' ? window.location.origin : undefined)
+    // A medida da aba Desempenho: a ponte entra como mais um script confiável, depois dos motores,
+    // com o registro dos inspetores ligado (o documento de sempre não muda um byte).
+    const investigate = investigating && devtoolsBridge && investigationScope
+    const devtoolsRuntime =
+      devtoolsOn && devtoolsBridge
+        ? devtoolsBridge.buildDevtoolsBridgeRuntime(parentOrigin, {
+            measure: measuring,
+            scope: investigate ? investigationScope : undefined,
+            labels:
+              locale === 'en' ? devtoolsBridge.EN_VALUE_LABELS : devtoolsBridge.PT_BR_VALUE_LABELS,
+          })
+        : null
     const base = buildJavaScriptClassicDocument({
       html: debouncedHtml,
       css: debouncedCss,
-      js: debouncedJs,
+      // Investigar: o leitor das variáveis entra no script (as linhas não mudam de número).
+      js: investigate
+        ? devtoolsBridge.instrumentForInvestigation(debouncedJs, investigationScope)
+        : debouncedJs,
       resources: {
-        extensionScripts,
+        extensionScripts: devtoolsRuntime
+          ? [...extensionScripts, devtoolsRuntime]
+          : extensionScripts,
         extensionImports,
         installedPermissions,
         gameUiFont: gameUiFontState.bundle ?? undefined,
         cenas3d: moduloDeCenas,
       },
       extraFiles: debouncedExtraFiles,
-      // Na casca, o `parent` do jogo é a casca: as mensagens do jogo vão a ela, que as repassa.
-      parentOrigin:
-        shell?.origin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
+      parentOrigin,
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
       loopBudgetMs: previewSecurity.loopBudgetMs,
       // Semeia o estado salvo (lido do ref: deliberadamente FORA das deps do memo
@@ -712,6 +794,7 @@ export function PreviewIframe(): JSX.Element {
       sounds: soundsManifest,
       models3d: models3dManifest,
       cenas3d: transporteDeCenas,
+      runtimeInspection: devtoolsRuntime !== null,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -743,7 +826,104 @@ export function PreviewIframe(): JSX.Element {
     renderNonce,
     execution.editingAccess,
     shell?.origin,
+    measuring,
+    investigating,
+    devtoolsOn,
+    devtoolsBridge,
+    investigationScope,
+    locale,
   ])
+
+  // "Meus testes": a prévia entrega à instância a receita do documento do jogo (os mesmos
+  // motores, materiais, fonte e cenas), para o teste rodar o jogo que a criança vê. Antes, a regra
+  // do Rodar: o que o editor ainda segura desce para o projeto e o projeto é gravado (o teste roda o
+  // projeto gravado, nunca o valor atrasado da prévia: um código recém-colado na Ponte ainda não
+  // chegou nela). O teste roda do zero: sem o armazenamento guardado do jogo e sem gravar nele
+  // (sem `storageProjectId`), e o quadro dele mora na página do editor (a origem vem de quem pede,
+  // nunca a da casca).
+  const previewDocument = usePreviewDocumentSource()
+  const testDocumentFactory = useCallback<PreviewDocumentFactory>(
+    async ({ transformScript, trustedScripts, parentOrigin, runtimeInspection }) => {
+      if (execution.editingAccess === 'observer' || !documentResourcesReady)
+        return { unavailable: 'loading' }
+      const prepared = await new Promise<{
+        project: ReturnType<typeof javaScriptProject>
+        failed: boolean
+      }>((resolve) => {
+        let failed = false
+        let started = false
+        void createRunPreparation({
+          project: () => {
+            const project = projectStore.getState().project
+            return project?.id === projectId ? project : null
+          },
+          dirty: () => projectStore.getState().isDirty,
+          flush: () => pendingEdits?.flush(),
+          save: () => persistence.save(),
+          pending: () => undefined,
+          error: (message) => {
+            if (message) failed = true
+          },
+        })
+          .run((project) => {
+            started = true
+            resolve({ project: javaScriptProject(project), failed: false })
+          })
+          .then(() => {
+            if (!started) resolve({ project: null, failed })
+          })
+      })
+      const project = prepared.project
+      if (!project) return { unavailable: prepared.failed ? 'unsaved' : 'loading' }
+      return {
+        document: buildJavaScriptClassicDocument({
+          html: project.files['index.html'] ?? '',
+          css: project.files['style.css'] ?? '',
+          js: transformScript(project.files['script.js'] ?? ''),
+          resources: {
+            extensionScripts: [...extensionScripts, ...trustedScripts],
+            extensionImports,
+            installedPermissions,
+            gameUiFont: gameUiFontState.bundle ?? undefined,
+            cenas3d: moduloDeCenas,
+          },
+          extraFiles: project.extraFiles,
+          parentOrigin,
+          fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
+          loopBudgetMs: previewSecurity.loopBudgetMs,
+          assets: assetsManifest,
+          assetsMeta,
+          sounds: soundsManifest,
+          models3d: models3dManifest,
+          cenas3d: transporteDeCenas,
+          runtimeInspection: runtimeInspection === true,
+        }),
+      }
+    },
+    [
+      execution.editingAccess,
+      documentResourcesReady,
+      projectStore,
+      projectId,
+      pendingEdits,
+      persistence,
+      extensionScripts,
+      extensionImports,
+      installedPermissions,
+      gameUiFontState.bundle,
+      moduloDeCenas,
+      previewSecurity,
+      assetsManifest,
+      assetsMeta,
+      soundsManifest,
+      models3dManifest,
+      transporteDeCenas,
+    ],
+  )
+  useEffect(
+    () => previewDocument?.register(testDocumentFactory),
+    [previewDocument, testDocumentFactory],
+  )
 
   // Keep the committed game while the next document's resources are loading.
   // Navigating live → blank → live during an asynchronous runtime/font change
@@ -758,12 +938,15 @@ export function PreviewIframe(): JSX.Element {
     !extensionRuntimeFailed &&
     !courseModelError &&
     execution.editingAccess !== 'observer'
-  const doc =
-    previewRunning &&
-    (preparingRun || preparationError !== null || waitingForDocumentResources) &&
-    committedDoc.current.projectId === projectId
-      ? committedDoc.current.document
-      : candidateDoc
+  const doc = heldPreviewDocument({
+    holding:
+      previewRunning &&
+      (preparingRun || preparationError !== null || waitingForDocumentResources) &&
+      committedDoc.current.projectId === projectId,
+    held: committedDoc.current.document,
+    stuck: stuckDocumentRef.current,
+    candidate: candidateDoc,
+  })
   useLayoutEffect(() => {
     committedDoc.current = { projectId, document: doc }
   }, [doc, projectId])
@@ -845,9 +1028,25 @@ export function PreviewIframe(): JSX.Element {
   if (!shell) frameDocumentRef.current = directDocument
   // A casca da geração atual do iframe avisou que está pronta para receber o documento.
   const [shellReadyGeneration, setShellReadyGeneration] = useState(-1)
+  // O número do último documento mandado à casca (achado E7): o "carregou" de um documento que já
+  // foi trocado não vale pelo atual.
+  const shellLoadSeqRef = useRef(0)
   const frameGenerationRef = useRef(frameGeneration)
   frameGenerationRef.current = frameGeneration
   const shellReady = shell !== null && !frameAbsent && shellReadyGeneration === frameGeneration
+  useEffect(() => {
+    if (!shell || shellReady || frameAbsent) return
+    const timer = setTimeout(() => {
+      setShellFailedFor(shell.url)
+      pushLog({
+        source: 'sz-preview',
+        kind: 'warn',
+        parts: ['A prévia isolada não respondeu; o jogo roda no modo de sempre.'],
+        timestamp: Date.now(),
+      })
+    }, SHELL_READY_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [shell, shellReady, frameAbsent, pushLog])
   useLayoutEffect(() => {
     if (frameAbsent) {
       recordDocumentAttempt(null)
@@ -868,7 +1067,11 @@ export function PreviewIframe(): JSX.Element {
     if (!target) return
     frameDocumentRef.current = effectiveDoc
     if (previewRunning && effectiveDoc !== PAUSED_PREVIEW_DOC) recordDocumentAttempt(effectiveDoc)
-    target.postMessage({ type: CLASSIC_SHELL_LOAD, document: effectiveDoc }, shell.origin)
+    shellLoadSeqRef.current += 1
+    target.postMessage(
+      { type: CLASSIC_SHELL_LOAD, document: effectiveDoc, seq: shellLoadSeqRef.current },
+      shell.origin,
+    )
   }, [shell, shellReady, effectiveDoc, previewRunning, recordDocumentAttempt])
   useEffect(() => {
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
@@ -881,14 +1084,21 @@ export function PreviewIframe(): JSX.Element {
   // conserta o código logo depois de rodar o que trava). Um iframe novo carrega na hora. Uma vez
   // por documento: num aparelho lento, um jogo grande que só demora a carregar não entra em laço.
   // Até `FRAME_GAPS_MS.length` tentativas por documento, cada uma com um intervalo sem iframe maior.
+  // Só sem sinal de vida (revisão da missão, achado E3): a ponte do documento novo manda um
+  // batimento assim que o começo dele roda. Um documento que só demora (módulos 3D chegando,
+  // tablet) já falou; o processo preso pelo jogo anterior não fala. Trocar o lento derrubava o
+  // download e a execução e repetia o código de topo até três vezes.
   const swapRescueRef = useRef<{ doc: string; count: number } | null>(null)
+  const lastFrameSignalRef = useRef(0)
   // biome-ignore lint/correctness/useExhaustiveDependencies: `frameGeneration` e `frameAbsent` são gatilhos (iframe novo que também não entra pede outra tentativa)
   useEffect(() => {
     if (isolatedUrl || frameAbsent || loadedSrcDoc === null || loadedSrcDoc === effectiveDoc) return
     const rescued = swapRescueRef.current?.doc === effectiveDoc ? swapRescueRef.current.count : 0
     if (rescued >= FRAME_GAPS_MS.length) return
+    const requestedAt = Date.now()
     const timer = setTimeout(() => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
+      if (lastFrameSignalRef.current >= requestedAt) return
       swapRescueRef.current = { doc: effectiveDoc, count: rescued + 1 }
       swapFrame(true)
     }, SWAP_STUCK_AFTER_MS)
@@ -989,6 +1199,8 @@ export function PreviewIframe(): JSX.Element {
       // própria origem caso o navegador a reporte.
       const source = iframeRef.current?.contentWindow
       if (!source || ev.source !== source) return
+      // Qualquer mensagem autenticada do iframe é sinal de que o processo dele está vivo.
+      lastFrameSignalRef.current = Date.now()
       if (shell && ev.origin === shell.origin) {
         // Os avisos da própria casca (o jogo não consegue mandá-los: a casca os barra).
         if (isClassicShellReady(ev.data)) {
@@ -996,7 +1208,9 @@ export function PreviewIframe(): JSX.Element {
           return
         }
         if (isClassicShellLoaded(ev.data)) {
-          frameLoadedRef.current()
+          // Sem número (casca publicada antes de 20/11/2026), o aviso vale como antes.
+          const seq = classicShellLoadedSeq(ev.data)
+          if (seq === null || seq === shellLoadSeqRef.current) frameLoadedRef.current()
           return
         }
       } else if (ev.origin !== 'null' && ev.origin !== window.location.origin) return
@@ -1212,7 +1426,7 @@ export function PreviewIframe(): JSX.Element {
           // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
           // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
           // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
-          allow="fullscreen"
+          allow={CLASSIC_GAME_FRAME_ALLOW}
           className="h-full w-full flex-1 bg-white"
         />
       )}
@@ -1353,8 +1567,27 @@ const STORAGE_FLUSH_MS = 500
 const UNRESPONSIVE_AFTER_MS = 2500
 /** Um documento novo que não carregou neste tempo está esperando um jogo preso. */
 const SWAP_STUCK_AFTER_MS = 3000
+/** Quanto a casca em outro site tem para avisar que está pronta antes do recuo ao documento direto. */
+const SHELL_READY_TIMEOUT_MS = 4000
 /** Intervalos sem iframe na troca de um jogo preso; cada nova tentativa espera mais. */
 const FRAME_GAPS_MS = [200, 1200, 3500] as const
+
+/**
+ * O documento do iframe enquanto o próximo ainda prepara os recursos: o que já estava (para não
+ * piscar em branco), MENOS o que travou o iframe que acabou de ser trocado. Achado E4 da revisão
+ * de 20/11: no Rodar de novo com o jogo preso, o iframe novo nasce depois do intervalo de 200 ms;
+ * se os recursos do documento novo demoravam mais que isso, o iframe novo recebia o documento
+ * preso e travava outra vez. Ali ele fica com a página em branco até o novo ficar pronto.
+ */
+export function heldPreviewDocument(input: {
+  holding: boolean
+  held: string
+  stuck: string | null
+  candidate: string
+}): string {
+  if (!input.holding) return input.candidate
+  return input.held === input.stuck ? PAUSED_PREVIEW_DOC : input.held
+}
 
 // Cap de taxa de mensagens vindas do iframe (anti-flood). Janela de 1s e teto
 // generoso: heartbeat (1/s) + escritas de jogo em laço cabem; só corta abuso.

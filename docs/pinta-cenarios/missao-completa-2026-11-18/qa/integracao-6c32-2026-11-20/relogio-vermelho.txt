@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\__tests__\personalSync.cases.ts:
+117 |     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+118 |     seedOpenProject([drawingAsset({})])
+119 |     await syncDrawingsIntoProjects(useProjectStore)
+120 |     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+121 |     await syncDrawingsIntoProjects(useProjectStore)
+122 |     expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(PNG_NOVO)
+                                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "data:image/png;base64,BBBB"
+Received: "data:image/png;base64,AAAA"
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\asset-library\__tests__\personalSync.cases.ts:122:70)
+(fail) duas alterações no mesmo milissegundo chegam ao projeto sem perder a segunda [32.00ms]
+
+ 0 pass
+ 88 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [1059.00ms]

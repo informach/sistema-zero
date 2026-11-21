@@ -15,12 +15,20 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameRules3DRuntime } from '../game3dRules/runtime'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
+import {
+  PAUSED_FLAG_ENGINE,
+  THREE_INVESTIGATION_VARIANT,
+  type ThreeInvestigationEngine,
+  withThreeInvestigation,
+} from '../three3dInvestigation'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
 import { GAME_3D_PLATFORM_KIT_METHODS } from './platformCodec'
+import { GAME_3D_WITHOUT_PLATFORM_VARIANT } from './platformKitVariant'
 import { gameThreeDModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameThreeDPlatformRuntimeSource } from './runtimePlatform'
-import { gameThreeDSceneRuntimeSource } from './runtimeScene'
+import { gameThreeDSceneAbsentRuntimeSource, gameThreeDSceneRuntimeSource } from './runtimeScene'
+import { GAME_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 const gameThreeDRuntimeBase = `import * as THREE from 'three';
 (function () {
@@ -3020,6 +3028,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
         // de jogo, recomeçando) os laços da criança esperam e a cena só é redesenhada.
         var ruled = world === _currentWorld();
         var waitingForScene = world._scenePending && !world._sceneHandle;
+        /*__SZ_3D_INVESTIGAR_QUADRO__*/
         if (ruled) rules.beforeFrame(world.camera);
         // Carimbo do quadro: as consultas de mira/chão sincronizam as matrizes uma vez só.
         world._frame = (world._frame || 0) + 1;
@@ -4308,6 +4317,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
 
   // ---- Partida: a fábrica do projeto roda de novo a cada "Recomeçar" ----
   var _paused = false;
+  /*__SZ_3D_INVESTIGAR__*/
   var _projectFactory = null;
   function _runFactory() {
     _paused = false;
@@ -4592,13 +4602,31 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
  * compõe os seus subsistemas: o fragmento roda DENTRO da IIFE e enxerga tudo que
  * o runtime principal já definiu, sem criar outro global nem outro import.
  */
-function composeGameThreeDRuntime(platformSource: string): string {
+/**
+ * A aba Investigar e a medida no Jogo 3D (`../three3dInvestigation.ts`): a pausa é a `_paused`
+ * das regras; o laço que conta é o da cena atual (`ruled`), fora da espera da cena.
+ */
+const GAME_3D_INVESTIGATION: ThreeInvestigationEngine = {
+  inspector: 'game-3d:investigar',
+  ...PAUSED_FLAG_ENGINE,
+  frameGuard: 'ruled',
+  plays: '!_paused && !waitingForScene',
+  frameRenderer: 'world.renderer',
+  renderer: '(_currentWorld() || {}).renderer',
+  scene: '(_currentWorld() || {}).scene',
+}
+
+function composeGameThreeDRuntime(
+  platformSource: string,
+  sceneSource: string = gameThreeDSceneRuntimeSource,
+  investigate = false,
+): string {
   return compactOfficialRuntimeSource(
     withThreeRenderBudgetRuntime(
       withGameRules3DRuntime(
         withThreeModelsRuntime(
-          gameThreeDRuntimeBase
-            .replace('  /*__SZ_GAME_3D_SCENE_RUNTIME__*/', () => gameThreeDSceneRuntimeSource)
+          withThreeInvestigation(gameThreeDRuntimeBase, investigate ? GAME_3D_INVESTIGATION : null)
+            .replace('  /*__SZ_GAME_3D_SCENE_RUNTIME__*/', () => sceneSource)
             // Funções como substituto: um `$&`/`$'` no fragmento seria lido como padrão.
             .replace('  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/', () => platformSource)
             // Modelos .glb e céu .hdr (lote 7 do Molda): mesmo mecanismo, outro fragmento. O
@@ -4642,3 +4670,30 @@ export const gameThreeDRuntime = composeGameThreeDRuntime(gameThreeDPlatformRunt
 
 /** O runtime sem o Kit Plataforma (~33 mil caracteres a menos), para quem não usa o kit. */
 export const gameThreeDRuntimeWithoutPlatform = composeGameThreeDRuntime(PLATFORM_KIT_ABSENT_SOURCE)
+
+const composedByVariant = new Map<string, string>([
+  ['', gameThreeDRuntime],
+  [GAME_3D_WITHOUT_PLATFORM_VARIANT, gameThreeDRuntimeWithoutPlatform],
+])
+
+/**
+ * O runtime de uma variante de `gameThreeDRuntimeVariant` (`sceneVariant.ts`): cada parte da
+ * chave tira um fragmento que o projeto não usa (`sem-kit-plataforma`, `sem-cenario-molda`).
+ * Composto uma vez por variante.
+ */
+export function gameThreeDRuntimeForVariant(variant: string): string {
+  const cached = composedByVariant.get(variant)
+  if (cached !== undefined) return cached
+  const parts = new Set(variant.split('+'))
+  const composed = composeGameThreeDRuntime(
+    parts.has(GAME_3D_WITHOUT_PLATFORM_VARIANT)
+      ? PLATFORM_KIT_ABSENT_SOURCE
+      : gameThreeDPlatformRuntimeSource,
+    parts.has(GAME_3D_WITHOUT_SCENE_VARIANT)
+      ? gameThreeDSceneAbsentRuntimeSource
+      : gameThreeDSceneRuntimeSource,
+    parts.has(THREE_INVESTIGATION_VARIANT),
+  )
+  composedByVariant.set(variant, composed)
+  return composed
+}

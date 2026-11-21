@@ -1,0 +1,590 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      ".cache/pinta-f7-browser.config.ts"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-f7-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache",
+        "testIgnore": [],
+        "testMatch": ["pinta-f7-*.spec.ts"],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache",
+        "testIgnore": [],
+        "testMatch": "pinta-f7-*.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5591",
+          "headless": true,
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-f7-browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "pinta-f7-physics.spec.ts",
+      "file": "pinta-f7-physics.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Pinta physics 1x checks all outlines in real browser Python",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2614,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                      "column": 191,
+                      "line": 87
+                    },
+                    "snippet": " \u001b[90m 85 |\u001b[39m \u001b[36mconst\u001b[39m browserErrors\u001b[33m=\u001b[39m\u001b[36mnew\u001b[39m \u001b[33mWeakMap\u001b[39m\u001b[33m<\u001b[39m\u001b[33mobject\u001b[39m\u001b[33m,\u001b[39mstring[]\u001b[33m>\u001b[39m()\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({page})\u001b[33m=>\u001b[39m{ \u001b[36mconst\u001b[39m errors\u001b[33m:\u001b[39mstring[]\u001b[33m=\u001b[39m[]\u001b[33m;\u001b[39mbrowserErrors\u001b[33m.\u001b[39mset(page\u001b[33m,\u001b[39merrors)\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mroute(\u001b[32m'**/favicon.ico'\u001b[39m\u001b[33m,\u001b[39mr\u001b[33m=>\u001b[39mr\u001b[33m.\u001b[39mfulfill({status\u001b[33m:\u001b[39m\u001b[35m204\u001b[39m\u001b[33m,\u001b[39mbody\u001b[33m:\u001b[39m\u001b[32m''\u001b[39m}))\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'console'\u001b[39m\u001b[33m,\u001b[39mm\u001b[33m=>\u001b[39m{\u001b[36mif\u001b[39m(m\u001b[33m.\u001b[39mtype()\u001b[33m===\u001b[39m\u001b[32m'error'\u001b[39m)errors\u001b[33m.\u001b[39mpush(m\u001b[33m.\u001b[39mtext())})\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'pageerror'\u001b[39m\u001b[33m,\u001b[39me\u001b[33m=>\u001b[39merrors\u001b[33m.\u001b[39mpush(e\u001b[33m.\u001b[39mmessage))\u001b[33m;\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 87 |\u001b[39m test\u001b[33m.\u001b[39mafterEach(\u001b[36masync\u001b[39m ({page}\u001b[33m,\u001b[39minfo)\u001b[33m=>\u001b[39m{\u001b[36mconst\u001b[39m errors\u001b[33m=\u001b[39mbrowserErrors\u001b[33m.\u001b[39mget(page)\u001b[33m??\u001b[39m[]\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'browser-errors'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(errors)\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\u001b[33m;\u001b[39mexpect(errors)\u001b[33m.\u001b[39mtoEqual([])})\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                                                                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 88 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                        "column": 191,
+                        "line": 87
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  85 | const browserErrors=new WeakMap<object,string[]>();\n  86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });\n> 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});\n     |                                                                                                                                                                                               ^\n  88 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:10:07.560Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "physics-runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\\attachments\\physics-runtime-proof-790b7b372bc9ee1b39a2364ae7555206385d9603.json"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-phy-7cd7e-ines-in-real-browser-Python-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                    "column": 191,
+                    "line": 87
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "71d4c706cdd99315bfa8-a39ed98fcd2b4839e75a",
+          "file": "pinta-f7-physics.spec.ts",
+          "line": 7,
+          "column": 5
+        },
+        {
+          "title": "Pinta physics 2x checks all outlines in real browser Python",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2324,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                      "column": 191,
+                      "line": 87
+                    },
+                    "snippet": " \u001b[90m 85 |\u001b[39m \u001b[36mconst\u001b[39m browserErrors\u001b[33m=\u001b[39m\u001b[36mnew\u001b[39m \u001b[33mWeakMap\u001b[39m\u001b[33m<\u001b[39m\u001b[33mobject\u001b[39m\u001b[33m,\u001b[39mstring[]\u001b[33m>\u001b[39m()\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({page})\u001b[33m=>\u001b[39m{ \u001b[36mconst\u001b[39m errors\u001b[33m:\u001b[39mstring[]\u001b[33m=\u001b[39m[]\u001b[33m;\u001b[39mbrowserErrors\u001b[33m.\u001b[39mset(page\u001b[33m,\u001b[39merrors)\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mroute(\u001b[32m'**/favicon.ico'\u001b[39m\u001b[33m,\u001b[39mr\u001b[33m=>\u001b[39mr\u001b[33m.\u001b[39mfulfill({status\u001b[33m:\u001b[39m\u001b[35m204\u001b[39m\u001b[33m,\u001b[39mbody\u001b[33m:\u001b[39m\u001b[32m''\u001b[39m}))\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'console'\u001b[39m\u001b[33m,\u001b[39mm\u001b[33m=>\u001b[39m{\u001b[36mif\u001b[39m(m\u001b[33m.\u001b[39mtype()\u001b[33m===\u001b[39m\u001b[32m'error'\u001b[39m)errors\u001b[33m.\u001b[39mpush(m\u001b[33m.\u001b[39mtext())})\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'pageerror'\u001b[39m\u001b[33m,\u001b[39me\u001b[33m=>\u001b[39merrors\u001b[33m.\u001b[39mpush(e\u001b[33m.\u001b[39mmessage))\u001b[33m;\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 87 |\u001b[39m test\u001b[33m.\u001b[39mafterEach(\u001b[36masync\u001b[39m ({page}\u001b[33m,\u001b[39minfo)\u001b[33m=>\u001b[39m{\u001b[36mconst\u001b[39m errors\u001b[33m=\u001b[39mbrowserErrors\u001b[33m.\u001b[39mget(page)\u001b[33m??\u001b[39m[]\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'browser-errors'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(errors)\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\u001b[33m;\u001b[39mexpect(errors)\u001b[33m.\u001b[39mtoEqual([])})\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                                                                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 88 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                        "column": 191,
+                        "line": 87
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  85 | const browserErrors=new WeakMap<object,string[]>();\n  86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });\n> 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});\n     |                                                                                                                                                                                               ^\n  88 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:10:11.293Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "physics-runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\\attachments\\physics-runtime-proof-f714dcd08ffa4936b7e2c31c23ac8f8c1626f229.json"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-phy-0be22-ines-in-real-browser-Python-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                    "column": 191,
+                    "line": 87
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "71d4c706cdd99315bfa8-a87a2ed32b7bc8bed885",
+          "file": "pinta-f7-physics.spec.ts",
+          "line": 7,
+          "column": 5
+        },
+        {
+          "title": "Pinta platform 1x checks all outlines in real browser Python",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2114,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                      "column": 191,
+                      "line": 87
+                    },
+                    "snippet": " \u001b[90m 85 |\u001b[39m \u001b[36mconst\u001b[39m browserErrors\u001b[33m=\u001b[39m\u001b[36mnew\u001b[39m \u001b[33mWeakMap\u001b[39m\u001b[33m<\u001b[39m\u001b[33mobject\u001b[39m\u001b[33m,\u001b[39mstring[]\u001b[33m>\u001b[39m()\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({page})\u001b[33m=>\u001b[39m{ \u001b[36mconst\u001b[39m errors\u001b[33m:\u001b[39mstring[]\u001b[33m=\u001b[39m[]\u001b[33m;\u001b[39mbrowserErrors\u001b[33m.\u001b[39mset(page\u001b[33m,\u001b[39merrors)\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mroute(\u001b[32m'**/favicon.ico'\u001b[39m\u001b[33m,\u001b[39mr\u001b[33m=>\u001b[39mr\u001b[33m.\u001b[39mfulfill({status\u001b[33m:\u001b[39m\u001b[35m204\u001b[39m\u001b[33m,\u001b[39mbody\u001b[33m:\u001b[39m\u001b[32m''\u001b[39m}))\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'console'\u001b[39m\u001b[33m,\u001b[39mm\u001b[33m=>\u001b[39m{\u001b[36mif\u001b[39m(m\u001b[33m.\u001b[39mtype()\u001b[33m===\u001b[39m\u001b[32m'error'\u001b[39m)errors\u001b[33m.\u001b[39mpush(m\u001b[33m.\u001b[39mtext())})\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'pageerror'\u001b[39m\u001b[33m,\u001b[39me\u001b[33m=>\u001b[39merrors\u001b[33m.\u001b[39mpush(e\u001b[33m.\u001b[39mmessage))\u001b[33m;\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 87 |\u001b[39m test\u001b[33m.\u001b[39mafterEach(\u001b[36masync\u001b[39m ({page}\u001b[33m,\u001b[39minfo)\u001b[33m=>\u001b[39m{\u001b[36mconst\u001b[39m errors\u001b[33m=\u001b[39mbrowserErrors\u001b[33m.\u001b[39mget(page)\u001b[33m??\u001b[39m[]\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'browser-errors'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(errors)\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\u001b[33m;\u001b[39mexpect(errors)\u001b[33m.\u001b[39mtoEqual([])})\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                                                                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 88 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                        "column": 191,
+                        "line": 87
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  85 | const browserErrors=new WeakMap<object,string[]>();\n  86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });\n> 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});\n     |                                                                                                                                                                                               ^\n  88 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:10:14.671Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "platform-runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\\attachments\\platform-runtime-proof-7ce00a63a984a196260c3787dd4b937c57b8e61d.json"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-pla-d9817-ines-in-real-browser-Python-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                    "column": 191,
+                    "line": 87
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "71d4c706cdd99315bfa8-f85dfc04332f604dee9b",
+          "file": "pinta-f7-physics.spec.ts",
+          "line": 7,
+          "column": 5
+        },
+        {
+          "title": "Pinta platform 2x checks all outlines in real browser Python",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2086,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                      "column": 191,
+                      "line": 87
+                    },
+                    "snippet": " \u001b[90m 85 |\u001b[39m \u001b[36mconst\u001b[39m browserErrors\u001b[33m=\u001b[39m\u001b[36mnew\u001b[39m \u001b[33mWeakMap\u001b[39m\u001b[33m<\u001b[39m\u001b[33mobject\u001b[39m\u001b[33m,\u001b[39mstring[]\u001b[33m>\u001b[39m()\u001b[33m;\u001b[39m\n \u001b[90m 86 |\u001b[39m test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({page})\u001b[33m=>\u001b[39m{ \u001b[36mconst\u001b[39m errors\u001b[33m:\u001b[39mstring[]\u001b[33m=\u001b[39m[]\u001b[33m;\u001b[39mbrowserErrors\u001b[33m.\u001b[39mset(page\u001b[33m,\u001b[39merrors)\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mroute(\u001b[32m'**/favicon.ico'\u001b[39m\u001b[33m,\u001b[39mr\u001b[33m=>\u001b[39mr\u001b[33m.\u001b[39mfulfill({status\u001b[33m:\u001b[39m\u001b[35m204\u001b[39m\u001b[33m,\u001b[39mbody\u001b[33m:\u001b[39m\u001b[32m''\u001b[39m}))\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'console'\u001b[39m\u001b[33m,\u001b[39mm\u001b[33m=>\u001b[39m{\u001b[36mif\u001b[39m(m\u001b[33m.\u001b[39mtype()\u001b[33m===\u001b[39m\u001b[32m'error'\u001b[39m)errors\u001b[33m.\u001b[39mpush(m\u001b[33m.\u001b[39mtext())})\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'pageerror'\u001b[39m\u001b[33m,\u001b[39me\u001b[33m=>\u001b[39merrors\u001b[33m.\u001b[39mpush(e\u001b[33m.\u001b[39mmessage))\u001b[33m;\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 87 |\u001b[39m test\u001b[33m.\u001b[39mafterEach(\u001b[36masync\u001b[39m ({page}\u001b[33m,\u001b[39minfo)\u001b[33m=>\u001b[39m{\u001b[36mconst\u001b[39m errors\u001b[33m=\u001b[39mbrowserErrors\u001b[33m.\u001b[39mget(page)\u001b[33m??\u001b[39m[]\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'browser-errors'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(errors)\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\u001b[33m;\u001b[39mexpect(errors)\u001b[33m.\u001b[39mtoEqual([])})\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                                                                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 88 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                        "column": 191,
+                        "line": 87
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  85 | const browserErrors=new WeakMap<object,string[]>();\n  86 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });\n> 87 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});\n     |                                                                                                                                                                                               ^\n  88 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts:87:191"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:10:17.827Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "platform-runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\\attachments\\platform-runtime-proof-53d233680fcd9ef4f19e6a5e8b5bd0fda7c82310.json"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-physics-Pinta-pla-0671e-ines-in-real-browser-Python-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-physics.spec.ts",
+                    "column": 191,
+                    "line": 87
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "71d4c706cdd99315bfa8-16d22d3c82c5e844b25e",
+          "file": "pinta-f7-physics.spec.ts",
+          "line": 7,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "pinta-f7-world.spec.ts",
+      "file": "pinta-f7-world.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Pinta world 1x renders and crosses doors in real browser Python",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2811,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts:83:191",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts",
+                      "column": 191,
+                      "line": 83
+                    },
+                    "snippet": " \u001b[90m 81 |\u001b[39m \u001b[36mconst\u001b[39m browserErrors\u001b[33m=\u001b[39m\u001b[36mnew\u001b[39m \u001b[33mWeakMap\u001b[39m\u001b[33m<\u001b[39m\u001b[33mobject\u001b[39m\u001b[33m,\u001b[39mstring[]\u001b[33m>\u001b[39m()\u001b[33m;\u001b[39m\n \u001b[90m 82 |\u001b[39m test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({page})\u001b[33m=>\u001b[39m{ \u001b[36mconst\u001b[39m errors\u001b[33m:\u001b[39mstring[]\u001b[33m=\u001b[39m[]\u001b[33m;\u001b[39mbrowserErrors\u001b[33m.\u001b[39mset(page\u001b[33m,\u001b[39merrors)\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mroute(\u001b[32m'**/favicon.ico'\u001b[39m\u001b[33m,\u001b[39mr\u001b[33m=>\u001b[39mr\u001b[33m.\u001b[39mfulfill({status\u001b[33m:\u001b[39m\u001b[35m204\u001b[39m\u001b[33m,\u001b[39mbody\u001b[33m:\u001b[39m\u001b[32m''\u001b[39m}))\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'console'\u001b[39m\u001b[33m,\u001b[39mm\u001b[33m=>\u001b[39m{\u001b[36mif\u001b[39m(m\u001b[33m.\u001b[39mtype()\u001b[33m===\u001b[39m\u001b[32m'error'\u001b[39m)errors\u001b[33m.\u001b[39mpush(m\u001b[33m.\u001b[39mtext())})\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'pageerror'\u001b[39m\u001b[33m,\u001b[39me\u001b[33m=>\u001b[39merrors\u001b[33m.\u001b[39mpush(e\u001b[33m.\u001b[39mmessage))\u001b[33m;\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 83 |\u001b[39m test\u001b[33m.\u001b[39mafterEach(\u001b[36masync\u001b[39m ({page}\u001b[33m,\u001b[39minfo)\u001b[33m=>\u001b[39m{\u001b[36mconst\u001b[39m errors\u001b[33m=\u001b[39mbrowserErrors\u001b[33m.\u001b[39mget(page)\u001b[33m??\u001b[39m[]\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'browser-errors'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(errors)\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\u001b[33m;\u001b[39mexpect(errors)\u001b[33m.\u001b[39mtoEqual([])})\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                                                                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 84 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts",
+                        "column": 191,
+                        "line": 83
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  81 | const browserErrors=new WeakMap<object,string[]>();\n  82 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });\n> 83 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});\n     |                                                                                                                                                                                               ^\n  84 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts:83:191"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:10:20.962Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\\attachments\\runtime-proof-d3c35f92958477ea7cd6523ac98d35dc412967ee.json"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-world-Pinta-world-5b6fb-oors-in-real-browser-Python-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts",
+                    "column": 191,
+                    "line": 83
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a613b03ce451592c5757-433931b44c9f71813a44",
+          "file": "pinta-f7-world.spec.ts",
+          "line": 6,
+          "column": 3
+        },
+        {
+          "title": "Pinta world 2x renders and crosses doors in real browser Python",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2786,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts:83:191",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts",
+                      "column": 191,
+                      "line": 83
+                    },
+                    "snippet": " \u001b[90m 81 |\u001b[39m \u001b[36mconst\u001b[39m browserErrors\u001b[33m=\u001b[39m\u001b[36mnew\u001b[39m \u001b[33mWeakMap\u001b[39m\u001b[33m<\u001b[39m\u001b[33mobject\u001b[39m\u001b[33m,\u001b[39mstring[]\u001b[33m>\u001b[39m()\u001b[33m;\u001b[39m\n \u001b[90m 82 |\u001b[39m test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({page})\u001b[33m=>\u001b[39m{ \u001b[36mconst\u001b[39m errors\u001b[33m:\u001b[39mstring[]\u001b[33m=\u001b[39m[]\u001b[33m;\u001b[39mbrowserErrors\u001b[33m.\u001b[39mset(page\u001b[33m,\u001b[39merrors)\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mroute(\u001b[32m'**/favicon.ico'\u001b[39m\u001b[33m,\u001b[39mr\u001b[33m=>\u001b[39mr\u001b[33m.\u001b[39mfulfill({status\u001b[33m:\u001b[39m\u001b[35m204\u001b[39m\u001b[33m,\u001b[39mbody\u001b[33m:\u001b[39m\u001b[32m''\u001b[39m}))\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'console'\u001b[39m\u001b[33m,\u001b[39mm\u001b[33m=>\u001b[39m{\u001b[36mif\u001b[39m(m\u001b[33m.\u001b[39mtype()\u001b[33m===\u001b[39m\u001b[32m'error'\u001b[39m)errors\u001b[33m.\u001b[39mpush(m\u001b[33m.\u001b[39mtext())})\u001b[33m;\u001b[39mpage\u001b[33m.\u001b[39mon(\u001b[32m'pageerror'\u001b[39m\u001b[33m,\u001b[39me\u001b[33m=>\u001b[39merrors\u001b[33m.\u001b[39mpush(e\u001b[33m.\u001b[39mmessage))\u001b[33m;\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 83 |\u001b[39m test\u001b[33m.\u001b[39mafterEach(\u001b[36masync\u001b[39m ({page}\u001b[33m,\u001b[39minfo)\u001b[33m=>\u001b[39m{\u001b[36mconst\u001b[39m errors\u001b[33m=\u001b[39mbrowserErrors\u001b[33m.\u001b[39mget(page)\u001b[33m??\u001b[39m[]\u001b[33m;\u001b[39m\u001b[36mawait\u001b[39m info\u001b[33m.\u001b[39mattach(\u001b[32m'browser-errors'\u001b[39m\u001b[33m,\u001b[39m{body\u001b[33m:\u001b[39m\u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mstringify(errors)\u001b[33m,\u001b[39mcontentType\u001b[33m:\u001b[39m\u001b[32m'application/json'\u001b[39m})\u001b[33m;\u001b[39mexpect(errors)\u001b[33m.\u001b[39mtoEqual([])})\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                                                                                                                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 84 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts",
+                        "column": 191,
+                        "line": 83
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  81 | const browserErrors=new WeakMap<object,string[]>();\n  82 | test.beforeEach(async ({page})=>{ const errors:string[]=[];browserErrors.set(page,errors);await page.route('**/favicon.ico',r=>r.fulfill({status:204,body:''}));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});page.on('pageerror',e=>errors.push(e.message)); });\n> 83 | test.afterEach(async ({page},info)=>{const errors=browserErrors.get(page)??[];await info.attach('browser-errors',{body:JSON.stringify(errors),contentType:'application/json'});expect(errors).toEqual([])});\n     |                                                                                                                                                                                               ^\n  84 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts:83:191"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:10:24.866Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-proof",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\\attachments\\runtime-proof-ddfa1145fc61c18859dcabe8254ced30a27858a4.json"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-browser-results\\pinta-f7-world-Pinta-world-dac32-oors-in-real-browser-Python-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f7-world.spec.ts",
+                    "column": 191,
+                    "line": 83
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a613b03ce451592c5757-c97749a38e1ab0e78511",
+          "file": "pinta-f7-world.spec.ts",
+          "line": 6,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T20:10:06.961Z",
+    "duration": 21515.161,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}

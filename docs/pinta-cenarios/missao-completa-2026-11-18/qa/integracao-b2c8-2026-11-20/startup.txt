@@ -1,0 +1,17 @@
+[INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ../core/src/studio/python-activity.ts, ..., dynamic import will not move module into another chunk.
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectIndexedRecovery.ts, src/state/projectValidation.ts but also statically imported by src/project-migrations/localV3.ts, src/project-migrations/localV3Recovery.ts, src/state/editableCloudProject.ts, src/state/projectRecoverySources.ts, src/state/projectStore.ts, ..., dynamic import will not move module into another chunk.
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, dynamic import will not move module into another chunk.
+
+[PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+  - rolldown:vite-resolve (28%)
+  - vite:css (26%)
+  - vite:css-post (11%)
+  - vite:build-import-analysis (9%)
+  - vite:terser (8%)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+  ✓  3 [chromium] › e2e\preview-startup.spec.ts:23:1 › stops native work in the first startup before load and preserves the editor source (13.1s)
+
+  3 passed (1.5m)

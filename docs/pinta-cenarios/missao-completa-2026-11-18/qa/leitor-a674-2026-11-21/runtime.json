@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-21T03:08:02.254Z",
+  "qualifiedSource": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "incoming": "a674e4c162321e1d4206266b0be47f65ede64ca8",
+  "bundleSha256": "670c8c32d33cf541dc16b6ff81e3c5acf0978626ef6844f7fefaf316f668cf6a",
+  "bundleBytes": 1979073,
+  "byteIdenticalToQualifiedReader": true,
+  "profileUnchanged": true,
+  "dryRunTemplateOnly": true,
+  "deployed": false
+}

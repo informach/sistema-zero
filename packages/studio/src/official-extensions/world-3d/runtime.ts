@@ -1,9 +1,16 @@
 import { withGameRules3DRuntime } from '../game3dRules/runtime'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
+import {
+  PAUSED_FLAG_ENGINE,
+  THREE_INVESTIGATION_VARIANT,
+  type ThreeInvestigationEngine,
+  withThreeInvestigation,
+} from '../three3dInvestigation'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
-import { world3DSceneRuntime } from './runtimeScene'
+import { world3DSceneAbsentRuntime, world3DSceneRuntime } from './runtimeScene'
+import { WORLD_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 /**
  * Runtime do "Mundo 3D" — injetado no <head> do iframe quando a extensão
@@ -422,6 +429,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // ---- Lote 10: regras de jogo (recomeçar LEVE), coletáveis e Molda ----
   // Fim de jogo e tela de início PAUSAM o jogador e os laços; a cena continua desenhando.
   var _paused = false;
+  /*__SZ_3D_INVESTIGAR__*/
   var spawnSnap = null;          // onde o jogador estava ao começar (o recomeçar volta aqui)
   // Chamadas das regras feitas no "Ao iniciar" (vida, contagem, "depois de", texto): o
   // recomeçar leve NÃO roda o projeto de novo, então refaz só estas.
@@ -8320,6 +8328,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (dt > 1 / 30) dt = 1 / 30;
     currentDt = dt;
     _rectBox = null;
+    /*__SZ_3D_INVESTIGAR_QUADRO__*/
     if (!_paused) playTime += dt;
 
     // Sonda de qualidade (orçamento compartilhado): mede o FPS entre 1.5 s e 4 s de passeio;
@@ -9822,16 +9831,61 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 })();
 `
 
-export const world3DRuntime = compactOfficialRuntimeSource(
-  withThreeRenderBudgetRuntime(
-    withThreePostProcessingRuntime(
-      withThreeModelsRuntime(
-        withGameRules3DRuntime(
-          world3DRuntimeSource.replace('__SZ_WORLD_SCENE_RUNTIME__', () => world3DSceneRuntime),
+/**
+ * A aba Investigar e a medida no Mundo 3D (`../three3dInvestigation.ts`): a pausa é a `_paused`
+ * das regras; o laço é um só. Os desenhos somam todas as passadas do pós-processamento.
+ */
+const WORLD_3D_INVESTIGATION: ThreeInvestigationEngine = {
+  inspector: 'world-3d:investigar',
+  ...PAUSED_FLAG_ENGINE,
+  frameGuard: 'true',
+  plays: '!_paused',
+  frameRenderer: 'renderer',
+  renderer: 'renderer',
+  scene: 'scene',
+}
+
+function composeWorld3DRuntime(sceneSource: string, investigate = false): string {
+  return compactOfficialRuntimeSource(
+    withThreeRenderBudgetRuntime(
+      withThreePostProcessingRuntime(
+        withThreeModelsRuntime(
+          withGameRules3DRuntime(
+            withThreeInvestigation(
+              world3DRuntimeSource,
+              investigate ? WORLD_3D_INVESTIGATION : null,
+            ).replace('__SZ_WORLD_SCENE_RUNTIME__', () => sceneSource),
+          ),
         ),
       ),
     ),
-  ),
-  // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.
-  { trimIndent: true },
-)
+    // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.
+    { trimIndent: true },
+  )
+}
+
+/** O runtime COMPLETO, com o cenário do Molda: o que `loadBootstrapScript()` sem contexto injeta. */
+export const world3DRuntime = composeWorld3DRuntime(world3DSceneRuntime)
+
+const composedByVariant = new Map<string, string>()
+
+/**
+ * O runtime de uma variante, composto uma vez: `world3DRuntimeVariant` (`sceneVariant.ts`) e,
+ * com uma aba da gaveta ligada, a investigação (`investigar`), juntas por `+`.
+ */
+export function world3DRuntimeForVariant(variant: string): string {
+  const parts = new Set(variant.split('+'))
+  const withoutScene = parts.has(WORLD_3D_WITHOUT_SCENE_VARIANT)
+  const investigate = parts.has(THREE_INVESTIGATION_VARIANT)
+  if (!withoutScene && !investigate) return world3DRuntime
+  const key = `${withoutScene}+${investigate}`
+  let composed = composedByVariant.get(key)
+  if (composed === undefined) {
+    composed = composeWorld3DRuntime(
+      withoutScene ? world3DSceneAbsentRuntime : world3DSceneRuntime,
+      investigate,
+    )
+    composedByVariant.set(key, composed)
+  }
+  return composed
+}

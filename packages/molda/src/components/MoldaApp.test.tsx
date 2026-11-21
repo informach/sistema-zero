@@ -456,6 +456,21 @@ describe('MoldaApp', () => {
     expect(opened).toBe(1)
   })
 
+  test('o atalho Cenários aparece só quando o host oferece a oficina', async () => {
+    let opened = 0
+    const { rerender } = render(<MoldaApp persistence={createMemoryPersistence()} adapter={{}} />)
+    await settle()
+    expect(screen.queryByRole('button', { name: COPY.gallery.openCenarios })).toBeNull()
+    rerender(
+      <MoldaApp
+        persistence={createMemoryPersistence()}
+        adapter={{ onOpenCenarios: () => (opened += 1) }}
+      />,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: COPY.gallery.openCenarios }))
+    expect(opened).toBe(1)
+  })
+
   test('Modelos prontos: escolher a nave sugere um nome livre e abre o modelo já montado', async () => {
     const db = await nativeDatabase()
     setMoldaGenerationStoreFactory(() => db.store)

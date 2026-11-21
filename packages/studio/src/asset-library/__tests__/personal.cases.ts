@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { failNextFakeIdbWrite, fakeUseStore, resetFakeIdb } from '../../testing/fakeIdbStore'
 
 // Mock FUNCIONAL (Map por DB) do idb-keyval — o IndexedDB não existe no
@@ -9,6 +9,7 @@ type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
 let failDeletes = false
 let failReads = false
+let beforeDelete: (() => void) | undefined
 const kvOf = (store?: { name?: string }): KV => {
   const key = store?.name ?? ''
   let kv = dbs.get(key)
@@ -31,6 +32,7 @@ mock.module('idb-keyval', () => ({
     for (const [key, value] of pairs) kvOf(store).set(key, value)
   },
   del: async (key: IDBValidKey, store?: { name?: string }) => {
+    beforeDelete?.()
     if (failDeletes) throw new Error('IndexedDB indisponível')
     kvOf(store).delete(key)
   },
@@ -56,6 +58,7 @@ const {
   readPersonalAssetInventory,
   PERSONAL_ASSET_LIMITS,
   personalAssetsChangedAt,
+  personalAssetsChangeToken,
   removePersonalAsset,
   savePersonalAsset,
   savePersonalAssetBundle,
@@ -68,6 +71,7 @@ beforeEach(() => {
   dbs.clear()
   failDeletes = false
   failReads = false
+  beforeDelete = undefined
   resetFakeIdb()
   setPersonalAssetsNamespace('')
 })
@@ -77,6 +81,79 @@ afterEach(() => {
 })
 
 describe('savePersonalAsset / listPersonalAssets', () => {
+  it('commits no mesmo instante têm sinais distintos e conservam o carimbo legado', async () => {
+    const clock = spyOn(Date, 'now').mockReturnValue(1720000000000)
+    try {
+      await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+      const before = personalAssetsChangeToken()
+      await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: `${PNG}BB` })
+      expect(personalAssetsChangeToken()).not.toBe(before)
+      expect(personalAssetsChangedAt()).toBe(1720000000000)
+    } finally {
+      clock.mockRestore()
+    }
+  })
+  it('o leitor de sinais aceita o legado e trata falta ou corrupção como desconhecida', () => {
+    setPersonalAssetsNamespace('marcador-legado')
+    const key = 'sz:desenhos-alterados:marcador-legado'
+    localStorage.setItem(key, JSON.stringify({ at: 7 }))
+    expect(personalAssetsChangeToken()).toBe(JSON.stringify({ at: 7 }))
+    localStorage.setItem(key, 'quebrado')
+    expect(personalAssetsChangeToken()).toBe('')
+    localStorage.removeItem(key)
+    expect(personalAssetsChangeToken()).toBe('')
+  })
+  it('falha ao publicar o sinal invalida o anterior e conserva o desenho já gravado', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    expect(personalAssetsChangeToken()).not.toBe('')
+    const storage = localStorage
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    const failingStorage: Storage = {
+      get length() {
+        return storage.length
+      },
+      clear: storage.clear.bind(storage),
+      getItem: storage.getItem.bind(storage),
+      key: storage.key.bind(storage),
+      removeItem: storage.removeItem.bind(storage),
+      setItem: () => {
+        throw new DOMException('Sem espaço', 'QuotaExceededError')
+      },
+    }
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: failingStorage })
+    try {
+      expect((await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: `${PNG}BB` })).ok).toBe(
+        true,
+      )
+      expect(personalAssetsChangeToken()).toBe('')
+      expect((await listPersonalAssets())[0]?.dataUrl).toBe(`${PNG}BB`)
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'localStorage', original)
+      else Reflect.deleteProperty(globalThis, 'localStorage')
+    }
+  })
+  it('apagar sem namespace explícito conserva o dono quando o perfil muda durante o IO', async () => {
+    let instant = 1720000000000
+    const clock = spyOn(Date, 'now').mockImplementation(() => ++instant)
+    try {
+      setPersonalAssetsNamespace('dono-a')
+      await savePersonalAsset({ id: 'a', name: 'heroi', dataUrl: PNG })
+      setPersonalAssetsNamespace('dono-b')
+      await savePersonalAsset({ id: 'b', name: 'outro', dataUrl: PNG })
+      const markerB = personalAssetsChangeToken()
+      setPersonalAssetsNamespace('dono-a')
+      const markerA = personalAssetsChangeToken()
+      beforeDelete = () => setPersonalAssetsNamespace('dono-b')
+      expect((await removePersonalAsset('a')).ok).toBe(true)
+      expect(personalAssetsChangeToken()).toBe(markerB)
+      expect((await listPersonalAssets()).map((a) => a.id)).toEqual(['b'])
+      setPersonalAssetsNamespace('dono-a')
+      expect(personalAssetsChangeToken()).not.toBe(markerA)
+      expect(await listPersonalAssets()).toEqual([])
+    } finally {
+      clock.mockRestore()
+    }
+  })
   it('a leitura estrita distingue vazio de falha, preservando a leitura tolerante da galeria', async () => {
     expect(await readPersonalAssetInventory()).toEqual({ ok: true, assets: [] })
     await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })

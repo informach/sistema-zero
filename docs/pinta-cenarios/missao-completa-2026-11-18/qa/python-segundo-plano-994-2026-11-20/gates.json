@@ -1,0 +1,156 @@
+[
+  {
+    "name": "biome-initial",
+    "exit": 0,
+    "started": "2026-11-20T23:39:10.952Z",
+    "finished": "2026-11-20T23:39:42.054Z",
+    "log": ".cache/pinta-994-bg-biome-initial.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T23:39:42.715Z",
+    "finished": "2026-11-20T23:39:43.469Z",
+    "log": ".cache/pinta-994-bg-profile.log"
+  },
+  {
+    "name": "studio-sdk",
+    "exit": 0,
+    "started": "2026-11-20T23:39:44.014Z",
+    "finished": "2026-11-20T23:39:44.868Z",
+    "log": ".cache/pinta-994-bg-studio-sdk.log"
+  },
+  {
+    "name": "molda-sdk",
+    "exit": 0,
+    "started": "2026-11-20T23:39:45.428Z",
+    "finished": "2026-11-20T23:39:46.212Z",
+    "log": ".cache/pinta-994-bg-molda-sdk.log"
+  },
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-20T23:39:46.767Z",
+    "finished": "2026-11-20T23:39:58.640Z",
+    "log": ".cache/pinta-994-bg-core.log"
+  },
+  {
+    "name": "core-types",
+    "exit": 0,
+    "started": "2026-11-20T23:39:59.186Z",
+    "finished": "2026-11-20T23:40:07.622Z",
+    "log": ".cache/pinta-994-bg-core-types.log"
+  },
+  {
+    "name": "studio",
+    "exit": 0,
+    "started": "2026-11-20T23:40:08.123Z",
+    "finished": "2026-11-20T23:51:22.131Z",
+    "log": ".cache/pinta-994-bg-studio.log"
+  },
+  {
+    "name": "members-unit",
+    "exit": 0,
+    "started": "2026-11-20T23:51:22.676Z",
+    "finished": "2026-11-20T23:51:24.588Z",
+    "log": ".cache/pinta-994-bg-members-unit.log"
+  },
+  {
+    "name": "gateway-unit",
+    "exit": 0,
+    "started": "2026-11-20T23:51:25.119Z",
+    "finished": "2026-11-20T23:51:27.121Z",
+    "log": ".cache/pinta-994-bg-gateway-unit.log"
+  },
+  {
+    "name": "atlas",
+    "exit": 0,
+    "started": "2026-11-20T23:51:27.649Z",
+    "finished": "2026-11-20T23:51:28.295Z",
+    "log": ".cache/pinta-994-bg-atlas.log"
+  },
+  {
+    "name": "runtime",
+    "exit": 0,
+    "started": "2026-11-20T23:51:28.816Z",
+    "finished": "2026-11-20T23:51:30.506Z",
+    "log": ".cache/pinta-994-bg-runtime.log"
+  },
+  {
+    "name": "native-observer",
+    "exit": 0,
+    "started": "2026-11-20T23:51:31.070Z",
+    "finished": "2026-11-20T23:51:36.958Z",
+    "log": ".cache/pinta-994-bg-native-observer.log"
+  },
+  {
+    "name": "browser",
+    "exit": 0,
+    "started": "2026-11-20T23:51:37.482Z",
+    "finished": "2026-11-20T23:55:17.101Z",
+    "log": ".cache/pinta-994-bg-browser.log"
+  },
+  {
+    "name": "integration",
+    "exit": 0,
+    "started": "2026-11-20T23:55:17.696Z",
+    "finished": "2026-11-20T23:57:22.619Z",
+    "log": ".cache/pinta-994-bg-integration.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-20T23:57:23.173Z",
+    "finished": "2026-11-21T00:00:22.893Z",
+    "log": ".cache/pinta-994-bg-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-21T00:00:23.401Z",
+    "finished": "2026-11-21T00:02:41.112Z",
+    "log": ".cache/pinta-994-bg-members-types.log"
+  },
+  {
+    "name": "shell-types",
+    "exit": 0,
+    "started": "2026-11-21T00:02:41.650Z",
+    "finished": "2026-11-21T00:05:38.006Z",
+    "log": ".cache/pinta-994-bg-shell-types.log"
+  },
+  {
+    "name": "runtime-types",
+    "exit": 0,
+    "started": "2026-11-21T00:05:38.558Z",
+    "finished": "2026-11-21T00:07:45.834Z",
+    "log": ".cache/pinta-994-bg-runtime-types.log"
+  },
+  {
+    "name": "native-controls",
+    "exit": 0,
+    "started": "2026-11-21T00:07:46.381Z",
+    "finished": "2026-11-21T00:08:09.849Z",
+    "log": ".cache/pinta-994-bg-native-controls.log"
+  },
+  {
+    "name": "biome-final",
+    "exit": 0,
+    "started": "2026-11-21T00:08:10.382Z",
+    "finished": "2026-11-21T00:08:39.149Z",
+    "log": ".cache/pinta-994-bg-biome-final.log"
+  },
+  {
+    "name": "pygame",
+    "exit": 0,
+    "started": "2026-11-21T00:08:39.809Z",
+    "finished": "2026-11-21T00:09:42.037Z",
+    "log": ".cache/pinta-994-bg-pygame.log"
+  },
+  {
+    "name": "shared",
+    "exit": 0,
+    "started": "2026-11-21T00:09:42.578Z",
+    "finished": "2026-11-21T00:12:34.672Z",
+    "log": ".cache/pinta-994-bg-shared.log"
+  }
+]

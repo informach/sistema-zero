@@ -1,3 +1,4 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import {
   assertStudioPythonActivityScope,
   type StudioPythonActivity,
@@ -11,11 +12,13 @@ import {
   type StudioPythonMissionProbe,
   verifyStudioPythonMissionObservation,
 } from '@sistemazero/core/studio/python-mission-observation'
+import { PYTHON_BACKGROUND_FOCUS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import {
   type StudioExecutionIdentity,
   type StudioHostAudioPreference,
   type StudioRuntimeEvent,
   type StudioRuntimeImage,
+  type StudioRuntimePerformanceSlice,
   type StudioRuntimeSession,
   StudioRuntimeUnavailableError,
 } from '../types'
@@ -49,6 +52,7 @@ export function preparePythonFrameSession(options: {
   signal: AbortSignal
   activity?: StudioPythonActivity
   mission?: true
+  background?: true
   hostAudio?: StudioHostAudioPreference
   /**
    * A file the program saved; the host keeps it for the next run (savedFiles.ts). A deleted
@@ -58,6 +62,7 @@ export function preparePythonFrameSession(options: {
 }): Promise<StudioRuntimeSession> {
   const { frame, signal } = options
   const identity = Object.freeze({ ...options.identity })
+  const background = options.background === true
   const activity =
     options.activity === undefined ? undefined : StudioPythonActivitySchema.parse(options.activity)
   if (activity) assertStudioPythonActivityScope(activity, options.snapshot.configuration)
@@ -111,6 +116,15 @@ export function preparePythonFrameSession(options: {
   let state = 'preparing'
   let inputId: string | undefined
   let commandInFlight = false
+  /** A aba Desempenho: quem recebe as fatias de meio segundo do quadro (`null` = desligada). */
+  let perfListener: ((slice: StudioRuntimePerformanceSlice) => void) | null = null
+  // A pausa da aba Investigar: quem espera o programa parar no próximo quadro.
+  let pauseWaiters: ((frame: number | null) => void)[] = []
+  const settlePause = (frame: number | null) => {
+    const waiting = pauseWaiters
+    pauseWaiters = []
+    for (const resolve of waiting) resolve(frame)
+  }
   let captureInFlight = false
   let frameWindowStart = performance.now()
   let frameMessages = 0
@@ -290,6 +304,14 @@ export function preparePythonFrameSession(options: {
         return
       }
       if (!active) return
+      if (message.type === 'perf') {
+        perfListener?.(message.slice)
+        return
+      }
+      if (message.type === 'pause') {
+        if (message.held) settlePause(message.frame)
+        return
+      }
       if (message.type === 'mission-result') {
         const waiting = pendingMission
         if (!options.mission || !waiting || message.requestId !== waiting.requestId) {
@@ -404,6 +426,11 @@ export function preparePythonFrameSession(options: {
         const result = await bootPreparation
         if (!result.ok) throw result.error
         const host = result.host
+        if (background && !host.features.includes(PYTHON_BACKGROUND_FOCUS_FEATURE))
+          throw new StudioRuntimeUnavailableError(
+            'background-focus-unsupported',
+            'Atualize o ambiente Python para rodar testes sem tirar o foco da oficina.',
+          )
         if (!active || closed || bootSignal.aborted) {
           channel.port2.close()
           return
@@ -426,15 +453,21 @@ export function preparePythonFrameSession(options: {
             snapshot: options.snapshot,
             ...(activity ? { activity } : {}),
             ...(options.mission ? { mission: true } : {}),
+            ...(background ? { background: true } : {}),
             bootResources: 1,
           },
           '*',
           [channel.port2, resourcePort],
         )
-      } catch {
+      } catch (error) {
         channel.port2.close()
         resourcePort?.close()
-        fail('Não foi possível preparar o canal Python.')
+        fail(
+          error instanceof StudioRuntimeUnavailableError &&
+            error.reasonCode === 'background-focus-unsupported'
+            ? error.message
+            : 'Não foi possível preparar o canal Python.',
+        )
       }
     }
     async function command(value: Command, expectedState: string) {
@@ -482,6 +515,43 @@ export function preparePythonFrameSession(options: {
     const session: StudioRuntimeSession = {
       identity,
       playback: { kind: 'stop-only' },
+      async measurePerformance(listener) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        perfListener = listener
+        await send({ type: 'perf', on: listener !== null })
+      },
+      async pausePython(on) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        if (!on) {
+          settlePause(null)
+          await send({ type: 'pause', on: false })
+          return null
+        }
+        // O programa para no próximo quadro pintado; o que não pinta em 2 s fica esperando.
+        const held = new Promise<number | null>((resolve) => {
+          pauseWaiters.push(resolve)
+          setTimeout(() => resolve(null), 2000)
+        })
+        await send({ type: 'pause', on: true })
+        const frame = await held
+        return frame === null ? null : { frame }
+      },
+      async stepPython() {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        const held = new Promise<number | null>((resolve) => {
+          pauseWaiters.push(resolve)
+          setTimeout(() => resolve(null), 2000)
+        })
+        await send({ type: 'step' })
+        const frame = await held
+        return frame === null ? null : { frame }
+      },
+      async pressKey(key, down) {
+        if (!active || !prepared) throw new Error('O programa ainda não está rodando.')
+        if (typeof key !== 'string' || key.length > 20 || typeof down !== 'boolean')
+          throw new Error('Tecla de teste inválida.')
+        await send({ type: 'key', key, down })
+      },
       repl: {
         kind: 'python',
         async evaluate({ requestId, source }) {
@@ -667,6 +737,7 @@ export function preparePythonFrameSession(options: {
     // Pro hosts keep COEP; anonymous framing permits this isolated runtime without cookies.
     frame.setAttribute('credentialless', '')
     frame.sandbox.value = 'allow-scripts allow-pointer-lock'
+    frame.allow = background ? "focus-without-user-activation 'none'" : GAME_FRAME_FOCUS_ALLOW
     frame.referrerPolicy = 'no-referrer'
     frame.src = url.href
   })

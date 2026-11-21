@@ -33,7 +33,8 @@ function profundidade(grupos: ReadonlyMap<string, GrupoDeCenario>, id: string): 
  *
  * Os cadeados são respeitados sem atalho: o que está trancado é destrancado, devolvido ao
  * estado anterior e trancado de novo, sempre pelos mesmos comandos que qualquer um usaria.
- * A ordem das listas não é restaurada; ela não tem significado no documento.
+ * A ordem das listas não é restaurada, menos a dos caminhos: nela o primeiro recorta os
+ * seguintes num encontro, então um caminho apagado volta ao lugar que tinha.
  */
 export function inverterLote(
   antes: DocumentoDeCenario,
@@ -192,7 +193,18 @@ export function inverterLote(
       if (atual?.bloqueado) comandos.push(definir(m.tipo, { ...atual, bloqueado: false }))
       const livre = { ...e, bloqueado: false }
       if (!igual(livre, atual && { ...atual, bloqueado: false }))
-        comandos.push(definir(m.tipo, livre))
+        comandos.push(
+          // Um caminho apagado volta ao lugar dele: a ordem decide quem vence nos encontros.
+          m.tipo === 'caminho' && !atual
+            ? {
+                ...(definir(m.tipo, livre) as Extract<
+                  ComandoDeCenario,
+                  { tipo: 'caminho.definir' }
+                >),
+                posicao: antes.caminhos.findIndex((c) => c.id === e.id),
+              }
+            : definir(m.tipo, livre),
+        )
       if (e.bloqueado) comandos.push(definir(m.tipo, e))
     }
     for (const e of m.apagar) {

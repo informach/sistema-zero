@@ -13,7 +13,7 @@ export async function montarCenaDeCompilacaoDoEnsaio(u) {
     modelos = new Map(),
     texturas = new Map(),
     criadas = new Map(),
-    origens = [
+    origens = u.bibliotecas ?? [
       ['reino', 'Reino', 'restrita'],
       ['cute', 'Cute Characters', 'restrita'],
       ['adventure', 'Adventure Land', 'restrita'],

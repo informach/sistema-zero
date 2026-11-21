@@ -7,6 +7,10 @@ import {
   criarDocumentoVazio,
   espacosDosComandos,
   executarLote,
+  FAIXAS_DA_OFICINA,
+  type FamiliaDaOficinaId,
+  familiaDaOficina,
+  familiasTrancadas,
   inverterLote,
   LIMITES_CENARIO_V2,
   LoteDeCenarioSchema,
@@ -29,6 +33,7 @@ import {
   type Mundo,
   normalizarBusca,
   podeNoEspaco,
+  podeNoMundo,
   podeUsarCenarios,
   type ResumoDeCenario,
   TETO_DO_BLOB,
@@ -41,6 +46,7 @@ import {
 import {
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
+  CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
   CenarioNaoEncontradoError,
   CenariosFechadosError,
@@ -158,6 +164,7 @@ export class CenariosService {
     this.exportacao = new ExportacaoDeCenariosService(repo, (ator, id) => this.cenarioDe(ator, id))
     this.conjuntos = new ConjuntosService(repo, {
       exigirAberto: (ator) => this.exigirAberto(ator),
+      exigirFamilia: (ator, familia) => this.exigirFamilia(ator, familia),
       bibliotecaDe: (ator, id) => this.bibliotecaDe(ator, id),
       abrirCenario: (ator, id) => this.abrirCenario(ator, id),
       abrirMundo: async (ator, id) => mundoView((await this.mundoDe(ator, id)).mundo),
@@ -167,36 +174,57 @@ export class CenariosService {
     })
   }
 
-  aberto(ator: Ator): boolean {
+  /** Só o modo, sem o produto: serve para quem já exige a equipe na própria conta. */
+  modoAdmite(ator: Ator): boolean {
     return podeUsarCenarios(this.abertura, ator)
   }
 
-  private exigirAberto(ator: Ator): void {
-    if (!this.aberto(ator)) throw new CenariosFechadosError()
+  /** A ferramenta está aberta para esta pessoa: o modo e, fora da equipe, o produto Molda. */
+  async aberto(ator: Ator): Promise<boolean> {
+    if (!podeUsarCenarios(this.abertura, ator)) return false
+    if (ator.equipe && !ator.suporte) return true
+    return (await this.abertura.produto?.(ator)) === true
+  }
+
+  private async exigirAberto(ator: Ator): Promise<void> {
+    if (!(await this.aberto(ator))) throw new CenariosFechadosError()
   }
 
   private async espacoDe(ator: Ator, espacoId: string, oque = 'O espaço'): Promise<Espaco> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const espaco = await this.repo.espaco(espacoId)
     if (!espaco || !podeNoEspaco(espaco, ator)) throw new CenarioNaoEncontradoError(oque)
-    return espaco
+    return this.comACotaDeAgora(espaco)
+  }
+
+  private get cotaDaConta(): number {
+    return this.abertura.cotaDaContaBytes ?? LIMITES_DOS_CENARIOS.bytesDaConta
+  }
+
+  /** A cota configurada vale também para o espaço que já existia com outra. */
+  private async comACotaDeAgora(espaco: Espaco): Promise<Espaco> {
+    if (espaco.tipo !== 'conta' || espaco.limiteBytes === this.cotaDaConta) return espaco
+    await this.repo.definirLimiteDaConta(espaco.id, this.cotaDaConta)
+    return { ...espaco, limiteBytes: this.cotaDaConta }
   }
   private async bibliotecaDe(ator: Ator, id: string) {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const biblioteca = await this.repo.biblioteca(id)
     if (!biblioteca) throw new CenarioNaoEncontradoError('A biblioteca')
     const espaco = await this.espacoDe(ator, biblioteca.espacoId, 'A biblioteca')
     return { biblioteca, espaco }
   }
   private async mundoDe(ator: Ator, id: string) {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const mundo = await this.repo.mundo(id)
     if (!mundo) throw new CenarioNaoEncontradoError('O mundo')
     const espaco = await this.espacoDe(ator, mundo.espacoId, 'O mundo')
+    // O mundo de um irmão responde "não existe", como o de outra conta.
+    if (!podeNoMundo(mundo, espaco, ator)) throw new CenarioNaoEncontradoError('O mundo')
     return { mundo, espaco }
   }
   private async cenarioDe(ator: Ator, id: string) {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const cenario = await this.repo.cenario(id)
     if (!cenario) throw new CenarioNaoEncontradoError('O cenário')
     const { mundo, espaco } = await this.mundoDe(ator, cenario.mundoId)
@@ -207,10 +235,12 @@ export class CenariosService {
 
   /** Os espaços de quem pede: o da conta e, para a equipe, o da equipe. Cria na primeira vez. */
   async espacos(ator: Ator): Promise<EspacoView[]> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const agora = this.clock()
     const lista = [
-      await this.repo.espacoDaConta(ator.contaId, LIMITES_DOS_CENARIOS.bytesDaConta, agora),
+      await this.comACotaDeAgora(
+        await this.repo.espacoDaConta(ator.contaId, this.cotaDaConta, agora),
+      ),
     ]
     if (equipeNaPropriaConta(ator))
       lista.push(await this.repo.espacoDaEquipe(LIMITES_DOS_CENARIOS.bytesDaEquipe, agora))
@@ -327,6 +357,55 @@ export class CenariosService {
       termos,
       ...(filtro.pasta !== undefined ? { pasta: filtro.pasta } : {}),
       ...(filtro.digest !== undefined ? { digest: filtro.digest } : {}),
+      inicio,
+      limite,
+    })
+    return {
+      ...pagina,
+      proximo: inicio + pagina.itens.length < pagina.total ? String(inicio + limite) : null,
+    }
+  }
+
+  /**
+   * A busca dos agentes: modelos de TODAS as bibliotecas do espaço, por nome, pasta, etiqueta e
+   * tamanho (pela caixa guardada de cada modelo), ou só os ids pedidos (o orçamento de um cenário).
+   */
+  async modelosNoEspaco(
+    ator: Ator,
+    espacoId: string,
+    filtro: {
+      busca?: string
+      pasta?: string
+      etiqueta?: string
+      ids?: string
+      alturaMin?: number
+      alturaMax?: number
+      ladoMin?: number
+      ladoMax?: number
+      cursor?: string
+      limite?: number
+    },
+  ): Promise<{ itens: Modelo[]; total: number; proximo: string | null }> {
+    await this.espacoDe(ator, espacoId)
+    const inicio = Math.max(0, Number(filtro.cursor ?? 0) || 0)
+    const limite = Math.min(LIMITES_DOS_CENARIOS.paginaDeModelos, Math.max(1, filtro.limite ?? 60))
+    const termos = normalizarBusca(filtro.busca ?? '')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 8)
+    const faixa = (min?: number, max?: number) =>
+      min !== undefined || max !== undefined
+        ? { ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}) }
+        : undefined
+    const altura = faixa(filtro.alturaMin, filtro.alturaMax),
+      lado = faixa(filtro.ladoMin, filtro.ladoMax)
+    const pagina = await this.repo.modelosNoEspaco(espacoId, {
+      termos,
+      ...(filtro.pasta !== undefined ? { pasta: filtro.pasta } : {}),
+      ...(filtro.etiqueta !== undefined ? { etiqueta: filtro.etiqueta } : {}),
+      ...(filtro.ids !== undefined ? { ids: filtro.ids.split(',') } : {}),
+      ...(altura ? { altura } : {}),
+      ...(lado ? { lado } : {}),
       inicio,
       limite,
     })
@@ -468,7 +547,7 @@ export class CenariosService {
     id: string,
     dados: { nome?: string; pasta?: string; etiquetas?: string[] },
   ): Promise<Modelo> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const modelo = await this.repo.modelo(id)
     if (!modelo) throw new CenarioNaoEncontradoError('O modelo')
     await this.bibliotecaDe(ator, modelo.bibliotecaId)
@@ -618,7 +697,7 @@ export class CenariosService {
     id: string,
     dados: { nome?: string; pasta?: string; etiquetas?: string[]; repeticaoMetros?: number },
   ): Promise<Textura> {
-    this.exigirAberto(ator)
+    await this.exigirAberto(ator)
     const atual = await this.repo.textura(id)
     if (!atual) throw new CenarioNaoEncontradoError('O chão')
     await this.bibliotecaDe(ator, atual.bibliotecaId)
@@ -670,8 +749,10 @@ export class CenariosService {
   // ---- mundos -------------------------------------------------------------
 
   async mundos(ator: Ator, espacoId: string): Promise<MundoView[]> {
-    await this.espacoDe(ator, espacoId)
-    return (await this.repo.mundos(espacoId)).map(mundoView)
+    const espaco = await this.espacoDe(ator, espacoId)
+    return (await this.repo.mundos(espacoId))
+      .filter((mundo) => podeNoMundo(mundo, espaco, ator))
+      .map(mundoView)
   }
 
   async criarMundo(ator: Ator, espacoId: string, nome: string): Promise<MundoView> {
@@ -759,13 +840,17 @@ export class CenariosService {
     }
   }
 
+  /** Sem o documento: a oficina pergunta isto a cada 4 s (edição ao vivo). As mesmas conferências
+   * do `cenarioDe` (aberto, espaço, mundo do perfil), lendo só a revisão e as pilhas. */
   async historico(ator: Ator, id: string): Promise<ResumoDoHistorico> {
-    const { cenario } = await this.cenarioDe(ator, id)
-    const pilhas = await this.repo.pilhasDoHistorico(id)
+    await this.exigirAberto(ator)
+    const resumo = await this.repo.resumoDoHistorico(id)
+    if (!resumo) throw new CenarioNaoEncontradoError('O cenário')
+    await this.mundoDe(ator, resumo.mundoId)
     return {
-      revisao: cenario.revisao,
-      desfazer: pilhas.passado.length,
-      refazer: pilhas.futuro.length,
+      revisao: resumo.revisao,
+      desfazer: resumo.pilhas.passado.length,
+      refazer: resumo.pilhas.futuro.length,
     }
   }
 
@@ -839,10 +924,18 @@ export class CenariosService {
       throw new CenarioDesatualizadoError(cenario.revisao)
     const documento = await this.documentoNaRevisao(ator, id, pedido.revisao)
     const comandos = inverterLote(documento, cenario.documento)
-    await this.editarCenario(ator, id, {
-      ...pedido,
-      comandos: comandos.length ? comandos : [{ tipo: 'cenario.restaurar', documento }],
-    })
+    // Voltar a uma versão do próprio histórico não é autoria: não passa pelas faixas.
+    await this.aplicarMudanca(
+      ator,
+      id,
+      {
+        ...pedido,
+        comandos: comandos.length ? comandos : [{ tipo: 'cenario.restaurar', documento }],
+      },
+      undefined,
+      undefined,
+      false,
+    )
     return this.abrirCenario(ator, id)
   }
 
@@ -859,12 +952,26 @@ export class CenariosService {
     return this.aplicarMudanca(ator, id, lote, undefined, recursos)
   }
 
+  private async exigirFamilia(ator: Ator, id: FamiliaDaOficinaId): Promise<void> {
+    const familia = familiaDaOficina(id)!
+    if (!(await this.faixasDe(ator)).includes(familia.faixa))
+      throw new CenarioFerramentaTrancadaError([familia])
+  }
+
+  /** As faixas de ferramentas de quem pede: todas para a equipe, só o básico sem a conferência. */
+  async faixasDe(ator: Ator): Promise<readonly string[]> {
+    if (ator.equipe && !ator.suporte) return FAIXAS_DA_OFICINA
+    return (await this.abertura.faixas?.(ator)) ?? ['basic']
+  }
+
   private async aplicarMudanca(
     ator: Ator,
     id: string,
     lote: { revisaoEsperada: number; comandos: ComandoDeCenario[]; operacaoId: string },
     movimento?: MovimentoDoHistorico,
     recursos?: { espacoId: string; conferidos: readonly ConferenciaDeBlob[] },
+    /** Desfazer, refazer e voltar a uma versão repõem o que já foi aceito: não são autoria. */
+    autoria = movimento === undefined,
   ): Promise<{ revisao: number }> {
     const { cenario, espaco } = await this.cenarioDe(ator, id)
     if (recursos && recursos.espacoId !== espaco.id) throw new CenarioNaoEncontradoError('O espaço')
@@ -913,6 +1020,15 @@ export class CenariosService {
       if (erro instanceof Error && erro.name === 'ZodError')
         throw new CenarioInvalidoError(['O lote tem um comando fora do formato'])
       throw erro
+    }
+    // A faixa do posto: o lote não cria nem muda uma ferramenta trancada (o agente também não).
+    if (autoria && !(ator.equipe && !ator.suporte)) {
+      const trancadas = familiasTrancadas(
+        cenario.documento,
+        depois.documento,
+        await this.faixasDe(ator),
+      )
+      if (trancadas.length) throw new CenarioFerramentaTrancadaError(trancadas)
     }
     const gravado = await this.repo.gravarLote(
       {

@@ -1,0 +1,839 @@
+bun test v1.3.11 (af24e281)
+
+src\modes\BlocksMode.test.tsx:
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+
+(pass) BlocksMode × preview no estreito > a aba de preview sobrevive a showPreview=false [375.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > deriva blocksState da IR ao abrir direto no modo Blocos [46.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > não marca projeto vazio como sujo só para criar workspace vazio
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > reconstrói os blocos quando o blocksState salvo está vazio mas o IR tem conteúdo [47.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > reconstrói os blocos quando a IR tem conteúdo somente em Meus moldes [32.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > NÃO deriva nada enquanto a partição real hidrata (pending) [62.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > recovery da corrida da Ponte funciona no StrictMode e deriva blocos DEFASADOS do CÓDIGO [125.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > recovery da Ponte não substitui blocos válidos por código com erro de sintaxe [94.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+
+(pass) BlocksMode > recovery da Ponte não substitui blocos válidos por IR semanticamente inválida [94.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13662:22)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13676:11)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13676:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13745:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15103:13)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16667:15)
+      at performWorkOnRootViaSchedulerTask (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:18957:7)
+      at flushActQueue (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react@19.2.6\node_modules\react\cjs\react.development.js:590:34)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react@19.2.6\node_modules\react\cjs\react.development.js:884:10)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\@testing-library+react@16.3.2+1dfe85a577ad90cf\node_modules\@testing-library\react\dist\act-compat.js:46:25)
+      at renderRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\@testing-library+react@16.3.2+1dfe85a577ad90cf\node_modules\@testing-library\react\dist\pure.js:189:18)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\modes\BlocksMode.test.tsx:354:5)
+
+(pass) BlocksMode > rede de segurança no StrictMode: sem IR e sem partição, deriva blocos do CÓDIGO sem sujar [78.00ms]
+
+src\modes\bridgeReverseParse.test.ts:
+(pass) runBridgeReverseParse > devolve source map sem reparsar quando os arquivos ja vieram da IR atual
+(pass) runBridgeReverseParse > múltiplas pilhas JS (vários statements) batem com a IR → generated-match, sem reconstruir blocos
+(pass) runBridgeReverseParse > reparseia arquivos editados e preserva extensoes instaladas
+(pass) runBridgeReverseParse > arquivos editados produzem IR NOVO e distinto da IR atual (não pode ser dropado)
+(pass) runBridgeReverseParse > rejeita IR semanticamente inválida e mantém os blocos anteriores como fonte válida [16.00ms]
+
+src\modes\bridgeStaleGuard.test.ts:
+(pass) isReverseParseResultStale > não é obsoleto quando requestId casa e o epoch não avançou
+(pass) isReverseParseResultStale > é obsoleto quando o lado-código postou um pedido mais novo (requestId não casa)
+(pass) isReverseParseResultStale > é obsoleto quando uma edição de BLOCO avançou o epoch durante o reparse
+(pass) isReverseParseResultStale > é obsoleto quando AMBOS divergem (pedido novo + edição de bloco)
+(pass) isReverseParseResultStale > é obsoleto quando o aluno continua digitando antes da resposta do worker
+(pass) isReverseParseResultStale > um único reparse aplicado (epoch igual no post e na chegada) não é dropado
+
+src\modes\pro\dependencyDeclarations.test.ts:
+(pass) índice das dependências instaladas > aceita a dimensão real dos tipos Phaser sem carregar o catálogo JSON nem scripts [16.00ms]
+(pass) índice das dependências instaladas > recusa arquivo excessivo e cancela ao trocar de projeto [15.00ms]
+
+src\modes\pro\fsDiff.test.ts:
+(pass) computeFsDiff > detecta arquivos novos com mkdir dos pais
+(pass) computeFsDiff > reescreve só conteúdo alterado, sem mkdir
+(pass) computeFsDiff > ignora arquivos idênticos
+(pass) computeFsDiff > remove arquivos que sumiram
+(pass) computeFsDiff > poda a pasta quando seu ÚLTIMO arquivo é removido
+(pass) computeFsDiff > poda da pasta mais profunda para a mais rasa
+(pass) computeFsDiff > NÃO poda a pasta se ainda resta outro arquivo nela
+(pass) computeFsDiff > poda só a subpasta esvaziada, preservando a pasta-pai com outro arquivo
+(pass) computeFsDiff > não poda pasta que passou a ter arquivo novo (mover arquivo entre pastas)
+(pass) computeFsDiff — transição arquivo↔diretório (removeFirst) > por padrão (sem transição) removeFirst é false
+(pass) computeFsDiff — transição arquivo↔diretório (removeFirst) > arquivo→diretório no mesmo caminho: caminho em conflito vai p/ removeFirstPaths
+(pass) computeFsDiff — transição arquivo↔diretório (removeFirst) > diretório→arquivo no mesmo caminho: a pasta antiga vai p/ removeFirstPaths (não rmdirs)
+(pass) computeFsDiff — transição arquivo↔diretório (removeFirst) > renomeio sem colisão de caminho NÃO marca removeFirst
+
+src\modes\pro\proAssetSync.test.ts:
+(pass) mounts real bytes and no assets are rewritten by code edits [15.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o mesmo coordenador monta os módulos de cenário e retira só as projeções ao remover o último [625.00ms]
+(pass) new terminal image files are retained in the durable library at their original public path [16.00ms]
+(pass) a retry after a partial write preserves one terminal conflict copy without duplicating it
+(pass) shell edits become durable assets; conflicting edits preserve both versions [16.00ms]
+(pass) deleting a projection restores it; deleting through Materials removes only owned files
+(pass) cancellation prevents writes and no preexisting file is overwritten [15.00ms]
+
+src\modes\pro\ProCandidatePreview.test.tsx:
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://runtime.test/v1/artifacts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/index.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14592:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+
+(pass) remote selection keeps one game document and never builds or replaces the current project [31.00ms]
+(pass) expired artifacts render recovery state and invoke the owner without any iframe
+(pass) ephemeral stores copy snapshots, isolate instances, preserve literal keys and discard all progress
+
+src\modes\pro\proConsoleBridge.test.ts:
+(pass) proConsoleBridge — script injetado > embute o targetOrigin do host via JSON (nunca interpolação crua) + marker + guard
+(pass) proConsoleBridge — isProConsoleMessage > aceita a forma válida (todos os kinds do bridge)
+(pass) proConsoleBridge — isProConsoleMessage > rejeita source/kind/parts fora do contrato
+(pass) proConsoleBridge — isProConsoleMessage > rejeita contagem de parts acima do teto (+1 da parte-resumo)
+
+src\modes\pro\proFsSync.test.ts:
+(pass) fila de sincronização com filesystem real > flush importa manifesto/lock e arquivos do terminal antes de persistir [15.00ms]
+(pass) fila de sincronização com filesystem real > renomeação/exclusão pelo shell e edição no editor convergem nas duas direções
+(pass) fila de sincronização com filesystem real > editores concorrentes preservam recuperação no disco e no documento [16.00ms]
+(pass) fila de sincronização com filesystem real > uma escrita tardia do terminal é detectada antes de sobrescrever
+(pass) fila de sincronização com filesystem real > retries a partial write without duplicating recovery or discarding editor content [16.00ms]
+(pass) fila de sincronização com filesystem real > troca de projeto cancela aplicação e escrita pendentes
+(pass) fila de sincronização com filesystem real > não remove dados ignorados que estavam dentro de pasta excluída
+(pass) fila de sincronização com filesystem real > does not acknowledge a save that would lose an unsupported terminal file [15.00ms]
+(pass) fila de sincronização com filesystem real > does not publish duplicate recovery files when an unsupported file blocks retries
+
+src\modes\pro\ProPreview.test.tsx:
+(pass) ProPreview — install órfão no cancelamento > repairs before remote execution, preserves Undo until explicit retry and survives StrictMode [62.00ms]
+(pass) ProPreview — install órfão no cancelamento > blocks legacy local execution without a host and accepts the separate authenticated Full callback [32.00ms]
+(pass) ProPreview — install órfão no cancelamento > uses the supplied remote executor without COEP or a WebContainer mount [15.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://runtime.test/v1/artifacts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/index.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14592:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16667:15)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+
+(pass) ProPreview — install órfão no cancelamento > switches only the game document while retaining the local dev-server and mounted controller [31.00ms]
+(pass) ProPreview — install órfão no cancelamento > keeps a mount error visible until an explicit retry, without remounting in a loop [47.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16667:15)
+      at performWorkOnRootViaSchedulerTask (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:18957:7)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+
+(pass) ProPreview — install órfão no cancelamento > fase ready: o iframe do dev-server; Atualizar (pela store) REMONTA o iframe [63.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-um.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16667:15)
+      at performWorkOnRootViaSchedulerTask (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:18957:7)
+
+(pass) ProPreview — install órfão no cancelamento > espelha o console do app no Console da IDE — só da origem do dev-server [62.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-um.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16667:15)
+      at performWorkOnRootViaSchedulerTask (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:18957:7)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-um.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-dois.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14821:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15102:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16667:15)
+      at performWorkOnRootViaSchedulerTask (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:18957:7)
+
+(pass) ProPreview — install órfão no cancelamento > Rodar de novo mata o dev atual e re-roda o ciclo; Parar mata e deixa o Rodar rápido [141.00ms]
+(pass) ProPreview — install órfão no cancelamento > mata o npm install se a instância desmontar antes da corrida resolver [31.00ms]
+
+src\modes\pro\proStorageHost.test.ts:
+(pass) only the current frame, origin, revision and instance receive a private storage port
+(pass) storage validates message bounds and preserves literal prototype keys without pollution [16.00ms]
+(pass) writes serialize and rejected persistence never changes the readable snapshot or acknowledges success [15.00ms]
+
+src\modes\pro\reconcileProTree.test.ts:
+(pass) reconciliação terminal/editor > incorpora install, criação, rename e exclusão enquanto preserva uma edição independente
+(pass) reconciliação terminal/editor > preserva as duas versões concorrentes em arquivos persistíveis
+(pass) reconciliação terminal/editor > edição contra exclusão no editor não perde a versão editada
+(pass) reconciliação terminal/editor > edição contra exclusão no terminal não perde a versão editada
+(pass) reconciliação terminal/editor > conflito arquivo/pasta preserva a subárvore inteira
+(pass) reconciliação terminal/editor > edições idênticas não criam conflito e não sobrescreve uma recuperação anterior
+
+src\modes\pro\RemoteProPreview.test.tsx:
+(pass) preview Pro remoto > withdraws a ready frame and cancels work when its author loses the lease [16.00ms]
+(pass) preview Pro remoto > does not resurrect a previous author result for the same project id
+(pass) preview Pro remoto > compila no adapter e executa o HTML em iframe isolado [31.00ms]
+(pass) preview Pro remoto > não compila a cada tecla e usa a versão atual ao executar alterações [62.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://runtime.test/v1/artifacts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/index.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13662:22)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13745:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14591:11)
+      at recursivelyTraverseMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14576:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14883:11)
+      at flushMutationEffects (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17979:13)
+      at commitRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:17953:9)
+      at commitRootWhenReady (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16824:7)
+      at performWorkOnRoot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:16722:15)
+      at performWorkOnRootViaSchedulerTask (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:18957:7)
+      at performWorkUntilDeadline (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\scheduler@0.27.0\node_modules\scheduler\cjs\scheduler.development.js:45:48)
+
+(pass) preview Pro remoto > keeps the last compiled artifact on build failure, without leaking it to another project [47.00ms]
+(pass) preview Pro remoto > Parar esconde o resultado e aborta o build em voo; Rodar compila de novo [125.00ms]
+
+src\modes\pro\useWebContainerSync.test.tsx:
+(pass) posse e cancelamento do filesystem Pro > StrictMode repete os efeitos sem duplicar a montagem nem perder a posse [31.00ms]
+(pass) posse e cancelamento do filesystem Pro > não libera o container enquanto a montagem da instância desmontada ainda escreve [203.00ms]
+(pass) posse e cancelamento do filesystem Pro > troca de projeto aguarda a montagem antiga antes de limpar e montar o novo [109.00ms]
+
+src\modes\python\PythonClassicMode.test.ts:
+(pass) Python classic lease reconciliation is isolated from other editor module mocks [1234.00ms]
+
+src\modes\pro\workspace\commands.test.ts:
+(pass) resolves current availability before invoking a shared command
+
+src\modes\pro\workspace\model.test.ts:
+(pass) workspace Pro > explores one temporary tab and pins it before editing
+(pass) workspace Pro > does not reopen the last closed tab and remaps a directory coherently
+(pass) workspace Pro > rejects malformed preferences and removes stale paths
+(pass) workspace Pro > migra os três tamanhos antigos para [código, palco] e completa o que faltar
+(pass) workspace Pro > searches closed files literally, returns positions and bounds results
+(pass) workspace Pro > preserves source columns through Unicode case folding and all supported line endings
+(pass) workspace Pro > keeps line-local matches, exact truncation and long-line excerpts
+
+src\modes\pro\workspace\ProCodeTools.test.tsx:
+(pass) renders the file map incrementally and searches symbols beyond the initial page [219.00ms]
+(pass) maps a normalized Python editor cursor to the unchanged saved source for references and symbols [110.00ms]
+(pass) loads an already open symbols panel when the language session becomes ready [890.00ms]
+(pass) keeps the latest reference search when an older request finishes afterwards [94.00ms]
+(pass) keeps every reference reachable through bounded pages and resets a new search [906.00ms]
+(pass) discards symbols from a replaced language session and loads the replacement [110.00ms]
+(pass) shows a symbols failure and clears it when the language session recovers [140.00ms]
+(pass) ignores an old reference resolve after file A → B → A [16.00ms]
+(pass) ignores an old reference reject after file A → B → A
+(pass) does not reopen references when a pending search completes after dismissal [94.00ms]
+(pass) keeps syntactic symbols for an unchanged file and discards an old response after editing [656.00ms]
+(pass) keeps the expanded file map window when an edit refreshes the symbols of the same file [109.00ms]
+
+src\modes\pro\workspace\ProDock.test.ts:
+(pass) origem dos problemas Pro > deduplicates the same diagnostic and rejects locations from another source revision [16.00ms]
+(pass) origem dos problemas Pro > invalidates cached hashes when a node is replaced or reused with new text
+
+src\modes\pro\workspace\ProDock.view.test.tsx:
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > JavaScript: Mensagens do jogo · Problemas (com a contagem) · Terminal avançado, em abas de verdade [15.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: Problemas · Experimentar comandos · Mensagens do programa (sem terminal)
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens [328.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: esconder "Mensagens do programa" pelo menu ⋯ não leva o Experimentar comandos junto
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > cada problema vira um cartão: lugar, a dica como texto principal, ir para a linha e pedir dica
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > sem problemas, a aba ganha o ✓ e o texto convida a rodar o jogo [16.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > sem a análise pronta (ainda analisando, ou ela falhou) não há ✓: zero problemas não é "tudo certo"
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Mensagens: filtros Tudo · Avisos · Erros sobre o console da instância [16.00ms]
+
+src\modes\pro\workspace\ProEditorStrip.test.tsx:
+(pass) a faixa única sobre o código (redesenho do Pro, 11/2026) > abas com ladrilho e nome curto; trocar, fixar e fechar passam pelo editor
+(pass) a faixa única sobre o código (redesenho do Pro, 11/2026) > "Arrumar código" chama o formatador do editor e respeita quem não tem formatador [16.00ms]
+(pass) a faixa única sobre o código (redesenho do Pro, 11/2026) > "Mostrar o jogo" só existe em "Só o código"
+(pass) a faixa única sobre o código (redesenho do Pro, 11/2026) > o menu "Mais" reúne o que eram cinco faixas: mapa, ir para um arquivo, onde é usado, trocar nome, espaços, mostrar na lista, fixar, fechar as outras, todas as ações [46.00ms]
+(pass) a faixa única sobre o código (redesenho do Pro, 11/2026) > sem as ferramentas prontas, os itens que dependem delas ficam desligados [16.00ms]
+
+src\modes\pro\workspace\ProNavigator.test.tsx:
+(pass) navegação do projeto > finds content in closed files and opens the existing Materials panel [344.00ms]
+
+src\modes\pro\workspace\ProWorkspaceLayout.test.tsx:
+(pass) layout contínuo do Pro > preserva código, prévia, Zappy e gaveta pelos três tamanhos e por toda arrumação [47.00ms]
+(pass) layout contínuo do Pro > o trilho troca a vista do painel (e o fecha ao apertar de novo); no tablet é uma gaveta [31.00ms]
+(pass) layout contínuo do Pro > abrir já no tablet começa com a gaveta FECHADA (ela cobriria o código) [16.00ms]
+(pass) layout contínuo do Pro > no celular há UM studio-run e no máximo UM studio-stop, sempre no que está visível [15.00ms]
+(pass) layout contínuo do Pro > registra o revealStage que a Topbar chama junto com Rodar: sai de "Só o código" [16.00ms]
+(pass) layout contínuo do Pro > um pedido de código revela o editor sem remontá-lo nem desfazer uma escolha posterior [31.00ms]
+
+src\modes\pro\workspace\useProWorkspace.test.tsx:
+(pass) retomada do workspace > coalesces rapid resizing while a preference write is in flight [500.00ms]
+(pass) retomada do workspace > a delayed read never replaces navigation already made by the learner [110.00ms]
+(pass) retomada do workspace > restores scoped preferences and reports a failure independently of saving the game [15.00ms]
+(pass) retomada do workspace > does not assume local identity for hosts without local persistence
+(pass) preserves a tab remap published before the renamed tree arrives
+
+ 134 pass
+ 0 fail
+ 571 expect() calls
+Ran 134 tests across 24 files. [11.58s]

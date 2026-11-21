@@ -1,0 +1,90 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "37d8622edfc567c13764390f0e2789a87225a0a6b2018b7e3fef138946dd5fdd"
+  },
+  {
+    "file": "biome.txt",
+    "sha256": "cbec8235e8fd1c14173c0961d49d43d30273fa10fb8cdeb564785a1483f6e393"
+  },
+  {
+    "file": "classic-shell.txt",
+    "sha256": "c8a2eacf859ab2c9d37e688ce001bc001a03cb3f82433e124d599ed251eb632b"
+  },
+  {
+    "file": "components.txt",
+    "sha256": "7629517be69ecc7646a65d83a9e150d3dd6d4367a81450d6c089f66dbbcb6c36"
+  },
+  {
+    "file": "diagnostico-regressao.txt",
+    "sha256": "a7986bf7c5ea4d1a539f5905537e43f78beeedd26e86d58b215311e2c6cd9d4d"
+  },
+  {
+    "file": "fontes-e-imports.json",
+    "sha256": "9055b3724887ffe9f82383a55cde8e4d29614f0a4f45a7ee9e12b5a963f3b21c"
+  },
+  {
+    "file": "fontes.json",
+    "sha256": "851e58e40246064e62903204031c0cd80cc2f111c30bea9fce8bb31ef436bb8a"
+  },
+  {
+    "file": "gates.json",
+    "sha256": "419f2341737913ef1dc55cd681e1bd51df24be7e0098699747e92bd070a8578c"
+  },
+  {
+    "file": "generated-molda.txt",
+    "sha256": "f1b5cb24359d3c6f89491e766affc645cb0dad255380bd30739290ce407bb1ab"
+  },
+  {
+    "file": "generated-motor.txt",
+    "sha256": "aba617644503ef6dccd4b6bc546aa4e9f0c7437b6324233dab7fad4c4b7ec8f7"
+  },
+  {
+    "file": "generated-studio.txt",
+    "sha256": "01a3b28276e6eeb2fca111dd9532c78ddda9d93811e29b7f4bde5d765cc20ac3"
+  },
+  {
+    "file": "gerados-comparacao.json",
+    "sha256": "d95a9bf780a9a751e55e6b4b83d45212038a7ef81f351188cdabe3a132f4074f"
+  },
+  {
+    "file": "integration.txt",
+    "sha256": "fdcadb5d0d159210adf099341ad0b2fbe92281bc59a38ce7b387a2b039e50f0e"
+  },
+  {
+    "file": "library.txt",
+    "sha256": "9d953c70a52bc3a968e7f728446f91326bdca36d7bffe3b1704ad638ef0db351"
+  },
+  {
+    "file": "observer-environment.txt",
+    "sha256": "cb585d21b5358e17369be9fc8b06d5cb1d4d9660e2335aed18da2012d3f51fb4"
+  },
+  {
+    "file": "pinta.txt",
+    "sha256": "8ff106ed3ea4e13241228d61e4bf8df015a8b6fe6ed1de9e927e7b913b96b635"
+  },
+  {
+    "file": "relogio-verde.txt",
+    "sha256": "dd16eab10d0e3a9aec81f103d99d9a4bc7c5510c232dcf7aa7a2fb74880c260a"
+  },
+  {
+    "file": "relogio-vermelho.txt",
+    "sha256": "2fff477ff1bbf65aa35e7ca539cbd6052a22916343210644697ab77395179eae"
+  },
+  {
+    "file": "runtime-profile.txt",
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+  },
+  {
+    "file": "scenes.txt",
+    "sha256": "24d2156f8217221632c537e4a4b4e8ebc8aa20e4d8ed065eb3889de890d92446"
+  },
+  {
+    "file": "tentativas.json",
+    "sha256": "65d46a67b77866fd79ea307ed899db2ad0c1a268c7537bfda9bac4ec1bdfc3a4"
+  },
+  {
+    "file": "tipos-remotos-falha-inicial.txt",
+    "sha256": "b6809b3d84d99c482b4c48e634abab8e8eba8cf965f5dce2bdcda77557c602aa"
+  }
+]

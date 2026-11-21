@@ -1259,7 +1259,7 @@ export const COPY = {
     title: 'Baixar',
     editableFile: 'Desenho editável (.pinta.json)',
     editableMissingTileset:
-      'Não encontrei as peças usadas por este mapa. Sem elas, o arquivo não funcionaria.',
+      'Não consegui reunir os desenhos deste cenário. Confira as peças e os destinos das portas.',
     currentFrame: 'Quadro atual (PNG)',
     currentFrameSvg: 'Quadro atual (SVG)',
     image: 'Imagem (PNG)',

@@ -1,0 +1,30 @@
+
+Running 22 tests using 1 worker
+
+(node:18980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e-runtime\python-background-focus.spec.ts:28:3 › pinta-world-1x: a background renderer paints while the host retains the keyboard (2.8s)
+  ✓   2 e2e-runtime\python-background-focus.spec.ts:28:3 › turtleDrawing: a background renderer paints while the host retains the keyboard (4.6s)
+  ✓   3 e2e-runtime\python-background-focus.spec.ts:28:3 › raylibGame: a background renderer paints while the host retains the keyboard (2.6s)
+  ✓   4 e2e-runtime\python-background-focus.spec.ts:92:3 › classic-pgzeroGame: the real student-test runner drives the game without taking focus (3.2s)
+  ✓   5 e2e-runtime\python-background-focus.spec.ts:92:3 › classic-pinta-world-1x: the real student-test runner drives the game without taking focus (3.4s)
+  ✓   6 e2e-runtime\python-pinta-physics.spec.ts:10:5 › Pinta physics 1x checks all outlines in real browser Python (2.0s)
+  ✓   7 e2e-runtime\python-pinta-physics.spec.ts:10:5 › Pinta physics 2x checks all outlines in real browser Python (2.1s)
+  ✓   8 e2e-runtime\python-pinta-physics.spec.ts:10:5 › Pinta platform 1x checks all outlines in real browser Python (2.0s)
+  ✓   9 e2e-runtime\python-pinta-physics.spec.ts:10:5 › Pinta platform 2x checks all outlines in real browser Python (1.8s)
+  ✓  10 e2e-runtime\python-pinta-world.spec.ts:9:3 › Pinta world 1x renders and crosses doors in real browser Python (2.3s)
+  ✓  11 e2e-runtime\python-pinta-world.spec.ts:9:3 › Pinta world 2x renders and crosses doors in real browser Python (2.5s)
+pygame-ce no navegador: 57.9 fps (60, 59.9, 60, 58.5, 51)
+  ✓  12 e2e-runtime\python-pygame-performance.spec.ts:6:1 › Pygame-ce keeps a playable frame rate with a full tile map, alpha sprites and text (10.5s)
+  ✓  13 e2e-runtime\python-pygame.spec.ts:5:1 › Pygame-ce update(None) keeps the displayed pixels until a real refresh (2.5s)
+  ✓  14 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game pong runs with assets and input (2.2s)
+  ✓  15 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game space-shooter runs with assets and input (1.9s)
+  ✓  16 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game platformer runs with assets and input (1.8s)
+  ✓  17 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game monster-battle runs with assets and input (1.9s)
+  ✓  18 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game pirate-maker runs with assets and input (1.9s)
+  ✓  19 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game vampire-survivor runs with assets and input (2.0s)
+  ✓  20 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game pydew-valley runs with assets and input (1.9s)
+  ✓  21 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game python-monsters runs with assets and input (2.5s)
+  ✓  22 e2e-runtime\python-pygame.spec.ts:39:3 › Pygame-ce gallery game super-pirate-world runs with assets and input (1.9s)
+
+  22 passed (1.0m)

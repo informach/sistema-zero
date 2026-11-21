@@ -5,7 +5,7 @@ import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameThreeDPromptSummary } from './aiSummary'
 import { gameThreeDBlocks, gameThreeDToolboxCategory } from './blocks'
 import { gameThreeDManifest } from './manifest'
-import { GAME_3D_WITHOUT_PLATFORM_VARIANT, gameThreeDBootstrapVariant } from './platformKitVariant'
+import { gameThreeDRuntimeVariant } from './sceneVariant'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(gameThreeDManifest)
@@ -31,15 +31,11 @@ export const gameThreeDExtension: ExtensionDefinition = {
     toolboxCategory: gameThreeDToolboxCategory,
   },
   runtime: {
-    // O Kit Plataforma só entra quando o código usa um método dele (`platformKitVariant.ts`);
-    // sem contexto, o runtime completo.
-    loadBootstrapScript: async (context) => {
-      const runtime = await import('./runtime')
-      return gameThreeDBootstrapVariant(context) === GAME_3D_WITHOUT_PLATFORM_VARIANT
-        ? runtime.gameThreeDRuntimeWithoutPlatform
-        : runtime.gameThreeDRuntime
-    },
-    bootstrapVariant: gameThreeDBootstrapVariant,
+    // O Kit Plataforma e o cenário do Molda só entram quando o código usa um método deles
+    // (`platformKitVariant.ts`, `sceneVariant.ts`); sem contexto, o runtime completo.
+    loadBootstrapScript: async (context) =>
+      (await import('./runtime')).gameThreeDRuntimeForVariant(gameThreeDRuntimeVariant(context)),
+    bootstrapVariant: gameThreeDRuntimeVariant,
     lifecycle: GAME_3D_LIFECYCLE,
     // Os addons entram para "Criar o objeto … com o modelo" (.glb, com ossos próprios por
     // cópia via SkeletonUtils) e "Usar o céu 360°" (.hdr) — as MESMAS URLs pinadas do Jogo 3D Avançado (mesma origem do

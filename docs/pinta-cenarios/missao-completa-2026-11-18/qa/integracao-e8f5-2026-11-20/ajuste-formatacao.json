@@ -1,0 +1,6 @@
+{
+  "exportNamesAndOtherStatementsUnchanged": true,
+  "barrel": "packages/core/src/learning/index.ts",
+  "addedGeneratedExclusion": "!packages/studio-runtime/runtime/click-target.generated.mjs",
+  "generatedBytesUnchanged": true
+}

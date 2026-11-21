@@ -1,9 +1,12 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
-import { behaviorStatements } from '#ir'
+import { behaviorStatements, type JSStatement, normalizeSZIR } from '#ir'
+import { parseJS } from '../../parsers/js'
+import { buildIRFromWorkspace } from '../buildIR'
 import { withWorkspaceLoad } from '../loadFence'
 import { ensureBlocklyInitialized } from '../setup'
+import { buildWorkspaceStateFromIR } from '../workspaceState'
 import { irInFrame } from './frameTestUtils'
 
 interface ExtendsApi extends Blockly.Block {
@@ -450,3 +453,183 @@ function argsOf(ws: Blockly.Workspace): Array<Record<string, unknown>> {
     return rest
   })
 }
+
+describe('argsMutator — ajustar os espaços não refaz o que já está neles (20/11/2026)', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+  const call = (inputs: Record<string, unknown>, items: number) => ({
+    blocks: {
+      languageVersion: 0,
+      blocks: [
+        {
+          type: 'sz_js_call_function',
+          id: 'c',
+          fields: { NAME: 'f' },
+          extraState: { items },
+          inputs,
+        },
+      ],
+    },
+  })
+
+  it('o número digitado na sombra do argumento sobrevive à abertura do projeto', async () => {
+    // Até 20/11/2026 o ajuste do FINISHED_LOADING refazia o espaço e a sombra voltava a 0.
+    const ws = new Blockly.Workspace()
+    const state = call(
+      { ARG0: { shadow: { type: 'sz_val_number', id: 's', fields: { NUM: 7 } } } },
+      1,
+    )
+    withWorkspaceLoad(() => Blockly.serialization.workspaces.load(state, ws))
+    await flush()
+    const block = ws.getBlockById('c')
+    if (!block) throw new Error('a chamada não carregou')
+    const saved = Blockly.serialization.blocks.save(block)
+    expect(saved?.inputs?.ARG0?.shadow).toMatchObject({ id: 's', fields: { NUM: 7 } })
+  })
+
+  it('o ajuste depois da carga não desencaixa o valor de verdade do argumento', async () => {
+    // Desencaixar um bloco ainda não desenhado obrigava a cauda adiada a se desenhar
+    // (`deferredTail.ts`). Agora o valor nunca sai do lugar.
+    const ws = new Blockly.Workspace()
+    const state = call(
+      { ARG0: { block: { type: 'sz_val_text', id: 'v', fields: { TEXT: 'Ana' } } } },
+      1,
+    )
+    const unplugged: string[] = []
+    const original = Blockly.Block.prototype.setParent
+    Blockly.Block.prototype.setParent = function (
+      this: Blockly.Block,
+      parent: Blockly.Block | null,
+    ) {
+      if (parent === null && this.getParent()) unplugged.push(this.id)
+      return original.call(this, parent)
+    }
+    try {
+      withWorkspaceLoad(() => Blockly.serialization.workspaces.load(state, ws))
+      await flush()
+    } finally {
+      Blockly.Block.prototype.setParent = original
+    }
+    expect(unplugged).toEqual([])
+    expect(ws.getBlockById('c')?.getInput('ARG0')?.connection?.targetBlock()?.id).toBe('v')
+  })
+
+  it('com a função declarada, ganha os rótulos e os espaços que faltam, sem tocar no que existe', async () => {
+    const ws = new Blockly.Workspace()
+    const fn = ws.newBlock('sz_js_function') as ParamsApi
+    fn.setFieldValue('f', 'NAME')
+    fn.addParam_()
+    fn.addParam_()
+    fn.setFieldValue('nome', 'P0')
+    fn.setFieldValue('idade', 'P1')
+    const chamada = ws.newBlock('sz_js_call_function') as ArgsApi
+    chamada.setFieldValue('f', 'NAME')
+    chamada.syncShape_()
+    const primeiro = chamada.getInput('ARG0')?.connection?.targetBlock()
+    expect(primeiro?.isShadow()).toBe(true)
+    // Um terceiro parâmetro: o espaço novo entra no fim; o primeiro continua com a mesma sombra.
+    fn.addParam_()
+    fn.setFieldValue('ativo', 'P2')
+    chamada.syncShape_()
+    expect(chamada.getInput('ARG2')).toBeTruthy()
+    expect(chamada.getInput('ARG0')?.connection?.targetBlock()).toBe(primeiro)
+    const rotulos = [0, 1, 2].map((k) => chamada.getField(`ARG_LABEL${k}`)?.getValue())
+    expect(rotulos).toEqual(['nome:', 'idade:', 'ativo:'])
+    await flush()
+  })
+})
+
+describe('argsMutator — abrir o projeto não muda o programa (20/11/2026)', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+  function stripIds<T>(value: T): T {
+    if (Array.isArray(value)) return value.map(stripIds) as T
+    if (value && typeof value === 'object')
+      return Object.fromEntries(
+        Object.entries(value)
+          .filter(([key]) => key !== '__id')
+          .map(([key, child]) => [key, stripIds(child)]),
+      ) as T
+    return value
+  }
+
+  /** Abre o código como o editor abre: blocos da IR, carga cercada e os eventos processados. */
+  async function openAsEditor(code: string) {
+    const ir = normalizeSZIR({ html: [], css: [], js: parseJS(code), extensions: [] })
+    const ws = new Blockly.Workspace()
+    withWorkspaceLoad(() =>
+      Blockly.serialization.workspaces.load(
+        buildWorkspaceStateFromIR(ir) as unknown as Record<string, unknown>,
+        ws,
+      ),
+    )
+    await flush()
+    const program = (): JSStatement[] => stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
+    return { ws, expected: stripIds(behaviorStatements(ir)), program }
+  }
+
+  const chamada = (ws: Blockly.Workspace, nome: string): Blockly.Block => {
+    const block = ws
+      .getBlocksByType('sz_js_call_function', false)
+      .find((candidate) => candidate.getFieldValue('NAME') === nome)
+    if (!block) throw new Error(`sem a chamada de ${nome}`)
+    return block
+  }
+
+  it('a chamada com menos argumentos que a função continua com os mesmos argumentos', async () => {
+    // Era o Reino Zero Ultra: `loadStage(stage.id)` virava `loadStage(stage.id, 0)` segundos
+    // depois de abrir, o código mudava e a prévia recarregava no meio da partida.
+    const { ws, expected, program } = await openAsEditor(
+      'function salto(altura, forca) { console.log(altura, forca) }\nsalto(3)\n',
+    )
+    expect(program()).toEqual(expected)
+    // O rótulo do parâmetro aparece no espaço que existe; o que falta fica para o +.
+    const block = chamada(ws, 'salto')
+    expect(block.getField('ARG_LABEL0')?.getValue()).toBe('altura:')
+    expect(block.getInput('ARG1')).toBeNull()
+    ws.dispose()
+  })
+
+  it('a chamada sem argumentos continua sem argumentos', async () => {
+    const { ws, expected, program } = await openAsEditor(
+      'function pular(altura) { console.log(altura) }\npular()\n',
+    )
+    expect(program()).toEqual(expected)
+    ws.dispose()
+  })
+
+  it('o + completa o parâmetro que falta, com o rótulo dele, e a contagem fica', async () => {
+    const { ws, program } = await openAsEditor(
+      'function salto(altura, forca) { console.log(altura, forca) }\nsalto(3)\n',
+    )
+    const block = chamada(ws, 'salto') as Blockly.Block & { plus(): void }
+    block.plus()
+    expect(block.getField('ARG_LABEL1')?.getValue()).toBe('forca:')
+    expect(block.getInput('ARG1')?.connection?.targetBlock()?.isShadow()).toBe(true)
+    // Com todos os parâmetros, o + some; um evento de outro bloco não mexe na contagem.
+    expect(block.getInput('SZ_ARGS_CONTROLS')).toBeNull()
+    ws.newBlock('sz_val_number')
+    await flush()
+    const call = program().find((statement) => statement.type === 'callFunction')
+    expect(call).toMatchObject({
+      name: 'salto',
+      args: [
+        { type: 'num', value: 3 },
+        { type: 'num', value: 0 },
+      ],
+    })
+    ws.dispose()
+  })
+
+  it('a chamada nova, tirada da paleta, ainda ganha os espaços da função', async () => {
+    const { ws } = await openAsEditor('function salto(altura, forca) { console.log(altura) }\n')
+    const nova = ws.newBlock('sz_js_call_function') as Blockly.Block & { syncShape_(): void }
+    nova.setFieldValue('salto', 'NAME')
+    nova.syncShape_()
+    expect(nova.getInput('ARG1')).toBeTruthy()
+    ws.dispose()
+  })
+})

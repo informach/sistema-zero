@@ -56,6 +56,22 @@ export interface FiltroDeModelos {
   limite: number
 }
 
+/** A busca de modelos em TODAS as bibliotecas de um espaço (a dos agentes), com medidas. */
+export interface FiltroDeModelosNoEspaco {
+  /** Termos já normalizados; todos precisam aparecer. */
+  termos: readonly string[]
+  pasta?: string
+  etiqueta?: string
+  /** Só estes modelos (o orçamento de um cenário pergunta pelos que ele usa). */
+  ids?: readonly string[]
+  /** Altura do modelo em metros (max.y - min.y), pela caixa guardada. */
+  altura?: { min?: number; max?: number }
+  /** O maior lado no chão em metros (o maior entre largura e profundidade). */
+  lado?: { min?: number; max?: number }
+  inicio: number
+  limite: number
+}
+
 export interface LoteGravado {
   revisao: number
   /** Verdadeiro quando a mesma operação já tinha sido aplicada antes. */
@@ -131,6 +147,8 @@ export interface CenariosRepository extends ConjuntosRepository {
   /** O espaço único da equipe, criado na primeira vez. */
   espacoDaEquipe(limiteBytes: number, agora: Date): Promise<Espaco>
   espaco(id: string): Promise<Espaco | null>
+  /** Troca a cota do espaço de uma conta (a cota configurada vale também para os que já existem). */
+  definirLimiteDaConta(espacoId: string, limiteBytes: number): Promise<void>
 
   bibliotecas(espacoId: string): Promise<Biblioteca[]>
   biblioteca(id: string): Promise<Biblioteca | null>
@@ -158,6 +176,11 @@ export interface CenariosRepository extends ConjuntosRepository {
   modelos(
     bibliotecaId: string,
     filtro: FiltroDeModelos,
+  ): Promise<{ itens: Modelo[]; total: number }>
+  /** Modelos de todas as bibliotecas do espaço, na mesma ordem da listagem por biblioteca. */
+  modelosNoEspaco(
+    espacoId: string,
+    filtro: FiltroDeModelosNoEspaco,
   ): Promise<{ itens: Modelo[]; total: number }>
   modelo(id: string): Promise<Modelo | null>
   organizacao(bibliotecaId: string): Promise<{ pastas: string[]; etiquetas: string[] }>
@@ -251,6 +274,10 @@ export interface CenariosRepository extends ConjuntosRepository {
   /** A revisão que uma operação já aplicada produziu, ou nulo. */
   operacaoAplicada(cenarioId: string, operacaoId: string): Promise<number | null>
   pilhasDoHistorico(cenarioId: string): Promise<PilhasDoHistorico>
+  /** Só o mundo, a revisão e as pilhas, sem o documento: a consulta da edição ao vivo. */
+  resumoDoHistorico(
+    cenarioId: string,
+  ): Promise<{ mundoId: string; revisao: number; pilhas: PilhasDoHistorico } | null>
   inicioDoHistorico(cenarioId: string): Promise<number | null>
   passoDoHistorico(cenarioId: string, revisao: number): Promise<PassoDoHistorico | null>
   /** Resumos paginados; comandos só são lidos para desfazer, refazer ou restaurar. */

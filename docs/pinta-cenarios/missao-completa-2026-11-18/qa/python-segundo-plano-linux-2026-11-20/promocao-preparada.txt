@@ -1,0 +1,1 @@
+{"planSha256":"6735d1c917301fd7c1b6a4b744df38bc266c4cc55fdf9a6e82d145f4e8dccb00","distributionSha256":"28da7a969d5648eb590b51a362d3703dd87556388d813e75ae787839cd2f9a81","releaseManifestSha256":"29e2adfdfca8f2ab9cc77a34d010adb8832b1a9688a87539903dfb3667d8cc86","baselineAttested":true,"activated":false}

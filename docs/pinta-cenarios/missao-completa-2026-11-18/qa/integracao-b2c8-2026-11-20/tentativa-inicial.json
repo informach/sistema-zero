@@ -1,0 +1,52 @@
+[
+  {
+    "name": "generated-studio",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-generated-studio.log"
+  },
+  {
+    "name": "members-cenarios",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-members-cenarios.log"
+  },
+  {
+    "name": "bff-cenarios",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-bff-cenarios.log"
+  },
+  {
+    "name": "three-diagnostics",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-three-diagnostics.log"
+  },
+  {
+    "name": "components",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-components.log"
+  },
+  {
+    "name": "integration",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-integration.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-members-types.log"
+  },
+  {
+    "name": "runtime-profile",
+    "exit": 0,
+    "log": ".cache/pinta-b2c8-runtime-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 1,
+    "log": ".cache/pinta-b2c8-biome.log"
+  }
+]

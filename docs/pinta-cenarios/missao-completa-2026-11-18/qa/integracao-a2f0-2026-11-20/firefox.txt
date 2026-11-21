@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:32220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [firefox] › e2e\preview-shell.spec.ts:20:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (6.7s)
+  ✓  2 [firefox] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (9.8s)
+
+  2 passed (18.2s)

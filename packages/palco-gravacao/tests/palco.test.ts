@@ -63,6 +63,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   alternarJogo: async () => false,
   jogoCarregando: () => false,
   zoom: async () => {},
+  categoriaNoCaminho: () => [],
   ...patch,
 })
 
@@ -101,6 +102,12 @@ describe('verbos do palco', () => {
     })
     expect(agir('apontar jogo', jogos)[0]).toMatchObject({ alvo: { u: 0.5, v: 0.5 } })
     expect(() => agir('apontar jogo', [])).toThrow(/jogo pronto/)
+    expect(agir('tocar jogo 480 300', jogos)[0]).toMatchObject({ fazer: 'clicar' })
+    expect(agir('tocar jogo', jogos)[0]).toMatchObject({
+      fazer: 'clicar',
+      alvo: { u: 0.5, v: 0.5 },
+    })
+    expect(() => agir('tocar jogo', [])).toThrow(/jogo pronto/)
   })
 
   test('navegação, ampliação, livro e materiais pelos nomes da tela', () => {
@@ -214,6 +221,23 @@ describe('verbos do palco', () => {
     expect(() =>
       agir('encaixar "Voar" em "Quando clicar ou tocar"', jogos, pagina({ bloco: () => null })),
     ).toThrow(/Abra a categoria/)
+    // Um bloco da área (com o que tem dentro) vai para o espaço de outro: o então de um Se.
+    expect(
+      agir('mover "Se valor da variável temChave" para "Se não" no "então"', jogos, pagina()),
+    ).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="area:Se valor da variável temChave"]', u: 0.1, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 },
+      },
+      { fazer: 'continuar', acao: 'afastar de "Se valor da variável temChave"' },
+    ])
+    expect(
+      agir('mover "Se não" para "Quando personagem encostar em farol"', jogos, pagina())[0],
+    ).toMatchObject({ fazer: 'arrastar' })
+    expect(() =>
+      agir('mover "Se" para "Quando acontecer"', jogos, pagina({ bloco: () => null })),
+    ).toThrow(/área de código/)
     expect(agir('encaixar "Somar 1" abaixo de "Deixar o sprite"', jogos, pagina())).toEqual([
       {
         fazer: 'arrastar',
@@ -608,6 +632,34 @@ describe('verbos do palco', () => {
     expect(agir('abrir categoria Movimentos prontos', jogos, aberta)).toEqual([
       { fazer: 'clicar', alvo: toolbox('Movimentos prontos') },
     ])
+  })
+
+  test('abrir categoria com nome repetido segue o caminho pela linha de cada uma', () => {
+    // Na paleta 3D, a subcategoria Encostar fica dentro da categoria Encostar.
+    const linha = (n: number) => ({ seletor: `[data-palco-alvo="c${n}"]`, u: 0.5, v: 0.5 })
+    const caminho = (...estados: ('aberta' | 'fechada')[]) =>
+      pagina({
+        categoriaNoCaminho: () =>
+          estados.map((estado, i) => ({ estado, alvo: linha(i + 1), repetida: i > 0 })),
+      })
+    const texto = 'abrir categoria Jogo 3D > Encostar > Encostar'
+    // Jogo 3D já aberta, a Encostar de fora fechada: clica nela e pergunta o caminho de novo.
+    expect(agir(texto, jogos, caminho('aberta', 'fechada'))).toEqual([
+      { fazer: 'clicar', alvo: linha(2) },
+      { fazer: 'continuar', acao: texto },
+    ])
+    // A de fora aberta: agora a de dentro, pela linha dela, e o caminho termina.
+    expect(agir(texto, jogos, caminho('aberta', 'aberta', 'fechada'))).toEqual([
+      { fazer: 'clicar', alvo: linha(3) },
+    ])
+    // Tudo aberto: a mão só aponta a última.
+    expect(agir(texto, jogos, caminho('aberta', 'aberta', 'aberta'))).toEqual([
+      { fazer: 'apontar', alvo: linha(3), exato: true },
+    ])
+    // Aberta, mas sem a de dentro com esse nome: o Verificar plano diz qual falta.
+    expect(() => agir(texto, jogos, caminho('aberta', 'aberta'))).toThrow(
+      /Encostar" dentro de "Encostar/,
+    )
   })
 
   test('setas da tela: segurar e apontar no canto de baixo do jogo pronto e da prévia', () => {

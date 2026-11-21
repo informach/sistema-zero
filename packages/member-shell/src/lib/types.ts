@@ -1803,6 +1803,8 @@ export interface HubThreadView {
   lastActivityAt: string
   createdAt: string
   editedAt: string | null
+  /** Última atualização do jogo publicado pela criança (selo "Atualizado"); `null`/ausente = nunca. */
+  gameUpdatedAt?: string | null
 }
 
 /** Payload autoritativo da vitrine (members) — o BFF monta o post a partir dele. */

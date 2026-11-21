@@ -1,0 +1,971 @@
+Studio test selection: 920 files in 166 isolated processes
+Studio tests: src/state (70 files)
+bun test v1.3.11 (af24e281)
+
+src\state\blockAllowlist.test.ts:
+(pass) CORE_BLOCKLY_BLOCK_TYPES > contém todos os tipos de CORE_BLOCKS (inclusive blocos ocultos)
+(pass) CORE_BLOCKLY_BLOCK_TYPES > persiste as primitives profissionais sem extensão
+
+src\state\blockGenerationInput.test.ts:
+(pass) preserves the saved banner on load and uses the established banner for a new block edit [15.00ms]
+(pass) recovers saved document metadata when the lightweight load has no IR
+(pass) does not materialize a normalized shell for the standard generated document
+(pass) does not freeze the head of a brand new project created from the blank template [16.00ms]
+(pass) lets the title follow a rename when the saved head is the generated default
+(pass) still preserves a head the child customized beyond the title
+(pass) recovers inline placement and the actual absence of a banner
+(pass) reads the head of a deep document without rebuilding its body or parsing JavaScript
+(pass) preserves saved data and rejects metadata recovery when the parser fails
+
+src\state\blocksStateSanitize.test.ts:
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > preserva a versão válida das áreas de comportamento e recusa versões desconhecidas [15.00ms]
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > converte a versão antiga antes do host, preservando layout e IDs [172.00ms]
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > preserva uma classe completa (extends, construtor com params, método, propriedades) [16.00ms]
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > preserva "Se/senão" com extraState do mutator (elseIf + hasElse)
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > o estado do exemplo "Invasores do Espaço" INTEIRO passa no sanitizador [16.00ms]
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > preserva sockets de valor com sombra (wrapper {shadow}) e extraState
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > preserva tempo e delta opcionais do loop de animação
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > preserva pilhas longas serializadas por next.block
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > descarta extraState de mutator que tentaria criar milhares de inputs
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > descarta extraState inesperado em blocos sem mutator conhecido
+(pass) sanitizeImportedBlocksState — aceita estado gerado pela Ponte > recusa o documento quando a partição de blocos excede o limite [31.00ms]
+(pass) canvas vazio e recusa de corrupção > aceita o workspace vazio sem fabricar blocos
+(pass) canvas vazio e recusa de corrupção > recusa estrutura corrompida sem substituir o layout
+
+src\state\bridgeSyncEpoch.test.ts:
+(pass) épocas da sincronização código⇄blocos (Ponte) > editar código na PONTE avança a época; noutros modos não
+(pass) épocas da sincronização código⇄blocos (Ponte) > markBridgeBlocksSynced é monotônico (nunca anda para trás)
+(pass) épocas da sincronização código⇄blocos (Ponte) > só retira a precedência do código quando os blocos alcançam a última edição
+(pass) épocas da sincronização código⇄blocos (Ponte) > ao atravessar host/servidor, preserva o código novo e descarta derivados antigos
+(pass) épocas da sincronização código⇄blocos (Ponte) > trocar/carregar projeto zera as épocas
+
+src\state\canonicalSourceMap.test.ts:
+(pass) maps retained CSS positions without changing the canonical map or reusing stale text [16.00ms]
+
+src\state\conversionBuild.test.ts:
+(pass) converted Three project builds real npm modules and keeps typed extras and asset paths [875.00ms]
+(pass) conversion rejects lossy exports before altering the project
+
+src\state\convertToPro.test.ts:
+(pass) convertClassicToProTree > leva o runtime de entrada para public/ e o carrega antes do script do aluno
+(pass) convertClassicToProTree > monta uma árvore Vite válida: index.html na raiz, assets em public/, refs absolutas
+(pass) convertClassicToProTree > preserva TypeScript e migra Three e extensões para módulos npm [47.00ms]
+(pass) convertClassicToProTree > rewrites inline and absolute module imports to the preserved typed source
+(pass) convertClassicToProTree > rejects mixed global/module files instead of copying divergent source or changing scope
+(pass) convertClassicToProTree > rejects dynamic imports in untouched global code before moving their target [16.00ms]
+(pass) sanitizeProjectForHost — coerção de modo (D2) > básico legado em mode 'code' carrega como 'bridge'
+(pass) sanitizeProjectForHost — coerção de modo (D2) > básico em mode 'blocks' permanece 'blocks'
+(pass) store: setMode + convertToPro > setMode('code') num projeto básico nunca cai em Código
+(pass) store: setMode + convertToPro > convertToPro gradua o projeto para pro (kind/mode/tree, zera ir/blocos)
+(pass) store: setMode + convertToPro > only converts after saving the complete original, retaining Pensa identity and CSS binary paths [16.00ms]
+(pass) store: setMode + convertToPro > failure to preserve the original leaves the current document intact
+(pass) store: setMode + convertToPro > an edit during original-copy persistence cancels conversion instead of losing that edit
+(pass) store: setMode + convertToPro > pro não volta para 'blocks' (setMode preso em Código)
+(pass) store: setMode + convertToPro > uma edição feita DURANTE o await da conversão não se perde (tree×conteúdo consistentes) [15.00ms]
+
+src\state\cssSourceCompatibility.test.ts:
+(pass) recognizes CSS property duplicates across letter case but preserves custom-property case
+(pass) recognizes reordered independent declarations without changing saved CSS
+(pass) commutes any two distinct properties that do not overlap (the "na mão" examples)
+(pass) keeps the order of properties that overlap through shorthands, aliases or logical sides
+(pass) does not equate changed values, selectors, rule order or missing properties
+(pass) preserves cascade order for shorthands, duplicate and case-insensitive property names
+(pass) does not claim equivalence for unqualified at-rules or distinct raw syntax
+
+src\state\devtools.test.ts:
+(pass) a janela da medida da aba Desempenho > guarda só os últimos 30 segundos e um jogo novo limpa as fatias
+(pass) a janela da medida da aba Desempenho > é uma por instância; esquecer faz a próxima começar do zero
+(pass) o resumo da janela > conta cada sequência de fatias lentas como UMA vez e acha o quadro mais lento
+(pass) o resumo da janela > jogo liso não fica lento nenhuma vez; janela vazia não tem última fatia
+(pass) a janela da aba Investigar > marca o valor que mudou desde a leitura anterior
+(pass) a janela da aba Investigar > guarda o PRIMEIRO erro, com o quadro, as linhas e os valores daquele momento
+(pass) a janela da aba Investigar > o painel manda comandos ao jogo pela prévia registrada da instância
+
+src\state\editableProjectValidation.test.ts:
+(pass) language dispatch preserves legacy JS and takes a detached Python snapshot before lazy imports
+(pass) unknown environments, future formats and malformed Python never fall back to JS
+(pass) legacy and v3 discriminants are inspected without invoking JSON accessors [16.00ms]
+(pass) a lazy adapter keeps the host limits captured when the read was requested
+
+src\state\editorHistory.test.ts:
+(pass) editorHistory: o registro das pilhas de desfazer de uma instância > um editor registrado aparece pelo alvo e some quando sai
+(pass) editorHistory: o registro das pilhas de desfazer de uma instância > avisa a barra quando um editor entra, sai, a pilha muda ou o alvo troca
+(pass) editorHistory: o registro das pilhas de desfazer de uma instância > a saída de um editor antigo não derruba o novo do mesmo alvo (remontagem wide ⇄ narrow)
+(pass) editorHistory: o registro das pilhas de desfazer de uma instância > o alvo: blocos no modo Blocos, código no Código e, na Ponte, o último tocado (blocos antes)
+(pass) editorHistory: o registro das pilhas de desfazer de uma instância > duas instâncias não se misturam
+
+src\state\errorGloss.test.ts:
+(pass) glossErrorMessage > reconhece "is not defined" e cita o nome
+(pass) glossErrorMessage > reconhece "is not a function"
+(pass) glossErrorMessage > reconhece "Cannot read properties of undefined" [16.00ms]
+(pass) glossErrorMessage > reconhece "Cannot read property of null" (forma singular antiga)
+(pass) glossErrorMessage > explica raio Canvas negativo com um próximo passo ("IndexSizeError: Failed to execute 'arc' on 'CanvasRenderingContext2D': The radius provided (-1) is negative.")
+(pass) glossErrorMessage > explica raio Canvas negativo com um próximo passo ("RangeError: Failed to execute 'roundRect' on 'CanvasRenderingContext2D': Radius value -1 is negative.")
+(pass) glossErrorMessage > reconhece "is not defined" com aspas ao redor do nome
+(pass) glossErrorMessage > cita o nome REAL mesmo com prefixo do navegador ("Uncaught ReferenceError: pontos is not defined")
+(pass) glossErrorMessage > cita o nome REAL mesmo com prefixo do navegador ("ReferenceError: pontos is not defined")
+(pass) glossErrorMessage > devolve null para mensagens desconhecidas (mostra só o original)
+(pass) glossErrorMessage > devolve null para string vazia
+(pass) glossErrorMessage com erros do Python > dá uma dica para "TypeError: unsupported operand type(s) for +: 'int' and 'str'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "TypeError: can only concatenate str (not "int") to str"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "IndentationError: expected an indented block after"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "SyntaxError: expected ':'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "ZeroDivisionError: division by zero"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "IndexError: list index out of range"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "AttributeError: 'NoneType' object has no attribute 'x'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "AttributeError: 'Actor' object has no attribute 'posicao'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "ValueError: invalid literal for int() with base 10: 'oi'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "TypeError: mover() takes 1 positional argument but 2 were given"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "KeyError: 'SPCAE'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "KeyError: 'vidas'"
+(pass) glossErrorMessage com erros do Python > dá uma dica para "SyntaxError: invalid syntax"
+(pass) glossErrorMessage com erros do Python > o NameError do Python continua citando o nome
+
+src\state\exitJournalCodec.test.ts:
+(pass) journal codec preserves unknown fields, undefined, arrays, tags and negative zero
+(pass) journal codec preserves a deep editable tree without recursive stringify [312.00ms]
+(pass) journal codec rejects executable properties and cycles without invoking getters
+(pass) journal codec treats prototype-looking keys as data
+(pass) journal codec rejects malformed or future wire values
+(pass) journal codec rejects malformed or future wire values
+(pass) journal codec rejects malformed or future wire values
+(pass) journal codec rejects malformed or future wire values
+(pass) journal codec rejects malformed or future wire values
+(pass) journal codec rejects malformed or future wire values
+(pass) both archive and exit contexts preserve the existing v1 wire bytes
+(pass) durable archives support accepted document sizes while the synchronous exit budget stays fixed
+
+src\state\extensionBlocklySync.test.ts:
+Isolated ./src/state/__tests__/extensionBlocklySync.cases.ts: 7 pass, 0 fail, 2483 expect() calls
+(pass) extensionBlocklySync.test.ts mock cases own an isolated module realm [688.00ms]
+
+src\state\extensionImportConsent.test.ts:
+Isolated ./src/state/__tests__/extensionImportConsent.cases.ts: 5 pass, 0 fail, 9 expect() calls
+(pass) extensionImportConsent.test.ts mock cases own an isolated module realm [891.00ms]
+
+src\state\extensionsAdapter.test.ts:
+(pass) extensionsAdapter > impede instalar extensões que disputam o mesmo canvas
+(pass) extensionsAdapter > mantém os conflitos de todos os runtimes de tela cheia simétricos
+(pass) extensionsAdapter > respeita conflito declarado pela extensão já instalada, mesmo se a candidata omitir
+(pass) extensionsAdapter > remove blocos e nós IR da extensão game-2d
+(pass) extensionsAdapter > remove nós g2d ANINHADOS em laços/try/fetch, não só no topo (#18)
+(pass) extensionsAdapter > conta e limpa blocos de extensão dentro de slots de sombra
+(pass) extensionsAdapter > mantém uma sombra no slot `next` do pai sobrevivente como sombra (#22)
+(pass) extensionsAdapter > removeExtension NÃO desregistra blocos do Blockly global (invariante #5) [15.00ms]
+
+src\state\extraFilesPreservation.test.ts:
+(pass) preservação de arquivos extras (Código→Ponte→Código) > setFiles (geração por blocos) não apaga extraFiles
+(pass) preservação de arquivos extras (Código→Ponte→Código) > applyProjectState (reverse-parse) preserva extraFiles e arquivos não tocados
+
+src\state\extraStateAllowlist.test.ts:
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_array
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_join
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_concat_arrays
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_object
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_call_function
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_call_method
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_val_method_on
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_new_var
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_call_function
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_call_method
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_method_on
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_t3d_new_var
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_t3d_new
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_constructor
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_class_method
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_function
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_js_class
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > aceita extraState válido para sz_canvas_anim_loop
+(pass) isSupportedBlocklyBlockExtraState — cobertura por tipo > rejeita extraState com forma errada (sentinela: não confiar só em "any object")
+
+src\state\gameStorage.test.ts:
+(pass) gameStorage > round-trip: writeGameStorage → loadGameStorage
+(pass) gameStorage > a sessão Pro fixa o perfil antes dos awaits e confirma falhas de escrita [16.00ms]
+(pass) gameStorage > escopo por projeto (chaves não vazam entre projetos)
+(pass) gameStorage > clampa o payload antes de persistir (não confia no sandbox)
+(pass) gameStorage > mapa vazio apaga o registro em vez de gravar lixo
+(pass) gameStorage > deleteGameStorage remove o registro
+(pass) gameStorage > projectId vazio é no-op seguro
+(pass) gameStorage > lê registro corrompido como {} (sanitiza)
+(pass) gameStorage > isola gameStorage por namespace e o delete remove do banco correto
+(pass) gameStorage > um write do preview que chega APÓS o delete não ressuscita o registro órfão
+(pass) gameStorage > um write enfileirado ANTES do delete é varrido pelo delMany (sem órfão)
+
+src\state\htmlSourceCompatibility.test.ts:
+(pass) treats the same document with attributes in another order as equal
+(pass) does not equate different text, values, attributes, structure or whitespace
+(pass) keeps the head, doctype and comments in the comparison [15.00ms]
+
+src\state\idbExitScheduling.test.ts:
+(pass) a warm exit write is queued before an independent synchronous reader [16.00ms]
+(pass) exit handoff does not assume a CAS can be aborted after commit was requested
+
+src\state\idbTransaction.test.ts:
+Isolated ./src/state/__tests__/idbTransaction.cases.ts: 17 pass, 0 fail, 49 expect() calls
+(pass) idbTransaction.test.ts mock cases own an isolated module realm [594.00ms]
+
+src\state\importUnknownBlocks.test.ts:
+Isolated ./src/state/__tests__/importUnknownBlocks.cases.ts: 4 pass, 0 fail, 8 expect() calls
+(pass) importUnknownBlocks.test.ts mock cases own an isolated module realm [719.00ms]
+
+src\state\logsStore.test.ts:
+(pass) logsStore > trunca mensagens gigantes vindas do preview
+(pass) logsStore > mantém no máximo 500 mensagens
+(pass) logsStore > limita flood de logs por janela de tempo
+(pass) logsStore > limita partes e stack mesmo quando push recebe payload não validado
+
+src\state\persistence.test.ts:
+Persistence cases in a separate process: 70 pass, 0 fail
+(pass) transaction fault cases run without replacing IndexedDB in other test files [8422.00ms]
+
+src\state\pintaImageStore.test.ts:
+(pass) captured Pinta images in the real Python project store > classic: frame identity/path/PNG survive updates, local reopen, duplicate and portable import [47.00ms]
+(pass) captured Pinta images in the real Python project store > pro: frame identity/path/PNG survive updates, local reopen, duplicate and portable import [15.00ms]
+
+src\state\pintaMapBundle.test.ts:
+(pass) importação atômica de mapas ligados > traz as portas com o mapa, mantém programação e atualiza sem mudar ids e nomes
+(pass) importação atômica de mapas ligados > um mapa inválido recusa o lote inteiro e mantém a referência do projeto
+(pass) importação atômica de mapas ligados > limite total, ids repetidos e modo de observação não deixam uma importação parcial
+
+src\state\proBuilderDeletion.test.ts:
+Isolated ./src/state/__tests__/proBuilderDeletion.cases.ts: 5 pass, 0 fail, 40 expect() calls
+(pass) proBuilderDeletion.test.ts mock cases own an isolated module realm [719.00ms]
+
+src\state\projectAssetLicense.test.ts:
+(pass) material insertion preserves detached attribution through javascript storage and export
+(pass) material insertion preserves detached attribution through classic storage and export [16.00ms]
+(pass) material insertion preserves detached attribution through pro storage and export
+(pass) attribution uses the same bounded sanitizer on insertion and reopening
+
+src\state\projectAssetSceneBudget.test.ts:
+(pass) cena 2 atualiza arte e animação sem reescrever o programa; um leitor que corte a cena é recusado
+(pass) entrada: cenário que não cabe é recusado na hora, e o que entra continua lá ao reabrir
+(pass) atualização: o cenário que cresceu é recusado e o material de antes fica inteiro
+O cenário do desenho "vila" não coube neste projeto e ficou de fora. A imagem foi mantida.
+(pass) leitura de projeto gravado antes da correção: sai só a cena, a imagem fica [16.00ms]
+
+src\state\projectBlocksMetaUnion.test.ts:
+Isolated ./src/state/__tests__/projectBlocksMetaUnion.cases.ts: 4 pass, 0 fail, 7 expect() calls
+(pass) projectBlocksMetaUnion.test.ts mock cases own an isolated module realm [1125.00ms]
+
+src\state\projectDatabaseInvariant.test.ts:
+Isolated ./src/state/__tests__/projectDatabaseInvariant.cases.ts: 3 pass, 0 fail, 13 expect() calls
+(pass) projectDatabaseInvariant.test.ts mock cases own an isolated module realm [1500.00ms]
+
+src\state\projectDocumentRefinement.test.ts:
+(pass) version 3 JavaScript semantic adapter > preserves classic source, payload and environment without historical conversion
+(pass) version 3 JavaScript semantic adapter > preserves pro source, payload and environment without historical conversion
+(pass) version 3 JavaScript semantic adapter > authoritative bridge text invalidates stale derived IR and blocks only
+(pass) version 3 JavaScript semantic adapter > refuses lossy IR, blocks, extensions and assets, preserving the input
+(pass) version 3 JavaScript semantic adapter > refuses a Pro tree that would lose a file, instead of opening it as Classic
+(pass) version 3 JavaScript semantic adapter > rejects Python, legacy, future and unknown-root documents explicitly
+(pass) version 3 JavaScript semantic adapter > an internal requested id never inherits another document lineage
+(pass) version 3 JavaScript semantic adapter > every valid v3 id survives reading without minting a new creation
+(pass) version 3 JavaScript semantic adapter > legacy readers cannot silently discard new environment configuration [16.00ms]
+(pass) version 3 JavaScript semantic adapter > the preservation guard covers configuration in every document variant
+
+src\state\projectHistoricalLoad.test.ts:
+(pass) direct document read migrates a flat v2 project without opening the list
+(pass) direct shell read migrates a flat v2 project without opening the list [16.00ms]
+(pass) direct metadata read migrates a flat v2 project without opening the list
+(pass) direct blocks read migrates a flat v2 project without opening the list
+(pass) direct summary read migrates a flat v2 project without opening the list
+(pass) direct summaries read migrates a flat v2 project without opening the list
+
+src\state\projectJsonGraph.test.ts:
+(pass) the existing exit journal wire stays byte-identical after sharing the graph codec
+(pass) storage may use the established project JSON budget without expanding the exit-copy budget
+(pass) graph callers may tighten structural limits but cannot expand project limits
+
+src\state\projectOpening.test.ts:
+(pass) overlapping owners release only themselves; namespaces and ids stay independent
+(pass) caller and captured scope cancellation release owners without affecting a later opening
+
+src\state\projectOperations.test.ts:
+(pass) limites de snapshot do Pro > excluir o último arquivo pelo terminal sobrevive à reabertura como Pro
+(pass) limites de snapshot do Pro > save aguarda o filesystem e captura a versão reconciliada
+(pass) limites de snapshot do Pro > fila não cruza instâncias e projeto trocado não é exportado como se fosse o anterior
+(pass) limites de snapshot do Pro > falha de reconciliação impede confirmação de save e aparece no estado
+(pass) limites de snapshot do Pro > aplicação atômica rejeita revisão velha e árvore inválida
+
+src\state\projectRecoveryGuards.test.ts:
+(pass) recovery v3 validates its own partition namespace without changing revision identity
+(pass) recovery v4 validates its own partition namespace without changing revision identity
+
+src\state\projectRecoverySources.test.ts:
+(pass) ancestral archive preserves storage namespace and future format: v3/false
+(pass) ancestral archive preserves storage namespace and future format: v3/true
+(pass) ancestral archive preserves storage namespace and future format: v4/false
+(pass) ancestral archive preserves storage namespace and future format: v4/true [16.00ms]
+
+src\state\projectStorageBrowser.test.ts:
+(pass) actual pagehide: large pending CAS + latest draft survive reload; two tabs conflict [27093.00ms]
+
+src\state\projectStorageCoordinator.test.ts:
+(pass) local revision transactions on IndexedDB > keeps a deleted material and its inverse atomic through failure, retry and reload [16.00ms]
+(pass) local revision transactions on IndexedDB > publishes inverse before subscribers autosave or switch projects in a microtask [15.00ms]
+(pass) local revision transactions on IndexedDB > reopened quota draft supersedes its exact staged ancestor on recovery, without inventing a conflict [16.00ms]
+(pass) local revision transactions on IndexedDB > an autosave ACK survives rehydrating the same store before reopening the panel
+(pass) local revision transactions on IndexedDB > quota recovery does not block the profile; editor reopens dirty draft with inverse while cloud reads committed data [15.00ms]
+(pass) local revision transactions on IndexedDB > pending undo works in memory and an ordinary autosave acknowledges session receipts
+(pass) local revision transactions on IndexedDB > profile A→B→A during the initial journal read cannot apply to a reopened editor
+(pass) local revision transactions on IndexedDB > a transaction cannot evict its newly added inverses and report them as saved [16.00ms]
+(pass) local revision transactions on IndexedDB > commits document and inverse together, reopens and undoes exactly once
+(pass) local revision transactions on IndexedDB > abort preserves both durable halves and dirty memory; same operation retries without patching again [16.00ms]
+(pass) local revision transactions on IndexedDB > two independent editors cannot overwrite the winning head; stale undo also fails
+(pass) local revision transactions on IndexedDB > exit recovery promotes the latest snapshot and preserves another writer on conflict
+(pass) local revision transactions on IndexedDB > deletion leaves a durable tombstone that rejects stale autosaves [15.00ms]
+(pass) local revision transactions on IndexedDB > retains the latest 20 durable inverses and resets them with an explicit complete replacement [32.00ms]
+(pass) local revision transactions on IndexedDB > migrates v2 with backup and isolates a later v2 writer as a recovered copy
+(pass) assistance reader > preserves provenance and questions; order-independent digest does not alter source revision [15.00ms]
+
+src\state\projectStorageDocuments.test.ts:
+(pass) language-independent project partitions and transaction coordinator > javascript/classic: the public writer and language reader preserve a complete revision [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/pro: the public writer and language reader preserve a complete revision [15.00ms]
+(pass) language-independent project partitions and transaction coordinator > python/classic: the public writer and language reader preserve a complete revision
+(pass) language-independent project partitions and transaction coordinator > python/pro: the public writer and language reader preserve a complete revision [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > Python classic: pending requirements remain editable after saving and reopening [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > Python pro: pending requirements remain editable after saving and reopening
+(pass) language-independent project partitions and transaction coordinator > closed Python materials keep their own audio budget during a Pinta synchronization read [47.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/classic: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > javascript/pro: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > python/classic: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > python/pro: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > recovery commits Python source and environment together after exit [15.00ms]
+(pass) language-independent project partitions and transaction coordinator > a stale writer cannot overwrite a configuration-only Python change
+(pass) language-independent project partitions and transaction coordinator > a failed partition write preserves the complete previous Python revision
+(pass) language-independent project partitions and transaction coordinator > listing a Python project reads only lightweight metadata, never the dependency lock
+
+src\state\projectStorageRecords.test.ts:
+(pass) a migration chooses one namespace for every partition without changing the portable version
+(pass) legacy host validation keeps unknown metadata before it reaches local storage
+(pass) javascript/classic: unknown document metadata survives partition round-trip
+(pass) javascript/pro: unknown document metadata survives partition round-trip
+(pass) python/classic: unknown document metadata survives partition round-trip
+(pass) python/pro: unknown document metadata survives partition round-trip
+(pass) partitioning never invokes executable unknown metadata
+(pass) nested executable metadata is rejected and local symbols never become document fields
+(pass) partition round-trip preserves unknown root undefined and signed zero
+
+src\state\projectStorageTransport.test.ts:
+(pass) ten thousand editable nodes use a shallow native-clone envelope and retain all IDs [109.00ms]
+(pass) shallow existing values and every non-v4-project namespace keep their native representation
+(pass) a shared subtree reached by a deeper path cannot evade the native-depth policy
+(pass) future and malformed envelopes cannot be read or authorized for replacement
+(pass) getters are rejected before native cloning and prepared envelopes are immutable
+
+src\state\projectStore.coverAsset.test.ts:
+(pass) setCoverAsset > grava o nome da imagem e bumpa o updatedAt; escolher de novo a mesma não mexe
+(pass) setCoverAsset > recusa o que não é imagem e o que não existe, com erro legível
+(pass) setCoverAsset > `null` remove a CHAVE (projeto sem capa fica byte-idêntico ao de antes)
+(pass) setCoverAsset > apagar a imagem escolhida limpa a capa; apagar outra imagem não
+(pass) setCoverAsset > renomear a imagem escolhida leva a capa junto
+
+src\state\projectSummary.test.ts:
+(pass) project summaries identify environments without granting execution > only known historical formats without a foreign environment default to JavaScript
+(pass) project summaries identify environments without granting execution > the four variants expose identity without source, assets, dependency lock or capabilities
+(pass) project summaries identify environments without granting execution > malformed and incomplete v3 metadata cannot masquerade as JavaScript
+
+src\state\projectSynchronousRecovery.test.ts:
+(pass) a synchronous journal restores the latest full revision when the native exit transaction aborts [15.00ms]
+(pass) a reused token with different native and synchronous payloads preserves both pending copies
+(pass) a confirmed descendant retires its exact synchronous ancestor: native [16.00ms]
+(pass) a confirmed descendant retires its exact synchronous ancestor: synchronous-only [16.00ms]
+(pass) a confirmed descendant retires its exact synchronous ancestor: confirmed-save
+(pass) retiring an ancestor cannot acknowledge an unrelated writer that reused its token [15.00ms]
+(pass) an incomplete descendant preserves the original ancestor journal and its exit mirror
+(pass) same-sequence competing snapshots are both preserved without choosing a later enumeration winner [16.00ms]
+(pass) a confirmed save retires a byte-equivalent exit copy without creating a recovered project
+(pass) a later confirmed revision of the same lineage retires an older exit copy without duplicating the project
+(pass) quota failure does not claim an exit copy and still requests the native journal
+(pass) a native revision replaced before the conditional write stays pending without a stale overwrite
+(pass) a reused native token cannot acknowledge different content through an existing recovered copy [16.00ms]
+(pass) a future document in a native journal cannot replace a readable committed project
+(pass) a native journal preserves a valid save when its partition identity is incompatible: foreign-record-id
+(pass) a native journal preserves a valid save when its partition identity is incompatible: future-storage-layout
+(pass) foreign partitions in a native journal cannot overwrite another project
+(pass) an incompatible native descendant cannot suppress a valid pending revision
+(pass) foreign partitions in a recovery copy cannot overwrite another project
+(pass) ambiguous journal partitions are preserved without applying: duplicate-put
+(pass) ambiguous journal partitions are preserved without applying: put-and-delete
+(pass) a colliding application identity preserves the full inverse and unknown fields as a recovery copy [15.00ms]
+(pass) inaccessible exit copies block recovery without acknowledging or modifying the committed revision
+(pass) projected recovery uses the prepared snapshot and acknowledges its original source only after commit
+[studio] cópia confirmada; limpeza de recuperação pendente: warn: source store temporarily unavailable
+      at acknowledge (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\projectSynchronousRecovery.test.ts:783:47)
+      at recoverSynchronousProjectWrites (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\projectSynchronousExitRecovery.ts:358:15)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\projectSynchronousRecovery.test.ts:786:11)
+
+(pass) a failed source acknowledgement can retry after the destination is already confirmed
+(pass) a failed destination transaction never acknowledges a prepared legacy source
+(pass) prepared legacy recovery promotes only v4 partitions after base migration [16.00ms]
+(pass) v4 replay records inverse history and its budget only in the destination namespace
+(pass) v4 recovery conflicts preserve the winner and create a complete v4 copy [15.00ms]
+(pass) legacy sources retire only after complete v4 recovery: synchronous
+(pass) legacy sources retire only after complete v4 recovery: mirrored
+(pass) legacy sources retire only after complete v4 recovery: native-only [16.00ms]
+(pass) a returning old tab becomes a v4 copy instead of overwriting the previously recovered edit
+(pass) mismatched legacy mirrors cannot migrate the base or acknowledge either source
+(pass) overlapping project prefixes cannot recover a different owner through a colon in its writer [16.00ms]
+(pass) a supported descendant preserves its future-format ancestor: synchronous/save
+(pass) a supported descendant preserves its future-format ancestor: synchronous/recover
+(pass) a supported descendant preserves its future-format ancestor: native/save
+(pass) a supported descendant preserves its future-format ancestor: native/recover
+(pass) a supported descendant preserves its future-format ancestor: same-writer-synchronous/save
+(pass) a supported descendant preserves its future-format ancestor: same-writer-synchronous/recover
+(pass) an archive write failure rolls back promotion and retains both ancestor and descendant sources [15.00ms]
+(pass) a previously archived identity cannot consume a later source with the same token and different content
+(pass) a foreign-prefix ancestor remains intact without granting retirement authority: synchronous [16.00ms]
+(pass) a foreign-prefix ancestor remains intact without granting retirement authority: native
+(pass) a live save cannot retire a parent whose native snapshot differs from its immutable mirror
+(pass) a parent replaced after preparation is not discarded using the old snapshot [16.00ms]
+(pass) a deep ancestor is archived without requiring a deep native structured clone [234.00ms]
+(pass) a native-only ancestor above the exit quota remains complete in its durable archive [16.00ms]
+
+src\state\projectThumbs.test.ts:
+Isolated ./src/state/__tests__/projectThumbs.cases.ts: 8 pass, 0 fail, 34 expect() calls
+(pass) projectThumbs.test.ts mock cases own an isolated module realm [1296.00ms]
+
+src\state\projectV4Opening.test.ts:
+(pass) v4 document read crosses the legacy boundary without visiting the project list
+(pass) v4 shell read crosses the legacy boundary without visiting the project list [16.00ms]
+(pass) v4 metadata read crosses the legacy boundary without visiting the project list [15.00ms]
+(pass) v4 blocks read crosses the legacy boundary without visiting the project list
+(pass) v4 assets read crosses the legacy boundary without visiting the project list
+(pass) v4 summary read crosses the legacy boundary without visiting the project list [16.00ms]
+(pass) v4 summaries read crosses the legacy boundary without visiting the project list
+(pass) v4 project lists migrate bases and isolate one future project without hiding healthy projects [16.00ms]
+(pass) v4 loadProjectById refuses another partition owner instead of masking it
+(pass) v4 loadProjectShellById refuses another partition owner instead of masking it
+(pass) partial current v4 storage cannot fall back to an older portable project
+(pass) binding a restore captures its baseline before upgrading and cannot overwrite the newly migrated document
+(pass) first-write migration reserves its queue position before another unbound save
+(pass) a journal with a foreign key cannot advertise a recoverable project for its claimed owner [15.00ms]
+
+src\state\projectValidation.test.ts:
+(pass) fronteira compartilhada de projetos > preserva código manual, arquivos extras, áudio e referências da biblioteca
+(pass) fronteira compartilhada de projetos > valida o formato do programa dentro do manifesto e a identidade da criação
+(pass) fronteira compartilhada de projetos > valida o programa Python v3 da nuvem sem converter a fonte em JavaScript
+(pass) fronteira compartilhada de projetos > confere JavaScript v3 pela mesma fronteira e recusa Python v3 inválido [16.00ms]
+(pass) fronteira compartilhada de projetos > retém as ferramentas usadas depois de apagar sua última instância
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > sanitizeCoverAssetName aceita um nome de asset válido e recusa o resto
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > sanitizeStoredProject preserva a escolha (e OMITE a chave quando não há)
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > o programa do manifesto da nuvem (assets: []) PRESERVA a escolha: é por isso que a régua é por forma
+(pass) studentTests ("Meus testes") viajam no projeto clássico em JavaScript > sanitizeStoredProject guarda os testes na forma e OMITE a chave sem nenhum
+(pass) studentTests ("Meus testes") viajam no projeto clássico em JavaScript > o programa do manifesto da nuvem e o documento do projeto PRESERVAM os testes
+
+src\state\proRevision.test.ts:
+(pass) application to the live Studio store > enforces the accepted line scope and candidate identity in the application boundary
+(pass) application to the live Studio store > applies and undoes as single updates with the exact original layout
+(pass) application to the live Studio store > flushes pending terminal edits and refuses to overwrite them with the old proposal [15.00ms]
+(pass) application to the live Studio store > rejects a profile A → B → A change during flush even with the same project object
+(pass) application to the live Studio store > preserves metadata changed while the revision digest is in flight
+(pass) isolated Pro revisions > changes several files atomically and undoes added directories without dropping empty ones
+(pass) isolated Pro revisions > rejects stale, forged, duplicate and traversal changes without mutating any file
+(pass) isolated Pro revisions > includes assets, settings and empty directories in the revision identity; order is irrelevant
+
+src\state\proRun.test.tsx:
+(pass) proRun (o estado de execução do projeto Pro) > a prévia publica estado e ações juntos e os tira juntos ao sair de cena
+(pass) proRun (o estado de execução do projeto Pro) > o layout registra quem traz o palco à vista e a Topbar chama
+(pass) proRun (o estado de execução do projeto Pro) > o rótulo do botão principal: Rodar parado, Rodar de novo com algo em andamento ou feito
+(pass) proRun (o estado de execução do projeto Pro) > cada <Studio> tem a sua store; fora de um Studio o hook lê a default de módulo [16.00ms]
+
+src\state\proSanitize.test.ts:
+(pass) sanitizeStoredProject — projetos profissionais > preserva um projeto pro válido
+(pass) sanitizeStoredProject — projetos profissionais > recusa árvore inválida sem descartar conteúdo
+(pass) sanitizeStoredProject — projetos profissionais > recusa projeto profissional sem metadados
+(pass) sanitizeStoredProject — projetos profissionais > nunca aceita node_modules na árvore
+(pass) sanitizeStoredProject — projetos profissionais > projeto classic permanece classic
+(pass) sanitizeProjectForHost — limite do id do initialProject > mantém um id seguro (ulid/alfanumérico) vindo do host
+(pass) sanitizeProjectForHost — limite do id do initialProject > substitui por um id fresco quando o id excede o teto de tamanho
+(pass) sanitizeProjectForHost — limite do id do initialProject > substitui por um id fresco quando o id tem caracteres fora do charset seguro
+(pass) sanitizeProjectForHost — limite do id do initialProject > substitui por um id fresco quando o id não é string
+
+src\state\proToolchainUpdate.test.ts:
+(pass) legacy RED control becomes a fully verified graph, changes only the pair and supports existing Undo [16.00ms]
+(pass) preparation failure, invalid lock, cancellation and a missing host preserve both original files
+(pass) concurrent source, profile and authorship changes cannot commit a prepared pair [16.00ms]
+(pass) only the exact retired spec is repaired; malformed or oversized manifests are refused
+(pass) an unsupported Three pin is rejected without silently rewriting the project
+
+src\state\proTree.test.ts:
+(pass) addProFile > cria arquivo e pastas-pai ausentes
+(pass) addProFile > rejeita duplicata e path inválido
+(pass) addProFile > rejeita quando um ancestral é arquivo
+(pass) addProFile > rejeita variante de CAIXA de um arquivo existente (FS case-insensível)
+(pass) addProDir > cria pasta
+(pass) addProDir > rejeita colisão
+(pass) addProDir > rejeita variante de caixa de pasta existente
+(pass) setProFileContent > atualiza conteúdo
+(pass) setProFileContent > no-op se igual ou inexistente
+(pass) renameProNode > renomeia arquivo
+(pass) renameProNode > renomeia pasta reescrevendo prefixos dos filhos
+(pass) renameProNode > recusa mover pasta para dentro dela mesma e colisões
+(pass) renameProNode > recusa renomear para variante de caixa de OUTRO nó, mas permite só trocar a caixa do próprio
+(pass) removeProNode > remove arquivo
+(pass) removeProNode > remove subárvore de uma pasta
+(pass) removeProNode > no-op se inexistente
+(pass) sanitizeProTree > aceita árvore válida e preenche pais ausentes
+(pass) sanitizeProTree > rejeita node_modules, traversal e formas inválidas
+(pass) sanitizeProTree > rejeita excesso de nós e tamanho [15.00ms]
+(pass) sanitizeProTree > rejeita árvore onde um arquivo é pai de outro path
+(pass) sanitizeProMeta > aceita meta válida e corta strings longas
+(pass) sanitizeProMeta > rejeita meta incompleta
+(pass) cotas do runtime Pro na store > bloqueia nova edição que ultrapassa a cota antes de persistir ou compilar
+(pass) cotas do runtime Pro na store > bloqueia edição cujo JSON serializado excederia o Worker
+
+src\state\proWorkspaceOperations.test.ts:
+(pass) operações documentais do workspace > reviews top-level examples, rejects stale text and duplicate symbols, and recovers the whole insertion [47.00ms]
+(pass) operações documentais do workspace > deletes and recovers a material with its exact identity, bytes, position and cover
+(pass) operações documentais do workspace > rejects a preview after a profile A → B → A switch even with the same project object [16.00ms]
+(pass) operações documentais do workspace > recovers empty folders and case-only file renames [15.00ms]
+(pass) operações documentais do workspace > moves a closed file, updates its consumer and recovers the complete document without an AI job
+(pass) operações documentais do workspace > updates relative imports inside the file being moved and handles folders
+(pass) operações documentais do workspace > renames symbol references without changing comments or string content [32.00ms]
+(pass) operações documentais do workspace > rejects collisions and observer operations before changing any file
+(pass) operações documentais do workspace > rejects stale previews and recovery after later edits, preserving the new work
+(pass) operações documentais do workspace > reports consumers when deleting and recovers a deleted directory with its files [15.00ms]
+(pass) operações documentais do workspace > refuses overlapping edits and dependency writes
+
+src\state\pythonHostLimits.test.ts:
+(pass) classic: host source quotas reject edits without publishing a partial document
+(pass) pro: host source quotas reject edits without publishing a partial document [16.00ms]
+(pass) host file counts and request quotas can narrow but cannot increase the hard Python limit
+
+src\state\pythonProApplication.test.ts:
+(pass) Python Pro shared application and recovery > a builder proposal persists source, entrypoint, Pinta provenance and inverse atomically across reopening [31.00ms]
+(pass) Python Pro shared application and recovery > moves the entrypoint and its configuration atomically and restores both
+(pass) Python Pro shared application and recovery > invalid entrypoint and observer writes preserve the exact open document
+(pass) Python Pro shared application and recovery > uses the existing editor history for a source change and undo [16.00ms]
+
+src\state\pythonProjectCreation.test.ts:
+(pass) free Python creation persists a new native document with Programação and no installed extensions
+(pass) cancelled or changed creation scope cannot persist Python under a different profile [15.00ms]
+
+src\state\pythonProjectStore.test.ts:
+(pass) one project store for Python Classic and Pro > v3 duplicates stay reopenable at the maximum title length in all four variants [32.00ms]
+(pass) one project store for Python Classic and Pro > classic: source edits preserve environment and reject lossy changes
+(pass) one project store for Python Classic and Pro > classic: requirements edits can be saved but cannot execute with the old lock
+(pass) one project store for Python Classic and Pro > pro: source edits preserve environment and reject lossy changes
+(pass) one project store for Python Classic and Pro > pro: requirements edits can be saved but cannot execute with the old lock
+(pass) one project store for Python Classic and Pro > Classic owns main.py; auxiliary Python files follow portable path and source rules
+(pass) one project store for Python Classic and Pro > Pro supports Python directories and keeps the entrypoint valid when moving a folder
+(pass) one project store for Python Classic and Pro > visual transactions commit only against the captured Classic source
+(pass) one project store for Python Classic and Pro > Python materials reject unsupported formats without changing the document
+(pass) one project store for Python Classic and Pro > Python classic refuses new 3D materials but still opens a document that already has one
+(pass) one project store for Python Classic and Pro > Python pro refuses new 3D materials but still opens a document that already has one
+(pass) one project store for Python Classic and Pro > promotion preserves an independent Classic copy and the execution recipe
+(pass) one project store for Python Classic and Pro > an edit while the original copy is saved prevents promotion from overwriting it [15.00ms]
+
+src\state\pythonProjectValidation.test.ts:
+(pass) Classic preserves source, syntax errors, opaque caches and local revision without trusting visual data
+(pass) Classic checks paths, media collisions, source quotas and dependency lock before runtime preparation
+(pass) opaque Python visual caches never enter the JavaScript block validator or override source
+(pass) promotion preserves a separate original and produces identical execution files and revision [16.00ms]
+
+src\state\pythonProProjectValidation.test.ts:
+(pass) Python Pro semantic document reader > preserves modules, metadata, media paths, runtime and local lineage
+(pass) Python Pro semantic document reader > captures source, dependency lock and identity before returning to the caller
+(pass) Python Pro semantic document reader > opens syntax errors as editable source without interpreting the program
+(pass) Python Pro semantic document reader > preserves requirements being edited and the previous dependency lock
+(pass) Python Pro semantic document reader > rejects malformed or lossy material paths without moving imported images
+(pass) Python Pro semantic document reader > shares portable path rules with the source revision boundary [16.00ms]
+(pass) Python Pro semantic document reader > rejects media/source collisions, including implicit directory case
+(pass) Python Pro semantic document reader > bounds source sizes and directory counts before any runtime is loaded
+(pass) Python Pro semantic document reader > refuses another language or visual variant instead of coercing it to Pro
+(pass) Python Pro semantic document reader > an explicit internal id replacement is bounded and does not copy another lineage
+(pass) Python Pro semantic document reader > reader and revision share the existing platform identity limits
+
+src\state\pythonProRevision.test.ts:
+(pass) Python Pro projection into the shared revision protocol > captures source/configuration and exact binary bytes through JSON transport [15.00ms]
+(pass) Python Pro projection into the shared revision protocol > source changes use the same inverse and reject stale bases
+(pass) Python Pro projection into the shared revision protocol > a runtime-only change invalidates equality even with identical source
+(pass) Python Pro projection into the shared revision protocol > later input mutations cannot change the captured revision
+(pass) Python Pro projection into the shared revision protocol > manifest quota limits the operation without truncating or preventing document reading [16.00ms]
+
+src\state\renameAndImportLimits.test.ts:
+Isolated ./src/state/__tests__/renameAndImportLimits.cases.ts: 3 pass, 0 fail, 14 expect() calls
+(pass) renameAndImportLimits.test.ts mock cases own an isolated module realm [1390.00ms]
+
+src\state\scene3dImport.test.ts:
+(pass) Python Classic/Pro aplica fontes e assets em uma atualização, preserva main e repete sem gravar [141.00ms]
+(pass) fontes Python adulteradas no plano não entram no projeto, nem deixam assets pela metade [15.00ms]
+(pass) uma alteração em memória durante a última espera do preparo também impede o commit
+(pass) importação aplica cena e recursos em uma atualização e conserva o programa [16.00ms]
+(pass) reimportação idêntica não grava outra revisão nem marca o projeto como sujo [31.00ms]
+(pass) projeto editado após o preparo recusa o plano antigo sem perder o código novo
+(pass) edição durante a conferência recusa o commit inteiro
+(pass) mudança de conteúdo também invalida a base quando o objeto mantém a mesma referência [16.00ms]
+(pass) troca de perfil A → B → A invalida a operação mesmo sem trocar o objeto do projeto
+(pass) cancelamento e perda de acesso não escrevem cena parcial
+(pass) plano adulterado é recusado e bytes capturados não mudam após o início [15.00ms]
+(pass) importação não reconhece outra revisão com JSON canônico igual: signed-zero [16.00ms]
+(pass) importação não reconhece outra revisão com JSON canônico igual: undefined-field
+(pass) importação completa preserva metadados profundos e mantém o programa do aluno [281.00ms]
+
+src\state\settingsStore.test.ts:
+Isolated ./src/state/__tests__/settingsStore.cases.ts: 14 pass, 0 fail, 48 expect() calls
+(pass) settingsStore.test.ts mock cases own an isolated module realm [578.00ms]
+
+src\state\studioStores.persistence.test.tsx:
+(pass) standalone persistence follows the active profile lifetime without crossing its database [16.00ms]
+(pass) trocar de perfil com projeto não salvo grava no perfil antigo e nunca no novo [31.00ms]
+
+src\state\studioStores.profile-review.test.tsx:
+(pass) review: editing the carried project must not copy private content into another profile
+
+src\state\synchronousExitJournal.test.ts:
+(pass) exit journal captures complete values under immutable scope/project/writer/token keys
+(pass) another payload cannot overwrite a token; acknowledging an old copy cannot remove a replacement
+(pass) quota and unavailable storage never acknowledge a new journal or erase a previous one
+(pass) future, malformed and over-budget records remain untouched [15.00ms]
+(pass) a browser policy denial is reported instead of treating inaccessible copies as absent
+
+src\state\uiStore.test.ts:
+(pass) resolveConsoleVisibility > usa o padrão do modo blocks sem escolha manual
+(pass) resolveConsoleVisibility > usa o padrão do modo bridge sem escolha manual
+(pass) resolveConsoleVisibility > usa o padrão do modo code sem escolha manual
+(pass) resolveConsoleVisibility > faz a escolha manual %s prevalecer em todos os modos
+(pass) resolveConsoleVisibility > faz a escolha manual %s prevalecer em todos os modos
+(pass) createUIStore > começa sem preferência manual de visibilidade do Console
+(pass) createUIStore > mantém a preferência manual na mesma store e a reinicia numa nova instância
+(pass) openAssetsTab — as portas dos materiais > fechada: abre na aba pedida
+(pass) openAssetsTab — as portas dos materiais > aberta em OUTRA aba: troca a aba, sem fechar
+(pass) openAssetsTab — as portas dos materiais > aberta NAQUELA aba: fecha (a mesma porta é a saída)
+(pass) openAssetsTab — as portas dos materiais > a aba começa nas imagens
+(pass) setAssetsTab — trocar de aba dentro da janela > troca a aba e NUNCA fecha a janela
+(pass) setAssetsTab — trocar de aba dentro da janela > escolher a MESMA aba de novo não fecha nada (a diferença para a porta)
+
+ 477 pass
+ 0 fail
+ 2618 expect() calls
+Ran 477 tests across 70 files. [50.85s]
+Studio tests: src/studio (18 files)
+bun test v1.3.11 (af24e281)
+
+src\studio\config.test.ts:
+(pass) an explicit empty course ceiling remains distinct from an unrestricted lesson [15.00ms]
+(pass) resolveStudioConfig — modo profissional > professional força terminal:true e mantém a allowlist do host (D2: modos por kind)
+(pass) resolveStudioConfig — modo profissional > default é não-profissional e não força terminal
+(pass) resolveStudioConfig — modo profissional > professional respeita terminal:false quando a aula usa runtime remoto
+(pass) resolveStudioConfig — modo profissional > sem professional, terminal segue a flag do host
+(pass) resolveStudioConfig — modo profissional > professional não quebra os outros defaults
+(pass) resolveStudioConfig — IA gerenciada pelo host > aceita um provider sem transportar segredo e desliga BYOK por padrão
+(pass) resolvePreviewSecurity — timeout do terminal > usa o default quando não informado
+(pass) resolvePreviewSecurity — timeout do terminal > respeita o limite do host (>0)
+(pass) resolvePreviewSecurity — timeout do terminal > ignora valores inválidos (≤0)
+
+src\studio\i18n.test.tsx:
+(pass) lista e editor compartilham o idioma da instância sem afetar vizinhos ou telas avulsas [16.00ms]
+
+src\studio\legacy-ai.test.tsx:
+(pass) legacy ai command opens the configured tutor in blocks without another tab or inference
+(pass) legacy ai command opens the configured tutor in bridge without another tab or inference [16.00ms]
+(pass) legacy ai command opens the configured tutor in code without another tab or inference
+(pass) without a host tutor old commands stay unavailable and cannot fall back to a provider
+(pass) legacy visibility command and panel redirect use only their own Studio instance [15.00ms]
+(pass) direct legacy panel entry opens the one configured tutor
+
+src\studio\liveCursor.integration.test.tsx:
+(pass) a revision change revokes the painted pointer before a delayed resolution finishes [46.00ms]
+(pass) a buffer change revokes the painted pointer before a delayed resolution finishes [79.00ms]
+
+src\studio\observation.test.ts:
+(pass) Studio observation boundary > late editor mutations cannot replace an observed snapshot
+(pass) Studio observation boundary > suspension cancels debounce and suppresses unmount writes [46.00ms]
+
+src\studio\pro-candidate-preview.test.tsx:
+(pass) candidate selection belongs to its instance and leaves the current project untouched
+(pass) project/profile changes discard selection permanently and stale callbacks cannot reopen it [16.00ms]
+
+src\studio\projectOpening.test.tsx:
+Isolated ./src/studio/__tests__/projectOpening.cases.tsx: 10 pass, 0 fail, 68 expect() calls
+(pass) project opening lifecycle owns an isolated module realm [2515.00ms]
+
+src\studio\Studio.test.tsx:
+Isolated ./src/studio/__tests__/Studio.cases.tsx: 23 pass, 0 fail, 155 expect() calls
+(pass) Studio.test.tsx mock cases own an isolated module realm [2313.00ms]
+
+src\studio\StudioEditor.test.tsx:
+Isolated ./src/studio/__tests__/StudioEditor.cases.tsx: 5 pass, 0 fail, 20 expect() calls
+(pass) StudioEditor.test.tsx mock cases own an isolated module realm [1204.00ms]
+
+src\studio\StudioLesson.test.tsx:
+Isolated ./src/studio/__tests__/StudioLesson.cases.tsx: 4 pass, 0 fail, 16 expect() calls
+(pass) StudioLesson.test.tsx mock cases own an isolated module realm [1265.00ms]
+
+src\studio\TaskGuidePanel.test.tsx:
+(pass) preparação instala a extensão por escolha explícita e repetir não duplica [750.00ms]
+(pass) falha no flush impede a confirmação e conserva a frase da gravação [31.00ms]
+(pass) uma missão concluída permite reabrir sem trocar o resultado esperado [16.00ms]
+(pass) o topo âmbar recolhe a missão e o trilho a abre de novo
+(pass) recolher e abrir não perde o foco: o topo e o trilho são o MESMO botão [15.00ms]
+(pass) concluir leva o foco ao recado de missão pronta, mesmo que o host responda depois [47.00ms]
+(pass) abrir pela linha recolhida traz a faixa para a vista; montar aberto não rola nada
+
+src\studio\tutor.test.ts:
+(pass) shares confirmed project decisions with explain and investigate, never with classic [16.00ms]
+(pass) buildStudioTutorContext > identifica o kit Pro de origem sem enviar fontes completas nem contaminar blocos
+(pass) buildStudioTutorContext > prioriza arquivo ativo e erros mesmo fora dos primeiros arquivos; isola o projeto [15.00ms]
+(pass) buildStudioTutorContext > envia estrutura compacta e nunca envia assets ou código no modo Blocos
+(pass) buildStudioTutorContext > a Ponte continua no modo normal e não envia código
+(pass) buildStudioTutorContext > não envia arquivos secretos nem valores de credenciais ao BFF
+(pass) buildStudioTutorContext > redige segredo com aspas incompletas antes de truncar o arquivo [32.00ms]
+(pass) buildStudioTutorContext > remove credenciais embutidas em URLs de conexão
+
+src\studio\tutorBehavior.test.ts:
+(pass) buildTutorBehavior > sem IR não inventa nada
+(pass) buildTutorBehavior > carrega os VALORES que a criança escolheu — o que o esboço de tipos perdia
+(pass) buildTutorBehavior > o bug clássico aparece: velocidade 0 dentro do evento da tecla
+(pass) buildTutorBehavior > separa o que roda ao iniciar, no evento e a cada quadro
+(pass) buildTutorBehavior > referência a nome vira valor legível (erro de grafia é bug silencioso)
+(pass) buildTutorBehavior > expressão composta não vira valor inventado
+(pass) buildTutorBehavior > respeita os tetos e não estoura com projeto grande
+(pass) buildTutorBehavior > IR malformada não derruba a pergunta
+
+src\studio\tutorEnvironment.test.ts:
+(pass) legacy JavaScript assistance identifies the language without reading source or media
+(pass) Python classic assistance describes its exact runtime and module overrides
+(pass) Python pro assistance describes its exact runtime and module overrides
+(pass) provided audio assistance classic main.py distinguishes sz_audio/child.py
+(pass) provided audio assistance classic main.py distinguishes sz_audio.py
+(pass) provided audio assistance classic main.py distinguishes sz_audio/__init__.py
+(pass) provided audio assistance classic main.py distinguishes sz_audio.pyi
+(pass) provided audio assistance classic main.py distinguishes sz_audio/__init__.pyi
+(pass) provided audio assistance classic main.py ignores files outside the entry directory
+(pass) provided audio assistance classic src/main.py distinguishes sz_audio/child.py
+(pass) provided audio assistance classic src/main.py distinguishes sz_audio.py
+(pass) provided audio assistance classic src/main.py distinguishes sz_audio/__init__.py
+(pass) provided audio assistance classic src/main.py distinguishes sz_audio.pyi [16.00ms]
+(pass) provided audio assistance classic src/main.py distinguishes sz_audio/__init__.pyi
+(pass) provided audio assistance classic src/main.py ignores files outside the entry directory
+(pass) provided audio assistance pro main.py distinguishes sz_audio/child.py
+(pass) provided audio assistance pro main.py distinguishes sz_audio.py
+(pass) provided audio assistance pro main.py distinguishes sz_audio/__init__.py
+(pass) provided audio assistance pro main.py distinguishes sz_audio.pyi
+(pass) provided audio assistance pro main.py distinguishes sz_audio/__init__.pyi
+(pass) provided audio assistance pro main.py ignores files outside the entry directory
+(pass) provided audio assistance pro src/main.py distinguishes sz_audio/child.py
+(pass) provided audio assistance pro src/main.py distinguishes sz_audio.py
+(pass) provided audio assistance pro src/main.py distinguishes sz_audio/__init__.py
+(pass) provided audio assistance pro src/main.py distinguishes sz_audio.pyi
+(pass) provided audio assistance pro src/main.py distinguishes sz_audio/__init__.pyi
+(pass) provided audio assistance pro src/main.py ignores files outside the entry directory
+(pass) provided audio refinement preserves conservative legacy stdlib namespace labels
+
+src\studio\tutorMode.test.ts:
+(pass) contrato pedagógico do tutor > Python keeps textual instructions in Pro and ordinary Portuguese labels in Classic
+(pass) contrato pedagógico do tutor > autoriza código somente no Pro, independentemente da visualização clássica
+(pass) contrato pedagógico do tutor > bloqueia instrução textual no normal: Escreva JavaScript para mover o herói.
+(pass) contrato pedagógico do tutor > bloqueia instrução textual no normal: Abra o terminal.
+(pass) contrato pedagógico do tutor > bloqueia instrução textual no normal: npm install three
+(pass) contrato pedagógico do tutor > bloqueia instrução textual no normal: const x = 1
+(pass) contrato pedagógico do tutor > bloqueia instrução visual no Pro: Selecione um bloco.
+(pass) contrato pedagógico do tutor > bloqueia instrução visual no Pro: Arraste o bloco de movimento.
+(pass) contrato pedagógico do tutor > bloqueia instrução visual no Pro: Como uso o bloco de colisão?
+(pass) contrato pedagógico do tutor > bloqueia instrução visual no Pro: Procure na paleta de blocos.
+(pass) contrato pedagógico do tutor > preserva explicações e sintaxe legítimas de cada modo
+
+src\studio\tutorProContext.test.ts:
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > seleção distante, diagnóstico e imports conservam linhas originais sob orçamento [15.00ms]
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > seleção no meio de uma linha longa chega ao contexto, sem enviar a linha inteira [94.00ms]
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > hash bruto coincide com SHA-256 UTF-8 e difere do digest do contexto redigido
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > segredo iniciado fora da seleção é removido inteiro antes do recorte [16.00ms]
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > seleção de outra versão não é apresentada como seleção atual
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > coordenadas fora do documento são descartadas mesmo com hash atual
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > não atribui diagnóstico antigo à versão editada do arquivo
+(pass) contexto Pro por trecho, sem efeitos ou hashing assíncrono > redação que remove newline degrada o mapa; corte posterior recalcula digest e faixa
+(pass) navegação do editor verifica conteúdo vivo > realça só a revisão analisada; edição e legado abrem apenas o arquivo
+(pass) navegação do editor verifica conteúdo vivo > recusa paths externos, faixas incompletas e metadados falsos
+
+src\studio\tutorPython.test.ts:
+(pass) Python Pro preserves its runtime, native template, textual Pyright signal and current selection
+(pass) Classic Python keeps saved source distinct from a pending visual buffer and ignores stale caches
+(pass) on-demand Classic capture describes the active live workspace only for its exact file source
+(pass) a saved sensitive Python workspace never bypasses whole-file privacy filtering
+
+src\studio\tutorSafetyPython.test.ts:
+(pass) Python quoted, triple, prefixed and annotated credentials are removed before excerpt selection
+(pass) Python composed credentials cannot leak through partial redaction or a distant excerpt [16.00ms]
+(pass) shared credential redaction retains JavaScript sibling statements and object fields
+
+ 106 pass
+ 0 fail
+ 767 expect() calls
+Ran 106 tests across 18 files. [9.55s]
+Studio tests: src/styles (2 files)
+bun test v1.3.11 (af24e281)
+
+src\styles\themeContract.test.ts:
+(pass) contrato de tema do Studio > não usa a variante dark do host em código de produção [562.00ms]
+
+src\styles\tokens.test.ts:
+(pass) studio.css lê os tokens compartilhados > --color-sz-bg aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > --color-sz-panel aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > --color-sz-panel-soft aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > --color-sz-border aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > --color-sz-fg aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > --color-sz-fg-soft aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > --color-sz-accent aponta para um --sz-tool-* no escuro e no claro
+(pass) studio.css lê os tokens compartilhados > os derivados são re-declarados nos DOIS blocos (senão ficam presos no tema do :root)
+(pass) studio.css lê os tokens compartilhados > a home não tem mais receita própria: usa as compartilhadas das ferramentas
+(pass) studio.css lê os tokens compartilhados > o @theme (escuro-default em :root) NÃO aponta para --sz-tool-*
+(pass) studio.css lê os tokens compartilhados > color-mix sempre em oklab (em oklch o matiz gira e dá rosa)
+
+ 12 pass
+ 0 fail
+ 26 expect() calls
+Ran 12 tests across 2 files. [1060.00ms]
+Studio tests: src/three (9 files)
+bun test v1.3.11 (af24e281)
+
+src\three\__tests__\canvas3dMacroCodec.test.ts:
+(pass) Canvas 3D — codec semântico dos macros > restaura o macro íntegro e mantém a geração determinística sem IDs efêmeros [110.00ms]
+(pass) Canvas 3D — codec semântico dos macros > a mesma receita com as chaves em outra ordem gera o mesmo marcador [15.00ms]
+(pass) Canvas 3D — codec semântico dos macros > continua abrindo marcadores legados salvos antes do framing v2
+(pass) Canvas 3D — codec semântico dos macros > não confia no metadado quando o JavaScript expandido foi editado [16.00ms]
+(pass) Canvas 3D — codec semântico dos macros > não confia no payload semântico quando só o metadado foi alterado [15.00ms]
+(pass) Canvas 3D — codec semântico dos macros > não confunde a sentinela de fim dentro do texto do letreiro com framing
+(pass) Canvas 3D — codec semântico dos macros > reserva auxiliares contra nomes do aluno e o JavaScript real continua parseável
+(pass) Canvas 3D — codec semântico dos macros > remove o kernel gerado do código→blocos sem perder o bloco de física
+(pass) Canvas 3D — codec semântico dos macros > separa o kernel e os metadados internos do código didático da Ponte
+(pass) Canvas 3D — codec semântico dos macros > mantém o source map alinhado depois dos cabeçalhos semânticos
+
+src\three\__tests__\canvas3dReferences.test.ts:
+(pass) Canvas 3D — referências tipadas > aceita o fluxo manual quando cada recurso foi declarado no papel certo [16.00ms]
+(pass) Canvas 3D — referências tipadas > recusa tela ausente e recurso usado no papel errado
+(pass) Canvas 3D — referências tipadas > recusa câmera, compositor e mundo físico que ainda não existem [16.00ms]
+(pass) Canvas 3D — referências tipadas > adapta automaticamente somente a câmera de perspectiva compatível
+(pass) Canvas 3D — referências tipadas > recusa corpo físico ausente ou criado depois do comando que o usa
+(pass) Canvas 3D — referências tipadas > reserva mover e pular para corpos do tipo personagem
+(pass) Canvas 3D — referências tipadas > aceita como sólidos somente objetos com colisor e cidades com mapa de colisão
+(pass) Canvas 3D — referências tipadas > recusa IDs físicos duplicados dentro do mesmo mundo e permite reutilizar após remover
+(pass) Canvas 3D — referências tipadas > só disponibiliza a função de altura depois de preparar o terreno [15.00ms]
+(pass) Canvas 3D — referências tipadas > mantém estrada e prédio planos válidos quando nenhuma função de altura foi escolhida
+(pass) Canvas 3D — referências tipadas > recusa dois terrenos que declaram a mesma função de altura
+(pass) Canvas 3D — referências tipadas > eleva bindings de import porque o gerador também move imports para o topo
+(pass) Canvas 3D — referências tipadas > não mistura uma cena Three.js crua com o mundo-fachada do Jogo 3D
+(pass) Canvas 3D — referências tipadas > recusa objeto comum no comando especializado de água
+(pass) Canvas 3D — referências tipadas > distingue carregador de modelo de carregador de áudio
+
+src\three\__tests__\canvas3dSafety.test.ts:
+(pass) Canvas 3D — limites, lifecycle e carregamento > restringe água, grama e passo da física a contextos contínuos
+(pass) Canvas 3D — limites, lifecycle e carregamento > limita densidade, tesselação, DPR e tamanho da cidade no código executável [16.00ms]
+(pass) Canvas 3D — limites, lifecycle e carregamento > rejeita criação de recursos 3D dentro do laço de animação
+(pass) Canvas 3D — limites, lifecycle e carregamento > rejeita construtor persistente encaixado como valor dentro do laço
+(pass) Canvas 3D — limites, lifecycle e carregamento > mantém valores matemáticos temporários disponíveis dentro do laço
+(pass) Canvas 3D — limites, lifecycle e carregamento > distingue classe local de addon realmente importado no lifecycle
+(pass) Canvas 3D — limites, lifecycle e carregamento > rejeita toda preparação persistente que ainda podia ser recriada a cada quadro [16.00ms]
+(pass) Canvas 3D — limites, lifecycle e carregamento > inclui a biblioteca 3D quando um facilitador gera código que depende dela
+(pass) Canvas 3D — limites, lifecycle e carregamento > gera callback de erro para loaders e o parser o preserva
+
+src\three\__tests__\physicsLiteRuntime.test.ts:
+(pass) SZ Physics Lite runtime > integra em passo fixo e mantém o corpo acima do chão analítico [15.00ms]
+(pass) SZ Physics Lite runtime > resolve caixa estática e publica a colisão real
+(pass) SZ Physics Lite runtime > aterrissa personagem sobre esfera estática e permite pular
+(pass) SZ Physics Lite runtime > separa corpo e esfera mesmo quando os centros coincidem
+(pass) SZ Physics Lite runtime > emite entrada e saída de gatilho sem repetir entrada a cada quadro
+(pass) SZ Physics Lite runtime > limpa contatos ao remover IDs que contêm o antigo delimitador interno
+(pass) SZ Physics Lite runtime > oferece salto de personagem e raycast no colisor mais próximo
+(pass) SZ Physics Lite runtime > personagem empurra corpos dinâmicos usando broadphase da grade
+(pass) SZ Physics Lite runtime > produz o mesmo deslocamento com 60 ou 120 chamadas por segundo
+(pass) SZ Physics Lite runtime > usa micro-passos para não atravessar uma parede fina em alta velocidade
+(pass) SZ Physics Lite runtime > limita entidades, remove qualquer tipo e permite cancelar listeners
+(pass) SZ Physics Lite runtime > não inclui Rapier, WASM ou dependência externa
+(pass) SZ Physics Lite runtime > rejeita nomes que poderiam alterar o protótipo dos índices internos
+
+src\three\__tests__\scene3d.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) resolve pelo ID e usa o runtime canônico, preservando fonte, matrizes e descarte em três ciclos [500.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) não resolve por nome e recusa recurso ausente ou bytes adulterados [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) captura os bytes e opções antes da primeira espera, sem reter alterações posteriores [360.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) cancelamento antes e entre recursos não entrega uma cena parcial [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) cancelamento na microtarefa da entrega descarta o resultado já carregado [344.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) orçamento do transporte é conferido antes de decodificar recursos [344.00ms]
+
+src\three\__tests__\scene3dBootstrap.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o SDK conserva a cena no pagehide persistido e libera no pagehide definitivo [375.00ms]
+
+src\three\__tests__\scene3dCanvas.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) a ligação troca apenas a base importada e libera os recursos anteriores, conservando o programa Three [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) a receita de atualização usa o loop existente antes e depois do carregamento, com foco em coordenadas globais [360.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) erro de preparo e sinal já cancelado conservam a cena vigente [375.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) um preparo atrasado não substitui a escolha mais recente nem retém sua geometria [328.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) cancelar uma ligação não afeta outra cena e não sobrescreve o ambiente alterado pelo programa [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) encerrar durante preparo libera o resultado atrasado e impede novas instalações [344.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o ambiente autoral alterado enquanto o arquivo prepara é restaurado ao retirar a primeira base [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) uma troca conserva também o ambiente que o programa alterou entre duas bases importadas [344.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) cancelar pelo evento de montagem Three conserva a base anterior e libera o preparo novo [344.00ms]
+
+src\three\__tests__\scene3dPhysics.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) Physics Lite usa o chão compilado fora da origem, sem chamar o piso analítico anterior [390.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o recorte compilado deixa o corpo cair por gravidade, sem piso zero invisível [485.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o tabuleiro real sustenta o corpo, permite salto e o teto compilado impede atravessamento [531.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) troca e descarte não consultam BVH liberado nem recriam chão; corpos e colisores autorais permanecem [375.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o deslocamento subdividido não atravessa a parede triangular fina, inclusive com corpo pequeno e rápido [328.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) atravessa a junta entre peças reais sem preencher todo o buraco com um piso artificial [610.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) remover a ligação emprestada não descarta a cena visual; clear permite reutilizar o mundo legado [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o cenário participa dos limites e dos IDs físicos; uma ligação inválida conserva a atual [344.00ms]
+(pass) os pés apoiam sobre toras arredondadas sem escorregar lateralmente nas juntas da ponte [15.00ms]
+(pass) o personagem conserva apoio em repouso no plano inclinado real e pode saltar dele [16.00ms]
+(pass) o apoio do personagem não retira o quique de um corpo dinâmico no cenário nativo
+
+src\three\__tests__\scene3dProArquivos.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) Pro busca só dependências do cenário, confere bytes/hash e reutiliza o cache sem trocar o SDK global [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) bytes adulterados não entram no cache e uma repetição válida usa o carregador canônico [328.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o fluxo acima do tamanho declarado é cancelado antes de copiar bytes fora do orçamento [344.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) cancelar durante a leitura encerra o fluxo e não deixa dados parciais no cache [344.00ms]
+
+ 78 pass
+ 0 fail
+ 287 expect() calls
+Ran 78 tests across 9 files. [11.68s]
+Studio tests: src/ui-internal (3 files)
+bun test v1.3.11 (af24e281)
+
+src\ui-internal\Button.test.tsx:
+(pass) Button > expõe o alvo mínimo compartilhado para dispositivos de toque [31.00ms]
+
+src\ui-internal\Menu.portal.test.tsx:
+(pass) Menu: onde o painel abre > reposicionar por rolagem ou resize conserva o item que a criança está usando [31.00ms]
+(pass) Menu: onde o painel abre > abre no document.body quando o host não escolheu outro contêiner
+(pass) Menu: onde o painel abre > abre dentro do contêiner do host (o diálogo modal do desafio) [16.00ms]
+(pass) Menu: folha no celular do Pro > com folha, o MESMO painel sobe de baixo, sem as coordenadas do gatilho; fecha igual
+(pass) Menu: folha no celular do Pro > sem o provider (clássico, lista, hosts sem Pro), nada muda [16.00ms]
+
+src\ui-internal\Modal.sheet.test.tsx:
+(pass) Modal: folha no celular do Pro > com folha, a janela sobe de baixo e ignora a largura de janela de quem chama [15.00ms]
+(pass) Modal: folha no celular do Pro > sem o provider, a janela de sempre (centralizada, com a largura pedida)
+(pass) Modal: folha no celular do Pro > Esc e o toque fora fecham a folha como fechavam a janela
+
+ 9 pass
+ 0 fail
+ 27 expect() calls
+Ran 9 tests across 3 files. [462.00ms]

@@ -3,6 +3,7 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   CanvasTexture,
+  type Matrix4,
   MeshStandardMaterial,
   PlaneGeometry,
   type Sprite,
@@ -100,6 +101,7 @@ export function TextoSobreMadeira<
     z: number
     giro: number
     escala: number
+    matriz?: Matrix4
     sinal?: { texto: string }
   },
 >({ colecao, assentar }: { colecao: readonly T[]; assentar: (p: T) => { y: number } }) {
@@ -145,9 +147,13 @@ export function TextoSobreMadeira<
     .map((p) => (
       <group
         key={p.id}
-        position={[p.x, assentar(p).y, p.z]}
-        rotation={[0, p.giro, 0]}
-        scale={p.escala}
+        {...(p.matriz
+          ? { matrix: p.matriz, matrixAutoUpdate: false }
+          : {
+              position: [p.x, assentar(p).y, p.z] as [number, number, number],
+              rotation: [0, p.giro, 0] as [number, number, number],
+              scale: p.escala,
+            })}
       >
         <mesh
           geometry={recursos.geo}

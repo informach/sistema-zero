@@ -1,95 +1,51 @@
-import { resolve } from 'node:path'
-import { criarClienteDaOficina, lerAcessoDaOficina, RecusaDaOficina } from './cliente'
+import { criarClienteDaOficina, lerAcessoDaOficina } from './cliente'
+import { criarContexto, ehImagem, executarFerramenta, FERRAMENTAS } from './ferramentas'
 
 /**
- * CLI da oficina de cenários (Molda › Cenários), para a equipe e para agentes sem MCP.
- * Fala com a plataforma pelo gateway, nas mesmas rotas da edição à mão.
+ * CLI da oficina de cenários: as MESMAS ferramentas do MCP, uma por chamada.
+ *
+ *   bun run cli <ferramenta> '<argumentos em JSON>'
+ *   bun run cli capturar_cenario '{"cenarioId":"..."}' foto.webp
+ *   bun run cli ajuda
+ *
+ * Acesso pelo ambiente: MOLDA_CENARIOS_APP (obrigatório), MOLDA_CENARIOS_TOKEN, ou
+ * MOLDA_CENARIOS_GATEWAY + MOLDA_CENARIOS_EMAIL + MOLDA_CENARIOS_SENHA.
  */
-const USO = `Comandos:
-  espacos
-  bibliotecas <espaço>
-  modelos <biblioteca> [busca]
-  mundos <espaço>
-  criar-mundo <espaço> <nome>
-  cenarios <mundo>
-  criar-cenario <mundo> <nome>
-  cenario <cenário>
-  duplicar <cenário>
-  editar <cenário> <lote.json>     (lote.json: { "revisaoEsperada": 3, "comandos": [...] })
 
-Acesso: MOLDA_CENARIOS_URL (o gateway) e MOLDA_CENARIOS_EMAIL + MOLDA_CENARIOS_SENHA
-de uma conta da equipe, ou MOLDA_CENARIOS_TOKEN.`
-
-const [acao, alvo, extra] = process.argv.slice(2)
-const mostrar = (valor: unknown) => console.log(JSON.stringify(valor, null, 2))
-const exigir = (valor: string | undefined, oque: string): string => {
-  if (!valor) throw Error(`Informe ${oque}\n\n${USO}`)
-  return valor
+export function ajuda(): string {
+  return [
+    "Uso: bun run cli <ferramenta> '<argumentos em JSON>'",
+    '',
+    ...FERRAMENTAS.map((f) => `  ${f.name.padEnd(20)} ${f.description.split('. ')[0]}.`),
+    '',
+    'Guia completo: docs/molda-cenarios-agentes.md',
+  ].join('\n')
 }
 
-try {
-  if (!acao || acao === 'ajuda') {
-    console.log(USO)
-  } else {
-    const cliente = criarClienteDaOficina(lerAcessoDaOficina())
-    switch (acao) {
-      case 'espacos':
-        mostrar(await cliente.espacos())
-        break
-      case 'bibliotecas':
-        mostrar(await cliente.bibliotecas(exigir(alvo, 'o espaço')))
-        break
-      case 'modelos':
-        mostrar(
-          await cliente.modelos(exigir(alvo, 'a biblioteca'), {
-            ...(extra ? { busca: extra } : {}),
-            limite: 100,
-          }),
-        )
-        break
-      case 'mundos':
-        mostrar(await cliente.mundos(exigir(alvo, 'o espaço')))
-        break
-      case 'criar-mundo':
-        mostrar(await cliente.criarMundo(exigir(alvo, 'o espaço'), exigir(extra, 'o nome')))
-        break
-      case 'cenarios':
-        mostrar(await cliente.cenarios(exigir(alvo, 'o mundo')))
-        break
-      case 'criar-cenario':
-        mostrar(await cliente.criarCenario(exigir(alvo, 'o mundo'), exigir(extra, 'o nome')))
-        break
-      case 'cenario':
-        mostrar(await cliente.cenario(exigir(alvo, 'o cenário')))
-        break
-      case 'duplicar':
-        mostrar(await cliente.duplicar(exigir(alvo, 'o cenário')))
-        break
-      case 'editar': {
-        const lote = await Bun.file(resolve(exigir(extra, 'o arquivo do lote'))).json()
-        mostrar(
-          await cliente.editar(
-            exigir(alvo, 'o cenário'),
-            lote.revisaoEsperada,
-            lote.comandos,
-            lote.operacaoId,
-          ),
-        )
-        break
-      }
-      default:
-        throw Error(`Não conheço "${acao}"\n\n${USO}`)
-    }
+if (import.meta.main) {
+  const [nome, json] = process.argv.slice(2)
+  if (!nome || nome === 'ajuda' || nome === '--help') {
+    console.log(ajuda())
+    process.exit(nome ? 0 : 1)
   }
-} catch (falha) {
-  if (falha instanceof RecusaDaOficina)
-    console.error(
-      JSON.stringify(
-        { erro: falha.message, codigo: falha.codigo, ...(falha.detalhes ?? {}) },
-        null,
-        2,
-      ),
-    )
-  else console.error(falha instanceof Error ? falha.message : String(falha))
-  process.exitCode = 1
+  let argumentos: unknown = {}
+  try {
+    argumentos = json ? JSON.parse(json) : {}
+  } catch {
+    console.error('Os argumentos precisam ser um JSON válido.')
+    process.exit(2)
+  }
+  const { host, baixar } = criarClienteDaOficina(lerAcessoDaOficina())
+  const r = await executarFerramenta(criarContexto(host, baixar), nome, argumentos)
+  if (r.ok && ehImagem(r.valor)) {
+    // A captura vira um arquivo (o terceiro argumento, ou captura.webp aqui mesmo).
+    const arquivo = process.argv[4] ?? 'captura.webp'
+    await Bun.write(arquivo, r.valor.imagem)
+    const { imagem: _imagem, ...resto } = r.valor
+    console.log(JSON.stringify({ ...resto, arquivo }, null, 2))
+  } else if (r.ok) console.log(JSON.stringify(r.valor, null, 2))
+  else {
+    console.error(JSON.stringify(r.erro, null, 2))
+    process.exit(1)
+  }
 }

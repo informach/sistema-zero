@@ -56,6 +56,18 @@ export type StudioRuntimeEvent = { identity: StudioExecutionIdentity; sequence: 
     }
 )
 
+/**
+ * Uma fatia de meio segundo da aba Desempenho, medida no quadro do Python (fora do programa e do
+ * worker: o quadro só olha quantos quadros o renderizador pintou). `canvas` falso: o programa não
+ * desenha (só print e input) e não há quadros para medir.
+ */
+export interface StudioRuntimePerformanceSlice {
+  fps: number
+  frameMsAvg: number
+  frameMsMax: number
+  canvas: boolean
+}
+
 export interface StudioRuntimeSession {
   /** Read-only probes on a dedicated validation generation. Never a client verdict. */
   observePythonMission?(
@@ -80,10 +92,32 @@ export interface StudioRuntimeSession {
   provideInput(requestId: string, response: StudioRuntimeInput): Promise<void>
   /** Captures an already presented frame. It never executes or changes learner source. */
   captureSnapshot?(): Promise<StudioRuntimeSnapshot | null>
+  /**
+   * A aba Desempenho: com um ouvinte, o quadro manda uma fatia a cada meio segundo; `null`
+   * desliga. Só lê o contador de quadros do renderizador; nunca toca no programa.
+   */
+  /**
+   * A aba Meus testes: aperta (`down`) ou solta uma tecla do contrato dos objetivos no programa.
+   * Recusa quando o quadro do Python não conhece o comando (distribuição anterior a ele).
+   */
+  pressKey?(key: string, down: boolean): Promise<void>
+  /**
+   * A aba Investigar: pausa o programa na troca de quadro (`true`) ou continua (`false`). Resolve
+   * com o quadro em que ele parou (ou `null` ao continuar, ou quando ele não pintou quadro nenhum
+   * dentro do prazo). Recusa no programa sem tela e no quadro do Python anterior ao comando.
+   */
+  pausePython?(on: boolean): Promise<{ frame: number } | null>
+  /** Avança 1 quadro com o programa pausado; resolve com o quadro em que ele parou de novo. */
+  stepPython?(): Promise<{ frame: number } | null>
+  measurePerformance?(
+    listener: ((slice: StudioRuntimePerformanceSlice) => void) | null,
+  ): Promise<void>
 }
 
 export interface StudioRuntimePrepareInput {
   pythonMission?: true
+  /** Host presentation only; never part of the learner's document or execution digest. */
+  pythonBackground?: true
   /** Trusted host UI preference. Never supplied by learner source or frame messages. */
   hostAudio?: StudioHostAudioPreference
   /** Host-owned lesson criteria, separate from the editable project and its execution digest. */

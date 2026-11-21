@@ -1,4 +1,5 @@
 import { isPythonProject } from '../../core/editableProject'
+import { pythonCanvasExtension } from '../../runtime/python/canvasExtension'
 import type {
   PythonExecutionController,
   PythonExecutionView,
@@ -10,8 +11,10 @@ import { useProRunApi } from '../../state/proRun'
 import {
   usePendingEditorEdits,
   usePythonEditorConsole,
+  usePythonTestHostSource,
   useStudioRuntimeCapture,
 } from '../../state/studioStores'
+import { useUIStore, useUIStoreApi } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
 import { useStudioExecution } from '../../studio/observation'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
@@ -37,8 +40,10 @@ export function PythonEditorPreview() {
   const capture = useStudioRuntimeCapture()
   const consoleBridge = usePythonEditorConsole()
   const consoleRelease = useRef<(() => void) | undefined>(undefined)
+  const controllerRef = useRef<PythonExecutionController | null>(null)
   const connectConsole = useCallback(
     (controller: PythonExecutionController | null) => {
+      controllerRef.current = controller
       consoleRelease.current?.()
       consoleRelease.current = controller ? consoleBridge?.register(controller) : undefined
     },
@@ -54,6 +59,26 @@ export function PythonEditorPreview() {
   const environment = useStudioRuntimeEnvironment()
   const execution = useStudioExecution()
   const proRun = useProRunApi()
+  // A aba Meus testes roda cada teste numa execução escondida, só dela: pede aqui o ambiente e o
+  // projeto como o Rodar o rodaria (o editor descarrega o que segura antes). O programa desta
+  // prévia não muda.
+  const testHost = usePythonTestHostSource()
+  const latestRun = useRef({ environment, execution })
+  latestRun.current = { environment, execution }
+  useEffect(() => {
+    if (!testHost) return
+    return testHost.register({
+      environment: () => latestRun.current.environment,
+      project: () => {
+        if (latestRun.current.execution.editingAccess !== 'author') return null
+        pending?.flush()
+        const current = store.getState().project
+        return current && isPythonProject(current) && current.kind === 'classic' ? current : null
+      },
+      writerEpoch: () => latestRun.current.execution.writerEpoch ?? null,
+      canExecute: () => store.getState().editingAccess === 'author',
+    })
+  }, [testHost, pending, store])
   const [commands, setCommands] = useState<PythonRunCommands | null>(null)
   const view = useSyncExternalStore(
     consoleBridge?.subscribe ?? emptySubscribe,
@@ -73,6 +98,8 @@ export function PythonEditorPreview() {
     line: number
     column: number
     message: string
+    /** O traceback inteiro (o caminho até o erro da aba Investigar). */
+    traceback?: string
   } | null>(null)
   const classic = python?.kind !== 'pro'
   const runState = useMemo(() => {
@@ -118,6 +145,133 @@ export function PythonEditorPreview() {
     if (!editing) return
     proRun.getState().publish(runState, runState ? commands : null)
   }, [editing, proRun, runState, commands])
+  // A aba Desempenho (proposta aprovada em 20/11/2026). O tempo de cada execução, para o programa
+  // sem tela, e a medida dos quadros, só com a aba medindo: o quadro do Python conta os quadros
+  // pintados e manda uma fatia a cada meio segundo. O módulo das janelas entra sob demanda.
+  const ui = useUIStoreApi()
+  const measuring = useUIStore((state) => state.measuring)
+  const investigating = useUIStore((state) => state.investigating)
+  const runId = current.identity?.runId ?? null
+  const runningNow = current.status === 'running' || current.status === 'waiting-input'
+  const ended =
+    current.status === 'completed' || current.status === 'failed' || current.status === 'stopped'
+  const timedRun = useRef<string | null>(null)
+  const drawsOnCanvas = useMemo(() => {
+    if (!python) return null
+    try {
+      return pythonCanvasExtension(python.installedExtensions) !== undefined
+    } catch {
+      // Duas bibliotecas de tela ao mesmo tempo: o Rodar avisa; para a aba, o programa desenha.
+      return true
+    }
+  }, [python])
+  useEffect(() => {
+    if (drawsOnCanvas === null) return
+    void import('../../state/devtools').then(({ programTimeFor }) =>
+      programTimeFor(ui).setState({ canvas: drawsOnCanvas }),
+    )
+  }, [ui, drawsOnCanvas])
+  useEffect(() => {
+    if (!runningNow && !ended) return
+    const startsNow = runningNow && runId !== null && timedRun.current !== runId
+    if (startsNow) timedRun.current = runId
+    void import('../../state/devtools').then(({ programTimeFor }) => {
+      const time = programTimeFor(ui)
+      if (startsNow) time.setState({ startedAt: Date.now(), endedAt: null })
+      else if (ended && time.getState().startedAt !== null && time.getState().endedAt === null)
+        time.setState({ endedAt: Date.now() })
+    })
+  }, [ui, runId, runningNow, ended])
+  // A aba Investigar (proposta aprovada em 20/11/2026: "Valores agora, caminho até o erro").
+  // Ligada, cada Rodar começa no modo de observação (o observador das missões lê as variáveis a
+  // cada quadro, sem mudar o programa); ligar ou desligar recomeça o programa, como o JavaScript.
+  const statusRef = useRef(current.status)
+  statusRef.current = current.status
+  const investigatingBefore = useRef(investigating)
+  useEffect(() => {
+    if (investigatingBefore.current === investigating) return
+    investigatingBefore.current = investigating
+    if (commands && statusRef.current !== 'idle') commands.run()
+  }, [investigating, commands])
+  const entrySource =
+    python && python.kind !== 'pro' ? (python.files[python.python.entrypoint] ?? '') : ''
+  const investigatedRun =
+    investigating && runId !== null && (runningNow || current.status === 'completed')
+  const completedNow = current.status === 'completed'
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runId` é o GATILHO (uma execução nova lê de novo)
+  useEffect(() => {
+    const controller = controllerRef.current
+    if (!investigatedRun || !controller) return
+    // O programa sem tela só responde no fim: perguntar enquanto ele roda prenderia a sonda.
+    if (drawsOnCanvas === false && !completedNow) return
+    let gone = false
+    let stop: (() => void) | null = null
+    void Promise.all([
+      import('../../components/devtools/pythonInvestigation'),
+      import('../../state/devtools'),
+    ]).then(([help, devtools]) => {
+      if (gone) return
+      const window = devtools.investigationWindowFor(ui)
+      // Os valores e Pausar e Avançar 1 quadro (no programa que desenha na tela, pelo quadro do
+      // Python que conhece a pausa).
+      stop = help.runPythonInvestigation({
+        controller,
+        names: help.pythonTopLevelNames(entrySource),
+        draws: drawsOnCanvas === true,
+        completed: completedNow,
+        receive: (reading) => window.getState().receive(reading),
+        setSender: (sender) => devtools.setDevtoolsSender(ui, sender),
+      })
+    })
+    return () => {
+      gone = true
+      stop?.()
+    }
+  }, [investigatedRun, completedNow, drawsOnCanvas, entrySource, ui, runId])
+  // O erro que parou o programa vira o caminho até o erro (os passos do traceback do projeto).
+  const traceback = investigating ? (diagnostic?.traceback ?? null) : null
+  useEffect(() => {
+    if (!traceback) return
+    void Promise.all([
+      import('../../components/devtools/pythonInvestigation'),
+      import('../../state/devtools'),
+    ]).then(([help, { investigationWindowFor }]) => {
+      const window = investigationWindowFor(ui)
+      const state = window.getState()
+      window.getState().receive({
+        frame: null,
+        paused: false,
+        canPause: false,
+        pauseLater: false,
+        values: state.values.map(({ name, text }) => ({ name, text })),
+        error: { lines: [], trace: help.pythonTraceSteps(traceback) },
+      })
+    })
+  }, [traceback, ui])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `runId` é o GATILHO (uma execução nova religa a medida)
+  useEffect(() => {
+    const controller = controllerRef.current
+    if (!measuring || !runningNow || !controller) return
+    let gone = false
+    void import('../../state/devtools').then(({ perfWindowFor }) => {
+      if (gone) return
+      const window = perfWindowFor(ui)
+      window.getState().clear()
+      // Recusa: o quadro publicado não mede (é de antes da medida) ou a execução acabou antes
+      // (Parar, erro). A aba diz que ainda não dá para medir; a próxima execução tenta de novo.
+      controller
+        .measurePerformance((slice) =>
+          window.getState().push({ ...slice, sprites: null, objects: null, draws: null }),
+        )
+        .catch(() => {
+          if (!gone) window.getState().refuse()
+        })
+    })
+    return () => {
+      gone = true
+      controller.measurePerformance(null).catch(() => undefined)
+    }
+  }, [measuring, runningNow, ui, runId])
   useEffect(() => () => proRun.getState().publish(null, null), [proRun])
   if (!python) return null
   return (
@@ -134,6 +288,7 @@ export function PythonEditorPreview() {
       canExecute={execution.editingAccess === 'author'}
       canExecuteNow={() => store.getState().editingAccess === 'author'}
       autoRun={execution.autoRun}
+      observation={investigating}
       muted={execution.muted}
       writerEpoch={execution.writerEpoch}
       capture={capture}
@@ -177,6 +332,7 @@ export function PythonEditorPreview() {
                 line: event.line,
                 column: event.column,
                 message: event.message,
+                ...(event.traceback ? { traceback: event.traceback } : {}),
               },
           )
           pushLog({

@@ -1,5 +1,22 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Atualizar a publicação do Mural (20/11/2026)
+
+Quatro rotas exatas do hub na régua das de publicação (JWT de aluno ativo + HMAC
+`allowedConsumers: ['member-shell']`, `hubInternalTransforms`, 30/min por principal, corpo pequeno):
+`hub-showcase-update-studio` (`POST /hub/internal/showcase-thread-studio/update`),
+`hub-showcase-update-studio-standalone` (`…-standalone/update`), `hub-showcase-touch-studio`
+(`…/showcase-thread-studio/touch`) e `hub-showcase-source` (`POST /hub/internal/showcase-source`).
+Liberadas ao aluno no `kidsMayAccess` (lista exata). Testes: `kids-access-policy.test.ts` e
+`studio-publication-provenance.test.ts`.
+
+## Meus testes no Pro (20/11/2026)
+
+`members-studio-student-tests` (`POST /members/studio/student-tests`): JWT de conta ativa,
+`membersInternalTransforms`, corpo de 2 MB, 20 por minuto por principal e o `timeoutMs` do
+"Verificar projeto" (160 s). O members confere o acesso ao Pro e roda os testes no executor; um
+lote por pedido. Teste em `tests/unit/config.test.ts`.
+
 ## Molda Cenários (16/11/2026)
 
 `src/infrastructure/config/cenarios-routes.ts` (`cenariosRoutes(membersInternalTransforms)`),

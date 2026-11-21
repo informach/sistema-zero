@@ -417,6 +417,40 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
         proximo: inicio + limite < todos.length ? String(inicio + limite) : null,
       })
     },
+    async buscarModelosNoEspaco(espacoId, filtro = {}) {
+      await esperar()
+      const busca = semAcento(filtro.busca?.trim() ?? '')
+      const termos = busca ? busca.split(/\s+/) : []
+      const dentro = (v: number, min?: number, max?: number) =>
+        (min === undefined || v >= min) && (max === undefined || v <= max)
+      const todos = [...modelos.values()]
+        .filter((m) => bibliotecas.get(m.bibliotecaId)?.espacoId === espacoId)
+        .filter((m) => filtro.pasta === undefined || m.pasta === filtro.pasta)
+        .filter((m) => filtro.etiqueta === undefined || m.etiquetas.includes(filtro.etiqueta))
+        .filter((m) => filtro.ids === undefined || filtro.ids.includes(m.id))
+        .filter((m) => dentro(m.max[1] - m.min[1], filtro.alturaMin, filtro.alturaMax))
+        .filter((m) =>
+          dentro(
+            Math.max(m.max[0] - m.min[0], m.max[2] - m.min[2]),
+            filtro.ladoMin,
+            filtro.ladoMax,
+          ),
+        )
+        .filter((m) => {
+          if (!termos.length) return true
+          const alvo = semAcento(`${m.nome} ${m.pasta} ${m.etiquetas.join(' ')}`)
+          return termos.every((t) => alvo.includes(t))
+        })
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+      const inicio = Number(filtro.cursor ?? 0) || 0
+      const limite = Math.min(200, Math.max(1, filtro.limite ?? 60))
+      const itens = todos.slice(inicio, inicio + limite)
+      return copia({
+        itens,
+        total: todos.length,
+        proximo: inicio + limite < todos.length ? String(inicio + limite) : null,
+      })
+    },
     async importarModelos(bibliotecaId, lista, aoAndar, sinal) {
       sinal?.throwIfAborted()
       const biblioteca = exigir(bibliotecas, bibliotecaId, 'A biblioteca')
@@ -679,6 +713,11 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
           refazer: c.futuro.length,
         },
       })
+    },
+    async historicoDoCenario(id) {
+      await esperar()
+      const c = exigir(cenarios, id, 'O cenário')
+      return { revisao: c.resumo.revisao, desfazer: c.passado.length, refazer: c.futuro.length }
     },
     async prepararExportacao(id, revisaoEsperada, sinal) {
       sinal?.throwIfAborted()

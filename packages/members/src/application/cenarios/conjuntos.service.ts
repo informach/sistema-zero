@@ -30,7 +30,9 @@ export interface VersaoDeConjuntoView extends Omit<VersaoDeConjunto, 'criadoEm' 
 }
 
 interface Contexto {
-  exigirAberto(ator: Ator): void
+  exigirAberto(ator: Ator): Promise<void>
+  /** A faixa do posto: montar conjuntos é do intermediário. */
+  exigirFamilia(ator: Ator, familia: 'objetos.conjuntos'): Promise<void>
   bibliotecaDe(ator: Ator, id: string): Promise<{ biblioteca: Biblioteca; espaco: Espaco }>
   abrirCenario(ator: Ator, id: string): Promise<CenarioView>
   abrirMundo(ator: Ator, id: string): Promise<MundoView>
@@ -88,7 +90,7 @@ export class ConjuntosService {
   ) {}
 
   private async de(ator: Ator, id: string) {
-    this.contexto.exigirAberto(ator)
+    await this.contexto.exigirAberto(ator)
     const conjunto = await this.repo.conjunto(id)
     if (!conjunto) throw new CenarioNaoEncontradoError('O conjunto')
     const { espaco } = await this.contexto.bibliotecaDe(ator, conjunto.bibliotecaId)
@@ -149,6 +151,7 @@ export class ConjuntosService {
     },
   ) {
     const { espaco } = await this.contexto.bibliotecaDe(ator, bibliotecaId)
+    await this.contexto.exigirFamilia(ator, 'objetos.conjuntos')
     const m = metadados(dados)
     const c = await this.repo.criarConjunto(
       {
@@ -173,12 +176,14 @@ export class ConjuntosService {
     dados: { nome?: string; pasta?: string; etiquetas?: string[] },
   ) {
     await this.de(ator, id)
+    await this.contexto.exigirFamilia(ator, 'objetos.conjuntos')
     const c = await this.repo.editarConjunto(id, metadados(dados), this.contexto.agora())
     if (!c) throw new CenarioNaoEncontradoError('O conjunto')
     return view(c)
   }
   async editarNaOficina(ator: Ator, id: string) {
     await this.de(ator, id)
+    await this.contexto.exigirFamilia(ator, 'objetos.conjuntos')
     const fonte = await this.repo.prepararEdicaoDeConjunto(
       id,
       ator.usuarioId,
@@ -203,6 +208,7 @@ export class ConjuntosService {
     },
   ) {
     const { conjunto, espaco } = await this.de(ator, id)
+    await this.contexto.exigirFamilia(ator, 'objetos.conjuntos')
     if (!Number.isInteger(dados.revisaoEsperada) || dados.revisaoEsperada < 1)
       throw new ValidationError('Informe a revisão publicada que está editando')
     if (dados.rascunho) {
@@ -239,6 +245,7 @@ export class ConjuntosService {
     imagem: { digest: string; bytes: number; tipoDoConteudo: 'image/png' | 'image/webp' },
   ) {
     const { espaco } = await this.de(ator, id)
+    await this.contexto.exigirFamilia(ator, 'objetos.conjuntos')
     await this.versao(ator, id, revisao)
     if (
       !/^[a-f0-9]{64}$/.test(imagem.digest) ||
@@ -259,6 +266,7 @@ export class ConjuntosService {
     recurso: { espacoId: string; conferido: ConferenciaDeBlob },
   ) {
     const { espaco } = await this.de(ator, id)
+    await this.contexto.exigirFamilia(ator, 'objetos.conjuntos')
     if (espaco.id !== recurso.espacoId) throw new CenarioNaoEncontradoError('O conjunto')
     if (
       !(await this.repo.definirMiniaturaDoConjunto(

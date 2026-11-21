@@ -96,6 +96,43 @@ const list = (...ops: number[]) => ({
 })
 
 describe('Pygame Zero renderer exchange', () => {
+  for (const focus of [true, false])
+    test(`presentation focus=${focus} preserves painting and applies to startup and pointer input`, async () => {
+      const host = document.createElement('div')
+      const editor = document.createElement('input')
+      document.body.append(editor, host)
+      editor.focus()
+      const renderer = createPgzeroRenderer(host, { focus })
+      const before = screenFills
+      try {
+        await renderer.exchange(header(), [list(PGZERO_OP.FILL, 1, 2, 3, 255)])
+        const canvas = host.querySelector('canvas')
+        expect(canvas).not.toBeNull()
+        if (!canvas) throw new Error('Missing real renderer canvas')
+        expect(screenFills).toBeGreaterThan(before)
+        expect([canvas.width, canvas.height]).toEqual([64, 48])
+        expect(document.activeElement).toBe(focus ? canvas : editor)
+        Object.defineProperty(canvas, 'getBoundingClientRect', {
+          value: () => new DOMRect(0, 0, 64, 48),
+        })
+        editor.focus()
+        canvas.dispatchEvent(
+          new MouseEvent('pointerdown', {
+            clientX: 8,
+            clientY: 8,
+            button: 0,
+            buttons: 1,
+            bubbles: true,
+          }),
+        )
+        expect(document.activeElement).toBe(focus ? canvas : editor)
+      } finally {
+        renderer.dispose()
+        host.remove()
+        editor.remove()
+      }
+    })
+
   test('mission actor poses appear only with a presented frame and disappear when no longer drawn', async () => {
     const renderer = createPgzeroRenderer(document.createElement('div'), { mission: true })
     try {

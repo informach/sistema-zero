@@ -1,0 +1,11 @@
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-level-design-scenes.flow.ts:152:1 › autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena (3.5s)
+  ✓  2 [desktop] › e2e\pinta-native-world-scenes.flow.ts:46:1 › arquivo editável: Vila e cabana completas, restauro e reabertura sem perda (2.6s)
+(node:37420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [touch] › e2e\pinta-level-design-scenes.flow.ts:152:1 › autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena (4.0s)
+  ✓  4 [touch] › e2e\pinta-native-world-scenes.flow.ts:46:1 › arquivo editável: Vila e cabana completas, restauro e reabertura sem perda (2.5s)
+
+  4 passed (18.6s)

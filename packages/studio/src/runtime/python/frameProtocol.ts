@@ -72,6 +72,7 @@ export interface PythonFrameInitialization {
   snapshot: PythonExecutionSnapshot
   activity?: StudioPythonActivity
   mission?: true
+  background?: true
   bootResources: 1
 }
 export type PythonFrameCommand = {
@@ -86,6 +87,19 @@ export type PythonFrameCommand = {
   | { type: 'mission-observe'; requestId: string; probe: StudioPythonMissionProbe }
   | { type: 'input'; requestId: string; response: StudioRuntimeInput }
   | { type: 'audio-response'; requestId: string; response: string }
+  /** A aba Desempenho liga e desliga a medida (o quadro conta os quadros pintados). */
+  | { type: 'perf'; on: boolean }
+  /**
+   * A aba Meus testes aperta (`down`) ou solta uma tecla do contrato dos objetivos no programa,
+   * como o teclado faria: o quadro despacha o KeyboardEvent no desenho (que sobe até a janela).
+   */
+  | { type: 'key'; key: string; down: boolean }
+  /**
+   * A aba Investigar pausa (`on`) ou continua o programa na troca de quadro, e avança 1 quadro
+   * (`step`), pelo `framePause.ts` do quadro. O programa sem tela recusa (não tem quadros).
+   */
+  | { type: 'pause'; on: boolean }
+  | { type: 'step' }
 )
 export type PythonFrameMessage = {
   protocol: 1
@@ -99,6 +113,12 @@ export type PythonFrameMessage = {
   | { type: 'mission-result'; requestId: string; result: StudioPythonMissionFrameObservation }
   | { type: 'audio-request'; requestId: string; request: string }
   | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
+  | {
+      type: 'perf'
+      slice: { fps: number; frameMsAvg: number; frameMsMax: number; canvas: boolean }
+    }
+  /** O programa parou no quadro `frame` (os quadros pintados desde o começo). */
+  | { type: 'pause'; held: boolean; frame: number }
   | {
       type: 'ack'
       commandId: number

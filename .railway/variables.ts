@@ -509,12 +509,13 @@ const extra: Record<string, Record<string, string[]>> = {
     'marketing-app': [],
     helpdesk: [],
     'evolution-api': [],
-    community: [],
+    // Casca isolada da prévia do Clássico (etapa 4 da missão do Estúdio, 20/11/2026): só staging.
+    community: ['STUDIO_CLASSIC_SHELL_ENABLED'],
     funnel: [],
     members: ['CENARIOS_MODO', 'COURSE_PUBLICATION_PRODUCTION_ADMIN_URL'],
     'helpdesk-app': [],
     admin: ['COURSE_PUBLICATION_SOURCE_TOKEN'],
-    'community-kids': [],
+    'community-kids': ['STUDIO_CLASSIC_SHELL_ENABLED'],
     'palco-gravacao': [],
   },
   production: {

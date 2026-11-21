@@ -372,6 +372,25 @@ describe('BFF do Molda Cenários: repasse', () => {
     ])
   })
 
+  test('a busca no espaço leva tamanho, etiqueta e a lista inteira de ids, e nada mais', async () => {
+    const t = montar({ responder: () => ({ status: 200, body: { itens: [], total: 0 } }) })
+    const ids = Array.from({ length: 150 }, () => crypto.randomUUID()).join(',')
+    const r = await t.pedir(
+      'GET',
+      `espacos/${BIBLIOTECA}/modelos?alturaMin=2&ladoMax=5&etiqueta=verde&ids=${ids}&espaco=outro`,
+    )
+    expect(r.status).toBe(200)
+    expect(t.chamadas).toEqual([
+      {
+        via: 'jwt',
+        path: `/members/cenarios/espacos/${BIBLIOTECA}/modelos`,
+        method: 'GET',
+        body: undefined,
+        query: { etiqueta: 'verde', ids, alturaMin: '2', ladoMax: '5' },
+      },
+    ])
+  })
+
   test('o lote do editor segue com o corpo; recusa do members volta inteira', async () => {
     const t = montar({
       responder: () => ({
@@ -498,6 +517,35 @@ describe('BFF do Molda Cenários: trazer modelos', () => {
       path: `/members/cenarios/bibliotecas/${BIBLIOTECA}/modelos/reservar`,
       body: pedido,
     })
+  })
+
+  test('o retrato que a versão já tem volta na reserva da capa, sem nada a enviar', async () => {
+    // Conferência em staging (20/11): sem o campo, a oficina tentava confirmar uma imagem que
+    // nunca enviou e recebia 409 "Envie o retrato de novo" ao reabrir o cenário.
+    const t = montar({
+      responder: () => ({
+        status: 200,
+        body: { espacoId: ESPACO, enviar: [], retrato: digest('c') },
+      }),
+    })
+    const pedido = { revisao: 3, digest: digest('d'), bytes: 7840, tipoDoConteudo: 'image/webp' }
+    const r = await t.pedir('POST', `cenarios/${CENARIO}/capa/reservar`, pedido)
+    expect(r.status).toBe(200)
+    expect(await r.json()).toEqual({ espacoId: ESPACO, enviar: [], retrato: digest('c') })
+    expect(t.assinados).toEqual([])
+    // Sem retrato guardado, a resposta segue como antes (e o retrato vem nulo).
+    const sem = montar({
+      responder: () => ({ status: 200, body: { espacoId: ESPACO, enviar: [], retrato: null } }),
+    })
+    const r2 = await sem.pedir('POST', `cenarios/${CENARIO}/capa/reservar`, pedido)
+    expect(await r2.json()).toEqual({ espacoId: ESPACO, enviar: [], retrato: null })
+    // Retrato fora do formato não passa adiante.
+    const torto = montar({
+      responder: () => ({ status: 200, body: { espacoId: ESPACO, enviar: [], retrato: 'x' } }),
+    })
+    expect((await torto.pedir('POST', `cenarios/${CENARIO}/capa/reservar`, pedido)).status).toBe(
+      502,
+    )
   })
 
   test('chave que não é deste espaço não é assinada', async () => {
@@ -892,7 +940,10 @@ describe('BFF do Molda Cenários: agente com token no cabeçalho', () => {
         getSession: async () => {
           throw Error('o pedido do agente não lê a sessão do cookie')
         },
-        verifyAccessTokenLocally: async (t: string) => veredito(t),
+        verifyAccessToken: async (t: string) => veredito(t),
+        verifyAccessTokenLocally: async () => {
+          throw Error('o pedido do agente usa a verificação completa')
+        },
       } as unknown as SessionModule,
       gatewayDoToken: (token) =>
         ({

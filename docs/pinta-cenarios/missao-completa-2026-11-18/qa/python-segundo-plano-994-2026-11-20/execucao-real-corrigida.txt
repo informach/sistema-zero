@@ -1,0 +1,12 @@
+
+Running 5 tests using 1 worker
+
+(node:33180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e-runtime\python-background-focus.spec.ts:28:3 › pinta-world-1x: a background renderer paints while the host retains the keyboard (2.8s)
+  ✓  2 e2e-runtime\python-background-focus.spec.ts:28:3 › turtleDrawing: a background renderer paints while the host retains the keyboard (4.6s)
+  ✓  3 e2e-runtime\python-background-focus.spec.ts:28:3 › raylibGame: a background renderer paints while the host retains the keyboard (2.5s)
+  ✓  4 e2e-runtime\python-background-focus.spec.ts:92:3 › classic-pgzeroGame: the real student-test runner drives the game without taking focus (3.2s)
+  ✓  5 e2e-runtime\python-background-focus.spec.ts:92:3 › classic-pinta-world-1x: the real student-test runner drives the game without taking focus (3.4s)
+
+  5 passed (17.6s)

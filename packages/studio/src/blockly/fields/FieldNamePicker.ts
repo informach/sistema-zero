@@ -24,6 +24,7 @@ import {
   enclosingClass,
   superClassMethodNames,
 } from '../blocks/classIntrospection'
+import { GROUP_DECL_BLOCKS } from './declaringBlocks'
 
 type NameFieldRegistry = Readonly<Record<string, readonly string[]>>
 type ScopedBinder = readonly string[] | Readonly<Record<string, readonly string[]>>
@@ -1027,18 +1028,6 @@ const CANVAS_CONTEXT_LITERAL_BINDERS: ScopedBinderRegistry = {
 /** Funções locais introduzidas por valores com corpo de comandos. */
 const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
   sz_val_new_promise: { DO: ['PARAM'] },
-}
-
-/**
- * Blocos que DECLARAM um grupo de sprites nomeado (Jogo 2D). O TIPO de inimigo
- * também entra aqui: ele É um grupo estendido (tem .items) — os blocos de grupo
- * (para cada / contar / colisões / tirar) funcionam direto no tipo.
- */
-const GROUP_DECL_BLOCKS: Record<string, string[]> = {
-  sz_g2d_create_group: ['NAME'],
-  sz_g2d_all_enemies_group: ['NAME'],
-  sz_g2d_define_enemy_type: ['NAME'],
-  sz_g2d_define_enemy_smart: ['NAME'],
 }
 
 /** Blocos que DECLARAM um TIPO de inimigo nomeado (Jogo 2D). */

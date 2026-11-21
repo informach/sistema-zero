@@ -1,0 +1,30 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "974cbdb79440323711fcd61e8dab3de3aef39dd7ea1272bb1f161a2be3bee0b7"
+  },
+  {
+    "file": "baseline-staging-incompleta.json",
+    "sha256": "c098807f847259d789ffb89f438b3c7724ada3b206e96448878f27d2a1794946"
+  },
+  {
+    "file": "navegador.txt",
+    "sha256": "cafecae604e56f5c0dac1abfcd553965e2fe78130deee00919334c5c85c55118"
+  },
+  {
+    "file": "pygame-real.txt",
+    "sha256": "a0b29ca96c7694dccc7c3d07764d2a25d472956c76b73ea516b3ca4358ba33ff"
+  },
+  {
+    "file": "regressao-focada.txt",
+    "sha256": "926f8199d7e72a10a60451a22765fd24b6082a428a3cf0991b138c40a692fe69"
+  },
+  {
+    "file": "suite-pinta.txt",
+    "sha256": "7994e77608f4b2be9ead4cdbc2b8bd078909952918b276aa374d1b1f783dbf5f"
+  },
+  {
+    "file": "verificacao.json",
+    "sha256": "a7ebfe5e2fdf803829292353b7252e9a03053971595fe7fa008d10646020419b"
+  }
+]

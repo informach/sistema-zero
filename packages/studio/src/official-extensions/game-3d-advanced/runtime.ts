@@ -1,6 +1,11 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameRules3DRuntime } from '../game3dRules/runtime'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
+import {
+  THREE_INVESTIGATION_VARIANT,
+  type ThreeInvestigationEngine,
+  withThreeInvestigation,
+} from '../three3dInvestigation'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
@@ -9,7 +14,8 @@ import { gameKit3DGameplayRuntimeSource } from './runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from './runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from './runtimeProject'
-import { gameKit3DSceneRuntimeSource } from './runtimeScene'
+import { gameKit3DSceneAbsentRuntimeSource, gameKit3DSceneRuntimeSource } from './runtimeScene'
+import { GAME_KIT_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
@@ -86,6 +92,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
 
   // ---- Estado interno ----
   var state = 'menu';
+  /*__SZ_3D_INVESTIGAR__*/
   var stateQueue = [];
   var changingState = false;
   var started = false;
@@ -2978,6 +2985,7 @@ const gameKit3DRuntimeAfterModelSource = `
     // Sonda de FPS do orçamento (entre 1,5 s e 4 s; abaixo de 45 passa ao nível leve).
     renderBudget.sample(dt);
     var waitingForScene = sceneRequest && sceneRequest.waitForRun;
+    /*__SZ_3D_INVESTIGAR_QUADRO__*/
     if (state === 'jogando' && !waitingForScene) {
       // "Ir para a próxima fase" pedido no quadro anterior: troca aqui, fora dos laços.
       if (levelPending) startPendingLevel();
@@ -3957,26 +3965,71 @@ const gameKit3DRuntimeAfterModelSource = `
 })();
 `
 
-const gameKit3DRuntimeSource = withGameRules3DRuntime(
-  gameKit3DRuntimeBeforeModelSource +
-    gameKit3DModelAssetsRuntimeSource +
-    gameKit3DRuntimeAfterModelSource,
-)
-  .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/', () => gameKit3DSceneRuntimeSource)
+/**
+ * A aba Investigar e a medida no 3D Avançado (`../three3dInvestigation.ts`): a pausa é o estado
+ * "pausado" do jogo (o mesmo da tecla de pausa), como no 2D Avançado.
+ */
+const GAME_KIT_3D_INVESTIGATION: ThreeInvestigationEngine = {
+  inspector: 'game-3d-advanced:investigar',
+  paused: "state === 'pausado'",
+  playing: "state === 'jogando'",
+  pause: "setState('pausado');",
+  resume: "setState('jogando');",
+  frameGuard: 'true',
+  plays: "state === 'jogando' && !waitingForScene",
+  frameRenderer: 'renderer',
+  renderer: 'renderer',
+  scene: 'scene',
+}
 
-// Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
-// contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
-// pacote, e no build minificado o esbuild escreve template literals ali.
-export const gameKit3DRuntime = compactOfficialRuntimeSource(
-  withThreeRenderBudgetRuntime(
-    withThreePostProcessingRuntime(withThreeModelsRuntime(gameKit3DRuntimeSource)),
-  ),
-  { trimIndent: true },
-).replace(
-  "import * as THREE from 'three';\n",
-  (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
-)
+function composeGameKit3DRuntime(sceneSource: string, investigate = false): string {
+  const source = withGameRules3DRuntime(
+    withThreeInvestigation(
+      gameKit3DRuntimeBeforeModelSource +
+        gameKit3DModelAssetsRuntimeSource +
+        gameKit3DRuntimeAfterModelSource,
+      investigate ? GAME_KIT_3D_INVESTIGATION : null,
+    ),
+  )
+    .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/', () => sceneSource)
+  // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
+  // contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
+  // pacote, e no build minificado o esbuild escreve template literals ali.
+  return compactOfficialRuntimeSource(
+    withThreeRenderBudgetRuntime(withThreePostProcessingRuntime(withThreeModelsRuntime(source))),
+    { trimIndent: true },
+  ).replace(
+    "import * as THREE from 'three';\n",
+    (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
+  )
+}
+
+/** O runtime COMPLETO, com o cenário do Molda: o que `loadBootstrapScript()` sem contexto injeta. */
+export const gameKit3DRuntime = composeGameKit3DRuntime(gameKit3DSceneRuntimeSource)
+
+const composedByVariant = new Map<string, string>()
+
+/**
+ * O runtime de uma variante, composto uma vez: `gameKit3DRuntimeVariant` (`sceneVariant.ts`) e,
+ * com uma aba da gaveta ligada, a investigação (`investigar`), juntas por `+`.
+ */
+export function gameKit3DRuntimeForVariant(variant: string): string {
+  const parts = new Set(variant.split('+'))
+  const withoutScene = parts.has(GAME_KIT_3D_WITHOUT_SCENE_VARIANT)
+  const investigate = parts.has(THREE_INVESTIGATION_VARIANT)
+  if (!withoutScene && !investigate) return gameKit3DRuntime
+  const key = `${withoutScene}+${investigate}`
+  let composed = composedByVariant.get(key)
+  if (composed === undefined) {
+    composed = composeGameKit3DRuntime(
+      withoutScene ? gameKit3DSceneAbsentRuntimeSource : gameKit3DSceneRuntimeSource,
+      investigate,
+    )
+    composedByVariant.set(key, composed)
+  }
+  return composed
+}

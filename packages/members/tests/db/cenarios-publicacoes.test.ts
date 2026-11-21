@@ -40,11 +40,14 @@ describe.skipIf(!url)('publicação versionada de cenários (PostgreSQL)', () =>
   let repo: DrizzlePublicacoesDeCenariosRepository
   let cenarios: CenariosService
   let servico: PublicacoesDeCenariosService
+  // A equipe na PRÓPRIA conta (usuário = conta, fora de perfil): só ela publica no jogo.
+  const contaDaEquipe = crypto.randomUUID()
   const ator: Ator = {
-    usuarioId: crypto.randomUUID(),
-    contaId: crypto.randomUUID(),
+    usuarioId: contaDaEquipe,
+    contaId: contaDaEquipe,
     equipe: true,
     suporte: false,
+    perfil: false,
   }
   beforeAll(async () => {
     const manutencao = new URL(url!)

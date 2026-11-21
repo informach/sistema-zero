@@ -39,6 +39,7 @@ import { StudioI18nProvider } from './i18n'
 import { StudioMoldaLibraryProvider } from './molda-library'
 import { StudioExecutionProvider } from './observation'
 import { StudioPintaLibraryProvider } from './pinta-library'
+import { useStudioPreviewShellUrl } from './preview-shell'
 import { ProBuilderDeletionReconciler } from './pro-builder-deletion'
 import { StudioProCandidatePreviewProvider } from './pro-candidate-preview'
 import { StudioProRuntimeProvider } from './pro-runtime'
@@ -103,6 +104,7 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
       workspacePreferences: props.workspacePreferences,
       limits: props.limits,
       proBuildLimits: props.proRuntime?.limits,
+      studentTestsServer: props.studentTestsServer,
       locale: props.locale,
     }),
   )
@@ -257,6 +259,8 @@ function StudioCoreBody({
   const [observationViewVersion, setObservationViewVersion] = useState(0)
   const observedRevision = useRef<number | null>(null)
   const observationGeneration = useRef(0)
+  // A casca do host (layout raiz do app) vale quando a propriedade não veio.
+  const hostPreviewShellUrl = useStudioPreviewShellUrl()
   const isObserver = editingAccess === 'observer' || handoffFrozen
   const sourceProject = replacedProject ?? initialProject
   const projectStoreApi = useProjectStoreApi()
@@ -648,7 +652,7 @@ function StudioCoreBody({
                                   editingAccess: isObserver ? 'observer' : 'author',
                                   autoRun,
                                   originAdapter: previewOriginAdapter,
-                                  shellUrl: previewShellUrl,
+                                  shellUrl: previewShellUrl ?? hostPreviewShellUrl ?? undefined,
                                   requireIsolatedPreview,
                                   muted: projectMuted,
                                   writerEpoch,

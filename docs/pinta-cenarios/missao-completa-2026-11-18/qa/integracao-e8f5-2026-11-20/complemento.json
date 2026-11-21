@@ -1,0 +1,44 @@
+[
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T22:47:46.360Z",
+    "finished": "2026-11-20T22:47:46.642Z",
+    "log": ".cache/pinta-e8f5-format-profile.log"
+  },
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-20T22:47:46.655Z",
+    "finished": "2026-11-20T22:47:58.232Z",
+    "log": ".cache/pinta-e8f5-format-core.log"
+  },
+  {
+    "name": "core-types",
+    "exit": 0,
+    "started": "2026-11-20T22:47:58.244Z",
+    "finished": "2026-11-20T22:48:06.296Z",
+    "log": ".cache/pinta-e8f5-format-core-types.log"
+  },
+  {
+    "name": "native-control",
+    "exit": 0,
+    "started": "2026-11-20T22:48:06.308Z",
+    "finished": "2026-11-20T22:48:28.641Z",
+    "log": ".cache/pinta-e8f5-format-native-control.log"
+  },
+  {
+    "name": "native-observer",
+    "exit": 0,
+    "started": "2026-11-20T22:48:28.653Z",
+    "finished": "2026-11-20T22:48:33.733Z",
+    "log": ".cache/pinta-e8f5-format-native-observer.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-20T22:48:33.742Z",
+    "finished": "2026-11-20T22:49:02.543Z",
+    "log": ".cache/pinta-e8f5-format-biome.log"
+  }
+]

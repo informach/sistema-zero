@@ -35,6 +35,9 @@ export interface MoldaHostAdapter {
   /** O perfil tem o Estúdio: a galeria mostra o atalho e a dica do "Trazer do Molda". */
   studioOwned?: boolean
   onOpenStudio?: () => void
+  /** A oficina de cenários (Molda › Cenários) está aberta para esta pessoa: a galeria mostra o
+   * atalho. Ausente = sem atalho (quem ainda não tem a ferramenta nem fica sabendo dela). */
+  onOpenCenarios?: () => void
   /** Abre esta criação assim que a galeria carregar (deep link `?criacao=`). */
   initialAssetId?: string
   /**

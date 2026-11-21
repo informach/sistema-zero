@@ -1,0 +1,10 @@
+module.exports=async function(qa){const library=await qa.vilaPage.evaluate(async({namespace,id})=>{
+ const name='sistema-zero-personal-assets-'+namespace;if(!(await indexedDB.databases()).some(d=>d.name===name))throw Error('Owned personal DB missing');
+ const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+ try{const asset=await new Promise((resolve,reject)=>{const r=db.transaction('kv','readonly').objectStore('kv').get('asset:'+id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+ function canonical(v){if(ArrayBuffer.isView(v))return Array.from(v);if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>[k,canonical(v[k])]));return v}
+ const sha=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(asset?.scene)))))).map(v=>v.toString(16).padStart(2,'0')).join('');
+ return {found:!!asset,updatedAt:asset?.updatedAt,sceneSha256:sha,layers:asset?.scene?.layers?.length,changedAt:JSON.parse(localStorage.getItem('sz:desenhos-alterados:'+namespace)||'{}').at??0};
+ }finally{db.close()}
+ },{namespace:qa.ownedStorageNamespace,id:qa.ownedVila.mapId});
+ return {library,project:await require('./checkpoint-owned-vila-program.cjs')(qa),nativeEdited:!!qa.ownedVilaNativeAfterEdit};};

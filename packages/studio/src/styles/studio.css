@@ -1105,6 +1105,15 @@
     background: var(--color-sz-panel-soft);
     color: var(--color-sz-fg-soft);
   }
+  /* As barras da aba Desempenho: cada uma é meio segundo; a lenta pinta no tom de aviso. */
+  .sz-devtools-bar {
+    background: var(--color-sz-accent);
+    opacity: 0.55;
+  }
+  .sz-devtools-bar--slow {
+    background: var(--color-sz-warn);
+    opacity: 1;
+  }
   .sz-pro-tag {
     display: inline-flex;
     align-items: center;
@@ -1736,6 +1745,50 @@
     .sz-sheet {
       animation: none;
     }
+  }
+
+  /* A aba Meus testes da gaveta (prancha aprovada em 20/11/2026): cada teste é um cartão com o
+     sinal, o texto e os botões; o que não passou ganha a borda vermelha. */
+  .sz-student-test {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+    gap: 0.625rem;
+    align-items: start;
+    padding: 0.5625rem 0.75rem;
+  }
+  .sz-student-test > :first-child {
+    margin-top: 0.125rem;
+  }
+  .sz-student-test--failed {
+    border-color: color-mix(in oklab, var(--color-sz-error) 45%, var(--color-sz-panel));
+  }
+  .sz-student-test__ending {
+    display: block;
+    width: 20rem;
+    max-width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-sz-border);
+  }
+  .sz-student-test-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  .sz-student-test-form__columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1rem;
+  }
+  .sz-student-test-form__remove {
+    min-height: 1.75rem;
+    min-width: 1.75rem;
+    padding: 0;
+    justify-content: center;
+    border-radius: 999px;
+  }
+  .sz-student-test-form__delete {
+    color: var(--color-sz-error);
   }
 }
 
@@ -2401,6 +2454,13 @@
 [data-sz-theme] .blocklyTrash {
   /* biome-ignore lint/complexity/noImportantStyles: o Blockly anima a opacidade da lixeira inline (0,4 parada). */
   opacity: 0.85 !important;
+}
+/* Até a lixeira e o zoom irem para o lugar deles (mais altos, a lixeira por cima dos blocos, o
+   desenho em vetor: `blockly/workspaceControls.ts`, baixado logo depois da injeção), eles ficam
+   escondidos, para não pularem de lugar. Só nos editores do Estúdio, que marcam `pending`. */
+[data-sz-theme] .injectionDiv[data-sz-controls="pending"] .blocklyTrash,
+[data-sz-theme] .injectionDiv[data-sz-controls="pending"] .blocklyZoom {
+  visibility: hidden;
 }
 /* Scroll shadow is decorative: text underneath must remain clickable. */
 [data-sz-theme] .monaco-editor .scroll-decoration {

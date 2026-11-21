@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-21T01:17:14.835Z",
+  "published": "39fc593c306e9d32ef985104560ddf1eb835f3ee",
+  "file": "packages/studio-runtime/runtime/scene3d-pro.generated.mjs",
+  "officialGenerator": true,
+  "changeIsOnlyEmbeddedAuthorizedProSdk": true,
+  "wrapperAndOtherRuntimeBytesIdentical": true,
+  "importsDependenciesLicensesAndThreeVersionIdentical": true,
+  "before": {
+    "chars": 524101,
+    "sha256": "623259a2bbf513b9d22a1b33cf30a7ae3bcabd1db8b8084c1e24ac20b1aab9a6",
+    "moduleChars": 514965,
+    "moduleSha256": "871b4f315471bfd87cb36f30727fcc147fb45280b05eea0d921126f1f5de8da7"
+  },
+  "after": {
+    "chars": 524136,
+    "sha256": "d90800c18902487129d7ed8213642b7166e683011e570d643f0e5459df3b20b2",
+    "moduleChars": 515000,
+    "moduleSha256": "c2f73c7775d8a0b330c6dc6e3719f6ff37769fb6c565bb2f2bfd8135d9c8c84a"
+  },
+  "moldaFunctionalSourcesModified": false
+}

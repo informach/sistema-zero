@@ -110,6 +110,21 @@ export type StudioPublicationPreparation =
   | { state: 'reserved'; reservationId: string; playId: string; snapshotHash: string }
   | { state: 'finalized'; thread: HubThreadView; deduped: true }
   | { state: 'retired'; playId: string; thread: HubThreadView | null }
+  /** O projeto já tem post no Mural: a publicação ATUALIZA este (sem reserva). */
+  | { state: 'existing'; playId: string; thread: HubThreadView }
+
+/** Resultado de atualizar o post do projeto (`previousCoverUrl` = capa substituída). */
+export type StudioPublicationUpdate = {
+  thread: HubThreadView
+  previousCoverUrl: string | null
+  updated: true
+}
+
+/** Qual projeto o botão Compartilhar consulta (o hub devolve só post do próprio ator). */
+export type StudioShowcaseSourceQuery =
+  | { kind: 'lesson'; lessonId: string; blockId: string }
+  | { kind: 'free'; spaceSlug: string; projectId: string; adoptPlayId?: string | null }
+  | { kind: 'live'; workspaceId: string }
 
 type StudioPublicationPublisher = {
   authorId: string
@@ -138,6 +153,12 @@ type StudioStandalonePublicationPreparation = {
   studioMeta?: StudioPublicProjectMetadata | null
   challengeKey?: string | null
   liveWorkspace?: { id: string; revision: number; playId: string; publicationToken: string }
+  /** Id do projeto no Estúdio livre: republicar o mesmo projeto atualiza o post. */
+  sourceProjectId?: string | null
+  /** Link local de publicação antiga (Pro/Python) para adotar o post de antes. */
+  adoptPlayId?: string | null
+  /** "Publicar como jogo novo". */
+  asNewPost?: boolean
 }
 
 /**
@@ -1382,6 +1403,21 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         signal: options?.signal,
       })
     },
+    /**
+     * "Meus testes" no Pro: os testes da criança no executor do "Verificar projeto" (um lote por
+     * pedido, até 8 testes). O prazo é o do Verificar projeto (o members compila e abre o jogo).
+     */
+    studioStudentTests(
+      input: { project: unknown; tests: unknown[] },
+      options?: { signal?: AbortSignal },
+    ): Promise<GatewayResponse<unknown>> {
+      return gw.gatewayFetch(`/members/studio/student-tests?audience=${audience}`, {
+        method: 'POST',
+        body: input,
+        signal: options?.signal,
+        timeoutMs: 165_000,
+      })
+    },
     authorizePythonAnalysis(
       input: StudioPythonAnalysisAuthorization,
       options?: { signal?: AbortSignal },
@@ -1897,11 +1933,61 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       /** Tag do Desafio do mês — o hub valida (posse + mês) com drop silencioso. */
       challengeKey?: string | null
       /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
+      sourceProjectId?: string | null
+      asNewPost?: boolean
       studioMeta?: StudioPublicProjectMetadata | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio-standalone', {
         method: 'POST',
         body,
+      })
+    },
+    /** Republicar o mesmo projeto da aula: atualiza o post (o hub revalida tudo). */
+    updateShowcaseThreadStudio(body: {
+      publisher: { authorId: string; accountId: string; audience: MembersAudience }
+      spaceSlug: string
+      lessonId: string
+      blockId: string
+      coverImageUrl: string | null
+      description: string
+      playId: string
+      clientIdempotencyKey: string
+      studioMeta?: StudioPublicProjectMetadata | null
+    }): Promise<GatewayResponse<StudioPublicationUpdate>> {
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio/update', {
+        method: 'POST',
+        body,
+      })
+    },
+    /** Republicar o mesmo projeto do Estúdio livre ou da oficina: atualiza o post. */
+    updateShowcaseThreadStudioStandalone(body: {
+      publisher: { authorId: string; accountId: string; audience: MembersAudience }
+      liveWorkspace?: { id: string; revision: number; playId: string; publicationToken: string }
+      spaceSlug: string
+      title: string
+      description: string
+      coverImageUrl: string | null
+      playId: string
+      clientIdempotencyKey: string
+      sourceProjectId?: string | null
+      studioMeta?: StudioPublicProjectMetadata | null
+    }): Promise<GatewayResponse<StudioPublicationUpdate>> {
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio-standalone/update', {
+        method: 'POST',
+        body,
+      })
+    },
+    /** O post que hoje representa o projeto do próprio ator (ou `null`). */
+    showcaseSource(
+      body: StudioShowcaseSourceQuery,
+    ): Promise<GatewayResponse<{ thread: HubThreadView | null }>> {
+      return gw.gatewayFetchDual('/hub/internal/showcase-source', { method: 'POST', body })
+    },
+    /** Restaurar uma versão do jogo carimba o selo "Atualizado" do post. */
+    touchShowcase(playId: string): Promise<GatewayResponse<{ touched: boolean }>> {
+      return gw.gatewayFetchDual('/hub/internal/showcase-thread-studio/touch', {
+        method: 'POST',
+        body: { playId },
       })
     },
     /**

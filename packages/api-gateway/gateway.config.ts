@@ -3236,6 +3236,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
+      // "Meus testes" no Pro (proposta aprovada em 20/11/2026): os testes da criança no executor
+      // do "Verificar projeto" (o members compila e abre o jogo num navegador do studio-runtime),
+      // um lote por pedido (até 8 testes); o teto de tempo é o do Verificar projeto.
+      id: 'members-studio-student-tests',
+      methods: ['POST'],
+      pathPattern: '/members/studio/student-tests',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: 2_000_000,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      timeoutMs: 160_000,
+    },
+    {
       id: 'members-studio-python-analysis',
       methods: ['POST'],
       pathPattern: '/members/studio/python-analysis',
@@ -4460,6 +4475,74 @@ const config: GatewayConfigInput = {
       id: 'hub-showcase-create-studio-standalone-prepare',
       methods: ['POST'],
       pathPattern: '/hub/internal/showcase-thread-studio-standalone/prepare',
+      service: 'hub',
+      auth: {
+        required: true,
+        mode: 'all',
+        strategies: ['jwt', 'hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Republicar o MESMO projeto ATUALIZA o post do Mural (mesmo link /jogar). O hub
+    // revalida as guardas da criação e só altera post do próprio autor. `showcase-source`
+    // diz se o projeto já tem post (botão "Atualizar no Mural"); `touch` carimba a
+    // atualização ao restaurar uma versão antiga do jogo.
+    {
+      id: 'hub-showcase-update-studio',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio/update',
+      service: 'hub',
+      auth: {
+        required: true,
+        mode: 'all',
+        strategies: ['jwt', 'hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-showcase-update-studio-standalone',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio-standalone/update',
+      service: 'hub',
+      auth: {
+        required: true,
+        mode: 'all',
+        strategies: ['jwt', 'hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-showcase-touch-studio',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-thread-studio/touch',
+      service: 'hub',
+      auth: {
+        required: true,
+        mode: 'all',
+        strategies: ['jwt', 'hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-showcase-source',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/showcase-source',
       service: 'hub',
       auth: {
         required: true,

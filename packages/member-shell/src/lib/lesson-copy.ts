@@ -104,6 +104,8 @@ export interface LessonCopy {
     paraConcluir: string
     continueConstruindo: string
     compartilharDepois: string
+    /** Na aula o Mural mostra o ENVIO: com o jogo igual, pede para enviar a versão nova. */
+    compartilharIgual: string
     semEnvio: string
     trazerExplica: string
     recomecarExplica: string
@@ -362,6 +364,8 @@ export const COMMON_LESSON_COPY: LessonCopy = {
     paraConcluir: 'Envie o seu projeto para concluir a aula.',
     continueConstruindo: 'Continue construindo. Você envia o projeto no fim da aula.',
     compartilharDepois: 'Envie o seu projeto primeiro para poder compartilhar.',
+    compartilharIgual:
+      'O jogo que você enviou à equipe é o mesmo que está no Mural. Envie a sua versão nova para atualizar.',
     semEnvio: 'Você ainda não enviou nenhum projeto.',
     trazerExplica:
       'Isto substitui o que você está editando aqui pelo último projeto que você enviou. Use se você terminou em outro computador.',

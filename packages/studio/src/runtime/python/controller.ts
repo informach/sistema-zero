@@ -3,6 +3,7 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import type { StudioPythonMissionProbe } from '@sistemazero/core/studio/python-mission-observation'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../environment'
 import { assertStudioRuntimeExecutionAccess, assertStudioRuntimeOperationAccess } from '../registry'
@@ -10,6 +11,7 @@ import type {
   StudioExecutionIdentity,
   StudioRuntimeEvent,
   StudioRuntimeInput,
+  StudioRuntimePerformanceSlice,
   StudioRuntimeSession,
   StudioRuntimeSnapshot,
 } from '../types'
@@ -59,7 +61,15 @@ export function createPythonExecutionController(options: {
   onEvent?(event: StudioRuntimeEvent): void
   /** A dedicated formative generation; absent for ordinary editor/public playback. */
   pythonActivity?: StudioPythonActivity
+  /**
+   * A aba Investigar do editor: a execução começa no modo de observação (o observador das
+   * missões, que lê as variáveis a cada quadro sem mudar o programa). Lido a cada Rodar.
+   */
+  observation?(): boolean
+  /** Keep keyboard ownership in the host while an isolated test runs. */
+  readonly background?: true
 }) {
+  const background = options.background === true
   const activity =
     options.pythonActivity === undefined
       ? undefined
@@ -228,6 +238,8 @@ export function createPythonExecutionController(options: {
           },
         },
         ...(activity ? { pythonActivity: activity } : {}),
+        ...(!activity && options.observation?.() ? { pythonMission: true as const } : {}),
+        ...(background ? { pythonBackground: true as const } : {}),
       })
       current.session = session
       requireOwner(current, true)
@@ -357,6 +369,71 @@ export function createPythonExecutionController(options: {
       } finally {
         if (current.capture === pending) current.capture = undefined
       }
+    },
+    /**
+     * A aba Desempenho: liga (com um ouvinte) ou desliga (`null`) a medida da execução da vez. As
+     * fatias de uma execução que já saiu não chegam (o dono é conferido a cada fatia).
+     */
+    async measurePerformance(listener: ((slice: StudioRuntimePerformanceSlice) => void) | null) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.measurePerformance)
+        throw new Error('Este ambiente não mede o desempenho do programa.')
+      await session.measurePerformance(
+        listener
+          ? (slice) => {
+              if (owns(current)) listener(slice)
+            }
+          : null,
+      )
+      requireOwner(current)
+    },
+    /**
+     * A aba Investigar: pausa (`true`) ou continua o programa na troca de quadro; avançar 1 quadro
+     * com `step`. Só numa execução que começou no modo de observação (os valores pausados são
+     * lidos pelo observador das missões). Recusa no programa sem tela e no quadro anterior ao
+     * comando.
+     */
+    async pause(on: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pausePython) throw new Error('Este ambiente não pausa o programa.')
+      const result = await session.pausePython(on)
+      requireOwner(current)
+      return result
+    },
+    async step() {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.stepPython) throw new Error('Este ambiente não pausa o programa.')
+      const result = await session.stepPython()
+      requireOwner(current)
+      return result
+    },
+    /**
+     * A aba Meus testes: aperta (`down`) ou solta uma tecla no programa da execução da vez, como
+     * o teclado faria. Recusa quando o quadro do Python não conhece o comando.
+     */
+    async pressKey(key: string, down: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pressKey) throw new Error('Este ambiente não aperta teclas no programa.')
+      await session.pressKey(key, down)
+      requireOwner(current)
+    },
+    /**
+     * A aba Investigar: lê um valor do programa (uma variável, `a.b.c` no máximo quatro nomes)
+     * no próximo quadro, ou no fim quando o programa já terminou. Só numa execução que começou no
+     * modo de observação; nunca muda o programa.
+     */
+    async observe(probe: StudioPythonMissionProbe) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.observePythonMission)
+        throw new Error('Esta execução não começou no modo de observação.')
+      const result = await session.observePythonMission(probe)
+      requireOwner(current)
+      return result
     },
     async input(requestId: string, response: StudioRuntimeInput) {
       const { current, session } = await active()

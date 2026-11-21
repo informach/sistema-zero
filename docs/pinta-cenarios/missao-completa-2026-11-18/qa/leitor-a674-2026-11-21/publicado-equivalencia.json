@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-21T02:47:37.596Z",
+  "previous": "39fc593c306e9d32ef985104560ddf1eb835f3ee",
+  "published": "a674e4c162321e1d4206266b0be47f65ede64ca8",
+  "reader": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "changedFiles": [
+    "packages/studio/e2e/fixtures/pro-workspace/main.tsx",
+    "packages/studio/e2e/fixtures/pro-workspace/modularProject.ts",
+    "packages/studio/e2e/pro-workspace-performance.spec.ts",
+    "packages/studio/src/ir/symbolNames.ts"
+  ],
+  "productionFilesChanged": ["packages/studio/src/ir/symbolNames.ts"],
+  "onlyTypeAndQaChanges": true,
+  "typescriptJavaScriptSha256": "fb697f1b624234f3b403e8f8d4b3c62281dc697425c4efbc9db1ab235cfbc8a7",
+  "typescriptOutputExactlyEqual": true,
+  "bunOutputExactlyEqual": true,
+  "publishedReadonlyContractOmitsForEach": true,
+  "readerKeepsCorrectlyTypedReadonlyCallback": true,
+  "mergeNotYetPerformed": true
+}

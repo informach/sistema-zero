@@ -539,6 +539,16 @@ export function IconStop(p: IconProps): JSX.Element {
   )
 }
 
+/** Duas barras (Lucide "pause", preenchido): pausar o jogo e parar de medir, na gaveta. */
+export function IconPause(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="6" y="4.5" width="4" height="15" rx="1" fill="currentColor" stroke="none" />
+      <rect x="14" y="4.5" width="4" height="15" rx="1" fill="currentColor" stroke="none" />
+    </Base>
+  )
+}
+
 /** Livro aberto (Lucide "book") — os Guias do projeto Pro. */
 export function IconBook(p: IconProps): JSX.Element {
   return (

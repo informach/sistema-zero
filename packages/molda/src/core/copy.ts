@@ -1467,6 +1467,8 @@ export const COPY = {
     resultCount: (count: number, total: number) =>
       count === total ? (count === 1 ? '1 criação' : `${count} criações`) : `${count} de ${total}`,
     openStudio: 'Abrir o Estúdio',
+    openCenarios: 'Cenários',
+    cenariosHint: 'Monte mundos e cenários 3D com os seus modelos.',
     studioHint: 'No Estúdio, abra o menu ⋯ → Materiais → Modelos 3D e use "Trazer do Molda".',
     cardMenu: (name: string) => `Mais opções de ${name}`,
     updated: 'Mexido',

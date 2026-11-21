@@ -1,0 +1,19 @@
+{
+  "mapBefore": "00d8e2c2a16fd54be9843e721ae381b44d726ecbb3c6c6bfbf255bdabbe31a7e",
+  "mapAfter": "3b2298ba3967e63731a3ca9503c1567ad2f1de84da9027748d82d58a26b7ac58",
+  "programBefore": "214cb63907092000a1de4c9c72e277a00b5afd686a293cf277cec6ee244e70bb",
+  "programAfter": "214cb63907092000a1de4c9c72e277a00b5afd686a293cf277cec6ee244e70bb",
+  "sceneBefore": "5bc850f91d7068291435016c7156caa6d694bb167f7dfb15a99cad19bfcfcbcf",
+  "sceneAfter": "40cef27de699b29e78ab1cbe199dc3213f0f785172e7b873b58e40b4409abfde",
+  "libRevisionBefore": 1795183789658,
+  "libRevisionAfter": 1795184885608,
+  "customProgramPreserved": true,
+  "precisePhysics": true,
+  "nativeSchema": 7,
+  "firstCell": 0,
+  "secondCell": -1,
+  "oldPagePreserved": true,
+  "authenticatedHost": true,
+  "focusEventEmulated": true,
+  "cloudWriter6Activated": false
+}

@@ -488,6 +488,74 @@ describe('Molda Cenários: quem entra', () => {
     expect(recusa.status).toBe(403)
     expect((await json(recusa)).error.code).toBe('CENARIOS_FECHADOS')
   })
+  test('aberto para todos, sem o Molda: o cliente recebe aberto falso e 403', async () => {
+    const { app } = buildApp({ cenariosModo: 'aberto', cenariosProduto: async () => false })
+    expect(
+      await json(await pedir(app, 'GET', '/members/cenarios/acesso', undefined, doCliente)),
+    ).toEqual({ aberto: false })
+    const recusa = await pedir(app, 'GET', '/members/cenarios/espacos', undefined, doCliente)
+    expect(recusa.status).toBe(403)
+    expect((await json(recusa)).error.code).toBe('CENARIOS_FECHADOS')
+    // A equipe segue entrando.
+    expect(await json(await pedir(app, 'GET', '/members/cenarios/acesso'))).toEqual({
+      aberto: true,
+    })
+  })
+  test('ferramenta fora da faixa do posto: 403 com as famílias trancadas', async () => {
+    const { app } = buildApp({ cenariosModo: 'aberto', cenariosFaixas: async () => ['basic'] })
+    const [espaco] = await json(
+      await pedir(app, 'GET', '/members/cenarios/espacos', undefined, doCliente),
+    )
+    const mundo = await json(
+      await pedir(
+        app,
+        'POST',
+        `/members/cenarios/espacos/${espaco.id}/mundos`,
+        { nome: 'Ilha' },
+        doCliente,
+      ),
+    )
+    const cenario = await json(
+      await pedir(
+        app,
+        'POST',
+        `/members/cenarios/mundos/${mundo.id}/cenarios`,
+        { nome: 'Praia' },
+        doCliente,
+      ),
+    )
+    const resposta = await pedir(
+      app,
+      'POST',
+      `/members/cenarios/cenarios/${cenario.id}/lotes`,
+      {
+        revisaoEsperada: 0,
+        operacaoId: 'camera-0001',
+        comandos: [
+          {
+            tipo: 'marcador.definir',
+            marcador: {
+              id: 'cam',
+              nome: 'Câmera',
+              grupo: null,
+              bloqueado: false,
+              oculto: false,
+              posicao: { x: 0, y: 2, z: 0 },
+              giro: 0,
+              noChao: false,
+              objeto: null,
+              configuracao: { tipo: 'camera', alvo: { x: 0, y: 0, z: -1 }, campoDeVisao: 60 },
+            },
+          },
+        ],
+      },
+      doCliente,
+    )
+    expect(resposta.status).toBe(403)
+    const corpo = await json(resposta)
+    expect(corpo.error.code).toBe('CENARIO_FERRAMENTA_TRANCADA')
+    expect(corpo.details).toEqual({ familias: ['jogo.cameras'] })
+  })
   test('aberto para todos: o cliente tem o espaço dele e não enxerga o de outra conta', async () => {
     const ctx = buildApp({ cenariosModo: 'aberto' })
     const { biblioteca } = await comBiblioteca(ctx)
@@ -633,6 +701,24 @@ describe('Molda Cenários: trazer modelos', () => {
       ),
     )
     expect(achados).toMatchObject({ total: 1, proximo: null })
+
+    // A busca dos agentes, no espaço inteiro: tamanho pela caixa (4 m de altura, 2 m de lado).
+    const noEspaco = async (consulta: string) =>
+      pedir(ctx.app, 'GET', `/members/cenarios/espacos/${espaco.id}/modelos?${consulta}`)
+    expect(
+      await json(await noEspaco('busca=arvore&etiqueta=verde&alturaMin=3.5&ladoMax=2.5')),
+    ).toMatchObject({ total: 1, itens: [{ id: criados[0].id, max: [1, 4, 1] }] })
+    expect(await json(await noEspaco('alturaMax=3'))).toMatchObject({ total: 0 })
+    expect(await json(await noEspaco('ladoMin=2.5'))).toMatchObject({ total: 0 })
+    expect(await json(await noEspaco('etiqueta=azul'))).toMatchObject({ total: 0 })
+    expect(await json(await noEspaco(`ids=${criados[0].id},${crypto.randomUUID()}`))).toMatchObject(
+      { total: 1 },
+    )
+    expect((await noEspaco('ids=nao-e-id')).status).toBe(400)
+    expect(
+      (await pedir(ctx.app, 'GET', `/members/cenarios/espacos/${crypto.randomUUID()}/modelos`))
+        .status,
+    ).toBe(404)
     const arquivo = await json(
       await pedir(ctx.app, 'GET', `/members/cenarios/espacos/${espaco.id}/arquivos/${digest('a')}`),
     )

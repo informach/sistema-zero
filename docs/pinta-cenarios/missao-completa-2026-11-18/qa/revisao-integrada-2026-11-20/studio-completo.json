@@ -1,0 +1,36 @@
+{
+  "source": "774677566f401989fc16f80f5180b3a4a94ed398",
+  "exit": 0,
+  "groups": 164,
+  "passes": 11919,
+  "failures": 0,
+  "skipped": 4,
+  "assertions": 364431,
+  "fileSummaries": 164,
+  "skippedTests": [
+    {
+      "file": "src\\check\\__tests__\\checkRunner.test.ts",
+      "title": "o executor roda o jogo e confere > jogo de código: variável, tecla, texto, console e função"
+    },
+    {
+      "file": "src\\check\\__tests__\\checkRunner.test.ts",
+      "title": "o executor roda o jogo e confere > regra em JavaScript: lê o jogo depois dos passos, sob a CSP da prévia"
+    },
+    {
+      "file": "src\\check\\__tests__\\checkRunner.test.ts",
+      "title": "o executor roda o jogo e confere > o jogo que troca eval, then e innerText não forja o resultado (review da etapa 4)"
+    },
+    {
+      "file": "src\\check\\__tests__\\checkRunner.test.ts",
+      "title": "o executor roda o jogo e confere > jogo de blocos do Jogo 2D: o herói anda com a seta e fica parado sem ela"
+    }
+  ],
+  "rerun": {
+    "source": "e9e87db6a9eea81e759755593268040ff4ab3593",
+    "executable": "Chrome instalado nesta máquina",
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "assertions": 21
+  }
+}

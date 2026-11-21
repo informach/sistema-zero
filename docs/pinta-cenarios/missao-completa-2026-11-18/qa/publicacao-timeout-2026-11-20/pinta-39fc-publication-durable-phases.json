@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-21T01:33:00.414Z",
+  "exit": null,
+  "error": "ETIMEDOUT",
+  "signal": "SIGTERM",
+  "sourceRestoredExactly": true,
+  "sourceSha256": "766954a0a999761a9a30d591da17350aca17a95dc2ce62ab54afb38042d13ec5",
+  "durablePhases": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-39fc-publication-durable-progress.log"
+}

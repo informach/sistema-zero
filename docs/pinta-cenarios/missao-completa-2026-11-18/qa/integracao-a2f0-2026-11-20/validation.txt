@@ -1,0 +1,18 @@
+bun test v1.3.11 (af24e281)
+
+src\state\projectValidation.test.ts:
+(pass) fronteira compartilhada de projetos > preserva código manual, arquivos extras, áudio e referências da biblioteca [188.00ms]
+(pass) fronteira compartilhada de projetos > valida o formato do programa dentro do manifesto e a identidade da criação
+(pass) fronteira compartilhada de projetos > valida o programa Python v3 da nuvem sem converter a fonte em JavaScript
+(pass) fronteira compartilhada de projetos > confere JavaScript v3 pela mesma fronteira e recusa Python v3 inválido [15.00ms]
+(pass) fronteira compartilhada de projetos > retém as ferramentas usadas depois de apagar sua última instância
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > sanitizeCoverAssetName aceita um nome de asset válido e recusa o resto
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > sanitizeStoredProject preserva a escolha (e OMITE a chave quando não há)
+(pass) coverAssetName (a capa escolhida) é saneada por FORMA, não pela existência do asset > o programa do manifesto da nuvem (assets: []) PRESERVA a escolha: é por isso que a régua é por forma
+(pass) studentTests ("Meus testes") viajam no projeto clássico em JavaScript > sanitizeStoredProject guarda os testes na forma e OMITE a chave sem nenhum
+(pass) studentTests ("Meus testes") viajam no projeto clássico em JavaScript > o programa do manifesto da nuvem e o documento do projeto PRESERVAM os testes
+
+ 10 pass
+ 0 fail
+ 31 expect() calls
+Ran 10 tests across 1 file. [762.00ms]

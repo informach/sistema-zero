@@ -1,6 +1,9 @@
 import { writeFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
 import type {} from '../../../experiments/studio-python-runtime/providerHost'
+import { requireCleanPythonBrowser } from './pythonBrowserErrors'
+
+requireCleanPythonBrowser()
 
 for (const scale of [1, 2])
   test(`Pinta world ${scale}x renders and crosses doors in real browser Python`, async ({

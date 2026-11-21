@@ -260,6 +260,10 @@ export class CenariosEmMemoria implements CenariosRepository {
     const espaco = this.espacosGuardados.get(id)
     return espaco ? this.copia(espaco) : null
   }
+  async definirLimiteDaConta(espacoId: string, limiteBytes: number) {
+    const espaco = this.espacosGuardados.get(espacoId)
+    if (espaco?.tipo === 'conta') espaco.limiteBytes = limiteBytes
+  }
 
   async bibliotecas(espacoId: string) {
     for (const b of this.bibliotecasGuardadas.values()) this.contar(b.id)
@@ -412,6 +416,28 @@ export class CenariosEmMemoria implements CenariosRepository {
       .filter((m) => filtro.digest === undefined || m.digest === filtro.digest)
       .filter((m) => filtro.termos.every((t) => m.busca.includes(t)))
       // A mesma ordem do banco: pelo texto de busca, byte a byte.
+      .sort((a, b) => (a.busca < b.busca ? -1 : a.busca > b.busca ? 1 : a.id.localeCompare(b.id)))
+    return {
+      itens: this.copia(
+        todos.slice(filtro.inicio, filtro.inicio + filtro.limite).map(({ busca: _b, ...m }) => m),
+      ),
+      total: todos.length,
+    }
+  }
+  async modelosNoEspaco(
+    espacoId: string,
+    filtro: Parameters<CenariosRepository['modelosNoEspaco']>[1],
+  ) {
+    const dentro = (v: number, f?: { min?: number; max?: number }) =>
+      (f?.min === undefined || v >= f.min) && (f?.max === undefined || v <= f.max)
+    const todos = [...this.modelosGuardados.values()]
+      .filter((m) => this.bibliotecasGuardadas.get(m.bibliotecaId)?.espacoId === espacoId)
+      .filter((m) => filtro.pasta === undefined || m.pasta === filtro.pasta)
+      .filter((m) => filtro.etiqueta === undefined || m.etiquetas.includes(filtro.etiqueta))
+      .filter((m) => filtro.ids === undefined || filtro.ids.includes(m.id))
+      .filter((m) => dentro(m.max[1] - m.min[1], filtro.altura))
+      .filter((m) => dentro(Math.max(m.max[0] - m.min[0], m.max[2] - m.min[2]), filtro.lado))
+      .filter((m) => filtro.termos.every((t) => m.busca.includes(t)))
       .sort((a, b) => (a.busca < b.busca ? -1 : a.busca > b.busca ? 1 : a.id.localeCompare(b.id)))
     return {
       itens: this.copia(
@@ -699,6 +725,15 @@ export class CenariosEmMemoria implements CenariosRepository {
     const mundo = this.mundosGuardados.get(c.mundoId)
     if (mundo) mundo.atualizadoEm = agora
     return { revisao: c.revisao, repetido: false }
+  }
+  async resumoDoHistorico(id: string) {
+    const c = this.cenariosGuardados.get(id)
+    if (!c) return null
+    return {
+      mundoId: c.mundoId,
+      revisao: c.revisao,
+      pilhas: this.copia(this.pilhas.get(id) ?? { passado: [], futuro: [] }),
+    }
   }
   async pilhasDoHistorico(id: string) {
     return this.copia(this.pilhas.get(id) ?? { passado: [], futuro: [] })

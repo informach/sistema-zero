@@ -9,13 +9,18 @@ import {
 } from '@sistemazero/core/journey'
 import { MOLDA_TOOL_BAND_LEVELS } from '../../core/tests/fixtures/legacy-kids-tool-levels'
 import { MOLDA_TOOL_BANDS, moldaToolFamilyIds } from '../../molda/src/core/toolFamilies'
+import { familiasDasFaixas } from '../../molda-cenarios-core/src/v2/faixas'
 import { LEVEL_ORDER } from '../src/lib/level-info'
 import {
   MOLDA_BAND_PROMISES,
   moldaCapabilitiesGain,
   moldaFeatureList,
 } from '../src/lib/molda-level-gain'
-import { MOLDA_BEYOND_HORIZON, moldaToolAccessFor } from '../src/lib/molda-tool-access'
+import {
+  cenariosToolAccessFor,
+  MOLDA_BEYOND_HORIZON,
+  moldaToolAccessFor,
+} from '../src/lib/molda-tool-access'
 import { JOURNEY_REWARD_INFO } from './fixtures/legacy-journey-rewards'
 import { kidsStaffPreview } from './kids-journey-fixtures'
 
@@ -179,5 +184,31 @@ describe('a promessa do Molda é uma só e é verdade', () => {
         band,
       ).toContain(moldaFeatureList(band))
     }
+  })
+})
+
+describe('cenariosToolAccessFor', () => {
+  test('a oficina de cenários segue as mesmas faixas, com as famílias dela', () => {
+    expect(cenariosToolAccessFor({ journey: seedView('noob') })?.allow).toEqual([])
+    expect(cenariosToolAccessFor({ journey: seedView('explorer') })).toEqual({
+      allow: familiasDasFaixas(['basic']),
+      upcoming: [
+        {
+          when: 'Abrem no nível Arquiteto(a) de Mundos',
+          families: familiasDasFaixas(['intermediate']),
+        },
+        { when: 'Abrem no nível Lenda', families: familiasDasFaixas(['professional']) },
+      ],
+    })
+    expect(cenariosToolAccessFor({ journey: seedView('god') })).toBeUndefined()
+    const full = {
+      ...kidsStaffPreview,
+      capabilities: [
+        ...kidsStaffPreview.capabilities,
+        'molda-intermediate',
+        'molda-professional',
+      ] as const,
+    }
+    expect(cenariosToolAccessFor({ journey: full })).toBeUndefined()
   })
 })

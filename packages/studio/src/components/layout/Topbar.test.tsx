@@ -285,6 +285,15 @@ describe('Topbar × o projeto Pro (redesenho de 11/2026)', () => {
     expect(screen.queryByRole('button', { name: 'Ocultar pré-visualização' })).toBeNull()
   })
 
+  it('com o projeto já no Mural, o botão vira "Atualizar no Mural"', async () => {
+    const status = mock(async () => ({ published: true }))
+    mount(1440, null, (node) => (
+      <StudioShareProvider value={{ ...SHARE, status }}>{node}</StudioShareProvider>
+    ))
+    expect(await screen.findByRole('button', { name: 'Atualizar no Mural' })).toBeTruthy()
+    expect((status.mock.calls[0] as unknown[])[0]).toMatchObject({ compare: false })
+  })
+
   it('menu ⋯ no Pro em JavaScript: "Mensagens do jogo", "Atalhos do teclado" e sem Extensões', async () => {
     mountPro()
     fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))

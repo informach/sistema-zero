@@ -8,6 +8,7 @@ import { cookies } from 'next/headers'
 import { Providers } from '@/components/providers'
 import { PALETTE_COOKIE } from '@/lib/cookies'
 import './globals.css'
+import { classicShellUrlFromEnv } from '@sistemazero/core/studio/classic-shell'
 
 // Tipografia kids: Baloo 2 (display arredondada/amigável, boa cobertura PT-BR)
 // + Nunito (corpo — x-height alto, legibilidade comprovada em material
@@ -59,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         suppressHydrationWarning
         className="min-h-screen bg-background text-(--tinta) antialiased"
       >
-        <Providers>{children}</Providers>
+        <Providers previewShellUrl={classicShellUrlFromEnv(process.env)}>{children}</Providers>
       </body>
     </html>
   )

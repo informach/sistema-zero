@@ -1,3 +1,5 @@
+// O piloto e os controles virtuais enviam o ponteiro sem transferir o teclado do editor.
+// Só um toque/clique real pede foco; os callbacks continuam recebendo ambos.
 export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, Pointer Events) ----
   var pointer = { x: 0, y: 0, down: false };
   var _activePointerId = null;
@@ -63,7 +65,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
     _activePointerId = _eventPointerId(e);
     if (typeof e.preventDefault === 'function') e.preventDefault();
-    if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
+    if (e.isTrusted === true) { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
     if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {
       try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
     }

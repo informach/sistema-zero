@@ -21,6 +21,7 @@ import { Eye, EyeOff, Lock, LockOpen } from 'lucide-react'
 import { type JSX, useEffect, useId, useMemo, useState } from 'react'
 import { transformacaoNoMundo } from '../acoes'
 import { COPY } from '../copy'
+import { useFerramentas } from '../faixas'
 
 const GRAUS = 180 / Math.PI
 
@@ -147,7 +148,10 @@ function PainelDoObjeto({
   executar(comandos: ComandoDeCenario[]): void
   fonte?: FonteDeAlturas
 }): JSX.Element {
-  const [proporcao, setProporcao] = useState(true)
+  const { pode } = useFerramentas()
+  const [escolhaDaProporcao, setProporcao] = useState(true)
+  // Tamanho por eixo é do intermediário: no básico o tamanho é sempre proporcional.
+  const proporcao = escolhaDaProporcao || !pode('objetos.precisao')
   const mundo = transformacaoNoMundo(documento, objeto, fonte)
   const atualizar = (alteracoes: Partial<Omit<InstanciaDeCenario, 'id'>>) =>
     executar([{ tipo: 'instancia.atualizar', id: objeto.id, alteracoes }])
@@ -222,9 +226,15 @@ function PainelDoObjeto({
             sufixo="×"
             aoMudar={(fator) => {
               const k = fator / escala.y
+              // Objeto do mesmo tamanho nos três eixos continua exato (sem o resto da divisão).
+              const uniforme =
+                Math.abs(escala.x - escala.y) <= 1e-6 * escala.y &&
+                Math.abs(escala.z - escala.y) <= 1e-6 * escala.y
               transformar({
                 ...mundo,
-                escala: { x: escala.x * k, y: fator, z: escala.z * k },
+                escala: uniforme
+                  ? { x: fator, y: fator, z: fator }
+                  : { x: escala.x * k, y: fator, z: escala.z * k },
               })
             }}
           />
@@ -243,14 +253,16 @@ function PainelDoObjeto({
             ))}
           </div>
         )}
-        <label className="mcn-marcar">
-          <input
-            type="checkbox"
-            checked={proporcao}
-            onChange={(evento) => setProporcao(evento.target.checked)}
-          />
-          {COPY.painel.proporcao}
-        </label>
+        {pode('objetos.precisao') ? (
+          <label className="mcn-marcar">
+            <input
+              type="checkbox"
+              checked={proporcao}
+              onChange={(evento) => setProporcao(evento.target.checked)}
+            />
+            {COPY.painel.proporcao}
+          </label>
+        ) : null}
       </fieldset>
 
       <div className="mcn-linha">
@@ -283,19 +295,23 @@ function PainelDoObjeto({
       <details className="mld-disclosure">
         <summary>{COPY.painel.mais}</summary>
         <fieldset className="mcn-grupo mt-3" disabled={trancado}>
-          <legend>{COPY.painel.colisao}</legend>
-          <select
-            className="sz-tool-select w-full"
-            value={objeto.colisao}
-            aria-label={COPY.painel.colisao}
-            onChange={(evento) => atualizar({ colisao: evento.target.value as Colisao })}
-          >
-            {COLISOES.map((colisao) => (
-              <option key={colisao} value={colisao}>
-                {COPY.painel.colisoes[colisao]}
-              </option>
-            ))}
-          </select>
+          {pode('objetos.colisao') ? (
+            <>
+              <legend>{COPY.painel.colisao}</legend>
+              <select
+                className="sz-tool-select w-full"
+                value={objeto.colisao}
+                aria-label={COPY.painel.colisao}
+                onChange={(evento) => atualizar({ colisao: evento.target.value as Colisao })}
+              >
+                {COLISOES.map((colisao) => (
+                  <option key={colisao} value={colisao}>
+                    {COPY.painel.colisoes[colisao]}
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : null}
           <div className="mcn-linha">
             <CampoNumero
               rotulo="Giro X"

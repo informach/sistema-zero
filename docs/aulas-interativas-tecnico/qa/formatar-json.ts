@@ -4,7 +4,7 @@ const root = resolve(import.meta.dir, '../../..')
 // Use the installed formatter directly, without resolving a package-manager command per clip.
 const biome = Bun.resolveSync('@biomejs/biome/bin/biome', root)
 
-/** Usa o mesmo formato da CI antes de comparar ou gravar o índice de edição. */
+/** Usa o mesmo formato da CI antes de comparar ou gravar um JSON gerado (índice de edição, manifesto). */
 export function formatarJson(valor: unknown): string {
   const resultado = Bun.spawnSync({
     cmd: [process.execPath, biome, 'format', '--stdin-file-path', 'aula.edicao.json'],
@@ -14,6 +14,6 @@ export function formatarJson(valor: unknown): string {
     stderr: 'pipe',
   })
   if (resultado.exitCode !== 0)
-    throw new Error(`Não foi possível formatar o índice de edição: ${resultado.stderr.toString()}`)
+    throw new Error(`Não foi possível formatar o JSON gerado: ${resultado.stderr.toString()}`)
   return resultado.stdout.toString()
 }

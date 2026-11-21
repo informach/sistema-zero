@@ -866,6 +866,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       _shapeH = 0;
       _spritePaintEpoch++;
       _spritePaintOrder = 0;
+      _paintOrderAtClear = 0;
     }
   });
 

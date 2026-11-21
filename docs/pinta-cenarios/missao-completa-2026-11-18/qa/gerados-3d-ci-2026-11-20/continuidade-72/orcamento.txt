@@ -1,0 +1,12 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\runtimePayloadBudget.test.ts:
+(pass) runtimes 3D: catraca de payload > game-3d cabe em 248700 caracteres e 70150 bytes gzip [31.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d (sem Kit Plataforma) cabe em 214600 caracteres e 60400 bytes gzip
+(pass) runtimes 3D: catraca de payload > world-3d cabe em 357600 caracteres e 107000 bytes gzip [16.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d-advanced cabe em 220700 caracteres e 65000 bytes gzip [15.00ms]
+
+ 4 pass
+ 0 fail
+ 12 expect() calls
+Ran 4 tests across 1 file. [665.00ms]

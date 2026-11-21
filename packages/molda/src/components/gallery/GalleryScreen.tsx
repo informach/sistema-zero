@@ -36,7 +36,17 @@ import { readSceneDocument } from '../../scene/readDocument'
 import { createGalleryPreviews } from '../../state/galleryPreviews'
 import { useGallery, useMoldaApp } from '../appContext'
 import { HostBackLink, HostCloudStatus, HostMenuButton, useMoldaHostChrome } from '../hostChrome'
-import { Box, Download, ExternalLink, Loader2, Plus, Search, Upload, X } from '../ui/icons'
+import {
+  Box,
+  Download,
+  ExternalLink,
+  Loader2,
+  Mountain,
+  Plus,
+  Search,
+  Upload,
+  X,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -334,6 +344,17 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
                 </div>
                 <div className="sz-tool-header__actions">
                   {headerPill ? <HostCloudStatus status={headerPill} variant="header" /> : null}
+                  {adapter.onOpenCenarios ? (
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--quiet"
+                      onClick={adapter.onOpenCenarios}
+                      title={COPY.gallery.cenariosHint}
+                    >
+                      <Mountain aria-hidden="true" />
+                      {COPY.gallery.openCenarios}
+                    </button>
+                  ) : null}
                   {adapter.studioOwned && adapter.onOpenStudio ? (
                     <button
                       type="button"

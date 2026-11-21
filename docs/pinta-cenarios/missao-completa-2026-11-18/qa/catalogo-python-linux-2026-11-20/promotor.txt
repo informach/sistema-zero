@@ -1,0 +1,69 @@
+bun test v1.3.11 (af24e281)
+
+tests\python-operational-promoter.test.ts:
+(pass) fixed frame returns views without per-file copies; malformed/order/trailing/over-budget refused [16.00ms]
+(pass) unconfigured Worker and missing explicit approval are fail closed without I/O [16.00ms]
+(pass) private request factory binds the exact frame and does not perform I/O
+(pass) HMAC binds exact plan/origin/version/nonce/expiry; auth negatives precede storage [31.00ms]
+(pass) synthetic storage port: real store functions keep marker/config order, readback and idempotence [31.00ms]
+(pass) readback uses at most four native reads and retains ownership until they all settle [16.00ms]
+(pass) one isolate admits one body; second authorized request429 is never read [15.00ms]
+(pass) primary and falsy cleanup rejections stay separate and raw data never reaches receipt
+(pass) tampered body is refused before any write; frame reader preserves abort and falsy cleanup [16.00ms]
+(pass) undefined native-port failure before marker remains primary; retry fills immutable partial files [16.00ms]
+(pass) expiry immediately after native-port object acquisition still closes its real stream
+(pass) abort during an actual pending stream read settles it and cancels once before rejection
+
+tests\python-promotion.test.ts:
+(pass) offline plan is deterministic, binds distinct hashes and registers real Python categories [563.00ms]
+(pass) a product promotion exposes Pygame-ce, the two Raylib extensions and their own blocks [203.00ms]
+(pass) a product promotion refuses a manifest without pgzero/pgzero/__init__.py even when the remaining hashes match [187.00ms]
+(pass) a product promotion refuses a manifest without raylib/_szraylib/_camera3d.py even when the remaining hashes match [203.00ms]
+(pass) a product promotion refuses a manifest without raylib-renderer.mjs even when the remaining hashes match [204.00ms]
+(pass) a product promotion refuses a manifest without pgzero/freesansbold.ttf even when the remaining hashes match [187.00ms]
+(pass) a product promotion refuses a manifest without LICENSE-raylib.txt even when the remaining hashes match [188.00ms]
+(pass) promotion rejects a distribution that omits the Pygame-ce file pygame/_szpygame/__init__.py [171.00ms]
+(pass) promotion rejects a distribution that omits the Pygame-ce file pygame/pinta.py [188.00ms]
+(pass) promotion rejects a distribution that omits the Pygame-ce file pygame_ce-2.5.7-cp314-cp314-pyemscripten_2026_0_wasm32.whl [187.00ms]
+(pass) promotion rejects a Pygame-ce wheel other than the one the Studio pinned [204.00ms]
+(pass) promotion selects APIs from an explicit current-format implementation feature array [843.00ms]
+(pass) repeating the current deployment preserves its exact approved policy and plan identity [828.00ms]
+(pass) a new release reconciles an interrupted retirement in worker without rewriting its baseline [922.00ms]
+(pass) a new release reconciles an interrupted retirement in members without rewriting its baseline [750.00ms]
+(pass) interrupted retirement recovery never reconciles a revoked release in worker [313.00ms]
+(pass) interrupted retirement recovery never reconciles a revoked release in members [281.00ms]
+(pass) recovery still rejects a divergent final state when the requested release is retired [609.00ms]
+(pass) a new active release retires only superseded releases of its Python profile in staging [969.00ms]
+(pass) a new active release retires only superseded releases of its Python profile in production [906.00ms]
+(pass) production reuses immutable release bytes with its own origins and catalog [657.00ms]
+(pass) existing JS and current-format Python statuses and origins survive merge in staging [406.00ms]
+(pass) existing JS and current-format Python statuses and origins survive merge in production [437.00ms]
+(pass) permanent identity, HTTPS origins and immutable collision are enforced in staging [422.00ms]
+(pass) permanent identity, HTTPS origins and immutable collision are enforced in production [360.00ms]
+(pass) environment and bucket crossings fail before the upload connector [218.00ms]
+(pass) adding a release preserves revoked releases, parents and state consistency in staging [422.00ms]
+(pass) adding a release preserves revoked releases, parents and state consistency in production [438.00ms]
+(pass) CLI prepare creates an immutable pinned plan in staging [515.00ms]
+(pass) CLI prepare creates an immutable pinned plan in production [579.00ms]
+(pass) proxy setup failure removes only its temporary configuration and never touches storage [406.00ms]
+(pass) upload preserves failure identities and cleans its config: upload error [812.00ms]
+(pass) upload preserves failure identities and cleans its config: undefined rejection [391.00ms]
+(pass) upload preserves failure identities and cleans its config: disposal error [484.00ms]
+(pass) upload preserves failure identities and cleans its config: both errors [407.00ms]
+(pass) upload preserves failure identities and cleans its config: undefined primary and disposal error [390.00ms]
+(pass) directory removal failure preserves every failure after connect [703.00ms]
+(pass) directory removal failure preserves every failure after upload [813.00ms]
+(pass) directory removal failure preserves every failure after dispose [969.00ms]
+(pass) directory removal failure preserves every failure after success [968.00ms]
+(pass) manifest mismatch, path escape, gzip mismatch and bytes drift fail offline [313.00ms]
+(pass) directory symlinks/junctions are rejected even when their bytes are valid [94.00ms]
+(pass) valid gzip with matching artifact hashes must still reproduce every logical byte and its length [640.00ms]
+(pass) upload uses conditional storage, marker then catalog, idempotence and disposal in staging [1156.00ms]
+(pass) upload uses conditional storage, marker then catalog, idempotence and disposal in production [1032.00ms]
+(pass) tampered plans and drift never connect; upload failure cannot create a completion marker [718.00ms]
+(pass) a catalog upload failure preserves complete runtime objects and retry publishes only the catalog [797.00ms]
+
+ 59 pass
+ 0 fail
+ 352 expect() calls
+Ran 59 tests across 2 files. [24.83s]

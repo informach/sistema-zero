@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { createEmptyProject } from '../src/core/project'
 import { generateProjectFiles } from '../src/generators/project'
 import { snowDescentExample } from '../src/official-extensions/game-2d/examples/snowDescent'
@@ -42,16 +43,20 @@ setInterval(function () { document.body.dataset.snowDistance = String(${apiName}
         }),
       )
       await page.goto('/__snow-descent-fixture__')
-      await page.evaluate((source) => {
-        document.body.replaceChildren()
-        document.body.style.margin = '0'
-        const frame = document.createElement('iframe')
-        frame.id = 'snow'
-        frame.setAttribute('sandbox', 'allow-scripts')
-        frame.style.cssText = 'width:100vw;height:100dvh;border:0;display:block'
-        frame.srcdoc = source
-        document.body.appendChild(frame)
-      }, srcdoc)
+      await page.evaluate(
+        ([source, allow]) => {
+          document.body.replaceChildren()
+          document.body.style.margin = '0'
+          const frame = document.createElement('iframe')
+          frame.id = 'snow'
+          frame.setAttribute('sandbox', 'allow-scripts')
+          frame.allow = allow
+          frame.style.cssText = 'width:100vw;height:100dvh;border:0;display:block'
+          frame.srcdoc = source
+          document.body.appendChild(frame)
+        },
+        [srcdoc, GAME_FRAME_FOCUS_ALLOW] as const,
+      )
       const frame = page.frameLocator('#snow')
       const canvas = frame.locator('canvas').first()
       await expect(canvas).toBeVisible()

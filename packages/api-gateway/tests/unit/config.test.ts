@@ -1079,6 +1079,26 @@ describe('gateway.config.ts (configuração real)', () => {
     }
   })
 
+  test('Meus testes no Pro: sessão ativa, transporte interno, projeto inteiro e o tempo do Verificar projeto', () => {
+    const route = realConfig.routes.find(
+      (candidate) => candidate.id === 'members-studio-student-tests',
+    )
+    const check = realConfig.routes.find(
+      (candidate) => candidate.id === 'members-section-project-check',
+    )
+    expect(route).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/studio/student-tests',
+      service: 'members',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 2_000_000,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+    })
+    expect(route?.transforms).toEqual(check?.transforms)
+    expect(route?.timeoutMs).toBe(check?.timeoutMs)
+  })
+
   test('autoria Python exige equipe ativa e transporte interno com candidato limitado', () => {
     const route = realConfig.routes.find(
       (candidate) => candidate.id === 'members-admin-studio-authoring-runtime',

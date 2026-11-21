@@ -1,10 +1,10 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { basename, posix, resolve } from 'node:path'
-import { validarArteCenario } from '../packages/admin/src/lib/cenarios-assets'
 import { medirVolumeGlb } from '../packages/arquipelago/scripts/medir-volume-glb'
 import { catalogoInicialDaFaisca } from '../packages/arquipelago/src/sistemas/cenario-inicial'
 import { type ModeloDeCatalogo, ModeloDeCatalogoSchema } from '../packages/molda-cenarios-core/src'
+import { validarArteCenario } from './molda-cenarios-arte'
 
 const repo = resolve(process.env.ARQUIPELAGO_ARTE_REPO ?? '../artes-3d'),
   commit = process.argv[2] ?? '67b72d4a1a90c0e95c6217341dccfc723ebe8c49',

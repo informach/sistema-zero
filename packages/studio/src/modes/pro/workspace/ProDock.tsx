@@ -1,4 +1,4 @@
-import { type JSX, useEffect, useId, useMemo, useState } from 'react'
+import { type JSX, lazy, Suspense, useContext, useEffect, useId, useMemo, useState } from 'react'
 import { cn, ErrorBoundary, IconChevronDown, IconChevronUp, IconFile } from '#ui'
 import { proFileBaseName, proFileKind } from '../../../components/code/proFileKinds'
 import { ConsolePanel } from '../../../components/console/ConsolePanel'
@@ -8,6 +8,8 @@ import type { ProjectTree } from '../../../core/proProject'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
 import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
+import { StudioStoresContext } from '../../../state/storesContext'
+import { useUIStore, useUIStoreApi } from '../../../state/uiStore'
 import { useStudioConfig } from '../../../studio/config'
 import { useT } from '../../../studio/i18n'
 import { currentProDiagnostics } from './diagnostics'
@@ -16,6 +18,18 @@ import type { ProWorkspaceBottom } from './model'
 export { currentProDiagnostics } from './diagnostics'
 
 type DockTab = Exclude<ProWorkspaceBottom, 'closed'>
+
+// As abas Investigar e Desempenho (proposta aprovada em 20/11/2026) só baixam quando abrem.
+const ProInvestigatePanel = lazy(async () => ({
+  default: (await import('../../../components/devtools/ProInvestigatePanel')).ProInvestigatePanel,
+}))
+const PerformancePanel = lazy(async () => ({
+  default: (await import('../../../components/devtools/PerformancePanel')).PerformancePanel,
+}))
+// Meus testes no Pro: os testes rodam no executor do servidor (o host entrega o adaptador).
+const StudentTestsPanel = lazy(async () => ({
+  default: (await import('../../../components/devtools/StudentTestsPanel')).StudentTestsPanel,
+}))
 
 function diagnosticHint(code: number | string, source?: ProEditorDiagnostic['source']) {
   if (source === 'pyright') {
@@ -94,6 +108,8 @@ export function ProDock({
   // pelo menu ⋯ (a preferência que o `useVisibleBottomTabs` cruza) não pode levar o REPL junto.
   const hasRepl = python && config.console
   const hasTerminal = !python && allowed.some((item) => item.id === 'terminal')
+  const serverTests = useContext(StudioStoresContext)?.studentTestsServer ?? null
+  const hasServerTests = !python && serverTests !== null
   const subject = python ? 'program' : 'game'
   const tabs: DockTab[] = python
     ? [
@@ -104,6 +120,9 @@ export function ProDock({
     : [
         ...(hasConsole ? (['console'] as const) : []),
         'problems',
+        'investigate',
+        'performance',
+        ...(hasServerTests ? (['tests'] as const) : []),
         ...(hasTerminal ? (['terminal'] as const) : []),
       ]
   const active: ProWorkspaceBottom = (tabs as string[]).includes(selected) ? selected : 'closed'
@@ -120,8 +139,21 @@ export function ProDock({
         ? t('pro.dock.problems')
         : tab === 'terminal'
           ? t('pro.dock.terminal')
-          : t('pro.dock.repl')
+          : tab === 'investigate'
+            ? t('pro.dock.investigate')
+            : tab === 'performance'
+              ? t('pro.dock.performance')
+              : tab === 'tests'
+                ? t('pro.dock.tests')
+                : t('pro.dock.repl')
   const open = active !== 'closed'
+  // A medida para quando a gaveta fecha, como a frase da aba promete (a mesma do clássico).
+  const ui = useUIStoreApi()
+  const measuring = useUIStore((state) => state.measuring)
+  useEffect(() => {
+    if (!open && measuring) ui.setState({ measuring: false })
+  }, [open, measuring, ui])
+  useEffect(() => () => ui.setState({ measuring: false }), [ui])
   return (
     <section className="sz-pro-dock" aria-label={t('pro.dock.label')}>
       <div className="flex items-center gap-1 px-2 py-1.5">
@@ -298,7 +330,44 @@ export function ProDock({
           )}
         </div>
         {tabs
-          .filter((tab): tab is 'console' | 'terminal' | 'repl' => tab !== 'problems')
+          .filter(
+            (tab): tab is 'investigate' | 'performance' | 'tests' =>
+              tab === 'investigate' || tab === 'performance' || tab === 'tests',
+          )
+          .map((tab) => (
+            <div
+              key={tab}
+              id={`${id}-${tab}`}
+              role="tabpanel"
+              aria-labelledby={`${id}-tab-${tab}`}
+              hidden={active !== tab}
+              className="h-full overflow-auto p-3"
+            >
+              {(visited.has(tab) || active === tab) && (
+                <ErrorBoundary
+                  label={tab}
+                  fallback={(props) => (
+                    <SectionErrorFallback {...props} title={t(`pro.dock.${tab}`)} />
+                  )}
+                >
+                  <Suspense fallback={null}>
+                    {tab === 'investigate' ? (
+                      <ProInvestigatePanel tree={tree} navigate={navigate} />
+                    ) : tab === 'tests' ? (
+                      <StudentTestsPanel />
+                    ) : (
+                      <PerformancePanel />
+                    )}
+                  </Suspense>
+                </ErrorBoundary>
+              )}
+            </div>
+          ))}
+        {tabs
+          .filter(
+            (tab): tab is 'console' | 'terminal' | 'repl' =>
+              tab === 'console' || tab === 'terminal' || tab === 'repl',
+          )
           .map((tab) => (
             <div
               key={tab}

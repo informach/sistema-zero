@@ -62,6 +62,7 @@ export {
   Minimize2,
   Minus,
   MoreHorizontal,
+  Mountain,
   MousePointer2,
   Move,
   Move3d,

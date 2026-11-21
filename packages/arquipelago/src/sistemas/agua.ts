@@ -1,4 +1,20 @@
 /** As águas rasas das ilhas (o lago do Bosque): uma elipse no chão, onde se nada. */
+export type ConsultaNivelDaAgua = (x: number, z: number, raio?: number) => number | null
+
+/**
+ * Outra água da lista responde por (x, z) inteira? O cenário publicado cobre a região dele (lá
+ * só vale a água compilada), sem tirar da lista as águas que outros componentes puseram: cada
+ * dono tira a sua quando sai, e nada volta para a lista depois de o dono ter saído.
+ */
+export function aguaCobertaEm(
+  aguas: readonly { cobre?: (x: number, z: number) => boolean }[],
+  a: object,
+  x: number,
+  z: number,
+): boolean {
+  for (const outra of aguas) if (outra !== a && outra.cobre?.(x, z)) return true
+  return false
+}
 
 /** A elipse de uma água rasa contém (x, z)? (`giro` é o da elipse no mundo.) */
 export function dentroDaAgua(
@@ -9,10 +25,13 @@ export function dentroDaAgua(
     raioZ: number
     giro: number
     contorno?: readonly { x: number; z: number }[]
+    /** Cobertura compilada: rios, ilhas secas e fundos próprios usam a consulta canônica. */
+    consultaNivel?: ConsultaNivelDaAgua
   },
   x: number,
   z: number,
 ): boolean {
+  if (a.consultaNivel) return a.consultaNivel(x, z) !== null
   const dx = x - a.x
   const dz = z - a.z
   const c = Math.cos(a.giro)
@@ -41,6 +60,7 @@ export function discoTocaAgua(
   z: number,
   raio: number,
 ): boolean {
+  if (a.consultaNivel) return a.consultaNivel(x, z, raio) !== null
   if (dentroDaAgua(a, x, z)) return true
   const dx = x - a.x,
     dz = z - a.z,

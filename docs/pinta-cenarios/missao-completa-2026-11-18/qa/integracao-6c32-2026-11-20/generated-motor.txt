@@ -1,0 +1,17 @@
+(pass) água estática conserva a física e o material portátil; fundo ausente usa profundidade declarada [16.00ms]
+(pass) hospedeiro com oceano compartilhado mantém lagos compilados sem importar outro mar
+
+tests\compilar-runtime.test.ts:
+(pass) o jogo pode assumir a animação e colisão de uma entidade sem duplicar os motores [47.00ms]
+(pass) propriedade externa exige uma entidade real da cena
+(pass) perfil de jogo conserva céu e iluminação globais e instala as luzes locais do cenário [16.00ms]
+(pass) runtime funciona sem Palco/renderer, preserva matrizes, física, dados e descarte [15.00ms]
+(pass) runtime recusa inventário adulterado antes de carregar e cancela entre recursos
+(pass) arquivo pequeno repetido não contorna o orçamento das cópias de nós e extras [78.00ms]
+(pass) instâncias compartilham material/geometria, isolam pele/morph/clipes e liberam só seus ossos
+(pass) carregamento HTTP usa somente arquivos do pacote e recusa excesso, truncamento e redirecionamento [16.00ms]
+
+ 11 pass
+ 0 fail
+ 108 expect() calls
+Ran 11 tests across 2 files. [391.00ms]

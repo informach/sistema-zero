@@ -1,8 +1,60 @@
+import { execFileSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { expect, test } from '@playwright/test'
+import { expect, type Locator, type Page, test } from '@playwright/test'
 import { build, type PreviewServer, preview } from 'vite'
 import { inspectWorkspaceBuffers } from './proWorkspaceInspection'
+
+/**
+ * Tecla até o segundo requestAnimationFrame, para cada tecla de caractere digitada no Monaco: o
+ * proxy de apresentação das medidas de digitação (não é INP nem o pixel exato).
+ */
+async function installInputFrameProbe(page: Page) {
+  await page.addInitScript(() => {
+    const samples: number[] = []
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (
+          !(event.target instanceof HTMLTextAreaElement) ||
+          event.key.length !== 1 ||
+          event.ctrlKey ||
+          event.metaKey
+        )
+          return
+        const start = performance.now()
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            samples.push(performance.now() - start)
+            document.documentElement.dataset.inputFrameSamples = JSON.stringify(samples)
+          }),
+        )
+      },
+      true,
+    )
+  })
+}
+
+function benchmarkStats(samples: number[]) {
+  const sorted = [...samples].sort((a, b) => a - b)
+  return {
+    samples,
+    p50: sorted[Math.ceil(sorted.length * 0.5) - 1],
+    p95: sorted[Math.ceil(sorted.length * 0.95) - 1],
+    max: sorted.at(-1),
+  }
+}
+
+// Achado T5 da revisão de 20/11: sem SHA nem data, o artefato podia levar a medição antiga.
+function benchmarkCommit(): string | null {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  } catch {
+    return null
+  }
+}
 
 let server: PreviewServer
 test.beforeAll(async () => {
@@ -66,29 +118,7 @@ test('records real editor input, openings and layout lifecycle with controlled s
   const url = `http://127.0.0.1:${address.port}/?performance=1`
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.addInitScript(() => {
-    const samples: number[] = []
-    document.addEventListener(
-      'keydown',
-      (event) => {
-        if (
-          !(event.target instanceof HTMLTextAreaElement) ||
-          event.key.length !== 1 ||
-          event.ctrlKey ||
-          event.metaKey
-        )
-          return
-        const start = performance.now()
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            samples.push(performance.now() - start)
-            document.documentElement.dataset.inputFrameSamples = JSON.stringify(samples)
-          }),
-        )
-      },
-      true,
-    )
-  })
+  await installInputFrameProbe(page)
   const openings: number[] = []
   for (let index = 0; index < 30; index++) {
     const start = performance.now()
@@ -160,6 +190,8 @@ test('records real editor input, openings and layout lifecycle with controlled s
   )
   expect(errors).toEqual([])
   const report = {
+    commit: benchmarkCommit(),
+    measuredAt: new Date().toISOString(),
     browser: browser.version(),
     fixture: '78-source-files-controlled-remote-runtime',
     limitations: [
@@ -177,9 +209,7 @@ test('records real editor input, openings and layout lifecycle with controlled s
   const output =
     process.env.STUDIO_BROWSER_BENCH_OUTPUT ??
     '../../.audits/studio-pro-evolution/browser-current.json'
-  await mkdir(fileURLToPath(new URL('../../../.audits/studio-pro-evolution/', import.meta.url)), {
-    recursive: true,
-  })
+  await mkdir(dirname(resolve(output)), { recursive: true })
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
   // Laboratory budgets fixed in batch 0. These are not physical-device acceptance.
   expect(openings[0]).toBeLessThan(10_000)
@@ -194,4 +224,234 @@ test('records real editor input, openings and layout lifecycle with controlled s
       layoutP95: report.layoutRoundTrip.p95,
     }),
   )
+})
+
+/** Clica e devolve o tempo, medido na página, até o alvo aparecer e o quadro seguinte sair. */
+function timeUntilVisible(button: Locator, target: 'search' | 'files' | 'problems') {
+  return button.evaluate(async (element, target) => {
+    const frame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve))
+    const find = (): Element | null => {
+      if (target === 'files') return document.querySelector('[role="tree"]')
+      if (target === 'problems')
+        return document.querySelector(
+          '.sz-pro-dock [role="tabpanel"][aria-labelledby$="-tab-problems"]',
+        )
+      const label = [...document.querySelectorAll('label')].find(
+        (item) => item.textContent === 'Encontrar no código do projeto',
+      )
+      return label?.htmlFor ? document.getElementById(label.htmlFor) : null
+    }
+    const start = performance.now()
+    ;(element as HTMLElement).click()
+    for (;;) {
+      const found = find()
+      if (found instanceof HTMLElement && found.checkVisibility()) break
+      if (performance.now() - start > 10_000) throw new Error(`O painel ${target} não apareceu.`)
+      await frame()
+    }
+    await frame()
+    return performance.now() - start
+  }, target)
+}
+
+/** Escreve a busca como a criança (um evento de entrada) e mede até o primeiro resultado aparecer. */
+function timeUntilFirstResult(field: Locator, query: string) {
+  return field.evaluate(async (element, query) => {
+    const input = element as HTMLInputElement
+    const write = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    if (!write) throw new Error('Campo sem escrita de valor.')
+    const frame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve))
+    const results = () =>
+      document.querySelectorAll('ul[aria-label="Resultados"] button[aria-label]').length
+    write.call(input, '')
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    while (results()) await frame()
+    const start = performance.now()
+    write.call(input, query)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    while (!results()) {
+      if (performance.now() - start > 10_000) throw new Error(`Nada encontrado para ${query}.`)
+      await frame()
+    }
+    await frame()
+    return performance.now() - start
+  }, query)
+}
+
+test('modular 60-file project: typing, panels, first search answer and analysis across files', async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000)
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Missing benchmark server')
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await installInputFrameProbe(page)
+  await page.goto(`http://127.0.0.1:${address.port}/?modular`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  const problemsTab = page.getByRole('tab', { name: /^Problemas/ })
+  // A análise passa pelos 60 arquivos e não acha nada: o projeto se importa sem erro.
+  await expect(problemsTab).toHaveAccessibleName(/Nenhum problema/, { timeout: 120_000 })
+
+  const rail = page.getByRole('navigation', { name: 'Explorar o projeto', exact: true })
+  const searchButton = rail.getByRole('button', { name: 'Procurar', exact: true })
+  const filesButton = rail.getByRole('button', { name: 'Arquivos', exact: true })
+  const field = page.getByRole('searchbox', { name: 'Encontrar no código do projeto' })
+  await searchButton.click()
+  await page.getByRole('button', { name: 'Nome do arquivo', exact: true }).click()
+  await page.getByRole('searchbox', { name: 'Encontrar um arquivo', exact: true }).fill('.ts')
+  // Os 60 arquivos estão no projeto (a busca por nome lista um botão por arquivo).
+  await expect(page.getByText('60 resultados', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Dentro do código', exact: true }).click()
+  await filesButton.click()
+
+  const panels: number[] = []
+  for (let index = 0; index < 20; index++) {
+    panels.push(await timeUntilVisible(searchButton, 'search'))
+    panels.push(await timeUntilVisible(filesButton, 'files'))
+  }
+  const closeDock = page.getByRole('button', { name: 'Fechar a gaveta', exact: true })
+  if (await closeDock.isVisible()) await closeDock.click()
+  await expect(page.locator('.sz-pro-dock__body')).toBeHidden()
+  const dock: number[] = []
+  for (let index = 0; index < 20; index++) {
+    dock.push(await timeUntilVisible(problemsTab, 'problems'))
+    await problemsTab.click()
+    await expect(page.locator('.sz-pro-dock__body')).toBeHidden()
+  }
+
+  await searchButton.click()
+  await expect(field).toBeVisible()
+  const queries = [
+    'Vector',
+    'Helper7',
+    'Behaviour3',
+    'System',
+    'Scene',
+    'update(dt',
+    'points()',
+    'theme.colors',
+    'configVersion',
+    'seedScore',
+    'new Enemy',
+    'storageVersion',
+    'drawHud',
+    'abstract',
+    'velocity',
+    'fillText',
+    'Math.min',
+    'readonly',
+    'alive',
+    'ticks',
+  ]
+  const searches: number[] = []
+  for (const query of queries) searches.push(await timeUntilFirstResult(field, query))
+
+  // Digitar num arquivo do meio do grafo (importado por dois sistemas).
+  await field.fill('class Enemy07')
+  await page.getByRole('button', { name: /^src\/entities\/enemy07\.ts:\d+ / }).click()
+  await input.focus()
+  const typedFrom = await page.evaluate(
+    () => JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]').length,
+  )
+  await input.press('Control+End')
+  await page.keyboard.type(`\n// ${'x'.repeat(200)}`)
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]').length,
+      ),
+    )
+    .toBeGreaterThanOrEqual(typedFrom + 203)
+  const typing: number[] = await page.evaluate(
+    (start) => JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]').slice(start),
+    typedFrom,
+  )
+
+  // A análise acompanha as dependências: mudar o tipo na classe base acusa os arquivos FECHADOS
+  // que a herdam, e desfazer apaga o que valia para a versão anterior.
+  await field.fill('abstract points')
+  await page.getByRole('button', { name: /^src\/entities\/base\.ts:\d+ / }).click()
+  await expect(page.locator('.monaco-editor .view-lines').first()).toContainText(
+    'abstract class Entity',
+  )
+  // O Procurar do editor seleciona o trecho, e o Esc devolve o foco ao código com ele selecionado.
+  await input.focus()
+  await input.press('Control+f')
+  await page.keyboard.type('abstract points(): number')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Escape')
+  await expect(input).toBeFocused()
+  await input.press('End')
+  for (let index = 0; index < 'number'.length; index++) await input.press('Backspace')
+  const brokenAt = Date.now()
+  await page.keyboard.type('string')
+  await input.press('Escape')
+  await expect(problemsTab).toHaveAccessibleName(/^Problemas\s*\d+$/, { timeout: 60_000 })
+  const brokenAfter = Date.now() - brokenAt
+  await problemsTab.click()
+  await expect(
+    page.getByRole('button', { name: /^Ir para src\/entities\/enemy00\.ts:\d+$/ }).first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: /^Ir para src\/systems\/movement\.ts:\d+$/ }).first(),
+  ).toBeVisible()
+  await input.focus()
+  await input.press('End')
+  for (let index = 0; index < 'string'.length; index++) await input.press('Backspace')
+  const fixedAt = Date.now()
+  await page.keyboard.type('number')
+  await input.press('Escape')
+  await expect(problemsTab).toHaveAccessibleName(/Nenhum problema/, { timeout: 60_000 })
+  const fixedAfter = Date.now() - fixedAt
+  await expect(page.getByRole('button', { name: /^Ir para src\/entities\// })).toHaveCount(0)
+  expect(errors).toEqual([])
+
+  const report = {
+    commit: benchmarkCommit(),
+    measuredAt: new Date().toISOString(),
+    browser: browser.version(),
+    fixture: '60-modular-typescript-files-five-layers',
+    limitations: [
+      'Playground fixture with the real Monaco and language worker, not the authenticated Kids route.',
+      'Input to second animation frame is a presentation proxy, not INP or exact pixel latency.',
+      'Panel and search times are measured inside the page from the click or input event to the frame after the target appears.',
+      'Analysis times include Playwright typing and polling; they are recorded, not budgeted.',
+    ],
+    typing: benchmarkStats(typing),
+    panelOpen: benchmarkStats(panels),
+    dockOpen: benchmarkStats(dock),
+    firstSearchAnswer: benchmarkStats(searches),
+    analysisAfterBreakingBaseMs: brokenAfter,
+    analysisAfterFixingBaseMs: fixedAfter,
+    errors,
+  }
+  const output = resolve(
+    dirname(
+      resolve(
+        process.env.STUDIO_BROWSER_BENCH_OUTPUT ??
+          '../../.audits/studio-pro-evolution/browser-current.json',
+      ),
+    ),
+    'pro-modular-current.json',
+  )
+  await mkdir(dirname(output), { recursive: true })
+  await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
+  console.log(
+    JSON.stringify({
+      typingP95: report.typing.p95,
+      panelP95: report.panelOpen.p95,
+      dockP95: report.dockOpen.p95,
+      searchP95: report.firstSearchAnswer.p95,
+      brokenAfter,
+      fixedAfter,
+    }),
+  )
+  // Os critérios da etapa 3 do plano (Pro em escala), na máquina do teste.
+  expect(report.typing.p95).toBeLessThan(50)
+  expect(report.panelOpen.p95).toBeLessThan(150)
+  expect(report.dockOpen.p95).toBeLessThan(150)
+  expect(report.firstSearchAnswer.p95).toBeLessThan(200)
 })

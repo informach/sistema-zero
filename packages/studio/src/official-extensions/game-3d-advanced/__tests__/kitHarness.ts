@@ -341,6 +341,8 @@ export async function loadExampleKit(
      * `makeCountingThree`). Sem ele, o THREE é exatamente o de sempre.
      */
     wrapThree?: (three: ReturnType<typeof makeFakeThree>['THREE']) => Record<string, unknown>
+    /** Outro corpo do runtime (uma variante, como a sem cenário); sem ele, o completo. */
+    body?: string
   } = {},
 ): Promise<{
   api: KitApi
@@ -353,7 +355,7 @@ export async function loadExampleKit(
   const THREE = opts.wrapThree ? opts.wrapThree(fake.THREE) : fake.THREE
   const win = globalThis.window as unknown as Record<string, unknown>
   // runtimeBody já injeta window.__SZProjectLifecycle (ver loadStartedKit).
-  new Function('THREE', 'window', runtimeBody)(THREE, win)
+  new Function('THREE', 'window', opts.body ?? runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   // O exemplo referencia o identificador SZGameKit3D "solto" — entra como
   // parâmetro (não confiar no reflexo de globais do happy-dom).

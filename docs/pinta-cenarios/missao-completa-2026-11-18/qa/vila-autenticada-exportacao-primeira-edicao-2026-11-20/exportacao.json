@@ -1,0 +1,443 @@
+{
+  "at": "2026-11-21T00:05:45.076Z",
+  "source": "Read-only actual owned staging-profile authority, RPC97; QA transport preserves all six native hashes",
+  "sourceHashes": [
+    {
+      "id": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+      "sha256": "0da3e50a083e3ba60ebbc848583a30d239b3055de73b1ce4dda61d37113d511b"
+    },
+    {
+      "id": "fc15aec6-b219-452a-9f85-80c2c2681598",
+      "sha256": "221c78fb4d0858010d8423d687d371e31b224bb132fce215a51cb8580ea15777"
+    },
+    {
+      "id": "209771ff-621e-41a8-a05d-e454853b5071",
+      "sha256": "70c4ddba0ee2ae8ec829e3947f8547d690445e9363f37e69b08f928f24eb671f"
+    },
+    {
+      "id": "3d36c552-4ecd-418c-9a1d-72032dcd6e3c",
+      "sha256": "4da663f7aabf86770c129906929e18a355e049a051953c15a213e72789e9fcef"
+    },
+    {
+      "id": "6c7c2b91-0023-42c4-8252-59d27b202f46",
+      "sha256": "05175ab61e254f2ecb56bae56ea50ae0eb25434f6c66402b6677e6690803cbc3"
+    },
+    {
+      "id": "9ab472dd-a61c-4f2b-8092-b413ac1ed6e6",
+      "sha256": "bca5ff876c11f17a8c43f42bee071578285ea14fc349bcb8419fdd5a9a56d88c"
+    }
+  ],
+  "nativeSchema": 7,
+  "sourceMapHash": "0da3e50a083e3ba60ebbc848583a30d239b3055de73b1ce4dda61d37113d511b",
+  "targets": [
+    {
+      "target": "tiled",
+      "files": 16,
+      "maps": 2,
+      "layerCounts": [18, 2],
+      "editableAssets": 6,
+      "hashes": [
+        {
+          "file": "mapas/mapa-0/mapa.json",
+          "bytes": 190404,
+          "sha256": "b7d4e7873a9edfb13cbf99f8f938e23de2d715919711bd1c610b6808476b714d"
+        },
+        {
+          "file": "mapas/mapa-0/mapa.tmx",
+          "bytes": 40714,
+          "sha256": "13dfdafc929d4b46dca0f42a5e2500f222ad6231bceb6c47bb7961434c78c80d"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-1.tsx",
+          "bytes": 441,
+          "sha256": "15e6deee0a25f95dafce18dd3bd0980527c1f7d153a500f9e060811afb03c43a"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-2.tsx",
+          "bytes": 667,
+          "sha256": "f76b44fafe125c73ff8378a968670a14ab21a8b0aad9b70c081bbcf8441b7095"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-1.png",
+          "bytes": 165,
+          "sha256": "cd4bce6c91dba43465f69ed4454523068e86a034fe8a4eb6d0a9a8cdfd596fcf"
+        },
+        {
+          "file": "mapas/mapa-0/images/art-0.png",
+          "bytes": 187,
+          "sha256": "74b889b82f93eb71420f6e2a61203cfc414e132a7947922599ce3062064138b3"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.json",
+          "bytes": 9949,
+          "sha256": "9718ba0a08d86e6a73afd792fc499ad1d0ac78d0b303c2f3c45a129f63661419"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.tmx",
+          "bytes": 1963,
+          "sha256": "334282b0798702bb36fcec80a631229b28f7fa08532ca367834909dda8b5966b"
+        },
+        {
+          "file": "mapas/mapa-1/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-1/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "maps.json",
+          "bytes": 192270,
+          "sha256": "c0d4904c04d923beb6c33b42252e525c626fcd21917111dcdc5060521c9e6fa7"
+        },
+        {
+          "file": "start.json",
+          "bytes": 27,
+          "sha256": "b95ce00fd1fad536af69371f2f1b7a5e9bd2a561471eb1d44762206fcc2df3a9"
+        },
+        {
+          "file": "desenhos.pinta.json",
+          "bytes": 220084,
+          "sha256": "7edd868f787c5536ceb9700642316a4aa90844931749ff53846a97ab49ec9341"
+        },
+        {
+          "file": "LEIA-ME.txt",
+          "bytes": 343,
+          "sha256": "b32e81e4b81918de87822c0ad9aa260bec3e3e3f36695af5f25ebaf3d9e49f17"
+        }
+      ]
+    },
+    {
+      "target": "phaser",
+      "files": 20,
+      "maps": 2,
+      "layerCounts": [18, 2],
+      "editableAssets": 6,
+      "hashes": [
+        {
+          "file": "mapas/mapa-0/mapa.json",
+          "bytes": 190404,
+          "sha256": "b7d4e7873a9edfb13cbf99f8f938e23de2d715919711bd1c610b6808476b714d"
+        },
+        {
+          "file": "mapas/mapa-0/mapa.tmx",
+          "bytes": 40714,
+          "sha256": "13dfdafc929d4b46dca0f42a5e2500f222ad6231bceb6c47bb7961434c78c80d"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-1.tsx",
+          "bytes": 441,
+          "sha256": "15e6deee0a25f95dafce18dd3bd0980527c1f7d153a500f9e060811afb03c43a"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-2.tsx",
+          "bytes": 667,
+          "sha256": "f76b44fafe125c73ff8378a968670a14ab21a8b0aad9b70c081bbcf8441b7095"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-1.png",
+          "bytes": 165,
+          "sha256": "cd4bce6c91dba43465f69ed4454523068e86a034fe8a4eb6d0a9a8cdfd596fcf"
+        },
+        {
+          "file": "mapas/mapa-0/images/art-0.png",
+          "bytes": 187,
+          "sha256": "74b889b82f93eb71420f6e2a61203cfc414e132a7947922599ce3062064138b3"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.json",
+          "bytes": 9949,
+          "sha256": "9718ba0a08d86e6a73afd792fc499ad1d0ac78d0b303c2f3c45a129f63661419"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.tmx",
+          "bytes": 1963,
+          "sha256": "334282b0798702bb36fcec80a631229b28f7fa08532ca367834909dda8b5966b"
+        },
+        {
+          "file": "mapas/mapa-1/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-1/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "maps.json",
+          "bytes": 192270,
+          "sha256": "c0d4904c04d923beb6c33b42252e525c626fcd21917111dcdc5060521c9e6fa7"
+        },
+        {
+          "file": "start.json",
+          "bytes": 27,
+          "sha256": "b95ce00fd1fad536af69371f2f1b7a5e9bd2a561471eb1d44762206fcc2df3a9"
+        },
+        {
+          "file": "desenhos.pinta.json",
+          "bytes": 220084,
+          "sha256": "7edd868f787c5536ceb9700642316a4aa90844931749ff53846a97ab49ec9341"
+        },
+        {
+          "file": "phaser.min.js",
+          "bytes": 1196122,
+          "sha256": "e92ddef111ba42e92d316979c732311757093688ea1810591cb7aa2858eba7a7"
+        },
+        {
+          "file": "PHASER-LICENSE.txt",
+          "bytes": 1100,
+          "sha256": "c3123cd25de4eccf1fd5a5a0a6fc872299116d1dbbb48b00f2554a4c35220a65"
+        },
+        {
+          "file": "index.html",
+          "bytes": 449,
+          "sha256": "48c4fe5dc2bd3728b0cbf62916617baa2865f420f5a57bcc703d4d13238c28f3"
+        },
+        {
+          "file": "main.js",
+          "bytes": 73137,
+          "sha256": "adc2b6333aebbb8a0f0e6ec88c47d1d47c94f3e9012148f3f1d162dc65edcac1"
+        },
+        {
+          "file": "LEIA-ME.txt",
+          "bytes": 865,
+          "sha256": "4c8902d65d3ca78709f54c98bc8c40fe0e29342a0e6d9b1fe858648da2c165d1"
+        }
+      ]
+    },
+    {
+      "target": "pygame",
+      "files": 19,
+      "maps": 2,
+      "layerCounts": [18, 2],
+      "editableAssets": 6,
+      "hashes": [
+        {
+          "file": "mapas/mapa-0/mapa.json",
+          "bytes": 190404,
+          "sha256": "b7d4e7873a9edfb13cbf99f8f938e23de2d715919711bd1c610b6808476b714d"
+        },
+        {
+          "file": "mapas/mapa-0/mapa.tmx",
+          "bytes": 40714,
+          "sha256": "13dfdafc929d4b46dca0f42a5e2500f222ad6231bceb6c47bb7961434c78c80d"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-1.tsx",
+          "bytes": 441,
+          "sha256": "15e6deee0a25f95dafce18dd3bd0980527c1f7d153a500f9e060811afb03c43a"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-2.tsx",
+          "bytes": 667,
+          "sha256": "f76b44fafe125c73ff8378a968670a14ab21a8b0aad9b70c081bbcf8441b7095"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-1.png",
+          "bytes": 165,
+          "sha256": "cd4bce6c91dba43465f69ed4454523068e86a034fe8a4eb6d0a9a8cdfd596fcf"
+        },
+        {
+          "file": "mapas/mapa-0/images/art-0.png",
+          "bytes": 187,
+          "sha256": "74b889b82f93eb71420f6e2a61203cfc414e132a7947922599ce3062064138b3"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.json",
+          "bytes": 9949,
+          "sha256": "9718ba0a08d86e6a73afd792fc499ad1d0ac78d0b303c2f3c45a129f63661419"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.tmx",
+          "bytes": 1963,
+          "sha256": "334282b0798702bb36fcec80a631229b28f7fa08532ca367834909dda8b5966b"
+        },
+        {
+          "file": "mapas/mapa-1/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-1/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "maps.json",
+          "bytes": 192270,
+          "sha256": "c0d4904c04d923beb6c33b42252e525c626fcd21917111dcdc5060521c9e6fa7"
+        },
+        {
+          "file": "start.json",
+          "bytes": 27,
+          "sha256": "b95ce00fd1fad536af69371f2f1b7a5e9bd2a561471eb1d44762206fcc2df3a9"
+        },
+        {
+          "file": "desenhos.pinta.json",
+          "bytes": 220084,
+          "sha256": "7edd868f787c5536ceb9700642316a4aa90844931749ff53846a97ab49ec9341"
+        },
+        {
+          "file": "pinta_cenario.py",
+          "bytes": 29858,
+          "sha256": "859b87b72a77da65bde6eca97accc6d1df2c390e9730cd8564aeda50b302a7de"
+        },
+        {
+          "file": "main.py",
+          "bytes": 1397,
+          "sha256": "d8b6bdcc17f23c5250cfc7a1d303a3502ed848755e674af57fb34a6e4ff4e2c0"
+        },
+        {
+          "file": "requirements.txt",
+          "bytes": 17,
+          "sha256": "fdb9840ce37afc18b3a3bf57048fc772798b8e551630a1c9f9635f2e925a4cf6"
+        },
+        {
+          "file": "LEIA-ME.txt",
+          "bytes": 820,
+          "sha256": "095dc747ef017b39077836a83c9b55f9e187cd1444cde62b7040d9b6a287ebe2"
+        }
+      ]
+    },
+    {
+      "target": "godot",
+      "files": 19,
+      "maps": 2,
+      "layerCounts": [18, 2],
+      "editableAssets": 6,
+      "hashes": [
+        {
+          "file": "mapas/mapa-0/mapa.json",
+          "bytes": 190404,
+          "sha256": "b7d4e7873a9edfb13cbf99f8f938e23de2d715919711bd1c610b6808476b714d"
+        },
+        {
+          "file": "mapas/mapa-0/mapa.tmx",
+          "bytes": 40714,
+          "sha256": "13dfdafc929d4b46dca0f42a5e2500f222ad6231bceb6c47bb7961434c78c80d"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-1.tsx",
+          "bytes": 441,
+          "sha256": "15e6deee0a25f95dafce18dd3bd0980527c1f7d153a500f9e060811afb03c43a"
+        },
+        {
+          "file": "mapas/mapa-0/tiles-2.tsx",
+          "bytes": 667,
+          "sha256": "f76b44fafe125c73ff8378a968670a14ab21a8b0aad9b70c081bbcf8441b7095"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "mapas/mapa-0/images/tiles-1.png",
+          "bytes": 165,
+          "sha256": "cd4bce6c91dba43465f69ed4454523068e86a034fe8a4eb6d0a9a8cdfd596fcf"
+        },
+        {
+          "file": "mapas/mapa-0/images/art-0.png",
+          "bytes": 187,
+          "sha256": "74b889b82f93eb71420f6e2a61203cfc414e132a7947922599ce3062064138b3"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.json",
+          "bytes": 9949,
+          "sha256": "9718ba0a08d86e6a73afd792fc499ad1d0ac78d0b303c2f3c45a129f63661419"
+        },
+        {
+          "file": "mapas/mapa-1/mapa.tmx",
+          "bytes": 1963,
+          "sha256": "334282b0798702bb36fcec80a631229b28f7fa08532ca367834909dda8b5966b"
+        },
+        {
+          "file": "mapas/mapa-1/tiles-0.tsx",
+          "bytes": 2160,
+          "sha256": "caa1e89eb44137d3f20cccd9c17b57212ce49415857367432348970da7e64823"
+        },
+        {
+          "file": "mapas/mapa-1/images/tiles-0.png",
+          "bytes": 1398,
+          "sha256": "273f1f1af2ac49c5418b94ce25d667ad27cd17ef88494220a4e3f8156d51192c"
+        },
+        {
+          "file": "maps.json",
+          "bytes": 192270,
+          "sha256": "c0d4904c04d923beb6c33b42252e525c626fcd21917111dcdc5060521c9e6fa7"
+        },
+        {
+          "file": "start.json",
+          "bytes": 27,
+          "sha256": "b95ce00fd1fad536af69371f2f1b7a5e9bd2a561471eb1d44762206fcc2df3a9"
+        },
+        {
+          "file": "desenhos.pinta.json",
+          "bytes": 220084,
+          "sha256": "7edd868f787c5536ceb9700642316a4aa90844931749ff53846a97ab49ec9341"
+        },
+        {
+          "file": "project.godot",
+          "bytes": 333,
+          "sha256": "706ef80c9ae4528acc51ed11ee5baf4f809983f1eba0f11dc82411b83af25099"
+        },
+        {
+          "file": "main.tscn",
+          "bytes": 153,
+          "sha256": "c8d01ec90f0daccc979799a7a46350f743c2ba5dd487f0bd1c160f930a8ad90e"
+        },
+        {
+          "file": "pinta.gd",
+          "bytes": 26093,
+          "sha256": "455182c1c32f9cc09506cd27ba2766e6a3b4726534a85caea8604438f049c6da"
+        },
+        {
+          "file": "LEIA-ME.txt",
+          "bytes": 711,
+          "sha256": "a930de98b5468c6f0ae4ddd70f46765754bfc14b3a5ab567e06cfba0d0853a29"
+        }
+      ]
+    }
+  ],
+  "engineExecutionProven": false,
+  "downloadThroughNewStagingUIProven": false,
+  "afterFirstEditOnly": true
+}

@@ -1,3 +1,4 @@
+import { CLASSIC_GAME_FRAME_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { studioProPublicationUrl } from '@sistemazero/core/studio/pro-publication'
 import type { CSSProperties, JSX, Ref } from 'react'
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
@@ -274,7 +275,7 @@ export const JavaScriptProjectPlayer = forwardRef<HTMLIFrameElement, StudioProje
           sandbox="allow-scripts allow-modals allow-pointer-lock"
           // Libera a Fullscreen API do jogo (blocos de "tela cheia") no player público.
           // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
-          allow="fullscreen"
+          allow={CLASSIC_GAME_FRAME_ALLOW}
           className={className}
           style={{ width: '100%', height: '100%', border: 0, background: '#fff', ...style }}
         />

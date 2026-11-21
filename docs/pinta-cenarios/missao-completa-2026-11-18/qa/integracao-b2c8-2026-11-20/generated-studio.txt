@@ -1,0 +1,3 @@
+$ bun scripts/generate-scene3d-runtime.ts --check
+SCENE3D_RUNTIME: 514423 caracteres, 3 imports Three compartilhados, SHA-256 cb5d74fd55204ca6495ab85c867c163979c3158667634f7557b8ea9cc989af0a.
+SCENE3D_PRO_RUNTIME: 514660 caracteres, 3 imports Three compartilhados, SHA-256 a80ca49fc236ffbc7a3aa928c7d79cd65a37e69cc4b1d1889f50c04714c10939.

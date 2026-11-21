@@ -4,7 +4,11 @@ import {
   readGltfDocument,
 } from '@sistemazero/molda/gltf'
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
-import { conferirGlb, conferirImagemDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  conferirGlb,
+  conferirImagemDeCenario,
+  digestDosBytes,
+} from '@sistemazero/molda-cenarios-core/v2'
 
 // Apenas extensões materiais que o GLTFLoader instalado decodifica. Não aceitamos
 // extensões que introduzam buffers, topologia comprimida ou instâncias adicionais.
@@ -57,6 +61,7 @@ export function inspecionarGlbDaCompilacao(
     profundidades[indice] = profundidade
   }
   let bytesDePixels = 0
+  const imagens: { bytes: Uint8Array; pixels: number }[] = []
   for (const imagem of d.resources.images) {
     const tipo = imagem.mimeType ?? imagem.uriMimeType
     const medidas =
@@ -77,6 +82,7 @@ export function inspecionarGlbDaCompilacao(
         'Uma imagem do GLB excede o limite portátil de pixels; redimensione a fonte antes de exportar.',
       )
     bytesDePixels += medidas.largura * medidas.altura * 4
+    imagens.push({ bytes: imagem.bytes, pixels: medidas.largura * medidas.altura * 4 })
     if (bytesDePixels > LIMITES_DA_EXPORTACAO.malha.bytesDaFonte)
       throw Error('As imagens do GLB excedem o orçamento de memória da compilação.')
   }
@@ -154,10 +160,32 @@ export function inspecionarGlbDaCompilacao(
     bytesNumericos,
     bytesDeMaterializacao,
     bytesDePixels,
+    /** Cada imagem embutida (os bytes do próprio GLB, sem cópia) e quanto ocupa decodificada:
+     * modelos de um mesmo kit repetem o mesmo atlas, que só deve contar uma vez. */
+    imagens,
     partesNomeadas,
     animavel:
       d.animations.length > 0 ||
       d.skins.length > 0 ||
       d.meshes.some((m) => m.primitives.some((p) => p.targets.length > 0)),
   }
+}
+
+/**
+ * Os pixels das imagens ainda não contadas (na compilação, na conferência do pacote). A mesma
+ * imagem embutida em outro modelo (o atlas de um kit) é decodificada uma vez só e não pesa de
+ * novo no orçamento.
+ */
+export async function pixelsDasImagensNovas(
+  imagens: readonly { bytes: Uint8Array; pixels: number }[],
+  contadas: Set<string>,
+): Promise<number> {
+  let pixels = 0
+  for (const imagem of imagens) {
+    const chave = await digestDosBytes(imagem.bytes)
+    if (contadas.has(chave)) continue
+    contadas.add(chave)
+    pixels += imagem.pixels
+  }
+  return pixels
 }

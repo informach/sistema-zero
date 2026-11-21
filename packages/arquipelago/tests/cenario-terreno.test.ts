@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { ModeloDeCatalogo } from '@sistemazero/molda-cenarios-core'
-import { assentarInstancias } from '../src/cenarios/apoio'
-import { alturaComRelevo, criarTerrenoDeCenario } from '../src/cenarios/terreno'
+import { assentarInstancias } from '../src/molda/importacao-v1/apoio'
+import { alturaComRelevo, criarTerrenoDeCenario } from '../src/molda/importacao-v1/terreno'
 import { cenarioInicialDaFaisca } from '../src/sistemas/cenario-inicial'
 import { ARQUIPELAGO } from '../src/sistemas/geografia-do-arquipelago'
 

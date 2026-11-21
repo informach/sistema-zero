@@ -1,9 +1,21 @@
 /**
+ * O retrato oferece consulta e iteração sem prometer os métodos novos do Set no ESNext.
+ * O callback de forEach recebe este mesmo contrato; herdar a assinatura do ReadonlySet
+ * exigiria operações que o retrato não implementa e quebraria o typecheck do Members.
+ */
+export type ReadonlyNames<T = string> = Pick<
+  ReadonlySet<T>,
+  'has' | 'size' | 'entries' | 'keys' | 'values' | typeof Symbol.iterator
+> & {
+  forEach(callback: (value: T, key: T, set: ReadonlyNames<T>) => void, thisArg?: unknown): void
+}
+
+/**
  * A lexical-scope snapshot. Forking shares read-only storage; the first actual
  * mutation detaches it. Unlike a parent-linked scope, later parent writes cannot
  * become visible in an earlier snapshot. Iteration reads the captured storage.
  */
-export class SymbolNames<T = string> implements ReadonlySet<T> {
+export class SymbolNames<T = string> implements ReadonlyNames<T> {
   private storage: { values: Set<T>; shared: boolean }
 
   constructor(values?: Iterable<T>, storage?: { values: Set<T>; shared: boolean }) {
@@ -57,7 +69,7 @@ export class SymbolNames<T = string> implements ReadonlySet<T> {
     return this.values()
   }
 
-  forEach(callback: (value: T, key: T, set: ReadonlySet<T>) => void, thisArg?: unknown): void {
+  forEach(callback: (value: T, key: T, set: SymbolNames<T>) => void, thisArg?: unknown): void {
     this.storage.values.forEach((value) => {
       callback.call(thisArg, value, value, this)
     })

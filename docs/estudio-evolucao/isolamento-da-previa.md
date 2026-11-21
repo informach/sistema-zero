@@ -151,7 +151,11 @@ padrão**:
 
 - Contrato e página: `packages/core/src/studio/classic-shell.ts` (`sz-shell:ready`, `sz-shell:load`,
   `sz-shell:loaded`). A casca confere a origem do host contra a lista do servidor, repassa as
-  mensagens nos dois sentidos com `targetOrigin` exato e barra qualquer `sz-shell:*` vindo do jogo.
+  mensagens nos dois sentidos e barra qualquer `sz-shell:*` vindo do jogo. Para o host, o
+  `targetOrigin` é a origem exata dele; para o jogo, é `'*'`, porque o jogo tem origem opaca (sandbox
+  sem `allow-same-origin`) e nenhuma origem nomeada o alcança. Quem garante o destino é a referência
+  da janela (`frame.contentWindow`), e o jogo não recebe nada que o host não mandaria ao `srcdoc`
+  direto.
   O jogo dentro dela leva o MESMO sandbox (`allow-scripts allow-modals allow-pointer-lock`).
 - Rota: `packages/studio-runtime/src/classic-shell.ts`, em `/v1/classic-shell/1.html`. Sem
   `STUDIO_CLASSIC_SHELL_PARENT_ORIGINS` a rota responde 404: nenhum deploy muda até alguém
@@ -166,10 +170,20 @@ padrão**:
   `playwright.config.ts` (qualificação por render e resposta real, `e51d3bb7`), rodam na CI da
   missão.
 
-**Ligar no app é decisão da dona e mudança de deploy** (não feita): configurar a variável no
-studio-runtime com as origens do editor, mandar COOP `same-origin` + COEP `credentialless` na rota
-do Clássico do `community-kids` (hoje só `/estudio/pro` e `/arquipelago` têm COEP) e acrescentar a
-origem da casca ao `frame-src`. O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
+**Ligada em staging em 20/11/2026** (decisão da dona; produção de fora): `STUDIO_CLASSIC_SHELL_ENABLED=1`
+no staging dos dois apps faz o layout raiz entregar a URL ao Estúdio (`classicShellUrlFromEnv`), a
+lista de origens do editor é secret do Worker de staging, e o `frame-src` já liberava a origem do
+runtime. **COEP não foi ligado, e não precisa:** a medição de 20/11
+([`2026-11-20-studio-firefox-site-isolation.md`](../qa/2026-11-20-studio-firefox-site-isolation.md))
+mostrou que a necessidade de COOP + COEP no Firefox era do Firefox do Playwright, que desliga os
+iframes em outro processo (`fission.webContentIsolationStrategy = 0`). No Firefox de mesa a casca
+isola com qualquer combinação de cabeçalhos do host, também na página da aula com vídeos.
+
+**Conferência no app logado (20/11, tarde):** [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md).
+O isolamento, o Parar e o conserto passaram no Chrome de verdade; as setas não chegavam ao jogo depois
+de Rodar (conserto `590c6ff48`, com e2e). A página da casca é servida pelo Worker, que só pode sair
+junto de uma imagem qualificada (o Worker confere o perfil de validação contra o da imagem); até lá
+a casca está desligada no staging (`STUDIO_CLASSIC_SHELL_ENABLED=0`). O teto de 790 000 do Reino Zero (`reino-zero-performance.spec.ts`)
 mede o `srcdoc` do modo direto; no modo casca o documento é o mesmo, entregue por mensagem.
 
 ### 3.3 WebKit: decisão registrada
@@ -184,3 +198,26 @@ Decisão: no WebKit a proteção continua a de hoje (vigia, marca de execução 
 iframe preso, guarda de laço, limite de mensagens). Isolamento completo ali exige o Jogo 2D em
 Worker com proxy de DOM (estudo B4), fora deste lote. Uma saída ainda não medida é a janela
 própria aberta com `noopener` (troca de processo no WebKit); fica registrada como pendente.
+
+**A janela própria, medida em 20/11/2026.** O `measure-preview-isolation.mjs` ganhou o arranjo
+`janela-noopener`: o jogo numa janela de OUTRO site aberta com `noopener`, que trava 5 s assim que
+abre. Sem `opener`, a página não fala com a janela; a prova de que o clique caiu dentro do
+travamento vem dos relógios de parede dos dois lados. WebKit 27.2 do Playwright, Windows 11 (a
+máquina da dona), uma observação por linha:
+
+| Cabeçalhos do host | `srcdoc` (o de hoje) | Janela de outro site com `noopener` |
+|---|---|---|
+| nenhum | 5.042 ms / 4.572 ms | **82 ms / 44 ms** (janela travada 5.029 ms, clique dentro) |
+| COOP + COEP | 5.045 ms / 4.553 ms | **68 ms / 36 ms** (janela travada 5.012 ms, clique dentro) |
+
+(atraso do relógio do editor / clique atendido em.) O job `isolation-measurement` da homologação
+passou a medir o arranjo nas três engines.
+
+**Leitura:** no WebKit a janela própria isola; o iframe não. Mas levar o jogo para lá muda a
+experiência: o jogo sai de dentro do editor (outra aba no iPad), a página não manda mais o
+documento nem recebe o console, o erro e o batimento (sem `opener` não há canal; um canal pelo
+servidor seria peça nova), o Parar da página não alcança a janela, e o documento precisa morar
+num endereço de outro site (hoje só a sala ao vivo publica um documento temporário). Por isso
+**não foi implementado**: é decisão da dona, a ser levada como proposta com as fotos do app (o
+"jogar numa janela própria" só no WebKit), junto do que se perde. Até lá, a proteção do WebKit
+segue a de cima.

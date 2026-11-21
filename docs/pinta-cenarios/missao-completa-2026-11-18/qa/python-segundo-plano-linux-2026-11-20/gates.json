@@ -1,0 +1,24 @@
+[
+  {
+    "name": "pygame",
+    "exit": 0,
+    "started": "2026-11-21T00:27:37.231Z",
+    "finished": "2026-11-21T00:28:37.259Z",
+    "log": ".cache/pinta-bg-linux-pygame.log",
+    "report": ".cache/pinta-bg-linux-pygame/report.json",
+    "source": "fb973c50fbf61fbca2cb955321e8aafca46c459c",
+    "distribution": "28da7a969d5648eb590b51a362d3703dd87556388d813e75ae787839cd2f9a81",
+    "expected": 22
+  },
+  {
+    "name": "shared",
+    "exit": 0,
+    "started": "2026-11-21T00:28:37.372Z",
+    "finished": "2026-11-21T00:31:33.852Z",
+    "log": ".cache/pinta-bg-linux-shared.log",
+    "report": ".cache/pinta-bg-linux-shared/report.json",
+    "source": "fb973c50fbf61fbca2cb955321e8aafca46c459c",
+    "distribution": "28da7a969d5648eb590b51a362d3703dd87556388d813e75ae787839cd2f9a81",
+    "expected": 88
+  }
+]

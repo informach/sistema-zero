@@ -1,0 +1,27 @@
+[
+  {
+    "name": "members-types",
+    "exit": 0,
+    "log": ".cache/pinta-native-world-r3-members-types.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "log": ".cache/pinta-native-world-r3-studio-types.log"
+  },
+  {
+    "name": "symbols",
+    "exit": 0,
+    "log": ".cache/pinta-native-world-r3-symbols.log"
+  },
+  {
+    "name": "runtime-profile",
+    "exit": 0,
+    "log": ".cache/pinta-native-world-r3-runtime-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "log": ".cache/pinta-native-world-r3-biome.log"
+  }
+]

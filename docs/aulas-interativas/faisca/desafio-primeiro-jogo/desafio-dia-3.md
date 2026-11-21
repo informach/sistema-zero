@@ -161,7 +161,7 @@ Editar os quatro textos de aviso: inicial em Ao iniciar, coleta no encontro com 
 - **Blocos:** `video-d3-posicao`, `ponte-d3-posicao`, `experiencia-posicao`.
 - **Metas da experiência:** `x-minus`, `x-plus`, `y-minus`, `y-plus`.
 
-Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 60 em 60 no x e de 40 em 40 no y, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
+Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 60 em 60 no x e de 40 em 40 no y, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual: um quadrado pontilhado onde a chave estava e uma seta dele até a chave (desde 20/11/2026, no lugar da linha pontilhada que uma criança achou confusa, porque não dizia para onde a chave foi). O alvo é opcional e tem borda contínua, para o pontilhado ficar só com o lugar anterior. A experiência não altera o projeto do Estúdio.
 
 **Convite da experiência:** Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. O Zappy te mostra o que testar, e você pode repetir quando quiser. (Desde 08/11/2026, com as quatro descobertas aparece o **Desafio** com **Mostrar o alvo**; os números têm − e +, e no teclado as setas, WASD, + e −.)
 

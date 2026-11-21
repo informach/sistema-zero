@@ -15,12 +15,16 @@ import {
   type AberturaDosCenarios,
   type Ator,
   chaveDoBlob,
+  type Espaco,
+  LIMITES_DOS_CENARIOS,
   type ModoDosCenarios,
+  podeNoMundo,
 } from '../../src/domain/cenarios/cenarios'
 import {
   BibliotecaRestritaError,
   CenarioArquivoAusenteError,
   CenarioDesatualizadoError,
+  CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
   CenarioNaoEncontradoError,
   CenariosFechadosError,
@@ -35,9 +39,14 @@ const cliente: Ator = { usuarioId: OUTRA, contaId: OUTRA, equipe: false, suporte
 const digest = (letra: string) => letra.repeat(64)
 const AGORA = new Date('2026-11-16T12:00:00Z')
 
-function montar(modo: ModoDosCenarios = 'equipe', lista: string[] = []) {
+function montar(
+  modo: ModoDosCenarios = 'equipe',
+  lista: string[] = [],
+  produto: AberturaDosCenarios['produto'] = async () => true,
+  faixas: AberturaDosCenarios['faixas'] = async () => ['basic', 'intermediate', 'professional'],
+) {
   const repo = new CenariosEmMemoria()
-  const abertura: AberturaDosCenarios = { modo, lista: new Set(lista) }
+  const abertura: AberturaDosCenarios = { modo, lista: new Set(lista), produto, faixas }
   let n = 0
   const servico = new CenariosService(
     repo,
@@ -215,6 +224,33 @@ describe('quem entra', () => {
     )
     expect(await montar('aberto').servico.espacos(cliente)).toHaveLength(1)
   })
+  test('fora da equipe, lista e aberto exigem também o Molda de quem pede', async () => {
+    const pedidos: Ator[] = []
+    const semMolda = async (ator: Ator) => {
+      pedidos.push(ator)
+      return false
+    }
+    await expect(montar('aberto', [], semMolda).servico.espacos(cliente)).rejects.toBeInstanceOf(
+      CenariosFechadosError,
+    )
+    await expect(
+      montar('lista', [OUTRA], semMolda).servico.espacos(cliente),
+    ).rejects.toBeInstanceOf(CenariosFechadosError)
+    expect(pedidos).toEqual([cliente, cliente])
+    // Sem a conferência ligada, a ferramenta fica só para a equipe.
+    const semConferencia = new CenariosService(new CenariosEmMemoria(), () => AGORA, {
+      modo: 'aberto',
+      lista: new Set(),
+    })
+    await expect(semConferencia.espacos(cliente)).rejects.toBeInstanceOf(CenariosFechadosError)
+    expect(await semConferencia.aberto(cliente)).toBe(false)
+    // A equipe na própria conta nem pergunta; em suporte, vale o Molda da conta olhada.
+    expect(await montar('aberto', [], semMolda).servico.espacos(ana)).toHaveLength(2)
+    expect(pedidos).toHaveLength(2)
+    const suporte: Ator = { ...ana, contaId: OUTRA, usuarioId: OUTRA, suporte: true }
+    expect(await montar('aberto', [], semMolda).servico.aberto(suporte)).toBe(false)
+    expect(pedidos.at(-1)).toEqual(suporte)
+  })
   test('a equipe em sessão de suporte não entra como equipe nem vê o espaço da equipe', async () => {
     const suporte: Ator = { ...ana, contaId: OUTRA, usuarioId: OUTRA, suporte: true }
     await expect(montar('equipe').servico.espacos(suporte)).rejects.toBeInstanceOf(
@@ -315,9 +351,13 @@ describe('trazer modelos', () => {
   })
   test('reserva acima da cota é recusada inteira', async () => {
     const base = await comBiblioteca()
-    base.repo.espacosGuardados.get(base.espaco.id)!.limiteBytes = 1500
+    const servico = new CenariosService(base.repo, () => AGORA, {
+      modo: 'equipe',
+      lista: new Set(),
+      cotaDaContaBytes: 1500,
+    })
     await expect(
-      base.servico.reservarModelos(ana, base.biblioteca.id, [
+      servico.reservarModelos(ana, base.biblioteca.id, [
         { digest: digest('a'), bytes: 1000 },
         { digest: digest('c'), bytes: 1000 },
       ]),
@@ -360,6 +400,226 @@ describe('trazer modelos', () => {
       apagar: [chaveDoBlob(base.espaco.id, digest('b'))],
     })
     expect((await base.servico.espacos(ana))[0]!.usadoBytes).toBe(1000)
+  })
+})
+
+describe('faixas do posto', () => {
+  const zona = (id: string): ComandoDeCenario => ({
+    tipo: 'marcador.definir',
+    marcador: {
+      id,
+      nome: 'Chegada',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      posicao: { x: 0, y: 0, z: 0 },
+      giro: 0,
+      noChao: true,
+      objeto: null,
+      configuracao: { tipo: 'zona', forma: { tipo: 'esfera', raio: 2 } },
+    },
+  })
+  const inicio: ComandoDeCenario = {
+    tipo: 'marcador.definir',
+    marcador: {
+      id: 'inicio',
+      nome: 'Início',
+      grupo: null,
+      bloqueado: false,
+      oculto: false,
+      posicao: { x: 1, y: 0, z: 1 },
+      giro: 0,
+      noChao: true,
+      objeto: null,
+      configuracao: { tipo: 'inicio', principal: true },
+    },
+  }
+
+  test('no básico o lote não cria zona; desfazer, refazer e voltar versão seguem livres', async () => {
+    let faixas: string[] = ['basic', 'intermediate']
+    const { servico } = montar(
+      'aberto',
+      [],
+      async () => true,
+      async () => faixas,
+    )
+    const [espaco] = await servico.espacos(cliente)
+    const mundo = await servico.criarMundo(cliente, espaco!.id, 'Ilha')
+    const c = await servico.criarCenario(cliente, mundo.id, 'Praia')
+    // Com o intermediário, a zona entra (revisão 1); depois, só o básico.
+    await servico.editarCenario(cliente, c.id, {
+      revisaoEsperada: 0,
+      operacaoId: 'zona-0001',
+      comandos: [zona('z1')],
+    })
+    faixas = ['basic']
+    const recusa = await servico
+      .editarCenario(cliente, c.id, {
+        revisaoEsperada: 1,
+        operacaoId: 'zona-0002',
+        comandos: [zona('z2')],
+      })
+      .catch((e) => e)
+    expect(recusa).toBeInstanceOf(CenarioFerramentaTrancadaError)
+    expect(recusa.familias.map((f: { id: string }) => f.id)).toEqual(['jogo.zonas-e-rotas'])
+    // O básico mexe no resto do cenário que já tem a zona.
+    expect(
+      await servico.editarCenario(cliente, c.id, {
+        revisaoEsperada: 1,
+        operacaoId: 'inicio-001',
+        comandos: [inicio],
+      }),
+    ).toEqual({ revisao: 2 })
+    // Desfazer e refazer repõem o que já foi aceito.
+    await servico.moverHistorico(cliente, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 2,
+      operacaoId: 'desfazer-01',
+    })
+    await servico.moverHistorico(cliente, c.id, {
+      acao: 'desfazer',
+      revisaoEsperada: 3,
+      operacaoId: 'desfazer-02',
+    })
+    expect((await servico.abrirCenario(cliente, c.id)).documento.marcadores).toEqual([])
+    await servico.moverHistorico(cliente, c.id, {
+      acao: 'refazer',
+      revisaoEsperada: 4,
+      operacaoId: 'refazer-001',
+    })
+    expect(
+      (await servico.abrirCenario(cliente, c.id)).documento.marcadores.map((m) => m.id),
+    ).toEqual(['z1'])
+    // Voltar a uma versão do histórico também.
+    await servico.restaurarRevisao(cliente, c.id, {
+      revisao: 0,
+      revisaoEsperada: 5,
+      operacaoId: 'restaurar-1',
+    })
+    await servico.restaurarRevisao(cliente, c.id, {
+      revisao: 2,
+      revisaoEsperada: 6,
+      operacaoId: 'restaurar-2',
+    })
+    expect(
+      (await servico.abrirCenario(cliente, c.id)).documento.marcadores.map((m) => m.id).sort(),
+    ).toEqual(['inicio', 'z1'])
+  })
+
+  test('a equipe tem todas as faixas; sem a conferência, só o básico; conjuntos são do intermediário', async () => {
+    const { servico } = montar(
+      'aberto',
+      [],
+      async () => true,
+      async () => ['basic'],
+    )
+    expect(await servico.faixasDe(ana)).toEqual(['basic', 'intermediate', 'professional'])
+    expect(await servico.faixasDe(cliente)).toEqual(['basic'])
+    const sem = new CenariosService(new CenariosEmMemoria(), () => AGORA, {
+      modo: 'aberto',
+      lista: new Set(),
+      produto: async () => true,
+    })
+    expect(await sem.faixasDe(cliente)).toEqual(['basic'])
+    const [espaco] = await servico.espacos(cliente)
+    const biblioteca = await servico.criarBiblioteca(cliente, espaco!.id, {
+      nome: 'Kits',
+      licenca: 'propria',
+    })
+    const recusa = await servico.conjuntos
+      .criar(cliente, biblioteca.id, { nome: 'Casa', conteudo: {}, operacaoId: 'conjunto-01' })
+      .catch((e) => e)
+    expect(recusa).toBeInstanceOf(CenarioFerramentaTrancadaError)
+  })
+})
+
+describe('cota da conta', () => {
+  test('a cota configurada vale para o espaço novo e para o que já existia com outra', async () => {
+    const repo = new CenariosEmMemoria()
+    const antigo = await repo.espacoDaConta(OUTRA, LIMITES_DOS_CENARIOS.bytesDaConta)
+    expect(antigo.limiteBytes).toBe(2 * 1024 ** 3)
+    const servico = new CenariosService(repo, () => AGORA, {
+      modo: 'aberto',
+      lista: new Set(),
+      produto: async () => true,
+      cotaDaContaBytes: 5 * 1024 ** 3,
+    })
+    const biblioteca = await servico.criarBiblioteca(cliente, antigo.id, {
+      nome: 'Pedras',
+      licenca: 'propria',
+    })
+    expect(biblioteca.espacoId).toBe(antigo.id)
+    expect((await repo.espaco(antigo.id))!.limiteBytes).toBe(5 * 1024 ** 3)
+    const [novo] = await servico.espacos({ ...cliente, contaId: CONTA, usuarioId: CONTA })
+    expect(novo!.limiteBytes).toBe(5 * 1024 ** 3)
+    // A equipe não muda com a cota da conta.
+    const [, equipe] = await servico.espacos(ana)
+    expect(equipe!.limiteBytes).toBe(LIMITES_DOS_CENARIOS.bytesDaEquipe)
+  })
+})
+
+describe('mundos de cada criança no Kids', () => {
+  const PERFIL_A = '44444444-4444-4444-8444-444444444444'
+  const PERFIL_B = '55555555-5555-4555-8555-555555555555'
+  const irmaA: Ator = {
+    usuarioId: PERFIL_A,
+    contaId: OUTRA,
+    equipe: false,
+    suporte: false,
+    perfil: true,
+  }
+  const irmaoB: Ator = { ...irmaA, usuarioId: PERFIL_B }
+  const responsavel: Ator = { ...cliente, perfil: false }
+
+  test('cada perfil vê e abre só os mundos que criou; as bibliotecas seguem da família', async () => {
+    const { servico } = montar('aberto')
+    const [espaco] = await servico.espacos(irmaA)
+    const dela = await servico.criarMundo(irmaA, espaco!.id, 'Ilha da Ana')
+    const cenario = await servico.criarCenario(irmaA, dela.id, 'Praia')
+    const dele = await servico.criarMundo(irmaoB, espaco!.id, 'Vulcão do Beto')
+    const biblioteca = await servico.criarBiblioteca(irmaA, espaco!.id, {
+      nome: 'Árvores',
+      licenca: 'propria',
+    })
+
+    expect((await servico.mundos(irmaA, espaco!.id)).map((m) => m.nome)).toEqual(['Ilha da Ana'])
+    expect((await servico.mundos(irmaoB, espaco!.id)).map((m) => m.nome)).toEqual([
+      'Vulcão do Beto',
+    ])
+    for (const pedir of [
+      () => servico.abrirMundo(irmaoB, dela.id),
+      () => servico.cenarios(irmaoB, dela.id),
+      () => servico.abrirCenario(irmaoB, cenario.id),
+      () => servico.criarCenario(irmaoB, dela.id, 'Invasão'),
+      () => servico.apagarMundo(irmaoB, dela.id),
+    ])
+      await expect(pedir()).rejects.toBeInstanceOf(CenarioNaoEncontradoError)
+    expect((await servico.abrirMundo(irmaoB, dele.id)).nome).toBe('Vulcão do Beto')
+    expect((await servico.bibliotecas(irmaoB, espaco!.id)).map((b) => b.id)).toContain(
+      biblioteca.id,
+    )
+    // Fora de uma sessão de perfil, a conta vê todos.
+    expect((await servico.mundos(responsavel, espaco!.id)).map((m) => m.nome).sort()).toEqual([
+      'Ilha da Ana',
+      'Vulcão do Beto',
+    ])
+  })
+
+  test('os rascunhos de conjunto seguem a biblioteca da família, e o espaço da equipe não filtra', () => {
+    const mundo = {
+      id: 'm',
+      espacoId: 'e',
+      nome: 'Rascunhos',
+      cenarios: 0,
+      bibliotecas: [],
+      capa: null,
+      criadoPor: PERFIL_A,
+      atualizadoEm: AGORA,
+    }
+    const conta = { tipo: 'conta' } as Espaco
+    expect(podeNoMundo(mundo, conta, irmaoB)).toBe(false)
+    expect(podeNoMundo({ ...mundo, bibliotecaConjuntosId: 'b' }, conta, irmaoB)).toBe(true)
+    expect(podeNoMundo(mundo, { tipo: 'equipe' } as Espaco, irmaoB)).toBe(true)
   })
 })
 

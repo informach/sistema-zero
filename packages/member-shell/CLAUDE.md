@@ -1,5 +1,43 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
+
+Pedido dela: compartilhar o mesmo projeto não cria mais outro post no Mural; ATUALIZA o que ele já
+tem (mesmo link `/jogar`, comentários, jogadas, data e lugar na ordem), só quando o jogo mudou.
+Vale para a aula gravada, a oficina ao vivo e o Estúdio Completo. Regras do hub no CLAUDE.md de lá.
+
+- **`routes/studio.ts`**: os dois publish viram publicar-ou-atualizar. O `prepare` manda
+  `sourceProjectId` (o `project.id`, no Estúdio livre), `adoptPlayId` e `asNewPost` (form
+  `asNewPost=1`, a opção escondida) e, com `state: 'existing'`, segue `updateExistingPublication`:
+  `publishedGame` (a revisão ativa do serviço de versões ou, num post clássico de antes, o
+  primeiro retrato do R2) → impressão igual (`studioGameFingerprint`: o projeto público sem nome,
+  datas e `coverAssetName`) responde **409 `SHOWCASE_UNCHANGED`** → `publishRevision` com
+  `expectedVersion` da revisão atual → capa nova só se a criança escolheu (sem capa = mantém) →
+  `hub.updateShowcaseThreadStudio[Standalone]` → a capa antiga sai depois que a nova vira a do
+  recibo (`readStudioCoverReceipt` + `retireStudioPublicationCover`). Resposta `{…, updated: true}`.
+  Sem serviço de versões configurado, atualizar responde 503 (o retrato do R2 é imutável).
+- **Jogo clássico com versões**: `retained()` inclui o clássico JavaScript quando
+  `STUDIO_PRO_RUNTIME_URL` e `_TOKEN` existem (`isStudioClassicHistoryProject`; o id precisa ser do
+  formato `^[A-Za-z0-9_-]{1,128}$`), e `publishRevision` despacha `publishStudioClassicRevision`
+  (`promote-classic`, revisão só de fonte). O `/jogar` clássico pede `resolve` ao serviço e serve a
+  versão ativa; sem registro serve o retrato do R2; link desativado (`resolve-status`) = 404; serviço
+  fora do ar = retrato do R2 (aviso no log).
+- **`studioPublication` POST**: operação nova `status` (`{compare?, context: lesson | free | live}`)
+  → `{published, playId, muralUrl, playUrl, title, description, coverUrl, hidden, gameUpdatedAt,
+  history, unchanged?}`; com `compare` lê a entrega (aula) ou recebe o projeto (livre). A operação
+  `update` SAIU (atualizar é sempre pelo Compartilhar, post e versão juntos); `activate` (restaurar ou
+  desativar) chama `hub.touchShowcase`.
+- **Adaptadores** (`lib/studio-publication-adapter.ts`): `createStudioShareStatus(contextFor)`; a
+  aula passa `{kind:'lesson'}` e `unchangedMessage` (`copy.estudio.compartilharIgual`: na aula o Mural
+  mostra o ENVIO), o Estúdio Completo `{kind:'free', projectId, adoptPlayId}` e `allowNewPost`, a
+  oficina `{kind:'live', workspaceId}`. ⚠️ A trava de "compartilhar uma vez só" da aula
+  (`readSharedFlag`/`alreadyShared`, `localStorage`) SAIU. Uma atualização mostra a tela do
+  `ShareDialog` ("Seu jogo foi atualizado!"); a `MuralCelebration` fica para a 1ª publicação.
+- **Selo** `lib/showcase-updated.ts` (`showcaseUpdatedLabel`) e `HubThreadView.gameUpdatedAt`.
+- Testes: `tests/studio-python-publish.test.ts` (republicar igual = 409, alterado = mesmo link e
+  versão 2, clássico com versões e status, jogo novo) e `tests/showcase-updated.test.ts`.
+
+## Pinta: item da conta em formato mais novo não é lido (17/11/2026)
 ## Periodicidade do mini checkout (full review da Aula 7, 19/11/2026)
 
 O catálogo permite intervalos positivos em meses além de 1 e 12. `PurchaseForm` apresenta
@@ -46,6 +84,16 @@ um mapa de formato novo era gravado cortado no aparelho e depois subia por cima 
   byte a byte o de antes.
 - Testes: o bloco "formato mais novo que este código" de
   `community-kids/tests/pinta-cloud-persistence.test.ts`.
+
+## Molda Cenários: faixas na tela e atalho no Molda (20/11/2026, lote 10)
+
+`lib/cenarios-tool-access.ts` traduz as faixas em famílias da oficina (`cenariosToolAccessFromBands`,
+`adultCenariosToolAccess` com a régua de `adult-molda-tool-access`, e `cenariosBasicToolAccess`
+quando a jornada não chegou). `CenariosClient` recebe `ferramentas` e passa à oficina; ausente =
+todas (a equipe). O Kids traduz com `cenariosToolAccessFor` (mesma régua do Molda). O `MoldaClient`
+ganhou `cenariosAvailable`: com ele, a galeria do Molda mostra o atalho "Cenários"; as páginas do
+Molda perguntam ao members (`checkCenariosAccessReadonly`). O Members confere as faixas no lote:
+a tela só decide o que aparece.
 
 ## Importação do relevo no Molda Cenários (17/11/2026)
 
@@ -352,7 +400,11 @@ aprovada no Canvas "Experiências do Cadê e do Farol" virou a moldura de TODAS 
     pega no chão por proximidade, o caderninho, o balão da porta com a largura medida pelo texto)
     e `Position` (− e +, réguas, aviso de borda, o palpite grande do y, teclado com setas, WASD, +,
     −, X e Y, e o desafio do alvo depois das 4 descobertas). `proximoGestoDaMemoria` decide o que
-    pulsa na memória.
+    pulsa na memória. ⚠️ O lugar anterior da chave (quadrado pontilhado e seta até a chave) é
+    desenhado só pelo palco, `MarcaDoLugarAnterior` em `scene-lighthouse-position.tsx`; as réguas
+    não repetem a marca, o alvo tem borda contínua e o número vai para o lado depois de subir ou
+    descer (20/11/2026: uma criança achou confusa a linha pontilhada, que não diz para onde a chave
+    foi, e as duas marcas sobrepostas).
   - As falas vêm do motor (`discoveryGuidance`, as que o Admin grava com voz); a ideia, a ponte e os
     momentos que só a tela conhece (o palpite e o alvo da posição) vêm de `discoverySpeech(id,
     cenario)` do core.
@@ -1681,7 +1733,7 @@ montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pe
   capa: o campo `cover` (print OU upload da criança) → R2 **PÚBLICO** (`r2PutObject`, WebP); OU, quando vem
   `useDefaultCover=1` (a criança escolheu "usar a capa do curso"), `coverImageUrl = payload.defaultCoverUrl`
   (URL AUTORITATIVA do `getShowcasePayload` do members — NÃO confia no cliente). Projeto inteiro (JSON auto-suficiente, assets data URLs)
-  passa por parse + `sanitizePlayableProject` ANTES de persistir (contrato mínimo: `files` canônicos
+  passa por `prepareEditableStudioProject` + `studioPublicProject` ANTES de persistir (contrato mínimo: `files` canônicos
   obrigatórios; `extraFiles`/`assets`/`installedExtensions` sempre arrays seguros; limites de tamanho
   rechecados após normalização; JSON inválido → 400, excedente → 413) →
   R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
@@ -1862,7 +1914,7 @@ não solta o jogo antes de terminar). Isso **substituiu o antigo "Publicar no Mu
 (`PublishToMural` REMOVIDO — mesma ação, e o Compartilhar ainda dá descrição editável + link público de
 jogar; `LessonCompleteResult.showcase` segue vindo do members mas o kids não o consome mais). A
 elegibilidade real é do backend (publish 409 `SHOWCASE_NOT_ELIGIBLE` quando o bloco não é de vitrine). O
-post publicado é um **snapshot IMUTÁVEL e INDEPENDENTE** do rascunho que a criança continua editando.
+post publicado é um **snapshot INDEPENDENTE** do rascunho que a criança continua editando (desde 20/11/2026 compartilhar de novo publica uma versão nova atrás do mesmo link; ver a seção do topo).
 **Sincronizar com o enviado (28/06):** o `StudioBlockView` passa **`onCloudSync`** ao `<StudioLesson>` (item
 ⋯ → "Sincronizar com o enviado", só na aula) → abre um Dialog de confirmação (substitui o editor) → no OK,
 `apiGet` da entrega (`…/studio-submission` GET) e `handleRef.current.replaceProject({...project, id: projectId})`

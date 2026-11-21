@@ -1,5 +1,4 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
-import { CatalogosDeCenarios } from './application/catalogo-de-cenarios'
 import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
@@ -15,14 +14,12 @@ import { ServicoDasVendas } from './application/servico-das-vendas'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
 import { ServicoDasVisitasAdultas } from './application/servico-das-visitas-adultas'
 import { ServicoDasVisitasDeAmigos } from './application/servico-das-visitas-de-amigos'
-import { ServicoDeCenarios } from './application/servico-de-cenarios'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
 import { ServicoDosFantasmas } from './application/servico-dos-fantasmas'
 import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import { ServicoDosPedidos } from './application/servico-dos-pedidos'
-import { SessoesDeCenarios } from './application/sessoes-de-cenarios'
 import type { Env } from './infrastructure/config/env'
 import repertorioPlanejado from './infrastructure/config/repertorio-planejado.json'
 import { AvatarHttp } from './infrastructure/members/avatar-http'
@@ -32,8 +29,6 @@ import { PosseHttp } from './infrastructure/members/posse-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
-import { DrizzleRepositorioDeCatalogos } from './infrastructure/persistence/drizzle/repositorio-catalogos-cenarios'
-import { DrizzleRepositorioDeCenarios } from './infrastructure/persistence/drizzle/repositorio-cenarios'
 import { DrizzleRepositorioDaFamilia } from './infrastructure/persistence/drizzle/repositorio-da-familia'
 import {
   DrizzleRepositorioDeDesafios,
@@ -47,7 +42,6 @@ import { DrizzleRepositorioDaObraEstendida } from './infrastructure/persistence/
 import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
 import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { DrizzleRepositorioDasRevisoesHumanas } from './infrastructure/persistence/drizzle/repositorio-revisoes-humanas'
-import { DrizzleSessoesDeCenarios } from './infrastructure/persistence/drizzle/repositorio-sessoes-cenarios'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { DrizzleRepositorioDasVendas } from './infrastructure/persistence/drizzle/repositorio-vendas'
 import { DrizzleRepositorioDasVisitasAdultas } from './infrastructure/persistence/drizzle/repositorio-visitas-adultas'
@@ -133,15 +127,7 @@ export function createApplication(env: Env): Application {
     obras: obrasEstendidas,
     logger,
   })
-  const catalogos = new CatalogosDeCenarios(new DrizzleRepositorioDeCatalogos(connection.db))
-  const cenarios = new ServicoDeCenarios(
-    new DrizzleRepositorioDeCenarios(connection.db),
-    (referencia) => catalogos.resolver(referencia),
-  )
   const app = createServer({
-    cenarios,
-    catalogos,
-    sessoesDeCenarios: new SessoesDeCenarios(new DrizzleSessoesDeCenarios(connection.db), cenarios),
     amigos: new ServicoDasVisitasDeAmigos({
       repo: new DrizzleRepositorioDasVisitasDeAmigos(connection.db),
       familia: repositorioDaFamilia,

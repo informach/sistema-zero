@@ -6,6 +6,7 @@ import {
   STUDIO_PARTS_VERSION,
   STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
 } from '@sistemazero/core/studio/project-format'
+import { sanitizeStudioStudentTests } from '@sistemazero/core/studio/student-tests'
 import { ulid } from 'ulid'
 import {
   createEmptyProject,
@@ -1082,6 +1083,9 @@ export function sanitizeJavaScriptProjectPayload(
   }
   const coverAssetName = sanitizeCoverAssetName(r.coverAssetName)
   if (coverAssetName) project.coverAssetName = coverAssetName
+  // Os testes da criança (no clássico e no Pro): só os válidos; sem nenhum, a chave nem aparece.
+  const studentTests = sanitizeStudioStudentTests(r.studentTests)
+  if (studentTests) project.studentTests = studentTests
   return project
 }
 

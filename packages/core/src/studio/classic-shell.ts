@@ -16,6 +16,8 @@
  * `frame-ancestors`: qualquer outra diretiva restringiria o jogo além da CSP dele próprio.
  */
 
+import { CLASSIC_GAME_FRAME_ALLOW } from './frame-permissions'
+
 export const CLASSIC_SHELL_PATH = '/v1/classic-shell/1.html'
 /** O mesmo sandbox da prévia direta (`PreviewIframe`): nunca `allow-same-origin`. */
 export const CLASSIC_SHELL_GAME_SANDBOX = 'allow-scripts allow-modals allow-pointer-lock'
@@ -28,6 +30,11 @@ export const CLASSIC_SHELL_LOADED = 'sz-shell:loaded'
 export interface ClassicShellLoadMessage {
   type: typeof CLASSIC_SHELL_LOAD
   document: string
+  /**
+   * O número deste documento (achado E7 da revisão de 20/11). A casca o devolve no
+   * `sz-shell:loaded`, e o editor ignora o aviso de um documento que já foi trocado.
+   */
+  seq?: number
 }
 
 function hasType(value: unknown, type: string): boolean {
@@ -40,6 +47,16 @@ export function isClassicShellReady(value: unknown): boolean {
 
 export function isClassicShellLoaded(value: unknown): boolean {
   return hasType(value, CLASSIC_SHELL_LOADED)
+}
+
+/**
+ * O número do documento a que o `sz-shell:loaded` se refere, ou `null` quando a casca não o
+ * manda (a casca publicada antes de 20/11/2026: o editor aceita o aviso como antes).
+ */
+export function classicShellLoadedSeq(value: unknown): number | null {
+  if (!isClassicShellLoaded(value)) return null
+  const seq = (value as { seq?: unknown }).seq
+  return typeof seq === 'number' && Number.isSafeInteger(seq) ? seq : null
 }
 
 /** Lista de origens do editor (separadas por vírgula ou espaço); só http(s), sem caminho. */
@@ -67,15 +84,29 @@ function shellScript(parentOrigins: readonly string[]): string {
   const allowed = new Set(${JSON.stringify(parentOrigins)});
   let host = null;
   let frame = null;
-  const mount = (doc) => {
+  // Leva o foco do teclado ao jogo. Focar o ELEMENTO, como a prévia direta faz
+  // (\`contentWindow.focus()\` num quadro de origem opaca o navegador ignora sem gesto). Se o quadro
+  // já é o ativo, focar de novo não faz nada: solta e foca.
+  const focarJogo = () => {
+    if (!frame) return;
+    if (document.activeElement === frame) frame.blur();
+    frame.focus();
+  };
+  const mount = (doc, seq) => {
+    // Com o foco na casca (ou no jogo de antes), o jogo novo herda o foco quando carregar: sem
+    // isso, depois de Rodar as setas iam para a casca vazia (o editor foca o quadro da casca e
+    // ela troca o quadro do jogo a cada documento). Conferência em staging, 20/11/2026.
+    const tinhaFoco = document.hasFocus();
     if (frame) frame.remove();
     frame = document.createElement('iframe');
     frame.setAttribute('sandbox', ${JSON.stringify(CLASSIC_SHELL_GAME_SANDBOX)});
-    frame.setAttribute('allow', 'fullscreen');
+    frame.setAttribute('allow', ${JSON.stringify(CLASSIC_GAME_FRAME_ALLOW)});
     frame.setAttribute('title', 'Jogo');
     const mounted = frame;
     mounted.addEventListener('load', () => {
-      if (mounted === frame && host !== null) parent.postMessage({ type: ${JSON.stringify(CLASSIC_SHELL_LOADED)} }, host);
+      if (mounted !== frame || host === null) return;
+      if (tinhaFoco || document.hasFocus()) focarJogo();
+      parent.postMessage(seq === null ? { type: ${JSON.stringify(CLASSIC_SHELL_LOADED)} } : { type: ${JSON.stringify(CLASSIC_SHELL_LOADED)}, seq }, host);
     });
     mounted.srcdoc = doc;
     document.body.append(mounted);
@@ -86,7 +117,7 @@ function shellScript(parentOrigins: readonly string[]): string {
       host = event.origin;
       const data = event.data;
       if (data && data.type === ${JSON.stringify(CLASSIC_SHELL_LOAD)} && typeof data.document === 'string') {
-        mount(data.document);
+        mount(data.document, typeof data.seq === 'number' && Number.isSafeInteger(data.seq) ? data.seq : null);
         return;
       }
       if (frame && frame.contentWindow) frame.contentWindow.postMessage(data, '*');
@@ -98,8 +129,18 @@ function shellScript(parentOrigins: readonly string[]): string {
     if (relayed && typeof relayed.type === 'string' && relayed.type.indexOf('sz-shell:') === 0) return;
     parent.postMessage(relayed, host);
   });
+  // O foco na própria casca (não no jogo dentro dela): o 'focus' e o 'blur' da janela. Só com ele
+  // a casca puxa o foco para o jogo. No WebKit, soltar e focar o quadro do jogo dispara de novo o
+  // 'focus' da casca; sem conferir, cada volta agendava a próxima, o jogo trocava de foco sem
+  // parar e as teclas se perdiam (homologação 44833799563, WebKit do Linux). O foco que entra no
+  // jogo dispara o 'blur' da casca, e a volta agendada não faz nada.
+  let cascaComFoco = false;
+  addEventListener('blur', () => { cascaComFoco = false; });
+  // Na tarefa seguinte: o evento chega enquanto o navegador ainda leva o foco até a casca, e um
+  // foco dado aqui mesmo terminava de volta na casca (as setas iam para a página vazia dela).
   addEventListener('focus', () => {
-    try { if (frame && frame.contentWindow) frame.contentWindow.focus(); } catch (_) {}
+    cascaComFoco = true;
+    setTimeout(() => { if (cascaComFoco) focarJogo(); }, 0);
   });
   for (const origin of allowed) parent.postMessage({ type: ${JSON.stringify(CLASSIC_SHELL_READY)} }, origin);
 })();`
@@ -126,5 +167,28 @@ export function classicShellHeaders(parentOrigins: readonly string[]): Record<st
     'cross-origin-resource-policy': 'cross-origin',
     'referrer-policy': 'no-referrer',
     'x-content-type-options': 'nosniff',
+  }
+}
+
+/**
+ * A URL da casca quando o host a ligou. Só com `STUDIO_CLASSIC_SHELL_ENABLED=1` E o endereço do
+ * runtime (`STUDIO_PRO_RUNTIME_URL`): sem a chave, nada muda, inclusive em produção, onde a rota
+ * da casca responde 404 enquanto o runtime não conhece as origens dos apps. HTTPS, salvo o
+ * computador local. O layout raiz dos dois apps entrega esta URL ao Estúdio; o `frame-src` já
+ * libera a origem do runtime pelo `withStudioPublishedProCsp` (travado em
+ * `community-kids/tests/classic-shell-csp.test.ts`).
+ */
+export function classicShellUrlFromEnv(env: Record<string, string | undefined>): string | null {
+  if (env.STUDIO_CLASSIC_SHELL_ENABLED?.trim() !== '1') return null
+  const runtime = env.STUDIO_PRO_RUNTIME_URL?.trim().replace(/\/+$/, '')
+  if (!runtime) return null
+  try {
+    const url = new URL(`${runtime}${CLASSIC_SHELL_PATH}`)
+    const local = url.hostname === '127.0.0.1' || url.hostname === 'localhost'
+    if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) return null
+    if (url.username || url.password || url.search || url.hash) return null
+    return url.href
+  } catch {
+    return null
   }
 }

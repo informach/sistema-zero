@@ -30,9 +30,11 @@ import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
+import { isBlockInView } from '../../blockly/blockInView'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import type { OrganizerWorkspace, ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
 import { installCornerSpacer, showBlocksFromTop } from '../../blockly/cornerSpacer'
+import type { DeferredTailLoad } from '../../blockly/deferredTail'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
   attachAnimationNameWatcher,
@@ -43,7 +45,12 @@ import {
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
-import { createOffscreenBodies } from '../../blockly/offscreenBodies'
+import type { OffscreenBodies } from '../../blockly/offscreenBodies'
+import {
+  disposeDeferredDrawing,
+  mayHaveManyBlocks,
+  OFFSCREEN_BODIES_MIN_BLOCKS,
+} from '../../blockly/offscreenThreshold'
 import { blockFontSpec, waitForOpeningFonts } from '../../blockly/openingRender'
 import {
   revealBlockInWorkspace,
@@ -60,7 +67,9 @@ import { cssSourceCompatible } from '../../state/cssSourceCompatibility'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
+import { htmlSourceCompatible } from '../../state/htmlSourceCompatibility'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { decideSavedSource, type SavedSourceDecision } from '../../state/savedSourceDecision'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
@@ -183,31 +192,6 @@ function restoreStackPositions(
   return moved
 }
 
-/**
- * Diz se o bloco já está inteiramente visível na viewport atual. Usamos para
- * só centralizar (centerOnBlock) quando o bloco está fora da tela — assim a
- * sincronização cursor→bloco não fica sacudindo o canvas a cada movimento.
- * Em caso de dúvida (não conseguimos medir), retorna false para que o fallback
- * centralize.
- */
-function isBlockInView(workspace: Blockly.WorkspaceSvg, block: Blockly.BlockSvg): boolean {
-  try {
-    const metricsManager = workspace.getMetricsManager?.()
-    if (!metricsManager || typeof metricsManager.getViewMetrics !== 'function') return false
-    const view = metricsManager.getViewMetrics(true) // coordenadas do workspace
-    const xy = block.getRelativeToSurfaceXY()
-    const size = block.getHeightWidth()
-    return (
-      xy.x >= view.left &&
-      xy.y >= view.top &&
-      xy.x + size.width <= view.left + view.width &&
-      xy.y + size.height <= view.top + view.height
-    )
-  } catch {
-    return false
-  }
-}
-
 function resizeBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   try {
     Blockly.svgResize(workspace)
@@ -231,6 +215,18 @@ function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   } catch {
     // Workspace pode ter sido descartado entre o agendamento e o render.
   }
+}
+
+/**
+ * A abertura que não desenha a cauda distante (`deferredTail.ts`) só é baixada para projeto
+ * grande, junto da espera da fonte. Se o download falhar, o projeto abre como sempre abriu.
+ */
+function loadDeferredTail(serialized: string) {
+  if (!mayHaveManyBlocks(serialized)) return null
+  return import('../../blockly/deferredTail').catch((error: unknown) => {
+    console.warn('Abrindo sem adiar o desenho:', error)
+    return null
+  })
 }
 
 /** Roda depois dos eventos que o Blockly já enfileirou (mesmo caminho do despacho dele). */
@@ -398,6 +394,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     ir: ReturnType<typeof blockGenerationInput>['ir']
     jsHeader: string | undefined
   } | null>(null)
+  // A decisão de manter o CSS e o HTML salvos no lugar do gerado, por projeto
+  // (`state/savedSourceDecision.ts`, C5 da revisão de 20/11/2026).
+  const savedCssRef = useRef<{ projectId: string; decision: SavedSourceDecision } | null>(null)
+  const savedHtmlRef = useRef<{ projectId: string; decision: SavedSourceDecision } | null>(null)
   const isApplyingStateRef = useRef(false)
   // Uma carga agendada que ainda não começou (o quadro adiado e a espera pela fonte, até
   // 1,5 s). O canvas que está à vista vai ser trocado pelo estado salvo: nada feito nele conta
@@ -619,8 +619,31 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
       primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap, files['style.css'])
-      if (current && cssSourceCompatible(current.files['style.css'], files['style.css'])) {
-        files['style.css'] = current.files['style.css']
+      // O CSS que difere do gerado só na ordem das declarações e o HTML que difere só na ordem dos
+      // atributos (o bloco guarda a classe à parte) ficam como estão ao abrir: abrir não regrava o
+      // arquivo nem recarrega a prévia. A decisão é lembrada por par (gerado, salvo): uma edição
+      // que não mexe no arquivo gerado a reaproveita sem analisar de novo, e uma que mexe (até só
+      // na ordem dos blocos) vale como a criança fez.
+      if (current) {
+        const opening = options.force === true
+        const decide = (
+          ref: typeof savedCssRef,
+          file: 'style.css' | 'index.html',
+          compatible: (saved: string, canonical: string) => boolean,
+        ) => {
+          const previous = ref.current?.projectId === current.id ? ref.current.decision : null
+          const decision = decideSavedSource({
+            previous,
+            canonical: files[file],
+            saved: current.files[file],
+            opening,
+            compatible,
+          })
+          ref.current = decision ? { projectId: current.id, decision } : null
+          if (decision?.keep) files[file] = decision.saved
+        }
+        decide(savedCssRef, 'style.css', cssSourceCompatible)
+        decide(savedHtmlRef, 'index.html', htmlSourceCompatible)
       }
       const displayedMap = () =>
         getDisplayedSourceMap(ir, projectNameForGen, jsHeader, files['style.css'])
@@ -1069,8 +1092,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const target = revealRequest.target
     let frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => {
-        let id = target.kind === 'runtime' ? runtimeErrorBlockId(svgWorkspace) : target.blockId
         const { runtimeMark: mark, cross: map } = markLookupRef.current
+        let id =
+          target.kind === 'runtime'
+            ? runtimeErrorBlockId(svgWorkspace)
+            : target.kind === 'block'
+              ? target.blockId
+              : target.file === 'script.js'
+                ? map.lookupLine('script.js', target.line)
+                : null
         if (!id && target.kind === 'runtime' && mark?.file === 'script.js') {
           // O erro chegou antes de os blocos terminarem de carregar: marca agora pela linha.
           const found = map.lookupLine('script.js', mark.line, mark.column ?? undefined)
@@ -1162,20 +1192,30 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
     loadPendingRef.current = true
-    const load = () => {
+    const load = (deferredTail: Awaited<ReturnType<typeof loadDeferredTail>>) => {
       if (cancelled) return
       loadPendingRef.current = false
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
       lastAppliedBlocksStateRef.current = serialized
+      let deferredLoad: DeferredTailLoad | null | undefined = null
       try {
+        // Projeto grande: a cauda de cada área longe da vista nasce sem desenho (fecha no `finally`).
+        deferredLoad = deferredTail?.prepareDeferredTail(
+          workspace as Blockly.WorkspaceSvg,
+          stateToLoad,
+          !initialViewDoneRef.current,
+        )
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
         // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
         // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
         withWorkspaceLoad(() =>
-          Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
+          Blockly.serialization.workspaces.load(
+            (deferredLoad?.state ?? stateToLoad) as Record<string, unknown>,
+            workspace,
+          ),
         )
         // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
         // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
@@ -1229,18 +1269,19 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         isApplyingStateRef.current = false
         console.warn('Não foi possível restaurar blocksState:', e)
       } finally {
+        deferredLoad?.finish()
         setIsLoadingWorkspace(false)
       }
     }
     const handle = requestAnimationFrame(() => {
       if (cancelled) return
       // Fonte ainda chegando: espera um pouco (no máximo 1,5 s) para medir os textos uma vez só,
-      // com a fonte certa. Com a fonte pronta, a carga segue na mesma tarefa, como antes.
-      void waitForOpeningFonts(
-        document,
-        undefined,
-        blockFontSpec(workspace as Blockly.WorkspaceSvg),
-      ).then(load)
+      // com a fonte certa. Com a fonte pronta, a carga segue na mesma tarefa, como antes. No
+      // projeto grande, o módulo da abertura adiada é baixado durante essa mesma espera.
+      void Promise.all([
+        waitForOpeningFonts(document, undefined, blockFontSpec(workspace as Blockly.WorkspaceSvg)),
+        loadDeferredTail(serialized),
+      ]).then(([, deferredTail]) => load(deferredTail))
     })
     return () => {
       cancelled = true
@@ -1266,12 +1307,33 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     })
     appliedToolboxRef.current = initialToolbox
     // Projeto muito grande: o corpo dos blocos longe da vista sai da página (`offscreenBodies.ts`).
-    const offscreenBodies = createOffscreenBodies(injected, {
-      // À vista dos testes de navegador e de quem depura: quantos corpos estão fora da página.
-      onChange: (count) => {
-        container.dataset.szOffscreenBodies = String(count)
-      },
-    })
+    // O módulo só carrega quando o projeto passa do limiar (fora do pacote de abertura): até lá
+    // um vigia barato olha só a carga terminada e os blocos criados.
+    let offscreenBodies: OffscreenBodies | null = null
+    let offscreenDisposed = false
+    let offscreenLoading = false
+    const offscreenGate = (event: Blockly.Events.Abstract) => {
+      if (offscreenLoading || offscreenBodies) return
+      if (
+        event.type !== Blockly.Events.FINISHED_LOADING &&
+        event.type !== Blockly.Events.BLOCK_CREATE
+      )
+        return
+      if (injected.getAllBlocks(false).length < OFFSCREEN_BODIES_MIN_BLOCKS) return
+      offscreenLoading = true
+      injected.removeChangeListener(offscreenGate)
+      void import('../../blockly/offscreenBodies').then(({ createOffscreenBodies }) => {
+        if (offscreenDisposed) return
+        offscreenBodies = createOffscreenBodies(injected, {
+          // À vista dos testes de navegador e de quem depura: quantos corpos estão fora da página.
+          onChange: (count) => {
+            container.dataset.szOffscreenBodies = String(count)
+          },
+        })
+        offscreenBodies.sync()
+      })
+    }
+    injected.addChangeListener(offscreenGate)
     // Acessor POR INSTÂNCIA dos assets do projeto, lido pelo FieldAssetPicker ao
     // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
     // é estável (store desta instância), então o efeito segue rodando uma vez.
@@ -1369,7 +1431,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
       onWorkspaceReadyRef.current?.(null)
-      offscreenBodies.dispose()
+      offscreenDisposed = true
+      injected.removeChangeListener(offscreenGate)
+      offscreenBodies?.dispose()
+      disposeDeferredDrawing(injected)
       injected.dispose()
       appliedToolboxRef.current = null
     }

@@ -1,0 +1,1423 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/student-tests.spec.ts",
+      "e2e/preview-focus-policy.spec.ts",
+      "e2e/preview-shell.spec.ts",
+      "e2e/preview-shell-hostile.spec.ts",
+      "e2e/offscreen-lifecycle.spec.ts",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\playwright.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-994-bg-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-994-bg-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/preview-security\\.spec\\.ts/",
+          "/preview-executes-user-code\\.spec\\.ts/",
+          "/preview-shell(?:-performance|-hostile)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/",
+          "/student-tests\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-994-bg-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/reload-flush\\.spec\\.ts/",
+          "/preview-shell(?:-performance)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/",
+          "/student-tests\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-994-bg-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5511",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.8154.6 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "permissions": ["clipboard-read", "clipboard-write"]
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-994-bg-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "firefox",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": [{}, {}, {}, {}, {}],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5511",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "firefox",
+          "launchOptions": {
+            "firefoxUserPrefs": {
+              "fission.webContentIsolationStrategy": 1
+            }
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "firefox"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-994-bg-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "webkit",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": [{}, {}, {}, {}],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5511",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1792,
+            "height": 1120
+          },
+          "deviceScaleFactor": 2,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "webkit"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "webkit"
+      }
+    ],
+    "quiet": false,
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "bun run serve:e2e",
+      "env": {
+        "E2E_PORT": "5511"
+      },
+      "url": "http://127.0.0.1:5511",
+      "reuseExistingServer": false,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "offscreen-lifecycle.spec.ts",
+      "file": "offscreen-lifecycle.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "demand rendering releases workspace methods and preserves later integrations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 267,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:51:57.116Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-c6e8d4e292a9381644ab",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 47,
+          "column": 1
+        },
+        {
+          "title": "centerOnBlock puts a far body back on the page (Mostrar o bloco, code cursor, Zappy)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 171,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:51:57.484Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-2a287b75e17eb6a14981",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 108,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: o que está longe fica fora da página, o modelo inteiro e a geometria exata",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 997,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:51:57.668Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-ffa8b5a3e70023f8d3cb",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 412,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada com chamadas de função: abrir não desenha a cauda, e nada adiado vai ao banco",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:51:58.674Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-d1b5822a4fc07283f57e",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 434,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: um espaço novo num \"chamar\" adiado não vai ao banco quando a área se redesenha",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1199,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:51:59.858Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-bdfae3b83a681a7721b0",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 452,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: rolar desenha as próximas unidades, com a geometria do caminho normal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1467,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:01.067Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-1c2e07ee51c53ba4decc",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 470,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: \"Mostrar o bloco\" e o cursor do código chegam a um bloco ainda não desenhado",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1432,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:02.543Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-51b2febec66090613d4b",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 493,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: desfazer e refazer uma mudança num bloco ainda não desenhado",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1889,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:03.986Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-67952688b59e11b1f623",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 516,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: arrastar uma unidade leva a cauda no modelo, sem desenhá-la, e nada encaixa no fim invisível",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1521,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:05.883Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-c2228b96f817dc43f599",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 547,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: apagar a última unidade desenhada sobe a cauda, que continua fora da página",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1349,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:07.413Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-a49a472e5c60efe908c2",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 587,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: encaixar um bloco na fronteira deixa a cauda embaixo dele, o resto fora da página",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1308,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:08.770Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-3ba1e233990f008364c1",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 613,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: um bloco adiado levado por programa para baixo de um desenhado continua fora da página",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1256,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:10.086Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-ba09ce6bcfe8d890f615",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 637,
+          "column": 1
+        },
+        {
+          "title": "cauda adiada: abaixo de 1 500 blocos nada muda",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1346,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:11.351Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3522e4f72c1605029553-3f19bfcc21d5273fe01e",
+          "file": "offscreen-lifecycle.spec.ts",
+          "line": 659,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "preview-focus-policy.spec.ts",
+      "file": "preview-focus-policy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "o jogo recebe foco sem ativação e devolve o teclado à Ponte (direto)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4198,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:12.717Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4808a0af1faf36e60a48-371b1aa48835833b611a",
+          "file": "preview-focus-policy.spec.ts",
+          "line": 5,
+          "column": 3
+        },
+        {
+          "title": "o jogo recebe foco sem ativação e devolve o teclado à Ponte (casca)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4276,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:16.924Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4808a0af1faf36e60a48-6cd6d2c08fee81194194",
+          "file": "preview-focus-policy.spec.ts",
+          "line": 5,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "preview-shell-hostile.spec.ts",
+      "file": "preview-shell-hostile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "programas hostis na prévia dentro da casca",
+          "file": "preview-shell-hostile.spec.ts",
+          "line": 46,
+          "column": 6,
+          "specs": [
+            {
+              "title": "trabalho síncrono longo que não é laço não trava o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9416,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:52:32.036Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11948,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:53:20.972Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-77302188094c0dbd97a5",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 53,
+              "column": 3
+            },
+            {
+              "title": "recursão sem fim vira erro do jogo, não do editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8980,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:52:41.709Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10466,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:53:33.659Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-a444c7d86da34e968ea6",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 67,
+              "column": 3
+            },
+            {
+              "title": "enxurrada de mensagens não trava o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9081,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:52:50.723Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11063,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:53:44.156Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-4c41fc6fc6daaa2359fc",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "memória crescendo sem parar não derruba o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9342,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:52:59.835Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10516,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:53:55.255Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-81b4ba71beccd16b3ae7",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 82,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-shell.spec.ts",
+      "file": "preview-shell.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "prévia dentro da casca em outro site",
+          "file": "preview-shell.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5618,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:53:09.854Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6942,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:54:06.642Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8374,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:54:40.948Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-e1567715c61c5abb01d3",
+              "file": "preview-shell.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "depois de Rodar, as setas chegam ao jogo sem clicar no palco",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4671,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:53:15.709Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10227,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:54:14.073Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "teclado-nativo-firefox",
+                          "contentType": "application/json",
+                          "body": "eyJicm93c2VyVmVyc2lvbiI6IjE1OS4wIiwicHJvdG9jb2wiOiJXM0MgV2ViRHJpdmVyIiwic2l0ZUlzb2xhdGlvbiI6MSwicmVhbFN0dWRpb1VpIjp0cnVlLCJyb3VuZHMiOlt7Iml0ZXJhdGlvbiI6MCwiZm9jdXMiOnsidG9wIjp7ImFjdGl2ZSI6IklGUkFNRSIsImZvY3VzZWQiOnRydWV9LCJtaWRkbGUiOnsiYWN0aXZlIjoiSUZSQU1FIiwiZm9jdXNlZCI6dHJ1ZX0sImlubmVyIjp7ImFjdGl2ZSI6IkJPRFkiLCJmb2N1c2VkIjp0cnVlLCJyZWFkeSI6InNpbSJ9fSwibmF0aXZlQXJyb3dSZWNlaXZlZCI6dHJ1ZSwidHJ1c3RlZEV2ZW50Ijp0cnVlLCJub1ByZXZpZXdDbGljayI6dHJ1ZX0seyJpdGVyYXRpb24iOjEsImZvY3VzIjp7InRvcCI6eyJhY3RpdmUiOiJJRlJBTUUiLCJmb2N1c2VkIjp0cnVlfSwibWlkZGxlIjp7ImFjdGl2ZSI6IklGUkFNRSIsImZvY3VzZWQiOnRydWV9LCJpbm5lciI6eyJhY3RpdmUiOiJCT0RZIiwiZm9jdXNlZCI6dHJ1ZSwicmVhZHkiOiJzaW0ifX0sIm5hdGl2ZUFycm93UmVjZWl2ZWQiOnRydWUsInRydXN0ZWRFdmVudCI6dHJ1ZSwibm9QcmV2aWV3Q2xpY2siOnRydWV9LHsiaXRlcmF0aW9uIjoyLCJmb2N1cyI6eyJ0b3AiOnsiYWN0aXZlIjoiSUZSQU1FIiwiZm9jdXNlZCI6dHJ1ZX0sIm1pZGRsZSI6eyJhY3RpdmUiOiJJRlJBTUUiLCJmb2N1c2VkIjp0cnVlfSwiaW5uZXIiOnsiYWN0aXZlIjoiQk9EWSIsImZvY3VzZWQiOnRydWUsInJlYWR5Ijoic2ltIn19LCJuYXRpdmVBcnJvd1JlY2VpdmVkIjp0cnVlLCJ0cnVzdGVkRXZlbnQiOnRydWUsIm5vUHJldmlld0NsaWNrIjp0cnVlfV19"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                },
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7673,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T23:54:49.414Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-1f6be22c25814bf3fb75",
+              "file": "preview-shell.spec.ts",
+              "line": 59,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "student-tests.spec.ts",
+      "file": "student-tests.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7456,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:21.232Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "hidden-frame-focus",
+                      "contentType": "application/json",
+                      "body": "eyJmcmFtZVRpdGxlIjoiVGVzdGUgZG8gam9nbyIsInRha2VuIjpmYWxzZX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10007,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:54:25.017Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "hidden-frame-focus",
+                      "contentType": "application/json",
+                      "body": "eyJmcmFtZVRpdGxlIjoiVGVzdGUgZG8gam9nbyIsInRha2VuIjpmYWxzZX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11659,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:54:57.560Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "hidden-frame-focus",
+                      "contentType": "application/json",
+                      "body": "eyJmcmFtZVRpdGxlIjoiVGVzdGUgZG8gam9nbyIsInRha2VuIjpmYWxzZX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "26131c2b5bf9018ea2ff-72255ebc48bd49bcf181",
+          "file": "student-tests.spec.ts",
+          "line": 45,
+          "column": 1
+        },
+        {
+          "title": "Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2872,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:52:28.700Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "hidden-frame-focus",
+                      "contentType": "application/json",
+                      "body": "eyJmcmFtZVRpdGxlIjoiVGVzdGUgZG8gam9nbyIsInRha2VuIjpmYWxzZX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4638,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:54:35.569Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "hidden-frame-focus",
+                      "contentType": "application/json",
+                      "body": "eyJmcmFtZVRpdGxlIjoiVGVzdGUgZG8gam9nbyIsInRha2VuIjpmYWxzZX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6855,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T23:55:09.302Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "hidden-frame-focus",
+                      "contentType": "application/json",
+                      "body": "eyJmcmFtZVRpdGxlIjoiVGVzdGUgZG8gam9nbyIsInRha2VuIjpmYWxzZX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "26131c2b5bf9018ea2ff-e725a922d917b41c3c6f",
+          "file": "student-tests.spec.ts",
+          "line": 89,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T23:51:38.018Z",
+    "duration": 218460.27,
+    "expected": 35,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

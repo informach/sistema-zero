@@ -35,7 +35,23 @@ conta, corrigida nas issues 023/025, não resolve essa perda do documento local.
   edições feitas na versão mais recente.
 - O diagnóstico acima descreve o defeito antes da correção. A implementação atual
   acrescenta autoridade e recuperação transacionais; veja Fix e a verificação específica.
-  O PR continua draft porque a missão integral e o rollout têm pendências próprias.
+  A missão integral e o rollout têm pendências próprias. A entrega atual segue a
+  instrução posterior do usuário: commits e integração em staging, sem PR.
+
+## Continuidade autenticada — 20/11/2026
+
+A aba publicada c7e9c70a sobrescreveu o espelho offline depois que a página de
+autoria nova foi fechada. Dois realms novos recuperaram o mapa nativo 7 completo,
+com duas camadas, colisão precisa, objeto girado, coordenadas fracionárias e
+propriedade inteira; o SHA-256 integral permaneceu idêntico. A edição antiga foi
+conservada em uma única cópia independente e estável. O aplicativo real reabriu
+ambos; exportação pela interface e importação oficial conservaram o mesmo hash.
+
+Evidências e limites: [ensaio autenticado](../../../../docs/pinta-cenarios/missao-completa-2026-11-18/qa/aba-antiga-autenticada-2026-11-20/README.md).
+O leitor offline usou código real previamente disponibilizado numa rota de QA;
+isso não comprova cold start HTTP offline do aplicativo. Uma máquina física,
+IndexedDB real, sem recuperação pela nuvem e sem documento autoral de reserva em
+RAM. O rollout do gravador de nuvem e a publicação completa continuam pendentes.
 
 ## Fix
 

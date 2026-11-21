@@ -24,9 +24,9 @@ import { criarInstaladorDeCenasThree } from '../src/compilar/instalar-three'
 import { carregarCenaDoEndereco } from '../src/compilar/runtime-http'
 import { instanciarModeloCompilado } from '../src/compilar/runtime-modelos'
 import { carregarCenaNoThree } from '../src/compilar/runtime-three'
-import { exemplo, glb } from './fixtures/glb-compilacao'
+import { comAnimacao, exemplo, glb } from './fixtures/glb-compilacao'
 
-async function pacote(comentario = ''): Promise<PacoteCompilado> {
+async function pacote(comentario = '', animado = false): Promise<PacoteCompilado> {
   const { j, bin } = exemplo(),
     posicoes = new Float32Array([-2, 0, -2, 0, 0, 2, 2, 0, -2]),
     a = new ArquivosDaCompilacao(new AbortController().signal),
@@ -37,7 +37,8 @@ async function pacote(comentario = ''): Promise<PacoteCompilado> {
   j.accessors[0]!.min = [-2, 0, -2]
   j.accessors[0]!.max = [2, 0, 2]
   // Dois nós na fonte, compartilhando a mesma malha.
-  const bytes = glb(j, bin)
+  const animacao = animado ? comAnimacao(j, bin) : undefined,
+    bytes = glb(animacao?.j ?? j, animacao?.bin ?? bin)
   await a.adicionar('modelos/solo.glb', bytes, {
     mime: 'model/gltf-binary',
     papel: 'modelo',
@@ -112,6 +113,55 @@ async function pacote(comentario = ''): Promise<PacoteCompilado> {
   })
   return { cena, arquivos: new Map(a.arquivos) }
 }
+
+test('o jogo pode assumir a animação e colisão de uma entidade sem duplicar os motores', async () => {
+  const p = await pacote('', true),
+    entidades = new Set(['solo']),
+    carregando = carregarCenaNoThree(p, new AbortController().signal, {
+      animacaoExterna: entidades,
+      colisoresExternos: entidades,
+    })
+  entidades.clear()
+  const r = await carregando,
+    normal = await carregarCenaNoThree(p, new AbortController().signal)
+  try {
+    const externo = r.atores.get('solo')![0]!,
+      interno = normal.atores.get('solo')![0]!
+    externo.mixer.clipAction(externo.animacoes[0]!).play()
+    interno.mixer.clipAction(interno.animacoes[0]!).play()
+    r.atualizar(0.25)
+    normal.atualizar(0.25)
+    expect(externo.mixer.time).toBe(0)
+    expect(interno.mixer.time).toBeCloseTo(0.25)
+    externo.mixer.update(0.25)
+    const alvo = externo.raiz.getObjectByProperty(
+      'uuid',
+      externo.animacoes[0]!.tracks[0]!.name.split('.')[0]!,
+    )!
+    expect(alvo.position.x).toBeCloseTo(0.25)
+    r.atualizar(0.25)
+    expect(externo.mixer.time).toBeCloseTo(0.25)
+    expect(r.colisoes.arvores).toBe(0)
+    expect(normal.colisoes.arvores).toBe(1)
+    expect(
+      new Raycaster(new Vector3(10, 8, -4), new Vector3(0, -1, 0)).intersectObject(r.raiz, true)
+        .length,
+    ).toBeGreaterThan(0)
+  } finally {
+    r.descartar()
+    normal.descartar()
+  }
+})
+
+test('propriedade externa exige uma entidade real da cena', async () => {
+  const p = await pacote()
+  for (const campo of ['animacaoExterna', 'colisoresExternos'] as const)
+    await expect(
+      carregarCenaNoThree(p, new AbortController().signal, {
+        [campo]: new Set(['inexistente']),
+      }),
+    ).rejects.toThrow(/entidade/)
+})
 
 test('perfil de jogo conserva céu e iluminação globais e instala as luzes locais do cenário', async () => {
   const alvo = new Scene(),

@@ -1,0 +1,30 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "71d2b807e08aeb470ff3ba119cea5f3f44975cc47f74e659f0c9afc1eb3551a4"
+  },
+  {
+    "file": "biome.txt",
+    "sha256": "8f3ce96c16d6ffce7025025ea2d27b8b8c48e198f2b1265557291fcd2621ac7a"
+  },
+  {
+    "file": "gates.json",
+    "sha256": "390349e69a0affc5d545554755cd1ebc060269d60288da7daf21bbc931f710ff"
+  },
+  {
+    "file": "javascript-identico.json",
+    "sha256": "bb86fe8ee580ea466ab0f1b13669eb489132de1ec7bb84987707503009be2802"
+  },
+  {
+    "file": "perfil.txt",
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+  },
+  {
+    "file": "regressao.txt",
+    "sha256": "6690b3ebb3ea36d30cac434a88df9b23865cc98120276ecef1b185dbce8517e8"
+  },
+  {
+    "file": "reproducao-esnext.txt",
+    "sha256": "2dc71cb6c0b0a790e72f6e4b741cbf6bac8797ec734252e2832358dc903a3e5f"
+  }
+]

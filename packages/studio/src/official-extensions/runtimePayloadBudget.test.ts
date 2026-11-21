@@ -118,11 +118,35 @@ const BUDGETS: readonly {
   // Antes (e193c8f8f): 238_497; gzip Linux 64_810 / Windows 67_291.
   // Evidência: execução 44586083565 e docs/pinta-cenarios/qa/ci-medidas-2026-11-19.
   // Ajuste restrito à guarda de QA; não modifica os motores 3D.
+  // 20/11, decisão da dona (revisão completa da missão, achado T1): o cenário do Molda só
+  // entra no jogo que usa cenário (`sceneVariant.ts`), e a catraca passa a ter as duas
+  // variantes. Com cenário: teto próprio, na medida mais uma folga pequena. Sem cenário:
+  // teto no valor medido, cerca de 1% acima do de antes de 19/11 por causa do que a
+  // integração pôs no motor base, fora do fragmento. A liberação do mapa de sombra no
+  // Recomeçar (88c6dfb50, tirada em 72e091418) volta nas duas.
+  // Gzip Linux de cada entrada: medido no CI (job contracts da homologação 44729611073; o
+  // teste registra o medido no log), com folga de ~0,2%.
+  // Completo (kit e cenário), o de quem chama sem contexto. Medido 20/11 (Bun 1.3.11, com a
+  // sombra): 248_765 caracteres; gzip Windows 70_123. Linux medido no CI em 386eb685b (89
+  // caracteres a menos): 67_504.
   {
     extension: gameThreeDExtension,
-    maxChars: 248_700,
-    maxGzipBytes: 67_550,
-    maxGzipBytesWindows: 70_150,
+    maxChars: 248_900,
+    maxGzipBytes: 67_650, // Linux medido: 67_520
+    maxGzipBytesWindows: 70_250,
+  },
+  // Sem cenário, com o kit. Medido: 241_722 caracteres; gzip Windows 68_289. Antes de 19/11
+  // (e193c8f8f): 238_497 / Linux 64_810 / Windows 67_291 (teto 238_550). A diferença,
+  // estimada pelo diff do motor: renderer mantido no Recomeçar ~700, ganchos do cenário na
+  // física/câmera/laço ~1_000, substituto do fragmento ~490, `pageHide`/BFCache compartilhado
+  // ~130, liberação da sombra ~25, outros ajustes da integração ~400.
+  {
+    extension: gameThreeDExtension,
+    variant: 'sem cenário',
+    context: { code: 'SZGame3D.loadStage(cena, mapa)' },
+    maxChars: 241_800,
+    maxGzipBytes: 65_900, // Linux medido: 65_783
+    maxGzipBytesWindows: 68_400,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -131,7 +155,7 @@ const BUDGETS: readonly {
   // custa ~33_500 caracteres e ~9_500 bytes gzip).
   {
     extension: gameThreeDExtension,
-    variant: 'sem Kit Plataforma',
+    variant: 'sem Kit Plataforma e sem cenário',
     context: { code: 'const cena = SZGame3D.createScene("tela");' },
     // ⚠️ SUBIU com a correção do review de 24/10/2026 (+4_470 / +1_067; o mesmo conjunto da
     // variante completa, acima, menos o do Kit). Medido: 185_682 caracteres, 51_568 bytes gzip.
@@ -153,9 +177,23 @@ const BUDGETS: readonly {
     // 19/11: mesma integração de cenas, +10_179 caracteres, sem incluir o Kit.
     // Bun 1.3.11: 214_594; gzip Linux 58_082 / Windows 60_393.
     // Antes: 204_415; gzip Linux 55_387 / Windows 57_577. Evidência acima.
-    maxChars: 214_600,
-    maxGzipBytes: 58_100,
-    maxGzipBytesWindows: 60_400,
+    // 20/11 (decisão acima): este contexto não usa cenário. Medido: 207_640 caracteres; gzip
+    // Windows 58_573. A mesma composição da variante "sem cenário" do Jogo 3D.
+    maxChars: 207_700,
+    maxGzipBytes: 56_450, // Linux medido: 56_343
+    maxGzipBytesWindows: 58_700,
+  },
+  // Com cenário, sem o kit. Medido 20/11: 214_683 caracteres; gzip Windows 60_412. Linux
+  // medido no CI em 386eb685b (89 caracteres a menos): 58_082.
+  {
+    extension: gameThreeDExtension,
+    variant: 'sem Kit Plataforma, com cenário',
+    context: {
+      code: 'const cena = SZGame3D.createScene("tela"); SZGame3D.loadScene(cena, "ilha")',
+    },
+    maxChars: 214_800,
+    maxGzipBytes: 58_250, // Linux medido: 58_099
+    maxGzipBytesWindows: 60_550,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO
@@ -217,11 +255,25 @@ const BUDGETS: readonly {
   // mede 357_521 caracteres / 106_864 bytes gzip no Windows (Bun 1.3.11).
   // Tetos próximos da medida, com gzip limitado a 107_000 nas duas plataformas.
   // A execução Linux do CI continua conferindo seu compressor real.
+  // 20/11 (decisão acima): este é o completo, com cenário. Medido: 357_367 caracteres; gzip
+  // Windows 106_823; Linux 102_838 (achado T3 fechado: o Linux tem medição própria).
   {
     extension: worldThreeDExtension,
-    maxChars: 357_600,
-    maxGzipBytes: 107_000,
-    maxGzipBytesWindows: 107_000,
+    maxChars: 357_450,
+    maxGzipBytes: 102_950,
+    maxGzipBytesWindows: 106_950,
+  },
+  // Sem cenário. Medido: 349_931 caracteres; gzip Windows 104_710. Antes de 19/11: 346_415 /
+  // Windows 103_642 (teto 346_500). A diferença é da mesma natureza da do Jogo 3D: ganchos do
+  // cenário no motor (terreno, água, chegada, colisão, câmera), o substituto do fragmento e o
+  // `pageHide`/BFCache compartilhado.
+  {
+    extension: worldThreeDExtension,
+    variant: 'sem cenário',
+    context: { code: 'SZWorld3D.setup({ style: "floresta" })' },
+    maxChars: 350_000,
+    maxGzipBytes: 100_900, // Linux medido: 100_755
+    maxGzipBytesWindows: 104_850,
   },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento
@@ -267,11 +319,23 @@ const BUDGETS: readonly {
   // e +2_830 bytes gzip Linux em relação a 81dfb3d8d. Medição independente no CI
   // 44600643248: 220_689 caracteres / 62_564 gzip; Windows: 64_974 gzip.
   // SHA-256 do texto idêntico nos dois sistemas: 0e4887f24178b829c7c90aa064322e53d41d483185123767084b7433061807b7.
+  // 20/11 (decisão acima): este é o completo, com cenário; o texto não mudou (220_689).
   {
     extension: gameKit3DExtension,
     maxChars: 220_700,
     maxGzipBytes: 62_600,
     maxGzipBytesWindows: 65_000,
+  },
+  // Sem cenário. Medido: 213_058 caracteres; gzip Windows 62_755. Antes de 19/11 (81dfb3d8d):
+  // 210_644 / Windows 62_048 (teto 210_700). Mesma natureza: ganchos do cenário na física, na
+  // câmera e na fábrica do projeto, o substituto do fragmento e o `pageHide`/BFCache.
+  {
+    extension: gameKit3DExtension,
+    variant: 'sem cenário',
+    context: { code: 'SZGameKit3D.setup({ width: 640, height: 360 })' },
+    maxChars: 213_150,
+    maxGzipBytes: 60_550, // Linux medido: 60_422
+    maxGzipBytesWindows: 62_900,
   },
 ]
 
@@ -300,8 +364,13 @@ describe('runtimes 3D: catraca de payload', () => {
       process.platform === 'win32' ? (maxGzipBytesWindows ?? maxGzipBytes) : maxGzipBytes
     it(`${name} cabe em ${maxChars} caracteres e ${gzipLimit} bytes gzip`, async () => {
       const source = await bootstrapSource(extension, context)
+      const gzipBytes = Bun.gzipSync(source).byteLength
+      // O medido vai ao log: é assim que o CI fornece o gzip de cada plataforma.
+      console.log(
+        `[catraca 3D] ${name}: ${source.length} caracteres, ${gzipBytes} bytes gzip (${process.platform})`,
+      )
       expect(source.length).toBeLessThanOrEqual(maxChars)
-      expect(Bun.gzipSync(source).byteLength).toBeLessThanOrEqual(gzipLimit)
+      expect(gzipBytes).toBeLessThanOrEqual(gzipLimit)
       // Anti-vácuo: um runtime vazio ou só com o import passaria em qualquer teto.
       expect(source.length).toBeGreaterThan(maxChars * 0.5)
     })

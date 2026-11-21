@@ -23,6 +23,7 @@ import { GetAvatarService } from './application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { CenariosService } from './application/cenarios/cenarios.service'
+import { criarConferenciaDoMolda } from './application/cenarios/molda-dos-cenarios'
 import { PublicacoesDeCenariosService } from './application/cenarios/publicacoes.service'
 import { SendChallengeLifecycleService } from './application/challenge-lifecycle/send-challenge-lifecycle.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
@@ -130,6 +131,7 @@ import { AuthorizePythonAnalysisService } from './application/studio/authorize-p
 import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
 import { OpenLessonStudioService } from './application/studio/open-lesson-studio.service'
 import { PythonProjectCheckerService } from './application/studio/python-project-checker.service'
+import { StudioStudentTestsService } from './application/studio/studio-student-tests.service'
 import { StudioPythonBuilderPolicy } from './application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
@@ -383,23 +385,6 @@ export async function createApplication(env: Env): Promise<Application> {
       )
     : undefined
   const clock = () => new Date()
-  const cenariosRepo = new DrizzleCenariosRepository(db)
-  const cenariosService = new CenariosService(cenariosRepo, clock, {
-    modo: env.CENARIOS_MODO,
-    lista: new Set(
-      (env.CENARIOS_LISTA ?? '')
-        .split(',')
-        .map((id) => id.trim().toLowerCase())
-        .filter(Boolean),
-    ),
-  })
-  const publicacoesDeCenarios = new PublicacoesDeCenariosService(
-    new DrizzlePublicacoesDeCenariosRepository(db),
-    cenariosRepo,
-    cenariosService,
-    clock,
-  )
-
   // Adapters
   const learningRepository = new DrizzleLearningRepository(db, studioAuthoringPolicy)
   const courses = new DrizzleCourseRepository(db)
@@ -476,6 +461,26 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
+  const cenariosRepo = new DrizzleCenariosRepository(db)
+  const cenariosService = new CenariosService(cenariosRepo, clock, {
+    modo: env.CENARIOS_MODO,
+    lista: new Set(
+      (env.CENARIOS_LISTA ?? '')
+        .split(',')
+        .map((id) => id.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+    ...criarConferenciaDoMolda({ accessCheck, kidsJourney: kidsJourneyQuery, adultJourney }),
+    ...(env.CENARIOS_COTA_DA_CONTA_MB
+      ? { cotaDaContaBytes: env.CENARIOS_COTA_DA_CONTA_MB * 1024 ** 2 }
+      : {}),
+  })
+  const publicacoesDeCenarios = new PublicacoesDeCenariosService(
+    new DrizzlePublicacoesDeCenariosRepository(db),
+    cenariosRepo,
+    cenariosService,
+    clock,
+  )
   const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
@@ -489,6 +494,11 @@ export async function createApplication(env: Env): Promise<Application> {
     freeStudioAccess,
     studioRuntimePolicy,
     studioAuthoringPolicy,
+  )
+  // "Meus testes" no Pro: os testes da criança no executor do "Verificar projeto".
+  const studioStudentTests = new StudioStudentTestsService(
+    freeStudioAccess,
+    projectExecutor ?? null,
   )
   const liveBenefits = new DrizzleLiveBenefitsRepository(db)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
@@ -1415,6 +1425,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getChallenge,
       getStudioUnlocks,
       authorizeFreeRuntime,
+      studioStudentTests,
       getMissions,
       claimMission,
       claimUnitChest,

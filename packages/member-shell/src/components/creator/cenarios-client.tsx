@@ -2,7 +2,11 @@
 
 // O CSS da oficina (`oficina-regras.css`) entra pelo `@import` em `app/globals.css` de cada app,
 // DENTRO do pipeline Tailwind, logo depois do `molda.css` (a oficina é um modo do Molda).
-import type { CenariosHost, RotaDosCenarios } from '@sistemazero/molda-cenarios/oficina'
+import type {
+  AcessoAsFerramentas,
+  CenariosHost,
+  RotaDosCenarios,
+} from '@sistemazero/molda-cenarios/oficina'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -25,7 +29,14 @@ export { enderecoDaRota, rotaDoEndereco } from '../../lib/cenarios-endereco'
  * que a página ainda é da mesma pessoa), guarda a tela aberta no endereço e recolhe o menu
  * quando o editor abre.
  */
-export function CenariosClient({ viewerId }: { viewerId: string | null }) {
+export function CenariosClient({
+  viewerId,
+  ferramentas,
+}: {
+  viewerId: string | null
+  /** As faixas de ferramentas da jornada de quem usa; ausente = todas (a equipe). */
+  ferramentas?: AcessoAsFerramentas
+}) {
   const [mod, setMod] = useState<Modulo | null>(null)
   const [falhou, setFalhou] = useState(false)
   const { setWorkspaceActive } = useFocusMode()
@@ -103,6 +114,7 @@ export function CenariosClient({ viewerId }: { viewerId: string | null }) {
             rotaInicial={inicio.rota}
             {...(inicio.espaco ? { espacoInicial: inicio.espaco } : {})}
             aoNavegar={aoNavegar}
+            {...(ferramentas ? { ferramentas } : {})}
             // A oficina é um modo do Molda: a seta das telas de lista volta para ele.
             cabecalho={
               <Link

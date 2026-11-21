@@ -1,0 +1,29 @@
+✖ official clock observes actual driver frames, pause and errors before its first read (3.5927ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 109.8796
+
+✖ failing tests:
+
+test at packages\studio-runtime\tests\motion-observation.cases.mjs:48:1
+✖ official clock observes actual driver frames, pause and errors before its first read (3.5927ms)
+  evalmachine.<anonymous>:134
+          drawn: _paintedLastFrame > 0 ? _paintedLastFrame : 0 };
+                 ^
+
+  ReferenceError: _paintedLastFrame is not defined
+      at Object._inspectLifecycle [as lifecycle] (evalmachine.<anonymous>:134:16)
+      at evalmachine.<anonymous>:5:25
+      at evalmachine.<anonymous>:8:5
+      at Script.runInContext (node:vm:149:12)
+      at Object.runInContext (node:vm:301:6)
+      at TestContext.<anonymous> (file:///C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio-runtime/tests/motion-observation.cases.mjs:49:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.start (node:internal/test_runner/test:1096:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)

@@ -43,7 +43,9 @@ Sem a folha as classes `sz-tool-*` não existem (a lista sai sem estilo). O EDIT
 O host serve `public/studio-blockly/` em `/studio-blockly/`, incluindo os arquivos
 originais do SDK e a licença. Os controles de zoom/lixeira e as imagens dos campos
 usam essa pasta, pela opção pública `media` do Blockly. Não dependem do servidor
-de demonstração externo. A aparência permanece a da versão instalada.
+de demonstração externo (com o Blockly 13 ele tirou o `sprites.png`, e os ícones sumiam).
+A lixeira e o zoom usam o `sprites.svg` do mesmo SDK, em vetor
+(`src/blockly/workspaceControls.ts`); o checkmark das listas segue no `sprites.png`.
 
 Admin, Community, Community Kids e o playground já contêm as cópias. Na atualização
 do Blockly, sincronize e confira a partir de `packages/studio`:

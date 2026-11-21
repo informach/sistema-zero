@@ -16,6 +16,7 @@ export default defineConfig({
           'python-http-compression.spec.ts',
           'python-supervisor.spec.ts',
           'python-provider.spec.ts',
+          'python-background-focus.spec.ts',
           'python-lifecycle.spec.ts',
           'python-profile.spec.ts',
           'python-turtle.spec.ts',
