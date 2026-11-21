@@ -9,18 +9,34 @@
  * vazio e clona bytes, vetor cria lista vazia e clona shapes com ids novos.
  */
 
+import {
+  PINTA_REGION_CELL_COUNT,
+  PINTA_REGION_LIMITS,
+  PINTA_REGION_SIDE,
+  parsePintaRegionBounds,
+} from '@sistemazero/core/creations'
 import { newId } from '../core/id'
-import type { AnyTilesetAsset, TilemapAsset, VectorFrame } from '../core/project'
+import type {
+  AnyTilesetAsset,
+  TilemapCells,
+  TilemapLayer,
+  TilemapObject,
+  VectorFrame,
+} from '../core/project'
 import {
   createBitmap,
   isObjectLayer,
   isTileLayer,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAX_SCHEMA,
   type PintaBitmap,
   tileLayerTilesetId,
 } from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
-import { cellTile, withCellTile } from './cell'
+import { cellTile, EMPTY_CELL, isValidCellForTiles, withCellTile } from './cell'
+import type { AuthorMap } from './mapCellEdits'
+import { mapCellBounds } from './mapCells'
 
 type TileOf<A extends AnyTilesetAsset> = A['tiles'][number]
 
@@ -184,52 +200,181 @@ export function cycleCollision<A extends AnyTilesetAsset>(asset: A, index: numbe
  * com várias peças, apagar uma peça de um tileset não pode mexer nas células das
  * camadas de outro. Sem ele, todas as camadas de peças (o comportamento antigo).
  */
-export function remapTilemapCells(
-  tilemap: TilemapAsset,
-  change: { insertedAt: number } | { removedAt: number },
+export type TileIndexChange = { insertedAt: number } | { removedAt: number }
+export type TilemapRemapFailure = 'invalid-change' | 'invalid-map' | 'tile-budget' | 'cell-budget'
+export type TilemapRemapResult<Map extends AuthorMap> =
+  | { ok: true; map: Map }
+  | { ok: false; reason: TilemapRemapFailure }
+
+/** Compatibility wrapper; compound library edits must inspect the detailed result. */
+export function remapTilemapCells<Map extends AuthorMap>(
+  tilemap: Map,
+  change: TileIndexChange,
   tilesetId?: string,
-): TilemapAsset {
+): Map {
+  const result = tryRemapTilemapCells(tilemap, change, tilesetId)
+  return result.ok ? result.map : tilemap
+}
+
+/** Whole document or refusal. Renumbering visits allocated buffers, never the world extent. */
+export function tryRemapTilemapCells<Map extends AuthorMap>(
+  tilemap: Map,
+  change: TileIndexChange,
+  tilesetId?: string,
+): TilemapRemapResult<Map> {
+  const at = 'insertedAt' in change ? change.insertedAt : change.removedAt
+  if (!Number.isSafeInteger(at) || at < 0 || at >= PINTA_MAP_FORMAT_LIMITS.maxTiles)
+    return { ok: false, reason: 'invalid-change' }
+  const regional = 'origin' in tilemap
+  if (
+    !parsePintaRegionBounds(mapCellBounds(tilemap)) ||
+    tilemap.layers.length > PINTA_MAP_FORMAT_LIMITS.maxLayers ||
+    (regional
+      ? tilemap.schema !== 8
+      : tilemap.schema !== undefined &&
+        (!Number.isSafeInteger(tilemap.schema) ||
+          tilemap.schema < 0 ||
+          tilemap.schema > PINTA_MAX_SCHEMA)) ||
+    (!regional &&
+      (tilemap.cols > PINTA_MAP_FORMAT_LIMITS.maxCols ||
+        tilemap.rows > PINTA_MAP_FORMAT_LIMITS.maxRows))
+  )
+    return { ok: false, reason: 'invalid-map' }
+  let allocated = 0,
+    tileLayers = 0
+  for (const layer of tilemap.layers) {
+    if (!isTileLayer<TilemapCells>(layer)) continue
+    tileLayers++
+    const cells = layer.cells
+    if (cells instanceof Int16Array) {
+      if (regional || cells.length !== tilemap.cols * tilemap.rows)
+        return { ok: false, reason: 'invalid-map' }
+      allocated += cells.length
+    } else {
+      if (
+        !regional ||
+        cells.kind !== 'regions' ||
+        cells.version !== 1 ||
+        cells.side !== PINTA_REGION_SIDE ||
+        !Array.isArray(cells.chunks)
+      )
+        return { ok: false, reason: 'invalid-map' }
+      allocated += cells.chunks.length * PINTA_REGION_CELL_COUNT
+    }
+    if (
+      allocated > PINTA_MAP_FORMAT_LIMITS.maxCells ||
+      (regional && allocated > PINTA_REGION_LIMITS.maxChunks * PINTA_REGION_CELL_COUNT)
+    )
+      return { ok: false, reason: 'cell-budget' }
+  }
+  if (!tileLayers) return { ok: false, reason: 'invalid-map' }
+  // Admit all layer headers together before inspecting any chunk payload.
+  for (const layer of tilemap.layers) {
+    if (!isTileLayer<TilemapCells>(layer) || layer.cells instanceof Int16Array) continue
+    for (const chunk of layer.cells.chunks)
+      if (!(chunk.cells instanceof Int16Array) || chunk.cells.length !== PINTA_REGION_CELL_COUNT)
+        return { ok: false, reason: 'invalid-map' }
+  }
   const remapOne = (value: number): number => {
     if (value < 0) return -1
     if ('insertedAt' in change) return value >= change.insertedAt ? value + 1 : value
     if (value === change.removedAt) return -1
     return value > change.removedAt ? value - 1 : value
   }
+  function remapBuffer(
+    cells: Int16Array,
+  ):
+    | { ok: true; cells: Int16Array; occupied: boolean }
+    | { ok: false; reason: TilemapRemapFailure } {
+    let next = cells,
+      occupied = false
+    for (let i = 0; i < cells.length; i++) {
+      const before = cells[i]!
+      if (!isValidCellForTiles(before, PINTA_MAP_FORMAT_LIMITS.maxTiles))
+        return { ok: false, reason: 'invalid-map' }
+      const tile = remapOne(cellTile(before))
+      if (tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles) return { ok: false, reason: 'tile-budget' }
+      const value = withCellTile(before, tile)
+      if (value !== before && next === cells) next = cells.slice()
+      if (next !== cells) next[i] = value
+      if (value !== EMPTY_CELL) occupied = true
+    }
+    return { ok: true, cells: next, occupied }
+  }
   let touched = false
-  const layers = tilemap.layers.map((layer) => {
+  const layers: TilemapLayer<TilemapCells>[] = []
+  for (const layer of tilemap.layers) {
     if (isObjectLayer(layer) && tilesetId !== undefined) {
       let changed = false
-      const objects = layer.objects.map((o) => {
-        if (o.art?.assetId !== tilesetId || o.art.tile === undefined) return o
+      const objects: TilemapObject[] = []
+      for (const o of layer.objects) {
+        if (o.art?.assetId !== tilesetId || o.art.tile === undefined) {
+          objects.push(o)
+          continue
+        }
+        if (
+          !Number.isSafeInteger(o.art.tile) ||
+          o.art.tile < 0 ||
+          o.art.tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles
+        )
+          return { ok: false, reason: 'invalid-map' }
         const next = remapOne(o.art.tile)
-        if (next === o.art.tile) return o
+        if (next >= PINTA_MAP_FORMAT_LIMITS.maxTiles) return { ok: false, reason: 'tile-budget' }
+        if (next === o.art.tile) {
+          objects.push(o)
+          continue
+        }
         changed = true
         if (next < 0) {
           const { art: _art, ...rest } = o
-          return { ...rest, shape: 'rect' as const }
+          objects.push({ ...rest, shape: 'rect' })
+          continue
         }
-        return { ...o, art: { ...o.art, tile: next } }
-      })
+        objects.push({ ...o, art: { ...o.art, tile: next } })
+      }
       if (changed) {
         touched = true
-        return { ...layer, objects }
+        layers.push({ ...layer, objects })
+      } else {
+        layers.push(layer)
       }
-      return layer
+      continue
     }
-    if (!isTileLayer(layer)) return layer
-    if (tilesetId !== undefined && tileLayerTilesetId(tilemap, layer) !== tilesetId) return layer
-    const cells = new Int16Array(layer.cells.length)
-    let layerTouched = false
-    for (let i = 0; i < layer.cells.length; i += 1) {
-      // A peça muda de índice; o jeito como ela está virada na célula fica.
-      const before = layer.cells[i] ?? -1
-      const next = withCellTile(before, remapOne(cellTile(before)))
-      cells[i] = next
-      if (next !== before) layerTouched = true
+    if (
+      !isTileLayer<TilemapCells>(layer) ||
+      (tilesetId !== undefined && tileLayerTilesetId(tilemap, layer) !== tilesetId)
+    ) {
+      layers.push(layer)
+      continue
     }
-    if (!layerTouched) return layer
+    if (layer.cells instanceof Int16Array) {
+      const result = remapBuffer(layer.cells)
+      if (!result.ok) return result
+      if (result.cells === layer.cells) {
+        layers.push(layer)
+        continue
+      }
+      layers.push({ ...layer, cells: result.cells })
+    } else {
+      const chunks: typeof layer.cells.chunks = []
+      let changed = false
+      for (const chunk of layer.cells.chunks) {
+        const result = remapBuffer(chunk.cells)
+        if (!result.ok) return result
+        if (result.cells === chunk.cells) {
+          chunks.push(chunk)
+          continue
+        }
+        changed = true
+        if (result.occupied) chunks.push({ ...chunk, cells: result.cells })
+      }
+      if (!changed) {
+        layers.push(layer)
+        continue
+      }
+      layers.push({ ...layer, cells: { ...layer.cells, chunks } })
+    }
     touched = true
-    return { ...layer, cells }
-  })
-  return touched ? { ...tilemap, layers } : tilemap
+  }
+  return { ok: true, map: touched ? { ...tilemap, layers } : tilemap }
 }

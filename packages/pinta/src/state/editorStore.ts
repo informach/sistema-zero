@@ -38,7 +38,7 @@ export interface PintaEditorState {
    * juntos. `before` = mapas antes; `after` = mapas remapeados (já com
    * updatedAt). A galeria só recebe o conjunto depois da persistência confirmar.
    */
-  commitLinked(next: PintaAsset, linked: { before: PintaAsset[]; after: PintaAsset[] }): void
+  commitLinked(next: PintaAsset, linked: { before: PintaAsset[]; after: PintaAsset[] }): boolean
   /** Substitui SEM entrada de undo (ex.: rename vindo da galeria). */
   replace(next: PintaAsset): void
   /** Conditional gesture write; returns its surviving snapshot, or null if superseded/refused. */
@@ -248,7 +248,7 @@ export function createEditorStore(options: {
       },
 
       commitLinked(next, linked) {
-        apply(next, true, linked)
+        return apply(next, true, linked) !== null
       },
 
       replace(next) {

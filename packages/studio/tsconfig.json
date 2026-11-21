@@ -52,6 +52,7 @@
     "playwright.pinta-resources.config.ts",
     "playwright.pinta-memory-regions.config.ts",
     "playwright.pinta-layers-regions.config.ts",
+    "playwright.pinta-remap.config.ts",
     "playwright.pinta-authority.config.ts",
     "playwright.pinta-chunks.config.ts",
     "playwright.pinta-render.config.ts",

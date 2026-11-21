@@ -175,6 +175,14 @@ de folhas conserva o vínculo explícito e a trava herdada; o ramo denso mantém
 sua política. Provas em `qa/camadas-por-regioes-2026-11-21/`. Achatar, remapear,
 store/IO e adaptadores ainda precisam completar os consumidores antes da promoção.
 
+Remapeamento de peças também admite regiões internamente: duas passagens de
+orçamento antes do payload, chunks inalterados compartilhados e recusa atômica
+de índices fora do contrato. `remapTilesetConsumers` sobrepõe todos os pendentes
+antes de filtrar consumidores; não ressuscitar referências da galeria confirmada
+entre dois comandos antes do autosave. `commitLinked` informa aceitação efetiva
+para a seleção acompanhar somente a operação aceita. Mesmos estilos e tetos.
+Provas em `qa/remapeamento-por-regioes-2026-11-21/`. Isso não promove store/IO 3.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de

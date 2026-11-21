@@ -3,7 +3,7 @@
  * nova/duplicar/apagar + o badge 🧱 de peça SÓLIDA. Inserir/remover uma peça
  * REMAPEIA as células de todos os MAPAS que usam este tileset (invariante:
  * índice no array = índice na folha = índice nas células) — o remap dos mapas
- * é persistido direto na galeria (fora do undo do tileset; cross-asset).
+ * entra na mesma entrada de histórico e transação da edição das peças.
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
@@ -12,20 +12,16 @@ import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
-  type MapSetAsset,
-  type PintaAsset,
   type PintaBitmap,
   resolveAssetPalette,
-  type TilemapAsset,
-  tilemapUsesTileset,
   type VectorFrame,
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
+import { remapTilesetConsumers } from '../../tiles/tilesetConsumers'
 import {
   addTile,
   cycleCollision,
   duplicateTile,
-  remapTilemapCells,
   removeTile,
   type TileCollision,
   tileCollisionAt,
@@ -151,46 +147,6 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
    * `commitLinked` — o remap entra na MESMA entrada de undo do tileset (desfazer
    * a edição da peça volta os mapas junto; não deixa mais célula apontando errado).
    */
-  function computeRemap(change: { insertedAt: number } | { removedAt: number }): {
-    before: PintaAsset[]
-    after: PintaAsset[]
-  } {
-    // A galeria contém apenas revisões CONFIRMADAS. Sobrepomos os mapas vivos
-    // do editor para que duas inserções dentro do debounce remapeiem a segunda
-    // a partir do resultado da primeira, sem publicar nada antes do IndexedDB.
-    const affectedById = new Map(
-      gallery
-        .getState()
-        .assets.filter(
-          (a): a is TilemapAsset | MapSetAsset =>
-            (a.kind === 'tilemap' && tilemapUsesTileset(a, asset.id)) ||
-            (a.kind === 'map-set' && tilemapUsesTileset(a.map, asset.id)),
-        )
-        .map((tilemap) => [tilemap.id, tilemap]),
-    )
-    for (const linked of editor.getState().linkedAssets ?? []) {
-      if (
-        (linked.kind === 'tilemap' && tilemapUsesTileset(linked, asset.id)) ||
-        (linked.kind === 'map-set' && tilemapUsesTileset(linked.map, asset.id))
-      ) {
-        affectedById.set(linked.id, linked)
-      }
-    }
-    const affected = [...affectedById.values()]
-    const before: PintaAsset[] = []
-    const after: PintaAsset[] = []
-    for (const tilemap of affected) {
-      // Só as camadas que usam ESTE tileset: as de outras peças não mudam de índice.
-      const source = tilemap.kind === 'map-set' ? tilemap.map : tilemap
-      const map = remapTilemapCells(source, change, asset.id)
-      if (map === source) continue
-      const next = tilemap.kind === 'map-set' ? { ...tilemap, map } : map
-      before.push(tilemap)
-      after.push({ ...next, updatedAt: Date.now() })
-    }
-    return { before, after }
-  }
-
   function mutate(
     op: (tileset: AnyTilesetAsset) => {
       next: AnyTilesetAsset
@@ -200,19 +156,31 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
     },
   ): void {
     const current = editor.getState().asset
-    if (!isTilesetKind(current)) return
+    if (!isTilesetKind(current) || current.id !== asset.id) return
     const { next, selectIndex, remap, limitToast } = op(current)
     if (next === current) {
       if (limitToast) showToast(limitToast)
       return
     }
+    let accepted: boolean
     if (remap) {
-      editor.getState().commitLinked(next, computeRemap(remap))
+      const linked = remapTilesetConsumers(
+        gallery.getState().assets,
+        editor.getState().linkedAssets ?? [],
+        current.id,
+        remap,
+      )
+      if (!linked.ok) {
+        showToast(COPY.tiles.remapRefused(linked.assetName))
+        return
+      }
+      accepted = editor
+        .getState()
+        .commitLinked(next, { before: linked.before, after: linked.after })
     } else {
-      editor.getState().commit(next)
+      accepted = editor.getState().commit(next)
     }
-    if (editor.getState().asset !== current && selectIndex !== undefined)
-      session.getState().selectFrame(selectIndex)
+    if (accepted && selectIndex !== undefined) session.getState().selectFrame(selectIndex)
   }
 
   return (

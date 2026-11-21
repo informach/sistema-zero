@@ -1,7 +1,10 @@
 import { expect, it } from 'bun:test'
+import { sparseMemoryMap } from '../../scripts/homologacao/memoryRegions'
 import { addMapObject, createMapObject } from '../tiles/mapObjects'
-import { freezeObjectResource } from '../tiles/resourceVersions'
+import { freezeMapTilesets, freezeObjectResource } from '../tiles/resourceVersions'
+import { createMapSet, placeMapSet } from '../tiles/sets'
 import { addObjectLayer } from '../tiles/tilemapOps'
+import { addTile } from '../tiles/tilesetOps'
 import { dependentTilemaps } from './dependentTilemaps'
 import {
   createPixelSpriteAsset,
@@ -84,4 +87,23 @@ it('tracks linked set definitions but never treats a frozen origin as a dependen
     dependentTilemaps(sprite.id, [sprite, tileset, map, pinned, set, world]).map((a) => a.id),
   ).toEqual([map.id, world.id])
   expect(pinned.resources?.[0]?.sourceId).toBe(sprite.id)
+})
+
+it('regional maps and definitions participate in the same dependency graph without thawing private art', () => {
+  const map = sparseMemoryMap(),
+    ground = addTile(
+      { ...createTilesetAsset({ name: 'ground', tileSize: 16 }), id: map.tilesetId },
+      0,
+    )
+  const set = createMapSet(map, { col: -100, row: -100, cols: 2, rows: 2 }, 16, 'bosque')
+  const source = sparseMemoryMap()
+  let world = addObjectLayer({ ...source, tilesetId: 'other' }, 'Conjuntos')
+  world = placeMapSet(world, world.layers.at(-1)!.id, set, -32.5, -16.25, 16)
+  const frozen = freezeMapTilesets(map, (id) => (id === ground.id ? ground : null), 0)
+  if (!frozen.ok) throw Error(frozen.reason)
+  const pinned = { ...frozen.map, id: 'private-world' }
+  const catalog = [ground, map, set, world, pinned]
+  expect(dependentTilemaps(ground.id, catalog).map((a) => a.id)).toEqual([map.id, world.id])
+  expect(dependentTilemaps(set.id, catalog).map((a) => a.id)).toEqual([world.id])
+  expect(pinned.resources![0]!.sourceId).toBe(ground.id)
 })

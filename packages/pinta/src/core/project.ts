@@ -727,11 +727,18 @@ export function tilemapUsesTileset(
 /** Orçamento da captura portátil já usado pelo adaptador de imagens; nunca corta um pacote. */
 export const PINTA_DEPENDENCY_ASSET_LIMIT = 225
 
+/** One map view for direct documents and reusable definitions, independent of storage. */
+export function tilemapOfAsset(
+  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
+): TilemapAsset | RegionTilemapAsset | null {
+  return asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
+}
+
 /** Dependências diretas visuais e tipadas. A travessia e a transação pertencem ao adaptador. */
 export function pintaAssetReferenceIds(
   asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
 ): string[] {
-  const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
+  const map = tilemapOfAsset(asset)
   const ids = new Set<string>(map ? tilemapTilesetIds(map) : [])
   const addProperties = (properties: Record<string, TilemapObjectPropertyValue> | undefined) => {
     for (const value of Object.values(properties ?? {}))
@@ -760,7 +767,7 @@ export function pintaAssetReferenceIds(
 export function pintaAssetDependencyIds(
   asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
 ): string[] {
-  const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
+  const map = tilemapOfAsset(asset)
   const ids = new Set(pintaAssetReferenceIds(asset))
   for (const version of map?.resources ?? [])
     for (const id of pintaAssetReferenceIds(version.asset)) ids.add(id)

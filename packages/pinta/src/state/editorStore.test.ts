@@ -86,9 +86,14 @@ describe('editorStore — commit/undo/redo', () => {
     })
     store.getState().commit(addLayer(map, 'Não cabe'))
     store.getState().replace({ ...map, cols: 129 })
-    store
-      .getState()
-      .commitLinked({ ...map, name: 'mudou' }, { before: [], after: [addLayer(map, 'Não cabe')] })
+    expect(
+      store
+        .getState()
+        .commitLinked(
+          { ...map, name: 'mudou' },
+          { before: [], after: [addLayer(map, 'Não cabe')] },
+        ),
+    ).toBe(false)
     expect(store.getState().asset).toBe(map)
     expect(store.getState().canUndo).toBe(false)
     expect(store.getState().dirty).toBe(false)
@@ -132,13 +137,15 @@ describe('editorStore — commitLinked (transação cross-asset: tileset + mapas
       persist: async () => {},
     })
 
-    store.getState().commitLinked(
-      { ...tileset, updatedAt: tileset.updatedAt + 1 },
-      {
-        before: [mapBefore],
-        after: [mapAfter],
-      },
-    )
+    expect(
+      store.getState().commitLinked(
+        { ...tileset, updatedAt: tileset.updatedAt + 1 },
+        {
+          before: [mapBefore],
+          after: [mapAfter],
+        },
+      ),
+    ).toBe(true)
     expect(store.getState().linkedAssets?.[0]).toBe(mapAfter)
     expect(store.getState().canUndo).toBe(true)
 

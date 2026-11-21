@@ -1,10 +1,23 @@
-import { type PintaAsset, pintaAssetDependencyIds, type TilemapAsset } from './project'
+import {
+  type PintaAsset,
+  pintaAssetDependencyIds,
+  type RegionMapSetAsset,
+  type RegionTilemapAsset,
+  type TilemapAsset,
+} from './project'
+
+type DependencyAsset = PintaAsset | RegionMapSetAsset | RegionTilemapAsset
 
 /** Reverse dependency closure. Frozen provenance is deliberately excluded by the native contract. */
+export function dependentTilemaps(changedId: string, assets: readonly PintaAsset[]): TilemapAsset[]
 export function dependentTilemaps(
   changedId: string,
-  assets: readonly PintaAsset[],
-): TilemapAsset[] {
+  assets: readonly DependencyAsset[],
+): Array<TilemapAsset | RegionTilemapAsset>
+export function dependentTilemaps(
+  changedId: string,
+  assets: readonly DependencyAsset[],
+): Array<TilemapAsset | RegionTilemapAsset> {
   const consumers = new Map<string, Set<string>>()
   for (const asset of assets) {
     for (const dependency of pintaAssetDependencyIds(asset)) {
@@ -26,6 +39,7 @@ export function dependentTilemaps(
     }
   }
   return assets.filter(
-    (a): a is TilemapAsset => a.kind === 'tilemap' && a.id !== changedId && seen.has(a.id),
+    (a): a is TilemapAsset | RegionTilemapAsset =>
+      a.kind === 'tilemap' && a.id !== changedId && seen.has(a.id),
   )
 }

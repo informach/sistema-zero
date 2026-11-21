@@ -881,6 +881,8 @@ export const COPY = {
     collisionSolid: 'Peça sólida (o personagem não atravessa)',
     collisionPlatform: 'Peça plataforma (pisa por cima, passa por baixo)',
     tileLimit: 'Você chegou ao limite de peças.',
+    remapRefused: (name: string) =>
+      `Não consegui atualizar as peças de "${name}". Nada foi alterado.`,
     blankTile:
       'Essa peça ainda está em branco! Desenhe nela em "Peças do cenário" que o mapa se pinta sozinho.',
     layers: 'Camadas',

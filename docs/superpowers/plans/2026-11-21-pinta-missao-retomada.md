@@ -47,6 +47,20 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    45 testes focados, 39 ensaios e tipos completos dos dois pacotes. Camada
    regional vazia não aloca a extensão; defaults/frações e vínculos explícitos
    sobrevivem ao codec, sem serializar payload na edição de cabeçalhos.
+   Remapeamento e dependentes verificados em
+   `qa/remapeamento-por-regioes-2026-11-21/`: chunks e flags preservados,
+   admissão agregada antes do payload e lote inteiro recusado se um consumidor
+   falhar. Correção pública também conserva revisões pendentes entre duas edições
+   de peças antes do autosave; desfazer/refazer e reabertura no IndexedDB real.
+   Suíte 2.622; ensaios distinguem controles atuais e falhas históricas esperadas.
+   Próximo: leitores de consulta/achatamento orçado e demais consumidores antes
+   da promoção do store, persistência física e adaptadores.
+   Na promoção, exercitar também a edição de uma folha viva por um leitor que
+   não entende um mapa consumidor futuro, inclusive com inventário parcial de
+   nuvem. Verificar os guardas existentes e a recuperação antes de escolher a
+   proteção; não presumir que recusar somente a gravação direta do mapa cobre
+   a mudança dos índices da folha. É critério pendente, não falha já comprovada
+   nem motivo para anunciar um protocolo novo sem evidência.
    O escopo deste sublote foi: criar camada regional vazia sem alocar a
    extensão, preservar defaults explícitos, frações e offsets do contrato 8,
    admitir propriedades/árvore sem normalização com perda e comparar apenas
