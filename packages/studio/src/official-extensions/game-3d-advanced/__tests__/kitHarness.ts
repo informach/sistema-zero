@@ -205,6 +205,8 @@ export interface KitApi {
   stopTimer(): void
   onTimerEnd(fn: () => void): void
   defineEffect(name: string, opts: Record<string, unknown>): void
+  burstAt(name: string, x: number, y: number, z: number): void
+  scatterDecor(count: number): void
   addAttractor(
     effect: string,
     x: number,

@@ -63,7 +63,15 @@ function provenance(): { sha: string | null; dirty: boolean | null } {
 
 // Um teste que reprova reinicia o processo do Playwright: o relatório é lido do disco e cada
 // jogo substitui a própria linha, para nenhum resultado se perder.
-function saveRow(row: { key: string }) {
+function saveRow(row: {
+  key: string
+  engine: string
+  game: string
+  quality: string | null
+  opened: Counts
+  cycles: Counts[]
+  errors: string[]
+}) {
   const previous = existsSync(OUTPUT)
     ? (JSON.parse(readFileSync(OUTPUT, 'utf8')) as { rows: Array<{ key: string }> }).rows
     : []

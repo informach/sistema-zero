@@ -1,5 +1,6 @@
 import {
   AMOSTRAS_DA_PECA,
+  AparenciaDaAguaSchema,
   capturarConteudoDeConjunto,
   codificarPecaDeAlturas,
   criarDocumentoVazio,
@@ -115,7 +116,7 @@ async function comCanvasNativo<T>(nativo: CanvasNativo, fazer: () => Promise<T>)
     definir(doc, 'createElement', function createElement(this: Document, tag: string, o?: object) {
       return String(tag).toLowerCase() === 'canvas'
         ? nativo.createCanvas(1, 1)
-        : original.call(this, tag, o as ElementCreationOptions)
+        : Reflect.apply(original, this, [tag, o])
     })
   }
   try {
@@ -334,7 +335,7 @@ export async function criarCenarioCompletoDeEnsaio(opcoes: { juntar?: boolean } 
           { x: -8, z: 8 },
         ],
         nado: true,
-        aparencia: { corRasa: '#77ccdd', corProfunda: '#226688' },
+        aparencia: AparenciaDaAguaSchema.parse({ corRasa: '#77ccdd', corProfunda: '#226688' }),
       },
     },
     ...definirConjunto,

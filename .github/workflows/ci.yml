@@ -842,6 +842,53 @@ jobs:
           path: packages/studio/.cache/playwright-results
           retention-days: 7
 
+  molda-cenarios-e2e:
+    name: molda-cenarios-e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+      - name: Preparar Chrome e gravação dos ensaios
+        working-directory: packages/studio
+        run: bunx --no-install playwright install --with-deps chrome ffmpeg
+      - name: Oficina e compilação reais no navegador
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/molda-review
+          bun run --cwd packages/molda-cenarios dev:oficina > .cache/molda-review/servidor.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4541/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4541/ > /dev/null
+          node packages/molda-cenarios/playground/oficina/verificar-abertura.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-historico.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-importacao.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-formas.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-agua-oficina.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-jogo-luz-oficina.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-compilacao-glb.mjs
+          CENARIOS_QA_JUNCAO=1 node packages/molda-cenarios/playground/oficina/verificar-compilacao-integrada.mjs
+      - name: Guardar diagnóstico dos cenários
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molda-cenarios-browser
+          path: |
+            .cache/molda-review
+            output/cenarios-reforma
+          retention-days: 7
+
   members-image:
     name: members-image
     runs-on: ubuntu-24.04
@@ -862,7 +909,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, arquipelago, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
+    needs: [ci, arquipelago, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image, molda-cenarios-e2e]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-24.04
