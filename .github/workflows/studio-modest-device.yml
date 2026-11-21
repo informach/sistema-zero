@@ -1,0 +1,70 @@
+name: Studio modest device (emulated)
+
+# Frente 5 da evolução do Estúdio (21/11/2026). Decisão da dona: o aparelho modesto é só EMULADO,
+# no CI. A CPU do editor é desacelerada pelo CDP (`STUDIO_CPU_THROTTLE`, e2e/helpers/cpuThrottle.ts),
+# só no Chromium, o único motor com essa emulação. Os números valem como "emulado, não conferido em
+# aparelho físico". Cada medida roda mesmo que a anterior reprove um critério: o que importa aqui
+# é o número, que vai para os artefatos e para docs/estudio-evolucao/.
+on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-modest-device.yml'
+      - 'packages/studio/e2e/helpers/cpuThrottle.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  emulated:
+    strategy:
+      fail-fast: false
+      matrix:
+        cpu: [4, 6]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      STUDIO_CPU_THROTTLE: ${{ matrix.cpu }}
+      STUDIO_BROWSER_BENCH_OUTPUT: .cache/modest-device/browser.json
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Prepare signed Ubuntu sources
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - run: bun install --frozen-lockfile
+      - working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
+      - name: Classic with 2 and 5 thousand blocks
+        continue-on-error: true
+        working-directory: packages/studio
+        env:
+          CLASSIC_SCALE_SIZES: '2000,5000'
+        run: bunx playwright test e2e/classic-scale.spec.ts --project=chromium --retries=0 --trace=off 2>&1 | tee .cache/modest-classic.txt
+      - name: Pro modular 60-file project
+        continue-on-error: true
+        working-directory: packages/studio
+        run: bunx playwright test e2e/pro-workspace-performance.spec.ts --project=chromium --grep 'modular' --retries=0 --trace=off 2>&1 | tee .cache/modest-pro.txt
+      - name: Hostile programs keep the editor responsive
+        continue-on-error: true
+        working-directory: packages/studio
+        run: bunx playwright test e2e/preview-hostile-programs.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/modest-hostile.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-modest-device-cpu${{ matrix.cpu }}
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            packages/studio/.cache/classic-scale
+            packages/studio/.cache/modest-device
+            packages/studio/.cache/modest-*.txt
+            packages/studio/.cache/playwright-results

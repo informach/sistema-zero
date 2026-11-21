@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { applyCpuThrottle } from './helpers/cpuThrottle'
 
 // A homologação de isolamento usa o Chromium completo, como measure-preview-isolation.mjs.
 // O headless shell padrão tem outro modelo de processos e não representa essa capacidade.
@@ -88,6 +89,10 @@ async function editorSobrevive(page: Page, limiteDeAtrasoMs = 500): Promise<void
 test.describe('programas hostis na prévia', () => {
   test.setTimeout(90_000)
   test.skip(({ browserName }) => browserName !== 'chromium', 'medido só no Chromium')
+  // Aparelho modesto emulado (frente 5): sem `STUDIO_CPU_THROTTLE`, nada muda.
+  test.beforeEach(async ({ page, browserName }) => {
+    await applyCpuThrottle(page, browserName)
+  })
 
   test('trabalho síncrono longo que não é laço não trava o editor', async ({ page }) => {
     await createProject(page)

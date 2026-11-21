@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
+import { applyCpuThrottle, cpuSuffix } from './helpers/cpuThrottle'
 
 /**
  * Perfil do Clássico em escala, no navegador (pacote C da evolução do Estúdio).
@@ -50,9 +51,10 @@ const resultados: Record<string, unknown>[] = []
 test.describe.configure({ mode: 'serial' })
 
 for (const tamanho of TAMANHOS) {
-  test(`abrir e editar com ${tamanho || 'os blocos do curso'}`, async ({ page }) => {
+  test(`abrir e editar com ${tamanho || 'os blocos do curso'}`, async ({ page, browserName }) => {
     test.setTimeout(5 * 60_000)
     await page.setViewportSize({ width: 1440, height: 900 })
+    const cpu = await applyCpuThrottle(page, browserName)
     const inicio = Date.now()
     await page.goto(
       `/aula?aula=desafio-primeiro-jogo/desafio-dia-3${tamanho ? `&escala=${tamanho}` : ''}`,
@@ -113,6 +115,7 @@ for (const tamanho of TAMANHOS) {
 
     const linha = {
       pedido: tamanho,
+      cpu,
       blocosNoProjeto,
       blocosDesenhados: desenhados,
       abrirMs,
@@ -122,7 +125,10 @@ for (const tamanho of TAMANHOS) {
     resultados.push(linha)
     console.log(JSON.stringify(linha))
     mkdirSync(SAIDA, { recursive: true })
-    writeFileSync(resolve(SAIDA, 'resultado.json'), JSON.stringify(resultados, null, 1))
+    writeFileSync(
+      resolve(SAIDA, `resultado${cpuSuffix(cpu)}.json`),
+      JSON.stringify(resultados, null, 1),
+    )
     expect(desenhados).toBeGreaterThan(0)
   })
 }

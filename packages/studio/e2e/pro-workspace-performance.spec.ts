@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, type Locator, type Page, test } from '@playwright/test'
 import { build, type PreviewServer, preview } from 'vite'
+import { applyCpuThrottle, cpuSuffix } from './helpers/cpuThrottle'
 import { inspectWorkspaceBuffers } from './proWorkspaceInspection'
 
 /**
@@ -281,6 +282,7 @@ function timeUntilFirstResult(field: Locator, query: string) {
 test('modular 60-file project: typing, panels, first search answer and analysis across files', async ({
   page,
   browser,
+  browserName,
 }) => {
   test.setTimeout(300_000)
   const address = server.httpServer.address()
@@ -288,6 +290,7 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await installInputFrameProbe(page)
+  const cpu = await applyCpuThrottle(page, browserName)
   await page.goto(`http://127.0.0.1:${address.port}/?modular`)
   const input = page.locator('.monaco-editor textarea.inputarea').first()
   await expect(input).toBeVisible({ timeout: 30_000 })
@@ -426,6 +429,7 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
     firstSearchAnswer: benchmarkStats(searches),
     analysisAfterBreakingBaseMs: brokenAfter,
     analysisAfterFixingBaseMs: fixedAfter,
+    cpu,
     errors,
   }
   const output = resolve(
@@ -435,7 +439,7 @@ test('modular 60-file project: typing, panels, first search answer and analysis 
           '../../.audits/studio-pro-evolution/browser-current.json',
       ),
     ),
-    'pro-modular-current.json',
+    `pro-modular-current${cpuSuffix(cpu)}.json`,
   )
   await mkdir(dirname(output), { recursive: true })
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
