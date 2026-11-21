@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Retomada do rollout e regiões (21/11/2026)
+
+O código integrado lê nuvem 6 e declara escrita 6 para mapas, folhas e conjuntos.
+Isso não atesta a versão implantada: o leitor de rollback 85d16fcd9 declara 4.
+Conferir a fonte publicada e executar produtor real, CAS, cliente antigo e
+rollback antes de concluir o rollout. As seções datadas abaixo incluem o histórico
+do corte anterior; os números atuais pertencem a `core/creations/pinta-format.ts`.
+
+`RegionTilemapAsset`/codec 8 continuam preparação interna: não integram ainda
+a união pública, o escritor de backup ou o protocolo físico 3. Não subir constantes
+para anunciar suporte de oficina antes de completar seus consumidores.
+Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
+Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
+
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
 Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
@@ -54,8 +68,9 @@ Comparação com renderer publicado, orçamento e limites em
   `physics: 'precise'` no mapa. `PINTA_MAX_SCHEMA = 7`. Campo ausente conserva o legado;
   não gravar `false` nem promover jogos existentes silenciosamente. Conjuntos acompanham
   o mapa interno. Cena 3 e PNG de dados 4 exigem o leitor `pinta-scene-physics-v1`;
-  receitas permanecem em 1 (mapa) / 2 (mundo). Nuvem lê 6 e ainda declara 4: documentos
-  6/7 ficam protegidos localmente até o rollout do leitor e a ativação posterior do gravador.
+  receitas permanecem em 1 (mapa) / 2 (mundo). O leitor de rollback lê nuvem 6 e
+  declara 4; o gravador preparado declara 6. Conferir o rollout efetivamente publicado:
+  somente a integração Git não comprova a subida dos documentos 6/7 para a conta.
 - Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
   completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
   recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado

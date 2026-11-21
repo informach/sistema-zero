@@ -301,7 +301,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     ).toMatchObject({ ok: true, deleted: true, storageRef: 'future' })
   })
 
-  test('delete espera uma atualização concorrente e reavalia a versão, sem preflight externo', async () => {
+  test.each([
+    2, 6,
+  ])('delete reavalia formato %s após atualização concorrente sob lock', async (formatVersion) => {
     const input = {
       ...base,
       tool: 'pinta' as const,
@@ -321,17 +323,28 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       release = resolve
     })
     const promoted = conn.sql.begin(async (sql) => {
-      await sql`update members.creations set format_version = 2 where user_id = ${input.userId} and item_id = ${input.itemId}`
+      await sql`update members.creations set format_version = ${formatVersion} where user_id = ${input.userId} and item_id = ${input.itemId}`
       locked()
       await barrier
     })
     await ready
-    const deleting = repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now)
+    const deleting = repo.softDelete(
+      input.userId,
+      input.tool,
+      input.itemId,
+      first.revision,
+      now,
+      formatVersion === 6 ? 4 : undefined,
+    )
     release()
     await promoted
-    expect(await deleting).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    expect(await deleting).toEqual({
+      ok: false,
+      reason: 'client-outdated',
+      requiredVersion: formatVersion,
+    })
     expect(await repo.get(input.userId, input.tool, input.itemId)).toMatchObject({
-      formatVersion: 2,
+      formatVersion,
       storageRef: 'original',
       deletedAt: null,
     })
