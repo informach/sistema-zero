@@ -2074,7 +2074,10 @@ members) + **`avatarSnapshot`** (multipart, FORA do matcher — sobe o PNG p/ o 
 /members/gamification/activity`; o members dá 10 XP/dia que MOVE o streak, gated por posse do Estúdio,
 1×/dia — âncora de quem já terminou os cursos e só cria) e `childrenStats` (área dos pais: junta
 identidade dos perfis do auth com os stats por perfil do members; gateado por
-`requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`
+`requireParentGateAccountOnly` no shim do KIDS) e `familyAvatars` (21/11/2026: a foto do avatar 3D
+de cada filho da conta, `{ avatars: { [profileId]: photoUrl | null } }`, para o menu da área dos
+pais; os ids saem de `profiles.list()`, nunca do pedido; mesmo portão no shim
+`/api/parents/avatares`). Toda escrita passa por `requireWritableSession`
 (`readonly` bloqueia; `write` libera o fluxo normal); ids de path validados como UUID na borda.
 
 **Privacidade — `authorProfileId` (perfil público, 06/2026):** o `redactAuthors` (`lib/hub-redact`)

@@ -368,6 +368,11 @@ página própria.
   os filhos lidos de `/api/profiles`), Cursos para pais (`/pais/cursos`), Oficinas ao vivo, Conta e
   Ajuda; no pé, "Ir para a área da criança", Trocar senha e Sair. No celular, barra no alto e barra
   embaixo (Início, Família, Cursos, Oficinas, Mais). `variant="lesson"` é o regime de aula.
+  A foto do avatar de cada filho no menu vem de `GET /api/parents/avatares` (desde 21/11/2026,
+  `shell.routes.familyAvatars` atrás de `requireParentGateAccountOnly`): até então o menu passava
+  `avatarUrl={null}` e só mostrava a inicial, enquanto o Início e a Família, que leem as fotos no
+  servidor (`listAvatarsByProfileIdsReadonly`), mostravam o rosto. Sem foto (ou se a leitura
+  falhar) fica a inicial. Teste: `tests/parent-shell-avatars.test.tsx`.
 - **Início** (`parents-client.tsx`): guia v3, aviso `?aluno=`, novidade da fala, "Precisa da sua
   atenção", "Seus filhos esta semana" (`ChildSummaryRow`), "Seu curso" e créditos.
 - **Família** (`familia/`): os `ChildCard` (botão principal "Ver a página de X"; "Acesso nos
