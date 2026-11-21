@@ -1,5 +1,9 @@
 name: Studio native input diagnostics
 
+# Lote 2 da missão (21/11/2026): rodada de novo no HEAD para medir a taxa do "teclado preso" nos
+# jogos 3D sem placa de vídeo (20/11: 2 de 50 no Windows, rodada 44716675130), depois das mudanças
+# do vigia da troca de documento (6c07e0343). O gatilho é este arquivo.
+
 on:
   push:
     branches: ['staging']
