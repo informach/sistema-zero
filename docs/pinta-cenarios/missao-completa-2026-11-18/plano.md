@@ -180,6 +180,13 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   navegador. Core, Pinta, Worker e Python ficaram intactos; a fonte integrada
   precisa de sua própria CI geral. Ver `qa/leitor-dbd-2026-11-21/`. Rollout e
   ciclo autenticado permanecem abertos.
+  A qualificação 44871808894 da fonte 66e3c5458 encontrou uma expectativa antiga
+  de perda parcial na fixture da leitura leve de materiais. A trava de produção
+  permanece; o positivo agora representa dados canônicos e três casos separados
+  exigem recusa sem escrita parcial. Passaram 73 casos isolados, 12.179 testes
+  do runner oficial do Estúdio e os quatro controles Chromium reexecutados com
+  Chrome real, além dos tipos. Ver `qa/leitura-integral-de-materiais-2026-11-21/`.
+  A fonte corrigida exige nova CI geral; o catálogo e o gravador não foram ativados.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

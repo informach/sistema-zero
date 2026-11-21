@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-21T06:34:36.160Z",
+  "readerBaseline": "66e3c54584e4eb4fdd1f37e144df30a1fe95eaff",
+  "file": "packages/studio/src/state/__tests__/persistence.cases.ts",
+  "beforeSha256": "8dc12734b79d15fe6b0f3e4d21a54d4e3481d915d4f59462f7b67e2311b205d2",
+  "afterSha256": "e0182615d7edbae6d7a17dc1d6b070d9becfed0b1973fa4d27b3010fba4e7cfb",
+  "copiedExactVerifiedFixture": true,
+  "committed": false
+}

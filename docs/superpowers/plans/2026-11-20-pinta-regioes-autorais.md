@@ -78,6 +78,13 @@ reproduzível comparou 30 execuções por versão com dados idênticos; o caso d
 máximo registrou medianas de 2,96/2,15 ms. Ver `qa/pintura-e-balde-por-regioes-2026-11-21/`.
 Não se anuncia UI expansível nem suporte de arquivo 8/persistência 3 neste lote.
 
+A preparação incorporou o leitor 85 e sua fixture de preservação de materiais.
+Os 16 arquivos próprios de pacote e a árvore de packages da última incorporação
+ficaram idênticos. Passaram os ensaios de armazenamento, os 73 casos isolados,
+tipos completos do Estúdio, perfil e lint. Ver `qa/regioes-base85-2026-11-21/`.
+O próximo lote precisa implementar o leitor nativo e os metadados assinados,
+reutilizando a validação existente sem alterar os formatos anteriores.
+
 ## 3. Oficina e consumidores
 
 - [ ] Adaptar palco, culling, geometria, minimapa, navegação e controles

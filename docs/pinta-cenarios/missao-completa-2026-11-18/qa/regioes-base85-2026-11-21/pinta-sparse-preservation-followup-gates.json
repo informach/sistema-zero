@@ -1,0 +1,23 @@
+[
+  {
+    "name": "studio-types",
+    "started": "2026-11-21T06:42:03.898Z",
+    "finished": "2026-11-21T06:45:00.086Z",
+    "exit": 0,
+    "log": ".cache/pinta-sparse-preservation-followup-studio-types.log"
+  },
+  {
+    "name": "profile",
+    "started": "2026-11-21T06:45:00.088Z",
+    "finished": "2026-11-21T06:45:00.285Z",
+    "exit": 0,
+    "log": ".cache/pinta-sparse-preservation-followup-profile.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T06:45:00.286Z",
+    "finished": "2026-11-21T06:45:30.208Z",
+    "exit": 0,
+    "log": ".cache/pinta-sparse-preservation-followup-biome.log"
+  }
+]

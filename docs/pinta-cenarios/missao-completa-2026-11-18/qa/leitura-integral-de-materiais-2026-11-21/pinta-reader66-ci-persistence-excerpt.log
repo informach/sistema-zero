@@ -1,0 +1,29 @@
+2026-11-21T06:05:48.6107113Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > persistProjectAssets avisa o espelho E bumpa o `updatedAt` do meta (é a régua da nuvem), numa transação só com os assets [1.00ms]
+2026-11-21T06:05:48.6108081Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > espelho `null` (aula, playground) não chama nada e não quebra [11.00ms]
+2026-11-21T06:05:48.6109086Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > persistProjectAssets NÃO recria a partição de um projeto que já foi apagado (meta ausente): nada gravado, espelho não acordado
+2026-11-21T06:05:48.6110163Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > loadProjectSnapshotForCloud recusa recursos duplicados ou desconhecidos sem subir uma versão incompleta [8.00ms]
+2026-11-21T06:05:48.6111318Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > loadProjectSummariesByIds lê os resumos de vários projetos num `getMany` só (meta + capa de cada) e devolve null para quem não existe [8.00ms]
+2026-11-21T06:05:48.6112081Z @sistemazero/studio test: 161 |       if (isDocumentRecord(before) && isDocumentRecord(after)) {
+2026-11-21T06:05:48.6112597Z @sistemazero/studio test: 162 |         for (const [key, value] of Object.entries(before))
+2026-11-21T06:05:48.6113137Z @sistemazero/studio test: 163 |           pending.push({ before: value, after: after[key], path: `${path}.${key}` })
+2026-11-21T06:05:48.6113573Z @sistemazero/studio test: 164 |         continue
+2026-11-21T06:05:48.6113854Z @sistemazero/studio test: 165 |       }
+2026-11-21T06:05:48.6114210Z @sistemazero/studio test: 166 |       throw new ProjectDocumentError(
+2026-11-21T06:05:48.6114545Z @sistemazero/studio test:                   ^
+2026-11-21T06:05:48.6115198Z @sistemazero/studio test: ProjectDocumentError: Este projeto não pode ser aberto integralmente nesta versão ($.assets). Nenhuma cópia foi gravada.
+2026-11-21T06:05:48.6115698Z @sistemazero/studio test:  path: "$.assets",
+2026-11-21T06:05:48.6116020Z @sistemazero/studio test:  code: "invalid-document"
+2026-11-21T06:05:48.6116291Z @sistemazero/studio test: 
+2026-11-21T06:05:48.6116998Z @sistemazero/studio test:       at compare (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/core/projectDocumentGuards.ts:166:13)
+2026-11-21T06:05:48.6117894Z @sistemazero/studio test:       at assertProjectContentPreserved (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/core/projectDocumentGuards.ts:173:43)
+2026-11-21T06:05:48.6118884Z @sistemazero/studio test:       at readProjectAssetsSnapshot (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/projectStorageRead.ts:180:3)
+2026-11-21T06:05:48.6119765Z @sistemazero/studio test:       at async loadProjectAssetsSnapshotById (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/persistence.ts:380:62)
+2026-11-21T06:05:48.6120626Z @sistemazero/studio test:       at async loadProjectAssetsById (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/persistence.ts:367:17)
+2026-11-21T06:05:48.6121500Z @sistemazero/studio test:       at async <anonymous> (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/__tests__/persistence.cases.ts:1734:26)
+2026-11-21T06:05:48.6122141Z @sistemazero/studio test: 
+2026-11-21T06:05:48.6125274Z @sistemazero/studio test: ::error file=packages/studio/src/core/projectDocumentGuards.ts,line=166,col=13,title=ProjectDocumentError: pia foi gravada.::pia foi gravada.%0A      at compare (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/core/projectDocumentGuards.ts:166:13)%0A      at assertProjectContentPreserved (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/core/projectDocumentGuards.ts:173:43)%0A      at readProjectAssetsSnapshot (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/projectStorageRead.ts:180:3)%0A      at async loadProjectAssetsSnapshotById (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/persistence.ts:380:62)%0A      at async loadProjectAssetsById (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/persistence.ts:367:17)%0A      at async <anonymous> (/home/runner/work/sistema-zero/sistema-zero/packages/studio/src/state/__tests__/persistence.cases.ts:1734:26)
+2026-11-21T06:05:48.6128380Z @sistemazero/studio test: (fail) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud lê materiais e metadados leves do perfil, sem arquivos ou blocos [2.00ms]
+2026-11-21T06:05:48.6129427Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > o restauro SUBSTITUI: apaga a partição de blocos quando o snapshot não traz blocos, e a capa antiga [7.00ms]
+2026-11-21T06:05:48.6130674Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > o restauro é ESTRITO: bloco que esta versão não reconhece RECUSA (nada gravado, partição de blocos intacta); canvas VAZIO da origem passa sem aviso e apaga a partição [10.00ms]
+2026-11-21T06:05:48.6131859Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > o restauro recusa projeto aberto em QUALQUER store (as por instância do editor, não só a default) [7.00ms]
+2026-11-21T06:05:48.6132787Z @sistemazero/studio test: (pass) espelho da nuvem ("guardado na sua conta") > o restauro recusa id inesperado ou inválido ANTES de gravar, e recusa projeto ABERTO
