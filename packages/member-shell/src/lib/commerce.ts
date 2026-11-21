@@ -52,6 +52,7 @@ export interface PurchaseView {
 }
 export type CommerceView =
   | PurchaseView
+  | { mode: 'included'; courseTitle: string; continueUrl: string; message: string }
   | {
       mode: 'gift'
       gift: ReferralGiftOfferView

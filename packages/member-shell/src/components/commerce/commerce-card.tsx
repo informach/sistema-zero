@@ -2,11 +2,11 @@
 import type { CommerceBlock, CommerceOrigin } from '@sistemazero/core/commerce'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
-import { Gift, ShoppingBag } from 'lucide-react'
+import { CheckCircle2, Gift, ShoppingBag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
-import { apiGet } from '../../lib/api'
-import type { PromotionCardView } from '../../lib/commerce'
+import { apiGet, apiSend } from '../../lib/api'
+import type { CommerceView, PromotionCardView } from '../../lib/commerce'
 import { useLessonPlayer } from '../lesson-player-context'
 import { useLessonPreview } from '../lesson-preview-context'
 import { CommercePanel } from './commerce-panel'
@@ -31,12 +31,36 @@ export function CommerceCard({
   manageUrl?: string
 }) {
   const [open, setOpen] = useState(false)
+  const [included, setIncluded] = useState<Extract<CommerceView, { mode: 'included' }> | null>(null)
+  const originKey = JSON.stringify(origin)
+  useEffect(() => {
+    if (mode !== 'gift' || preview) return
+    let active = true
+    const inspect = () => {
+      apiSend<CommerceView>('/api/commerce', 'POST', {
+        action: 'inspect',
+        origin: JSON.parse(originKey),
+      })
+        .then((view) => {
+          if (active) setIncluded(view.mode === 'included' ? view : null)
+        })
+        .catch(() => {
+          if (active) setIncluded(null)
+        })
+    }
+    inspect()
+    window.addEventListener('sz-commerce-updated', inspect)
+    return () => {
+      active = false
+      window.removeEventListener('sz-commerce-updated', inspect)
+    }
+  }, [mode, preview, originKey])
   const router = useRouter()
   const updated = useCallback(() => {
     router.refresh()
     window.dispatchEvent(new Event('sz-commerce-updated'))
   }, [router])
-  const Icon = mode === 'gift' ? Gift : ShoppingBag
+  const Icon = included ? CheckCircle2 : mode === 'gift' ? Gift : ShoppingBag
   return (
     <>
       <section className="kids-carta flex flex-col gap-4 rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-sm sm:p-6">
@@ -45,13 +69,30 @@ export function CommerceCard({
         ) : null}
         <span className="flex items-center gap-2 font-bold text-primary text-sm">
           <Icon className="size-5" aria-hidden="true" />
-          {mode === 'gift' ? 'Seu presente' : manageUrl ? 'Seu acesso' : 'Para continuar criando'}
+          {included || manageUrl
+            ? 'Seu acesso'
+            : mode === 'gift'
+              ? 'Seu presente'
+              : 'Para continuar criando'}
         </span>
-        <h3 className="sz-display font-bold text-xl leading-tight">{title}</h3>
-        {description ? (
-          <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        <h3 className="sz-display font-bold text-xl leading-tight">
+          {included ? `${included.courseTitle} já está incluído no seu acesso` : title}
+        </h3>
+        {included || description ? (
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {included?.message ?? description}
+          </p>
         ) : null}
-        {manageUrl ? (
+        {included ? (
+          <a
+            href={included.continueUrl}
+            className={buttonVariants({ className: 'h-11 rounded-full font-bold' })}
+          >
+            {included.continueUrl === '/pais/familia'
+              ? 'Continuar com meu filho'
+              : 'Ir para o curso'}
+          </a>
+        ) : manageUrl ? (
           <a href={manageUrl} className={buttonVariants({ variant: 'outline' })}>
             Gerenciar meu acesso
           </a>

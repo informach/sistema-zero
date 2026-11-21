@@ -208,6 +208,95 @@ describe('blocos e cards comerciais autenticados', () => {
     expect((await result.json()).mode).toBe('manage')
     expect(q.calls.map((c) => c.path)).toEqual(['/funnel/internal/commerce/recover'])
   })
+  test('assinante Kids vê o curso incluído e não resgata uma bolsa', async () => {
+    const q = setup()
+    q.setAccess([
+      {
+        productId: 'comunidade',
+        offerId: null,
+        kind: 'paid',
+        expiresAt: null,
+        accessType: 'all_kids_courses',
+        courseRef: null,
+      },
+    ])
+    for (const action of ['inspect', 'redeem']) {
+      const response = await q.routes.commerce.POST(request({ action, origin }))
+      expect(response.status).toBe(200)
+      expect(await response.json()).toMatchObject({
+        mode: 'included',
+        courseTitle: 'Cadê',
+        continueUrl: '/pais/familia',
+      })
+    }
+    expect(
+      q.calls
+        .filter((c) => c.path.includes('member-gifts'))
+        .every((c) => (c.body as { action: string }).action === 'inspect'),
+    ).toBe(true)
+  })
+  test('chave adulta, comunidade e outro curso não substituem o presente Kids', async () => {
+    const q = setup()
+    q.setAccess([
+      {
+        productId: 'adulto',
+        offerId: null,
+        kind: 'paid',
+        expiresAt: null,
+        accessType: 'all_courses',
+      },
+      {
+        productId: 'comunidade',
+        offerId: null,
+        kind: 'paid',
+        expiresAt: null,
+        accessType: 'community',
+        courseRef: 'cade',
+      },
+      {
+        productId: 'outro',
+        offerId: null,
+        kind: 'manual',
+        expiresAt: null,
+        accessType: 'course',
+        courseRef: 'outro',
+      },
+    ])
+    const response = await q.routes.commerce.POST(request({ action: 'inspect', origin }))
+    expect((await response.json()).mode).toBe('gift')
+  })
+  test('presente existente continua resgatável; compra direta do curso é incluída', async () => {
+    const q = setup()
+    const course: CommerceAccess = {
+      productId: 'cade',
+      offerId: null,
+      kind: 'gift',
+      expiresAt: null,
+      accessType: 'course',
+      courseRef: 'cade',
+    }
+    q.setAccess([course])
+    expect(
+      (await (await q.routes.commerce.POST(request({ action: 'inspect', origin }))).json()).mode,
+    ).toBe('gift')
+    q.setAccess([{ ...course, kind: 'paid' }])
+    expect(
+      (await (await q.routes.commerce.POST(request({ action: 'redeem', origin }))).json()).mode,
+    ).toBe('included')
+  })
+  test('falha ou projeção antiga não vira falta de acesso nem concede presente', async () => {
+    const q = setup()
+    q.setAccessStatus(503)
+    expect((await q.routes.commerce.POST(request({ action: 'redeem', origin }))).status).toBe(503)
+    q.setAccessStatus(200)
+    q.setAccess([{ productId: 'legado', offerId: null, kind: 'paid', expiresAt: null }])
+    expect((await q.routes.commerce.POST(request({ action: 'redeem', origin }))).status).toBe(503)
+    expect(
+      q.calls
+        .filter((c) => c.path.includes('member-gifts'))
+        .every((c) => (c.body as { action: string }).action === 'inspect'),
+    ).toBe(true)
+  })
   test('R04: reinspeção recupera operação própria antes do bloco removido e da elegibilidade', async () => {
     const q = setup()
     q.setBlock(null)
