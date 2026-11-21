@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\world-3d\__tests__\reviewFindings.test.ts:
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — boliche e veículos > "Quando derrubar todos os pinos" do Ao iniciar dispara (e de novo depois do recomeçar) [172.00ms]
+(pass) Mundo 3D — boliche e veículos > sobe no barco, desce e continua a pé [46.00ms]
+(pass) Mundo 3D — boliche e veículos > sobe no carro, desce e continua a pé [47.00ms]
+(pass) Mundo 3D — boliche e veículos > machucado no carro e descendo durante o piscar: o carro continua à vista [32.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > coletável tirado durante o jogo volta no recomeçar [78.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > moedas nascidas durante o jogo saem no recomeçar (não acumulam) [172.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Jogar de novo" devolve a corrida, as missões e as caixas explosivas do começo [125.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Jogar de novo": o do Ao iniciar volta (mesmo tirado no jogo) e o nascido no jogo sai [125.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Levar o carrinho para…" no Ao iniciar põe o carro lá (o carro nasce no start) [78.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Pôr" no meio do jogo sai no recomeçar sem deixar parede invisível [93.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — amigos, mapa, céu e chão > amigo que nasce durante o jogo passeia (o "passear" veio no Ao iniciar) [32.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > tirar o amigo fecha a pergunta dele (e o próximo amigo consegue perguntar) [47.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > teleporte do mapa grande a bordo do barco leva o BARCO [31.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > lua e nuvens seguem o jogador a pé, não o carro estacionado [31.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > o teto de 64 do chão conta só os pedidos feitos durante o jogo [78.00ms]
+(pass) Mundo 3D — o que a criança lê no console > erro dentro de um "Quando…" vira frase em português; o erro cru fica no console.debug [16.00ms]
+(pass) Mundo 3D — listeners da partida > abrir e fechar o mapa grande e responder perguntas não acumula listeners [47.00ms]
+
+ 17 pass
+ 0 fail
+ 76 expect() calls
+Ran 17 tests across 1 file. [1.74s]

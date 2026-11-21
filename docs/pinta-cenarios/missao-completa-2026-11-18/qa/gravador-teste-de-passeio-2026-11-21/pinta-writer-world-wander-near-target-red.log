@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\world-3d\__tests__\reviewFindings.test.ts:
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+539 |     if (!body) throw new Error('o amigo não entrou na cena')
+540 |     const random = spyOn(Math, 'random').mockReturnValue(0.0001)
+541 |     try {
+542 |       step(300)
+543 |       const moved = Math.hypot(body.position.x - 20, body.position.z - 20)
+544 |       expect(moved).toBeGreaterThan(0.5)
+                          ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0.5
+Received: 0
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\studio\src\official-extensions\world-3d\__tests__\reviewFindings.test.ts:544:21)
+(fail) Mundo 3D — amigos, mapa, céu e chão > amigo que nasce durante o jogo passeia (o "passear" veio no Ao iniciar) [78.00ms]
+
+ 0 pass
+ 16 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [661.00ms]

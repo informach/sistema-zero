@@ -55,6 +55,23 @@ Cena estruturada **4**, PNG de dados **5** e capacidade explícita para regiões
 impedem que um runtime antigo receba dados que não consegue executar. Jogos e
 receitas anteriores preservam seus contratos e comportamento.
 
+### Coordenadas e metadados na próxima fronteira
+
+A origem lógica usa células; posições e geometrias de objetos usam pixels
+globais do mapa. Expandir à esquerda ou acima não desloca objetos, caminhos,
+portas, IDs ou propriedades. O leitor nativo 8 precisa aceitar posições
+assinadas, derivar seus limites da extensão orçada e do maior tamanho de peça
+permitido, e preservar valores autorais sem os arredondar ou truncar. As
+normalizações históricas dos formatos 0–7 não devem mudar silenciosamente.
+
+O leitor novo deve reutilizar a validação de metadados existente com limites
+explícitos por formato. Descritores e orçamento global são conferidos antes
+dos buffers. Uma camada, referência ou propriedade que não possa ser conservada
+deve recusar o documento inteiro: não descartar a parte e autorizar uma gravação
+parcial. Isso ainda é critério do próximo lote, não suporte já implementado.
+O formato 8 aqui continua ortogonal; isometria e hexágonos exigem seus próprios
+contratos e consumidores antes de qualquer opção aparecer na oficina.
+
 ## Fluxo e consumidores
 
 Autoria, seleção, terrenos, preenchimento, copiar/colar, conjuntos, objetos,

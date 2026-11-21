@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-21T04:43:02.896Z",
+  "base": "691fb7f7fae34fcd9d9efbbec2f470af6d10b7f5",
+  "changedPackageFile": "packages/studio/src/official-extensions/world-3d/__tests__/reviewFindings.test.ts",
+  "sourceSha256": "741ebbd74cb826408566823e74f2493f2001f3096209dd42e9dc93f8cb84e86a",
+  "worldRuntimeBlobUnchanged": "db993dca480710c9ea66707a30eae410d033e3b3",
+  "fullFailedCiLogSha256": "9d1e806fbfd3072b12e60eb9dd7f1ceaa830f4ed4c6f77626efa1ac53f388062",
+  "qualification": 44864926351,
+  "productionCodeChanged": false,
+  "observationFrames": 300,
+  "requiredDistance": 0.5,
+  "controlledRandom": 0.5,
+  "negativeNearTarget": 0.0001,
+  "negativeWanderingDisabled": true,
+  "fileTests": 17,
+  "relatedTests": 386,
+  "deployed": false
+}

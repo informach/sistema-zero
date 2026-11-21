@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-21T05:25:20.968Z",
+  "scope": "local merge qualification; original Reader13 whole CI green, merged source requires new CI",
+  "files": [
+    {
+      "file": "biome.log",
+      "bytes": 47,
+      "sha256": "179b3a5103a43535b3d40a2545af326be27433daba3056cdd22edab21d9306bb"
+    },
+    {
+      "file": "browser-receipt.json",
+      "bytes": 177,
+      "sha256": "c407bbff0ffb53850a7366ecf55d8a198ec56a2a2e6f9911a11902610295376c"
+    },
+    {
+      "file": "browser-report.json",
+      "bytes": 1286387,
+      "sha256": "38e1f8899b092916dc4e21abb2587af818ab28cf646b1da897cfb783628f1113"
+    },
+    {
+      "file": "browser.log",
+      "bytes": 7566,
+      "sha256": "f4b8c343517bd995e523e792975c260f81678940a9a71050ec263027c43d4cb6"
+    },
+    {
+      "file": "previous-ci.json",
+      "bytes": 2771,
+      "sha256": "46b85bf364a22fedd04e1f1a645a5229f02723a56c2e77191a493c9be770317f"
+    },
+    {
+      "file": "qa-format.json",
+      "bytes": 284,
+      "sha256": "fdba91e1420d403828c404b6a0c3de3de7d027730ef2fb092b46ec6c3dbd819a"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1763,
+      "sha256": "30ba36811db428a9d79fd612a54fb7eb704027d5ebf30e9148c82439c531890b"
+    },
+    {
+      "file": "source-freeze.json",
+      "bytes": 551,
+      "sha256": "9961d9925c538cd2dc20edabef9b2fa21eeb9ddfa01c982c6a5e840ff1e476c5"
+    },
+    {
+      "file": "storage.log",
+      "bytes": 6541,
+      "sha256": "ec47b631e0e63cb40aad0aeed42f6c70204754bd60c9272b8d5fa4d517bc3db6"
+    },
+    {
+      "file": "types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

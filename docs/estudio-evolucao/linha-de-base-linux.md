@@ -19,8 +19,10 @@ O ZIP de fonte grande (81 arquivos, 200 mil bytes) usa um worker só e o descart
 O proxy de apresentação fica abaixo de 50 ms neste projeto de laboratório. Ele não mede a
 latência exata dos pixels ou INP e não certifica sozinho a meta de digitação da etapa 3.
 A abertura usa navegação da página, não troca de arquivo numa sessão já aberta.
-Falta medir no projeto modular de 60 arquivos com dependências, que ainda não existe como fixture,
-e falta medir busca, referências e renomear.
+O projeto modular de 60 arquivos com dependências passou a existir em 20/11/2026, com digitar,
+abrir painel, a primeira resposta da busca e a análise entre arquivos medidos no Linux e no
+Windows: ver [`pro-em-escala.md`](pro-em-escala.md). Referências e renomear seguem sem medida de
+tempo no navegador (o ensaio de mil arquivos do serviço mede os dois sem a tela).
 
 ## Clássico
 
