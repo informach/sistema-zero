@@ -1,0 +1,100 @@
+name: Qualificar linguagem Python do Pinta em Linux
+
+on:
+  push:
+    branches: [pinta-qa-processos-20261121]
+    paths: [.github/workflows/pinta-language-image-20261121.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  language:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PINTA_SOURCE_SHA: 85d16fcd99efe2a72a8350181542cf475a55db37
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: 85d16fcd99efe2a72a8350181542cf475a55db37
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Conferir fonte fixa e contratos locais
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$PINTA_SOURCE_SHA"
+          bun install --frozen-lockfile
+          bun --no-env-file test ./packages/studio-language-service/tests ./packages/studio-language-service/worker-tests
+          bun run --cwd packages/studio-language-service typecheck
+          bun run --cwd packages/studio-language-service build:server
+      - name: Fixar o bootstrap público da distribuição qualificada
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/pinta-language-image
+          cat > .cache/pinta-language-image/prepare.ts <<'TS'
+          import assert from 'node:assert/strict'
+          import { writeFileSync } from 'node:fs'
+          import { verifyStudioPythonDeployment } from '../../packages/core/src/studio/python-runtime-distribution'
+          import { createPythonLanguageBootstrap } from '../../packages/core/src/studio/python-language-bootstrap'
+          import { readJsonBodyWithLimit } from '../../packages/core/src/http'
+          const manifest = 'cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0'
+          const response = await fetch('https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev/v1/runtime-deployments/' + manifest, { redirect: 'error', signal: AbortSignal.timeout(30000) })
+          assert.equal(response.status, 200)
+          const raw = await readJsonBodyWithLimit(response, 2000000)
+          const verified = await verifyStudioPythonDeployment(raw)
+          assert.equal(verified.release.manifestSha256, manifest)
+          assert.equal(verified.distributionSha256, 'f7c60430cb693962aec48da387898882d4708bfc7629fbd30ac3ca2ab403acc1')
+          const bootstrap = await createPythonLanguageBootstrap({ protocolVersion: 1, runtimeRelease: verified.release })
+          for (const [file, value] of [['bootstrap.json', bootstrap], ['deployment.json', raw], ['pins.json', { source: process.env.PINTA_SOURCE_SHA, manifestSha256: manifest, distributionSha256: verified.distributionSha256 }]])
+            writeFileSync('.cache/pinta-language-image/' + file, JSON.stringify(value, null, 2) + '\n', { flag: 'wx' })
+          TS
+          bun --no-env-file .cache/pinta-language-image/prepare.ts
+      - name: Preparar armazenamento OCI no runner descartável
+        run: |
+          set -euo pipefail
+          sudo python3 - <<'PY'
+          import json, pathlib
+          target = pathlib.Path('/etc/docker/daemon.json')
+          config = json.loads(target.read_text()) if target.exists() else {}
+          config.setdefault('features', {})['containerd-snapshotter'] = True
+          target.write_text(json.dumps(config))
+          PY
+          sudo systemctl restart docker
+          docker info --format '{{json .DriverStatus}}' > .cache/pinta-language-image/docker-storage.json
+      - name: Construir e conferir a imagem imutável
+        run: |
+          set -euo pipefail
+          docker buildx build --platform linux/amd64 --provenance=mode=min --load --tag pinta-language:reader85 packages/studio-language-service
+          image="$(docker image inspect pinta-language:reader85 --format '{{.Id}}')"
+          platform="$(docker image inspect --platform linux/amd64 "$image" --format '{{.Id}}')"
+          bundle="$(sha256sum packages/studio-language-service/dist/server.mjs | cut -d ' ' -f 1)"
+          printf '%s\n' "$image" > .cache/pinta-language-image/image-id.txt
+          printf '%s\n' "$platform" > .cache/pinta-language-image/platform-manifest.txt
+          printf '%s\n' "$bundle" > .cache/pinta-language-image/server-sha256.txt
+          cp packages/studio-language-service/dist/server.mjs .cache/pinta-language-image/server.mjs
+          bun --no-env-file packages/studio-language-service/scripts/verify-container.ts --image="$image" --platform-manifest="$platform" --run="pinta-reader85-${GITHUB_RUN_ID}" --bootstrap=.cache/pinta-language-image/bootstrap.json --bundle-sha256="$bundle" --manifest-sha256=cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0
+      - name: Empacotar a imagem após os controles nativos
+        run: |
+          set -euo pipefail
+          docker image save pinta-language:reader85 | gzip -1 > .cache/pinta-language-image/language-image.tar.gz
+          sha256sum .cache/pinta-language-image/language-image.tar.gz > .cache/pinta-language-image/SHA256SUMS
+          printf '%s\n' "$PINTA_SOURCE_SHA" > .cache/pinta-language-image/source-sha.txt
+          cp -R .cache/studio-python-l0/language22-container-* .cache/pinta-language-image/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pinta-language-reader85-${{ github.run_id }}
+          path: |
+            .cache/pinta-language-image/
+            .cache/studio-python-l0/language22-container-*/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
