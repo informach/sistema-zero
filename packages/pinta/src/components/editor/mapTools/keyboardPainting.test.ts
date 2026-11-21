@@ -1,6 +1,6 @@
 import { expect, it } from 'bun:test'
 import { createTilemapAsset, createTilesetAsset, isTileLayer } from '../../../core/project'
-import { CELL_FLIP_H, makeCell } from '../../../tiles/cell'
+import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, makeCell } from '../../../tiles/cell'
 import { updateMapLayer } from '../../../tiles/layerTree'
 import { singleTileStamp } from '../../../tiles/stamp'
 import { setCell } from '../../../tiles/tilemapOps'
@@ -22,6 +22,39 @@ function fixture() {
   }
   return { map, context }
 }
+
+it('scatter shares the selected stamp transform across pencil, shapes and bucket', () => {
+  const { map, context } = fixture()
+  for (const flags of [
+    0,
+    CELL_FLIP_H,
+    CELL_FLIP_V,
+    CELL_FLIP_D,
+    CELL_FLIP_H | CELL_FLIP_V,
+    CELL_FLIP_H | CELL_FLIP_D,
+    CELL_FLIP_V | CELL_FLIP_D,
+    CELL_FLIP_H | CELL_FLIP_V | CELL_FLIP_D,
+  ]) {
+    const value = makeCell(0, flags)
+    for (const tool of ['pencil', 'line', 'rect', 'fill'] as const) {
+      const result = keyboardPaintCandidate(
+        map,
+        tool,
+        { col: 2, row: 2 },
+        { col: 0, row: 0 },
+        {
+          ...context,
+          stamp: singleTileStamp(value),
+          brush: { ...DEFAULT_MAP_BRUSH, scatter: true, density: 1, tiles: [0] },
+        },
+      )!
+      const cells = result.map.layers.find(isTileLayer)!.cells.filter((cell) => cell >= 0)
+      expect(cells.length).toBeGreaterThan(0)
+      expect(cells.every((cell) => cell === value)).toBe(true)
+    }
+  }
+  expect(map.layers.find(isTileLayer)!.cells.every((cell) => cell === -1)).toBe(true)
+})
 it('pencil and eraser edit only the chosen cell without mutating the input', () => {
   const { map, context } = fixture()
   const painted = keyboardPaintCandidate(map, 'pencil', { col: 1, row: 2 }, null, context)!.map

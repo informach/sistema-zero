@@ -4,6 +4,7 @@
  * quando nada muda (é assim que quem chama sabe que não há o que gravar).
  */
 import type { AnyTilesetAsset, TilemapAsset, TileTerrain } from '../../../core/project'
+import { cellFlags } from '../../../tiles/cell'
 import { type CellPos, lineCells, normalizeCellRect, rectCells } from '../../../tiles/cellGeometry'
 import { scatterTiles } from '../../../tiles/scatter'
 import { blockCells, stampCells, type TileStamp } from '../../../tiles/stamp'
@@ -76,6 +77,7 @@ export function applyMapBrush(
         brush.tiles.length ? brush.tiles : [selectedTile],
         brush.density,
         brush.seed,
+        cellFlags(stamp?.tiles[0] ?? selectedTile),
       ),
       unmatched: false,
     }

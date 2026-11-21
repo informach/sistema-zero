@@ -215,6 +215,83 @@ test('terrenos: duas folhas, materiais, gestos, prévia, cancelamento, históric
   await cdp.detach()
 })
 
+test('espalhar peças conserva a semente, a densidade e um desfazer por gesto', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.setTimeout(120_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', {
+    rate: Number(info.project.metadata.cpuSlowdown ?? 1),
+  })
+  await page.goto(`/?namespace=scatter-${info.project.name}-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(directory, 'terrenos.pinta.json'))
+  await page
+    .getByRole('button', { name: 'Abrir terrenos-em-duas-folhas (Mapa)', exact: true })
+    .click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByLabel('Nível das ferramentas', { exact: true }).selectOption('advanced')
+  await page.getByRole('checkbox', { name: 'Espalhar com o pincel', exact: true }).check()
+  const density = page.getByRole('slider', { name: /^Densidade/ })
+  await density.focus()
+  await density.press('End')
+  await expect(density).toHaveValue('100')
+  const pieces = page.getByRole('textbox', { name: 'Peças (separe por vírgula)', exact: true })
+  await pieces.fill('0,1')
+  await pieces.press('Enter')
+  const variation = page.getByLabel('Variação', { exact: true })
+  await variation.fill('42')
+  const canvas = page.getByRole('img', { name: 'Grade do mapa', exact: true })
+  const initial = map(await backup(page)).layers
+  const paint = async () => {
+    await page.getByRole('button', { name: 'Retângulo', exact: true }).click()
+    await canvas.scrollIntoViewIfNeeded()
+    const box = await canvas.boundingBox()
+    if (!box) throw Error('Grade esperada')
+    const start = { x: box.x + 48, y: box.y + 48 },
+      end = { x: box.x + 112, y: box.y + 112 }
+    if (isMobile) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] })
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [end] })
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+    } else {
+      await page.mouse.move(start.x, start.y)
+      await page.mouse.down()
+      await page.mouse.move(end.x, end.y, { steps: 5 })
+      await page.mouse.up()
+    }
+  }
+  await paint()
+  const first = map(await backup(page)).layers
+  const painted = first[0]!.cells.filter((cell) => cell >= 0)
+  expect(painted).toHaveLength(9)
+  expect(new Set(painted)).toEqual(new Set([0, 1]))
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect(map(await backup(page)).layers).toEqual(initial)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  expect(map(await backup(page)).layers).toEqual(first)
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  await variation.fill('43')
+  await paint()
+  expect(map(await backup(page)).layers).not.toEqual(first)
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  await variation.fill('42')
+  await paint()
+  expect(map(await backup(page)).layers).toEqual(first)
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  await page.getByRole('button', { name: 'Espelhar na horizontal', exact: true }).click()
+  await paint()
+  expect(new Set(map(await backup(page)).layers[0]!.cells.filter((cell) => cell >= 0))).toEqual(
+    new Set([4096, 4097]),
+  )
+  await cdp.detach()
+})
+
 test('Começar: criar o bosque pronto e pintar materiais sem preparar regras', async ({
   page,
   isMobile,

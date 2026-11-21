@@ -133,6 +133,13 @@ continuam pendentes; o formato público permanece em 7.
 
 ## 4. Destinos e fechamento
 
+O espalhamento de peças usa agora o mesmo escritor atômico e a origem assinada.
+A revisão corrigiu o repasse do espelho/giro escolhido no pincel. Passaram 22
+casos focados, 2.349 da suíte completa, os três controles nativos, tipos/lint e
+nove ensaios de navegador. Ver `qa/espalhamento-por-regioes-2026-11-21/` no diretório
+da missão. Conjuntos, objetos, pré-admissão dos carimbos, oficina esparsa, protocolo
+3 e destinos novos continuam pendentes; os formatos públicos permanecem iguais.
+
 - [ ] Implementar Tiled infinito real, relatórios e round-trip em ferramenta.
 - [ ] Adaptar pacotes Phaser, Pygame e Godot; testar culling, física, objetos,
   portas, animação e ausência/falha de regiões nos motores reais.
