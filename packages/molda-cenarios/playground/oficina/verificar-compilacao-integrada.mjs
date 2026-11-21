@@ -17,6 +17,9 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true }),
   pagina = await browser.newPage(),
   erros = []
 pagina.on('pageerror', (e) => erros.push(e.message))
+pagina.on('console', (mensagem) => {
+  if (mensagem.text().includes('[vite]')) console.log(mensagem.text())
+})
 try {
   await pagina.goto('http://127.0.0.1:4541/?vazio=1')
   await pagina.waitForFunction(() => window.__cenarios)

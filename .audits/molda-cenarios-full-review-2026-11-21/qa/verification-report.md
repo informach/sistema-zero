@@ -73,6 +73,13 @@ O ciclo `44946156167` chegou ao lint global e apontou uma formatação no novo t
 de browser. O arquivo foi formatado; o lint direcionado dos 95 arquivos alterados passou em
 286 ms, e os 12 contratos leves correspondentes passaram. As provas pesadas seguem no GitHub.
 
+O mesmo ciclo passou pelos sete primeiros scripts de browser do Molda e perdeu o contexto
+na importação dinâmica do compilador integrado. As entradas do scanner do Vite agora incluem
+compilador e colisões usados por URLs calculadas, conforme a documentação de
+[`optimizeDeps.entries`](https://github.com/vitejs/vite/blob/main/docs/config/dep-optimization-options.md).
+A confirmação dessa hipótese fica com a próxima rodada remota. O artefato passa a incluir
+o log oculto do servidor e o ensaio registra mensagens do Vite para permitir diagnóstico.
+
 Merge local em staging, push de todos os commits dessa branch, todos os jobs obrigatórios
 verdes e `deploy-staging` concluído pelo fluxo normal. Falhas novas devem ser corrigidas e
 verificadas no GitHub; não se executam novamente testes pesados na máquina do usuário.

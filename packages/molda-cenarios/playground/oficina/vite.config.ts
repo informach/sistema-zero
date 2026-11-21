@@ -41,6 +41,14 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), acervoLocal()],
   server: { host: '127.0.0.1', port: 4541, strictPort: true },
   optimizeDeps: {
+    // Os ensaios importam o compilador por URLs calculadas no navegador. O scanner não
+    // enxerga essas URLs no HTML; uma descoberta tardia pode recarregar a página em uso.
+    entries: [
+      'index.html',
+      '../../../molda-cenarios-core/src/compilar/index.ts',
+      '../../../molda-cenarios-motor/src/compilar/index.ts',
+      '../../../molda-cenarios-motor/src/teste/colisoes.ts',
+    ],
     exclude: [
       '@sistemazero/molda',
       '@sistemazero/molda-cenarios-core',
