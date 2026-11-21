@@ -120,7 +120,8 @@ jogando), e a API tem de existir. Critério:
   o relatório leva o SHA e se havia mudança sem commit, e uma sabotagem grava em outro arquivo
   (`STUDIO_GPU_CYCLES_OUTPUT`).
 
-Evidência: `evidencias/motores-gpu-2026-11-21/windows-local.json` (Chromium 159 sem placa de vídeo;
+Evidência: `evidencias/motores-gpu-2026-11-21/windows-local.json` (SHA `74c852e78`, árvore limpa;
+Chromium 159 sem placa de vídeo;
 o Parar e Rodar, que troca o documento, já é medido na `preview-resource-release.spec.ts`).
 
 ## Desenhar sprites fora do palco (medido antes de mexer)
@@ -128,12 +129,12 @@ o Parar e Rodar, que troca o documento, já é medido na `preview-resource-relea
 `e2e/engine-2d-offscreen.spec.ts` (a mesma config própria): o runtime do Jogo 2D numa página em
 branco, 400 sprites (o teto de um grupo; metade com imagem, conferido pela contagem de `drawImage`:
 200 por quadro), o tempo do `drawGroup` por quadro em lotes de 100 (o relógio da página tem
-resolução de 0,1 ms). No Chromium 159 desta máquina: **2,27 ms por quadro** com todos dentro do
-palco e **0,45 ms** com todos fora. (Revisão do lote 4: a primeira rodada passava a imagem como
+resolução de 0,1 ms). No Chromium 159 desta máquina, em duas rodadas (a estação é compartilhada):
+**de 1,49 a 2,27 ms por quadro** com todos dentro do palco e **de 0,28 a 0,45 ms** com todos fora. (Revisão do lote 4: a primeira rodada passava a imagem como
 elemento, que o runtime não aceita, e media só retângulos de cor: 0,33 e 0,15 ms.)
 
-Recortar quem está fora economizaria uns 0,45 ms por grupo cheio fora da tela num computador de mesa
-(num aparelho modesto, que é 4 a 6 vezes mais lento, de 2 a 3 ms: uma fatia real do quadro num mundo
+Recortar quem está fora economizaria de 0,3 a 0,45 ms por grupo cheio fora da tela num computador
+de mesa (num aparelho modesto, que é 4 a 6 vezes mais lento, de 1 a 3 ms: uma fatia real do quadro num mundo
 grande com vários grupos). **O recorte não entrou neste lote**, por um motivo do código: o
 `drawSprite` muda estado do quadro além de desenhar (o piscar de quem tomou dano diminui a cada
 desenho, a ordem de pintura que o clique usa é carimbada ali, o texto de um sprite é medido ali).
