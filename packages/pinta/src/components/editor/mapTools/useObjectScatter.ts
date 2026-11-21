@@ -11,6 +11,7 @@ import {
 } from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import { type CellPos, lineCells } from '../../../tiles/cellGeometry'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import {
   type ObjectScatterResult,
   type ObjectScatterSettings,
@@ -81,6 +82,7 @@ export function useObjectScatter(deps: {
           stage,
           viewport: { width: window.innerWidth, height: window.innerHeight },
           cols: map.cols,
+          origin: mapCellBounds(map),
           rows: map.rows,
           tileSize: d.tileSize,
           pad: d.pad,

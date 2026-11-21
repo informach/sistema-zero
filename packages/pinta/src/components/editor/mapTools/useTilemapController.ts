@@ -20,6 +20,7 @@ import { paintSelectionOverlay } from '../../../pixel/render'
 import { getPintaStorageNamespace } from '../../../state/persistence'
 import type { CellPos, CellRect } from '../../../tiles/cellGeometry'
 import { TileChunkCache } from '../../../tiles/chunks'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import { copyRegion, stampRegionAt } from '../../../tiles/mapSelection'
 import { DEFAULT_OBJECT_SCATTER } from '../../../tiles/objectScatter'
 import { createMapSet } from '../../../tiles/sets'
@@ -42,6 +43,7 @@ import {
   writeMapLevel,
 } from './mapLevels'
 import { createMapObjectActions } from './mapObjectActions'
+import { mapCellFromCanvas, mapPointFromPaper } from './mapViewport'
 import { createMapSelectionController, type MapSelection } from './selectionController'
 import { createTileGestures, type PanGesture, type TileGesture } from './tileGestures'
 import { type KeyboardMapPreview, useKeyboardPainting } from './useKeyboardPainting'
@@ -219,11 +221,12 @@ export function useTilemapController(model: ReadyMapModel) {
   const overlayRect = useCallback(
     (rect: CellRect): void => {
       const e = layer ? effectiveLayer(tilemap, layer) : { offsetX: 0, offsetY: 0 }
+      const bounds = mapCellBounds(tilemap)
       paintSelectionOverlay(
         canvasRef.current,
         {
-          x: rect.col + pad + e.offsetX / tileSize,
-          y: rect.row + pad + e.offsetY / tileSize,
+          x: rect.col - bounds.col + pad + e.offsetX / tileSize,
+          y: rect.row - bounds.row + pad + e.offsetY / tileSize,
           width: rect.cols,
           height: rect.rows,
         },
@@ -319,21 +322,26 @@ export function useTilemapController(model: ReadyMapModel) {
     const e = activeTileLayer
       ? effectiveLayer(tilemap, activeTileLayer)
       : { offsetX: 0, offsetY: 0 }
+    return mapCellFromCanvas(
+      { x: event.clientX, y: event.clientY },
+      {
+        canvas: rect,
+        viewport: viewportRef.current,
+        layerOffset: { x: e.offsetX, y: e.offsetY },
+        cellPx,
+        tileSize,
+        pad,
+        origin: mapCellBounds(tilemap),
+      },
+    )
+  }
+  const clampCell = (cell: CellPos): CellPos => {
+    const bounds = mapCellBounds(tilemap)
     return {
-      col:
-        Math.floor(
-          (event.clientX - rect.left + viewportRef.current.x) / cellPx - e.offsetX / tileSize,
-        ) - pad,
-      row:
-        Math.floor(
-          (event.clientY - rect.top + viewportRef.current.y) / cellPx - e.offsetY / tileSize,
-        ) - pad,
+      col: Math.min(Math.max(cell.col, bounds.col), bounds.col + bounds.cols - 1),
+      row: Math.min(Math.max(cell.row, bounds.row), bounds.row + bounds.rows - 1),
     }
   }
-  const clampCell = (cell: CellPos): CellPos => ({
-    col: Math.min(Math.max(cell.col, 0), tilemap.cols - 1),
-    row: Math.min(Math.max(cell.row, 0), tilemap.rows - 1),
-  })
 
   /** Camada ativa trancada: mostra o mesmo aviso do editor de pixel e devolve `true`. */
   function isLocked(): boolean {
@@ -511,30 +519,40 @@ export function useTilemapController(model: ReadyMapModel) {
   function trackPointer(event: { clientX: number; clientY: number }): void {
     const rect = paperRef.current?.getBoundingClientRect()
     if (!rect || rect.width <= 0 || rect.height <= 0) return
-    lastPointRef.current = {
-      x: ((event.clientX - rect.left) / cellPx - pad) * tileSize,
-      y: ((event.clientY - rect.top) / cellPx - pad) * tileSize,
-    }
+    lastPointRef.current = mapPointFromPaper(
+      { x: event.clientX, y: event.clientY },
+      {
+        paper: rect,
+        cols: tilemap.cols,
+        rows: tilemap.rows,
+        tileSize,
+        pad,
+        origin: mapCellBounds(tilemap),
+      },
+    )
   }
   /**
    * Onde pôr o que é colado ou trazido da biblioteca: o último lugar do ponteiro no palco;
    * sem ponteiro, o meio do que aparece na tela; sem tela medida, o meio do mapa.
    */
   function placementPoint(): { x: number; y: number } {
-    const mapW = tilemap.cols * tileSize,
+    const bounds = mapCellBounds(tilemap),
+      left = bounds.col * tileSize,
+      top = bounds.row * tileSize,
+      mapW = tilemap.cols * tileSize,
       mapH = tilemap.rows * tileSize
     const clamp = (p: { x: number; y: number }) => ({
-      x: Math.max(0, Math.min(mapW, p.x)),
-      y: Math.max(0, Math.min(mapH, p.y)),
+      x: Math.max(left, Math.min(left + mapW, p.x)),
+      y: Math.max(top, Math.min(top + mapH, p.y)),
     })
     if (lastPointRef.current) return clamp(lastPointRef.current)
     const stage = stageRef.current
     if (stage && stage.clientWidth > 0 && stage.clientHeight > 0)
       return clamp({
-        x: ((stage.scrollLeft + stage.clientWidth / 2) / cellPx - pad) * tileSize,
-        y: ((stage.scrollTop + stage.clientHeight / 2) / cellPx - pad) * tileSize,
+        x: ((stage.scrollLeft + stage.clientWidth / 2) / cellPx - pad + bounds.col) * tileSize,
+        y: ((stage.scrollTop + stage.clientHeight / 2) / cellPx - pad + bounds.row) * tileSize,
       })
-    return { x: mapW / 2, y: mapH / 2 }
+    return { x: left + mapW / 2, y: top + mapH / 2 }
   }
 
   const libraryPlacement = useLibraryPlacement({
@@ -576,8 +594,9 @@ export function useTilemapController(model: ReadyMapModel) {
   function jumpTo(col: number, row: number): void {
     const stage = stageRef.current
     if (!stage) return
-    stage.scrollLeft = (col + pad) * cellPx - stage.clientWidth / 2
-    stage.scrollTop = (row + pad) * cellPx - stage.clientHeight / 2
+    const bounds = mapCellBounds(tilemap)
+    stage.scrollLeft = (col - bounds.col + pad) * cellPx - stage.clientWidth / 2
+    stage.scrollTop = (row - bounds.row + pad) * cellPx - stage.clientHeight / 2
   }
   const registerHover = useCallback((fn: (cell: CellPos | null) => void) => {
     hoverRef.current = fn

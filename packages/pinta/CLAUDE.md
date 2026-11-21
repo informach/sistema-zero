@@ -97,6 +97,16 @@ retém revisão e camada iniciais e é descartado se mudarem. Estilos preservado
 isso não migra automaticamente os gestos de vetor/recursos, nem promove formato 8.
 Provas em `qa/gestos-de-objetos-e-camadas-2026-11-21/`, no diretório da missão.
 
+O papel/canvas usa `mapCellBounds` e conversões comuns de mundo, ponteiro e CSS.
+Seleção, cursor, destinos do minimapa e ponto de inserção descontam a origem.
+O canvas de oficina aceita o documento interno por regiões, com colisões pelo
+leitor comum e bitmap limitado ao viewport. A biblioteca conserva coordenadas
+assinadas/fracionárias e o deslocamento herdado; o legado conserva sua régua.
+A grade ainda percorre as linhas do mundo: perfil e culling ficam em lote isolado.
+Isso não ativa edição pública 8: movimento SVG de objetos, recursos, modelos de
+store/IO e adaptadores continuam no plano. Provas em
+`qa/geometria-do-papel-2026-11-21/`, no diretório da missão.
+
 **Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
 e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
 variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.

@@ -25,12 +25,29 @@ export function normalizeCellRect(
   b: CellPos,
   maxCols: number,
   maxRows: number,
+  origin: CellPos = { col: 0, row: 0 },
 ): CellRect | null {
-  if (maxCols <= 0 || maxRows <= 0) return null
-  const c0 = Math.max(Math.min(a.col, b.col), 0)
-  const r0 = Math.max(Math.min(a.row, b.row), 0)
-  const c1 = Math.min(Math.max(a.col, b.col), maxCols - 1)
-  const r1 = Math.min(Math.max(a.row, b.row), maxRows - 1)
+  if (
+    ![
+      a.col,
+      a.row,
+      b.col,
+      b.row,
+      maxCols,
+      maxRows,
+      origin.col,
+      origin.row,
+      origin.col + maxCols,
+      origin.row + maxRows,
+    ].every(Number.isSafeInteger) ||
+    maxCols <= 0 ||
+    maxRows <= 0
+  )
+    return null
+  const c0 = Math.max(Math.min(a.col, b.col), origin.col)
+  const r0 = Math.max(Math.min(a.row, b.row), origin.row)
+  const c1 = Math.min(Math.max(a.col, b.col), origin.col + maxCols - 1)
+  const r1 = Math.min(Math.max(a.row, b.row), origin.row + maxRows - 1)
   if (c1 < c0 || r1 < r0) return null
   return { col: c0, row: r0, cols: c1 - c0 + 1, rows: r1 - r0 + 1 }
 }

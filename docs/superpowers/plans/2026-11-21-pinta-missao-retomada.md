@@ -309,5 +309,23 @@ a geometria assinada continuam na lista abaixo; nenhuma etapa macro é fechada.
   Reproduzir cancelamento/admissão tardios com o mesmo ID e com conjuntos.
 - [ ] Completar geometria, seleção, movimento e edição de versões em coordenadas
   assinadas; integrar câmera, palco, viewport e navegação antes da promoção 8.
+
+Próximo lote em execução: geometria do papel e inserção da biblioteca. Reproduzir
+conversão de origem assinada e conservação de posições fracionárias; extrair as
+conversões comuns, aplicá-las aos consumidores do ponteiro/cursor/seleção e
+navegação existentes e adaptar o canvas de oficina ao leitor de regiões.
+Conservar a composição densa anterior e os estilos, com comparação de pixels no
+Chromium e regressão da biblioteca/teclado. Não otimizar a grade neste lote: o
+perfil e o culling dela ficam em mudança isolada, depois da geometria correta.
+O store público/IO e a ativação 8 continuam condicionados aos demais consumidores.
+
+Lote do papel/canvas verificado em `qa/geometria-do-papel-2026-11-21/`, no
+diretório da missão: 2.543 testes do Pinta, 39 focados, 240 comparações de imagens
+e conservação dos destinos/seleções legados no Chromium. Consumidores de
+ponteiro/cursor/seleção e navegação usam os limites lógicos; a biblioteca conserva
+frações e offsets. O documento por regiões continua interno: movimento SVG,
+modelos do store e recursos/IO permanecem pendentes. A grade inteira foi medida
+na prova esparsa, sem otimização misturada à correção geométrica. Não fecha o item
+3 ou a etapa macro 6. Seguir para o restante da geometria/consumidores e perfil.
 - [ ] Prosseguir ao perfil de render estabilizado e aos adaptadores/IO, conforme
   os itens anteriores. O contrato público e as etapas macro continuam abertos.

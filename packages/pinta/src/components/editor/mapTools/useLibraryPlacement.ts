@@ -17,6 +17,7 @@ import {
 } from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import { libraryPlacement, placeLibraryObject } from '../../../tiles/libraryPlacement'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import { pointOnMap } from './mapViewport'
 
 type Preview = NonNullable<ReturnType<typeof libraryPlacement>> & { source: PintaAsset }
@@ -129,6 +130,7 @@ export function useLibraryPlacement(deps: {
           stage,
           viewport: { width: window.innerWidth, height: window.innerHeight },
           cols: d.map.cols,
+          origin: mapCellBounds(d.map),
           rows: d.map.rows,
           tileSize: d.tileSize,
           pad: d.pad,

@@ -1,0 +1,390 @@
+{
+  "at": "2026-11-21T19:08:21.118Z",
+  "sourceBase": "27d4e81534efd32f0a246ce708c02513039506a4",
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "focused": {
+      "passed": 39,
+      "failed": 0,
+      "assertions": 258
+    },
+    "pinta": {
+      "passed": 2543,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 29469
+    },
+    "browser": {
+      "passed": 36,
+      "failed": 0,
+      "retries": 0,
+      "geometry": 3,
+      "publicWorkshop": 33,
+      "rgbaComparisons": 240,
+      "legacyPlacements": 72,
+      "pointerPositions": 1443,
+      "selections": 27,
+      "exactSetNativeComparisons": 12,
+      "profiles": [
+        {
+          "profile": "desktop",
+          "cpuSlowdown": 1,
+          "legacyImageComparisons": 32,
+          "regionImageComparisons": 48,
+          "legacyPlacements": 24,
+          "pointerPositions": 481,
+          "selections": 9,
+          "world": {
+            "hash": "3861e7f30572890eeba88aae6bd5aa3230f28e2b86f3027c948cd5ecbb786c7f",
+            "width": 160,
+            "height": 128,
+            "viewport": {
+              "x": 0,
+              "y": 0,
+              "width": 160,
+              "height": 128
+            },
+            "cacheBytes": 1048576,
+            "gridMoves": 20002,
+            "painted": 2660,
+            "logicalCells": 100000000,
+            "allocatedCellBytes": 4096
+          }
+        },
+        {
+          "profile": "touch",
+          "cpuSlowdown": 1,
+          "legacyImageComparisons": 32,
+          "regionImageComparisons": 48,
+          "legacyPlacements": 24,
+          "pointerPositions": 481,
+          "selections": 9,
+          "world": {
+            "hash": "3861e7f30572890eeba88aae6bd5aa3230f28e2b86f3027c948cd5ecbb786c7f",
+            "width": 160,
+            "height": 128,
+            "viewport": {
+              "x": 0,
+              "y": 0,
+              "width": 160,
+              "height": 128
+            },
+            "cacheBytes": 1048576,
+            "gridMoves": 20002,
+            "painted": 2660,
+            "logicalCells": 100000000,
+            "allocatedCellBytes": 4096
+          }
+        },
+        {
+          "profile": "cpu-4x",
+          "cpuSlowdown": 4,
+          "legacyImageComparisons": 32,
+          "regionImageComparisons": 48,
+          "legacyPlacements": 24,
+          "pointerPositions": 481,
+          "selections": 9,
+          "world": {
+            "hash": "3861e7f30572890eeba88aae6bd5aa3230f28e2b86f3027c948cd5ecbb786c7f",
+            "width": 160,
+            "height": 128,
+            "viewport": {
+              "x": 0,
+              "y": 0,
+              "width": 160,
+              "height": 128
+            },
+            "cacheBytes": 1048576,
+            "gridMoves": 20002,
+            "painted": 2660,
+            "logicalCells": 100000000,
+            "allocatedCellBytes": 4096
+          }
+        }
+      ]
+    },
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "studioTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1,
+    "children": false,
+    "latencyQualified": false,
+    "heapMeasured": false,
+    "nativeControlsRepeated": false
+  },
+  "review": {
+    "sharedPaperCoordinates": true,
+    "signedSelectionBounds": true,
+    "regionalLibraryAdmission": true,
+    "collisionReaderPerLayer": true,
+    "viewportBoundedCanvas": true,
+    "gridCullingPending": true,
+    "stylesChanged": false,
+    "svgObjectMotionAndStoreIoPending": true
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/map-geometry-probe.ts",
+      "sha256": "76b7ccfb03f4f8cb94fccd2fac7e393ad106317093d26a21034a90287b0dbcd8"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-geometry-e2e.ts",
+      "sha256": "5dc27633e8ad33ba9895f170afc1ac38ba986793781ce0d26f03c5fae81d8de4"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapStage.tsx",
+      "sha256": "15c7bce7deb7a4fd3d13189b2e13693c6304feb38a86dd3f4278fdd616a7b231"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvas.ts",
+      "sha256": "5bc47825768bb656f53a8648b4af7b02f5d1795f211362db9f1ed7b55a85206f"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvasRegions.test.ts",
+      "sha256": "65e934ff2ad3317e53a8cf010d4e3f9516124e9f300983e8f934297b46650e5e"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapViewport.test.ts",
+      "sha256": "be6bbfb3dac914ee271e94cf67109e4226b734407db7af506211edc76f06400b"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapViewport.ts",
+      "sha256": "b193c73286512e27d8b41a14b3f367a2832c707d9497dbe0b4fc214677ecb444"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/selectionController.ts",
+      "sha256": "9a39eea4e77b1c0879704ca2e0c7219db34052509a6b1514d33cf90b877bbae9"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useKeyboardPainting.ts",
+      "sha256": "bd8ed2781e9b33644e1b46afba2a2511d2836dafc098d782ccf0e21b62ff203b"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useLibraryPlacement.ts",
+      "sha256": "c1ae53682c5421fcf5db84f0429b4e4081554ab061a017c057aa29c195a98542"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.ts",
+      "sha256": "bfbcc0f62228f1f3988811dc71ee8f6c8f80d68a471404cbf21dfb7b08ea67eb"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useTilemapController.ts",
+      "sha256": "fe2bf134d6d9d31c1566b65a3cef4f8ae501b862eb29bc769b2e5c5560d1167b"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellGeometry.test.ts",
+      "sha256": "7f4452196076572f0fd21ebd109ef1a159dd3fb6d3484f69d0d76ef48c419891"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellGeometry.ts",
+      "sha256": "0caee5344a5c77696f2d391763d7e5bee2ecdcd0e9fa7bf97e9b17f37448e384"
+    },
+    {
+      "file": "packages/pinta/src/tiles/libraryPlacement.ts",
+      "sha256": "b7651e40588957cb332735c7281fa23095e4701d6a34e427801841500d923e57"
+    },
+    {
+      "file": "packages/pinta/src/tiles/libraryPlacementRegions.test.ts",
+      "sha256": "3be84ca6f1c710c761d0647ba7b371985faf77d7493866d492a7d2e04b7a38e9"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-geometry.flow.ts",
+      "sha256": "025588c169873b1b32bfc9b15c71e9800549f87290df60af16f0097ff85b9771"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-geometry.config.ts",
+      "sha256": "681896f9a1360def385d736027b104704b9b320da818f54c502b38b6ebf91b4d"
+    }
+  ],
+  "historicalSources": [
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvas.ts",
+      "commit": "27d4e81534efd32f0a246ce708c02513039506a4",
+      "sha256": "01a2a6d770bf8c4c897a8ca8b060b0c7428b0673e0947d45fc88126779f28e01"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapViewport.ts",
+      "commit": "27d4e81534efd32f0a246ce708c02513039506a4",
+      "sha256": "819b591eceb477c44f50a20b04499a6e223e7fab094bb05a27ab80a1d5a660bc"
+    },
+    {
+      "file": "packages/pinta/src/tiles/libraryPlacement.ts",
+      "commit": "27d4e81534efd32f0a246ce708c02513039506a4",
+      "sha256": "e2ce79feb23f40dfeed9a13812f6e1fd059260e5930672cd5736f51f7229f8d6"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellGeometry.ts",
+      "commit": "27d4e81534efd32f0a246ce708c02513039506a4",
+      "sha256": "4e7714ac01089e8a24544961d8b8f19d15aea33e7c2eaad9db018d9e1e3a596d"
+    }
+  ],
+  "records": [
+    {
+      "file": "canvas-desktop.png",
+      "bytes": 3596,
+      "sha256": "0d9fd9ed52c550443e80c8be2b7b13aad75f844047d66355eafb4d41d3735104"
+    },
+    {
+      "file": "canvas-touch.png",
+      "bytes": 3596,
+      "sha256": "0d9fd9ed52c550443e80c8be2b7b13aad75f844047d66355eafb4d41d3735104"
+    },
+    {
+      "file": "canvas-cpu-4x.png",
+      "bytes": 3596,
+      "sha256": "0d9fd9ed52c550443e80c8be2b7b13aad75f844047d66355eafb4d41d3735104"
+    },
+    {
+      "file": "workshop-desktop.png",
+      "bytes": 60117,
+      "sha256": "7923f03ef4e7b0aa0ec25ff8672a982cb75f2b4b480d2deade3a178a2c3ea09b"
+    },
+    {
+      "file": "workshop-touch.png",
+      "bytes": 85304,
+      "sha256": "62cad61f88a030e81f8c15730267a00197ec581623c841da5ab02cdca1bb0c0f"
+    },
+    {
+      "file": "workshop-cpu-4x.png",
+      "bytes": 60117,
+      "sha256": "7923f03ef4e7b0aa0ec25ff8672a982cb75f2b4b480d2deade3a178a2c3ea09b"
+    },
+    {
+      "file": "playwright-geometry-report.json.gz",
+      "bytes": 37959,
+      "sha256": "4ac40048bb460c237fb9ab0760d9888cd2aa9bc0cf4eabc1957cb6b6c93d8f73",
+      "rawBytes": 236039,
+      "rawSha256": "2a7bbe36ad4dfcc425aaea222b626ad1acd8f2b3f5afce55fcd8bb8dcee45a52"
+    },
+    {
+      "file": "playwright-workshop-report.json.gz",
+      "bytes": 3001249,
+      "sha256": "0dbcc7e577aab16a4a3fd80142b0409ed06eb0b7b52e35f7f35ec7bfbf51a64c",
+      "rawBytes": 4433665,
+      "rawSha256": "beacf4ec5a220c89279a9fc1087fcc8c83510559ebc05ff075bb81ee849a7177"
+    },
+    {
+      "file": "pinta-map-geometry-red.log.gz",
+      "bytes": 1416,
+      "sha256": "07ea4c5fd1422e50d96b99918215e7b9c68eac7dd0585fe30200fed7da0aebfa",
+      "rawBytes": 4474,
+      "rawSha256": "c1b1435d6fed5f389ca6364015faa0b9302b8267196dd6172d78506bc873a503"
+    },
+    {
+      "file": "pinta-map-canvas-regions-red.log.gz",
+      "bytes": 626,
+      "sha256": "e7743effb5dd318d4f6ad16ed10fb2de8f49c8066cdcb3fbdcd75e248e195f35",
+      "rawBytes": 3892,
+      "rawSha256": "5ac13ac2f378b4eaacc598b7e6bfb7cf55836c451813c6a6097b4dff9561206a"
+    },
+    {
+      "file": "pinta-map-geometry-focused-first.log.gz",
+      "bytes": 1246,
+      "sha256": "ffd38b90eb20de2437bceb1f2c558b480e11800ccbc97ce43ae0ce7f250615e5",
+      "rawBytes": 3470,
+      "rawSha256": "f12339db406a0013f23a576b4372d3a2a839db234e6a179158589d439c38d753"
+    },
+    {
+      "file": "pinta-map-geometry-types-first.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-geometry-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-geometry-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-geometry-studio-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-map-geometry-suite.log.gz",
+      "bytes": 76115,
+      "sha256": "ebb5aaf2600ace2acf68fa61ac503b6595f0edbffc922aec2ee165cfc9636cd3",
+      "rawBytes": 284135,
+      "rawSha256": "463972caa436a4425d313fcd19b6ad967b8fe34d7c985cb77915313b09a39e6e"
+    },
+    {
+      "file": "pinta-map-geometry-browser-first.log.gz",
+      "bytes": 890,
+      "sha256": "f2ce8732255dfa9a64101793cb32bebc81077c67317e92b4e155fdd4456ca053",
+      "rawBytes": 8569,
+      "rawSha256": "4cf41b7e9fea31796b4425bfa67731656034621a6f06e5d7f587addf70704c3a"
+    },
+    {
+      "file": "pinta-map-geometry-browser-first-report.json.gz",
+      "bytes": 2281,
+      "sha256": "65f6baa2a375a6c54c5dff628ad6f470d987086ca4211b2cddd001c15b881285",
+      "rawBytes": 20762,
+      "rawSha256": "07437e87156bfd8c25de46a520b5471f03c2e3135bfada1b230175034729499c"
+    },
+    {
+      "file": "pinta-map-geometry-browser-second.log.gz",
+      "bytes": 352,
+      "sha256": "004e2c7043136f4786a677cb33da5a2055c3ed3ac928277fe6607a7e1b07d959",
+      "rawBytes": 1037,
+      "rawSha256": "ffa2558a2251d23544e6e6f48414125c8b3fed5fe875a7ab274f409d65465a17"
+    },
+    {
+      "file": "pinta-map-geometry-browser-second-report.json.gz",
+      "bytes": 37960,
+      "sha256": "3c81788ca6cd106f197546e12dc09875db9776fa28c887cdc9d1e7fc86a62fd7",
+      "rawBytes": 236048,
+      "rawSha256": "074407f792e50c38033e018b50a96c84420b675ee1679bbff7ff330e17b618c5"
+    },
+    {
+      "file": "pinta-map-geometry-browser-final.log.gz",
+      "bytes": 353,
+      "sha256": "cbbad8a06f0d1db2642b92322d88407fce8cbbbec68551d16434c80587be9e64",
+      "rawBytes": 1037,
+      "rawSha256": "4227af2cc57c7cd0e451bf9b2e1d1faa2e03ccf722157fbcff4b40d37c7606ca"
+    },
+    {
+      "file": "pinta-map-geometry-workshop.log.gz",
+      "bytes": 1331,
+      "sha256": "9a9ad5defef4f0da803f85ea7473078b49e429239b5929b423656708cc88900e",
+      "rawBytes": 6317,
+      "rawSha256": "6671b8b929b53a71e57ca7f6ee386ee7ffb98ee4f79801ff8c828aebf6a5c8cb"
+    },
+    {
+      "file": "pinta-map-geometry-biome-final.log.gz",
+      "bytes": 56,
+      "sha256": "11496e386dc1d372d221c073da7bfc5c8a09fd46081815cbcd0b43c5866f5e0d",
+      "rawBytes": 42,
+      "rawSha256": "079c632fe83959f19f6d25902439f263d98c07a3b7514073499f290add2de5f0"
+    },
+    {
+      "file": "pinta-map-geometry-qa-final-biome.log.gz",
+      "bytes": 57,
+      "sha256": "eaeefc64760224d065940d6cd61d0315ba8048516ad8f03e544dda376ce33a7f",
+      "rawBytes": 40,
+      "rawSha256": "d87bf1577bb92bc62c8ae05f74243606df96328a2ec50149c910c8d29a34feda"
+    },
+    {
+      "file": "pinta-map-geometry-lint.log.gz",
+      "bytes": 65,
+      "sha256": "a1b4686a2a28b2d555b4f8b4833817985246c28a0cd5ad74ad88f15d109c7a85",
+      "rawBytes": 45,
+      "rawSha256": "a5244aca8ccccd78f68d7c8ea5d84d0bbf9bc97f5cb5978523416d0665280309"
+    }
+  ]
+}

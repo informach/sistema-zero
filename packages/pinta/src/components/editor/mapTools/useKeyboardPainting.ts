@@ -4,6 +4,7 @@ import { COPY } from '../../../core/copy'
 import { effectiveLayer, type TilemapAsset } from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
 import { type CellPos, type CellRect, normalizeCellRect } from '../../../tiles/cellGeometry'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import { isTileBlank } from '../../../tiles/tilesetOps'
 import type { MapTool } from '../TilemapPanels'
 import { isPintaModalOpen } from '../useActionShortcuts'
@@ -78,7 +79,10 @@ export function useKeyboardPainting(options: Options) {
       options.brush.tileset,
     ],
   )
-  const [cursor, setCursor] = useState<CellPos>({ col: 0, row: 0 })
+  const [cursor, setCursor] = useState<CellPos>(() => {
+    const bounds = mapCellBounds(options.map)
+    return { col: bounds.col, row: bounds.row }
+  })
   const cellRef = useRef(cursor)
   const [focused, setFocused] = useState(false)
   const [anchor, setAnchor] = useState<CellPos | null>(null)
@@ -139,9 +143,10 @@ export function useKeyboardPainting(options: Options) {
       : null
   }
   function clamped(at: CellPos, map: TilemapAsset): CellPos {
+    const bounds = mapCellBounds(map)
     return {
-      col: Math.max(0, Math.min(map.cols - 1, at.col)),
-      row: Math.max(0, Math.min(map.rows - 1, at.row)),
+      col: Math.max(bounds.col, Math.min(bounds.col + map.cols - 1, at.col)),
+      row: Math.max(bounds.row, Math.min(bounds.row + map.rows - 1, at.row)),
     }
   }
   function move(at: CellPos, map: TilemapAsset): void {
@@ -207,8 +212,10 @@ export function useKeyboardPainting(options: Options) {
     if (event.key === 'ArrowRight') next = { ...at, col: at.col + 1 }
     if (event.key === 'ArrowUp') next = { ...at, row: at.row - 1 }
     if (event.key === 'ArrowDown') next = { ...at, row: at.row + 1 }
-    if (event.key === 'Home') next = { col: 0, row: control ? 0 : at.row }
-    if (event.key === 'End') next = { col: map.cols - 1, row: control ? map.rows - 1 : at.row }
+    const bounds = mapCellBounds(map)
+    if (event.key === 'Home') next = { col: bounds.col, row: control ? bounds.row : at.row }
+    if (event.key === 'End')
+      next = { col: bounds.col + map.cols - 1, row: control ? bounds.row + map.rows - 1 : at.row }
     if (next) {
       event.preventDefault()
       move(next, map)
@@ -261,7 +268,7 @@ export function useKeyboardPainting(options: Options) {
       return
     }
     if (tool === 'select' && gesture) {
-      const rect = normalizeCellRect(gesture.at, at, map.cols, map.rows)
+      const rect = normalizeCellRect(gesture.at, at, map.cols, map.rows, bounds)
       cancel()
       if (rect) d.selectRect(rect)
       return
