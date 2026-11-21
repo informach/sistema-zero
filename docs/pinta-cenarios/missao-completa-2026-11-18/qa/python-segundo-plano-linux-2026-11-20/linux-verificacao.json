@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-21T00:26:46.929Z",
+  "source": "fb973c50fbf61fbca2cb955321e8aafca46c459c",
+  "qualificationRun": 44842695808,
+  "hash": "28da7a969d5648eb590b51a362d3703dd87556388d813e75ae787839cd2f9a81",
+  "manifestSha256": "30afc1ea99efece251de8b996046446d62ec7b2120a95ce8fa4771995b9d656f",
+  "directory": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-qualified-linux-image-background\\python\\28da7a969d5648eb590b51a362d3703dd87556388d813e75ae787839cd2f9a81",
+  "files": 126,
+  "totalBytes": 25972606,
+  "features": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1"
+  ],
+  "recomputedAllFileHashes": true,
+  "compressedImageSha256": "333bebb0652e0e0f69c470224cfa1b4fdd8eb28bdd7eb1fd72adf0dcbae27d4c",
+  "profile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "069c2ea93f58bb35f59339c14de53670ca7901b90967b6e9a51a70f9ae0ee62a"
+  },
+  "windows": "f30ac6960bb6fdc0cd7c2eaa70c46d60ea353b1c0b9357f2438f6d65d6300a43",
+  "logicalFilesByteIdentical": 110,
+  "differingGzipFiles": 16,
+  "transportRepresentationsDecodedAndHashed": 32,
+  "activated": false
+}

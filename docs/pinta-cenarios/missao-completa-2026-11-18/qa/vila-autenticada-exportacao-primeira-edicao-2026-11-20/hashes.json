@@ -1,0 +1,90 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2579,
+      "sha256": "4aa8ec0904b1e19b17b3ba2c7b943bf93e701c173d6401adfdd258b538a9643e"
+    },
+    {
+      "file": "ensaio-godot.txt",
+      "bytes": 2919,
+      "sha256": "ea327bd08e004921c78a0ae780228ae77467c1ce74e6854e275ae753033316bb"
+    },
+    {
+      "file": "ensaio-phaser.txt",
+      "bytes": 4772,
+      "sha256": "805fce42f037511441c53f7a40550339da803989cff47a50818353b447542b0b"
+    },
+    {
+      "file": "ensaio-pygame.txt",
+      "bytes": 2753,
+      "sha256": "a56832be310dd59558d79e5ac1f1dacbb2b5a6f077e8822591d4018e7fb22771"
+    },
+    {
+      "file": "ensaio-tiled.txt",
+      "bytes": 2508,
+      "sha256": "aa25a597dd578582ff530fd15a0e27f48416aafdfea56198f63233e2046fe39d"
+    },
+    {
+      "file": "execucoes.json",
+      "bytes": 319,
+      "sha256": "c59538fa1a2680480b296ed88b11f9dfd03cf3a6de5282123a1f8f43991685d7"
+    },
+    {
+      "file": "exportacao.json",
+      "bytes": 14931,
+      "sha256": "7ceed061e74320b7dd6bc604729decf44364178a7da633b63c8bf2a1e854d6ce"
+    },
+    {
+      "file": "godot-execucao.txt",
+      "bytes": 486,
+      "sha256": "ccd6c70a01b890dbb1fd2f50d2712aeace12a4aa854bc9d3604dbdafbb2c58e2"
+    },
+    {
+      "file": "godot-importacao.txt",
+      "bytes": 2559,
+      "sha256": "8a54c8663522cd5825b89c7d3b08a6314631b46c484022df96b580e98e010726"
+    },
+    {
+      "file": "godot.png",
+      "bytes": 13277,
+      "sha256": "367c2dbf2da75f2e5d8711edf5783f30ba61664dc516e15895a945acbd3f9f66"
+    },
+    {
+      "file": "phaser-desktop.png",
+      "bytes": 17234,
+      "sha256": "50da576fc45670c6f0414343af5cc479707c577dafe83a435f2d856f876782f3"
+    },
+    {
+      "file": "phaser-toque-emulado.png",
+      "bytes": 200049,
+      "sha256": "c1ef8b8e2ed61469ca5d4b1d607811a4b42ce9b473e0d6c995c82e8e1b73e960"
+    },
+    {
+      "file": "phaser.json",
+      "bytes": 848,
+      "sha256": "7175c252fe125e03a4d9d43f992b8df460419934ed12b1f094d04f011e63cd33"
+    },
+    {
+      "file": "pygame-exemplo.txt",
+      "bytes": 105,
+      "sha256": "8d7542c0a95be4868a81be2519e8837834c158e3870b5fbf6006c191a7d86803"
+    },
+    {
+      "file": "pygame.json",
+      "bytes": 635,
+      "sha256": "e42345ac8a23589a5f45df92d61673dc1e0d012c18673d64bdfd523ff1da10c2"
+    },
+    {
+      "file": "pygame.png",
+      "bytes": 13479,
+      "sha256": "51174b85942ab2f249cc89121e0ec61e61b2fb8b7ce87cf385fa74b555a752e9"
+    },
+    {
+      "file": "tiled.json",
+      "bytes": 1128,
+      "sha256": "03090afd39fa0dd6490f88a9c52a9e5e902460f3011f98f7e45786a0dd2c0a90"
+    }
+  ]
+}

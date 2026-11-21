@@ -1,0 +1,7 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 610.88 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 3050
+
+Pinta: qa-vila-floresta-20261120 / 18 camadas
+Pinta: qa-cabana-20261120 / 2 camadas
+Pinta: qa-vila-floresta-20261120 / 18 camadas
+OWNED_VILA_GODOT {"animation":true,"door_cycle":true,"failed":false,"gpu_capture":true,"keyboard":true,"layers":18,"maps":2,"version":"4.7.2-stable (official)","wall_x":74.7999954223633}

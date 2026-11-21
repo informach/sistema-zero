@@ -126,6 +126,16 @@ As alterações em andamento de Molda no worktree principal não fazem parte des
   e sua retomada, tipos, catálogo e imagem estão em
   `qa/catalogo-python-linux-2026-11-20/`. Catálogo Linux preparado sem ativação;
   nova CI geral, upload imutável, rollout e ciclo autenticado continuam separados.
+  Continuidade do corte publicado 994aacd3: a integração fb973c50f passou nos
+  22 gates congelados, com 12.112 testes do Estúdio, 3.183 do Core, 35 ensaios
+  do frontend e 12 Pinta/Estúdio. O novo executor Python escondido agora exige
+  uma capacidade verificada e mantém o foco do editor nos três renderizadores;
+  ver `qa/python-segundo-plano-994-2026-11-20/`. A qualificação Linux 44842695808
+  passou e preservou o guest 28da7a969…: os 126 arquivos foram conferidos,
+  com 110 lógicos idênticos ao Windows e 16 gzip diferentes, descompactados
+  e verificados. Passaram novamente 22 casos Pygame/Pinta e 88 compartilhados
+  no guest Linux exato. A nova política deve estar empacotada no leitor de
+  rollback antes de qualquer ativação; o ciclo autenticado continua pendente.
 - [x] 1a. Corrigir teto real do cache e medir mapas ruidosos; liberar autoria 256 × 256,
   32 camadas e 256 peças dentro de 2.097.152 células. Integrar criação, operações, limite de
   aulas, feedback e navegador, conservando migração e todas as ferramentas anteriores.

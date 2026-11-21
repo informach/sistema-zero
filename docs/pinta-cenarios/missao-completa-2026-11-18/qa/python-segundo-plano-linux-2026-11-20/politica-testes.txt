@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+tests\unit\studio-authoring-policy.test.ts:
+(pass) private v3 examples use the same approved catalog and dependency policy as the canonical initial [15.00ms]
+(pass) discovery copies cannot alter approval, block curation or release lifecycle [16.00ms]
+(pass) publication accepts approved javascript/classic without changing the document
+(pass) publication accepts approved javascript/pro without changing the document
+(pass) publication accepts approved python/classic without changing the document
+(pass) publication accepts approved python/pro without changing the document
+(pass) authoring denies incompatible curation, templates, extensions, locks and unapproved runtime [16.00ms]
+(pass) deployment policy verifies hashes, completeness and statuses before approving publication
+(pass) legacy JS remains authorable; historical or forged Python v2 cannot bypass the catalog
+
+tests\unit\studio-runtime-hosts.test.ts:
+(pass) runtime hosts validate exact releases and isolated deployment origins, never snapshot URLs
+(pass) publish and assist require the release declaration and the context grant
+
+ 11 pass
+ 0 fail
+ 78 expect() calls
+Ran 11 tests across 2 files. [964.00ms]
