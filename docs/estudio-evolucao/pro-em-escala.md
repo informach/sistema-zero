@@ -77,8 +77,47 @@ As cotas do compilador (`STUDIO_PRO_BUILD_LIMITS`: 80 arquivos, 256 mil caracter
 agora na execução leve. As do artefato (`STUDIO_PRO_ARTIFACT_LIMITS`: 338 arquivos, 2,5 MB)
 somam aos 80 fontes os materiais e o manifesto. Nenhuma foi aumentada.
 
+## Ensaio com tudo ligado ao mesmo tempo (21/11/2026)
+
+Pedido dos relatórios de 20 e 21/11. Teste `tudo ligado ao mesmo tempo` em
+`e2e/pro-workspace-performance.spec.ts`, com o harness em `?ensaio`.
+
+- **O projeto:** os 60 arquivos do projeto modular com um `index.html` e um laço de jogo de
+  verdade em canvas (`src/jogo.ts` chama o `frame()` do `main.ts` a cada quadro e troca de cena a
+  cada 2 s).
+- **A execução:** leve, montada no navegador. O teste confere que o compilador do servidor não foi
+  chamado.
+- **O que roda junto:**
+  - a análise dos 61 arquivos;
+  - o jogo;
+  - uma pergunta ao Zappy em voo (o adaptador responde depois de 1,5 s, de uma vez, como o produto
+    hoje);
+  - painéis e busca;
+  - um arquivo criado e renomeado pela interface com o jogo rodando;
+  - dez ciclos de Parar e Rodar.
+
+**Números locais (Windows; Chromium 156 do Playwright e Chromium 159 completo, o da homologação):**
+
+| Medida (p95) | Chromium 156 | Chromium 159 completo | Critério |
+|---|---|---|---|
+| Digitar com a pergunta do Zappy em voo | 32,8 ms | 32,9 ms | < 50 |
+| Digitar com o jogo rodando à vista | 32,0 ms | 31,7 ms | < 50 |
+| Abrir painel com o jogo rodando | 27,4 ms | 26,5 ms | < 150 |
+| Primeira resposta da busca com o jogo rodando | 22,3 ms | 20,1 ms | < 200 |
+| Intervalo entre quadros do jogo enquanto se digita | 16,8 ms | 16,8 ms | o jogo segue a 60 quadros |
+| Memória do editor depois de 10 Parar e Rodar | +1,6% | +2,0% | < 20% |
+
+**O que o ensaio mostrou:** na largura do computador, o painel do Zappy ocupa o lugar do palco.
+Enquanto ele está aberto, o jogo fica atrás dele, e o navegador pausa os quadros de um quadro que
+não está à vista. Não é travamento: ao fechar o Zappy, o jogo volta a desenhar. Por isso os
+quadros do jogo são medidos com o Zappy fechado.
+
+**Limites:**
+- só a execução leve: o build hospedado com dependências e o WebContainer não entram;
+- apagar arquivo não é exercitado;
+- a memória é a da página do editor (o jogo roda em outro processo).
+
 ## O que falta
 
-- O ensaio com tudo ligado ao mesmo tempo (editor, linguagem, jogo, filesystem e Zappy), pedido
-  do relatório de 20/11: a medição atual liga editor, linguagem, jogo (fixture) e Zappy, sem o
-  WebContainer, que precisa de rede para fora.
+- O build hospedado com dependências reais e o WebContainer no mesmo ensaio. O WebContainer
+  precisa de rede para fora.

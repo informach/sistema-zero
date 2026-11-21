@@ -132,6 +132,62 @@ if (new URLSearchParams(location.search).has('light')) {
   for (const [path, content] of Object.entries(files)) tree[path] = { kind: 'file', content }
   Object.assign(project, { tree, assets: [] })
 }
+const ensaio = new URLSearchParams(location.search).has('ensaio')
+if (ensaio) {
+  // Ensaio com tudo ligado (frente 4, 21/11/2026): os 60 arquivos do projeto modular com um jogo
+  // de verdade em canvas, sem materiais, que a execução leve monta no navegador. O laço guarda o
+  // horário de cada quadro em `window.__ensaio`, para o teste medir o jogo enquanto o editor, a
+  // análise, o Zappy e os arquivos trabalham.
+  const files: Record<string, string> = {
+    ...modularProjectFiles(),
+    'index.html': [
+      '<!doctype html>',
+      '<html lang="pt-BR">',
+      '  <head>',
+      '    <meta charset="UTF-8" />',
+      '    <title>Ensaio</title>',
+      '  </head>',
+      '  <body style="margin:0">',
+      '    <canvas id="tela" width="480" height="320"></canvas>',
+      '    <script type="module" src="/src/jogo.ts"></script>',
+      '  </body>',
+      '</html>',
+      '',
+    ].join('\n'),
+    'src/jogo.ts': [
+      "import { frame, nextScene } from './main'",
+      '',
+      "const tela = document.getElementById('tela') as HTMLCanvasElement",
+      "const contexto = tela.getContext('2d') as CanvasRenderingContext2D",
+      'const quadros: number[] = []',
+      'let anterior = performance.now()',
+      '',
+      'function laco(agora: number): void {',
+      '  const dt = Math.min(0.1, (agora - anterior) / 1000)',
+      '  anterior = agora',
+      '  contexto.clearRect(0, 0, tela.width, tela.height)',
+      '  frame(contexto, dt)',
+      '  quadros.push(agora)',
+      '  if (quadros.length > 1200) quadros.shift()',
+      '  requestAnimationFrame(laco)',
+      '}',
+      '',
+      '// O teste lê os horários dos quadros (o jogo não depende disto).',
+      'Object.assign(window, { __ensaio: { quadros } })',
+      'setInterval(nextScene, 2000)',
+      'requestAnimationFrame(laco)',
+      '',
+    ].join('\n'),
+  }
+  const tree: Record<string, { kind: 'dir' } | { kind: 'file'; content: string }> = {}
+  for (const [path, content] of Object.entries(files)) {
+    const parts = path.split('/')
+    for (let depth = 1; depth < parts.length; depth++)
+      tree[parts.slice(0, depth).join('/')] = { kind: 'dir' }
+    tree[path] = { kind: 'file', content }
+  }
+  Object.assign(project, { tree, assets: [] })
+}
 if (new URLSearchParams(location.search).has('symbols')) {
   project.tree['src/main.ts'].content = [
     ...Array.from({ length: 350 }, (_, index) => `export const item${index} = ${index};`),
@@ -184,15 +240,20 @@ const tutor: StudioTutorConfig = {
       cancel: async () => null,
     },
     loadHistory: async () => ({ messages: [], nextCursor: null }),
-    ask: async () => ({
-      response: {
-        id: crypto.randomUUID(),
-        text: 'Confira o nome no arquivo.',
-        scope: 'concept',
-        blockReferences: [],
-        createdAt: new Date().toISOString(),
-      },
-    }),
+    ask: async () => {
+      // No ensaio, a resposta leva o tempo de um servidor: a criança continua digitando enquanto
+      // a pergunta está em voo (o adaptador do Zappy responde de uma vez, sem partes).
+      if (ensaio) await new Promise((resolve) => setTimeout(resolve, 1500))
+      return {
+        response: {
+          id: crypto.randomUUID(),
+          text: 'Confira o nome no arquivo.',
+          scope: 'concept',
+          blockReferences: [],
+          createdAt: new Date().toISOString(),
+        },
+      }
+    },
     feedback: async () => {},
     deleteHistory: async () => {},
   },

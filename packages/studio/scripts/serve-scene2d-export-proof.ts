@@ -66,10 +66,15 @@ Bun.serve({
   port,
   async fetch(request) {
     const path = decodeURIComponent(new URL(request.url).pathname)
+    // O ícone vazio evita o pedido do /favicon.ico, que o Chromium completo faz e que viraria um
+    // erro de console (404) sem relação com a prova.
     if (path === '/')
-      return new NativeResponse('<!doctype html><html><body></body></html>', {
-        headers: { 'Content-Type': 'text/html' },
-      })
+      return new NativeResponse(
+        '<!doctype html><html><head><link rel="icon" href="data:,"></head><body></body></html>',
+        {
+          headers: { 'Content-Type': 'text/html' },
+        },
+      )
     const target = resolve(output, `.${path}`)
     if (!target.startsWith(output + sep)) return new NativeResponse('Forbidden', { status: 403 })
     const file = Bun.file(target)
