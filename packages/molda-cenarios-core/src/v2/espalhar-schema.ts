@@ -36,6 +36,8 @@ const DadosDaReceita = z
     semente: z.number().int().min(0).max(0xffffffff),
     limite: z.number().int().min(1).max(LIMITES_ESPALHAMENTO.objetos),
     evitarObjetos: z.boolean(),
+    /** As peças tomam a inclinação do relevo onde pousam (opcional: o formato só cresce). */
+    inclinar: z.boolean().optional(),
     grupo: id.nullable(),
     camada: id.nullable(),
   })

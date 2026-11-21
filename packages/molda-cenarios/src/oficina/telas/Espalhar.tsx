@@ -126,6 +126,14 @@ export function Espalhar({
           />
           <span>Evitar sobreposição</span>
         </label>
+        <label className="mcn-marcar">
+          <input
+            type="checkbox"
+            checked={p.inclinar ?? false}
+            onChange={(e) => pincel.mudar('inclinar', e.target.checked)}
+          />
+          <span>Inclinar com a encosta</span>
+        </label>
         <p className="text-sm text-mld-muted">
           Reserva espaço com as medidas dos modelos. Desative para permitir que copas e vegetação se
           cruzem.

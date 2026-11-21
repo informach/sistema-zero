@@ -212,6 +212,19 @@ function PainelDoObjeto({
             transformar({ ...mundo, rotacao: { ...mundo.rotacao, y: graus / GRAUS } })
           }
         />
+        {objeto.apoio.tipo === 'terreno' && documento.base.tipo === 'terreno' ? (
+          <label className="mcn-marcar">
+            <input
+              type="checkbox"
+              checked={objeto.apoio.inclinar}
+              onChange={(evento) =>
+                objeto.apoio.tipo === 'terreno' &&
+                atualizar({ apoio: { ...objeto.apoio, inclinar: evento.target.checked } })
+              }
+            />
+            Inclinar com a encosta
+          </label>
+        ) : null}
       </fieldset>
 
       <fieldset className="mcn-grupo" disabled={trancado}>
