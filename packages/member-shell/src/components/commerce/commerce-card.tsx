@@ -31,30 +31,53 @@ export function CommerceCard({
   manageUrl?: string
 }) {
   const [open, setOpen] = useState(false)
-  const [included, setIncluded] = useState<Extract<CommerceView, { mode: 'included' }> | null>(null)
   const originKey = JSON.stringify(origin)
+  const giftIdentity = mode === 'gift' && !preview ? originKey : null
+  const [inclusion, setInclusion] = useState<{
+    identity: string
+    view: Extract<CommerceView, { mode: 'included' }>
+  } | null>(null)
+  const included =
+    giftIdentity !== null && inclusion?.identity === giftIdentity ? inclusion.view : null
   useEffect(() => {
-    if (mode !== 'gift' || preview) return
+    if (giftIdentity === null) {
+      setInclusion(null)
+      return
+    }
     let active = true
+    let sequence = 0
+    let controller: AbortController | undefined
     const inspect = () => {
-      apiSend<CommerceView>('/api/commerce', 'POST', {
-        action: 'inspect',
-        origin: JSON.parse(originKey),
-      })
+      const requestSequence = ++sequence
+      controller?.abort()
+      controller = new AbortController()
+      apiSend<CommerceView>(
+        '/api/commerce',
+        'POST',
+        {
+          action: 'inspect',
+          origin: JSON.parse(giftIdentity),
+        },
+        undefined,
+        { signal: controller.signal },
+      )
         .then((view) => {
-          if (active) setIncluded(view.mode === 'included' ? view : null)
+          if (active && requestSequence === sequence)
+            setInclusion(view.mode === 'included' ? { identity: giftIdentity, view } : null)
         })
         .catch(() => {
-          if (active) setIncluded(null)
+          if (active && requestSequence === sequence) setInclusion(null)
         })
     }
     inspect()
     window.addEventListener('sz-commerce-updated', inspect)
     return () => {
       active = false
+      sequence++
+      controller?.abort()
       window.removeEventListener('sz-commerce-updated', inspect)
     }
-  }, [mode, preview, originKey])
+  }, [giftIdentity])
   const router = useRouter()
   const updated = useCallback(() => {
     router.refresh()
