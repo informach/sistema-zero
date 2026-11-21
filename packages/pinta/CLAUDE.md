@@ -35,6 +35,14 @@ clipboard 3 conserva posições assinadas/fracionárias e é recusado pelo módu
 1/2 mantêm os bytes anteriores. O template usa base neutra sem materializar o mundo.
 Isso não ativa formato 8 público. Provas em `qa/objetos-por-regioes-2026-11-21/`.
 
+O espalhamento também usa limites assinados e deltas fracionários no núcleo
+interno. Amostras têm teto de 65.536, e objetos/recursos são admitidos juntos.
+O clonador comum aceita IDs determinísticos por gesto; cada cópia religa as peças
+privadas. `MapObjectArtwork` resolve a arte no snapshot exibido, inclusive prévia,
+e não apenas no editor salvo. O formato 8 ainda não está ativo na oficina.
+Provas, comparação com 48 composições legadas e retificação do hook de CPU em
+`qa/espalhamento-de-objetos-por-regioes-2026-11-21/`, no diretório da missão.
+
 O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
 aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
 herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.

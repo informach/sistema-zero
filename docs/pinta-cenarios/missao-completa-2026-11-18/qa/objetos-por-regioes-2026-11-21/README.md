@@ -46,6 +46,13 @@ não canônico, a falha de tipos e uma invocação incorreta do CLI na raiz.
 O novo ensaio de clipboard segue o padrão `*-scenes.flow.ts`, entrando na suíte
 normal de CI. Os resultados locais não são uma declaração de CI remota aprovada.
 
+Retificação da revisão seguinte: o perfil chamado `cpu-4x` não ativava o CDP nos
+quatro casos do arquivo de recursos, cujo hook esperava `cpu4x`. Os demais três
+casos aplicavam o fator pelos metadados. A rodada seguinte corrigiu o hook e
+repetiu esses fluxos, registrando o fator aplicado em cada caso. Conferir
+`../espalhamento-de-objetos-por-regioes-2026-11-21/`: a rodada histórica acima não deve ser
+usada como prova de CPU 4× para aqueles quatro casos.
+
 ## Limites da entrega
 
 Formato 8, conjuntos por regiões e clipboard assinado continuam preparação

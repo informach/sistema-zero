@@ -16,6 +16,11 @@ O lote de [seleção, clipboard e templates](missao-completa-2026-11-18/qa/objet
 preserva geometria assinada e vínculos de objetos/arte privada, com histórico atômico.
 As regiões continuam internas; isso não fecha a integração dos formatos novos.
 
+O [espalhamento de objetos por regiões](missao-completa-2026-11-18/qa/espalhamento-de-objetos-por-regioes-2026-11-21/README.md)
+também foi preparado no núcleo, com prévia determinística, vínculos privados
+religados e recusa atômica de orçamentos. A revisão corrigiu imagens ausentes
+na prévia e repetiu os ensaios de recursos com o fator de CPU aplicado corretamente.
+
 O [checkpoint local de 21/11](missao-completa-2026-11-18/qa/fechamento-local-2026-11-21/README.md)
 registra a pausa solicitada, as publicações JavaScript e Python em staging,
 as exportações da mesma edição e a integração local das branches de preparação.

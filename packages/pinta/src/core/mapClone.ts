@@ -101,9 +101,10 @@ export function cloneObjectsWithResources(
   objects: readonly TilemapObject[],
   resources: readonly TilemapResourceVersion[] = [],
   idFor: (sourceId: string, index: number) => string = newId,
+  resourceIdFor: (sourceId: string, index: number) => string = newId,
 ): { objects: TilemapObject[]; resources: TilemapResourceVersion[] } {
   const ids = new Map(objects.map((object, index) => [object.id, idFor(object.id, index)]))
-  const versions = resourceIdsForCopy(resources, ids, false)
+  const versions = resourceIdsForCopy(resources, ids, false, resourceIdFor)
   return {
     objects: objects.map((object) =>
       remapObjectAssets(cloneObjectIds(object, ids, true), versions),
@@ -129,6 +130,7 @@ function resourceIdsForCopy(
   resources: readonly TilemapResourceVersion[],
   objectIds: ReadonlyMap<string, string>,
   all: boolean,
+  idFor: (sourceId: string, index: number) => string = newId,
 ): Map<string, string> {
   const versions = new Map<string, string>(),
     dependents = new Map<string, string[]>()
@@ -150,14 +152,14 @@ function resourceIdsForCopy(
           ),
         ))
     )
-      versions.set(version.asset.id, newId())
+      versions.set(version.asset.id, idFor(version.asset.id, versions.size))
   }
   // An indirect reference change also changes the immutable dependent version.
   const pending = [...versions.keys()]
   for (let i = 0; i < pending.length; i++)
     for (const id of dependents.get(pending[i]!) ?? []) {
       if (versions.has(id)) continue
-      versions.set(id, newId())
+      versions.set(id, idFor(id, versions.size))
       pending.push(id)
     }
   return versions

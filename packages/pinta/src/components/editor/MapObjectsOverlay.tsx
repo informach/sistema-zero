@@ -710,7 +710,7 @@ export function MapObjectsOverlay({
                   <g
                     transform={`translate(${object.flipX ? 2 * object.x + object.width : 0} ${object.flipY ? 2 * object.y + object.height : 0}) scale(${object.flipX ? -1 : 1} ${object.flipY ? -1 : 1})`}
                   >
-                    <MapObjectArtwork object={object} />
+                    <MapObjectArtwork object={object} resourceSource={tilemap} />
                   </g>
                 ) : null}
               </g>

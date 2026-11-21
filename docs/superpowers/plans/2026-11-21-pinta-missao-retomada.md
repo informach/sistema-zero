@@ -111,13 +111,38 @@ histórico. A colagem religa dependências indiretas das versões imutáveis. Os
 de oficina usam o formato público denso; o teste entre abas de regiões usa apenas
 os módulos reais do clipboard em uma página de QA. Nenhuma ativação pública 8.
 
-## Próximo lote: espalhamento de objetos por regiões
+## Lote verificado: espalhamento de objetos por regiões
 
-- [ ] Adaptar `tiles/objectScatter.ts` ao mapa autoral comum, com limites assinados
+- [x] Adaptar `tiles/objectScatter.ts` ao mapa autoral comum, com limites assinados
   e geometria fracionária, preservando a saída densa e a ordem/semente existentes.
-- [ ] Admitir amostras antes de acumular/sortear, com teto de gesto de 65.536 casas,
+- [x] Admitir amostras antes de acumular/sortear, com teto de gesto de 65.536 casas,
   e recusar excedentes atomicamente. Evitar coleções proporcionais ao mundo lógico.
-- [ ] Conservar grupos, offsets, vínculos vivos, autorreferências e versões de arte;
+- [x] Conservar grupos, offsets, vínculos vivos, autorreferências e versões de arte;
   a repetição da prévia precisa gerar exatamente o mesmo documento.
-- [ ] Validar travas, posições, bordas, cancelamento e orçamentos; executar regressão
+- [x] Validar travas, posições, bordas, cancelamento e orçamentos; executar regressão
   da oficina por mouse/toque e revisar antes do commit. Render/IO seguem no lote seguinte.
+
+Provas e revisão em `qa/espalhamento-de-objetos-por-regioes-2026-11-21/`, no diretório da missão.
+Incluem 48 comparações idênticas com o núcleo denso anterior e a correção da arte
+privada ausente na prévia. O hook de CPU dos ensaios de recursos foi corrigido;
+o relatório anterior identifica os quatro casos que não aplicaram o fator.
+As etapas 1/4 continuam abertas até o formato público e seus consumidores.
+
+## Próximos lotes: consumidores visuais e renderização
+
+1. Adaptar `tiles/chunks.ts` ao leitor comum, com chunks assinados, recorte dos
+   chunks ocupados e orçamento constante do viewport/cache. Comparar pixels do
+   legado e regiões deslocadas, transformações, offsets e animações reais.
+2. Adaptar renderizadores de miniatura/imagem e minimapa com dimensões limitadas,
+   sem achatar a extensão lógica numa matriz ou canvas gigante. Conservar o
+   comportamento visual legado, recursos e múltiplas folhas.
+3. Completar ferramentas (`mapBrush`, formas, seleção/movimento e recursos) com
+   admissão antes de alocar, coordenadas assinadas e mensagens explícitas de recusa.
+   Integrar câmera, viewports e navegação aos mesmos contratos de coordenadas.
+4. Medir e perfilar o caminho de renderização estabilizado; otimizar uma causa por
+   commit, conservando os pixels. Medir quadro aquecido, primeira pintura e gesto
+   separadamente, com o cache de 32 MiB. Não confundir a redução anterior de 60%
+   com aprovação dos alvos de fluidez.
+
+Cada item será um lote revisado e verificado. A promoção pública e o IO 3 seguem
+condicionados à integração de todos os consumidores e às provas dos adaptadores.

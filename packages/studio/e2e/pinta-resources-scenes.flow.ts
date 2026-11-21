@@ -16,10 +16,122 @@ test.beforeAll(() => {
 })
 test.use({ actionTimeout: 15000 })
 test.beforeEach(async ({ page }, info) => {
-  if (info.project.name === 'cpu4x') {
+  const rate = Number(info.project.metadata.cpuSlowdown ?? (info.project.name === 'cpu4x' ? 4 : 1))
+  if (rate > 1) {
     const session = await page.context().newCDPSession(page)
-    await session.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+    await session.send('Emulation.setCPUThrottlingRate', { rate })
   }
+  await info.attach('perfil-de-cpu', {
+    body: JSON.stringify({ rate, emulated: true }),
+    contentType: 'application/json',
+  })
+})
+
+test('espalhar arte privada religa cada cópia e conserva recursos no cancelamento, histórico e reabertura', async ({
+  page,
+  isMobile,
+}) => {
+  test.setTimeout(120000)
+  await page.goto(`/?namespace=scatter-references-${Date.now()}`)
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles(resolve(fixture, '../resources-object-references.pinta.json'))
+  await page.getByRole('button', { name: 'Abrir vinculos-qa (Mapa)', exact: true }).click()
+  const tip = page.getByRole('button', { name: 'Entendi!', exact: true })
+  if (await tip.isVisible()) await tip.click()
+  if (isMobile) await page.getByText('Peças, camadas e detalhes', { exact: true }).click()
+  await page.getByLabel('Nível das ferramentas', { exact: true }).selectOption('advanced')
+  await page.getByRole('button', { name: /^Objetos/ }).click()
+  await page.getByRole('button', { name: 'Escolher o objeto Placa QA', exact: true }).click()
+  async function saved() {
+    const map = importPintaJson(JSON.stringify(await backup(page))).assets.find(
+      (a) => a.kind === 'tilemap' && a.name === 'vinculos-qa',
+    )
+    if (map?.kind !== 'tilemap') throw Error('Mapa esperado')
+    return map
+  }
+  const original = await saved()
+  await page.getByRole('button', { name: 'Espalhar desenhos', exact: true }).click()
+  await page.getByLabel('Tamanho do pincel (casas)', { exact: true }).selectOption('1')
+  const density = page.getByRole('slider', { name: /^Densidade/ })
+  await density.focus()
+  await density.press('End')
+  const spacing = page.getByRole('slider', { name: /^Distância entre centros:/ })
+  await spacing.focus()
+  await spacing.press('Home')
+  const cdp = await page.context().newCDPSession(page)
+  async function begin() {
+    const overlay = page.locator('[data-pin-objects-overlay]')
+    await overlay.scrollIntoViewIfNeeded()
+    const points = await overlay.evaluate((element) => {
+      const matrix = (element as SVGSVGElement).getScreenCTM()
+      if (!matrix) throw Error('Transformação esperada')
+      return [new DOMPoint(56, 56), new DOMPoint(72, 56)].map((point) => {
+        const p = point.matrixTransform(matrix)
+        return { x: p.x, y: p.y }
+      })
+    })
+    for (const p of points) {
+      expect(p.x).toBeGreaterThanOrEqual(0)
+      expect(p.y).toBeGreaterThanOrEqual(0)
+      expect(p.x).toBeLessThan(page.viewportSize()!.width)
+      expect(p.y).toBeLessThan(page.viewportSize()!.height)
+    }
+    if (isMobile) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [points[0]!] })
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [points[1]!] })
+    } else {
+      await page.mouse.move(points[0]!.x, points[0]!.y)
+      await page.mouse.down()
+      await page.mouse.move(points[1]!.x, points[1]!.y, { steps: 3 })
+    }
+    const preview = page.locator('[data-pin-scatter-preview]')
+    await expect(preview).toHaveCount(2)
+    await expect(preview.locator('image')).toHaveCount(2)
+    await expect(preview.first().locator('image')).toHaveAttribute('href', /^data:image\//)
+    return preview.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute('data-pin-scatter-preview')),
+    )
+  }
+  await begin()
+  if (isMobile) await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] })
+  else {
+    await page.keyboard.press('Escape')
+    await page.mouse.up()
+  }
+  expect((await saved()).resources).toEqual(original.resources)
+  expect((await saved()).layers).toEqual(original.layers)
+  const previewIds = await begin()
+  if (isMobile) await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  else await page.mouse.up()
+  await expect(page.locator('[data-pin-scatter-preview]')).toHaveCount(0)
+  const placed = await saved(),
+    objects = placed.layers.filter(isObjectLayer).flatMap((l) => l.objects)
+  expect(objects).toHaveLength(3)
+  expect(objects.slice(1).map((o) => o.id)).toEqual(previewIds)
+  expect(placed.resources).toHaveLength(6)
+  for (const object of objects) {
+    const dependent = placed.resources!.find((v) => v.asset.id === object.art?.assetId)!.asset
+    if (!isTilesetKind(dependent)) throw Error('Peças esperadas')
+    const ref = dependent.tileProperties!['0']!.linked
+    if (typeof ref !== 'object' || ref.type !== 'asset') throw Error('Vínculo esperado')
+    const direct = placed.resources!.find((v) => v.asset.id === ref.value)!.asset
+    if (!isTilesetKind(direct)) throw Error('Peças esperadas')
+    expect(direct.tileProperties!['0']!.marker).toEqual({ type: 'object', value: object.id })
+  }
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect((await saved()).layers).toEqual(original.layers)
+  expect((await saved()).resources).toEqual(original.resources)
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  expect((await saved()).resources).toEqual(placed.resources)
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar novo', exact: true })).toBeVisible()
+  await page.reload()
+  await page.getByRole('button', { name: 'Abrir vinculos-qa (Mapa)', exact: true }).click()
+  const reopened = await saved()
+  expect(reopened.layers).toEqual(placed.layers)
+  expect(reopened.resources).toEqual(placed.resources)
 })
 async function backup(page: Page) {
   await page.getByRole('button', { name: 'Baixar', exact: true }).click()

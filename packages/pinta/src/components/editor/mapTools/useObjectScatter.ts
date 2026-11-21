@@ -16,6 +16,7 @@ import {
   type ObjectScatterSettings,
   scatterMapObjects,
 } from '../../../tiles/objectScatter'
+import { REGION_EDIT_LIMIT } from '../../../tiles/regionCells'
 import { isPintaModalOpen } from '../useActionShortcuts'
 import { pointOnMap } from './mapViewport'
 
@@ -32,6 +33,14 @@ type Gesture = {
   positions: Map<number, CellPos>
   last: CellPos | null
   result: ObjectScatterResult | null
+  workRefused: boolean
+}
+
+function refusalMessage(result: ObjectScatterResult): string {
+  if (result.reason === 'work-budget') return COPY.scene.scatterWorkLimit
+  if (result.reason === 'resources') return COPY.scene.resourcePasteFailed
+  if (result.reason === 'invalid-template') return COPY.scene.scatterRefused
+  return COPY.scene.scatterLimit
 }
 
 export function useObjectScatter(deps: {
@@ -84,17 +93,26 @@ export function useObjectScatter(deps: {
   const paint = useCallback((current: Gesture, at: CellPos): ObjectScatterResult => {
     const before = current.positions.size
     const radius = Math.floor(Math.max(1, Math.min(9, current.settings.width)) / 2)
-    for (const center of lineCells(current.last ?? at, at))
-      for (let dy = -radius; dy <= radius; dy++)
-        for (let dx = -radius; dx <= radius; dx++) {
-          if (dx * dx + dy * dy > radius * radius) continue
-          const col = center.col + dx,
-            row = center.row + dy
-          if (col < 0 || row < 0 || col >= current.map.cols || row >= current.map.rows) continue
-          current.positions.set(row * current.map.cols + col, { col, row })
-        }
+    if (!current.workRefused) {
+      samples: for (const center of lineCells(current.last ?? at, at))
+        for (let dy = -radius; dy <= radius; dy++)
+          for (let dx = -radius; dx <= radius; dx++) {
+            if (dx * dx + dy * dy > radius * radius) continue
+            const col = center.col + dx,
+              row = center.row + dy
+            if (col < 0 || row < 0 || col >= current.map.cols || row >= current.map.rows) continue
+            const key = row * current.map.cols + col
+            if (!current.positions.has(key) && current.positions.size >= REGION_EDIT_LIMIT) {
+              current.workRefused = true
+              break samples
+            }
+            current.positions.set(key, { col, row })
+          }
+    }
     current.last = at
-    if (current.positions.size !== before || !current.result)
+    if (current.workRefused)
+      current.result = { map: current.map, addedIds: [], overflow: true, reason: 'work-budget' }
+    else if (current.positions.size !== before || !current.result)
       current.result = scatterMapObjects(
         current.map,
         current.layerId,
@@ -107,7 +125,7 @@ export function useObjectScatter(deps: {
     setPreview(current.result)
     setMessage(
       current.result.overflow
-        ? COPY.scene.scatterLimit
+        ? refusalMessage(current.result)
         : COPY.scene.scatterPreviewCount(current.result.addedIds.length),
     )
     return current.result
@@ -153,7 +171,7 @@ export function useObjectScatter(deps: {
       setPreview(null)
       const d = latest.current
       if (result.overflow) {
-        d.showToast(COPY.scene.scatterLimit)
+        d.showToast(refusalMessage(result))
         return
       }
       if (result.map === current.map) {
@@ -266,6 +284,7 @@ export function useObjectScatter(deps: {
         positions: new Map(),
         last: null,
         result: null,
+        workRefused: false,
       }
       gesture.current = current
       safeSetPointerCapture(event.currentTarget, event.pointerId)

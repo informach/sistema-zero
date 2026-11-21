@@ -2,7 +2,13 @@ import { expect, it } from 'bun:test'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useRef } from 'react'
 import { COPY } from '../../../core/copy'
-import { createPixelSpriteAsset, createTilemapAsset, isObjectLayer } from '../../../core/project'
+import {
+  createPixelSpriteAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  isObjectLayer,
+} from '../../../core/project'
+import { PINTA_RESOURCE_LIMITS } from '../../../core/projectConfig'
 import { createEditorStore } from '../../../state/editorStore'
 import { addMapObject, createMapObject } from '../../../tiles/mapObjects'
 import { DEFAULT_OBJECT_SCATTER } from '../../../tiles/objectScatter'
@@ -37,6 +43,62 @@ function geometry(container: HTMLElement): void {
     })
 }
 const at = { button: 0, isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 }
+
+it('recusa de versões privadas avisa o motivo e não grava objetos ou histórico parciais', () => {
+  const base = scene(),
+    source = base.layers.find(isObjectLayer)!.objects[0]!,
+    art = createTilesetAsset({ name: 'arte', tileSize: 16 }),
+    map = {
+      ...base,
+      resources: Array.from({ length: PINTA_RESOURCE_LIMITS.maxVersions }, (_, index) => ({
+        sourceId: `source-${index}`,
+        capturedAt: 1,
+        asset: {
+          ...art,
+          id: index === 0 ? 'arte' : `resource-${index}`,
+          ...(index === 0
+            ? { tileProperties: { '0': { target: { type: 'object' as const, value: source.id } } } }
+            : {}),
+        },
+      })),
+    },
+    toasts: string[] = [],
+    editor = createEditorStore({ asset: map, persist: async () => {} })
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null),
+      c = useObjectScatter({
+        editor,
+        map,
+        layerId: map.layers.at(-1)!.id,
+        source,
+        active: true,
+        settings,
+        tileSize: 16,
+        cellPx: 32,
+        pad: 0,
+        paperRef,
+        stageRef,
+        showToast: (message) => toasts.push(message),
+      })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <canvas role="img" aria-label="Pintar" onPointerDown={c.down} />
+        </div>
+        <output>{c.message}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  geometry(view.container)
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), at)
+  expect(screen.getByRole('status').textContent).toBe(COPY.scene.resourcePasteFailed)
+  fireEvent.pointerUp(document, at)
+  expect(editor.getState().asset).toBe(map)
+  expect(editor.getState().canUndo).toBe(false)
+  expect(toasts).toEqual([COPY.scene.resourcePasteFailed])
+})
 
 it('cópia recuperada durante a prévia não é substituída por eventos atrasados do pincel', async () => {
   const original = scene(),
