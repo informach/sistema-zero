@@ -72,7 +72,9 @@ describe('Cenário do Molda: as variantes do runtime', () => {
       expect(source).not.toContain(SCENE_LINE)
       expect(source).toContain(ABSENT_LINE)
     }
-    expect(gameThreeDRuntime.length - semCenario.length).toBeGreaterThan(6_500)
+    // O fragmento do cenário pesa: a variante sem ele economiza isto. Desceu de 6.500 para 6.000
+    // quando os dois laços de apoio foram para o SDK (`fisica.apoio`, lote 6 da conclusão).
+    expect(gameThreeDRuntime.length - semCenario.length).toBeGreaterThan(6_000)
   })
 
   it('compilam, sem crase nem cifrão-chave soltos, e a mesma variante não recompõe', () => {

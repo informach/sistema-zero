@@ -1,5 +1,6 @@
 export * from './alturas'
 export * from './caminhos'
+export * from './carga-das-regioes'
 export * from './dividir-malha'
 export * from './faixas'
 export * from './fonte'

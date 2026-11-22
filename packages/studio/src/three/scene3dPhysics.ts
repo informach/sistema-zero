@@ -19,6 +19,19 @@ export interface FisicaDaCena3D {
     normals: readonly Ponto[]
   }
   raycast(from: Ponto, to: Ponto): { distance: number; normal: Ponto } | null
+  /**
+   * O chão sob um corpo: a régua única do motor dos cenários (`MundoDoTeste.apoio`, nove raios em
+   * volta dos pés), que os motores 3D do Estúdio repetiam (lote 6 da conclusão, 22/11/2026).
+   */
+  apoio(
+    x: number,
+    z: number,
+    raio: number,
+    topo: number,
+    fundo: number,
+    normalMinima: number,
+    incluiMinima?: boolean,
+  ): { y: number; normal: Ponto } | null
 }
 
 export function criarFisicaDaCena3D(
@@ -46,6 +59,10 @@ export function criarFisicaDaCena3D(
             normal: { x: contato.normal.x, y: contato.normal.y, z: contato.normal.z },
           }
         : null
+    },
+    apoio(x, z, raio, topo, fundo, normalMinima, incluiMinima = false) {
+      if (!active()) throw Error('O cenário físico foi descarregado.')
+      return cena.colisoes.apoio(x, z, raio, topo, fundo, normalMinima, incluiMinima)
     },
   }
 }

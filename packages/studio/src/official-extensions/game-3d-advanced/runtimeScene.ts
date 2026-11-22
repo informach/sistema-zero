@@ -127,16 +127,9 @@ export const gameKit3DSceneRuntimeSource = `
     var top = start.posicao.y + 1;
     for (var n = 0; n < handle.dados.nos.length; n++) top = Math.max(top, handle.dados.nos[n].volume.max.y + 1);
     var bottom = handle.colisoes.limiteInferior == null ? start.posicao.y - 100 : handle.colisoes.limiteInferior - 1;
-    var support = null;
-    for (var i = 0; i < 9; i++) {
-      var angle = (i - 1) * Math.PI / 4;
-      var x = start.posicao.x + (i ? Math.cos(angle) * radius * 0.75 : 0);
-      var z = start.posicao.z + (i ? Math.sin(angle) * radius * 0.75 : 0);
-      var hit = handle.colisoes.rastrear(new THREE.Vector3(x, top, z), new THREE.Vector3(x, bottom, z));
-      if (hit && hit.normal.y >= MIN_GROUND_Y && (support == null || hit.ponto.y > support)) support = hit.ponto.y;
-    }
-    if (support == null) { warn('O ponto inicial do cenário não tem apoio físico.'); return; }
-    e.mesh.position.set(start.posicao.x, support - c.minY, start.posicao.z);
+    var support = handle.fisica.apoio(start.posicao.x, start.posicao.z, radius, top, bottom, MIN_GROUND_Y, true);
+    if (!support) { warn('O ponto inicial do cenário não tem apoio físico.'); return; }
+    e.mesh.position.set(start.posicao.x, support.y - c.minY, start.posicao.z);
     e.mesh.rotation.set(0, start.giro + Math.PI, 0);
     if (camMode.kind === 'fps' && sameCamEntity(e, camMode.targetGen) && camMode.target === e)
       camMode.yaw = e.mesh.rotation.y;
@@ -180,17 +173,11 @@ export const gameKit3DSceneRuntimeSource = `
   function supportImportedGround(e, down, fromY) {
     var m = molds[e._mold];
     if (!m || !importedScene || !importedScene.fisica.active() || e.vy > 0) return;
-    var c = m.col, p = e.mesh.position, feet = p.y+c.minY, r = importedBodyRadius(e), best = null;
+    var c = m.col, p = e.mesh.position, feet = p.y+c.minY;
     var top = fromY == null ? feet + SKIN : Math.max(fromY, feet) + SKIN;
-    for (var i = 0; i < 9; i++) {
-      var a = (i-1)*Math.PI/4;
-      var x = p.x+(c.minX+c.maxX)/2+(i?Math.cos(a)*r*0.75:0);
-      var z = p.z+(c.minZ+c.maxZ)/2+(i?Math.sin(a)*r*0.75:0);
-      var hit = importedScene.colisoes.rastrear(new THREE.Vector3(x,top,z),new THREE.Vector3(x,feet-down,z));
-      if (hit && hit.normal.y >= MIN_GROUND_Y && (!best || hit.ponto.y > best.ponto.y)) best = hit;
-    }
+    var best = importedScene.fisica.apoio(p.x+(c.minX+c.maxX)/2, p.z+(c.minZ+c.maxZ)/2, importedBodyRadius(e), top, feet-down, MIN_GROUND_Y, true);
     if (best) {
-      p.y = best.ponto.y-c.minY;
+      p.y = best.y-c.minY;
       contact(e,best.normal.x,best.normal.y,best.normal.z,null);
     }
   }

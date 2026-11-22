@@ -23,6 +23,48 @@ interface Entrada {
 }
 
 /** Árvores por geometria, caixas por instância; os triângulos finais são medidos no mundo. */
+interface ContatoDoApoio {
+  ponto: { y: number }
+  normal: { x: number; y: number; z: number }
+}
+
+/**
+ * O chão sob um corpo, a régua única do apoio (os motores 3D do Estúdio a repetiam; lote 6 da
+ * conclusão, 22/11/2026): nove raios de `topo` a `fundo` (o centro e oito em volta, a 3/4 do raio;
+ * sem raio positivo, só o do centro), e vale o contato mais alto (o primeiro, no empate) cuja
+ * normal sobe mais que `normalMinima` (ou pelo menos isso, com `incluiMinima`); `null` sem apoio.
+ */
+export function apoioPorRaios(
+  rastrear: (de: Vector3, ate: Vector3) => ContatoDoApoio | null | undefined,
+  x: number,
+  z: number,
+  raio: number,
+  topo: number,
+  fundo: number,
+  normalMinima: number,
+  incluiMinima = false,
+): { y: number; normal: { x: number; y: number; z: number } } | null {
+  const de = new Vector3(),
+    ate = new Vector3()
+  let melhor: { y: number; normal: { x: number; y: number; z: number } } | null = null
+  for (let i = 0; i < (raio > 0 ? 9 : 1); i++) {
+    const angulo = ((i - 1) * Math.PI) / 4,
+      px = x + (i ? Math.cos(angulo) * raio * 0.75 : 0),
+      pz = z + (i ? Math.sin(angulo) * raio * 0.75 : 0),
+      contato = rastrear(de.set(px, topo, pz), ate.set(px, fundo, pz))
+    if (
+      contato &&
+      (incluiMinima ? contato.normal.y >= normalMinima : contato.normal.y > normalMinima) &&
+      (melhor === null || contato.ponto.y > melhor.y)
+    )
+      melhor = {
+        y: contato.ponto.y,
+        normal: { x: contato.normal.x, y: contato.normal.y, z: contato.normal.z },
+      }
+  }
+  return melhor
+}
+
 export class MundoDoTeste {
   readonly limiteInferior: number | null
   private readonly geometrias = new Map<
@@ -230,6 +272,28 @@ export class MundoDoTeste {
       resposta = { ponto: this.ponto.clone(), normal, distancia }
     }
     return resposta
+  }
+
+  /** O chão sob um corpo (`apoioPorRaios` com os raios deste mundo). */
+  apoio(
+    x: number,
+    z: number,
+    raio: number,
+    topo: number,
+    fundo: number,
+    normalMinima: number,
+    incluiMinima = false,
+  ) {
+    return apoioPorRaios(
+      (de, ate) => this.rastrear(de, ate),
+      x,
+      z,
+      raio,
+      topo,
+      fundo,
+      normalMinima,
+      incluiMinima,
+    )
   }
 
   descartar() {

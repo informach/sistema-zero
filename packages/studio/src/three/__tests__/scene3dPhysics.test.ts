@@ -335,3 +335,22 @@ test('o apoio do personagem não retira o quique de um corpo dinâmico no cenár
     geometria.dispose()
   }
 })
+
+// O apoio dos pés (lote 6 da conclusão, 22/11/2026): a régua mora no mundo de colisões do motor
+// (`apoioPorRaios`, provada contra o laço antigo em `molda-cenarios-motor/tests/apoio.test.ts`);
+// o SDK confere a cena ativa e repassa.
+test('o apoio do SDK repassa ao mundo de colisões e recusa a cena descarregada', () => {
+  const chamadas: unknown[][] = []
+  const colisoes = {
+    apoio: (...args: unknown[]) => {
+      chamadas.push(args)
+      return { y: 2, normal: { x: 0, y: 1, z: 0 } }
+    },
+  }
+  let ativa = true
+  const fisica = criarFisicaDaCena3D({ colisoes } as never, () => ativa)
+  expect(fisica.apoio(1, 2, 0.5, 4, -4, 0.64, true)).toEqual({ y: 2, normal: { x: 0, y: 1, z: 0 } })
+  expect(chamadas).toEqual([[1, 2, 0.5, 4, -4, 0.64, true]])
+  ativa = false
+  expect(() => fisica.apoio(0, 0, 1, 1, -1, 0)).toThrow('descarregado')
+})

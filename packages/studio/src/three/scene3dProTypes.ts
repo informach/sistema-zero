@@ -8,6 +8,7 @@ export interface Superficies {
   readonly limiteInferior:number|null
   resolver(pes:Vector3,altura:number,raio:number):{posicao:Vector3;normais:Vector3[];candidatos:number}
   rastrear(de:Vector3,ate:Vector3):{ponto:Vector3;normal:Vector3;distancia:number}|null
+  apoio(x:number,z:number,raio:number,topo:number,fundo:number,normalMinima:number,incluiMinima?:boolean):{y:number;normal:Ponto}|null
 }
 export interface Cena3D {
   readonly cena:Scene
@@ -29,6 +30,7 @@ export interface CenaInstalada extends Cena3D {
     active():boolean
     resolve(pes:Ponto,altura:number,raio:number):{position:Ponto;normals:readonly Ponto[]}
     raycast(de:Ponto,ate:Ponto):{distance:number;normal:Ponto}|null
+    apoio(x:number,z:number,raio:number,topo:number,fundo:number,normalMinima:number,incluiMinima?:boolean):{y:number;normal:Ponto}|null
   }
 }
 export declare function carregar(id:string,sinal:AbortSignal,opcoes?:Opcoes):Promise<Cena3D>
