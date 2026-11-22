@@ -626,7 +626,10 @@ describe('Studio', () => {
     }
     try {
       const { getByTestId, unmount } = render(
-        <Studio initialProject={createEmptyProject('project-exit', 'Sair')} persistence={adapter} />,
+        <Studio
+          initialProject={createEmptyProject('project-exit', 'Sair')}
+          persistence={adapter}
+        />,
       )
       await waitFor(() =>
         expect(getByTestId('editor-shell').getAttribute('data-project')).toBe('project-exit'),
