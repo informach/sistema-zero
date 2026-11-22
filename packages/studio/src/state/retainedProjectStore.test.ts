@@ -154,3 +154,46 @@ test('recusa reuso de corpo ausente, trocado ou órfão antes de publicar outra 
   expect(await readValues(scope.store, preserved)).toEqual(initial)
   expect(await readValue(scope.store, key)).toBe(foreign)
 })
+
+test('o download físico carrega somente os corpos da cabeça exata e identifica uma versão parcial', async () => {
+  const { exportPreservedProjectRecords } = await import('../project-migrations/localBackups')
+  const { decodeProjectJsonGraph } = await import('./projectJsonGraphDecode')
+  const scope = privateRegionalProjectScope('arquivo-v5')
+  const a = await prepareRetainedParts(sample('a', 'fonte-a'))
+  const b = await prepareRetainedParts(sample('b', 'fonte-b'))
+  const head = await commitRetainedProject(scope, {
+    id: 'a',
+    expectedToken: null,
+    origin,
+    candidate: a,
+  })
+  await commitRetainedProject(scope, { id: 'b', expectedToken: null, origin, candidate: b })
+  const read = async () => {
+    let warned = false
+    const payload = JSON.parse(
+      await exportPreservedProjectRecords('a', scope, () => {
+        warned = true
+      }),
+    )
+    return {
+      warned,
+      complete: payload.retention.complete,
+      rows: new Map(decodeProjectJsonGraph(payload.indexedDb) as [string, unknown][]),
+    }
+  }
+  const first = await read()
+  expect(first.complete).toBe(true)
+  expect(first.warned).toBe(false)
+  for (const [hash, body] of a.bodies) expect(first.rows.get('sz:v5:body:' + hash)).toBe(body.text)
+  const other = 'sz:v5:body:' + b.parts.files!.strings[0]![1]
+  expect(first.rows.has(other)).toBe(false)
+  await writeInOneTransaction(scope.store, { deletes: ['sz:v5:body:' + a.parts.files!.shape] })
+  expect(await read()).toMatchObject({ warned: true, complete: false })
+  const future = JSON.stringify({ ...head, version: 9, extra: 'aluna' })
+  await writeInOneTransaction(scope.store, { puts: [[retainedProjectKey('a'), future]] })
+  const partial = await read()
+  expect(partial.warned).toBe(true)
+  expect(partial.complete).toBe(false)
+  expect(partial.rows.get(retainedProjectKey('a'))).toBe(future)
+  expect(partial.rows.has(other)).toBe(false)
+})

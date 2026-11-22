@@ -247,7 +247,9 @@ export const ProjectCard = memo(function ProjectCard({
         import('../../project-migrations/localBackups'),
         import('../../export/download'),
       ])
-      const text = await exportPreservedProjectRecords(summary.id)
+      const text = await exportPreservedProjectRecords(summary.id, undefined, () =>
+        setNotice(t('projects.preserved.partial')),
+      )
       triggerDownload(
         new Blob([text], { type: 'application/json' }),
         `${summary.id.replace(/[^\w-]+/g, '_')}.preservado.json`,
@@ -423,6 +425,11 @@ export const ProjectCard = memo(function ProjectCard({
                         <MenuItem onClick={() => void handleDuplicate()}>
                           {t('projects.duplicate')}
                         </MenuItem>
+                        {summary.hasRetainedLegacySource && (
+                          <MenuItem onClick={() => void handleDownloadPreserved()}>
+                            {t('projects.preserved.download')}
+                          </MenuItem>
+                        )}
                         <MenuItem onClick={() => void handleExport()}>
                           {t('projects.export')}
                         </MenuItem>

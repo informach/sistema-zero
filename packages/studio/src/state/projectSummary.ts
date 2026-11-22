@@ -5,6 +5,7 @@ import { IDE_MODES, type IDEMode } from '../core/modes'
 export interface ProjectSummary {
   migrationPending?: boolean
   hasPreservedEdit?: boolean
+  hasRetainedLegacySource?: true
   id: string
   name: string
   createdAt: number

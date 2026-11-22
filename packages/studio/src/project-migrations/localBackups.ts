@@ -1,5 +1,6 @@
 import { isDocumentRecord } from '../core/projectDocument'
 import { readAllKeys, readPhysicalProjectRecords, readValues } from '../state/idbTransaction'
+import { BACKUP_KEY_SUFFIX, backupPrefixes } from '../state/projectBackupKeys'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
 import { decodeProjectJsonGraph } from '../state/projectJsonGraphDecode'
 import { nativeRecovery, synchronousRecovery } from '../state/projectRecoveryGuards'
@@ -7,8 +8,8 @@ import { projectFromRecovery, type RecoveryWrite } from '../state/projectStorage
 import {
   PROJECT_STORAGE_VERSION,
   type ProjectStorageVersion,
-  projectBackupKey,
   projectRecoveryKey,
+  RETAINED_PROJECT_PREFIX,
 } from '../state/projectStorageKeys'
 import { assembleProjectRecord, type StoredProjectRecord } from '../state/projectStorageRecords'
 import {
@@ -46,20 +47,6 @@ export interface LocalProjectBackup {
 
 const PARTS = ['meta', 'files', 'state', 'blocks', 'assets'] as const
 type Part = (typeof PARTS)[number]
-
-const LEGACY_BACKUP_PREFIX = 'sz:project-backup:'
-
-function backupPrefixes(projectId: string): string[] {
-  return [projectBackupKey(projectId, '', 4), `${LEGACY_BACKUP_PREFIX}${projectId}:`]
-}
-
-/**
- * O resto da chave depois de `<família>:<id>:`: o SHA-256 em hexadecimal, com `recovery-` ou
- * `v3-recovery-` na frente nas cópias de saída. Todo produtor de cópia monta a chave assim
- * (`localProjects.ts`, `localV3.ts`, `localV3RecoveryArchive.ts`, `projectRecoverySources.ts`).
- * Um resto com dois-pontos é de outro projeto cujo id começa com este (`jogo:outro`).
- */
-const BACKUP_KEY_SUFFIX = /^(?:recovery-|v3-recovery-)?[0-9a-f]{64}$/
 
 /**
  * As chaves das cópias de segurança deste projeto, decididas só pela chave, sem ler o conteúdo.
@@ -295,12 +282,22 @@ function journalBelongsTo(scope: string, id: string, key: string) {
 export async function exportPreservedProjectRecords(
   projectId: string,
   scope: ProjectStorageScope = captureProjectStorageScope(),
+  onPartial?: () => void,
 ): Promise<string> {
   const keys = (await readAllKeys(scope.store)).filter(
     (key): key is string => typeof key === 'string' && recordBelongsTo(projectId, key),
   )
   const values = await readPhysicalProjectRecords(scope.store, keys)
   const indexed = keys.map((key, index) => [key, values[index]] as const)
+  const authority = keys.findIndex((key) => key === RETAINED_PROJECT_PREFIX + projectId)
+  let retention: { complete: boolean } | undefined
+  if (authority >= 0) {
+    const { retainedArchive } = await import('../state/retainedProjectStore')
+    const archive = await retainedArchive(scope, projectId, values[authority])
+    indexed.push(...archive.records)
+    retention = { complete: archive.complete }
+    if (!archive.complete) onPartial?.()
+  }
   const journal: Array<readonly [string, string]> = []
   const storage = scope.exitJournalStorage
   if (storage) {
@@ -319,6 +316,7 @@ export async function exportPreservedProjectRecords(
     exportedAt: new Date().toISOString(),
     indexedDb: encodeProjectJsonGraph(indexed),
     exitJournal: journal,
+    ...(retention ? { retention } : {}),
   })
 }
 

@@ -1,17 +1,20 @@
 import { sha256Hex } from '@sistemazero/core/creations'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
-import { isDocumentRecord } from '../core/projectDocumentGuards'
+import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocumentGuards'
 import { localSnapshotsEqual } from '../project-migrations/localTransaction'
 import {
   conditionalGeneration,
   conditionalWrite,
   type IdbWrite,
+  readPhysicalProjectRecords,
   readValue,
   readValues,
 } from './idbTransaction'
+import { BACKUP_KEY_SUFFIX, backupPrefixes } from './projectBackupKeys'
 import { RETAINED_PROJECT_PREFIX } from './projectStorageKeys'
 import { ProjectWriteConflict } from './projectStorageRevision'
 import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
+import { legacyProjectKeys } from './retainedProjectKeys'
 import {
   capturedRetainedBody,
   checkExpandedRetention,
@@ -123,6 +126,7 @@ export async function commitRetainedProject(
     origin: string
     candidate: PreparedRetention | null
     source?: ReadonlyArray<Guard>
+    retireLegacy?: true
     absent?: readonly IDBKeyRange[]
     ready?: () => boolean
   },
@@ -159,9 +163,24 @@ export async function commitRetainedProject(
   const source = (options.source ?? []).map(
     ([key, value]) => [key, copyStudioProjectJson(value)] as const,
   )
-  const emptyRanges = options.absent?.length
-    ? { ranges: [...options.absent], conflict: () => new ProjectWriteConflict() }
-    : undefined
+  const retiredLegacy = options.retireLegacy ? legacyProjectKeys(id) : undefined
+  const keyChecks = {
+    ranges: [...(options.absent ?? [])],
+    conflict: () => new ProjectWriteConflict(),
+    retire: retiredLegacy
+      ? backupPrefixes(id).map((prefix) => ({
+          range: IDBKeyRange.bound(prefix, prefix + '\uffff'),
+          owns: (key: IDBValidKey) =>
+            typeof key === 'string' && BACKUP_KEY_SUFFIX.test(key.slice(prefix.length)),
+        }))
+      : undefined,
+  }
+  if (
+    retiredLegacy &&
+    (candidate !== null ||
+      Object.values(retiredLegacy).some((key) => !source.some(([guard]) => guard === key)))
+  )
+    invalidRetention()
   const raw = await readValue(scope.store, headKey)
   const before = readManifest(raw, id)
   if ((before?.token ?? null) !== expectedToken || (before?.deleted && candidate !== null))
@@ -235,10 +254,26 @@ export async function commitRetainedProject(
       }
       if (used < keySize(LEDGER, counter(0))) invalidRetention()
       if (used > RETAINED_PROJECT_LIMITS.scopeBytes) retentionLimit()
+      if (retiredLegacy) {
+        const oldHead = source.find(([guard]) => guard === retiredLegacy.head)?.[1]
+        puts.push([
+          retiredLegacy.head,
+          {
+            version: 1,
+            deleted: true,
+            token: crypto.randomUUID(),
+            writer: '',
+            sequence: 0,
+            base:
+              isDocumentRecord(oldHead) && typeof oldHead.token === 'string' ? oldHead.token : null,
+          },
+        ])
+        deletes.push(...Object.values(retiredLegacy).filter((key) => key !== retiredLegacy.head))
+      }
       puts.push([LEDGER, counter(used)])
       return { write: { puts, deletes }, result: nextManifest }
     },
-    emptyRanges,
+    keyChecks,
   )
 }
 
@@ -279,4 +314,45 @@ export async function readRetainedParts(
     if (descriptor) result[name] = restoreRetainedPart(name, descriptor, bodies)
   }
   return result
+}
+
+/** The export carries only the blobs reachable from the pinned physical head. A future
+ * owner or a damaged body can still be downloaded exactly, with an explicit partial status. */
+export async function retainedArchive(scope: ProjectStorageScope, id: string, raw: unknown) {
+  const records: Array<readonly [string, unknown]> = []
+  let manifest: RetainedManifest | undefined
+  try {
+    manifest = readManifest(raw, id)
+  } catch (error) {
+    if (!(error instanceof ProjectDocumentError)) throw error
+    return { complete: false, records }
+  }
+  if (!manifest) return { complete: false, records }
+  const hashes = retainedBodyIds(manifest.parts)
+  const [head, ...bodies] = await readPhysicalProjectRecords(scope.store, [
+    retainedProjectKey(id),
+    ...hashes.map(bodyKey),
+  ])
+  if (head !== raw) throw new ProjectWriteConflict()
+  let complete = true,
+    bytes = 0
+  for (const [index, hash] of hashes.entries()) {
+    const body = bodies[index]
+    if (body === undefined) {
+      complete = false
+      continue
+    }
+    if (typeof body !== 'string' || body.length > RETAINED_PROJECT_LIMITS.projectBytes) {
+      complete = false
+      continue
+    }
+    bytes += retentionSize(body)
+    if (bytes > RETAINED_PROJECT_LIMITS.projectBytes) {
+      complete = false
+      break
+    }
+    records.push([bodyKey(hash), body])
+    if ((await sha256Hex(body)) !== hash) complete = false
+  }
+  return { complete, records }
 }

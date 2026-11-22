@@ -5,23 +5,15 @@ import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocumentG
 import { sanitizePreviewStorageData } from '../preview/types'
 import { prepareEditableStudioProject } from '../state/editableProjectValidation'
 import { readValues } from '../state/idbTransaction'
-import {
-  projectApplicationsKey,
-  projectAssetsKey,
-  projectBlocksKey,
-  projectFilesKey,
-  projectHeadKey,
-  projectMetaKey,
-  projectMigrationKey,
-  projectRecoveryKey,
-  projectStateKey,
-  projectThumbKey,
-} from '../state/projectStorageKeys'
+import { applicationBudgetKey, projectRecoveryKey } from '../state/projectStorageKeys'
+import { legacyProjectKeys } from '../state/retainedProjectKeys'
+
+export { legacyProjectKeys } from '../state/retainedProjectKeys'
+
 import { assertCurrentProjectParts } from '../state/projectStorageRead'
 import { assembleProjectRecord } from '../state/projectStorageRecords'
 import { isLocalHead, ProjectWriteConflict } from '../state/projectStorageRevision'
 import {
-  gameStorageKey,
   isPrivateRegionalProjectScope,
   type ProjectStorageScope,
 } from '../state/projectStorageRuntime'
@@ -42,20 +34,6 @@ import { hasSynchronousExitJournal } from '../state/synchronousExitJournalProbe'
 import { localSnapshotsEqual } from './localTransaction'
 
 type SourceValues = Partial<Record<RetainedPart, unknown>>
-export function legacyProjectKeys(id: string): Record<RetainedPart, string> {
-  return {
-    meta: projectMetaKey(id),
-    files: projectFilesKey(id),
-    state: projectStateKey(id),
-    blocks: projectBlocksKey(id),
-    assets: projectAssetsKey(id),
-    thumb: projectThumbKey(id),
-    head: projectHeadKey(id),
-    applications: projectApplicationsKey(id),
-    source: projectMigrationKey(id),
-    game: gameStorageKey(id),
-  }
-}
 function pending(): never {
   throw new ProjectDocumentError(
     'migration-pending',
@@ -64,16 +42,22 @@ function pending(): never {
 }
 export async function readLegacyRegionalSource(scope: ProjectStorageScope, id: string) {
   const keys = legacyProjectKeys(id)
-  const raw = await readValues(
-    scope.store,
-    RETAINED_PARTS.map((part) => keys[part]),
+  const raw = await readValues(scope.store, [
+    ...RETAINED_PARTS.map((part) => keys[part]),
+    applicationBudgetKey(),
+  ])
+  const oldBudget = raw[RETAINED_PARTS.length]
+  if (
+    oldBudget !== undefined &&
+    (!isDocumentRecord(oldBudget) || (Object.hasOwn(oldBudget, id) && oldBudget[id] !== 0))
   )
+    pending()
   const values: SourceValues = {}
   const guards = RETAINED_PARTS.map((part, i) => {
     if (raw[i] !== undefined) values[part] = raw[i]
     return [keys[part], raw[i]] as const
   })
-  return { values, guards }
+  return { values, guards: [...guards, [applicationBudgetKey(), oldBudget] as const] }
 }
 function classicSource(id: string, v: SourceValues) {
   assertCurrentProjectParts(id, v.meta, v.files, v.state, v.blocks, v.assets)
@@ -158,6 +142,11 @@ export async function promoteLocalRegionalProject(options: {
     next.parts.assets = updated.parts.assets!
     for (const [hash, body] of updated.bodies) next.bodies.set(hash, body)
   }
+  const observed = await prepareRetainedParts({
+    source: { version: 1, legacyToken: expectedV4Token },
+  })
+  next.parts.source = observed.parts.source!
+  for (const [hash, body] of observed.bodies) next.bodies.set(hash, body)
   const prefix = projectRecoveryKey(id, '')
   return commitRetainedProject(scope, {
     id,
@@ -248,5 +237,5 @@ export async function preserveLegacyRegionalEdit(
     const committed = await readRetainedManifest(scope, targetId)
     if (committed?.origin !== scopeMarker) throw error
   }
-  return { guards, fork: targetId }
+  return { guards, fork: targetId, created: true }
 }

@@ -225,6 +225,8 @@ export const en: Record<string, string> = {
   'projects.import': 'Import',
   'projects.export': 'Export',
   'projects.preserved.restore': 'Restore a copy',
+  'projects.preserved.partial':
+    'The download is partial. Some project parts are missing or require another version.',
   'projects.preserved.download': 'Download what was preserved',
   'projects.preserved.restored': 'Restored copy added to the list',
   'projects.preserved.restoredPartial': 'Copy restored, but some parts were left out',

@@ -5,6 +5,7 @@ import {
   GAME_STORAGE_KEY_PREFIX,
   gameStorageKey,
   isGameStorageDeleted,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
   runSerializedProjectWrite,
 } from './projectStorageRuntime'
@@ -25,10 +26,45 @@ export interface GameStoragePersistence {
 
 // O banco dos projetos, pelas transações com commit explícito (`idbTransaction.ts`): o jogo da
 // criança pode estar gravando o placar no instante em que ela recarrega a página.
+async function retainedGameState(scope: ProjectStorageScope, key: string) {
+  if (!isPrivateRegionalProjectScope(scope) || !key.startsWith(GAME_STORAGE_KEY_PREFIX))
+    return undefined
+  const disk = await import('./retainedProjectStore')
+  const manifest = await disk.readRetainedManifest(scope, key.slice(GAME_STORAGE_KEY_PREFIX.length))
+  return manifest ? { disk, manifest } : undefined
+}
+function storeGameState(
+  scope: ProjectStorageScope,
+  key: string,
+  value: Record<string, string> | undefined,
+) {
+  return value
+    ? writeInOneTransaction(scope.store, { puts: [[key, value]] })
+    : writeInOneTransaction(scope.store, { deletes: [key] })
+}
+async function persistGameState(
+  scope: ProjectStorageScope,
+  key: string,
+  value: Record<string, string> | undefined,
+) {
+  if (!isPrivateRegionalProjectScope(scope)) return storeGameState(scope, key, value)
+  const captured = value && { ...value }
+  const active = await retainedGameState(scope, key)
+  if (!active) return storeGameState(scope, key, captured)
+  if (active.manifest.deleted) return
+  const editor = await import('./retainedProjectEditor')
+  await editor.editRetainedAuxiliary(scope, active.manifest, { game: captured })
+}
 const indexedDbPersistence: GameStoragePersistence = {
-  get: (key, scope) => readValue(scope.store, key),
-  set: (key, value, scope) => writeInOneTransaction(scope.store, { puts: [[key, value]] }),
-  delete: (key, scope) => writeInOneTransaction(scope.store, { deletes: [key] }),
+  get: async (key, scope) => {
+    if (!isPrivateRegionalProjectScope(scope)) return readValue(scope.store, key)
+    const retained = await retainedGameState(scope, key)
+    if (!retained) return readValue(scope.store, key)
+    const snapshot = await retained.disk.readRetainedParts(scope, retained.manifest, ['game'])
+    return snapshot.game
+  },
+  set: (key, value, scope) => persistGameState(scope, key, value),
+  delete: (key, scope) => persistGameState(scope, key, undefined),
 }
 
 /**

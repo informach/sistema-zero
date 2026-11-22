@@ -139,18 +139,18 @@ export async function readProjectAssetsSnapshot(
   scope: ProjectStorageScope,
   prepareHistorical: () => Promise<void>,
   options: PrivateRegionalProjectReadOptions = {},
+  retainedSnapshot?: readonly [unknown, unknown, unknown],
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
   observedHead?: string | null
 }> {
-  let [record, head, meta] = await readValues(scope.store, [
-    projectAssetsKey(id),
-    projectHeadKey(id),
-    projectMetaKey(id),
-  ])
+  let [record, head, meta] =
+    retainedSnapshot ??
+    (await readValues(scope.store, [projectAssetsKey(id), projectHeadKey(id), projectMetaKey(id)]))
   if (
     PROJECT_STORAGE_VERSION === 4 &&
+    !retainedSnapshot &&
     record === undefined &&
     meta === undefined &&
     !isLocalHead(head)

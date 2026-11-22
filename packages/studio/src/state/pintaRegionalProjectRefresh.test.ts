@@ -758,7 +758,27 @@ test('reabre a autoria regional e cria só um fork completo do restauro V4 poste
     alt.name = 'Outro programa'
     alt.files['script.js'] = 'console.log("revisão alternativa")'
     alt.blocksState.blocks.blocks[0]!.id = 'outro-bloco'
-    await restoreProjectFromCloud(alt, { expectedId: id, namespace: scope.namespace })
+    await expect(
+      restoreProjectFromCloud(alt, { expectedId: id, namespace: scope.namespace }),
+    ).rejects.toThrow()
+    // The immutable 16bf Chrome runner covers the old restore itself. Only its V4 rows change here.
+    const { projectStorageEntries } = await import('./projectStorageRecords')
+    await writeInOneTransaction(scope.store, {
+      puts: [
+        ...projectStorageEntries(alt, 4),
+        [
+          keys.head,
+          {
+            ...expected,
+            version: 1,
+            base: expected.token,
+            writer: '',
+            sequence: 0,
+            token: crypto.randomUUID(),
+          },
+        ],
+      ],
+    })
     await writeInOneTransaction(scope.store, { puts: [[keys.game, { visita: '9' }]] })
     // The caller changes its copy while the first IDB read is pending. The captured head owns the fork.
     const mutable = structuredClone(head)
@@ -778,11 +798,101 @@ test('reabre a autoria regional e cria só um fork completo do restauro V4 poste
     expect((await listProjectSummariesLight(scope)).map((s) => s.id).sort()).toEqual(
       [id, fork!].sort(),
     )
-    await discardImportedProjectSnapshot(id, { namespace: scope.namespace })
+    await expect(
+      discardImportedProjectSnapshot(id, { namespace: scope.namespace }),
+    ).rejects.toThrow()
+    await writeInOneTransaction(scope.store, { deletes: Object.values(keys) })
     expect((await preserveLegacyRegionalEdit(scope, head)).fork).toBeUndefined()
     expect(await readRetainedParts(scope, head)).toStrictEqual(previous)
     expect(await readRetainedParts(scope, other)).toStrictEqual(saved)
   } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'IDBKeyRange', descriptor)
+    else Reflect.deleteProperty(globalThis, 'IDBKeyRange')
+  }
+})
+
+test('entradas normais mantêm a cabeça autoral na capa/placar, recusam a aba atrasada e retiram as duas fontes no delete explícito', async () => {
+  const { IDBKeyRange: Range } = await import('fake-indexeddb')
+  const { promoteLocalRegionalProject, legacyProjectKeys } = await import(
+    '../project-migrations/localRegionalAuthority'
+  )
+  const { readRetainedManifest, readRetainedParts } = await import('./retainedProjectStore')
+  const { readValue } = await import('./idbTransaction')
+  const { listProjectSummariesLight } = await import('./projectListStorage')
+  const { loadGameStorage, writeGameStorage } = await import('./gameStorage')
+  const { writeProjectThumb, loadProjectThumb, loadProjectBlocksById, loadProjectShellById } =
+    await import('./persistence')
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'IDBKeyRange')
+  const previous = captureProjectStorageScope()
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: Range, configurable: true })
+  try {
+    const scope = privateRegionalProjectScope('editor-v5'),
+      id = 'vila-editavel'
+    setProjectStorageNamespace(scope.namespace)
+    const keys = legacyProjectKeys(id)
+    const baseline = { ...createEmptyProject(id, 'Vila'), assets: [image], blocksState }
+    await persistProject(baseline, {}, scope)
+    const expected = (await readValue(scope.store, keys.head)) as { token: string }
+    await promoteLocalRegionalProject({
+      scope,
+      id,
+      expectedV4Token: expected.token,
+      assets: [{ ...image, ...before }],
+    })
+    const open = () => loadSanitizedProjectById(id, scope, true)
+    const a = await open(),
+      b = await open()
+    if (!a || isPythonProject(a) || !b || isPythonProject(b)) throw Error('O projeto não abriu.')
+    expect(a.assets?.[0]?.dataUrl).toBe(before.dataUrl)
+    expect((await loadProjectShellById(id, scope))?.id).toBe(id)
+    expect(await writeProjectThumb(id, image.dataUrl, {}, scope)).toBe(true)
+    expect(await loadProjectThumb(id, scope)).toBe(image.dataUrl)
+    await writeGameStorage(id, { placar: '5' })
+    expect(await loadGameStorage(id)).toStrictEqual({ placar: '5' })
+    a.files = { ...a.files, 'script.js': 'console.log("V5")' }
+    await persistProject(a, {}, scope)
+    b.files = { ...b.files, 'script.js': 'console.log("atrasado")' }
+    await expect(persistProject(b, {}, scope)).rejects.toThrow()
+    const head = (await readRetainedManifest(scope, id))!
+    const saved = await readRetainedParts(scope, head)
+    expect(saved.files).toMatchObject({ files: { 'script.js': a.files['script.js'] } })
+    expect(await loadProjectBlocksById(id, scope)).toStrictEqual(blocksState)
+    expect(await readValue(scope.store, keys.files)).toMatchObject({ files: baseline.files })
+    expect(await readValue(scope.store, keys.game)).toBeUndefined()
+    await expect(
+      discardImportedProjectSnapshot(id, { namespace: scope.namespace }),
+    ).rejects.toThrow()
+    const digest = '1'.repeat(64)
+    const archive = `sz:v4:project-backup:${id}:recovery-${digest}`
+    const sibling = `sz:v4:project-backup:${id}:vizinho:recovery-${digest}`
+    const { writeInOneTransaction } = await import('./idbTransaction')
+    await writeInOneTransaction(scope.store, {
+      puts: [
+        [archive, { raw: true }],
+        [sibling, 'vizinho'],
+      ],
+    })
+    await deleteProject(id, scope)
+    expect(await readValue(scope.store, archive)).toBeUndefined()
+    expect(await readValue(scope.store, sibling)).toBe('vizinho')
+    expect(await loadProjectById(id, scope)).toBeNull()
+    expect((await readRetainedManifest(scope, id))?.deleted).toBe(true)
+    expect(await readValue(scope.store, keys.meta)).toBeUndefined()
+    expect(await readValue(scope.store, keys.head)).toMatchObject({ deleted: true })
+    await writeGameStorage(id, { placar: 'tardio' })
+    expect(await loadGameStorage(id)).toEqual({})
+    expect((await listProjectSummariesLight(scope)).some((card) => card.id === id)).toBe(false)
+    // A late V4 writer can repopulate a deleted ID. Recovery exposes a copy, never an editable original.
+    await writeInOneTransaction(scope.store, {
+      puts: [[keys.files, { id, files: baseline.files }]],
+    })
+    expect(await loadProjectById(id, scope)).toBeNull()
+    expect((await listProjectSummariesLight(scope)).find((card) => card.id === id)).toMatchObject({
+      migrationPending: true,
+      hasPreservedEdit: true,
+    })
+  } finally {
+    setProjectStorageNamespace(previous.namespace)
     if (descriptor) Object.defineProperty(globalThis, 'IDBKeyRange', descriptor)
     else Reflect.deleteProperty(globalThis, 'IDBKeyRange')
   }

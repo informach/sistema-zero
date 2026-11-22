@@ -1,8 +1,10 @@
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import type { EditableStudioProject } from '../core/editableProject'
 import {
   assertLegacyStudioProjectMaterials,
   hasRegionalPintaReference,
   type PrivateRegionalProjectReadOptions,
+  UNSUPPORTED_PINTA_REGION,
 } from '../core/pintaRegionalReference'
 import type { ProjectAsset } from '../core/projectAssets'
 import {
@@ -199,6 +201,10 @@ export async function persistProject(
     )
   const captured = storageScope ?? captureProjectStorageScope()
   if (!isPrivateRegionalProjectScope(captured)) assertLegacyStudioProjectMaterials(project)
+  if (isPrivateRegionalProjectScope(captured) && !options.exit && readLocalRevision(project)) {
+    const original = project
+    project = copyLocalRevision(original, copyStudioProjectJson(original) as EditableStudioProject)
+  }
   const generation = conditionalGeneration(captured.identity)
   const requestWrite = async (scope: ProjectStorageScope) => {
     const id = project.id
@@ -260,6 +266,16 @@ export async function persistProject(
     // o flush chama isto (nada é esperado antes), então a transação nasce antes de a
     // página ir embora, mesmo com um autosave anterior ainda em voo.
     const write = { puts: pairs, deletes: stale }
+    if (isPrivateRegionalProjectScope(scope) && !options.exit) {
+      const retained = await retainedAccess(scope, id)
+      if (retained) {
+        if (options.replace) throw new Error(UNSUPPORTED_PINTA_REGION)
+        const editor = await import('./retainedProjectEditor')
+        await editor.saveRetainedDocument(scope, retained.manifest, project, write)
+        lastPersistedAssetsRef.set(scopedId, project.assets)
+        return { done: Promise.resolve() }
+      }
+    }
     const done = (
       options.exit
         ? stageProjectExit(project, write, scope, options.incompleteBlocks, {
@@ -294,12 +310,26 @@ function validThumbDataUrl(value: unknown): string | null {
     : null
 }
 
+async function retainedAccess(scope: ProjectStorageScope, id: string) {
+  if (!isPrivateRegionalProjectScope(scope)) return undefined
+  const disk = await import('./retainedProjectStore')
+  const manifest = await disk.readRetainedManifest(scope, id)
+  return manifest ? { disk, manifest } : undefined
+}
+
 export async function loadProjectById(
   id: string,
   storageScope?: ProjectStorageScope,
   options: { recoverDraft?: boolean } = {},
 ): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const editor = await import('./retainedProjectEditor')
+      return editor.readRetainedDocument(scope, retained.manifest, false)
+    }
+  }
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   if (options.recoverDraft) {
     const draft = await loadRecoverableProjectDraft(scope, id)
@@ -325,6 +355,13 @@ export async function loadProjectShellById(
   storageScope?: ProjectStorageScope,
 ): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const editor = await import('./retainedProjectEditor')
+      return editor.readRetainedDocument(scope, retained.manifest, true)
+    }
+  }
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   const draft = await loadRecoverableProjectDraft(scope, id)
   if (draft) return copyLocalRevision(draft, { ...draft })
@@ -346,6 +383,13 @@ export async function loadProjectMetaById(
   storageScope?: ProjectStorageScope,
 ): Promise<Record<string, unknown> | null> {
   const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, ['meta'])
+      return isRecord(v.meta) ? v.meta : null
+    }
+  }
   const reader = await import('./projectStorageRead')
   return reader.readProjectMeta(id, scope, () => loadHistoricalProject(id, scope))
 }
@@ -355,6 +399,13 @@ export async function loadProjectBlocksById(
   storageScope?: ProjectStorageScope,
 ): Promise<unknown | null> {
   const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, ['blocks'])
+      return isRecord(v.blocks) ? (v.blocks.blocksState ?? null) : null
+    }
+  }
   const reader = await import('./projectStorageRead')
   return reader.readProjectBlocks(id, scope, () => loadHistoricalProject(id, scope))
 }
@@ -389,6 +440,19 @@ export async function loadProjectAssetsSnapshotById(
 }> {
   const scope = storageScope ?? captureProjectStorageScope()
   const reader = await import('./projectStorageRead')
+  let pinned: readonly [unknown, unknown, unknown] | undefined
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, [
+        'assets',
+        'head',
+        'meta',
+      ])
+      const editor = await import('./retainedProjectEditor')
+      pinned = [v.assets, editor.retainedEditorHead(retained.manifest, v.head), v.meta]
+    }
+  }
   const { assets, environment, observedHead } = await reader.readProjectAssetsSnapshot(
     id,
     scope,
@@ -396,6 +460,7 @@ export async function loadProjectAssetsSnapshotById(
       notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
     },
     options,
+    pinned,
   )
   if (observedHead !== undefined) assetReadHeads.set(assets, observedHead)
   return { assets, environment }
@@ -419,6 +484,8 @@ export async function persistProjectAssets(
 ): Promise<boolean> {
   const captured = storageScope ?? captureProjectStorageScope()
   if (!isPrivateRegionalProjectScope(captured)) assertLegacyStudioProjectMaterials({ assets })
+  if (isPrivateRegionalProjectScope(captured))
+    assets = copyStudioProjectJson(assets) as ProjectAsset[]
   const stamp = liveProject && readLocalRevision(liveProject)
   if (
     liveProject &&
@@ -447,6 +514,23 @@ export async function persistProjectAssets(
       // Sem ele a revisão subia com o mesmo `updatedAt`, o outro computador via "iguais" e
       // nunca baixava a troca de desenho (e, se editasse lá, apagava o desenho novo por
       // cima). Juntos, um não chega ao disco sem o outro.
+      if (isPrivateRegionalProjectScope(scope)) {
+        const retained = await retainedAccess(scope, id)
+        if (retained) {
+          const editor = await import('./retainedProjectEditor')
+          await editor.updateRetainedAssets(
+            scope,
+            retained.manifest,
+            assets,
+            expectedToken,
+            () => !isProjectOpening(scope, id) && canWrite?.() !== false,
+            liveProject,
+          )
+          lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+          written = true
+          return
+        }
+      }
       const done = mutateProjectRecord(
         scope,
         id,
@@ -510,6 +594,16 @@ export async function deleteProject(
   // persist/rename do mesmo projeto. Uma transação com commit explícito, como
   // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
   await runSerializedProjectWrite(scope, id, async () => {
+    if (isPrivateRegionalProjectScope(scope)) {
+      const retained = await retainedAccess(scope, id)
+      if (retained) {
+        if (remoteDelete) throw Error(UNSUPPORTED_PINTA_REGION)
+        const editor = await import('./retainedProjectEditor')
+        await editor.removeRetainedProject(scope, retained.manifest)
+        lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+        return
+      }
+    }
     const meta = await readValue(scope.store, projectMetaKey(id))
     if (!meta) await loadHistoricalProject(id, scope)
     // As cópias de segurança (migração e arquivo das cópias de saída) saem com o projeto, na mesma
@@ -624,6 +718,31 @@ export async function renameProjectMeta(
   await runSerializedWrite(
     id,
     async (scope) => {
+      if (isPrivateRegionalProjectScope(scope)) {
+        const retained = await retainedAccess(scope, id)
+        if (retained) {
+          if (retained.manifest.deleted) throw Error('O projeto foi excluído.')
+          const editor = await import('./retainedProjectEditor')
+          const saved = await retained.disk.readRetainedParts(scope, retained.manifest, [
+            'meta',
+            'head',
+          ])
+          if (!isRecord(saved.meta)) throw Error('Os metadados do projeto estão preservados.')
+          const old = editor.retainedEditorHead(retained.manifest, saved.head)
+          const stamp = liveProject && readLocalRevision(liveProject)
+          if (stamp && stamp.lineage.durableToken !== old.token)
+            throw new Error('O projeto mudou em outra aba.')
+          const next = stamp
+            ? { ...localHead(stamp), token: crypto.randomUUID() }
+            : editor.detachedHead(old.token)
+          await editor.patchRetainedProject(scope, retained.manifest, old.token, {
+            values: { meta: { ...saved.meta, name, updatedAt: Date.now() } },
+            nextHead: next,
+          })
+          if (stamp) stamp.lineage.durableToken = next.token
+          return
+        }
+      }
       if (liveProject)
         return { done: renameLiveProject(liveProject, name, scope).then(() => undefined) }
       if (
@@ -668,6 +787,16 @@ export async function writeProjectThumb(
     await runSerializedWrite(
       id,
       async (scope) => {
+        if (isPrivateRegionalProjectScope(scope)) {
+          const retained = await retainedAccess(scope, id)
+          if (retained) {
+            if (retained.manifest.deleted || options.silent) return
+            const editor = await import('./retainedProjectEditor')
+            await editor.editRetainedAuxiliary(scope, retained.manifest, { thumb: { id, dataUrl } })
+            stored = true
+            return
+          }
+        }
         const done = conditionalWrite(
           scope.store,
           scope.identity,
@@ -701,6 +830,14 @@ export async function loadProjectThumb(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<string | null> {
+  const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, ['thumb'])
+      return thumbDataUrlOf(v.thumb) ?? null
+    }
+  }
   const value = await readValue(getStore(storageScope), projectThumbKey(id))
   return thumbDataUrlOf(value) ?? null
 }

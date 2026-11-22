@@ -163,15 +163,17 @@ export function conditionalWrite<T>(
   generation: number,
   keys: readonly IDBValidKey[] | ((keys: readonly IDBValidKey[]) => readonly IDBValidKey[]),
   decide: (values: unknown[], keys: readonly IDBValidKey[]) => { write: IdbWrite; result: T },
-  emptyRanges?: { ranges: readonly IDBKeyRange[]; conflict: () => Error },
+  keyChecks?: {
+    ranges: readonly IDBKeyRange[]
+    conflict: () => Error
+    retire?: ReadonlyArray<{ range: IDBKeyRange; owns: (key: IDBValidKey) => boolean }>
+  },
 ): Promise<T> {
   // Inventory selection is for stores without the document transport. The key
   // list and its values must be observed inside the same transaction as the put.
   const ready = typeof keys === 'function' ? undefined : prepareProjectTransport(keys)
   if (ready)
-    return ready.then(() =>
-      conditionalWrite(store, identity, generation, keys, decide, emptyRanges),
-    )
+    return ready.then(() => conditionalWrite(store, identity, generation, keys, decide, keyChecks))
   return openTransaction(store, 'readwrite', (objectStore) => {
     const transaction = objectStore.transaction
     if (conditionalGeneration(identity) !== generation) {
@@ -203,13 +205,16 @@ export function conditionalWrite<T>(
     }
     const read = (selected: readonly IDBValidKey[]) => {
       const values: unknown[] = new Array(selected.length)
-      let remaining = selected.length + (emptyRanges?.ranges.length ?? 0)
+      const retire: IDBValidKey[] = []
+      let remaining =
+        selected.length + (keyChecks?.ranges.length ?? 0) + (keyChecks?.retire?.length ?? 0)
       const finish = () => {
         try {
           const { write, result } = decide(values, selected)
           for (const [key, value] of write.puts ?? [])
             objectStore.put(encodeProjectStorageValue(key, value), key)
           for (const key of write.deletes ?? []) objectStore.delete(key)
+          for (const key of retire) objectStore.delete(key)
           decided = result
           conditionalTransactions.get(identity)?.delete(transaction)
           if (typeof transaction.commit === 'function') transaction.commit()
@@ -218,11 +223,22 @@ export function conditionalWrite<T>(
         }
       }
       // Indexed checks observe arrivals in the same CAS as the part writes without listing a profile.
-      for (const range of emptyRanges?.ranges ?? []) {
+      for (const range of keyChecks?.ranges ?? []) {
         const request = objectStore.count(range)
         request.onsuccess = () => {
-          if (request.result !== 0) abort(emptyRanges!.conflict())
+          if (request.result !== 0) abort(keyChecks!.conflict())
           else if (--remaining === 0) finish()
+        }
+      }
+      for (const { range, owns } of keyChecks?.retire ?? []) {
+        const request = objectStore.getAllKeys(range)
+        request.onsuccess = () => {
+          try {
+            for (const key of request.result) if (owns(key)) retire.push(key)
+            if (--remaining === 0) finish()
+          } catch (error) {
+            abort(error)
+          }
         }
       }
       if (remaining === 0) finish()
@@ -312,6 +328,20 @@ export function readPhysicalProjectRecords(
   return inOneTransaction(store, 'readonly', (objectStore) => {
     const requests = keys.map((key) => objectStore.get(key))
     return { reads: requests, result: () => requests.map((request) => request.result) }
+  })
+}
+
+/** Presence only; listing a damaged legacy source must not load its files or material bytes. */
+export function hasAnyPhysicalProjectKey(
+  store: UseStore,
+  keys: readonly string[],
+): Promise<boolean> {
+  return inOneTransaction(store, 'readonly', (objectStore) => {
+    const requests = keys.map((key) => objectStore.getKey(key))
+    return {
+      reads: requests,
+      result: () => requests.some((request) => request.result !== undefined),
+    }
   })
 }
 

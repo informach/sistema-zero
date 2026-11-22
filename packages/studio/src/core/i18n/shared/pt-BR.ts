@@ -264,6 +264,8 @@ export const ptBR: Record<string, string> = {
   'projects.import': 'Importar',
   'projects.export': 'Exportar',
   'projects.preserved.restore': 'Restaurar uma cópia',
+  'projects.preserved.partial':
+    'A cópia é parcial. Algumas partes do projeto estão ausentes ou exigem outra versão.',
   'projects.preserved.download': 'Baixar o que foi preservado',
   'projects.preserved.restored': 'Cópia restaurada na lista',
   'projects.preserved.restoredPartial': 'Cópia restaurada, mas com partes de fora',
