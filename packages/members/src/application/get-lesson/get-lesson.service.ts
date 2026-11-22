@@ -198,6 +198,9 @@ export class GetLessonService {
       lessonCompleted: completedIds.includes(lessonId),
       live: course.modality === 'live',
       savedVideoPending,
+      // Nos cursos Kids e adultos, a parte escolhida também é o lugar de continuar
+      // desenhando/programando. O avanço das partes prontas é da jornada dos pais.
+      advanceCompleted: course.audience === 'kids' && course.learner === 'parents',
     })
     return {
       ...view,
