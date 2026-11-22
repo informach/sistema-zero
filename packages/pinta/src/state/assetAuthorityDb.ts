@@ -1,7 +1,7 @@
 import type { UseStore } from 'idb-keyval'
 import {
-  decodeLocalChunkDocument,
-  localChunkKeys,
+  type LocalStorageCodec,
+  localDenseStorageCodec,
   planLocalStorageWrites,
 } from './localChunkStorage'
 
@@ -14,6 +14,7 @@ export function withAssetTransaction<T>(
   openStore: UseStore,
   plan: (records: Map<string, unknown>) => T,
   select?: AssetRecordSelection,
+  codec: LocalStorageCodec = localDenseStorageCodec,
 ): Promise<T> {
   return openStore(
     'readwrite',
@@ -38,7 +39,7 @@ export function withAssetTransaction<T>(
           try {
             const before = new Map(records)
             result = plan(records)
-            const writes = planLocalStorageWrites(before, records, physical)
+            const writes = planLocalStorageWrites(before, records, physical, codec)
             for (const [key, value] of writes.puts) store.put(value, key)
             for (const key of writes.deletes) store.delete(key)
           } catch (error) {
@@ -49,7 +50,7 @@ export function withAssetTransaction<T>(
           let wanted: readonly string[] | null
           try {
             const chunks = [...records].flatMap(([key, value]) =>
-              decoded.has(key) ? [] : localChunkKeys(key, value),
+              decoded.has(key) ? [] : codec.keys(key, value),
             )
             const missing = chunks.filter((key) => !visited.has(key))
             if (missing.length) {
@@ -58,7 +59,7 @@ export function withAssetTransaction<T>(
             }
             for (const [key, value] of records)
               if (!decoded.has(key)) {
-                records.set(key, decodeLocalChunkDocument(key, value, records))
+                records.set(key, codec.decode(key, value, records))
                 decoded.add(key)
               }
             wanted = select ? select(records) : null

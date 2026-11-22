@@ -1,0 +1,192 @@
+{
+  "baseline": "729021df2c27b55020e21705d2465a75486490a5",
+  "records": [
+    {
+      "file": "physical-regions-focused.log.gz",
+      "bytes": 1541,
+      "sha256": "41b95283c2afe8447fbde37de5a723962fb352106b77815ea290db56d5f3ae69",
+      "rawBytes": 4817,
+      "rawSha256": "ce6ebe11a878578da6363de40ecc52072386e58f1c2b5e1779035a651d38280b"
+    },
+    {
+      "file": "physical-regions-full-first.log.gz",
+      "bytes": 81275,
+      "sha256": "0d91de8d0029021af113bb60fe94df448634c4423d13b1ddb1484f8cf1ea97d4",
+      "rawBytes": 299906,
+      "rawSha256": "56d7e8a1e0601e34287e0e72b1ade9aa3e4790e5eb0b460ae05e66edeed4adb8"
+    },
+    {
+      "file": "physical-regions-full.log.gz",
+      "bytes": 81110,
+      "sha256": "bd496b0cefa7e7d4e89db962e0a0966eb8529eea95f440c760c0acab0b5dff1c",
+      "rawBytes": 300307,
+      "rawSha256": "eb529a92d9d06327ea4f834f068b7175b1858ff5adebd33d0440eefe86fbe8ed"
+    },
+    {
+      "file": "physical-regions-core.log.gz",
+      "bytes": 734,
+      "sha256": "85443b7eb6ae131bb85fb68aeeb34b20a5798d2bf6400c0a12237598169dd68c",
+      "rawBytes": 1434,
+      "rawSha256": "2be9c95a814d22319a590106788d7f6840f81597dcc387e37406d2520c5ead1d"
+    },
+    {
+      "file": "physical-regions-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "physical-regions-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "physical-regions-browser-launch-first.log.gz",
+      "bytes": 256,
+      "sha256": "c2134ae3a8a49bddf811369a4e1963df1bbf1c35ae80104678a8e4cf5a593136",
+      "rawBytes": 583,
+      "rawSha256": "d4216c367b7a3f09a001df79432dc898aa13589ddb58429fdcca88c45c502b05"
+    },
+    {
+      "file": "physical-regions-server-diagnostic.log.gz",
+      "bytes": 1343,
+      "sha256": "b0beb60c58ea02e3e933428c1920c62424b4cf789a707e193f0d53cf39c59bb0",
+      "rawBytes": 3619,
+      "rawSha256": "607e0773ca370ffbaf0b6d128bcb56e05f8192e8cd97aed138fb2c45f8cab66f"
+    },
+    {
+      "file": "physical-regions-browser.log.gz",
+      "bytes": 1740,
+      "sha256": "d848e968f8c4e6ab600502df78a44432f8f7376f31818d31f599e275b32d67b7",
+      "rawBytes": 5937,
+      "rawSha256": "99362316b059fa0eded83eff10f053a53fa79f91bcc8699c13620643d6e99a2b"
+    },
+    {
+      "file": "physical-regions-biome.log.gz",
+      "bytes": 65,
+      "sha256": "0d9828103d4fc1cd05f8b2335e2a273f791a919a50d1bf1a752d45ef354b87cc",
+      "rawBytes": 45,
+      "rawSha256": "2a9021849901cf9d7b1c4031a8ea35ad788271beadf688ee8193693b8c235e74"
+    },
+    {
+      "file": "physical-regions-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-report.json.gz",
+      "bytes": 228611,
+      "sha256": "06909945d995ebe8e6fd654d85c6d4d02ac14aad3104eb121b13e15fdd8fb5e9",
+      "rawBytes": 353599,
+      "rawSha256": "5f83326501b8a9304d9e6d48026f5e0988d70386b5bf1c2bda604ffc99c5a99a"
+    },
+    {
+      "file": "archive-physical-regions.cjs.gz",
+      "bytes": 1660,
+      "sha256": "573322017a5f5eaedd4e9034f7c442f067e9ed7c60c6dd645dc20cf54a5926f8",
+      "rawBytes": 3684,
+      "rawSha256": "82e3c0b414c4800a373ca2f618d50864810a7ff0ed0599f4d8d950d59792db9a"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "sha256": "25281deb14b69ba3279079ab66ed0e656c6d7fdd0f6a0c9446db660c14bc1a8b",
+      "previousSha256": "8528820c101ff7c6c0547cf0e640268e3220daeb15ed7507a7cab6cf461a163e"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-authority-e2e.ts",
+      "sha256": "bd33bc0b6bcaba8754baef3b669053b04867e282f7168bb6eab00830b25adfd4",
+      "previousSha256": "85d6eb5d7b4e4c84c170254bba98d750e87c21cdcea04a9aa116b8509525be46"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityDb.ts",
+      "sha256": "79c179e63ff7e1f6fa7dd2eb2e0d2da6a92041808d81759e119070424063ca9f",
+      "previousSha256": "40bdb5ffa02322b440a587e2fed7af8add3b20eafb7c1daae4d30ac314f12466"
+    },
+    {
+      "file": "packages/pinta/src/state/localChunkStorage.ts",
+      "sha256": "9b4c700bc1bab843d7ab7e37f2a562e703cdf16048ac69f101d4de391ecb948e",
+      "previousSha256": "5889b7e9272859371528494a7ada890d3f5769a999b073766331f67bda6b89c7"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "8528c8ad9c040271acba6ab8beecb971e29dbd5f017cf9625a231582e3089fa2",
+      "previousSha256": "9cb237d865835f95d57b36d50eb2bb3a467c34ebd3d8e39c4f9d9d4341266d3e"
+    },
+    {
+      "file": "packages/pinta/scripts/physical-region-proof.ts",
+      "sha256": "f06f7ec626c669d06c3c3b99abd0eb2433e8f33fe135103f750f8019e5684179"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionChunkStorage.test.ts",
+      "sha256": "2180d614cdcf564d2bd7ef791210f5d0ad2a93513849ba987e8989a0ef341562"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionChunkStorage.ts",
+      "sha256": "41dc1e37579f2a23928f9b66f4f10fd9033358ea487f0f0bb5b4328331530ea3"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-physical-regions.flow.ts",
+      "sha256": "d117413bd46e7a105284787982979e951ff1e5ff94a9a92353632e85f45b2d28"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-physical-regions.config.ts",
+      "sha256": "b86920cef5d3f83992d2e7350a95aa0785d7d537eefa0850d82dce2d01fcba87"
+    }
+  ],
+  "suite": {
+    "pass": 2699,
+    "fail": 0,
+    "skipped": 0,
+    "files": 248,
+    "assertions": 35208
+  },
+  "focused": {
+    "pass": 43,
+    "assertions": 190,
+    "files": 3
+  },
+  "core": {
+    "pass": 15,
+    "assertions": 69
+  },
+  "browser": {
+    "pass": 29,
+    "retries": 0,
+    "profiles": [
+      "desktop",
+      "cpu-4x"
+    ],
+    "nativeRegionTests": 8,
+    "publicLegacyRegressionTests": 21,
+    "realIndexedDB": true,
+    "initialLauncherExitCode": -1073740791,
+    "initialLauncherCause": "not established; the same installed Playwright CLI subsequently ran under Node"
+  },
+  "sparseFixture": {
+    "logicalCells": 100000000,
+    "chunks": 2,
+    "cellBufferBytes": 4096
+  },
+  "fullFixture": {
+    "layers": 32,
+    "chunks": 2048,
+    "cellBufferBytes": 4194304,
+    "sharedAfterEdit": 2047,
+    "putsAfterOneEdit": 2,
+    "chunkPutsAfterOneEdit": 1
+  },
+  "publicNative8": false,
+  "publicPhysical3": false,
+  "fullAuthorialCAS8": false,
+  "regionalGalleryInventory": false,
+  "lazyChunkLoading": false,
+  "measuredHeap": false,
+  "externalRegionAdapters": false
+}

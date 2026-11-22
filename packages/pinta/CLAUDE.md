@@ -20,6 +20,15 @@ para anunciar suporte de oficina antes de completar seus consumidores.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
 Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
 
+`state/localRegionChunkStorage.ts` prepara o físico 3 como política opt-in do
+IO transacional existente. `parsePintaRegionLayerLocations` confere cabeçalhos
+antes das requisições de buffers; limites globais, IDs e dono das chaves são
+obrigatórios. O padrão público continua no codec denso 1/2. Não selecionar a
+política 3 na fábrica pública antes de integrar autoridade/CAS 8, espelho,
+inventário/host, transporte e adaptadores. Abertura ainda lê os chunks do
+documento; não anunciar carregamento sob demanda. Provas em
+`qa/io-regional-interno-2026-11-21/`, no diretório da missão.
+
 `RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
 separação usam células por regiões e o clonador comum; a separação esparsa conserva
 a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto

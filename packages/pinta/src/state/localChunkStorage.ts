@@ -188,6 +188,19 @@ export interface EncodedLocalDocument {
   document: unknown
   chunks: Map<string, Int16Array>
 }
+
+/** IO policy is explicit; the public default remains the legacy dense reader. */
+export interface LocalStorageCodec {
+  keys(key: string, value: unknown): string[]
+  decode(key: string, value: unknown, records: ReadonlyMap<string, unknown>): unknown
+  encode(key: string, value: unknown, records: ReadonlyMap<string, unknown>): EncodedLocalDocument
+}
+
+export const localDenseStorageCodec: LocalStorageCodec = {
+  keys: localChunkKeys,
+  decode: decodeLocalChunkDocument,
+  encode: encodeLocalChunkDocument,
+}
 /** Unchanged chunk arrays are borrowed from the captured physical snapshot. */
 export function encodeLocalChunkDocument(
   key: string,
@@ -261,17 +274,18 @@ export function planLocalStorageWrites(
   before: ReadonlyMap<string, unknown>,
   after: ReadonlyMap<string, unknown>,
   physical: ReadonlyMap<string, unknown>,
+  codec: LocalStorageCodec = localDenseStorageCodec,
 ): { puts: Map<string, unknown>; deletes: Set<string> } {
   const puts = new Map<string, unknown>(),
     deletes = new Set<string>()
   for (const [key, value] of after) {
     if (before.has(key) && value === before.get(key)) continue
     if (key.startsWith(LOCAL_ASSET_PREFIX)) {
-      const encoded = encodeLocalChunkDocument(key, value, physical)
+      const encoded = codec.encode(key, value, physical)
       puts.set(key, encoded.document)
       for (const [chunk, cells] of encoded.chunks)
         if (cells !== physical.get(chunk)) puts.set(chunk, cells)
-      for (const chunk of localChunkKeys(key, physical.get(key)))
+      for (const chunk of codec.keys(key, physical.get(key)))
         if (!encoded.chunks.has(chunk)) deletes.add(chunk)
     } else puts.set(key, value)
   }
@@ -279,7 +293,7 @@ export function planLocalStorageWrites(
     if (!after.has(key)) {
       deletes.add(key)
       if (key.startsWith(LOCAL_ASSET_PREFIX))
-        for (const chunk of localChunkKeys(key, physical.get(key))) deletes.add(chunk)
+        for (const chunk of codec.keys(key, physical.get(key))) deletes.add(chunk)
     }
   for (const key of puts.keys()) deletes.delete(key)
   return { puts, deletes }

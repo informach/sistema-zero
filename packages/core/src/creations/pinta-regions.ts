@@ -198,6 +198,24 @@ function encode(cells: Int16Array): string {
   return btoa(String.fromCharCode(...bytes))
 }
 
+/** Header-only admission for storage readers, before requesting any cell payloads. */
+export function parsePintaRegionLayerLocations(
+  raw: unknown,
+  rawBounds: unknown,
+): Array<Array<{ col: number; row: number }>> | null {
+  try {
+    const bounds = readBounds(rawBounds)
+    const headers = bounds && readHeaders(raw, bounds, false)
+    return headers
+      ? headers.map((header) =>
+          header.chunks.map((chunk) => ({ col: chunk.col as number, row: chunk.row as number })),
+        )
+      : null
+  } catch {
+    return null
+  }
+}
+
 /** Strict and bounded; rejects unsupported data rather than sanitizing away information. */
 export function parsePintaRegionLayers(
   raw: unknown,

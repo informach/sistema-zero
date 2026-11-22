@@ -27,7 +27,8 @@ for (const [version, src] of [
     `import * as persistence from ${modulePath('state/persistence.ts')};
 import * as project from ${modulePath('core/project.ts')};
 import * as clipboard from ${modulePath('state/clipboardStore.ts')};
-Object.assign(window, { pinta026: { ...persistence, ...project, ...clipboard } });`,
+Object.assign(window, { pinta026: { ...persistence, ...project, ...clipboard } });
+${version === 'current' ? `import * as physicalRegions from ${JSON.stringify(join(pinta, 'scripts/physical-region-proof.ts').replaceAll('\\', '/'))}; window.pintaPhysicalRegions = physicalRegions;` : ''}`,
   )
   const result = await Bun.build({ entrypoints: [entry], target: 'browser', outdir: proof })
   if (!result.success) throw new AggregateError(result.logs, 'Não compilou a prova')

@@ -131,6 +131,16 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    61 focados e 24 ensaios Chromium/IndexedDB real, incluindo oficina e CPU 4×.
    O código protege leitores atualizados; não modifica binários históricos nem
    cobre inventário parcial da nuvem. Esses critérios e físico 3 seguem abertos.
+   O IO físico 3 foi preparado como política interna do mesmo transacionador,
+   sem selecioná-lo na persistência pública. Cabeçalhos precedem payloads;
+   conjuntos/metadados e dois chunks em mundo de 100 milhões de casas reabrem
+   em outro contexto. No teto de 32 camadas/4 MiB, uma edição grava cabeçalho e
+   um chunk. Falha/quota aborta tudo; o leitor público 7 recusa 3 e recupera RAM
+   em cópia. Provas em `qa/io-regional-interno-2026-11-21/`: suíte 2.699,
+   43 focados, 15 Core e 29 ensaios Chromium. Autoridade/CAS 8, espelho,
+   inventário de galeria, host e transporte precisam selecionar/integrar essa
+   política antes da promoção. Ainda não é carregamento sob demanda nem fecha
+   o item 4 ou a etapa macro 1.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
