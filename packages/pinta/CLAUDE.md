@@ -4092,3 +4092,19 @@ por px reais.
 - **Backlog de produto conhecido (baixo)**: strings de UI soltas fora do copy.ts; auto-avançar no
   passo de tamanho; nome do estilo "Vetor" pode virar "Desenho de formas" se o QA com crianças
   mandar.
+## Leitura privada de mundos PNG 5 (22/11/2026)
+
+`export/pintaPngText.ts` captura bytes próprios, valida o PNG estático/CRC/tetos,
+recusa iTXt Pinta duplicado antes de descomprimir e lê UTF-8 estrito. O zlib usa
+os buffers explícitos da API pública de pako 3.0.1: no máximo 16 KiB por saída,
+saldo + um byte junto do limite, checksum e consumo integral da entrada.
+Não usar `slice` do Buffer para capturar bytes nem descompressão integral sem teto.
+`regionImageLimits.ts` reúne o mesmo orçamento do escritor e do leitor.
+
+`regionImageWorld.ts` combina essa extração com os planos Core, captura somente
+PNGs inline dos destinos/recursos e confere geometria de folhas/artes e pixels
+agregados, compartilhando URLs idênticas. Não busca rede ou caminhos de arquivo.
+Retorna bytes/dados admitidos; IDAT e superfícies são decodificados pelos motores.
+Ainda faltam os adaptadores e seus tetos temporários, inclusive os três destinos
+Python, antes de ativar receitas/formatos públicos. Provas:
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-png-de-mundos-regionais-2026-11-22/`.

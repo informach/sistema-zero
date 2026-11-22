@@ -12,6 +12,31 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
   IDs, metadados, recursos, snapshots e formatos antigos.
 - [ ] 2. Completar os dois motores JavaScript e Python, atualização e publicação
   sem perder arquivos, blocos ou programação; investigar a divergência histórica de IR.
+  Python inclui obrigatoriamente **Pygame, Pygame Zero e Raylib 2D**, conforme
+  esclarecimento de 22/11. Conferir cada extensão/runtime separadamente: carga
+  estruturada, camadas, animações, objetos/propriedades, colisões, portas e
+  atualização preservando o programa. Provas de Pygame não qualificam os outros
+  dois destinos. Compartilhar dados/codec e geometria independentes de motor,
+  com adaptadores próprios nas fronteiras; sem alterações funcionais 3D.
+  Outra frente reorganiza áreas/categorias dos blocos. Esta missão reutiliza os
+  blocos existentes e acrescenta somente operações ausentes, preservando IDs,
+  entradas e projetos salvos; não reorganiza áreas, categorias ou navegação.
+  Acordo confirmado com a frente Áreas do projeto no Python (22/11): categorias
+  das extensões permanecem livres para os novos comandos; Áreas do projeto é
+  uma categoria separada. Carregamento solto usa Ao iniciar; desenho e operações
+  ficam nos eventos/laços existentes; valores não têm área. Não editar
+  `src/python/blocks/areas.ts` para comandos/valores. Se for necessário um chapéu
+  novo de evento/laço ou controle de ligar/desligar o jogo, informar seu ID para
+  coordenação dessa tabela. Não há chapéus adicionais previstos no escopo atual.
+  Não editar `python/extensions/raylib/commonCatalog.ts`: usar apenas arquivos
+  específicos do 2D. Pontos de contato: `official-extensions/map-2d/catalog.ts`
+  e catálogos Python pygame/pgzero/raylib2d. IDs adicionais ainda não definidos.
+  Esta missão requalifica os jogos/recibos afetados pelos blocos que acrescentar,
+  incluindo os catálogos após a reorganização da outra frente (58 Pygame Zero,
+  nove Raylib 2D e conferência Pygame no inventário informado; conferir o
+  inventário final real). A versão do motor Python e a lista aprovada de blocos
+  saem juntas, com todas as frentes, geradas por quem concluir por último sobre
+  a integração final. Não publicar uma versão independente somente deste lote.
 - [ ] 3. Adaptar todas as ferramentas existentes de terreno às regiões.
 - [ ] 4. Integrar objetos, conjuntos vinculados, cópias e espalhamento.
 - [ ] 5. Integrar geometria, caminhos, portas, animações e profundidade.
@@ -263,6 +288,15 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Suítes 3.251 Core/2.748 Pinta, 26 focados, 144 comparações históricas e 77
    ensaios de navegador. Não fecha loader PNG: faltam descompressão limitada,
    CRC/captura de imagens, pixels/superfícies e adaptadores de runtime.
+   Extração PNG limitada e admissão de imagens implementadas privadamente em
+   `qa/leitor-png-de-mundos-regionais-2026-11-22/`: zlib com saída explícita,
+   consumo/checksum/UTF-8 estritos, CRC/duplicatas, captura própria de bytes e
+   orçamento global de capas/recursos. Vila/Cabana reabrem em outra página e
+   a Vila recomposta conserva exatamente os pixels. Suíte Pinta 2.766,
+   25 focados, 79 ensaios, tipos/gerados aprovados. O leitor devolve dados/bytes;
+   ainda faltam superfícies/compositores e gameplay dos motores. Seguir à base
+   Python independente do motor e seus três adaptadores, sem ativar os formatos
+   ou alterar catálogos/versão comum antes da qualificação coordenada.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

@@ -1,9 +1,5 @@
 /** Private PNG-5 boundary. The host and public recipe/runtime capabilities do not select it. */
-import {
-  PINTA_IMAGE_WORLD_LIMITS,
-  type PintaImageWorld,
-} from '@sistemazero/core/studio/pinta-image'
-import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
+import type { PintaImageWorld } from '@sistemazero/core/studio/pinta-image'
 import {
   PINTA_REGION_IMAGE_MAX_JSON_BYTES,
   readPintaRegionImageData,
@@ -12,14 +8,7 @@ import { PINTA_REGION_SCENE_MAX_JSON_BYTES } from '@sistemazero/core/studio/pint
 import { JsonByteSizeCache, utf8ByteLength } from '../core/jsonBytes'
 import { pngWithPintaJson } from './pngText'
 import { readPngDimensions } from './portableImageRender'
-
-const limits = {
-  dimension: PINTA_IMAGE_WORLD_LIMITS.dimension,
-  imagePixels: PINTA_IMAGE_WORLD_LIMITS.imagePixels,
-  totalImagePixels: PINTA_IMAGE_WORLD_LIMITS.totalImagePixels,
-  imageBytes: 16 * 1024 * 1024,
-  dataUrlChars: PINTA_STUDIO_LEGACY_LIMITS.imageChars,
-}
+import { PINTA_REGION_IMAGE_PNG_LIMITS as limits } from './regionImageLimits'
 
 function invalid(): never {
   throw new Error('Não consegui conferir os dados deste cenário. O desenho foi mantido.')

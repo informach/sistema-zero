@@ -1263,11 +1263,8 @@ test('regional geometry queries reopen a signed Vila PNG without a world-sized c
   })
 })
 
-test('linked PNG-5 metadata admits Vila and Cabana together before decoding their regional cells', async ({
-  page,
-  context,
-}, info) => {
-  const encoded = await page.evaluate(async () => {
+async function encodedVilaWorld(page: Page) {
+  return page.evaluate(async () => {
     const p = window.pintaPhysicalRegions,
       { map, cabana, assets } = p.vilaEFloresta()
     const url = (bytes: Uint8Array) => {
@@ -1301,6 +1298,114 @@ test('linked PNG-5 metadata admits Vila and Cabana together before decoding thei
       maps: [{ id: cabana.id, name: cabana.name, png: child }],
     })
   })
+}
+
+test('the encoded PNG-5 world reader captures Vila images and renders identical pixels after an independent reopen', async ({
+  page,
+  context,
+}, info) => {
+  const encoded = await encodedVilaWorld(page)
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x')
+    await (await context.newCDPSession(reopened)).send('Emulation.setCPUThrottlingRate', {
+      rate: 4,
+    })
+  await proof(reopened)
+  const result = await reopened.evaluate(async (encoded) => {
+    const p = window.pintaPhysicalRegions,
+      source = Uint8Array.from(atob(encoded.split(',')[1]!), (char) => char.charCodeAt(0))
+    const world = p.readPintaRegionImageWorld(source),
+      root = world.maps.get(world.rootId)!
+    const load = async (bytes: Uint8Array<ArrayBuffer>) => {
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'image/png' })),
+        image = new Image()
+      try {
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve()
+          image.onerror = () => reject(Error('PNG não abriu'))
+          image.src = url
+        })
+        return image
+      } finally {
+        URL.revokeObjectURL(url)
+      }
+    }
+    const loaded = new Map<string, HTMLImageElement>()
+    for (const [url, image] of world.images) {
+      const png = await load(image.png)
+      if (png.naturalWidth !== image.width || png.naturalHeight !== image.height)
+        throw Error('Dimensões mudaram')
+      loaded.set(url, png)
+    }
+    const cover = await load(root.png),
+      canvas = document.createElement('canvas'),
+      expected = document.createElement('canvas')
+    canvas.width = expected.width = root.width
+    canvas.height = expected.height = root.height
+    const ctx = canvas.getContext('2d')!,
+      reference = expected.getContext('2d')!
+    ctx.imageSmoothingEnabled = false
+    const images = new Map(
+      [...root.data.scene.tilesets, ...(root.data.scene.art ?? [])].map((resource) => [
+        resource.id,
+        loaded.get(resource.image)!,
+      ]),
+    )
+    p.drawScene(ctx, root.data.scene, images, 'back', 0)
+    p.drawScene(ctx, root.data.scene, images, 'front', 0)
+    reference.drawImage(cover, 0, 0)
+    const pixels = ctx.getImageData(0, 0, root.width, root.height).data,
+      original = reference.getImageData(0, 0, root.width, root.height).data
+    source.fill(0)
+    const corrupt = root.png.slice()
+    corrupt[corrupt.length - 1]! ^= 1
+    let refused = false
+    try {
+      p.readPintaRegionImageWorld(corrupt)
+    } catch {
+      refused = true
+    }
+    return {
+      rootId: world.rootId,
+      ids: [...world.maps.keys()],
+      images: world.images.size,
+      width: root.width,
+      height: root.height,
+      pixelsEqual: pixels.every((value, index) => value === original[index]),
+      sourceCopied: root.png[0] === 137,
+      corruptRefused: refused,
+      mapsAfterRefusal: world.maps.size,
+      childStart: p.createRegionSceneQueries(world.maps.get('cabana')!.data.scene).spawn(),
+      imagePixels: world.imagePixels,
+      publicReaderRefused: p.readPintaScene(root.data.scene) === null,
+    }
+  }, encoded)
+  expect(result).toMatchObject({
+    rootId: 'vila-e-floresta',
+    ids: ['vila-e-floresta', 'cabana'],
+    width: 512,
+    height: 384,
+    pixelsEqual: true,
+    sourceCopied: true,
+    corruptRefused: true,
+    mapsAfterRefusal: 2,
+    childStart: { x: 32, y: 32 },
+    publicReaderRefused: true,
+  })
+  expect(result.images).toBeGreaterThanOrEqual(3)
+  expect(result.imagePixels).toBeLessThanOrEqual(16777216)
+  await test.info().attach('leitor-png-mundo-regional.json', {
+    body: Buffer.from(JSON.stringify(result, null, 2)),
+    contentType: 'application/json',
+  })
+})
+
+test('linked PNG-5 metadata admits Vila and Cabana together before decoding their regional cells', async ({
+  page,
+  context,
+}, info) => {
+  const encoded = await encodedVilaWorld(page)
   await page.close()
   const reopened = await context.newPage()
   if (info.project.name === 'cpu-4x')
@@ -1311,13 +1416,9 @@ test('linked PNG-5 metadata admits Vila and Cabana together before decoding thei
   const result = await reopened.evaluate((encoded) => {
     const p = window.pintaPhysicalRegions,
       original = globalThis.atob
-    // The test reads only PNGs just produced above. This is not the product's
-    // bounded PNG decompressor/pixel preflight, which remains a separate boundary.
-    const text = (url: string) => {
-      const bytes = Uint8Array.from(original(url.split(',')[1]!), (char) => char.charCodeAt(0)),
-        view = new DataView(bytes.buffer),
-        size = view.getUint32(33)
-      return new TextDecoder().decode(p.unzlibSync(bytes.subarray(51, 41 + size)))
+    const text = (url: string, remaining?: number) => {
+      const bytes = Uint8Array.from(original(url.split(',')[1]!), (char) => char.charCodeAt(0))
+      return p.readPintaPngText(bytes, remaining).text
     }
     const rootText = text(encoded),
       seen: string[] = []
@@ -1332,7 +1433,7 @@ test('linked PNG-5 metadata admits Vila and Cabana together before decoding thei
       const maps = p.readPintaRegionImageWorldMetadata(rootText, (descriptor, remaining) => {
         headersBeforeCells &&= decodes === 0
         seen.push(descriptor.id)
-        const decoded = text(descriptor.png)
+        const decoded = text(descriptor.png, remaining)
         remainingBudgetRespected &&= new TextEncoder().encode(decoded).byteLength <= remaining
         return decoded
       })
