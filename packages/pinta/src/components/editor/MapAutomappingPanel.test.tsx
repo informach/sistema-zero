@@ -103,6 +103,26 @@ test('na oficina avançada o teclado e o ponteiro preveem a pincelada inteira, c
       await editor.getState().flush()
     })
     expect((await decodeAutomapGallery(durable!))?.books.get(map.id)?.rules).toHaveLength(1)
+    const current = editor.getState().asset
+    if (!isAutomapEditorMap(current)) throw Error('map')
+    const reverse = structuredClone(current.automapping)
+    reverse.rules[0]!.outputs = [[{ ...reverse.rules[0]!.input[0]!, cells: [-1] }]]
+    act(() => {
+      editor.getState().commit({ ...current, automapping: reverse } as typeof current)
+    })
+    const same = editor.getState().asset
+    await waitFor(() =>
+      expect((ui.getByRole('button', { name: name.input }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.focus(canvas)
+    fireEvent.keyDown(canvas, { key: 'Home', ctrlKey: true })
+    fireEvent.keyDown(canvas, { key: 'ArrowRight' })
+    fireEvent.keyDown(canvas, { key: 'Enter' })
+    await waitFor(() => expect(ui.getByText(name.noChanges)).toBeTruthy())
+    expect(ui.queryByRole('button', { name: name.apply })).toBeNull()
+    expect(editor.getState().asset).toBe(same)
   } finally {
     view.unmount()
     await editor.getState().flush()

@@ -33,14 +33,14 @@
   },
   "ensaios": {
     "foco": {
-      "testes": 22,
-      "assercoes": 175,
+      "testes": 23,
+      "assercoes": 184,
       "arquivos": 6,
       "falhas": 0
     },
     "regressao": {
-      "testes": 74,
-      "assercoes": 383,
+      "testes": 75,
+      "assercoes": 393,
       "arquivos": 11,
       "falhas": 0
     }

@@ -4,7 +4,7 @@ import { CELL_FLIP_H, makeCell } from '../cell'
 import { expandRegionMap, prepareMapRegions } from '../regionMap'
 import { cellAt, setCell } from '../tilemapOps'
 import { type AutomapBook, readAutomapBook } from './book'
-import { captureAutomapExample, previewAutomapping } from './engine'
+import { captureAutomapExample, previewAutomapping, previewAutomapStroke } from './engine'
 
 const signature = 'a'.repeat(64)
 const sheets = new Map([['arte', { sha256: signature, count: 4 }]])
@@ -208,4 +208,32 @@ test('tetos de comparações e escritas recusam tudo, incluindo a primeira camad
   const noChange = { ...one, outputs: [[plane('chao', [-1]), plane('enfeite', [0])]] }
   const allowed = previewAutomapping(base, { ...book, rules: [noChange] }, sheets, area)
   expect(allowed.ok && allowed.changes).toBe(65536)
+})
+
+test('o teto de um gesto inclui a pincelada e desconta a casa que as regras sobrescreveram', () => {
+  const base = createTilemapAsset({ name: 'gesto', tilesetId: 'arte', cols: 256, rows: 256 })
+  const first = base.layers[0] as TilemapTileLayer
+  base.layers = [
+    { ...first, id: 'chao' },
+    { ...first, id: 'frente', cells: first.cells.slice() },
+  ]
+  const painted = {
+    ...base,
+    layers: [{ ...first, id: 'chao', cells: new Int16Array(65536).fill(1) }, base.layers[1]!],
+  }
+  const source = {
+    id: 'm',
+    name: 'Marca',
+    width: 1,
+    height: 1,
+    input: [plane('chao', [1])],
+    outputs: [[plane('frente', [2])]],
+  }
+  expect(previewAutomapStroke(base, painted, 'chao', { ...book, rules: [source] }, sheets)).toEqual(
+    { ok: false, reason: 'work-budget' },
+  )
+  const target = { ...source, outputs: [[plane('chao', [2])]] }
+  const ok = previewAutomapStroke(base, painted, 'chao', { ...book, rules: [target] }, sheets)
+  expect(ok.ok && cellAt(ok.map, 'chao', 255, 255)).toBe(2)
+  expect(cellAt(base, 'frente', 255, 255)).toBe(-1)
 })

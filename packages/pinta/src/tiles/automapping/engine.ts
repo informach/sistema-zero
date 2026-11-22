@@ -252,5 +252,20 @@ export function previewAutomapStroke<M extends import('../../core/project').Tile
     new Set([layer]),
     changed,
   )
-  return result.ok ? { ...result, base: before } : result
+  if (!result.ok) return result
+  // Count each final changed address once, including the original stroke. Rules can
+  // overwrite the brush layer or restore its previous value.
+  if (changed.size + result.changes > AUTOMAP_LIMITS.writes) {
+    let total = result.changes
+    const final = createMapLayerCellReader(result.map, layer)!
+    for (const at of changed) {
+      const col = at % painted.cols,
+        row = Math.floor(at / painted.cols),
+        cell = final.at(col, row)
+      if (cell !== current.at(col, row)) total--
+      if (cell !== old.at(col - shift.col, row - shift.row)) total++
+    }
+    if (total > AUTOMAP_LIMITS.writes) return { ok: false, reason: 'work-budget' }
+  }
+  return { ...result, base: before }
 }

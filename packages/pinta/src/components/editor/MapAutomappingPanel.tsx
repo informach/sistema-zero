@@ -138,6 +138,12 @@ export function MapAutomappingPanel({
         setMessage(messages[result.reason])
         return
       }
+      if (sameAssetContent({ ...map, updatedAt: result.map.updatedAt }, result.map)) {
+        setPreview(null)
+        showPreview(map, null)
+        setMessage(COPY.automap.noChanges)
+        return
+      }
       setPreview({ base: map, next: result.map })
       setMessage(COPY.automap.strokePreview(result.changes))
       showPreview(map, result.map)
