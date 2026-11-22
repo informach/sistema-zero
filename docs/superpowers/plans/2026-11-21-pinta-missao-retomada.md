@@ -30,7 +30,13 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
   coordenação dessa tabela. Não há chapéus adicionais previstos no escopo atual.
   Não editar `python/extensions/raylib/commonCatalog.ts`: usar apenas arquivos
   específicos do 2D. Pontos de contato: `official-extensions/map-2d/catalog.ts`
-  e catálogos Python pygame/pgzero/raylib2d. IDs adicionais ainda não definidos.
+  e catálogos Python pygame/pgzero/raylib2d. Os 27 IDs candidatos usam os prefixos
+  `sz_py_pygame_`, `sz_py_pgzero_` e `sz_py_rl2d_`, seguidos de
+  `pinta_scene_{load,draw,start,objects,property,open_door,blocked,landing,dispose}`.
+  São comandos/valores nas categorias das próprias extensões, sem chapéus novos.
+  A oferta exige a capacidade privada do motor; os 16 IDs Pygame anteriores e a
+  lista pública aprovada permanecem preservados. Esses IDs precisam entrar na
+  requalificação combinada após a integração final das áreas.
   Esta missão requalifica os jogos/recibos afetados pelos blocos que acrescentar,
   incluindo os catálogos após a reorganização da outra frente (58 Pygame Zero,
   nove Raylib 2D e conferência Pygame no inventário informado; conferir o
