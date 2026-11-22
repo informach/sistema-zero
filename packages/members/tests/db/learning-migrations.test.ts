@@ -107,6 +107,62 @@ describe.skipIf(!url)(
   'learning upgrade and real persistence in an empty disposable database',
   () => {
     lessonDraftCases(() => get().db)
+    test('opening telemetry cannot overwrite explicit navigation under the owner transaction lock', async () => {
+      const { db } = get()
+      const c = randomUUID(),
+        m = randomUUID(),
+        l = randomUUID()
+      const person = { userId: randomUUID(), accountId: randomUUID() }
+      await db.insert(courses).values({
+        id: c,
+        slug: `retomada-${c}`,
+        title: 'Curso para pais',
+        audience: 'kids',
+        learner: 'parents',
+        status: 'published',
+        createdAt: now,
+        updatedAt: now,
+      })
+      await db.insert(modules).values({
+        id: m,
+        courseId: c,
+        title: 'Módulo',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      })
+      await db.insert(lessons).values({
+        id: l,
+        courseId: c,
+        moduleId: m,
+        slug: 'aula',
+        title: 'Aula',
+        sortOrder: 0,
+        isPublished: true,
+        createdAt: now,
+        updatedAt: now,
+      })
+      const parts = [1, 2, 3].map((n) => defaultLessonSection(randomUUID(), `Parte ${n}`, []))
+      const [first, second, third] = parts
+      if (!first || !second || !third) throw new Error('Missing navigation fixture')
+      await db
+        .insert(lessonStructures)
+        .values({ lessonId: l, revision: randomUUID(), sections: parts })
+      const repository = new DrizzleLearningRepository(db)
+      await repository.saveNavigation(person, l, second.id)
+      await repository.saveNavigation(person, l, first.id, { opening: true })
+      expect((await repository.getProgress(person, l)).sectionId).toBe(second.id)
+      await Promise.all([
+        repository.saveNavigation(person, l, first.id, { opening: true }),
+        repository.saveNavigation(person, l, third.id),
+      ])
+      expect((await repository.getProgress(person, l)).sectionId).toBe(third.id)
+      await repository.saveNavigation(person, l, first.id)
+      expect((await repository.getProgress(person, l)).sectionId).toBe(first.id)
+      expect(
+        (await repository.getProgress({ ...person, userId: randomUUID() }, l)).sectionId,
+      ).toBeNull()
+    })
     beforeAll(async () => {
       const { db, sql } = get()
       // ⚠️ A pasta compartilha UM banco descartável e hoje são TRÊS arquivos que

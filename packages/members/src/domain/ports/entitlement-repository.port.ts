@@ -17,6 +17,8 @@ export interface MemberSummary {
 
 /** Filtro da listagem admin de membros. Membership por HAVING (contagens são do conjunto TODO). */
 export interface ListMembersFilter {
+  /** Responsáveis com chave Kids ou matrícula específica de curso para pais. */
+  learner?: 'parents'
   /** Mantém membros com ≥1 matrícula nesse status (`active` = predicado runtime). */
   status?: EntitlementStatus
   /** Mantém membros com ≥1 matrícula nesse `courseRef`. */

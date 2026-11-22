@@ -6,6 +6,7 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonResume } from '@sistemazero/member-shell/components/lesson-resume'
 import {
   LessonSections,
   useLessonLearning,
@@ -76,7 +77,15 @@ const PARENT_HELP_THREAD: NonNullable<LessonPlayerContextValue['helpThread']> = 
   label: PARENT_DOUBTS_LABEL,
 }
 
-export function LessonPlayer({
+export function LessonPlayer(props: Props) {
+  return (
+    <LessonResume lesson={props.lesson} viewerId={props.viewerId}>
+      {(lesson) => <ResumedLessonPlayer {...props} lesson={lesson} />}
+    </LessonResume>
+  )
+}
+
+function ResumedLessonPlayer({
   course,
   lesson,
   nextLessonHref,

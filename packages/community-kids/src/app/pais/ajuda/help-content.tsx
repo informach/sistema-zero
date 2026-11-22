@@ -83,8 +83,8 @@ function CourseDoubts({ doubts }: { doubts: TeacherThreadSummaryView[] }) {
         {PARENT_DOUBTS_TITLE}
       </h2>
       <p className="text-muted-foreground text-sm">
-        As perguntas que você mandou pelo Preciso de ajuda, dentro das aulas, e as respostas da
-        nossa equipe.
+        As perguntas que você mandou pelo Preciso de ajuda, dentro das aulas, as respostas e os
+        recados da nossa equipe.
       </p>
       <ul className="flex flex-col">
         {doubts.map((doubt) => (
@@ -94,7 +94,10 @@ function CourseDoubts({ doubts }: { doubts: TeacherThreadSummaryView[] }) {
               className="flex min-h-14 items-center gap-3 py-3 text-foreground"
             >
               <span className="flex min-w-0 flex-1 flex-col">
-                <strong className="truncate">{doubt.title ?? 'Dúvida na aula'}</strong>
+                <strong className="truncate">
+                  {doubt.title ??
+                    (doubt.contextType === 'general' ? 'Recado da equipe' : 'Dúvida na aula')}
+                </strong>
                 <span className="text-muted-foreground text-xs">
                   {dayLabel(doubt.lastMessageAt)}
                   {doubt.workflowStatus ? ` · ${DOUBT_STATUS[doubt.workflowStatus]}` : ''}

@@ -3,6 +3,7 @@ import type { EntitlementRepository } from '../../domain/ports/entitlement-repos
 import { type MemberSummaryView, toMemberSummaryView } from '../mappers/admin-views'
 
 export interface ListMembersCommand {
+  learner?: 'parents'
   status?: EntitlementStatus
   courseRef?: string
   limit: number
@@ -29,7 +30,13 @@ export class ListMembersService {
 
   async execute(cmd: ListMembersCommand): Promise<ListMembersResultView> {
     const { items, total } = await this.entitlements.listMembers(
-      { status: cmd.status, courseRef: cmd.courseRef, limit: cmd.limit, offset: cmd.offset },
+      {
+        learner: cmd.learner,
+        status: cmd.status,
+        courseRef: cmd.courseRef,
+        limit: cmd.limit,
+        offset: cmd.offset,
+      },
       this.clock(),
     )
     return {

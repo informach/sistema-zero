@@ -49,6 +49,13 @@ import { formatCentsStr, formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
 import { createLatestAppendGuard } from '@/lib/latest-wins'
 import { type LearnerSelection, resolveLearnerId } from '@/lib/learner-selection'
+import {
+  coursesForLearner,
+  type MemberLearner as Learner,
+  memberActivityScope,
+  memberHistoryQuery,
+  memberLearners,
+} from '@/lib/member-learners'
 import { COMMUNITY_NAMES } from '@/lib/platform'
 import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 import { type MemberToolUsageView, ownedToolCards } from '@/lib/tool-usage'
@@ -79,13 +86,6 @@ const ACCESS_LABELS: Record<string, string> = {
   all_courses: 'Todos os cursos',
   all_kids_courses: `Todos os cursos da ${COMMUNITY_NAMES.kids}`,
   community: 'Comunidade',
-}
-
-/** Um aprendiz da ficha: a CONTA (adulto) ou um PERFIL de criança (kids). */
-interface Learner {
-  id: string
-  label: string
-  audience: 'adult' | 'kids'
 }
 
 type Tab = 'overview' | 'gamification' | 'activity' | 'certificates' | 'ratings' | 'payments'
@@ -290,15 +290,7 @@ export function MemberDetailClient({
   const email = user?.email ?? userId
 
   // Aprendizes: a conta + cada perfil de criança (kids).
-  const hasProfiles = (detail?.profiles?.length ?? 0) > 0
-  const learners: Learner[] = [
-    { id: userId, label: hasProfiles ? 'Conta (responsável)' : 'Conta', audience: 'adult' },
-    ...(detail?.profiles ?? []).map((p) => ({
-      id: p.id,
-      label: p.name,
-      audience: 'kids' as const,
-    })),
-  ]
+  const learners = memberLearners(userId, platform, detail?.profiles ?? [])
   const learnerId = resolveLearnerId({
     accountId: userId,
     profileIds: detail?.profiles?.map((profile) => profile.id) ?? [],
@@ -315,7 +307,7 @@ export function MemberDetailClient({
   // O "Mais" do cabeçalho: as ações de segunda linha, com as MESMAS regras de antes
   // (conceder = quem escreve; entrar como = `canImpersonate`). Quem só lê vê o "Conceder
   // acesso" apagado, com o motivo, e a faixa de só leitura explica.
-  const groupRecadoFor = platform === 'kids' && learner?.audience === 'kids' ? learner : null
+  const groupRecadoFor = platform === 'kids' && learner?.kind === 'child' ? learner : null
   const moreItems: MoreMenuItem[] = [
     {
       label: 'Ver recados',
@@ -466,13 +458,31 @@ export function MemberDetailClient({
             />
           ) : null}
           {tab === 'gamification' && learner ? (
-            <GamificationTab learnerId={learner.id} audience={learner.audience} />
+            learner.kind === 'parents' ? (
+              <p className="text-muted-foreground text-sm">
+                Os cursos para pais guardam o progresso das aulas e não usam XP, moedas ou Jornada
+                do Criador.
+              </p>
+            ) : (
+              <GamificationTab learnerId={learner.id} audience={learner.audience} />
+            )
           ) : null}
-          {tab === 'activity' && learner ? <ActivityTab learnerId={learner.id} /> : null}
+          {tab === 'activity' && learner ? <ActivityTab learner={learner} /> : null}
           {tab === 'certificates' && learner ? (
-            <CertificatesTab learnerId={learner.id} canWrite={canWrite} />
+            <CertificatesTab
+              key={`${learner.kind}:${learner.id}`}
+              learnerId={learner.id}
+              historyQuery={memberHistoryQuery(learner)}
+              canWrite={canWrite}
+            />
           ) : null}
-          {tab === 'ratings' && learner ? <RatingsTab learnerId={learner.id} /> : null}
+          {tab === 'ratings' && learner ? (
+            <RatingsTab
+              key={`${learner.kind}:${learner.id}`}
+              learnerId={learner.id}
+              historyQuery={memberHistoryQuery(learner)}
+            />
+          ) : null}
           {tab === 'payments' ? <PaymentsTab email={user?.email ?? null} /> : null}
         </>
       )}
@@ -685,14 +695,17 @@ function OverviewTab({
   onExtend: (e: AdminEntitlementView) => void
 }) {
   // Uso por ferramenta: 1 chamada por FAMÍLIA (o BFF resolve os perfis no auth).
-  const owned = ownedToolCards(detail.entitlements)
+  const owned = learner.kind === 'parents' ? [] : ownedToolCards(detail.entitlements)
   const usage = useSection<MemberToolUsageView>(
     owned.length > 0 ? `/api/members/${userId}/tool-usage` : null,
   )
   const learnerUsage = usage.data?.learners.find((l) => l.userId === learner.id) ?? null
 
   const profile = detail.profiles?.find((p) => p.id === learner.id) ?? null
-  const progress = learner.id === userId ? detail.progress : (profile?.progress ?? [])
+  const progress = coursesForLearner(
+    learner.id === userId ? detail.progress : (profile?.progress ?? []),
+    learner,
+  )
   const who = profile ? profile.name : 'da conta'
 
   return (
@@ -701,7 +714,11 @@ function OverviewTab({
         <div className="flex items-center gap-2">
           {profile ? <ProfileAvatar name={profile.name} avatarUrl={profile.avatarUrl} /> : null}
           <h2 className="font-semibold text-muted-foreground text-sm">
-            {profile ? `Cursos de ${who}` : 'Cursos da conta'}
+            {profile
+              ? `Cursos de ${who}`
+              : learner.kind === 'parents'
+                ? 'Cursos para pais'
+                : 'Cursos da conta'}
           </h2>
         </div>
         {progress.length > 0 ? (
@@ -978,7 +995,17 @@ const ACTIVITY_LABELS: Record<MemberActivityItemView['kind'], string> = {
   pinta_submission: 'Enviou um desenho do Pinta',
 }
 
-function ActivityTab({ learnerId }: { learnerId: string }) {
+function ActivityTab({ learner }: { learner: Learner }) {
+  const scope = memberActivityScope(learner)
+  return (
+    <div className="space-y-3">
+      {scope ? <p className="text-muted-foreground text-sm">{scope}</p> : null}
+      <ActivityHistory learnerId={learner.id} />
+    </div>
+  )
+}
+
+function ActivityHistory({ learnerId }: { learnerId: string }) {
   const [items, setItems] = useState<MemberActivityItemView[]>([])
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(false)
@@ -1080,9 +1107,42 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
   )
 }
 
-function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite: boolean }) {
+interface CertificatesTabProps {
+  learnerId: string
+  historyQuery: string
+  canWrite: boolean
+}
+
+function CertificatesTab(props: CertificatesTabProps) {
+  const [fullHistory, setFullHistory] = useState(false)
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          {fullHistory
+            ? 'Histórico completo desta pessoa, incluindo cursos que saíram do catálogo.'
+            : 'Certificados dos cursos do público selecionado.'}
+        </p>
+        <Button
+          variant="outline"
+          aria-pressed={fullHistory}
+          onClick={() => setFullHistory((value) => !value)}
+        >
+          {fullHistory ? 'Ver público selecionado' : 'Ver histórico completo'}
+        </Button>
+      </div>
+      <CertificateRecords
+        key={fullHistory ? 'all' : 'scoped'}
+        {...props}
+        historyQuery={fullHistory ? '' : props.historyQuery}
+      />
+    </div>
+  )
+}
+
+function CertificateRecords({ learnerId, historyQuery, canWrite }: CertificatesTabProps) {
   const { data, loading, error, reload } = useSection<{ certificates: MemberCertificateView[] }>(
-    `/api/members/${learnerId}/certificates`,
+    `/api/members/${learnerId}/certificates${historyQuery}`,
   )
   const [busyId, setBusyId] = useState<string | null>(null)
   const { confirm, confirmDialog } = useConfirm()
@@ -1169,9 +1229,9 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
   )
 }
 
-function RatingsTab({ learnerId }: { learnerId: string }) {
+function RatingsTab({ learnerId, historyQuery }: { learnerId: string; historyQuery: string }) {
   const { data, loading, error } = useSection<{ ratings: MemberRatingView[] }>(
-    `/api/members/${learnerId}/ratings`,
+    `/api/members/${learnerId}/ratings${historyQuery}`,
   )
   if (loading || error) return <SectionState loading={loading} error={error} />
   const ratings = data?.ratings ?? []

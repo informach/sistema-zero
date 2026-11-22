@@ -219,6 +219,7 @@ function isStrongerState(a: EntitlementState, b: EntitlementState): boolean {
 }
 
 export class InMemoryEntitlementRepository implements EntitlementRepository {
+  constructor(private readonly parentCourseRefs: () => readonly string[] = () => []) {}
   readonly byId = new Map<string, EntitlementState>()
 
   async findByIdempotencyKey(key: string): Promise<EntitlementAggregate | null> {
@@ -312,6 +313,25 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
 
     const summaries: MemberSummary[] = []
     for (const [userId, rows] of groups) {
+      if (filter.learner === 'parents') {
+        const parentRefs = new Set(this.parentCourseRefs())
+        const matching = rows.filter(
+          (row) =>
+            row.accessType === 'all_kids_courses' ||
+            (row.accessType === 'course' &&
+              row.courseRef !== null &&
+              parentRefs.has(row.courseRef)),
+        )
+        if (
+          !matching.some(
+            (row) =>
+              (!filter.courseRef || row.courseRef === filter.courseRef) &&
+              (!filter.status ||
+                (filter.status === 'active' ? isActive(row, now) : row.status === filter.status)),
+          )
+        )
+          continue
+      }
       if (filter.status === 'active' && !rows.some((r) => isActive(r, now))) continue
       if (
         filter.status &&

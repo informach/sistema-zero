@@ -62,6 +62,8 @@ afterEach(() => {
 function mountLesson({ last = false, publication = false, failed = false } = {}) {
   globalThis.fetch = Object.assign(
     mock(async (input: RequestInfo | URL) => {
+      if (String(input) === `/api/members/courses/${course.slug}/lessons/${lesson.id}`)
+        return Response.json(lesson)
       if (String(input).endsWith('/complete'))
         return failed
           ? Response.json({ error: { message: 'Não foi possível concluir.' } }, { status: 503 })
@@ -123,6 +125,7 @@ function mountLesson({ last = false, publication = false, failed = false } = {})
 }
 
 async function complete() {
+  await screen.findByRole('button', { name: 'Concluir aula' })
   await act(async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Concluir aula' }))
   })

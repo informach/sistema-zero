@@ -741,6 +741,7 @@ const ENTITLEMENT_STATUS = t.Union([
 
 /** Query de `GET /members/admin/members`. `t.Numeric` coage a string da query. */
 export const ListMembersQuery = t.Object({
+  learner: t.Optional(t.Literal('parents')),
   status: t.Optional(ENTITLEMENT_STATUS),
   courseRef: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
@@ -766,6 +767,11 @@ export const AdminRankingQuery = t.Object({
 export const AdminActivityQuery = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+
+export const AdminCourseHistoryQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  learner: t.Optional(t.Union([t.Literal('child'), t.Literal('parents')])),
 })
 
 // `userId` do grant manual vai à coluna uuid `entitlements.user_id`.
