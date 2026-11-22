@@ -1073,7 +1073,7 @@ export const LearningStructureBody = t.Object({
 })
 export const LearningLessonParams = t.Object({ lessonId: Id })
 export const LearningBlockParams = t.Object({ lessonId: Id, blockId: Id })
-export const LearningNavigationBody = t.Object({ sectionId: Id })
+export const LearningNavigationBody = t.Object({ sectionId: Id, opening: t.Optional(t.Boolean()) })
 export const LearningHelpBody = t.Object({
   requestId: t.Optional(t.String({ format: 'uuid' })),
   sectionId: Id,

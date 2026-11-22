@@ -32,7 +32,7 @@ export function createLearningRoutes({
       })
       .strict(),
     'action-check': z.object({ revision: z.uuid() }).strict(),
-    navigation: z.object({ sectionId: z.uuid() }).strict(),
+    navigation: z.object({ sectionId: z.uuid(), opening: z.boolean().optional() }).strict(),
     'section-help': z
       .object({
         sectionId: z.uuid(),
@@ -47,42 +47,47 @@ export function createLearningRoutes({
       .strict(),
     'learning-attempts': z.object({ ...learningFields, id: z.uuid() }).strict(),
   }
+  async function authorizeViewer(req: Request, write: boolean): Promise<NextResponse | null> {
+    const user = await session.getSession()
+    if (!user)
+      return NextResponse.json(
+        { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada.' } },
+        { status: 401 },
+      )
+    if (write && isReadonlyImpersonation(user))
+      return NextResponse.json(
+        {
+          error: {
+            code: 'IMPERSONATION_READONLY',
+            message: 'Sessão de suporte é somente-leitura.',
+          },
+        },
+        { status: 403 },
+      )
+    if (user.status !== 'active')
+      return NextResponse.json(
+        { error: { code: 'FORBIDDEN', message: 'Conta inativa.' } },
+        { status: 403 },
+      )
+    if (req.headers.get('x-sz-viewer') !== user.id)
+      return NextResponse.json(
+        {
+          error: {
+            code: 'VIEWER_CHANGED',
+            message: 'O perfil mudou. Abra esta página de novo para continuar no perfil atual.',
+          },
+        },
+        { status: 409 },
+      )
+    return null
+  }
   function learningHandler(endpoint: keyof typeof learningSchemas, method: 'POST' | 'PUT') {
     return async (
       req: Request,
       ctx: { params: Promise<{ lessonId: string; blockId?: string; sectionId?: string }> },
     ) => {
-      const user = await session.getSession()
-      if (!user)
-        return NextResponse.json(
-          { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada.' } },
-          { status: 401 },
-        )
-      if (isReadonlyImpersonation(user))
-        return NextResponse.json(
-          {
-            error: {
-              code: 'IMPERSONATION_READONLY',
-              message: 'Sessão de suporte é somente-leitura.',
-            },
-          },
-          { status: 403 },
-        )
-      if (user.status !== 'active')
-        return NextResponse.json(
-          { error: { code: 'FORBIDDEN', message: 'Conta inativa.' } },
-          { status: 403 },
-        )
-      if (req.headers.get('x-sz-viewer') !== user.id)
-        return NextResponse.json(
-          {
-            error: {
-              code: 'VIEWER_CHANGED',
-              message: 'O perfil mudou. Abra esta página de novo para continuar no perfil atual.',
-            },
-          },
-          { status: 409 },
-        )
+      const denied = await authorizeViewer(req, true)
+      if (denied) return denied
       const params = await ctx.params
       const needsSection = endpoint === 'project-check' || endpoint === 'action-check'
       const needsBlock = endpoint === 'learning-progress' || endpoint === 'learning-attempts'
@@ -133,6 +138,32 @@ export function createLearningRoutes({
 
   const learningProjectCheck = { POST: learningHandler('project-check', 'POST') }
   return {
+    learningResume: {
+      GET: async (req: Request, ctx: { params: Promise<{ slug: string; lessonId: string }> }) => {
+        const denied = await authorizeViewer(req, false)
+        if (denied) return denied
+        const { slug, lessonId } = await ctx.params
+        if (
+          !z.uuid().safeParse(lessonId).success ||
+          !z.string().min(1).max(200).safeParse(slug).success
+        )
+          return invalidInput()
+        // O Members mantém as regras de público, matrícula, perfil e trava da aula.
+        const { status, body } = await gateway.gatewayFetch(
+          `/members/courses/${encodeURIComponent(slug)}/lessons/${encodeURIComponent(lessonId)}`,
+          { method: 'GET', signal: req.signal },
+        )
+        return NextResponse.json(
+          body ?? {
+            error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível recuperar a aula.' },
+          },
+          {
+            status: body == null && status === 200 ? 502 : status,
+            headers: { 'Cache-Control': 'private, no-store' },
+          },
+        )
+      },
+    },
     learningNavigation,
     learningProgress,
     learningAttempt,

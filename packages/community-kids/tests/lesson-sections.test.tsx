@@ -1045,7 +1045,7 @@ describe('aula por seções', () => {
       // dela que alimenta o "continuar de onde parou".
       {
         url: '/api/members/lessons/lesson/navigation',
-        body: { sectionId: 'second' },
+        body: { sectionId: 'second', opening: true },
         viewer: 'child-a',
       },
       {

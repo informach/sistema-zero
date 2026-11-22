@@ -13,7 +13,7 @@ import {
   mergeVideoWatchAnswers,
   validateLessonSections,
 } from '@sistemazero/core/learning'
-import { and, asc, desc, eq, gte, lt, lte, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray, lt, lte, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import { LessonNotFoundError } from '../../../domain/course/course.errors'
 import { LearningConflictError } from '../../../domain/learning/learning.errors'
@@ -331,7 +331,12 @@ export class DrizzleLearningRepository implements LearningRepository {
     ])
     return { sectionId: navigation[0]?.sectionId ?? null, blocks: blocks.map(progressView) }
   }
-  async saveNavigation(owner: LearningOwner, lessonId: string, sectionId: string) {
+  async saveNavigation(
+    owner: LearningOwner,
+    lessonId: string,
+    sectionId: string,
+    options?: { opening?: boolean },
+  ) {
     await this.withOwner(owner, async (tx) => {
       await lockLessonStructure(tx, lessonId)
       const [structure] = await tx
@@ -353,7 +358,17 @@ export class DrizzleLearningRepository implements LearningRepository {
         .values({ ...owner, lessonId, sectionId, updatedAt: new Date() })
         .onConflictDoUpdate({
           target: [lessonNavigation.userId, lessonNavigation.lessonId],
-          set: { sectionId, updatedAt: new Date() },
+          // A abertura pode chegar depois de uma navegação explícita. Conserva a posição
+          // válida sob o mesmo lock; só repara uma seção que saiu da publicação.
+          set: {
+            sectionId: options?.opening
+              ? sql`case when ${inArray(
+                  lessonNavigation.sectionId,
+                  sections.map((s) => s.id),
+                )} then ${lessonNavigation.sectionId} else ${sectionId}::uuid end`
+              : sectionId,
+            updatedAt: new Date(),
+          },
           setWhere: eq(lessonNavigation.accountId, owner.accountId),
         })
     })

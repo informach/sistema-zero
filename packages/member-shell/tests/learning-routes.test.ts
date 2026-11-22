@@ -42,6 +42,63 @@ function request(body: unknown, viewer: string | null = user.id) {
   })
 }
 describe('learning BFF boundary', () => {
+  test('a retomada lê a aula atual com a mesma fronteira de sessão e sem cache', async () => {
+    for (const current of [
+      user,
+      {
+        ...user,
+        activeProfile: undefined,
+        kids: { kind: 'parent' as const, sessionId: 's', authenticatedAt: 1 },
+      },
+    ]) {
+      const { routes, calls } = setup(current)
+      const req = new Request('https://kids.test/api', { headers: { 'x-sz-viewer': current.id } })
+      const res = await routes.learningResume.GET(req, {
+        params: Promise.resolve({ slug: 'curso-pais', lessonId }),
+      })
+      expect(res.status).toBe(200)
+      expect(res.headers.get('cache-control')).toBe('private, no-store')
+      expect(calls[0]?.path).toBe(`/members/courses/curso-pais/lessons/${lessonId}`)
+      expect(calls[0]?.opts.method).toBe('GET')
+    }
+  })
+
+  test('a retomada não aceita outra conta nem uma sessão expirada ou inativa', async () => {
+    for (const [current, viewer, status] of [
+      [null, user.id, 401],
+      [user, 'outro', 409],
+      [{ ...user, status: 'blocked' }, user.id, 403],
+    ] as const) {
+      const { routes, calls } = setup(current)
+      const res = await routes.learningResume.GET(
+        new Request('https://kids.test/api', { headers: { 'x-sz-viewer': viewer } }),
+        { params: Promise.resolve({ slug: 'curso-pais', lessonId }) },
+      )
+      expect(res.status).toBe(status)
+      expect(calls).toHaveLength(0)
+    }
+  })
+
+  test('distingue registro de abertura e navegação explícita sem aceitar um dono do progresso', async () => {
+    const { routes, calls } = setup()
+    expect(
+      (
+        await routes.learningNavigation.POST(
+          request({ sectionId: lessonId, opening: true }),
+          context,
+        )
+      ).status,
+    ).toBe(200)
+    expect(calls[0]?.opts.body).toEqual({ sectionId: lessonId, opening: true })
+    expect(
+      (
+        await routes.learningNavigation.POST(
+          request({ sectionId: lessonId, opening: true, userId: user.id }),
+          context,
+        )
+      ).status,
+    ).toBe(400)
+  })
   test('forwards validated answers to the fixed gateway route without accepting an owner', async () => {
     const { routes, calls } = setup()
     const response = await routes.learningProgress.POST(request(progress), context)

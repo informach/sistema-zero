@@ -95,7 +95,7 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       .put(
         '/lessons/:lessonId/navigation',
         ({ headers, params, body }) =>
-          deps.learning.navigation(actor(headers), params.lessonId, body.sectionId),
+          deps.learning.navigation(actor(headers), params.lessonId, body.sectionId, body.opening),
         { params: LearningLessonParams, body: LearningNavigationBody },
       )
       .post(
