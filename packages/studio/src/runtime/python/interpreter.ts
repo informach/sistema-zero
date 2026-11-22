@@ -27,6 +27,7 @@ import bridgeSource from './interpreter.py'
 import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
+import { isPintaTextureRequest, pintaTextureAttachments } from './pintaRegionProtocol'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { PYGAME_EXTENSION } from './pygame/contract'
 import { loadPygameModuleSources } from './pygame/moduleSources'
@@ -546,6 +547,13 @@ export async function createPythonInterpreter(options: {
               // O pedido curto de quem espera com o programa pausado (aba Investigar) não é um
               // quadro: vai ao quadro da página como veio, sem dados (framePause.ts).
               if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, []).then(pythonReply)
+              if (isPintaTextureRequest(raw)) {
+                if (pygame) throw new Error('O compositor do Pinta é do Pygame Zero neste canal.')
+                return options.graphics!(
+                  raw,
+                  pintaTextureAttachments(raw, payload, PGZERO_LIMITS.images),
+                ).then(pythonReply)
+              }
               const header = readPgzeroFrameHeader(raw)
               const attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
               // Python hands over a Uint8Array copy (to_js), never a proxy to free here. That
@@ -635,6 +643,14 @@ export async function createPythonInterpreter(options: {
             (raw: unknown, payload: unknown) => {
               // O pedido curto de quem espera com o programa pausado (aba Investigar).
               if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, []).then(pythonReply)
+              if (isPintaTextureRequest(raw)) {
+                if (resources.kind !== 'python-raylib-2d')
+                  throw new Error('O compositor do Pinta é do Raylib 2D neste canal.')
+                return options.graphics!(
+                  raw,
+                  pintaTextureAttachments(raw, payload, RAYLIB_LIMITS.textures),
+                ).then(pythonReply)
+              }
               const header = readRaylibFrameHeader(raw)
               if (
                 !(payload instanceof Uint8Array) ||

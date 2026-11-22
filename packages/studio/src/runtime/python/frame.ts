@@ -24,6 +24,7 @@ import {
 import { createPgzeroAudioQueue } from './pgzero/audioQueue'
 import type { PgzeroAudioCommand } from './pgzero/protocol'
 import type { PgzeroRenderer } from './pgzero/renderer'
+import { isPintaTextureRequest } from './pintaRegionProtocol'
 import { installPythonPlayerBridge } from './playerBridge'
 import { createProtectedPythonWorker } from './protectedWorker'
 import type { RaylibRenderer } from './raylib/renderer'
@@ -466,6 +467,7 @@ async function initialize(event: MessageEvent<unknown>) {
           renderer = module.createPgzeroRenderer(document.body, {
             focus,
             name: canvas === 'python-pygame' ? 'Pygame-ce' : 'Pygame Zero',
+            pintaRegional: canvas === 'python-pgzero',
             ...('mission' in value && value.mission === true ? { mission: true as const } : {}),
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
@@ -485,6 +487,7 @@ async function initialize(event: MessageEvent<unknown>) {
           if (closed) return
           renderer = module.createRaylibRenderer(document.body, {
             focus,
+            pintaRegional: canvas === 'python-raylib-2d',
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {
@@ -565,6 +568,7 @@ async function initialize(event: MessageEvent<unknown>) {
               const current = renderer
               if (!prepared || !current || closed)
                 throw new Error('O ambiente gráfico ainda não está pronto.')
+              if (isPintaTextureRequest(request)) return current.exchange(request, images)
               return pause.exchange(
                 request,
                 () => current.exchange(request, images),

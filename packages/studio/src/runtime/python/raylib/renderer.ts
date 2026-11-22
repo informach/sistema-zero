@@ -2,6 +2,14 @@ import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
 import { createPgzeroFramePacer } from '../pgzero/pacing'
 import type { PgzeroAudioCommand } from '../pgzero/protocol'
+import {
+  checkPintaAffine,
+  checkPintaReleaseAttachments,
+  isPintaTextureRequest,
+  readPintaTextureAttachment,
+  readPintaTextureRequest,
+} from '../pintaRegionProtocol'
+import { createPintaTextureStore } from '../pintaRegionTextures'
 import { createPythonRendererFocus, type PythonRendererFocusOptions } from '../rendererFocus'
 import { DEFAULT_FONT_RECS, DEFAULT_FONT_WORDS } from './defaultFont.generated'
 import {
@@ -224,6 +232,7 @@ export function createRaylibRenderer(
     onAudio?(commands: readonly PgzeroAudioCommand[], watch: boolean): void
     takeEndedVoices?(limit: number): number[]
     onTitle?(title: string): void
+    pintaRegional?: boolean
   } = {},
 ): RaylibRenderer {
   const focusCanvas = createPythonRendererFocus(options)
@@ -248,6 +257,7 @@ export function createRaylibRenderer(
   let count = 0
   let batchMode = 0
   let batchTexture = DEFAULT_TEXTURE
+  let batchPintaTexture: WebGLTexture | undefined
   let width = 0
   let height = 0
   let targetWidth = 0
@@ -274,6 +284,13 @@ export function createRaylibRenderer(
   let three: Raylib3D | undefined
   let renderingTexture = false
   let currentPixels = 0
+  const pinta = createPintaTextureStore({
+    maxImages: RAYLIB_LIMITS.textures,
+    maxPixels: RAYLIB_LIMITS.totalPixels,
+    existing: () => ({ images: gl ? textures.size : 2, pixels: currentPixels }),
+    create: createPintaTexture,
+    release: (entry) => gl?.deleteTexture(entry.texture),
+  })
 
   function active() {
     if (disposed) throw new Error('A execução do Raylib foi encerrada.')
@@ -370,21 +387,14 @@ export function createRaylibRenderer(
     // must not stay half made). The built-in textures and the font atlases are the runtime's,
     // as on the Python side, which counts only what the game loads.
     const counted = id > DEFAULT_FONT_TEXTURE && !fontAtlas ? w * h : 0
-    if (counted && currentPixels + counted > RAYLIB_LIMITS.totalPixels)
+    if (counted && currentPixels + pinta.pixels + counted > RAYLIB_LIMITS.totalPixels)
       throw new Error('As imagens do jogo passaram do limite de tamanho.')
-    if (counted && textures.size >= RAYLIB_LIMITS.textures)
+    if (counted && textures.size + pinta.count >= RAYLIB_LIMITS.textures)
       throw new Error('O jogo carregou imagens demais ao mesmo tempo.')
     const texture = g.createTexture()
-    g.bindTexture(g.TEXTURE_2D, texture)
-    if (pixels instanceof ImageBitmap)
-      g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, pixels)
-    else g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, w, h, 0, g.RGBA, g.UNSIGNED_BYTE, pixels)
     // raylib (rlLoadTexture on OpenGL 3.3): TEXTURE_FILTER_POINT and TEXTURE_WRAP_REPEAT, the
     // color texture of a render texture included.
-    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.NEAREST)
-    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.NEAREST)
-    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.REPEAT)
-    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.REPEAT)
+    uploadTexture(g, texture, w, h, pixels, g.REPEAT)
     const entry: Texture = { texture, width: w, height: h, pixels: counted }
     if (renderTarget) {
       entry.framebuffer = g.createFramebuffer()
@@ -400,6 +410,41 @@ export function createRaylibRenderer(
     }
     currentPixels += entry.pixels
     textures.set(id, entry)
+  }
+
+  function uploadTexture(
+    g: WebGL2RenderingContext,
+    texture: WebGLTexture,
+    w: number,
+    h: number,
+    pixels: Uint8Array | ImageBitmap | null,
+    wrap: number,
+  ) {
+    g.bindTexture(g.TEXTURE_2D, texture)
+    if (pixels instanceof ImageBitmap)
+      g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, g.RGBA, g.UNSIGNED_BYTE, pixels)
+    else g.texImage2D(g.TEXTURE_2D, 0, g.RGBA, w, h, 0, g.RGBA, g.UNSIGNED_BYTE, pixels)
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.NEAREST)
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.NEAREST)
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, wrap)
+    g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, wrap)
+  }
+
+  function createPintaTexture(bitmap: ImageBitmap) {
+    const g = ensureGl()
+    const texture = g.createTexture()
+    if (!texture) throw new Error('Não consegui preparar uma textura do cenário do Pinta.')
+    const { width, height } = bitmap
+    try {
+      uploadTexture(g, texture, width, height, bitmap, g.CLAMP_TO_EDGE)
+      if (g.getError() !== g.NO_ERROR)
+        throw new Error('Não consegui preparar uma textura do cenário do Pinta.')
+      bitmap.close()
+      return { texture, width, height }
+    } catch (error) {
+      g.deleteTexture(texture)
+      throw error
+    }
   }
 
   function release(id: number) {
@@ -605,7 +650,7 @@ export function createRaylibRenderer(
     const g = gl
     const mvp = multiply(view, projection)
     // BeginShaderMode (Raylib 3D): the game's shader draws the batch, with its own uniforms.
-    if (!three?.batch(mvp, batchTexture)) {
+    if (batchPintaTexture || !three?.batch(mvp, batchTexture)) {
       // biome-ignore lint/correctness/useHookAtTopLevel: WebGL's useProgram, not a React hook.
       g.useProgram(program!)
       g.uniformMatrix4fv(mvpLocation, false, mvp)
@@ -620,7 +665,7 @@ export function createRaylibRenderer(
     g.activeTexture(g.TEXTURE0)
     g.bindTexture(
       g.TEXTURE_2D,
-      (textures.get(batchTexture) ?? textures.get(DEFAULT_TEXTURE)!).texture,
+      batchPintaTexture ?? (textures.get(batchTexture) ?? textures.get(DEFAULT_TEXTURE)!).texture,
     )
     g.drawArrays(batchMode === 1 ? g.LINES : g.TRIANGLES, 0, count)
     g.bindVertexArray(null)
@@ -634,12 +679,13 @@ export function createRaylibRenderer(
     flush()
     three?.endBatch()
   }
-  function begin(mode: 0 | 1, texture = DEFAULT_TEXTURE, vertices = 6) {
+  function begin(mode: 0 | 1, texture = DEFAULT_TEXTURE, vertices = 6, regional?: WebGLTexture) {
     if (count + vertices > MAX_VERTICES) endBatch()
-    if (mode !== batchMode || texture !== batchTexture) {
+    if (mode !== batchMode || texture !== batchTexture || regional !== batchPintaTexture) {
       flush()
       batchMode = mode
       batchTexture = texture
+      batchPintaTexture = regional
     }
   }
   function vertex(x: number, y: number, u: number, v: number, color: number, z = 0) {
@@ -1225,6 +1271,44 @@ export function createRaylibRenderer(
     vertex(trx, try_, u1, v0, tint)
   }
 
+  function pintaAffine(list: Float64Array, at: number) {
+    const image = pinta.image(list[at]!, list[at + 1]!)
+    checkPintaAffine(list, at, image)
+    const x = list[at + 2]!,
+      y = list[at + 3]!,
+      w = list[at + 4]!,
+      h = list[at + 5]!
+    const a = list[at + 6]!,
+      b = list[at + 7]!,
+      c = list[at + 8]!,
+      d = list[at + 9]!
+    const e = list[at + 10]!,
+      f = list[at + 11]!
+    const det = a * d - b * c
+    const alpha = Math.round(list[at + 12]! * 255)
+    if (!alpha || det === 0) return
+    const u0 = x / image.width,
+      u1 = (x + w) / image.width
+    const v0 = y / image.height,
+      v1 = (y + h) / image.height
+    const tint = 0xffffff00 + alpha
+    const rightX = a * w,
+      rightY = b * w,
+      downX = c * h,
+      downY = d * h
+    begin(0, DEFAULT_TEXTURE, 6, image.texture)
+    // The front face is TL, BL, BR, TR in the top-left coordinate system. A reflection
+    // reverses the order while preserving the coordinates and UV of each vertex.
+    vertex(e, f, u0, v0, tint)
+    if (det > 0) vertex(e + downX, f + downY, u0, v1, tint)
+    else vertex(e + rightX, f + rightY, u1, v0, tint)
+    vertex(e + rightX + downX, f + rightY + downY, u1, v1, tint)
+    vertex(e, f, u0, v0, tint)
+    vertex(e + rightX + downX, f + rightY + downY, u1, v1, tint)
+    if (det > 0) vertex(e + rightX, f + rightY, u1, v0, tint)
+    else vertex(e + downX, f + downY, u0, v1, tint)
+  }
+
   function text(list: Float64Array, at: number) {
     const fontId = list[at]!
     const size = list[at + 1]!
@@ -1404,6 +1488,7 @@ export function createRaylibRenderer(
   function paint(list: Float64Array) {
     const g = ensureGl()
     count = 0
+    batchPintaTexture = undefined
     setTarget(0)
     g.disable(g.DEPTH_TEST)
     // rlglInit: back faces culled, counter-clockwise front. A clockwise draw_triangle is
@@ -1659,6 +1744,17 @@ export function createRaylibRenderer(
           break
         case RAYLIB_OP.TEXTURE_NPATCH:
           npatch(r, at)
+          break
+        case RAYLIB_OP.PINTA_AFFINE:
+          if (!options.pintaRegional)
+            throw new Error('Este jogo não usa o compositor do Raylib 2D.')
+          pintaAffine(r, at)
+          break
+        case RAYLIB_OP.PINTA_RELEASE:
+          if (!options.pintaRegional)
+            throw new Error('Este jogo não usa o compositor do Raylib 2D.')
+          endBatch()
+          pinta.release(r[at]!)
           break
         case RAYLIB_OP.BEGIN_2D:
           endBatch()
@@ -1950,6 +2046,19 @@ export function createRaylibRenderer(
       if (busy) throw new Error('Um quadro do Raylib já está em andamento.')
       busy = true
       try {
+        if (isPintaTextureRequest(raw)) {
+          if (!options.pintaRegional)
+            throw new Error('Este jogo não usa o compositor do Raylib 2D.')
+          const request = readPintaTextureRequest(raw, RAYLIB_LIMITS.textures)
+          if ('owner' in request) {
+            checkPintaReleaseAttachments(attachments)
+            pinta.release(request.owner)
+            return '{}'
+          }
+          const owner = await pinta.load(request, readPintaTextureAttachment(attachments, request))
+          active()
+          return JSON.stringify({ pintaOwner: owner })
+        }
         const header = readRaylibFrameHeader(raw)
         const supplied = new Map<number, Uint8Array<ArrayBuffer>>()
         for (const attachment of attachments) {
@@ -2054,6 +2163,7 @@ export function createRaylibRenderer(
       raf = undefined
       pendingPaint?.reject(new Error('A execução do Raylib foi encerrada.'))
       pendingPaint = undefined
+      pinta.dispose()
       if (canvas && canvas.ownerDocument.pointerLockElement === canvas)
         canvas.ownerDocument.exitPointerLock()
       three?.dispose()

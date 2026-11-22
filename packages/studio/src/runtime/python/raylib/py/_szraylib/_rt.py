@@ -59,6 +59,8 @@ OP_SCALE = 38
 OP_LINE_BEZIER = 39
 OP_POINTS = 40
 OP_TEXTURE_NPATCH = 41
+OP_PINTA_AFFINE = 42
+OP_PINTA_RELEASE = 43
 # 3D (a extensão Raylib 3D): _camera3d.py, _draw3d.py e _models.py.
 OP_BEGIN_3D = 60
 OP_END_3D = 61
@@ -167,6 +169,7 @@ input = _Input()
 
 ops = array('d')
 _previous_payload = None
+_pinta_owners = set()
 _transport = None
 _decoder = None
 _root = '.'
@@ -290,6 +293,30 @@ def _exchange(header, payload):
     return reply, pixels
 
 
+def _pinta_carregar(images, payload):
+    require_window('abrir cenário do Pinta')
+    if mode != '2d':
+        raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
+    reply, _ = _exchange({'pintaLoad': images}, payload)
+    return reply.get('pintaOwner')
+
+
+def _pinta_desenhar(owner, index, crop, matrix, opacity):
+    require_window('desenhar cenário do Pinta')
+    if mode != '2d':
+        raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
+    ops.extend((OP_PINTA_AFFINE, owner, index, *crop, *matrix, opacity))
+    _pinta_owners.add(owner)
+
+
+def _pinta_descartar(owner):
+    if owner in _pinta_owners:
+        ops.extend((OP_PINTA_RELEASE, owner))
+        _pinta_owners.discard(owner)
+    else:
+        _exchange({'pintaRelease': owner}, b'')
+
+
 def decode_image(path):
     """RGBA de um arquivo do projeto, decodificado no navegador (sem pygame, sem PIL)."""
     if _decoder is None:
@@ -375,6 +402,7 @@ def present():
     pending_free[:] = [item for item in pending_free if item in waiting]
     audio.clear()
     _previous_payload = payload
+    _pinta_owners.clear()
     _apply_reply(reply)
     _held = reply.get('hold') is True
     return reply

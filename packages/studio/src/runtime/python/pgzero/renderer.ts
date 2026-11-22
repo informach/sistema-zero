@@ -2,6 +2,14 @@ import type { ExecutionMotionSample } from '@sistemazero/core/learning'
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
 import { createPythonMissionPoseTracker } from '../missionPose'
+import {
+  checkPintaAffine,
+  checkPintaReleaseAttachments,
+  isPintaTextureRequest,
+  readPintaTextureAttachment,
+  readPintaTextureRequest,
+} from '../pintaRegionProtocol'
+import { createPintaTextureStore } from '../pintaRegionTextures'
 import { createPythonRendererFocus, type PythonRendererFocusOptions } from '../rendererFocus'
 import { createPgzeroInputQueue, readPgzeroKey } from './inputQueue'
 import { PGZERO_KEY_MODS } from './keyCodes.generated'
@@ -94,6 +102,8 @@ export function createPgzeroRenderer(
   options: PythonRendererFocusOptions & {
     /** How the canvas introduces itself to screen readers (Pygame Zero by default). */
     name?: string
+    /** The Pygame-ce screen transport uses this renderer without recorded Pinta draws. */
+    pintaRegional?: boolean
     /** `watch`: Python waits for sounds to end, so the host should report them. */
     onAudio?(commands: readonly PgzeroAudioCommand[], watch: boolean): void
     /** At most `limit` sounds that ended since the previous frame (their voice ids). */
@@ -113,6 +123,13 @@ export function createPgzeroRenderer(
   const textCache = new Map<string, TextSurface>()
   let textCachePixels = 0
   let imagePixels = 0
+  const pinta = createPintaTextureStore({
+    maxImages: PGZERO_LIMITS.images,
+    maxPixels: PGZERO_LIMITS.totalImagePixels,
+    existing: () => ({ images: images.size, pixels: imagePixels }),
+    create: (bitmap) => bitmap,
+    release: (bitmap) => bitmap.close(),
+  })
   const input = createPgzeroInputQueue()
   const pacer = createPgzeroFramePacer()
   const listeners = new AbortController()
@@ -659,6 +676,28 @@ export function createPgzeroRenderer(
           ctx.restore()
           break
         }
+        case PGZERO_OP.PINTA_AFFINE: {
+          if (!options.pintaRegional)
+            throw new Error('Este jogo não usa o compositor do Pygame Zero.')
+          const image = pinta.image(r[at]!, r[at + 1]!)
+          checkPintaAffine(r, at, image)
+          const w = r[at + 4]!,
+            h = r[at + 5]!
+          ctx.save()
+          try {
+            ctx.transform(r[at + 6]!, r[at + 7]!, r[at + 8]!, r[at + 9]!, r[at + 10]!, r[at + 11]!)
+            ctx.globalAlpha = r[at + 12]!
+            ctx.drawImage(image, r[at + 2]!, r[at + 3]!, w, h, 0, 0, w, h)
+          } finally {
+            ctx.restore()
+          }
+          break
+        }
+        case PGZERO_OP.PINTA_RELEASE:
+          if (!options.pintaRegional)
+            throw new Error('Este jogo não usa o compositor do Pygame Zero.')
+          pinta.release(r[at]!)
+          break
         // The shapes of pygame.draw and screen.draw fill whole pixels, exactly pygame-ce's
         // (pixelShapes.ts): the browser would smooth their edges, and get_at would read a mix.
         case PGZERO_OP.LINE:
@@ -791,8 +830,10 @@ export function createPgzeroRenderer(
   ) {
     if (bytes.byteLength > PGZERO_LIMITS.imageBytes)
       throw new Error(`A imagem ${filePath} é grande demais.`)
-    if (imagePixels + w * h > PGZERO_LIMITS.totalImagePixels)
+    if (imagePixels + pinta.pixels + w * h > PGZERO_LIMITS.totalImagePixels)
       throw new Error('As imagens do jogo passaram do limite de tamanho.')
+    if (pinta.count && !images.has(id) && images.size + pinta.count >= PGZERO_LIMITS.images)
+      throw new Error('O jogo carregou imagens demais ao mesmo tempo.')
     if (/\.svg$/i.test(filePath)) {
       const vector = await decodeVector(bytes, filePath)
       if (disposed) {
@@ -877,6 +918,26 @@ export function createPgzeroRenderer(
       if (busy) throw new Error('Um quadro do Pygame Zero já está em andamento.')
       busy = true
       try {
+        if (isPintaTextureRequest(raw)) {
+          if (!options.pintaRegional)
+            throw new Error('Este jogo não usa o compositor do Pygame Zero.')
+          const request = readPintaTextureRequest(raw, PGZERO_LIMITS.images)
+          // An older batch may still draw or release an owner before this resource exchange.
+          if (shown) {
+            const previous = shown
+            shown = undefined
+            await previous
+            active()
+          }
+          if ('owner' in request) {
+            checkPintaReleaseAttachments(attachments)
+            pinta.release(request.owner)
+            return '{}'
+          }
+          const owner = await pinta.load(request, readPintaTextureAttachment(attachments, request))
+          active()
+          return JSON.stringify({ pintaOwner: owner })
+        }
         const header = readPgzeroFrameHeader(raw)
         const supplied = new Map<number, Uint8Array<ArrayBuffer>>()
         for (const attachment of attachments) {
@@ -1059,6 +1120,7 @@ export function createPgzeroRenderer(
       raf = undefined
       pendingPaint?.reject(new Error('A execução do Pygame Zero foi encerrada.'))
       pendingPaint = undefined
+      pinta.dispose()
       for (const image of images.values()) image.close()
       images.clear()
       lastPixels?.close()
