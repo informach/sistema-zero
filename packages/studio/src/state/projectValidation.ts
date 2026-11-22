@@ -41,6 +41,7 @@ import {
 } from '../blockly/blocksStateVersion'
 import { WEB_BLOCK_TYPES_BY_CATEGORY } from '../codecs/web/registry'
 import type { EditableStudioProject } from '../core/editableProject'
+import type { PintaRegionalProjectAdmissions } from '../core/pintaRegionalProjectAdmission'
 import {
   assertProjectContentPreserved,
   CURRENT_PROJECT_FORMAT_VERSION,
@@ -1019,6 +1020,7 @@ export function sanitizeStoredProject(
   raw: unknown,
   requestedId?: string,
   proBuildLimits?: StudioProBuildLimits,
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Project | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) {
     return null
@@ -1029,7 +1031,12 @@ export function sanitizeStoredProject(
       'Este projeto precisa ser convertido antes da abertura.',
     )
   const r = copyDocument(raw)
-  const project = sanitizeJavaScriptProjectPayload(r, requestedId, proBuildLimits)
+  const project = sanitizeJavaScriptProjectPayload(
+    r,
+    requestedId,
+    proBuildLimits,
+    regionalMaterials,
+  )
   if (!project) return null
   assertProjectContentPreserved(raw, project)
   return copyLocalRevision(raw as { id: string }, project)
@@ -1040,6 +1047,7 @@ export function sanitizeJavaScriptProjectPayload(
   r: Record<string, unknown>,
   requestedId?: string,
   proBuildLimits?: StudioProBuildLimits,
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Project | null {
   // `requestedId` (load por chave interna do IndexedDB) é confiável — usado como
   // está. Sem ele (caminho do host `initialProject`/`sanitizeProjectForHost`), o
@@ -1103,7 +1111,7 @@ export function sanitizeJavaScriptProjectPayload(
       ? null
       : sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
-    assets: sanitizeProjectAssets(r.assets),
+    assets: sanitizeProjectAssets(r.assets, { regionalMaterials }),
     createdAt,
     updatedAt,
     ...(bridgeCodeAhead ? { bridgeCodeAhead: true as const } : {}),
@@ -1125,14 +1133,20 @@ export function sanitizeJavaScriptProjectPayload(
  */
 export function sanitizeProjectForHost(
   raw: unknown,
-  options: { proBuildLimits?: StudioProBuildLimits } = {},
+  options: {
+    proBuildLimits?: StudioProBuildLimits
+    regionalMaterials?: PintaRegionalProjectAdmissions
+  } = {},
 ): Project | null {
-  return sanitizeStoredProject(raw, undefined, options.proBuildLimits)
+  return sanitizeStoredProject(raw, undefined, options.proBuildLimits, options.regionalMaterials)
 }
 
 export async function prepareProjectForHost(
   raw: unknown,
-  options: { proBuildLimits?: StudioProBuildLimits } = {},
+  options: {
+    proBuildLimits?: StudioProBuildLimits
+    regionalMaterials?: PintaRegionalProjectAdmissions
+  } = {},
 ): Promise<Project | null> {
   if (raw == null) return null
   const project = sanitizeProjectForHost(await prepareProjectDocument(raw), options)

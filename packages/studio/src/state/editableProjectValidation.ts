@@ -1,7 +1,14 @@
 import type { StudioProBuildLimits } from '@sistemazero/core/studio/pro-build'
-import { STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION } from '@sistemazero/core/studio/project-format'
+import {
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import type { EditableStudioProject } from '../core/editableProject'
+import {
+  PRIVATE_REGIONAL_JS_PROJECT,
+  type RegionalJsProjectReadOptions,
+} from '../core/pintaRegionalReference'
 import {
   isDocumentRecord,
   ProjectDocumentError,
@@ -14,15 +21,24 @@ import { prepareProjectForHost } from './projectValidation'
 /** One language dispatch for storage, host snapshots and recovery; never guesses Python as JS. */
 export async function prepareEditableStudioProject(
   raw: unknown,
-  options: { proBuildLimits?: StudioProBuildLimits } = {},
+  options: { proBuildLimits?: StudioProBuildLimits } & RegionalJsProjectReadOptions = {},
 ): Promise<EditableStudioProject | null> {
   if (raw == null) return null
-  const policy = {
-    proBuildLimits: options.proBuildLimits ? { ...options.proBuildLimits } : undefined,
-  }
+  const proBuildLimits = options.proBuildLimits ? { ...options.proBuildLimits } : undefined
+  const privateRead = options[PRIVATE_REGIONAL_JS_PROJECT] === true
   const version = projectFormatVersion(raw)
   const captured = copyStudioProjectJson(raw)
   if (!isDocumentRecord(captured) || !isDocumentRecord(raw)) throw new Error('Documento inválido.')
+  const regionalMaterials =
+    privateRead &&
+    captured.programmingLanguage !== 'python' &&
+    (version === STUDIO_PROJECT_FORMAT_VERSION ||
+      version === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
+      ? await (await import('../core/pintaRegionalProjectAdmission')).admitRegionalProjectAssets(
+          captured.assets,
+        )
+      : undefined
+  const policy = { proBuildLimits, regionalMaterials }
   const snapshot =
     typeof captured.id === 'string'
       ? copyLocalRevision(raw as { id: string }, { ...captured, id: captured.id })

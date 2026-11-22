@@ -10,6 +10,10 @@ import {
 } from '@sistemazero/core/studio/pinta-scene'
 import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
+import {
+  admittedRegionalMarker,
+  type PintaRegionalProjectAdmissions,
+} from './pintaRegionalProjectAdmission'
 import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
 import { validProMaterialPath } from './proAssetPaths'
 import {
@@ -582,6 +586,7 @@ export function sanitizeProjectAssets(
   options: {
     materialPath?: (path: unknown, kind?: ProjectAsset['kind']) => path is string
     dataLimits?: ProjectAssetDataLimits
+    regionalMaterials?: PintaRegionalProjectAdmissions
     /** Recebe os avisos do que foi deixado de fora sem derrubar o material (hoje, a cena). */
     warnings?: string[]
   } = {},
@@ -596,7 +601,10 @@ export function sanitizeProjectAssets(
     if (out.length >= MAX_ASSETS_COUNT) break
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
-    if (hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
+    const regional = hasRegionalPintaReference(a)
+      ? admittedRegionalMarker(a, options.regionalMaterials)
+      : undefined
+    if (!regional && hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
     const pintaImage = readPintaImageAssetMetadata(a)
     if (
       a.kind !== 'image' &&
@@ -640,6 +648,7 @@ export function sanitizeProjectAssets(
       dataUrl: a.dataUrl,
       source,
       ...(pintaImage ? { pintaImage } : {}),
+      ...(regional ? { regional } : {}),
     }
     if (materialPath(a.proPath, kind)) asset.proPath = a.proPath
     if (kind === 'scene3d-data') {

@@ -1,12 +1,9 @@
-export const UNSUPPORTED_PINTA_REGION =
-  'Este cenário usa dados que esta versão do Estúdio ainda não abre. O original foi preservado.'
+export {
+  assertLegacyStudioProjectMaterials,
+  hasRegionalPintaReference,
+  UNSUPPORTED_PINTA_REGION,
+} from '@sistemazero/core/studio/pinta-regional-reference'
 
-/** Explicit markers only. Plain uploaded PNGs are still usable as images. */
-export function hasRegionalPintaReference(value: unknown): boolean {
-  if (!value || typeof value !== 'object') return false
-  const record = value as Record<string, unknown>
-  const scene = record.scene as { version?: unknown } | null | undefined
-  return (
-    Object.hasOwn(record, 'regional') || (typeof scene?.version === 'number' && scene.version >= 4)
-  )
-}
+/** In-process option for a private JS reader only. Never a document, request or catalog field. */
+export const PRIVATE_REGIONAL_JS_PROJECT = Symbol('private-regional-js-project')
+export type RegionalJsProjectReadOptions = { [PRIVATE_REGIONAL_JS_PROJECT]?: true }

@@ -16,6 +16,7 @@ import {
   type StudioPythonPublication,
 } from '@sistemazero/core/studio'
 import { pintaImageRequiredRuntimeFeature } from '@sistemazero/core/studio/pinta-image'
+import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
 import {
   PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_PINTA_WORLD_FEATURE,
@@ -76,6 +77,7 @@ export function studioPublicProject(project: Project): Project
 export function studioPublicProject(project: PythonProjectDocument): PythonProjectDocument
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject {
+  assertLegacyStudioProjectMaterials(project)
   const assets = project.assets?.map(
     // The published image is detached from the author's private Pinta recipe/provenance.
     // A course model keeps its library reference: it is public course art, and without it
@@ -440,6 +442,7 @@ export async function publishStudioClassicRevision(options: {
   parentOrigin: string
   signal?: AbortSignal
 }): Promise<StudioClassicPublication> {
+  assertLegacyStudioProjectMaterials(options.project)
   if (!isStudioPublicationId(options.playId))
     throw new StudioPublicationError(400, 'Publicação inválida.')
   const sourceHash = createHash('sha256').update(options.source).digest('hex')

@@ -1,3 +1,7 @@
+import {
+  PRIVATE_REGIONAL_JS_PROJECT,
+  type RegionalJsProjectReadOptions,
+} from '../core/pintaRegionalReference'
 import type { ProjectAsset } from '../core/projectAssets'
 import { ProjectDocumentError } from '../core/projectDocument'
 import { readValue, readValues } from './idbTransaction'
@@ -134,6 +138,7 @@ export async function readProjectAssetsSnapshot(
   id: string,
   scope: ProjectStorageScope,
   prepareHistorical: () => Promise<void>,
+  options: RegionalJsProjectReadOptions = {},
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
@@ -169,10 +174,29 @@ export async function readProjectAssetsSnapshot(
     ? projectEnvironmentSummary(meta)
     : { programmingLanguage: 'unknown' as const }
   if (!isRecord(record)) return { assets: [], environment }
+  const privateRead = options[PRIVATE_REGIONAL_JS_PROJECT] === true
+  if (
+    privateRead &&
+    (!isRecord(meta) ||
+      (meta.formatVersion !== 2 && meta.formatVersion !== 3) ||
+      environment.programmingLanguage !== 'javascript')
+  )
+    throw new ProjectDocumentError(
+      'invalid-document',
+      'A captura regional precisa de um projeto JavaScript compatível.',
+    )
+  const regionalMaterials = privateRead
+    ? await (await import('../core/pintaRegionalProjectAdmission')).admitRegionalProjectAssets(
+        record.assets,
+        scope.signal,
+      )
+    : undefined
   const assets =
     isRecord(meta) && meta.programmingLanguage === 'python'
       ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
-      : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
+      : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets, {
+          regionalMaterials,
+        })
   // A mesma trava da abertura completa: a limpeza não pode tirar nada do que está no disco. Sem
   // ela, uma cena que esta versão não lê (gravada por um Estúdio mais novo) ou que passou do
   // orçamento saía calada aqui, e a varredura dos desenhos regravava a lista inteira sem ela.

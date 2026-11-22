@@ -39,6 +39,7 @@
  * rodam no SSR): as funções chegam por parâmetro, nunca por import estático.
  */
 import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
+import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
 
 export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
 
@@ -186,6 +187,7 @@ const PART_FETCH_CONCURRENCY = 3
 export async function buildStudioCloudSnapshot(
   project: StudioProjectLike,
 ): Promise<{ json: string; parts?: CloudPart[] }> {
+  assertLegacyStudioProjectMaterials(project)
   const assets = Array.isArray(project.assets) ? project.assets : []
   if (assets.length === 0 || !hashSupported()) return { json: JSON.stringify(project) }
   // Um asset por vez: o pico de memória é UM JSON canônico (um cenário pode ter MB), não

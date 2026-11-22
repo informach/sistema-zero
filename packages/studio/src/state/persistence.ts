@@ -1,4 +1,9 @@
 import type { EditableStudioProject } from '../core/editableProject'
+import {
+  assertLegacyStudioProjectMaterials,
+  hasRegionalPintaReference,
+  type RegionalJsProjectReadOptions,
+} from '../core/pintaRegionalReference'
 import type { ProjectAsset } from '../core/projectAssets'
 import {
   CURRENT_PROJECT_FORMAT_VERSION,
@@ -375,6 +380,7 @@ export async function loadProjectAssetsById(
 export async function loadProjectAssetsSnapshotById(
   id: string,
   storageScope?: ProjectStorageScope,
+  options?: RegionalJsProjectReadOptions,
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
@@ -387,6 +393,7 @@ export async function loadProjectAssetsSnapshotById(
     async () => {
       notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
     },
+    options,
   )
   if (observedHead !== undefined) assetReadHeads.set(assets, observedHead)
   return { assets, environment }
@@ -461,7 +468,7 @@ export async function persistProjectAssets(
   // Uma varredura iniciada no perfil A pode terminar depois de o host ativar B. Os bytes
   // continuam no scope capturado de A, mas eventos/espelho globais já pertencem a B.
   if (captureProjectStorageScope().identity !== captured.identity) return true
-  notifyMirrorChanged(id)
+  if (!assets.some(hasRegionalPintaReference)) notifyMirrorChanged(id)
   notifyProjectChanged(id)
   return true
 }
@@ -473,12 +480,13 @@ export async function deleteProject(
 ): Promise<void> {
   const scope = storageScope ?? captureProjectStorageScope()
   let builderDeletion = false
-  // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
-  // re-persistiria o projeto recém-apagado.
-  cancelPendingAutosavesFor(id, scope.identity)
-  // Cerca o armazenamento do programa do aluno ANTES de apagar: um flush do
-  // preview já em voo (writeGameStorage) que chegue depois é descartado.
-  fenceGameStorageDelete(scope, id)
+  const remoteDelete = options.notifyCloudMirror === false
+  const fenceDeletion = () => {
+    // Timers and preview writes still in flight cannot recreate a deleted project.
+    cancelPendingAutosavesFor(id, scope.identity)
+    fenceGameStorageDelete(scope, id)
+  }
+  if (!remoteDelete) fenceDeletion()
   // No MESMO mutex de escrita do id: apagar não pode intercalar com um
   // persist/rename do mesmo projeto. Uma transação com commit explícito, como
   // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
@@ -503,8 +511,15 @@ export async function deleteProject(
       scope.store,
       scope.identity,
       conditionalGeneration(scope.identity),
-      [projectMigrationKey(id), APPLICATION_BUDGET_KEY, projectMetaKey(id)],
-      ([source, oldBudget, currentMeta]) => {
+      [
+        projectMigrationKey(id),
+        APPLICATION_BUDGET_KEY,
+        projectMetaKey(id),
+        ...(remoteDelete ? [projectAssetsKey(id)] : []),
+      ],
+      ([source, oldBudget, currentMeta, protectedMaterials]) => {
+        assertLegacyStudioProjectMaterials(protectedMaterials)
+        if (remoteDelete) fenceDeletion()
         builderDeletion =
           isRecord(currentMeta) && currentMeta.kind === 'pro' && options.notifyCloudMirror !== false
         const nextBudget = isRecord(oldBudget) ? { ...oldBudget } : {}

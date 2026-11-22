@@ -865,7 +865,7 @@ export function createProjectStore(
         if (get().project?.id === project.id || isProjectOpenAnywhere(project.id)) {
           throw new Error('Snapshot recusado: o projeto está aberto no editor.')
         }
-        await bindProjectToDurableHead(project, scope)
+        await bindProjectToDurableHead(project, scope, { legacyMaterialsOnly: true })
         // Antes de persistir, converge desenhos por revisão. Se só um lado é mais novo,
         // ele vence; legado divergente preserva ambos e religa o projeto à cópia remota.
         const drawings = await reconcileDrawingsFromRestoredProject(project, {

@@ -1,5 +1,17 @@
 import { expect, test } from 'bun:test'
+import { buildStudioCloudSnapshot } from '../src/lib/studio-cloud'
 import { createStudioCloudTransport } from '../src/lib/studio-cloud-transport'
+
+test('material regional privado não gera manifesto multipart para o espelho', async () => {
+  await expect(
+    buildStudioCloudSnapshot({
+      id: 'project',
+      name: 'Mapa',
+      updatedAt: 0,
+      assets: [{ regional: {} }],
+    }),
+  ).rejects.toThrow('O original foi preservado')
+})
 
 for (const formatVersion of [2, 3]) {
   test(`o cliente atual exclui revisão conhecida de formato ${formatVersion}`, async () => {

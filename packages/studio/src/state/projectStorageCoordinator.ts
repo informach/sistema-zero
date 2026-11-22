@@ -1,4 +1,5 @@
 import type { EditableStudioProject } from '../core/editableProject'
+import { assertLegacyStudioProjectMaterials } from '../core/pintaRegionalReference'
 import { isDocumentRecord } from '../core/projectDocumentGuards'
 import { encodeExitJournal } from './exitJournalCodec'
 import {
@@ -265,9 +266,12 @@ export async function commitProjectRecovery(
       projectApplicationsKey(id, version),
       applicationBudgetKey(version),
       recoveryKey,
+      ...(incoming.resetApplications ? [projectAssetsKey(id, version)] : []),
       ...(prepared?.keys ?? []),
     ],
     ([rawHead, meta, oldJournal, oldBudget, recovery, ...sourceValues]) => {
+      // A whole-project replacement (cloud restore) must not overwrite private materials.
+      if (incoming.resetApplications) assertLegacyStudioProjectMaterials(sourceValues.shift())
       prepared?.assertUnchanged(recovery, sourceValues)
       if (unchangedRecovery && !unchangedRecovery(recovery))
         throw new Error('A recuperação mudou antes da gravação. A revisão atual foi preservada.')
@@ -518,6 +522,7 @@ export async function listProApplications(
 export async function bindProjectToDurableHead(
   project: { id: string },
   scope: ProjectStorageScope,
+  options: { legacyMaterialsOnly?: true } = {},
 ): Promise<void> {
   // A migração da base v3 só troca o formato: a cabeça v3 vira a cabeça v4 e o conteúdo é o
   // mesmo. Ela vem ANTES da captura; sem isso, a primeira substituição de um projeto que só
@@ -527,10 +532,12 @@ export async function bindProjectToDurableHead(
     const { migrateLocalV3Projects } = await import('../project-migrations/localV3Projects')
     await migrateLocalV3Projects(scope, undefined, project.id)
   }
-  let [head, meta] = await readValues(scope.store, [
+  let [head, meta, materials] = await readValues(scope.store, [
     projectHeadKey(project.id),
     projectMetaKey(project.id),
+    ...(options.legacyMaterialsOnly ? [projectAssetsKey(project.id)] : []),
   ])
+  if (options.legacyMaterialsOnly) assertLegacyStudioProjectMaterials(materials)
   if (!head && meta) {
     await ensureProjectHead(scope, project.id)
     ;[head] = await readValues(scope.store, [projectHeadKey(project.id)])
