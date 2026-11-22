@@ -131,11 +131,18 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
     })
   const original = await source()
   const savedProgram = () => page.evaluate(() => studioFreeProbe.savedProgramArea('main.py'))
-  // Opening an example alone persists Programa; no layout or source edit is needed.
-  await expect.poll(savedProgram).toMatchObject({
-    pending: false,
-    rootTypes: ['sz_py_program'],
-  })
+  // Opening an example alone persists the areas (22/11/2026: the six `sz_py_area_<kind>` replaced
+  // Programa); no layout or source edit is needed. Only the areas with lines are roots.
+  await expect
+    .poll(async () => {
+      const saved = await savedProgram()
+      const roots = saved?.rootTypes ?? []
+      return {
+        pending: saved?.pending,
+        areas: roots.length > 0 && roots.every((type: string) => type.startsWith('sz_py_area_')),
+      }
+    })
+    .toEqual({ pending: false, areas: true })
   const legacyRoot = await page.evaluate(() => studioFreeProbe.legacyWorkspaceSnapshot())
   await page.getByTitle('Voltar à lista de projetos', { exact: true }).click()
   await page.evaluate(() => studioFreeProbe.saveLegacyWorkspace())
@@ -237,7 +244,7 @@ test('program statements move to scratch and back with undo and redo', async ({ 
   await drafts(page, 1).click()
   await assignment.click({ button: 'right', position: { x: 8, y: 10 } })
   await page
-    .getByRole('menuitem', { name: 'Inserir pilha no final do Programa', exact: true })
+    .getByRole('menuitem', { name: 'Inserir no final de ⚙️ Ao iniciar', exact: true })
     .click()
   await expect.poll(source).toBe('print(x)\nx = 7\n')
   await expect(drafts(page, 0)).toBeDisabled()

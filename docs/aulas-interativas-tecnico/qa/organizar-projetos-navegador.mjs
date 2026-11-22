@@ -147,7 +147,9 @@ try {
             scrollbars: false,
           })
           const estado = structuredClone(item.blocksState)
-          estado.blocks.blocks.forEach((b, i) => Object.assign(b, posicoes[i]))
+          estado.blocks.blocks.forEach((b, i) => {
+            Object.assign(b, posicoes[i])
+          })
           o.loadWorkspaceState(estado, ws)
           o.Blockly.svgResize(ws)
           ws.scroll(0, 0)

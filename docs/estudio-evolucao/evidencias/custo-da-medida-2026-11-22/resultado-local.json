@@ -12,19 +12,11 @@
       "costs": {
         "desempenho": {
           "percentP50": -0.06,
-          "perRoundPercent": [
-            -0.06,
-            0.07,
-            -0.36
-          ]
+          "perRoundPercent": [-0.06, 0.07, -0.36]
         },
         "investigar": {
           "percentP50": -0.23,
-          "perRoundPercent": [
-            -0.23,
-            -0.31,
-            0.05
-          ]
+          "perRoundPercent": [-0.23, -0.31, 0.05]
         }
       },
       "samples": [
@@ -147,19 +139,11 @@
       "costs": {
         "desempenho": {
           "percentP50": 0.17,
-          "perRoundPercent": [
-            0.66,
-            0.17,
-            -0.51
-          ]
+          "perRoundPercent": [0.66, 0.17, -0.51]
         },
         "investigar": {
           "percentP50": 0.35,
-          "perRoundPercent": [
-            0.35,
-            1.01,
-            -0.75
-          ]
+          "perRoundPercent": [0.35, 1.01, -0.75]
         }
       },
       "samples": [
@@ -282,19 +266,11 @@
       "costs": {
         "desempenho": {
           "percentP50": -0.18,
-          "perRoundPercent": [
-            0.78,
-            -0.18,
-            -0.82
-          ]
+          "perRoundPercent": [0.78, -0.18, -0.82]
         },
         "investigar": {
           "percentP50": 0.23,
-          "perRoundPercent": [
-            0.78,
-            0.23,
-            -0.41
-          ]
+          "perRoundPercent": [0.78, 0.23, -0.41]
         }
       },
       "samples": [
@@ -417,19 +393,11 @@
       "costs": {
         "desempenho": {
           "percentP50": 1.44,
-          "perRoundPercent": [
-            0.51,
-            1.44,
-            1.71
-          ]
+          "perRoundPercent": [0.51, 1.44, 1.71]
         },
         "investigar": {
           "percentP50": 0.14,
-          "perRoundPercent": [
-            1.72,
-            0.14,
-            -2.31
-          ]
+          "perRoundPercent": [1.72, 0.14, -2.31]
         }
       },
       "samples": [
@@ -552,19 +520,11 @@
       "costs": {
         "desempenho": {
           "percentP50": 0.36,
-          "perRoundPercent": [
-            -0.41,
-            0.44,
-            0.36
-          ]
+          "perRoundPercent": [-0.41, 0.44, 0.36]
         },
         "investigar": {
           "percentP50": 0.64,
-          "perRoundPercent": [
-            0.64,
-            1.13,
-            -1.18
-          ]
+          "perRoundPercent": [0.64, 1.13, -1.18]
         }
       },
       "samples": [
@@ -687,13 +647,7 @@
       "costs": {
         "desempenho": {
           "percentP50": 0.35,
-          "perRoundPercent": [
-            -0.18,
-            0.58,
-            0.64,
-            -0.81,
-            0.35
-          ]
+          "perRoundPercent": [-0.18, 0.58, 0.64, -0.81, 0.35]
         }
       },
       "samples": [

@@ -181,10 +181,11 @@ export function createFreeProbe(root: Root) {
       if (!project || !isPythonProject(project) || project.kind !== 'classic')
         throw new Error('Expected Python classic')
       const workspace = Blockly.serialization.workspaces.save(visualWorkspace())
+      // A primeira área com linhas (as seis `sz_py_area_<tipo>` substituíram o Programa).
       const area = (workspace.blocks.blocks as Blockly.serialization.blocks.State[]).find(
-        (block) => block.type === 'sz_py_program',
+        (block) => block.type.startsWith('sz_py_area_') && block.inputs?.CHILDREN?.block,
       )
-      const first = area?.inputs?.BODY?.block
+      const first = area?.inputs?.CHILDREN?.block
       if (!first?.id) throw new Error('Expected a nonempty program')
       workspace.blocks.blocks = [first]
       const queue = [first]
