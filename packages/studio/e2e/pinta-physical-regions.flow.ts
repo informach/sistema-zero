@@ -1592,3 +1592,36 @@ test('native 8 shadow and physical 3 document share rollback and reopen without 
   })
   await reopened.close()
 })
+
+test('cold regional I/O profile on a signed sparse gallery', async ({ page, context }, info) => {
+  test.skip(!process.env.PINTA_PROFILE_REGIONAL_IO, 'Perfil de IO opt-in')
+  test.setTimeout(120_000)
+  await proof(page)
+  const seed = await page.evaluate(() => window.pintaPhysicalRegions.seedRegionalIoProfile())
+  await page.close()
+  const reader = await context.newPage()
+  await proof(reader)
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(reader)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  const observations = await reader.evaluate(async (seed) => {
+    const observations = []
+    for (let i = 0; i < 10; i++) {
+      const open = await window.pintaPhysicalRegions.profileFullRegionalIo(seed, 'open')
+      const capture = await window.pintaPhysicalRegions.profileFullRegionalIo(seed, 'capture')
+      observations.push({ open, capture })
+    }
+    return observations
+  }, seed)
+  expect(
+    observations.every(({ open }) => open.chunks === 2048 && open.bytes === 4 * 1024 * 1024),
+  ).toBe(true)
+  expect(
+    observations.every(({ capture }) => capture.chunks >= 2048 && capture.inventories === 1),
+  ).toBe(true)
+  await info.attach('regional-io-profile', {
+    body: JSON.stringify(observations, null, 2),
+    contentType: 'application/json',
+  })
+})
