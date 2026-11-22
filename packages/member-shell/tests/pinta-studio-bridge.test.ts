@@ -23,7 +23,7 @@ test('Pinta host bridge owns its DOM and mocked external modules in an isolated 
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b7 pass\b/)
+    expect(stdout + stderr).toMatch(/\b8 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

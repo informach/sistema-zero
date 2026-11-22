@@ -5,6 +5,7 @@ import {
 } from '@sistemazero/core/creations/pinta-causal'
 import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
+import { learnerIdentity } from '../lib/learner-identity'
 import type { SessionUser } from '../lib/types'
 
 export function pintaCausalCandidateReady(): boolean {
@@ -57,4 +58,19 @@ export function pintaCausalPageEligible(
     !isReadonlyImpersonation(user) &&
     pintaCausalProfileAllowed(pintaCausalViewer(user, audience))
   )
+}
+
+export function pintaPalettePageViewer(
+  user: SessionUser | null,
+  audience: PintaCausalViewer['audience'],
+): PintaCausalViewer | null {
+  if (
+    !user ||
+    !learnerIdentity(user, audience) ||
+    isReadonlyImpersonation(user) ||
+    !pintaPaletteWriteCandidateReady()
+  )
+    return null
+  const viewer = pintaCausalViewer(user, audience)
+  return pintaCausalProfileAllowed(viewer) ? viewer : null
 }

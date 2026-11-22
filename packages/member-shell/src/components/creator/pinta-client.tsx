@@ -25,6 +25,7 @@ import {
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
+import { usePintaPaletteAccount } from './pinta-palette-scope'
 import { savePintaStudioBundle } from './save-pinta-studio-bundle'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
@@ -81,9 +82,10 @@ export function PintaClient({
   /** O molde de um objeto do Arquipélago: o Pinta abre (ou reabre) a planificação dele. */
   initialCanvas?: PintaInitialCanvas
 }) {
+  const paletteAccount = usePintaPaletteAccount(viewerId, audience)
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [attempt, setAttempt] = useState(0)
-  const loadKey = JSON.stringify([viewerId, audience, attempt, pintaCausalAllowed])
+  const loadKey = JSON.stringify([viewerId, audience, attempt, pintaCausalAllowed, paletteAccount])
   const [load, setLoad] = useState<PintaLoad | null>(null)
   const current = load?.key === loadKey ? load : null
   const session = current?.status === 'ready' ? current : null
@@ -154,6 +156,7 @@ export function PintaClient({
             maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
             viewerId,
             audience,
+            pintaPaletteWriteEnabled: !!paletteAccount,
             pintaCausalEnabled:
               pintaCausalAllowed && process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 === '1',
           })
@@ -192,7 +195,7 @@ export function PintaClient({
       // The old profile's documents and outbox stay in its database for the next session.
       cloud?.dispose({ abort: true })
     }
-  }, [audience, loadKey, localNamespace, pintaCausalAllowed, viewerId])
+  }, [audience, loadKey, localNamespace, pintaCausalAllowed, paletteAccount, viewerId])
 
   // O selo acompanha a descida (a galeria já abriu com o local; os desenhos de outro aparelho
   // vão chegando). Ao trocar de persistência (perfil), a antiga desliga o que escutava por fora.

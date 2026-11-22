@@ -28,6 +28,7 @@ import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loadi
 import { useFocusMode } from './focus-mode'
 import { type MoldaGuidePersistence, MoldaMissionGuide } from './molda-mission-guide'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
+import { usePintaPaletteAccount } from './pinta-palette-scope'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
@@ -76,6 +77,7 @@ export function MoldaClient({
   narrationEnabled?: boolean
   onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
 }) {
+  const paletteAccount = usePintaPaletteAccount(viewerId, audience)
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [mod, setMod] = useState<MoldaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -103,6 +105,12 @@ export function MoldaClient({
     null,
   )
   const paletteBridgeCleanup = useRef<(() => void) | null>(null)
+  const selectedPalette = useRef(paletteAccount)
+  const renewPalettes = useRef<((account: string | null) => void) | null>(null)
+  useEffect(() => {
+    selectedPalette.current = paletteAccount
+    renewPalettes.current?.(paletteAccount)
+  }, [paletteAccount])
   const loadRevision = useRef(0)
   const router = useRouter()
   const { setWorkspaceActive } = useFocusMode()
@@ -160,6 +168,7 @@ export function MoldaClient({
     const revision = ++loadRevision.current
     paletteBridgeCleanup.current?.()
     paletteBridgeCleanup.current = null
+    renewPalettes.current = null
     setMod(null)
     setLoadError(false)
     setCloud(null)
@@ -174,37 +183,44 @@ export function MoldaClient({
       m.setMoldaStorageNamespace(localNamespace)
       // A lista "Minhas paletas" pertence ao perfil do Pinta. O Molda usa a MESMA store
       // e o mesmo espelho de nuvem, inclusive quando o Pinta não está montado nesta rota.
-      const pintaLocal = p.createPintaPersistence({ namespace: localNamespace })
-      const pintaCloud = viewerId
-        ? createCreationsCloud({
-            tool: 'pinta',
-            maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
-            viewerId,
-          })
-        : null
-      const mirroredPinta = pintaCloud
-        ? createCloudMirroredPintaPersistence({
-            local: pintaLocal,
-            cloud: pintaCloud,
-            viewerId: viewerId!,
-            localNamespace,
-            isAssetOpen: p.isPintaAssetOpen,
-            subscribeAssetOpenState: p.subscribePintaAssetOpenState,
-          })
-        : null
-      const pintaPersistence = mirroredPinta ?? pintaLocal
-      const sharedPalettes = p.createPaletteLibraryStore(pintaPersistence)
-      const detachPalettes = sharedPalettes.getState().attachPersistence()
-      void sharedPalettes.getState().load()
-      // Busca só a biblioteca do perfil; abrir o Molda não baixa desenhos do Pinta.
-      if (mirroredPinta) void mirroredPinta.syncPaletteLibrary?.().catch(() => {})
-      paletteBridgeCleanup.current = () => {
-        detachPalettes()
-        mirroredPinta?.dispose?.()
-        if (pintaCloud)
-          void pintaCloud.flush({ timeoutMs: 5000 }).finally(() => pintaCloud.dispose())
+      const connectPalettes = (account: string | null) => {
+        paletteBridgeCleanup.current?.()
+        const pintaLocal = p.createPintaPersistence({ namespace: localNamespace })
+        const pintaCloud = viewerId
+          ? createCreationsCloud({
+              tool: 'pinta',
+              pintaPaletteWriteEnabled: !!account,
+              audience,
+              maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
+              viewerId,
+            })
+          : null
+        const mirroredPinta = pintaCloud
+          ? createCloudMirroredPintaPersistence({
+              local: pintaLocal,
+              cloud: pintaCloud,
+              viewerId: viewerId!,
+              localNamespace,
+              isAssetOpen: p.isPintaAssetOpen,
+              subscribeAssetOpenState: p.subscribePintaAssetOpenState,
+            })
+          : null
+        const pintaPersistence = mirroredPinta ?? pintaLocal
+        const sharedPalettes = p.createPaletteLibraryStore(pintaPersistence)
+        const detachPalettes = sharedPalettes.getState().attachPersistence()
+        void sharedPalettes.getState().load()
+        // Busca só a biblioteca do perfil; abrir o Molda não baixa desenhos do Pinta.
+        if (mirroredPinta) void mirroredPinta.syncPaletteLibrary?.().catch(() => {})
+        paletteBridgeCleanup.current = () => {
+          detachPalettes()
+          mirroredPinta?.dispose?.()
+          if (pintaCloud)
+            void pintaCloud.flush({ timeoutMs: 5000 }).finally(() => pintaCloud.dispose())
+        }
+        setPaletteLibrary(sharedPalettes)
       }
-      setPaletteLibrary(sharedPalettes)
+      renewPalettes.current = connectPalettes
+      connectPalettes(selectedPalette.current)
       const local = m.createMoldaPersistence({ namespace: localNamespace })
       // Só com PERFIL: sem sessão de perfil não há dono na nuvem, e o Molda abre
       // como sempre (só local).
@@ -243,9 +259,10 @@ export function MoldaClient({
       if (revision !== loadRevision.current) return
       paletteBridgeCleanup.current?.()
       paletteBridgeCleanup.current = null
+      renewPalettes.current = null
       setLoadError(true)
     }
-  }, [viewerId, localNamespace])
+  }, [viewerId, localNamespace, audience])
 
   useEffect(() => {
     void loadMolda()
@@ -253,6 +270,7 @@ export function MoldaClient({
       loadRevision.current += 1
       paletteBridgeCleanup.current?.()
       paletteBridgeCleanup.current = null
+      renewPalettes.current = null
     }
   }, [loadMolda])
 

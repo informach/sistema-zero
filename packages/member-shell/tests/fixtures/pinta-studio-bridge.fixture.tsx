@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaExportedAsset, PintaHostAdapter } from '@sistemazero/pinta'
 import type { ReactNode } from 'react'
+import { PintaPaletteScope } from '../../src/components/creator/pinta-palette-scope'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -25,6 +27,7 @@ let lookupGate = Promise.withResolvers<void>()
 let lookupEntered = Promise.withResolvers<void>()
 let linked = false
 let saveOk = true
+const connections: { viewerId: string; pintaPaletteWriteEnabled: boolean }[] = []
 const lookups: Array<{ id: string; namespace: string }> = []
 const saves: Array<{ asset: PintaExportedAsset; namespace: string }> = []
 const retired: Array<{ viewerId: string; abort?: boolean }> = []
@@ -57,10 +60,14 @@ mock.module('@sistemazero/pinta', () => ({
   },
 }))
 mock.module('../../src/lib/creations-cloud', () => ({
-  createCreationsCloud: ({ viewerId }: { viewerId: string }) => ({
-    flush: async () => {},
-    dispose: (opts?: { abort?: boolean }) => retired.push({ viewerId, ...opts }),
-  }),
+  createCreationsCloud: (options: { viewerId: string; pintaPaletteWriteEnabled: boolean }) => {
+    const { viewerId } = options
+    connections.push(options)
+    return {
+      flush: async () => {},
+      dispose: (opts?: { abort?: boolean }) => retired.push({ viewerId, ...opts }),
+    }
+  },
 }))
 mock.module('../../src/lib/pinta-cloud-persistence', () => ({
   createCloudMirroredPintaPersistence: ({ local }: { local: { namespace: string } }) => ({
@@ -115,6 +122,7 @@ beforeEach(() => {
   linked = false
   saveOk = true
   lookups.length = saves.length = 0
+  connections.length = 0
   retired.length = 0
   lookupGate = Promise.withResolvers<void>()
   lookupEntered = Promise.withResolvers<void>()
@@ -137,10 +145,14 @@ async function harness(audience: 'kids' | 'adult', owned = true) {
     element.remove()
   }
   cleanups.push(unmount)
-  const render = async (viewerId: string | null) => {
+  const render = async (viewerId: string | null, scope: PintaCausalViewer | null = null) => {
     current = undefined
     await act(async () => {
-      root.render(<PintaClient viewerId={viewerId} audience={audience} studioAvailable={owned} />)
+      root.render(
+        <PintaPaletteScope viewer={scope}>
+          <PintaClient viewerId={viewerId} audience={audience} studioAvailable={owned} />
+        </PintaPaletteScope>,
+      )
     })
     return mountedAdapter()
   }
@@ -217,3 +229,27 @@ for (const audience of ['kids', 'adult'] as const) {
     expect(saves).toEqual([{ asset: canonical, namespace: audience === 'adult' ? 'adult:a' : 'a' }])
   })
 }
+
+test('a sessão do Pinta confere a audiência e o perfil e aposenta a fila ao mudar a conta', async () => {
+  const saved = process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
+  const viewer = { userId: 'A', accountId: 'P', audience: 'kids' } as const
+  const view = await harness('kids')
+  try {
+    delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
+    await view.render('A', viewer)
+    expect(connections.at(-1)?.pintaPaletteWriteEnabled).toBe(false)
+    process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = '1'
+    await view.render('A', viewer)
+    expect(connections.at(-1)?.pintaPaletteWriteEnabled).toBe(true)
+    const count = retired.length
+    await view.render('A', { ...viewer, accountId: 'P2' })
+    expect(retired).toHaveLength(count + 1)
+    await view.render('A', { ...viewer, audience: 'adult' })
+    expect(connections.at(-1)?.pintaPaletteWriteEnabled).toBe(false)
+    await view.render('B', viewer)
+    expect(connections.at(-1)).toMatchObject({ viewerId: 'B', pintaPaletteWriteEnabled: false })
+  } finally {
+    if (saved === undefined) delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
+    else process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = saved
+  }
+})

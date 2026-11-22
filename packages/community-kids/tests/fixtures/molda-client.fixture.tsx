@@ -1,4 +1,5 @@
 import { afterAll, afterEach, expect, mock, test } from 'bun:test'
+import { PintaPaletteScope } from '@sistemazero/member-shell/components/creator/pinta-palette-scope'
 import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -399,4 +400,67 @@ test('missão ocupada mostra a frase autorizada e volta ao plano sem montar o Mo
   router.push.mockClear()
   fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
   expect(router.push).toHaveBeenCalledWith(`/pensa?plano=${handoff.project.id}`)
+})
+
+test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política não reinicia o modelo', async () => {
+  const viewer = { userId: PROFILE_ID, accountId: 'account-owner', audience: 'kids' } as const
+  const original = process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
+  const originalIdb = globalThis.indexedDB
+  globalThis.indexedDB = new IDBFactory()
+  process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = '1'
+  const reads: string[] = []
+  const localSlots = () => namespaces.length
+  globalThis.fetch = Object.assign(
+    async (input: RequestInfo | URL) => {
+      const path = String(input)
+      if (path.includes('sz-pinta-palettes')) {
+        reads.push(path)
+        return Response.json(
+          path.includes('paletteWrite=')
+            ? {
+                paletteHead: {
+                  protocol: 'palette-cas-v1',
+                  exists: false,
+                  revision: 0,
+                  generation: null,
+                  adopted: false,
+                },
+              }
+            : {},
+          { status: 404 },
+        )
+      }
+      return Response.json({}, { status: 404 })
+    },
+    { preconnect: originalFetch.preconnect },
+  )
+  const renderHost = (scope: typeof viewer | null) => (
+    <PintaPaletteScope viewer={scope}>
+      <MoldaClient viewerId={PROFILE_ID} studioAvailable={false} />
+    </PintaPaletteScope>
+  )
+  const view = render(renderHost(viewer))
+  try {
+    await screen.findByTestId('molda-opened')
+    await waitFor(() =>
+      expect(reads.some((path) => path.endsWith('?paletteWrite=palette-cas-v1'))).toBe(true),
+    )
+    const mountedSlots = localSlots(),
+      priorStore = lastAdapter?.paletteLibrary
+    view.rerender(renderHost(null))
+    await waitFor(() => expect(lastAdapter?.paletteLibrary).not.toBe(priorStore))
+    const after = lastAdapter?.paletteLibrary
+    const color = await after?.getState().savePalette({
+      name: 'Offline após a troca',
+      colors: ['', '#abcdef', ...Array<string>(14).fill('')],
+    })
+    expect(color?.name).toBe('Offline após a troca')
+    expect(localSlots()).toBe(mountedSlots)
+    expect(reads.every((path) => path.endsWith('?paletteWrite=palette-cas-v1'))).toBe(true)
+  } finally {
+    view.unmount()
+    globalThis.indexedDB = originalIdb
+    if (original === undefined) delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
+    else process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = original
+  }
 })

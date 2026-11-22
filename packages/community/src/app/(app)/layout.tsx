@@ -1,3 +1,4 @@
+import { PintaPaletteSession } from '@sistemazero/member-shell/components/creator/pinta-palette-session'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { AcessoSchema } from '@sistemazero/member-shell/lib/arquipelago-contracts'
 import { learnerIdentity } from '@sistemazero/member-shell/lib/learner-identity'
@@ -54,7 +55,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ) : null
         }
       >
-        {children}
+        <PintaPaletteSession audience="adult" session={session}>
+          {children}
+        </PintaPaletteSession>
       </CommunityFrame>
     </AdultGamificationProvider>
   )
