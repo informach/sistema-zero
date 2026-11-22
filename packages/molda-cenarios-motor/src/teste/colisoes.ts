@@ -65,12 +65,28 @@ export function apoioPorRaios(
   return melhor
 }
 
+/**
+ * As árvores (BVH) de cada geometria, que um mundo monta uma vez. Um cache passado de fora é do
+ * chamador: vários mundos dividem as árvores (a carga por regiões refaz o mundo a cada troca de
+ * região sem refazer árvore nenhuma) e o mundo não as descarta. Sem cache, o mundo é o dono, como
+ * sempre foi.
+ */
+export type CacheDeArvores = Map<BufferGeometry, { copia: BufferGeometry; arvore: MeshBVH }>
+
+/** Descarta as árvores de geometrias que saíram (o arquivo delas foi descarregado). */
+export function liberarArvores(cache: CacheDeArvores, geometrias: Iterable<BufferGeometry>) {
+  for (const g of geometrias) {
+    cache.get(g)?.copia.dispose()
+    cache.delete(g)
+  }
+}
+
 export class MundoDoTeste {
   readonly limiteInferior: number | null
-  private readonly geometrias = new Map<
-    BufferGeometry,
-    { copia: BufferGeometry; arvore: MeshBVH }
-  >()
+  private readonly geometrias: CacheDeArvores
+  private readonly donoDasArvores: boolean
+  /** As geometrias que este mundo usa (num cache dividido, o cache tem as dos outros também). */
+  private readonly usadas = new Set<BufferGeometry>()
   private readonly indice = new IndiceDeCaixas()
   private readonly entradas: Entrada[] = []
   private readonly segmento = new Line3()
@@ -85,10 +101,12 @@ export class MundoDoTeste {
   private readonly ponto = new Vector3()
   private descartado = false
   get arvores() {
-    return this.geometrias.size
+    return this.usadas.size
   }
 
-  constructor(fontes: readonly FonteDeColisao[]) {
+  constructor(fontes: readonly FonteDeColisao[], cache?: CacheDeArvores) {
+    this.geometrias = cache ?? new Map()
+    this.donoDasArvores = !cache
     try {
       for (const f of fontes) {
         if (
@@ -114,6 +132,7 @@ export class MundoDoTeste {
           }
           this.geometrias.set(f.geometria, entrada)
         }
+        this.usadas.add(f.geometria)
         if (!entrada.copia.boundingBox) entrada.copia.computeBoundingBox()
         this.entradas.push({
           objeto: f.objeto,
@@ -299,8 +318,11 @@ export class MundoDoTeste {
   descartar() {
     if (this.descartado) return
     this.descartado = true
-    for (const g of this.geometrias.values()) g.copia.dispose()
-    this.geometrias.clear()
+    if (this.donoDasArvores) {
+      for (const g of this.geometrias.values()) g.copia.dispose()
+      this.geometrias.clear()
+    }
+    this.usadas.clear()
     this.entradas.length = 0
     this.indice.definir([])
   }

@@ -82,9 +82,21 @@ export class AguaDaCenaCompilada {
       throw erro
     }
   }
-  aplicar(raiz: Object3D, entidade: string) {
+  /**
+   * Põe o material da água nas malhas da instância. Devolve como desfazer o que foi criado só para
+   * ela (as cópias de geometria), para a carga por regiões descartar a instância sem acumular
+   * geometria; o material é da água e fica.
+   */
+  aplicar(raiz: Object3D, entidade: string): () => void {
     const material = this.materiais.get(entidade)
-    if (!material) return
+    const criadas: BufferGeometry[] = []
+    const desfazer = () => {
+      for (const g of criadas.splice(0)) {
+        g.dispose()
+        this.geometrias.delete(g)
+      }
+    }
+    if (!material) return desfazer
     raiz.traverse((no) => {
       const m = no as Mesh
       if (!m.isMesh) return
@@ -96,12 +108,14 @@ export class AguaDaCenaCompilada {
       if (uv || profundidade) {
         const g = original.clone()
         this.geometrias.add(g)
+        criadas.push(g)
         if (uv) g.setAttribute('uv', uv.clone())
         if (profundidade) g.setAttribute('mcnProfundidadeModelo', profundidade.clone())
         m.geometry = g
       }
       m.material = material.material
     })
+    return desfazer
   }
   atualizar(segundos: number, movimentoReduzido = false) {
     for (const m of this.materiais.values()) m.atualizar(segundos, movimentoReduzido)

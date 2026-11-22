@@ -23,9 +23,11 @@ export async function carregarCena3DDoProjeto(
   }
   const asset = assets.find((a) => a.id === id)
   if (asset?.kind !== 'scene3d') throw Error('Escolha um cenário que esteja neste projeto.')
-  // Materialization owns decoded bytes and parsed metadata before the first await.
+  // Materialization owns decoded bytes and parsed metadata before the first await. Os motores do
+  // Estúdio carregam por regiões (a janela de onde o personagem está); cena sem regiões carrega
+  // inteira, como sempre (lote 6 da conclusão, 22/11/2026).
   const pacote = pacoteDeCena3D(asset, assets),
-    capturadas = { ...opcoes }
+    capturadas: OpcoesDoRuntimeCompilado = { carga: 'regioes', ...opcoes }
   const { carregarCenaNoThree } = await import('@sistemazero/molda-cenarios-motor/runtime')
   sinal.throwIfAborted()
   const resultado = await carregarCenaNoThree(pacote, sinal, capturadas)

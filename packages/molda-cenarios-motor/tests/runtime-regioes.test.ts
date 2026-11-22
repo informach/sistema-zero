@@ -1,0 +1,250 @@
+import { afterEach, expect, test } from 'bun:test'
+import {
+  calcularPertencaDasRegioes,
+  lerCenaCompilada,
+  type PacoteCompilado,
+} from '@sistemazero/molda-cenarios-core/compilar'
+import type { RegiaoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
+import { Matrix4, PerspectiveCamera, Vector3 } from 'three'
+import { ArquivosDaCompilacao } from '../src/compilar/arquivos'
+import { type CenaNoThree, carregarCenaNoThree } from '../src/compilar/runtime-three'
+import { exemplo, glb } from './fixtures/glb-compilacao'
+
+/**
+ * A carga por regiões (lote 6 da conclusão, 22/11/2026). Seis regiões de 100 m em grade 3×2:
+ *
+ *   z 100–200:  D (0–100)  E (100–200)  F (200–300)
+ *   z   0–100:  A          B            C
+ *
+ * vizinhas pelo lado (A–B, B–C, D–E, E–F, A–D, B–E, C–F). Cada região tem um chão (nó e colisão)
+ * num arquivo próprio; um poste fora de todas é de todas. O início fica no meio de A.
+ */
+const LETRAS = ['a', 'b', 'c', 'd', 'e', 'f'] as const
+const VIZINHAS: Record<string, string[]> = {
+  a: ['b', 'd'],
+  b: ['a', 'c', 'e'],
+  c: ['b', 'f'],
+  d: ['a', 'e'],
+  e: ['b', 'd', 'f'],
+  f: ['c', 'e'],
+}
+const centro = (letra: string) => {
+  const i = LETRAS.indexOf(letra as (typeof LETRAS)[number])
+  return { x: (i % 3) * 100 + 50, z: Math.floor(i / 3) * 100 + 50 }
+}
+
+async function pacote(): Promise<PacoteCompilado> {
+  const a = new ArquivosDaCompilacao(new AbortController().signal)
+  const nos = [],
+    colisoes = []
+  for (const [i, letra] of [...LETRAS, 'poste'].entries()) {
+    const { j, bin } = exemplo()
+    // Um triângulo de chão de 40 m, diferente em cada arquivo (digests distintos).
+    const posicoes = new Float32Array([-20, 0, -20, 0, 0, 20 + i * 0.01, 20, 0, -20])
+    bin.set(new Uint8Array(posicoes.buffer))
+    j.accessors[0]!.min = [-20, 0, -20]
+    j.accessors[0]!.max = [20, 0, 20 + i * 0.01]
+    j.nodes = [{ mesh: 0 }]
+    j.scenes = [{ nodes: [0] }]
+    const bytes = glb(j, bin),
+      caminho = `modelos/${letra}.glb`
+    await a.adicionar(caminho, bytes, {
+      mime: 'model/gltf-binary',
+      papel: 'modelo',
+      malhas: 1,
+      triangulos: 1,
+      verticesMaximos: 3,
+    })
+    const onde = letra === 'poste' ? { x: -80, z: -80 } : centro(letra),
+      matriz = new Matrix4().makeTranslation(onde.x, 0, onde.z).elements,
+      volume = {
+        min: { x: onde.x - 20, y: 0, z: onde.z - 20 },
+        max: { x: onde.x + 20, y: 0, z: onde.z + 20 + i * 0.01 },
+      }
+    nos.push({ id: `no-${letra}`, entidade: null, arquivo: caminho, matriz, volume })
+    if (letra !== 'poste') {
+      const colisao = `colisoes/${letra}.glb`
+      await a.adicionar(colisao, bytes, {
+        mime: 'model/gltf-binary',
+        papel: 'colisao',
+        malhas: 1,
+        triangulos: 1,
+        verticesMaximos: 3,
+      })
+      colisoes.push({
+        id: `chao-${letra}`,
+        entidade: null,
+        arquivo: colisao,
+        tipo: 'malha' as const,
+        matriz,
+        volume,
+      })
+    }
+  }
+  const regioes: RegiaoDeCenario[] = LETRAS.map((letra) => {
+    const c = centro(letra)
+    return {
+      id: letra,
+      nome: letra.toUpperCase(),
+      caixa: { x0: c.x - 50, z0: c.z - 50, x1: c.x + 50, z1: c.z + 50 },
+      vizinhas: VIZINHAS[letra]!,
+    }
+  })
+  const base = {
+    formato: 'molda-cena-compilada' as const,
+    versao: 1 as const,
+    nome: 'Grade',
+    unidade: 'metro' as const,
+    eixoVertical: 'y' as const,
+    fonte: { cenario: 'c', revisao: 1, digest: 'a'.repeat(64) },
+    arquivos: a.descrever(),
+    entidades: [],
+    nos,
+    colisoes,
+    aguas: [],
+    caminhos: [],
+    texturas: [],
+    fontes: { modelos: [], texturas: [], conjuntos: [] },
+    licencas: [],
+    marcadores: [
+      {
+        id: 'inicio',
+        nome: 'Início',
+        posicao: { x: 50, y: 0, z: 50 },
+        giro: 0,
+        objeto: null,
+        configuracao: { tipo: 'inicio' as const, principal: true },
+      },
+    ],
+    ambiente: { hora: 12 },
+  }
+  const cena = lerCenaCompilada({
+    ...base,
+    entidades: [{ id: 'inicio', nome: 'Início', tipo: 'marcador', grupo: null }],
+    regioes: calcularPertencaDasRegioes(regioes, { ...base, entidades: [] }),
+  })
+  return { cena, arquivos: new Map(a.arquivos) }
+}
+
+const abertas: CenaNoThree[] = []
+afterEach(() => {
+  for (const c of abertas.splice(0)) c.descartar()
+})
+
+async function abrir(opcoes: Parameters<typeof carregarCenaNoThree>[2] = { carga: 'regioes' }) {
+  const p = await pacote(),
+    cena = await carregarCenaNoThree(p, new AbortController().signal, {
+      ambiente: 'luzes-locais',
+      ...opcoes,
+    })
+  abertas.push(cena)
+  return { p, cena }
+}
+
+const camera = new PerspectiveCamera()
+/** Um quadro com o foco no ponto (a câmera 10 m atrás) e o tempo andando. */
+async function andar(cena: CenaNoThree, x: number, z: number, segundos = 0.1) {
+  cena.atualizar(Math.min(segundos, 1))
+  camera.position.set(x, 5, z - 10)
+  camera.updateMatrixWorld(true)
+  cena.quadro(camera, new Vector3(x, 0, z))
+  // A carga cede entre os arquivos: espera a fila esvaziar.
+  for (let i = 0; i < 50 && cena.estadoDasRegioes()?.carregando.length; i++)
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  await new Promise((resolve) => setTimeout(resolve, 20))
+}
+const nos = (cena: CenaNoThree) => [...cena.instancias.keys()].sort()
+const ondeHaChao = (cena: CenaNoThree, letra: string) => {
+  const c = centro(letra)
+  return cena.colisoes.rastrear(new Vector3(c.x, 5, c.z), new Vector3(c.x, -5, c.z)) !== null
+}
+
+test('sem pedir regiões, a cena carrega inteira, como antes', async () => {
+  const { cena } = await abrir({})
+  expect(nos(cena)).toHaveLength(7)
+  expect(cena.estadoDasRegioes()).toBeNull()
+})
+
+test('a janela inicial é a região do início, as vizinhas e o que é de todas', async () => {
+  const { cena } = await abrir()
+  expect(nos(cena)).toEqual(['no-a', 'no-b', 'no-d', 'no-poste'])
+  expect(cena.estadoDasRegioes()).toMatchObject({ atual: 'a', falhas: [], aviso: null })
+  expect([...cena.estadoDasRegioes()!.carregadas].sort()).toEqual(['a', 'b', 'd'])
+  expect(ondeHaChao(cena, 'a')).toBe(true)
+  expect(ondeHaChao(cena, 'c')).toBe(false)
+  // A âncora mantém a caixa da cena inteira na raiz (o Mundo 3D mede por ela).
+  expect(cena.raiz.getObjectByName('regioes:caixa-da-cena')?.visible).toBe(false)
+})
+
+test('andando até C, C e as vizinhas entram; A e D saem depois de 2 s longe', async () => {
+  const { cena } = await abrir()
+  await andar(cena, 250, 50)
+  expect(nos(cena)).toEqual(['no-a', 'no-b', 'no-c', 'no-d', 'no-f', 'no-poste'])
+  expect(ondeHaChao(cena, 'c')).toBe(true)
+  for (let s = 0; s < 3; s++) await andar(cena, 250, 50, 1)
+  expect(nos(cena)).toEqual(['no-b', 'no-c', 'no-f', 'no-poste'])
+  expect(ondeHaChao(cena, 'a')).toBe(false)
+  expect(cena.estadoDasRegioes()?.atual).toBe('c')
+})
+
+test('fora de toda região a atual é nenhuma e a carga fica na última', async () => {
+  const { cena } = await abrir()
+  await andar(cena, 250, 50)
+  await andar(cena, 250, -30)
+  expect(cena.estadoDasRegioes()?.atual).toBeNull()
+  expect(cena.estadoDasRegioes()?.carregadas).toContain('c')
+})
+
+test('a região que falha mantém as de antes, avisa uma vez e tenta de novo', async () => {
+  const { p, cena } = await abrir()
+  const bytes = p.arquivos.get('modelos/c.glb')!
+  p.arquivos.delete('modelos/c.glb')
+  await andar(cena, 250, 50)
+  const estado = cena.estadoDasRegioes()!
+  expect(estado.falhas).toContain('c')
+  expect(estado.aviso).toMatch(/Não consegui carregar uma parte do cenário/)
+  expect(nos(cena)).not.toContain('no-c')
+  // O arquivo volta, mas a região espera a vez dela (1 s) antes de tentar de novo.
+  p.arquivos.set('modelos/c.glb', bytes)
+  await andar(cena, 250, 50, 0.1)
+  expect(nos(cena)).not.toContain('no-c')
+  await andar(cena, 250, 50, 1)
+  await andar(cena, 250, 50, 0.5)
+  expect(nos(cena)).toContain('no-c')
+  expect(cena.estadoDasRegioes()?.falhas).toEqual([])
+})
+
+test('descartar no meio da carga não deixa nada para trás', async () => {
+  const { cena } = await abrir()
+  cena.atualizar(0.1)
+  camera.position.set(250, 5, 40)
+  camera.updateMatrixWorld(true)
+  cena.quadro(camera, new Vector3(250, 0, 50))
+  cena.descartar()
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(cena.instancias.size).toBe(0)
+  expect(cena.raiz.children).toHaveLength(0)
+})
+
+test('dez idas e voltas entre A e C terminam com as mesmas contagens', async () => {
+  const { cena } = await abrir()
+  const contagens: string[] = []
+  for (let volta = 0; volta < 10; volta++) {
+    for (const letra of ['c', 'a']) {
+      const c = centro(letra)
+      for (let s = 0; s < 3; s++) await andar(cena, c.x, c.z, 1)
+    }
+    contagens.push(
+      JSON.stringify([
+        cena.instancias.size,
+        cena.raiz.children.length,
+        cena.colisoes.arvores,
+        cena.estadoDasRegioes()!.arquivos,
+      ]),
+    )
+  }
+  expect(new Set(contagens.slice(-4)).size).toBe(1)
+  expect(nos(cena)).toEqual(['no-a', 'no-b', 'no-d', 'no-poste'])
+  // Os modelos de A, B, D e do poste e as colisões de A, B e D: nada a mais na memória.
+  expect(cena.estadoDasRegioes()!.arquivos).toBe(7)
+})
