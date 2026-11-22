@@ -418,3 +418,60 @@ test('sem backup e sem registros, não inventa cópia', async () => {
     await restorePreservedProject('nada-aqui', { scope: database(), importSnapshot: fakeImport }),
   ).toBeNull()
 })
+
+test('arquivo físico conserva envelope futuro e separa perfil, anônimo, id e prefixos no journal compartilhado', async () => {
+  const db = database()
+  const id = 'oficina',
+    future = {
+      format: 'sz-project-json-graph',
+      version: 9,
+      payload: 'desconhecido',
+      campo: { presente: undefined },
+    }
+  const part = projectMetaKey(id)
+  await db.store(
+    'readwrite',
+    (s) =>
+      new Promise<void>((resolve, reject) => {
+        s.transaction.oncomplete = () => resolve()
+        s.transaction.onabort = () => reject(s.transaction.error)
+        s.put(future, part)
+        s.put('outro id', projectMetaKey('oficina:outra'))
+        s.put('backup de outro id', projectBackupKey('oficina:outra', 'a'.repeat(64)))
+        s.put('outro projeto', projectRecoveryKey('x', id))
+      }),
+  )
+  const names = [
+    'sistema-zero-studio-pessoa',
+    'sistema-zero-studio-pessoa-extra',
+    'sistema-zero-studio',
+    'pinta:regional/ç',
+  ]
+  const key = (owner: string, project: string) =>
+    'sz:studio-exit:' + ['1', owner, project, 'escritor', 'token'].map(encodeURIComponent).join('|')
+  const values = new Map<string, string>()
+  for (const owner of names) {
+    values.set(key(owner, id), 'futuro de ' + owner)
+    values.set(key(owner, 'oficina-extra'), 'outro projeto')
+    values.set(key(owner, 'outro').replace('escritor', id), 'id só na posição de escritor')
+    values.set(key(owner, id) + '|sobra', 'chave distinta')
+  }
+  const storage = {
+    get length() {
+      return values.size
+    },
+    key: (index: number) => [...values.keys()][index] ?? null,
+    getItem: (k: string) => values.get(k) ?? null,
+  } as unknown as Storage
+  for (const owner of names) {
+    const report = JSON.parse(
+      await exportPreservedProjectRecords(id, {
+        ...db,
+        identity: owner,
+        exitJournalStorage: storage,
+      }),
+    )
+    expect(report.exitJournal).toEqual([[key(owner, id), 'futuro de ' + owner]])
+    expect(decodeProjectJsonGraph(report.indexedDb)).toStrictEqual([[part, future]])
+  }
+})

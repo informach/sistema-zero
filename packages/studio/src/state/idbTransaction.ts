@@ -303,6 +303,18 @@ export function readValues(store: UseStore, keys: readonly IDBValidKey[]): Promi
   })
 }
 
+/** Emergency export only. Preserve physical envelopes, including versions the editor cannot decode. */
+export function readPhysicalProjectRecords(
+  store: UseStore,
+  keys: readonly IDBValidKey[],
+): Promise<unknown[]> {
+  if (!keys.length) return Promise.resolve([])
+  return inOneTransaction(store, 'readonly', (objectStore) => {
+    const requests = keys.map((key) => objectStore.get(key))
+    return { reads: requests, result: () => requests.map((request) => request.result) }
+  })
+}
+
 /** Lê uma chave (`undefined` quando não existe). */
 export async function readValue(store: UseStore, key: IDBValidKey): Promise<unknown> {
   const [value] = await readValues(store, [key])

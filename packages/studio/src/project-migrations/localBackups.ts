@@ -1,5 +1,5 @@
 import { isDocumentRecord } from '../core/projectDocument'
-import { readAllKeys, readValues } from '../state/idbTransaction'
+import { readAllKeys, readPhysicalProjectRecords, readValues } from '../state/idbTransaction'
 import { encodeProjectJsonGraph } from '../state/projectJsonGraph'
 import { decodeProjectJsonGraph } from '../state/projectJsonGraphDecode'
 import { nativeRecovery, synchronousRecovery } from '../state/projectRecoveryGuards'
@@ -248,6 +248,45 @@ export async function restoreLocalProjectBackup(
   return { id: project.id, name: project.name, warnings }
 }
 
+function recordBelongsTo(id: string, key: string) {
+  const parts =
+    /^sz:(?:v[0-9]+:)?(project(?:-[a-z-]+)?|game-storage|builder-deletion|history-index|history-file):(.+)$/.exec(
+      key,
+    )
+  if (!parts) return false
+  const [, family, owner] = parts
+  if (family === 'project-backup' || family === 'project-recovery' || family === 'history-file') {
+    const split = owner!.lastIndexOf(':')
+    if (split < 0 || owner!.slice(0, split) !== id) return false
+    const tail = owner!.slice(split + 1)
+    return family === 'project-recovery'
+      ? tail.length > 0
+      : family === 'history-file'
+        ? /^[a-f0-9]{64}$/.test(tail)
+        : BACKUP_KEY_SUFFIX.test(tail)
+  }
+  return owner === id
+}
+function journalBelongsTo(scope: string, id: string, key: string) {
+  const prefix = 'sz:studio-exit:'
+  if (!key.startsWith(prefix)) return false
+  const fields = key.slice(prefix.length).split('|')
+  if (
+    fields.length !== 5 ||
+    fields[0] !== '1' ||
+    fields[1] !== encodeURIComponent(scope) ||
+    fields[2] !== encodeURIComponent(id)
+  )
+    return false
+  try {
+    return fields
+      .slice(3)
+      .every((value) => value.length > 0 && encodeURIComponent(decodeURIComponent(value)) === value)
+  } catch {
+    return false
+  }
+}
+
 /**
  * Tudo o que este navegador guarda sobre o projeto, para um adulto mandar ao suporte quando o
  * card diz "Preservado". Codificado pelo grafo do Core (preserva `undefined`, -0 e árvores
@@ -258,19 +297,16 @@ export async function exportPreservedProjectRecords(
   scope: ProjectStorageScope = captureProjectStorageScope(),
 ): Promise<string> {
   const keys = (await readAllKeys(scope.store)).filter(
-    (key): key is string =>
-      typeof key === 'string' &&
-      key.startsWith('sz:') &&
-      (key.endsWith(`:${projectId}`) || key.includes(`:${projectId}:`)),
+    (key): key is string => typeof key === 'string' && recordBelongsTo(projectId, key),
   )
-  const values = await readValues(scope.store, keys)
+  const values = await readPhysicalProjectRecords(scope.store, keys)
   const indexed = keys.map((key, index) => [key, values[index]] as const)
   const journal: Array<readonly [string, string]> = []
   const storage = scope.exitJournalStorage
   if (storage) {
     for (let index = 0; index < storage.length; index++) {
       const key = storage.key(index)
-      if (!key?.startsWith('sz:studio-exit:') || !key.includes(`|${projectId}|`)) continue
+      if (!key || !journalBelongsTo(scope.identity, projectId, key)) continue
       const value = storage.getItem(key)
       if (value !== null) journal.push([key, value])
     }
