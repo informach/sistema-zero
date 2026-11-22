@@ -213,6 +213,14 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
     const checkpointId = randomUUID()
     const protect = (action: Parameters<typeof fixture.checkpoints.protect>[2]) =>
       fixture.checkpoints.protect(fixture.actor, fixture.projectId, action, fixture.capabilities)
+    async function rejectedProtection(action: Parameters<typeof protect>[0]) {
+      try {
+        await protect(action)
+      } catch (error) {
+        return error
+      }
+      throw new Error('O Pensa aceitou uma revisão que não pode proteger.')
+    }
     await protect({ type: 'prepare', id: checkpointId, baseRevisionId, saveRevision: '1' })
     await protect({ type: 'commit', id: checkpointId })
 
@@ -238,23 +246,23 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
       revision = 2, last_reserved_revision = 2, bytes = 100, format_version = 2
       where user_id = ${fixture.actor.profileId} and tool = 'studio' and item_id = ${game.creationId}`
 
-    await expect(
-      protect({
+    expect(
+      await rejectedProtection({
         type: 'prepare',
         id: randomUUID(),
         baseRevisionId,
         saveRevision: '2',
       }),
-    ).rejects.toMatchObject({ code: 'REVISION_CONFLICT' })
-    await expect(
-      protect({
+    ).toMatchObject({ code: 'REVISION_CONFLICT' })
+    expect(
+      await rejectedProtection({
         type: 'restore_prepare',
         id: randomUUID(),
         checkpointId,
         baseRevisionId,
         saveRevision: '2',
       }),
-    ).rejects.toMatchObject({ code: 'REVISION_CONFLICT' })
+    ).toMatchObject({ code: 'REVISION_CONFLICT' })
     expect(
       (await fixture.checkpoints.list(fixture.actor, fixture.projectId)).map(
         (checkpoint) => checkpoint.id,
