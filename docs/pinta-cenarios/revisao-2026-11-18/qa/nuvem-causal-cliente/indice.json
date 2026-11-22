@@ -367,6 +367,12 @@
       "resultado": "20 falham/124 asserções no candidato anterior à sombra durável"
     },
     {
+      "arquivo": "recibos/duravel-436976c.txt",
+      "sha256": "0ce6b0d9ff5041559c486c0f22e53adf44d719a702fd1b61e73f6cc9cca3694a",
+      "commit": "436976c4f83a75a5c2cf8920eb227d4770b53eb1",
+      "resultado": "20 passam/251 asserções com dependências isoladas"
+    },
+    {
       "arquivo": "recibos/replay-85e.txt",
       "originalSha256": "4cc4c66d382e77d5366720d98462c6782d9525f3461814b6d98d7ad0280e8528",
       "sha256": "4e352b3edd3741317e4b2d7bf2d2f90c0a5612873b00b25e7970b03ba9fef603",

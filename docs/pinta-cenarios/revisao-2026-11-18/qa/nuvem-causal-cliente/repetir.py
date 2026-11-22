@@ -12,6 +12,21 @@ from urllib.parse import urlsplit
 HERE = Path(__file__).resolve().parent
 INDEX = json.loads((HERE / "indice.json").read_text("utf-8"))
 
+IDB_ESM_BRIDGE = """
+import { dirname as idbDirname, resolve as idbResolve } from 'node:path'
+const mockIdbPath = Bun.resolveSync('idb-keyval', idbResolve(import.meta.dir, '../../../pinta'))
+const compatIdb = await import(mockIdbPath)
+if (compatIdb.createStore('control-current', 'kv').name !== 'control-current')
+  throw Error('The test IndexedDB module was not resolved for the current ESM bundle')
+for (const entry of [process.env.PINTA_REVIEW_LEGACY_ENTRY, process.env.PINTA_REVIEW_V2_ENTRY]) {
+  if (!entry) continue
+  const path = Bun.resolveSync('idb-keyval', idbDirname(entry))
+  mock.module(path, () => ({ ...compatIdb }))
+  if ((await import(path)).createStore('control-legacy', 'kv').name !== 'control-legacy')
+    throw Error('The test IndexedDB module was not resolved for a historical ESM bundle')
+}
+"""
+
 
 def verify_text(text, expected, name):
     if hashlib.sha256(text.encode("utf-8")).hexdigest() != expected:
@@ -78,10 +93,26 @@ def run_candidate(root, database, legacy=None, retention=False, v3=None, pins=Fa
             if role == "pinta":
                 # A captura original estava na raiz do pacote. Aqui está duas pastas abaixo.
                 text = text.replace("'./src/", "'../../src/")
+            if role in ("terminal", "duravel"):
+                # O stub original opera no módulo do candidato. Outras instalações Bun têm
+                # caminhos ESM próprios e precisam usar o mesmo adaptador de armazenamento.
+                marker = "import { mock } from 'bun:test'\n"
+                text = text.replace(marker, marker + IDB_ESM_BRIDGE, 1)
             output = directories[role] / case["nome"]
             output.write_text(text, encoding="utf-8", newline="\n")
             staged.append(str(output))
-        subprocess.run(["bun", "--no-env-file", "test", *staged], cwd=root, env=env, check=True)
+        if legacy is None:
+            subprocess.run(["bun", "--no-env-file", "test", *staged], cwd=root, env=env, check=True)
+        else:
+            code = 0
+            for test in staged:
+                # Cada teste instala mocks globais do Bun para versões locais específicas.
+                result = subprocess.run(
+                    ["bun", "--no-env-file", "test", test], cwd=package / "member-shell", env=env
+                )
+                code = max(code, result.returncode)
+            if code:
+                raise SystemExit(code)
         if database:
             subprocess.run(
                 ["bun", "--no-env-file", "test", "tests/db/pinta-causal.test.ts",

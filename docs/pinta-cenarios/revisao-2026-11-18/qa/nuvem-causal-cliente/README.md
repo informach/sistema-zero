@@ -109,3 +109,5 @@ python ./repetir.py --duravel C:/caminho/do/candidato --legado C:/caminho/do/che
 ```
 
 O ensaio da vila abre cada mapa recuperado, segue a porta pelo nome e lê a peça usada pela célula em ambos os lados. A variante indireta usa outra folha na vila, de modo que a alteração na cabana só afeta a vila por meio da porta. Duas variantes mudam uma folha que o grupo leu sem gravar. Uma delas mantém a revisão exata da folha na conta. A outra elimina essa fonte e exige que o aparelho conserve o selo, os bytes e a edição posterior.
+
+O candidato `436976c4f` passou nos vinte casos, com 251 asserções. Checkouts com dependências instaladas separadamente usam a ponte do runner para ligar cada resolução ESM de `idb-keyval` ao mesmo armazenamento de teste. Os controles conferem a instalação do adaptador em cada versão. O runner preserva os fontes arquivados, verifica seus SHA-256 e injeta a ponte apenas nas cópias temporárias. [Recibo do candidato](recibos/duravel-436976c.txt)
