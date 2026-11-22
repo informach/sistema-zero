@@ -18,7 +18,7 @@ O ensaio integrado usa o container PostgreSQL 16.13 de QA `pinta-causal-20261122
 pwsh -NoProfile -File docs/pinta-cenarios/missao-completa-2026-11-18/qa/nuvem-causal-minio-2026-11-22/run.ps1 -Journey
 ```
 
-O helper de QA cria o banco dedicado se necessário e aplica as migrações reais. Cada rodada gera uma conta e um perfil inéditos. O teste injeta somente a sessão de QA no listener local do Member Shell. O Gateway valida o HMAC real, encaminha requisições ao Members pela rede local e o Members persiste as unidades no PostgreSQL.
+O helper de QA cria o banco dedicado se necessário e aplica as migrações reais. Cada rodada gera uma conta e um perfil inéditos. O teste injeta a identidade de QA no verificador de sessão do listener do Member Shell e envia a prova do documento Kids. O login e a introspecção no Auth ficam fora desse ensaio. O Gateway valida o HMAC real, encaminha requisições ao Members pela rede local e o Members persiste as unidades no PostgreSQL.
 
 ## Resultados registrados
 
@@ -26,4 +26,4 @@ O helper de QA cria o banco dedicado se necessário e aplica as migrações reai
 - Com apenas um dos dois membros verificado, o commit devolveu 409 e o grafo continuou intacto. Com ambos os membros atestados, as duas revisões apareceram juntas. A tentativa de remapear a folha sem seu mapa consumidor também devolveu 409. A unidade completa preservou as coordenadas e os dois flags de espelhamento, com os hashes dos gzips publicados conferidos. [Log integrado](journey.log)
 - A unidade inversa restaurou a folha e o mapa com novos timestamps e gzips recomprimidos. A remoção posterior de uma camada por ID produziu o atestado `detached` e publicou o mapa com a camada restante. [Log integrado](journey.log)
 
-O [índice](artefatos.json) fixa as versões, os hashes e as fontes testadas. O CORS e o armazenamento Cloudflare R2 de homologação permanecem por qualificar.
+O [índice](artefatos.json) fixa as versões, os hashes e as fontes testadas. O armazenamento e o CORS de homologação foram verificados separadamente. [Ensaio no Cloudflare R2](../nuvem-causal-r2-staging-2026-11-22/README.md)
