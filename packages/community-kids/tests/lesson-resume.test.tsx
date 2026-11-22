@@ -23,6 +23,31 @@ const lesson: LessonDetailView = {
 }
 
 describe('retomada da aula ao reabrir', () => {
+  test('um retrato antigo recriado durante a leitura não substitui a resposta atual', async () => {
+    let finish: ((r: Response) => void) | undefined
+    globalThis.fetch = Object.assign(
+      () =>
+        new Promise<Response>((resolve) => {
+          finish = resolve
+        }),
+      { preconnect: originalFetch.preconnect },
+    )
+    const child = (current: LessonDetailView) => <p>{current.learningProgress?.sectionId}</p>
+    const view = render(
+      <LessonResume lesson={lesson} viewerId="responsavel">
+        {child}
+      </LessonResume>,
+    )
+    await waitFor(() => expect(finish).toBeDefined())
+    view.rerender(
+      <LessonResume lesson={{ ...lesson }} viewerId="responsavel">
+        {child}
+      </LessonResume>,
+    )
+    finish?.(Response.json({ ...lesson, learningProgress: { sectionId: 'parte-3', blocks: [] } }))
+    await waitFor(() => expect(screen.getByText('parte-3')).toBeTruthy())
+    expect(screen.queryByText('parte-1')).toBeNull()
+  })
   test('consulta a conta antes de montar vídeos a partir de um retrato antigo do roteador', async () => {
     let finish: ((r: Response) => void) | undefined
     globalThis.fetch = Object.assign(

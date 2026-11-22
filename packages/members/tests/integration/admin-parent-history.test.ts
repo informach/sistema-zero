@@ -6,6 +6,39 @@ const ACCOUNT = 'a0000000-0000-4000-8000-000000000001'
 const CHILD = 'b0000000-0000-4000-8000-000000000002'
 
 describe('históricos do responsável no Time', () => {
+  test('o histórico completo conserva certificados de cursos removidos sem atribuir um público inventado', async () => {
+    const env = buildApp()
+    const id = randomUUID()
+    env.certificates.rows.push({
+      id,
+      userId: ACCOUNT,
+      accountId: ACCOUNT,
+      courseId: randomUUID(),
+      courseRef: 'curso-removido',
+      serial: randomUUID(),
+      studentName: 'Responsável',
+      courseTitle: 'Curso que saiu do catálogo',
+      completedAt: new Date(),
+      issuedAt: new Date(),
+      revokedAt: null,
+    })
+    const scoped = await env.app.handle(
+      new Request(
+        `http://localhost/members/admin/members/${ACCOUNT}/certificates?audience=kids&learner=parents`,
+      ),
+    )
+    expect((await scoped.json()).certificates).toEqual([])
+    const full = await env.app.handle(
+      new Request(`http://localhost/members/admin/members/${ACCOUNT}/certificates`),
+    )
+    expect((await full.json()).certificates).toEqual([
+      expect.objectContaining({ id, courseRef: 'curso-removido' }),
+    ])
+    const child = await env.app.handle(
+      new Request(`http://localhost/members/admin/members/${CHILD}/certificates`),
+    )
+    expect((await child.json()).certificates).toEqual([])
+  })
   test('certificados e avaliações separam cursos para pais e cursos adultos na mesma conta', async () => {
     const env = buildApp()
     const parent = seedSampleCourse(env.courses, 'pais-historico', 'published', 'kids')
