@@ -122,7 +122,7 @@ for (const { extension, prefix, sceneCodecs, oldCodecs, target, offset } of acce
       importar,
       assignment('lugar', officialLoad),
       assignment('inicio', api('ponto_inicial')),
-      assignment('coisas', api('objetos', [], [keyword('tipo', text('porta'))])),
+      assignment('coisas', api('objetos', [], [keyword('tipo', text('door'))])),
       assignment('destino', api('propriedade', [name('porta'), text('destino')])),
       assignment('outro', api('abrir_destino', [name('porta')])),
       assignment('barreira', api('bloqueado', [name('jogador')])),
@@ -138,12 +138,14 @@ for (const { extension, prefix, sceneCodecs, oldCodecs, target, offset } of acce
           keyword(offset, name('ponto_camera')),
         ]),
       ),
+      paint('outro', target),
       expression(api('descartar')),
     ])
     const visual = pythonASTToVisual(tree, { codecs: loaded.codecs, officialModules })
     const visible = ids(visual.body)
     expect(visible).not.toContain('source')
     for (const id of expectedIds) expect(visible).toContain(id)
+    expect(visible.filter((id) => id === `${prefix}pinta_scene_draw`)).toHaveLength(3)
     const workspace = new Blockly.Workspace()
     try {
       const roots = pythonVisualToWorkspace(visual, workspace, loaded.codecs)
@@ -220,4 +222,45 @@ test('the candidate never changes the CE map codec or offers the 2D blocks in Ra
   )
   const three = await load(RAYLIB_3D_EXTENSION.id, RAYLIB_3D_EXTENSION.version, [], true)
   expect(three.loaded.codecs.some(({ id }) => id.includes('pinta_scene_'))).toBe(false)
+})
+
+test('a scene result is inferred only from direct initialization and an unchanged receiver', async () => {
+  const { project, loaded } = await load(PGZERO_EXTENSION.id, PGZERO_EXTENSION.version, [], true)
+  const options = {
+    codecs: loaded.codecs,
+    officialModules: pythonOfficialModules(project, features),
+  }
+  const open = assignment('outro', api('abrir_destino', [name('porta')]))
+  const loadScene = assignment('lugar', officialLoad)
+  const draw = paint('outro', [name('screen')])
+  const condition = { test: name('condicao'), orelse: [] }
+  for (const preparation of [
+    [node('If', { ...condition, body: [loadScene] }), open],
+    [loadScene, node('If', { ...condition, body: [open] })],
+    [loadScene, open, assignment('outro', call(name('OutraCoisa')))],
+    [
+      loadScene,
+      node('Assign', {
+        targets: [withTargetContext(attribute(name('lugar'), 'abrir_destino'), 'Store')],
+        value: name('outra_funcao'),
+        type_comment: null,
+      }),
+      open,
+    ],
+    [assignment('lugar', call(name('Heroi'))), open],
+    [open, loadScene],
+  ]) {
+    const tree = moduleNode([importar, ...preparation, draw])
+    const visual = pythonASTToVisual(tree, options)
+    expect(ids(visual.body)).not.toContain('sz_py_pgzero_pinta_scene_draw')
+    expect(pythonSemanticTree(pythonVisualToAST(visual, loaded.codecs))).toEqual(
+      pythonSemanticTree(tree),
+    )
+  }
+  const beforeAssignment = moduleNode([importar, loadScene, draw, open])
+  const before = pythonASTToVisual(beforeAssignment, options)
+  expect(ids(before.body)).not.toContain('sz_py_pgzero_pinta_scene_draw')
+  expect(pythonSemanticTree(pythonVisualToAST(before, loaded.codecs))).toEqual(
+    pythonSemanticTree(beforeAssignment),
+  )
 })

@@ -76,6 +76,7 @@ export function pythonResolverOptionsOf(
     builtins: own?.builtins ?? new Map(),
     starExports,
     builtinModules: own?.builtinModules ?? new Map(),
+    pintaDoorResults: own?.pintaDoorResults,
   }
 }
 

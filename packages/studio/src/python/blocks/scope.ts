@@ -77,6 +77,8 @@ export interface PythonResolverOptions {
    * when it is made on a module, never on an object such as `self`.
    */
   moduleAttributes?: ReadonlySet<string>
+  /** The supplied Pinta scene API can return another scene through a door. */
+  pintaDoorResults?: true
 }
 export interface PythonBindingResolver {
   (value: PythonNode, binding: PythonBlockBinding | undefined): boolean
@@ -190,6 +192,8 @@ export function pythonBindingResolver(
   const builtinModules = options.builtinModules ?? new Map()
   const projectModules: PythonProjectModules = options.projectModules ?? new Map()
   const scopes = new WeakMap<PythonNode, Scope>()
+  const pintaBodies: PythonNode[][] = []
+  const pintaReads = new WeakMap<PythonNode, ReadonlyMap<string, Binding>>()
   const classNodes = new WeakMap<Scope, PythonNode>()
   const methodScopes: Scope[] = []
   /** Constructor/literal assignments to a Name, to infer the class of its object. */
@@ -338,6 +342,12 @@ export function pythonBindingResolver(
   function visit(value: PythonNode, scope: Scope) {
     scopes.set(value, scope)
     const fields = value.fields
+    if (
+      options.pintaDoorResults &&
+      ['Module', 'FunctionDef', 'AsyncFunctionDef'].includes(value.kind) &&
+      nodes(fields.body)
+    )
+      pintaBodies.push(fields.body)
     markSafeReads(value)
     // `with open(...) as arquivo` binds the file like `arquivo = open(...)` does.
     if (
@@ -1189,6 +1199,75 @@ export function pythonBindingResolver(
     return !!klass && (!ancestorsOf(klass).mayBeOfficial || familyDefines(klass, member!))
   }
 
+  if (
+    options.pintaDoorResults &&
+    officialModules.has('pinta') &&
+    !hasAttributeWrites &&
+    !hasDynamicBindings
+  ) {
+    // Track straight-line assignments only, after ordinary proof and replacement checks.
+    // A conditional assignment, a rebound name or a user's similarly named method supplies
+    // no facts about the returned object.
+    for (const body of pintaBodies) {
+      const seen = new Map<string, Binding>()
+      let returned: ReadonlyMap<string, Binding> = new Map()
+      function markReads(value: PythonNode, scope: Scope) {
+        if (scopes.get(value) !== scope) return
+        pintaReads.set(value, returned)
+        for (const child of eachChild(value)) markReads(child, scope)
+      }
+      for (const statement of body) {
+        const scope = scopes.get(statement)
+        if (scope && returned.size) markReads(statement, scope)
+        const { targets, value } = statement.fields
+        if (
+          statement.kind !== 'Assign' ||
+          !scope ||
+          scope.uncertain ||
+          !nodes(targets) ||
+          targets.length !== 1 ||
+          !isNode(value) ||
+          value.kind !== 'Call' ||
+          !isNode(value.fields.func)
+        )
+          continue
+        const target = targets[0]
+        const key = target?.kind === 'Name' ? target.fields.id : undefined
+        if (typeof key !== 'string' || scope.writes.get(key) !== 1) continue
+        const instance = scope.bindings.get(key)
+        if (
+          instance?.kind === 'instance' &&
+          instance.module === 'pinta' &&
+          instance.instance === 'carregar_cenario'
+        ) {
+          seen.set(key, instance)
+          continue
+        }
+        const func = value.fields.func
+        const object = func.fields.value
+        if (
+          func.kind !== 'Attribute' ||
+          func.fields.attr !== 'abrir_destino' ||
+          !isNode(object) ||
+          object.kind !== 'Name' ||
+          typeof object.fields.id !== 'string' ||
+          !seen.has(object.fields.id) ||
+          ownMethod(value, object.fields.id, scope)
+        )
+          continue
+        const prior = seen.get(object.fields.id)
+        if (
+          prior?.kind === 'instance' &&
+          prior.module === 'pinta' &&
+          prior.instance === 'carregar_cenario'
+        ) {
+          seen.set(key, prior)
+          returned = new Map(returned).set(key, prior)
+        }
+      }
+    }
+  }
+
   const resolver = ((value: PythonNode, binding: PythonBlockBinding | undefined) => {
     if (!binding) return true
     if (hasAttributeWrites || hasDynamicBindings) return false
@@ -1228,7 +1307,7 @@ export function pythonBindingResolver(
     while (scope) {
       if (scope.uncertain) return false
       if (scope.globals?.has(binding.root)) scope = moduleScope(scope)
-      const found = scope.bindings.get(binding.root)
+      const found = pintaReads.get(value)?.get(binding.root) ?? scope.bindings.get(binding.root)
       if (found) {
         if (found.kind === 'other') return false
         if (binding.moduleOrInstance && found.kind === 'module' && !found.member)

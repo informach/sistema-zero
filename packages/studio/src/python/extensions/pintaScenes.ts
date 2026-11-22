@@ -88,8 +88,8 @@ export function pintaSceneCodecs(owner: PythonPintaScenesCanvas): readonly Pytho
       'objetos',
       'objetos do cenário',
       'value',
-      'Percorra os objetos com um laço para encontrar portas, perigos ou outros tipos que você marcou no Pinta.',
-      [optional('tipo', 'do tipo', () => text('porta'))],
+      'Percorra os objetos com um laço. Use ‘door’ para as portas padrão ou o tipo que você marcou no Pinta.',
+      [optional('tipo', 'do tipo', () => text('door'))],
     ),
     method(
       'property',

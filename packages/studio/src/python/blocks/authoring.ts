@@ -1,3 +1,4 @@
+import { PYTHON_PINTA_REGIONS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
@@ -107,7 +108,15 @@ export async function loadPythonAuthoring(
     const ordered = orderPythonAuthoringCodecs(extension.codecs, python.features)
     const key = ordered.map((codec) => codec.id).join('|')
     const cached = extensionCatalogs.get(key)
-    codecs = cached?.codecs ?? attachPythonResolverOptions(ordered, extension.options)
+    const pintaDoorResults = ordered.some(({ requiredRuntimeFeatures }) =>
+      requiredRuntimeFeatures?.includes(PYTHON_PINTA_REGIONS_FEATURE),
+    )
+    codecs =
+      cached?.codecs ??
+      attachPythonResolverOptions(ordered, {
+        ...extension.options,
+        ...(pintaDoorResults ? { pintaDoorResults: true } : {}),
+      })
     catalog = cached?.catalog ?? describePythonCatalog(codecs)
     extensionCatalogs.set(key, { codecs, catalog })
   }
