@@ -181,7 +181,10 @@ export async function preserveLegacyRegionalEdit(
   scope: ProjectStorageScope,
   parent: RetainedManifest,
 ) {
-  const { id } = parent
+  const { id, origin: parentOrigin } = parent
+  const expectedParent = JSON.stringify(parent)
+  const observed = await readRetainedManifest(scope, id)
+  if (!observed || JSON.stringify(observed) !== expectedParent) throw new ProjectWriteConflict()
   const { values, guards } = await readLegacyRegionalSource(scope, id)
   const dataParts = [
     'meta',
@@ -202,10 +205,7 @@ export async function preserveLegacyRegionalEdit(
   const captured = await prepareRetainedParts(values)
   const origin = await authoredOrigin(captured.parts)
   // The original private measurement revision included the legacy CAS token in its origin.
-  if (
-    origin === parent.origin ||
-    (await sha256Hex(JSON.stringify(captured.parts))) === parent.origin
-  )
+  if (origin === parentOrigin || (await sha256Hex(JSON.stringify(captured.parts))) === parentOrigin)
     return { guards }
   const scopeMarker = await sha256Hex(JSON.stringify([id, origin]))
   const targetId = `recuperado-${id.slice(0, 28)}-${scopeMarker.slice(0, 24)}`
@@ -237,7 +237,7 @@ export async function preserveLegacyRegionalEdit(
       expectedToken: null,
       origin: scopeMarker,
       candidate: target,
-      source: [...guards, ...dest.guards, [retainedProjectKey(id), JSON.stringify(parent)]],
+      source: [...guards, ...dest.guards, [retainedProjectKey(id), expectedParent]],
       absent: [noDraft(id), noDraft(targetId)],
       ready: () =>
         !hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id) &&

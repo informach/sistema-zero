@@ -760,7 +760,13 @@ test('reabre a autoria regional e cria só um fork completo do restauro V4 poste
     alt.blocksState.blocks.blocks[0]!.id = 'outro-bloco'
     await restoreProjectFromCloud(alt, { expectedId: id, namespace: scope.namespace })
     await writeInOneTransaction(scope.store, { puts: [[keys.game, { visita: '9' }]] })
-    const { fork } = await preserveLegacyRegionalEdit(scope, head)
+    // The caller changes its copy while the first IDB read is pending. The captured head owns the fork.
+    const mutable = structuredClone(head)
+    const inFlight = preserveLegacyRegionalEdit(scope, mutable)
+    mutable.origin = 'a'.repeat(64)
+    mutable.token = crypto.randomUUID()
+    const { fork } = await inFlight
+    await expect(preserveLegacyRegionalEdit(scope, mutable)).rejects.toThrow()
     expect(fork).toBeString()
     const other = (await readRetainedManifest(scope, fork!))!
     const saved = await readRetainedParts(scope, other)
