@@ -10,9 +10,15 @@ import {
 } from '../core/project'
 import { CELL_FLIP_H, makeCell } from '../tiles/cell'
 import { createMapObject, removeMapObject } from '../tiles/mapObjects'
-import { freezeMapTilesets } from '../tiles/resourceVersions'
+import { freezeMapTilesets, freezeObjectResource } from '../tiles/resourceVersions'
 import { addLayer, addObjectLayer, removeLayer } from '../tiles/tilemapOps'
-import { addTile, duplicateTile, remapTilemapCells, removeTile } from '../tiles/tilesetOps'
+import {
+  addTile,
+  duplicateTile,
+  remapTilemapCells,
+  removeTile,
+  tryRemapTilemapIndices,
+} from '../tiles/tilesetOps'
 import { assetToJson } from './assetJson'
 import { inspectPintaCausalDocument } from './pintaCausalManifest'
 import {
@@ -331,5 +337,91 @@ test('pinning refuses a private id that would capture a property link from the v
       remaps,
       new Map([[tiles.id, provePintaCausalPin(source.asset, candidate.asset, oldSheet)!]]),
     ),
+  ).toBeNull()
+})
+
+test('uses the two actual freeze gestures and remaps the bindings still pointing at the live sheet', () => {
+  const tiles = sheet()
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+    'Objetos',
+  )
+  map.layers.find(isTileLayer)!.cells.set([makeCell(2, CELL_FLIP_H), -1])
+  const objects = map.layers.find(isObjectLayer)!
+  const art = createMapObject({ shape: 'art', art: { assetId: tiles.id, tile: 2 } })
+  objects.objects.push(art)
+  const find = (id: string) => (id === tiles.id ? tiles : null)
+  const mapSpec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), mapSpec)!
+  const source = inspectPintaCausalDocument(assetToJson(tiles), {
+    itemId: tiles.id,
+    kind: tiles.kind,
+    formatVersion: 6,
+  })?.asset
+  if (source?.kind !== 'tileset') throw new Error('Folha inválida')
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  const prove = (candidate: typeof map) => {
+    const inspected = inspectPintaCausalDocument(assetToJson(candidate), mapSpec)!
+    const pin = provePintaCausalPin(base.asset, inspected.asset, source)
+    if (!pin) throw new Error('Snapshot inválido')
+    return provePintaCausalConsumerRemaps(base, inspected.asset, remaps, new Map([[tiles.id, pin]]))
+  }
+
+  const frozenGrid = freezeMapTilesets(map, find, 5)
+  if (!frozenGrid.ok) throw new Error(frozenGrid.reason)
+  const mappedArt = tryRemapTilemapIndices(frozenGrid.map, removeFirst.oldToNew, tiles.id)
+  if (!mappedArt.ok) throw new Error(mappedArt.reason)
+  expect(mappedArt.map.layers.find(isTileLayer)!.cells[0]).toBe(makeCell(2, CELL_FLIP_H))
+  expect(mappedArt.map.layers.find(isObjectLayer)!.objects[0]!.art).toEqual({
+    assetId: tiles.id,
+    tile: 1,
+  })
+  expect(prove(mappedArt.map)).toEqual([{ sheetId: tiles.id, mode: 'pinned' }])
+  const mixed = structuredClone(frozenGrid.map)
+  mixed.layers.find(isObjectLayer)!.objects[0]!.art!.assetId = mixed.tilesetId
+  expect(prove(mixed)).toBeNull()
+
+  const frozenArt = freezeObjectResource(map, objects.id, art.id, find, 5)
+  if (!frozenArt.ok) throw new Error(frozenArt.reason)
+  const mappedGrid = tryRemapTilemapIndices(frozenArt.map, removeFirst.oldToNew, tiles.id)
+  if (!mappedGrid.ok) throw new Error(mappedGrid.reason)
+  expect(mappedGrid.map.layers.find(isTileLayer)!.cells[0]).toBe(makeCell(1, CELL_FLIP_H))
+  expect(mappedGrid.map.layers.find(isObjectLayer)!.objects[0]!.art).toEqual({
+    assetId: frozenArt.map.resources![0]!.asset.id,
+    tile: 2,
+  })
+  expect(prove(mappedGrid.map)).toEqual([{ sheetId: tiles.id, mode: 'pinned' }])
+})
+
+test('a multi-sheet grid requires a certified base for every captured binding', () => {
+  const tiles = sheet()
+  const other = { ...sheet(), name: 'segunda-folha' }
+  const map = addLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+    'Piso de fora',
+    other.id,
+  )
+  map.layers.filter(isTileLayer)[0]!.cells.set([1, -1])
+  map.layers.filter(isTileLayer)[1]!.cells.set([2, -1])
+  const spec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), spec)!
+  const freeze = freezeMapTilesets(
+    map,
+    (id) => [tiles, other].find((item) => item.id === id) ?? null,
+  )
+  if (!freeze.ok) throw new Error(freeze.reason)
+  const candidate = inspectPintaCausalDocument(assetToJson(freeze.map), spec)!
+  const source = inspectPintaCausalDocument(assetToJson(tiles), {
+    itemId: tiles.id,
+    kind: tiles.kind,
+    formatVersion: 6,
+  })?.asset
+  if (source?.kind !== 'tileset') throw new Error('Folha inválida')
+  const pin = provePintaCausalPin(base.asset, candidate.asset, source)
+  if (!pin) throw new Error('Versão privada inválida')
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  expect(pintaCausalPinSourceIds(base, candidate.asset, remaps)).toEqual([tiles.id])
+  expect(
+    provePintaCausalConsumerRemaps(base, candidate.asset, remaps, new Map([[tiles.id, pin]])),
   ).toBeNull()
 })
