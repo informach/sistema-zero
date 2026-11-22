@@ -429,7 +429,12 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // sintático também conta parâmetros tipados, e a prova semântica acima continua exigida.
   // +1 (19/11): pageHide(event) no ciclo de vida compartilhado preserva o jogo
   // quando event.persisted indica BFCache. A guarda semântica acima permanece.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1498)
+  // +6 (22/11, recorte dos sprites fora do palco): `_drawSprite(ctx, sprite, fora)`, o corpo do
+  // `drawSprite` público (que segue com os dois do contrato), `_cullRect(ctx)` e
+  // `_offStage(s, r)`, todos com JSDoc; a prova semântica acima cobre os três.
+  // +1 (22/11): `_newTileMap(options)`, o corpo do createTileMap sem a conta do "rodando sem
+  // parar" (o cenário do Pinta cria um mapa a cada porta), com JSDoc.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1505)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

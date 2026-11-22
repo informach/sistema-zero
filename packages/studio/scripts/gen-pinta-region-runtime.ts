@@ -10,8 +10,12 @@ const output = new URL(
 const runtime = fileURLToPath(
   new URL('../src/official-extensions/map-2d/regionRuntime.ts', import.meta.url),
 )
-for (const name of sharedRegionGeometry)
-  if (!sceneObjectTransformSource.includes(`var ${name}=`))
+// Check the published functions, independently of the generator's declaration syntax.
+const provided: unknown = new Function(
+  `${sceneObjectTransformSource};return [${sharedRegionGeometry.join(',')}];`,
+)()
+for (const [index, name] of sharedRegionGeometry.entries())
+  if (!Array.isArray(provided) || typeof provided[index] !== 'function')
     throw new Error(`O Core não forneceu a função portátil ${name}.`)
 let linkedGeometry = false
 const built = await Bun.build({

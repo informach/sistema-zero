@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { basename, dirname, join, resolve } from 'node:path'
 import {
   sceneIntersectsBox,
   sceneMoveBox,
@@ -11,11 +14,10 @@ import {
   transformSceneSetObject,
 } from '../src/studio/pinta-scene-runtime'
 
-// Capture authoritative functions before bundling. Only this controlled build
-// shortens local identifiers; explicit aliases preserve the portable API names.
-// No imports/editor dependency may enter the generated closure.
+// Capturar a função ANTES do bundler: a minificação pode introduzir templates e
+// renomear símbolos. O texto portátil deve ser estável em dev e produção.
 const file = new URL('../src/studio/pinta-scene-transform.generated.ts', import.meta.url)
-const functions = [
+const funcoes = [
   transformSceneSetObject,
   sceneArtFrame,
   sceneLayerState,
@@ -25,34 +27,57 @@ const functions = [
   scenePlatformLanding,
   sceneMoveBox,
 ]
-const contents =
-  functions.map((fn) => `var ${fn.name}=(${fn.toString()});`).join('') +
-  `__pintaSceneExports={${functions.map((fn) => fn.name).join(',')}};`
-const built = await Bun.build({
-  entrypoints: ['pinta-scene-virtual'],
-  format: 'iife',
-  target: 'browser',
-  minify: { whitespace: true, identifiers: true, syntax: false },
-  plugins: [
-    {
-      name: 'pinta-scene-source',
-      setup(build) {
-        build.onResolve({ filter: /^pinta-scene-virtual$/ }, () => ({
-          path: 'pinta-scene-virtual',
-          namespace: 'pinta-scene',
-        }))
-        build.onLoad({ filter: /.*/, namespace: 'pinta-scene' }, () => ({ contents, loader: 'js' }))
-      },
-    },
-  ],
-})
-if (!built.success || built.outputs.length !== 1)
-  throw new Error('Falha ao compor geometria portátil.', { cause: built.logs })
-const source =
-  'var __pintaSceneExports;' +
-  (await built.outputs[0]!.text()).trim() +
-  functions.map((fn) => `var ${fn.name}=__pintaSceneExports.${fn.name};`).join('') +
-  '__pintaSceneExports=undefined;'
+/**
+ * Os nomes encurtados (lote 8 da conclusão do plano do Estúdio, 22/11/2026): o Bun.Transpiler
+ * desta versão não encurta identificadores, então as funções passam pelo Bun.build num módulo
+ * temporário. O resultado vai embrulhado numa função que devolve as oito com os nomes longos: os
+ * nomes de uma letra nunca chegam ao escopo do motor (o fragmento entra no meio do Jogo 2D). É a
+ * compensação de bytes que abre espaço para o cache e a pré-carga do tocador de cenas.
+ */
+async function compactar(): Promise<string> {
+  const temporarios = resolve(tmpdir())
+  const pasta = mkdtempSync(join(temporarios, 'sz-pinta-transform-'))
+  if (dirname(resolve(pasta)) !== temporarios || !basename(pasta).startsWith('sz-pinta-transform-'))
+    throw new Error('O diretório temporário do compositor não pertence a este gerador.')
+  try {
+    const entrada = join(pasta, 'entrada.js')
+    writeFileSync(
+      entrada,
+      `${funcoes.map((fn) => `var ${fn.name}=(${fn.toString()});`).join('')}export{${funcoes
+        .map((fn) => fn.name)
+        .join(',')}};`,
+    )
+    const resultado = await Bun.build({
+      entrypoints: [entrada],
+      format: 'esm',
+      target: 'browser',
+      minify: { whitespace: true, identifiers: true, syntax: false },
+    })
+    if (!resultado.success || resultado.outputs.length !== 1)
+      throw new AggregateError(resultado.logs, 'Falha ao compactar o compositor portátil.')
+    let codigo = (await resultado.outputs[0]!.text()).trim()
+    const exportacao = codigo.match(/export\s*\{([^}]*)\};?\s*$/)
+    if (!exportacao || exportacao.index === undefined)
+      throw new Error('O compositor compactado perdeu a lista de exportações.')
+    const curto = new Map(
+      exportacao[1]!.split(',').map((par) => {
+        const [interno, externo] = par.trim().split(/\s+as\s+/)
+        return [externo ?? interno!, interno!] as const
+      }),
+    )
+    codigo = codigo.slice(0, exportacao.index).trim()
+    if (!codigo.endsWith(';')) codigo += ';'
+    const nomes = funcoes.map((fn) => {
+      const nome = curto.get(fn.name)
+      if (!nome) throw new Error(`O compositor compactado perdeu ${fn.name}.`)
+      return nome
+    })
+    return `var[${funcoes.map((fn) => fn.name).join(',')}]=(()=>{${codigo}return[${nomes.join(',')}]})();`
+  } finally {
+    rmSync(pasta, { recursive: true, force: true })
+  }
+}
+const source = await compactar()
 if (source.includes('`')) throw new Error('O compositor portátil exige fonte sem templates.')
 // Match the repository formatter at generation time. JSON escapes embedded double
 // quotes; the single-quoted TS literal only needs those escapes removed and its

@@ -253,14 +253,15 @@ def count_texture(width, height, function):
     global _texture_count, _total_pixels
     if width > MAX_TEXTURE_SIDE or height > MAX_TEXTURE_SIDE:
         raise ValueError(f'{function}: a imagem passa de {MAX_TEXTURE_SIDE} pixels de lado.')
-    _texture_count += 1
-    _total_pixels += width * height
-    if _texture_count > MAX_TEXTURES:
+    # Os limites antes de contar: uma textura recusada não fica somada (revisão do lote 7b).
+    if _texture_count + 1 > MAX_TEXTURES:
         raise RuntimeError(f'{function}: o jogo carregou mais de {MAX_TEXTURES} texturas. '
                            'Carregue as imagens uma vez, antes do laço do jogo.')
-    if _total_pixels > MAX_TOTAL_PIXELS:
+    if _total_pixels + width * height > MAX_TOTAL_PIXELS:
         raise RuntimeError(f'{function}: as imagens do jogo somam pixels demais. Carregue cada '
                            'imagem uma vez, antes do laço, e descarregue as que não usa mais.')
+    _texture_count += 1
+    _total_pixels += width * height
 
 
 def forget_texture(width, height):

@@ -117,6 +117,8 @@ describe('bundle inicial do Jogo 2D', () => {
 // (+0,7 KB). Medido no Windows (Bun 1.3.11): 368.619 bytes / 95.238 bytes gzip (com os recados
 // da revisão do lote 4). Antes: 423.180 / 120.879 com os avisos, 422.457 / 120.628 sem eles. Os
 // tetos desceram junto.
+// 22/11/2026 (lote 8 da conclusão): o recorte dos sprites fora do palco nos grupos, +734 bytes.
+// Medido: 369.353 bytes / 95.501 bytes gzip, dentro dos mesmos tetos.
 const RUNTIME_TETO_CRU = 369_500
 const RUNTIME_TETO_GZIP = 96_000
 

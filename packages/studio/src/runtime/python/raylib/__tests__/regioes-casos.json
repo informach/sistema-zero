@@ -391,6 +391,454 @@
       }
     ]
   },
+  "regua": [
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": []
+        },
+        {
+          "id": "b",
+          "nome": "Mata",
+          "caixa": {
+            "x0": 10,
+            "z0": 0,
+            "x1": 20,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": []
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": []
+        },
+        {
+          "id": "a",
+          "nome": "Outra",
+          "caixa": {
+            "x0": 20,
+            "z0": 20,
+            "x1": 30,
+            "z1": 30
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["Região duplicada: a"]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "   ",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["Uma região está sem nome. Escreva um nome para ela."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": []
+        },
+        {
+          "id": "b",
+          "nome": " vila ",
+          "caixa": {
+            "x0": 20,
+            "z0": 20,
+            "x1": 30,
+            "z1": 30
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["Já existe uma região chamada vila."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 5,
+            "z0": 0,
+            "x1": 5,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila precisa ter largura e comprimento."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 90,
+            "z0": 0,
+            "x1": 140,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila sai da base do cenário."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 90,
+            "z0": 0,
+            "x1": 140,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": null,
+      "esperado": []
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": ["a"]
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila não pode ser vizinha dela mesma."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": ["zz"]
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila cita uma vizinha que não existe mais."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": ["b", "b"]
+        },
+        {
+          "id": "b",
+          "nome": "Mata",
+          "caixa": {
+            "x0": 10,
+            "z0": 0,
+            "x1": 20,
+            "z1": 10
+          },
+          "vizinhas": ["a"]
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila repete a vizinha Mata."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": ["b"]
+        },
+        {
+          "id": "b",
+          "nome": "Mata",
+          "caixa": {
+            "x0": 10,
+            "z0": 0,
+            "x1": 20,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila tem Mata como vizinha, mas Mata não tem Vila."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 10,
+            "z1": 10
+          },
+          "vizinhas": []
+        },
+        {
+          "id": "b",
+          "nome": "Mata",
+          "caixa": {
+            "x0": 9,
+            "z0": 0,
+            "x1": 20,
+            "z1": 10
+          },
+          "vizinhas": []
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["As regiões Vila e Mata se sobrepõem. Elas podem encostar pela borda."]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": -90,
+            "z0": 0,
+            "x1": 0,
+            "z1": 50
+          },
+          "vizinhas": ["v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8"]
+        },
+        {
+          "id": "v0",
+          "nome": "V0",
+          "caixa": {
+            "x0": -90,
+            "z0": 50,
+            "x1": -80,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v1",
+          "nome": "V1",
+          "caixa": {
+            "x0": -80,
+            "z0": 50,
+            "x1": -70,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v2",
+          "nome": "V2",
+          "caixa": {
+            "x0": -70,
+            "z0": 50,
+            "x1": -60,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v3",
+          "nome": "V3",
+          "caixa": {
+            "x0": -60,
+            "z0": 50,
+            "x1": -50,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v4",
+          "nome": "V4",
+          "caixa": {
+            "x0": -50,
+            "z0": 50,
+            "x1": -40,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v5",
+          "nome": "V5",
+          "caixa": {
+            "x0": -40,
+            "z0": 50,
+            "x1": -30,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v6",
+          "nome": "V6",
+          "caixa": {
+            "x0": -30,
+            "z0": 50,
+            "x1": -20,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v7",
+          "nome": "V7",
+          "caixa": {
+            "x0": -20,
+            "z0": 50,
+            "x1": -10,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        },
+        {
+          "id": "v8",
+          "nome": "V8",
+          "caixa": {
+            "x0": -10,
+            "z0": 50,
+            "x1": 0,
+            "z1": 60
+          },
+          "vizinhas": ["a"]
+        }
+      ],
+      "limite": {
+        "x0": -100,
+        "z0": -100,
+        "x1": 100,
+        "z1": 100
+      },
+      "esperado": ["A região Vila tem 9 vizinhas. Uma região pode ter até 8."]
+    }
+  ],
   "plano": [
     {
       "regioes": [

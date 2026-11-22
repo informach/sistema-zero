@@ -360,6 +360,14 @@ jobs:
       # As áreas do projeto no editor de blocos do Python (organizar o código que veio de fora, as
       # notas, o "Ir para") e o arranjo das áreas: o servidor de provas exige Bun 1.4 no Windows,
       # então estes e2e só rodam aqui (22/11/2026).
+      # As regiões no Raylib 3D do Python (lote 7b da conclusão, 22/11/2026): a rota pelas três
+      # regiões, dez voltas, com os objetos de GPU vivos do quadro.
+      - name: Python Raylib 3D regions route
+        if: success() || failure()
+        working-directory: packages/studio
+        env:
+          PYTHON_PROBE_OUTPUT_DIR: ../../.cache/studio-python-runtime/mission-browser/regioes
+        run: bunx playwright test --config playwright.python-regions.config.ts
       - name: Python editor areas and workspace layout
         if: success() || failure()
         working-directory: packages/studio

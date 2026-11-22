@@ -41,6 +41,9 @@ test('Raylib distribui a fonte oficial e dados separados, sem transformar nome a
   expect(JSON.parse(ler('cenario.json')).nome).toBe(p.cena.nome)
   expect(ler(`${r.modulo}.py`)).not.toContain(p.cena.nome)
   expect(ler('main.py')).not.toContain(p.cena.nome)
+  // Com regiões, o cenário carrega pela posição da câmera: o exemplo chama o atualizar a cada
+  // quadro (revisão do lote 7b; sem isso, as regiões longe do início nunca apareciam).
+  expect(ler('main.py')).toContain('lugar.atualizar(camera.position.x, camera.position.z)')
   expect(ler('LEIA-ME.txt')).toContain('caixas')
   expect(ler('LEIA-ME.txt')).toContain('estática')
   expect(JSON.stringify(p.cena)).toBe(antes)

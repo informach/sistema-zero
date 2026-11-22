@@ -192,6 +192,10 @@ class CenarioTest(unittest.TestCase):
         listas = cenario._pertenca(p['regioes'], {**itens, 'plano': itens.get('plano')})
         self.assertEqual([{'id': r['id'], **listas[i]} for i, r in enumerate(p['regioes'])],
                          p['esperado'])
+        # A régua do documento: os mesmos recados, na mesma ordem (revisão do lote 7b).
+        for caso in CASOS['regua']:
+            self.assertEqual(cenario._erros_das_regioes(caso['regioes'], caso['limite']),
+                             caso['esperado'], caso['regioes'])
         for caso in CASOS['plano']:
             plano = cenario._PlanoDaCarga(caso['regioes'])
             ordem = [r['id'] for r in caso['regioes']]
@@ -353,6 +357,63 @@ class CenarioTest(unittest.TestCase):
             cenario.carregar(types.ModuleType('outro'))
         self.assertIn('módulo do cenário', str(erro.exception))
 
+    def test_review_7b_water_tie_break_and_partial_registration(self):
+        # Revisão do lote 7b. B4: a colisão de água vale sempre, como no motor JavaScript, mesmo
+        # com a região dela fora da carga.
+        data = com_regioes(self.data, self.folder)
+        data['entidades'].append({'id': 'poca', 'nome': 'Poça', 'tipo': 'agua', 'grupo': None,
+                                  'oculto': False})
+        data['aguas'].append({'id': 'poca', 'tipo': 'lago'})
+        data['colisoes'].append({'id': 'poca-col', 'entidade': 'poca', 'tipo': 'agua',
+                                 'arquivo': 'models/c.glb', 'matriz': IDENTITY[:],
+                                 'volume': caixa(120, 125)})
+        data['regioes'][2]['colisoes'] = ['pedra-c', 'poca-col']
+        data['regioes'][2]['aguas'] = ['poca']
+        s = cenario.Cenario(self.folder, data)
+        try:
+            self.assertNotIn('Caverna', s.estado_das_regioes()['carregadas'])
+            self.assertTrue(s.colide_caixa((121, 0, -1), (124, 1, 1), tipos=('agua',)))
+            self.assertFalse(s.colide_caixa((96, 0, -1), (104, 1, 1)))
+        finally:
+            s.descartar()
+        # B3: no empate de distância, a região que já está carregada fica (nada de trocar à toa).
+        self.setUp()
+        data = com_regioes(self.data, self.folder, {'pessoa': 0, 'a': 10, 'c': 30})
+        for r in data['regioes']:
+            r['vizinhas'] = []
+        data['regioes'][0]['nos'] = ['a1', 'a2']
+        s = cenario.Cenario(self.folder, data)
+        try:
+            # Perto da Caverna: ela entra (opcional, pela câmera longe).
+            s.atualizar(40, 0, camera=(40, -400), agora=0)
+            self.assertIn('Caverna', s.estado_das_regioes()['carregadas'])
+            # No meio da Floresta, Vila e Caverna ficam à mesma distância (50 m) e só uma cabe.
+            s.atualizar(0, 0, camera=(0, -400), agora=1)
+            carregadas = s.estado_das_regioes()['carregadas']
+            self.assertIn('Caverna', carregadas)
+            self.assertNotIn('Vila', carregadas)
+        finally:
+            s.descartar()
+        # B5: uma falha ao registrar as texturas de uma região que entra depois da abertura devolve
+        # o modelo dela: nada fica guardado sem uso (e uma nova tentativa registra tudo de novo).
+        self.setUp()
+        s = cenario.Cenario(self.folder, com_regioes(self.data, self.folder))
+        original = cenario.Cenario._registrar_texturas
+
+        def quebrado(self_, chave, modelo):
+            raise RuntimeError('texturas ilegíveis')
+
+        try:
+            cenario.Cenario._registrar_texturas = quebrado
+            with contextlib.redirect_stdout(io.StringIO()):
+                s.atualizar(0, 0, agora=1)
+            self.assertEqual(s.estado_das_regioes()['falhas'], ['Caverna'])
+            self.assertEqual(len(s._modelos), 2)
+            self.assertEqual(set(s._usos.values()), {1, 3})
+        finally:
+            cenario.Cenario._registrar_texturas = original
+            s.descartar()
+
     def test_triangular_heights_holes_missing_pieces_and_cutouts(self):
         self.data.pop('plano')
         heights = [0.0] * (129 * 65)
@@ -461,6 +522,51 @@ class CenarioTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             cenario.carregar(self.guardar())
         self.assertGreater(len(_rt.pending_free), antes)
+
+    def test_model_that_fails_midway_returns_its_textures(self):
+        # O load_model do Estúdio criava as texturas antes dos passos que podem falhar e não as
+        # devolvia: cada nova tentativa de uma região que falhou vazava texturas que nem o
+        # descartar() via (revisão do lote 7b).
+        from _szraylib import _models
+        path = self.folder / 'models/pessoa.glb'
+        original = path.read_bytes()
+        n = struct.unpack_from('<I', original, 12)[0]
+        d = json.loads(original[20:20 + n])
+        png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg=='
+        d['images'] = [{'uri': 'data:image/png;base64,' + png}]
+        d['textures'] = [{'source': 0}]
+        d['materials'][0].setdefault('pbrMetallicRoughness', {})['baseColorTexture'] = {'index': 0}
+        body = json.dumps(d).encode()
+        body += b' ' * (-len(body) % 4)
+        restante = original[20 + n:]
+        path.write_bytes(struct.pack('<5I', 0x46546c67, 2, 20 + len(body) + len(restante), len(body),
+                                     0x4e4f534a) + body + restante)
+        envio = _models.upload
+
+        def falha(mesh, function='upload_mesh'):
+            raise RuntimeError('a placa recusou a malha')
+
+        antes, livres = _rt._texture_count, len(_rt.pending_free)
+        _models.upload = falha
+        try:
+            with self.assertRaises(RuntimeError):
+                P.load_model(str(path))
+        finally:
+            _models.upload = envio
+        self.assertEqual(_rt._texture_count, antes)
+        # A textura, criada antes do envio da malha, volta para a lista de liberar.
+        self.assertGreaterEqual(len(_rt.pending_free) - livres, 1)
+
+    def test_texture_over_the_limit_is_not_counted(self):
+        contagem, pixels = _rt._texture_count, _rt._total_pixels
+        _rt._total_pixels = _rt.MAX_TOTAL_PIXELS - 10
+        try:
+            with self.assertRaises(RuntimeError):
+                _rt.count_texture(100, 100, 'teste')
+            self.assertEqual(_rt._texture_count, contagem)
+            self.assertEqual(_rt._total_pixels, _rt.MAX_TOTAL_PIXELS - 10)
+        finally:
+            _rt._total_pixels = pixels
 
     def test_owned_textures_are_released_without_freeing_the_default(self):
         path = self.folder / 'models/pessoa.glb'

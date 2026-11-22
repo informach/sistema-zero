@@ -19,7 +19,7 @@ export function pythonProAssetExample(
       label: `usar o cenário ${asset.name} no Raylib`,
       explanation:
         'Carrega a revisão que está no projeto. Chame depois de init_window; desenhe dentro de begin_mode_3d e descarte antes de close_window. Seu programa continua controlando a câmera e o movimento.',
-      code: `# Depois de init_window: lugar = ${nome}()\n# Entre begin_mode_3d e end_mode_3d: lugar.desenhar()\n# Antes de close_window: lugar.descartar()\ndef ${nome}():\n    from ${modulo} import carregar\n    return carregar()`,
+      code: `# Depois de init_window: lugar = ${nome}()\n# A cada quadro, com regiões: lugar.atualizar(x, z) com a posição do personagem\n# Entre begin_mode_3d e end_mode_3d: lugar.desenhar()\n# Antes de close_window: lugar.descartar()\ndef ${nome}():\n    from ${modulo} import carregar\n    return carregar()`,
     }
   }
   if (
