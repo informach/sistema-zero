@@ -1,0 +1,9 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\real-shadow-quota-review.test.ts:
+(pass) galeria aceita o desenho no limite, recusa o gzip adicional e permite tentar de novo após liberar espaço [906.00ms]
+
+ 1 pass
+ 0 fail
+ 10 expect() calls
+Ran 1 test across 1 file. [1085.00ms]

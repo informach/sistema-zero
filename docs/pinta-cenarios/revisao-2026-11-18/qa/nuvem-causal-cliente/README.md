@@ -44,3 +44,23 @@ O comando abaixo repete as onze variações. No commit 5ef, as quatro perdas de 
 ```powershell
 python ./repetir.py --terminal C:/caminho/do/checkout-5ef --legado C:/caminho/do/checkout-64c
 ```
+
+## Retenção da última edição aceita no aparelho
+
+Em `85e506f85f1e2d23bceb69bcea2407c3076f734d`, passaram 17 dos 20 casos de retenção e quota, com 171 asserções executadas. O escritor anterior continua sendo o checkout 64c. Nos casos com mapas, cada cópia abriu a folha e o mapa de destino da respectiva edição. As referências tipadas e as portas foram conferidas depois de reabrir a galeria.
+
+| Sequência | Resultado no checkpoint 85e |
+| --- | --- |
+| Edição 3 selada, seguida de exclusão ou edição 5 na instalação anterior e versão 7 da conta | A fila instalou a versão 7 e recuperou a última edição local. Quando existia, a edição independente 5 ganhou uma cópia. Uma resposta 404 com o mesmo epoch preservou os dados até o servidor apresentar um epoch posterior. |
+| Edição 4 aceita após selar 3, seguida de 5 e 7 | A galeria recuperou 4, 5 e 7. O caso exige especificamente a edição 4 que o aparelho havia confirmado como a mais recente. |
+| Substituição da edição pendente | Uma falha na última gravação física preservou o gzip, a revisão e o desenho anteriores. A tentativa seguinte substituiu os três valores e o congelamento aproveitou a mesma chave de blob. |
+| Galeria cuja margem comportava o desenho, mas era inferior ao tamanho de seu gzip | A escrita recusou o conjunto inteiro. Depois de reduzir um desenho da galeria, a repetição gravou a folha e o gzip. |
+| Primeira adoção de um mapa regional alterado por outro escritor | O mapa esparso de 10.000 × 10.000 células conservou a origem (−64, −64), as versões locais 4 e 5 e suas folhas. A leitura oficial instalou o mapa de valor 7. |
+| Exclusão anterior à primeira adoção | A fila reteve o gzip de valor 4, mas deixou de instalar a versão oficial 7 após a lápide do escritor anterior. |
+| Mutação do argumento enquanto o gzip está pronto e a transação ainda aguarda | Tanto na primeira escrita quanto após reconhecer um epoch, o aparelho confirmou um desenho de valor 4 junto a um gzip de valor 3. O ensaio usa uma barreira após a compressão real. |
+
+O comando seguinte executa os vinte casos. No checkpoint 85e, as três falhas das duas últimas linhas produzem código de saída 1. Os recibos incluem a execução conjunta de recuperação e a execução de fronteira com 32 MiB. [Índice de fontes e recibos](indice.json)
+
+```powershell
+python ./repetir.py --retencao C:/caminho/do/checkout-85e --legado C:/caminho/do/checkout-64c
+```

@@ -108,6 +108,92 @@
       ],
       "sha256": "16ef17088e21762328f8b01c801049014ef204d3461e2c86310d11c4420c368a",
       "originalSha256": "d3a3317378c1846aea79aeecd04e914d371eb6d7cec7e27a3a6a7c5b584d962c"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "real-shadow-quota-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/real-shadow-quota-review.inc"
+      ],
+      "sha256": "380e1b4fcdc70bc4d53eb3c8afdbe2742756b1fb019dfa7ac0d02063faaeef7d"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "shadow-rollback-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/shadow-rollback-review.inc"
+      ],
+      "sha256": "9a4b0ff97a4fe25fc40807debfcc1c348ccdf4999abf98274d0380a0dfe9ca92",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-doors-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-doors-review.inc"
+      ],
+      "sha256": "38f3c5772e4c26afcd6dd9cf7a642014fdfdbc65387bfdbbd485e365c22d66be",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-fixed-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-fixed-review.inc"
+      ],
+      "sha256": "bb70617ae0351dbd0d6df81fe99d3194981ef6ec82227b4c922d8bb780c8088d",
+      "lfAdicional": 3
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-graph-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-graph-review.inc"
+      ],
+      "sha256": "b95343ea6961cc8c43f3e686f21a088a606ece18da3112bbe0d74ebf9ba51250"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-http-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-http-review.inc"
+      ],
+      "sha256": "adcd2c18258ee5efb0f343350c1395cbe6bc5c76302ac914348820b63a540500",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-mutable-encode-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-mutable-encode-review.inc"
+      ],
+      "sha256": "0d4d3e89a1230d5383a8c011e4137b36c780eaab05b7941b54075ef939d45687"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-pending-fixed-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-pending-fixed-review.inc"
+      ],
+      "sha256": "6a5e772869d9c1ed62d20fc31c6f0d7802f855032659c171b6be8e2fcc19b9c1",
+      "lfAdicional": 5
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-unbased-region-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-unbased-region-review.inc"
+      ],
+      "sha256": "24113af36eb311bb11dcae1f3e1b2eadcfb248f77a1d249186cf251e4b17578a"
     }
   ],
   "recibos": [
@@ -173,6 +259,20 @@
       "sha256": "f42cc0d6099449a41dbfc08cacd6be878ecfdd45436d31a46ede3e54d24ab8ba",
       "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
       "resultado": "1 falha/8 asserções"
+    },
+    {
+      "arquivo": "recibos/replay-85e.txt",
+      "originalSha256": "4cc4c66d382e77d5366720d98462c6782d9525f3461814b6d98d7ad0280e8528",
+      "sha256": "4e352b3edd3741317e4b2d7bf2d2f90c0a5612873b00b25e7970b03ba9fef603",
+      "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+      "resultado": "16 passam/3 falham/161 asserções"
+    },
+    {
+      "arquivo": "recibos/quota-85e.txt",
+      "originalSha256": "5e9a4df1407f6d10bff8ef79f228d8b76c74f8b0c7c4e7c38f6631d30efca7b5",
+      "sha256": "2f08ae7950b977717e48a690196a854d91ba79d734c48139cf9aaa142166658a",
+      "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+      "resultado": "1 passa/10 asserções"
     }
   ],
   "arvoresGit": {
@@ -191,8 +291,14 @@
     },
     "legado": {
       "packages/pinta/src": "af6608a9570ceec9d95a67fe01ce045b2fb4e4e4"
+    },
+    "retencao": {
+      "packages/pinta/src": "f0376341bbf05da953cd30274101dbc61d2fea79",
+      "packages/member-shell/src/lib": "586777bc885c17b5b3979d6d26e69af331be7686",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
     }
   },
   "terminal": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
-  "legado": "64c197d5332a36b73af54de6ae5bf045a4a7699e"
+  "legado": "64c197d5332a36b73af54de6ae5bf045a4a7699e",
+  "retencao": "85e506f85f1e2d23bceb69bcea2407c3076f734d"
 }

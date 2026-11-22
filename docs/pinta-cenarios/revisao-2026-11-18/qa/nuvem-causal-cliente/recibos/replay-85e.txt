@@ -1,0 +1,104 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\shadow-rollback-review.test.ts:
+(pass) a troca de um gzip mutável usa a mesma transação, espaço e chave [78.00ms]
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-doors-review.test.ts:
+(pass) cópias autorais e preexistentes religam o mapa à folha da mesma versão [94.00ms]
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-fixed-review.test.ts:
+(pass) último PUT, escritor anterior delete e situação unknown [31.00ms]
+(pass) último PUT, escritor anterior delete e situação expired [16.00ms]
+(pass) último PUT, escritor anterior delete e situação aborted [15.00ms]
+(pass) último PUT, escritor anterior overwrite e situação unknown [32.00ms]
+(pass) último PUT, escritor anterior overwrite e situação expired
+(pass) último PUT, escritor anterior overwrite e situação aborted [31.00ms]
+(pass) último PUT, escritor anterior none e situação unknown [15.00ms]
+(pass) último PUT, escritor anterior none e situação expired
+(pass) último PUT, escritor anterior none e situação aborted [16.00ms]
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-graph-review.test.ts:
+(pass) cópias autorais e preexistentes religam o mapa à folha da mesma versão [31.00ms]
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-http-review.test.ts:
+(pass) dois PUTs escritos uma vez, último falha, outro commit vence abort e somente recibo exato libera a unidade [15.00ms]
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-mutable-encode-review.test.ts:
+132 |    const blob=item.blobs.get(s.id)
+133 |    const body=await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text()
+134 |    const fromGzip=local.causal.decodeCandidate(body)
+135 |    const document=await local.loadAssetById(s.id)
+136 |    expect(fromGzip.tiles[0].data[0]).toBe(3)
+137 |    expect(document.tiles[0].data[0]).toBe(fromGzip.tiles[0].data[0])
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 4
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-mutable-encode-review.test.ts:137:38)
+(fail) mutação durante encode mantém documento e gzip da mesma autoria: sem base [16.00ms]
+132 |    const blob=item.blobs.get(s.id)
+133 |    const body=await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text()
+134 |    const fromGzip=local.causal.decodeCandidate(body)
+135 |    const document=await local.loadAssetById(s.id)
+136 |    expect(fromGzip.tiles[0].data[0]).toBe(3)
+137 |    expect(document.tiles[0].data[0]).toBe(fromGzip.tiles[0].data[0])
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 4
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-mutable-encode-review.test.ts:137:38)
+(fail) mutação durante encode mantém documento e gzip da mesma autoria: com base
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-pending-fixed-review.test.ts:
+(pass) último PUT, escritor anterior overwrite e situação unknown [31.00ms]
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-unbased-region-review.test.ts:
+(pass) primeira base recupera documento de valor 4 apesar da API antiga: edit [16.00ms]
+132 |    const state=await local.causal.inspect(); expect(state.epoch).toBeNull(); expect(state.shadows.get(state.unbased.opId).bytes).toBeGreaterThan(0)
+133 |    const old=await legacy.loadAssetById(s.id)
+134 |    if(retire==='edit')await legacy.persistAsset(pixel(old,5));else await legacy.deleteAsset(s.id,old)
+135 |    const reopened=createPintaCausalPersistence({namespace:ns})
+136 |    const outcome=await syncPintaCausalAccount({local:reopened.causal,cloud:transport,signal:new AbortController().signal,reader:6,canContinue:()=>true,isOpen:()=>false,withClosed:(_,apply)=>apply()})
+137 |    expect(outcome).toMatchObject({applied:true})
+                         ^
+error: expect(received).toMatchObject(expected)
+
+  {
+-   "applied": true,
++   "applied": false,
++   "mode": "causal",
++   "snapshot": {
++     "entries": [
++       {
++         "bytes": 272,
++         "coverage": "certified",
++         "formatVersion": 6,
++         "itemId": "c15c9b76-567a-4d87-b40f-dd8c07c10b6f",
++         "itemUpdatedAt": "2026-11-22T19:45:43.264Z",
++         "kind": "tileset",
++         "layoutRevision": "1",
++         "name": "arte",
++         "revision": 1,
++         "sha256": "c556e5f664063249854aa92e59e09ed99bae45b031583ac55434c27e53daeae5",
++       },
++     ],
++     "epoch": "1",
++     "requiredFormat": 6,
++   },
+  }
+
+- Expected  - 1
++ Received  + 20
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\terminal-unbased-region-review.test.ts:137:20)
+(fail) primeira base recupera documento de valor 4 apesar da API antiga: delete
+(pass) última edição nativa8 10000² sobrevive à edição regional antiga e à primeira descida densa [31.00ms]
+
+ 16 pass
+ 3 fail
+ 161 expect() calls
+Ran 19 tests across 8 files. [807.00ms]
