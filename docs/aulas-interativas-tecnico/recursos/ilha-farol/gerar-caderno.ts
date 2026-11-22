@@ -9,8 +9,11 @@
  *
  * Itens do conteúdo: `text`, `step` (título "N. …" vira passo numerado), `box` (com `tone`),
  * `note`, `activity` (com `pill`), `delivery` (com `finish`), `gallery` (com `category`),
- * `drawing` (com `name`, um dos desenhos abaixo, e `title`) e `index` (o "Encontre seu passo" da
- * primeira folha). Em todo texto, `<br/>` separa parágrafos e um caminho da paleta em negrito
+ * `drawing` (com `name`, um dos desenhos abaixo, e `title`), `index` (o "Encontre seu passo" da
+ * primeira folha), `views` (prints do jogo lado a lado, com `images`) e `figure` (com `name`, um dos
+ * desenhos das páginas de conceito, e `title`). Uma página `{ "id": "guia-…", "guia": true }` é uma
+ * folha "Conheça a plataforma" (`guia-da-plataforma/guia.ts`): na Ilha, o jogo em 3D e os botões
+ * da vista. Em todo texto, `<br/>` separa parágrafos e um caminho da paleta em negrito
  * ("Jogo 3D &gt; …") ganha a cor de caminho. `{{pagina:<id>}}` vira o número da página.
  *
  * Gerar e conferir: `python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py ilha-farol`.
@@ -38,6 +41,7 @@ import {
   rodape,
   secao,
 } from '../caderno-visual/visual'
+import { GUIA_CSS, guiaSecao } from '../guia-da-plataforma/guia'
 
 type Item = {
   kind: string
@@ -50,6 +54,7 @@ type Item = {
   pill?: string
   days?: { kicker: string; title: string; text: string; pages: string }[]
   extras?: { icon: string; title: string; text: string }[]
+  images?: { image: string; caption: string }[]
 }
 type ContentPage = {
   id: string
@@ -57,12 +62,14 @@ type ContentPage = {
   title: string
   subtitle: string
   lit?: boolean
+  guia?: false
   items: Item[]
 }
+type GuiaPage = { id: string; guia: true }
 const root = resolve(import.meta.dir, '../../../..')
 const pages = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'caderno-conteudo.json'), 'utf8'),
-) as ContentPage[]
+) as (ContentPage | GuiaPage)[]
 const fontes = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}
 @font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`
 const arte = arteDoCurso('capa-ilha-farol.jpg')
@@ -217,6 +224,65 @@ function gallery(category: string | undefined): string {
   return `<div class="galeria ilha-galeria ilha-galeria--${category}">${nomes.map(opcao).join('')}</div>`
 }
 
+// As figuras das páginas de conceito (22/11/2026). Os prints do jogo vêm do guia da plataforma
+// (`guia-da-plataforma/telas/ilha-do-farol`, de `capturar-telas.py`), e os desenhos usam os modelos
+// do jogo renderizados com fundo transparente (`arte/`). Na página de encostar, as fotos são da
+// experiência da Aula 2, Parte 3, de cima e de lado, como a criança viu.
+const telasDir = resolve(import.meta.dir, '../guia-da-plataforma/telas/ilha-do-farol')
+const arteDir = resolve(import.meta.dir, 'arte')
+const dataUrl = (arquivo: string, tipo: string) =>
+  `data:${tipo};base64,${readFileSync(arquivo).toString('base64')}`
+const modelo = (nome: string) => dataUrl(resolve(arteDir, `${nome}.webp`), 'image/webp')
+
+function views(images: Item['images']): string {
+  if (!images?.length) throw new Error('Página com views sem imagens.')
+  const figuras = images
+    .map(
+      (v) =>
+        `<figure class="ilha-vista"><img src="${dataUrl(resolve(telasDir, `${v.image}.jpg`), 'image/jpeg')}" alt="${v.caption}"><figcaption>${v.caption}</figcaption></figure>`,
+    )
+    .join('')
+  return `<div class="ilha-vistas">${figuras}</div>`
+}
+
+// As cores dos eixos são as do Estúdio e da maioria dos programas 3D: x vermelho, y verde, z azul.
+const EIXO = { x: '#d64545', y: '#2a9457', z: '#2f6fdb' } as const
+const FONTE_DESENHO = `font-family="'Baloo 2', Nunito, sans-serif" font-weight="800"`
+const ponta = (eixo: keyof typeof EIXO) =>
+  `<marker id="ponta-${eixo}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.4" markerHeight="4.4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${EIXO[eixo]}"/></marker>`
+const seta = (eixo: keyof typeof EIXO, x1: number, y1: number, x2: number, y2: number) =>
+  `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${EIXO[eixo]}" stroke-width="6" stroke-linecap="round" marker-end="url(#ponta-${eixo})"/>`
+const rotulo = (eixo: keyof typeof EIXO, x: number, y: number, explica: string, ancora = 'start') =>
+  `<text x="${x}" y="${y}" text-anchor="${ancora}" ${FONTE_DESENHO} fill="${EIXO[eixo]}"><tspan font-size="34">${eixo}</tspan><tspan font-size="17" dx="6">${explica}</tspan></text>`
+
+/**
+ * As três direções na vista do começo: a câmera fica do lado de quem olha, então o x vai para a
+ * direita, o y para cima e o z vem para perto, pelo chão (no desenho, o z desce seguindo a
+ * perspectiva do chão, que foge para o fundo).
+ */
+function desenhoEixos(): string {
+  return `<svg class="ilha-desenho" viewBox="0 0 480 300" role="img" aria-label="A chave no ar, com as setas do x, do y e do z">
+<defs>${ponta('x')}${ponta('y')}${ponta('z')}</defs>
+<rect width="480" height="300" rx="18" fill="#e6f3ff"/>
+<polygon points="40,266 440,266 360,132 120,132" fill="#f2d9a6" stroke="#d8b878" stroke-width="2"/>
+<ellipse cx="200" cy="208" rx="30" ry="8" fill="#0000001f"/>
+${seta('y', 200, 208, 200, 52)}
+${seta('x', 200, 208, 338, 208)}
+${seta('z', 200, 208, 191, 262)}
+<image href="${modelo('chave')}" x="166" y="92" width="68" height="63"/>
+${rotulo('x', 348, 218, 'para os lados')}
+${rotulo('y', 214, 60, 'a altura')}
+${rotulo('z', 150, 292, 'perto e longe')}
+</svg>`
+}
+
+const FIGURAS: Record<string, () => string> = { eixos: desenhoEixos }
+function figure(item: Item): string {
+  const desenho = FIGURAS[item.name ?? '']
+  if (!desenho) throw new Error(`Figura desconhecida: ${item.name}`)
+  return `<figure class="ilha-figura">${desenho()}<figcaption>${item.title ?? ''}</figcaption></figure>`
+}
+
 /** Card de cada caixa: o tom e o ícone seguem o que a caixa diz, como nas folhas de referência. */
 function boxStyle(item: Item): { tom: 'azul' | 'amarelo'; icone: string } {
   const titulo = item.title ?? ''
@@ -258,6 +324,8 @@ function renderItem(item: Item, page: { kicker: string }, index: number): string
     return B.esquema(item.title ?? '', drawing.area, drawing.corpo())
   }
   if (item.kind === 'index') return indexCards(item)
+  if (item.kind === 'views') return views(item.images)
+  if (item.kind === 'figure') return figure(item)
   const text = item.text ?? ''
   if (item.kind === 'text')
     // Nas folhas de experiência, a ideia do vídeo abre a folha num card, antes do convite.
@@ -302,6 +370,16 @@ const ui = {
   curso: 'A Ilha do Farol',
 }
 const montadas = pages.map((page) => {
+  if (page.guia)
+    return {
+      id: page.id,
+      html: (numero: string) =>
+        guiaSecao(page.id, {
+          curso: 'ilha-do-farol',
+          kicker: (parte) => `Aula 1 · Parte ${parte}`,
+          rodape: rodape(ui.curso, numero),
+        }),
+    }
   const body = page.items.map((item, i) => renderItem(item, page, i)).join('')
   const topo =
     page.id === 'p1'
@@ -374,6 +452,13 @@ body { --fundo: #f6fbfa; --tinta: #0b3036; --texto: #3a4b4e; --destaque: #0e7c86
 .ilha-galeria--chaves { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .ilha-galeria--chaves img { height: 26mm; }
 .ilha-galeria--barcos img, .ilha-galeria--farois img { height: 30mm; }
+.ilha-vistas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3mm; margin: 1mm 0 3mm; }
+.ilha-vista { margin: 0; }
+.ilha-vista img { display: block; width: 100%; border-radius: 10px; border: 1px solid #dbe9e8; }
+.ilha-vista figcaption, .ilha-figura figcaption { font-size: 9.6pt; font-weight: 700; color: var(--tinta); text-align: center; margin-top: 1.4mm; }
+.ilha-figura { margin: 1mm 0 3mm; }
+.ilha-desenho { display: block; width: 100%; max-height: 72mm; margin: 0 auto; }
+${GUIA_CSS}
 `
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${ui.titulo}</title><style>${cssDoCaderno(fontes)}\n${cursoCss}</style></head><body>${cover}${body}</body></html>`
 if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')

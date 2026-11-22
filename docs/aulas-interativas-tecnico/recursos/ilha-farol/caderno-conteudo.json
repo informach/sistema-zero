@@ -24,7 +24,7 @@
             "kicker": "Aula 1",
             "title": "Uma ilha com profundidade",
             "text": "A câmera muda de lugar, e o personagem anda pela ilha.",
-            "pages": "Páginas {{pagina:ponto-de-vista}} a {{pagina:movimento-teste}}"
+            "pages": "Páginas {{pagina:guia-jogo-3d}} a {{pagina:movimento-teste}}"
           },
           {
             "kicker": "Aula 2",
@@ -71,6 +71,10 @@
     ]
   },
   {
+    "id": "guia-jogo-3d",
+    "guia": true
+  },
+  {
     "id": "ponto-de-vista",
     "kicker": "Aula 1 · Parte 3 · Experiência antes da montagem",
     "title": "O que aparece quando você muda de lugar?",
@@ -90,6 +94,37 @@
         "kind": "box",
         "title": "Você escolhe a ordem",
         "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "camera",
+    "kicker": "Aula 1 · Parte 4 · O que você descobriu",
+    "title": "A câmera muda, a ilha fica",
+    "subtitle": "O que você vê depende de onde a câmera está.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, você olhou a ilha de lugares diferentes. A chave, a pedra e o farol ficaram onde estavam: quem mudou de lugar foi a câmera. Por isso a imagem muda. De um lado, a pedra fica na frente da chave e esconde a chave. Do outro, a chave aparece."
+      },
+      {
+        "kind": "views",
+        "images": [
+          {
+            "image": "vista-do-comeco",
+            "caption": "Na vista do começo, a pedra esconde a chave."
+          },
+          {
+            "image": "vista-girada",
+            "caption": "Com a cena girada, a chave aparece ao lado da pedra."
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Use os botões da vista",
+        "text": "No seu jogo também dá para mudar a câmera, com os botões do canto do jogo (página {{pagina:guia-jogo-3d}}). Girar a cena ajuda a achar o que está escondido e a conferir se cada coisa ficou no lugar certo.",
         "tone": "note"
       }
     ]
@@ -172,6 +207,32 @@
     ]
   },
   {
+    "id": "eixos",
+    "kicker": "Aula 2 · Parte 2 · O que você descobriu",
+    "title": "Três números, três direções",
+    "subtitle": "No 3D, o lugar de cada objeto tem um x, um y e um z.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, cada número levava a chave para uma direção. O x e o z levam a chave pelo chão, e o y muda a altura dela."
+      },
+      {
+        "kind": "figure",
+        "name": "eixos",
+        "title": "O x, o y e o z da chave, na vista do começo"
+      },
+      {
+        "kind": "box",
+        "title": "Cada número, uma direção",
+        "text": "<b>x</b>: para os lados. Aumentando, a chave vai para a direita; diminuindo, vai para a esquerda.<br/><b>y</b>: a altura. Aumentando, a chave sobe; diminuindo, ela desce.<br/><b>z</b>: para a frente e para trás. Aumentando, a chave vem para perto de quem olha; diminuindo, vai para o fundo."
+      },
+      {
+        "kind": "note",
+        "text": "No jogo 2D, o y mudava o lugar na tela. No 3D, o y é a altura, e quem leva para perto ou para longe é o z. O desenho mostra a vista do começo: se você girar a cena, as direções giram junto com a ilha."
+      }
+    ]
+  },
+  {
     "id": "posicao",
     "kicker": "Aula 2 · Parte 2 · Montagem",
     "title": "Coloque a chave na ilha",
@@ -225,6 +286,36 @@
         "title": "Você escolhe a ordem",
         "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
         "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "encostar",
+    "kicker": "Aula 2 · Parte 4 · O que você descobriu",
+    "title": "Encostar é se tocar de verdade",
+    "subtitle": "Na imagem, duas coisas podem parecer juntas sem estar encostando.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, olhando de cima, a chave parecia estar em cima do personagem. Olhando de lado, dava para ver que ela estava mais alta, no ar. No 3D, uma coisa pode estar na frente, atrás ou acima da outra e, mesmo assim, as duas parecem juntas na imagem."
+      },
+      {
+        "kind": "views",
+        "images": [
+          {
+            "image": "encostar-de-cima",
+            "caption": "De cima, a chave parece estar em cima do personagem."
+          },
+          {
+            "image": "encostar-de-lado",
+            "caption": "De lado, dá para ver: a chave está no ar, bem acima dele."
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Como o jogo confere",
+        "text": "O jogo não olha a imagem: ele confere o lugar de cada um, nas três direções. O bloco <b>Quando personagem encostar em chave</b> só percebe o encontro quando os dois se tocam de verdade, no chão e na altura."
       }
     ]
   },
