@@ -18,6 +18,9 @@ ENV NODE_OPTIONS=--max-old-space-size=8192
 ARG RAILWAY_GIT_COMMIT_SHA
 ARG STUDIO_PYTHON_FRAME_ORIGINS
 ARG STUDIO_PRO_RUNTIME_URL
+# O Next incorpora a opção pública de sincronização causal durante o build.
+ARG NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1=0
+ENV NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1=$NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
 # Build PACKAGE-LOCAL com runtime Node (gotcha do monorepo: `--filter` da raiz
 # quebra a resolução do React nos workers de static-export — ver CLAUDE.md).
 RUN cd packages/community-kids && npm run build
