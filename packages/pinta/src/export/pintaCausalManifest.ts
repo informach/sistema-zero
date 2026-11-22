@@ -1,6 +1,8 @@
 import {
+  createHexRegionCellReader,
   PINTA_INVENTORY_READER_VERSION,
   pintaCanWriteNativeSchema,
+  pintaHexCellTile,
 } from '@sistemazero/core/creations'
 import {
   PINTA_CAUSAL_LIMITS,
@@ -12,13 +14,11 @@ import { utf8ByteLength } from '../core/jsonBytes'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import {
   isObjectLayer,
-  isTileLayer,
   isTilesetKind,
   PINTA_MAX_SCHEMA,
   type PintaAssetReferenceRole,
   pintaAssetSchema,
   sanitizePintaAsset,
-  type TilemapCells,
   tileLayerTilesetId,
   tilemapOfAsset,
   visitPintaAssetDependencies,
@@ -30,6 +30,8 @@ import {
   encodeRegionSetDocument,
 } from '../core/regionDocument'
 import { pintaDoorSelectors } from '../core/sceneMapClosure'
+import { automapSheetIdentity } from '../tiles/automapping/book'
+import { isPintaAuthoredMap } from '../tiles/automapping/model'
 import { cellTile } from '../tiles/cell'
 import { createTileCellReader, mapCellBounds } from '../tiles/mapCells'
 import {
@@ -40,6 +42,14 @@ import {
   MAX_BACKUP_FILE_BYTES,
 } from './projectJson'
 import { admitsRegionBackupBuffers, REGION_BACKUP_VERSION } from './regionBackup'
+import { readWorkshopBookEnvelope } from './workshopDocument'
+import { decodeWorkshopProjectedMap, type WorkshopProjectedMap } from './workshopProjection'
+
+export type CausalAsset = PintaMemoryAsset | WorkshopProjectedMap
+export function causalRulebook(asset: CausalAsset) {
+  if (asset.kind === 'tilemap' && 'projection' in asset) return asset.automapping
+  return isPintaAuthoredMap(asset) ? asset.automapping : undefined
+}
 
 type JsonRecord = Record<string, unknown>
 
@@ -156,12 +166,13 @@ function nestedSchemaIsKnown(encoded: JsonRecord, ceiling: number): boolean {
 
 type CausalReference = PintaCausalManifest['refs'][number]
 
-function referencesOf(asset: PintaMemoryAsset): CausalReference[] {
+function referencesOf(asset: CausalAsset): CausalReference[] {
   const dependencies = new Map<
     string,
     {
       id: string
       roles: Set<PintaAssetReferenceRole>
+      ruleSheetSha256?: string
       bits?: Uint8Array
       implicitArtSlotZero?: true
     }
@@ -190,10 +201,16 @@ function referencesOf(asset: PintaMemoryAsset): CausalReference[] {
   if (map) {
     const bounds = mapCellBounds(map)
     for (const layer of map.layers) {
-      if (isTileLayer<TilemapCells>(layer)) {
+      if (layer.kind === undefined || layer.kind === 'tiles') {
         const id = tileLayerTilesetId(map, layer)
-        if (dependencies.has(id))
-          createTileCellReader(layer.cells, bounds).visitOccupied(bounds, (cell) =>
+        if (!dependencies.has(id)) continue
+        const grid = layer.cells
+        if (!(grid instanceof Int16Array) && grid.kind === 'hex-regions')
+          createHexRegionCellReader(grid).visitOccupied(bounds, (cell) =>
+            mark(id, pintaHexCellTile(cell)),
+          )
+        else
+          createTileCellReader(grid, bounds).visitOccupied(bounds, (cell) =>
             mark(id, cellTile(cell)),
           )
       } else if (isObjectLayer(layer)) {
@@ -208,11 +225,23 @@ function referencesOf(asset: PintaMemoryAsset): CausalReference[] {
       }
     }
   }
+  for (const rule of causalRulebook(asset)?.rules ?? []) {
+    for (const group of [rule.input, ...rule.outputs])
+      for (const plane of group) {
+        const ref = dependencies.get(plane.sheet)
+        if (!ref) continue // A private sheet is checked against the bytes in this same document.
+        if (ref.ruleSheetSha256 && ref.ruleSheetSha256 !== plane.sha256)
+          throw new Error('Regras observaram versões diferentes de uma folha')
+        ref.ruleSheetSha256 = plane.sha256
+        for (const cell of plane.cells) if (cell !== null && cell >= 0) mark(ref.id, cellTile(cell))
+      }
+  }
   return [...dependencies.keys()].sort().map((id) => {
-    const { roles, bits, implicitArtSlotZero } = dependencies.get(id)!
+    const { roles, bits, implicitArtSlotZero, ruleSheetSha256 } = dependencies.get(id)!
     return {
       id,
       roles: [...roles].sort(),
+      ...(ruleSheetSha256 ? { ruleSheetSha256 } : {}),
       ...(bits
         ? { indices: Array.from(bits, (byte) => byte.toString(16).padStart(2, '0')).join('') }
         : {}),
@@ -222,7 +251,7 @@ function referencesOf(asset: PintaMemoryAsset): CausalReference[] {
 }
 
 interface DecodedDocument {
-  asset: PintaMemoryAsset
+  asset: CausalAsset
   encoded: unknown
   requiredNativeSchema: number
 }
@@ -232,6 +261,14 @@ function decodeDocument(
   backupVersion: number,
   regional: boolean,
 ): DecodedDocument | null {
+  if (backupVersion === 9) {
+    const asset =
+      raw.capability === 'projection'
+        ? decodeWorkshopProjectedMap(raw)
+        : readWorkshopBookEnvelope(raw)
+    // Both envelope readers verify every authored field against their canonical encoding.
+    return asset ? { asset, encoded: raw, requiredNativeSchema: 9 } : null
+  }
   const decoded = decodePintaBackupAsset(raw, true)
   if (regional) {
     if (raw.kind === 'tilemap') {
@@ -266,11 +303,52 @@ function decodeDocument(
 }
 
 export interface PintaCausalDocument {
-  asset: PintaMemoryAsset
+  asset: CausalAsset
   manifest: PintaCausalManifest
   /** Canonical native values used only while hashing a verified revision on the server. */
   authorial: Readonly<JsonRecord>
 }
+
+/** Complete hash-based rule bindings only after bounded native admission. */
+export async function verifyWorkshopRuleSheets(
+  document: PintaCausalDocument,
+): Promise<PintaCausalManifest | null> {
+  const { asset, manifest } = document
+  if (isTilesetKind(asset) && manifest.sheet) {
+    const { sha256 } = await automapSheetIdentity(asset)
+    return { ...manifest, sheet: { ...manifest.sheet, ruleSheetSha256: sha256 } }
+  }
+  const book = causalRulebook(asset)
+  if (!book || asset.kind !== 'tilemap') return manifest
+  const resources = new Map(asset.resources?.map(({ asset }) => [asset.id, asset]))
+  for (const rule of book.rules)
+    for (const planes of [rule.input, ...rule.outputs])
+      for (const plane of planes) {
+        const sheet = resources.get(plane.sheet)
+        if (!sheet) {
+          if (
+            !manifest.refs.some(
+              (ref) => ref.id === plane.sheet && ref.ruleSheetSha256 === plane.sha256,
+            )
+          )
+            return null
+          continue
+        }
+        if (!isTilesetKind(sheet)) return null
+        const { count, sha256 } = await automapSheetIdentity(sheet)
+        if (
+          sha256 !== plane.sha256 ||
+          plane.cells.some((cell) => cell !== null && cellTile(cell) >= count)
+        )
+          return null
+      }
+  return manifest
+}
+
+/** Cloud format of the native-9 workshop body. Only the private workshop reader (server flag
+ * PINTA_WORKSHOP_SERVICE_READER, off by default) admits it; the reader negotiated by the
+ * service stays PINTA_INVENTORY_READER_VERSION until the native-9/cloud-8 gate is separated. */
+const WORKSHOP_CLOUD_FORMAT_VERSION = 8
 
 export interface PintaCausalDocumentExpectation {
   itemId: string
@@ -278,9 +356,18 @@ export interface PintaCausalDocumentExpectation {
   formatVersion: number
   /** Private codec admission for local qualification. The cloud writer does not select it. */
   allowRegions?: boolean
+  allowWorkshop?: boolean
 }
 
 /** Reads one exact native backup entry, or leaves its bytes opaque for recovery. */
+export function inspectPintaCausalDocument(
+  text: string,
+  expected: PintaCausalDocumentExpectation & { allowWorkshop?: false },
+): (Omit<PintaCausalDocument, 'asset'> & { asset: PintaMemoryAsset }) | null
+export function inspectPintaCausalDocument(
+  text: string,
+  expected: PintaCausalDocumentExpectation,
+): PintaCausalDocument | null
 export function inspectPintaCausalDocument(
   text: string,
   expected: PintaCausalDocumentExpectation,
@@ -288,7 +375,10 @@ export function inspectPintaCausalDocument(
   if (
     !Number.isSafeInteger(expected.formatVersion) ||
     expected.formatVersion < 1 ||
-    expected.formatVersion > PINTA_INVENTORY_READER_VERSION ||
+    expected.formatVersion >
+      (expected.allowWorkshop === true
+        ? WORKSHOP_CLOUD_FORMAT_VERSION
+        : PINTA_INVENTORY_READER_VERSION) ||
     text.length > MAX_BACKUP_FILE_BYTES ||
     utf8ByteLength(text) > MAX_BACKUP_FILE_BYTES
   )
@@ -305,16 +395,19 @@ export function inspectPintaCausalDocument(
     )
       return null
 
-    const regional = doc.version === REGION_BACKUP_VERSION && expected.allowRegions === true
-    if (!regional && !canReadPintaBackupEnvelope(doc.version)) return null
+    const regional =
+      doc.version === REGION_BACKUP_VERSION &&
+      (expected.allowRegions === true || expected.allowWorkshop === true)
+    const authored = doc.version === 9 && expected.allowWorkshop === true
+    if (!authored && !regional && !canReadPintaBackupEnvelope(doc.version)) return null
     const raw = record(doc.assets[0])
-    const cap = regional ? REGION_BACKUP_VERSION : PINTA_MAX_SCHEMA
+    const cap = authored ? 9 : regional ? REGION_BACKUP_VERSION : PINTA_MAX_SCHEMA
     if (
       !raw ||
       raw.id !== expected.itemId ||
       raw.kind !== expected.kind ||
       !nestedSchemaIsKnown(raw, cap) ||
-      !admitsRegionBackupBuffers([raw])
+      !admitsRegionBackupBuffers([authored ? raw.map : raw])
     )
       return null
 
@@ -323,12 +416,12 @@ export function inspectPintaCausalDocument(
     const { asset, requiredNativeSchema } = decoded
     const encoded = record(decoded.encoded)
     const nativeSchema = typeof raw.schema === 'number' ? raw.schema : 0
-    const readsSchema = regional
-      ? nativeSchema === requiredNativeSchema
-      : pintaCanWriteNativeSchema(
-          Math.max(nativeSchema, requiredNativeSchema),
-          expected.formatVersion,
-        )
+    const readsSchema =
+      (!(regional || authored) || nativeSchema === requiredNativeSchema) &&
+      pintaCanWriteNativeSchema(
+        Math.max(nativeSchema, requiredNativeSchema),
+        expected.formatVersion,
+      )
     if (!readsSchema || !encoded || !matchesAssetEncoding(raw, encoded, regional)) return null
 
     const map = tilemapOfAsset(asset)
@@ -353,6 +446,12 @@ export function inspectPintaCausalDocument(
         : {}),
     })
     const { updatedAt: _updatedAt, ...authorial } = encoded
+    if (authored) {
+      const body = record(encoded.map)
+      if (!body) return null
+      const { updatedAt: _bodyTime, ...authoredBody } = body
+      authorial.map = authoredBody
+    }
     return result.success ? { asset, manifest: result.data, authorial } : null
   } catch {
     return null

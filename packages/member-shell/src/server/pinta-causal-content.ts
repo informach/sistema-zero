@@ -11,6 +11,7 @@ import {
   MAX_PINTA_CAUSAL_DOCUMENT_BYTES,
   type PintaCausalDocument,
   type PintaCausalDocumentExpectation,
+  verifyWorkshopRuleSheets,
 } from '@sistemazero/pinta/assets/causal'
 import { CREATION_BLOB_CONTENT_TYPE } from './creation-download'
 import type { R2PrivateObject } from './r2'
@@ -195,7 +196,14 @@ export async function readPintaCausalBlob(
   const document = inspectPintaCausalDocument(text, expected)
   if (!document)
     throw new PintaCausalUnverifiedContent('A revisão do desenho não pode ser conferida.')
-  const { asset, authorial, manifest } = document
+  const { asset, authorial } = document
+  const manifest = expected.allowWorkshop
+    ? await verifyWorkshopRuleSheets(document)
+    : document.manifest
+  if (!manifest)
+    throw new PintaCausalUnverifiedContent(
+      'A folha observada pelas regras difere da versão guardada.',
+    )
   const authoredFingerprint = {
     version: 1 as const,
     sha256: createHash('sha256')

@@ -50,6 +50,7 @@ import {
   uniqueAnimationName,
   VECTOR_TILE_SIZES,
 } from './projectConfig'
+import type { ProjectedTilemapAsset } from './projectedDocument'
 
 export {
   BACKGROUND_SIZES,
@@ -681,7 +682,9 @@ export function isLayerShown(
   return layer.parentId === undefined || effectiveLayer(tilemap, layer).visible
 }
 
-export function isObjectLayer(layer: TilemapLayer<TilemapCells>): layer is TilemapObjectLayer {
+export function isObjectLayer(
+  layer: TilemapObjectLayer | TilemapGroupLayer | (TilemapLayerCommon & { kind?: 'tiles' }),
+): layer is TilemapObjectLayer {
   return layer.kind === 'objects'
 }
 
@@ -730,13 +733,17 @@ export const PINTA_DEPENDENCY_ASSET_LIMIT = 225
 /** One map view for direct documents and reusable definitions, independent of storage. */
 export function tilemapOfAsset(
   asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
-): TilemapAsset | RegionTilemapAsset | null {
+): TilemapAsset | RegionTilemapAsset | null
+export function tilemapOfAsset(
+  asset: ReferenceAsset,
+): TilemapAsset | RegionTilemapAsset | ProjectedTilemapAsset | null
+export function tilemapOfAsset(asset: ReferenceAsset) {
   return asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
 }
 
 export type PintaAssetReferenceRole = 'default-sheet' | 'layer-sheet' | 'art' | 'set' | 'property'
 
-type ReferenceAsset = PintaAsset | RegionTilemapAsset | RegionMapSetAsset
+type ReferenceAsset = PintaAsset | RegionTilemapAsset | RegionMapSetAsset | ProjectedTilemapAsset
 type ReferenceVisitor = (id: string, role: PintaAssetReferenceRole) => void
 
 /** Dependências diretas visuais e tipadas. A travessia e a transação pertencem ao adaptador. */
@@ -754,7 +761,7 @@ function visitPintaAssetReferences(asset: ReferenceAsset, visit: ReferenceVisito
   if (map) {
     add(map.tilesetId, 'default-sheet')
     for (const layer of map.layers) {
-      if (isTileLayer<TilemapCells>(layer) && layer.tilesetId !== undefined)
+      if ((layer.kind === undefined || layer.kind === 'tiles') && layer.tilesetId !== undefined)
         add(layer.tilesetId, 'layer-sheet')
     }
     for (const layer of map.layers) {
@@ -1050,9 +1057,7 @@ export interface TilemapResourceVersion {
   asset: VersionablePintaAsset
 }
 
-export function isTilesetKind(
-  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
-): asset is AnyTilesetAsset {
+export function isTilesetKind(asset: ReferenceAsset): asset is AnyTilesetAsset {
   return asset.kind === 'tileset' || asset.kind === 'vector-tileset'
 }
 

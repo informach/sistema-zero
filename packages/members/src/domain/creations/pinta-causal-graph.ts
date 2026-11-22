@@ -235,6 +235,13 @@ export function verifyPintaGraph(
         throw new PintaCausalError('missing-consumer', item.itemId)
       if (changed && target) requireRead(item.itemId, target)
     }
+    for (const ref of manifest.refs) {
+      if (
+        ref.ruleSheetSha256 &&
+        ref.ruleSheetSha256 !== after.get(ref.id)?.manifest?.sheet?.ruleSheetSha256
+      )
+        throw new PintaCausalError('missing-consumer', item.itemId)
+    }
     if (!wrote) continue
     const previousRefs = new Map(previous?.refs.map((r) => [r.id, r]))
     const defaultId = manifest.refs.find((ref) => ref.roles.includes('default-sheet'))?.id

@@ -2,6 +2,7 @@ import type { PintaMemoryAsset } from './assetMemory'
 import { COPY } from './copy'
 import { type PintaResourceObservation, pintaResourceObservation } from './localAssetOrigin'
 import { isObjectLayer, PINTA_DEPENDENCY_ASSET_LIMIT, pintaAssetDependencyIds } from './project'
+import type { ProjectedTilemapAsset } from './projectedDocument'
 
 export class SceneMapClosureError extends Error {
   constructor(
@@ -27,7 +28,9 @@ export class SceneMapClosureError extends Error {
   }
 }
 
-function* rawDoorSelectors(asset: PintaMemoryAsset): IterableIterator<unknown> {
+function* rawDoorSelectors(
+  asset: PintaMemoryAsset | ProjectedTilemapAsset,
+): IterableIterator<unknown> {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   if (!map) return
   const unwrap = (value: unknown): unknown =>
@@ -44,7 +47,9 @@ function* rawDoorSelectors(asset: PintaMemoryAsset): IterableIterator<unknown> {
 }
 
 /** The authored selector needs the complete current catalog for ID-first resolution. */
-export function* pintaDoorSelectors(asset: PintaMemoryAsset): IterableIterator<string> {
+export function* pintaDoorSelectors(
+  asset: PintaMemoryAsset | ProjectedTilemapAsset,
+): IterableIterator<string> {
   for (const destination of rawDoorSelectors(asset)) {
     if (typeof destination !== 'string') throw new SceneMapClosureError('missing-map')
     yield destination

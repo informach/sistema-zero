@@ -3,7 +3,7 @@ export type {
   PintaCausalDocument,
   PintaCausalDocumentExpectation,
 } from '../export/pintaCausalManifest'
-export { inspectPintaCausalDocument } from '../export/pintaCausalManifest'
+export { inspectPintaCausalDocument, verifyWorkshopRuleSheets } from '../export/pintaCausalManifest'
 export {
   pintaCausalChangedSurvivingSlots,
   pintaCausalPinSourceIds,

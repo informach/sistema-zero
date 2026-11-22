@@ -168,3 +168,14 @@ test('the full manifest including its authored digest must fit the proof budget'
     }),
   ).rejects.toThrow('orçamento do manifesto')
 })
+
+test('a habilitação privada atesta o hash de regras da folha sobre o gzip exato', async () => {
+  const verified = await readPintaCausalBlob(blob(gzip), {
+    ...identity,
+    bytes: gzip.length,
+    allowWorkshop: true,
+  })
+  expect(verified.manifest.sheet?.ruleSheetSha256).toMatch(/^[0-9a-f]{64}$/)
+  const legacy = await readPintaCausalBlob(blob(gzip), { ...identity, bytes: gzip.length })
+  expect(legacy.manifest.sheet?.ruleSheetSha256).toBeUndefined()
+})

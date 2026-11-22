@@ -127,26 +127,40 @@ export function pintaWorkshopAssetFromJson(text: string): PintaMemoryAsset | nul
   try {
     const doc = JSON.parse(text),
       record = doc.assets?.[0]
-    if (
-      doc.format !== 'pinta-gallery' ||
-      Object.keys(doc).length !== 3 ||
-      !Array.isArray(doc.assets) ||
-      doc.assets.length !== 1 ||
-      record?.kind !== 'tilemap' ||
-      record.schema !== 9 ||
-      record.map?.kind !== 'tilemap' ||
-      record.id !== record.map.id ||
-      Object.keys(record).length !== 5 ||
-      !Object.hasOwn(record, 'book')
-    )
-      return null
-    const book = readAutomapBook(JSON.stringify(record.book))
-    if (!book) return null
-    const body = readExactAutomapBodies([record.map])?.[0]
-    return body?.kind === 'tilemap' ? attachWorkshopBook(body, book) : null
+    return doc.format === 'pinta-gallery' &&
+      Object.keys(doc).length === 3 &&
+      Array.isArray(doc.assets) &&
+      doc.assets.length === 1
+      ? readWorkshopBookEnvelope(record)
+      : null
   } catch {
     return null
   }
+}
+
+/** Decode a single native rulebook and its original, exactly encoded map body. */
+export function readWorkshopBookEnvelope(raw: unknown): PintaAuthoredMap | null {
+  if (
+    !raw ||
+    typeof raw !== 'object' ||
+    !('kind' in raw) ||
+    raw.kind !== 'tilemap' ||
+    !('schema' in raw) ||
+    raw.schema !== 9 ||
+    !('map' in raw) ||
+    !raw.map ||
+    typeof raw.map !== 'object' ||
+    !('id' in raw) ||
+    !('id' in raw.map) ||
+    raw.id !== raw.map.id ||
+    Object.keys(raw).length !== 5 ||
+    !('book' in raw)
+  )
+    return null
+  const book = readAutomapBook(JSON.stringify(raw.book))
+  if (!book) return null
+  const body = readExactAutomapBodies([raw.map])?.[0]
+  return body?.kind === 'tilemap' ? attachWorkshopBook(body, book) : null
 }
 
 export async function workshopAssetBundleToJson(

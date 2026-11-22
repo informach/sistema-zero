@@ -139,7 +139,7 @@ export function pintaCanReadFormatVersion(version: number | undefined | null): b
 export const PINTA_RESOURCE_NATIVE_SCHEMA = 6
 /** Object collision is authored data; readers that discard it must refuse native 7. */
 export const PINTA_COLLISION_NATIVE_SCHEMA = 7
-const MIN_CLOUD_FORMAT_BY_NATIVE_SCHEMA = [1, 1, 1, 2, 3, 4, 5, 6] as const
+const MIN_CLOUD_FORMAT_BY_NATIVE_SCHEMA = [1, 1, 1, 2, 3, 4, 5, 6, 7, 8] as const
 export function pintaCanWriteNativeSchema(schema: number, declaredFormatVersion: number): boolean {
   if (!Number.isSafeInteger(schema) || schema < 0) return false
   const minimum = MIN_CLOUD_FORMAT_BY_NATIVE_SCHEMA[schema]

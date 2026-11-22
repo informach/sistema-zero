@@ -164,6 +164,13 @@ test('uses the sparse regional codec only when explicitly selected', () => {
     expect(backup).not.toBeNull()
     const expected = { itemId: asset.id, kind: asset.kind, formatVersion: 7 }
     expect(inspectPintaCausalDocument(backup!.text, expected)).toBeNull()
+    expect(
+      inspectPintaCausalDocument(backup!.text, {
+        ...expected,
+        formatVersion: 6,
+        allowRegions: true,
+      }),
+    ).toBeNull()
     const result = inspectPintaCausalDocument(backup!.text, { ...expected, allowRegions: true })
     expect(result?.manifest).toMatchObject({
       itemId: asset.id,

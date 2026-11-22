@@ -14,6 +14,7 @@ import {
   provePintaCausalPin,
 } from '@sistemazero/pinta/assets/causal'
 import { z } from 'zod'
+import { getEnv } from '../lib/env'
 import { CREATION_BLOB_CONTENT_TYPE } from './creation-download'
 import {
   type PintaCausalBlobExpectation,
@@ -51,6 +52,11 @@ export function isPintaPointer(
   )
 }
 
+/** Server configuration is separate from the browser's selected writer. All callers already passed profile eligibility. */
+function readerOptions(expected: PintaCausalBlobExpectation): PintaCausalBlobExpectation {
+  return { ...expected, allowWorkshop: getEnv().PINTA_WORKSHOP_SERVICE_READER === '1' }
+}
+
 async function read(
   storage: PintaCausalStorage,
   key: string,
@@ -60,7 +66,7 @@ async function read(
   const blob = await storage.open(key, signal)
   if (!blob)
     throw new PintaCausalUnverifiedContent('O arquivo da revisão ainda não está disponível.')
-  return readPintaCausalBlob(blob, expected, signal)
+  return readPintaCausalBlob(blob, readerOptions(expected), signal)
 }
 
 function reservationSignal(signal: AbortSignal, expiresAt: string): AbortSignal {
@@ -154,7 +160,7 @@ export async function attestPintaMember(
   const sealedKey = pintaCausalBlobKey(binding, 'sealed')
   const existing = await storage.open(sealedKey, signal)
   const proposed = existing
-    ? await readPintaCausalBlob(existing, expected, signal)
+    ? await readPintaCausalBlob(existing, readerOptions(expected), signal)
     : await read(storage, pintaCausalBlobKey(binding, 'upload'), expected, signal)
   const before = await readBase(storage, actor, plan, signal)
   if (inverse) {

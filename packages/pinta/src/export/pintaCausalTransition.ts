@@ -22,11 +22,16 @@ import {
   tilemapTilesetIds,
 } from '../core/project'
 import { PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
+import { pintaWorkshopBody } from '../core/workshopAsset'
+import { cellTile, withCellTile } from '../tiles/cell'
 import type { AuthorMap } from '../tiles/mapCellEdits'
 import { objectLayerById, updateMapObject } from '../tiles/mapObjects'
 import { mapResourceSnapshotAsset } from '../tiles/resourceVersions'
 import { remapTileMetadata, tryRemapTilemapIndices } from '../tiles/tilesetOps'
 import { provePintaCausalRemovals } from './pintaCausalDetach'
+import type { CausalAsset } from './pintaCausalManifest'
+import { causalRulebook } from './pintaCausalManifest'
+import { proveProjectedRemap } from './pintaCausalProjectedRemap'
 
 type RemapOperation = Extract<PintaCausalOperation, { type: 'remap' }>
 type Art = { assetId: string; tile?: number; animationId?: string }
@@ -136,8 +141,8 @@ function newVectorShapeIdsAreIndependent(
 }
 
 export function provePintaCausalMutation(
-  before: PintaMemoryAsset | null,
-  after: PintaMemoryAsset,
+  before: CausalAsset | null,
+  after: CausalAsset,
   operation: PintaCausalOperation,
 ): boolean {
   if (operation.type === 'create') return before === null
@@ -177,7 +182,7 @@ interface SheetRemap {
   sheetId: string
   operation: RemapOperation
 }
-type BeforeDocument = { asset: PintaMemoryAsset; manifest: PintaCausalManifest }
+type BeforeDocument = { asset: CausalAsset; manifest: PintaCausalManifest }
 
 function affectedRemaps(before: BeforeDocument, remaps: readonly SheetRemap[]): SheetRemap[] {
   const refs = new Map(before.manifest.refs.map((ref) => [ref.id, ref]))
@@ -194,10 +199,7 @@ function affectedRemaps(before: BeforeDocument, remaps: readonly SheetRemap[]): 
   })
 }
 
-function newSnapshotVersions(
-  before: PintaMemoryAsset,
-  after: PintaMemoryAsset,
-): TilemapResourceVersion[] {
+function newSnapshotVersions(before: CausalAsset, after: CausalAsset): TilemapResourceVersion[] {
   const known = new Set(tilemapOfAsset(before)?.resources?.map((version) => version.asset.id))
   return (tilemapOfAsset(after)?.resources ?? []).filter((version) => !known.has(version.asset.id))
 }
@@ -205,7 +207,7 @@ function newSnapshotVersions(
 /** Only look up bases when a failed mapped proof has a candidate private snapshot to verify. */
 export function pintaCausalPinSourceIds(
   before: BeforeDocument,
-  after: PintaMemoryAsset,
+  after: CausalAsset,
   remaps: readonly SheetRemap[],
 ): string[] {
   const snapshots = new Set(
@@ -222,8 +224,8 @@ type PintaCausalPin = {
 
 /** Check one sealed source and retain only evidence and the snapshot already in the proposal. */
 export function provePintaCausalPin(
-  before: PintaMemoryAsset,
-  after: PintaMemoryAsset,
+  before: CausalAsset,
+  after: CausalAsset,
   source: AnyTilesetAsset,
   checkedBytes = 0,
 ): PintaCausalPin | null {
@@ -348,20 +350,64 @@ function replayVerifiedPins(
   return { ...result, resources: [...(result.resources ?? []), ...proven] }
 }
 
+function verifiedRuleRemap(
+  before: CausalAsset,
+  after: CausalAsset,
+  changes: ReadonlyMap<string, readonly number[]>,
+): boolean {
+  const sourceBook = causalRulebook(before)
+  const resultBook = causalRulebook(after)
+  if (sourceBook) {
+    if (!resultBook) return false
+    const hashes = new Map<string, string>()
+    for (const rule of resultBook.rules)
+      for (const group of [rule.input, ...rule.outputs])
+        for (const plane of group) hashes.set(plane.sheet, plane.sha256)
+    const book = structuredClone(sourceBook)
+    for (const rule of book.rules)
+      for (const group of [rule.input, ...rule.outputs])
+        for (const plane of group) {
+          const mapping = changes.get(plane.sheet)
+          if (!mapping) continue
+          const hash = hashes.get(plane.sheet)
+          if (!hash) return false
+          plane.sha256 = hash // The graph verifies this digest against the certified output sheet.
+          for (const [offset, cell] of plane.cells.entries()) {
+            if (cell === null || cell < 0) continue
+            const next = mapping[cellTile(cell)]
+            if (next === undefined || next < 0) return false
+            plane.cells[offset] = withCellTile(cell, next)
+          }
+        }
+    if (!pintaValuesEqual(book, resultBook)) return false
+    return true
+  }
+  return resultBook === undefined
+}
+
 /** Compare every authored layer, placement and flag after a composed index change. */
 export function provePintaCausalConsumerRemaps(
   before: BeforeDocument,
-  after: PintaMemoryAsset,
+  after: CausalAsset,
   remaps: readonly SheetRemap[],
   pins: ReadonlyMap<string, PintaCausalPin> = new Map(),
 ): PintaCausalAttestation['transitions'] | null {
   const affected = affectedRemaps(before, remaps)
   if (!affected.length) return []
-  let expected = tilemapOfAsset(before.asset)
-  const proposed = tilemapOfAsset(after)
+  const changes = new Map(affected.map(({ sheetId, operation }) => [sheetId, operation.oldToNew]))
+  if (!verifiedRuleRemap(before.asset, after, changes)) return null
+  if ('projection' in before.asset || 'projection' in after) {
+    return 'projection' in before.asset &&
+      'projection' in after &&
+      !pins.size &&
+      proveProjectedRemap(before.asset, after, changes)
+      ? affected.map(({ sheetId }) => ({ sheetId, mode: 'mapped' }))
+      : null
+  }
+  let expected = tilemapOfAsset(pintaWorkshopBody(before.asset))
+  const proposed = tilemapOfAsset(pintaWorkshopBody(after))
   if (!expected || !proposed) return null
 
-  const changes = new Map(affected.map(({ sheetId, operation }) => [sheetId, operation.oldToNew]))
   const removals = provePintaCausalRemovals(expected, proposed, changes)
   if (!removals) return null
   const recognized = new Set(affected.map(({ sheetId }) => sheetId))
@@ -399,7 +445,7 @@ export function provePintaCausalConsumerRemaps(
         mapArtwork(map, (art) => zeroAsDefault(art, recognized)),
       ),
     )
-  return pintaValuesEqual(compare(before.asset, expected), compare(after, proposed))
+  return expected && pintaValuesEqual(compare(before.asset, expected), compare(after, proposed))
     ? verified
     : null
 }

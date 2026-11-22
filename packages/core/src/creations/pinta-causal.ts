@@ -109,9 +109,15 @@ const ref = z
     roles: z.array(roles).min(1).max(5).refine(unique),
     /** Little-endian bits per byte. Index i occupies bit i%8 in byte floor(i/8). */
     indices: tileMask.optional(),
+    /** Native rules bind the entire ordered sheet, even in an empty map. */
+    ruleSheetSha256: sha256.optional(),
     implicitArtSlotZero: z.literal(true).optional(),
   })
   .refine((r) => !r.implicitArtSlotZero || r.roles.includes('art'))
+  .refine(
+    (r) =>
+      !r.ruleSheetSha256 || r.roles.includes('default-sheet') || r.roles.includes('layer-sheet'),
+  )
 
 /** BFF-only digest of the canonical admitted authoring document, for inverses after recompression. */
 export const PintaCausalAuthoredFingerprintSchema = z.strictObject({
@@ -134,7 +140,9 @@ export const PintaCausalManifestSchema = z
       .array(z.string().min(1).max(4096))
       .max(PINTA_CAUSAL_LIMITS.readEdges)
       .refine(unique),
-    sheet: z.strictObject({ tileSize, count: tileCount }).optional(),
+    sheet: z
+      .strictObject({ tileSize, count: tileCount, ruleSheetSha256: sha256.optional() })
+      .optional(),
     embeddedDefaultLayout: z.strictObject({ kind: sheetKind, tileSize }).optional(),
   })
   .refine(
