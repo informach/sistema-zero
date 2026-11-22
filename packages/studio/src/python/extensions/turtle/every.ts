@@ -123,6 +123,8 @@ export function turtleEveryCodec(ontimer: PythonBlockCodec): PythonBlockCodec {
       const closing = closingCall(value)
       return closing && ontimer.bindingFor?.(expression(closing.call))
     },
+    // A tela é conferida DENTRO da função: um `tela = …` no corpo faz dela outra variável.
+    bindingScopeNode: (value) => closingCall(value)?.call,
     defaultNode: () =>
       definition('a_cada_quadro', [reschedule('tela', 'a_cada_quadro', integer('30'))]),
     decode(value) {

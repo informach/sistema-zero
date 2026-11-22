@@ -2352,7 +2352,7 @@ const conflictingName = (a: ReadonlySet<string>, b: ReadonlySet<string>) => {
 }
 
 export type PythonCommuteConflict =
-  | { reason: 'pinned' | 'barrier' | 'effects' | 'fixed' }
+  | { reason: 'pinned' | 'barrier' | 'effects' | 'fixed' | 'fixedNeighbor' }
   | { reason: 'name'; name: string }
 
 /** Por que duas linhas NÃO podem trocar de lugar (undefined = podem). */
@@ -2541,9 +2541,10 @@ function notesFor(
 ): PythonAreaNote[] {
   const notes: PythonAreaNote[] = []
   // A linha que não pode sair do lugar (outra linha dividindo a mesma linha do arquivo) segura tudo.
+  // Quem chega aqui já pode sair do lugar: a presa é a outra, a do caminho.
   const conflictOf = (a: number, b: number): PythonCommuteConflict | undefined =>
     !movable(a) || !movable(b)
-      ? { reason: 'fixed' }
+      ? { reason: 'fixedNeighbor' }
       : pythonCommuteConflict(statements[a]!, statements[b]!)
   order.forEach((original, position) => {
     const info = statements[original]!

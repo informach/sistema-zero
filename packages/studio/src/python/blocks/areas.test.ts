@@ -493,6 +493,17 @@ describe('organizar', () => {
     ])
   })
 
+  test('a linha segurada por uma presa do caminho leva o motivo "fixedNeighbor" (não é ela que divide a linha)', () => {
+    const plan = planPythonOrganize(
+      analyze([line(run(name('print'), [text('oi')])), line(imp('random'))]),
+      (index) => index !== 0,
+    )
+    expect(plan.order).toEqual([0, 1])
+    expect(plan.notes).toEqual([
+      { statement: 1, wanted: 'libraries', blocker: 0, conflict: { reason: 'fixedNeighbor' } },
+    ])
+  })
+
   test('a exibição tem o menor custo possível (conferida por força bruta)', () => {
     let seed = 11
     const random = () => {

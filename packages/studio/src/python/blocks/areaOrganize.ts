@@ -45,9 +45,17 @@ export interface PythonOrganizeOptions {
 export interface PythonOrganizeResult {
   changed: boolean
   notes: PythonAreaBlockNote[]
+  /** O programa não pôde ser lido agora (entrada vazia, área repetida no meio de um gesto). */
+  incomplete?: true
 }
 
-const NOTHING: PythonOrganizeResult = { changed: false, notes: [] }
+const NOTHING: PythonOrganizeResult = { changed: false, notes: [], incomplete: true }
+
+/**
+ * Os grupos de eventos em que o organizar religou as linhas. Ele mexe em todas de uma vez, e o
+ * plano já deixa o fim do jogo no fim; a guarda do fim do jogo não lê esses movimentos.
+ */
+export const PYTHON_ORGANIZE_GROUPS = new Set<string>()
 
 /** Organiza as áreas (ou só calcula as notas). Programa incompleto: não mexe em nada. */
 export function organizePythonWorkspace(
@@ -93,6 +101,10 @@ export function organizePythonWorkspace(
   const existing = new Set(pythonAreaFrames(workspace).keys())
   const previous = Blockly.Events.getGroup()
   if (!previous) Blockly.Events.setGroup(true)
+  // O plano já põe o fim do jogo no fim: as guardas não mexem nos eventos deste grupo.
+  PYTHON_ORGANIZE_GROUPS.add(Blockly.Events.getGroup())
+  if (PYTHON_ORGANIZE_GROUPS.size > 32)
+    PYTHON_ORGANIZE_GROUPS.delete(PYTHON_ORGANIZE_GROUPS.values().next().value!)
   try {
     // Desfaz as correntes (cada linha de topo solta) e religa na ordem planejada.
     for (const frame of executablePythonAreaFrames(workspace))
@@ -133,10 +145,12 @@ export function pythonAreaNoteText(
         : conflict?.reason === 'effects'
           ? 'Ela e outra linha do caminho fazem coisas na hora (desenhar, tocar, mudar valores), e a ordem conta.'
           : conflict?.reason === 'fixed'
-            ? 'Ela divide a mesma linha do código com outro comando. Separe os dois no código.'
-            : conflict?.reason === 'pinned'
-              ? 'O começo do arquivo fica sempre no topo.'
-              : 'Mudar o lugar dela mudaria o que o programa faz.'
+            ? 'Ela divide a mesma linha do código com outro comando (separados por ";"). No código, ponha cada comando na sua própria linha.'
+            : conflict?.reason === 'fixedNeighbor'
+              ? 'Uma linha do caminho divide a mesma linha do código com outro comando (separados por ";") e não sai do lugar. No código, ponha cada comando na sua própria linha.'
+              : conflict?.reason === 'pinned'
+                ? 'O começo do arquivo fica sempre no topo.'
+                : 'Mudar o lugar dela mudaria o que o programa faz.'
   return `Este bloco é de ${wanted}, mas ficou em ${shown} para o programa continuar igual.\n${reason}`
 }
 

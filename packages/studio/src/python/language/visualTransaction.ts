@@ -205,12 +205,15 @@ function createPythonVisualPlanner(
           transferredComments,
         )
         if (moved) {
-          const children: { copy: PythonSourceCopy; changes: VisualChange[] }[] = []
+          // Os comandos que dividem uma linha (`a = 1; b = 2`) andam numa cópia só.
+          const byCopy = new Map<PythonSourceCopy, VisualChange[]>()
           for (const retained of moved.retained) {
             const edits = compare(retained.before, retained.after)
             if (!edits) return whole()
-            if (edits.length) children.push({ copy: retained.copy, changes: edits })
+            if (edits.length)
+              byCopy.set(retained.copy, [...(byCopy.get(retained.copy) ?? []), ...edits])
           }
+          const children = [...byCopy].map(([copy, changes]) => ({ copy, changes }))
           changes.push({ kind: 'move', edit: moved.edit, children, insertions: moved.insertions })
           continue
         }
@@ -348,7 +351,10 @@ export async function preparePythonVisualTransaction(options: {
   const changes = findChanges(document.tree, tree)
   const newline = /\r\n|\r|\n/.exec(document.source)?.[0] ?? '\n'
   async function renderInsertion(
-    insertion: Pick<PythonStatementInsertion, 'nodes' | 'indent' | 'leadingNewline' | 'header'>,
+    insertion: Pick<
+      PythonStatementInsertion,
+      'nodes' | 'indent' | 'leadingNewline' | 'header' | 'trailingBlankLine'
+    >,
   ): Promise<PythonSourceFragment> {
     const header = insertion.header
       ? `${insertion.header.indent}${insertion.header.keyword}:${newline}`
@@ -372,6 +378,7 @@ export async function preparePythonVisualTransaction(options: {
       fragments.push(await renderTransferredCommand(value, insertion.indent))
     }
     await appendNew()
+    if (insertion.trailingBlankLine) fragments.push({ text: newline, copies: [] })
     return joinPythonSourceFragments(fragments)
   }
   async function renderTransferredCommand(

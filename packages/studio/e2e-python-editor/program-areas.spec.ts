@@ -429,6 +429,31 @@ test('o código que veio de fora se organiza no primeiro clique nos blocos, e o 
   await expect.poll(source).toMatch(new RegExp(`^${MOLDS}\ndef pular`))
 })
 
+test('com um campo aberto o organizar espera: ele vem no gesto seguinte, com o campo fechado', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
+  await page.evaluate(() => pythonBridgeProbe.create())
+  const typed = 'print(1)\ndef pular():\n    pass\n'
+  await page.evaluate((value) => pythonBridgeProbe.replaceSavedSource(value), typed)
+  const source = () => page.evaluate(() => pythonBridgeProbe.state().source)
+  const number = page.locator('.sz_py_integer .blocklyEditableText').first()
+  await expect(number).toBeVisible({ timeout: 20_000 })
+  await showInsideBlocks(page, number)
+  // O primeiro gesto nos blocos abre o campo do número: organizar agora fecharia o campo.
+  await number.click()
+  await expect(page.locator('.blocklyWidgetDiv .blocklyHtmlInput')).toBeVisible()
+  await page.waitForTimeout(1_000)
+  expect(await source()).toBe(typed)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.blocklyWidgetDiv .blocklyHtmlInput')).toBeHidden()
+  await clickBlocks(page)
+  await expect
+    .poll(source)
+    .toMatch(new RegExp(`^${MOLDS}\ndef pular\\(\\):\n {4}pass\n+${START}\nprint\\(1\\)\n$`))
+})
+
 test('a linha que não pode ir para a área dela fica no Ao iniciar, com nota e "Levar para"', async ({
   page,
 }) => {

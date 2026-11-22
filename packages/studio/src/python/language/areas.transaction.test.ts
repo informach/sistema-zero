@@ -6,7 +6,12 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
 import * as Blockly from 'blockly/core'
-import { executablePythonAreaFrames, pythonAreaFrames } from '../blocks/areaFrames'
+import {
+  appendToPythonAreaFrame,
+  ensurePythonAreaFrame,
+  executablePythonAreaFrames,
+  pythonAreaFrames,
+} from '../blocks/areaFrames'
 import { organizePythonWorkspace } from '../blocks/areaOrganize'
 import {
   analyzePythonModuleAreas,
@@ -19,6 +24,8 @@ import { PYTHON_PROGRAMMING_CODECS as codecs } from '../blocks/catalog'
 import { pythonASTToVisual } from '../blocks/projection'
 import { bindPythonVisualOrigins, type PythonWorkspaceOrigins } from '../blocks/provenance'
 import { orderPythonWorkspaceRoots } from '../blocks/workspacePresentation'
+import { indexPythonSourceLines } from './sourceLines'
+import { pythonStatementLines } from './statementMoves'
 import type { PythonAnalysisIdentity, PythonNode, PythonParsedDocument } from './types'
 import { preparePythonVisualTransaction } from './visualTransaction'
 
@@ -133,6 +140,13 @@ async function commit({ ws, origins, document, rootIds }: Editor) {
   })
   return result.parsed.source
 }
+/** O mesmo "pode sair do lugar" do editor (`PythonBlocklyEditor`): a linha própria na fonte. */
+const movable =
+  ({ origins, document }: Editor) =>
+  (block: Blockly.Block) => {
+    const node = origins.get(block.id)
+    return !node || !!pythonStatementLines(document, node, indexPythonSourceLines(document.source))
+  }
 const blockWith = (ws: Blockly.Workspace, type: string, field?: string, value?: string) =>
   ws
     .getBlocksByType(type, false)
@@ -206,6 +220,92 @@ describe.skipIf(!PYTHON)('áreas do projeto no caminho do editor (CPython)', () 
     // O Ao iniciar começa no meio da linha (`b = 2`): o comentário dele vai para a próxima linha.
     expect(source).toBe(
       `${marker('libraries')}\nimport math\n\n${marker('settings')}\nA = 1; b = 2\n\n${marker('start')}\nprint(8)\n`,
+    )
+  }, 30_000)
+
+  test('um ";" sozinho no fim da linha não impede organizar só aquela linha', async () => {
+    const opened = await open('print(  1  )\nimport math;\n')
+    expect(organizePythonWorkspace(opened.ws, codecs, { movable: movable(opened) }).changed).toBe(
+      true,
+    )
+    const source = await commit(opened)
+    // A grafia fica (o arquivo não foi reescrito inteiro): o `;` e os espaços do print.
+    expect(source).toBe(
+      `${marker('libraries')}\nimport math;\n\n${marker('start')}\nprint(  1  )\n`,
+    )
+  }, 30_000)
+
+  test('a linha com dois comandos fica no lugar, e o resto se organiza sem reescrever o arquivo', async () => {
+    const opened = await open('print(  1  )\nimport math\nA = 7; b = 8\nprint(  3  )\n')
+    expect(organizePythonWorkspace(opened.ws, codecs, { movable: movable(opened) }).changed).toBe(
+      true,
+    )
+    // E no mesmo gesto os dois comandos da linha mudam (as duas edições na mesma cópia).
+    blockWith(opened.ws, 'sz_py_integer', 'NUMBER', '7').setFieldValue('5', 'NUMBER')
+    blockWith(opened.ws, 'sz_py_integer', 'NUMBER', '8').setFieldValue('6', 'NUMBER')
+    const source = await commit(opened)
+    expect(source).toBe(
+      // (O valor trocado fora de parênteses ganha um par: é o renderizador de sempre.)
+      `${marker('libraries')}\nimport math\n\n${marker('start')}\nprint(  1  )\nA = (5); b = (6)\nprint(  3  )\n`,
+    )
+  }, 30_000)
+
+  test('o comentário de uma linha levada para os rascunhos fica no lugar, e o desfazer a põe embaixo dele', async () => {
+    const typed = `${marker('start')}\nprint(1)\n# fala dois\nprint(2)\nprint(3)\n`
+    const opened = await open(typed)
+    const two = blockWith(opened.ws, 'sz_py_integer', 'NUMBER', '2').getSurroundParent()!
+    two.unplug(true)
+    two.moveBy(400, 0)
+    const removed = await commit(opened)
+    expect(removed).toBe(`${marker('start')}\nprint(1)\n# fala dois\nprint(3)\n`)
+    opened.ws.dispose()
+    // O desfazer: a linha volta para depois do print(1).
+    const again = await open(removed)
+    const line = again.ws.newBlock('sz_py_print')
+    const value = again.ws.newBlock('sz_py_integer')
+    value.setFieldValue('2', 'NUMBER')
+    line.getInput('args:0')!.connection!.connect(value.outputConnection!)
+    const one = blockWith(again.ws, 'sz_py_integer', 'NUMBER', '1').getSurroundParent()!
+    one.nextConnection!.connect(line.previousConnection!)
+    expect(await commit(again)).toBe(typed)
+  }, 30_000)
+
+  test('trocar a primeira linha de uma área não deixa linha em branco a mais (nem na volta)', async () => {
+    const typed = `${marker('libraries')}\nimport math\n\n${marker('start')}\nprint(1)\nprint(2)\n`
+    const swap = async (source: string, first: string) => {
+      const opened = await open(source)
+      const top = blockWith(opened.ws, 'sz_py_integer', 'NUMBER', first).getSurroundParent()!
+      const other = top.getNextBlock()!
+      other.unplug(true)
+      const frame = top.getSurroundParent()!
+      frame.getInput('CHILDREN')!.connection!.connect(other.previousConnection!)
+      const after = await commit(opened)
+      opened.ws.dispose()
+      editor = undefined
+      return after
+    }
+    const swapped = await swap(typed, '1')
+    expect(swapped).toBe(
+      `${marker('libraries')}\nimport math\n\n${marker('start')}\nprint(2)\nprint(1)\n`,
+    )
+    expect(await swap(swapped, '2')).toBe(typed)
+  }, 30_000)
+
+  test('uma linha nova antes da primeira entra embaixo do título do arquivo, acima do comentário de área', async () => {
+    const opened = await open(`# Cobrinha\n# um jogo de teste\n\n${marker('start')}\nprint(1)\n`)
+    // Um "guardar" de constante, posto em 🎛️ Configurações (uma área antes do Ao iniciar).
+    Blockly.Events.disable()
+    let assign: Blockly.Block
+    try {
+      const scratch = await analysis.parse(identity(9), 'VIDAS = 3\n')
+      pythonVisualToWorkspace(pythonASTToVisual(scratch.tree!, { codecs }), opened.ws, codecs)
+      assign = opened.ws.getTopBlocks(false).find((block) => block.type === 'sz_py_assign')!
+    } finally {
+      Blockly.Events.enable()
+    }
+    appendToPythonAreaFrame(ensurePythonAreaFrame(opened.ws, 'settings'), assign)
+    expect(await commit(opened)).toBe(
+      `# Cobrinha\n# um jogo de teste\n\n${marker('settings')}\nVIDAS = 3\n\n${marker('start')}\nprint(1)\n`,
     )
   }, 30_000)
 

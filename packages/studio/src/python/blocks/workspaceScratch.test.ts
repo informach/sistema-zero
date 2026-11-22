@@ -15,7 +15,7 @@ import {
   executablePythonAreaFrames,
 } from './areaFrames'
 import { registerPythonBlocks } from './blockly'
-import { preparePythonScratchRestore } from './restoreWorkspace'
+import { preparePythonScratchRestore, preparePythonScratchRestoreKeeping } from './restoreWorkspace'
 import {
   capturePythonWorkspace,
   readPythonScratchWorkspace,
@@ -114,6 +114,40 @@ test('scratch follows a folder rename independently of source cache and disappea
   const removed = store.getState().project!
   if (removed.programmingLanguage !== 'python') throw new Error('Fixture')
   expect(readPythonScratchWorkspace(removed, 'renamed/helper.py')).toBeUndefined()
+})
+
+test('o rascunho que não reabre fica guardado, e o que reabre volta (bloco a bloco)', async () => {
+  const project = await fixture()
+  const saved = readPythonScratchWorkspace(project, 'folder/helper.py') as {
+    blocks: { blocks: Record<string, unknown>[] }
+  }
+  // Um bloco de uma versão que não existe mais, ao lado do número da criança.
+  const unknown = { type: 'sz_py_bloco_que_saiu', id: 'saiu', x: 10, y: 10 }
+  const raw = { ...saved, blocks: { ...saved.blocks, blocks: [...saved.blocks.blocks, unknown] } }
+  expect(() => preparePythonScratchRestore(raw)).toThrow()
+  const { apply, kept } = preparePythonScratchRestoreKeeping(raw)
+  expect(kept).toEqual([unknown])
+  const ws = new Blockly.Workspace()
+  try {
+    apply!(ws)
+    expect(String(ws.getBlockById('scratch-number')?.getFieldValue('NUMBER'))).toBe('73')
+    // A próxima gravação leva os dois: o que voltou e o que ficou guardado.
+    const { scratch } = capturePythonWorkspace(
+      project,
+      'folder/helper.py',
+      savePythonWorkspace(ws, new Map()),
+      [],
+      kept,
+    )
+    const blocks = (scratch as { blocks: { blocks: Record<string, unknown>[] } }).blocks.blocks
+    expect(blocks.map((block) => block.id)).toEqual(['scratch-number', 'saiu'])
+  } finally {
+    ws.dispose()
+  }
+  // Sem nada que reabra, nada a pôr; tudo guardado.
+  expect(preparePythonScratchRestoreKeeping({ blocks: { blocks: [unknown] } })).toEqual({
+    kept: [unknown],
+  })
 })
 
 test('scratch preflight rejects executable areas and duplicate IDs before appending anything', async () => {

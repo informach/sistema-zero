@@ -144,6 +144,13 @@ test('fica no "definir a função" quando não é o laço do Turtle', () => {
     moduleNode([importTurtle, screen, def('a', [ontimer('tela', 'a'), step])]),
     // A "tela" é um objeto da própria criança.
     moduleNode([relogio, assign('r', call(name('Relogio'))), def('a', [ontimer('r', 'a')])]),
+    // Dentro da função, `tela` é OUTRA (local): a tela do Turtle de fora não vale ali.
+    moduleNode([
+      importTurtle,
+      screen,
+      relogio,
+      def('a', [assign('tela', call(name('Relogio'))), ontimer('tela', 'a')]),
+    ]),
   ]
   for (const module of cases) {
     const body = top(module)

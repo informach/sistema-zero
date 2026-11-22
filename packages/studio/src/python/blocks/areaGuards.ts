@@ -4,10 +4,10 @@
  *
  * - uma área de cada tipo: a repetida some e o que estava dentro dela vira rascunho (a mesma
  *   regra do JavaScript, que nunca apaga o código da criança);
- * - o bloco que liga ou desliga o jogo mora no fim da última área usada, no mesmo passo de
- *   desfazer do gesto que o tirou de lá. Só quando o GESTO mexeu nele: um programa que já vinha
- *   com algo depois do `pgzrun.go()` (o "obrigado por jogar" que roda quando o jogo fecha) não
- *   muda sozinho porque a criança editou outra linha.
+ * - o bloco que liga ou desliga o jogo mora no fim da última área usada, com a cauda dele (o
+ *   "obrigado por jogar" que roda quando o jogo fecha), no mesmo passo de desfazer do gesto que o
+ *   tirou de lá. Só quando o GESTO mexeu nele ou pôs uma linha depois dele: editar outra linha não
+ *   muda nada, e o organizar (que já planeja o fim no fim) fica de fora.
  */
 import * as Blockly from 'blockly/core'
 import { isWorkspaceLoading } from '../../blockly/loadFence'
@@ -22,6 +22,7 @@ import {
   PYTHON_AREA_INPUT,
   pythonAreaKindOf,
 } from './areaFrames'
+import { PYTHON_ORGANIZE_GROUPS } from './areaOrganize'
 import type { PythonAreaKind } from './areas'
 
 /** Deixa uma área de cada tipo; o conteúdo da repetida vira rascunho. Devolve quantas saíram. */
@@ -57,22 +58,59 @@ function areaLines(workspace: Blockly.Workspace) {
 }
 
 /**
- * Leva os blocos que ligam ou desligam o jogo para o fim da última área usada, na ordem em que
- * estavam. Devolve se mexeu.
+ * O fim do jogo mora no fim da última área usada. O fim é o primeiro bloco que liga ou desliga o
+ * jogo e a cauda dele: o que vinha depois dele na mesma área sem ter mexido neste gesto (o
+ * "obrigado por jogar" e o `sys.exit()` que rodam quando a janela fecha).
+ *
+ * A pilha que a criança soltou depois do fim (ou o que sobrou embaixo do bloco que ela soltou no
+ * meio) volta para onde o fim estava. O Blockly religa embaixo da pilha solta o que estava ali
+ * antes, e esse resto também mexe no gesto: é a outra parte da cauda, e fica com o fim.
+ *
+ * Só age quando o gesto mexeu no próprio bloco ou pôs uma LINHA depois do fim (`moved`). Mexer
+ * dentro de uma linha que já estava depois dele não conta: um programa aberto do código pode ter
+ * o `def on_key_down` depois do `pgzrun.go()`, e trocar a ordem mudaria o que ele faz. Sem
+ * `moved`, confere sempre. Devolve se mexeu.
  */
-export function keepPythonGameSwitchAtTheEnd(workspace: Blockly.Workspace): boolean {
+export function keepPythonGameSwitchAtTheEnd(
+  workspace: Blockly.Workspace,
+  moved?: ReadonlySet<string>,
+): boolean {
   const lines = areaLines(workspace)
-  const switches = lines.filter((block) => isPythonGameSwitchBlock(block))
-  if (!switches.length) return false
-  // Já estão no fim (a cauda da última área é exatamente eles): nada a fazer.
-  const tail = lines.slice(lines.length - switches.length)
-  const frames = executablePythonAreaFrames(workspace)
-  const last = frames.at(-1)!
-  const inLast = (block: Blockly.Block) => block.getSurroundParent() === last
-  if (tail.every((block, index) => block === switches[index] && inLast(block))) return false
-  for (const block of switches) block.unplug(true)
-  const target = executablePythonAreaFrames(workspace).at(-1) ?? last
-  for (const block of switches) appendToPythonAreaFrame(target, block)
+  const index = lines.findIndex((block) => isPythonGameSwitchBlock(block))
+  if (index < 0) return false
+  const start = lines[index]!
+  let last = start
+  for (let block = start.getNextBlock(); block && !moved?.has(block.id); ) {
+    last = block
+    block = block.getNextBlock()
+  }
+  const endIndex = lines.indexOf(last, index)
+  if (endIndex === lines.length - 1) return false
+  if (moved && !moved.has(start.id) && !lines.slice(endIndex + 1).some((l) => moved.has(l.id)))
+    return false
+  // O que caiu embaixo do fim: da 1ª linha que mexeu até antes da próxima que mexeu (o resto
+  // religado pelo Blockly), que volta para o fim.
+  const dropped = last.getNextBlock()
+  let remainder: Blockly.Block | null = null
+  for (let block = dropped?.getNextBlock(); moved && block; block = block.getNextBlock())
+    if (moved.has(block.id)) {
+      remainder = block
+      break
+    }
+  const above = start.getPreviousBlock()
+  const frame = start.getSurroundParent()
+  start.unplug(false)
+  if (dropped) {
+    dropped.unplug(false)
+    if (remainder) {
+      remainder.unplug(false)
+      last.nextConnection!.connect(remainder.previousConnection!)
+    }
+    const slot = above?.nextConnection ?? frame?.getInput(PYTHON_AREA_INPUT)?.connection
+    slot?.connect(dropped.previousConnection!)
+  }
+  const target = executablePythonAreaFrames(workspace).at(-1)
+  if (target) appendToPythonAreaFrame(target, start)
   return true
 }
 
@@ -109,13 +147,6 @@ export function attachPythonAreaGuards(workspace: Blockly.Workspace): () => void
   let group = ''
   let moved = new Set<string>()
   let renamed = new Set<string>()
-  /** O gesto mexeu num bloco que liga ou desliga o jogo (ele ou alguém da pilha dele)? */
-  const movedSwitch = (ids: ReadonlySet<string>) =>
-    [...ids].some((id) => {
-      for (let block = workspace.getBlockById(id); block; block = block.getNextBlock())
-        if (isPythonGameSwitchBlock(block)) return true
-      return false
-    })
   const run = () => {
     queued = false
     if (!active || isWorkspaceLoading()) return
@@ -132,7 +163,8 @@ export function attachPythonAreaGuards(workspace: Blockly.Workspace): () => void
     try {
       enforceUniquePythonAreas(workspace)
       uppercasePythonSettingNames(workspace, new Set([...ids, ...names]))
-      if (movedSwitch(ids)) keepPythonGameSwitchAtTheEnd(workspace)
+      // O organizar religa todas as linhas, e o plano dele já deixa o fim do jogo no fim.
+      if (!PYTHON_ORGANIZE_GROUPS.has(group)) keepPythonGameSwitchAtTheEnd(workspace, ids)
     } finally {
       Blockly.Events.setGroup(previous)
     }

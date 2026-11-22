@@ -104,6 +104,11 @@ export interface PythonBlockCodec {
   binding?: PythonBlockBinding
   /** Alias-aware extensions may derive the required binding from the actual call. */
   bindingFor?(node: PythonNode): PythonBlockBinding | undefined
+  /**
+   * Onde o vínculo é conferido quando a chamada da API mora DENTRO do nó (o `tela.ontimer` no fim
+   * do corpo do "repetir a cada"): no escopo dela, não no de quem a contém.
+   */
+  bindingScopeNode?(node: PythonNode): PythonNode | undefined
   /** Other names the block also reads (`keys` in `keyboard[keys.SPACE]`): all must resolve. */
   alsoBound?: readonly PythonBlockBinding[]
   /** Method specialization needs a proven built-in receiver, not just a matching name. */
