@@ -18,7 +18,7 @@ O ensaio integrado usa o container PostgreSQL 16.13 de QA `pinta-causal-20261122
 pwsh -NoProfile -File docs/pinta-cenarios/missao-completa-2026-11-18/qa/nuvem-causal-minio-2026-11-22/run.ps1 -Journey
 ```
 
-O helper de QA cria o banco dedicado se necessário e aplica as migrações reais. Cada rodada gera uma conta e um perfil inéditos. O teste injeta a identidade de QA no verificador de sessão do listener do Member Shell e envia a prova do documento Kids. O login e a introspecção no Auth ficam fora desse ensaio. O Gateway valida o HMAC real, encaminha requisições ao Members pela rede local e o Members persiste as unidades no PostgreSQL.
+O helper de QA cria o banco dedicado se necessário e aplica as migrações reais. Cada rodada gera conta e perfil inéditos e habilita apenas essa identidade no Member Shell e no Members. O teste injeta a identidade de QA no verificador de sessão do listener do Member Shell e envia a prova do documento Kids. O login e a introspecção no Auth ficam fora desse ensaio. O Gateway valida o HMAC real, encaminha requisições ao Members pela rede local e o Members persiste as unidades no PostgreSQL.
 
 ## Resultados registrados
 
