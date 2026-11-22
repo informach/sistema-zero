@@ -14,6 +14,16 @@ async function arrastar(page: Page, de: [number, number], ate: [number, number])
   await page.mouse.up()
 }
 
+// O campo de imagem do "Criar sprite chave" com aquele nome.
+function campoDoSprite(page: Page, nome: string) {
+  return page
+    .locator('.sz_g2d_create_image_sprite .blocklyEditableField')
+    .filter({ hasText: new RegExp(`^${nome}$`) })
+}
+
+// O segundo caso continua a aula do primeiro (o members em memória é o mesmo servidor).
+test.describe.configure({ mode: 'serial' })
+
 test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -67,10 +77,7 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   // Com a prévia ao lado, o fim do bloco fica atrás dela: a criança esconde o jogo pelo menu.
   await page.getByRole('button', { name: 'Mais opções' }).click()
   await page.getByRole('menuitem', { name: 'Mostrar o jogo' }).click()
-  const campo = (nome: string) =>
-    page
-      .locator('.sz_g2d_create_image_sprite .blocklyEditableField')
-      .filter({ hasText: new RegExp(`^${nome}$`) })
+  const campo = (nome: string) => campoDoSprite(page, nome)
   await campo('chave-dourada').click()
   await page.getByRole('button', { name: 'minha-chave', exact: true }).click()
   await expect(campo('minha-chave')).toHaveCount(1)
@@ -114,5 +121,86 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   expect(segundo).toMatch(/^data:image\//)
   expect(segundo).not.toBe(primeiro)
   await page.screenshot({ path: '.cache/art-slots-06.png' })
+  expect(errors).toEqual([])
+})
+
+test('o envio que cai não perde nada, o reenvio entra e recomeçar avisa antes de mandar o projeto inicial', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const campo = (nome: string) => campoDoSprite(page, nome)
+  const abrirOEstudio = async () => {
+    await page.goto('/')
+    const titulo = page.getByRole('heading', { level: 1 })
+    await expect(titulo).toBeVisible({ timeout: 30_000 })
+    if ((await titulo.textContent())?.includes('Desenhe a sua chave'))
+      await page.getByRole('button', { name: 'Próxima parte' }).click()
+    await expect(page.locator('.blocklySvg').first()).toBeVisible({ timeout: 60_000 })
+  }
+  const envioDoProjeto = (url: string, metodo: string) =>
+    url.includes('/studio-submission') && metodo === 'POST'
+
+  // 1. Navegador novo: o editor abre com o que foi enviado no caso anterior (a minha-chave).
+  await abrirOEstudio()
+  await expect(campo('minha-chave')).toHaveCount(1, { timeout: 30_000 })
+
+  // 2. Uma edição que ainda não foi enviada: o sprite volta para a chave do curso.
+  await page.getByRole('button', { name: 'Expandir' }).click()
+  await page.getByRole('button', { name: 'Mais opções' }).click()
+  await page.getByRole('menuitem', { name: 'Mostrar o jogo' }).click()
+  await campo('minha-chave').click()
+  await page.getByRole('button', { name: 'chave-dourada', exact: true }).click()
+  await expect(campo('chave-dourada')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Reduzir' }).click()
+
+  // 3. O envio cai no caminho: a criança lê o recado e o editor fica como estava.
+  await page.route('**/studio-submission', (route) =>
+    route.request().method() === 'POST' ? route.abort('failed') : route.continue(),
+  )
+  await page.getByRole('button', { name: 'Enviar de novo' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Reenviar', exact: true }).click()
+  await expect(page.getByText('Não foi possível enviar o projeto. Tente de novo.')).toBeVisible({
+    timeout: 30_000,
+  })
+  await expect(campo('chave-dourada')).toHaveCount(1)
+  await page.unroute('**/studio-submission')
+
+  // 4. Recarregar: o rascunho deste navegador vence o envio guardado, então a edição continua.
+  await abrirOEstudio()
+  await expect(campo('chave-dourada')).toHaveCount(1, { timeout: 30_000 })
+  await expect(campo('minha-chave')).toHaveCount(0)
+  await page.screenshot({ path: '.cache/art-slots-07.png' })
+
+  // 5. O reenvio entra.
+  const reenvio = page.waitForResponse((r) => envioDoProjeto(r.url(), r.request().method()), {
+    timeout: 30_000,
+  })
+  await page.getByRole('button', { name: 'Enviar de novo' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Reenviar', exact: true }).click()
+  expect((await reenvio).ok()).toBe(true)
+  await expect(page.getByText('Não foi possível enviar o projeto. Tente de novo.')).toHaveCount(0)
+
+  // 6. Recomeçar: o projeto inicial volta, e o desenho da vaga continua nos materiais.
+  await page.getByRole('button', { name: 'Recomeçar', exact: true }).click()
+  const recomecar = page.getByRole('dialog').filter({ hasText: 'Recomeçar do projeto inicial?' })
+  await recomecar.getByRole('button', { name: 'Recomeçar', exact: true }).click()
+  await expect(recomecar).toHaveCount(0)
+  await expect(page.locator('.blocklySvg').first()).toBeVisible({ timeout: 60_000 })
+  await page.getByRole('button', { name: 'Mais opções' }).click()
+  await page.getByRole('menuitem', { name: 'Imagens' }).click()
+  const materiais = page.getByRole('dialog')
+  await expect(materiais.getByText('Seu desenho da aula')).toBeVisible()
+  await expect(materiais.getByText('minha-chave', { exact: true })).toBeVisible()
+  await materiais.getByRole('button', { name: 'Fechar' }).click()
+  await expect(materiais).toHaveCount(0)
+
+  // 7. Enviar agora levaria o projeto inicial por cima do envio: a confirmação avisa.
+  await page.getByRole('button', { name: 'Enviar de novo' }).click()
+  const confirmar = page.getByRole('dialog')
+  await expect(confirmar.getByText(/você está enviando o projeto inicial da aula/)).toBeVisible()
+  await page.screenshot({ path: '.cache/art-slots-08.png' })
+  await confirmar.getByRole('button', { name: 'Cancelar' }).click()
   expect(errors).toEqual([])
 })

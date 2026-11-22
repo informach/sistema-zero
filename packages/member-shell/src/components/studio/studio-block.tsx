@@ -43,7 +43,7 @@ import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
 import { loadLessonArt } from '../../lib/lesson-art-load'
-import { applyLessonArt } from '../../lib/lesson-art-slots'
+import { applyLessonArt, type LessonArtSlot } from '../../lib/lesson-art-slots'
 import type { LessonDraftConflictOutcome, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import {
@@ -377,6 +377,14 @@ function LessonStudioBlockView({
     submitted: studioState?.submitted ?? false,
     artSlots: content.artSlots?.length ?? 0,
   }
+  // Os desenhos das vagas lidos nesta abertura: o "Recomeçar" e a troca de versão os põem de novo
+  // no projeto que reabre (22/11/2026). Sem isso, recomeçar tirava o desenho dos materiais até a
+  // próxima abertura, e o "Criar sprite" da criança não achava mais a imagem.
+  const lessonArtRef = useRef<readonly LessonArtSlot[] | null>(null)
+  const withLessonArt = useCallback((project: Project): Project => {
+    const slots = lessonArtRef.current
+    return slots ? applyLessonArt(project, slots) : project
+  }, [])
   // O desenho de uma vaga de arte não chegou nesta abertura (o jogo abriu sem ele).
   const [artNote, setArtNote] = useState(false)
   const [seed, setSeed] = useState<Project | null>(null)
@@ -520,9 +528,9 @@ function LessonStudioBlockView({
       local: () => studioMod.createLocalPersistenceAdapter().load(projectId),
       initial: { ...(content.initialProject as Project), id: projectId },
     })
-    setSeed(project)
+    setSeed(withLessonArt(project))
     setStudioVersion((version) => version + 1)
-  }, [studioMod, projectId, content.initialProject])
+  }, [studioMod, projectId, content.initialProject, withLessonArt])
   // O conflito na subida (`resolveStudioConflict`). Num ref porque a fila guarda o callback e ele
   // precisa do editor de agora. No primeiro contato a versão da conta passa para cima: guarda o
   // que está na tela antes e reabre o editor com ela.
@@ -695,6 +703,7 @@ function LessonStudioBlockView({
       if (artPromise) {
         const art = await artPromise
         if (!active) return
+        lessonArtRef.current = art.slots
         let tooBig = false
         project = applyLessonArt(project, art.slots, { onTooBig: () => (tooBig = true) })
         setArtNote(art.failed || tooBig)
@@ -891,11 +900,11 @@ function LessonStudioBlockView({
       // apaga também partições de blocos/capa que o projeto inicial não possui.
       await handle.save()
       // Data de agora: o recomeço é a versão mais nova, também diante de outro computador.
-      const initial: Project = {
+      const initial = withLessonArt({
         ...(content.initialProject as Project),
         id: projectId,
         updatedAt: Date.now(),
-      }
+      })
       await replaceLocalProject(initial, { namespace: '' })
       // Uma nova instância também encerra qualquer leitura tardia dos blocos do
       // rascunho antigo, que usa o mesmo id local do projeto inicial.
@@ -909,7 +918,7 @@ function LessonStudioBlockView({
     } finally {
       setRestarting(false)
     }
-  }, [content.initialProject, projectId])
+  }, [content.initialProject, projectId, withLessonArt])
 
   // Troca o rascunho de agora com a "outra versão" guardada neste navegador.
   const doSwap = useCallback(async () => {
