@@ -9,7 +9,10 @@ import { gameTwoDRuntime } from '../src/official-extensions/game-2d/runtime'
  * de `docs/estudio-evolucao/motores-inventario.md`). Quanto isso custa? O runtime de verdade numa
  * página em branco do Chromium, 400 sprites (o teto de um grupo; metade com imagem), com o tempo
  * do `drawGroup` por quadro medido com todos dentro do palco e com todos fora dele. Desde o lote 8
- * da conclusão (22/11/2026), com o recorte, fora custa no máximo 20% de dentro.
+ * da conclusão (22/11/2026), com o recorte, os 400 fora não chamam NENHUM desenho do canvas. O
+ * tempo continua registrado, mas não é a prova: o Chromium já descartava quase todo desenho fora
+ * da tela (0,275 ms fora contra 1,486 ms dentro antes do recorte), então uma régua de tempo
+ * passaria sem o recorte (revisão do lote 8).
  */
 
 const OUTPUT = resolve(
@@ -88,10 +91,33 @@ test('quanto custa desenhar 400 sprites fora do palco no Jogo 2D', async ({
     }
     const imagesDrawnPerFrame = drawn
     ctx.drawImage = original
+    // A prova do recorte: com os 400 fora, um quadro não chama nenhum desenho do canvas.
+    const methods = ['drawImage', 'fillRect', 'strokeRect', 'fill', 'stroke', 'fillText'] as const
+    const originals = methods.map((name) => ctx[name])
+    let callsOutside = 0
+    for (const name of methods)
+      (ctx as unknown as Record<string, unknown>)[name] = (...args: unknown[]) => {
+        callsOutside++
+        return Reflect.apply(
+          originals[methods.indexOf(name)] as (...a: unknown[]) => unknown,
+          ctx,
+          args,
+        )
+      }
+    place(true)
+    g.drawGroup(ctx, group)
+    const drawCallsOutside = callsOutside
+    callsOutside = 0
+    place(false)
+    g.drawGroup(ctx, group)
+    const drawCallsInside = callsOutside
+    methods.forEach((name, index) => {
+      ;(ctx as unknown as Record<string, unknown>)[name] = originals[index]
+    })
     const inside = measure(false)
     const outside = measure(true)
     const insideAgain = measure(false)
-    return { imagesDrawnPerFrame, inside, outside, insideAgain }
+    return { imagesDrawnPerFrame, drawCallsOutside, drawCallsInside, inside, outside, insideAgain }
   })
   const report = {
     measuredAt: new Date().toISOString(),
@@ -107,6 +133,8 @@ test('quanto custa desenhar 400 sprites fora do palco no Jogo 2D', async ({
   // Anti-vácuo da imagem: metade dos sprites desenhou a imagem de verdade.
   expect(result.imagesDrawnPerFrame).toBeGreaterThanOrEqual(200)
   // O recorte (lote 8 da conclusão, 22/11/2026): quem está fora do palco só atualiza o estado do
-  // quadro, então desenhar os 400 fora custa no máximo 20% de desenhar os 400 dentro.
+  // quadro e não chama desenho nenhum; dentro, os 400 desenham (anti-vácuo da contagem).
+  expect(result.drawCallsOutside).toBe(0)
+  expect(result.drawCallsInside).toBeGreaterThanOrEqual(400)
   expect(result.outside.p50).toBeLessThanOrEqual(result.inside.p50 * 0.2)
 })

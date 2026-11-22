@@ -16,6 +16,8 @@
  *   e o jogador fica onde está;
  * - as áreas de cada evento são conferidas de novo só quando o retângulo do corpo muda: desenhar
  *   as duas camadas e colidir no mesmo lugar conferem uma vez.
+ * ⚠️ O relógio das áreas (`watch`) e a pré-carga (`ahead`) vivem na MESMA geração (`turn`), que só
+ * o `reset` troca: um relógio que abrisse geração nova mataria a pré-carga (revisão do lote 8).
  */
 import { sceneObjectTransformSource } from './pinta-scene-transform.generated'
 
@@ -50,7 +52,7 @@ function createMap2D(host) {
   function inside(sprite,o){if(!sprite||!o)return false;var x=sprite.x+(sprite.w||sprite.width||0)/2-o.x,y=sprite.y+(sprite.h||sprite.height||0)/2-o.y,a=-(o.rotation||0)*Math.PI/180,px=x*Math.cos(a)-y*Math.sin(a),py=x*Math.sin(a)+y*Math.cos(a);if(o.shape==='point')return Math.hypot(px,py)<=1;if(o.shape==='ellipse')return Math.pow((px-o.width/2)/(o.width/2||.001),2)+Math.pow((py-o.height/2)/(o.height/2||.001),2)<=1;if((o.shape==='polygon'||o.shape==='polyline')&&o.points&&o.points.length){var yes=false;for(var i=0,j=o.points.length-1;i<o.points.length;j=i++){var p=o.points[i],q=o.points[j];if(o.shape!=='polyline'&&(p.y>py)!==(q.y>py)&&px<(q.x-p.x)*(py-p.y)/(q.y-p.y)+p.x)yes=!yes;if(o.shape==='polyline'&&i===0)continue;var dx=q.x-p.x,dy=q.y-p.y,t=Math.max(0,Math.min(1,((px-p.x)*dx+(py-p.y)*dy)/(dx*dx+dy*dy||1)));if(Math.hypot(px-p.x-t*dx,py-p.y-t*dy)<=1)return true;}return yes;}return px>=0&&py>=0&&px<=o.width&&py<=o.height;}
   function property(o,key){var v=o&&o.properties&&Object.prototype.hasOwnProperty.call(o.properties,key)?o.properties[key]:null;return v&&typeof v==='object'&&'value'in v?v.value:v;}
   function areas(m){m.events.forEach(function(event){var p=event.sprite,k=p?[p.x,p.y,p.w,p.h,p.width,p.height].join():'';if(k===event.at)return;event.at=k;m.objects.filter(function(o){return !event.type||o.type===event.type||o.role===event.type;}).forEach(function(o){var hit=inside(event.sprite,o);if(hit&&!event.inside.has(o.id))event.callback(o);if(hit)event.inside.add(o.id);else event.inside.delete(o.id);});});}
-  function watch(){if(ticking||!host.frame)return;ticking=true;var mine=++turn;(function step(){if(mine!==turn)return;maps.forEach(areas);host.frame(step);})();}
+  function watch(){if(ticking||!host.frame)return;ticking=true;var mine=turn;(function step(){if(mine!==turn)return;maps.forEach(areas);host.frame(step);})();}
   function spawn(m){return m.objects.find(function(o){return o.role==='start'||o.type==='inicio';})||{x:m.scene.tileSize/2,y:m.scene.tileSize/2};}
   return {
     reset:function(){maps.clear();pictures.clear();warnings.clear();cache.clear();queue.length=0;turn++;ticking=false;pumping=false;},

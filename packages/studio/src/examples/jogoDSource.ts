@@ -7,10 +7,13 @@
  * - A região onde o herói está e as vizinhas dela ligam as entidades (no máximo 300 de uma vez);
  *   cavernas e casas ligam tudo o que têm.
  * - A porta leva ao objeto de chegada que ela aponta (`chegada`), na boca da caverna ou na porta
- *   da casa, e não ao início do outro lugar. Se o outro lugar sumiu, o tocador avisa uma vez e o
- *   herói fica onde está (sem chegada, nada muda).
+ *   da casa, e não ao início do outro lugar. O programa sabe que trocou de lugar quando a porta
+ *   usada não está mais na cena (os nomes das portas não se repetem entre os lugares): se o outro
+ *   lugar sumiu, o tocador avisa uma vez e nada muda; sem a chegada, o herói fica no início do
+ *   outro lugar, e o resto (lugar, mundo, música, entidades) muda do mesmo jeito.
  * - O que foi pego (moedas, baús abertos, inimigos derrotados) fica numa lista com o lugar e o id
- *   do objeto: voltar a um lugar não traz nada de volta. Deitar na cama de uma casa guarda o jogo.
+ *   do objeto: voltar a um lugar não traz nada de volta. Deitar na cama de uma casa guarda o jogo
+ *   numa chave só (a prévia guarda no máximo 500 chaves), e o "salvo" é a última a ser gravada.
  *
  * Gerado para IR estruturada por `scripts/gen-jogo-d.ts` (sem nó opaco).
  */
@@ -45,6 +48,7 @@ let tempoDoRecado = 0;
 let esmaecer = 0;
 let salvo = localStorage.getItem("jogo-d-salvo") === "sim";
 if (salvo) {
+  pegos = localStorage.getItem("jogo-d-pegos").split(",");
   pontos = Math.round(localStorage.getItem("jogo-d-pontos"));
   recado = "Jogo guardado de volta!";
   tempoDoRecado = 120;
@@ -55,9 +59,6 @@ function jaPegou(chave) {
     if (item === chave) {
       return true;
     }
-  }
-  if (salvo && localStorage.getItem("jogo-d:" + chave) === "sim") {
-    return true;
   }
   return false;
 }
@@ -109,9 +110,7 @@ function ligarEntidades() {
 }
 
 function guardarOJogo() {
-  for (const item of pegos) {
-    localStorage.setItem("jogo-d:" + item, "sim");
-  }
+  localStorage.setItem("jogo-d-pegos", pegos.join(","));
   localStorage.setItem("jogo-d-pontos", pontos);
   localStorage.setItem("jogo-d-salvo", "sim");
 }
@@ -126,11 +125,14 @@ SZGame2D.mapArea("mapa", jogador, "region", function (area) {
 SZGame2D.mapArea("mapa", jogador, "door", function (porta) {
   const destino = SZGame2D.mapObjectProperty(porta, "destino");
   const chegada = SZGame2D.mapObjectProperty(porta, "chegada");
+  const nomeDaPorta = SZGame2D.mapObjectField(porta, "name");
   SZGame2D.useMapDoor("mapa", jogador, porta);
-  const ponto = SZGame2D.mapObjectById("mapa", chegada);
-  if (ponto !== null) {
+  if (SZGame2D.mapObjectNamed("mapa", nomeDaPorta) === null) {
     lugar = destino;
-    SZGame2D.setPosition(jogador, SZGame2D.mapObjectField(ponto, "x") - 11, SZGame2D.mapObjectField(ponto, "y") - 12);
+    const ponto = SZGame2D.mapObjectById("mapa", chegada);
+    if (ponto !== null) {
+      SZGame2D.setPosition(jogador, SZGame2D.mapObjectField(ponto, "x") - 11, SZGame2D.mapObjectField(ponto, "y") - 12);
+    }
     mundo.width = SZGame2D.mapSize("mapa", "width");
     mundo.height = SZGame2D.mapSize("mapa", "height");
     esmaecer = 100;

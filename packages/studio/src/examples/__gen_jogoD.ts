@@ -289,6 +289,28 @@ export const JOGO_D_IR = {
         then: [
           {
             type: 'assign',
+            name: 'pegos',
+            value: {
+              type: 'memberCallExpr',
+              object: {
+                type: 'storageGet',
+                store: 'local',
+                key: {
+                  type: 'str',
+                  value: 'jogo-d-pegos',
+                },
+              },
+              method: 'split',
+              args: [
+                {
+                  type: 'str',
+                  value: ',',
+                },
+              ],
+            },
+          },
+          {
+            type: 'assign',
             name: 'pontos',
             value: {
               type: 'mathUnary',
@@ -354,50 +376,6 @@ export const JOGO_D_IR = {
                     },
                   },
                 ],
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logical',
-              op: '&&',
-              left: {
-                type: 'var',
-                name: 'salvo',
-              },
-              right: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'storageGet',
-                  store: 'local',
-                  key: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'str',
-                      value: 'jogo-d:',
-                    },
-                    right: {
-                      type: 'var',
-                      name: 'chave',
-                    },
-                  },
-                },
-                right: {
-                  type: 'str',
-                  value: 'sim',
-                },
-              },
-            },
-            then: [
-              {
-                type: 'return',
-                value: {
-                  type: 'bool',
-                  value: true,
-                },
               },
             ],
           },
@@ -1049,31 +1027,26 @@ export const JOGO_D_IR = {
         params: [],
         body: [
           {
-            type: 'forOf',
-            itemName: 'item',
-            iterableVar: 'pegos',
-            body: [
-              {
-                type: 'storageSet',
-                store: 'local',
-                key: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'str',
-                    value: 'jogo-d:',
-                  },
-                  right: {
-                    type: 'var',
-                    name: 'item',
-                  },
-                },
-                value: {
-                  type: 'str',
-                  value: 'sim',
-                },
+            type: 'storageSet',
+            store: 'local',
+            key: {
+              type: 'str',
+              value: 'jogo-d-pegos',
+            },
+            value: {
+              type: 'memberCallExpr',
+              object: {
+                type: 'var',
+                name: 'pegos',
               },
-            ],
+              method: 'join',
+              args: [
+                {
+                  type: 'str',
+                  value: ',',
+                },
+              ],
+            },
           },
           {
             type: 'storageSet',
@@ -1244,6 +1217,25 @@ export const JOGO_D_IR = {
             kind: 'const',
           },
           {
+            type: 'var',
+            name: 'nomeDaPorta',
+            value: {
+              type: 'g2d:sceneValue',
+              method: 'mapObjectField',
+              args: [
+                {
+                  type: 'var',
+                  name: 'porta',
+                },
+                {
+                  type: 'str',
+                  value: 'name',
+                },
+              ],
+            },
+            kind: 'const',
+          },
+          {
             type: 'g2d:sceneCommand',
             method: 'useMapDoor',
             args: [
@@ -1262,32 +1254,23 @@ export const JOGO_D_IR = {
             ],
           },
           {
-            type: 'var',
-            name: 'ponto',
-            value: {
-              type: 'g2d:sceneValue',
-              method: 'mapObjectById',
-              args: [
-                {
-                  type: 'str',
-                  value: 'mapa',
-                },
-                {
-                  type: 'var',
-                  name: 'chegada',
-                },
-              ],
-            },
-            kind: 'const',
-          },
-          {
             type: 'if',
             cond: {
               type: 'binop',
-              op: '!==',
+              op: '===',
               left: {
-                type: 'var',
-                name: 'ponto',
+                type: 'g2d:sceneValue',
+                method: 'mapObjectNamed',
+                args: [
+                  {
+                    type: 'str',
+                    value: 'mapa',
+                  },
+                  {
+                    type: 'var',
+                    name: 'nomeDaPorta',
+                  },
+                ],
               },
               right: {
                 type: 'null',
@@ -1303,52 +1286,87 @@ export const JOGO_D_IR = {
                 },
               },
               {
-                type: 'g2d:setPosition',
-                spriteVar: 'jogador',
-                x: {
+                type: 'var',
+                name: 'ponto',
+                value: {
+                  type: 'g2d:sceneValue',
+                  method: 'mapObjectById',
+                  args: [
+                    {
+                      type: 'str',
+                      value: 'mapa',
+                    },
+                    {
+                      type: 'var',
+                      name: 'chegada',
+                    },
+                  ],
+                },
+                kind: 'const',
+              },
+              {
+                type: 'if',
+                cond: {
                   type: 'binop',
-                  op: '-',
+                  op: '!==',
                   left: {
-                    type: 'g2d:sceneValue',
-                    method: 'mapObjectField',
-                    args: [
-                      {
-                        type: 'var',
-                        name: 'ponto',
-                      },
-                      {
-                        type: 'str',
-                        value: 'x',
-                      },
-                    ],
+                    type: 'var',
+                    name: 'ponto',
                   },
                   right: {
-                    type: 'num',
-                    value: 11,
+                    type: 'null',
                   },
                 },
-                y: {
-                  type: 'binop',
-                  op: '-',
-                  left: {
-                    type: 'g2d:sceneValue',
-                    method: 'mapObjectField',
-                    args: [
-                      {
-                        type: 'var',
-                        name: 'ponto',
+                then: [
+                  {
+                    type: 'g2d:setPosition',
+                    spriteVar: 'jogador',
+                    x: {
+                      type: 'binop',
+                      op: '-',
+                      left: {
+                        type: 'g2d:sceneValue',
+                        method: 'mapObjectField',
+                        args: [
+                          {
+                            type: 'var',
+                            name: 'ponto',
+                          },
+                          {
+                            type: 'str',
+                            value: 'x',
+                          },
+                        ],
                       },
-                      {
-                        type: 'str',
-                        value: 'y',
+                      right: {
+                        type: 'num',
+                        value: 11,
                       },
-                    ],
+                    },
+                    y: {
+                      type: 'binop',
+                      op: '-',
+                      left: {
+                        type: 'g2d:sceneValue',
+                        method: 'mapObjectField',
+                        args: [
+                          {
+                            type: 'var',
+                            name: 'ponto',
+                          },
+                          {
+                            type: 'str',
+                            value: 'y',
+                          },
+                        ],
+                      },
+                      right: {
+                        type: 'num',
+                        value: 12,
+                      },
+                    },
                   },
-                  right: {
-                    type: 'num',
-                    value: 12,
-                  },
-                },
+                ],
               },
               {
                 type: 'memberSet',

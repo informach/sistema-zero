@@ -27,8 +27,9 @@ const output = resolve(root, '.cache/mission/jogo-d-proof')
 const port = Number(process.env.JOGO_D_PROOF_PORT ?? 5421)
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('Porta inválida')
 
+// A sonda conta os começos do jogo (`__comecos`): o restart do jogo roda o "Ao iniciar" de novo.
 const SONDA =
-  'window.__jogoD = { jogador, lugar: () => lugar, regiao: () => regiao, pontos: () => pontos, pegos: () => pegos.length, vivas: () => moedas.items.length + inimigos.items.length + baus.items.length, moedas: () => moedas.items.map((m) => [m.x + m.w / 2, m.y + m.h / 2]) };'
+  'window.__comecos = (window.__comecos || 0) + 1; window.__jogoD = { jogador, lugar: () => lugar, regiao: () => regiao, pontos: () => pontos, pegos: () => pegos.length, vivas: () => moedas.items.length + inimigos.items.length + baus.items.length, moedas: () => moedas.items.map((m) => [m.x + m.w / 2, m.y + m.h / 2]) };'
 
 function projeto(assets = jogoDExample.assets ?? [], comSonda = true) {
   const ir = structuredClone(jogoDExample.ir)

@@ -33,8 +33,10 @@ num mundo com portas: as cenas preparadas ficam num cache de 8 (voltar não prep
 destinos das portas da cena ativa ficam prontos um por quadro com as imagens decodificadas, as
 áreas são conferidas de novo só quando o corpo muda de lugar e o host do Jogo 2D cria o mapa de
 colisão pelo `_newTileMap` (70 passagens davam o aviso falso de "Criar mapa rodando sem parar").
+O relógio das áreas e a pré-carga vivem na mesma geração: na primeira versão, o relógio abria uma
+geração nova e matava a pré-carga em todo jogo com "Quando entrar em área" (revisão do lote 8).
 O jogo D (`evidencias/jogo-d-2026-11-22/`) mede isso num mundo de 96 × 72 peças com 14 portas:
-pior passagem de 6,9 ms e p95 de 2 ms por quadro no Windows local.
+pior passagem de 7,8 ms e p95 de 2,1 ms por quadro no Windows local.
 
 O orçamento de desenho dos três motores 3D (`OE/threeRenderBudgetRuntime.ts`) cuida do pixel
 ratio, do tamanho da tela, do mapa de sombra e dos efeitos, e passa ao nível leve uma vez abaixo
@@ -193,8 +195,11 @@ com as aulas conferidas no navegador: fica registrado como pendente. Evidência:
 (piscar, ordem de pintura, medida do texto) continua a cada quadro para todos, e só o desenho é
 pulado para quem está fora do retângulo do mundo visto pela transformação do contexto (margem de
 64 px mais o maior lado; com rotação ou inclinação, nada é recortado). Testes:
-`game-2d/__tests__/offscreenCulling.test.ts` (400 fora não desenham, piscar, ordem, clique, câmera,
-DPR e rotação); `e2e/engine-2d-offscreen.spec.ts` passou a exigir "fora ≤ 20% de dentro".
+`game-2d/__tests__/offscreenCulling.test.ts` (400 fora não desenham, piscar, ordem de pintura que o
+clique usa, câmera, DPR e rotação); `e2e/engine-2d-offscreen.spec.ts` conta os desenhos do canvas:
+0 com os 400 fora, 400 com eles dentro. O ganho de TEMPO num computador de mesa é pequeno (0,275
+para 0,2 a 0,25 ms por grupo cheio fora), porque o Chromium já descartava quase todo desenho fora
+da tela; a régua de tempo sozinha passaria sem o recorte, e por isso a prova conta desenhos.
 
 ## O que falta na seção 8, sem enfeite
 
@@ -204,5 +209,6 @@ DPR e rotação); `e2e/engine-2d-offscreen.spec.ts` passou a exigir "fora ≤ 20
 - **Recorte das instâncias de conjunto das cenas do Pinta**: pede a caixa real do conteúdo de cada
   conjunto, calculada ao preparar a cena (os objetos de arte já são recortados, `719fade30`).
 - **Jogos de homologação D e E**: o jogo D está feito no lote 8 da conclusão
-  (`evidencias/jogo-d-2026-11-22/`); o jogo E, com as regiões 3D, no lote 7.
+  (`evidencias/jogo-d-2026-11-22/`); o jogo E, com as regiões 3D, no lote 7 (a seção E da
+  homologação é atualizada no lote 9).
 - **Instancing no Jogo 3D e no 3D Avançado**: só se um perfil apontar.

@@ -31,11 +31,27 @@ export interface Regiao {
 export const REGIOES: Regiao[] = [
   { nome: 'Vila', x0: 0, y0: 0, x1: 32, y1: 36, vizinhas: ['Floresta', 'Lago'] },
   { nome: 'Floresta', x0: 32, y0: 0, x1: 64, y1: 36, vizinhas: ['Vila', 'Montanha', 'Campo'] },
-  { nome: 'Montanha', x0: 64, y0: 0, x1: 96, y1: 36, vizinhas: ['Floresta', 'Ruinas'] },
+  { nome: 'Montanha', x0: 64, y0: 0, x1: 96, y1: 36, vizinhas: ['Floresta', 'Ruínas'] },
   { nome: 'Lago', x0: 0, y0: 36, x1: 32, y1: 72, vizinhas: ['Vila', 'Campo'] },
-  { nome: 'Campo', x0: 32, y0: 36, x1: 64, y1: 72, vizinhas: ['Floresta', 'Lago', 'Ruinas'] },
-  { nome: 'Ruinas', x0: 64, y0: 36, x1: 96, y1: 72, vizinhas: ['Montanha', 'Campo'] },
+  { nome: 'Campo', x0: 32, y0: 36, x1: 64, y1: 72, vizinhas: ['Floresta', 'Lago', 'Ruínas'] },
+  { nome: 'Ruínas', x0: 64, y0: 36, x1: 96, y1: 72, vizinhas: ['Montanha', 'Campo'] },
 ]
+
+/** O nome sem acento, para os ids dos objetos. */
+const semAcento = (nome: string) => nome.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+
+/** O centro de cada região, em peças: é onde o robô da prova visita cada uma. */
+export const centroDaRegiao = (r: Regiao): [number, number] => [
+  (r.x0 + r.x1) / 2,
+  (r.y0 + r.y1) / 2,
+]
+
+/**
+ * Nenhum inimigo nasce a menos de 6 peças (192 px) de uma chegada, do início ou do centro de uma
+ * região: o inimigo persegue quem está a menos de 140 px, e o herói apanhava toda vez que saía da
+ * caverna 3 (revisão do lote 8).
+ */
+export const RAIO_SEM_INIMIGO = 6
 
 export const CENAS = {
   mundo: 'jogo-d-mundo',
@@ -159,6 +175,7 @@ function espalhar(
   quantas: number,
   area: { x0: number; y0: number; x1: number; y1: number },
   ocupadas: Set<string>,
+  longeDe: [number, number][] = [],
 ) {
   const lugares: [number, number][] = []
   for (let tentativa = 0; lugares.length < quantas && tentativa < quantas * 60; tentativa++) {
@@ -166,6 +183,7 @@ function espalhar(
       y = area.y0 + Math.floor(a() * (area.y1 - area.y0)),
       chave = `${x},${y}`
     if (ocupadas.has(chave) || !g.livre(x, y)) continue
+    if (longeDe.some(([px, py]) => Math.hypot(px - x, py - y) < RAIO_SEM_INIMIGO)) continue
     ocupadas.add(chave)
     lugares.push([x, y])
   }
@@ -345,9 +363,15 @@ export function mundo(tilesetImagem: string) {
     inimigos: PintaSceneObject[] = [],
     baus: PintaSceneObject[] = [],
     nascimentos: PintaSceneObject[] = []
+  const semInimigo: [number, number][] = [
+    [11, 15],
+    ...casas.map(([cx, cy]): [number, number] => [cx + 2, cy + 4]),
+    ...entradas.map(([x, y]): [number, number] => [x, y + 1]),
+    ...REGIOES.map(centroDaRegiao),
+  ]
   for (const r of REGIOES) {
     const area = { x0: r.x0 + 1, y0: r.y0 + 1, x1: r.x1 - 1, y1: r.y1 - 1 }
-    const chave = r.nome.toLowerCase()
+    const chave = semAcento(r.nome)
     moedas.push(
       ...espalhar(g, a, 57, area, ocupadas).map(([x, y], i) =>
         objeto(`moeda-${chave}-${i + 1}`, 'Moeda', 'moeda', x * PECA, y * PECA, {
@@ -356,7 +380,7 @@ export function mundo(tilesetImagem: string) {
       ),
     )
     inimigos.push(
-      ...espalhar(g, a, 15, area, ocupadas).map(([x, y], i) =>
+      ...espalhar(g, a, 15, area, ocupadas, semInimigo).map(([x, y], i) =>
         objeto(`inimigo-${chave}-${i + 1}`, 'Gosma', 'inimigo', x * PECA, y * PECA, {
           role: 'enemy',
           properties: { regiao: r.nome },
@@ -379,10 +403,12 @@ export function mundo(tilesetImagem: string) {
     )
   }
   const regioes = REGIOES.map((r) =>
-    objeto(`regiao-${r.nome.toLowerCase()}`, r.nome, 'regiao', r.x0 * PECA, r.y0 * PECA, {
+    objeto(`regiao-${semAcento(r.nome)}`, r.nome, 'regiao', r.x0 * PECA, r.y0 * PECA, {
       role: 'region',
-      width: (r.x1 - r.x0) * PECA,
-      height: (r.y1 - r.y0) * PECA,
+      // Semiaberta: 1 px a menos, para a borda comum ficar numa região só (o tocador confere as
+      // bordas incluídas, e o herói parado na borda ficava nas duas).
+      width: (r.x1 - r.x0) * PECA - 1,
+      height: (r.y1 - r.y0) * PECA - 1,
       properties: { vizinhas: r.vizinhas.join(',') },
     }),
   )
@@ -444,7 +470,9 @@ export function caverna(i: number, tilesetImagem: string) {
   const moedas = espalhar(g, a, 32, { x0: 1, y0: 1, x1: 39, y1: 29 }, ocupadas).map(([x, y], k) =>
     objeto(`moeda-${k + 1}`, 'Moeda', 'moeda', x * PECA, y * PECA),
   )
-  const inimigos = espalhar(g, a, 10, { x0: 1, y0: 1, x1: 39, y1: 26 }, ocupadas).map(([x, y], k) =>
+  const inimigos = espalhar(g, a, 10, { x0: 1, y0: 1, x1: 39, y1: 26 }, ocupadas, [
+    [saida.x, saida.y - 2],
+  ]).map(([x, y], k) =>
     objeto(`inimigo-${k + 1}`, 'Morcego', 'inimigo', x * PECA, y * PECA, { role: 'enemy' }),
   )
   const [[bx, by]] = espalhar(g, a, 1, { x0: 2, y0: 2, x1: 38, y1: 14 }, ocupadas) as [

@@ -9,9 +9,11 @@ import { expect, type Frame, type Page, test } from '@playwright/test'
  * - Desempenho nas condições de referência (Chromium do Playwright, 1280 × 720, palco 640 × 480,
  *   DPR 1), andando pelas setas: p95 do trabalho por quadro ≤ 8 ms, p99 ≤ 16,7 ms e no máximo 1%
  *   dos intervalos acima de 20 ms.
- * - Sessão longa (JOGO_D_SESSAO_MS; 10 minutos no CI): o robô passa por todas as regiões e por
- *   todas as portas. A memória depois do coletor não sobe, as imagens criadas param depois da
- *   primeira volta, cada passagem cabe em 50 ms e não sai nenhum aviso.
+ * - Sessão longa (JOGO_D_SESSAO_MS; 10 minutos no CI; pelo menos 3 voltas): o robô PÕE o herói
+ *   no centro de cada região e em cada porta (não anda: o caminho e a colisão ficam com a prova de
+ *   desempenho). A memória depois do coletor não sobe, as imagens criadas param depois da primeira
+ *   volta, cada passagem cabe em 50 ms, o jogo nunca recomeça (o herói não morre) e não sai nenhum
+ *   aviso.
  * - Volta com o estado (o que foi pego continua pego, chegada na boca da caverna) e a cama que
  *   guarda o jogo no site exportado, que volta depois de recarregar.
  * - Destino quebrado: o herói fica e o aviso sai uma vez.
@@ -35,6 +37,7 @@ interface Medida {
 }
 type Janela = Window & {
   __medida: Medida
+  __comecos?: number
   __jogoD?: {
     jogador: { x: number; y: number }
     lugar(): string
@@ -216,16 +219,27 @@ test.describe('site exportado', () => {
     await page.locator('canvas').first().click()
     await esperarQuadros(page, 60)
     const inicio = await quadros(page)
+    const posicao = () =>
+      page.evaluate(() => {
+        const j = (window as unknown as Janela).__jogoD!.jogador
+        return { x: j.x, y: j.y }
+      })
+    // O herói precisa ANDAR: sem isso, teclas que não chegam ao jogo mediriam o jogo parado.
+    let andou = 0
     for (const tecla of ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'ArrowRight']) {
+      const antes = await posicao()
       await page.keyboard.down(tecla)
       await page.waitForTimeout(4000)
       await page.keyboard.up(tecla)
+      const depois = await posicao()
+      andou += Math.hypot(depois.x - antes.x, depois.y - antes.y)
     }
     const m = await page.evaluate((de) => {
       const medida = (window as unknown as Janela).__medida
       return { trabalho: medida.trabalho.slice(de), intervalos: medida.intervalos.slice(de) }
     }, inicio)
     const resultado = {
+      andouPx: Math.round(andou),
       quadros: m.trabalho.length,
       p50: quantil(m.trabalho, 0.5),
       p95: quantil(m.trabalho, 0.95),
@@ -236,6 +250,7 @@ test.describe('site exportado', () => {
     }
     await anexar(info, 'jogo-d-desempenho.json', resultado)
     console.log(`jogo D, desempenho: ${JSON.stringify(resultado)}`)
+    expect(resultado.andouPx).toBeGreaterThan(600)
     expect(resultado.quadros).toBeGreaterThan(600)
     expect(resultado.p95).toBeLessThanOrEqual(8)
     expect(resultado.p99).toBeLessThanOrEqual(16.7)
@@ -258,7 +273,7 @@ test.describe('site exportado', () => {
     const doMundo = e.portas.filter((p) => p.cena === 'jogo-d-mundo')
     const voltas: { memoria: number; imagens: number; pior: number }[] = []
     const comeco = Date.now()
-    while (Date.now() - comeco < duracao || voltas.length < 2) {
+    while (Date.now() - comeco < duracao || voltas.length < 3) {
       let pior = 0
       for (const r of e.regioes) {
         await ir(page, r)
@@ -289,11 +304,15 @@ test.describe('site exportado', () => {
       piorPassagemMs: Math.max(...voltas.map((v) => v.pior)),
       memoria: voltas.map((v) => v.memoria),
       imagens: voltas.map((v) => v.imagens),
+      comecos: await page.evaluate(() => (window as unknown as Janela).__comecos ?? 0),
     }
     await anexar(info, 'jogo-d-sessao.json', resultado)
     console.log(
       `jogo D, sessão: ${JSON.stringify({ ...resultado, memoria: undefined, imagens: undefined })}`,
     )
+    // O jogo nunca recomeçou: o herói não morreu no caminho (revisão do lote 8: um inimigo perto
+    // da chegada da caverna 3 o matava na 5ª volta, e o recomeço criava imagens de novo).
+    expect(resultado.comecos).toBe(1)
     expect(resultado.piorPassagemMs).toBeLessThanOrEqual(50)
     // As imagens param de nascer depois da primeira volta (o cache das cenas e dos desenhos).
     expect(voltas.at(-1)!.imagens).toBe(voltas[0]!.imagens)

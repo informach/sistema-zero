@@ -154,12 +154,12 @@ feito por código, e um programa só com blocos que já existem no Jogo 2D. Deta
 |---|---|---|
 | Vila, floresta, cavernas e interiores, centenas de entidades | `src/examples/jogoD.test.ts` (cenas no leitor do Pinta, tetos, 603 entidades) | Windows local |
 | Regiões: só a região e as vizinhas ficam ativas (no máximo 300) | `jogoD.test.ts` (rodada no motor: 225 vivas na Vila) e `e2e/jogo-d.flow.ts` (recibo) | Windows local |
-| Transições pelas portas, chegada certa, 70 passagens sem aviso | `jogoD.test.ts` e a sessão longa do `jogo-d.flow.ts` (pior passagem 6,9 ms) | Windows local |
+| Transições pelas portas, chegada certa, 70 passagens sem aviso | `jogoD.test.ts` e a sessão longa do `jogo-d.flow.ts` (pior passagem 7,8 ms) | Windows local |
 | Persistência: o que foi pego continua pego; a cama guarda e o jogo volta depois de recarregar | `jogoD.test.ts` e `jogo-d.flow.ts` (site exportado) | Windows local |
-| Carregamento progressivo: os destinos das portas prontos antes de passar, cache das cenas | `map-2d/__tests__/scenePlayerCache.test.ts` (lote 8, parte 2) | CI Linux e Windows local |
-| Sprites fora do palco quase de graça | `game-2d/__tests__/offscreenCulling.test.ts`, `e2e/engine-2d-offscreen.spec.ts` | CI Linux e Windows local |
-| 60 quadros por segundo: p95 ≤ 8 ms, p99 ≤ 16,7 ms, ≤ 1% acima de 20 ms | `jogo-d.flow.ts` (2,0 / 2,5 ms, 0%) | Windows local |
-| Sessão longa: memória e imagens estáveis, sem aviso | `jogo-d.flow.ts` (10 minutos no CI; 30 s no Windows local) | Windows local |
+| Carregamento progressivo: os destinos das portas prontos antes de passar, cache das cenas | `map-2d/__tests__/scenePlayerCache.test.ts` (também com "Quando entrar em área", o caso que a revisão pegou) e `jogoD.test.ts` (no jogo D, passar pela porta não lê nada) | Windows local |
+| Sprites fora do palco não chamam desenho nenhum | `game-2d/__tests__/offscreenCulling.test.ts`, `e2e/engine-2d-offscreen.spec.ts` (0 desenhos com os 400 fora) | Windows local |
+| 60 quadros por segundo: p95 ≤ 8 ms, p99 ≤ 16,7 ms, ≤ 1% acima de 20 ms | `jogo-d.flow.ts` (2,1 / 2,4 ms, 0%, com o herói andando) | Windows local |
+| Sessão longa: memória e imagens estáveis, sem aviso, sem recomeço | `jogo-d.flow.ts` (10 minutos no CI; 60 s e 6 voltas no Windows local; o robô põe o herói em cada ponto) | Windows local |
 | Destino quebrado: o herói fica e o aviso sai uma vez | `jogoD.test.ts` e `jogo-d.flow.ts` | Windows local |
 | Abre nos blocos e roda na prévia | `jogo-d.flow.ts` (importado no Estúdio do playground) | Windows local |
 

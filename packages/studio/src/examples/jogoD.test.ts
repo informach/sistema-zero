@@ -7,6 +7,7 @@ import {
 } from '@sistemazero/core/studio/pinta-scene'
 import * as Blockly from 'blockly/core'
 import { jogoDAssets, jogoDIR } from '../../scripts/gen-jogo-d'
+import { RAIO_SEM_INIMIGO } from '../../scripts/jogo-d/cenas'
 import { registerExtensionBlocks } from '../blockly/blocks'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../blockly/setup'
@@ -37,6 +38,8 @@ const cenas = JOGO_D_ASSETS.filter((a) => a.scene).map((a) => a.scene as PintaSc
 const cena = (id: string) => cenas.find((s) => s.id === id)!
 const objetos = (s: PintaScene) => s.layers.flatMap((l) => (l.kind === 'objects' ? l.objects : []))
 const ENTIDADES = ['moeda', 'inimigo', 'bau']
+const meio = (o: { x: number; y: number; width: number; height: number }) =>
+  [o.x + o.width / 2, o.y + o.height / 2] as const
 
 beforeAll(() => {
   ensureBlocklyInitialized()
@@ -112,7 +115,7 @@ test('toda porta tem destino e chegada, e o destino tem a porta de volta para pe
   expect(portas).toBe(14)
 })
 
-test('as seis regiões cobrem o mundo sem sobrepor, com vizinhas em par', () => {
+test('as seis regiões cobrem o mundo, cada peça numa só (semiabertas), com vizinhas em par', () => {
   const mundo = cena('jogo-d-mundo')
   const regioes = objetos(mundo).filter((o) => o.role === 'region')
   expect(regioes.map((r) => r.name)).toEqual([
@@ -121,13 +124,35 @@ test('as seis regiões cobrem o mundo sem sobrepor, com vizinhas em par', () => 
     'Montanha',
     'Lago',
     'Campo',
-    'Ruinas',
+    'Ruínas',
   ])
-  const area = regioes.reduce((n, r) => n + r.width * r.height, 0)
-  expect(area).toBe(mundo.cols * mundo.rows * mundo.tileSize ** 2)
+  // O tocador confere as bordas incluídas: cada ponto do mundo, inclusive a borda exata entre
+  // duas regiões, fica numa só (revisão do lote 8).
+  const dentro = (r: (typeof regioes)[number], x: number, y: number) =>
+    x >= r.x && y >= r.y && x <= r.x + r.width && y <= r.y + r.height
+  for (let y = 0; y < mundo.rows * mundo.tileSize; y += 16)
+    for (let x = 0; x < mundo.cols * mundo.tileSize; x += 16)
+      expect(regioes.filter((r) => dentro(r, x, y)).length, `${x},${y}`).toBe(1)
   const vizinhas = new Map(regioes.map((r) => [r.name, String(r.properties.vizinhas).split(',')]))
   for (const [nome, lista] of vizinhas)
     for (const outra of lista) expect(vizinhas.get(outra), `${nome} ↔ ${outra}`).toContain(nome)
+})
+
+test('nenhum inimigo nasce perto de uma chegada, do início ou do centro de uma região', () => {
+  // O inimigo persegue quem está a menos de 140 px: o herói apanhava toda vez que saía da caverna 3.
+  for (const s of cenas) {
+    const pontos = objetos(s).filter(
+      (o) => o.type === 'chegada' || o.role === 'start' || o.role === 'region',
+    )
+    for (const inimigo of objetos(s).filter((o) => o.type === 'inimigo'))
+      for (const p of pontos) {
+        const [px, py] = p.role === 'region' ? meio(p) : [p.x, p.y]
+        const d = Math.hypot(inimigo.x + 16 - px, inimigo.y + 16 - py)
+        expect(d, `${s.id}: ${inimigo.id} perto de ${p.id}`).toBeGreaterThanOrEqual(
+          RAIO_SEM_INIMIGO * 32 - 16,
+        )
+      }
+  }
 })
 
 test('mais de 600 entidades, e a região com as vizinhas liga no máximo 300', () => {
@@ -201,8 +226,9 @@ interface Sonda {
   grupos(): { items: Sprite[] }[]
 }
 
-async function jogar(materiais = JOGO_D_ASSETS) {
+async function jogar(materiais = JOGO_D_ASSETS, armazenamento: Storage = localStorage) {
   const avisos: unknown[][] = []
+  const lidas: string[] = []
   HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement) {
     return new Proxy(
       {
@@ -241,7 +267,13 @@ async function jogar(materiais = JOGO_D_ASSETS) {
     innerHeight: 480,
     devicePixelRatio: 1,
     __SZGAME_ASSETS: assetManifest(materiais),
-    __SZGAME_ASSET_META: assetMetaManifest(materiais),
+    // Conta as leituras de cada cena: é como o tocador prepara um lugar.
+    __SZGAME_ASSET_META: new Proxy(assetMetaManifest(materiais), {
+      get(alvo, nome) {
+        if (typeof nome === 'string') lidas.push(nome)
+        return Reflect.get(alvo, nome)
+      },
+    }),
     __SZGAME_SOUNDS: soundManifest(materiais),
   }
   const raf = (fn: FrameRequestCallback) => {
@@ -292,7 +324,7 @@ async function jogar(materiais = JOGO_D_ASSETS) {
     win.SZGame2D,
     win.ctx,
     consoleCalado,
-    localStorage,
+    armazenamento,
   )
   for (let i = 0; i < 12; i++) await Promise.resolve()
   const quadros = (n: number) => {
@@ -309,10 +341,8 @@ async function jogar(materiais = JOGO_D_ASSETS) {
   /** Põe o centro do herói num ponto do lugar (é o que as áreas conferem). */
   const ir_ = (x: number, y: number) => api.setPosition(sonda.jogador, x - 11, y - 12)
   const vivas = () => sonda.grupos().reduce((n, g) => n + g.items.length, 0)
-  return { sonda, quadros, ir: ir_, vivas, avisos }
+  return { sonda, quadros, ir: ir_, vivas, avisos, lidas }
 }
-const meio = (o: { x: number; y: number; width: number; height: number }) =>
-  [o.x + o.width / 2, o.y + o.height / 2] as const
 
 test('rodada: a região liga as entidades, a porta leva à chegada, o que foi pego fica pego e a cama guarda', async () => {
   const jogo = await jogar()
@@ -411,4 +441,68 @@ test('rodada: o destino quebrado avisa uma vez e o herói fica onde está', asyn
   const avisos = jogo.avisos.map((a) => String(a[0]))
   expect(avisos.filter((a) => a.includes('jogo-d-sumida'))).toHaveLength(1)
   expect(avisos).toHaveLength(1)
+})
+
+test('rodada: os destinos das portas ficam prontos antes de passar, e a passagem não lê nada', async () => {
+  const jogo = await jogar()
+  jogo.quadros(10)
+  const destinos = objetos(cena('jogo-d-mundo'))
+    .filter((o) => o.role === 'door')
+    .map((o) => String(o.properties.destino))
+  // Só as cenas (as imagens dos personagens também passam pelos metadados).
+  const ehCena = (nome: string) => cenas.some((s) => s.id === nome)
+  expect(new Set(jogo.lidas.filter(ehCena))).toEqual(new Set(['jogo-d-mundo', ...destinos]))
+  const antes = jogo.lidas.length
+  jogo.ir(...meio(objetos(cena('jogo-d-mundo')).find((o) => o.id === 'porta-caverna-3')!))
+  jogo.quadros(2)
+  expect(jogo.sonda.lugar()).toBe('jogo-d-caverna-3')
+  expect(jogo.lidas.slice(antes).filter(ehCena)).toEqual([])
+})
+
+test('rodada: a cama guarda numa chave só, também no armazenamento da prévia (500 chaves)', async () => {
+  // O mesmo teto do armazenamento da prévia (`preview/storageBridge.ts`): a 501ª chave é recusada.
+  const dados = new Map<string, string>()
+  const prévia = {
+    getItem: (k: string) => dados.get(k) ?? null,
+    setItem: (k: string, v: unknown) => {
+      if (!dados.has(k) && dados.size >= 500) throw new DOMException('cheio', 'QuotaExceededError')
+      dados.set(k, String(v))
+    },
+    removeItem: (k: string) => void dados.delete(k),
+    clear: () => dados.clear(),
+    key: (i: number) => [...dados.keys()][i] ?? null,
+    get length() {
+      return dados.size
+    },
+  } as Storage
+  const jogo = await jogar(JOGO_D_ASSETS, prévia)
+  jogo.quadros(2)
+  // A criança pegou quase tudo (600 itens) e foi dormir.
+  for (let i = 0; i < 600; i++) jogo.sonda.pegos().push(`jogo-d-mundo/item-${i}`)
+  const porta = objetos(cena('jogo-d-mundo')).find((o) => o.id === 'porta-casa-1')!
+  jogo.ir(...meio(porta))
+  jogo.quadros(2)
+  jogo.ir(...meio(objetos(cena('jogo-d-casa-1')).find((o) => o.id === 'cama')!))
+  jogo.quadros(2)
+  expect(prévia.getItem('jogo-d-salvo')).toBe('sim')
+  expect(dados.size).toBe(3)
+  expect(jogo.avisos).toEqual([])
+  const outro = await jogar(JOGO_D_ASSETS, prévia)
+  outro.quadros(2)
+  expect(outro.sonda.pegos()).toHaveLength(600)
+})
+
+test('rodada: a porta cuja chegada falta no destino ainda troca de lugar (o herói no início dele)', async () => {
+  const semChegada = structuredClone(JOGO_D_ASSETS)
+  const mundo = semChegada.find((a) => a.name === 'jogo-d-mundo')!.scene!
+  const porta = objetos(mundo).find((o) => o.id === 'porta-casa-1')!
+  porta.properties = { ...porta.properties, chegada: 'nada' }
+  const jogo = await jogar(semChegada)
+  jogo.quadros(2)
+  jogo.ir(...meio(porta))
+  jogo.quadros(2)
+  expect(jogo.sonda.lugar()).toBe('jogo-d-casa-1')
+  expect(jogo.vivas()).toBe(6)
+  const inicio = objetos(cena('jogo-d-casa-1')).find((o) => o.role === 'start')!
+  expect([jogo.sonda.jogador.x, jogo.sonda.jogador.y]).toEqual([inicio.x, inicio.y])
 })

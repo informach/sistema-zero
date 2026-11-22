@@ -167,6 +167,25 @@ describe('o tocador de cenas num mundo com portas', () => {
     expect(api.mapSpawn('mundo', 'x')).toBe(24)
   })
 
+  it('a pré-carga também roda com "Quando entrar em área" registrado depois de criar a cena', () => {
+    // O caso de todo jogo de verdade (revisão do lote 8): o relógio das áreas nascia com uma
+    // geração nova e matava a pré-carga, que ficava marcada como rodando para sempre.
+    const { api, lidas, quadros } = tocador({
+      vila: cena('vila', [porta('p1', 'casa', 0), porta('p2', 'caverna', 16)]),
+      casa: cena('casa', [porta('p3', 'vila')]),
+      caverna: cena('caverna'),
+    })
+    api.createMapScene('mundo', 'vila')
+    api.mapArea('mundo', naPorta(), 'door', () => {})
+    quadros(3)
+    expect(lidas).toEqual(['vila', 'casa', 'caverna'])
+    // Na casa, o destino de volta já está no cache: nada é lido de novo, nem na passagem.
+    atravessar(api)('mundo', naPorta(), api.mapObjectById('mundo', 'p1')!)
+    quadros(3)
+    atravessar(api)('mundo', naPorta(), api.mapObjectById('mundo', 'p3')!)
+    expect(lidas).toEqual(['vila', 'casa', 'caverna'])
+  })
+
   it('o destino quebrado não avisa na pré-carga; avisa uma vez ao usar e o jogador fica', () => {
     const { api, avisos, quadros } = tocador({
       vila: cena('vila', [porta('p1', 'sumida')]),
@@ -222,6 +241,7 @@ describe('o tocador de cenas num mundo com portas', () => {
     expect(entradas).toBe(2)
   })
 
+  // No Avançado o teste só confere que nada avisa: o host dele nunca usou o createTileMap.
   for (const target of ['g2d', 'gk'] as const)
     it(`${target}: 70 passagens por porta não dão o aviso falso de "Criar mapa"`, async () => {
       const win: Record<string, unknown> = {
