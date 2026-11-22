@@ -37,41 +37,45 @@ export interface SheetIdentity {
   count: number
 }
 export type SheetIndex = ReadonlyMap<string, SheetIdentity>
+/** The immutable ordered slots and their metadata. Native copies can compare their buffers directly. */
+export function automapSheetDefinition(sheet: AnyTilesetAsset, tiles: unknown = sheet.tiles) {
+  const properties = Object.fromEntries(
+    Object.entries(sheet.tileProperties ?? {}).map(([index, props]) => [
+      index,
+      Object.fromEntries(
+        Object.entries(props).map(([key, v]) => [
+          key,
+          typeof v === 'object' && v.type === 'asset' && v.value === sheet.id
+            ? { type: 'self' }
+            : v,
+        ]),
+      ),
+    ]),
+  )
+  return {
+    kind: sheet.kind,
+    tileSize: sheet.tileSize,
+    tiles,
+    solid: sheet.solid,
+    platform: sheet.platform,
+    animations: sheet.animations ?? {},
+    terrains: sheet.terrains ?? [],
+    properties,
+    palette:
+      sheet.kind === 'tileset'
+        ? [sheet.paletteId, sheet.customPalette ?? null, sheet.extraColors ?? null]
+        : null,
+  }
+}
 const signatures = new WeakMap<AnyTilesetAsset, Promise<SheetIdentity>>()
 /** Ordered art, physics and tile metadata determine slot identity. Renaming or duplicating a sheet preserves its digest. */
 export function automapSheetIdentity(sheet: AnyTilesetAsset): Promise<SheetIdentity> {
   let signature = signatures.get(sheet)
   if (!signature) {
     const wire = encodePintaBackupAsset(sheet) as Record<string, unknown>
-    const properties = Object.fromEntries(
-      Object.entries(sheet.tileProperties ?? {}).map(([index, props]) => [
-        index,
-        Object.fromEntries(
-          Object.entries(props).map(([key, v]) => [
-            key,
-            typeof v === 'object' && v.type === 'asset' && v.value === sheet.id
-              ? { type: 'self' }
-              : v,
-          ]),
-        ),
-      ]),
+    signature = sha256Hex(canonicalJson(automapSheetDefinition(sheet, wire.tiles))).then(
+      (sha256) => ({ sha256, count: sheet.tiles.length }),
     )
-    signature = sha256Hex(
-      canonicalJson({
-        kind: sheet.kind,
-        tileSize: sheet.tileSize,
-        tiles: wire.tiles,
-        solid: sheet.solid,
-        platform: sheet.platform,
-        animations: sheet.animations ?? {},
-        terrains: sheet.terrains ?? [],
-        properties,
-        palette:
-          sheet.kind === 'tileset'
-            ? [sheet.paletteId, sheet.customPalette ?? null, sheet.extraColors ?? null]
-            : null,
-      }),
-    ).then((sha256) => ({ sha256, count: sheet.tiles.length }))
     signatures.set(sheet, signature)
   }
   return signature

@@ -1,7 +1,16 @@
-import { pintaCanReadFormatVersion } from '@sistemazero/core/creations'
+import {
+  PINTA_MAX_READ_FORMAT_VERSION,
+  pintaCanWriteNativeSchema,
+} from '@sistemazero/core/creations'
 import { awaitWithSignal } from '@sistemazero/core/http'
-import type { PintaCausalLocalPort } from '@sistemazero/pinta'
-import { assetFromJson, MAX_BACKUP_FILE_BYTES, type PintaAsset } from '@sistemazero/pinta/assets'
+import type { PintaCausalLocalPort as NativeCausalPort } from '@sistemazero/pinta'
+import {
+  assetFromJson,
+  isLegacyWorkshopAsset,
+  MAX_BACKUP_FILE_BYTES,
+  type PintaMemoryAsset,
+  pintaAssetSchema,
+} from '@sistemazero/pinta/assets'
 import {
   type PintaCausalCloud,
   PintaCausalRequestError,
@@ -10,6 +19,8 @@ import {
 } from './pinta-causal-cloud'
 
 /** A 404 is a compatibility signal only before the account has used the new protocol. */
+type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
+
 export async function discoverPintaCausalSnapshot(options: {
   local: Pick<PintaCausalLocalPort, 'inspect' | 'rememberProtocol'>
   cloud: Pick<PintaCausalCloud, 'snapshot'>
@@ -84,11 +95,11 @@ async function readRetainedCandidates(
   ]
   const archived: NonNullable<LocalPull['archived']>[number][] = []
   const archivedPins: NonNullable<LocalPull['archivedPins']>[number][] = []
-  const decoded = new Map<string, PintaAsset>()
+  const decoded = new Map<string, PintaMemoryAsset>()
   async function decode(
     put: NonNullable<Awaited<ReturnType<PintaCausalLocalPort['retained']>>>['puts'][number],
     blob: Blob | undefined,
-  ): Promise<PintaAsset> {
+  ): Promise<PintaMemoryAsset> {
     if (!blob || blob.size !== put.bytes)
       throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
     signal.throwIfAborted()
@@ -140,8 +151,25 @@ async function readRetainedCandidates(
   return { archived, archivedPins }
 }
 
+/** A newer reader still checks the native floor claimed by the verified catalog row. */
+export function decodeCausalEntry(
+  json: string,
+  entry: PintaCloudSnapshot['entries'][number],
+  decode?: NativeCausalPort<PintaMemoryAsset>['decodeCandidate'],
+) {
+  const legacy = decode ? null : assetFromJson(json)
+  const asset = decode ? decode(json) : legacy?.warnings.length ? null : legacy?.asset
+  if (!asset || asset.id !== entry.itemId || asset.kind !== entry.kind || asset.name !== entry.name)
+    return null
+  const native = isLegacyWorkshopAsset(asset) ? pintaAssetSchema(asset) : asset.schema
+  if (native === undefined || !pintaCanWriteNativeSchema(native, entry.formatVersion)) return null
+  if (native >= 8 && new Date(asset.updatedAt).toISOString() !== entry.itemUpdatedAt) return null
+  return asset
+}
+
 /** The input represents every visible ID at the same server epoch. */
 export async function pullPintaCausalSnapshot(options: {
+  reader?: number
   snapshot: PintaCloudSnapshot
   local: Pick<PintaCausalLocalPort, 'inspect' | 'capture' | 'pullImpact' | 'applyPull'> &
     RetainedPort
@@ -197,23 +225,19 @@ export async function pullPintaCausalSnapshot(options: {
   )
   const ids = [...changed.map(({ itemId }) => itemId), ...removed]
   if (ids.some(options.isOpen)) return false
-  if (changed.some((entry) => !pintaCanReadFormatVersion(entry.formatVersion))) return false
-  const staged = new Map<string, PintaAsset>()
+  if (
+    changed.some((entry) => entry.formatVersion > (options.reader ?? PINTA_MAX_READ_FORMAT_VERSION))
+  )
+    return false
+  const staged = new Map<string, PintaMemoryAsset>()
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
   for (const entry of changed) {
     signal.throwIfAborted()
     const bytes = await cloud.download(entry, snapshot.epoch, signal)
     const json = await readPintaCausalJson(bytes, signal, budget)
-    const parsed = assetFromJson(json)
-    if (
-      !parsed.asset ||
-      parsed.warnings.length > 0 ||
-      parsed.asset.id !== entry.itemId ||
-      parsed.asset.kind !== entry.kind ||
-      parsed.asset.name !== entry.name
-    )
-      return false
-    staged.set(entry.itemId, parsed.asset)
+    const asset = decodeCausalEntry(json, entry, local.decodeCandidate)
+    if (!asset) return false
+    staged.set(entry.itemId, asset)
   }
   const transitions = ids.map((id) => {
     const previous = bases.get(id)

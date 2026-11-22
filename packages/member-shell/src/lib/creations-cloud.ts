@@ -510,6 +510,8 @@ export function createCreationsCloud(options: {
   pintaCausalEnabled?: boolean
   pintaPaletteWriteEnabled?: boolean
   studioSealedReader?: boolean
+  /** Negotiated only on the authenticated causal endpoints. */
+  pintaCausalReader?: number
   /** Injetável (testes). Default: o `fetch` global. */
   fetch?: FetchLike
   /**
@@ -617,7 +619,7 @@ export function createCreationsCloud(options: {
       ? createPintaCausalCloud({
           viewerId: options.viewerId,
           audience: options.audience,
-          reader: maxFormatVersion ?? 1,
+          reader: options.pintaCausalReader ?? maxFormatVersion ?? 1,
           signal: causalSession.signal,
           fetch: doFetch,
         })

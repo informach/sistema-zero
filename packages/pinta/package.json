@@ -10,6 +10,7 @@
     "./assets": "./src/assets/index.ts",
     "./assets/causal": "./src/assets/causal.ts",
     "./lesson": "./src/lesson/index.ts",
+    "./workshop-reader": "./src/assets/workshopReader.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
     "./styles.css": "./src/styles/pinta.css"
   },

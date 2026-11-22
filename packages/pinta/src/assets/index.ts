@@ -21,6 +21,7 @@
  */
 
 export { pintaValuesEqual } from '../core/assetEquality'
+export type { PintaMemoryAsset } from '../core/assetMemory'
 export { inheritPintaLocalOrigin, pintaLocalRevisionOf } from '../core/localAssetOrigin'
 export { PintaLocalConflictError, PintaLocalStorageError } from '../core/localStorageErrors'
 export {
@@ -74,6 +75,7 @@ export {
 export { PINTA_LESSON_MAP_LIMITS } from '../core/projectConfig'
 export { observePintaReferences } from '../core/sceneMapClosure'
 export { PINTA_TOOL_PRESETS, type PintaToolPreset } from '../core/toolCuration'
+export { isLegacyWorkshopAsset } from '../core/workshopAsset'
 export { type AssetImportResult, assetFromJson, assetToJson } from '../export/assetJson'
 export { MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 export { bitmapFromArt, cellsFromArt } from '../templates/art'

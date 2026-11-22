@@ -2,12 +2,16 @@ import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import {
   isObjectLayer,
+  isTileLayer,
   isTilesetKind,
   pintaAssetDependencyIds,
   type TilemapAsset,
   type TilemapCells,
+  tileLayerTilesetId,
 } from '../core/project'
 import { pintaDoorBinding, pintaDoorBindings } from '../core/sceneMapClosure'
+import { automapSheetDefinition } from '../tiles/automapping/book'
+import { isPintaAuthoredMap, type PintaAuthoredMap } from '../tiles/automapping/model'
 import { planImport } from './importPlan'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import type { PintaCausalLocalPull } from './localCausalOutbox'
@@ -123,6 +127,54 @@ function restoreDoorTargets(
   }
 }
 
+/** Keep the exact rule signature on a copy with new layer/sheet IDs. A changed sheet requires
+ * an explicit recovery from the original bytes; the IDB compare-and-swap never guesses a hash. */
+function restoreRuleBindings<Asset extends PintaMemoryAsset>(
+  original: PintaAuthoredMap,
+  copy: PintaAuthoredMap,
+  originals: ReadonlyMap<string, Asset>,
+  copies: ReadonlyMap<string, Asset>,
+): boolean {
+  const layers = new Map(original.layers.map((layer, i) => [layer.id, i]))
+  const checked = new Map<string, string>()
+  const lookup = (map: PintaAuthoredMap, catalog: ReadonlyMap<string, Asset>, id: string) =>
+    map.resources?.find((row) => row.asset.id === id)?.asset ?? catalog.get(id)
+  const book = structuredClone(original.automapping)
+  for (const rule of book.rules)
+    for (const group of [rule.input, ...rule.outputs])
+      for (const plane of group) {
+        const index = layers.get(plane.layer)
+        const from = index === undefined ? undefined : original.layers[index],
+          into = index === undefined ? undefined : copy.layers[index]
+        if (
+          !from ||
+          !into ||
+          !isTileLayer<TilemapCells>(from) ||
+          !isTileLayer<TilemapCells>(into) ||
+          tileLayerTilesetId(original, from) !== plane.sheet
+        )
+          return false
+        const id = tileLayerTilesetId(copy, into)
+        if (checked.get(plane.sheet) !== id) {
+          const old = lookup(original, originals, plane.sheet),
+            next = lookup(copy, copies, id)
+          if (
+            !old ||
+            !next ||
+            !isTilesetKind(old) ||
+            !isTilesetKind(next) ||
+            !pintaValuesEqual(automapSheetDefinition(old), automapSheetDefinition(next))
+          )
+            return false
+          checked.set(plane.sheet, id)
+        }
+        plane.layer = into.id
+        plane.sheet = id
+      }
+  copy.automapping = book
+  return true
+}
+
 export function projectRecoveryCopies<Asset extends PintaMemoryAsset>(
   selected: readonly Asset[],
   originals: ReadonlyMap<string, Asset>,
@@ -166,6 +218,11 @@ export function projectRecoveryCopies<Asset extends PintaMemoryAsset>(
       return null
   for (const [i, copy] of copies.entries()) {
     const original = selected[i]!
+    if (
+      isPintaAuthoredMap(original) &&
+      (!isPintaAuthoredMap(copy) || !restoreRuleBindings(original, copy, originals, catalog))
+    )
+      return null
     const expected = pintaDoorBindings(original, originals).map(({ binding }) =>
       binding.type === 'target'
         ? { ...binding, id: imported.idMap.get(binding.id) ?? binding.id }

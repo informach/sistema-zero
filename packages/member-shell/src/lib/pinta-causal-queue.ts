@@ -9,10 +9,13 @@ import {
   type PintaCausalRead,
   pintaCausalIntentHash,
 } from '@sistemazero/core/creations/pinta-causal'
-import type { PintaCausalLocalPort } from '@sistemazero/pinta'
+import type { PintaCausalLocalPort as NativeCausalPort } from '@sistemazero/pinta'
+import type { PintaMemoryAsset } from '@sistemazero/pinta/assets'
 import { type PintaCausalCloud, PintaCausalRequestError } from './pinta-causal-cloud'
 
 /** Carry the attempted seal across awaits so recovery cannot abort a different tab's upload. */
+type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
+
 export class PintaCausalUploadError extends PintaCausalRequestError {
   constructor(
     error: PintaCausalRequestError,

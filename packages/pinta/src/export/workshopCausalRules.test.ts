@@ -1,5 +1,7 @@
 import { expect, test } from 'bun:test'
+import { projectRecoveryCopies } from '../state/localCausalRecovery'
 import { automapFixture } from '../testing/automapFixture'
+import { isPintaAuthoredMap } from '../tiles/automapping/model'
 import { assetToJson } from './assetJson'
 import { inspectPintaCausalDocument, verifyWorkshopRuleSheets } from './pintaCausalManifest'
 import { provePintaCausalConsumerRemaps } from './pintaCausalTransition'
@@ -55,4 +57,21 @@ test('o servidor verifica slots que só existem no exemplo, a impressão da folh
   badPin.resources[0]!.asset.tiles[0]!.data[0] = 3
   const badDoc = inspectPintaCausalDocument(pintaWorkshopAssetToJson(badPin)!, spec)!
   expect(await verifyWorkshopRuleSheets(badDoc)).toBeNull()
+})
+
+test('a cópia recuperada religa IDs sem renumerar peças nem inferir um digest novo no CAS', async () => {
+  const { sheet, map, book } = await automapFixture()
+  const asset = attachWorkshopBook(map, book)!
+  const source = [sheet, asset]
+  const result = projectRecoveryCopies(source, new Map(source.map((a) => [a.id, a])), new Map())
+  const drawing = result?.copies.find(isPintaAuthoredMap)
+  expect(drawing).toBeDefined()
+  expect(drawing!.automapping.rules[0]!.input[0]).toEqual({
+    ...book.rules[0]!.input[0]!,
+    layer: drawing!.layers[0]!.id,
+    sheet: drawing!.tilesetId,
+  })
+  expect(drawing!.tilesetId).not.toBe(sheet.id)
+  expect(drawing!.layers[0]!.id).not.toBe(map.layers[0]!.id)
+  expect(projectRecoveryCopies([asset], new Map([[asset.id, asset]]), new Map())).toBeNull()
 })
