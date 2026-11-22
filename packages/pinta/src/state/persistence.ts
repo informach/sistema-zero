@@ -12,6 +12,7 @@
  * default `sistema-zero-pinta`.
  */
 import { createStore, get, getMany, keys, update } from 'idb-keyval'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import { recordPintaLocalOrigin } from '../core/localAssetOrigin'
 import { withMapResourceVersions } from '../core/mapResourceVersions'
 import type { PaletteLibrary } from '../core/paletteLibrary'
@@ -30,8 +31,9 @@ import {
 } from '../core/project'
 import { sceneMapClosure } from '../core/sceneMapClosure'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
-import { withAssetTransaction } from './assetAuthorityDb'
+import { type AssetRecordSelection, withAssetTransaction } from './assetAuthorityDb'
 import {
+  type createLocalAssetAuthority,
   deleteLocalRecord,
   LOCAL_ASSET_PREFIX,
   type LocalSnapshot,
@@ -41,6 +43,7 @@ import {
   selectLocalAssetRecords,
   writeLocalRecords,
 } from './localAssetAuthority'
+import type { LocalStorageCodec } from './localChunkStorage'
 
 export {
   PintaLocalConflictError,
@@ -251,10 +254,14 @@ function notifyOtherTabs(storeHandle: StoreHandle, dbName: string, ids: readonly
   }
 }
 
-function reportLocalRecovery(storeHandle: StoreHandle, snapshot: LocalSnapshot): void {
+function reportLocalRecovery<Asset extends PintaMemoryAsset>(
+  storeHandle: StoreHandle,
+  snapshot: LocalSnapshot<Asset>,
+  legacyAssets?: readonly PintaAsset[],
+): void {
   if (!snapshot.recovered.length) return
   const names = snapshot.recovered.map((a) => a.name)
-  backupSizeCaches.get(storeHandle)?.seed([...snapshot.assets.values()])
+  if (legacyAssets) backupSizeCaches.get(storeHandle)?.seed(legacyAssets)
   emitPersistenceEvent(storeHandle, { type: 'changed' })
   emitPersistenceEvent(storeHandle, { type: 'recovered', names })
   try {
@@ -329,12 +336,12 @@ export function runSerializedWrite(
  * "buscando…" e quem espera um desenho que ainda não chegou aguarda), `changed` diz que a lista
  * do disco mudou (a galeria relê, coalescido).
  */
-export interface PintaPersistence {
-  persistAsset(asset: PintaAsset): Promise<void>
-  persistAssets(assets: readonly PintaAsset[]): Promise<void>
-  deleteAsset(id: string, base?: PintaAsset): Promise<void>
-  loadAssetById(id: string): Promise<PintaAsset | null>
-  listAllAssets(): Promise<PintaAsset[]>
+export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
+  persistAsset(asset: Asset): Promise<void>
+  persistAssets(assets: readonly Asset[]): Promise<void>
+  deleteAsset(id: string, base?: Asset): Promise<void>
+  loadAssetById(id: string): Promise<Asset | null>
+  listAllAssets(): Promise<Asset[]>
   /**
    * OPCIONAL: observar mudanças feitas por fora (ver `PintaPersistenceEvent`). O IndexedDB do
    * perfil emite mudanças da biblioteca entre stores/abas; o wrapper da nuvem do host acrescenta
@@ -400,13 +407,48 @@ export function isPintaStorageBudgetError(error: unknown): error is PintaStorage
  * abrem juntas.
  */
 export function createPintaPersistence(options: { namespace?: string } = {}): PintaPersistence {
+  return createLocalPintaPersistence(options, {
+    authority: {
+      resolveLocalRecords,
+      selectLocalAssetRecords,
+      writeLocalRecords,
+      deleteLocalRecord,
+    },
+    stamp: withPintaSchemaStamp,
+    legacyAssets: (assets) => assets,
+  })
+}
+
+/** Internal policy boundary. Public callers continue to select native 0–7 and physical 1/2. */
+export interface LocalPersistenceFormat<Asset extends PintaMemoryAsset> {
+  authority: Pick<
+    ReturnType<typeof createLocalAssetAuthority<Asset>>,
+    'resolveLocalRecords' | 'selectLocalAssetRecords' | 'writeLocalRecords' | 'deleteLocalRecord'
+  >
+  stamp(asset: Asset): Asset
+  codec?: LocalStorageCodec
+  /** Only the legacy policy may use the sprite inventory/RLE incremental cache. */
+  legacyAssets?(assets: readonly Asset[]): readonly PintaAsset[]
+}
+
+export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
+  options: { namespace?: string },
+  format: LocalPersistenceFormat<Asset>,
+): PintaPersistence<Asset> {
+  const { resolveLocalRecords, selectLocalAssetRecords, writeLocalRecords, deleteLocalRecord } =
+    format.authority
   const storeHandle = getStoreHandle(options.namespace)
   const dbName = dbNames.get(storeHandle) ?? ''
   const backupSizeCache = backupSizeCacheFor(storeHandle)
   const observed = new Map<string, string | null>()
   let readIssues: PintaReadIssue[] = []
+  const transaction = <T>(
+    plan: (records: Map<string, unknown>) => T,
+    select?: AssetRecordSelection,
+    inspectKeys?: (keys: readonly string[]) => void,
+  ) => withAssetTransaction(storeHandle, plan, select, format.codec, inspectKeys)
   const accept = (
-    snapshot: LocalSnapshot,
+    snapshot: LocalSnapshot<Asset>,
     writtenIds?: readonly string[],
     readIds?: readonly string[],
   ) => {
@@ -436,12 +478,12 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
           : (!readIds || readIds.includes(id)) && !observed.has(id))
       )
         observed.set(id, doc.revision)
-    if (!readIds) backupSizeCache.seed([...snapshot.assets.values()])
-    reportLocalRecovery(storeHandle, snapshot)
+    const legacyAssets = format.legacyAssets?.([...snapshot.assets.values()])
+    if (!readIds && legacyAssets) backupSizeCache.seed(legacyAssets)
+    reportLocalRecovery(storeHandle, snapshot, legacyAssets)
   }
   const readSnapshot = async (ids?: readonly string[]) => {
-    const snapshot = await withAssetTransaction(
-      storeHandle,
+    const snapshot = await transaction(
       resolveLocalRecords,
       ids ? selectLocalAssetRecords(ids) : undefined,
     )
@@ -449,9 +491,9 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     return snapshot
   }
   const finishProtectedWrite = (
-    snapshot: LocalSnapshot & { forks: Map<string, PintaAsset> },
-    assets: readonly PintaAsset[],
-    changed: readonly PintaAsset[],
+    snapshot: LocalSnapshot<Asset> & { forks: Map<string, Asset> },
+    assets: readonly Asset[],
+    changed: readonly Asset[],
   ) => {
     // A fork may leave the submitted ID unchanged; seed from committed authority,
     // never from the speculative measurement of the attempted edit.
@@ -470,19 +512,21 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     )
     if (snapshot.forks.size) throw new PintaLocalConflictError(snapshot.forks)
   }
-  const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
+  const persistAssetsForStore = async (assets: readonly Asset[]): Promise<void> => {
     if (assets.length === 0) return
     // O carimbo `schema` é recalculado a cada gravação. O editor muda o mapa em memória sem
     // mexer nele, e é o carimbo NO DISCO que faz outra aba com código mais antigo recusar o
     // registro em vez de abrir, cortar o que não conhece e salvar por cima.
-    const unique = new Map(assets.map((asset) => [asset.id, withPintaSchemaStamp(asset)]))
+    const unique = new Map(assets.map((asset) => [asset.id, format.stamp(asset)]))
     const pairs = [...unique.values()].map(
-      (asset) => [assetKey(asset.id), asset] as [string, PintaAsset],
+      (asset) => [assetKey(asset.id), asset] as [string, Asset],
     )
     const changed = [...unique.values()]
+    const legacyChanged = format.legacyAssets?.(changed)
     // A mixed gallery budgets canonical maps, not legacy mirrors. The incremental
     // sprite-only path is retained only in galleries without protected documents.
     if (
+      !legacyChanged ||
       changed.some(
         (a) =>
           a.kind === 'tilemap' ||
@@ -495,7 +539,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       )
     ) {
       await runSerializedWrite(storeHandle, async () => {
-        const snapshot = await withAssetTransaction(storeHandle, (records) =>
+        const snapshot = await transaction((records) =>
           writeLocalRecords(records, changed, observed, dbName),
         )
         finishProtectedWrite(snapshot, assets, changed)
@@ -532,7 +576,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
         })
         const { currentBytes, projectedBytes } = perfSpan('pinta:persist:budget', () => ({
           currentBytes: backupSizeCache.totalBytes(),
-          projectedBytes: backupSizeCache.projectedBytes(changed),
+          projectedBytes: backupSizeCache.projectedBytes(legacyChanged),
         }))
         if (projectedBytes > MAX_BACKUP_FILE_BYTES) {
           // Legado acima do teto continua editável quando a mutação REDUZ o
@@ -546,15 +590,13 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
         }
         let needsAuthority = false
         const protectedSnapshot = await perfSpanAsync('pinta:persist:write', () =>
-          withAssetTransaction(
-            storeHandle,
+          transaction(
             (records) => {
               if (needsAuthority) return writeLocalRecords(records, changed, observed, dbName)
               for (const [key, asset] of pairs) records.set(key, asset)
               return null
             },
             () => (needsAuthority ? null : pairs.map(([key]) => key)),
-            undefined,
             (allKeys) => {
               // Same readwrite transaction as the eventual put: another tab cannot
               // introduce an opaque map after this classification and before the write.
@@ -578,7 +620,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
         }
         // Só depois do write resolver: uma transação recusada deixa o disco e o inventário como
         // estavam.
-        backupSizeCache.commit(changed)
+        backupSizeCache.commit(legacyChanged)
         notifyOtherTabs(
           storeHandle,
           dbNames.get(storeHandle) ?? '',
@@ -594,7 +636,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     persistAssets: persistAssetsForStore,
     deleteAsset: (id, base) =>
       runSerializedWrite(storeHandle, async () => {
-        const snapshot = await withAssetTransaction(storeHandle, (records) =>
+        const snapshot = await transaction((records) =>
           deleteLocalRecord(records, id, observed, dbName, base),
         )
         accept(snapshot, [id])
@@ -611,8 +653,11 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       // bytes em fatias ociosas: o custo de codificar a galeria inteira (RLE+JSON) sai do
       // primeiro traço da criança. Sem `requestIdleCallback` (SSR/testes) fica para a
       // primeira gravação, determinístico.
-      backupSizeCache.seed(assets)
-      scheduleWarmUp(backupSizeCache)
+      const legacyAssets = format.legacyAssets?.(assets)
+      if (legacyAssets) {
+        backupSizeCache.seed(legacyAssets)
+        scheduleWarmUp(backupSizeCache)
+      }
       return assets
     },
     subscribe(listener) {
@@ -714,7 +759,7 @@ export async function capturePintaAssetForImage(
     selectLocalAssetRecords([id], options.signal, options.includeSceneMaps),
   )
   options.signal?.throwIfAborted()
-  reportLocalRecovery(store, snapshot)
+  reportLocalRecovery(store, snapshot, [...snapshot.assets.values()])
   for (const [assetId, asset] of snapshot.assets)
     recordPintaLocalOrigin(
       asset,

@@ -173,6 +173,15 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    pai, não uma nova execução. Recibos em
    `qa/integracao-staging-69ced6cb3-2026-11-22/`. Sem promoção de formatos ou
    merge da feature em staging. Prosseguir à fábrica regional existente.
+   Fábrica regional privada integrada ao mesmo mecanismo de persistência:
+   namespace, FIFO, CAS, eventos, paletas, recuperação e lápides. Seleciona
+   autoridade 8/IO 3 e quota regional, sem alimentar o cache legado com chunks
+   ou espelhos compactos. Suíte 2.721, 55 focados e 47 ensaios Chromium, mais
+   repetição dos quatro novos após guards de tipo das fixtures. Provas em
+   `qa/fabrica-regional-interna-2026-11-22/`. Host/barril público continuam
+   na seleção anterior; captura, transporte, inventário parcial da nuvem e
+   adaptadores ainda pendem. Não fechar o item 4. Próximo: captura do mundo
+   completo pela mesma autoridade e transporte regional, antes do host 8.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

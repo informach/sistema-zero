@@ -40,20 +40,22 @@ export function sanitizeLocalRegionAsset(raw: unknown): PintaMemoryAsset | null 
   return sanitizePintaAsset(raw)
 }
 
+export function stampLocalRegionAsset(asset: PintaMemoryAsset): PintaMemoryAsset {
+  if (!regional(asset)) return withPintaSchemaStamp(asset)
+  if (!sanitizeLocalRegionAsset(asset))
+    throw new PintaLocalStorageError(
+      'Não consegui conferir o cenário completo. Seus dados foram mantidos.',
+    )
+  // Validation never replaces the causal RAM origin with a newly sanitized object.
+  return asset
+}
+
 /** Internal only: the public persistence still selects the native-7 authority. */
 export function createLocalRegionAssetAuthority() {
   return createLocalAssetAuthority<PintaMemoryAsset>({
     maxSchema: 8,
     sanitize: sanitizeLocalRegionAsset,
-    stamp(asset) {
-      if (!regional(asset)) return withPintaSchemaStamp(asset)
-      if (!sanitizeLocalRegionAsset(asset))
-        throw new PintaLocalStorageError(
-          'Não consegui conferir o cenário completo. Seus dados foram mantidos.',
-        )
-      // Validation never replaces the causal RAM origin with a newly sanitized object.
-      return asset
-    },
+    stamp: stampLocalRegionAsset,
     schema: (asset) => (regional(asset) ? 8 : pintaAssetSchema(asset)),
     mirror(asset, revision) {
       return regional(asset)

@@ -506,3 +506,189 @@ test('regional business recovery, mirror and chunks roll back together when a qu
     ),
   ).toEqual({ failed: true, unchanged: true, before: 1, after: 1, copies: 1 })
 })
+
+test('the existing persistence factory reopens sparse regions in another page and writes a compact revision', async ({
+  page,
+  context,
+}, info) => {
+  const namespace = `region-factory-reopen-${Date.now()}`,
+    id = await initialize(page, namespace)
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(reopened)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  await proof(reopened)
+  expect(
+    await reopened.evaluate(
+      async ({ namespace, id }) => {
+        const p = window.pintaPhysicalRegions,
+          local = p.createRegionPintaPersistence({ namespace }),
+          source = await local.loadAssetById(id)
+        if (source?.kind !== 'tilemap' || !('origin' in source)) throw Error('Mapa ausente')
+        const puts: string[] = [],
+          original = IDBObjectStore.prototype.put
+        IDBObjectStore.prototype.put = function (value, key) {
+          puts.push(String(key))
+          return original.call(this, value, key)
+        }
+        try {
+          await local.persistAsset(p.setCell(source, source.layers[0]!.id, -64, -64, 8))
+        } finally {
+          IDBObjectStore.prototype.put = original
+        }
+        const after = await p.createRegionPintaPersistence({ namespace }).loadAssetById(id)
+        if (after?.kind !== 'tilemap' || !('origin' in after)) throw Error('Mapa não reabriu')
+        const store = p.createStore(`sistema-zero-pinta-${namespace}`, 'kv')
+        const raw = await store(
+          'readonly',
+          (kv) =>
+            new Promise<unknown>((resolve, reject) => {
+              const request = kv.get(`pinta:asset:${id}`)
+              request.onsuccess = () => resolve(request.result)
+              request.onerror = () => reject(request.error)
+            }),
+        )
+        return {
+          cell: p.cellAt(after, after.layers[0]!.id, -64, -64),
+          untouched: p.cellAt(after, after.layers[0]!.id, 0, 0),
+          origin: after.origin,
+          chunks: after.layers.reduce((sum, layer) => sum + (layer.cells?.chunks.length ?? 0), 0),
+          puts: puts.length,
+          chunkPuts: puts.filter((key) => key.startsWith('pinta:local:chunk:')).length,
+          mirror: raw && typeof raw === 'object' ? Object.keys(raw).sort() : [],
+          issues: local.getReadIssues?.(),
+        }
+      },
+      { namespace, id },
+    ),
+  ).toEqual({
+    cell: 8,
+    untouched: 3,
+    origin: { col: -64, row: -64 },
+    chunks: 2,
+    puts: 3,
+    chunkPuts: 1,
+    mirror: ['capability', 'id', 'kind', 'revision', 'version'],
+    issues: [],
+  })
+})
+
+test('two factory clients preserve stale regional RAM through abort, durable recovery and continued editing', async ({
+  page,
+  context,
+}, info) => {
+  const namespace = `region-factory-conflict-${Date.now()}`,
+    id = await initialize(page, namespace)
+  await page.evaluate(
+    async ({ namespace, id }) => {
+      const p = window.pintaPhysicalRegions,
+        local = p.createRegionPintaPersistence({ namespace }),
+        source = await local.loadAssetById(id)
+      if (source?.kind !== 'tilemap' || !('origin' in source)) throw Error('Mapa ausente')
+      Object.assign(window, { factoryRecovery: { local, source } })
+    },
+    { namespace, id },
+  )
+  const peer = await context.newPage()
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(peer)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  await proof(peer)
+  await peer.evaluate(
+    async ({ namespace, id }) => {
+      const p = window.pintaPhysicalRegions,
+        local = p.createRegionPintaPersistence({ namespace }),
+        source = await local.loadAssetById(id)
+      if (!source) throw Error('Mapa ausente')
+      await local.persistAsset({ ...source, name: 'revisao-da-outra-aba' })
+    },
+    { namespace, id },
+  )
+  const result = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions
+    const { local, source } = (
+      window as unknown as {
+        factoryRecovery: {
+          local: ReturnType<typeof p.createRegionPintaPersistence>
+          source: NonNullable<ReturnType<typeof p.sanitizeRegionTilemapAsset>>
+        }
+      }
+    ).factoryRecovery
+    // Refreshing inventory must not grant a later baseline to the stale source.
+    await local.listAllAssets()
+    const events: string[] = [],
+      unsubscribe = local.subscribe?.((event) => {
+        if (event.type === 'recovered') events.push(event.type)
+      })
+    const edited = p.setCell(source, source.layers[0]!.id, -64, -64, 9)
+    let puts = 0,
+      failed = false,
+      copyId = ''
+    const original = IDBObjectStore.prototype.put
+    IDBObjectStore.prototype.put = function (...args) {
+      if (++puts === 2) throw Error('falha-fabrica-regional-qa')
+      return original.apply(this, args)
+    }
+    try {
+      await local.persistAsset(edited)
+    } catch (error) {
+      failed = String(error).includes('falha-fabrica-regional-qa')
+    } finally {
+      IDBObjectStore.prototype.put = original
+    }
+    const afterFailure = (await local.listAllAssets()).length,
+      eventsAfterFailure = events.length
+    try {
+      await local.persistAsset(edited)
+      throw Error('Conflito esperado')
+    } catch (error) {
+      if (!(error instanceof Error) || !('forks' in error) || !(error.forks instanceof Map))
+        throw error
+      const copy = p.sanitizeRegionTilemapAsset(error.forks.get(source.id))
+      if (!copy) throw Error('Cópia ausente')
+      copyId = copy.id
+      // Sanitization is deliberately not used to transfer the causal RAM baseline.
+      const committed = await local.loadAssetById(copy.id)
+      if (committed?.kind !== 'tilemap' || !('origin' in committed))
+        throw Error('Cópia não confirmada')
+      await local.persistAsset(p.setCell(committed, committed.layers[0]!.id, -64, -64, 10))
+    } finally {
+      unsubscribe?.()
+    }
+    return { failed, afterFailure, eventsAfterFailure, recoveredEvents: events.length, copyId }
+  })
+  expect(result).toMatchObject({
+    failed: true,
+    afterFailure: 1,
+    eventsAfterFailure: 0,
+    recoveredEvents: 1,
+  })
+  expect(result.copyId).not.toBe(id)
+  await page.close()
+  expect(
+    await peer.evaluate(
+      async ({ namespace, id, copyId }) => {
+        const p = window.pintaPhysicalRegions,
+          local = p.createRegionPintaPersistence({ namespace }),
+          original = await local.loadAssetById(id),
+          copy = await local.loadAssetById(copyId)
+        if (original?.kind !== 'tilemap' || copy?.kind !== 'tilemap') throw Error('Dados ausentes')
+        return {
+          count: (await local.listAllAssets()).length,
+          name: original.name,
+          original: p.cellAt(original, original.layers[0]!.id, -64, -64),
+          copy: p.cellAt(copy, copy.layers[0]!.id, -64, -64),
+        }
+      },
+      { namespace, id, copyId: result.copyId },
+    ),
+  ).toEqual({
+    count: 2,
+    name: 'revisao-da-outra-aba',
+    original: 4,
+    copy: 10,
+  })
+})

@@ -5,5 +5,6 @@ export { createTilemapAsset, sanitizeRegionTilemapAsset } from '../src/core/proj
 export { withAssetTransaction } from '../src/state/assetAuthorityDb'
 export { createLocalRegionAssetAuthority } from '../src/state/localRegionAssetAuthority'
 export { localRegionStorageCodec } from '../src/state/localRegionChunkStorage'
+export { createRegionPintaPersistence } from '../src/state/localRegionPersistence'
 export { expandRegionMap, prepareMapRegions } from '../src/tiles/regionMap'
 export { cellAt, setCell } from '../src/tiles/tilemapOps'

@@ -38,6 +38,16 @@ mutáveis entre gravações. Permitir exclusão estrita de dados inalterados par
 liberar espaço acima do teto. A fábrica pública/host ainda não selecionam 8.
 Provas e limites em `qa/autoridade-regional-interna-2026-11-22/`.
 
+`createLocalPintaPersistence` compartilha a fábrica existente por política de
+formato, conservando o padrão público. `localRegionPersistence.ts` é opt-in
+privado: escolhe autoridade 8, físico 3 e quota regional completa, sem passar
+regiões pelo cache/RLE legado da galeria de sprites. Namespace, FIFO, eventos,
+CAS, cópias e lápides são os mesmos. O espelho compacto nunca substitui a
+autoridade. Não exportar/selecionar essa fábrica no host antes de completar
+galeria, transporte, adaptadores e segurança do inventário parcial da nuvem.
+Provas em `qa/fabrica-regional-interna-2026-11-22/`. Abertura ainda reconstrói
+todos os chunks do documento; isso não é carregamento sob demanda.
+
 `RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
 separação usam células por regiões e o clonador comum; a separação esparsa conserva
 a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto
