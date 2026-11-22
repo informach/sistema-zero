@@ -1,4 +1,8 @@
-import { lessonCompletionRequirements, sectionCompletionView } from '@sistemazero/core/learning'
+import {
+  lessonCompletionRequirements,
+  readVideoCoverage,
+  sectionCompletionView,
+} from '@sistemazero/core/learning'
 import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
@@ -18,6 +22,7 @@ import {
   type StudioStateView,
   toLessonDetailView,
 } from '../mappers/views'
+import { resumeSectionId } from './resume-section'
 
 /** Detalhe da aula com o conteúdo COMPLETO (blocos + anexos) — exige acesso ativo. */
 export class GetLessonService {
@@ -168,13 +173,32 @@ export class GetLessonService {
           )
         : blocks
     const sectionState = (id: string) => sectionProgress?.sections.find((s) => s.id === id)
-    const savedSection = structure.progress.sectionId
-    const sectionId =
-      sectionProgress && (!savedSection || sectionState(savedSection)?.status === 'locked')
-        ? (sectionProgress.sections.find((s) => s.status === 'available')?.id ??
-          sectionProgress.sections[0]?.id ??
-          null)
-        : savedSection
+    const savedSection = structure.sections.find(
+      (section) => section.id === structure.progress.sectionId,
+    )
+    const savedVideoPending =
+      savedSection?.blockIds.some((id) => {
+        const block = lesson.blocks.find((candidate) => candidate.id === id)
+        if (block?.content.kind !== 'video') return false
+        const video = structure.progress.blocks.find((candidate) => candidate.blockId === id)
+        const duration =
+          readVideoCoverage(video?.answers ?? {})?.duration ?? block.content.durationSeconds
+        // O limiar que libera a próxima parte é 90%, não o fim do vídeo. Na dúvida,
+        // mantenha a parte salva; só avance quando a posição arredondada chegou ao fim.
+        return (
+          video?.positionSeconds == null ||
+          typeof duration !== 'number' ||
+          duration <= 0 ||
+          video.positionSeconds < Math.floor(duration)
+        )
+      }) ?? false
+    const sectionId = resumeSectionId({
+      saved: structure.progress.sectionId,
+      progress: sectionProgress,
+      lessonCompleted: completedIds.includes(lessonId),
+      live: course.modality === 'live',
+      savedVideoPending,
+    })
     return {
       ...view,
       ...(sectionProgress ? { sectionProgress } : {}),

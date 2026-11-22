@@ -1415,6 +1415,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   const {
+    learningResume,
     learningNavigation,
     learningProgress,
     learningAttempt,
@@ -1993,6 +1994,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     ambassadorMe,
     lessonPosition,
     quizAttempts,
+    learningResume,
     learningNavigation,
     learningProjectCheck,
     learningActionCheck,

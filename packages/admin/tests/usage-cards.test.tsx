@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { MoldaUsageCard, ToolUsageGrid } from '../src/components/members/usage-cards'
+import {
+  CourseProgressCard,
+  MoldaUsageCard,
+  ToolUsageGrid,
+} from '../src/components/members/usage-cards'
 import { relativeDayLabel } from '../src/lib/format'
 import type { LearnerToolUsageView } from '../src/lib/tool-usage'
 
@@ -16,6 +20,26 @@ const learner: LearnerToolUsageView = {
   clube: null,
   mural: null,
 }
+
+test('curso feito pelo responsável recebe o selo Pais', () => {
+  const html = renderToStaticMarkup(
+    <CourseProgressCard
+      course={{
+        courseRef: 'pais',
+        title: 'Curso para pais',
+        status: 'published',
+        audience: 'kids',
+        learner: 'parents',
+        completedLessons: 1,
+        totalLessons: 2,
+        percent: 50,
+      }}
+    />,
+  )
+  expect(html).toContain('Pais')
+  expect(html).not.toContain('>Kids<')
+  expect(html).toContain('50%')
+})
 
 describe('cartão do Molda na ficha do aluno', () => {
   test('mostra as criações na nuvem (singular/plural) e a última atividade', () => {

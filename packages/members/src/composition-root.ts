@@ -1253,8 +1253,8 @@ export async function createApplication(env: Env): Promise<Application> {
     quizAttempts,
     studioSubmissions,
   )
-  const listMemberCertificates = new ListMemberCertificatesService(certificates)
-  const listMemberRatings = new ListMemberRatingsService(ratings)
+  const listMemberCertificates = new ListMemberCertificatesService(certificates, courses)
+  const listMemberRatings = new ListMemberRatingsService(ratings, courses)
   const analytics = new GetCourseAnalyticsService(new DrizzleAnalyticsRepository(db))
   const grantManual = new GrantManualEntitlementService({
     catalog,

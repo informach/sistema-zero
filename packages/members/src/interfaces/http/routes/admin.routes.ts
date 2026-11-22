@@ -34,6 +34,7 @@ import {
 } from '../auth'
 import {
   AdminActivityQuery,
+  AdminCourseHistoryQuery,
   AdminGamificationQuery,
   AdminRankingQuery,
   AdminTeacherThreadByContextQuery,
@@ -130,6 +131,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           return deps.listMembers.execute({
+            learner: query.learner,
             status: query.status,
             courseRef: query.courseRef,
             limit: clampLimit(query.limit),
@@ -212,20 +214,20 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       // Certificados emitidos para o aprendiz (inclui revogados).
       .get(
         '/members/:userId/certificates',
-        async ({ params, headers }) => {
+        async ({ params, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.listMemberCertificates.execute(params.userId)
+          return deps.listMemberCertificates.execute(params.userId, query)
         },
-        { params: UserIdParams },
+        { params: UserIdParams, query: AdminCourseHistoryQuery },
       )
       // Classificações que o aprendiz deu aos cursos.
       .get(
         '/members/:userId/ratings',
-        async ({ params, headers }) => {
+        async ({ params, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.listMemberRatings.execute(params.userId)
+          return deps.listMemberRatings.execute(params.userId, query)
         },
-        { params: UserIdParams },
+        { params: UserIdParams, query: AdminCourseHistoryQuery },
       )
       // Analytics de aprendizado: overview por curso (conclusão) + funil por aula.
       // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não

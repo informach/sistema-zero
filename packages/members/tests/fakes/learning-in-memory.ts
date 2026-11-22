@@ -112,7 +112,15 @@ export class InMemoryLearningRepository implements LearningRepository {
         .map(([, p]) => p),
     }
   }
-  async saveNavigation(owner: LearningOwner, lessonId: string, sectionId: string) {
+  async saveNavigation(
+    owner: LearningOwner,
+    lessonId: string,
+    sectionId: string,
+    options?: { opening?: boolean },
+  ) {
+    const existing = this.navigation.get(key(owner, lessonId))
+    if (options?.opening && this.structures.get(lessonId)?.sections.some((s) => s.id === existing))
+      return
     this.navigation.set(key(owner, lessonId), sectionId)
   }
   async saveProgress(input: SaveLearningProgress) {
