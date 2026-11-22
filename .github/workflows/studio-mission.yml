@@ -401,6 +401,7 @@ jobs:
         run: |
           bun tests/image-smoke.ts
           bun tests/validation-smoke.ts
+          bun tests/templates-smoke.ts
       - name: Prepare pinned Python runtime
         env:
           STUDIO_PYTHON_BUILD_TEST_VENDOR_DIRECTORY: .cache/studio-python-runtime/vendor

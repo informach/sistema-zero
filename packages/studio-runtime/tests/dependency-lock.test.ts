@@ -102,3 +102,25 @@ test('generated graph installs independently with npm ci and npm ls without chan
     await rm(root, { recursive: true, force: true })
   }
 }, 120000)
+
+test('uma biblioteca fora do catálogo é recusada com o recado que a criança lê (lote 4 da conclusão)', () => {
+  const request = (dependencies: Record<string, string>) => ({
+    executionId: 'builder-1234567890abcdef',
+    parentOrigin: 'https://kids.test',
+    templateId: 'vanilla-vite',
+    files: {
+      'package.json': JSON.stringify({ dependencies, devDependencies: { vite: '8.1.6' } }),
+      'index.html': '<main>Game</main>',
+    },
+  })
+  // O recado vai inteiro para a tela (400 INVALID_REQUEST): diz o que fazer, sem detalhe técnico.
+  expect(() => parseBuildRequest(request({ nanoid: '5.0.9' }))).toThrow(
+    'A biblioteca nanoid ainda não está disponível no compilador remoto. Execute este projeto pelo terminal local.',
+  )
+  // A faixa sem a trava: o recado manda instalar e esperar.
+  expect(() =>
+    parseBuildRequest(request({ three: `^${STUDIO_PRO_REMOTE_PACKAGES.three}` })),
+  ).toThrow(
+    `O compilador remoto usa three@${STUDIO_PRO_REMOTE_PACKAGES.three}. Instale essa versão pelo terminal e aguarde a conclusão.`,
+  )
+})
