@@ -401,7 +401,20 @@ export function familiasMudadas(
   depois: DocumentoDeCenario,
 ): FamiliaDaOficinaId[] {
   const mudadas = new Set<FamiliaDaOficinaId>()
-  const marcasAntes = marcas(antes)
+  // Apagar uma região tira o id dela das vizinhas (`regiao.remover`): isso é parte de apagar, que
+  // é do básico, e não uma mudança na vizinha (revisão do lote 5).
+  const restantes = new Set((depois.regioes ?? []).map((r) => r.id))
+  const marcasAntes = marcas(
+    antes.regioes?.length
+      ? {
+          ...antes,
+          regioes: antes.regioes.map((r) => ({
+            ...r,
+            vizinhas: r.vizinhas.filter((v) => restantes.has(v)),
+          })),
+        }
+      : antes,
+  )
   for (const [chave, assinatura] of marcas(depois))
     if (marcasAntes.get(chave) !== assinatura)
       mudadas.add(chave.slice(0, chave.indexOf('|')) as FamiliaDaOficinaId)

@@ -48,7 +48,7 @@ export function resolveStudioProRemoteDependencies(
     manifest.optionalDependencies
   )
     throw new Error(
-      'O compilador remoto ainda não aceita workspaces, overrides ou dependências opcionais. Use o terminal local para este projeto.',
+      'Este jogo não monta com workspaces, overrides ou dependências opcionais. Tire esses campos do package.json.',
     )
   const packages = object(lock?.packages)
   const root = object(packages?.[''])
@@ -61,7 +61,7 @@ export function resolveStudioProRemoteDependencies(
     for (const [name, range] of Object.entries(entries)) {
       if (!Object.hasOwn(STUDIO_PRO_REMOTE_PACKAGES, name))
         throw new Error(
-          `A biblioteca ${name} ainda não está disponível no compilador remoto. Execute este projeto pelo terminal local.`,
+          `A biblioteca ${name} não está entre as que o Estúdio monta aqui. Tire ela do package.json ou use uma das bibliotecas do modelo.`,
         )
       const version = STUDIO_PRO_REMOTE_PACKAGES[name as StudioProRemotePackage]
       if (typeof range !== 'string') throw new Error(`A versão de ${name} é inválida.`)
@@ -75,7 +75,7 @@ export function resolveStudioProRemoteDependencies(
           !new RegExp(`^[~^]${version.replaceAll('.', '\\.')}$`).test(range))
       )
         throw new Error(
-          `O compilador remoto usa ${name}@${version}. Instale essa versão pelo terminal e aguarde a conclusão.`,
+          `O Estúdio monta ${name} na versão ${version}. Escreva "${version}" para ${name} no package.json.`,
         )
       if (
         lock &&

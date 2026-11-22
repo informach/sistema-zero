@@ -68,3 +68,44 @@ test('ligado: a região entra no documento, e o /acesso diz que a ferramenta val
   const desligado = await cenarioCom(false)
   expect(await desligado.servico.acesso(equipe)).toEqual({ aberto: true, regioes: false })
 })
+
+test('desligado depois de ligado: o cenário com regiões segue editável (a ordem das chaves do banco não conta)', async () => {
+  // O Postgres devolve as chaves do jsonb ordenadas por tamanho (`{x0,x1,z0,z1}`), e o lote
+  // validado sai na ordem do esquema (`{x0,z0,x1,z1}`): comparar texto acusava mudança nas regiões
+  // em todo lote, até no desfazer, assim que o interruptor era desligado.
+  const repo = new CenariosEmMemoria()
+  let n = 0
+  const id = () => `00000000-0000-4000-8000-${String(++n).padStart(12, '0')}`
+  const ligado = new CenariosService(
+    repo,
+    () => new Date('2026-11-22T12:00:00Z'),
+    { modo: 'equipe', lista: new Set(), regioes: true },
+    id,
+  )
+  const [espaco] = await ligado.espacos(equipe)
+  const mundo = await ligado.criarMundo(equipe, espaco!.id, 'Ilha')
+  const cenario = await ligado.criarCenario(equipe, mundo.id, 'Praia')
+  await ligado.editarCenario(equipe, cenario.id, {
+    revisaoEsperada: 0,
+    comandos: [vila],
+    operacaoId: 'op-1',
+  })
+  const guardado = repo.cenariosGuardados.get(cenario.id)!
+  for (const r of guardado.documento.regioes ?? []) {
+    const { x0, x1, z0, z1 } = r.caixa
+    r.caixa = { x0, x1, z0, z1 } as typeof r.caixa
+  }
+  const desligado = new CenariosService(
+    repo,
+    () => new Date('2026-11-22T12:00:00Z'),
+    { modo: 'equipe', lista: new Set(), regioes: false },
+    id,
+  )
+  expect(
+    await desligado.editarCenario(equipe, cenario.id, {
+      revisaoEsperada: 1,
+      comandos: [{ tipo: 'cenario.renomear', nome: 'Praia nova' }],
+      operacaoId: 'op-2',
+    }),
+  ).toEqual({ revisao: 2 })
+})

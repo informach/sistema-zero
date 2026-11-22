@@ -120,3 +120,89 @@ export function regioesSem(regioes: readonly RegiaoDeCenario[], id: string): Reg
       r.vizinhas.includes(id) ? { ...r, vizinhas: r.vizinhas.filter((v) => v !== id) } : r,
     )
 }
+
+/** Distância (m) em que "Encaixar na vizinha" encosta as bordas e uma região vira sugestão de vizinha. */
+export const ENCAIXE_DE_REGIAO = 2
+
+/**
+ * O lote que grava `regiao` mantendo as vizinhas em par (lote 7 da conclusão, 22/11/2026): a
+ * própria região e cada região que ganhou ou perdeu a vizinhança dela. Quem foi tirada da lista
+ * deixa de citar a região; quem entrou passa a citar. A oficina e o agente usam este mesmo lote,
+ * então o documento nunca fica com uma vizinha de um lado só.
+ */
+export function comandosParaDefinirRegiao(
+  regioes: readonly RegiaoDeCenario[] | undefined,
+  regiao: RegiaoDeCenario,
+): Array<{ tipo: 'regiao.definir'; regiao: RegiaoDeCenario }> {
+  const todas = regioes ?? []
+  const novas = new Set(regiao.vizinhas)
+  const comandos: Array<{ tipo: 'regiao.definir'; regiao: RegiaoDeCenario }> = [
+    { tipo: 'regiao.definir', regiao },
+  ]
+  for (const outra of todas) {
+    if (outra.id === regiao.id) continue
+    const cita = outra.vizinhas.includes(regiao.id)
+    const deveCitar = novas.has(outra.id)
+    if (cita === deveCitar) continue
+    comandos.push({
+      tipo: 'regiao.definir',
+      regiao: {
+        ...outra,
+        vizinhas: deveCitar
+          ? [...outra.vizinhas, regiao.id]
+          : outra.vizinhas.filter((v) => v !== regiao.id),
+      },
+    })
+  }
+  // Uma vizinha que não existe fica no lote como está: a validação recusa com o recado.
+  return comandos
+}
+
+/** A menor distância entre duas caixas no chão (0 quando encostam ou se cruzam). */
+export function distanciaEntreCaixas(a: CaixaDeRegiao, b: CaixaDeRegiao): number {
+  const dx = Math.max(0, a.x0 - b.x1, b.x0 - a.x1)
+  const dz = Math.max(0, a.z0 - b.z1, b.z0 - a.z1)
+  return Math.hypot(dx, dz)
+}
+
+/** As regiões a até `tolerancia` metros da caixa (as que fazem sentido como vizinhas), na ordem. */
+export function vizinhasSugeridas(
+  regioes: readonly RegiaoDeCenario[] | undefined,
+  caixa: CaixaDeRegiao,
+  ignorar?: string,
+  tolerancia = ENCAIXE_DE_REGIAO,
+): RegiaoDeCenario[] {
+  return (regioes ?? []).filter(
+    (r) => r.id !== ignorar && distanciaEntreCaixas(r.caixa, caixa) <= tolerancia + FOLGA,
+  )
+}
+
+/**
+ * "Encaixar na vizinha": cada borda da caixa a até `tolerancia` metros de uma borda paralela de
+ * outra região (que ela cruza na outra direção) encosta nela. A largura não muda de sinal: uma
+ * borda só se move se a caixa continuar com área.
+ */
+export function encaixarCaixa(
+  regioes: readonly RegiaoDeCenario[] | undefined,
+  caixa: CaixaDeRegiao,
+  ignorar?: string,
+  tolerancia = ENCAIXE_DE_REGIAO,
+): CaixaDeRegiao {
+  const r = { ...caixa }
+  const cruzaEmZ = (o: CaixaDeRegiao) => Math.min(o.z1, r.z1) - Math.max(o.z0, r.z0) > FOLGA
+  const cruzaEmX = (o: CaixaDeRegiao) => Math.min(o.x1, r.x1) - Math.max(o.x0, r.x0) > FOLGA
+  const perto = (a: number, b: number) => Math.abs(a - b) <= tolerancia + FOLGA
+  for (const o of regioes ?? []) {
+    if (o.id === ignorar) continue
+    const c = o.caixa
+    if (cruzaEmZ(c)) {
+      if (perto(r.x0, c.x1) && c.x1 < r.x1) r.x0 = c.x1
+      if (perto(r.x1, c.x0) && c.x0 > r.x0) r.x1 = c.x0
+    }
+    if (cruzaEmX(c)) {
+      if (perto(r.z0, c.z1) && c.z1 < r.z1) r.z0 = c.z1
+      if (perto(r.z1, c.z0) && c.z0 > r.z0) r.z1 = c.z0
+    }
+  }
+  return r
+}

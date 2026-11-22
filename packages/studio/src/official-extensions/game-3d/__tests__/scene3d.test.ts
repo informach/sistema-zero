@@ -371,3 +371,22 @@ test('"Quando o heroi entrar na região" conta cada entrada uma vez, inclusive c
     instalador.descartar()
   }
 })
+
+test('com a câmera parada, a carga por regiões segue quem começou no cenário (revisão do lote 6)', async () => {
+  const { api, plano, carregados, instalador, mundo } = await preparar({ comRegioes: true }),
+    heroi: Mesh = call(api, 'createBox', mundo)
+  try {
+    call(api, 'setCameraPosition', mundo, -20, 10, 0)
+    const carga = call(api, 'loadScene', mundo, plano.assetId)
+    call(api, 'sceneStart', heroi)
+    expect(await carga).toBe(true)
+    call(api, 'setPosition', heroi, 20, 3, 0)
+    mundo.renderer._loop?.(16)
+    mundo.renderer._loop?.(33)
+    // A câmera está na Vila; o herói, na Floresta: a região atual é a dele.
+    expect(carregados.at(-1)?.estadoDasRegioes()?.atual).toBe('floresta')
+  } finally {
+    call(api, 'disposeAll')
+    instalador.descartar()
+  }
+})

@@ -26,20 +26,24 @@ const image = args.find((arg) => !arg.startsWith('--')) ?? 'sistemazero-studio-r
 interface Case {
   label: string
   templateId: string
-  /** Um texto que só existe com a biblioteca empacotada. */
+  /**
+   * Um texto que só existe DENTRO da biblioteca empacotada (revisão do lote 4: `WebGLRenderer` e
+   * `createRoot` estão no próprio código dos modelos e passavam com a biblioteca de fora). Os
+   * recados internos do three e o gancho das ferramentas do React só vêm da biblioteca.
+   */
   marker: string
   /** Troca o package.json do modelo (a faixa `^`) e manda a trava junto. */
   range?: { name: keyof typeof STUDIO_PRO_REMOTE_PACKAGES }
 }
 
 const CASES: Case[] = [
-  { label: 'three-ts', templateId: 'three-ts', marker: 'WebGLRenderer' },
-  { label: 'react-ts', templateId: 'react-ts', marker: 'createRoot' },
+  { label: 'three-ts', templateId: 'three-ts', marker: 'THREE.WebGLRenderer:' },
+  { label: 'react-ts', templateId: 'react-ts', marker: '__REACT_DEVTOOLS_GLOBAL_HOOK__' },
   { label: 'phaser', templateId: 'phaser-arcade', marker: 'Phaser' },
   {
     label: 'three-ts com ^ e trava',
     templateId: 'three-ts',
-    marker: 'WebGLRenderer',
+    marker: 'THREE.WebGLRenderer:',
     range: { name: 'three' },
   },
 ]
@@ -111,6 +115,7 @@ try {
   for (const p of paths.filter((p) => p.endsWith('.js'))) {
     const code = fs.readFileSync(root + '/dist/' + p, 'utf8');
     if (/(?:\\bimport\\s*\\(\\s*|\\bfrom\\s*)["'](?:https?:)?\\/\\//.test(code)) throw new Error('Module imported from another site in ' + p);
+    if (/(?:\\bimport\\s*\\(\\s*|\\bfrom\\s*)["'](?:three|react|react-dom|phaser)(?:\\/[^"']*)?["']/.test(code)) throw new Error('Bare library import left in ' + p);
     if (code.includes(${JSON.stringify(item.marker)})) packed = true;
   }
   if (!packed) throw new Error('Library not packed: ' + ${JSON.stringify(item.marker)});

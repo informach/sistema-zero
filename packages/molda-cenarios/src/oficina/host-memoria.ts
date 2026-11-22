@@ -58,6 +58,8 @@ export interface OpcoesDoHostEmMemoria {
   equipe?: boolean
   /** Atraso de cada chamada, para ver os estados de espera. */
   atrasoMs?: number
+  /** O interruptor das regiões (o `CENARIOS_REGIOES` do Members). Padrão: ligado. */
+  regioes?: boolean
 }
 
 /**
@@ -306,6 +308,10 @@ export function criarHostEmMemoria(opcoes: OpcoesDoHostEmMemoria = {}): Cenarios
     async espacos() {
       await esperar()
       return copia(espacos)
+    },
+    async recursos() {
+      await esperar()
+      return { regioes: opcoes.regioes !== false }
     },
 
     async listarBibliotecas(espacoId) {

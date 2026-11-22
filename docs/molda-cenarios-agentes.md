@@ -61,10 +61,13 @@ Intenções (um passo de desfazer cada):
 | `espalhar` | Espalha modelos numa área redonda, sem encostar nos objetos e fora da água. `densidade` é quantos por 100 m². |
 | `alinhar_ao_chao` | Faz objetos pisarem no relevo. |
 | `encaixar_pecas` | Encaixa peças modulares (caminhos, pontes, rampas, escadas, plataformas, cercas) na vizinha mais perto pelos pontos de encaixe: gira no próprio eixo e encosta ponta com ponta, solta do relevo. Os pontos são os escritos à mão no modelo (`encaixes`) ou os da geometria do arquivo. `vizinha` limita a uma peça; `alcance` (padrão 3 m). |
+| `desenhar_regiao` | Desenha uma região do cenário: um retângulo no chão com nome (Vila, Floresta, Caverna) e `vizinhas` pelo nome (até 8, sempre em par). Pelo nome: se já existe, redesenha a mesma, sem renomear. Regiões não se sobrepõem, mas encostam pela borda. O servidor recusa enquanto o interruptor das regiões estiver desligado. |
+| `apagar_regiao` | Apaga a região pelo nome (ou id); as outras deixam de tê-la como vizinha. |
 | `desfazer`, `refazer` | O histórico da oficina. |
 
 Consultas (não gravam nada): `consultar_pontos` (há chão? altura? água?), `consultar_regiao`
-(o que existe num retângulo), `conferir_implantacao` (objetos mal assentados e campos do jogo),
+(o que existe num retângulo; não confundir com as regiões do cenário), `listar_regioes` (as
+regiões do cenário, com o retângulo e as vizinhas), `conferir_implantacao` (objetos mal assentados e campos do jogo),
 `validar_lote` (passaria no servidor?), `orcamento` (objetos, triângulos e bytes contra os tetos
 de cada destino) e `capturar_cenario` (foto).
 
@@ -156,6 +159,18 @@ Sem um farol na biblioteca? Traga um do computador antes do passo 7: `trazer_mod
 biblioteca do mundo e o caminho do arquivo, e use o `id` e o `digest` que voltarem.
 
 Cada passo é um desfazer: se algo ficou ruim, `desfazer` e refaça com outros números.
+
+### Um mundo grande em regiões
+
+As regiões dividem o cenário em lugares com nome. No Estúdio, o jogo carrega a região onde o
+personagem está e as vizinhas (o resto descarrega), e o bloco "Quando entrar na região" usa o
+nome. Desenhe primeiro uma, depois as outras citando as vizinhas:
+
+1. `desenhar_regiao` com `nome: "Vila"` e o retângulo dela.
+2. `desenhar_regiao` com `nome: "Floresta"`, o retângulo encostado na Vila e `vizinhas: ["Vila"]`.
+   A Vila passa a ter a Floresta como vizinha no mesmo passo.
+3. `listar_regioes` para conferir. Cada janela (a região, as vizinhas e o que é de todas) cabe em
+   48 malhas e 128 MiB.
 
 ### Um vilarejo num platô
 

@@ -95,7 +95,15 @@ export async function conferirConteudoCompilado(
   if (cena.regioes) {
     const relevo = cena.terreno
     // O campo de alturas é global (o chão onde a região não carregou): conta em toda janela.
-    if (relevo) memoriaDoArquivo.set(relevo.alturas, (relevo.colunas + 1) * (relevo.linhas + 1) * 8)
+    if (relevo) {
+      const alturas = (relevo.colunas + 1) * (relevo.linhas + 1) * 8
+      // Sozinho acima do teto, nenhuma divisão em regiões resolve: o recado diz o que mudar.
+      if (alturas > LIMITES_DA_EXPORTACAO.janela.bytesDecodificados)
+        throw Error(
+          `O relevo deste cenário ocupa ${Math.ceil(alturas / 2 ** 20)} MiB decodificados, acima dos 128 MiB de cada janela de regiões. Use um relevo menor (menos colunas e linhas, ou um passo maior) ou tire as regiões.`,
+        )
+      memoriaDoArquivo.set(relevo.alturas, alturas)
+    }
     for (const [regiao, bytes] of Object.entries(memoriaPorJanela(cena, memoriaDoArquivo)))
       if (bytes > LIMITES_DA_EXPORTACAO.janela.bytesDecodificados)
         throw Error(

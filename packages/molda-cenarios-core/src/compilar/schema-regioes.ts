@@ -61,6 +61,8 @@ export interface ItensDasRegioes {
 
 /** Folga das bordas, a mesma das caixas das regiões do documento. */
 const FOLGA = 1e-6
+/** Volume de reserva (nunca lido: a água sem pegada não chega ao `toca`). */
+const ZERO: Volume = { min: { x: 0, z: 0 }, max: { x: 0, z: 0 } }
 
 function eixoToca(min: number, max: number, inicio: number, fim: number): boolean {
   const sobreposto = Math.min(max, fim) - Math.max(min, inicio)
@@ -126,9 +128,24 @@ export function calcularPertencaDasRegioes(
   }
   const deTodas = (entidade: string | null) =>
     entidade !== null && (comPropriedades.has(entidade) || mares.has(entidade))
-  const pegada = (entidade: string | null, volume: Volume): Volume[] => {
+  // A água toca uma região pela pegada inteira (todas as peças e colisões dela): a resposta é a
+  // mesma para cada item da água, então é calculada uma vez por água e região. Recalcular por
+  // item custava regiões × itens² (revisão do lote 5).
+  const aguaToca = new Map<string, boolean>()
+  const tocaPelaPegada = (
+    entidade: string | null,
+    volume: Volume,
+    regiao: RegiaoDeCenario,
+  ): boolean => {
     const agua = daAgua(entidade)
-    return agua === null ? [volume] : (pegadaDaAgua.get(agua) ?? [volume])
+    if (agua === null) return toca([volume], regiao.caixa)
+    const chave = `${agua}|${regiao.id}`
+    let resposta = aguaToca.get(chave)
+    if (resposta === undefined) {
+      resposta = toca(pegadaDaAgua.get(agua) ?? [volume], regiao.caixa)
+      aguaToca.set(chave, resposta)
+    }
+    return resposta
   }
   return regioes.map((regiao) => ({
     ...semListas(regiao),
@@ -138,7 +155,7 @@ export function calcularPertencaDasRegioes(
           !n.preservarHierarquia &&
           !deTodas(n.entidade) &&
           !n.faixas?.some((f) => deTodas(f.entidade)) &&
-          toca(pegada(n.entidade, n.volume), regiao.caixa),
+          tocaPelaPegada(n.entidade, n.volume, regiao),
       )
       .map((n) => n.id),
     colisoes: itens.colisoes
@@ -147,11 +164,14 @@ export function calcularPertencaDasRegioes(
           c.id !== itens.plano?.colisao &&
           c.tipo !== 'terreno' &&
           !deTodas(c.entidade) &&
-          toca(pegada(c.entidade, c.volume), regiao.caixa),
+          tocaPelaPegada(c.entidade, c.volume, regiao),
       )
       .map((c) => c.id),
     aguas: itens.aguas
-      .filter((a) => !mares.has(a.id) && toca(pegadaDaAgua.get(a.id) ?? [], regiao.caixa))
+      .filter(
+        (a) =>
+          !mares.has(a.id) && (pegadaDaAgua.has(a.id) ? tocaPelaPegada(a.id, ZERO, regiao) : false),
+      )
       .map((a) => a.id),
   }))
 }

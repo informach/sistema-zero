@@ -114,13 +114,15 @@ test('uma biblioteca fora do catálogo é recusada com o recado que a criança l
     },
   })
   // O recado vai inteiro para a tela (400 INVALID_REQUEST): diz o que fazer, sem detalhe técnico.
+  // O build hospedado roda onde não há terminal (aula, Admin, oficina ao vivo e desafio): o recado
+  // diz o que mudar no projeto, nunca "use o terminal" (revisão do lote 4).
   expect(() => parseBuildRequest(request({ nanoid: '5.0.9' }))).toThrow(
-    'A biblioteca nanoid ainda não está disponível no compilador remoto. Execute este projeto pelo terminal local.',
+    'A biblioteca nanoid não está entre as que o Estúdio monta aqui. Tire ela do package.json ou use uma das bibliotecas do modelo.',
   )
-  // A faixa sem a trava: o recado manda instalar e esperar.
+  // A faixa sem a trava: o recado diz a versão que o Estúdio monta.
   expect(() =>
     parseBuildRequest(request({ three: `^${STUDIO_PRO_REMOTE_PACKAGES.three}` })),
   ).toThrow(
-    `O compilador remoto usa three@${STUDIO_PRO_REMOTE_PACKAGES.three}. Instale essa versão pelo terminal e aguarde a conclusão.`,
+    `O Estúdio monta three na versão ${STUDIO_PRO_REMOTE_PACKAGES.three}. Escreva "${STUDIO_PRO_REMOTE_PACKAGES.three}" para three no package.json.`,
   )
 })

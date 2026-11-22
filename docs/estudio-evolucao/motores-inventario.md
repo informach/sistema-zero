@@ -105,17 +105,19 @@ O bloco entrou nos três motores 3D do JavaScript sem subir teto nenhum. Cada mo
 
 | Runtime | Antes (20/11 e 21/11) | Depois (22/11) | Tetos (caracteres; gzip Windows) |
 |---|---|---|---|
-| Jogo 3D (completo) | 248.765; 70.123 | 248.020; 69.686 | 248.900 → 248.100; 70.250 → 69.800 |
+| Jogo 3D (completo) | 248.765; 70.123 | 248.064; 69.697 | 248.900 → 248.100; 70.250 → 69.800 |
 | Jogo 3D sem cenário | 241.722; 68.289 | 240.939; 67.786 | 241.800 → 241.000; 68.400 → 67.900 |
 | Jogo 3D sem Kit e sem cenário | 207.640; 58.573 | 207.326; 58.329 | 207.700 → 207.400; 58.700 → 58.450 |
-| Jogo 3D sem Kit, com cenário | 214.683; 60.412 | 214.407; 60.237 | 214.800 → 214.500; 60.550 → 60.350 |
+| Jogo 3D sem Kit, com cenário | 214.683; 60.412 | 214.451; 60.248 | 214.800 → 214.500; 60.550 → 60.350 |
 | Mundo 3D (completo) | 357.367; 106.823 | 350.553; 103.443 | 357.450 → 350.650; 106.950 → 103.550 |
 | Mundo 3D sem cenário | 349.931; 104.710 | 342.786; 101.227 | 350.000 → 342.900; 104.850 → 101.350 |
 | 3D Avançado (completo) | 217.833; 63.490 | 217.947; 63.470 | 217.950 (igual); 63.600 → 63.550 |
 | 3D Avançado sem cenário | 210.202; 61.269 | 210.265; 61.234 | 210.300 (igual); 61.400 (igual) |
 
 O gzip do Linux desce com a medida do CI do commit (o teste a registra no log): até lá ficam os
-tetos de antes, que a medida nova não alcança.
+tetos de antes, que a medida nova não alcança. Na revisão do lote 6, o Jogo 3D ganhou 44
+caracteres (a carga por regiões segue quem começou no cenário quando a câmera não segue ninguém),
+dentro dos tetos novos.
 
 ## A GPU em 10 recomeços (descarte medido)
 

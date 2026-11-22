@@ -61,6 +61,8 @@ export const gameThreeDSceneRuntimeSource = `
   function sceneStart(obj) {
     var world = worldOf(obj);
     if (!world || world._disposed || obj._szRemoved) return;
+    // Quem começa no cenário é o foco da carga por regiões quando a câmera não segue ninguém.
+    world._sceneHero = obj;
     if (world._scenePending) {
       if (!world._sceneArrivals) world._sceneArrivals = new Set();
       world._sceneArrivals.add(obj);
@@ -98,7 +100,7 @@ export const gameThreeDSceneRuntimeSource = `
     var handle = world._sceneHandle;
     if (!handle || !handle.fisica.active()) return;
     handle.atualizar(dt);
-    var target = world._tpObj || world._camFollowTarget || world._fpsObj || world._orbitTarget;
+    var target = world._tpObj || world._camFollowTarget || world._fpsObj || world._orbitTarget || world._sceneHero;
     var focus = new THREE.Vector3();
     if (target && target.getWorldPosition) target.getWorldPosition(focus);
     else world.camera.getWorldPosition(focus);

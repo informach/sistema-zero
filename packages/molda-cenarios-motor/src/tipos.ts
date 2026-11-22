@@ -21,7 +21,7 @@ export type Ferramenta = 'selecionar' | 'mover' | 'girar' | 'tamanho' | 'espalha
 export type Vista = 'livre' | 'cima' | 'frente' | 'lado'
 export type Tema = 'light' | 'dark'
 export type ModoDeSelecao = 'ponto' | 'retangulo' | 'laco'
-export type DonoDosPontos = 'caminhos' | 'jogo'
+export type DonoDosPontos = 'caminhos' | 'jogo' | 'regioes'
 
 export interface ConfiguracaoDoEspalhamento {
   /** Mantém a paleta carregada enquanto parâmetros ou destino precisam ser corrigidos. */

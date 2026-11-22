@@ -157,4 +157,19 @@ describe('as regiões do documento', () => {
     expect(familiasMudadas(comRegioes(undefined), antes)).toEqual(['jogo.regioes'])
     expect(familiasMudadas(antes, comRegioes(undefined))).toEqual([])
   })
+
+  test('apagar uma região com vizinha não conta como mudar a vizinha (revisão do lote 5)', () => {
+    const antes = comRegioes([
+      regiao('vila', 'Vila', [-128, -128, 0, 0], ['floresta']),
+      regiao('floresta', 'Floresta', [0, -128, 128, 0], ['vila']),
+    ])
+    const depois = comRegioes([regiao('floresta', 'Floresta', [0, -128, 128, 0])])
+    expect(familiasMudadas(antes, depois)).toEqual([])
+    // Tirar a vizinha SEM apagar a região continua sendo mudança.
+    const semPar = comRegioes([
+      regiao('vila', 'Vila', [-128, -128, 0, 0]),
+      regiao('floresta', 'Floresta', [0, -128, 128, 0]),
+    ])
+    expect(familiasMudadas(antes, semPar)).toEqual(['jogo.regioes'])
+  })
 })

@@ -214,7 +214,16 @@ export async function carregarCenaNoThree(
       return
     }
     // A cópia pertence ao loader; o inventário recebido permanece somente leitura.
-    const modelo = await lerGlb(pacote.arquivos.get(arquivo)!.slice().buffer, { imagens })
+    let modelo: Awaited<ReturnType<typeof lerGlb>>
+    try {
+      modelo = await lerGlb(pacote.arquivos.get(arquivo)!.slice().buffer, { imagens })
+    } catch (erro) {
+      // O loader pode ter posto uma imagem no cache antes de falhar noutra parte do mesmo
+      // arquivo: sem modelo que a conte, ela ficaria na memória até o fim da cena (revisão do
+      // lote 6). As cargas são uma por vez, então sem uso contado é desta.
+      for (const chave of [...imagens.keys()]) if (!usosDasImagens.has(chave)) imagens.delete(chave)
+      throw erro
+    }
     if (descartado) {
       modelo.descartar()
       throw Error('A cena compilada foi descartada durante a carga.')
@@ -368,6 +377,43 @@ export async function carregarCenaNoThree(
   /** Os nomes de região que o jogo pediu e a cena não tem (avisados uma vez). */
   const avisadas = new Set<string>()
 
+  // O orçamento em execução (revisão do lote 6): a janela obrigatória (a região segura e as
+  // vizinhas) sempre carrega; as outras (as que estão perto e a que ainda espera o descarte) só
+  // entram enquanto o conjunto inteiro cabe nas malhas de uma janela. A memória decodificada fica
+  // limitada pelo teto do pacote, conferido na abertura.
+  // (`nosListados` e `regiaoPorId` são os de cima, das listas da cena.)
+  const malhasDoArquivo = new Map(dados.arquivos.map((a) => [a.caminho, a.malhas ?? 0])),
+    malhasDeTodas = dados.nos
+      .filter((n) => !nosListados.has(n.id))
+      .reduce((soma, n) => soma + (malhasDoArquivo.get(n.arquivo) ?? 0), 0)
+  const malhasDoConjunto = (ids: Iterable<string>) => {
+    const nos = new Set<string>()
+    for (const id of ids) for (const n of regiaoPorId.get(id)?.nos ?? []) nos.add(n)
+    let soma = malhasDeTodas
+    for (const id of nos) soma += malhasDoArquivo.get(nosPorId.get(id)?.arquivo ?? '') ?? 0
+    return soma
+  }
+  const dentroDoOrcamento = (
+    estado: { obrigatorias: ReadonlySet<string>; carregadas: ReadonlySet<string> },
+    foco: { x: number; z: number },
+  ): Set<string> => {
+    const conjunto = new Set(estado.obrigatorias)
+    const distancia = (id: string) => {
+      const c = regiaoPorId.get(id)?.caixa
+      if (!c) return Infinity
+      const dx = Math.max(0, c.x0 - foco.x, foco.x - c.x1),
+        dz = Math.max(0, c.z0 - foco.z, foco.z - c.z1)
+      return Math.hypot(dx, dz)
+    }
+    const opcionais = [...estado.carregadas]
+      .filter((id) => !conjunto.has(id))
+      .sort((a, b) => distancia(a) - distancia(b))
+    for (const id of opcionais)
+      if (malhasDoConjunto([...conjunto, id]) <= LIMITES_DA_EXPORTACAO.janela.malhas)
+        conjunto.add(id)
+    return conjunto
+  }
+
   /** Leva a carga ao conjunto pedido: carrega o que entra, descarta o que sai. */
   const aplicar = async (alvo: Set<string>) => {
     const { nos, cols } = itensDasRegioes(alvo),
@@ -423,20 +469,37 @@ export async function carregarCenaNoThree(
         const vez = pedido
         pedido = null
         emCurso = vez
+        const falhou = (id: string, erro: unknown) => {
+          const f = falhas.get(id) ?? { tentativa: 0, proxima: 0 }
+          f.proxima = tempo + NOVAS_TENTATIVAS[Math.min(f.tentativa, 2)]!
+          f.tentativa++
+          falhas.set(id, f)
+          aviso ??= `Não consegui carregar uma parte do cenário (${erro instanceof Error ? erro.message : 'erro'}). Vou tentar de novo.`
+        }
         try {
           await aplicar(vez)
           for (const id of vez) falhas.delete(id)
         } catch (erro) {
           if (descartado) return
-          // A falha mantém as regiões de antes; quem está na que falhou pisa no relevo.
-          for (const id of vez)
-            if (!regioesCarregadas.has(id)) {
-              const f = falhas.get(id) ?? { tentativa: 0, proxima: 0 }
-              f.proxima = tempo + NOVAS_TENTATIVAS[Math.min(f.tentativa, 2)]!
-              f.tentativa++
-              falhas.set(id, f)
+          // A falha mantém as regiões de antes; quem está na que falhou pisa no relevo. As
+          // regiões novas do pedido são tentadas uma por uma: a que quebrou não segura as outras
+          // (revisão do lote 6: com uma vizinha quebrada, a região boa nunca carregava).
+          const novas = [...vez].filter((id) => !regioesCarregadas.has(id))
+          if (novas.length <= 1) for (const id of novas) falhou(id, erro)
+          else {
+            const conjunto = new Set([...vez].filter((id) => regioesCarregadas.has(id)))
+            for (const id of novas) {
+              if (descartado || pedido) break
+              try {
+                await aplicar(new Set([...conjunto, id]))
+                conjunto.add(id)
+                falhas.delete(id)
+              } catch (erroDaRegiao) {
+                if (descartado) return
+                falhou(id, erroDaRegiao)
+              }
             }
-          aviso ??= `Não consegui carregar uma parte do cenário (${erro instanceof Error ? erro.message : 'erro'}). Vou tentar de novo.`
+          }
         } finally {
           emCurso = null
         }
@@ -462,10 +525,20 @@ export async function carregarCenaNoThree(
           ) ?? dados.marcadores.find((m) => m.configuracao?.tipo === 'inicio'),
         meio = { x: 0, z: 0 }
       if (!inicio && dados.nos.length) {
+        // O centro da caixa da cena, como `resolverInicioDaCena`: os motores põem o jogador ali,
+        // e a média dos centros puxava a janela para onde há mais objetos (revisão do lote 6).
+        let x0 = Infinity,
+          x1 = -Infinity,
+          z0 = Infinity,
+          z1 = -Infinity
         for (const n of dados.nos) {
-          meio.x += (n.volume.min.x + n.volume.max.x) / 2 / dados.nos.length
-          meio.z += (n.volume.min.z + n.volume.max.z) / 2 / dados.nos.length
+          x0 = Math.min(x0, n.volume.min.x)
+          x1 = Math.max(x1, n.volume.max.x)
+          z0 = Math.min(z0, n.volume.min.z)
+          z1 = Math.max(z1, n.volume.max.z)
         }
+        meio.x = (x0 + x1) / 2
+        meio.z = (z0 + z1) / 2
       }
       const estado = plano.atualizar(inicio ? inicio.posicao : meio, 0)
       atual = estado.atual
@@ -641,15 +714,20 @@ export async function carregarCenaNoThree(
         if (descartado) return
         luz?.quadro(camera, alvo)
         if (!plano) return
+        // Um foco inválido (um "Levar … até" com NaN) mantém a carga como está: lançar aqui
+        // derrubava o laço do jogo inteiro (revisão do lote 6).
+        if (!Number.isFinite(alvo.x) || !Number.isFinite(alvo.z)) return
         camera.getWorldPosition(posicaoDaCamera)
-        const estado = plano.atualizar({ x: alvo.x, z: alvo.z }, tempo, {
-          x: posicaoDaCamera.x,
-          z: posicaoDaCamera.z,
-        })
+        const semCamera = !Number.isFinite(posicaoDaCamera.x) || !Number.isFinite(posicaoDaCamera.z)
+        const estado = plano.atualizar(
+          { x: alvo.x, z: alvo.z },
+          tempo,
+          semCamera ? { x: alvo.x, z: alvo.z } : { x: posicaoDaCamera.x, z: posicaoDaCamera.z },
+        )
         atual = estado.atual
         // A região que falhou espera a vez dela de tentar de novo.
         const alvoDaCarga = new Set(
-          [...estado.carregadas].filter((id) => {
+          [...dentroDoOrcamento(estado, alvo)].filter((id) => {
             const f = falhas.get(id)
             return !f || f.proxima <= tempo || regioesCarregadas.has(id)
           }),

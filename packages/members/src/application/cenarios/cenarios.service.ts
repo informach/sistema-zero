@@ -12,6 +12,7 @@ import {
   type FamiliaDaOficinaId,
   familiaDaOficina,
   familiasTrancadas,
+  igual,
   inverterLote,
   LIMITES_CENARIO_V2,
   LoteDeCenarioSchema,
@@ -1031,10 +1032,11 @@ export class CenariosService {
     }
     // O interruptor das regiões: desligado, nenhum lote mexe no campo (nem o desfazer). Os leitores
     // (o Estúdio, o motor dos cenários e a imagem do studio-runtime) chegam antes do escritor.
+    // ⚠️ Comparação estrutural: o jsonb volta do banco com as chaves em outra ordem que o lote
+    // validado, e comparar texto acusava mudança em todo lote de um cenário com regiões.
     if (
       this.abertura.regioes !== true &&
-      JSON.stringify(cenario.documento.regioes ?? null) !==
-        JSON.stringify(depois.documento.regioes ?? null)
+      !igual(cenario.documento.regioes ?? null, depois.documento.regioes ?? null)
     )
       throw new CenarioRegioesDesligadasError()
     // A faixa do posto: o lote não cria nem muda uma ferramenta trancada (o agente também não).

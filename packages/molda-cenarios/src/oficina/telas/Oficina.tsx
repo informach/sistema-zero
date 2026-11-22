@@ -42,6 +42,7 @@ import {
   Haze,
   History,
   Lasso,
+  LayoutGrid,
   Lightbulb,
   ListChecks,
   ListTree,
@@ -128,6 +129,7 @@ import { useCaminhos } from '../useCaminhos'
 import { useConjuntos } from '../useConjuntos'
 import { useJogo } from '../useJogo'
 import { usePincelDeObjetos } from '../usePincelDeObjetos'
+import { useRegioes } from '../useRegioes'
 import { useRetratos } from '../useRetratos'
 import { useTerreno } from '../useTerreno'
 import { Agua, FERRAMENTAS_AGUA } from './Agua'
@@ -147,6 +149,7 @@ import { Organizacao } from './Organizacao'
 import { Organizar } from './Organizar'
 import { Painel } from './Painel'
 import { Propriedades } from './Propriedades'
+import { Regioes } from './Regioes'
 import { FERRAMENTAS_TERRENO_RAIL, NOMES_TERRENO, Terreno } from './Terreno'
 import { ControlesDoTesteAoVivo, criarLojaDoTeste, PrepararTeste } from './Testar'
 import { Versoes } from './Versoes'
@@ -560,28 +563,59 @@ function OficinaAberta({
     alturaDoAvatar,
   })
   const ambiente = useAmbiente({ controlador, palco, documento, ativo: aba === 'luz' && !emEnsaio })
+  // A ferramenta Regiões (lote 7 da conclusão): só com o interruptor do servidor ligado
+  // (`host.recursos().regioes`, o `CENARIOS_REGIOES` do Members) e a faixa `jogo.regioes`.
+  const [regioesLigadas, setRegioesLigadas] = useState(false)
+  useEffect(() => {
+    let vivo = true
+    host.recursos?.().then(
+      (r) => vivo && setRegioesLigadas(r.regioes === true),
+      () => vivo && setRegioesLigadas(false),
+    )
+    return () => {
+      vivo = false
+    }
+  }, [host])
+  const regioesNaAba = regioesLigadas && liberada('jogo', 'regiao')
+  const regioes = useRegioes({
+    controlador,
+    palco,
+    documento,
+    ativo: aba === 'jogo' && !emEnsaio && regioesNaAba,
+  })
   const jogoAtual = useRef(jogo),
     ambienteAtual = useRef(ambiente),
+    regioesAtual = useRef(regioes),
     abaAtual = useRef(aba)
   jogoAtual.current = jogo
   ambienteAtual.current = ambiente
+  regioesAtual.current = regioes
   abaAtual.current = aba
-  const edicaoAberta = agua.ocupado || caminhos.ocupado || jogo.ocupado || ambiente.ocupado
+  const edicaoAberta =
+    agua.ocupado ||
+    caminhos.ocupado ||
+    jogo.ocupado ||
+    ambiente.ocupado ||
+    regioes.ocupado ||
+    regioes.criando
   bloqueioDaTransferencia.current =
     edicaoAberta || terreno.ocupado || emEnsaio || janelaTeste || escolhendoPersonagem
   const aoEditarPontosDeCaminho = useCallback(
     (gesto: Parameters<typeof caminhos.aoEditarPontos>[0], dono: DonoDosPontos) => {
       if (dono === 'jogo') jogoAtual.current.aoEditarPontos(gesto)
+      else if (dono === 'regioes') regioesAtual.current.aoEditarPontos(gesto)
       else caminhosAtual.current.aoEditarPontos(gesto)
     },
     [],
   )
   const aoCancelarPontosDeCaminho = useCallback((dono: DonoDosPontos) => {
     if (dono === 'jogo') jogoAtual.current.cancelar()
+    else if (dono === 'regioes') regioesAtual.current.cancelar()
     else caminhosAtual.current.cancelar()
   }, [])
   const aoErroDePontosDeCaminho = useCallback((erro: string, dono: DonoDosPontos) => {
     if (dono === 'jogo') jogoAtual.current.informarErro(erro)
+    else if (dono === 'regioes') regioesAtual.current.informarErro(erro)
     else caminhosAtual.current.informarErro(erro)
   }, [])
   const editarCaminho = caminhos.editar
@@ -1866,6 +1900,25 @@ function OficinaAberta({
                   }}
                 />
               ))}
+              {regioesNaAba ? (
+                <Ladrilho
+                  icone={LayoutGrid}
+                  rotulo="Regiões"
+                  desligado={
+                    jogo.ocupado ||
+                    regioes.aplicando ||
+                    terreno.ocupado ||
+                    !relevoPronto ||
+                    estado.ocupado
+                  }
+                  aoTocar={() => {
+                    regioes.iniciarCriacao()
+                    setGavetaAberta(false)
+                    setModoPainel('escolha')
+                    setPainelAberto(true)
+                  }}
+                />
+              ) : null}
               <hr className="mcn-fio" />
               {FERRAMENTAS.filter(([f]) => f !== 'espalhar').map(([f, Icone, rotulo, atalho]) => (
                 <Ladrilho
@@ -2305,7 +2358,24 @@ function OficinaAberta({
                     }
                   />
                 ) : null}
-                {!ambiente.rascunho ? (
+                {aba === 'jogo' && regioesNaAba && !jogo.rascunho ? (
+                  <Regioes
+                    regioes={regioes}
+                    documento={documento}
+                    indisponivel={
+                      !relevoPronto ||
+                      estado.ocupado ||
+                      estado.salvamento !== 'guardado' ||
+                      ambiente.ocupado
+                    }
+                    aoCapturar={() => {
+                      setGavetaAberta(false)
+                      if (globalThis.matchMedia?.('(max-width: 899px)').matches)
+                        setPainelAberto(false)
+                    }}
+                  />
+                ) : null}
+                {!ambiente.rascunho && !regioes.rascunho && !regioes.criando ? (
                   <Jogo
                     jogo={jogo}
                     documento={documento}

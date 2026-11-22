@@ -170,6 +170,38 @@ export async function juntarEstaticosDoPacote(
     comPropriedades = cena.regioes ? entidadesComPropriedades(cena.entidades) : new Set<string>(),
     assinaturaDasRegioes = (volume: CenaCompilada['nos'][number]['volume']) =>
       cena.regioes ? `${regioesQueOVolumeToca(cena.regioes, volume).join(',')}|` : '',
+    // As peças fora de toda região (assinatura vazia) só entram num lote enquanto a caixa dele
+    // continuar fora de toda região: a pertença do lote é refeita pela caixa da UNIÃO, e uma caixa
+    // que atravessasse uma região pequena no meio delas tiraria o lote do "de todas" (revisão do
+    // lote 5). As outras assinaturas não precisam: a união só soma regiões, e o lote carrega em
+    // mais janelas, nunca em menos.
+    lotesDeTodas = new Map<string, Array<CenaCompilada['nos'][number]['volume']>>(),
+    chaveDoLote = (chave: string, volume: CenaCompilada['nos'][number]['volume']) => {
+      if (!cena.regioes || !chave.startsWith('|')) return chave
+      const lista = lotesDeTodas.get(chave) ?? []
+      lotesDeTodas.set(chave, lista)
+      for (let i = 0; i < lista.length; i++) {
+        const a = lista[i]!,
+          uniao = {
+            min: {
+              x: Math.min(a.min.x, volume.min.x),
+              y: Math.min(a.min.y, volume.min.y),
+              z: Math.min(a.min.z, volume.min.z),
+            },
+            max: {
+              x: Math.max(a.max.x, volume.max.x),
+              y: Math.max(a.max.y, volume.max.y),
+              z: Math.max(a.max.z, volume.max.z),
+            },
+          }
+        if (regioesQueOVolumeToca(cena.regioes, uniao).length === 0) {
+          lista[i] = uniao
+          return `${chave}#${i}`
+        }
+      }
+      lista.push({ min: { ...volume.min }, max: { ...volume.max } })
+      return `${chave}#${lista.length - 1}`
+    },
     ids = new Set(cena.nos.map((n) => n.id)),
     ordemDosNos = new Map(cena.nos.map((no, i) => [no.id, i])),
     metadados = new Map(cena.arquivos.map((a) => [a.caminho, a])),
@@ -334,7 +366,10 @@ export async function juntarEstaticosDoPacote(
               ? uvSegueOChao(unica.geometria, matrizDaPeca)
               : null
           if (chao && materialDoAtlas(unica.material)) {
-            const chaveDaRegiao = `${assinaturaDasRegioes(no.volume)}${coluna}/${linha}`,
+            const chaveDaRegiao = chaveDoLote(
+                `${assinaturaDasRegioes(no.volume)}${coluna}/${linha}`,
+                no.volume,
+              ),
               geometria = unica.geometria.clone()
             let regiao = relevos.get(chaveDaRegiao)
             if (!regiao) {
@@ -356,7 +391,10 @@ export async function juntarEstaticosDoPacote(
         }
         for (const p of modelo.partes)
           adicionarAoGrupo(
-            `${assinaturaDasRegioes(no.volume)}${coluna}/${linha}/${chaveDoMaterial(p.material)}/${layoutDaParteEstatica(p.geometria)}`,
+            chaveDoLote(
+              `${assinaturaDasRegioes(no.volume)}${coluna}/${linha}/${chaveDoMaterial(p.material)}/${layoutDaParteEstatica(p.geometria)}`,
+              no.volume,
+            ),
             p.material,
             matriz,
             { geometria: p.geometria, matriz: relativa.clone().multiply(p.matriz) },

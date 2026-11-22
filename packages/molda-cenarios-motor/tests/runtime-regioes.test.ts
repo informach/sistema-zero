@@ -34,7 +34,8 @@ const centro = (letra: string) => {
   return { x: (i % 3) * 100 + 50, z: Math.floor(i / 3) * 100 + 50 }
 }
 
-async function pacote(): Promise<PacoteCompilado> {
+/** `extrasEmE`: cópias do chão de E na mesma região (para pesar nas malhas do orçamento). */
+async function pacote(extrasEmE = 0): Promise<PacoteCompilado> {
   const a = new ArquivosDaCompilacao(new AbortController().signal)
   const nos = [],
     colisoes = []
@@ -63,6 +64,9 @@ async function pacote(): Promise<PacoteCompilado> {
         max: { x: onde.x + 20, y: 0, z: onde.z + 20 + i * 0.01 },
       }
     nos.push({ id: `no-${letra}`, entidade: null, arquivo: caminho, matriz, volume })
+    if (letra === 'e')
+      for (let k = 0; k < extrasEmE; k++)
+        nos.push({ id: `no-e-${k}`, entidade: null, arquivo: caminho, matriz, volume })
     if (letra !== 'poste') {
       const colisao = `colisoes/${letra}.glb`
       await a.adicionar(colisao, bytes, {
@@ -132,8 +136,11 @@ afterEach(() => {
   for (const c of abertas.splice(0)) c.descartar()
 })
 
-async function abrir(opcoes: Parameters<typeof carregarCenaNoThree>[2] = { carga: 'regioes' }) {
-  const p = await pacote(),
+async function abrir(
+  opcoes: Parameters<typeof carregarCenaNoThree>[2] = { carga: 'regioes' },
+  extrasEmE = 0,
+) {
+  const p = await pacote(extrasEmE),
     cena = await carregarCenaNoThree(p, new AbortController().signal, {
       ambiente: 'luzes-locais',
       ...opcoes,
@@ -296,4 +303,37 @@ test('instalada na cena do jogo, a consulta de colisões acompanha a troca de re
   } finally {
     instalador.descartar()
   }
+})
+
+test('uma vizinha quebrada não segura a região boa que entrou junto (revisão do lote 6)', async () => {
+  const { p, cena } = await abrir()
+  p.arquivos.delete('modelos/c.glb')
+  // Em B, C e E entram juntas como vizinhas: C quebrada, E boa.
+  await andar(cena, 150, 50)
+  for (let i = 0; i < 4; i++) await andar(cena, 150, 50, 1)
+  const estado = cena.estadoDasRegioes()!
+  expect(estado.falhas).toEqual(['c'])
+  expect(nos(cena)).toContain('no-e')
+  expect(ondeHaChao(cena, 'e')).toBe(true)
+})
+
+test('a região perto só entra se o conjunto couber nas malhas de uma janela (revisão do lote 6)', async () => {
+  // No canto de A, perto de E (14 m): A, B e D são obrigatórias; E entra pela pré-carga.
+  const leve = await abrir()
+  await andar(leve.cena, 90, 90)
+  expect(nos(leve.cena)).toContain('no-e')
+  // Com E pesando 47 malhas, o conjunto passaria das 48: E espera até ser obrigatória.
+  const pesada = await abrir({ carga: 'regioes' }, 46)
+  await andar(pesada.cena, 90, 90)
+  expect(nos(pesada.cena)).not.toContain('no-e')
+  await andar(pesada.cena, 150, 150)
+  expect(nos(pesada.cena)).toContain('no-e')
+})
+
+test('um foco inválido não derruba a carga: ela fica como estava (revisão do lote 6)', async () => {
+  const { cena } = await abrir()
+  const antes = nos(cena)
+  cena.atualizar(0.1)
+  expect(() => cena.quadro(camera, new Vector3(Number.NaN, 0, 50))).not.toThrow()
+  expect(nos(cena)).toEqual(antes)
 })

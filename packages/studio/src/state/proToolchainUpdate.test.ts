@@ -165,7 +165,7 @@ test('an unsupported Three pin is rejected without silently rewriting the projec
   const beforeTree = JSON.stringify(before?.tree)
   await expect(
     updateProToolchainBeforeExecution(store, prepare, new AbortController().signal),
-  ).rejects.toThrow(`O compilador remoto usa three@${STUDIO_THREE_VERSION}`)
+  ).rejects.toThrow(`O Estúdio monta three na versão ${STUDIO_THREE_VERSION}`)
   expect(store.getState().project).toBe(before)
   expect(JSON.stringify(store.getState().project?.tree)).toBe(beforeTree)
 })

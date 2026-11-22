@@ -302,3 +302,31 @@ describe('as janelas das regiões (o que fica carregado junto)', () => {
     expect(memoriaPorJanela({ ...cena, regioes: undefined }, memoria)).toEqual({})
   })
 })
+
+test('a pegada da água é conferida uma vez por região, não uma vez por peça (revisão do lote 5)', () => {
+  // Uma água com milhares de peças: refazer a pegada inteira para cada peça custava regiões ×
+  // peças², e travava quem lê um manifesto grande.
+  const pecas = Array.from({ length: 6000 }, (_, i) => ({
+    id: `agua-${i}`,
+    entidade: 'lago',
+    volume: {
+      min: { x: i % 100, y: 0, z: Math.floor(i / 100) },
+      max: { x: (i % 100) + 1, y: 0, z: Math.floor(i / 100) + 1 },
+    },
+  }))
+  const regioes = Array.from({ length: 8 }, (_, i) => ({
+    id: `r${i}`,
+    nome: `R${i}`,
+    caixa: { x0: 200 + i * 10, z0: 0, x1: 210 + i * 10, z1: 10 },
+    vizinhas: [],
+  }))
+  const inicio = performance.now()
+  const listas = calcularPertencaDasRegioes(regioes, {
+    entidades: [],
+    nos: pecas,
+    colisoes: [],
+    aguas: [{ id: 'lago', tipo: 'lago' }],
+  })
+  expect(performance.now() - inicio).toBeLessThan(1000)
+  expect(listas.every((r) => r.nos.length === 0 && r.aguas.length === 0)).toBe(true)
+})

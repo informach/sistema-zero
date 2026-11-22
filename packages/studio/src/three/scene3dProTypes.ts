@@ -19,6 +19,7 @@ export interface Cena3D {
   readonly atores:ReadonlyMap<string,readonly Ator[]>
   readonly instancias:ReadonlyMap<string,Ator>
   readonly alturas:(((x:number,z:number)=>number)&{temChao?:(p:{x:number;z:number})=>boolean})|undefined
+  /** Numa cena com regiões a consulta muda quando a carga troca: leia colisoes a cada uso, sem guardar. */
   readonly colisoes:Superficies
   entidade(contato:Pick<Intersection,'object'|'faceIndex'>):string|null
   atualizar(delta:number,movimentoReduzido?:boolean):void

@@ -130,3 +130,19 @@ test('com regiões, os lotes não misturam regiões, a casa fica fora e a perten
   expect([...(vila?.nos ?? []), ...(floresta?.nos ?? [])]).not.toContain('no-3')
   expect(cena.regioes).toEqual(calcularPertencaDasRegioes(REGIOES, cena))
 })
+
+test('as peças fora de toda região continuam "de todas": o lote não atravessa uma região pequena', async () => {
+  // Achado da revisão do lote 5: as peças sem região eram juntadas por célula, e a caixa da união
+  // atravessava a Casa, que fica no meio delas. O lote ia para a lista da Casa e sumia junto com
+  // ela, abrindo um vão no cenário quando o personagem estava longe.
+  const casa: RegiaoDeCenario[] = [
+    { id: 'casa', nome: 'Casa', caixa: { x0: 4.4, z0: -5, x1: 4.6, z1: 5 }, vizinhas: [] },
+  ]
+  const { cena } = await juntarEstaticosDoPacote(pacote(casa), new AbortController().signal)
+  expect(cena.regioes?.[0]?.nos).toEqual([])
+  const lotes = cena.nos.filter((n) => n.faixas)
+  // Os dois lados da Casa viram lotes separados, e nenhum toca nela.
+  expect(lotes.length).toBeGreaterThanOrEqual(2)
+  for (const lote of lotes) expect(lote.volume.max.x < 4.4 || lote.volume.min.x > 4.6).toBe(true)
+  expect(cena.regioes).toEqual(calcularPertencaDasRegioes(casa, cena))
+})
