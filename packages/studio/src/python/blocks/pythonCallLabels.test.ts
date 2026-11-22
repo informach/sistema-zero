@@ -4,7 +4,6 @@ import type { PythonNode } from '../language/types'
 import { pythonVisualToWorkspace } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS as codecs } from './catalog'
 import { call, integer, moduleNode, name, node, pass } from './nodes'
-import { ensurePythonProgramArea } from './programArea'
 import { pythonASTToVisual } from './projection'
 import { attachPythonCallLabels, refreshPythonCallLabels } from './pythonCallLabels'
 
@@ -57,12 +56,16 @@ const labels = () =>
 const settle = () => new Promise((done) => setTimeout(done, 20))
 const definition = () => workspace.getBlocksByType('sz_py_def', true)[0]!
 
-test('Programa keeps module function labels and scratch definitions cannot shadow them', () => {
-  open([def('mover', ['distancia']), run('mover', 1)])
-  ensurePythonProgramArea(
+test('as áreas guardam os rótulos das funções do módulo, e uma definição solta não os esconde', () => {
+  workspace = new Blockly.Workspace()
+  pythonVisualToWorkspace(
+    pythonASTToVisual(moduleNode([def('mover', ['distancia']), run('mover', 1)]), {
+      codecs,
+      officialModules: new Set(),
+    }),
     workspace,
-    workspace.getTopBlocks(false).map((block) => block.id),
-    'main.py',
+    codecs,
+    { areas: ['molds', 'start'] },
   )
   const scratch = workspace.newBlock('sz_py_def')
   scratch.setFieldValue('mover', 'NAME')

@@ -2,6 +2,17 @@ import * as Blockly from 'blockly/core'
 import { withMutation } from '../../blockly/blocks/mutatorEvents'
 import { readPythonNode } from '../language/readNode'
 import type { PythonNode } from '../language/types'
+import { pythonAreaContextMenu } from './areaContextMenu'
+import {
+  appendToPythonAreaFrame,
+  ensurePythonAreaFrame,
+  executablePythonAreaFrames,
+  isPythonAreaFrame,
+  PYTHON_AREA_INPUT,
+  pythonAreaFrames,
+  registerPythonAreaFrames,
+} from './areaFrames'
+import type { PythonAreaKind } from './areas'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import {
   PYTHON_BLOCK_ROLES,
@@ -13,11 +24,6 @@ import {
 import { pythonShadowState } from './paletteBlocks'
 import { pythonCategoryColour } from './paletteGroups'
 import { pythonPlaceholderNode as placeholder } from './placeholders'
-import {
-  pythonProgramArea,
-  pythonProgramContextMenu,
-  registerPythonProgramArea,
-} from './programArea'
 import type { PythonBlockProjection, PythonVisualNode, PythonVisualOrigin } from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
 import { pythonDecodeContextFromExtra } from './resolverOptions'
@@ -264,7 +270,7 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
 export function registerPythonBlocks(
   codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
 ) {
-  registerPythonProgramArea()
+  registerPythonAreaFrames()
   for (const codec of codecs) {
     if (Blockly.Blocks[codec.id]) continue
     Blockly.Blocks[codec.id] = {
@@ -383,7 +389,7 @@ export function registerPythonBlocks(
         options: Blockly.ContextMenuRegistry.ContextMenuOption[],
       ) {
         if (!this.isEditable()) return
-        pythonProgramContextMenu(this, options)
+        pythonAreaContextMenu(this, options)
         for (const control of codec.controls ?? []) {
           const current = this.pythonState.layout.extra?.[control.key]
           const choose = (value: number | boolean) => {
@@ -481,6 +487,10 @@ export function pythonVisualToWorkspace(
   projection: PythonBlockProjection,
   workspace: Blockly.Workspace,
   codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
+  options: {
+    /** Área de cada linha de topo: monta as áreas do projeto e devolve as que têm linhas. */
+    areas?: readonly PythonAreaKind[]
+  } = {},
 ): string[] {
   registerPythonBlocks(codecs)
   function state(value: PythonVisualNode): Blockly.serialization.blocks.State {
@@ -512,6 +522,26 @@ export function pythonVisualToWorkspace(
       tail = next
     }
     return first
+  }
+  if (options.areas) {
+    // Áreas do projeto: uma corrente por área, na ordem do arquivo; devolve as áreas com linhas.
+    if (options.areas.length !== projection.body.length)
+      throw new Error('A divisão em áreas não corresponde ao programa Python.')
+    registerPythonAreaFrames()
+    let start = 0
+    while (start < projection.body.length) {
+      const kind = options.areas[start]!
+      let end = start + 1
+      while (end < projection.body.length && options.areas[end] === kind) end++
+      const frame = ensurePythonAreaFrame(workspace, kind)
+      const first = Blockly.serialization.blocks.append(
+        chain(projection.body.slice(start, end)),
+        workspace,
+      )
+      appendToPythonAreaFrame(frame, first)
+      start = end
+    }
+    return executablePythonAreaFrames(workspace).map((frame) => frame.id)
   }
   if (!projection.body.length) return []
   const first = Blockly.serialization.blocks.append(chain(projection.body), workspace)
@@ -588,21 +618,34 @@ export function pythonWorkspaceToVisual(
     }
     return result
   }
-  const area = pythonProgramArea(workspace)
-  if (area && (rootIds.length !== 1 || rootIds[0] !== area.id))
-    throw new Error('A ordem dos comandos Python precisa ser atualizada.')
-  const first = area?.getInputTargetBlock('BODY')
-  const body = area
-    ? first
-      ? readChain(first)
-      : []
-    : rootIds.flatMap((id) => {
-        const block = workspace.getBlockById(id)
-        if (!block || block.getParent())
-          throw new Error('A ordem dos comandos Python precisa ser atualizada.')
-        return readChain(block)
-      })
-  if (!area && workspace.getAllBlocks(false).some((block) => !visited.has(block.id)))
+  const frames = pythonAreaFrames(workspace)
+  const rootsAreFrames = rootIds.every((id) => isPythonAreaFrame(workspace.getBlockById(id)))
+  if (frames.size || !rootIds.length || rootsAreFrames) {
+    // Áreas do projeto: lê as áreas com linhas na ordem do arquivo; fora delas é rascunho.
+    const executable = executablePythonAreaFrames(workspace)
+    if (
+      executable.length !== rootIds.length ||
+      executable.some((frame, index) => frame.id !== rootIds[index])
+    )
+      throw new Error('A ordem dos comandos Python precisa ser atualizada.')
+    const kindOf = new Map([...frames].map(([kind, frame]) => [frame, kind]))
+    const body: PythonVisualNode[] = []
+    const areas: PythonAreaKind[] = []
+    for (const frame of executable) {
+      const kind = kindOf.get(frame)!
+      const chainNodes = readChain(frame.getInputTargetBlock(PYTHON_AREA_INPUT)!)
+      body.push(...chainNodes)
+      areas.push(...chainNodes.map(() => kind))
+    }
+    return { body, typeIgnores, areas }
+  }
+  const body = rootIds.flatMap((id) => {
+    const block = workspace.getBlockById(id)
+    if (!block || block.getParent())
+      throw new Error('A ordem dos comandos Python precisa ser atualizada.')
+    return readChain(block)
+  })
+  if (workspace.getAllBlocks(false).some((block) => !visited.has(block.id)))
     throw new Error('Há blocos soltos. Conecte ou remova esses blocos antes de gerar Python.')
   return { body, typeIgnores }
 }

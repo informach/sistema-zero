@@ -1,11 +1,12 @@
 import * as Blockly from 'blockly/core'
 import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
 import type { PythonNode, PythonValue } from '../language/types'
+import { PYTHON_AREA_BY_FRAME, PYTHON_AREA_FRAME_TYPES } from './areas'
 import type { PythonBlocklyBlock } from './blockly'
 import { isNode, pythonSemanticTree } from './nodes'
-import { PYTHON_PROGRAM } from './programArea'
 import type { PythonOpaqueBlock, PythonVisualOrigin } from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
+import { isExecutablePythonAreaState } from './workspaceParts'
 
 /** Presentation and scratch blocks do not change the executable program. */
 export function samePythonWorkspaceProgram(
@@ -19,8 +20,17 @@ export function samePythonWorkspaceProgram(
     const saved = state as ReturnType<typeof Blockly.serialization.workspaces.save>
     const roots = saved.blocks?.blocks as Blockly.serialization.blocks.State[] | undefined
     if (!roots) return jsonPlainCopy(state)
-    const areas = roots.filter((block) => block.type === PYTHON_PROGRAM)
-    const selected = areas.length === 1 ? areas : roots
+    // Áreas do projeto: só as áreas com linhas, na ordem do arquivo (áreas vazias e rascunhos não
+    // mudam o código). Sem área nenhuma (estado antigo, testes), vale a lista de raízes.
+    const frames = roots.filter((block) => PYTHON_AREA_FRAME_TYPES.has(block.type))
+    const selected = frames.length
+      ? frames
+          .filter(isExecutablePythonAreaState)
+          .sort(
+            (a, b) =>
+              PYTHON_AREA_BY_FRAME.get(a.type)!.index - PYTHON_AREA_BY_FRAME.get(b.type)!.index,
+          )
+      : roots
     const copy = jsonPlainCopy({ blocks: { ...saved.blocks, blocks: selected } }) as {
       blocks: { blocks: Record<string, unknown>[] }
     }
@@ -77,15 +87,16 @@ export function rebasePythonWorkspaceState(
   while (queue.length) {
     const state = queue.pop()!
     const parsed = state.id ? origins.get(state.id) : undefined
-    if (state.type.startsWith('sz_py_source_'))
+    if (PYTHON_AREA_FRAME_TYPES.has(state.type)) {
+      // O bloco de área não tem origem no código: só o que está dentro dele.
+    } else if (state.type.startsWith('sz_py_source_'))
       state.extraState = sourceWithCurrentOrigin(state.extraState as PythonOpaqueBlock, parsed)
-    else if (state.type.startsWith('sz_py_') && state.type !== PYTHON_PROGRAM) {
+    else if (state.type.startsWith('sz_py_')) {
       state.extraState = {
         ...state.extraState,
         origin: parsed ? { nodeId: parsed.id, range: structuredClone(parsed.range) } : undefined,
       }
-    } else if (state.type !== PYTHON_PROGRAM)
-      throw new Error('O rascunho contém um bloco de outro ambiente.')
+    } else throw new Error('O rascunho contém um bloco de outro ambiente.')
     for (const connection of [
       ...Object.values(state.inputs ?? {}),
       ...(state.next ? [state.next] : []),

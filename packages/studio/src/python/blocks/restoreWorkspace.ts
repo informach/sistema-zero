@@ -1,10 +1,11 @@
 import * as Blockly from 'blockly/core'
 import type { PythonNode, PythonParsedDocument } from '../language/types'
+import { PYTHON_AREA_INPUT, pythonAreaFrames } from './areaFrames'
+import { PYTHON_AREA_FRAME_TYPES } from './areas'
 import { pythonWorkspaceToVisual } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import type { PythonBlockCodec } from './contract'
 import { nodes, pythonSemanticTree } from './nodes'
-import { pythonProgramArea } from './programArea'
 import { pythonVisualToAST } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
 import { readPythonWorkspaceState } from './readWorkspaceState'
@@ -61,8 +62,10 @@ export function preparePythonScratchRestore(
   if (!raw) return
   let ids: string[] = []
   const state = readPythonWorkspaceState(raw, codecs, (workspace) => {
-    if (pythonProgramArea(workspace))
-      throw new Error('Rascunhos não podem conter uma área Programa.')
+    // Só áreas VAZIAS acompanham os rascunhos (as com linhas são o programa).
+    for (const frame of pythonAreaFrames(workspace).values())
+      if (frame.getInputTargetBlock(PYTHON_AREA_INPUT))
+        throw new Error('Rascunhos não podem conter uma área com linhas do programa.')
     ids = workspace.getAllBlocks(false).map((block) => block.id)
   })
   // The preflight validator checked every serialized block, including nested IDs.
@@ -70,7 +73,12 @@ export function preparePythonScratchRestore(
     (state.blocks as { blocks: Blockly.serialization.blocks.State[] } | undefined)?.blocks ?? []
   return (workspace: Blockly.Workspace) => {
     if (ids.some((id) => workspace.getBlockById(id)))
-      throw new Error('Os rascunhos e o Programa precisam ter identificadores distintos.')
-    for (const block of blocks) Blockly.serialization.blocks.append(block, workspace)
+      throw new Error('Os rascunhos e o programa precisam ter identificadores distintos.')
+    const present = new Set(workspace.getTopBlocks(false).map((block) => block.type))
+    for (const block of blocks) {
+      // Uma área vazia guardada não volta se o programa já tem essa área.
+      if (PYTHON_AREA_FRAME_TYPES.has(block.type) && present.has(block.type)) continue
+      Blockly.serialization.blocks.append(block, workspace)
+    }
   }
 }

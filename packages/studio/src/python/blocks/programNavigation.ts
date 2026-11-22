@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly/core'
-import { PYTHON_PROGRAM, pythonProgramArea, pythonScratchRoots } from './programArea'
+import { orderedPythonAreaFrames, PYTHON_AREA_INPUT, pythonScratchRoots } from './areaFrames'
 
 const definitions = new Set([
   'sz_py_def',
@@ -42,7 +42,12 @@ export function createPythonProgramNavigation(
     detached.clear()
   }
   function publish() {
-    const area = pythonProgramArea(workspace)
+    let frames: Blockly.Block[] = []
+    try {
+      frames = orderedPythonAreaFrames(workspace)
+    } catch {
+      // Área repetida durante um arraste: a guarda do editor junta; a lista espera.
+    }
     const entries: PythonProgramEntry[] = []
     // Input/next traversal follows the actual Python order, including nested definitions.
     const visit = (first: Blockly.Block | null, depth: number, scratch = false) => {
@@ -65,7 +70,7 @@ export function createPythonProgramNavigation(
             visit(input.connection?.targetBlock() ?? null, depth + (definition ? 1 : 0), scratch)
       }
     }
-    visit(area?.getInputTargetBlock('BODY') ?? null, 0)
+    for (const frame of frames) visit(frame.getInputTargetBlock(PYTHON_AREA_INPUT), 0)
     const scratch = pythonScratchRoots(workspace)
     for (const root of scratch) visit(root, 0, true)
     const state = { entries, scratch: scratch.length }
@@ -116,13 +121,13 @@ export function createPythonProgramNavigation(
     Blockly.Events.disable()
     try {
       for (const block of blocks()) block.setCollapsed(!open.has(block.id))
-      workspace.getBlocksByType(PYTHON_PROGRAM, false)[0]?.setCollapsed(false)
+      for (const frame of orderedPythonAreaFrames(workspace)) frame.setCollapsed(false)
     } finally {
       Blockly.Events.enable()
     }
     await sync()
     if (disposed || request !== revealRevision) return
-    const selected = target ?? pythonProgramArea(workspace)
+    const selected = target ?? orderedPythonAreaFrames(workspace)[0]
     if (selected) {
       const position = selected.getRelativeToSurfaceXY()
       workspace.scroll(40 - position.x * workspace.scale, 100 - position.y * workspace.scale)

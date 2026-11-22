@@ -9,8 +9,12 @@ import {
 } from '../../state/projectStorageRuntime'
 import { createProjectStore, loadSanitizedProjectById } from '../../state/projectStore'
 import { createStudioStores } from '../../state/studioStores'
+import {
+  appendToPythonAreaFrame,
+  ensurePythonAreaFrame,
+  executablePythonAreaFrames,
+} from './areaFrames'
 import { registerPythonBlocks } from './blockly'
-import { ensurePythonProgramArea } from './programArea'
 import { preparePythonScratchRestore } from './restoreWorkspace'
 import {
   capturePythonWorkspace,
@@ -27,7 +31,8 @@ async function fixture() {
   const ws = new Blockly.Workspace()
   try {
     registerPythonBlocks()
-    const roots = ensurePythonProgramArea(ws, [], 'folder/helper.py')
+    // Programa vazio: nenhuma área (as áreas só existem com linhas ou quando a criança põe).
+    const roots: string[] = []
     const block = ws.newBlock('sz_py_integer', 'scratch-number')
     block.setFieldValue('73', 'NUMBER')
     block.setCommentText('Minha ideia')
@@ -48,7 +53,7 @@ async function fixture() {
 }
 
 for (const action of ['source edit and undo', 'discard pending edit'] as const) {
-  test(`scratch survives ${action}, IndexedDB reopening and a fresh Program projection`, async () => {
+  test(`scratch survives ${action}, IndexedDB reopening and a fresh projection without areas`, async () => {
     const scope = captureProjectStorageScope()
     setProjectStorageNamespace(`python-scratch-${crypto.randomUUID()}`)
     const ws = new Blockly.Workspace()
@@ -78,14 +83,13 @@ for (const action of ['source edit and undo', 'discard pending edit'] as const) 
       if (reopened?.programmingLanguage !== 'python') throw new Error('Project missing')
       expect(readPythonWorkspaceDraft(reopened, 'folder/helper.py')).toBeUndefined()
       expect(readPythonScratchWorkspace(reopened, 'folder/helper.py')).toEqual(scratch)
-      const roots = ensurePythonProgramArea(ws, [], 'folder/helper.py')
       preparePythonScratchRestore(readPythonScratchWorkspace(reopened, 'folder/helper.py'))!(ws)
       const block = ws.getBlockById('scratch-number')!
       expect(block.getFieldValue('NUMBER')).toBe('73')
       expect(block.getCommentText()).toBe('Minha ideia')
       expect(block.getRelativeToSurfaceXY()).toMatchObject({ x: 810, y: 140 })
       expect(block.getParent()).toBeNull()
-      expect(ws.getBlockById(roots[0]!)!.getInputTargetBlock('BODY')).toBeNull()
+      expect(executablePythonAreaFrames(ws)).toEqual([])
     } finally {
       ws.dispose()
       setProjectStorageNamespace(scope.namespace)
@@ -116,7 +120,7 @@ test('scratch preflight rejects executable areas and duplicate IDs before append
   const project = await fixture()
   const ws = new Blockly.Workspace()
   try {
-    ensurePythonProgramArea(ws, [], 'main.py')
+    appendToPythonAreaFrame(ensurePythonAreaFrame(ws, 'start'), ws.newBlock('sz_py_assign'))
     expect(() => preparePythonScratchRestore(savePythonWorkspace(ws, new Map()))).toThrow(
       'restaurar',
     )
