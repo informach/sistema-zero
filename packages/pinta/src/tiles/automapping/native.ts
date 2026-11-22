@@ -1,7 +1,12 @@
 import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { utf8ByteLength } from '../../core/jsonBytes'
 import { REGION_METADATA_BUDGET } from '../../core/mapDocumentBoundary'
-import { isTileLayer, isTilesetKind, tileLayerTilesetId } from '../../core/project'
+import {
+  isTileLayer,
+  isTilesetKind,
+  type TilemapCells,
+  tileLayerTilesetId,
+} from '../../core/project'
 import { collectAssetBundle } from '../../export/assetJson'
 import {
   encodePintaBackupAsset,
@@ -38,7 +43,7 @@ export async function automapSheetIndex(map: AuthorMap, assets: readonly PintaMe
   for (const version of map.resources ?? []) gallery.set(version.asset.id, version.asset)
   const sheets = new Map<string, SheetIdentity>()
   for (const layer of map.layers) {
-    if (!isTileLayer(layer)) continue
+    if (!isTileLayer<TilemapCells>(layer)) continue
     const id = tileLayerTilesetId(map, layer),
       asset = gallery.get(id)
     if (!sheets.has(id) && asset && isTilesetKind(asset))
@@ -235,7 +240,7 @@ export async function importAutomapCopy(text: string, destination: AutomapGaller
       for (const planes of [rule.input, ...rule.outputs])
         for (const plane of planes) {
           const layer = layers.get(plane.layer)
-          if (!layer || !isTileLayer(layer)) return null
+          if (!layer || !isTileLayer<TilemapCells>(layer)) return null
           const sheet = tileLayerTilesetId(copy, layer),
             identity = index.get(sheet)
           if (!identity) return null

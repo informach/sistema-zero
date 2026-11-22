@@ -453,7 +453,7 @@ function decodeAsset(raw: unknown, strictBitmap = false): unknown {
 export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
 
 /** A galeria inteira → texto do `.pinta.json`. */
-export function galleryToPintaJson(assets: PintaAsset[]): string {
+export function galleryToPintaJson(assets: readonly PintaAsset[]): string {
   return pintaBackupFromEncoded(assets.map(encodeAsset), envelopeVersionFor(assets))
 }
 
@@ -540,7 +540,7 @@ export function assetNeedsV2(asset: PintaAsset): boolean {
 }
 
 /** Tamanho EXATO do backup que a galeria produziria, medido em bytes UTF-8. */
-export function galleryBackupByteLength(assets: PintaAsset[]): number {
+export function galleryBackupByteLength(assets: readonly PintaAsset[]): number {
   return new GalleryBackupSizeCache().byteLength(assets)
 }
 

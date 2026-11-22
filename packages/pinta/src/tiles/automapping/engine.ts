@@ -1,4 +1,9 @@
-import { effectiveLayer, isTileLayer, tileLayerTilesetId } from '../../core/project'
+import {
+  effectiveLayer,
+  isTileLayer,
+  type TilemapCells,
+  tileLayerTilesetId,
+} from '../../core/project'
 import { isValidCellForTiles } from '../cell'
 import type { CellRect } from '../cellGeometry'
 import { type AuthorMap, isBoundedCellRect, tryEditMapCellBatch } from '../mapCellEdits'
@@ -29,7 +34,7 @@ export function checkAutomapBindings(
     for (const planes of [rule.input, ...rule.outputs])
       for (const plane of planes) {
         const layer = map.layers.find((item) => item.id === plane.layer)
-        if (!layer || !isTileLayer(layer)) return 'missing-layer'
+        if (!layer || !isTileLayer<TilemapCells>(layer)) return 'missing-layer'
         const sheet = sheets.get(plane.sheet)
         if (
           tileLayerTilesetId(map, layer) !== plane.sheet ||
@@ -62,7 +67,7 @@ export function previewAutomapping<M extends AuthorMap>(
     return { ok: true, base: map, map, changes: 0, matches: 0, comparisons: 0 }
   const layers = new Map<string, PlaneState>()
   for (const layer of map.layers)
-    if (isTileLayer(layer))
+    if (isTileLayer<TilemapCells>(layer))
       layers.set(layer.id, {
         reader: createMapLayerCellReader(map, layer.id)!,
         locked: effectiveLayer(map, layer).locked,
@@ -197,7 +202,7 @@ export function captureAutomapExample(
   const planes: PatternLayer[] = []
   for (const id of ids) {
     const layer = map.layers.find((item) => item.id === id)
-    if (!layer || !isTileLayer(layer)) return null
+    if (!layer || !isTileLayer<TilemapCells>(layer)) return null
     const sheet = tileLayerTilesetId(map, layer),
       identity = sheets.get(sheet),
       reader = createMapLayerCellReader(map, id)!

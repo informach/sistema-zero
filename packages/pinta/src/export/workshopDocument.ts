@@ -5,6 +5,7 @@ import {
   isTileLayer,
   PINTA_MAX_SCHEMA,
   type PintaAsset,
+  type TilemapCells,
   tileLayerTilesetId,
   withPintaSchemaStamp,
 } from '../core/project'
@@ -56,7 +57,11 @@ export function attachWorkshopBook(asset: AuthorMap, book: AutomapBook): PintaAu
       [rule.input, ...rule.outputs].every((group) =>
         group.every((plane) => {
           const layer = asset.layers.find((layer) => layer.id === plane.layer)
-          return !!layer && isTileLayer(layer) && tileLayerTilesetId(asset, layer) === plane.sheet
+          return (
+            !!layer &&
+            isTileLayer<TilemapCells>(layer) &&
+            tileLayerTilesetId(asset, layer) === plane.sheet
+          )
         }),
       ),
     )
