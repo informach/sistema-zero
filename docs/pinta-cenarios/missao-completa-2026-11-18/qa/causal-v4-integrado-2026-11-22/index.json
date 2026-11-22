@@ -1,0 +1,2703 @@
+{
+  "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+  "stagingIntegrated": "c4c7d15e937ddc71b06e02e0ee4ed4f447fdf0de",
+  "fullPintaAfterPng5Library": false,
+  "authenticatedCausalRollout": false,
+  "publicRegionalPromotion": false,
+  "receipts": [
+    {
+      "file": "pinta-v4-full.log.gz",
+      "head": "e1deb37ad25a1fe9f305a1b228ec8eeaf481d8c8",
+      "sha256": "1270ebc17308174a00038cf0b69c122a6c63a786cdd7be29257c3d3a83bfe9f4",
+      "rawSha256": "be70c64b6763aac62df297117fd97eabcc7b03694fabf8bc5c9831e2172226b9",
+      "bytes": 87100
+    },
+    {
+      "file": "chrome-v4.log.gz",
+      "head": "e1deb37ad25a1fe9f305a1b228ec8eeaf481d8c8",
+      "sha256": "b869568f49813eabc5e3b4369135459c49602a2aa8c569044d7e4993739dbd6b",
+      "rawSha256": "ef879924195afa7cd003d0a27a5d8a80d3f43f8f2500e0ae714c471f70a06158",
+      "bytes": 1004
+    },
+    {
+      "file": "palette-final.log.gz",
+      "head": "6b0dd0a7a96863cc1f54bd61af9a34b292e984a9",
+      "sha256": "d0ccf70dc0816f3c5860b99a89030ded46888b50b91445ecbbf93bb06c9606c6",
+      "rawSha256": "e9fc69218c7d9a58beb69e1e236db8905dc6ed1f484102a0ad672cf5c64a5b65",
+      "bytes": 4516
+    },
+    {
+      "file": "png5-library.log.gz",
+      "head": "14af1d7777e48aec2df8444e25afaa99b88d7a9f",
+      "sha256": "1540bb12eb344dec6ccbfc1f11e2f4eba1695f3c4653ad3057eec2200a4f1037",
+      "rawSha256": "10d20bf4d6b25460e679c032833f95ea5f05b71299b80e8f922adf2a4a5610cf",
+      "bytes": 1257
+    },
+    {
+      "file": "enumerable-admission.log.gz",
+      "head": "e8ad0fe9417d608bf18580598fbdea4d8d00706b",
+      "sha256": "e19fd1a30df0bae9e5e184b0675e0a5ab1eaa55634d99423e5c265fa062d542f",
+      "rawSha256": "9ea0656b24dbbc0da84c06989a887ed02eda6aa29f0e67e391501fcb81a1d8eb",
+      "bytes": 506
+    },
+    {
+      "file": "core-staging-c4c.log.gz",
+      "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+      "sha256": "8ce66e239a9fa661a321763f7da0cc1dc5f54b0b5f7d689c597f1f921f2186b4",
+      "rawSha256": "e0f37d83cb262d20cbbb3a1ac6d6c3d7680e96bfc0c470aa1f7badc1117e1de2",
+      "bytes": 72209
+    },
+    {
+      "file": "players-staging-c4c.log.gz",
+      "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+      "sha256": "f477b8424627a31f28170ce49d062bd337b18dbce8d90f0b4af99315b33a2e2c",
+      "rawSha256": "78342df7ef50cd3a1f50ced1672694d7af120c3ebb39d109adf3604d31ca162c",
+      "bytes": 1216
+    },
+    {
+      "file": "core-generator-c4c.log.gz",
+      "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    },
+    {
+      "file": "regional-generator-c4c.log.gz",
+      "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    },
+    {
+      "file": "studio-types-c4c.log.gz",
+      "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    },
+    {
+      "file": "pinta-types-c4c.log.gz",
+      "head": "3ecd92a04b4fcfddd758d33ffd0f0ac6b0ab5faa",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    }
+  ],
+  "sources": [
+    {
+      "file": "experiments/studio-python-runtime/fixtures.ts",
+      "bytes": 11535,
+      "gitBlobSha256": "4c473a66987a60427661c9f44a869fb1aa9d96858190f6e0685b60be22d4916c"
+    },
+    {
+      "file": "experiments/studio-python-runtime/pintaBrowser2dFixtures.ts",
+      "bytes": 7974,
+      "gitBlobSha256": "b429d14c9e7f4c8905ecb89478901edfa81df1439382997f1748b2a80da97b96"
+    },
+    {
+      "file": "experiments/studio-python-runtime/pintaRegionalFixtures.ts",
+      "bytes": 7076,
+      "gitBlobSha256": "4464f648fd608d3913d60b2cd3e3d44d3b8cf39b690ba2a509197def16c508e2"
+    },
+    {
+      "file": "packages/api-gateway/gateway.config.ts",
+      "bytes": 222390,
+      "gitBlobSha256": "06f32f94380ef4b7bb17250ee5772f56047a27dfd517c8a933fcbfcbe22efd28"
+    },
+    {
+      "file": "packages/api-gateway/src/infrastructure/config/pinta-causal-routes.ts",
+      "bytes": 1291,
+      "gitBlobSha256": "394044171d36b395eb0c450e5bba33bacf2db1e139c570ff47c29543480d7900"
+    },
+    {
+      "file": "packages/api-gateway/tests/integration/pinta-causal-provenance.test.ts",
+      "bytes": 3981,
+      "gitBlobSha256": "2521a077d276fba5a5d20960771e30fa810017a4927165b16166a3d6e4b8dfb5"
+    },
+    {
+      "file": "packages/community-kids/Dockerfile",
+      "bytes": 3223,
+      "gitBlobSha256": "9d9d0f87b550baeb556aeb0583b00c74c760b35dc58eb8f29eaca2edbee54ef5"
+    },
+    {
+      "file": "packages/community-kids/src/app/(app)/pinta/page.tsx",
+      "bytes": 3478,
+      "gitBlobSha256": "f217ddc8f63bbd978e6cb7a06c44a93b03966964c9702622b2377f5ec8be45d7"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/archive/items/[itemId]/route.ts",
+      "bytes": 99,
+      "gitBlobSha256": "529500d9dfcba7ccd980b243566ea984d2791aaa8b2da94723b067e3ef34ae2f"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/archive/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "e2287860530345b59bb432608512c4db5dfedf8bcd369f602f8b7877c4311d81"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/backfill/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "52a53c855fadd9f838708b0648b11f88bc1df8b53f5ad81be492338e54cdce6e"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/graph/items/[itemId]/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "62fbeb4c2075655e385c10ab5b938f9c8181499697e5a6da36daaeabcbae4128"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/graph/route.ts",
+      "bytes": 93,
+      "gitBlobSha256": "6fa10a71aac309256cabe3295be284f7d82feb13d64302f80947549c2057ca79"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/abort/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b48e41ea6bd71147c1f80bc5102c71b584a63ec8700555439f9ffc16a9a65bfd"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/commit/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "216bcb7961687762359919213c7c768050eb3e3001c39e3e112253c7eff88a39"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b72bcaff90e3b07c0e8ee57cc8f0647cee2b66fe853da1739baf2e567ac6bc94"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/verify/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "9208ff64c991d3ed656e1e77e93bdf5635843192d6c2df8dfa87238d470a11a7"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/reserve/route.ts",
+      "bytes": 96,
+      "gitBlobSha256": "a98bb02ba7687a6aa75d4086fb05d7bd13894c461796df13a17d01c5d4770dc0"
+    },
+    {
+      "file": "packages/community-kids/tests/cloud-status.test.ts",
+      "bytes": 4578,
+      "gitBlobSha256": "8e2cb2b31752d2bce66601485112c4fd7f9e00bb8798033714279d38829f5ede"
+    },
+    {
+      "file": "packages/community-kids/tests/creations-cloud.test.ts",
+      "bytes": 70840,
+      "gitBlobSha256": "7eed43ef4461c0bdefb448120f9f317b14f83be339d606ba29516e645c9d921c"
+    },
+    {
+      "file": "packages/community-kids/tests/pinta-cloud-persistence.test.ts",
+      "bytes": 104909,
+      "gitBlobSha256": "cfdedade9dadaf01d8a4fb3ef2c4aafd1a1012c69864bb7bd592e96bb004dadf"
+    },
+    {
+      "file": "packages/community/Dockerfile",
+      "bytes": 2928,
+      "gitBlobSha256": "c7ce61e6bc073ca610e9a4996b2fcdbf2c8534b596c1cf7a599f5fae0ca8403a"
+    },
+    {
+      "file": "packages/community/src/app/(app)/pinta/page.tsx",
+      "bytes": 1084,
+      "gitBlobSha256": "a0bb9e8a9993e2d512cd40733a011dc1731e0129d01f1b3282f157a008d02f5b"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/archive/items/[itemId]/route.ts",
+      "bytes": 99,
+      "gitBlobSha256": "529500d9dfcba7ccd980b243566ea984d2791aaa8b2da94723b067e3ef34ae2f"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/archive/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "e2287860530345b59bb432608512c4db5dfedf8bcd369f602f8b7877c4311d81"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/backfill/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "52a53c855fadd9f838708b0648b11f88bc1df8b53f5ad81be492338e54cdce6e"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/graph/items/[itemId]/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "62fbeb4c2075655e385c10ab5b938f9c8181499697e5a6da36daaeabcbae4128"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/graph/route.ts",
+      "bytes": 93,
+      "gitBlobSha256": "6fa10a71aac309256cabe3295be284f7d82feb13d64302f80947549c2057ca79"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/abort/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b48e41ea6bd71147c1f80bc5102c71b584a63ec8700555439f9ffc16a9a65bfd"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/commit/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "216bcb7961687762359919213c7c768050eb3e3001c39e3e112253c7eff88a39"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b72bcaff90e3b07c0e8ee57cc8f0647cee2b66fe853da1739baf2e567ac6bc94"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/verify/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "9208ff64c991d3ed656e1e77e93bdf5635843192d6c2df8dfa87238d470a11a7"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/reserve/route.ts",
+      "bytes": 96,
+      "gitBlobSha256": "a98bb02ba7687a6aa75d4086fb05d7bd13894c461796df13a17d01c5d4770dc0"
+    },
+    {
+      "file": "packages/core/CLAUDE.md",
+      "bytes": 82834,
+      "gitBlobSha256": "0d9059bc1d50a5fa3ad4bb6ec62c17712823a55135c7a7ba2427727b74796c4a"
+    },
+    {
+      "file": "packages/core/package.json",
+      "bytes": 2407,
+      "gitBlobSha256": "2d9a17ead9b2c2f59fa02cbbfeeacdcf9311f7e46327cdce595529a15a7453cf"
+    },
+    {
+      "file": "packages/core/scripts/gen-pinta-scene-transform.ts",
+      "bytes": 4148,
+      "gitBlobSha256": "c631c1db70e7e6ddb10719192b2ccc541419c0d33867b0c5ade0e2706606a584"
+    },
+    {
+      "file": "packages/core/scripts/pinta-scene-python-schema.ts",
+      "bytes": 4578,
+      "gitBlobSha256": "9f896117bb13f0c567797224bf4aadd69fc3c55b630a46041d5b51582cd290f2"
+    },
+    {
+      "file": "packages/core/src/creations/index.ts",
+      "bytes": 374,
+      "gitBlobSha256": "abd757b5cd2398cfb90f347b8fbf9a2f9b6bcef4645cd6869ad5d85dfdb1a193"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-causal-qa.test.ts",
+      "bytes": 1538,
+      "gitBlobSha256": "3839a54f542942ef9034ee2da420f38d09308537b510072fb063c9447eb9c6ec"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-causal.test.ts",
+      "bytes": 5835,
+      "gitBlobSha256": "eaafc04dab6c4f7f3ac3a46e9d889cccc506f3e7b647890f8c28cb41c231fa93"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-causal.ts",
+      "bytes": 15421,
+      "gitBlobSha256": "7658acc7759b9a13b07695d4a20ff82b868c8fa9e15ed76a9b0e45720e087801"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "bytes": 4871,
+      "gitBlobSha256": "a75a39476d2d5aa77c1240b9dc4bc8213c33e74eef9702d8b69ba2731e504980"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "bytes": 8211,
+      "gitBlobSha256": "c79d53e960d22150ff1fe9cd767394730ad7376dbe40a331393b18104ca1a9f4"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-region-reader.test.ts",
+      "bytes": 5261,
+      "gitBlobSha256": "504a3116332337316a7b55920979e8386a9e9805320443962dab39de5aef4336"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-region-reader.ts",
+      "bytes": 4284,
+      "gitBlobSha256": "99fcfbd7da70fd52edee4f4d124f199c232a03c3f1573fea62636afc8a475e20"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "bytes": 8768,
+      "gitBlobSha256": "a4a82684678ab9769cb93c2a3730f84c52df48dd6b23d7270582b60e8cb9aeae"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-image.ts",
+      "bytes": 12471,
+      "gitBlobSha256": "e1615c66bacf8c4fbf4871925230a271a7feb26b9538341a2193562d24d8c6b5"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-png-binary.ts",
+      "bytes": 3566,
+      "gitBlobSha256": "fecab8d994e2f0f9364453863f5ac6244fae40e13b6943a90fd55509be6e5c40"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-image-limits.ts",
+      "bytes": 659,
+      "gitBlobSha256": "88892831d760004d1d50514d1b86efdc8e0d2744d08b42d4c78e544c5f527cb7"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-image-world.ts",
+      "bytes": 3784,
+      "gitBlobSha256": "773774efae13406f1c1d9592c74788b17c3ad0e09b4b274d566b39ace5671732"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-image.test.ts",
+      "bytes": 5901,
+      "gitBlobSha256": "e0800bd1d7a113bdf5a5d035aa4f475955b54a0a3e7c186e959c52a92b15121e"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-image.ts",
+      "bytes": 5867,
+      "gitBlobSha256": "af70c147f4947c88e1ef1af0b2736c70286d3277fdb15f2b722ab5d9e71dba85"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-png-text.ts",
+      "bytes": 4313,
+      "gitBlobSha256": "c40c4dfb8047ec5ed4223c2a11fe291d16447de6abefb575203dfa74a048ec04"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-scene.test.ts",
+      "bytes": 9143,
+      "gitBlobSha256": "f758f666bd0b56143ddcd8cec553ca50611fa305692d3d25f8b7fa9499ddd324"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-scene.ts",
+      "bytes": 7443,
+      "gitBlobSha256": "659d1a7e8f84ff0e1fec0c3f9fed9bb81d7c7c04281368929b569e3a005f11fe"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-world-metadata.test.ts",
+      "bytes": 8988,
+      "gitBlobSha256": "bd9f65e3ee21282e8e0bca130c4587e50f2671a4a53918ceb3a3bf243823d5f6"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-geometry.ts",
+      "bytes": 17480,
+      "gitBlobSha256": "80bc79066a310980725a76dde26db98c0d344373abd061b4169db69b62cba2a8"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-python-schema.test.ts",
+      "bytes": 2156,
+      "gitBlobSha256": "f18237f0d43a0879b5f8d5de696d06a18cb400482d3d3e4f30d0a74dd2234bf5"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-query.test.ts",
+      "bytes": 17379,
+      "gitBlobSha256": "2e5aacfeb7f578a401ecfc3996abc508a0a2e0bf13edc00600b1b1fc7b848bd3"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-query.ts",
+      "bytes": 2282,
+      "gitBlobSha256": "b3f8330e19ad3d9fed240a77520b8430d130554ff424fdac404a406a395a5146"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-runtime.ts",
+      "bytes": 14927,
+      "gitBlobSha256": "d8dd22cdc1bc9ae5a06ac16f08d2095944e4da6e14ca28ffa28f3066550c4f0c"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-transform.generated.ts",
+      "bytes": 9723,
+      "gitBlobSha256": "3113feca304ae2a4ed821fc0540d79f1c03d6ae2c2a2ce04f0887a70f484dc26"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene.ts",
+      "bytes": 12457,
+      "gitBlobSha256": "16883cc1b9af5ab37207073149ca439c8abda2b024c29514b0624259fbe74888"
+    },
+    {
+      "file": "packages/core/tests/fixtures/pinta-region-scene.ts",
+      "bytes": 3289,
+      "gitBlobSha256": "ad8fc1624f5abe4b4922157073c9c5bec33de074f170405893073f33763e8452"
+    },
+    {
+      "file": "packages/member-shell/qa/pinta-causal-r2-entry.ts",
+      "bytes": 733,
+      "gitBlobSha256": "b7a162c32eaac806bb0e6f3482a2d285363f2549f4733b01580ab82451c1d0f7"
+    },
+    {
+      "file": "packages/member-shell/qa/pinta-causal-r2-staging.mjs",
+      "bytes": 12770,
+      "gitBlobSha256": "6c64cdabe260ecbf0eeeaaf30132e8d11e9c1df84ad43be7e336b8e8087edb80"
+    },
+    {
+      "file": "packages/member-shell/src/components/creator/pinta-client.tsx",
+      "bytes": 17902,
+      "gitBlobSha256": "96b2372f8a4b0ac218c70559c92bb80e7f077ada855f539d848d8ba4ed372c4d"
+    },
+    {
+      "file": "packages/member-shell/src/index.ts",
+      "bytes": 6350,
+      "gitBlobSha256": "af8930101a9cae93227106cbc9d125706021305fa883c2231fce84c34e0b0bb9"
+    },
+    {
+      "file": "packages/member-shell/src/lib/cloud-status.ts",
+      "bytes": 3271,
+      "gitBlobSha256": "36712f1b53d2dfb011d0dcdc00302ee87821304d4c5924bec54788337c493312"
+    },
+    {
+      "file": "packages/member-shell/src/lib/creations-cloud.ts",
+      "bytes": 56303,
+      "gitBlobSha256": "4959386d58eba035e735a942cd2422d5de937bb007dd651abeb69e5b6f543be0"
+    },
+    {
+      "file": "packages/member-shell/src/lib/env.ts",
+      "bytes": 9744,
+      "gitBlobSha256": "1a68432bd73991921ea25e880a0006db36183a55f537097376539bfbb140d42a"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-authoring.ts",
+      "bytes": 23040,
+      "gitBlobSha256": "e9628aa91dfa8934dd5dc71a66e23d16496217cec86a079843771469275a3a1a"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-cloud.ts",
+      "bytes": 14180,
+      "gitBlobSha256": "db879d26437c445d1bd48327b26d722e51a3a3ed8abe9e23268e665c351c4539"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-pins.ts",
+      "bytes": 4772,
+      "gitBlobSha256": "a527ee86a0ac76dfa76cfab681708ee7e03fc61557033f85be75b8241929b3c5"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-pull.ts",
+      "bytes": 9738,
+      "gitBlobSha256": "52e591aef9a62779305841b7fdf675b1cb385297b3abe3bb0d9015178d4c27e2"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-queue.ts",
+      "bytes": 5807,
+      "gitBlobSha256": "c1754f1012a5116151e0b951794799aab6a5c9e4fd2b0e2a61622dd3d71b16c8"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-sync.ts",
+      "bytes": 3478,
+      "gitBlobSha256": "0ea6116f2d7d9b51ea584703118456867a06f9592b9e7303680e7648296e6392"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-cloud-persistence.ts",
+      "bytes": 84336,
+      "gitBlobSha256": "544d642501a9de2783159bfd8a22e5e64620b7930fe74e106f5a118d708f5f83"
+    },
+    {
+      "file": "packages/member-shell/src/lib/types.ts",
+      "bytes": 68325,
+      "gitBlobSha256": "f41388ba80ba833c9dcce8fb96c5fb0750e9268194f6714d5ddff726ba8ba476"
+    },
+    {
+      "file": "packages/member-shell/src/routes/creation-cleanup.ts",
+      "bytes": 5997,
+      "gitBlobSha256": "8ab76e10ed62548daafd64a69cd6a148f9ebde7558e658b51f18e46a8bd22804"
+    },
+    {
+      "file": "packages/member-shell/src/routes/creations.ts",
+      "bytes": 26187,
+      "gitBlobSha256": "7de5014c9c1229d7b4ce0bfdc3cc4387e7f13fcf1d817d2c9d24890bf2511110"
+    },
+    {
+      "file": "packages/member-shell/src/routes/pinta-causal.ts",
+      "bytes": 17618,
+      "gitBlobSha256": "ada61e78010c29b80ce6c3fe6635e9b63f7612cf8f30b6fa97f070d795686d1e"
+    },
+    {
+      "file": "packages/member-shell/src/server/clients.ts",
+      "bytes": 85041,
+      "gitBlobSha256": "e44ad178bac72a63401855b8431776a465985bc7dceb4d870c86a435c1a04849"
+    },
+    {
+      "file": "packages/member-shell/src/server/gateway.ts",
+      "bytes": 17592,
+      "gitBlobSha256": "135e3774486c8bbe60661b4f6bf579267a482233620063c2d1c5c340e7ed1744"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-content.ts",
+      "bytes": 6087,
+      "gitBlobSha256": "0aed36b31e7310dc7d36ea867f24aef6b2dba6d073fe5fce0cbfd7797737c88e"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-eligibility.ts",
+      "bytes": 1382,
+      "gitBlobSha256": "8c267339dee8499585ca18b5da0f40902df18ddde3c788bd0dcaa2ba1021a743"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-proof.ts",
+      "bytes": 9181,
+      "gitBlobSha256": "44ecab78a15cad6629fbf2db086eade772ebfc1c3f6df36c0bf2efd051fd6837"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-protocol.ts",
+      "bytes": 3477,
+      "gitBlobSha256": "c0fe62171d564c9ec516515ccae2fd8e06949f3f18230943db75faf9c4802099"
+    },
+    {
+      "file": "packages/member-shell/src/server/r2.ts",
+      "bytes": 25790,
+      "gitBlobSha256": "c76a41ac2afd62abdc33aa99313dcf20b636e916d912610e98b7a89d90c77367"
+    },
+    {
+      "file": "packages/member-shell/tests/creation-cleanup-routes.test.ts",
+      "bytes": 8586,
+      "gitBlobSha256": "95ed28e52a21eb293fd35edd32195eab0ed2fd2966170b50cd34d5f6d6466aef"
+    },
+    {
+      "file": "packages/member-shell/tests/creations-routes.test.ts",
+      "bytes": 44621,
+      "gitBlobSha256": "3d5e438ef8efd6c39a4a88b87a3941fcd91c29e4f2901e1d36f1a6b9f91546ee"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "bytes": 84175,
+      "gitBlobSha256": "ea61469fbc3aa782e996e00cc1316c36582e8e7d39e58ae78c36d5d95e312263"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-studio-bridge.fixture.tsx",
+      "bytes": 8231,
+      "gitBlobSha256": "9207a50d4811096636cb508422ee67bb2ffdb8200cceb7b4e056a48af30a2e51"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-cloud.test.ts",
+      "bytes": 7180,
+      "gitBlobSha256": "3e7a25d9ce2a87dee75973683c92f06653de8935218c7f2a108088899f1ed204"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-content.test.ts",
+      "bytes": 6322,
+      "gitBlobSha256": "797df0deca3138ba283b75f2ce447aeb07c7d36e2dd5b1729a10ce5b5a1854c6"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-pull.test.ts",
+      "bytes": 3141,
+      "gitBlobSha256": "9a533c5339fa2d822fbcff2150e6a6fbfb2dc34f1bc0829f44a8b31264805249"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-queue.test.ts",
+      "bytes": 3242,
+      "gitBlobSha256": "d80663bb36c14796ee78171a3f228f878d9d3036f6de85b09ebacb7946278451"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-routes.test.ts",
+      "bytes": 30538,
+      "gitBlobSha256": "c788d7817797ec865e6b2aae3b458c774a268755c02ef4b77cbc4c445f4f4f96"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "bytes": 870,
+      "gitBlobSha256": "09c8ab7283d0c736691effc44bda3683a42143296c0f6026fe37618ef63e7cf7"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-studio-bridge.test.ts",
+      "bytes": 894,
+      "gitBlobSha256": "1dd6961f9236a12f066a1cb5f90e623b49a15e3e1680eb69ca3a07dc5f3216cd"
+    },
+    {
+      "file": "packages/member-shell/tests/r2-presign.test.ts",
+      "bytes": 1297,
+      "gitBlobSha256": "b1dac41639cac2bcc38645404dd0afa50d3730d53c429e7b0331fa7b2272d6a3"
+    },
+    {
+      "file": "packages/members/CLAUDE.md",
+      "bytes": 308696,
+      "gitBlobSha256": "bc3caa7938f4a1eb254776437082140bfcdacc874113085e30a151116b676f5c"
+    },
+    {
+      "file": "packages/members/src/application/creations/creations.service.ts",
+      "bytes": 23078,
+      "gitBlobSha256": "da3f4051d2e7930876caf21cf7d36d490bb20faa565eb450a67e5ff3f13550d3"
+    },
+    {
+      "file": "packages/members/src/composition-root.ts",
+      "bytes": 79196,
+      "gitBlobSha256": "29c35694dbc30da83b1c446108be01d7df6d7aac0e151d9a515ba8c7354f2d6c"
+    },
+    {
+      "file": "packages/members/src/domain/creations/creation.ts",
+      "bytes": 9514,
+      "gitBlobSha256": "02672c8cd762c58765620665a9543c439193acdbde092e10fc3afeefc316a7d2"
+    },
+    {
+      "file": "packages/members/src/domain/creations/pinta-causal-graph.ts",
+      "bytes": 9748,
+      "gitBlobSha256": "ca16a06e710b7d62fa6beb31d76db2c6d7638f23fcd7a305e5ee62b30fc4319c"
+    },
+    {
+      "file": "packages/members/src/domain/ports/creation-cleanup-repository.port.ts",
+      "bytes": 1131,
+      "gitBlobSha256": "44a2b0e2ff6d5d01035852f1a380482aa24b5504c455f20250c0871ccaaca329"
+    },
+    {
+      "file": "packages/members/src/domain/ports/creations-repository.port.ts",
+      "bytes": 7832,
+      "gitBlobSha256": "3ae930335e34347d5537819cce7d27d58fb1516acfa09e18d251f5921b387c6e"
+    },
+    {
+      "file": "packages/members/src/infrastructure/config/env.ts",
+      "bytes": 24253,
+      "gitBlobSha256": "c0738efec3a5d1cdb9ff9521b192fc33a0b9fc3467a997a8c820a99fc78f7ea9"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/creation-cleanup.repository.ts",
+      "bytes": 5788,
+      "gitBlobSha256": "56e3de239f75145f71b1539eeaf3a23b0ef26b6279f69ce561c99c8e57fade6a"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/creations.repository.ts",
+      "bytes": 34034,
+      "gitBlobSha256": "07e329785cc3248b77b8ff13a842145a01970702d51acf100e6288d106e01144"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0166_pinta_inventory_floor.sql",
+      "bytes": 575,
+      "gitBlobSha256": "d383877c7707737cdc4548abf510720ddfcde87d06b663e964d543577e8f34c1"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0167_backfill_pinta_inventory_floor.sql",
+      "bytes": 844,
+      "gitBlobSha256": "058a9542efa306d47c96603da7ef320d76c47107355eb8b767cd13c6139da089"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0168_pinta_causal_units.sql",
+      "bytes": 1608,
+      "gitBlobSha256": "807fed01b4971f8d9c74b1802351b1266268d1c0d6e46065bb0c956168d1b05f"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0169_pinta_causal_object_retirement.sql",
+      "bytes": 661,
+      "gitBlobSha256": "790edce8e1f272b6b28e88b5a4a7d1a60e8c92932d6c9d132582ed76afdd7f38"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0170_pinta_causal_writer_fence.sql",
+      "bytes": 4596,
+      "gitBlobSha256": "5ffd334905cb8fe4cb2bd5b340d4d1cb7340133e487927d51841724bb16a0a3c"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0166_snapshot.json",
+      "bytes": 425325,
+      "gitBlobSha256": "eb65212303c8ac5b6b0ed13e65c522bf930d54e7c0f070fcbfedb7d8668fcf73"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0167_snapshot.json",
+      "bytes": 425325,
+      "gitBlobSha256": "fb6c7478a2f722d8fe8c8598d92e6a1412fcebac30c140cb1d4cac94d0680fd6"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0168_snapshot.json",
+      "bytes": 429732,
+      "gitBlobSha256": "13701a233d78787432258cd455adcb7dd3fba053ff76c70a961ac860c896ad9e"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0169_snapshot.json",
+      "bytes": 432440,
+      "gitBlobSha256": "c001d215fdc348fb678bd1325ab1c5feffcc292255cb7cf058799d9f1f98b715"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0170_snapshot.json",
+      "bytes": 432440,
+      "gitBlobSha256": "388ec47e001d97900e91973b2187f3250e10c4cf75513f0b78c8597ee2494fab"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+      "bytes": 25369,
+      "gitBlobSha256": "24a656a1314c0d56561a73caf756d9018b2cb4ac151b32f7c7f175f9e2b90962"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-leases.ts",
+      "bytes": 1835,
+      "gitBlobSha256": "b3f0f2a9580bfefefa13e8460ea02b43f21edd1b8da8093a2e7cdea5e4f72557"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-retirement.ts",
+      "bytes": 6660,
+      "gitBlobSha256": "4927f8d4957f793fd3758e8ae67006261f9873b8cab1e9bfb0d2cc790925ee3b"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-scope.ts",
+      "bytes": 2221,
+      "gitBlobSha256": "48173784f66669cb16bb8bd293c313d4293b02967515efec29dbe58251982da4"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-store.ts",
+      "bytes": 9654,
+      "gitBlobSha256": "75a3382199d33d37c08620d27e6b195c5201170fda01c717f197d9217e38a831"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-units.repository.ts",
+      "bytes": 25363,
+      "gitBlobSha256": "3db02668ddf38c09c2442ff6e923fee890a49c44f4425e398f7b07d522ac38ad"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/schema.ts",
+      "bytes": 176476,
+      "gitBlobSha256": "89f2a3a4f95b58fb0bd749b35cd19c4cb76e0fa48444679c80932eb67f3e3e28"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts",
+      "bytes": 21529,
+      "gitBlobSha256": "58468c7d87513709e70bd250fbe4a7bf560221d8fc35fcfe0219fad010d47e45"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/dtos.ts",
+      "bytes": 75294,
+      "gitBlobSha256": "c602bcaddbf5fed89045e3d7f2de7ed7d45b60b2c0dd73be6dd33712ddf668f6"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/error-handler.ts",
+      "bytes": 11963,
+      "gitBlobSha256": "4495b4652e9e8d4b4a2d508d568f4366a6df6a797a028d4b41c5f20fe3580724"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/routes/creations.routes.ts",
+      "bytes": 6223,
+      "gitBlobSha256": "12e756b09f68ddaaf6fd29c2ee65fd0a62aa21a88745678e528bbb2bb816f1df"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/routes/pinta-causal.routes.ts",
+      "bytes": 4858,
+      "gitBlobSha256": "a71c3c49914801ab94acebf58f648c8604d9aedd3612be29faca457fccfcac6e"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/server.ts",
+      "bytes": 19372,
+      "gitBlobSha256": "794ae2b018f9b445c08581087bd20d2f91c096584481459da9854f9fd9e5eafe"
+    },
+    {
+      "file": "packages/members/tests/db/creations.repository.test.ts",
+      "bytes": 47445,
+      "gitBlobSha256": "96a216253e254164b0d1bfc8312dcb7da4954d10bd9b14692af637654e61080f"
+    },
+    {
+      "file": "packages/members/tests/db/pinta-causal-http.test.ts",
+      "bytes": 11246,
+      "gitBlobSha256": "af75d2e845cb08b47a623423d86ef602809cabc5f8e6034077ebd57280a82ae3"
+    },
+    {
+      "file": "packages/members/tests/db/pinta-causal.test.ts",
+      "bytes": 45455,
+      "gitBlobSha256": "8e34b26be083eefa2b01304f761a0ce78447d3bf43faea97851d9ead4e5d9418"
+    },
+    {
+      "file": "packages/members/tests/db/user-data-purge.test.ts",
+      "bytes": 16183,
+      "gitBlobSha256": "0c6ffd677e4496eaf682861449dec34628c6b23c8aaa2dc1c3cf7593de52c694"
+    },
+    {
+      "file": "packages/members/tests/fakes/creations-in-memory.ts",
+      "bytes": 16335,
+      "gitBlobSha256": "2a51669023f071606f91d976631030156a41f9b36cb028a10d1f42a0954a023f"
+    },
+    {
+      "file": "packages/members/tests/integration/creations.test.ts",
+      "bytes": 64176,
+      "gitBlobSha256": "89d46aaa63379bf2d1ec47de355a3bbb5b702ec6a25f8f4cc2adef2f36a8c6a9"
+    },
+    {
+      "file": "packages/pinta/CLAUDE.md",
+      "bytes": 333863,
+      "gitBlobSha256": "4b8c8f4e247fac7cd24001febb19c170e7ff4101ac0b7a3258185d7b82905654"
+    },
+    {
+      "file": "packages/pinta/package.json",
+      "bytes": 1922,
+      "gitBlobSha256": "acc7bd157c61a57144123a79351b13451b4adb08b144dc3a5f222b098d46f8fd"
+    },
+    {
+      "file": "packages/pinta/scripts/authority-recovery-gallery.tsx",
+      "bytes": 1761,
+      "gitBlobSha256": "1713d538d6174fd2b241e66d3e69d229ebe0c7fefdcd704a2f8a30da2645cffd"
+    },
+    {
+      "file": "packages/pinta/scripts/backup-legacy-probe.ts",
+      "bytes": 1970,
+      "gitBlobSha256": "5b8e2ebc7ebeacbeb1f4bf9e3c36f2511fa8b616bdcfd258bad0c017f6fab16b"
+    },
+    {
+      "file": "packages/pinta/scripts/backup-regions-probe.ts",
+      "bytes": 4691,
+      "gitBlobSha256": "4bf9bea75f553e896d38b9a234eb17032a8dc34817e453097a256c5670d6d84a"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/brushGestures.tsx",
+      "bytes": 8162,
+      "gitBlobSha256": "9fc030693e47cd648d00e36f203c1a45cd474cd8d6f09c70834cbcc81b059d5c"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/clipboardRegions.ts",
+      "bytes": 1991,
+      "gitBlobSha256": "51c67d1d9d0291cb175e8875e81bccd327440aa5e0e31296f0974a5683326a17"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/fixtures/clipboard-v2/clipboardStore.ts.gz",
+      "bytes": 3396,
+      "gitBlobSha256": "0712c31820d2d946eb35c6836f315c05a484ea7a6266f6de4df75c9bc1efbb4b"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/fixtures/clipboard-v2/source.json",
+      "bytes": 323,
+      "gitBlobSha256": "dfc95a19632aad3d967fb1c012e6ab016259cf71ccbd87cae4502b33f886a114"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/jsonBudget.ts",
+      "bytes": 1968,
+      "gitBlobSha256": "c563ee30803744c8df53a5774dc53ebfc71d32d5004f2f1cec144bca6154b285"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/layerRegions.ts",
+      "bytes": 556,
+      "gitBlobSha256": "0aa31731c9d39f0556da9c328e4ee977d0c4068a48614dba05e10991b21be413"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/memoryRegions.ts",
+      "bytes": 1683,
+      "gitBlobSha256": "f86fc37901842d8f5be0d0770e5f46c3681e11a6d923f95856c70ac098e7c2ae"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/metadataBudget.ts",
+      "bytes": 4649,
+      "gitBlobSha256": "0b58f8b06f3052c82cbdb9bf3bbb35756f241f7d5e64c88b7fb765bd15be4b47"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/minimapRegions.tsx",
+      "bytes": 3138,
+      "gitBlobSha256": "cb897282a13450e89e8b90193b508970da4facfa54eb22e4541e365b3b7b47dd"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/objectGestures.tsx",
+      "bytes": 10171,
+      "gitBlobSha256": "eebd6e267faa563c151d91b11fadeb708491d39ce39c060865b9d762943d9154"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/previewGestures.tsx",
+      "bytes": 10857,
+      "gitBlobSha256": "45122d09a3c14eeddd7f2a8f0a5d2fb594670caa3628704e3dbeaa30084a36b5"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/queryRegions.ts",
+      "bytes": 1152,
+      "gitBlobSha256": "123a4535945ad171caa409495f94d0437e9bde254a2a06f4cc3289e6dd30c699"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/regionRendering.ts",
+      "bytes": 4500,
+      "gitBlobSha256": "ead82397a2f20570fbaa08ab574aa3c01d63a22fc237cade2e707f72db3fd2d3"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/resizeRegions.ts",
+      "bytes": 1322,
+      "gitBlobSha256": "0b93ad76aeba99733186df1e5253ebf77cccc014c8b4be2fbc184eac5f27ef2f"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/resizeScreenHost.tsx",
+      "bytes": 3007,
+      "gitBlobSha256": "8b19b81ac78ad86dac455a5fbf5230e873687218c80fd005decc7863624d2f65"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/resources.ts",
+      "bytes": 6777,
+      "gitBlobSha256": "fa593ddd9ba1451424c5760392d846d47a93892c25f04bf54781caf06bc79e82"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/tilesetRemapHost.tsx",
+      "bytes": 5321,
+      "gitBlobSha256": "8ef0fa531e0fda66a4175df83d0843212985e05911d74cfa9befad512361966f"
+    },
+    {
+      "file": "packages/pinta/scripts/json-admission-probe.ts",
+      "bytes": 4626,
+      "gitBlobSha256": "5228bd3200250e5f7ba3be307fc30619e9b2f7210e56a7ae16700cdfd2f3fb66"
+    },
+    {
+      "file": "packages/pinta/scripts/layers-regions-probe.ts",
+      "bytes": 3359,
+      "gitBlobSha256": "fc335f9694de562c88856df44a21813a1b45dbcfa6059c77aff3860c475ce349"
+    },
+    {
+      "file": "packages/pinta/scripts/map-geometry-probe.ts",
+      "bytes": 7488,
+      "gitBlobSha256": "76b7ccfb03f4f8cb94fccd2fac7e393ad106317093d26a21034a90287b0dbcd8"
+    },
+    {
+      "file": "packages/pinta/scripts/map-grid-edge-probe.ts",
+      "bytes": 2793,
+      "gitBlobSha256": "02eeb194110ae8775a7172235826e579fcd4201c5620ab19bd73de2586878ae0"
+    },
+    {
+      "file": "packages/pinta/scripts/map-grid-probe.ts",
+      "bytes": 5794,
+      "gitBlobSha256": "f53e1390397e1bcdd330821b0534fb4ea921b9609a57af4d55d476f7970406b5"
+    },
+    {
+      "file": "packages/pinta/scripts/map-images-regions-probe.ts",
+      "bytes": 9696,
+      "gitBlobSha256": "efe0c2a8209cac55aa3464b5f0e60f5b2fecd11cee083055284d073bfe979338"
+    },
+    {
+      "file": "packages/pinta/scripts/memory-regions-probe.ts",
+      "bytes": 2456,
+      "gitBlobSha256": "e7366337645d2cd6d852f184bbe60e855469a83125b18eeb4f0d0ef2743da2f1"
+    },
+    {
+      "file": "packages/pinta/scripts/metadata-regions-probe.ts",
+      "bytes": 2988,
+      "gitBlobSha256": "33ce2ed68ee8186f4455123b60017db2b3e2f2a80d953cb9cff11b69b9c2f5e1"
+    },
+    {
+      "file": "packages/pinta/scripts/physical-region-proof.ts",
+      "bytes": 2340,
+      "gitBlobSha256": "fd8ed9736a0557ca57eb41715f978958619b30c7407a88ebb8fafff01a9f2bc2"
+    },
+    {
+      "file": "packages/pinta/scripts/queries-regions-probe.ts",
+      "bytes": 3431,
+      "gitBlobSha256": "e3bb3035180db28c663d33ef30ca0c6898a1c2e46e7a380a8474bf6a4849548b"
+    },
+    {
+      "file": "packages/pinta/scripts/region-render-probe.ts",
+      "bytes": 8441,
+      "gitBlobSha256": "f58341f2d1b49e86cbba0c48f7b70aa3f890cb003c226705fd6be5c2598eb330"
+    },
+    {
+      "file": "packages/pinta/scripts/remap-regions-probe.ts",
+      "bytes": 2414,
+      "gitBlobSha256": "7dc3f5e4b0417b9078eb6ab949622909be0a9acb74558b69900cf5e4215fecb5"
+    },
+    {
+      "file": "packages/pinta/scripts/resize-entry.tsx",
+      "bytes": 878,
+      "gitBlobSha256": "f121234a54b2d59b1db17e23c31aaf45aa6dc01e1a6b7e0e6b2edeb2a8718587"
+    },
+    {
+      "file": "packages/pinta/scripts/resize-regions-probe.ts",
+      "bytes": 2839,
+      "gitBlobSha256": "9db19e2c8210c9f1152f571643e856348b82a8f7181363f3888ae7de6a68d4b8"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-authority-e2e.ts",
+      "bytes": 3549,
+      "gitBlobSha256": "18c63003877b629712f53ab1b3b098aae52c001417d3f06bcf4a292c7fd51fee"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-brush-e2e.ts",
+      "bytes": 2327,
+      "gitBlobSha256": "879ee75cddcc22ac133432ca8425863eebe5e3c40e52add3a71ea43fa80630b7"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-budget-e2e.ts",
+      "bytes": 2966,
+      "gitBlobSha256": "0e918430f0916baf4af6869d8567a0fe78fb7005d068efc36d3048399fec5619"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-geometry-e2e.ts",
+      "bytes": 2486,
+      "gitBlobSha256": "5dc27633e8ad33ba9895f170afc1ac38ba986793781ce0d26f03c5fae81d8de4"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-grid-e2e.ts",
+      "bytes": 2791,
+      "gitBlobSha256": "20d76c2218cd56b6ae136f799b0f9f83f8b3be2d6981e3281108b3676b15748e"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-map-images-regions-e2e.ts",
+      "bytes": 2204,
+      "gitBlobSha256": "3b5be1910c4cc9f415fc4a0ee48cc61f95b97d1809ef62f034508f3cc041fe66"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-memory-regions-e2e.ts",
+      "bytes": 5194,
+      "gitBlobSha256": "b119704f0b7452ddd767c1fa988c2a60d5982acd0d44f8aa15bcbadf5b37787f"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-minimap-regions-e2e.ts",
+      "bytes": 1008,
+      "gitBlobSha256": "70be85efd987c060ae83790f4dfa97848dac7ba4d0c4a9425f09c6fa922b95ca"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-resize-e2e.ts",
+      "bytes": 2579,
+      "gitBlobSha256": "c895a0ee8b22e29d83cdf77b810f32a30d0fd087eb087ec667653131f3d78687"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-tileset-remap-e2e.ts",
+      "bytes": 2317,
+      "gitBlobSha256": "6ac7092b272bcbb499708e2c699ecceb0a2d8296503533ff62d8d13775ca3dd1"
+    },
+    {
+      "file": "packages/pinta/scripts/tileset-remap-entry.tsx",
+      "bytes": 1097,
+      "gitBlobSha256": "74f8a1d92e9fea5075dd6fe226d7a81363165db2249bf00df4b0095594bafc54"
+    },
+    {
+      "file": "packages/pinta/src/assets/causal.ts",
+      "bytes": 564,
+      "gitBlobSha256": "21113f8937c33fc5409cee3165f68f26b5b0c7df6910cc6b928b9aaa85adcfa7"
+    },
+    {
+      "file": "packages/pinta/src/assets/index.ts",
+      "bytes": 3400,
+      "gitBlobSha256": "6b4632d2b9978c20726949d9aba9efe0efa3a3e2e1a0498db159cf7d9f1d775e"
+    },
+    {
+      "file": "packages/pinta/src/assets/purity.test.ts",
+      "bytes": 4672,
+      "gitBlobSha256": "7a785a99a2917d27f57dc1b65e550024d52871d52e50792f53ba2dace72bd4dd"
+    },
+    {
+      "file": "packages/pinta/src/components/PintaApp.test.tsx",
+      "bytes": 41207,
+      "gitBlobSha256": "5082f9997f8b0d7b9e687254c3e607e760630a0f32895862f2ff8b2a12ac2db7"
+    },
+    {
+      "file": "packages/pinta/src/components/PintaApp.tsx",
+      "bytes": 16389,
+      "gitBlobSha256": "b66f77f7ba753d88e924c4afec370d0ade5cb15c9dc26e840cde384631c8905f"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/EditorScreen.tsx",
+      "bytes": 34122,
+      "gitBlobSha256": "2627c4adac824deb20f3f3f14fbd97c22635251119248c780b0f035200554b77"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapLayerPanel.tsx",
+      "bytes": 18038,
+      "gitBlobSha256": "eb245c2904a63b27a0f8a68c61c63d71685d43d9c22f2ffc3c4cd3e2b95add0e"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapLibraryPreview.tsx",
+      "bytes": 1551,
+      "gitBlobSha256": "850f17d47aeca5ce5e526fbbe6de4c519fc7d47e1576ee983793fb86bc59b6a4"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapMinimapPanel.tsx",
+      "bytes": 6466,
+      "gitBlobSha256": "64398403988bda5881ec942815dd52d5746cc2a0a034e7a1c899a99d49b24dad"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapMinimapRegions.test.tsx",
+      "bytes": 3058,
+      "gitBlobSha256": "8f6e8add666b67abf9e3e2b6e221688a2afe6749a262d172d461727e08b8034c"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapObjectArtwork.tsx",
+      "bytes": 5315,
+      "gitBlobSha256": "a09e5ffe6ceaab3dd642d86a852f21c2028d62f80bf6bb1dd5c9db6a6cff5d08"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapObjectSelectionPanel.tsx",
+      "bytes": 7867,
+      "gitBlobSha256": "ddbf4fe5bf5d8fbd335fd6b7c504ed105fb83bb1493bb491d4d61a0c0ca5f9a5"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapObjectsOverlay.tsx",
+      "bytes": 33743,
+      "gitBlobSha256": "264fa857ac48b7c64f882097ff8b23542ed5d77c69a38072018956d08cc69149"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapSetEditor.tsx",
+      "bytes": 785,
+      "gitBlobSha256": "42902f0638fd84f91e11e3408b116b56e4ce0922bbd7e902933d04283c8a36e7"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapStage.tsx",
+      "bytes": 6654,
+      "gitBlobSha256": "e39ba5f3511fe7f0f1a5f0f35d2bf55b3a13f500b4ec71a5be9ad901d5980f95"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/ResizeAssetDialog.tsx",
+      "bytes": 3674,
+      "gitBlobSha256": "36f4536970a970345d69e771783a41ef8e8061051e93a0a0d78e17585e99790d"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/TileStrip.tsx",
+      "bytes": 10203,
+      "gitBlobSha256": "66a9d3f56a64fb7c18bf2fc7a4beb1a72584147252ed4e87035bd6e5c6154425"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapLayerGestures.test.tsx",
+      "bytes": 5283,
+      "gitBlobSha256": "3f75197a8296f76e2ab57421c9cefe6139759db2b5de5097be55dbf1c1c2f584"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapObjectGestures.test.tsx",
+      "bytes": 12260,
+      "gitBlobSha256": "9d6d865afa6ed6833b67690c890fed391e7285a90002384108f8c401ca4eb50d"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapObjectsRegions.test.tsx",
+      "bytes": 2308,
+      "gitBlobSha256": "0748774da293a46632e7f46f477c375d9a2b18aa5a0c865cc3f05085dfc0bf7c"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/keyboardPainting.test.ts",
+      "bytes": 4644,
+      "gitBlobSha256": "e3c4aed104cfdb068954546c19df18b8e94873d3e57d4526e63eaeca961d0600"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/keyboardPainting.ts",
+      "bytes": 2486,
+      "gitBlobSha256": "239e06c385a0ea0e0cb533801b86f02ecaec6d8d310e42156b04e64dd6d90bce"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapBrush.ts",
+      "bytes": 9171,
+      "gitBlobSha256": "d69e4cdb7406204c71601081dd276d857bee50ed749e467fae1c54e865fceaf6"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapBrushMessages.ts",
+      "bytes": 597,
+      "gitBlobSha256": "e0e91cfd12dbc4a8ceca960b9dc3a9c3161cf3faad393c1da02667cafa967a6c"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapBrushRegions.test.ts",
+      "bytes": 5385,
+      "gitBlobSha256": "7141d3be9f9de57ce08d3cdd48fb7a4a332711bb2aa27404d550423b1907e114"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvas.ts",
+      "bytes": 6215,
+      "gitBlobSha256": "68066004983158c818817e3714c5151a9d111f4a4ab9a077ee6ae66638006986"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapCanvasRegions.test.ts",
+      "bytes": 3608,
+      "gitBlobSha256": "7d4a92f27181ce75a5fdd0b11a707c995e0b59dc8bbd456764f94c8e4d97c414"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapLevels.ts",
+      "bytes": 6837,
+      "gitBlobSha256": "2d7d6d8df9c7460d13936fac42382a8d8ad064bf821f18ac5de6f569efed2240"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapViewport.test.ts",
+      "bytes": 3375,
+      "gitBlobSha256": "be6bbfb3dac914ee271e94cf67109e4226b734407db7af506211edc76f06400b"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/mapViewport.ts",
+      "bytes": 3566,
+      "gitBlobSha256": "b193c73286512e27d8b41a14b3f367a2832c707d9497dbe0b4fc214677ecb444"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/minimapView.ts",
+      "bytes": 1466,
+      "gitBlobSha256": "3c9fc86af626abc629925828942170ec88126c74eb08faf2c1c888010704ba57"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/resourceVersionMessages.ts",
+      "bytes": 606,
+      "gitBlobSha256": "d08fd64643cbc44e0b34920de780ce3661679ad07bf7907c564e852d1ae6449e"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/selectionController.ts",
+      "bytes": 6570,
+      "gitBlobSha256": "9a39eea4e77b1c0879704ca2e0c7219db34052509a6b1514d33cf90b877bbae9"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/tileGestures.test.ts",
+      "bytes": 8686,
+      "gitBlobSha256": "0a5dc00056fb236856229d49ecfaf34465b34e9a9124d16e50d402017d40f60f"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/tileGestures.ts",
+      "bytes": 14981,
+      "gitBlobSha256": "35d47c245a42b4c786ab0851b2638fd3d3a41831a7433056de1d2797f3d1307e"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useKeyboardPainting.ts",
+      "bytes": 10639,
+      "gitBlobSha256": "bd8ed2781e9b33644e1b46afba2a2511d2836dafc098d782ccf0e21b62ff203b"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useLibraryPlacement.ts",
+      "bytes": 8311,
+      "gitBlobSha256": "c16fd7b45c64803398bdae67e7d5dec1e1e8b1cfb1eeeb9a4bab4a765de58e24"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.test.tsx",
+      "bytes": 12264,
+      "gitBlobSha256": "9b3e6dd2794cc03cfcc338661589c98bf82034264aaeabadf8dca8ef6d0923d8"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.ts",
+      "bytes": 9384,
+      "gitBlobSha256": "b0628fa74c81a52a7aec7552de50e45869bf1e4c8842bb162c8413283b2537a9"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useTilemapController.ts",
+      "bytes": 24342,
+      "gitBlobSha256": "fe2bf134d6d9d31c1566b65a3cef4f8ae501b862eb29bc769b2e5c5560d1167b"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/resizeRefusalUi.test.tsx",
+      "bytes": 5255,
+      "gitBlobSha256": "e685ff2de13f74705fe93c714ebb6aff93a978e6891b268b5c47d0a47f406d29"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/tilesetRemapUi.test.tsx",
+      "bytes": 3789,
+      "gitBlobSha256": "878f1f0392ee74d122eee2a414f540b3ff2ac0fb94033d444e6775ef4d94a7c1"
+    },
+    {
+      "file": "packages/pinta/src/components/gallery/AssetCard.tsx",
+      "bytes": 14898,
+      "gitBlobSha256": "5f9a2a97a3e3fca7bb9eecd9c1b31b357aac821fde4cb264a9194c5cca5525bf"
+    },
+    {
+      "file": "packages/pinta/src/components/gallery/GalleryScreen.tsx",
+      "bytes": 44485,
+      "gitBlobSha256": "8d63ebb7d1f457e2191a23635b28781dac8e7ed0ef59da91ea5beaa4af8f8ab9"
+    },
+    {
+      "file": "packages/pinta/src/core/assetMemory.ts",
+      "bytes": 4477,
+      "gitBlobSha256": "64c7371df4ffdab192aedadfec9cea9a9b941402ea4cf2dd988e70b95d3183c1"
+    },
+    {
+      "file": "packages/pinta/src/core/assetMemoryRegions.test.ts",
+      "bytes": 4244,
+      "gitBlobSha256": "5eac980ad80a7562b887020289b138646515c49625f1942ef42983260cf6706a"
+    },
+    {
+      "file": "packages/pinta/src/core/assetMetadataBudget.test.ts",
+      "bytes": 4389,
+      "gitBlobSha256": "eb24ba043cad37daed46330f74d1d8d6248933ddd735fe5467a7659527497696"
+    },
+    {
+      "file": "packages/pinta/src/core/assetResize.ts",
+      "bytes": 10554,
+      "gitBlobSha256": "2fe8ba4364353163db54fd7358b30ba43582b70255ac66bef987311651dc5a63"
+    },
+    {
+      "file": "packages/pinta/src/core/bitmapCodec.ts",
+      "bytes": 3143,
+      "gitBlobSha256": "9c4a40111de4f5d67e49551a55ff5a59348e54c3f6edf29e35a64a457b708da8"
+    },
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "bytes": 67452,
+      "gitBlobSha256": "729010c998c83434ff1719d7699f61629916c3a7768117f446c45fe67ae33e33"
+    },
+    {
+      "file": "packages/pinta/src/core/dependentTilemaps.test.ts",
+      "bytes": 4203,
+      "gitBlobSha256": "216e0809b5f3a6c6c79c8611552c0d19bdf39b916eaf562043edd85d37ef6869"
+    },
+    {
+      "file": "packages/pinta/src/core/dependentTilemaps.ts",
+      "bytes": 1435,
+      "gitBlobSha256": "7fd6e58ea6baea33e78891e5ab17b8ea634054c100d78a028e6da32d914255d5"
+    },
+    {
+      "file": "packages/pinta/src/core/jsonBytes.test.ts",
+      "bytes": 3068,
+      "gitBlobSha256": "f6ddc242f56d78f34e12c10aa16b36c2b9b7912d5cd546d873dade13860b0ebb"
+    },
+    {
+      "file": "packages/pinta/src/core/jsonBytes.ts",
+      "bytes": 4543,
+      "gitBlobSha256": "b23bc0795df1d0d6e92306ef5e5c0db0a38313b400a405f882ec8490218adf0b"
+    },
+    {
+      "file": "packages/pinta/src/core/localAssetOrigin.ts",
+      "bytes": 2539,
+      "gitBlobSha256": "3a97fd669ff05cc1cc6ef9f27980226d471ecde671c8b33c4073ad8b622e09f0"
+    },
+    {
+      "file": "packages/pinta/src/core/localStorageErrors.ts",
+      "bytes": 829,
+      "gitBlobSha256": "f63c9310da74b379a6c042b2555e7ea7e1f222ad9ccbf1deb55f21421a366f2d"
+    },
+    {
+      "file": "packages/pinta/src/core/mapClone.test.ts",
+      "bytes": 4846,
+      "gitBlobSha256": "e22230bc97901918bcea0ccda7c12d438269426c57e1f08389b88688fc9e7372"
+    },
+    {
+      "file": "packages/pinta/src/core/mapClone.ts",
+      "bytes": 8150,
+      "gitBlobSha256": "ccacec3b352ad39e9a08493c9bfb4018df52444e8ba0f7b667392c667fb2edc4"
+    },
+    {
+      "file": "packages/pinta/src/core/mapDocumentBoundary.ts",
+      "bytes": 10866,
+      "gitBlobSha256": "075766d4da63eeb2698c4c84f4b6dc235cb223e86864f429f1cc8e02fdcabd01"
+    },
+    {
+      "file": "packages/pinta/src/core/mapResourceVersions.ts",
+      "bytes": 5556,
+      "gitBlobSha256": "8802cef5ed47f299782facbc15a3d1b1d5cb32cdb7deb502022fc1add2f51c1a"
+    },
+    {
+      "file": "packages/pinta/src/core/metadataBudgetCache.test.ts",
+      "bytes": 3792,
+      "gitBlobSha256": "e512df6a255d439a37a01fc515d32be67f333035f1d0d405c56f5af533719caf"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "bytes": 84824,
+      "gitBlobSha256": "7aab9ddfc7ccf7df200d94090c2a35392b34cead4b12ae2fb58bae787a32d7ea"
+    },
+    {
+      "file": "packages/pinta/src/core/projectConfig.ts",
+      "bytes": 11783,
+      "gitBlobSha256": "123a60b40b0ae26228bab4fb0149389dae72d0c6473f8eab1589d3560c67d285"
+    },
+    {
+      "file": "packages/pinta/src/core/regionCanvasResize.test.ts",
+      "bytes": 6326,
+      "gitBlobSha256": "36073a2090fc6846d9b7be508d7bd4ce0e598e57181651811bd944fe16db3faf"
+    },
+    {
+      "file": "packages/pinta/src/core/regionDocument.ts",
+      "bytes": 2392,
+      "gitBlobSha256": "ea3e3a62166ab02e61f2fbcc6a6a29b914e16588f0c5feea4a79ccdf6e4a7bde"
+    },
+    {
+      "file": "packages/pinta/src/core/regionResourceEncoding.test.ts",
+      "bytes": 1125,
+      "gitBlobSha256": "a6d9bad88f7a67c94b144668f21f8c4b29518cde276f0018cc399b41fe7ca2ae"
+    },
+    {
+      "file": "packages/pinta/src/core/regionSetMetadataBudget.test.ts",
+      "bytes": 1048,
+      "gitBlobSha256": "dcc494cd2a981501a91b27d5f16889658c7250630b4c292483a8aae5e7c24839"
+    },
+    {
+      "file": "packages/pinta/src/core/sceneMapClosure.test.ts",
+      "bytes": 3282,
+      "gitBlobSha256": "b47dd495d382575ef79afa9ebdedaf28007e70e307cd99fc67b32edce998ce13"
+    },
+    {
+      "file": "packages/pinta/src/core/sceneMapClosure.ts",
+      "bytes": 5713,
+      "gitBlobSha256": "c3d37d05d712380814677ab24be2af4e7e5867f8902634c34e180f85e445287e"
+    },
+    {
+      "file": "packages/pinta/src/export/__fixtures__/pinta-png4-reader.md",
+      "bytes": 547,
+      "gitBlobSha256": "90696f93c982a0dfe6cae35487047f2194469b4c9261063019bef7f606b298dc"
+    },
+    {
+      "file": "packages/pinta/src/export/__fixtures__/pinta-png4-reader.py.gz",
+      "bytes": 19135,
+      "gitBlobSha256": "e323d78a56b158ca4f8340c645cc20c89f9d3bfce051834388ce16d671051db9"
+    },
+    {
+      "file": "packages/pinta/src/export/assetJson.ts",
+      "bytes": 5884,
+      "gitBlobSha256": "6ab046994a717f051a525359b505bcd7ca4787e69381b51e9350a79cfd04bb50"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalDetach.ts",
+      "bytes": 3507,
+      "gitBlobSha256": "4ece13775a71121d7a7d17620d2a9163d23068a2b6528d0b22525b50b002f745"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalManifest.test.ts",
+      "bytes": 8170,
+      "gitBlobSha256": "662f6554725d959c5554ef6de7a15a5ce0e6ef48ab96cc645eb24de50ced6df0"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalManifest.ts",
+      "bytes": 12071,
+      "gitBlobSha256": "aa554051ee05077b0480d0a64f107499c3750bf4de0f1cf3bcdeeee7179884e1"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalTransition.test.ts",
+      "bytes": 18609,
+      "gitBlobSha256": "0307e5e0fbcd4021a9da52e0d6e3aec450ec87e06f1e41f529a648a7ed43cd02"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalTransition.ts",
+      "bytes": 14615,
+      "gitBlobSha256": "d011719a19cb2cb99a5496ade238ebd64cfc6856cf009ab205fe6600c6692cdb"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaPngText.test.ts",
+      "bytes": 6482,
+      "gitBlobSha256": "5abbb014b2934f81c4f26c0f8d3c68273d4bf806a9ee4dffb4031664fc9c9583"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaPngText.ts",
+      "bytes": 82,
+      "gitBlobSha256": "57473a49d45ae6c4b091c4eae58f7c8393dde3255b80bfdc43a074dc51bbdf5c"
+    },
+    {
+      "file": "packages/pinta/src/export/pngText.ts",
+      "bytes": 4128,
+      "gitBlobSha256": "b896582afea73dabc59581748204f201b2967402d95711030ba0b551685edf7d"
+    },
+    {
+      "file": "packages/pinta/src/export/portableImageRender.ts",
+      "bytes": 15505,
+      "gitBlobSha256": "0da5006643092f9fd7e234cf8b4f83c26827b74b211d4eaae1746d448925c594"
+    },
+    {
+      "file": "packages/pinta/src/export/portableMapWorld.ts",
+      "bytes": 3295,
+      "gitBlobSha256": "676acceed31694e351637335320c9ab827ad6c94773f0c704b97fc9e72d3f590"
+    },
+    {
+      "file": "packages/pinta/src/export/projectJson.test.ts",
+      "bytes": 12285,
+      "gitBlobSha256": "f84ab0741ba34912c5c0de6274ee915bb738c272b18c7d857265525f232e2896"
+    },
+    {
+      "file": "packages/pinta/src/export/projectJson.ts",
+      "bytes": 22104,
+      "gitBlobSha256": "0dfad3e11f2d742af56f9bde7c2c6334a1dee9310e2736b4841cf1f247b93424"
+    },
+    {
+      "file": "packages/pinta/src/export/pygameProject.ts",
+      "bytes": 24376,
+      "gitBlobSha256": "7aa223b2cb46355f82d1b60b2e986305aea516a88bd442354c9c904b7bf984b6"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonJsonWire.test.ts",
+      "bytes": 3504,
+      "gitBlobSha256": "a543343ea6d44cb1a4746a3a978b0238f7c7252ec070248a82644279909c1ecf"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonJsonWire.ts",
+      "bytes": 3814,
+      "gitBlobSha256": "23dba1628d593fe0418ab601770d184225cabd573cfe224ad7a544fac6d4a554"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPgzeroRegional.ts",
+      "bytes": 780,
+      "gitBlobSha256": "6db66d897b90f27bb300e6adf623e20d0d65beb65693c38dae6ea0137b63b9aa"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPngText.test.ts",
+      "bytes": 12079,
+      "gitBlobSha256": "3ad487742d1f6080988f6db3d5c23857a59d4da7d46e7decced590884564cfa5"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPngText.ts",
+      "bytes": 6520,
+      "gitBlobSha256": "31e89b393ea535a78fc640280c81d97bfa692a2c2a1243cc307d8f22ae8a8896"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPygameAffine.ts",
+      "bytes": 6265,
+      "gitBlobSha256": "3f09b68124da4bd7edd55ca22226ad0a6be4d70e110d141ec0096005c25ea60e"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPygameRegional.test.ts",
+      "bytes": 10966,
+      "gitBlobSha256": "56eda1d409e7cef7a9a63e82db0543840ed3c3a88199bc5c22e013e17433e13f"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPygameRegional.ts",
+      "bytes": 1958,
+      "gitBlobSha256": "d984e35365c43a25369489682909447d5233a0e76175a8d01b9dc4af33307cb3"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonRaylib2dRegional.ts",
+      "bytes": 5025,
+      "gitBlobSha256": "9f2ce41bd2c1c5d02761eb95ccce17f1bb07481bd9929a312f123d48e2eb91dd"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonRegionWorld.test.ts",
+      "bytes": 23819,
+      "gitBlobSha256": "c93e8e6be47a31ba9b80c7c6171e1a7656efda5a58109fc55068afb9104c6231"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonRegionWorld.ts",
+      "bytes": 6762,
+      "gitBlobSha256": "50c0c3d1366e7790d6b9b78249bc096100a552f1af91aeca0be7612e451310bf"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonRegional2dBackends.test.ts",
+      "bytes": 13369,
+      "gitBlobSha256": "fcfd7a29c1f42286173b6dd1f524569ce2cc4caafd4601cf2f8bf061198a276d"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneBackend.ts",
+      "bytes": 5037,
+      "gitBlobSha256": "96e08de2fa5487ea8a7ab1dfa21ae0ddbe3c78ad293a3834e7596c8f0e75cdd6"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneDocument.test.ts",
+      "bytes": 14653,
+      "gitBlobSha256": "60b1e777946849f862c080b65d9296efaa01abd4cfa6b49d0e9bef7833817be3"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneDocument.ts",
+      "bytes": 13579,
+      "gitBlobSha256": "fbcbd7efacd8b79dc0d011a4199426543ce1480068213ecede5876def2f693f4"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneGeometry.test.ts",
+      "bytes": 9676,
+      "gitBlobSha256": "0c9233175b7af25cd0193ba8557a6821190301d3dd40cdab1cc05ce9655397ed"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneGeometry.ts",
+      "bytes": 8132,
+      "gitBlobSha256": "09dd1228de3b5d0c0c9ce459339cd90b5797c3c1cabe8515a78b9540bc5a4645"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonScenePhysics.ts",
+      "bytes": 6858,
+      "gitBlobSha256": "fdf66cc3c27969a13daac0d75f933ad33fad797b5882867f157be45098b71875"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonScenePlacement.ts",
+      "bytes": 10268,
+      "gitBlobSha256": "ca12ad74f31fc0e1342d77655f2a2d618a15052342119b76a00172bd9dcd663c"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRegions.test.ts",
+      "bytes": 9748,
+      "gitBlobSha256": "052bceae9d354f0b35e4513ae3931dfbd2045bb849d9cd346c4e4725ae1ab2b8"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRegions.ts",
+      "bytes": 8298,
+      "gitBlobSha256": "1803992f71466550d4d7584fdcc59b5c434fc7d0faed4670b346e84ab4c15042"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRuntime.test.ts",
+      "bytes": 21040,
+      "gitBlobSha256": "467711c5dc120db461004dec7a48f0de8279dc3052c0c8ddccff566090b40a7a"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRuntime.ts",
+      "bytes": 8902,
+      "gitBlobSha256": "65f4e7b314224722d86a8de562671262cc0d9db978641868ef32532189a06bb7"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneSchemas.generated.ts",
+      "bytes": 13123,
+      "gitBlobSha256": "3eec6f29041b370e234e47e694e599e8ccc6431bd436cd55c0899df8e364ad6b"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneSetCulling.test.ts",
+      "bytes": 9624,
+      "gitBlobSha256": "0812ab53306d2010a8fca5729525363d4bd795acab790f57e7a5b1295bdf5345"
+    },
+    {
+      "file": "packages/pinta/src/export/regionAssetBundle.test.ts",
+      "bytes": 2543,
+      "gitBlobSha256": "f3ccb96c9498c25695a8f3468939bb29e6d07e18a85cbd00ced154db0f2330d2"
+    },
+    {
+      "file": "packages/pinta/src/export/regionAssetBundle.ts",
+      "bytes": 625,
+      "gitBlobSha256": "fd4b9c2088260dd22122e82b0dc28051235163b1f18553c3e703b942c23e12d0"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackup.test.ts",
+      "bytes": 8843,
+      "gitBlobSha256": "17a385c1c7730fd37777a95fb04bc0703131630bca5470344f47bfb99ee3b07c"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackup.ts",
+      "bytes": 8287,
+      "gitBlobSha256": "7b4aacf54c7977c1fd8819e577c0f2134d4ec727f1643ba73885a4990c024218"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackupSize.test.ts",
+      "bytes": 6151,
+      "gitBlobSha256": "624ac81e1b3d243b243ac893deff56b95df8bd2947ed6e5f29f771e86214f81e"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackupSize.ts",
+      "bytes": 5676,
+      "gitBlobSha256": "6d2a2539deeb07c956be2fca9ef8e4db9eafaa3c715e9715521e101b16d1f1be"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImage.test.ts",
+      "bytes": 7689,
+      "gitBlobSha256": "d429f196c66c0c15e24fc0f9ca3e4c2599c9050b775db8c16b69fa587083bf5f"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImage.ts",
+      "bytes": 2872,
+      "gitBlobSha256": "91ab8e3b5ad7fef20eabcfdacd4bfaa52d897c28a12930a71a6c1e7598cb8131"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImageLimits.ts",
+      "bytes": 99,
+      "gitBlobSha256": "049a23c249fc9eb1a0b90b14093c0ebff05ddb8a2c2447fed2d7750cc771e6f7"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImageWorld.test.ts",
+      "bytes": 7302,
+      "gitBlobSha256": "8949a60951d46bd8218049557ad1285c4930fbd7e98b30bb84f6fd7a4806e7f4"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImageWorld.ts",
+      "bytes": 155,
+      "gitBlobSha256": "3d097b85e4ce356282049239c662dfb308f88714801aa8ca44aa6578aabc46a1"
+    },
+    {
+      "file": "packages/pinta/src/export/regionScene.test.ts",
+      "bytes": 11256,
+      "gitBlobSha256": "6e2314012f430ea6a94f072c3b35ca1da89d4953562b28849902345d8d26b55f"
+    },
+    {
+      "file": "packages/pinta/src/export/regionScene.ts",
+      "bytes": 6473,
+      "gitBlobSha256": "d15be444039298457dd1739a8e22fb7b137e72f7b9c4b7a5bc54b56a6bf4a917"
+    },
+    {
+      "file": "packages/pinta/src/export/regionSceneDrawing.test.ts",
+      "bytes": 8578,
+      "gitBlobSha256": "941219e1e0f063e7363dee5876e153adafff8268f4a2d4e7c799cd9c6694f8fa"
+    },
+    {
+      "file": "packages/pinta/src/export/scene.ts",
+      "bytes": 10480,
+      "gitBlobSha256": "b377b8cc1bd35e2f549e2403fb282b77e6dda2e12c9d12c67dac90310e7e1acc"
+    },
+    {
+      "file": "packages/pinta/src/export/sceneDrawing.ts",
+      "bytes": 9547,
+      "gitBlobSha256": "00e816cdaaf5a171d02189c5faa7e094e8189d39c6a7bdaeea4a9b50b631b3d7"
+    },
+    {
+      "file": "packages/pinta/src/export/zip.ts",
+      "bytes": 9497,
+      "gitBlobSha256": "750c3b619b6f59f643cd3f130f79e2ec6c0863021c8570c9f5fd35793c41295a"
+    },
+    {
+      "file": "packages/pinta/src/index.ts",
+      "bytes": 2307,
+      "gitBlobSha256": "d251f6860639a995f408c69738e9d364e84bc3760bf77bc856690bd2e2b69d84"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityDb.ts",
+      "bytes": 3953,
+      "gitBlobSha256": "fddc29d4b8ecae4804a46bf846c478d130c33de89888aa852e8913b6858274a4"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityKeys.ts",
+      "bytes": 401,
+      "gitBlobSha256": "c7827f00fb4d585b3a443aaaa9d27edb4b75dd3fffbdc86766a9b9a556c5fc9f"
+    },
+    {
+      "file": "packages/pinta/src/state/causalEditorLocks.ts",
+      "bytes": 1338,
+      "gitBlobSha256": "a4bbc62ed565b7f67f82ebe02a9d8b27ea486bc7536a172ada9071850e0d88e8"
+    },
+    {
+      "file": "packages/pinta/src/state/clipboardRegions.test.ts",
+      "bytes": 2123,
+      "gitBlobSha256": "26a5637cffd2840a33aaf23a65da942ff1437e06f80a238c15b7dc7d8887eac8"
+    },
+    {
+      "file": "packages/pinta/src/state/clipboardStore.ts",
+      "bytes": 10251,
+      "gitBlobSha256": "6f486808137adf3ee829f9a53c06575e0339f3822e2957fece1d2b11e3598449"
+    },
+    {
+      "file": "packages/pinta/src/state/editorGesture.test.ts",
+      "bytes": 2463,
+      "gitBlobSha256": "2bab8235f57fc4b9aa127ba6b5fa959d7301a7df73b469d16e6f3bbb55a3ef37"
+    },
+    {
+      "file": "packages/pinta/src/state/editorGesture.ts",
+      "bytes": 1270,
+      "gitBlobSha256": "65619ea944f0aa14beefc76d4f3f1a4c014e7abb4fe52e14c809f59d8339a20a"
+    },
+    {
+      "file": "packages/pinta/src/state/editorJsonAdmission.test.ts",
+      "bytes": 5731,
+      "gitBlobSha256": "4124238484fc3c45bf7e1621c312ad7ea9a149c93bdace1108fe26923343ad26"
+    },
+    {
+      "file": "packages/pinta/src/state/editorMetadataAdmission.test.ts",
+      "bytes": 3122,
+      "gitBlobSha256": "5888afa7ff8fd694f91ff91e4beb4762a098d5afde40602f2911aef317d280e9"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.test.ts",
+      "bytes": 19833,
+      "gitBlobSha256": "5d2354c80f49b19ea3962e547fa80b2617a6ffcb92f440f5bec5dec27babdf3c"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "bytes": 17295,
+      "gitBlobSha256": "0a65168a24c65847ade6580e812b75937120eeb37b9b6c9e3fbcf379f84ed3ef"
+    },
+    {
+      "file": "packages/pinta/src/state/galleryStore.ts",
+      "bytes": 20864,
+      "gitBlobSha256": "8bb2e0f325db9b1fff68faaab1ff6d053bdb249fd2b45228e9ab3cb1dfb53f21"
+    },
+    {
+      "file": "packages/pinta/src/state/importPlan.ts",
+      "bytes": 5218,
+      "gitBlobSha256": "e5809f9385e3fca129db03c9c79e415fa655354a2b1bf18c47fcbf9de9753367"
+    },
+    {
+      "file": "packages/pinta/src/state/localAssetAuthority.ts",
+      "bytes": 18543,
+      "gitBlobSha256": "2c592203151a72872a4be1a2396504fe337e1dd7d721a7a5da13d4c487869d00"
+    },
+    {
+      "file": "packages/pinta/src/state/localAuthority.test.ts",
+      "bytes": 17547,
+      "gitBlobSha256": "99f5b2bdd6679daadebfa8b17a933f773002cdadec2085d89b1f92c539dc0bbe"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalArchive.ts",
+      "bytes": 13361,
+      "gitBlobSha256": "7cb6ed05ae4d7ffa58ccb1c0bfea9d4ec2a46800f36372aa76622ee0d5038a24"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalOutbox.ts",
+      "bytes": 60228,
+      "gitBlobSha256": "3f677dad015a7773ab82c7d2a0d3975cd50bddf20b9f0f4ae7b354122461f262"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalPins.ts",
+      "bytes": 5930,
+      "gitBlobSha256": "5b0ab64e164deccb12519552f02d46cb076b020d04aea81f076097f0bd749b39"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalRecovery.ts",
+      "bytes": 9214,
+      "gitBlobSha256": "339c6df3fc953303f7a1e998506b14d57a3299fb7864f4389e29ef8b1122d872"
+    },
+    {
+      "file": "packages/pinta/src/state/localChunkStorage.ts",
+      "bytes": 11220,
+      "gitBlobSha256": "9b4c700bc1bab843d7ab7e37f2a562e703cdf16048ac69f101d4de391ecb948e"
+    },
+    {
+      "file": "packages/pinta/src/state/localCompatibilityIsolation.test.ts",
+      "bytes": 2500,
+      "gitBlobSha256": "c2e284196e57e936fa9f75f3d4baa5a88725047a88bc5d3479c794a5eb8a1ae5"
+    },
+    {
+      "file": "packages/pinta/src/state/localCompatibilityIsolation.ts",
+      "bytes": 3614,
+      "gitBlobSha256": "86ea73046fdb6826284d6571fc6cea128e51237392a8f0dd5ee82b1950cf0cfc"
+    },
+    {
+      "file": "packages/pinta/src/state/localFutureRecovery.test.ts",
+      "bytes": 12319,
+      "gitBlobSha256": "2444351b9ff8061bea0ba50dc86c6d7d83ae62578088bb7dbaf87dba6a6653b0"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionAssetAuthority.ts",
+      "bytes": 4597,
+      "gitBlobSha256": "bbfaf621dceef00cf9a90e8603f4f2f277213e419239b878f2aaf7c1345c0454"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionAuthority.test.ts",
+      "bytes": 11055,
+      "gitBlobSha256": "64a7c8d8ffa9dc80572c08035a1e7d540b5f80e3bd82f374189cec9d199cfc4e"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionChunkStorage.test.ts",
+      "bytes": 10735,
+      "gitBlobSha256": "2180d614cdcf564d2bd7ef791210f5d0ad2a93513849ba987e8989a0ef341562"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionChunkStorage.ts",
+      "bytes": 8207,
+      "gitBlobSha256": "41dc1e37579f2a23928f9b66f4f10fd9033358ea487f0f0bb5b4328331530ea3"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionPersistence.test.ts",
+      "bytes": 13303,
+      "gitBlobSha256": "767668810d19e652b7545f6e2b03143b2dfe011d927b784851d47361075e7b21"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionPersistence.ts",
+      "bytes": 2177,
+      "gitBlobSha256": "809a2404ccbcc2c309fc9c2095ee7d01c57ab47976ba06810a9a637791f5b894"
+    },
+    {
+      "file": "packages/pinta/src/state/mapSetEditorStore.test.ts",
+      "bytes": 2418,
+      "gitBlobSha256": "de9e6c14e65e9a9a9ba18c5aa280659679b0275cce45d0b1291bf7751b9cd0d5"
+    },
+    {
+      "file": "packages/pinta/src/state/mapSetEditorStore.ts",
+      "bytes": 2572,
+      "gitBlobSha256": "1ad9b1b66b95c99ed680c916a0b815277877ff7bad276af9e9cc740d95193934"
+    },
+    {
+      "file": "packages/pinta/src/state/paletteLibraryPersistence.test.ts",
+      "bytes": 6071,
+      "gitBlobSha256": "571facc50b9e4be26361258c6b482480bd60e9e5e773dd64c76874b5c62f48ce"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.test.ts",
+      "bytes": 28210,
+      "gitBlobSha256": "514d496e31960fc8cea743abbc8546ab56977f49d1183957c7fb607a97982e78"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.ts",
+      "bytes": 55787,
+      "gitBlobSha256": "e538c8abbadb2f7f4985b848013dd9b704b10f25d299492246320379cdde32f7"
+    },
+    {
+      "file": "packages/pinta/src/state/regionSceneCapture.test.ts",
+      "bytes": 5877,
+      "gitBlobSha256": "088876100389f374788586531eb6582256bb5ab2a3be6037c32d8bea246c5fe1"
+    },
+    {
+      "file": "packages/pinta/src/testing/idbMock.ts",
+      "bytes": 5862,
+      "gitBlobSha256": "d20d794e38c392091a0a357adf5f0eefae64743f45fdb08d5591dfdfe4c5a1b2"
+    },
+    {
+      "file": "packages/pinta/src/testing/regionPlatformPng.ts",
+      "bytes": 1664,
+      "gitBlobSha256": "d15793753e4df9a8536a3350575ec724f0e8ec817309e53b5b065aaf122b988a"
+    },
+    {
+      "file": "packages/pinta/src/testing/regionVila.ts",
+      "bytes": 1487,
+      "gitBlobSha256": "273dd3048f985bb44c26ad31a72fda22a8880d0d1ac112252c97244ef68e5122"
+    },
+    {
+      "file": "packages/pinta/src/testing/runPurePython.ts",
+      "bytes": 1722,
+      "gitBlobSha256": "7faabf74e03341bb559b11b6ff27e19f1d17604585345d866bc1b666a9a17168"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cell.ts",
+      "bytes": 3673,
+      "gitBlobSha256": "ed4be72ebf09f5effeb2bc0d9bb4f53938a7a8dafff526c370398d23e6a7b7ae"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "bytes": 8615,
+      "gitBlobSha256": "04e38ac9d15f7013226a81fc1c48962b86ea9af2c819749061bd71a46611b47f"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellGeometry.test.ts",
+      "bytes": 2651,
+      "gitBlobSha256": "7f4452196076572f0fd21ebd109ef1a159dd3fb6d3484f69d0d76ef48c419891"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellGeometry.ts",
+      "bytes": 2654,
+      "gitBlobSha256": "0caee5344a5c77696f2d391763d7e5bee2ecdcd0e9fa7bf97e9b17f37448e384"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunks.test.ts",
+      "bytes": 11676,
+      "gitBlobSha256": "86af686c6138aaad3cee4781d8469aa884981e368805ac33f45c07945b978679"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunks.ts",
+      "bytes": 20376,
+      "gitBlobSha256": "9a49856d8dbc5708749846fdb349121338a8c03f0300871033c5ef3e0999b451"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunksContent.test.ts",
+      "bytes": 6476,
+      "gitBlobSha256": "66e7f225006e97f1bf8c2b01645fd32663cea0f489835cb44b2e6a1249348a3b"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunksPressure.test.ts",
+      "bytes": 5880,
+      "gitBlobSha256": "0940b198f480827732f6253faad8fcdf4363f88ced810292a80599cc4290e3f0"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunksRegions.test.ts",
+      "bytes": 7379,
+      "gitBlobSha256": "f38ebc1a9a70d30269dbf67d57124a2187a8c0aaaca3f6de4ffd9a8af7c03fa6"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunksWorkingSet.test.ts",
+      "bytes": 6275,
+      "gitBlobSha256": "c9687286d3ce0b26d4ce567f65629261f44bab84b17866c95cd729d4476d7bb1"
+    },
+    {
+      "file": "packages/pinta/src/tiles/layerTree.ts",
+      "bytes": 5270,
+      "gitBlobSha256": "06dd1d32c8097a06817f6cea10fcefe3a332519a12218f3419f443167acec76c"
+    },
+    {
+      "file": "packages/pinta/src/tiles/layerTreeRegions.test.ts",
+      "bytes": 6682,
+      "gitBlobSha256": "fc6e3f19b39bb7042ea5ab2a1521769c7c40f990efa10824f48de3e173a3092e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/libraryPlacement.ts",
+      "bytes": 2957,
+      "gitBlobSha256": "b7651e40588957cb332735c7281fa23095e4701d6a34e427801841500d923e57"
+    },
+    {
+      "file": "packages/pinta/src/tiles/libraryPlacementRegions.test.ts",
+      "bytes": 2507,
+      "gitBlobSha256": "3be84ca6f1c710c761d0647ba7b371985faf77d7493866d492a7d2e04b7a38e9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellEdits.ts",
+      "bytes": 3215,
+      "gitBlobSha256": "198291bd341c0397e6e28f29692c08676c3772c6884de4556b6d6e867cc99bcc"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellReader.ts",
+      "bytes": 4337,
+      "gitBlobSha256": "a144e7650926248a9068a7d3b4b54eacc5a96fbeedbba413d371c9505c76fddf"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "bytes": 662,
+      "gitBlobSha256": "6a589449e515f6dd54da89d65d00226a85e8e4116a95da208b3ec58f4c61511a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapFlatten.ts",
+      "bytes": 2805,
+      "gitBlobSha256": "f6b805b51e141c8be05b5cb0cb65745c47b9ac3c2f7dcd6e7aa2e285f30e685b"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapImageBudget.ts",
+      "bytes": 1470,
+      "gitBlobSha256": "608c7bd4308c1cccd22a68595f6138875ab77e51a7342c914a9bacbde3758adb"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapImageRegions.test.ts",
+      "bytes": 5221,
+      "gitBlobSha256": "50f3b7e1318dba404b049f0998920cf8074744c203c9043564bfd82992b2cd21"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapObjects.ts",
+      "bytes": 12940,
+      "gitBlobSha256": "02efa26ed3daac1818a740ee8b346811c9226b46a76913b56f24e8bc86e44da9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapQueriesRegions.test.ts",
+      "bytes": 5045,
+      "gitBlobSha256": "bc52baf5a9ce0a1fb654cacb776d06d1453c3fa815226571aec5822733753d78"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapTilesets.ts",
+      "bytes": 5135,
+      "gitBlobSha256": "6a8b054634e48f96dd22dd7d07237ddf6ff0656312278201c31f127cb4645cd9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapWorkflow.test.ts",
+      "bytes": 5048,
+      "gitBlobSha256": "b9f766c79044033990727843e3f6b3242e07ac0f1882aba36c0654d9c527a58c"
+    },
+    {
+      "file": "packages/pinta/src/tiles/minimap.ts",
+      "bytes": 6465,
+      "gitBlobSha256": "a97159735c3f60bea34ab99f27bf870575e742664c1c60aa449327c3f346bc54"
+    },
+    {
+      "file": "packages/pinta/src/tiles/minimapRegions.test.ts",
+      "bytes": 7654,
+      "gitBlobSha256": "bca7a3af401b500d56750b58cefeb5d6468e90d2e43dbb4abadae4ea7fc9f58f"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectEditorSpace.test.ts",
+      "bytes": 3465,
+      "gitBlobSha256": "25342149aff0e1e3bcb546f0669f53a7e333edc094089fcf99a173f7eafe872b"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectEditorSpace.ts",
+      "bytes": 2923,
+      "gitBlobSha256": "8497d5eed0893b67800f7eb3ee716dc5d8624bba70f76e3061b0dcb65473f75c"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectRegions.test.ts",
+      "bytes": 7945,
+      "gitBlobSha256": "490d3eb721c526e1c494cfbc0e7f9f18a8e11eb418738a553cdf7b3f2055b41d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatter.ts",
+      "bytes": 7771,
+      "gitBlobSha256": "202db7ed134c527126b5bfbda752a2701bd6726e6a77f98aae891d72d8fcd22a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatterRegions.test.ts",
+      "bytes": 10194,
+      "gitBlobSha256": "39791fefdd910b45c87717a729e5a774d43cc3507ef26e95f69e9ba792f12e29"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatterStroke.test.ts",
+      "bytes": 3465,
+      "gitBlobSha256": "6dc315e8bb1d79b2adb0a74bb1dcff01c92d05cb33d9df8ac1c724937bbc742f"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatterStroke.ts",
+      "bytes": 2126,
+      "gitBlobSha256": "c65bcb7063f8dddd1f8a2b497e2cb932091d29fb3f4fd83d61c3cb04da867e10"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectSelection.ts",
+      "bytes": 6897,
+      "gitBlobSha256": "13135a8e84f7548f650ab4ca0f140e2913bc3adbc42a751f6fd607d3b850ea7e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectTemplate.ts",
+      "bytes": 3242,
+      "gitBlobSha256": "d1ceb2abcd9eb1aefd14fa64febc762674b7847e67a38b9bf407745dd7cfd177"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "bytes": 6738,
+      "gitBlobSha256": "8898eb5bfb0d3b7a3ca2e601aac072624720264136f3eb6d6377369d7d48f4c2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "bytes": 9485,
+      "gitBlobSha256": "5c19d5c4d5ad6a7476c7f97f2933541568247840cf00ea08c1bab60aa12c6200"
+    },
+    {
+      "file": "packages/pinta/src/tiles/renderTilemap.ts",
+      "bytes": 7310,
+      "gitBlobSha256": "04cfade7061ebf6ed9f9376870470bbe99f94c75448ee8557a7dbd91922ec1ca"
+    },
+    {
+      "file": "packages/pinta/src/tiles/renderVectorTilemap.ts",
+      "bytes": 8108,
+      "gitBlobSha256": "d6d346a1779fcfb94bf4137ecbcaa5f103b264d8c80b7be35e57a4bdcf87b494"
+    },
+    {
+      "file": "packages/pinta/src/tiles/resourceVersions.ts",
+      "bytes": 10404,
+      "gitBlobSha256": "fbba7d0a562e6b98cf08e06a7f28f7c015ee6e5dbda16bd0444c7a006e68a1e2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/resourceVersionsRegions.test.ts",
+      "bytes": 12467,
+      "gitBlobSha256": "15ab9b3214f7e7859d7edced9ca63779276a52ab96251b06be486051a4bf63e4"
+    },
+    {
+      "file": "packages/pinta/src/tiles/scatter.ts",
+      "bytes": 2205,
+      "gitBlobSha256": "f95597b40b22d3099f4b512dff573a90d64e8f3547f69ab9fd0ae1e9a904ebca"
+    },
+    {
+      "file": "packages/pinta/src/tiles/scatterRegions.test.ts",
+      "bytes": 4476,
+      "gitBlobSha256": "31c3b0fc7ab07546ae553c0ec2efcfa894fffc621d6fec3e950c76f0fa36b74d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/sets.ts",
+      "bytes": 21169,
+      "gitBlobSha256": "66b5e5e9216e846c3edfd43ca24e03f705019c14f8e3d55297e8cee4f28a372d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/setsReferences.test.ts",
+      "bytes": 5989,
+      "gitBlobSha256": "b597018806cc19385ce316914ee04f2599013e64061a567ba4425177d1662e0a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/setsRegions.test.ts",
+      "bytes": 12936,
+      "gitBlobSha256": "64c2932afaee54a20cb844242c9f276be0fefef2a1216ef503b1e2dadf8227d3"
+    },
+    {
+      "file": "packages/pinta/src/tiles/stamp.ts",
+      "bytes": 6118,
+      "gitBlobSha256": "1d50c42fc31fa89294749b353ba21a1dd26bf6ec2ecfa19137ba6b9e8c473adc"
+    },
+    {
+      "file": "packages/pinta/src/tiles/terrain.ts",
+      "bytes": 9086,
+      "gitBlobSha256": "3e19b27b4912bc06a5087fb378b4ec695bae8589d308a0bea928cfd4494c8dfa"
+    },
+    {
+      "file": "packages/pinta/src/tiles/terrainRegions.test.ts",
+      "bytes": 7262,
+      "gitBlobSha256": "d128a14b179c32b12fa8cc54903fa0a0d8361b16febe36049bc7d1c1c76e4b8a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "bytes": 22804,
+      "gitBlobSha256": "dc7a2fa95a38f553a832ebb611ac030c9184e8fb97a33c9b35f048300e94f82c"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetConsumers.test.ts",
+      "bytes": 2839,
+      "gitBlobSha256": "b4c5dacd2d7ff3697c7aa1e0574d6d5dd7a5db674fddd4e755d32a4daea58e90"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetConsumers.ts",
+      "bytes": 1551,
+      "gitBlobSha256": "a7d4dfe3369e139ec9658b53bb0ef3007503b2e65a0ce635ef3c4926ebe71024"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetMetadata.test.ts",
+      "bytes": 12470,
+      "gitBlobSha256": "79de93ecf59bb6e815e41b2204e36a7bce7f09cf8d750437c1b5802699d26795"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetOps.ts",
+      "bytes": 16380,
+      "gitBlobSha256": "a07fc487df4cef78bd920cb861bc3b256f80685a723b78597cf4675bcb8e3694"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetRegions.test.ts",
+      "bytes": 6791,
+      "gitBlobSha256": "21a3da9188f08e31a45ca2903d3d942008a389f3ad79602e24e90dcc743e624b"
+    },
+    {
+      "file": "packages/pinta/src/vector/svg.ts",
+      "bytes": 11610,
+      "gitBlobSha256": "8a447fa3cb80a5c561311653a5cc98f4564946de0e136e1366891b99e15592b6"
+    },
+    {
+      "file": "packages/pinta/test-setup.ts",
+      "bytes": 770,
+      "gitBlobSha256": "e574d7ca3859a5b6dc422b00d3016415e98318133151d5c344223d4817c29d7d"
+    },
+    {
+      "file": "packages/pinta/tsconfig.json",
+      "bytes": 1434,
+      "gitBlobSha256": "2207778f27d10325eb6e7eeeb1e72220d47b444b6eff5604420756de1e642ee9"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-pinta-2d-browser.spec.ts",
+      "bytes": 8794,
+      "gitBlobSha256": "32f2f301a03298de13b30d3d5695d68493a5490f873907082c7aee3581830642"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-pinta-regional.spec.ts",
+      "bytes": 3833,
+      "gitBlobSha256": "2fedb34057f11408c061737455f3e1c37056ffcc798cf5b4aff518c7b73ee522"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-backup-regions.flow.ts",
+      "bytes": 2247,
+      "gitBlobSha256": "c1648a46ee8507547e025156df0fe52ab2c36266c6b8522969ae2643b4c9ddb7"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-brush-regions.flow.ts",
+      "bytes": 3839,
+      "gitBlobSha256": "fda1fd0f038593d3cf06500fea2c4d84b4be6b771e65f51413fbb3b4ef0f63f6"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-brush-workshop-scenes.flow.ts",
+      "bytes": 4999,
+      "gitBlobSha256": "4a0017a1f2bcfdf8887da2cac28018bd8434020af983c816de09fdbe259b8828"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-causal-local.flow.ts",
+      "bytes": 28326,
+      "gitBlobSha256": "c3cece5691c9156ed5c16d250c26e86ced80b09fb2c2836f585707248454aa2f"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-clipboard-regions-scenes.flow.ts",
+      "bytes": 5526,
+      "gitBlobSha256": "ec8b0e71bb8243c68586df7a301a640c9849e791f6c705d616e845f2ce69ab89"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-future-recovery.flow.ts",
+      "bytes": 15075,
+      "gitBlobSha256": "a032fc457f94cd9f66493d49ede97c389a889f2b499c7bce60a49a28168807bb"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-json-admission.flow.ts",
+      "bytes": 1786,
+      "gitBlobSha256": "a9b443dea5514930383d0f43ffeb55b77fd22ad589c5f4d13b9f37848b6bff45"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-layers-regions.flow.ts",
+      "bytes": 1611,
+      "gitBlobSha256": "b16176c9ca9732cfe09c5222619923bbe9af9e03d05be2197b3f2a55e87fa940"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-level-design-scenes.flow.ts",
+      "bytes": 13026,
+      "gitBlobSha256": "9f80fecd830a2d29126d17effb7707e7cc4cf278a7d939a3e3a56be0fe928d1d"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-cache.flow.ts",
+      "bytes": 3649,
+      "gitBlobSha256": "213d517742be83268f60056e488ab24e6fa0d3750740af71415de8d9a6a5e29b"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-geometry.flow.ts",
+      "bytes": 2582,
+      "gitBlobSha256": "8ab2c4e3d222167733f8854f726d8b87ad9c2c0d86ab2918c732bf1c92920e20"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-grid.flow.ts",
+      "bytes": 2913,
+      "gitBlobSha256": "f39342cf4a22245d88046e2576655b02083cc6db88e503965f215d22c6a70a19"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-images-regions.flow.ts",
+      "bytes": 2079,
+      "gitBlobSha256": "9d63f8153274f5b266ed8622e9710e706304ce71d1ee66863a454685d4fc9944"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-map-pressure.flow.ts",
+      "bytes": 3897,
+      "gitBlobSha256": "9851577d6b2b1bea4e7f237fc350d56ccc729db331823d4bf0b2171284caf607"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-memory-regions.flow.ts",
+      "bytes": 1719,
+      "gitBlobSha256": "32a5de7bee104a67623907b0c7c0f9eb868e44fd392e4b98b7de9e5b65a931e8"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-metadata.flow.ts",
+      "bytes": 1826,
+      "gitBlobSha256": "bedbb57b14e3bb8d985a0dd5fa1d6c7c6aab3f7b9fc5158a0580c8c6698087a5"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-minimap-regions.flow.ts",
+      "bytes": 2942,
+      "gitBlobSha256": "9c234bcbe8fd17172ff475a645b675c8ad4dea48dfe555f2cdf9e18528757b12"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-minimap.flow.ts",
+      "bytes": 4914,
+      "gitBlobSha256": "bd832a462f7acc6452fcd337c2708671961bead45429e0a5267cd783684d437c"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-object-gestures.flow.ts",
+      "bytes": 9309,
+      "gitBlobSha256": "48a4cc95292fa207a45b1b54bd0f2318aabfce74121ba322b025785089bee80f"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-physical-regions.flow.ts",
+      "bytes": 57904,
+      "gitBlobSha256": "570eb319fe332209c19302ed205f7cb1b6e079ff8ca26746f5ce94af5179cc44"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-preview-gestures.flow.ts",
+      "bytes": 5138,
+      "gitBlobSha256": "f514cf1a2950cec3bac8271d62192911e04cdf0bfe566bae7a91ebfbe714fc6f"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-queries.flow.ts",
+      "bytes": 1653,
+      "gitBlobSha256": "166910a057cd51c22f92e42676b4fd7b197e0d272d9d316516def49f5c21ed12"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-region-players.flow.ts",
+      "bytes": 4268,
+      "gitBlobSha256": "e5930d0395915718439462e999f087e29da653b1b9e0d7d6513e394f7280337e"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-region-render.flow.ts",
+      "bytes": 2085,
+      "gitBlobSha256": "33fda18610bbc0e2826b1fbc2cc8d7dbe96c61a0d024b6a05cc7c5b0d161225d"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-remap.flow.ts",
+      "bytes": 6659,
+      "gitBlobSha256": "0bd26b52d8fc95efece6949890981fb1986445b5e19c818157803d21adc7dfd6"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-render-pressure.flow.ts",
+      "bytes": 2086,
+      "gitBlobSha256": "117f43ad602ea5bdd95a27f0e205aeccaaf4e028f3c3a0daeadea985a7fce3ec"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-resize-workshop-scenes.flow.ts",
+      "bytes": 3012,
+      "gitBlobSha256": "988d2e725eead88374d87b2410d176806d308cb25017744a6b88c8d73754a2b8"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-resize.flow.ts",
+      "bytes": 6203,
+      "gitBlobSha256": "0ddcd8b7a6b0d825f94e7f5401899da1d9a7103ddc490527b662d78e4dd54332"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-resources-scenes.flow.ts",
+      "bytes": 19767,
+      "gitBlobSha256": "98c0edf8bd9dabd1b05fd03d4097e1ccf793431422ceb30ce24720e9fb810967"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-terrain-scenes.flow.ts",
+      "bytes": 17202,
+      "gitBlobSha256": "9aef690e8089dda27c69e8566ed9a9a30e326f570e2e0ae38679284cbe2258e9"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-backup-regions.config.ts",
+      "bytes": 751,
+      "gitBlobSha256": "6e906880719aa0adb3f5300086c9a9a67bbe2882fb70c9fbdafb66a32ce1d0cb"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-brush-workshop.config.ts",
+      "bytes": 769,
+      "gitBlobSha256": "d0d553958c8dfacf2382ecb9081507e15585653540da702f9439343396b92514"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-brush.config.ts",
+      "bytes": 650,
+      "gitBlobSha256": "977e4f619b04c56904533e2c90a8837b4cef9e37f48fde61c32978cbdff52b00"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-future-recovery.config.ts",
+      "bytes": 366,
+      "gitBlobSha256": "09dd3ab8b4b5ddc1497b921192f4a0c99f7e34f451838f3028ad394a2eef160e"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-json-admission.config.ts",
+      "bytes": 757,
+      "gitBlobSha256": "4c5e6d6db5c811ad0c712dbb3cb10a2d83741ca8d81e759aae2c7fc6c96ae36f"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-layers-regions.config.ts",
+      "bytes": 751,
+      "gitBlobSha256": "0fd7723a5bf7a605e40b3cea5b8c898927064ec81673498280c34ee62ddd0a79"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-cache.config.ts",
+      "bytes": 839,
+      "gitBlobSha256": "9e4d467a0d343758922ab9ce1542d57530c70f3c19ff1f54dfe1b30da142aa6f"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-geometry.config.ts",
+      "bytes": 654,
+      "gitBlobSha256": "681896f9a1360def385d736027b104704b9b320da818f54c502b38b6ebf91b4d"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-grid.config.ts",
+      "bytes": 711,
+      "gitBlobSha256": "5c47993d84e0eb0847484a389bbf50fd67ed34bb628d3ff4fcc65b4ca8832448"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-images.config.ts",
+      "bytes": 687,
+      "gitBlobSha256": "95dd239818a77c8a23a8bfaa08d540c5111bc449a69031639a3fa27d1fc881b6"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-map-pressure.config.ts",
+      "bytes": 849,
+      "gitBlobSha256": "090a879c0ead4b1013ba5833944885a9a5e0ad716354ffa205c898a49edae376"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-memory-regions.config.ts",
+      "bytes": 714,
+      "gitBlobSha256": "e0d2ab95d072fb5b04e1a16c7bc5903aa450c68eae11bf8d7195d3778805afc2"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-metadata.config.ts",
+      "bytes": 724,
+      "gitBlobSha256": "b8a9c7ccf774c69e102b519ccb13032638264a0f70e897cd39279e0858b41bff"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-minimap-regions.config.ts",
+      "bytes": 685,
+      "gitBlobSha256": "9f10de48bdbed8b565a53887f361ca4bd9a764995f0ebc6a68c150568fd5cf48"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-object-gestures.config.ts",
+      "bytes": 636,
+      "gitBlobSha256": "4390af6a27dfc962d234fa5f2ce10bb141557a8743f0f952c07836133c04cfb3"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-physical-regions.config.ts",
+      "bytes": 1027,
+      "gitBlobSha256": "cf5dba033b7d55716271490b09180f4bd9dc4abfaf2958deeccc4e5e41a62a10"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-preview-gestures.config.ts",
+      "bytes": 787,
+      "gitBlobSha256": "ec757268ede6382046061dba344fe747c1df91c943222d25643f47b822c3d408"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-python-2d-browser.config.ts",
+      "bytes": 607,
+      "gitBlobSha256": "9036f0166e7c8f5dac66c0a968b4ce61dc7ef3cd667a3c5fd5a97a00c66e8a65"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-python-regional.config.ts",
+      "bytes": 629,
+      "gitBlobSha256": "c55f319a275d34a76d5cd6fe815275093ad8fb5be96a63a615f55be6afc0439b"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-queries.config.ts",
+      "bytes": 719,
+      "gitBlobSha256": "eb4fa9668ecd556e2bef6ba05b6f9c2e75d5b9146e721c0cb833bdea59a2c6e6"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-region-players.config.ts",
+      "bytes": 461,
+      "gitBlobSha256": "3bee662eff001dc8411d299878d2c36cda91e7559a322edc8379425414368ab0"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-remap.config.ts",
+      "bytes": 678,
+      "gitBlobSha256": "56cac9ba5ee91f2dc45f43de9cf6217641c0b24f72f1662fbc2d3c1fdaa3c35e"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-render.config.ts",
+      "bytes": 755,
+      "gitBlobSha256": "bff0da7d8f1530f5ace94276c2757ff527522eab3248ced1c46aaacbd6afd1c6"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-resize-workshop.config.ts",
+      "bytes": 704,
+      "gitBlobSha256": "871416bd934305a2e9736d83fab543bf364c8b13f1d638029ee374df8442b54f"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-resize.config.ts",
+      "bytes": 676,
+      "gitBlobSha256": "3e9eefadd5680c819123774dba3a4f63715591746833731c13e8f59ff9a9c209"
+    },
+    {
+      "file": "packages/studio/scripts/gen-pinta-region-runtime.ts",
+      "bytes": 3181,
+      "gitBlobSha256": "10abdbc72bcba3f171b61d3800a6dda1b360f7118f675b8f6a09c805cfe12566"
+    },
+    {
+      "file": "packages/studio/scripts/gen-pinta-scene-python.ts",
+      "bytes": 2670,
+      "gitBlobSha256": "6ceb61fffbfb8eeb78984064eb8466b20eef3ca492feab52dbd2b032358a8a11"
+    },
+    {
+      "file": "packages/studio/scripts/qa/pinta-legacy-personal-probe.mjs",
+      "bytes": 4491,
+      "gitBlobSha256": "614173e9f90bf49acc344b7d4e5bb08a672d4f72d399f9a4b1ecb46bd0591d7a"
+    },
+    {
+      "file": "packages/studio/scripts/qa/pinta-personal-authority-probe.mjs",
+      "bytes": 6938,
+      "gitBlobSha256": "6aad70db7c83e2f71a82b0b01237bd47838a7601a649382c2b711712d83891fb"
+    },
+    {
+      "file": "packages/studio/scripts/qa/pinta-regional-boundary.cases.ts",
+      "bytes": 12326,
+      "gitBlobSha256": "fb1d5aad3e8f92736ad52f9379ca7b82bb1d0e63524f3adea8da05941d2f46f0"
+    },
+    {
+      "file": "packages/studio/src/asset-library/__tests__/personal.cases.ts",
+      "bytes": 19795,
+      "gitBlobSha256": "8830cf5f5784b9ac198f8ef8dc76d6c04abe4ece4196bf7bf6686d525a3e6581"
+    },
+    {
+      "file": "packages/studio/src/asset-library/__tests__/personalSync.cases.ts",
+      "bytes": 99842,
+      "gitBlobSha256": "37d95ce7cbb8d6681695338f579093d0fda4d3225535278e56d96744eb632f1c"
+    },
+    {
+      "file": "packages/studio/src/asset-library/personal.ts",
+      "bytes": 18375,
+      "gitBlobSha256": "fc266e6904df779d773b11100e41c46b82069740eccd27277c36ac2b65317fa1"
+    },
+    {
+      "file": "packages/studio/src/asset-library/personalAssetMerge.ts",
+      "bytes": 3292,
+      "gitBlobSha256": "7586476a0ae5edae0afbbce8d29b852ae67f186d89960d5f7676ce7bcc58f2a7"
+    },
+    {
+      "file": "packages/studio/src/asset-library/personalRegional.test.ts",
+      "bytes": 12034,
+      "gitBlobSha256": "e712abec7dee22585b03707cfaaf36f6bd5a16eade66cabe1d96a73b84b462bc"
+    },
+    {
+      "file": "packages/studio/src/asset-library/personalRegional.ts",
+      "bytes": 6618,
+      "gitBlobSha256": "2769eaa0c99d53ebefed45970e4e79ba0f0bfabff21977b4126bdcc3b40c0214"
+    },
+    {
+      "file": "packages/studio/src/asset-library/personalStorage.ts",
+      "bytes": 7604,
+      "gitBlobSha256": "f555415324a99e0b57456bfdd275e94c6608ec035b29efa9f18042847c8d5496"
+    },
+    {
+      "file": "packages/studio/src/components/assets/__tests__/AssetsPanelEditDrawing.cases.tsx",
+      "bytes": 31535,
+      "gitBlobSha256": "f9d2d03ed4dcd7cfb05541a38d4dd82ba0de3e344e1994edfd00b630c1b12387"
+    },
+    {
+      "file": "packages/studio/src/components/assets/__tests__/DrawingSyncWatcher.cases.tsx",
+      "bytes": 7714,
+      "gitBlobSha256": "e1b4da16b34b3237d2c237ddb16d71c5429dfbee846a8e97c949c3d6550da358"
+    },
+    {
+      "file": "packages/studio/src/core/__tests__/pintaRegionalMaterial.test.ts",
+      "bytes": 8597,
+      "gitBlobSha256": "f298186be34bebcec9b909d7c559faef01d328c449682f4e7e0ebbaad81de481"
+    },
+    {
+      "file": "packages/studio/src/core/pintaAuthoredPngVersion.ts",
+      "bytes": 1727,
+      "gitBlobSha256": "745bfd41ea92c9596964362775f07e9b41a27dcaf4f6d73035c1d813ff25c347"
+    },
+    {
+      "file": "packages/studio/src/core/pintaRegionalMaterial.ts",
+      "bytes": 4573,
+      "gitBlobSha256": "3d27eb47de3db9fc35eb9c6928893be9f6ab1849bd97eaef52b6a191e8215215"
+    },
+    {
+      "file": "packages/studio/src/core/pintaRegionalReference.ts",
+      "bytes": 585,
+      "gitBlobSha256": "61fe3f3f5c7295e924f428e39e4914bd03a1fc977a07b32e3d4710ddc34221d4"
+    },
+    {
+      "file": "packages/studio/src/core/projectAssets.ts",
+      "bytes": 37136,
+      "gitBlobSha256": "e9419f0000f6228437c6448832e67bf5eaffcd7732742b04eb23b2f40db10239"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+      "bytes": 238286,
+      "gitBlobSha256": "f73aacb769b40c46690819d266ad84e0f0926c3d2e848f9d750cc23a07ff4daf"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/utilities.ts",
+      "bytes": 18934,
+      "gitBlobSha256": "2da91df76d5e198a07fc03b6b5623087eb8f09ff751cf6c1f6909eb25296a347"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/worldTiles.ts",
+      "bytes": 38660,
+      "gitBlobSha256": "fff3da0ef60809854b7dad5ad4d011d800f0f4e7253ad03e5d4e941d0ef5bc4c"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/regionEngines.test.ts",
+      "bytes": 7248,
+      "gitBlobSha256": "9a2e7f7d184bfb0d31d8436706846bfc9f2b97025c2cea39a80f114914e24cdb"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/regionFixture.ts",
+      "bytes": 7507,
+      "gitBlobSha256": "a5de4d84b2822d405b7e1341eae99cab6d66475efe794b9899cb78aa2b0df591"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/regionLegacyCollision.test.ts",
+      "bytes": 4892,
+      "gitBlobSha256": "881639a0ef39c6ba02794ee897ed14cff4cdfd63d3b84fb819bcc28a75b05953"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/bootstrap.ts",
+      "bytes": 9501,
+      "gitBlobSha256": "483d734ab6d8183d93e237159ba03f1709a896f7b7d131adbc686dfe0ee2b549"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionBootstrap.ts",
+      "bytes": 1940,
+      "gitBlobSha256": "610bb45cc18d80d50b7a3131ab9ce822691fb873ef0b1512cd8da6c7f8be6c9d"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionHostSource.ts",
+      "bytes": 4779,
+      "gitBlobSha256": "f4a8e756e5bea0efa4677972a289b81ad83d67f64ab0890500b9acb02720e3da"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionLegacyCollision.ts",
+      "bytes": 6689,
+      "gitBlobSha256": "9b12941c9e545744cb45e274107fad6b330341a28612086ce0fb8aabf6fd9c42"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionRuntime.generated.ts",
+      "bytes": 21824,
+      "gitBlobSha256": "cbed7c3a115b78e1cef16caa43474372e43315286b0cef7bb33b1dffaaa0f702"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionRuntime.ts",
+      "bytes": 12350,
+      "gitBlobSha256": "224d9dc781d86ec84863ad5f8a20c6edcf02b5d4c7e49698bd936b3f020470d0"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionWire.ts",
+      "bytes": 2442,
+      "gitBlobSha256": "15d0ab5ca774196fcb88545b997904cc7ecfdee80daccf09a49447ba9f2d1061"
+    },
+    {
+      "file": "packages/studio/src/preview/assetsBridge.ts",
+      "bytes": 16977,
+      "gitBlobSha256": "c8a153f5102e48123c794d9b166aa063731fdb425f9f1dfbe37f0df78926c55e"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frame.ts",
+      "bytes": 22886,
+      "gitBlobSha256": "dfd6b9abdb7bdb45e615cf101e979277eb931e91567e2e36c539225132e5e590"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/interpreter.ts",
+      "bytes": 33788,
+      "gitBlobSha256": "0ca2a44c794f84885ac6169fddfc1efa979704da85dfaf2346ebeda76abfbe21"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/protocol.ts",
+      "bytes": 13627,
+      "gitBlobSha256": "effb567322d685e3c5903d19b608bd8b0c083fbe78085b033f18344fc5ed7d0d"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/py/pgzero/_sz.py",
+      "bytes": 38078,
+      "gitBlobSha256": "f2c4f900ba2b83cf165ffab34aef90c31caea0768933791e5397d6aa27578cea"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.test.ts",
+      "bytes": 21532,
+      "gitBlobSha256": "8fbfc0af1f5585f303bc3c57762620e6d60c7040a8f35376200dbdce90785690"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.ts",
+      "bytes": 43916,
+      "gitBlobSha256": "acf2f349671d8fc2f1c060b509d1e2d4c4ed32b9e11994a8baf7d04a1735b286"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaBrowserSceneSource.ts",
+      "bytes": 3185,
+      "gitBlobSha256": "509dfb40c1e3d416784b6cd81d8318d1adc494982cc9e5a7f2657fd0c15eccef"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionProtocol.test.ts",
+      "bytes": 5201,
+      "gitBlobSha256": "71dd44cb0c6d2ad00747bb16d413e1f3e5b093b32695cc92fe783bdae212557a"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionProtocol.ts",
+      "bytes": 6066,
+      "gitBlobSha256": "386091cd73773f6f25ba9765e04bf57587f745d1dfd9dc94972e9d0371560524"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionTextures.test.ts",
+      "bytes": 2804,
+      "gitBlobSha256": "e4bb65b16810ad630ac4c2c384eb46fa29b6ef8860f621567faebbaba984bba4"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionTextures.ts",
+      "bytes": 3895,
+      "gitBlobSha256": "720ad8b7f8ae517fe9ca4c937f57f534dca26f0e2a88bdbfb7b9545aa677e2d5"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pygame/py/pinta.py",
+      "bytes": 76180,
+      "gitBlobSha256": "bbcbeb402deb64d6c7d67abc709e6d79b5a94f3678936e8f24c49cf5f0ba0fee"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/__tests__/module_test.py",
+      "bytes": 16042,
+      "gitBlobSha256": "38c405c06d8129eb31f0da7dc1186b1613ab3af21eeb561d679187819db5f929"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/protocol.ts",
+      "bytes": 12357,
+      "gitBlobSha256": "7a4fccb600edbd0dbe50761f4158cda2f67d972aff1018f802c69e80b86f6edd"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/py/_szraylib/_rt.py",
+      "bytes": 18298,
+      "gitBlobSha256": "a8500b46459919a5a6d16f70d1050a09c069f0f41b9119bf4a828f70378b7b50"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/renderer.ts",
+      "bytes": 71017,
+      "gitBlobSha256": "2e1bd961216bd50a390e566fc18b91b4b5bb212027e5ec0a98fef352b642a751"
+    },
+    {
+      "file": "packages/studio/src/state/idbTransaction.ts",
+      "bytes": 16491,
+      "gitBlobSha256": "6e767103de5f1bba0b432d40c59e77c2b4faf983d818dd5ce117a3ae15a91cb9"
+    },
+    {
+      "file": "packages/studio/src/state/pintaMapBundle.ts",
+      "bytes": 3607,
+      "gitBlobSha256": "7756bd319983305e9c6b635956d316b039bf1bf90607b5f09906d354bb6f0d69"
+    },
+    {
+      "file": "packages/studio/src/testing/fakeIdbStore.ts",
+      "bytes": 19374,
+      "gitBlobSha256": "18ebc1d506cf483217348c2ea55bba582b6affceacb24690115c1b6480c223a9"
+    },
+    {
+      "file": "packages/studio/tsconfig.json",
+      "bytes": 2780,
+      "gitBlobSha256": "0bbcc9371fae1ff94e8f1d4fbaa4ee71793a8f1da8893320bc29a8426da38f31"
+    },
+    {
+      "file": "scripts/ci/pinta-causal-build-flag.test.ts",
+      "bytes": 933,
+      "gitBlobSha256": "250929b1ed3e6b43da872a40d1e663917e1ad70aa7779046b52f0fecad8de39f"
+    }
+  ]
+}

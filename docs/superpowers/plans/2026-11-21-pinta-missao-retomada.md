@@ -828,3 +828,37 @@ A homologação autenticada nova exige entrada limitada ao perfil de QA, tanto n
 BFF quanto no Members. A flag pública precisa entrar no build Next das duas
 comunidades; o padrão permanece desligado. Nenhum destes testes ativa formatos
 regionais, catálogos, versão de motor, release ou rollout público.
+
+### Corte integrado V4 e nova revisão — 22/11
+
+O corte `3ecd92a04` incorpora a staging `c4c7d15e9`, preservando os arquivos
+funcionais do Molda recebidos do remoto. A fila local V4 conserva documentos e
+recursos observados por edição no mesmo CAS/orçamento, inclusive portas
+transitivas e a primeira edição anterior ao epoch remoto. O download dos bytes
+originais de filas antigas continua disponível offline, com aviso quando não
+constitui backup completo. A revisão independente cobre 29 casos/264 asserções;
+sete ensaios de Chrome exercitam IndexedDB real e reabertura. O Pinta completo
+passou em 2.874 casos no corte `e1deb37ad`, anterior à biblioteca PNG 5. O Core
+passou em 3.260 casos depois da integração; os tipos Studio/Pinta e os geradores
+passaram. Recibos e limites em `qa/causal-v4-integrado-2026-11-22/`.
+
+A revisão adicional encontrou outra corrida nas paletas: marcas de revisão em
+memória não constituem CAS entre duas abas do mesmo perfil. O ensaio reproduz a
+reintrodução de uma cor removida quando um GET antigo termina depois do novo.
+Segue em correção a autoridade durável da biblioteca e sua revisão/encarnação,
+incluindo ACK, 404, primeira adoção e migração. Os 80 testes aprovados de uma
+sessão não fecham esse requisito. Não ativar o candidato antes do replay verde.
+
+A admissão compartilhada de PNG 5 conserva bytes e SHA; a biblioteca do Estúdio
+ganhou armazenamento privado protegido do escritor antigo. As provas locais
+não habilitam uso sincronizado ou publicação. A integração privada do projeto
+precisa cercar também restauração/exclusão remota e demonstrar recusa antes de
+upload. Um escritor antigo não é corrigido retroativamente por guardas novas.
+O módulo Python fornecido às três extensões está em implementação e ensaio
+real; não há bump do motor, catálogo publicado ou alteração em áreas do projeto.
+
+O acesso autenticado de staging foi conferido para o adulto autorizado e um
+único perfil sintético próprio de QA. O endpoint causal ainda não foi ativado.
+O perfil sintético deverá ser arquivado e seu pareamento revogado após a
+homologação, preservando os perfis e criações preexistentes. Nenhuma etapa macro
+1–9 é encerrada por este corte intermediário.
