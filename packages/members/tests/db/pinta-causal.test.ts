@@ -577,6 +577,96 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
       entries: [{ revision: 1, sha256: doc.sha256 }],
     })
   })
+  test('a frozen two-sheet grid and a live artwork follow separate authoring units in either order', async () => {
+    for (const freezeFirst of [true, false]) {
+      const a = actor(),
+        A = put('A', 1, 'tileset'),
+        B = put('B', 2, 'tileset'),
+        map = put('map', 3, 'tilemap')
+      const before = (n: number) =>
+        manifest(map, {
+          refs: [
+            { id: 'A', roles: ['art', 'default-sheet'], indices: slots(n) },
+            { id: 'B', roles: ['layer-sheet'], indices: slots(1) },
+          ],
+        })
+      const frozen = (n: number) =>
+        manifest(map, {
+          embeddedDefaultLayout: { kind: 'tileset', tileSize: 8 },
+          refs: [{ id: 'A', roles: ['art'], indices: slots(n) }],
+        })
+      const readInUnit = (targetId: string): PintaCausalRead => ({
+        source: 'unit',
+        consumerId: 'map',
+        targetId,
+      })
+      const readSnapshot = (
+        targetId: string,
+        revision: number,
+        sha256: string,
+        layoutRevision: string,
+      ): PintaCausalRead => ({
+        source: 'snapshot',
+        consumerId: 'map',
+        targetId,
+        revision,
+        sha256,
+        layoutRevision,
+      })
+      const sheet = { tileSize: 8, count: 2 }
+      await complete(a, intent('0', [A, B, map], [readInUnit('A'), readInUnit('B')]), [
+        manifest(A, { sheet }),
+        manifest(B, { sheet }),
+        before(2),
+      ])
+      const freeze = async (epoch: string, rev: number, bit: number, live: PintaCausalRead) => {
+        const update = put('map', bit + 8, 'tilemap', rev)
+        await complete(a, intent(epoch, [update], [live]), [frozen(bit)])
+      }
+      const fresh = {
+        ...A,
+        baseRevision: 1,
+        sha256: sha(7),
+        operation: { type: 'remap' as const, oldToNew: [-1, 0], count: 1 },
+      }
+      const afterSheet = manifest(A, { sheet: { tileSize: 8, count: 1 } })
+      if (freezeFirst) await freeze('1', 1, 2, readSnapshot('A', 1, A.sha256, '1'))
+      const epoch = freezeFirst ? '2' : '1'
+      const incomplete = intent(epoch, [fresh])
+      expect(await rejection(complete(a, incomplete, [afterSheet]))).toMatchObject({
+        reason: 'missing-consumer',
+        itemId: 'map',
+      })
+      await db.abort(a, incomplete)
+      const mapping = put('map', 4, 'tilemap', freezeFirst ? 2 : 1)
+      const observed: PintaCausalRead[] = [readInUnit('A')]
+      if (!freezeFirst) observed.push(readSnapshot('B', 1, B.sha256, '1'))
+      const remapped = await complete(
+        a,
+        intent(epoch, [fresh, mapping], observed),
+        [afterSheet, freezeFirst ? frozen(1) : before(1)],
+        [[], [{ sheetId: 'A', mode: 'mapped' }]],
+      )
+      if (!freezeFirst) {
+        if (remapped.status.state !== 'committed') throw Error('missing remap receipt')
+        const seen = remapped.status.result.members.find((m) => m.itemId === 'A')!
+        await freeze(
+          remapped.status.result.epoch,
+          2,
+          1,
+          readSnapshot('A', seen.revision, seen.sha256!, seen.layoutRevision!),
+        )
+      }
+      expect(await visible(a)).toMatchObject({
+        epoch: '3',
+        entries: [
+          { itemId: 'A', revision: 3 },
+          { itemId: 'B', revision: 1 },
+          { itemId: 'map', revision: 3 },
+        ],
+      })
+    }
+  })
   test('self doors by ID and name use the proven map PUT; external and shadowed selectors still require their target', async () => {
     const a = actor(),
       home = { ...put('home', 1, 'tilemap'), name: 'vila' },
