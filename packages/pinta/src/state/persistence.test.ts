@@ -7,6 +7,7 @@ import {
   createTilemapAsset,
   createTilesetAsset,
   createVectorBackgroundAsset,
+  isObjectLayer,
   withPintaSchemaStamp,
 } from '../core/project'
 import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
@@ -17,6 +18,8 @@ import {
   resetIdbMockStats,
   setIdbWriteGuard,
 } from '../testing/idbMock'
+import { createMapObject } from '../tiles/mapObjects'
+import { addObjectLayer } from '../tiles/tilemapOps'
 import { MAX_IMAGE_SRC_CHARS, type VectorShape } from '../vector/model'
 
 const {
@@ -102,6 +105,66 @@ describe('authority of the causal gallery', () => {
     expect((await local.causal.inspect()).epoch).toBe('1')
     expect(await local.loadAssetById(sheet.id)).toMatchObject({ tiles: sheet.tiles })
     expect(await local.loadAssetById(map.id)).toMatchObject({ layers: map.layers })
+  })
+
+  it('protects each offline door when map names swap or a new id shadows a name', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'offline-doors' })
+    const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const forest = createTilemapAsset({ name: 'bosque', tilesetId: sheet.id, cols: 2, rows: 2 })
+    const cabin = createTilemapAsset({ name: 'cabana', tilesetId: sheet.id, cols: 2, rows: 2 })
+    const published = { revision: 1, sha256: 'a'.repeat(64), layoutRevision: null }
+    expect(
+      await local.causal.applyPull(
+        {
+          fromEpoch: null,
+          epoch: '1',
+          transitions: [sheet, forest, cabin].map((after) => ({
+            id: after.id,
+            before: null,
+            beforeRevision: null,
+            after,
+            remote: published,
+          })),
+        },
+        () => true,
+      ),
+    ).toBe(true)
+    const draft = addObjectLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 }),
+      'Portas',
+    )
+    draft.layers
+      .find(isObjectLayer)!
+      .objects.push(
+        ...['ausente', 'bosque', 'cabana'].map((destino) =>
+          createMapObject({ id: destino, role: 'door', properties: { destino } }),
+        ),
+      )
+    await local.persistAsset(draft)
+    const revisions = await local.causal.capture([forest.id, cabin.id])
+    const other = { ...createPixelSpriteAsset({ name: 'sombra', frameSize: 8 }), id: forest.name }
+    const renamed = revisions.map((snapshot) => {
+      if (snapshot.before?.kind !== 'tilemap') throw Error('Mapa ausente')
+      return {
+        ...snapshot,
+        after: { ...snapshot.before, name: snapshot.id === forest.id ? cabin.name : forest.name },
+        remote: { ...published, revision: 2 },
+      }
+    })
+    for (const transitions of [
+      renamed,
+      [{ id: other.id, before: null, beforeRevision: null, after: other, remote: published }],
+    ]) {
+      const pull = { fromEpoch: '1', epoch: '2', transitions }
+      const impact = await local.causal.pullImpact(pull)
+      expect(impact.blocked).toBe(true)
+      expect(impact.ids).toContain(draft.id)
+      expect(await local.causal.applyPull({ ...pull, coveredIds: impact.ids }, () => true)).toBe(
+        false,
+      )
+    }
+    expect((await local.loadAssetById(forest.id))?.name).toBe('bosque')
+    expect((await local.causal.inspect()).epoch).toBe('1')
   })
 
   it('counts drawings and the sealed gzip in the same budget and keeps the draft after refusal', async () => {

@@ -27,8 +27,7 @@ export class SceneMapClosureError extends Error {
   }
 }
 
-/** The authored selector needs the complete current catalog for ID-first resolution. */
-export function* pintaDoorSelectors(asset: PintaMemoryAsset): IterableIterator<string> {
+function* rawDoorSelectors(asset: PintaMemoryAsset): IterableIterator<unknown> {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   if (!map) return
   const unwrap = (value: unknown): unknown =>
@@ -39,10 +38,42 @@ export function* pintaDoorSelectors(asset: PintaMemoryAsset): IterableIterator<s
       if (object.role !== 'door') continue
       const destination = unwrap(object.properties.destino) || unwrap(object.properties.destination)
       if (!destination) continue // An unconfigured door remains editable data.
-      if (typeof destination !== 'string') throw new SceneMapClosureError('missing-map')
       yield destination
     }
   }
+}
+
+/** The authored selector needs the complete current catalog for ID-first resolution. */
+export function* pintaDoorSelectors(asset: PintaMemoryAsset): IterableIterator<string> {
+  for (const destination of rawDoorSelectors(asset)) {
+    if (typeof destination !== 'string') throw new SceneMapClosureError('missing-map')
+    yield destination
+  }
+}
+
+function doorBinding(destination: string, byId: ReadonlyMap<string, PintaMemoryAsset>) {
+  const exact = byId.get(destination)
+  if (exact)
+    return exact.kind === 'tilemap'
+      ? { type: 'target' as const, id: exact.id }
+      : { type: 'wrong-kind' as const, kind: exact.kind }
+  const matches = [...byId.values()]
+    .filter((asset) => asset.kind === 'tilemap' && asset.name === destination)
+    .map((asset) => asset.id)
+  if (matches.length > 1) return { type: 'ambiguous' as const, ids: matches.sort() }
+  const id = matches[0]
+  return id ? { type: 'target' as const, id } : { type: 'missing' as const }
+}
+
+/** A catalog update must preserve each selector's resolution, even in a partly configured map. */
+export function pintaDoorBindings(
+  asset: PintaMemoryAsset,
+  byId: ReadonlyMap<string, PintaMemoryAsset>,
+) {
+  return [...rawDoorSelectors(asset)].map((selector) => ({
+    selector,
+    binding: typeof selector === 'string' ? doorBinding(selector, byId) : { type: 'invalid' },
+  }))
 }
 
 /** Door references share the same rules in playable worlds and editable files. */
@@ -52,19 +83,10 @@ export function pintaDoorDependencyIds(
 ): string[] {
   const ids = new Set<string>()
   for (const destination of pintaDoorSelectors(asset)) {
-    const exact = byId.get(destination)
-    if (exact) {
-      if (exact.kind !== 'tilemap') throw new SceneMapClosureError('missing-map')
-      ids.add(exact.id)
-      continue
-    }
-    const candidates = [...byId.values()].filter(
-      (a) => a.kind === 'tilemap' && a.name === destination,
-    )
-    if (candidates.length > 1) throw new SceneMapClosureError('ambiguous-map')
-    const target = candidates[0]
-    if (!target) throw new SceneMapClosureError('missing-map')
-    ids.add(target.id)
+    const binding = doorBinding(destination, byId)
+    if (binding.type === 'ambiguous') throw new SceneMapClosureError('ambiguous-map')
+    if (binding.type !== 'target') throw new SceneMapClosureError('missing-map')
+    ids.add(binding.id)
   }
   return [...ids]
 }

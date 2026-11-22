@@ -17,7 +17,7 @@ import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
-import { pintaDoorDependencyIds, SceneMapClosureError } from '../core/sceneMapClosure'
+import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 
@@ -429,13 +429,18 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
 ): { ids: string[]; blocked: boolean } {
   const written = new Set(pull.transitions.map(({ id }) => id))
   const changedLayout = new Set<string>()
-  let hasNameChange = false
+  let hasSelectorChange = false
   const projected = new Map(snapshot.assets)
   for (const { id, before, after, remote } of pull.transitions) {
     if (after) projected.set(id, after)
     else projected.delete(id)
-    if (before?.name !== after?.name && (before?.kind === 'tilemap' || after?.kind === 'tilemap'))
-      hasNameChange = true
+    if (
+      !before ||
+      !after ||
+      ((before.kind === 'tilemap' || after.kind === 'tilemap') &&
+        (before.name !== after.name || before.kind !== after.kind))
+    )
+      hasSelectorChange = true
     const mark = state.confirmed.get(id)
     const kindChanged = before && before.kind !== after?.kind
     const layoutChanged =
@@ -444,22 +449,18 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
       (mark ? mark.layoutRevision !== remote?.layoutRevision : !pintaValuesEqual(before, after))
     if (kindChanged || layoutChanged) changedLayout.add(id)
   }
-  let blocked = (hasNameChange || changedLayout.size > 0) && snapshot.issues.length > 0
+  let blocked = (hasSelectorChange || changedLayout.size > 0) && snapshot.issues.length > 0
   const affected = new Set(written)
-  if (!hasNameChange && changedLayout.size === 0) return { ids: [...affected], blocked }
-  const doorsIn = (asset: Asset, catalog: ReadonlyMap<string, Asset>): string[] | null => {
-    try {
-      return pintaDoorDependencyIds(asset, catalog).sort()
-    } catch (error) {
-      if (!(error instanceof SceneMapClosureError)) throw error
-      return null
-    }
-  }
+  if (!hasSelectorChange && changedLayout.size === 0) return { ids: [...affected], blocked }
   for (const asset of snapshot.assets.values()) {
     if (written.has(asset.id)) continue
     const usesChangedLayout = pintaAssetDependencyIds(asset).some((id) => changedLayout.has(id))
     const doorChanged =
-      hasNameChange && !pintaValuesEqual(doorsIn(asset, snapshot.assets), doorsIn(asset, projected))
+      hasSelectorChange &&
+      !pintaValuesEqual(
+        pintaDoorBindings(asset, snapshot.assets),
+        pintaDoorBindings(asset, projected),
+      )
     if (!usesChangedLayout && !doorChanged) continue
     affected.add(asset.id)
     const mark = state.confirmed.get(asset.id)
