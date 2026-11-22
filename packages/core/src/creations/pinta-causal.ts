@@ -31,6 +31,17 @@ const epoch = z
   .regex(/^(0|[1-9][0-9]{0,18})$/)
   .refine((value) => value.length < 19 || value <= '9223372036854775807')
 const tileMask = z.string().regex(/^[0-9a-f]{64}$/)
+export function pintaCausalMaskHasSlot(mask: string, slot: number) {
+  if (!Number.isInteger(slot) || slot < 0 || slot >= PINTA_CAUSAL_LIMITS.tiles) return false
+  const offset = Math.floor(slot / 8) * 2
+  return (Number.parseInt(mask.slice(offset, offset + 2), 16) & (1 << (slot % 8))) !== 0
+}
+export function pintaCausalMaskFits(mask: string, count: number) {
+  if (!Number.isInteger(count) || count < 0 || count > PINTA_CAUSAL_LIMITS.tiles) return false
+  for (let slot = count; slot < PINTA_CAUSAL_LIMITS.tiles; slot++)
+    if (pintaCausalMaskHasSlot(mask, slot)) return false
+  return true
+}
 const kinds = z.enum([
   'pixel-sprite',
   'pixel-background',
@@ -66,6 +77,12 @@ const ref = z
   })
   .refine((r) => !r.implicitArtSlotZero || r.roles.includes('art'))
 
+/** BFF-only digest of the canonical admitted authoring document, for inverses after recompression. */
+export const PintaCausalAuthoredFingerprintSchema = z.strictObject({
+  version: z.literal(1),
+  sha256,
+})
+export type PintaCausalAuthoredFingerprint = z.infer<typeof PintaCausalAuthoredFingerprintSchema>
 export const PintaCausalManifestSchema = z
   .strictObject({
     version: z.literal(1),
@@ -75,6 +92,7 @@ export const PintaCausalManifestSchema = z
     nativeSchema: count(65_535),
     backupVersion: formatVersion,
     requiredNativeSchema: count(65_535),
+    authoredFingerprint: PintaCausalAuthoredFingerprintSchema.optional(),
     refs: z.array(ref).max(PINTA_CAUSAL_LIMITS.readEdges),
     doorSelectors: z
       .array(z.string().min(1).max(4096))
@@ -97,12 +115,19 @@ export const PintaCausalOperationSchema = z
     z.strictObject({ type: z.literal('update') }),
     z.strictObject({ type: z.literal('paint'), slots: tileMask }),
     z.strictObject({ type: z.literal('append'), count: tileCount }),
-    z.strictObject({ type: z.literal('remap'), oldToNew: mapping, count: tileCount }),
+    z.strictObject({
+      type: z.literal('remap'),
+      oldToNew: mapping,
+      count: tileCount,
+      paintedSlots: tileMask.optional(),
+    }),
   ])
   .refine(
     (op) =>
       op.type !== 'remap' ||
-      (unique(op.oldToNew.filter((n) => n >= 0)) && op.oldToNew.every((n) => n < op.count)),
+      (unique(op.oldToNew.filter((n) => n >= 0)) &&
+        op.oldToNew.every((n) => n < op.count) &&
+        (!op.paintedSlots || pintaCausalMaskFits(op.paintedSlots, op.count))),
   )
 export type PintaCausalOperation = z.infer<typeof PintaCausalOperationSchema>
 
@@ -147,6 +172,14 @@ const read = z.discriminatedUnion('source', [
   }),
   z.strictObject({ source: z.literal('unit'), consumerId: itemId, targetId: itemId }),
 ])
+
+export {
+  epoch as pintaCausalEpochSchema,
+  itemId as pintaCausalItemIdSchema,
+  read as PintaCausalReadSchema,
+  revision as pintaCausalRevisionSchema,
+  uuid as pintaCausalOpIdSchema,
+}
 export type PintaCausalRead = z.infer<typeof read>
 const identity = {
   protocol: z.literal(1),
@@ -314,19 +347,32 @@ export const PintaCausalEntrySchema = z
   })
   .refine((r) => r.coverage !== 'certified' || r.sha256 !== null)
 export type PintaCausalEntry = z.infer<typeof PintaCausalEntrySchema>
-export const PintaCausalSnapshotPageSchema = z
-  .strictObject({
-    protocol: z.literal(1),
-    epoch,
-    requiredFormat: formatVersion,
-    nextCursor: itemId.nullable(),
-    entries: z.array(PintaCausalEntrySchema).max(PINTA_CAUSAL_LIMITS.page),
-  })
-  .refine(
-    (p) =>
-      p.entries.every((e, i) => i === 0 || p.entries[i - 1]!.itemId < e.itemId) &&
-      (p.nextCursor === null || p.nextCursor === p.entries.at(-1)?.itemId),
+const pageFields = {
+  epoch,
+  requiredFormat: formatVersion,
+  nextCursor: itemId.nullable(),
+  entries: z.array(PintaCausalEntrySchema).max(PINTA_CAUSAL_LIMITS.page),
+}
+function pageOrder(p: { entries: PintaCausalEntry[]; nextCursor: string | null }) {
+  return (
+    p.entries.every((e, i) => i === 0 || p.entries[i - 1]!.itemId < e.itemId) &&
+    (p.nextCursor === null || p.nextCursor === p.entries.at(-1)?.itemId)
   )
+}
+export const PintaCausalSnapshotPageSchema = z
+  .strictObject({ protocol: z.literal(1), ...pageFields })
+  .refine(pageOrder)
+/** Explicit owner export. These responses cannot enter the normal snapshot parser. */
+export const PintaCausalArchivePageSchema = z.strictObject({
+  archive: z.strictObject(pageFields).refine(pageOrder),
+})
+export const PintaCausalArchiveItemSchema = z.strictObject({
+  archive: z.strictObject({
+    entry: PintaCausalEntrySchema,
+    storageRef: z.string().min(1).max(512),
+  }),
+})
+export type PintaCausalArchivePage = z.infer<typeof PintaCausalArchivePageSchema>
 export type PintaCausalSnapshotPage = z.infer<typeof PintaCausalSnapshotPageSchema>
 
 export type PintaCausalFailure =

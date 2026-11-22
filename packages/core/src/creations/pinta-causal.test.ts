@@ -1,5 +1,7 @@
 import { expect, test } from 'bun:test'
 import {
+  PintaCausalArchiveItemSchema,
+  PintaCausalArchivePageSchema,
   PintaCausalAttestationSchema,
   PintaCausalIntentSchema,
   PintaCausalManifestSchema,
@@ -50,6 +52,19 @@ test('canonical intent binds every revision, ordered member, read and layout ope
     },
   ])
     expect(PintaCausalIntentSchema.safeParse(bad).success).toBe(false)
+  const composed = {
+    ...member,
+    operation: { ...member.operation, paintedSlots: '02'.padEnd(64, '0') },
+  }
+  expect(PintaCausalIntentSchema.safeParse({ ...base, members: [composed] }).success).toBe(true)
+  expect(
+    PintaCausalIntentSchema.safeParse({
+      ...base,
+      members: [
+        { ...composed, operation: { ...composed.operation, paintedSlots: '04'.padEnd(64, '0') } },
+      ],
+    }).success,
+  ).toBe(false)
   const page = {
     protocol: 1,
     opId,
@@ -137,6 +152,18 @@ test('snapshot pages pin every observed revision and require the cursor to end a
     coverage: 'certified',
   }
   const page = { protocol: 1, epoch: '1', entries: [entry], requiredFormat: 1, nextCursor: 'map' }
+  const opaque = { ...entry, formatVersion: 99, sha256: null, coverage: 'unknown' }
+  const archive = {
+    archive: { epoch: '1', entries: [opaque], requiredFormat: 99, nextCursor: 'map' },
+  }
+  expect(PintaCausalArchivePageSchema.safeParse(archive).success).toBe(true)
+  expect(PintaCausalArchivePageSchema.safeParse(page).success).toBe(false)
+  expect(PintaCausalSnapshotPageSchema.safeParse(archive).success).toBe(false)
+  expect(
+    PintaCausalArchiveItemSchema.safeParse({
+      archive: { entry: opaque, storageRef: 'original.gz' },
+    }).success,
+  ).toBe(true)
   expect(PintaCausalSnapshotPageSchema.safeParse(page).success).toBe(true)
   expect(PintaCausalSnapshotPageSchema.safeParse({ ...page, nextCursor: 'next' }).success).toBe(
     false,
