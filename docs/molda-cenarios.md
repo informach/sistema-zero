@@ -37,6 +37,17 @@ na região" usa os nomes. Formato e regras em
   (`jogo/desenho-de-regiao.ts`), `molda-cenarios/src/oficina` (`regioes-formulario.ts`,
   `useRegioes.ts`, `telas/Regioes.tsx`) e as ferramentas do agente `desenhar_regiao`,
   `apagar_regiao` e `listar_regioes`.
+- **No Python (Raylib 3D)**: o módulo oficial `cenario`
+  (`packages/studio/src/runtime/python/raylib/py/cenario.py`, o mesmo no Estúdio e no Raylib do
+  computador) carrega por regiões com as mesmas regras do JavaScript. `lugar =
+  cenario.carregar(cenario_vila)` (o módulo que a importação cria), `lugar.atualizar(x, z)` a cada
+  quadro com a posição do personagem, `lugar.desenhar()`, `lugar.regiao(x, z)` (o nome ou `None`),
+  `lugar.entrou_na_regiao('Vila')` (verdadeiro uma vez por entrada) e
+  `lugar.estado_das_regioes()`. `altura()` usa o relevo inteiro, então ninguém cai onde a região
+  ainda não carregou. Os blocos "carregar o cenário", "desenhar o cenário", "atualizar as regiões
+  perto de" e "entrou na região" (com o seletor das regiões) ficam na categoria "Cenário do Molda"
+  e exigem a versão do runtime com `molda-scene-regions-v1`. Os casos da pertença e do plano da
+  carga são os mesmos dos dois lados (`scripts/gen-raylib-region-cases.ts`).
 
 ### Agentes (CLI e MCP) na oficina nova
 

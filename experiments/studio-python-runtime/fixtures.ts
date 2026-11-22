@@ -178,6 +178,8 @@ export async function runtimeFixtureProject(
   if (isPygameExampleFixture(name)) return pygameExampleProject(name)
   const { isPintaWorldFixture, pintaWorldProject } = await import('./pintaWorldFixtures')
   if (isPintaWorldFixture(name)) return pintaWorldProject(name)
+  const { isRaylibRegionsFixture, raylibRegionsProject } = await import('./raylibRegionFixtures')
+  if (isRaylibRegionsFixture(name)) return raylibRegionsProject(name)
   const { isPintaPhysicsFixture, pintaPhysicsProject } = await import('./pintaPhysicsFixtures')
   if (isPintaPhysicsFixture(name)) return pintaPhysicsProject(name)
   const { isPintaPlatformFixture, pintaPlatformProject } = await import('./pintaPlatformFixtures')

@@ -185,3 +185,99 @@ for (const { key } of RAYLIB_GAMES)
     expect(colours).toBeGreaterThan(3)
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   })
+
+/**
+ * Regiões no Raylib 3D (lote 7b da conclusão, 22/11/2026): o cenário de três regiões em fila
+ * (`experiments/studio-python-runtime/raylibRegionFixtures.ts`), a rota Vila → Floresta →
+ * Caverna → Floresta → Vila dez vezes. No fim de cada volta o programa escreve o que contou e
+ * espera o N; a prova lê ali os objetos de GPU vivos do quadro. Reprova se uma entrada não contar
+ * exatamente uma vez, se a Caverna (não vizinha da Vila) continuar carregada na volta à Vila, se
+ * alguma região falhar, ou se os modelos, as texturas do runtime e os objetos de GPU mudarem nas
+ * últimas quatro voltas.
+ */
+test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(240_000)
+  await page.addInitScript(() => {
+    const kinds: Array<[string, string, string]> = [
+      ['createBuffer', 'deleteBuffer', 'buffers'],
+      ['createTexture', 'deleteTexture', 'textures'],
+      ['createVertexArray', 'deleteVertexArray', 'vertexArrays'],
+    ]
+    const live = new Map<object, Record<string, Set<unknown>>>()
+    const prototype = (window as unknown as { WebGL2RenderingContext?: { prototype: object } })
+      .WebGL2RenderingContext?.prototype as Record<string, unknown> | undefined
+    if (!prototype) return
+    for (const [create, remove, name] of kinds) {
+      const original = prototype[create] as (...args: unknown[]) => unknown
+      const originalRemove = prototype[remove] as (item: unknown) => unknown
+      prototype[create] = function (this: object, ...args: unknown[]) {
+        const made = original.apply(this, args)
+        let own = live.get(this)
+        if (!own) {
+          own = { buffers: new Set(), textures: new Set(), vertexArrays: new Set() }
+          live.set(this, own)
+        }
+        if (made) own[name]?.add(made)
+        return made
+      }
+      prototype[remove] = function (this: object, item: unknown) {
+        live.get(this)?.[name]?.delete(item)
+        return originalRemove.call(this, item)
+      }
+    }
+    Object.defineProperty(window, '__szGpuVivos', {
+      value: () => {
+        const total: Record<string, number> = {}
+        for (const own of live.values())
+          for (const [name, items] of Object.entries(own))
+            total[name] = (total[name] ?? 0) + items.size
+        return total
+      },
+    })
+  })
+  await page.goto('/provider')
+  await page.waitForFunction(() => !!globalThis.providerProbe)
+  await page.evaluate(() => globalThis.providerProbe.prepare('game', 'raylib-regioes-3d'))
+  const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
+  expect(ready.status, JSON.stringify(ready)).toBe('ready')
+  await page.evaluate(() => globalThis.providerProbe.run('game'))
+  const frame = page.frames().find((candidate) => candidate.url().includes('/frame.html'))!
+  const canvas = frame.locator('canvas')
+  await expect(canvas).toHaveCount(1, { timeout: 30_000 })
+  const voltas: { linha: string; gpu: Record<string, number> }[] = []
+  for (let volta = 1; volta <= 10; volta++) {
+    const marca = `volta ${volta} `
+    await expect.poll(() => stdout(page), { timeout: 60_000 }).toContain(marca)
+    const saida = await stdout(page)
+    const linha = saida.slice(saida.lastIndexOf(marca)).split('fim')[0]!
+    // O programa espera o N desenhando o mesmo estado: os objetos de GPU estão estáveis aqui.
+    const gpu = await frame.evaluate(() =>
+      (window as unknown as { __szGpuVivos(): Record<string, number> }).__szGpuVivos(),
+    )
+    voltas.push({ linha, gpu })
+    await canvas.press('n')
+  }
+  await testInfo.attach('voltas', {
+    body: JSON.stringify(voltas, null, 2),
+    contentType: 'application/json',
+  })
+  const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
+  expect(state.status, JSON.stringify(state.events.at(-1))).not.toBe('failed')
+  const ultima = voltas.at(-1)!.linha
+  // Cada entrada uma vez: a Vila começa dentro (1) e volta uma vez por volta; a Floresta, duas.
+  expect(ultima).toContain('entradas 11 20 10')
+  expect(ultima).toContain('carregadas Vila+Floresta ')
+  for (const { linha } of voltas) expect(linha).toContain('falhas 0')
+  const ultimas = voltas.slice(-4)
+  const campo = (linha: string, nome: string) => linha.match(new RegExp(`${nome} (\\d+)`))?.[1]
+  for (const nome of ['modelos', 'texturas'])
+    expect(new Set(ultimas.map((v) => campo(v.linha, nome))).size, nome).toBe(1)
+  for (const nome of ['buffers', 'textures', 'vertexArrays'])
+    expect(
+      new Set(ultimas.map((v) => v.gpu[nome] ?? 0)).size,
+      `${nome}: ${ultimas.map((v) => v.gpu[nome]).join(', ')}`,
+    ).toBe(1)
+  await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+})
