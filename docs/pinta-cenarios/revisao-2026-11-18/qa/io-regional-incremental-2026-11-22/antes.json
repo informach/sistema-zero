@@ -1,0 +1,326 @@
+{
+  "desktop": [
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 173.30000001192093
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 314.19999998807907
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 158
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 321.30000001192093
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 160.19999998807907
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 312.90000000596046
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 194.2999999821186
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 372.59999999403954
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 198.60000002384186
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 383.2999999821186
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 188.7000000178814
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 375.69999998807907
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 193.19999998807907
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 394.60000002384186
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 190.59999999403954
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 387.40000000596046
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 188.2999999821186
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 405
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 205.2999999821186
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 432.90000000596046
+      }
+    }
+  ],
+  "cpu-4x": [
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 579.3000000119209
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1012.6999999880791
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 486.89999997615814
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1034.5
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 691.1999999880791
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1245.300000011921
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 603.9000000059605
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1191.5
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 594.9000000059605
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1234.5999999940395
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 629.1999999880791
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1136.7000000178814
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 622.6999999880791
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1220.2000000178814
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 637.9000000059605
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1185.7999999821186
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 616.8000000119209
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1245
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 663.4000000059605
+      },
+      "capture": {
+        "chunks": 4096,
+        "bytes": 8388608,
+        "records": 4102,
+        "inventories": 1,
+        "ms": 1201.699999988079
+      }
+    }
+  ]
+}

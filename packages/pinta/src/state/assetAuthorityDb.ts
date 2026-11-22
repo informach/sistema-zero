@@ -10,16 +10,16 @@ import {
 export type AssetRecordSelection = (
   records: ReadonlyMap<string, unknown>,
 ) => readonly string[] | null
-/** IO only. No awaits inside a live IDB transaction; domain planning is synchronous. */
+/** A null codec reads raw records without writing. Planning stays synchronous in both modes. */
 export function withAssetTransaction<T>(
   openStore: UseStore,
   plan: (records: Map<string, unknown>) => T,
   select?: AssetRecordSelection,
-  codec: LocalStorageCodec = localDenseStorageCodec,
+  codec: LocalStorageCodec | null = localDenseStorageCodec,
   inspectKeys?: (keys: readonly string[]) => void,
 ): Promise<T> {
   return openStore(
-    'readwrite',
+    codec ? 'readwrite' : 'readonly',
     (store) =>
       new Promise<T>((resolve, reject) => {
         const tx = store.transaction
@@ -39,6 +39,10 @@ export function withAssetTransaction<T>(
         }
         const run = () => {
           try {
+            if (!codec) {
+              result = plan(records)
+              return
+            }
             const before = new Map(records)
             result = plan(records)
             const writes = planLocalStorageWrites(before, records, physical, codec)
@@ -55,19 +59,21 @@ export function withAssetTransaction<T>(
           }
           let wanted: readonly string[] | null
           try {
-            const chunks = [...records].flatMap(([key, value]) =>
-              decoded.has(key) ? [] : codec.keys(key, value),
-            )
-            const missing = [...new Set(chunks)].filter((key) => !visited.has(key))
-            if (missing.length) {
-              read(missing)
-              return
-            }
-            for (const [key, value] of records)
-              if (!decoded.has(key)) {
-                records.set(key, codec.decode(key, value, records))
-                decoded.add(key)
+            if (codec) {
+              const chunks = [...records].flatMap(([key, value]) =>
+                decoded.has(key) ? [] : codec.keys(key, value),
+              )
+              const missing = [...new Set(chunks)].filter((key) => !visited.has(key))
+              if (missing.length) {
+                read(missing)
+                return
               }
+              for (const [key, value] of records)
+                if (!decoded.has(key)) {
+                  records.set(key, codec.decode(key, value, records))
+                  decoded.add(key)
+                }
+            }
             wanted = select ? select(records) : null
           } catch (error) {
             abort(error)
@@ -107,7 +113,7 @@ export function withAssetTransaction<T>(
             const request = store.get(key)
             request.onsuccess = () => {
               records.set(key, request.result)
-              physical.set(key, request.result)
+              if (codec) physical.set(key, request.result)
               if (--pending === 0) step()
             }
           }

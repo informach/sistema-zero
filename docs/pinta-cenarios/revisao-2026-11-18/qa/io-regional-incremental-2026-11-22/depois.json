@@ -1,0 +1,486 @@
+{
+  "desktop": [
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 207
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 14.299999982118607,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 161.69999998807907
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 202.30000001192093
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 5.899999976158142,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 177.2000000178814
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 198.90000000596046
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 8.099999994039536,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 206
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 232.59999999403954
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 6.5,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 216.30000001192093
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 206.30000001192093
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 4.5999999940395355,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 204.40000000596046
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 218.19999998807907
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 7.5999999940395355,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 212.10000002384186
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 246.40000000596046
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 6.299999982118607,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 226
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 235.90000000596046
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 8.5,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 224
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 240
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 9.300000011920929,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 241.09999999403954
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 251
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 7.0999999940395355,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 230.40000000596046
+      }
+    }
+  ],
+  "cpu-4x": [
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 740.8000000119209
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 69.89999997615814,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 510.80000001192093
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 559.9000000059605
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 21.400000005960464,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 439
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 704.5999999940395
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 30.600000023841858,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 667
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 804.7999999821186
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 75.2000000178814,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 634.7999999821186
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 800
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 34.29999998211861,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 573.2999999821186
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 710.5
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 30.599999994039536,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 588.3999999761581
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 721.4000000059605
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 59.20000001788139,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 600.1999999880791
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 714.3000000119209
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 50.19999998807907,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 847.1000000238419
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 797.7999999821186
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 43.5,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 579
+      }
+    },
+    {
+      "open": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2052,
+        "inventories": 0,
+        "ms": 686.5999999940395
+      },
+      "viewport": {
+        "chunks": 4,
+        "bytes": 8192,
+        "records": 8,
+        "inventories": 0,
+        "ms": 55.30000001192093,
+        "retainedBytes": 8192
+      },
+      "capture": {
+        "chunks": 2048,
+        "bytes": 4194304,
+        "records": 2054,
+        "inventories": 1,
+        "ms": 513.9000000059605
+      }
+    }
+  ]
+}

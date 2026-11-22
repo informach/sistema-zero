@@ -1,9 +1,22 @@
-import { createTilemapAsset, createTilesetAsset, isTileLayer } from '../src/core/project'
+import { paintMapCanvas } from '../src/components/editor/mapTools/mapCanvas'
+import { readStoredRegionMapViewport } from '../src/components/editor/mapTools/storedRegionMapCanvas'
+import {
+  createTilemapAsset,
+  createTilesetAsset,
+  isTileLayer,
+  isTilesetKind,
+  tilemapTilesetIds,
+} from '../src/core/project'
 import {
   captureRegionPintaAssetForImage,
   createRegionPintaPersistence,
 } from '../src/state/localRegionPersistence'
+import { regionVila } from '../src/testing/regionVila'
+import { TileChunkCache } from '../src/tiles/chunks'
+import { resolveMapTilesets } from '../src/tiles/mapTilesets'
 import { expandRegionMap, prepareMapRegions } from '../src/tiles/regionMap'
+import { pixelSheetCanvas } from '../src/tiles/sheetCanvas'
+import { setCell } from '../src/tiles/tilemapOps'
 
 export async function seedRegionalIoProfile() {
   const namespace = crypto.randomUUID()
@@ -81,4 +94,116 @@ export async function profileFullRegionalIo(
   const { value, ...counters } = sample
   if (!value || ('ok' in value && !value.ok)) throw Error('Cenário ausente')
   return counters
+}
+
+export async function profileRegionalViewport(
+  seed: Awaited<ReturnType<typeof seedRegionalIoProfile>>,
+) {
+  const { value, ...counters } = await measureRegionalIo(() =>
+    readStoredRegionMapViewport(seed.id, {
+      namespace: seed.namespace,
+      stage: { clientWidth: 1024, clientHeight: 768, scrollLeft: 0, scrollTop: 0 },
+      cellPx: 16,
+      pad: 1,
+      showCollision: false,
+    }),
+  )
+  if (!value) throw Error('Janela regional ausente')
+  return { ...counters, retainedBytes: value.bytes }
+}
+
+export async function compareStoredVilaViewports() {
+  const namespace = crypto.randomUUID()
+  const { map, cabana, assets } = regionVila()
+  const local = createRegionPintaPersistence({ namespace })
+  await local.persistAssets(assets)
+  const source = await local.loadAssetById(map.id)
+  if (source?.kind !== 'tilemap' || !('origin' in source)) throw Error('Vila ausente')
+  const ids = tilemapTilesetIds(source)
+  const resolved = resolveMapTilesets(source, assets.filter(isTilesetKind))
+  const tilesets = new Map(
+    ids.flatMap((id, index) => {
+      const asset = resolved[index]
+      return asset ? [[id, asset] as const] : []
+    }),
+  )
+  const stage = { clientWidth: 1024, clientHeight: 768, scrollLeft: 1024, scrollTop: 1024 }
+  const view = { stage, cellPx: 16, pad: 1, showCollision: true }
+  const canvas = document.createElement('canvas')
+  const cache = new TileChunkCache()
+  const hash = async () => {
+    const pixels = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height).data
+    const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', pixels))
+    return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+  }
+  const sheetOf = (id: string) => {
+    const asset = tilesets.get(id)
+    return asset?.kind === 'tileset' ? pixelSheetCanvas(asset) : null
+  }
+  const draw = { canvas, cache, time: 0 }
+  const renderFull = () =>
+    paintMapCanvas({
+      ...draw,
+      ...view,
+      map: source,
+      tileSize: resolved[0]!.tileSize,
+      tilesetById: tilesets,
+      sheetOf,
+    })
+  const renderWindow = (
+    window: NonNullable<Awaited<ReturnType<typeof readStoredRegionMapViewport>>>,
+  ) =>
+    window.paint({
+      ...draw,
+      sheetOf: (asset) => (asset.kind === 'tileset' ? pixelSheetCanvas(asset) : null),
+    })
+
+  const first = await readStoredRegionMapViewport(map.id, { namespace, ...view })
+  if (!first || !renderWindow(first)) throw Error('Vila não abriu pela janela')
+  const firstHash = await hash()
+  renderFull()
+  const firstExpected = await hash()
+  stage.scrollLeft += 300
+  stage.scrollTop += 100
+  const previousRefused = renderWindow(first) === null
+  const navigated = await readStoredRegionMapViewport(map.id, {
+    namespace,
+    ...view,
+    revision: first.revision,
+  })
+  if (!navigated || !renderWindow(navigated)) throw Error('Janela seguinte da Vila ausente')
+  const nextHash = await hash()
+  renderFull()
+  const nextExpected = await hash()
+  const capture = await captureRegionPintaAssetForImage(map.id, { namespace })
+  const floor = source.layers.find(isTileLayer)
+  if (!floor) throw Error('Chão da Vila ausente')
+  const put = IDBObjectStore.prototype.put
+  let chunkPuts = 0
+  IDBObjectStore.prototype.put = function (value, key) {
+    if (typeof key === 'string' && key.startsWith('pinta:local:chunk:')) chunkPuts++
+    return put.call(this, value, key)
+  }
+  try {
+    await local.persistAsset(setCell(source, floor.id, -64, -64, 4))
+  } finally {
+    IDBObjectStore.prototype.put = put
+  }
+  const outdated = await readStoredRegionMapViewport(map.id, {
+    namespace,
+    ...view,
+    revision: navigated.revision,
+  })
+  return {
+    firstHash,
+    firstExpected,
+    nextHash,
+    nextExpected,
+    previousRefused,
+    linked: capture.ok && capture.assets?.some((asset) => asset.id === cabana.id),
+    firstBytes: first.bytes,
+    nextBytes: navigated.bytes,
+    chunkPuts,
+    outdatedRefused: outdated === null,
+  }
 }

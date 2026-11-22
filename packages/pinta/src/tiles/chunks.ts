@@ -58,7 +58,7 @@ function validView(view: MapViewport): boolean {
 
 /** A sparse world never enumerates empty logical chunks, including when zoomed out. */
 function occupiedChunks(
-  cells: Exclude<TilemapCells, Int16Array>,
+  locations: readonly { col: number; row: number }[],
   map: TilemapAsset<TilemapCells>,
   view: MapViewport,
   tileSize: number,
@@ -71,7 +71,7 @@ function occupiedChunks(
     right = Math.min((bounds.col + bounds.cols) * tileSize, view.x + view.width),
     bottom = Math.min((bounds.row + bounds.rows) * tileSize, view.y + view.height)
   if (left >= right || top >= bottom) return []
-  return cells.chunks
+  return locations
     .filter(
       ({ col, row }) =>
         col * size < right &&
@@ -361,6 +361,10 @@ export function visibleLayerChunks<Cells extends TilemapCells>(
   tilesets: ReadonlyMap<string, AnyTilesetAsset>,
   view: MapViewport,
   includeCollision = false,
+  selection?: {
+    locationsOf(layerId: string): readonly { col: number; row: number }[] | undefined
+    includeTransparent: boolean
+  },
 ): Array<{
   layer: TilemapTileLayer<Cells>
   tileset: AnyTilesetAsset
@@ -373,7 +377,7 @@ export function visibleLayerChunks<Cells extends TilemapCells>(
   for (const layer of map.layers) {
     if (!isTileLayer(layer) || (layer.collision && !includeCollision)) continue
     const e = effectiveLayer(map, layer)
-    if (!e.visible || !e.opacity) continue
+    if (!e.visible || (!e.opacity && !selection?.includeTransparent)) continue
     const tileset = tilesets.get(tileLayerTilesetId(map, layer))
     if (!tileset) continue
     const layerView = { ...view, x: view.x - e.offsetX, y: view.y - e.offsetY }
@@ -386,7 +390,12 @@ export function visibleLayerChunks<Cells extends TilemapCells>(
       chunks:
         layer.cells instanceof Int16Array
           ? visibleChunks(layerView, tileset.tileSize, map.cols, map.rows, mapCellBounds(map))
-          : occupiedChunks(layer.cells, map, layerView, tileset.tileSize),
+          : occupiedChunks(
+              selection?.locationsOf(layer.id) ?? layer.cells.chunks,
+              map,
+              layerView,
+              tileset.tileSize,
+            ),
     })
   }
   return out

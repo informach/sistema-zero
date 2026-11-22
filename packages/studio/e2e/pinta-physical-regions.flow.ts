@@ -1608,9 +1608,12 @@ test('cold regional I/O profile on a signed sparse gallery', async ({ page, cont
   const observations = await reader.evaluate(async (seed) => {
     const observations = []
     for (let i = 0; i < 10; i++) {
+      const before = i % 2 === 0
+      const early = before && (await window.pintaPhysicalRegions.profileRegionalViewport(seed))
       const open = await window.pintaPhysicalRegions.profileFullRegionalIo(seed, 'open')
+      const viewport = early || (await window.pintaPhysicalRegions.profileRegionalViewport(seed))
       const capture = await window.pintaPhysicalRegions.profileFullRegionalIo(seed, 'capture')
-      observations.push({ open, capture })
+      observations.push({ open, viewport, capture })
     }
     return observations
   }, seed)
@@ -1618,10 +1621,96 @@ test('cold regional I/O profile on a signed sparse gallery', async ({ page, cont
     observations.every(({ open }) => open.chunks === 2048 && open.bytes === 4 * 1024 * 1024),
   ).toBe(true)
   expect(
-    observations.every(({ capture }) => capture.chunks >= 2048 && capture.inventories === 1),
+    observations.every(
+      ({ viewport }) =>
+        viewport.chunks === 4 &&
+        viewport.bytes === 8192 &&
+        viewport.retainedBytes === viewport.bytes,
+    ),
+  ).toBe(true)
+  expect(
+    observations.every(({ capture }) => capture.chunks === 2048 && capture.inventories === 1),
   ).toBe(true)
   await info.attach('regional-io-profile', {
     body: JSON.stringify(observations, null, 2),
     contentType: 'application/json',
   })
+})
+
+test('stored Vila paints and navigates with exactly the same pixels as a complete map', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => window.pintaPhysicalRegions.compareStoredVilaViewports())
+  expect(result.firstHash).toEqual(result.firstExpected)
+  expect(result.nextHash).toEqual(result.nextExpected)
+  expect(result.firstHash).not.toEqual(result.nextHash)
+  expect(result.previousRefused).toBe(true)
+  expect(result.linked).toBe(true)
+  expect(result.firstBytes).toBeGreaterThan(0)
+  expect(result.firstBytes + result.nextBytes).toBe(64 * 1024)
+  expect(result.chunkPuts).toBe(1)
+  expect(result.outdatedRefused).toBe(true)
+})
+
+test('stored map view refuses a foreign namespace, changed revision and corrupt selected chunk', async ({
+  page,
+}) => {
+  const result = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions
+    const seed = await p.seedRegionalIoProfile()
+    const opts = {
+      namespace: seed.namespace,
+      cellPx: 16,
+      showCollision: false,
+      pad: 1,
+      stage: { clientWidth: 1024, clientHeight: 768, scrollLeft: 0, scrollTop: 0 },
+    }
+    const first = await p.readStoredRegionMapViewport(seed.id, opts)
+    if (!first) throw Error('Mapa ausente')
+    const foreign = await p.readStoredRegionMapViewport(seed.id, {
+      ...opts,
+      namespace: crypto.randomUUID(),
+    })
+    const wrongRevision = await p.readStoredRegionMapViewport(seed.id, {
+      ...opts,
+      revision: 'outra-revisao',
+    })
+    const controller = new AbortController()
+    controller.abort()
+    const cancelled = await p
+      .readStoredRegionMapViewport(seed.id, { ...opts, signal: controller.signal })
+      .then(
+        () => false,
+        (error) => error.name === 'AbortError',
+      )
+    const store = p.createStore(`sistema-zero-pinta-${seed.namespace}`, 'kv')
+    await store(
+      'readwrite',
+      (kv) =>
+        new Promise<void>((resolve, reject) => {
+          const scan = kv.getAllKeys()
+          scan.onsuccess = () => {
+            const key = scan.result.find(
+              (key) =>
+                typeof key === 'string' &&
+                key.startsWith(`pinta:local:chunk:${seed.id}:`) &&
+                key.endsWith(':-2:-2'),
+            )
+            if (!key) {
+              reject(Error('Chunk ausente'))
+              return
+            }
+            kv.put(new Int16Array(1), key)
+          }
+          kv.transaction.oncomplete = () => resolve()
+          kv.transaction.onabort = () => reject(kv.transaction.error)
+        }),
+    )
+    const corrupt = await p.readStoredRegionMapViewport(seed.id, opts).then(
+      () => false,
+      (error) => String(error).includes('conferir uma região guardada'),
+    )
+    return { foreign: foreign === null, wrongRevision: wrongRevision === null, cancelled, corrupt }
+  })
+  expect(result).toEqual({ foreign: true, wrongRevision: true, cancelled: true, corrupt: true })
 })

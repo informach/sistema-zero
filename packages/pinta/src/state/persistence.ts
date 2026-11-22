@@ -138,6 +138,16 @@ function getStoreHandle(explicit?: string): StoreHandle {
   return created
 }
 
+/** Select physical records in the same profile transaction without decoding other assets. */
+export function readLocalPintaRecords<T>(
+  namespace: string | undefined,
+  select: AssetRecordSelection,
+  read: (records: ReadonlyMap<string, unknown>) => T,
+  inspectKeys?: (keys: readonly string[]) => void,
+): Promise<T> {
+  return withAssetTransaction(getStoreHandle(namespace), read, select, null, inspectKeys)
+}
+
 // Uma cadeia FIFO por BANCO. Além de impedir interleaving entre save/rename/
 // delete, permite gravar asset + mapas ligados numa única transação IndexedDB.
 const writeChains = new WeakMap<StoreHandle, Promise<void>>()
@@ -1298,23 +1308,28 @@ export async function captureLocalPintaAssetForImage<Asset extends PintaMemoryAs
   id: string,
   options: PintaCaptureOptions,
   format: LocalPersistenceFormat<Asset>,
+  readScoped?: (id: string, options: PintaCaptureOptions) => Promise<LocalSnapshot<Asset> | null>,
 ): Promise<PintaAssetCapture<Asset>> {
-  const store = getStoreHandle(options.namespace)
+  const namespace = options.namespace ?? storageNamespace
+  const store = getStoreHandle(namespace)
   const { resolveLocalRecords, selectLocalAssetRecords } = format.authority
   options.signal?.throwIfAborted()
-  const snapshot = await withAssetTransaction(
-    store,
-    (records) => {
-      const snapshot = resolveLocalRecords(records)
-      if (format.strictCapture && snapshot.issues.length)
-        throw new PintaLocalStorageError(
-          'Atualize a página antes de levar este cenário completo. Há lugares em um formato mais novo.',
-        )
-      return snapshot
-    },
-    selectLocalAssetRecords([id], options.signal, options.includeSceneMaps),
-    format.codec,
-  )
+  const scoped = readScoped && (await readScoped(id, { ...options, namespace }))
+  const snapshot =
+    scoped ??
+    (await withAssetTransaction(
+      store,
+      (records) => {
+        const snapshot = resolveLocalRecords(records)
+        if (format.strictCapture && snapshot.issues.length)
+          throw new PintaLocalStorageError(
+            'Atualize a página antes de levar este cenário completo. Há lugares em um formato mais novo.',
+          )
+        return snapshot
+      },
+      selectLocalAssetRecords([id], options.signal, options.includeSceneMaps),
+      format.codec,
+    ))
   options.signal?.throwIfAborted()
   reportLocalRecovery(store, snapshot, format.legacyAssets?.([...snapshot.assets.values()]))
   for (const [assetId, asset] of snapshot.assets)

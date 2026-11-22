@@ -9,6 +9,7 @@ import {
   isLocalRegionAsset,
   stampLocalRegionAsset,
 } from './localRegionAssetAuthority'
+import { readRegionCaptureSnapshot } from './localRegionCapture'
 import { localRegionStorageCodec } from './localRegionChunkStorage'
 import {
   captureLocalPintaAssetForImage,
@@ -55,5 +56,6 @@ export function captureRegionPintaAssetForImage(id: string, options: PintaCaptur
     id,
     { ...options, includeSceneMaps: options.includeSceneMaps ?? true },
     regionPersistenceFormat(),
+    readRegionCaptureSnapshot,
   )
 }

@@ -39,6 +39,22 @@ export function mapCanvasViewport(
   }
 }
 
+export function mapCanvasWorldViewport(
+  origin: { col: number; row: number },
+  viewport: MapViewport,
+  cellPx: number,
+  tileSize: number,
+  pad: number,
+): MapViewport {
+  const { col, row } = origin
+  return {
+    x: col * tileSize + ((viewport.x - pad * cellPx) * tileSize) / cellPx,
+    y: row * tileSize + ((viewport.y - pad * cellPx) * tileSize) / cellPx,
+    width: (viewport.width * tileSize) / cellPx,
+    height: (viewport.height * tileSize) / cellPx,
+  }
+}
+
 export interface MapCanvasOptions {
   canvas: HTMLCanvasElement
   stage: HTMLElement | null
@@ -79,12 +95,7 @@ export function paintMapCanvas(options: MapCanvasOptions): MapViewport | null {
     tilesetById,
     options.sheetOf,
     options.cache,
-    {
-      x: bounds.col * tileSize + ((x - pad * cellPx) * tileSize) / cellPx,
-      y: bounds.row * tileSize + ((y - pad * cellPx) * tileSize) / cellPx,
-      width: (width * tileSize) / cellPx,
-      height: (height * tileSize) / cellPx,
-    },
+    mapCanvasWorldViewport(bounds, { x, y, width, height }, cellPx, tileSize, pad),
     cellPx / tileSize,
     options.time,
     showCollision,

@@ -1,9 +1,10 @@
 import { beforeEach, expect, test } from 'bun:test'
 import { pintaLocalRevisionOf } from '../core/localAssetOrigin'
-import { isTileLayer } from '../core/project'
+import { createTilemapAsset, createTilesetAsset, isTileLayer } from '../core/project'
 import { clearIdbMock, idbMockDb, setIdbReadGuard } from '../testing/idbMock'
 import { regionVila } from '../testing/regionVila'
 import { createMapObject } from '../tiles/mapObjects'
+import { expandRegionMap, prepareMapRegions } from '../tiles/regionMap'
 import { cellAt } from '../tiles/tilemapOps'
 import {
   captureRegionPintaAssetForImage,
@@ -145,4 +146,81 @@ test('a hidden door in a regional set captures its connected places even when th
   expect(new Set([captured.source, ...(captured.assets ?? [])].map((asset) => asset.id))).toEqual(
     new Set(assets.map((asset) => asset.id)),
   )
+})
+
+test('the complete regional capture refuses an oversized reachable world before reading chunks', async () => {
+  const namespace = 'region-capture-header-budget'
+  const tileset = createTilesetAsset({ name: 'folha', tileSize: 16 })
+  const dense = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 2 })
+  const converted = prepareMapRegions(dense)
+  if (!converted.ok) throw Error(converted.reason)
+  const expanded = expandRegionMap(converted.map, { col: -64, row: -64, cols: 10000, rows: 10000 })
+  if (!expanded.ok) throw Error(expanded.reason)
+  const local = createRegionPintaPersistence({ namespace })
+  await local.persistAsset(tileset)
+  const db = idbMockDb(`sistema-zero-pinta-${namespace}`)
+  const map = expanded.map
+  const tileLayer = map.layers.find(isTileLayer)!
+  for (let i = 0; i < 9; i++) {
+    const id = `lugar-${i}`
+    const revision = `revision-${i}`
+    const chunks = Array.from({ length: 2048 }, (_, index) => {
+      const col = (index % 64) - 2
+      const row = Math.floor(index / 64) - 2
+      return {
+        col,
+        row,
+        key: `pinta:local:chunk:${id}:${encodeURIComponent(tileLayer.id)}:${col}:${row}`,
+      }
+    })
+    db.set(`pinta:local:document:${id}`, {
+      version: 3,
+      capability: 8,
+      revision,
+      storage: 'pinta-regions-32-v1',
+      asset: {
+        ...map,
+        id,
+        name: id,
+        layers: [
+          { ...tileLayer, cells: { ...tileLayer.cells, chunks } },
+          {
+            kind: 'objects',
+            id: 'portas',
+            name: 'Portas',
+            visible: true,
+            objects:
+              i === 8
+                ? []
+                : [
+                    createMapObject({
+                      name: 'Porta',
+                      role: 'door',
+                      properties: { destino: `lugar-${i + 1}` },
+                    }),
+                  ],
+          },
+        ],
+      },
+    })
+    db.set(`pinta:asset:${id}`, {
+      kind: 'pinta-local-mirror',
+      version: 1,
+      capability: 8,
+      id,
+      revision,
+    })
+  }
+  setIdbReadGuard((key) => {
+    if (typeof key === 'string' && key.startsWith('pinta:local:chunk:'))
+      throw Error('Uma leitura excedeu o orçamento de região')
+  })
+  try {
+    await expect(captureRegionPintaAssetForImage('lugar-0', { namespace })).rejects.toThrow(
+      '32 MiB',
+    )
+    expect(db.size).toBeGreaterThanOrEqual(19)
+  } finally {
+    setIdbReadGuard(null)
+  }
 })

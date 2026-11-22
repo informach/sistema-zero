@@ -17,6 +17,7 @@ export { createRegionSceneQueries } from '../../core/src/studio/pinta-scene-quer
 export { sceneObjects, sceneSolidAt, sceneSpawn } from '../../core/src/studio/pinta-scene-runtime'
 export { sceneObjectTransformSource } from '../../core/src/studio/pinta-scene-transform.generated'
 export { scene4BudgetFixture, scene4Fixture } from '../../core/tests/fixtures/pinta-region-scene'
+export { readStoredRegionMapViewport } from '../src/components/editor/mapTools/storedRegionMapCanvas'
 export { recordPintaLocalOrigin } from '../src/core/localAssetOrigin'
 export { createTilemapAsset, sanitizeRegionTilemapAsset } from '../src/core/project'
 export { readPintaPngText } from '../src/export/pintaPngText'
@@ -39,4 +40,10 @@ export { regionVila } from '../src/testing/regionVila'
 export { expandRegionMap, prepareMapRegions } from '../src/tiles/regionMap'
 export { cellAt, setCell } from '../src/tiles/tilemapOps'
 export { vilaEFloresta } from './homologacao/fixture'
-export { measureRegionalIo, profileFullRegionalIo, seedRegionalIoProfile } from './region-io-proof'
+export {
+  compareStoredVilaViewports,
+  measureRegionalIo,
+  profileFullRegionalIo,
+  profileRegionalViewport,
+  seedRegionalIoProfile,
+} from './region-io-proof'

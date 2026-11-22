@@ -52,6 +52,24 @@ export function stampLocalRegionAsset(asset: PintaMemoryAsset): PintaMemoryAsset
   return asset
 }
 
+export function matchesLocalRegionMirror(raw: unknown, id: string, revision: string): boolean {
+  return Boolean(
+    raw &&
+      typeof raw === 'object' &&
+      Reflect.ownKeys(raw).length === 5 &&
+      'kind' in raw &&
+      raw.kind === 'pinta-local-mirror' &&
+      'version' in raw &&
+      raw.version === 1 &&
+      'capability' in raw &&
+      raw.capability === 8 &&
+      'id' in raw &&
+      raw.id === id &&
+      'revision' in raw &&
+      raw.revision === revision,
+  )
+}
+
 /** Internal only: the public persistence still selects the native-7 authority. */
 export function createLocalRegionAssetAuthority() {
   return createLocalAssetAuthority<PintaMemoryAsset>({
@@ -67,17 +85,9 @@ export function createLocalRegionAssetAuthority() {
     readMirror(raw, id, doc) {
       if (raw && typeof raw === 'object' && 'kind' in raw && raw.kind === 'pinta-local-mirror') {
         if (
-          Reflect.ownKeys(raw).length !== 5 ||
-          !('version' in raw) ||
-          raw.version !== 1 ||
-          !('capability' in raw) ||
-          raw.capability !== 8 ||
-          !('id' in raw) ||
-          raw.id !== id ||
-          !('revision' in raw) ||
-          raw.revision !== doc?.revision ||
           !doc?.asset ||
-          !isLocalRegionAsset(doc.asset)
+          !isLocalRegionAsset(doc.asset) ||
+          !matchesLocalRegionMirror(raw, id, doc.revision)
         )
           throw new PintaLocalStorageError(
             'Não consegui conferir a referência do cenário guardado. Seus dados foram mantidos.',

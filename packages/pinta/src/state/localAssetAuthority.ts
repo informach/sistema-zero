@@ -27,8 +27,8 @@ export {
 } from '../core/localStorageErrors'
 
 export const LOCAL_ASSET_PREFIX = 'pinta:local:document:'
-const mirrorKey = (id: string) => `pinta:asset:${id}`
-const authorityKey = (id: string) => LOCAL_ASSET_PREFIX + id
+export const mirrorKey = (id: string) => `pinta:asset:${id}`
+export const authorityKey = (id: string) => LOCAL_ASSET_PREFIX + id
 export interface LocalDocument<Asset extends PintaMemoryAsset = PintaAsset> {
   version: 1
   capability: number

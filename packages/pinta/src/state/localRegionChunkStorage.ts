@@ -21,6 +21,7 @@ import {
 const STORAGE = 'pinta-regions-32-v1'
 type Value = Record<string, unknown>
 type RegionAsset = RegionTilemapAsset | RegionMapSetAsset
+type ChunkLocation = { col: number; row: number; key: string }
 const object = (raw: unknown): Value | null =>
   raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Value) : null
 const mapOf = (asset: RegionAsset) => (asset.kind === 'map-set' ? asset.map : asset)
@@ -83,7 +84,7 @@ function envelope(key: string, raw: unknown): Value | null {
 }
 
 /** Validate metadata, the complete location budget and ownership before requesting buffers. */
-function prepare(key: string, raw: unknown) {
+export function prepareLocalRegionDocument(key: string, raw: unknown) {
   const doc = envelope(key, raw)
   if (!doc) return null
   const asset = object(doc.asset),
@@ -156,33 +157,63 @@ function prepare(key: string, raw: unknown) {
       if (!expected || stored.key !== expected) invalid()
       keys.push(expected)
     }
-  return { doc, empty, locations, keys }
+  return { doc, empty, locations, keys, revision: doc.revision as string }
+}
+
+type PreparedRegionDocument = NonNullable<ReturnType<typeof prepareLocalRegionDocument>>
+
+/** Only the viewport needs to look up a physical key by layer and coordinates. */
+export function localRegionChunkDirectory(prepared: PreparedRegionDocument) {
+  const result = new Map<string, ChunkLocation[]>()
+  let layerIndex = 0
+  let keyIndex = 0
+  for (const layer of mapOf(prepared.empty).layers) {
+    if (!isTileLayer(layer)) continue
+    const locations = prepared.locations[layerIndex++]!
+    result.set(
+      layer.id,
+      locations.map((location) => ({ ...location, key: prepared.keys[keyIndex++]! })),
+    )
+  }
+  return result
+}
+
+/** A selection is private to a viewport. Ordinary document decoding always reads every chunk. */
+export function decodeLocalRegionChunks(
+  prepared: PreparedRegionDocument,
+  records: ReadonlyMap<string, unknown>,
+  selection?: ReadonlySet<string>,
+): RegionAsset {
+  const map = mapOf(prepared.empty)
+  let layerIndex = 0
+  let keyIndex = 0
+  const layers = map.layers.map((layer) => {
+    if (!isTileLayer(layer)) return layer
+    const chunks: PintaRegionCells['chunks'] = []
+    for (const location of prepared.locations[layerIndex++]!) {
+      const key = prepared.keys[keyIndex++]!
+      if (selection && !selection.has(key)) continue
+      const cells = records.get(key)
+      if (!(cells instanceof Int16Array) || cells.length !== 1024) invalid()
+      chunks.push({ ...location, cells })
+    }
+    return { ...layer, cells: grid(chunks) }
+  })
+  const asset = sanitize(replaceMap(prepared.empty, { ...map, layers }))
+  if (!asset) invalid()
+  return asset
 }
 
 /** Internal opt-in policy; no public persistence or format advertisement selects it yet. */
 export const localRegionStorageCodec: LocalStorageCodec = {
   keys(key, raw) {
-    return prepare(key, raw)?.keys ?? localDenseStorageCodec.keys(key, raw)
+    return prepareLocalRegionDocument(key, raw)?.keys ?? localDenseStorageCodec.keys(key, raw)
   },
   decode(key, raw, records) {
-    const prepared = prepare(key, raw)
+    const prepared = prepareLocalRegionDocument(key, raw)
     if (!prepared) return localDenseStorageCodec.decode(key, raw, records)
-    let layerIndex = 0,
-      keyIndex = 0
-    const map = mapOf(prepared.empty)
-    const layers = map.layers.map((layer) => {
-      if (!isTileLayer(layer)) return layer
-      const chunks = prepared.locations[layerIndex++]!.map((location) => {
-        const cells = records.get(prepared.keys[keyIndex++]!)
-        if (!(cells instanceof Int16Array) || cells.length !== 1024) invalid()
-        return { ...location, cells }
-      })
-      return { ...layer, cells: grid(chunks) }
-    })
-    const asset = sanitize(replaceMap(prepared.empty, { ...map, layers }))
-    if (!asset) invalid()
     const { storage: _storage, ...doc } = prepared.doc
-    return { ...doc, version: 1, asset }
+    return { ...doc, version: 1, asset: decodeLocalRegionChunks(prepared, records) }
   },
   encode(key, raw, records) {
     const doc = object(raw),
