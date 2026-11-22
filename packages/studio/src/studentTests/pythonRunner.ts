@@ -4,9 +4,10 @@ import {
   executionRuleBudgetMs,
   judgeExecutionObservation,
 } from '@sistemazero/core/learning'
-import type {
-  StudioPythonMissionFrameObservation,
-  StudioPythonMissionProbe,
+import {
+  PYTHON_MISSION_UNRESPONSIVE_MESSAGE,
+  type StudioPythonMissionFrameObservation,
+  type StudioPythonMissionProbe,
 } from '@sistemazero/core/studio/python-mission-observation'
 import {
   isRunnableStudentTestRule,
@@ -299,6 +300,10 @@ export async function runPythonStudentTest(
               : { error: error instanceof Error ? error.message.slice(0, 300) : 'sem resposta' }),
           }
         }
+        // O programa travado (o laço que nunca devolve o controle) não responde à leitura, e o
+        // supervisor encerra a execução com este recado: é o tempo esgotado, a mesma resposta do
+        // JavaScript ("o jogo demorou demais"), não um erro do jogo (lote 3 da conclusão).
+        if (errors.includes(PYTHON_MISSION_UNRESPONSIVE_MESSAGE)) return { status: 'timeout' }
         const judged = judgeExecutionObservation(rule, observation)
         if (judged.passed) return { status: 'passed', observation }
         // A foto de como o programa terminou (o programa sem desenho não tem foto).
