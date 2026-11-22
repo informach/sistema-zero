@@ -427,6 +427,91 @@ test('Meus testes: o executor testa uma função do Python clássico numa execu�
   expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
 })
 
+/**
+ * Os casos da aba Meus testes no Python (lote 3 da conclusão, 22/11/2026), pelo executor inteiro
+ * da aba numa execução escondida: chave, porta, vida, placar e fim num jogo de Pygame Zero, o
+ * programa que não compila e o jogo que trava. O par JavaScript mora em
+ * `e2e/student-tests.spec.ts` e `e2e/student-tests-hostile.spec.ts`; a frase que a criança lê sai da
+ * mesma régua (`studentTestsText.ts`): erro do programa vira "o jogo deu erro durante o teste" e o
+ * prazo vira "o jogo não respondeu a tempo".
+ */
+const PYTHON_CASES = [
+  {
+    name: 'A seta leva até a chave',
+    steps: [{ action: 'press', key: 'ArrowRight', holdMs: 1000 }],
+    expect: { target: { kind: 'value', path: 'tem_chave' }, compare: 'equals', value: true },
+    status: 'passed',
+  },
+  {
+    name: 'Com a chave a porta abre',
+    steps: [{ action: 'press', key: 'ArrowRight', holdMs: 1500 }],
+    expect: { target: { kind: 'value', path: 'porta_aberta' }, compare: 'equals', value: true },
+    status: 'passed',
+  },
+  {
+    name: 'Espaço abre a porta',
+    steps: [{ action: 'press', key: 'Space' }],
+    expect: { target: { kind: 'value', path: 'porta_aberta' }, compare: 'equals', value: true },
+    status: 'failed',
+  },
+  {
+    name: 'Parado no começo perde vida',
+    steps: [{ action: 'wait', ms: 1500 }],
+    expect: { target: { kind: 'value', path: 'vidas' }, compare: 'decreased' },
+    status: 'passed',
+  },
+  {
+    name: 'Espaço marca ponto',
+    steps: [{ action: 'press', key: 'Space' }],
+    expect: { target: { kind: 'value', path: 'pontos' }, compare: 'increased' },
+    status: 'passed',
+  },
+  {
+    name: 'Sem vidas o jogo acaba',
+    steps: [{ action: 'wait', ms: 4500 }],
+    expect: { target: { kind: 'value', path: 'fim' }, compare: 'equals', value: true },
+    status: 'passed',
+  },
+] as const
+
+const studentTest = (page: Page, fixture: string, item: (typeof PYTHON_CASES)[number]) =>
+  page.evaluate(
+    ({ fixture, item }) =>
+      globalThis.pythonControllerProbe.studentTest(fixture, {
+        id: 'caso',
+        name: item.name,
+        rule: { type: 'behavior', steps: item.steps, expect: item.expect },
+      } as never),
+    { fixture, item },
+  )
+
+test('Meus testes no Pygame Zero: chave, porta, vida, placar e fim', async ({ page }) => {
+  test.setTimeout(300_000)
+  for (const item of PYTHON_CASES) {
+    const outcome = await studentTest(page, 'classic-pgzeroCasos', item)
+    expect(outcome.status, item.name).toBe(item.status)
+  }
+  expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
+})
+
+test('Meus testes no Python: o programa que não compila conta o erro, e o que trava não segura o teste', async ({
+  page,
+}) => {
+  test.setTimeout(240_000)
+  const ponto = PYTHON_CASES[4]
+  const quebrado = await studentTest(page, 'classic-pgzeroErroDeEscrita', ponto)
+  // O mesmo caminho do JavaScript: o teste não passa e a observação traz o erro do programa (a aba
+  // diz "o jogo deu erro durante o teste").
+  expect(quebrado.status).toBe('failed')
+  if (quebrado.status === 'failed')
+    expect(
+      Boolean(quebrado.observation.error) || (quebrado.observation.errors?.length ?? 0) > 0,
+    ).toBe(true)
+  const travado = await studentTest(page, 'classic-pgzeroTrava', ponto)
+  expect(travado.status).toBe('timeout')
+  expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
+})
+
 test('Investigar: o controlador no modo de observação lê as variáveis do jogo a cada quadro', async ({
   page,
 }) => {

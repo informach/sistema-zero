@@ -278,5 +278,24 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
     contador para, anda com Avançar e volta com Continuar) e o Turtle parado no `mainloop`. Foi essa
     prova que achou o pedido curto barrado no worker: os transportes do Turtle, do Pygame Zero e da
     Raylib conferiam todo pedido como quadro, e agora deixam o pedido curto ir ao quadro como veio.
+- **Lote 3 da conclusão (22/11/2026): o custo da medida e os casos dos testes do aluno.**
+  - Custo: `e2e/devtools-cost.spec.ts` (`studio-engines.yml`) mede no processo do jogo, com a
+    gaveta fechada, o Desempenho e o Investigar alternados. Nos cinco motores do clássico e no Pro
+    ficou entre 0% e 1,5% do quadro; o Python mede a CPU de todos os processos de página na suíte
+    da homologação (`e2e-runtime/python-devtools-cost.spec.ts`). Números e sabotagem em
+    [`evidencias/custo-da-medida-2026-11-22/`](evidencias/custo-da-medida-2026-11-22/README.md).
+  - Casos: chave, porta, vida, placar e fim num jogo do Jogo 2D, do Jogo 2D Avançado
+    (`e2e/student-tests.spec.ts`, três navegadores) e do Pygame Zero
+    (`e2e-runtime/python-provider.spec.ts`); o código que não compila e o jogo que trava
+    (`e2e/student-tests-hostile.spec.ts` e a mesma suíte Python).
+  - O que os casos acharam: todo teste num jogo do Jogo 2D Avançado ficava parado no menu (o
+    motor abre sempre ali e o Enter sintético não aperta o botão focado); o piloto agora aperta o
+    botão principal do menu antes de ler o começo, como a criança. O pedido de foco do jogo dentro
+    do palco escondido (sem permissão de focar) não chega mais ao navegador, que registrava uma
+    violação a cada tentativa.
+  - A compilação que falha tem uma resposta só: "Não passou: o jogo deu erro durante o teste." no
+    JavaScript, no Python e no Pro. No Pro o executor responde 200 com nada passando ("O projeto
+    não compilou: …", como diz o README do studio-runtime); o comentário do serviço do Members que
+    falava em recusa estava errado, e o cartão mostrava a saída crua do Vite.
 - Próximos: as etapas que faltam do plano (casca ligada em staging, linha de base, Pro em escala,
   persistência, motores e streaming, Pinta e Molda, homologação final).

@@ -219,3 +219,30 @@ describe('o clique no sprite de um grupo', () => {
     ).toEqual({ problem: 'tests.form.needSprite' })
   })
 })
+
+describe('o código que não compila (lote 3 da conclusão, 22/11/2026)', () => {
+  it('no Pro, a resposta do servidor diz o mesmo que o JavaScript clássico, sem a saída do Vite', () => {
+    const outcome: StudentTestOutcome = {
+      status: 'remote',
+      passed: false,
+      detail:
+        'O projeto não compilou: error during build: src/main.ts (3:14): Expected ";" but found "pontos"',
+    }
+    expect(describeOutcome(t, comecar, outcome)).toEqual({
+      tone: 'failed',
+      text: 'Não passou: o jogo deu erro durante o teste.',
+    })
+  })
+
+  it('o erro do programa no navegador (JavaScript e Python) já diz isso', () => {
+    const outcome: StudentTestOutcome = {
+      status: 'failed',
+      detail: '',
+      observation: { id: 'a', type: 'behavior', errors: ["Unexpected token ';'"] },
+      ending: null,
+    }
+    expect(describeOutcome(t, comecar, outcome)?.text).toBe(
+      'Não passou: o jogo deu erro durante o teste.',
+    )
+  })
+})
