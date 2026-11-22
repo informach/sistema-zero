@@ -9,5 +9,6 @@ export {
   pintaCausalPinSourceIds,
   provePintaCausalConsumerRemaps,
   provePintaCausalMutation,
+  provePintaCausalPin,
 } from '../export/pintaCausalTransition'
 export { MAX_BACKUP_FILE_BYTES as MAX_PINTA_CAUSAL_DOCUMENT_BYTES } from '../export/projectJson'

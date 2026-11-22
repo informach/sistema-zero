@@ -6,7 +6,7 @@ import {
   pintaCausalMaskHasSlot,
 } from '@sistemazero/core/creations/pinta-causal'
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import { type PintaMemoryAsset, retainedAssetBytes } from '../core/assetMemory'
 import {
   type AnyTilesetAsset,
   isObjectLayer,
@@ -16,6 +16,7 @@ import {
   type TilemapResourceVersion,
   tilemapOfAsset,
 } from '../core/project'
+import { PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
 import type { AuthorMap } from '../tiles/mapCellEdits'
 import { mapResourceSnapshotAsset } from '../tiles/resourceVersions'
 import { remapTileMetadata, tryRemapTilemapIndices } from '../tiles/tilesetOps'
@@ -209,6 +210,33 @@ export function pintaCausalPinSourceIds(
     .filter((id) => snapshots.has(id))
 }
 
+type PintaCausalPin = {
+  snapshot: TilemapResourceVersion
+  dependencyIds: readonly string[]
+  sourceBytes: number
+}
+
+/** Check one sealed source and retain only evidence and the snapshot already in the proposal. */
+export function provePintaCausalPin(
+  before: PintaMemoryAsset,
+  after: PintaMemoryAsset,
+  source: AnyTilesetAsset,
+  checkedBytes = 0,
+): PintaCausalPin | null {
+  const candidates = newSnapshotVersions(before, after).filter(
+    ({ sourceId }) => sourceId === source.id,
+  )
+  const snapshot = candidates[0]
+  if (candidates.length !== 1 || !snapshot) return null
+  const sourceBytes = retainedAssetBytes(source)
+  if (
+    checkedBytes + sourceBytes > PINTA_RESOURCE_LIMITS.maxSnapshotBytes ||
+    !pintaValuesEqual(mapResourceSnapshotAsset(source, snapshot.asset.id), snapshot.asset)
+  )
+    return null
+  return { snapshot, dependencyIds: pintaAssetDependencyIds(source), sourceBytes }
+}
+
 function compareAssetWithMap(asset: PintaMemoryAsset, map: AuthorMap) {
   return (asset.kind === 'map-set' ? { ...asset, map } : map) as PintaMemoryAsset
 }
@@ -241,7 +269,7 @@ export function provePintaCausalConsumerRemaps(
   before: BeforeDocument,
   after: PintaMemoryAsset,
   remaps: readonly SheetRemap[],
-  pinBases: ReadonlyMap<string, AnyTilesetAsset> = new Map(),
+  pins: ReadonlyMap<string, PintaCausalPin> = new Map(),
 ): PintaCausalAttestation['transitions'] | null {
   const affected = affectedRemaps(before, remaps)
   if (!affected.length) return []
@@ -263,17 +291,16 @@ export function provePintaCausalConsumerRemaps(
   const recognized = new Set<string>()
   const added = new Set<TilemapResourceVersion>()
   // A new private id must not capture a property link from any sheet entering this map.
-  for (const sheet of pinBases.values())
-    for (const id of pintaAssetDependencyIds(sheet)) reserved.add(id)
+  for (const pin of pins.values()) for (const id of pin.dependencyIds) reserved.add(id)
   const verified: PintaCausalAttestation['transitions'] = []
   for (const { sheetId, operation } of affected) {
-    const source = pinBases.get(sheetId)
+    const pin = pins.get(sheetId)
     recognized.add(sheetId)
     if (removals.detached.has(sheetId)) {
       verified.push({ sheetId, mode: 'detached' })
       continue
     }
-    if (!source) {
+    if (!pin) {
       const result: ReturnType<typeof tryRemapTilemapIndices> = tryRemapTilemapIndices(
         expected,
         operation.oldToNew,
@@ -284,15 +311,8 @@ export function provePintaCausalConsumerRemaps(
       verified.push({ sheetId, mode: 'mapped' })
       continue
     }
-    const candidates = snapshots.filter((snapshot) => snapshot.sourceId === sheetId)
-    const pinned = candidates[0]
-    if (
-      source.id !== sheetId ||
-      candidates.length !== 1 ||
-      !pinned ||
-      reserved.has(pinned.asset.id) ||
-      !pintaValuesEqual(mapResourceSnapshotAsset(source, pinned.asset.id), pinned.asset)
-    )
+    const pinned = pin.snapshot
+    if (pinned.sourceId !== sheetId || !snapshots.includes(pinned) || reserved.has(pinned.asset.id))
       return null
 
     const pinnedId = pinned.asset.id

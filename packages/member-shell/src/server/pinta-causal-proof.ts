@@ -6,12 +6,12 @@ import {
   type PintaCausalEntry,
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
-import type { AnyTilesetAsset } from '@sistemazero/pinta/assets'
 import {
   type PintaCausalDocument,
   pintaCausalPinSourceIds,
   provePintaCausalConsumerRemaps,
   provePintaCausalMutation,
+  provePintaCausalPin,
 } from '@sistemazero/pinta/assets/causal'
 import { z } from 'zod'
 import { CREATION_BLOB_CONTENT_TYPE } from './creation-download'
@@ -181,7 +181,8 @@ export async function attestPintaMember(
   if (!inverse && before && plan.remaps.length) {
     let proof = provePintaCausalConsumerRemaps(before, proposed.asset, plan.remaps)
     if (!proof) {
-      const pinBases = new Map<string, AnyTilesetAsset>()
+      const pins = new Map<string, NonNullable<ReturnType<typeof provePintaCausalPin>>>()
+      let checkedBytes = 0
       for (const id of pintaCausalPinSourceIds(before, proposed.asset, plan.remaps)) {
         const related = await loadRelated(id)
         const other = related.binding
@@ -201,10 +202,14 @@ export async function attestPintaMember(
           throw new PintaCausalUnverifiedContent(
             'A folha de origem da versão privada não foi conferida.',
           )
-        pinBases.set(id, baseSheet)
+        const pin = provePintaCausalPin(before.asset, proposed.asset, baseSheet, checkedBytes)
+        if (!pin)
+          throw new PintaCausalUnverifiedContent('A versão privada difere da folha de origem.')
+        checkedBytes += pin.sourceBytes
+        pins.set(id, pin)
       }
-      if (pinBases.size)
-        proof = provePintaCausalConsumerRemaps(before, proposed.asset, plan.remaps, pinBases)
+      if (pins.size)
+        proof = provePintaCausalConsumerRemaps(before, proposed.asset, plan.remaps, pins)
     }
     if (!proof)
       throw new PintaCausalUnverifiedContent('O desenho vinculado não acompanha o remapeamento.')

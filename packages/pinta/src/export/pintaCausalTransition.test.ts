@@ -20,6 +20,7 @@ import {
   pintaCausalPinSourceIds,
   provePintaCausalConsumerRemaps,
   provePintaCausalMutation,
+  provePintaCausalPin,
 } from './pintaCausalTransition'
 
 const removeFirst = {
@@ -185,7 +186,7 @@ test('the pin alternative needs the same frozen sheet bytes and its canonical sl
       base,
       candidate.asset,
       remaps,
-      new Map([[before.id, admittedBefore]]),
+      new Map([[before.id, provePintaCausalPin(base.asset, candidate.asset, admittedBefore)!]]),
     ),
   ).toEqual([{ sheetId: before.id, mode: 'pinned' }])
 
@@ -193,9 +194,7 @@ test('the pin alternative needs the same frozen sheet bytes and its canonical sl
   if (corrupted.kind !== 'tilemap' || corrupted.resources?.[0]?.asset.kind !== 'tileset')
     throw new Error('Versão privada inválida')
   corrupted.resources[0].asset.tiles[1]!.data[0] = 7
-  expect(
-    provePintaCausalConsumerRemaps(base, corrupted, remaps, new Map([[before.id, admittedBefore]])),
-  ).toBeNull()
+  expect(provePintaCausalPin(base.asset, corrupted, admittedBefore)).toBeNull()
 })
 
 test('a composed move through another slot keeps art at effective zero', () => {
@@ -330,7 +329,7 @@ test('pinning refuses a private id that would capture a property link from the v
       source,
       candidate.asset,
       remaps,
-      new Map([[tiles.id, oldSheet]]),
+      new Map([[tiles.id, provePintaCausalPin(source.asset, candidate.asset, oldSheet)!]]),
     ),
   ).toBeNull()
 })

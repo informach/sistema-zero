@@ -511,7 +511,7 @@ test('historical authored fingerprint allows reserialization and a new updatedAt
   expect(receipt.manifest?.authoredFingerprint).toEqual(historical.manifest.authoredFingerprint)
 })
 
-test('a pin fallback reads only the related certified sheet in the same unit', async () => {
+test('pinning checks each sealed source in the same unit before looking up the next one', async () => {
   const { routes, calls, objects, responses } = fixture()
   if (current.kind !== 'tileset') throw new Error('Fixture sem folha')
   const added = structuredClone(current.tiles[0]!)
@@ -522,6 +522,7 @@ test('a pin fallback reads only the related certified sheet in the same unit', a
     solid: [false, false],
     platform: [false, false],
   }
+  const second = { ...original, id: 'outra-folha', name: 'outra-folha' }
   const map = createAsset({
     kind: 'tilemap',
     name: 'vila-pin',
@@ -533,17 +534,29 @@ test('a pin fallback reads only the related certified sheet in the same unit', a
   const tileLayer = map.layers[0]!
   if (!isTileLayer(tileLayer)) throw new Error('Camada inicial sem grade')
   tileLayer.cells.set([1, 1])
+  const additionalLayer = {
+    ...tileLayer,
+    id: 'outra-camada',
+    name: 'Outra camada',
+    tilesetId: second.id,
+    cells: new Int16Array([1, 0]),
+  }
+  map.layers.push(additionalLayer)
   const sample = (asset: typeof map | typeof original) => {
     const bytes = gzipSync(assetToJson(asset))
     return { bytes, sha: createHash('sha256').update(bytes).digest('hex') }
   }
   const oldMap = sample(map)
   const oldSheet = sample(original)
-  const pinned = sample({
+  const pinned = {
     ...map,
     tilesetId: 'snapshot',
-    resources: [{ sourceId: original.id, capturedAt: 1, asset: { ...original, id: 'snapshot' } }],
-  })
+    layers: [tileLayer, { ...additionalLayer, tilesetId: 'outra-versao' }],
+    resources: [
+      { sourceId: original.id, capturedAt: 1, asset: { ...original, id: 'snapshot' } },
+      { sourceId: second.id, capturedAt: 1, asset: { ...second, id: 'outra-versao' } },
+    ],
+  }
   const newSheet = sample({ ...original, tiles: [added], solid: [false], platform: [false] })
   const operation = { type: 'remap' as const, oldToNew: [-1, 0], count: 1 }
   const plan = (
@@ -589,27 +602,54 @@ test('a pin fallback reads only the related certified sheet in the same unit', a
       remaps: [],
     }
   }
-  const mapped = plan(map, oldMap, pinned, { type: 'update' })
-  responses.set(`units/member:${map.id}`, {
-    ...mapped,
-    remapSheetIds: [original.id],
-    remaps: [{ sheetId: original.id, operation }],
-  })
+  const mapPlan = (candidate: typeof pinned) => {
+    const mapped = plan(map, oldMap, sample(candidate), { type: 'update' })
+    responses.set(`units/member:${map.id}`, {
+      ...mapped,
+      remapSheetIds: [original.id, second.id],
+      remaps: [original.id, second.id].map((sheetId) => ({ sheetId, operation })),
+    })
+    return mapped
+  }
+  const mapped = mapPlan(pinned)
   const sheetPlan = plan(original, oldSheet, newSheet, operation)
   responses.set(`units/member:${original.id}`, {
     ...sheetPlan,
     binding: { ...sheetPlan.binding, intentHash: 'c'.repeat(64) },
   })
+  responses.set(
+    `units/member:${second.id}`,
+    plan(
+      second,
+      sample(second),
+      sample({ ...second, tiles: [added], solid: [false], platform: [false] }),
+      operation,
+    ),
+  )
   const verify = () =>
     routes.pintaCausalVerify.POST(json('/units/verify', { itemId: map.id }), context)
   expect((await verify()).status).toBe(409)
   expect(objects.has(pintaCausalBlobKey(mapped.binding, 'sealed'))).toBe(false)
 
   responses.set(`units/member:${original.id}`, sheetPlan)
+  const wrong = structuredClone(pinned)
+  wrong.resources[0]!.asset.name = 'versao-privada-diferente'
+  mapPlan(wrong)
+  const start = calls.length
+  expect((await verify()).status).toBe(409)
+  expect(
+    calls.slice(start).map(({ body }) => (body as { payload: { itemId: string } }).payload.itemId),
+  ).toEqual([map.id, original.id])
+  expect(objects.has(pintaCausalBlobKey(mapped.binding, 'sealed'))).toBe(false)
+
+  mapPlan(pinned)
   expect((await verify()).status).toBe(200)
   const proof = PintaCausalAttestationSchema.parse(
     (calls.at(-1)?.body as { payload: unknown }).payload,
   )
-  expect(proof.transitions).toEqual([{ sheetId: original.id, mode: 'pinned' }])
+  expect(proof.transitions).toEqual([
+    { sheetId: original.id, mode: 'pinned' },
+    { sheetId: second.id, mode: 'pinned' },
+  ])
   expect(proof.manifest?.refs).toEqual([])
 })
