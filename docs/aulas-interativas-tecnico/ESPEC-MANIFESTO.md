@@ -141,8 +141,10 @@ e `installedExtensions`. Use a versão do manifesto da extensão oficial. `chain
 `content`. O mesmo `key` pode ser `workspaceKey` nas seções de construção e aparecer em `blockKeys`
 na seção de entrega.
 
-**Blocos já organizados (22/11/2026):** o `initialProject` e cada projeto de `projectExamples` chegam
-com as pilhas do topo no lugar do "Organizar blocos" do Estúdio e do Admin, sem uma área cobrir a outra.
+**Blocos já organizados (22/11/2026):** o `initialProject` chega com as pilhas do topo no lugar do
+"Organizar blocos" do Estúdio e do Admin, sem uma área cobrir a outra. Os `projectExamples` ficam como o
+gerador os fez: um exemplo guardado é imutável na plataforma, e mudar a posição de uma pilha faz a
+importação recusar o manifesto ("Use um novo ID"); o palco organiza os exemplos sozinho na gravação.
 Antes a importação trazia as áreas nas posições fixas do gerador, e a responsável organizava à mão no
 Admin, bloco por bloco de Estúdio. Os geradores do Faísca terminam com `organizarManifestos` de
 `qa/organizar-projetos.ts`, que abre cada projeto num navegador com o Blockly do Estúdio e grava só x e

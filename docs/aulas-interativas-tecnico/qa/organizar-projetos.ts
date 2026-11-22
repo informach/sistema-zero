@@ -3,8 +3,8 @@
  * inicial e os exemplos chegavam com as áreas umas por cima das outras: os geradores põem cada área num
  * lugar fixo, sem saber o tamanho da pilha, e ela organizava à mão no Admin, bloco por bloco de Estúdio.
  *
- * Aqui cada projeto (o `initialProject` e cada `projectExamples.examples[*]` dos blocos de Estúdio) é
- * aberto num navegador com o Blockly do Estúdio e passa pelo mesmo "Organizar blocos" do Estúdio e do
+ * Aqui o projeto inicial de cada bloco de Estúdio (`initialProject`; os `projectExamples` são imutáveis
+ * na plataforma e ficam como o gerador os fez) é aberto num navegador com o Blockly do Estúdio e passa pelo mesmo "Organizar blocos" do Estúdio e do
  * Admin (organize.ts). Do resultado só voltam as posições x e y das pilhas do topo; o resto do manifesto
  * fica como estava. As posições ficam num cache por conteúdo (.cache/organizar-projetos.json): gerar de
  * novo um curso que não mudou não abre o navegador.
@@ -65,10 +65,11 @@ function projetosDe(manifesto: { blocks: Bloco[] }): { rotulo: string; projeto: 
   return manifesto.blocks.flatMap((b) => {
     const c = b.content
     if (c?.kind !== 'studio') return []
+    // Só o projeto inicial. Os exemplos de cada parte (projectExamples) são imutáveis na plataforma: mudar
+    // um exemplo guardado, nem que seja a posição de uma pilha, faz a importação recusar o manifesto ("Um
+    // exemplo guardado é imutável. Use um novo ID"), e o palco organiza os exemplos sozinho na gravação.
     const lista: { rotulo: string; projeto: Projeto }[] = []
     if (c.initialProject) lista.push({ rotulo: `${b.key}/inicial`, projeto: c.initialProject })
-    for (const [id, p] of Object.entries(c.projectExamples?.examples ?? {}))
-      lista.push({ rotulo: `${b.key}/exemplo ${id}`, projeto: p })
     return lista.filter((x) => (x.projeto.blocksState?.blocks?.blocks?.length ?? 0) > 0)
   })
 }
