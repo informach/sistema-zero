@@ -37,6 +37,16 @@ mantendo o comportamento legado. Provas de pixels, arte real e miniatura 512
 estão em `qa/composicao-de-cena-regional-2026-11-22/`. Essa composição não é
 exportação de dados PNG 5, runtime de jogo ou ativação na oficina pública.
 
+`export/regionImage.ts` prepara/embute uma cena wire 4 em metadados privados
+Pinta 5 no PNG. JSON e memória decodificada continuam separados; o encoder
+compartilhado recebe texto já serializado e conserva a aquisição/serialização
+assíncrona legada. Capa estática limitada a 4.096/lado, 4 Mi pixels e arquivo
+final de 16 MiB; metadados/cena têm tetos próprios. PNG com dados Pinta anteriores
+é recusado para não criar duas autoridades. Descritores de mundo não equivalem
+a validar seus PNGs filhos: falta integração do loader/encoder do mundo e dos
+motores antes do host. Fixture do leitor PNG 4 é autêntica e congelada, sem
+seleção no produto. Provas em `qa/envelope-png-regional-2026-11-22/`.
+
 `state/localRegionChunkStorage.ts` prepara o físico 3 como política opt-in do
 IO transacional existente. `parsePintaRegionLayerLocations` confere cabeçalhos
 antes das requisições de buffers; limites globais, IDs e dono das chaves são

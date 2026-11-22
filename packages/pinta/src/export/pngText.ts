@@ -91,7 +91,24 @@ export async function pngWithPintaData(
   data: unknown,
   keyword = 'pinta',
 ): Promise<Uint8Array<ArrayBuffer>> {
+  return pngWithSerializedPintaData(png, () => JSON.stringify(data), keyword)
+}
+
+/** Already-serialized wire JSON; decoded typed-array scenes are not a transport DTO. */
+export async function pngWithPintaJson(
+  png: Uint8Array,
+  json: string,
+  keyword = 'pinta',
+): Promise<Uint8Array<ArrayBuffer>> {
+  return pngWithSerializedPintaData(png, () => json, keyword)
+}
+
+async function pngWithSerializedPintaData(
+  png: Uint8Array,
+  serialize: () => string,
+  keyword: string,
+): Promise<Uint8Array<ArrayBuffer>> {
   const { strToU8, zlibSync } = await import('fflate')
-  const text = zlibSync(strToU8(JSON.stringify(data)), { level: 9 })
+  const text = zlibSync(strToU8(serialize()), { level: 9 })
   return insertPngChunkAfterIhdr(png, pngChunk('iTXt', iTxtChunkData(keyword, text)))
 }

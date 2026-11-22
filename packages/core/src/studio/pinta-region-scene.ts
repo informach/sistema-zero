@@ -63,9 +63,15 @@ export type PintaRegionScene = Omit<z.infer<typeof header>, 'layers' | 'sets'> &
 }
 
 /** Only JSON crosses this boundary: cap input before parsing objects, art or base64. */
-export function readPintaRegionScene(text: string): PintaRegionScene | null {
+export function readPintaRegionScene(
+  text: string,
+  maxIndexBytes = PINTA_REGION_SCENE_MAX_INDEX_BYTES,
+): PintaRegionScene | null {
   try {
     if (
+      !Number.isSafeInteger(maxIndexBytes) ||
+      maxIndexBytes < 0 ||
+      maxIndexBytes > PINTA_REGION_SCENE_MAX_INDEX_BYTES ||
       typeof text !== 'string' ||
       text.length > PINTA_REGION_SCENE_MAX_JSON_BYTES ||
       new TextEncoder().encode(text).byteLength > PINTA_REGION_SCENE_MAX_JSON_BYTES
@@ -90,7 +96,7 @@ export function readPintaRegionScene(text: string): PintaRegionScene | null {
       if (!locations) return null
       for (const chunks of locations)
         indexBytes += chunks.length * PINTA_REGION_CELL_COUNT * Int16Array.BYTES_PER_ELEMENT
-      if (indexBytes > PINTA_REGION_SCENE_MAX_INDEX_BYTES) return null
+      if (indexBytes > maxIndexBytes) return null
     }
     const decodeMap = (map: MapHeader): PintaRegionSceneMap | null => {
       const grids = parsePintaRegionLayers(

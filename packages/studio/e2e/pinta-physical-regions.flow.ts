@@ -1052,3 +1052,102 @@ test('scene 4 renders the real Vila with identical pixels and a bounded sparse-w
     contentType: 'image/png',
   })
 })
+
+test('a real PNG 5 keeps Vila artwork and structured scene 4 when reopened in an independent realm', async ({
+  page,
+  context,
+}, info) => {
+  const exported = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions,
+      { map, assets } = p.vilaEFloresta(),
+      converted = p.prepareMapRegions(map)
+    if (!converted.ok) throw Error(converted.reason)
+    const scene = await p.exportPintaRegionScene(
+        converted.map,
+        (id) => assets.find((asset) => asset.id === id) ?? null,
+      ),
+      cover = await p.scenePng(scene.scene, 1, 512)
+    if (!cover) throw Error('Imagem ausente')
+    const original = Uint8Array.from(atob(cover.dataUrl.split(',')[1]!), (char) =>
+        char.charCodeAt(0),
+      ),
+      image = await p.embedPintaRegionImage(original, scene.json)
+    const view = new DataView(image.png.buffer, image.png.byteOffset, image.png.byteLength),
+      length = view.getUint32(33),
+      json = new TextDecoder().decode(p.unzlibSync(image.png.subarray(51, 41 + length)))
+    let binary = ''
+    for (const byte of image.png) binary += String.fromCharCode(byte)
+    return {
+      id: map.id,
+      png: btoa(binary),
+      json,
+      bytes: image.metadata.bytes,
+      original: cover.dataUrl,
+    }
+  })
+  await test.info().attach('vila-dados5.png', {
+    body: Buffer.from(exported.png, 'base64'),
+    contentType: 'image/png',
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x')
+    await (await context.newCDPSession(reopened)).send('Emulation.setCPUThrottlingRate', {
+      rate: 4,
+    })
+  await proof(reopened)
+  expect(
+    await reopened.evaluate(async ({ png, json, bytes, id, original }) => {
+      const p = window.pintaPhysicalRegions,
+        data = p.readPintaRegionImageData(json)
+      if (!data) throw Error('Dados não reabriram')
+      const frames = await Promise.all(
+        [original, `data:image/png;base64,${png}`].map(async (source) => {
+          const image = new Image()
+          await new Promise<void>((resolve, reject) => {
+            image.onload = () => resolve()
+            image.onerror = () => reject(Error('PNG inválido'))
+            image.src = source
+          })
+          const canvas = document.createElement('canvas')
+          canvas.width = image.naturalWidth
+          canvas.height = image.naturalHeight
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(image, 0, 0)
+          return {
+            width: canvas.width,
+            height: canvas.height,
+            pixels: ctx.getImageData(0, 0, canvas.width, canvas.height).data,
+          }
+        }),
+      )
+      return {
+        version: data.version,
+        sceneVersion: data.scene.version,
+        id: data.scene.id,
+        expectedId: id,
+        layers: data.scene.layers.length,
+        sheets: data.scene.tilesets.length,
+        sets: data.scene.sets?.length,
+        physics: data.scene.physics,
+        exactBytes: new TextEncoder().encode(json).byteLength === bytes,
+        width: frames[1]!.width,
+        height: frames[1]!.height,
+        pixelsEqual: frames[0]!.pixels.every((value, index) => value === frames[1]!.pixels[index]),
+      }
+    }, exported),
+  ).toEqual({
+    version: 5,
+    sceneVersion: 4,
+    id: exported.id,
+    expectedId: exported.id,
+    layers: 18,
+    sheets: 2,
+    sets: 1,
+    physics: 'legacy',
+    exactBytes: true,
+    width: 512,
+    height: 384,
+    pixelsEqual: true,
+  })
+})

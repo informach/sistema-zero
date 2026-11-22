@@ -2,6 +2,16 @@
 
 ## Leitor interno de cenas regionais (22/11/2026)
 
+`studio/pinta-region-image.ts` prepara metadados Pinta 5 em PNG: entrada JSON
+descomprimida até 16 MiB UTF-8, cena 4 pelo leitor compartilhado e seu teto de
+8 MiB, nome/raiz coerentes, escala com peça integral e física explícita. Conserva
+o teto anterior de 4 MiB de índices por destino: `maxIndexBytes` só pode reduzi-lo,
+permitindo ao loader descontar o que já admitiu. O leitor genérico de cena também
+aceita somente redução do próprio teto, antes do primeiro payload. Mundo aqui
+é descritor; o loader precisa validar/capturar seus PNGs filhos e orçamentos
+acumulados. Não inclui dataVersion 5 nas receitas/capacidades públicas. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/envelope-png-regional-2026-11-22/`.
+
 O emissor privado do Pinta agora declara `physics: 'legacy' | 'precise'` na
 cena 4: formato de armazenamento não decide o modo de colisão. O leitor mantém
 o campo opcional para os primeiros documentos privados, recusando física legada

@@ -1,5 +1,8 @@
 // Browser QA entry only. It does not select the regional codec for public persistence.
+
+export { unzlibSync } from 'fflate'
 export { createStore } from 'idb-keyval'
+export { readPintaRegionImageData } from '../../core/src/studio/pinta-region-image'
 export { readPintaRegionScene } from '../../core/src/studio/pinta-region-scene'
 export { readPintaScene } from '../../core/src/studio/pinta-scene'
 export { scene4BudgetFixture, scene4Fixture } from '../../core/tests/fixtures/pinta-region-scene'
@@ -7,6 +10,7 @@ export { recordPintaLocalOrigin } from '../src/core/localAssetOrigin'
 export { createTilemapAsset, sanitizeRegionTilemapAsset } from '../src/core/project'
 export { regionAssetBundleToJson } from '../src/export/regionAssetBundle'
 export { decodeRegionGalleryBackup } from '../src/export/regionBackup'
+export { embedPintaRegionImage } from '../src/export/regionImage'
 export { exportPintaRegionScene } from '../src/export/regionScene'
 export { exportPintaScene } from '../src/export/scene'
 export { drawScene, loadSceneImages, scenePng } from '../src/export/sceneDrawing'

@@ -222,6 +222,14 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    PNGs reais da Vila e miniatura 512 do mundo esparso em
    `qa/composicao-de-cena-regional-2026-11-22/`. Não é runtime ou PNG de dados 5;
    seguir a essas fronteiras e aos consumidores públicos antes de fechar o item.
+   Envelope PNG de dados 5 preparado privadamente: leitor Core reutiliza cena 4,
+   escritor usa o chunk/encoder existente e conserva PNGs legados em 256
+   comparações históricas. A revisão corrigiu o ponto assíncrono de serialização
+   da primeira refatoração. A Vila real reabre em outra página com pixels e
+   dados; leitor Pygame PNG 4 autêntico recusa os novos metadados. Recibos em
+   `qa/envelope-png-regional-2026-11-22/`. É fronteira de uma cena e descritores;
+   ainda faltam montagem/carga completa de mundos, leitores de jogo/capacidades
+   e seleção no host. Não fecha PNG 5 integral, item 4 ou etapas macro.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
