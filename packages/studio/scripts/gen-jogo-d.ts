@@ -12,6 +12,7 @@ import { JOGO_D_DESCRIPTION, jogoDSource } from '../src/examples/jogoDSource'
 import { normalizeSZIR, SZIRV2Schema } from '../src/ir'
 import { parseJS } from '../src/parsers/js'
 import { dataUrl, personagens, previa, tileset } from './jogo-d/arte'
+import { capa } from './jogo-d/capa'
 import { casa, caverna, mundo } from './jogo-d/cenas'
 import { sons } from './jogo-d/sons'
 import { writeGeneratedSource } from './writeGeneratedSource'
@@ -97,14 +98,27 @@ export function jogoDIR() {
   return stripIds(ir)
 }
 
+/** A capa da galeria: a vila desenhada com as peças e os personagens do próprio jogo. */
+export function jogoDCapa(): string {
+  const pecas = tileset(),
+    cena = PintaSceneSchema.parse(mundo(dataUrl(pecas.png)).cena)
+  return dataUrl(capa(cena, pecas.tela, pecas.colunas).png())
+}
+
 if (import.meta.main) {
   const assets = jogoDAssets(),
-    ir = jogoDIR()
+    ir = jogoDIR(),
+    imagemDaCapa = jogoDCapa()
   const destinoMateriais = join(import.meta.dir, '../src/examples/jogoD.generated.ts'),
-    destinoIR = join(import.meta.dir, '../src/examples/__gen_jogoD.ts')
+    destinoIR = join(import.meta.dir, '../src/examples/__gen_jogoD.ts'),
+    destinoCapa = join(import.meta.dir, '../src/examples/jogoDCapa.generated.ts')
   const materiais = `// Gerado por scripts/gen-jogo-d.ts. Não edite.\nimport type { ProjectAsset } from '../core/project'\nexport const JOGO_D_ASSETS: ProjectAsset[] = ${JSON.stringify(assets)}\n`
   const programa = `// Gerado por scripts/gen-jogo-d.ts. Não edite.\nimport type { SZIRV2 } from '../ir'\n/** ${JOGO_D_DESCRIPTION} */\nexport const JOGO_D_IR = ${JSON.stringify(ir, null, 2)} as SZIRV2\n`
+  // A capa mora num arquivo leve: a galeria a mostra sem baixar o jogo.
+  const textoDaCapa = `// Gerado por scripts/gen-jogo-d.ts. Não edite.\nexport const JOGO_D_CAPA =\n  '${imagemDaCapa}'\n`
   if (process.argv.includes('--check')) {
+    if ((await import(destinoCapa)).JOGO_D_CAPA !== imagemDaCapa)
+      throw new Error('A capa do jogo D mudou; rode bun run gen:jogo-d')
     const atuais = [
       (await import(destinoMateriais)).JOGO_D_ASSETS,
       stripIds((await import(destinoIR)).JOGO_D_IR),
@@ -117,6 +131,7 @@ if (import.meta.main) {
   } else {
     writeGeneratedSource(destinoMateriais, materiais)
     writeGeneratedSource(destinoIR, programa)
+    writeGeneratedSource(destinoCapa, textoDaCapa)
     // O programa sai formatado (o arquivo dos materiais, grande, fica fora do biome).
     const formato = Bun.spawnSync([process.execPath, 'x', 'biome', 'format', '--write', destinoIR])
     if (formato.exitCode !== 0) throw new Error(formato.stderr.toString())
@@ -125,6 +140,8 @@ if (import.meta.main) {
       (n, a) => n + a.dataUrl.length + (a.scene ? JSON.stringify(a.scene).length : 0),
       0,
     )
-    console.log(`jogo D: ${assets.length} materiais, ${chars} caracteres; programa estruturado`)
+    console.log(
+      `jogo D: ${assets.length} materiais, ${chars} caracteres; capa ${imagemDaCapa.length}; programa estruturado`,
+    )
   }
 }

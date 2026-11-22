@@ -256,15 +256,20 @@ export function tileset() {
       }
     return n ? [r / n, g / n, b / n].map((v) => Math.round(v)) : null
   })
-  return { png: t.png(), colunas, medias }
+  return { png: t.png(), colunas, medias, tela: t }
 }
 
 /** Personagens e objetos do jogo (32 × 32), um PNG cada. */
 export function personagens() {
+  return Object.fromEntries(Object.entries(figuras()).map(([nome, t]) => [nome, t.png()]))
+}
+
+/** Os personagens e objetos como telas (a capa os desenha por cima das peças). */
+export function figuras() {
   const feito = (desenhar: (t: Tela) => void) => {
     const t = new Tela(PECA, PECA)
     desenhar(t)
-    return t.png()
+    return t
   }
   return {
     heroi: feito((t) => {
@@ -337,4 +342,37 @@ export function previa(
     t.retangulo((i % colunas) * escala, Math.floor(i / colunas) * escala, escala, escala, hexa)
   }
   return { png: t.png(), largura: t.largura, altura: t.altura }
+}
+
+/** Um pedaço de uma tela (uma peça do tileset). */
+export function recortar(origem: Tela, x: number, y: number, w: number, h: number) {
+  const t = new Tela(w, h)
+  for (let j = 0; j < h; j++)
+    t.rgba.set(
+      origem.rgba.subarray(
+        ((y + j) * origem.largura + x) * 4,
+        ((y + j) * origem.largura + x + w) * 4,
+      ),
+      j * w * 4,
+    )
+  return t
+}
+
+/** Reduz a tela pela média de cada bloco (fator inteiro). */
+export function reduzir(origem: Tela, fator: number) {
+  const t = new Tela(Math.floor(origem.largura / fator), Math.floor(origem.altura / fator))
+  for (let y = 0; y < t.altura; y++)
+    for (let x = 0; x < t.largura; x++) {
+      const soma = [0, 0, 0, 0]
+      for (let j = 0; j < fator; j++)
+        for (let i = 0; i < fator; i++) {
+          const at = ((y * fator + j) * origem.largura + x * fator + i) * 4
+          for (let c = 0; c < 4; c++) soma[c]! += origem.rgba[at + c]!
+        }
+      t.rgba.set(
+        soma.map((v) => Math.round(v / (fator * fator))),
+        (y * t.largura + x) * 4,
+      )
+    }
+  return t
 }

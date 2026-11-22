@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { gameTwoDExamples } from '../official-extensions/game-2d/exampleCatalog'
 import {
   buildKitGroups,
+  buildProjectFromKitEntry,
   filterKitGroups,
   type KitEntry,
   type KitGalleryFilters,
@@ -34,13 +35,29 @@ describe('descoberta dos exemplos do Jogo 2D', () => {
   it('o loader validado entrega os metadados à galeria', async () => {
     const gameTwoDGroup = (await buildKitGroups()).find((group) => group.extensionId === 'game-2d')
 
-    expect(gameTwoDGroup?.entries).toHaveLength(46)
+    // Os 46 do catálogo e o jogo D (os exemplos grandes entram no fim, `examples/bigExamples.ts`).
+    expect(gameTwoDGroup?.entries).toHaveLength(47)
     expect(gameTwoDGroup?.entries.find((entry) => entry.name === 'Pegue a moeda')).toMatchObject({
       difficulty: 'beginner',
       genre: 'coleta',
       featured: true,
       recommendedOrder: 1,
     })
+  })
+
+  it('o jogo D entra no grupo do Jogo 2D com capa e só carrega o jogo no clique', async () => {
+    const grupo = (await buildKitGroups()).find((group) => group.extensionId === 'game-2d')
+    const jogoD = grupo?.entries.find((entry) => entry.name === 'Mundo das Portas')
+    expect(jogoD).toMatchObject({ difficulty: 'advanced', genre: 'aventura', experience: 'game' })
+    expect(jogoD?.cover).toMatch(/^data:image\/png;base64,/)
+    // O card não traz o jogo: os materiais (1,75 milhão de caracteres) chegam pelo `load`.
+    expect(jogoD?.ir).toBeUndefined()
+    expect(jogoD?.assets).toBeUndefined()
+    const carregado = await jogoD!.load!()
+    expect(carregado.assets).toHaveLength(22)
+    const projeto = buildProjectFromKitEntry({ ...jogoD!, ...carregado })
+    expect(projeto.installedExtensions.map((extension) => extension.id)).toEqual(['game-2d'])
+    expect(projeto.assets).toHaveLength(22)
   })
 
   it('busca sem acento e filtros combinados encontram metadados editoriais', () => {

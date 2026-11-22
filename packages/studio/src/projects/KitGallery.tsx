@@ -14,6 +14,7 @@ import { OFFICIAL_CATALOG } from '#official-extensions'
 import type { EditableStudioProject } from '../core/editableProject'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { normalizeSearchText } from '../core/searchText'
+import { BIG_EXAMPLES, type BigExample } from '../examples/bigExamples'
 import {
   CORE_EXAMPLE_SUMMARIES,
   type CoreExampleSummary,
@@ -58,6 +59,8 @@ export interface KitEntry {
   /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
   assets?: readonly ProjectAsset[]
   workspaceOptions?: BuildWorkspaceStateOptions
+  /** A imagem do card, tirada do próprio jogo (os exemplos grandes, `examples/bigExamples.ts`). */
+  cover?: string
 }
 
 type GalleryEntry = KitEntry | PythonExampleEntry
@@ -294,6 +297,22 @@ function toEntry(
   }
 }
 
+/** Um exemplo grande: entra no grupo do motor dele e só carrega o jogo no clique. */
+function toBigEntry(example: BigExample): KitEntry {
+  return {
+    key: `${example.extensionId}:${example.name}`,
+    name: example.name,
+    description: example.description,
+    experience: example.experience,
+    emoji: KIT_EMOJI[example.name] ?? '🎮',
+    difficulty: example.difficulty,
+    concepts: example.concepts,
+    genre: example.genre,
+    cover: example.cover,
+    load: example.load,
+  }
+}
+
 function toCoreEntry(summary: CoreExampleSummary): KitEntry {
   return {
     key: `core:${summary.name}`,
@@ -346,6 +365,10 @@ export async function buildKitGroupsResult(t: Translator = defaultT): Promise<Ki
       },
     ]
   })
+  for (const example of BIG_EXAMPLES)
+    groups
+      .find((group) => group.extensionId === example.extensionId)
+      ?.entries.push(toBigEntry(example))
   if (CORE_EXAMPLE_SUMMARIES.length > 0) {
     groups.push({
       extensionId: 'core',
@@ -424,6 +447,17 @@ function KitCard({
       onClick={() => onPick(entry)}
       className="flex h-full min-h-28 w-full flex-col items-start gap-1 rounded-lg border border-sz-border bg-sz-panel p-3 text-left transition-colors hover:border-sz-accent disabled:cursor-not-allowed disabled:opacity-60"
     >
+      {'cover' in entry && entry.cover ? (
+        // Decorativa: o nome do jogo vem logo abaixo, no texto do botão.
+        <img
+          src={entry.cover}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          data-sz-kit-cover=""
+          className="mb-1 aspect-video w-full rounded-md object-cover [image-rendering:pixelated]"
+        />
+      ) : null}
       <span className="flex w-full items-start justify-between gap-2">
         <span className="flex items-center gap-2">
           {step !== undefined ? (
