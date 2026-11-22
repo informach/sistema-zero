@@ -1,0 +1,323 @@
+{
+  "target": "2bb89391871b90cd200ed44334397bbf1d822639",
+  "blobs": [
+    {
+      "file": "docs/aulas-interativas-tecnico/qa/gerar-ilha-do-farol.ts",
+      "received": "8f28eeb5ba4e048e24e164efa418425088bc9280",
+      "index": "8f28eeb5ba4e048e24e164efa418425088bc9280",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas-tecnico/qa/ilha-do-farol-conteudo.ts",
+      "received": "ac02f30143b7254c162002ecad75cff708cae031",
+      "index": "ac02f30143b7254c162002ecad75cff708cae031",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas-tecnico/qa/ilha-do-farol.test.ts",
+      "received": "817687c8a05e51d47d07d524dcc2d709a7c33e29",
+      "index": "817687c8a05e51d47d07d524dcc2d709a7c33e29",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/README.md",
+      "received": "12f8b847717c49a49bea5518b93f2b9184777d48",
+      "index": "12f8b847717c49a49bea5518b93f2b9184777d48",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.debinha.elevenlabs.txt",
+      "received": "98f2a00a86322187c1eda6b2b6b71fae5d3e879f",
+      "index": "98f2a00a86322187c1eda6b2b6b71fae5d3e879f",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.edicao.json",
+      "received": "6971619cd79a9f0b052cbde1f8f6670d17a1df7e",
+      "index": "6971619cd79a9f0b052cbde1f8f6670d17a1df7e",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.elevenlabs.txt",
+      "received": "95ce62a3526630e4f48f8f136449730c859514b6",
+      "index": "95ce62a3526630e4f48f8f136449730c859514b6",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.manifesto.json",
+      "received": "049f7a10c6cc36c7b574621fc6581fe8870eeac1",
+      "index": "049f7a10c6cc36c7b574621fc6581fe8870eeac1",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.md",
+      "received": "f9accab8bd439affaf2e19587d59e4ec24343567",
+      "index": "f9accab8bd439affaf2e19587d59e4ec24343567",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.roteiro.md",
+      "received": "acb5c1c5fad9a665a778dcdf765e14d2dfd74012",
+      "index": "acb5c1c5fad9a665a778dcdf765e14d2dfd74012",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.dede.elevenlabs.txt",
+      "received": "e9e81739336dc6e576cf7da005bbbb3d7c5f7d78",
+      "index": "e9e81739336dc6e576cf7da005bbbb3d7c5f7d78",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.edicao.json",
+      "received": "7df63e13dd7fd97dc19fe452e97bdabe2ac7bf3c",
+      "index": "7df63e13dd7fd97dc19fe452e97bdabe2ac7bf3c",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.elevenlabs.txt",
+      "received": "786c49a0715fc5cf3114b6a1c42dd662abb99ffc",
+      "index": "786c49a0715fc5cf3114b6a1c42dd662abb99ffc",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.manifesto.json",
+      "received": "f7f4a17b5d1580e68281b1f4653d9824feee5fee",
+      "index": "f7f4a17b5d1580e68281b1f4653d9824feee5fee",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.md",
+      "received": "9daa6bafad2dfe1a7baa60990d5172000b28e011",
+      "index": "9daa6bafad2dfe1a7baa60990d5172000b28e011",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.roteiro.md",
+      "received": "30641bf5a30c60e4e8b6e16e123afd4bceb051f5",
+      "index": "30641bf5a30c60e4e8b6e16e123afd4bceb051f5",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.debinha.elevenlabs.txt",
+      "received": "d6979afbe6465f1aeb90841f62f19182fdf4a86e",
+      "index": "d6979afbe6465f1aeb90841f62f19182fdf4a86e",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.edicao.json",
+      "received": "c3eda24a7a1b910564242ddf3670cad05dadcc13",
+      "index": "c3eda24a7a1b910564242ddf3670cad05dadcc13",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.elevenlabs.txt",
+      "received": "96e6e9309d57fb06ff49e96a2b20c624121251ce",
+      "index": "96e6e9309d57fb06ff49e96a2b20c624121251ce",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json",
+      "received": "2e273e5a70043f3ef0a4decda9bb675d0b47ffee",
+      "index": "2e273e5a70043f3ef0a4decda9bb675d0b47ffee",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.md",
+      "received": "78ee459770f0d24a470a5068828df1962832f6e6",
+      "index": "78ee459770f0d24a470a5068828df1962832f6e6",
+      "identical": true
+    },
+    {
+      "file": "docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.roteiro.md",
+      "received": "88636a212bb144e042ef32c89bb8c369fb6a962b",
+      "index": "88636a212bb144e042ef32c89bb8c369fb6a962b",
+      "identical": true
+    },
+    {
+      "file": "packages/admin/tests/lesson-evidence-history.test.tsx",
+      "received": "08e394029eeeda433fb50c5f6a3b9ca91df0a158",
+      "index": "08e394029eeeda433fb50c5f6a3b9ca91df0a158",
+      "identical": true
+    },
+    {
+      "file": "packages/community-kids/CLAUDE.md",
+      "received": "ab2db049fd7d6698da77c0bf8b0debafabfbc9de",
+      "index": "ab2db049fd7d6698da77c0bf8b0debafabfbc9de",
+      "identical": true
+    },
+    {
+      "file": "packages/community-kids/e2e-art-slots/art-slots.spec.ts",
+      "received": "88f40f33c633a32c1df74267de872989babe4b16",
+      "index": "88f40f33c633a32c1df74267de872989babe4b16",
+      "identical": true
+    },
+    {
+      "file": "packages/member-shell/CLAUDE.md",
+      "received": "c75f49d0e6843ebcc3698c568a078f1ddc480038",
+      "index": "c75f49d0e6843ebcc3698c568a078f1ddc480038",
+      "identical": true
+    },
+    {
+      "file": "packages/member-shell/src/components/studio/studio-block.tsx",
+      "received": "ee9fce3476cfee39014e6e45a294beae71059018",
+      "index": "ee9fce3476cfee39014e6e45a294beae71059018",
+      "identical": true
+    },
+    {
+      "file": "packages/member-shell/src/lib/studio-template.ts",
+      "received": "110e38da5cbd62da296c63b287f7cc0299a2b504",
+      "index": "110e38da5cbd62da296c63b287f7cc0299a2b504",
+      "identical": true
+    },
+    {
+      "file": "packages/member-shell/tests/studio-template.test.ts",
+      "received": "b70739051520d6930fceed8e2ac6ed4d19492c20",
+      "index": "b70739051520d6930fceed8e2ac6ed4d19492c20",
+      "identical": true
+    },
+    {
+      "file": "packages/members/tests/db/studio-submission-previous.test.ts",
+      "received": "9d8866bcbd4f34287e376e9c4b6db34373ccfd29",
+      "index": "9d8866bcbd4f34287e376e9c4b6db34373ccfd29",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/e2e/reload-flush.spec.ts",
+      "received": "0567659dea9fd56d92ccb80d4254c934c9563b50",
+      "index": "0567659dea9fd56d92ccb80d4254c934c9563b50",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/scripts/verify-project-storage-browser.mjs",
+      "received": "3b6aab5a23be3c004fe488f671075d59eb1eda68",
+      "index": "3b6aab5a23be3c004fe488f671075d59eb1eda68",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/components/blocks/BlocklyPanel.tsx",
+      "received": "fe64c12034df722e5c6c17a4acd644f03610493a",
+      "index": "fe64c12034df722e5c6c17a4acd644f03610493a",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/modes/pro/useWebContainerSync.test.tsx",
+      "received": "abc4124cc71f7aa3485209b1b1a50172cec4a5ba",
+      "index": "abc4124cc71f7aa3485209b1b1a50172cec4a5ba",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/persistence/service.test.ts",
+      "received": "803c6d291d6e457b58dd1480bb6edbafa245331c",
+      "index": "803c6d291d6e457b58dd1480bb6edbafa245331c",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/persistence/service.ts",
+      "received": "a3ea4f7da486fe6ead6e8316d3aba9c842d14539",
+      "index": "a3ea4f7da486fe6ead6e8316d3aba9c842d14539",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/state/fixtures/projectStorageBrowser.ts",
+      "received": "1a3ee1515907c237ca588e7960651a9efbc0b502",
+      "index": "7c9633410b2f776b8c1ae4572ce9e10f3f4d953c",
+      "identical": false,
+      "qaCorrection": "Narrow unknown name/tree fields before inspecting raw recovery records"
+    },
+    {
+      "file": "packages/studio/src/studio/StudioCore.tsx",
+      "received": "9df0f97d3b5c36ff8fda57616835aaf37999fbe3",
+      "index": "9df0f97d3b5c36ff8fda57616835aaf37999fbe3",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/studio/__tests__/Studio.cases.tsx",
+      "received": "da9ba39c797de9ef4d5ff2ac4072f3ff373ed114",
+      "index": "da9ba39c797de9ef4d5ff2ac4072f3ff373ed114",
+      "identical": true
+    }
+  ],
+  "records": [
+    {
+      "file": "studio-focused.log.gz",
+      "sha256": "af2bc28901294ead686b366b0199b77e3dd622f5670b50c3df7369c4c1b4e493"
+    },
+    {
+      "file": "member-shell-focused.log.gz",
+      "sha256": "c621adcab4d4e8c4f2bbc2cb91b0906a6c60a766f087c0a3a5952ce63bc1f546"
+    },
+    {
+      "file": "admin-focused.log.gz",
+      "sha256": "c3b01d5b728baf128f8b6a8064bb27553dfe1c8d160bfc034c9a2d233be68756"
+    },
+    {
+      "file": "studio-types-first.log.gz",
+      "sha256": "4724192bdac3fede58f589e167bd456050aa3e571a17333ae4d112c5cf6a9242"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63"
+    },
+    {
+      "file": "biome.log.gz",
+      "sha256": "1fc2fb40a9007a778158ad1cb93a2d978c339cb5b5800d10922d98d43a320bb9"
+    },
+    {
+      "file": "fixture-biome.log.gz",
+      "sha256": "4f4f9a1cc7d2c02604e81f9d94e2c77d64da3138f4c59415817d6448ba179865"
+    },
+    {
+      "file": "reload-browser.log.gz",
+      "sha256": "18503ab0bf5d333abe3281797b84ad8cf1a5d410b14e865fa4a6eb4369f7b028"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "sha256": "c7a268c97ee54cd45372d8a3adddfee5eb62789187c6e72ea2c0f277625ac1eb"
+    },
+    {
+      "file": "storage-browser.log.gz",
+      "sha256": "0615db0275c5b5c61d75954b7db5505d72cbb02bf3ffff68c5e2c4354330a58e"
+    },
+    {
+      "file": "storage-driver.txt.gz",
+      "sha256": "3f3d98d27049738e83f82668eecbef4acec81536b48fd402cdd5c7dfa792ab7f"
+    },
+    {
+      "file": "archive.cjs.gz",
+      "sha256": "a9d48fbbef4a91c928203d587c34c2140c5bb4bf3422d37b32c27cd5bff501fe"
+    }
+  ],
+  "pintaCoreUnchanged": true,
+  "pintaSuiteCarried": {
+    "commit": "7f30bf123",
+    "pass": 2738
+  },
+  "studio": {
+    "pass": 34,
+    "isolatedChildPass": 25,
+    "assertions": 96,
+    "isolatedAssertions": 161
+  },
+  "memberShell": {
+    "pass": 23,
+    "assertions": 38
+  },
+  "admin": {
+    "pass": 2,
+    "assertions": 15
+  },
+  "browser": {
+    "pass": 14,
+    "retries": 0,
+    "integration": 12,
+    "reloadHidden": 2
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 2,
+    "info": 1,
+    "source": "incoming lesson generator, preserved"
+  },
+  "sqlTestsRun": false,
+  "featureMergedIntoStaging": false
+}

@@ -49,6 +49,13 @@ de Pinta da aula entra no jogo do bloco de Estúdio, com o extra "Meu primeiro d
   `minha-chave` com o selo "Seu desenho da aula" em Imagens, troca a imagem no "Criar sprite
   chave", verifica (2 de 2) e envia; depois redesenha, envia de novo, reabre a aula e confere que a
   imagem do jogo mudou. Fora do CI, `SZ_CHECK_CHROMIUM` aponta o Chromium da página e do executor.
+- **Segundo caso (22/11/2026, `mode: 'serial'`: continua a aula do primeiro, no mesmo members em
+  memória):** num navegador novo o editor abre com o envio; uma edição ainda não enviada, o POST do
+  envio abortado (`page.route`) mostra "Não foi possível enviar o projeto. Tente de novo." e o editor
+  fica igual; recarregar abre o rascunho deste navegador (vence o envio); o reenvio entra; "Recomeçar"
+  volta ao projeto inicial com o desenho da vaga ainda nos materiais; e a confirmação do envio mostra
+  o aviso de projeto inicial. Foi ele que achou o aviso morto nas aulas de manifesto e o desenho que
+  sumia ao recomeçar (CLAUDE.md do member-shell, "Aviso você está enviando o projeto INICIAL").
 
 ## Arquipélago Vagalume: a página do jogo (27/10/2026)
 

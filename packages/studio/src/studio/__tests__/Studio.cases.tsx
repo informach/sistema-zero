@@ -2,6 +2,8 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun
 import { act, cleanup, render, waitFor } from '@testing-library/react'
 import { createRef, StrictMode, useEffect } from 'react'
 import { createEmptyProject, isBlockTypeAllowed } from '#core'
+import { javaScriptProject } from '../../core/editableProject'
+import type { StudioPersistenceAdapter } from '../../persistence/types'
 import { fakeUseStore } from '../../testing/fakeIdbStore'
 import { useStudioConfig } from '../config'
 import { useT } from '../i18n'
@@ -604,6 +606,78 @@ describe('Studio', () => {
       )
       await waitFor(() => expect(saved).toEqual(['project-open']))
       expect(handleRef.current?.getProject()?.name).toBe('Do professor')
+    } finally {
+      setAutosaveDelayForTests(null)
+    }
+  })
+
+  // Navegação dentro do app (trocar de perfil, menu lateral, voltar do navegador): o editor
+  // desmonta com a página viva. O serviço precisa gravar ANTES de o projeto ser descarregado da
+  // store; descarregado primeiro, a edição pendente e o projeto sujo sumiam calados.
+  it('sair do editor grava a edição que o editor ainda segurava', async () => {
+    setAutosaveDelayForTests(60_000)
+    pendingEditorCode = 'console.log("digitado antes de sair")'
+    const saved: Array<string | undefined> = []
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      save: async (project) => {
+        saved.push(javaScriptProject(project)?.files['script.js'])
+      },
+    }
+    try {
+      const { getByTestId, unmount } = render(
+        <Studio
+          initialProject={createEmptyProject('project-exit', 'Sair')}
+          persistence={adapter}
+        />,
+      )
+      await waitFor(() =>
+        expect(getByTestId('editor-shell').getAttribute('data-project')).toBe('project-exit'),
+      )
+      await waitFor(() => expect(pendingEditorRegistered).toBe(true))
+      unmount()
+      await waitFor(() => expect(saved).toContain('console.log("digitado antes de sair")'))
+    } finally {
+      setAutosaveDelayForTests(null)
+    }
+  })
+
+  it('o salvamento recusado ao sair vira cópia de saída, sem perder a edição', async () => {
+    setAutosaveDelayForTests(60_000)
+    const exits: Array<{ code: string | undefined; pageAlive: boolean | undefined }> = []
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      save: async () => {
+        throw new Error('Outra aba gravou este projeto antes.')
+      },
+      flushOnExit: async (project, options) => {
+        exits.push({
+          code: javaScriptProject(project)?.files['script.js'],
+          pageAlive: options?.pageAlive,
+        })
+      },
+    }
+    try {
+      const { getByTestId, unmount } = render(
+        <Studio
+          initialProject={createEmptyProject('project-conflict', 'Conflito')}
+          persistence={adapter}
+        />,
+      )
+      await waitFor(() =>
+        expect(getByTestId('editor-shell').getAttribute('data-project')).toBe('project-conflict'),
+      )
+      act(() =>
+        observedProjectStore
+          ?.getState()
+          .setFile('script.js', 'console.log("edição que não pode sumir")'),
+      )
+      unmount()
+      await waitFor(() =>
+        expect(exits).toEqual([
+          { code: 'console.log("edição que não pode sumir")', pageAlive: true },
+        ]),
+      )
     } finally {
       setAutosaveDelayForTests(null)
     }

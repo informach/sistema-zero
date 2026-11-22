@@ -225,13 +225,21 @@ createPersistenceService(store, {
   scopeIdentity: scope.identity,
   load: async () => null,
   save,
-  flushOnExit: (p) => {
+  flushOnExit: (p, options) => {
     lifecycle(
       `flush:${p.tree?.['main.ts']?.kind === 'file' ? p.tree['main.ts'].content : 'unknown'}`,
     )
     exitCommit = true
     try {
-      return stageProjectExit(p, { puts: projectStorageEntries(p) }, scope)
+      // As mesmas opções do adapter de produção (`persistProject`): sem o `pageAlive`, a aba
+      // escondida deste fixture provaria um caminho que o Estúdio não usa.
+      return stageProjectExit(
+        p,
+        { puts: projectStorageEntries(p) },
+        scope,
+        options?.incompleteBlocks ?? false,
+        { pageAlive: options?.pageAlive === true },
+      )
     } finally {
       exitCommit = false
     }
@@ -291,6 +299,43 @@ Object.assign(window, {
     previousLifecycle,
     recoveredProjectIds,
     recoveredHead: isLocalHead(head) ? head : null,
+    /** As cópias "(edição recuperada)" deste projeto que estão no banco, com nome e conteúdo. */
+    async recoveredCopies(sourceId: string) {
+      const prefix = projectMetaKey(`recuperado-${sourceId.slice(0, 28)}-`)
+      const ids = (await readAllKeys(scope.store))
+        .filter((key): key is string => typeof key === 'string' && key.startsWith(prefix))
+        .map((key) => key.slice(projectMetaKey('').length))
+      const copies: Array<{ id: string; name: string; text: unknown }> = []
+      for (const copyId of ids) {
+        const [copyMeta, copyFiles, copyState, copyAssets, copyBlocks] = await readValues(
+          scope.store,
+          [
+            projectMetaKey(copyId),
+            projectFilesKey(copyId),
+            projectStateKey(copyId),
+            projectAssetsKey(copyId),
+            projectBlocksKey(copyId),
+          ],
+        )
+        const copy = assembleProjectRecord(
+          copyId,
+          copyMeta,
+          copyFiles,
+          copyState,
+          copyAssets,
+          copyBlocks,
+        )
+        copies.push({
+          id: copyId,
+          name: typeof copy?.name === 'string' ? copy.name : '',
+          text:
+            copy?.tree && typeof copy.tree === 'object' && 'main.ts' in copy.tree
+              ? copy.tree['main.ts']
+              : null,
+        })
+      }
+      return copies
+    },
     clearLifecycle: () => {
       window.name = '[]'
     },
@@ -299,6 +344,7 @@ Object.assign(window, {
       dirty: state.isDirty,
       error: state.saveError,
     }),
+    exitStatus: () => projectExitRecoveryStatus(state.project!),
     edit(text: string) {
       const previous = state
       state = {

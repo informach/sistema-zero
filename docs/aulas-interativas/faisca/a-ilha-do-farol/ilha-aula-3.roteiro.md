@@ -1,6 +1,6 @@
 # Roteiro de produção · A luz volta ao farol
 
-A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, Debinha substitui somente as frases das tabelas de substituição, com a voz do arquivo .debinha.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
 ## Parte 1. O farol precisa conferir a chave
 
@@ -53,7 +53,9 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Pronto: agora o Se pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave?
 
-[engaging, energetic, conversational voice] No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A resposta do não fica no espaço do senão.
+[curious] E onde eu escrevo que falta a chave?
+
+[engaging, energetic, conversational voice] Num espaço do próprio Se. No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A resposta do não fica no espaço do senão.
 
 [engaging, energetic, conversational voice] O aviso de que falta a chave é a resposta do não. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
 
@@ -91,6 +93,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-sem-chave-K1 | Debinha | 1 | no x e escolha temChave. Pronto: agora o Se pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave? | E onde eu escrevo que falta a chave? | Num espaço do próprio Se. No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o bloco Se com temChave e o aviso no espaço do senão. Depois vá ao farol sem pegar a chave. Funcionou? Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
@@ -172,6 +182,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-decisao-K1 | Debinha | 1 | Abra Programação e depois Lógica e Se, e pegue o bloco verdadeiro. Solte em cima do número e deixe em verdadeiro. | E quem está jogando vai saber que deu certo? | Vai, sim! É para isso que serve o terceiro bloco: o aviso. Ele vai logo abaixo do bloco de ganhou, ainda dentro do | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
 **Recado na página (não gravar):** Agora acenda o farol! No espaço do então, ponha Tocar a animação acender em farol uma vez, ganhou verdadeiro e o aviso da vitória. Teste sem a chave e com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 ## Parte 3. O que muda com o não?
@@ -196,6 +214,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 [upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-pergunta-com-nao-K1 | Debinha | 1 | uma palavrinha de diferença. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim. | Com o não na pergunta, o que a porta faz? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a palavra não faz com a resposta | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
 **Recado na página (não gravar):** Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. O farol acende uma vez só
@@ -209,7 +235,11 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 ```text
 [engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa no seu jogo. Clique em Rodar de novo, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
 
-[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. Isso acontece porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
+[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo.
+
+[curious] Ué, por que a luz acendeu de novo?
+
+[engaging, energetic, conversational voice] Porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
 
 [engaging, energetic, conversational voice] Sabe o apito final de um jogo de futebol? Depois dele, chutar a bola no gol não vale mais, porque a partida acabou.
 
@@ -261,6 +291,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-uma-vez-K1 | Debinha | 1 | o farol. Depois ande um pouco para trás pelo cais e volte até o farol. Tá vendo? A luz apagou e acendeu tudo de novo. | Ué, por que a luz acendeu de novo? | Porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez. Sabe o apito | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Agora faça o farol acender uma vez só! Ponha um Se novo com não ganhou no encontro com o farol e leve o Se temChave para dentro do então dele. Teste: acenda o farol, ande para trás e volte. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
@@ -401,11 +439,21 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 [pleased, lively voice] Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.
 
-[engaging, energetic, conversational voice] Para mandar o jogo para eles, clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se precisar.
+[curious] E para mostrar o jogo para alguém?
+
+[engaging, energetic, conversational voice] Clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se precisar.
 
 [engaging, energetic, conversational voice] Quem receber o link pode jogar direto, no computador, com o teclado.
 
 [engaging, energetic, conversational voice] Depois de copiar o link, clique em Fechar e, por fim, em Concluir aula.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-fecho-K1 | Debinha | 1 | terminar. Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou. | E para mostrar o jogo para alguém? | Clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.

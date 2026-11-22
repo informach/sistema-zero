@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-sem-chave",
-      "plannedVideo": "Título: O farol precisa conferir a chave\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-sem-chave. Gravação pendente."
+      "plannedVideo": "Título: O farol precisa conferir a chave\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-sem-chave. Substituições kids: [{\"id\":\"video-sem-chave-K1\",\"clipe\":\"video-sem-chave\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E onde eu escrevo que falta a chave?\",\"falaPersonagem\":\"E onde eu escrevo que falta a chave?\",\"ancoraAntes\":\"no x e escolha temChave. Pronto: agora o Se pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave?\",\"ancoraDepois\":\"Num espaço do próprio Se. No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-sem-chave",
@@ -18,7 +18,7 @@
     },
     {
       "key": "video-decisao",
-      "plannedVideo": "Título: Acenda o farol com a chave\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-decisao. Gravação pendente."
+      "plannedVideo": "Título: Acenda o farol com a chave\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-decisao. Substituições kids: [{\"id\":\"video-decisao-K1\",\"clipe\":\"video-decisao\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E quem está jogando vai saber que deu certo?\",\"falaPersonagem\":\"E quem está jogando vai saber que deu certo?\",\"ancoraAntes\":\"Abra Programação e depois Lógica e Se, e pegue o bloco verdadeiro. Solte em cima do número e deixe em verdadeiro.\",\"ancoraDepois\":\"Vai, sim! É para isso que serve o terceiro bloco: o aviso. Ele vai logo abaixo do bloco de ganhou, ainda dentro do\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-decisao",
@@ -30,7 +30,7 @@
     },
     {
       "key": "video-pergunta-com-nao",
-      "plannedVideo": "Título: O que muda com o não?\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-pergunta-com-nao. Gravação pendente."
+      "plannedVideo": "Título: O que muda com o não?\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-pergunta-com-nao. Substituições kids: [{\"id\":\"video-pergunta-com-nao-K1\",\"clipe\":\"video-pergunta-com-nao\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Com o não na pergunta, o que a porta faz?\",\"falaPersonagem\":\"Com o não na pergunta, o que a porta faz?\",\"ancoraAntes\":\"uma palavrinha de diferença. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a palavra não faz com a resposta\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-pergunta-com-nao",
@@ -74,7 +74,7 @@
     },
     {
       "key": "video-uma-vez",
-      "plannedVideo": "Título: O farol acende uma vez só\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-uma-vez. Gravação pendente."
+      "plannedVideo": "Título: O farol acende uma vez só\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-uma-vez. Substituições kids: [{\"id\":\"video-uma-vez-K1\",\"clipe\":\"video-uma-vez\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Ué, por que a luz acendeu de novo?\",\"falaPersonagem\":\"Ué, por que a luz acendeu de novo?\",\"ancoraAntes\":\"o farol. Depois ande um pouco para trás pelo cais e volte até o farol. Tá vendo? A luz apagou e acendeu tudo de novo.\",\"ancoraDepois\":\"Porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez. Sabe o apito\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-uma-vez",
@@ -211,7 +211,7 @@
     },
     {
       "key": "video-fecho",
-      "plannedVideo": "Título: Sua ilha está pronta\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-fecho. Gravação pendente."
+      "plannedVideo": "Título: Sua ilha está pronta\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-fecho. Substituições kids: [{\"id\":\"video-fecho-K1\",\"clipe\":\"video-fecho\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E para mostrar o jogo para alguém?\",\"falaPersonagem\":\"E para mostrar o jogo para alguém?\",\"ancoraAntes\":\"terminar. Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.\",\"ancoraDepois\":\"Clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-fecho",

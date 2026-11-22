@@ -1509,10 +1509,22 @@ incidente é o editor semeado do TEMPLATE (passo 4 da ordem acima, num soluço d
 → parágrafo `text-destructive` no Dialog apontando o "Sincronizar com o enviado". NÃO bloqueia
 (reenviar o template pode ser recomeço intencional). A régua é PURA em
 **`lib/studio-template.ts`** (`isInitialTemplateProject`, testada em `tests/studio-template.test.ts`):
-compara byte a byte os 3 arquivos canônicos (ausente = `''`); **`kind:'pro'` em qualquer lado →
-false** (no Pro os 3 são `''` — falso positivo garantido); contagem de `assets` diferente → false;
+compara os 3 arquivos canônicos (ausente = `''`); **`kind:'pro'` em qualquer lado →
+false** (no Pro os 3 são `''` — falso positivo garantido); `assets` diferentes → false;
 entrada torta → false (aviso errado ensina a ignorar avisos). O members guarda a versão
 sobrescrita (migração 0066) e o professor restaura pelo admin — este aviso é a 1ª linha de defesa.
+⚠️⚠️ **Desde 22/11/2026, duas exceções que tinham deixado o aviso MORTO** (provadas no e2e
+`community-kids/e2e-art-slots`, segundo caso): (1) projeto de BLOCOS compara os BLOCOS sem o que o
+editor põe sozinho ao abrir (id e posição de cada bloco, `szBehaviorAreasVersion`), mais a página e o
+estilo; o `script.js` não entra. O projeto inicial dos manifestos guarda os blocos SEM id e o código
+com nomes de evento escritos à mão; ao abrir, o Blockly sorteia os ids e o código regerado os leva,
+então os arquivos nunca batiam em nenhuma aula montada por manifesto. Com `bridgeCodeAhead` não há
+aviso; blocos com variável do Blockly (campo com objeto, referência por id) ou sem `blocks` seguem a
+régua dos arquivos. (2) O desenho da vaga de arte (`source: 'lesson-art'`) não conta, junto com a
+imagem do projeto inicial que ele troca (vaga `replace`, mesmo nome): é o host que o põe a cada
+abertura, como a impressão do conteúdo do core já tratava. E o **"Recomeçar"** (e a troca para a
+"outra versão") passou a pôr de novo os desenhos das vagas lidos nesta abertura (`lessonArtRef` +
+`withLessonArt`): antes o desenho sumia dos materiais até a próxima abertura.
 
 ⭐ **`navigator.storage.persist()` (08/2026 — rascunho não é mais despejável):**
 **`lib/persistent-storage.ts`** (`requestPersistentStorage` — best-effort, guard de módulo

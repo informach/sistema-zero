@@ -479,6 +479,16 @@ function StudioCoreBody({
     ],
   )
 
+  // ⚠️ Declarado ANTES do efeito que descarrega o projeto: na desmontagem o React roda as limpezas
+  // na ordem da declaração (e as do pai antes das dos filhos). O `detach` grava o pendente (inclusive
+  // o que os editores ainda seguram) com o projeto ainda na store. Na ordem inversa, a navegação
+  // dentro do app (trocar de perfil, menu lateral, voltar) achava a store vazia e perdia a edição.
+  useEffect(() => {
+    const detach = persistence.attach()
+    void loadSettings()
+    return detach
+  }, [persistence, loadSettings])
+
   // Document lifetime belongs to its preparation, never to mutable authority/curation.
   // A denied first opening can hydrate later; a loaded document survives revocation.
   const hydratedPreparation = useRef<typeof prepared>(null)
@@ -548,12 +558,6 @@ function StudioCoreBody({
     sourceProject,
     config.allowedModes,
   ])
-
-  useEffect(() => {
-    const detach = persistence.attach()
-    void loadSettings()
-    return detach
-  }, [persistence, loadSettings])
 
   // onReady: 1x POR PROJETO carregado. O ref re-arma quando a identidade do
   // projeto muda (ex.: handle.replaceProject() → unload+re-hidrata), senão um

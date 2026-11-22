@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-posicao-3d",
-      "plannedVideo": "Título: Para onde vai a chave?\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-posicao-3d. Gravação pendente."
+      "plannedVideo": "Título: Para onde vai a chave?\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-posicao-3d. Substituições kids: [{\"id\":\"video-posicao-3d-K1\",\"clipe\":\"video-posicao-3d\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E o y, será que continua fazendo o que fazia no jogo 2D?\",\"falaPersonagem\":\"E o y, será que continua fazendo o que fazia no jogo 2D?\",\"ancoraAntes\":\"de mudar de lugar. Na ilha, a chave também tem os seus três números, e cada um muda o lugar dela de um jeito.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde a chave vai quando cada um\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-posicao-3d",
@@ -64,7 +64,7 @@
     },
     {
       "key": "video-contato-3d",
-      "plannedVideo": "Título: Parece junto, mas está encostando?\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-contato-3d. Gravação pendente."
+      "plannedVideo": "Título: Parece junto, mas está encostando?\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-contato-3d. Substituições kids: [{\"id\":\"video-contato-3d-K1\",\"clipe\":\"video-contato-3d\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que eles estão encostando?\",\"falaPersonagem\":\"Será que eles estão encostando?\",\"ancoraAntes\":\"fazem barulho quando se tocam de verdade. Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando a chave e o personagem estão\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-contato-3d",
@@ -109,7 +109,7 @@
     },
     {
       "key": "video-recolher",
-      "plannedVideo": "Título: Recolha a chave\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-recolher. Gravação pendente."
+      "plannedVideo": "Título: Recolha a chave\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-recolher. Substituições kids: [{\"id\":\"video-recolher-K1\",\"clipe\":\"video-recolher\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"A chave some para sempre?\",\"falaPersonagem\":\"A chave some para sempre?\",\"ancoraAntes\":\"Clique em Rodar de novo e leve o personagem até a chave. Olha só: a chave some quando o personagem encosta nela!\",\"ancoraDepois\":\"Não, ela só sai desta partida. Toque na tecla R. A chave volta, e você pode pegar de novo por outro caminho. Se algo\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-recolher",
@@ -121,7 +121,7 @@
     },
     {
       "key": "video-memoria",
-      "plannedVideo": "Título: Guarde que você pegou a chave\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-memoria. Gravação pendente."
+      "plannedVideo": "Título: Guarde que você pegou a chave\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-memoria. Substituições kids: [{\"id\":\"video-memoria-K1\",\"clipe\":\"video-memoria\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Como eu vejo se o jogo guardou a chave?\",\"falaPersonagem\":\"Como eu vejo se o jogo guardou a chave?\",\"ancoraAntes\":\"porque o personagem acabou de pegar a chave. Olha os dois lugares: ao começar, falso. Ao pegar a chave, verdadeiro.\",\"ancoraDepois\":\"Jogando, você não vê, porque esse valor não aparece na ilha. Quem vai usar essa informação é o farol, na próxima aula.\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-memoria",

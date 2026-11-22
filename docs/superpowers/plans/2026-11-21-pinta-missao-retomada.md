@@ -212,6 +212,10 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    A Vila usa imagens reais e reabre em outro contexto desktop/CPU 4×. Provas em
    `qa/emissor-de-cena-regional-2026-11-22/`. Continuar para composição/PNG 5,
    leitores dos motores e consumidores públicos; não fecha o item 4 ou a missão.
+   A staging recebida em `2bb893918` também foi integrada: 39 conteúdos iguais
+   ao remoto, sem fonte Pinta/Core/3D alterada. Revisados flush na saída/aba
+   escondida, estado do Blockly e arte das atividades. Provas da integração em
+   `qa/integracao-staging-2bb893918-2026-11-22/`. Continuar com os adaptadores.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

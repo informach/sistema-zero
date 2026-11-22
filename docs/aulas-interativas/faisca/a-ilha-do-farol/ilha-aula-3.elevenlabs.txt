@@ -40,7 +40,9 @@
 
 [engaging, energetic, conversational voice] Pronto: agora o Se pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave?
 
-[engaging, energetic, conversational voice] No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A resposta do não fica no espaço do senão.
+[curious] E onde eu escrevo que falta a chave?
+
+[engaging, energetic, conversational voice] Num espaço do próprio Se. No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A resposta do não fica no espaço do senão.
 
 [engaging, energetic, conversational voice] O aviso de que falta a chave é a resposta do não. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
 
@@ -166,7 +168,11 @@
 
 [engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa no seu jogo. Clique em Rodar de novo, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
 
-[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. Isso acontece porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
+[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo.
+
+[curious] Ué, por que a luz acendeu de novo?
+
+[engaging, energetic, conversational voice] Porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
 
 [engaging, energetic, conversational voice] Sabe o apito final de um jogo de futebol? Depois dele, chutar a bola no gol não vale mais, porque a partida acabou.
 
@@ -322,7 +328,9 @@
 
 [pleased, lively voice] Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.
 
-[engaging, energetic, conversational voice] Para mandar o jogo para eles, clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se precisar.
+[curious] E para mostrar o jogo para alguém?
+
+[engaging, energetic, conversational voice] Clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se precisar.
 
 [engaging, energetic, conversational voice] Quem receber o link pode jogar direto, no computador, com o teclado.
 

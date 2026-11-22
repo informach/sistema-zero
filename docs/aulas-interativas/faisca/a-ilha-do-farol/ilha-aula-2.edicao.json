@@ -15,5 +15,50 @@
     "video-memoria",
     "video-aviso"
   ],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-posicao-3d-K1",
+      "clipe": "video-posicao-3d",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "de mudar de lugar. Na ilha, a chave também tem os seus três números, e cada um muda o lugar dela de um jeito.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde a chave vai quando cada um",
+      "falaPrincipal": "E o y, será que continua fazendo o que fazia no jogo 2D?",
+      "falaPersonagem": "E o y, será que continua fazendo o que fazia no jogo 2D?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-contato-3d-K1",
+      "clipe": "video-contato-3d",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "fazem barulho quando se tocam de verdade. Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando a chave e o personagem estão",
+      "falaPrincipal": "Será que eles estão encostando?",
+      "falaPersonagem": "Será que eles estão encostando?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-recolher-K1",
+      "clipe": "video-recolher",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Clique em Rodar de novo e leve o personagem até a chave. Olha só: a chave some quando o personagem encosta nela!",
+      "ancoraDepois": "Não, ela só sai desta partida. Toque na tecla R. A chave volta, e você pode pegar de novo por outro caminho. Se algo",
+      "falaPrincipal": "A chave some para sempre?",
+      "falaPersonagem": "A chave some para sempre?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-memoria-K1",
+      "clipe": "video-memoria",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "porque o personagem acabou de pegar a chave. Olha os dois lugares: ao começar, falso. Ao pegar a chave, verdadeiro.",
+      "ancoraDepois": "Jogando, você não vê, porque esse valor não aparece na ilha. Quem vai usar essa informação é o farol, na próxima aula.",
+      "falaPrincipal": "Como eu vejo se o jogo guardou a chave?",
+      "falaPersonagem": "Como eu vejo se o jogo guardou a chave?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

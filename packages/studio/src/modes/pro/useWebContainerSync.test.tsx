@@ -17,6 +17,8 @@ const gate = () =>
     releaseMount = resolve
   })
 let mountGate: Promise<void> | null = null
+type WatchListener = (event: string, filename: string) => void
+let watchListener: WatchListener | null = null
 const root = await mkdtemp(join(tmpdir(), 'studio-mount-lifecycle-'))
 async function mountFiles(tree: FileSystemTree, parent = root) {
   for (const [name, node] of Object.entries(tree)) {
@@ -35,7 +37,10 @@ const container = {
     await mountFiles(tree)
   },
   fs: {
-    watch: () => ({ close() {} }),
+    watch: (_path: string, _options: unknown, listener?: WatchListener) => {
+      watchListener = listener ?? null
+      return { close() {} }
+    },
     readdir: (path: string, options?: { withFileTypes: true }) =>
       options ? readdir(join(root, path), options) : readdir(join(root, path)),
     readFile: (path: string, encoding?: 'utf-8') =>
@@ -75,6 +80,7 @@ afterEach(async () => {
   resets = 0
   mountGate = null
   releaseMount = null
+  watchListener = null
 })
 
 function Probe({ project }: { project: Project }) {
@@ -103,6 +109,35 @@ const project = (id: string) =>
     'dev',
     'vanilla-vite',
   )
+
+describe('escrita do terminal ainda não lida', () => {
+  // Lacuna "o terminal do Pro na saída" (22/11/2026): o navegador não espera a leitura do sistema
+  // de arquivos ao fechar, então com uma escrita do terminal ainda não lida a página avisa antes de
+  // sair; lida, ela entra no projeto e o aviso some.
+  it('avisa ao fechar enquanto a escrita não foi lida, e a escrita entra no projeto', async () => {
+    const source = project('terminal')
+    useProjectStore.setState({ project: source })
+    const view = render(<Probe project={source} />)
+    await view.findByRole('button', { name: 'mounted' })
+    expect(watchListener).not.toBeNull()
+
+    await writeFile(join(root, 'notas.ts'), 'export const nota = 1')
+    act(() => watchListener?.('change', 'notas.ts'))
+    const closing = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(closing)
+    expect(closing.defaultPrevented).toBe(true)
+
+    await waitFor(() =>
+      expect(useProjectStore.getState().project?.tree?.['notas.ts']).toEqual({
+        kind: 'file',
+        content: 'export const nota = 1',
+      }),
+    )
+    const closingAgain = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(closingAgain)
+    expect(closingAgain.defaultPrevented).toBe(false)
+  })
+})
 
 describe('posse e cancelamento do filesystem Pro', () => {
   it('StrictMode repete os efeitos sem duplicar a montagem nem perder a posse', async () => {

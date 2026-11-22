@@ -60,4 +60,4 @@ Faça o personagem andar.
 
 ## Produção
 
-[Fala integral e notas de tela](ilha-aula-1.roteiro.md). Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.
+[Fala integral e notas de tela](ilha-aula-1.roteiro.md). Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro. Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.

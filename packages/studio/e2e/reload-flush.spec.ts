@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
 import { nativeRecovery } from '../src/state/projectRecoveryGuards'
-import { PROJECT_STORAGE_VERSION } from '../src/state/projectStorageKeys'
+import { PROJECT_STORAGE_VERSION, projectBlocksKey } from '../src/state/projectStorageKeys'
 import { decodeProjectStorageValue } from '../src/state/projectStorageTransport'
 import { attachMenuInteractions, recordMenuInteractions } from './helpers/menuInteractionTrace'
 import {
@@ -222,6 +222,38 @@ async function hiddenDraftHasAdvanced3D(page: Page, expectedName: string): Promi
   })
 }
 
+/** Arrasta uma Área do projeto da paleta para o canvas (o mesmo gesto do `topbar-undo.spec.ts`). */
+async function dragAreaFromFlyout(page: Page, label: string): Promise<void> {
+  const category = page
+    .locator('.blocklyToolboxCategory')
+    .filter({ hasText: 'Áreas do projeto' })
+    .first()
+  const source = page
+    .locator('.blocklyToolboxFlyout .blocklyDraggable')
+    .filter({ hasText: label })
+    .first()
+  if (!(await source.isVisible())) await category.click()
+  await expect(source).toBeVisible()
+  const sourceBox = await source.boundingBox()
+  const target = await page.evaluate(() => {
+    const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
+    if (!background) return null
+    for (let y = background.bottom - 64; y > background.top + 64; y -= 32) {
+      for (let x = background.right - 64; x > background.left + 64; x -= 32) {
+        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
+          return { x, y }
+        }
+      }
+    }
+    return null
+  })
+  if (!sourceBox || !target) throw new Error('Área ou workspace sem ponto interativo')
+  await page.mouse.move(sourceBox.x + 5, sourceBox.y + 5)
+  await page.mouse.down()
+  await page.mouse.move(target.x, target.y, { steps: 8 })
+  await page.mouse.up()
+}
+
 function collectPageErrors(page: Page): string[] {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -338,5 +370,91 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }, te
   await expect(page.getByRole('button', { name, exact: true })).toBeVisible()
   await openMenuItem(page, 'Mais blocos')
   await expect(advanced3DKit(page).getByText('No meu jogo', { exact: true })).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+/**
+ * As cópias de saída deste projeto que guardam os blocos, decodificadas pelo transporte de
+ * produção, dizendo se ainda têm um bloco do tipo pedido.
+ */
+async function exitDraftsWithBlockType(page: Page, blockType: string): Promise<boolean[]> {
+  const snapshot = await page.evaluate(async (version) => {
+    const id = decodeURIComponent(location.pathname.split('/').at(-1)!)
+    const prefix = `sz:v${version}:project-recovery:${id}:`
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('sistema-zero-studio')
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    try {
+      return await new Promise<{ id: string; drafts: Array<{ key: IDBValidKey; value: unknown }> }>(
+        (resolve, reject) => {
+          const tx = db.transaction('kv', 'readonly')
+          const range = IDBKeyRange.bound(prefix, `${prefix}￿`)
+          const keys = tx.objectStore('kv').getAllKeys(range)
+          const values = tx.objectStore('kv').getAll(range)
+          tx.oncomplete = () =>
+            resolve({
+              id,
+              drafts: keys.result.map((key, index) => ({ key, value: values.result[index] })),
+            })
+          tx.onabort = () => reject(tx.error)
+        },
+      )
+    } finally {
+      db.close()
+    }
+  }, PROJECT_STORAGE_VERSION)
+  const blocksKey = projectBlocksKey(snapshot.id)
+  const found: boolean[] = []
+  for (const { key, value } of snapshot.drafts) {
+    if (typeof key !== 'string') continue
+    const draft = nativeRecovery(
+      decodeProjectStorageValue(key, value),
+      key,
+      PROJECT_STORAGE_VERSION,
+    )
+    if (draft.projectId !== snapshot.id) continue
+    const blocks = draft.write.puts?.find(([putKey]) => putKey === blocksKey)
+    if (blocks) found.push(JSON.stringify(blocks[1]).includes(blockType))
+  }
+  return found
+}
+
+test('desfazer um bloco e esconder a aba na mesma tarefa: a cópia de saída já vem sem o bloco', async ({
+  page,
+}) => {
+  // O Blockly entrega o evento da mudança num quadro + setTimeout(0), e com a aba escondida o
+  // quadro nem vem (iPad). A gravação da aba escondida precisa materializar o que está no canvas
+  // mesmo sem o evento ter chegado ao painel. Duas áreas, e só a segunda é desfeita: o canvas
+  // vazio apagaria a partição dos blocos em vez de gravá-la, e a prova ficaria sem o que ler.
+  test.setTimeout(60_000)
+  const errors = collectPageErrors(page)
+  const topBlocks = page.locator(
+    'svg.blocklySvg > g.blocklyWorkspace > g.blocklyBlockCanvas > g.blocklyDraggable',
+  )
+
+  await createProject(page)
+  await dragAreaFromFlyout(page, 'Ao iniciar')
+  await expect(topBlocks).toHaveCount(1)
+  await dragAreaFromFlyout(page, 'Quando acontecer')
+  await expect(topBlocks).toHaveCount(2)
+  await saveNow(page)
+
+  // Desfazer a segunda área e esconder a aba sem devolver o controle ao navegador entre os dois.
+  await page.evaluate(() => {
+    const undo = document.querySelector<HTMLButtonElement>('button[aria-label="Desfazer"]')
+    if (!undo || undo.disabled) throw new Error('Desfazer indisponível')
+    undo.click()
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+
+  const exitCopyDropsTheUndoneArea = async () => {
+    const withStart = await exitDraftsWithBlockType(page, 'sz_frame_start')
+    const withEvents = await exitDraftsWithBlockType(page, 'sz_frame_events')
+    return withStart.some((hasStart, index) => hasStart && withEvents[index] === false)
+  }
+  await expect.poll(exitCopyDropsTheUndoneArea, { timeout: 10_000 }).toBe(true)
   expect(errors).toEqual([])
 })

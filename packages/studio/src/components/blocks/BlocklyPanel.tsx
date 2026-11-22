@@ -742,8 +742,25 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     }
     const pending = pendingRegenerationWorkspaceRef.current
     pendingRegenerationWorkspaceRef.current = null
-    if (pending) regenerateFromBlocks(pending)
-  }, [regenerateFromBlocks])
+    if (pending) {
+      regenerateFromBlocks(pending)
+      return
+    }
+    // Edição que o Blockly ainda NÃO entregou ao painel: ele despacha os eventos num quadro +
+    // `setTimeout(0)`, e com a aba escondida o quadro nem vem (o iPad descarta a aba sem
+    // `pagehide`). Entre o gesto e esse despacho não há regeneração agendada, e a gravação de
+    // saída lia o projeto de antes (lacuna "a janela de 120 ms dos blocos", 22/11/2026). Aqui o
+    // canvas é comparado com o último estado APLICADO a ele (não com o último regenerado: depois
+    // de uma carga com o código da Ponte à frente, o regenerado fica velho, e regenerar dele
+    // escreveria os arquivos a partir dos blocos defasados).
+    if (!workspace || isApplyingStateRef.current || loadPendingRef.current) return
+    if (restoreFailedRef.current) return
+    const svgWorkspace = workspace as Blockly.WorkspaceSvg
+    if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) return
+    const serialized = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+    if (serialized === lastAppliedBlocksStateRef.current) return
+    regenerateFromBlocks(workspace)
+  }, [regenerateFromBlocks, workspace])
 
   const scheduleRegenerateFromBlocks = useCallback(
     (targetWorkspace: Blockly.Workspace) => {

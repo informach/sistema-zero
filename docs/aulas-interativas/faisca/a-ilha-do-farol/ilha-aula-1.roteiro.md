@@ -1,6 +1,6 @@
 # Roteiro de produção · Uma ilha com profundidade
 
-A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, Debinha substitui somente as frases das tabelas de substituição, com a voz do arquivo .debinha.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
 ## Parte 1. Jogue na ilha
 
@@ -29,6 +29,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [upbeat, encouraging voice] Explore a ilha. Quando terminar, clique em Próxima parte.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-abertura-K1 | Debinha | 1 | a profundidade. Um objeto pode ficar mais perto ou mais longe, e o da frente pode esconder o que está atrás dele. | Será que a pedra está escondendo alguma coisa? | Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Sua vez! Jogue a versão pronta: segure as setas para andar e explore a ilha. A tecla R recomeça. Quando terminar, clique em Próxima parte.
 
@@ -74,6 +82,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 [upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-ponto-de-vista-K1 | Debinha | 1 | de lugar e consegue olhar. Na ilha, a câmera também pode mudar de lugar. E perto de uma pedra tem uma chave escondida. | Se a câmera mudar de lugar, a chave também muda de lugar? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na imagem e o que continua | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
 **Recado na página (não gravar):** Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Faça o personagem andar
@@ -91,7 +107,9 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? O jogo desenha a cena muitas vezes por segundo, e cada desenho é um quadro. No 3D é igual. Para o personagem andar, o jogo precisa olhar as setas em todo quadro.
 
-[confident, clear, unhurried voice] Por isso, o bloco novo vai dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+[curious] E onde eu coloco o bloco que faz ele andar?
+
+[confident, clear, unhurried voice] Dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
 [confident, clear, unhurried voice] Repare: dentro de A cada quadro da cena já tem o bloco Escrever na tela. O bloco novo vai no começo, no espaço ao lado da palavra fazer.
 
@@ -123,5 +141,13 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Na próxima aula, você vai escolher um lugar para a chave e ensinar o personagem a pegar a chave. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-movimento-K1 | Debinha | 1 | e cada desenho é um quadro. No 3D é igual. Para o personagem andar, o jogo precisa olhar as setas em todo quadro. | E onde eu coloco o bloco que faz ele andar? | Dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Hora de fazer o seu personagem andar! Coloque o movimento no começo de A cada quadro da cena e troque a velocidade por 4. Teste as quatro setas e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
