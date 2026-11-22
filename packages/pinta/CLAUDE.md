@@ -4120,3 +4120,11 @@ contexto. Cenas, referências, mundo, imagens e física ainda exigem seus leitor
 Não ativar formatos/receitas por essa base nem tratá-la como suporte completo em
 Pygame, Pygame Zero ou Raylib 2D. Provas CPython e escopo em
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/base-python-geometria-e-regioes-2026-11-22/`.
+
+`pythonSceneDocument.ts` prepara cenas privadas 4 com a tabela gerada do Core,
+semântica compartilhada pelos futuros adaptadores e planos de células. Tudo é
+admitido antes do base64; tentativa única, resultado inteiro e inteiros nativos
+após conservar a leitura binary64. O documento decodificado contém contextos de
+células, não é JSON/wire. PNG, mundos, imagens e gameplay ainda exigem seus
+loaders/adaptadores. Não ativar receitas por esse leitor. Provas:
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/admissao-python-de-cenas-regionais-2026-11-22/`.

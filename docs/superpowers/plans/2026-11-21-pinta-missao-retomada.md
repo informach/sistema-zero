@@ -312,6 +312,21 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    A revisão corrigiu consultas com metadados extras e registrou a auditoria de
    células inteiras na guarda existente. Seguir à admissão Python de cenas e
    mundos, depois aos três adaptadores, sem promover contratos por esse lote.
+   Lote verificado: admissão de cena 4 em Python independente de motor. Gerar
+   a tabela estrutural do esquema Core, conservando explicitamente propriedades
+   tipadas, limite de propriedades e flags de regex; recusar vocabulário novo
+   não suportado no gerador. Conferir referências e orçamento de todas as
+   definições antes de decodificar; plano privado de tentativa única, sem
+   publicar resultados parciais. Comparar Vila, Unicode/UTF-16, números binary64,
+   dados inválidos e fronteiras de orçamento com o leitor Core. O PNG/mundo e
+   os adaptadores gráficos continuam separados; não ativar receitas ou versões.
+   Provas em `qa/admissao-python-de-cenas-regionais-2026-11-22/`: Core 3.252,
+   Pinta 2.783, 29 focados e 16 ensaios de navegador. Tipos Core/Pinta e do
+   gerador, lint e gerados aprovados; Studio completo pertence ao lote anterior.
+   A Vila real e 81 variações são comparadas com o Core; a revisão conserva
+   binary64 e entrega inteiros nativos após a admissão. Recusa tardia não muda
+   outro snapshot. A guarda oficial reprova tabela adulterada e passa após
+   restaurar os mesmos bytes. Seguir ao PNG/mundo Python e aos três adaptadores.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

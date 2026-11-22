@@ -1,5 +1,17 @@
 # CLAUDE.md — @sistemazero/core
 
+## Restrições compartilhadas com Python (22/11/2026)
+
+`scripts/pinta-scene-python-schema.ts` deriva a tabela estrutural do cabeçalho
+regional para o leitor Python privado. Preserva explicitamente refinamentos de
+propriedades e flags dos padrões registrados; novos tipos/palavras-chave não
+suportados interrompem a geração. O gerador oficial do Estúdio grava/confere a
+tabela junto do compositor. Não confundir `PintaRegionSceneHeaderSchema` com
+admissão: semântica, orçamento, cabeçalhos e payloads continuam obrigatórios.
+Limites/padrões nomeados em `pinta-scene.ts` conservaram os valores anteriores.
+Provas e alcance: `qa/admissao-python-de-cenas-regionais-2026-11-22/`, no
+diretório da missão. Não ativa formato, receita ou extensão Python.
+
 ## Admissão de metadados regionais em duas fases (22/11/2026)
 
 `preparePintaRegionScene` e `preparePintaRegionImageData` conferem cabeçalhos,

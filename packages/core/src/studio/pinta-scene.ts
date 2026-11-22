@@ -13,6 +13,10 @@ export const PINTA_SCENE_LIMITS = {
 const id = z.string().min(1).max(200)
 const finite = z.number().finite()
 const point = z.strictObject({ x: finite, y: finite })
+export const PINTA_SCENE_MAX_PROPERTIES = 16
+export const PINTA_SCENE_PROPERTY_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9_-]{0,31}$/
+export const PINTA_SCENE_COLOR_PATTERN = /^#[\da-f]{6}$/i
+export const PINTA_SCENE_PROPERTY_COLOR_PATTERN = /^#[\da-f]{6}([\da-f]{2})?$/i
 export const PintaScenePropertySchema = z.union([
   z.string().max(200),
   finite,
@@ -29,14 +33,14 @@ export const PintaScenePropertySchema = z.union([
           : p.type === 'float'
             ? typeof p.value === 'number'
             : p.type === 'color'
-              ? typeof p.value === 'string' && /^#[\da-f]{6}([\da-f]{2})?$/i.test(p.value)
+              ? typeof p.value === 'string' && PINTA_SCENE_PROPERTY_COLOR_PATTERN.test(p.value)
               : typeof p.value === 'string',
       'Tipo e valor da propriedade não correspondem.',
     ),
 ])
 const properties = z
-  .record(z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,31}$/), PintaScenePropertySchema)
-  .refine((v) => Object.keys(v).length <= 16)
+  .record(z.string().regex(PINTA_SCENE_PROPERTY_KEY_PATTERN), PintaScenePropertySchema)
+  .refine((v) => Object.keys(v).length <= PINTA_SCENE_MAX_PROPERTIES)
 export const PintaSceneObjectSchema = z.strictObject({
   id,
   name: z.string().max(48),
@@ -116,7 +120,7 @@ export const PintaSceneTilesetSchema = z.strictObject({
         id,
         name: z.string().max(48),
         mode: z.enum(['corner', 'edge', 'mixed']),
-        colors: z.array(z.string().regex(/^#[\da-f]{6}$/i)).max(15),
+        colors: z.array(z.string().regex(PINTA_SCENE_COLOR_PATTERN)).max(15),
         tiles: z.record(z.string(), z.array(z.number().int().min(0).max(15)).length(8)),
       }),
     )

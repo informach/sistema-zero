@@ -6,6 +6,7 @@
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { PINTA_IMAGE_WORLD_LIMITS } from '@sistemazero/core/studio/pinta-image'
+import { pythonSceneSchemaSource } from '../../core/scripts/pinta-scene-python-schema'
 import { pygameSceneModule } from '../../pinta/src/export/pygameProject'
 
 const path = new URL('../src/runtime/python/pygame/py/pinta.py', import.meta.url)
@@ -23,7 +24,18 @@ const world = `${worldStart}\nMUNDO_MAX_MAPAS = ${limits.maps}\nMUNDO_MAX_CELULA
 original = original.slice(0, start) + world + original.slice(end + worldEnd.length)
 const runtime = pygameSceneModule.replace('class Mundo:', 'class _CenaCompleta:')
 const expected = `${(original + marker + runtime).trimEnd()}\n`
+const schemaPath = new URL(
+  '../../pinta/src/export/pythonSceneSchemas.generated.ts',
+  import.meta.url,
+)
+const schemaExpected = pythonSceneSchemaSource()
 if (process.argv.includes('--check')) {
+  if ((await readFile(schemaPath, 'utf8')) !== schemaExpected) {
+    console.error(
+      'O esquema portátil Python está desatualizado. Rode: bun packages/studio/scripts/gen-pinta-scene-python.ts',
+    )
+    process.exit(1)
+  }
   if (current !== expected) {
     console.error(
       'O trecho da cena no pinta.py está desatualizado. Rode: bun packages/studio/scripts/gen-pinta-scene-python.ts',
@@ -31,4 +43,7 @@ if (process.argv.includes('--check')) {
     process.exit(1)
   }
   console.log('pinta.py: o trecho da cena confere com o pacote portátil do Pinta.')
-} else await writeFile(path, expected)
+} else {
+  await writeFile(path, expected)
+  await writeFile(schemaPath, schemaExpected)
+}

@@ -1,0 +1,179 @@
+{
+  "baseline": "75fd6db9dc80f674241ee2acbc857de84478c275",
+  "records": [
+    {
+      "file": "core-full.log.gz",
+      "bytes": 71859,
+      "sha256": "ca0c196df1741ba5a5fb10dde4898fedcdafffe0d1e46c9cd3309ac7c7a39f4e",
+      "rawSha256": "f357a037404fbaf484d5c598eeee2cb6c8be8916f199e70f5b3c858a2daedd4a"
+    },
+    {
+      "file": "pinta-full.log.gz",
+      "bytes": 84281,
+      "sha256": "3a2a88a2f17ce33be8993ea5ab6ee3759f120f87e32c6fb42de9164e12f681bf",
+      "rawSha256": "908ebfaa0e39cec300381af33cbfa0445b9e34a305f45ab347e9a9a9542a1271"
+    },
+    {
+      "file": "focused.log.gz",
+      "bytes": 1355,
+      "sha256": "540346c5922bb2c9c3c4058d3fb21d7f0faef679f7a7a1029e935a930ea5f9bd",
+      "rawSha256": "7e99a9af4ccf78aff71484dd5c444b1b22afda7ecf9bc6cb55c0ee646ae75330"
+    },
+    {
+      "file": "core-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "generator-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "generator-tsconfig.json.gz",
+      "bytes": 158,
+      "sha256": "75fa4b44315ad43a8c073355470f5e3cf56175d616ad4353868ec2843a714728",
+      "rawSha256": "cc2ac4a3b4250b25719cc26eacb67278e8b5513168afa9f257427cfbfb9984ef"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 64,
+      "sha256": "4d9caa0e68ec1aa08a4f9331e40668565855cf0916c409a28695d826d5ac5285",
+      "rawSha256": "bfb18a002e3b7f00c38f145e0b35848077ba74daa7285f588b5cea37196f4138"
+    },
+    {
+      "file": "python-generated.log.gz",
+      "bytes": 86,
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55"
+    },
+    {
+      "file": "js-generated.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "schema-check.json.gz",
+      "bytes": 71,
+      "sha256": "f164e08544fe000e4cf1c183511af3cc231128f88da4b8cf1199105ce518d991",
+      "rawSha256": "d02b6b4d9d29f60e6b6f71db5ef0da9ce6d33e3e612ef527e4e820d5f68f8759"
+    },
+    {
+      "file": "probe-schema-check.cjs.gz",
+      "bytes": 552,
+      "sha256": "79344ce3dc9fd717beadbef49c8599bef3e945c9bf7e4fc3c36c6091220c798d",
+      "rawSha256": "980195fbc1e02d765ab04cec84a2d389f8a49a38b785694d50b3e37b603eb272"
+    },
+    {
+      "file": "native-before.log.gz",
+      "bytes": 581,
+      "sha256": "fd65830f3ee8ee2c054afb108d178410afdd3ec591f5b0885812a601494ef709",
+      "rawSha256": "02d61b0a3b65e05636b2d0d648f8bf15a67fec0950115a7e36b8b7dbb18b3ee5"
+    },
+    {
+      "file": "first-harness.log.gz",
+      "bytes": 2890,
+      "sha256": "e0d479a56bb08ee2377ee36a47e48b0e509a2a7eaffbba54c3db778183d59e06",
+      "rawSha256": "848a601f2c54f483eb4d49c5b4da197567a93e0362ab3506f33c980dc4c135f0"
+    },
+    {
+      "file": "browser.log.gz",
+      "bytes": 779,
+      "sha256": "c6c140bce986b1b44b1a83ff814e3d0945a83e50eeadce21a2fed2279059985c",
+      "rawSha256": "11b16e8170640bdf17fba29f68ec21087342d439bb0f35d6e7d45f0f7f6ceee0"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "bytes": 2149,
+      "sha256": "5926c5a689f504931a8c022ebda795684cfeae15ff1c2931212b2aa3152b24ce",
+      "rawSha256": "b24156d37d38fa299a4f397115e4289dc2e8674991df945885604826756c3378"
+    },
+    {
+      "file": "physical-report.json.gz",
+      "bytes": 2503,
+      "sha256": "94e82ebd47b74e0149390597726e958b44b3a6c50044f4bf437010f22e5fcee1",
+      "rawSha256": "8ea592f4d6506958eba114c59e9b2f0af8751a46691512a6fb9ec9d7aad7a29c"
+    },
+    {
+      "file": "integration-report.json.gz",
+      "bytes": 928575,
+      "sha256": "e5731d2381407100d7a66bff4b634ff41ae9f308a43a10ef98b6725adca69ef4",
+      "rawSha256": "83672f51534ed805075cf9d6c944e99df32cb0231f4c1d41ee1093ff712e7e27"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "archive-python-document.cjs.gz",
+      "bytes": 1032,
+      "sha256": "7efb77aa7006125db9b5fe0136216d827d060c063dea15426913ec68b897f743",
+      "rawSha256": "2f846c019dcdc89e204a40290ba76b01d60edc374171e618de2ffe02e1d7ee57"
+    },
+    {
+      "file": "delivered-python.json.gz",
+      "bytes": 126,
+      "sha256": "99c27d841a914c70ec77983ede3296d54683f22bd06751b4a752e87f583278ca",
+      "rawSha256": "fc38dc0a3851b2da3ba330d108ddd2679cd6e307743ab5765834dfff487f5d9f"
+    },
+    {
+      "file": "generator-types-before.log.gz",
+      "bytes": 153,
+      "sha256": "cfe673d2d259a478bf941ef165c935d4fb83c4de3780e5a8b7a6d4e5971b398d",
+      "rawSha256": "7ff64db005f49ed990e31b89266bc75a29b07ddeb78e98c51b55bda227044f0b"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/core/src/studio/pinta-scene.ts",
+      "bytes": 12457,
+      "sha256": "16883cc1b9af5ab37207073149ca439c8abda2b024c29514b0624259fbe74888"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-region-scene.ts",
+      "bytes": 7443,
+      "sha256": "659d1a7e8f84ff0e1fec0c3f9fed9bb81d7c7c04281368929b569e3a005f11fe"
+    },
+    {
+      "file": "packages/core/scripts/pinta-scene-python-schema.ts",
+      "bytes": 3551,
+      "sha256": "b54bc3ecb00c459395a49f40cdfffb05f6f84392b23b45ced5b7226655ecd22d"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-python-schema.test.ts",
+      "bytes": 1207,
+      "sha256": "a4f66c6dc6ca753e8d60c89cd63db22ec210b91b46a2b3057ff3145f2dc9a41a"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneDocument.ts",
+      "bytes": 12836,
+      "sha256": "4f2a5092c8c8ab67cc6ab2427c6fff545ec81fdaba918a9a53f2191905e476b5"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneDocument.test.ts",
+      "bytes": 14653,
+      "sha256": "60b1e777946849f862c080b65d9296efaa01abd4cfa6b49d0e9bef7833817be3"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneSchemas.generated.ts",
+      "bytes": 11686,
+      "sha256": "229fbd9527ea3c5ba65bb3b59072d845033f3ae7a61db8f10e05bc514476cc37"
+    },
+    {
+      "file": "packages/studio/scripts/gen-pinta-scene-python.ts",
+      "bytes": 2670,
+      "sha256": "6ceb61fffbfb8eeb78984064eb8466b20eef3ca492feab52dbd2b032358a8a11"
+    }
+  ]
+}

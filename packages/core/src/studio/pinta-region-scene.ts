@@ -53,6 +53,11 @@ const header = z.strictObject({
   resources: PintaSceneBaseSchema.shape.resources,
 })
 
+/** Structure for portable validator generation only. Not scene admission: the
+ * region headers, budgets, shared semantic checks and cell payloads remain required.
+ */
+export const PintaRegionSceneHeaderSchema = header
+
 type MapHeader = z.infer<typeof mapHeader>
 export type PintaRegionSceneMap = Omit<MapHeader, 'layers'> & {
   layers: PintaSceneCellsLayer<PintaRegionCells>[]
