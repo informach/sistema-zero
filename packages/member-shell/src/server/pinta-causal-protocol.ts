@@ -1,4 +1,5 @@
 import 'server-only'
+import { PINTA_INVENTORY_READER_VERSION } from '@sistemazero/core/creations'
 import {
   PINTA_CAUSAL_LIMITS,
   PintaCausalBackfillBindingSchema,
@@ -13,7 +14,7 @@ import { z } from 'zod'
 
 export const causalItem = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)
 export const causalEpoch = z.string().regex(/^(0|[1-9][0-9]{0,18})$/)
-export const causalReader = z.number().int().min(1).max(65_535)
+export const causalReader = z.number().int().min(1).max(PINTA_INVENTORY_READER_VERSION)
 export const causalRevision = z.number().int().min(1).max(2_147_483_647)
 
 export const PintaCausalActorSchema = z.strictObject({

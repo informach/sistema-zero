@@ -185,7 +185,33 @@ test('the private route scope rejects profile and audience drift before any upst
   expect(calls).toEqual([])
   const page = await get({ 'x-sz-viewer': userId, 'x-sz-viewer-audience': 'kids' })
   expect(page.status).toBe(200)
+  expect(page.headers.get('cache-control')).toBe('private, no-store')
   expect(calls[0]?.body).toEqual({ userId, accountId, audience: 'kids', payload: { reader: 7 } })
+})
+
+test('an advertised reader beyond this BFF cannot bypass the format floor', async () => {
+  const { routes, calls } = fixture()
+  expect((await routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=99`))).status).toBe(
+    400,
+  )
+  expect(
+    (
+      await routes.pintaCausalReserve.POST(
+        json('/units/reserve', {
+          protocol: 1,
+          opId,
+          baseEpoch: '0',
+          reader: 99,
+          intentHash: binding.intentHash,
+          page: 0,
+          pages: 1,
+          members: [member],
+          readSet: [],
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(calls).toEqual([])
 })
 
 test('private tickets sign an exact, expiring write-once staging PUT and hide the binding', async () => {

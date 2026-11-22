@@ -62,6 +62,9 @@ const EntryQuery = z.strictObject({
   epoch: causalEpoch,
   revision: z.coerce.number().pipe(causalRevision),
 })
+const ReserveBody = PintaCausalReservePageSchema.refine(
+  ({ reader }) => causalReader.safeParse(reader).success,
+)
 const StatusQuery = z.strictObject({ cursor: causalItem.optional() })
 const VerifyBody = z.strictObject({ itemId: causalItem })
 const BackfillBody = z.strictObject({
@@ -312,7 +315,7 @@ export function createPintaCausalRoutes({
     pintaCausalReserve: {
       POST: (req: Request) =>
         authorized(req, true, async (actor) => {
-          const params = await body(req, PintaCausalReservePageSchema)
+          const params = await body(req, ReserveBody)
           if (!params) return invalid()
           return statusReply(actor, params.opId, await internal(actor, 'units/reserve', params))
         }),
