@@ -236,6 +236,64 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('piso de inventário atravessa a reserva, os erros 409, o commit idempotente e o DELETE', async () => {
+    const ctx = buildWithTools()
+    const pending = await reserve(ctx, 'pinta', 'folha', { kind: 'tileset', formatVersion: 6 })
+    expect(pending.status).toBe(200)
+    const active = await reserve(ctx, 'pinta', 'mapa', {
+      kind: 'tilemap',
+      formatVersion: 7,
+      maxReadFormatVersion: 7,
+    })
+    expect(await json(active)).toMatchObject({
+      revision: 1,
+      formatVersion: 7,
+      maxReadFormatVersion: 7,
+      inventoryFloor: 7,
+    })
+    const path = '/members/creations/pinta/folha'
+    for (const response of [
+      await req(ctx.app, 'POST', `${path}/commit`, { revision: 1 }),
+      await reserve(ctx, 'pinta', 'folha', { kind: 'tileset', formatVersion: 6 }),
+      await req(ctx.app, 'DELETE', path, { baseRevision: 0, maxFormatVersion: 6 }),
+    ]) {
+      expect(response.status).toBe(409)
+      expect(await json(response)).toMatchObject({
+        error: { code: 'CREATION_CLIENT_OUTDATED' },
+        details: { requiredVersion: 7 },
+      })
+    }
+    const reader = await reserve(ctx, 'pinta', 'art', {
+      kind: 'sprite',
+      formatVersion: 1,
+      maxReadFormatVersion: 7,
+    })
+    expect(await json(reader)).toMatchObject({
+      formatVersion: 1,
+      inventoryFloor: 7,
+      maxReadFormatVersion: 7,
+    })
+    const unknown = await reserve(ctx, 'pinta', 'future', { kind: 'map-set', formatVersion: 99 })
+    expect(await json(unknown)).toMatchObject({ formatVersion: 99, inventoryFloor: 99 })
+    const denied = await reserve(ctx, 'pinta', 'art', {
+      kind: 'sprite',
+      formatVersion: 1,
+      maxReadFormatVersion: 7,
+    })
+    expect(await json(denied)).toMatchObject({
+      error: { code: 'CREATION_CLIENT_OUTDATED' },
+      details: { requiredVersion: 99 },
+    })
+    expect(
+      (
+        await reserve(ctx, 'pinta', 'art', {
+          kind: 'sprite',
+          formatVersion: 1,
+          maxReadFormatVersion: 99,
+        })
+      ).status,
+    ).toBe(400)
+  })
   test('Pinta B6 → leitor A → B6 conserva o confirmado durante reservas, conflitos e recusas antigas', async () => {
     const ctx = buildWithTools()
     const id = 'vila-rollout-6'

@@ -1,4 +1,8 @@
-import { creativeToolAccessRef, isContentFingerprint } from '@sistemazero/core/creations'
+import {
+  creativeToolAccessRef,
+  isContentFingerprint,
+  PINTA_INVENTORY_READER_VERSION,
+} from '@sistemazero/core/creations'
 import {
   STUDIO_PROJECT_FORMAT_VERSION,
   STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
@@ -64,6 +68,8 @@ export interface CreationUploadTicket {
   revision: number
   /** Native format validated and reserved, independent of the upload revision. */
   formatVersion: number
+  maxReadFormatVersion?: number
+  inventoryFloor?: number
   storageKey: string
   /** Eco dos tetos, para o BFF assinar `Content-Length` = bytes e negar o resto. */
   bytes: number
@@ -222,6 +228,7 @@ export class ReserveCreationUploadService {
     /** A revisão que o aparelho conhece (0 = nova); ausente = sem conferência. */
     baseRevision?: number
     formatVersion?: number
+    maxReadFormatVersion?: number
     /** Partes referenciadas (hash de conteúdo; `bytes` só para as que o item não tem). */
     parts?: ReadonlyArray<{ hash: string; bytes?: number }>
     /** Impressão digital do conteúdo (`v1:<sha256>`), opaca aqui. */
@@ -267,6 +274,19 @@ export class ReserveCreationUploadService {
     const formatVersion = input.formatVersion ?? 1
     if (!Number.isInteger(formatVersion) || formatVersion < 1 || formatVersion > 65_535) {
       throw new ValidationError('Versão de formato inválida')
+    }
+    const reader = input.maxReadFormatVersion
+    if (
+      reader !== undefined &&
+      (input.tool !== 'pinta' ||
+        !Number.isInteger(reader) ||
+        reader < 1 ||
+        reader > PINTA_INVENTORY_READER_VERSION ||
+        reader < formatVersion)
+    ) {
+      throw new ValidationError(
+        'A capacidade de leitura declarada não é compatível com este formato',
+      )
     }
     if (isStudioFormatTool(input.tool) && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
       throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
@@ -334,6 +354,7 @@ export class ReserveCreationUploadService {
       itemUpdatedAt: input.itemUpdatedAt,
       bytes: input.bytes,
       formatVersion,
+      maxReadFormatVersion: reader,
       thumb,
       ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
       ...(parts.length > 0 ? { parts } : {}),
@@ -374,7 +395,11 @@ export class ReserveCreationUploadService {
     }
     return {
       revision: reservation.revision,
+      ...(reservation.inventoryFloor === undefined
+        ? {}
+        : { inventoryFloor: reservation.inventoryFloor }),
       formatVersion,
+      ...(reader === undefined ? {} : { maxReadFormatVersion: reader }),
       storageKey: creationStorageKey(
         input.userId,
         input.tool,

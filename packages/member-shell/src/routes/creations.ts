@@ -3,6 +3,8 @@ import {
   CONTENT_FINGERPRINT_PATTERN,
   creationPartStorageKey,
   creationStorageKey,
+  PINTA_INVENTORY_READER_VERSION,
+  pintaInventoryFloorConfirmed,
 } from '@sistemazero/core/creations'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { validateEditableStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
@@ -68,6 +70,7 @@ const LessonBlockId = z
   .string()
   .regex(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i)
 const UploadBody = z.strictObject({
+  maxReadFormatVersion: z.number().int().min(1).max(PINTA_INVENTORY_READER_VERSION).optional(),
   formatVersion: z.number().int().min(1).max(65_535).optional(),
   // Corte por CARACTERE (não por UTF-16): um emoji na borda não vira meio par substituto.
   name: z
@@ -336,6 +339,8 @@ export function createCreationsRoutes(deps: {
           { status: 409 },
         )
       }
+      // An explicit receipt distinguishes a server that protected dependencies from one that only stamped the item.
+      const requestedReader = parsed.data.maxReadFormatVersion
       const reserved = await members.reserveCreationUpload(item.tool, item.itemId, parsed.data)
       if (reserved.status !== 200 || !reserved.body) return response(reserved.status, reserved.body)
       if (session.audience === 'adult') {
@@ -372,7 +377,17 @@ export function createCreationsRoutes(deps: {
       // Only absence means legacy 1; malformed values (including null/string) fail closed.
       const confirmedFormat =
         reserved.body.formatVersion === undefined ? 1 : reserved.body.formatVersion
-      if (confirmedFormat !== (parsed.data.formatVersion ?? 1)) {
+      if (
+        !pintaInventoryFloorConfirmed(
+          item.tool,
+          parsed.data.kind,
+          parsed.data.formatVersion ?? 1,
+          reserved.body.inventoryFloor,
+          requestedReader,
+        ) ||
+        confirmedFormat !== (parsed.data.formatVersion ?? 1) ||
+        (requestedReader !== undefined && reserved.body.maxReadFormatVersion !== requestedReader)
+      ) {
         return NextResponse.json(
           {
             error: {
@@ -421,6 +436,10 @@ export function createCreationsRoutes(deps: {
         return NextResponse.json({
           revision: reserved.body.revision,
           formatVersion: confirmedFormat,
+          ...(reserved.body.inventoryFloor === undefined
+            ? {}
+            : { inventoryFloor: reserved.body.inventoryFloor }),
+          ...(requestedReader === undefined ? {} : { maxReadFormatVersion: requestedReader }),
           bytes: reserved.body.bytes,
           uploadUrl,
           method: 'PUT',
@@ -529,6 +548,7 @@ export function createCreationsRoutes(deps: {
         ...(verifiedPartHashes ? { verifiedPartHashes } : {}),
         ...(verifiedFormatVersion !== undefined ? { verifiedFormatVersion } : {}),
       })
+      const code = responseErrorCode(body)
       if (status === 200 && body) {
         // Best-effort e DEPOIS da resposta: o manifesto anterior e as partes que a revisão
         // nova não referencia mais já não são de ninguém. Se falhar, fica um objeto órfão no
@@ -538,9 +558,9 @@ export function createCreationsRoutes(deps: {
         deleteManyQuietly(released, 'a revisão anterior')
       } else if (
         status === 409 &&
-        ['CREATION_QUOTA_EXCEEDED', 'CREATION_REVISION_MISMATCH'].includes(
-          responseErrorCode(body) ?? '',
-        )
+        (code === 'CREATION_QUOTA_EXCEEDED' ||
+          code === 'CREATION_REVISION_MISMATCH' ||
+          (item.tool === 'pinta' && code === 'CREATION_CLIENT_OUTDATED'))
       ) {
         // O PUT já aconteceu, mas o members confirmou que esta revisão não entrou
         // no índice. A chave é determinística e, portanto, pode ser removida sem

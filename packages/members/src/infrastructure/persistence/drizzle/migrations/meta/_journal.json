@@ -1163,6 +1163,20 @@
       "when": 1795167512450,
       "tag": "0165_cenarios_blobs_saindo",
       "breakpoints": true
+    },
+    {
+      "idx": 166,
+      "version": "7",
+      "when": 1795363314831,
+      "tag": "0166_pinta_inventory_floor",
+      "breakpoints": true
+    },
+    {
+      "idx": 167,
+      "version": "7",
+      "when": 1795363318799,
+      "tag": "0167_backfill_pinta_inventory_floor",
+      "breakpoints": true
     }
   ]
 }

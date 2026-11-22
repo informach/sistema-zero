@@ -1573,6 +1573,7 @@ export const CreationItemParams = t.Union([
 const CreationFormatVersion = t.Number({ minimum: 1, maximum: 65_535, multipleOf: 1 })
 export const CreationUploadBody = t.Object({
   formatVersion: t.Optional(CreationFormatVersion),
+  maxReadFormatVersion: t.Optional(CreationFormatVersion),
   name: t.String({ minLength: 1, maxLength: 120 }),
   kind: t.String({ minLength: 1, maxLength: 40 }),
   /** `updatedAt` do item no relógio do editor (ISO). */

@@ -507,6 +507,43 @@ describe('createCreationsCloud', () => {
     }
   })
 
+  test.each([
+    [7, undefined, 7, false],
+    [7, 7, undefined, false],
+    [7, 7, 7, true],
+    [99, 7, undefined, false],
+    [99, 99, undefined, true],
+  ] as const)('Pinta exige a barreira efetiva e o eco da capacidade de leitura antes de usar o PUT (%i,%s,%s)', async (version, floor, echo, allowed) => {
+    const server = fakeServer()
+    const cloud = createCreationsCloud({
+      tool: 'pinta',
+      maxFormatVersion: version,
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok) return response
+        const body = JSON.parse(String(init?.body))
+        expect(body.maxReadFormatVersion).toBe(version === 7 ? 7 : undefined)
+        return Response.json({
+          ...(await response.json()),
+          formatVersion: version,
+          inventoryFloor: floor,
+          maxReadFormatVersion: echo,
+        })
+      },
+    })
+    try {
+      const upload = cloud.upload(
+        { itemId: 'map', name: 'Mapa', kind: 'tilemap', updatedAt: 1, formatVersion: version },
+        '{}',
+      )
+      if (allowed) expect(await upload).toMatchObject({ revision: 1 })
+      else await expect(upload).rejects.toMatchObject({ code: 'CLOUD_FORMAT_UNSUPPORTED' })
+      expect(server.calls.filter((c) => c.method === 'PUT')).toHaveLength(allowed ? 1 : 0)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
   test('fila envia versão do documento e recusa de editor antigo não dispara PUT, retry ou confirmação', async () => {
     const calls: string[] = []
     let sent: unknown

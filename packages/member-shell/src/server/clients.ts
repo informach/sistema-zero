@@ -1544,6 +1544,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         thumb?: string | null
         baseRevision?: number
         formatVersion?: number
+        maxReadFormatVersion?: number
         parts?: Array<{ hash: string; bytes?: number }>
         fingerprint?: string
       },

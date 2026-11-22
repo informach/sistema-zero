@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { PINTA_INVENTORY_READER_VERSION, pintaInventoryFloor } from '@sistemazero/core/creations'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
@@ -27,9 +28,67 @@ import type {
   CreationUsage,
 } from '../../../domain/ports/creations-repository.port'
 import type { Database } from './db'
-import { accountDeletionFences, creations } from './schema'
+import { accountDeletionFences, creationInventoryFloors, creations } from './schema'
+
+async function inventoryFloor(
+  db: Pick<Database, 'select'>,
+  userId: string,
+  audience: CourseAudience,
+  tool: CreationTool,
+) {
+  if (tool !== 'pinta') return 1
+  const [row] = await db
+    .select({ version: creationInventoryFloors.requiredVersion })
+    .from(creationInventoryFloors)
+    .where(
+      and(
+        eq(creationInventoryFloors.userId, userId),
+        eq(creationInventoryFloors.audience, audience),
+        eq(creationInventoryFloors.tool, tool),
+      ),
+    )
+  return row?.version ?? 1
+}
+
+async function raiseInventoryFloor(
+  db: Pick<Database, 'insert'>,
+  input: { userId: string; accountId: string; tool: CreationTool },
+  audience: CourseAudience,
+  version: number,
+) {
+  await db
+    .insert(creationInventoryFloors)
+    .values({
+      userId: input.userId,
+      accountId: input.accountId,
+      tool: input.tool,
+      audience,
+      requiredVersion: version,
+    })
+    .onConflictDoUpdate({
+      target: [
+        creationInventoryFloors.userId,
+        creationInventoryFloors.audience,
+        creationInventoryFloors.tool,
+      ],
+      set: {
+        requiredVersion: sql`greatest(${creationInventoryFloors.requiredVersion}, ${version})`,
+      },
+    })
+}
 
 type Row = typeof creations.$inferSelect
+
+function reservedReader(row: Row): number | undefined {
+  const receipt = row.pendingInventoryReader
+  return receipt &&
+    receipt.revision === row.pendingRevision &&
+    Number.isInteger(receipt.version) &&
+    receipt.version >= 1 &&
+    receipt.version <= PINTA_INVENTORY_READER_VERSION
+    ? receipt.version
+    : undefined
+}
 type SummaryRow = Pick<
   Row,
   | 'tool'
@@ -79,6 +138,9 @@ const toRecord = (row: Row): CreationRecord => ({
       ? {
           revision: row.pendingRevision,
           formatVersion: row.pendingFormatVersion ?? 1,
+          ...(reservedReader(row) === undefined
+            ? {}
+            : { maxReadFormatVersion: reservedReader(row) }),
           bytes: row.pendingBytes,
           name: row.pendingName,
           kind: row.pendingKind,
@@ -330,6 +392,9 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .for('update')
 
       const formatVersion = input.formatVersion ?? 1
+      const floor = await inventoryFloor(tx, input.userId, this.audience, input.tool)
+      if ((input.maxReadFormatVersion ?? formatVersion) < floor)
+        return { ok: false, reason: 'client-outdated', requiredVersion: floor }
       // Sob o mesmo lock da reserva: uma aba velha não cancela um upload novo em voo.
       const requiredVersion = Math.max(
         isStudioFormatTool(input.tool) ? STUDIO_PROJECT_FORMAT_VERSION : 1,
@@ -410,8 +475,16 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         return { ok: false, reason: 'stale-base', currentRevision }
       }
 
+      const nextFloor = pintaInventoryFloor(input.tool, input.kind, formatVersion)
+      if (nextFloor > floor) await raiseInventoryFloor(tx, input, this.audience, nextFloor)
+      const receipt =
+        Math.max(floor, nextFloor) > 1 ? { inventoryFloor: Math.max(floor, nextFloor) } : {}
       const pending = {
         pendingRevision: 0,
+        pendingInventoryReader:
+          input.maxReadFormatVersion === undefined
+            ? null
+            : { revision, version: input.maxReadFormatVersion },
         pendingFormatVersion: formatVersion,
         pendingBytes: totalBytes,
         pendingName: input.name,
@@ -446,7 +519,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           createdAt: input.now,
           syncedAt: input.now,
         })
-        return { ok: true, revision: 1, missingParts: resolved.missing }
+        return { ok: true, revision: 1, missingParts: resolved.missing, ...receipt }
       }
       // Contador que NUNCA volta: mesmo com uma reserva em voo (ou depois de apagar e
       // ressuscitar), a próxima ganha número — e chave no R2 — novos.
@@ -454,7 +527,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .update(creations)
         .set({ ...pending, pendingRevision: revision, lastReservedRevision: revision })
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
-      return { ok: true, revision, missingParts: resolved.missing }
+      return { ok: true, revision, missingParts: resolved.missing, ...receipt }
     })
   }
 
@@ -502,6 +575,14 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         row.pendingItemUpdatedAt === null
       ) {
         return { ok: false }
+      }
+      const floor = await inventoryFloor(tx, input.userId, this.audience, input.tool)
+      if ((reservedReader(row) ?? row.pendingFormatVersion ?? 1) < floor) {
+        await tx
+          .update(creations)
+          .set(clearPending())
+          .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
+        return { ok: false, reason: 'client-outdated', requiredVersion: floor }
       }
       const usage = await usageWith(tx, input.userId, this.audience)
       const committedAlive = row.deletedAt === null && row.storageRef !== null
@@ -592,6 +673,8 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         })
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
       const previous = row.storageRef && row.storageRef !== input.storageRef ? row.storageRef : null
+      const nextFloor = pintaInventoryFloor(input.tool, row.pendingKind, formatVersion)
+      if (nextFloor > floor) await raiseInventoryFloor(tx, row, this.audience, nextFloor)
       const nextSet = new Set(pendingParts.map((part) => part.hash))
       return {
         ok: true,
@@ -611,6 +694,11 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     maxFormatVersion = 1,
   ): ReturnType<CreationsRepository['softDelete']> {
     return this.db.transaction(async (tx) => {
+      if (tool === 'pinta')
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${userId}`}, 0))`,
+        )
+      const floor = await inventoryFloor(tx, userId, this.audience, tool)
       const [row] = await tx
         .select({
           storageRef: creations.storageRef,
@@ -633,7 +721,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       if (baseRevision !== row.revision) {
         return { ok: false, reason: 'stale-base', currentRevision: row.revision }
       }
-      const requiredVersion = Math.max(row.formatVersion, row.pendingFormatVersion ?? 1)
+      const requiredVersion = Math.max(floor, row.formatVersion, row.pendingFormatVersion ?? 1)
       if (maxFormatVersion < requiredVersion) {
         return { ok: false, reason: 'client-outdated', requiredVersion }
       }
@@ -706,6 +794,7 @@ function clearPending() {
     pendingParts: null,
     pendingRevision: null,
     pendingFormatVersion: null,
+    pendingInventoryReader: null,
     pendingBytes: null,
     pendingName: null,
     pendingKind: null,

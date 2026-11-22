@@ -2254,6 +2254,11 @@ export const creations = members.table(
     /** Reserva em voo (a chave já foi assinada). `null` = nada reservado. */
     pendingRevision: integer('pending_revision'),
     pendingFormatVersion: integer('pending_format_version'),
+    /** The revision binds the reader even if an older server replaces pending_* during rollout. */
+    pendingInventoryReader: jsonb('pending_inventory_reader').$type<{
+      revision: number
+      version: number
+    }>(),
     /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
     pendingBytes: integer('pending_bytes'),
     /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */
@@ -2298,6 +2303,22 @@ export const creations = members.table(
     index('creations_usage_idx')
       .on(t.userId, t.tool, t.bytes)
       .where(sql`${t.deletedAt} is null and ${t.storageRef} is not null`),
+  ],
+)
+
+/** Survives tombstones and abandoned reservations. Scoped to the inventory where IDs resolve. */
+export const creationInventoryFloors = members.table(
+  'creation_inventory_floors',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    tool: creationToolEnum('tool').notNull(),
+    requiredVersion: integer('required_version').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.tool] }),
+    index('creation_inventory_floors_account_idx').on(t.accountId),
   ],
 )
 
@@ -3856,6 +3877,7 @@ export const schema = {
   adultHelpCollections,
   adultHelpTutorials,
   creations,
+  creationInventoryFloors,
   accountDeletionFences,
   creationCleanupJobs,
   galleryCopyAttempts,

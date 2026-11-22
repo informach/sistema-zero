@@ -336,6 +336,70 @@ describe('BFF das criações — reserva', () => {
     expect(r2.presignPut).toEqual([])
   })
 
+  test.each([
+    [7, undefined, 503],
+    [7, 99, 503],
+    [99, 7, 503],
+    [99, 99, 200],
+    [7, 7, 200],
+  ] as const)('Pinta só assina após confirmação da barreira real (%i, %s)', async (formatVersion, inventoryFloor, status) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: { revision: 2, storageKey: 'map', bytes: 12, formatVersion, inventoryFloor },
+        }),
+      },
+    })
+    const result = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Mapa',
+        kind: 'tilemap',
+        itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+        bytes: 12,
+        formatVersion,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'mapa' }) },
+    )
+    expect(result.status).toBe(status)
+    expect(r2.presignPut).toHaveLength(status === 200 ? 1 : 0)
+    if (status === 200) expect(await result.json()).toMatchObject({ formatVersion, inventoryFloor })
+  })
+  test.each([
+    undefined,
+    7,
+  ])('sprite formato1 exige eco da capacidade 7 quando o leitor a declarou (%s)', async (echo) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async (...args: unknown[]) => {
+          expect(args[2]).toMatchObject({ maxReadFormatVersion: 7 })
+          return {
+            status: 200,
+            body: {
+              revision: 1,
+              formatVersion: 1,
+              inventoryFloor: 7,
+              maxReadFormatVersion: echo,
+              storageKey: 'sprite',
+              bytes: 12,
+            },
+          }
+        },
+      },
+    })
+    const res = await routes.creationsUploadUrl.POST(
+      post({
+        kind: 'sprite',
+        name: 'Sprite',
+        itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+        bytes: 12,
+        maxReadFormatVersion: 7,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'sprite' }) },
+    )
+    expect(res.status).toBe(echo === 7 ? 200 : 503)
+    expect(r2.presignPut).toHaveLength(echo === 7 ? 1 : 0)
+  })
   test('ticket legado ausente confirma somente formato 1', async () => {
     const { routes } = buildRoutes()
     const result = await routes.creationsUploadUrl.POST(
@@ -860,7 +924,11 @@ describe('BFF das criações — commit', () => {
   })
 
   test('409 definitivo do members apaga do R2 a revisão recusada e passa o erro', async () => {
-    for (const code of ['CREATION_REVISION_MISMATCH', 'CREATION_QUOTA_EXCEEDED']) {
+    for (const code of [
+      'CREATION_REVISION_MISMATCH',
+      'CREATION_QUOTA_EXCEEDED',
+      'CREATION_CLIENT_OUTDATED',
+    ]) {
       r2.deleted.length = 0
       const { routes } = buildRoutes({
         members: {
@@ -870,10 +938,12 @@ describe('BFF das criações — commit', () => {
           }),
         },
       })
-      const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+      const tool = code === 'CREATION_CLIENT_OUTDATED' ? 'pinta' : 'studio'
+      const target = { params: Promise.resolve({ tool, itemId: 'proj-1' }) }
+      const res = await routes.creationsCommit.POST(post({ revision: 2 }), target)
       expect(res.status).toBe(409)
       expect((await res.json()).error.code).toBe(code)
-      expect(r2.deleted).toEqual(['creations/user-1/studio/proj-1/2.json.gz'])
+      expect(r2.deleted).toEqual([`creations/user-1/${tool}/proj-1/2.json.gz`])
     }
   })
 })

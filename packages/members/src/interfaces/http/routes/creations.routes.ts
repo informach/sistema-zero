@@ -93,6 +93,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             name: body.name,
             kind: body.kind,
             formatVersion: body.formatVersion ?? 1,
+            maxReadFormatVersion: body.maxReadFormatVersion,
             itemUpdatedAt: new Date(body.itemUpdatedAt),
             bytes: body.bytes,
             thumb: body.thumb ?? null,

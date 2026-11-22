@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { pintaInventoryFloor } from '@sistemazero/core/creations'
 import {
   type CreationDraftState,
   type CreationPartRef,
@@ -60,6 +61,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
   constructor(
     readonly audience: 'adult' | 'kids' = 'kids',
     readonly rows = new Map<string, CreationRecord>(),
+    readonly floors = new Map<string, number>(),
   ) {}
 
   async list(userId: string, tool: CreationTool): Promise<CreationSummary[]> {
@@ -157,6 +159,10 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     const k = key(input.userId, input.tool, input.itemId, this.audience)
     const existing = this.rows.get(k)
     const formatVersion = input.formatVersion ?? 1
+    const scope = key(input.userId, input.tool, '', this.audience)
+    const floor = this.floors.get(scope) ?? 1
+    if ((input.maxReadFormatVersion ?? formatVersion) < floor)
+      return { ok: false, reason: 'client-outdated', requiredVersion: floor }
     const requiredVersion = Math.max(
       existing?.formatVersion ?? 1,
       existing?.pending?.formatVersion ?? 1,
@@ -206,8 +212,15 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     if (input.baseRevision !== undefined && input.baseRevision !== currentRevision) {
       return { ok: false, reason: 'stale-base', currentRevision }
     }
+    const nextFloor = pintaInventoryFloor(input.tool, input.kind, formatVersion)
+    if (nextFloor > floor) this.floors.set(scope, nextFloor)
+    const receipt =
+      Math.max(floor, nextFloor) > 1 ? { inventoryFloor: Math.max(floor, nextFloor) } : {}
     const pending = {
       formatVersion,
+      ...(input.maxReadFormatVersion === undefined
+        ? {}
+        : { maxReadFormatVersion: input.maxReadFormatVersion }),
       bytes: totalBytes,
       name: input.name,
       kind: input.kind,
@@ -239,14 +252,14 @@ export class InMemoryCreationsRepository implements CreationsRepository {
         createdAt: input.now,
         syncedAt: input.now,
       })
-      return { ok: true, revision: 1, missingParts: resolved.missing }
+      return { ok: true, revision: 1, missingParts: resolved.missing, ...receipt }
     }
     this.rows.set(k, {
       ...existing,
       lastReservedRevision: revision,
       pending: { revision, ...pending },
     })
-    return { ok: true, revision, missingParts: resolved.missing }
+    return { ok: true, revision, missingParts: resolved.missing, ...receipt }
   }
 
   async commit(input: {
@@ -276,6 +289,12 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       input.verifiedFormatVersion !== existing.pending.formatVersion
     )
       return { ok: false, reason: 'manifest-mismatch' }
+    const scope = key(input.userId, input.tool, '', this.audience)
+    const floor = this.floors.get(scope) ?? 1
+    if ((existing.pending.maxReadFormatVersion ?? existing.pending.formatVersion) < floor) {
+      this.rows.set(k, { ...existing, pending: null })
+      return { ok: false, reason: 'client-outdated', requiredVersion: floor }
+    }
     if (existing.pending.formatVersion < existing.formatVersion) {
       this.rows.set(k, { ...existing, pending: null })
       return { ok: false, reason: 'client-outdated', requiredVersion: existing.formatVersion }
@@ -325,6 +344,12 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     const previous =
       existing.storageRef && existing.storageRef !== input.storageRef ? existing.storageRef : null
     const nextParts: CreationPartRef[] = existing.pending.parts.map((part) => ({ ...part }))
+    const nextFloor = pintaInventoryFloor(
+      input.tool,
+      existing.pending.kind,
+      existing.pending.formatVersion,
+    )
+    if (nextFloor > floor) this.floors.set(scope, nextFloor)
     const nextSet = new Set(nextParts.map((part) => part.hash))
     this.rows.set(k, {
       ...existing,
@@ -368,7 +393,11 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     if (baseRevision !== existing.revision) {
       return { ok: false, reason: 'stale-base', currentRevision: existing.revision }
     }
-    const requiredVersion = Math.max(existing.formatVersion, existing.pending?.formatVersion ?? 1)
+    const requiredVersion = Math.max(
+      this.floors.get(key(userId, tool, '', this.audience)) ?? 1,
+      existing.formatVersion,
+      existing.pending?.formatVersion ?? 1,
+    )
     if (maxFormatVersion < requiredVersion) {
       return { ok: false, reason: 'client-outdated', requiredVersion }
     }

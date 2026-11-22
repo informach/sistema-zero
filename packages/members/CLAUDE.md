@@ -2746,6 +2746,16 @@ Listas/download/commit expõem o formato do documento confirmado. Aplicar migrat
 antes do backend e terminar o rollout dos guards antes de novos escritores.
 Rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
 
+**Pinta, dependências entre itens (22/11/2026).** As migrations 0166 e 0167 acrescentam e
+preenchem o piso de leitura da galeria por perfil/público/ferramenta. Reservas aprovadas de
+mapas, folhas e conjuntos com formato ≥7 elevam esse piso ao formato integral. Reserva, commit
+e DELETE usam o lock da quota do perfil. Uma aba incompatível mantém a revisão confirmada na
+conta, inclusive quando já fez PUT de outro item. O ticket carrega `inventoryFloor` e, quando
+declarada, a capacidade `maxReadFormatVersion` da reserva. O commit usa a capacidade persistida.
+A escrita/leitura pública do Pinta continua em 6. Ordem de rollout, ensaios e limites em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/piso-de-leitura-do-inventario-2026-11-22/`
+na raiz. A causalidade de alterações em várias criações por um escritor compatível segue aberta.
+
 **Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
 BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.
 Essa confirmação não substitui o rollout de todos os guards.

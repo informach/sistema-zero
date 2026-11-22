@@ -32,7 +32,13 @@ import { sessionFetch as fetch } from './session-fetch'
  * sessão já trocou de perfil (irmão que entrou no meio de um upload em voo).
  */
 
-import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import {
+  canonicalJson,
+  PINTA_INVENTORY_READER_VERSION,
+  PINTA_MIN_INVENTORY_FORMAT_VERSION,
+  pintaInventoryFloorConfirmed,
+  sha256Hex,
+} from '@sistemazero/core/creations'
 import { perfSpanAsync } from './perf'
 
 export { canonicalJson, sha256Hex }
@@ -640,6 +646,8 @@ export function createCreationsCloud(options: {
   }
 
   interface UploadTicket {
+    inventoryFloor?: number
+    maxReadFormatVersion?: number
     revision: number
     /** Old servers omit this and only confirm native format 1. */
     formatVersion?: number
@@ -687,6 +695,13 @@ export function createCreationsCloud(options: {
     for (const part of parts) if (!byHash.has(part.hash)) byHash.set(part.hash, part)
     // Bytes gzip das partes que o servidor PEDIU (só essas são comprimidas): hash → bytes.
     const gzipped = new Map<string, Uint8Array>()
+    const requestedReader =
+      tool === 'pinta' &&
+      maxFormatVersion !== undefined &&
+      maxFormatVersion >= PINTA_MIN_INVENTORY_FORMAT_VERSION &&
+      (meta.formatVersion ?? 1) <= PINTA_INVENTORY_READER_VERSION
+        ? Math.min(maxFormatVersion, PINTA_INVENTORY_READER_VERSION)
+        : undefined
     const reserveBody = () =>
       JSON.stringify({
         name: meta.name,
@@ -695,6 +710,7 @@ export function createCreationsCloud(options: {
         bytes: bytes.byteLength,
         thumb: meta.thumb ?? null,
         ...(meta.formatVersion !== undefined ? { formatVersion: meta.formatVersion } : {}),
+        ...(requestedReader === undefined ? {} : { maxReadFormatVersion: requestedReader }),
         ...(meta.baseRevision !== undefined ? { baseRevision: meta.baseRevision } : {}),
         ...(meta.fingerprint ? { fingerprint: meta.fingerprint } : {}),
         ...(byHash.size > 0
@@ -744,7 +760,17 @@ export function createCreationsCloud(options: {
     }
     if (!ticket) throw new Error('Reserva sem resposta')
     const confirmedFormat = ticket.formatVersion === undefined ? 1 : ticket.formatVersion
-    if (confirmedFormat !== (meta.formatVersion ?? 1)) {
+    if (
+      !pintaInventoryFloorConfirmed(
+        tool,
+        meta.kind,
+        meta.formatVersion ?? 1,
+        ticket.inventoryFloor,
+        requestedReader,
+      ) ||
+      confirmedFormat !== (meta.formatVersion ?? 1) ||
+      (requestedReader !== undefined && ticket.maxReadFormatVersion !== requestedReader)
+    ) {
       // A legacy BFF can drop the field even with an updated Members service.
       // Never upload parts/manifest or advance marks on an unconfirmed format.
       const err = new Error('A nuvem não confirmou o formato solicitado') as CloudError

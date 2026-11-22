@@ -5,9 +5,25 @@ import {
   PINTA_MAX_READ_FORMAT_VERSION,
   pintaCanReadFormatVersion,
   pintaCanWriteNativeSchema,
+  pintaInventoryFloor,
+  pintaInventoryFloorConfirmed,
   pintaWriteFormatVersion,
 } from './pinta-format'
 
+test('o piso das dependências preserva formatos futuros e separa a capacidade de leitura da escrita do item', () => {
+  for (const kind of ['tilemap', 'tileset', 'vector-tileset', 'map-set']) {
+    expect(pintaInventoryFloor('pinta', kind, 6)).toBe(1)
+    expect(pintaInventoryFloor('pinta', kind, 7)).toBe(7)
+    expect(pintaInventoryFloor('pinta', kind, 99)).toBe(99)
+    expect(pintaInventoryFloorConfirmed('pinta', kind, 99, 7)).toBe(false)
+    expect(pintaInventoryFloorConfirmed('pinta', kind, 99, 99)).toBe(true)
+  }
+  expect(pintaInventoryFloor('pinta', 'sprite', 99)).toBe(1)
+  expect(pintaInventoryFloor('lesson-pinta', 'tilemap', 99)).toBe(1)
+  expect(pintaInventoryFloorConfirmed('pinta', 'sprite', 1, 7, 7)).toBe(true)
+  expect(pintaInventoryFloorConfirmed('pinta', 'sprite', 1, 99, 7)).toBe(false)
+  expect(pintaInventoryFloorConfirmed('pinta', 'sprite', 1, undefined)).toBe(true)
+})
 test('o gravador B admite os documentos nativos conhecidos e recusa o próximo formato', () => {
   for (const kind of ['tilemap', 'tileset', 'vector-tileset', 'map-set']) {
     const declared = pintaWriteFormatVersion(kind)

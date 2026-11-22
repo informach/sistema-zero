@@ -100,6 +100,7 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       authCursor = owner.userId
     }
     await addEntitlement(accountId, entitlementId)
+    await conn.sql`insert into members.creation_inventory_floors(user_id,account_id,audience,tool,required_version) values (${profileId},${accountId},'kids','pinta',7)`
     await conn.sql`insert into members.kids_journey_earned(user_id,account_id,level,capabilities,policy_version,updated_at)
       values (${profileId},${accountId},'coder','["studio","pinta"]'::jsonb,0,now())`
     await conn.sql`
@@ -149,6 +150,7 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       'lesson_section_progress',
       'creations',
       'teacher_threads',
+      'creation_inventory_floors',
       'pensa_projects',
       'ai_usage_daily',
       'parent_reports_sent',

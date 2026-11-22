@@ -155,6 +155,7 @@ export interface CreationSummary {
 export interface CreationPendingUpload {
   revision: number
   formatVersion: number
+  maxReadFormatVersion?: number
   /** TOTAL reservado: manifesto + Σ partes referenciadas. */
   bytes: number
   name: string

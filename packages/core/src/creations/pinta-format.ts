@@ -98,6 +98,33 @@ export function isPintaVersionedKind(kind: string): boolean {
   return VERSIONED_KINDS.has(kind)
 }
 
+/** Earliest format with cross-item dependencies that an older writer cannot safely update. */
+export const PINTA_MIN_INVENTORY_FORMAT_VERSION = 7
+/** Highest explicit reader capability negotiated by this service, independent of the floor. */
+export const PINTA_INVENTORY_READER_VERSION = 7
+
+export function pintaInventoryFloor(tool: string, kind: string, formatVersion: number): number {
+  return tool === 'pinta' &&
+    isPintaVersionedKind(kind) &&
+    formatVersion >= PINTA_MIN_INVENTORY_FORMAT_VERSION
+    ? formatVersion
+    : 1
+}
+
+/** An old server can echo the item's format while leaving related resources unprotected. */
+export function pintaInventoryFloorConfirmed(
+  tool: string,
+  kind: string,
+  formatVersion: number,
+  confirmed: number | undefined,
+  reader = formatVersion,
+): boolean {
+  if (tool !== 'pinta') return true
+  const required = pintaInventoryFloor(tool, kind, formatVersion)
+  if (confirmed === undefined) return required === 1
+  return Number.isInteger(confirmed) && confirmed >= required && confirmed <= reader
+}
+
 /** A versão que um desenho deste tipo declara ao subir. */
 export function pintaWriteFormatVersion(kind: string): number {
   return isPintaVersionedKind(kind) ? PINTA_MAP_WRITE_FORMAT_VERSION : 1

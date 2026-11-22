@@ -20,6 +20,7 @@ import {
   coinEvents,
   courseRatings,
   creationCleanupJobs,
+  creationInventoryFloors,
   creations,
   creatorJourneyCourseGrants,
   entitlements,
@@ -503,6 +504,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           or(
             inArray(studioSubmissions.userId, userIds),
             eq(studioSubmissions.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(creationInventoryFloors)
+        .where(
+          or(
+            inArray(creationInventoryFloors.userId, userIds),
+            eq(creationInventoryFloors.accountId, accountId),
           ),
         )
       // Índice das criações "guardadas na conta" (Estúdio Completo/Pinta). ⚠️ Só o

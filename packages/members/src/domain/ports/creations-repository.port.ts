@@ -33,6 +33,7 @@ export interface CreationUploadInput {
   baseRevision?: number
   /** Ausente = formato legado (1); nunca pode rebaixar o formato corrente ou reservado. */
   formatVersion?: number
+  maxReadFormatVersion?: number
   /** Impressão digital do conteúdo (`v1:<sha256>`), promovida no commit. */
   contentFingerprint?: string | null
   now: Date
@@ -48,7 +49,7 @@ export interface CreationUploadInput {
 /** O que a reserva devolve. */
 export type CreationUploadReservation =
   /** A revisão nova (a chave do R2 é derivada dela) + as partes que FALTAM no R2 (a assinar). */
-  | { ok: true; revision: number; missingParts: CreationPartRef[] }
+  | { ok: true; revision: number; missingParts: CreationPartRef[]; inventoryFloor?: number }
   /** Partes faltantes vieram sem `bytes`: nada reservado; o cliente volta com eles. */
   | { ok: false; reason: 'parts-need-bytes'; hashes: string[] }
   /** Manifesto + partes passam do teto por item. */
