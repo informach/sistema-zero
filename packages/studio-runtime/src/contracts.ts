@@ -183,10 +183,8 @@ export const SCENE3D_CANONICAL_COMMAND = 'node /opt/sz-runtime/scene3d-pro-canon
 
 export const normalizeBuildPath = normalizeStudioProBuildPath
 
-export function trustedPackageJson(
-  templateId: ProTemplateId,
-  resolved?: StudioProRemoteDependencies,
-): string {
+/** As dependências que o build confiável instala: as do projeto conferidas, ou as do modelo. */
+function trustedDependencies(templateId: ProTemplateId, resolved?: StudioProRemoteDependencies) {
   const template = studioProTemplate(templateId)
   const dependencies: Record<string, string> = {}
   const devDependencies: Record<string, string> = { vite: '8.1.6' }
@@ -207,18 +205,70 @@ export function trustedPackageJson(
     devDependencies['@types/three'] = STUDIO_THREE_TYPES_VERSION
     devDependencies.typescript = '5.9.3'
   }
+  return {
+    dependencies: resolved?.dependencies ?? dependencies,
+    devDependencies: resolved?.devDependencies ?? devDependencies,
+  }
+}
+
+export function trustedPackageJson(
+  templateId: ProTemplateId,
+  resolved?: StudioProRemoteDependencies,
+): string {
   return `${JSON.stringify(
     {
       name: 'sz-pro-lesson',
       private: true,
       type: 'module',
       scripts: { build: 'vite build' },
-      dependencies: resolved?.dependencies ?? dependencies,
-      devDependencies: resolved?.devDependencies ?? devDependencies,
+      ...trustedDependencies(templateId, resolved),
     },
     null,
     2,
   )}\n`
+}
+
+/** O começo da linha que o plugin abaixo escreve; o Worker devolve o recado depois dele. */
+export const UNDECLARED_DEPENDENCY_MARKER = 'STUDIO_UNDECLARED_DEPENDENCY'
+
+/**
+ * Recusa, no build hospedado, o `import` de uma biblioteca que o projeto não declarou (revisão do
+ * lote 4 da conclusão, 22/11/2026). A conferência do catálogo olha só o package.json, e o Vite do
+ * Rodar comum monta com o `node_modules` da imagem: um `import { nanoid } from 'nanoid'` sem
+ * declarar empacotava o nanoid que veio na imagem por ser dependência do postcss (e uns 40
+ * pacotes assim). Só vale para o código do projeto: as bibliotecas importam o que quiserem.
+ *
+ * ⚠️ Vai para a configuração do Vite como TEXTO (`toString`): nada de fora desta função.
+ */
+export function catalogImportsPlugin(declared: readonly string[]) {
+  const allowed = new Set([...declared, 'vite'])
+  return {
+    name: 'sz-catalog-imports',
+    enforce: 'pre' as const,
+    resolveId(this: { error(message: string): never }, source: string, importer?: string) {
+      if (!importer || importer.startsWith('\0') || /[\\/]node_modules[\\/]/.test(importer))
+        return null
+      const bare = source.split(/[?#]/)[0] ?? ''
+      // Caminho relativo ou absoluto, módulo virtual e endereço com esquema (`virtual:`, `data:`).
+      if (!bare || /^(?:[./\\\0]|[A-Za-z]:[\\/]|[a-z][a-z0-9+.-]*:)/i.test(bare)) return null
+      const parts = bare.split('/')
+      const name = bare.startsWith('@') ? parts.slice(0, 2).join('/') : (parts[0] ?? '')
+      if (allowed.has(name)) return null
+      this.error(
+        'STUDIO_UNDECLARED_DEPENDENCY A biblioteca ' +
+          name +
+          ' não está no package.json deste jogo. Se ela é uma das bibliotecas do modelo, escreva ela no package.json; se não, tire o import.',
+      )
+    },
+  }
+}
+
+/** O recado do plugin acima, quando o build falhou por ele. */
+export function undeclaredDependencyMessage(output: string): string | null {
+  const at = output.indexOf(`${UNDECLARED_DEPENDENCY_MARKER} `)
+  if (at < 0) return null
+  const rest = output.slice(at + UNDECLARED_DEPENDENCY_MARKER.length + 1)
+  return rest.split(/\r?\n/)[0]?.trim() || null
 }
 
 export function trustedViteConfig(
@@ -233,8 +283,11 @@ export function trustedViteConfig(
       )
     : templateId === 'react-ts'
   const reactImport = react ? "import react from '@vitejs/plugin-react'\n" : ''
-  const plugins = react ? '  plugins: [react()],\n' : ''
+  const deps = trustedDependencies(templateId, resolved)
+  const declared = [...Object.keys(deps.dependencies), ...Object.keys(deps.devDependencies)]
+  const catalog = `const catalogImports = ${catalogImportsPlugin.toString()}\n`
+  const plugins = `  plugins: [catalogImports(${JSON.stringify(declared)})${react ? ', react()' : ''}],\n`
   // Inline PostCSS disables discovery of executable project/parent configuration.
   // Native config loading avoids writing a bundled config into trusted node_modules.
-  return `import { defineConfig } from 'vite'\n${reactImport}\nexport default defineConfig({\n${plugins}  base: './',\n  envDir: false,\n  envPrefix: [],\n  cacheDir: '.vite-cache',\n  css: { postcss: { plugins: [] } },\n  build: {\n    assetsInlineLimit: 4096,\n    cssCodeSplit: true,\n    sourcemap: false,\n  },\n})\n`
+  return `import { defineConfig } from 'vite'\n${reactImport}${catalog}\nexport default defineConfig({\n${plugins}  base: './',\n  envDir: false,\n  envPrefix: [],\n  cacheDir: '.vite-cache',\n  css: { postcss: { plugins: [] } },\n  build: {\n    assetsInlineLimit: 4096,\n    cssCodeSplit: true,\n    sourcemap: false,\n  },\n})\n`
 }
