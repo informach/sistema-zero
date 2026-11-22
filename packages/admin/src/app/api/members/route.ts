@@ -13,6 +13,7 @@ import { batchGetUsers } from '@/server/users'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listMembers({
+    learner: searchParams.get('learner') === 'parents' ? 'parents' : undefined,
     status: searchParams.get('status') ?? undefined,
     courseRef: searchParams.get('courseRef') ?? undefined,
     limit: parseLimit(searchParams.get('limit')),

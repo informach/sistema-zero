@@ -20,13 +20,19 @@ export const gameThreeDPlatformRuntimeSource = `
   // KIT PLATAFORMA — um jogo de correr e pular de lado, em 2,5D.
   // O mundo é um corredor: X avança, Y é altura, Z fica quase parado.
   // ====================================================================
-  var MAX_STAGE_MESHES = 260;   // teto PRÓPRIO do kit (não é o dos 300 objetos)
+  // teto PRÓPRIO do kit (não é o dos 300 objetos)
+  var MAX_STAGE_MESHES = 260;
   var MAX_STAGE_ENEMIES = 28;
-  var TILE = 1;                 // um bloco do mapa = uma unidade do mundo
-  var STAGE_Z = 0;              // o corredor inteiro vive nesta profundidade
-  var STAGE_DEPTH = 1.6;        // espessura das peças (dá volume sem virar labirinto)
-  var VIEW_AHEAD = 17;          // colunas materializadas à frente da câmera
-  var VIEW_BEHIND = 11;         // colunas mantidas atrás antes de reciclar
+  // um bloco do mapa = uma unidade do mundo
+  var TILE = 1;
+  // o corredor inteiro vive nesta profundidade
+  var STAGE_Z = 0;
+  // espessura das peças (dá volume sem virar labirinto)
+  var STAGE_DEPTH = 1.6;
+  // colunas materializadas à frente da câmera
+  var VIEW_AHEAD = 17;
+  // colunas mantidas atrás antes de reciclar
+  var VIEW_BEHIND = 11;
 
   var STAGE_THEMES = {
     dia: { sky: '#5c94fc', horizon: '#c8e0ff', ground: '#c86400', groundB: '#e89050',
@@ -140,7 +146,8 @@ export const gameThreeDPlatformRuntimeSource = `
       return null;
     }
     var mesh = new THREE.Mesh(stageGeometry(world, st, w, h, d), stageMaterial(world, st, color, null));
-    mesh.castShadow = false;      // cenário não projeta sombra: metade do custo
+    // cenário não projeta sombra: metade do custo
+    mesh.castShadow = false;
     mesh.receiveShadow = true;
     mesh.userData.sz = { hw: w / 2, hh: h / 2, hd: d / 2, vx: 0, vy: 0, vz: 0,
       grounded: false, gravity: 0 };
@@ -564,7 +571,8 @@ export const gameThreeDPlatformRuntimeSource = `
     var hero = createBlock(world, { width: 0.8, height: 1.5, depth: 0.8,
       color: color || '#e03010' });
     if (!hero) return null;
-    body(hero, 72); // = -0.02 por quadro (gravidade positiva, por segundo²)
+    // = -0.02 por quadro (gravidade positiva, por segundo²)
+    body(hero, 72);
     setPosition(hero, st.spawnX * TILE, 2, STAGE_Z);
     st.hero = hero;
     return hero;
@@ -928,7 +936,8 @@ export const gameThreeDPlatformRuntimeSource = `
       return;
     }
     if (fromAbove) {
-      who.userData.sz.vy = 0.16;   // o quique do pisão
+      // o quique do pisão
+      who.userData.sz.vy = 0.16;
       playEffect('hit');
       if (kind === 2 && shell === 0) {
         // Koopa vira concha: fica parado até alguém encostar de lado.

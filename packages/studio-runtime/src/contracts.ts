@@ -142,7 +142,7 @@ function verifyRemoteLock(raw: string, packageJson: string): void {
       )
     )
       throw new InvalidBuildRequestError(
-        `O lock inclui uma versão de ${path.replace(/^node_modules\//, '')} diferente da imagem do compilador remoto. Execute pelo terminal local ou use as dependências compatíveis.`,
+        `O lock inclui uma versão de ${path.replace(/^node_modules\//, '')} diferente da imagem do compilador remoto. Use as versões das bibliotecas do modelo.`,
       )
   }
 }

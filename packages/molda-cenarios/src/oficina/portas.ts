@@ -241,6 +241,12 @@ export interface CenariosHost {
   /** Publicação autorizada da equipe; o host de ensaio mantém estado separado. */
   publicacoes?: import('./publicacoes').PublicacoesDeCenariosHost
   espacos(): Promise<Espaco[]>
+  /**
+   * As ferramentas que o servidor liga por interruptor (lote 7 da conclusão, 22/11/2026). Hoje só
+   * `regioes`, o `CENARIOS_REGIOES` do Members: desligado, a ferramenta Regiões não aparece (e o
+   * servidor recusa mudar as regiões). Sem o método, nada fica ligado.
+   */
+  recursos?(): Promise<{ regioes: boolean }>
 
   listarBibliotecas(espacoId: string): Promise<Biblioteca[]>
   obterBibliotecaDoMolda(espacoId: string): Promise<Biblioteca>

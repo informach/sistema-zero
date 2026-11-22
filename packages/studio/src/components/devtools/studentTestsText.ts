@@ -232,11 +232,19 @@ function describeRemoteOutcome(
     return { tone: 'passed', text: t('tests.passed', { what }) }
   }
   const seen = (outcome.detail ?? '').trim().replace(/\.$/, '')
-  const what = seen
-    ? `${seen.charAt(0).toLowerCase()}${seen.slice(1)}`
-    : t('tests.what.remoteFailed')
+  // O projeto que não compila: o executor do servidor responde que nada passou, com a saída do
+  // Vite no recado (`studio-runtime/src/index.ts`, "O projeto não compilou: …"). A criança lê a
+  // mesma frase do JavaScript clássico e do Python; o erro de escrita aparece no editor.
+  const what = PRO_COMPILE_FAILED.test(seen)
+    ? t('tests.what.gameError')
+    : seen
+      ? `${seen.charAt(0).toLowerCase()}${seen.slice(1)}`
+      : t('tests.what.remoteFailed')
   return { tone: 'failed', text: t('tests.failed', { what }) }
 }
+
+/** O começo do recado do executor do servidor quando o projeto Pro não compila. */
+const PRO_COMPILE_FAILED = /^O projeto não compilou\b/
 
 /** A linha do resultado embaixo do teste ("Passou: …", "Não passou: …" ou um recado). */
 export function describeOutcome(

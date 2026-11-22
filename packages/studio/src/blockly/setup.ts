@@ -30,6 +30,7 @@ import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldJsonData } from './fields/FieldJsonData'
 import { registerFieldModelClipPicker } from './fields/FieldModelClipPicker'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
+import { registerFieldSceneRegionPicker } from './fields/FieldSceneRegionPicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
@@ -181,7 +182,12 @@ function registerOrganizeContextMenu(): void {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     displayText: () => 'Organizar blocos',
     preconditionFn: (scope) =>
-      (scope.workspace?.getTopBlocks(false).length ?? 0) > 0 ? 'enabled' : 'disabled',
+      // O editor Python tem o próprio "Organizar blocos" (pelas áreas do projeto Python).
+      (scope.workspace as { __szOrganizePython?: unknown } | undefined)?.__szOrganizePython
+        ? 'hidden'
+        : (scope.workspace?.getTopBlocks(false).length ?? 0) > 0
+          ? 'enabled'
+          : 'disabled',
     callback: (scope) => organizeBlocks(scope.workspace),
   })
 }
@@ -301,6 +307,8 @@ export function ensureBlocklyInitialized(): void {
   registerFieldAnimationPicker()
   // Nome da animação de um modelo 3D do Molda (clipes lidos do próprio .glb).
   registerFieldModelClipPicker()
+  // Nome da região de um cenário do Molda (as regiões lidas dos cenários do projeto).
+  registerFieldSceneRegionPicker()
   registerFieldCampaignStage()
   registerFieldJsonData()
   registerFieldSolidTilesPicker()

@@ -102,3 +102,27 @@ test('generated graph installs independently with npm ci and npm ls without chan
     await rm(root, { recursive: true, force: true })
   }
 }, 120000)
+
+test('uma biblioteca fora do catálogo é recusada com o recado que a criança lê (lote 4 da conclusão)', () => {
+  const request = (dependencies: Record<string, string>) => ({
+    executionId: 'builder-1234567890abcdef',
+    parentOrigin: 'https://kids.test',
+    templateId: 'vanilla-vite',
+    files: {
+      'package.json': JSON.stringify({ dependencies, devDependencies: { vite: '8.1.6' } }),
+      'index.html': '<main>Game</main>',
+    },
+  })
+  // O recado vai inteiro para a tela (400 INVALID_REQUEST): diz o que fazer, sem detalhe técnico.
+  // O build hospedado roda onde não há terminal (aula, Admin, oficina ao vivo e desafio): o recado
+  // diz o que mudar no projeto, nunca "use o terminal" (revisão do lote 4).
+  expect(() => parseBuildRequest(request({ nanoid: '5.0.9' }))).toThrow(
+    'A biblioteca nanoid não está entre as que o Estúdio monta aqui. Tire ela do package.json ou use uma das bibliotecas do modelo.',
+  )
+  // A faixa sem a trava: o recado diz a versão que o Estúdio monta.
+  expect(() =>
+    parseBuildRequest(request({ three: `^${STUDIO_PRO_REMOTE_PACKAGES.three}` })),
+  ).toThrow(
+    `O Estúdio monta three na versão ${STUDIO_PRO_REMOTE_PACKAGES.three}. Escreva "${STUDIO_PRO_REMOTE_PACKAGES.three}" para three no package.json.`,
+  )
+})

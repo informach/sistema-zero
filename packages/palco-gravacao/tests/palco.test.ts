@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { arrumacao, sobrepostas } from '../src/lib/arrumacao'
+import { arrumacao, cobreDoLado, sobrepostas } from '../src/lib/arrumacao'
 import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
@@ -49,6 +49,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   sobre: () => ({ seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 }),
   palcoDoJogo: () => null,
   desembolar: () => null,
+  cobreDoLado: () => false,
   posicoes: () => 'parado',
   fundoLivre: () => ({ seletor: '[data-palco-alvo="a13"]', u: 0.6, v: 0.5 }),
   rolagemDeVarios: () => 'visivel',
@@ -126,7 +127,16 @@ describe('verbos do palco', () => {
 
   test('expandir e reduzir o Estúdio só terminam com ele no outro estado', () => {
     // Farol, Parte 6: a seta segurada logo depois de expandir mediu a prévia ainda no lugar antigo.
+    // Ilha, Aula 2, Parte 4: expandido com o projeto ainda abrindo, a área ficava sem os blocos; o
+    // Expandir espera a área de blocos aberta e sem o carregamento por cima.
     expect(agir('expandir estúdio', jogos)).toEqual([
+      { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 30 },
+      {
+        fazer: 'esperar',
+        alvo: { seletor: '[data-sz-blocks-loading]' },
+        estado: 'sumir',
+        maximo: 30,
+      },
       { fazer: 'clicar', alvo: { texto: 'Expandir' } },
       { fazer: 'esperar', alvo: { texto: 'Reduzir' }, estado: 'aparecer', maximo: 10 },
     ])
@@ -184,6 +194,23 @@ describe('verbos do palco', () => {
     expect(agir('tocar prévia', jogos, pagina({ previa: () => null })).map((p) => p.fazer)).toEqual(
       ['esperar', 'continuar'],
     )
+  })
+
+  test('a área que cresceu por cima da vizinha do lado é organizada depois do gesto', async () => {
+    // Pedido da Helena, 22/11/2026: o bloco encaixado alarga a área por cima da vizinha da direita;
+    // aí a página organiza os blocos, como o botão direito e Organizar blocos.
+    let arrumou = 0
+    const larga = pagina({ cobreDoLado: () => arrumou === 0, organizar: async () => ++arrumou > 0 })
+    await agirNaPagina('afastar de "Alterar variável aviso" clicando', jogos, larga)
+    expect(arrumou).toBe(1)
+    // Sem área por cima da outra, nada é organizado.
+    let mexeu = 0
+    await agirNaPagina(
+      'afastar de "Criar variável"',
+      jogos,
+      pagina({ organizar: async () => ++mexeu > 0 }),
+    )
+    expect(mexeu).toBe(0)
   })
 
   test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', async () => {
@@ -895,6 +922,17 @@ describe('arrumação de quando o Estúdio abre', () => {
     expect(sobrepostas(juntas)).toBe(true)
     expect(sobrepostas(separadas)).toBe(false)
     expect(sobrepostas([caixa(0, 0), caixa(100, 0)])).toBe(false)
+  })
+
+  test('acha a área que cresceu para o lado por cima da vizinha da direita', () => {
+    // Quando acontecer (400 de largura) alargou e entrou 60 na vizinha que começa em 340.
+    expect(cobreDoLado([caixa(0, 100, 400, 300), caixa(340, 80, 300, 400)])).toBe(true)
+    // Só encostar a borda não conta.
+    expect(cobreDoLado([caixa(0, 100, 345, 300), caixa(340, 80, 300, 400)])).toBe(false)
+    // A de baixo na mesma coluna é do desembolar, não da organização.
+    expect(cobreDoLado([caixa(0, 0, 400, 300), caixa(10, 280, 400, 200)])).toBe(false)
+    // Lado a lado com espaço entre elas.
+    expect(cobreDoLado([caixa(0, 0, 300, 300), caixa(340, 0, 300, 300)])).toBe(false)
   })
 
   test('organiza uma vez quando os blocos pararam de chegar, e a página fica ocupada até lá', async () => {

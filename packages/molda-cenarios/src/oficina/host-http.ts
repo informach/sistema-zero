@@ -321,6 +321,10 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       const lista = await pedir<Array<Omit<Espaco, 'nome'>>>('GET', 'espacos')
       return lista.map((e) => ({ ...e, nome: NOMES_DOS_ESPACOS[e.tipo] }))
     },
+    async recursos() {
+      const acesso = await pedir<{ aberto?: unknown; regioes?: unknown }>('GET', 'acesso')
+      return { regioes: acesso.aberto === true && acesso.regioes === true }
+    },
 
     async listarBibliotecas(espacoId) {
       const lista = await pedir<BibliotecaDoServidor[]>('GET', `espacos/${espacoId}/bibliotecas`)

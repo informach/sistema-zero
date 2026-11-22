@@ -8,7 +8,8 @@
  * recebe painéis de fora: `panel(canto, chave, ordem)`), pontos, vida com corações e
  * invencibilidade, contagem regressiva, "depois de N s", sorteio, telas de início/fim/vitória,
  * fim de jogo, recomeçar (adiado para fora do quadro), tremer a câmera, piscar um objeto e os
- * "Quando…" de vida, contagem, tecla, clique e encostar (na ENTRADA do contato).
+ * "Quando…" de vida, contagem, tecla, clique, encostar (na ENTRADA do contato) e entrar na região
+ * do cenário (na ENTRADA, inclusive começando dentro; lote 6 da conclusão, 22/11/2026).
  *
  * O HOST fornece (todos opcionais, menos `pause`/`resume`/`restart`):
  * - `canvas()`        → o canvas do jogo (o HUD se alinha a ele; canvas `position:fixed` = tela cheia);
@@ -28,6 +29,39 @@
  * crase e sem cifrão-chave.
  */
 export const GAME_RULES_3D_MARKER = '/*__SZ_GAME_RULES_3D_RUNTIME__*/'
+
+/**
+ * "Quando entrar na região" (lote 6 da conclusão, 22/11/2026): uma vez por entrada, inclusive
+ * começando dentro (a região de antes nasce indefinida, e um `undefined` do motor antes de saber
+ * a região é igual a ela: não dispara). O motor define, no fragmento do cenário,
+ * `sceneRegion(obj, anterior, nome)`: a região de agora pelo cenário (`null` fora de todas, sem o
+ * objeto ou sem o cenário ainda), que também avisa uma vez o nome que o cenário não tem. Só entra
+ * no runtime com o cenário do Molda; sem ele, nomes vazios (`withGameRules3DRuntime(fonte, false)`).
+ */
+const GAME_RULES_REGIONS_MARKER = '/*__SZ_GAME_RULES_REGIONS__*/'
+const GAME_RULES_REGIONS_SOURCE = `
+    function onEnterRegion(obj, name, fn) {
+      if (typeof fn !== 'function') return;
+      (handlers.region || (handlers.region = [])).push({ obj: obj, name: str(name), fn: fn });
+      if (host.wake) host.wake();
+    }
+    function stepRegions() {
+      var list = (handlers.region || []).slice();
+      for (var i = 0; i < list.length && running(); i++) {
+        var h = list[i], now = sceneRegion(h.obj, h.at || null, h.name);
+        if (now === h.at) continue;
+        h.at = now;
+        if (now === h.name) call(h.fn, undefined, 'quando entrar na região');
+      }
+    }
+    // O recomeço leve guarda os "Quando…": a entrada na região volta a contar do começo.
+    function resetRegions() { (handlers.region || []).forEach(function (h) { delete h.at; }); }
+`
+const GAME_RULES_REGIONS_ABSENT = `
+    function onEnterRegion() {}
+    function stepRegions() {}
+    function resetRegions() {}
+`
 
 const GAME_RULES_3D_SOURCE = `
   // ==== Regras de jogo 3D (fragmento compartilhado, game3dRules/runtime.ts) ====
@@ -355,6 +389,7 @@ const GAME_RULES_3D_SOURCE = `
       handlers.touch.push({ obj: obj, group: group, fn: fn, inside: [] });
       if (host.wake) host.wake();
     }
+    /*__SZ_GAME_RULES_REGIONS__*/
     function key(code) {
       if (!running()) return;
       var list = handlers.key.slice();
@@ -442,6 +477,7 @@ const GAME_RULES_3D_SOURCE = `
         for (var q = 0; due && q < due.length && running(); q++) call(due[q].fn, undefined, 'depois de N segundos');
       }
       if (running()) stepTouches();
+      stepRegions();
     }
 
     // ---- Telas de início, fim e vitória ----
@@ -534,6 +570,7 @@ const GAME_RULES_3D_SOURCE = `
         handlers = { life: [], timer: [], key: [], click: [], scene: [], touch: [] };
         screens = {};
       }
+      resetRegions();
       ended = false; waiting = false; restartPending = false;
       shakeT = 0; ox = oy = oz = 0;
     }
@@ -553,6 +590,7 @@ const GAME_RULES_3D_SOURCE = `
       afterSeconds: afterSeconds, randomBetween: randomBetween, randomChance: randomChance,
       blink: blink, cameraShake: cameraShake,
       onKey: onKey, onClickObject: onClickObject, onCanvasClick: onCanvasClick, onTouchGroup: onTouchGroup,
+      onEnterRegion: onEnterRegion,
       setScreenText: setScreenText, endGame: endGame, restart: restart,
       step: step, beforeFrame: beforeFrame, afterFrame: afterFrame, key: key, click: click,
       running: running, reset: reset, dispose: dispose
@@ -562,10 +600,18 @@ const GAME_RULES_3D_SOURCE = `
 
 // O fragmento entra em mais de um runtime: a indentação e os comentários de linha saem do
 // payload (nenhuma string do literal tem várias linhas, então nada de texto muda).
-const GAME_RULES_3D_SOURCE_COMPACT = GAME_RULES_3D_SOURCE.split('\n')
-  .map((line) => line.trimStart())
-  .filter((line) => line !== '' && !line.startsWith('//'))
-  .join('\n')
+const compactRules = (source: string) =>
+  source
+    .split('\n')
+    .map((line) => line.trimStart())
+    .filter((line) => line !== '' && !line.startsWith('//'))
+    .join('\n')
+const GAME_RULES_3D_SOURCE_COMPACT = compactRules(
+  GAME_RULES_3D_SOURCE.replace(GAME_RULES_REGIONS_MARKER, () => GAME_RULES_REGIONS_SOURCE),
+)
+const GAME_RULES_3D_SOURCE_COMPACT_WITHOUT_REGIONS = compactRules(
+  GAME_RULES_3D_SOURCE.replace(GAME_RULES_REGIONS_MARKER, () => GAME_RULES_REGIONS_ABSENT),
+)
 
 /** Fragmento cru (os testes do módulo o avaliam isolado). */
 export const gameRules3DRuntimeSource = GAME_RULES_3D_SOURCE_COMPACT
@@ -596,9 +642,10 @@ export const GAME_RULES_PUBLIC_METHODS = [
   'onClickObject',
   'onCanvasClick',
   'onTouchGroup',
+  'onEnterRegion',
 ] as const
 
-export function withGameRules3DRuntime(source: string): string {
+export function withGameRules3DRuntime(source: string, regions = true): string {
   const firstMarker = source.indexOf(GAME_RULES_3D_MARKER)
   if (firstMarker === -1) {
     throw new Error('Runtime 3D sem o marcador das regras de jogo')
@@ -606,5 +653,7 @@ export function withGameRules3DRuntime(source: string): string {
   if (source.indexOf(GAME_RULES_3D_MARKER, firstMarker + 1) !== -1) {
     throw new Error('Runtime 3D com marcador das regras de jogo duplicado')
   }
-  return source.replace(GAME_RULES_3D_MARKER, () => GAME_RULES_3D_SOURCE_COMPACT)
+  return source.replace(GAME_RULES_3D_MARKER, () =>
+    regions ? GAME_RULES_3D_SOURCE_COMPACT : GAME_RULES_3D_SOURCE_COMPACT_WITHOUT_REGIONS,
+  )
 }

@@ -442,6 +442,42 @@ export const FERRAMENTAS = [
       ),
   }),
   ferramenta({
+    name: 'desenhar_regiao',
+    description:
+      'Desenha uma região do cenário: um retângulo no chão (x0, z0) a (x1, z1) com nome (Vila, Floresta, Caverna). No Estúdio, o jogo carrega a região onde o personagem está e as vizinhas, e o bloco "Quando entrar na região" usa o nome. Pelo nome: se a região já existe, redesenha a mesma. `vizinhas` são nomes de regiões que já existem (até 8); as vizinhas ficam sempre em par. Regiões não podem se sobrepor, mas podem encostar pela borda.',
+    schema: z
+      .object({
+        ...lote,
+        nome: z.string().trim().min(1).max(60),
+        x0: z.number().finite(),
+        z0: z.number().finite(),
+        x1: z.number().finite(),
+        z1: z.number().finite(),
+        vizinhas: z.array(z.string().trim().min(1).max(60)).max(8).optional(),
+      })
+      .strict(),
+    executar: (c, a) =>
+      c.intencoes.desenharRegiao(
+        a.cenarioId,
+        {
+          nome: a.nome,
+          x0: a.x0,
+          z0: a.z0,
+          x1: a.x1,
+          z1: a.z1,
+          ...(a.vizinhas ? { vizinhas: a.vizinhas } : {}),
+        },
+        opcoesDoLote(a),
+      ),
+  }),
+  ferramenta({
+    name: 'apagar_regiao',
+    description:
+      'Apaga uma região do cenário pelo nome (ou pelo id). As outras regiões que a tinham como vizinha deixam de ter.',
+    schema: z.object({ ...lote, regiao: z.string().trim().min(1).max(200) }).strict(),
+    executar: (c, a) => c.intencoes.apagarRegiao(a.cenarioId, a.regiao, opcoesDoLote(a)),
+  }),
+  ferramenta({
     name: 'desfazer',
     description: 'Desfaz o último passo do cenário (o mesmo botão da oficina).',
     schema: z.object(lote).strict(),
@@ -461,6 +497,13 @@ export const FERRAMENTAS = [
       'Em cada ponto: se há chão, a altura do relevo e a água que cobre (nível e profundidade).',
     schema: z.object({ cenarioId: id, pontos: z.array(ponto).min(1).max(2000) }).strict(),
     executar: (c, a) => c.intencoes.consultarPontos(a.cenarioId, a.pontos),
+  }),
+  ferramenta({
+    name: 'listar_regioes',
+    description:
+      'As regiões do cenário (as de carregar o jogo por partes e do bloco "Quando entrar na região"): nome, retângulo no chão e vizinhas. Não confunda com `consultar_regiao`, que lista o que existe num retângulo.',
+    schema: z.object({ cenarioId: id }).strict(),
+    executar: (c, a) => c.intencoes.listarRegioes(a.cenarioId),
   }),
   ferramenta({
     name: 'consultar_regiao',

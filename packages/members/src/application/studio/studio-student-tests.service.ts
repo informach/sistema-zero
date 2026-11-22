@@ -74,7 +74,10 @@ export class StudioStudentTestsService {
       })
       return { results: output.results }
     } catch (error) {
-      // A recusa do executor é do projeto (não compila, grande demais): a criança lê o motivo.
+      // A recusa do executor é do projeto (grande demais, forma que ele não aceita): a criança lê o
+      // motivo. O projeto que NÃO COMPILA não é recusa: o executor responde 200 com nada passando
+      // ("O projeto não compilou: …"), e o Estúdio mostra a mesma frase do erro do jogo que o
+      // JavaScript clássico e o Python mostram (`studentTestsText.ts`, lote 3 da conclusão).
       if (error instanceof ProjectCheckRejectedError) throw new ValidationError(error.reason)
       throw error
     }

@@ -41,6 +41,8 @@ const MAX_VALUE_CHARS = 20_000
 const MAX_TEXT_CHARS = 50_000
 /** Quanto o piloto espera os modelos 3D ficarem prontos antes de começar. */
 const MODELS_WAIT_MS = 10_000
+/** Quanto o piloto espera o "carregando" do Jogo 2D Avançado sair (o mesmo do servidor). */
+const MENU_WAIT_MS = 10_000
 
 export interface StudentTestDriverOptions {
   parentOrigin: string
@@ -70,6 +72,21 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
   return `(function () {
   var host = window.parent;
   if (!host || host === window) return;
+  // O palco escondido nunca pega o foco da página (lote 3 da conclusão, 22/11/2026): no Firefox e
+  // no WebKit o menu do Jogo 2D Avançado (que foca o botão "Jogar") puxava o foco para dentro do
+  // teste, e no Chromium, sem a permissão de focar sem gesto, o navegador registrava uma violação a
+  // cada tentativa. O foco de verdade não se move; o piloto guarda o elemento que o jogo quis focar
+  // e entrega a ele as teclas do teste, como o foco faria (o jogo que ouve a tecla no próprio
+  // canvas continua recebendo).
+  var intended = null;
+  try {
+    HTMLElement.prototype.focus = function () { intended = this; };
+    var blur = HTMLElement.prototype.blur;
+    HTMLElement.prototype.blur = function () {
+      if (intended === this) intended = null;
+      return blur.apply(this, arguments);
+    };
+  } catch (focusError) {}
   var origin = ${JSON.stringify(options.parentOrigin)};
   var token = ${JSON.stringify(options.token)};
   var scope = ${JSON.stringify(options.scope)};
@@ -125,7 +142,7 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
     return { found: true, value: codec.encode(current, ${MAX_VALUE_CHARS}) };
   }
   function key(type, event) {
-    var target = document.activeElement || document.body || document.documentElement;
+    var target = (intended && intended.isConnected ? intended : null) || document.activeElement || document.body || document.documentElement;
     target.dispatchEvent(new KeyboardEvent(type, { key: event.key, code: event.code, bubbles: true, cancelable: true }));
   }
   ${clickFunctions}
@@ -176,10 +193,30 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
     var until = Date.now() + ${MODELS_WAIT_MS};
     while (Date.now() < until && Number(window.__szModelosPendentes) > 0) await wait(100);
   }
+  async function startFromMenu() {
+    // O Jogo 2D Avançado abre sempre no menu dele, e a partida só começa pelo botão (o Enter
+    // sintético não aperta o botão focado). O teste espera o "carregando" do motor sair (imagens
+    // e sons) e aperta o "Jogar" DE FÁBRICA do menu, como a criança faria; o executor do servidor
+    // faz o mesmo (\`check-objectives.mjs\`, \`startGame\`). Menu que a criança trocou (sem o
+    // "Jogar") e as outras telas (fim, vitória, pausa) ficam como estão: apertar outro botão seria
+    // adivinhar.
+    var until = Date.now() + ${MENU_WAIT_MS};
+    while (Date.now() < until && document.querySelector('[data-szgk-screen="carregando"].szgk-active')) await wait(100);
+    var menu = document.querySelector('[data-szgk-screen="menu"].szgk-active');
+    if (!menu) return;
+    var buttons = menu.querySelectorAll('button'), play = null;
+    for (var i = 0; i < buttons.length && !play; i++)
+      if (String(buttons[i].textContent || '').trim() === 'Jogar') play = buttons[i];
+    if (!play) return;
+    play.click();
+    await frame();
+    await frame();
+  }
   async function run() {
     await frame();
     await frame();
     await models();
+    await startFromMenu();
     await wait(${SETTLE_MS});
     var initial = read(plan.target);
     for (var i = 0; i < plan.steps.length; i++) {

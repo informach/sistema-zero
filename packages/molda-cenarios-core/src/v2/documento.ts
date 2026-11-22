@@ -22,6 +22,7 @@ import {
 } from './entidades-schema'
 import { FormaDeCenarioSchema } from './formas'
 import { IluminacaoSchema } from './iluminacao'
+import { RegioesSchema } from './regioes-schema'
 import { BaseDeTerrenoSchema } from './terreno'
 
 export * from './entidades-schema'
@@ -88,6 +89,8 @@ export const DocumentoDeCenarioSchema = z
     aguas: z.array(AguaSchema).max(256),
     marcadores: z.array(MarcadorSchema).max(4096),
     iluminacao: IluminacaoSchema,
+    /** As regiões do cenário (22/11/2026): opcional, ver `regioes.ts`. */
+    regioes: RegioesSchema.optional(),
   })
   .strict()
 

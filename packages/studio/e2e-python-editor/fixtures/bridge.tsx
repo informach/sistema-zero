@@ -223,9 +223,13 @@ export function createBridgeProbe(root: Root) {
       return {
         source: project.files['main.py'],
         pending: readPythonWorkspaceDraft(project)?.pending ?? false,
+        // As peças de rascunho (as áreas vazias também ficam no rascunho, mas não são peças).
         scratchIds:
-          scratch?.blocks?.blocks?.map((block: Blockly.serialization.blocks.State) => block.id) ??
-          [],
+          scratch?.blocks?.blocks
+            ?.filter(
+              (block: Blockly.serialization.blocks.State) => !block.type.startsWith('sz_py_area_'),
+            )
+            .map((block: Blockly.serialization.blocks.State) => block.id) ?? [],
         logs: stores.logs.getState().entries,
       }
     },

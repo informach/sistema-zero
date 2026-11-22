@@ -1,5 +1,10 @@
 # Como o Pro escolhe onde o jogo roda (20/11/2026)
 
+> Corrigido em 22/11/2026 (lote 4 da conclusão): a tabela dizia que o Estúdio livre do Kids e da
+> comunidade usava a execução leve. Ele não entrega o compilador do servidor ao editor Pro, então
+> o Pro em JavaScript dele roda no WebContainer (a execução completa). A leve e a hospedada são das
+> aulas, do Admin, da oficina ao vivo e do desafio do Arquipélago.
+
 Etapa 3 do plano (Pro em escala), critério "a escolha de execução (leve, completa, hospedada) é
 pela capacidade real e está documentada". Vale para o Pro em JavaScript; o Python tem o caminho
 próprio do worker protegido (`runtime/python/`) e não passa por aqui.
@@ -8,9 +13,9 @@ próprio do worker protegido (`runtime/python/`) e não passa por aqui.
 
 | Execução | Quem usa | O que faz | Custo |
 | --- | --- | --- | --- |
-| **Leve** | Todo host que entrega o compilador do servidor (Estúdio livre do Kids e da comunidade, aulas, Admin, oficina ao vivo, desafio do Arquipélago), quando o projeto cabe nela | Monta o projeto no próprio navegador: tira os tipos com o Sucrase e roda os módulos como ES modules nativos, ligados por um mapa de importação (`modes/pro/lightProBuild.ts`) | Sem ida ao servidor; o montador (parser e Sucrase) baixa só no primeiro Rodar |
+| **Leve** | Todo host que entrega o compilador do servidor (aulas, Admin, oficina ao vivo, desafio do Arquipélago), quando o projeto cabe nela | Monta o projeto no próprio navegador: tira os tipos com o Sucrase e roda os módulos como ES modules nativos, ligados por um mapa de importação (`modes/pro/lightProBuild.ts`) | Sem ida ao servidor; o montador (parser e Sucrase) baixa só no primeiro Rodar |
 | **Hospedada** | Os mesmos hosts, quando o projeto não cabe na leve | O servidor roda o Vite de verdade no contêiner do `studio-runtime` e devolve o documento ou o artefato | Ida e volta ao servidor e o contêiner |
-| **Completa** | Host que NÃO entrega o compilador do servidor (hoje só o playground de desenvolvimento) | WebContainer no navegador: `npm install`, `npm run dev`, terminal e HMR | Exige COOP/COEP na página; instalar as dependências leva o tempo da rede |
+| **Completa** | Host que NÃO entrega o compilador do servidor: o Estúdio livre do Kids e da comunidade (`studio-pro-client.tsx` monta o `StudioProEditor` sem `proRuntime`) e o playground de desenvolvimento | WebContainer no navegador: `npm install`, `npm run dev`, terminal e HMR | Exige COOP/COEP na página; instalar as dependências leva o tempo da rede |
 
 A escolha mora em dois lugares, e cada um decide pelo que é capaz:
 

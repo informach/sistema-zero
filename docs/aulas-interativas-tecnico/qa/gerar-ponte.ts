@@ -12,6 +12,8 @@ import { isStudioAuthoringProject } from '../../../packages/core/src/studio/auth
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
+import { organizarManifestos } from './organizar-projetos'
 import { ponteAjuda, ponteAulas, ponteExperiencia } from './ponte-conteudo'
 import { ponteChecks } from './ponte-criterios'
 import { montarProjetoPonte, PONTE_CURSO, PONTE_ETAPAS, type PonteEtapa } from './ponte-projeto'
@@ -218,7 +220,7 @@ for (const [index, aula] of ponteAulas.entries()) {
         title: 'Passo a passo do projeto: A ponte apressada',
         bookPreview: true,
         items: [
-          { id: 'passos', kind: 'text', markdown: help },
+          ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
           {
             id: 'como-estudio',
             kind: 'link',
@@ -296,3 +298,5 @@ write(
 console.log(
   'Ponte: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([dir])

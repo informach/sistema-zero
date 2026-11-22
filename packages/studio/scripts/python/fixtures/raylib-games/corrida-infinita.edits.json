@@ -1,0 +1,34 @@
+[
+  {
+    "label": "gravidade",
+    "path": {
+      "body": 5,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "16",
+    "after": "12"
+  },
+  {
+    "label": "pulo",
+    "path": {
+      "body": 6,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "8",
+    "after": "9"
+  }
+]

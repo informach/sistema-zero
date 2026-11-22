@@ -96,6 +96,7 @@ export function toMemberSummaryView(m: MemberSummary): MemberSummaryView {
  * ref não resolve mais um curso (linha degradada, visível de propósito).
  */
 export interface MemberCourseProgressView {
+  learner: import('@sistemazero/core/course/learner').CourseLearner | null
   courseRef: string
   courseId: string | null
   title: string | null

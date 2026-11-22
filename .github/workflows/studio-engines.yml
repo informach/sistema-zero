@@ -1,10 +1,12 @@
-name: Studio engines (GPU cycles and off-screen drawing)
+name: Studio engines (GPU cycles, off-screen drawing and devtools cost)
 
 # Lote 4 da evolução do Estúdio (seção 8 da missão, 21/11/2026): as medidas dos motores fora da
 # suíte que barra o merge (esperas fixas sobre a GPU emulada). A GPU dos motores 3D em 10
 # recomeços no mesmo documento (`engine-gpu-cycles.spec.ts`, com critério que reprova vazamento e
 # recomeço que não recria nada) e o custo de desenhar sprites fora do palco no Jogo 2D
-# (`engine-2d-offscreen.spec.ts`). A evidência vai nos artefatos com o SHA.
+# (`engine-2d-offscreen.spec.ts`). Desde o lote 3 da conclusão (22/11/2026), também o custo das
+# abas Desempenho e Investigar no processo do jogo (`devtools-cost.spec.ts`, meta da proposta:
+# abaixo de 5% do quadro). A evidência vai nos artefatos com o SHA.
 on:
   push:
     branches: ['staging']
@@ -13,6 +15,13 @@ on:
       - 'packages/studio/playwright.engines.config.ts'
       - 'packages/studio/e2e/engine-gpu-cycles.spec.ts'
       - 'packages/studio/e2e/engine-2d-offscreen.spec.ts'
+      - 'packages/studio/e2e/devtools-cost.spec.ts'
+      - 'packages/studio/src/preview/devtoolsBridge.ts'
+      - 'packages/studio/src/check/instrumentCheckScript.ts'
+      - 'packages/studio/src/components/devtools/**'
+      - 'packages/studio/src/official-extensions/game-2d-advanced/**'
+      - 'packages/studio/src/official-extensions/three3dInvestigation.ts'
+      - 'packages/core/src/studio/pro-runtime-bridge.ts'
       - 'packages/studio/src/official-extensions/game-2d/runtime/**'
       - 'packages/studio/src/official-extensions/game-3d/**'
       - 'packages/studio/src/official-extensions/world-3d/**'
@@ -31,7 +40,7 @@ concurrency:
 jobs:
   engines:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 70
     defaults:
       run:
         shell: bash
@@ -50,8 +59,8 @@ jobs:
       - working-directory: .
         run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
-      - name: GPU in 10 restarts and off-screen sprites
-        timeout-minutes: 30
+      - name: GPU in 10 restarts, off-screen sprites and devtools cost
+        timeout-minutes: 60
         run: bunx playwright test --config playwright.engines.config.ts
       - uses: actions/upload-artifact@v4
         if: always()
@@ -62,4 +71,5 @@ jobs:
           path: |
             packages/studio/.cache/mission/engine-gpu-cycles.json
             packages/studio/.cache/mission/engine-2d-offscreen.json
+            packages/studio/.cache/mission/devtools-cost.json
             packages/studio/.cache/engines-results

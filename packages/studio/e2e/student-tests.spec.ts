@@ -2,6 +2,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
 import { requireCleanRuntimeBrowser, requireRetainedHostFocus } from './helpers/cleanBrowser'
+import { instalarJogo2D } from './helpers/hostilePrograms'
 import { replaceBridgeScript } from './helpers/previewShell'
 
 requireCleanRuntimeBrowser()
@@ -29,6 +30,11 @@ async function createProject(page: Page): Promise<void> {
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
+  // A URL troca antes de o editor montar ("Carregando projeto…"): no WebKit os cartões da lista
+  // ainda estavam na página, e o "Ponte" da colagem achava os cartões com "Ponte" no nome.
+  await expect(page.getByRole('button', { name: 'Ponte', exact: true })).toBeVisible({
+    timeout: 30_000,
+  })
 }
 
 async function newTest(page: Page, name: string, value: string): Promise<void> {
@@ -114,3 +120,153 @@ test('Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mun
   await expect(card).toHaveAttribute('data-sz-test-status', 'passed', { timeout: 60_000 })
   await expect(card).toContainText('Passou: achados foi de 0 para 1.')
 })
+
+/**
+ * Os casos dos testes do aluno (lote 3 da conclusão, 22/11/2026): chave, porta, vida, placar e
+ * fim num jogo pequeno de cada motor 2D, escrito na Ponte (o código que não compila e o jogo que
+ * trava moram em `student-tests-hostile.spec.ts`: eles deixam erro no navegador de propósito). Os
+ * jogos são curtos de propósito (a caixa acessível do Monaco no WebKit, ver `GAME`): o herói anda
+ * para a direita com a seta, pega a chave em x 100, abre a porta em x 220, Espaço marca ponto e,
+ * parado no começo, ele perde uma vida por segundo até o fim. O Jogo 2D Avançado abre sempre no
+ * menu dele: o piloto aperta o "Jogar" antes de ler o começo (sem isso, todo teste dele ficava
+ * parado no menu, achado deste lote).
+ */
+const CASE_GAMES = [
+  {
+    engine: 'Jogo 2D',
+    code: [
+      "SZGame2D.setupStage(400, 200, '#dff6ff'); let x = 0; let temChave = false; let portaAberta = false; let vidas = 3; let pontos = 0; let fim = false;",
+      "SZGame2D.onKey('Space', function () { if (!fim) pontos = pontos + 1; });",
+      "SZGame2D.gameLoop(function () { if (!fim && SZGame2D.keyDown('ArrowRight')) x = x + 4; if (x > 100) temChave = true; if (temChave && x > 220) portaAberta = true; if (!fim && x === 0 && SZGame2D.everySeconds('perigo', 1)) { vidas = vidas - 1; if (vidas === 0) fim = true; } SZGame2D.clear(); });",
+    ].join('\n'),
+  },
+  {
+    engine: 'Jogo 2D Avançado',
+    code: [
+      'SZGameKit.setup({ width: 400, height: 200 }); let x = 0; let temChave = false;',
+      'let portaAberta = false; let vidas = 3; let pontos = 0; let fim = false;',
+      'let perigo = 0; SZGameKit.onUpdate(function (dt) { if (fim) return;',
+      "if (SZGameKit.keyDown('ArrowRight')) x += 240 * dt; if (x > 100) temChave = true;",
+      "if (SZGameKit.keyPressed('Space')) pontos++; if (temChave && x > 220) portaAberta = true;",
+      'if (x === 0 && (perigo += dt) >= 1) { perigo = 0; vidas--; fim = vidas === 0; } });',
+      'SZGameKit.start();',
+    ].join('\n'),
+  },
+] as const
+
+/** O botão que acrescenta um passo ao teste (`tests.form.more`). */
+const MORE_STEPS = '+ Mais um passo'
+
+interface CaseStep {
+  kind: 'press' | 'hold' | 'wait'
+  key?: string
+  seconds?: string
+}
+
+interface CaseTest {
+  name: string
+  steps: readonly CaseStep[]
+  variable: string
+  compare: string
+  value?: string
+  status: 'passed' | 'failed'
+  text?: string
+}
+
+async function newCase(page: Page, item: CaseTest): Promise<void> {
+  await page.getByRole('button', { name: '+ Novo teste' }).click()
+  const form = page.getByRole('form', { name: 'Novo teste' })
+  await form.getByLabel('Nome do teste').fill(item.name)
+  for (const [index, step] of item.steps.entries()) {
+    const n = index + 1
+    if (index > 0) await form.getByRole('button', { name: MORE_STEPS, exact: true }).click()
+    await form.getByLabel(`Passo ${n}`, { exact: true }).selectOption(step.kind)
+    if (step.key) await form.getByLabel(`Tecla do passo ${n}`).selectOption(step.key)
+    if (step.seconds) await form.getByLabel(`Segundos do passo ${n}`).fill(step.seconds)
+  }
+  await form.getByLabel('Qual variável').selectOption(item.variable)
+  await form.getByLabel('Como comparar').selectOption(item.compare)
+  if (item.value !== undefined) await form.getByLabel('Valor para comparar').fill(item.value)
+  await form.getByRole('button', { name: 'Salvar teste' }).click()
+  await expect(form).toBeHidden()
+}
+
+const CASES: readonly CaseTest[] = [
+  {
+    name: 'A seta leva até a chave',
+    steps: [{ kind: 'hold', key: 'ArrowRight', seconds: '1' }],
+    variable: 'temChave',
+    compare: 'equals',
+    value: 'verdadeiro',
+    status: 'passed',
+  },
+  {
+    name: 'Com a chave a porta abre',
+    steps: [{ kind: 'hold', key: 'ArrowRight', seconds: '1.5' }],
+    variable: 'portaAberta',
+    compare: 'equals',
+    value: 'verdadeiro',
+    status: 'passed',
+  },
+  {
+    name: 'Espaço abre a porta',
+    steps: [{ kind: 'press', key: 'Space' }],
+    variable: 'portaAberta',
+    compare: 'equals',
+    value: 'verdadeiro',
+    status: 'failed',
+    text: 'Não passou: portaAberta terminou em falso.',
+  },
+  {
+    name: 'Parado no começo perde vida',
+    steps: [{ kind: 'wait', seconds: '1.5' }],
+    variable: 'vidas',
+    compare: 'decreased',
+    status: 'passed',
+  },
+  {
+    name: 'Espaço marca ponto',
+    steps: [{ kind: 'press', key: 'Space' }],
+    variable: 'pontos',
+    compare: 'increased',
+    status: 'passed',
+  },
+  {
+    name: 'Sem vidas o jogo acaba',
+    steps: [{ kind: 'wait', seconds: '4.5' }],
+    variable: 'fim',
+    compare: 'equals',
+    value: 'verdadeiro',
+    status: 'passed',
+  },
+]
+
+for (const game of CASE_GAMES)
+  test(`Meus testes no ${game.engine}: chave, porta, vida, placar e fim`, async ({
+    page,
+    browserName,
+  }) => {
+    // O ajudante da colagem confere o programa inteiro pela caixa acessível do Monaco, e no WebKit
+    // ela guarda só um trecho variável perto do cursor (as seis últimas de dez linhas, as duas
+    // últimas de sete, o fim de uma linha comprida): o jogo do Avançado nunca cabe inteiro. O
+    // executor é o mesmo nos três navegadores; o Jogo 2D cobre o WebKit, e o "Jogar" do menu do
+    // Avançado tem teste próprio no piloto (`studentTests/driver.test.ts`).
+    test.skip(
+      browserName === 'webkit' && game.engine === 'Jogo 2D Avançado',
+      'A colagem do WebKit não confere um programa deste tamanho.',
+    )
+    test.setTimeout(180_000)
+    await createProject(page)
+    await instalarJogo2D(page, game.engine)
+    await replaceBridgeScript(page, game.code)
+    await page.getByRole('tab', { name: 'Meus testes' }).click()
+    for (const item of CASES) await newCase(page, item)
+    await page.getByRole('button', { name: 'Rodar os testes' }).click()
+    const status = page.locator('[data-sz-devtools="tests"] [role="status"]')
+    await expect(status).toContainText('5 de 6 testes passaram.', { timeout: 120_000 })
+    const cards = page.locator('[data-sz-devtools="tests"] article')
+    for (const [index, item] of CASES.entries()) {
+      await expect(cards.nth(index), item.name).toHaveAttribute('data-sz-test-status', item.status)
+      if (item.text) await expect(cards.nth(index)).toContainText(item.text)
+    }
+  })

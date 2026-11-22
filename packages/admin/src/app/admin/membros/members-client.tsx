@@ -34,7 +34,7 @@ const STATUS_LABELS: Record<string, string> = {
   pending: 'Com acesso aguardando',
 }
 
-export function MembersClient() {
+export function MembersClient({ parents = false }: { parents?: boolean }) {
   const router = useRouter()
   const [items, setItems] = useState<MemberRow[]>([])
   const [total, setTotal] = useState(0)
@@ -48,6 +48,7 @@ export function MembersClient() {
     setLoading(true)
     try {
       const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
+      if (parents) params.set('learner', 'parents')
       if (status) params.set('status', status)
       if (courseRef.trim()) params.set('courseRef', courseRef.trim())
       const page = await apiGet<Paginated<MemberRow>>(`/api/members?${params}`)
@@ -60,7 +61,7 @@ export function MembersClient() {
     } finally {
       setLoading(false)
     }
-  }, [offset, status, courseRef])
+  }, [offset, status, courseRef, parents])
 
   // Debounce do filtro de curso + recarga ao mudar filtros/página.
   useEffect(() => {
@@ -69,14 +70,20 @@ export function MembersClient() {
   }, [load])
 
   function open(userId: string) {
-    router.push(`/admin/membros/${userId}`)
+    router.push(
+      `/admin/membros/${userId}${parents ? `?learner=${encodeURIComponent(userId)}` : ''}`,
+    )
   }
 
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Alunos"
-        description="Os alunos com acesso a algum curso. Abra a ficha para ver, liberar ou tirar um acesso."
+        title={parents ? 'Pais como alunos' : 'Alunos'}
+        description={
+          parents
+            ? 'Responsáveis com acesso aos cursos para pais, inclusive os recebidos de presente. Abra a ficha para acompanhar o progresso da conta.'
+            : 'Os alunos com acesso a algum curso. Abra a ficha para ver, liberar ou tirar um acesso.'
+        }
       />
       <AlunosTabs />
 
@@ -114,9 +121,9 @@ export function MembersClient() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Aluno</TableHead>
-              <TableHead>Acessos</TableHead>
-              <TableHead>Cursos</TableHead>
+              <TableHead>{parents ? 'Responsável' : 'Aluno'}</TableHead>
+              <TableHead>{parents ? 'Acessos da família' : 'Acessos'}</TableHead>
+              <TableHead>{parents ? 'Cursos da família' : 'Cursos'}</TableHead>
               <TableHead>Último acesso liberado</TableHead>
               <TableHead className="text-right">
                 <span className="sr-only">Abrir a ficha</span>

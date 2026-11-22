@@ -338,3 +338,55 @@ test('recomeçar durante o preparo aborta a partida antiga sem instalar sua carg
     instalador.descartar()
   }
 })
+
+test('"Quando o heroi entrar na região" conta cada entrada uma vez, inclusive começando dentro', async () => {
+  const origem = { x: 100, z: 200 }
+  const { api, plano, instalador, mundo } = await preparar({ origem, comRegioes: true }),
+    heroi: Mesh = call(api, 'createBox', mundo)
+  try {
+    call(api, 'setPosition', heroi, origem.x + 10, 3, origem.z + 10)
+    expect(await call(api, 'loadScene', mundo, plano.assetId)).toBe(true)
+    const entradas: string[] = []
+    call(api, 'onEnterRegion', heroi, 'Vila', () => entradas.push('Vila'))
+    call(api, 'onEnterRegion', heroi, 'Floresta', () => entradas.push('Floresta'))
+    let tempo = 0
+    const step = (quadros: number) => {
+      for (let i = 0; i < quadros; i++) {
+        tempo += 1000 / 60
+        mundo.renderer._loop?.(tempo)
+      }
+    }
+    step(3)
+    expect(entradas).toEqual(['Vila'])
+    call(api, 'setPosition', heroi, origem.x + 40, 3, origem.z + 10)
+    step(3)
+    call(api, 'setPosition', heroi, origem.x + 50, 3, origem.z + 20)
+    step(3)
+    expect(entradas).toEqual(['Vila', 'Floresta'])
+    call(api, 'setPosition', heroi, origem.x + 10, 3, origem.z + 10)
+    step(3)
+    expect(entradas).toEqual(['Vila', 'Floresta', 'Vila'])
+  } finally {
+    call(api, 'disposeAll')
+    instalador.descartar()
+  }
+})
+
+test('com a câmera parada, a carga por regiões segue quem começou no cenário (revisão do lote 6)', async () => {
+  const { api, plano, carregados, instalador, mundo } = await preparar({ comRegioes: true }),
+    heroi: Mesh = call(api, 'createBox', mundo)
+  try {
+    call(api, 'setCameraPosition', mundo, -20, 10, 0)
+    const carga = call(api, 'loadScene', mundo, plano.assetId)
+    call(api, 'sceneStart', heroi)
+    expect(await carga).toBe(true)
+    call(api, 'setPosition', heroi, 20, 3, 0)
+    mundo.renderer._loop?.(16)
+    mundo.renderer._loop?.(33)
+    // A câmera está na Vila; o herói, na Floresta: a região atual é a dele.
+    expect(carregados.at(-1)?.estadoDasRegioes()?.atual).toBe('floresta')
+  } finally {
+    call(api, 'disposeAll')
+    instalador.descartar()
+  }
+})

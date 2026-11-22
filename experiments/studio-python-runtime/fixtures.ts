@@ -126,6 +126,9 @@ export async function runtimeFixtureProject(
       'classic-portableAudio',
       'classic-portableAudioNamespace',
       'classic-pgzeroGame',
+      'classic-pgzeroCasos',
+      'classic-pgzeroErroDeEscrita',
+      'classic-pgzeroTrava',
       'classic-pinta-world-1x',
     ].includes(name)
   ) {

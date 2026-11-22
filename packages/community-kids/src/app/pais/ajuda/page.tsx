@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { listTeacherThreadsReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
+import { isParentHelpContext } from '../parent-routes'
 import { HelpContent } from './help-content'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +13,7 @@ export default async function AjudaPage() {
   const threads = await listTeacherThreadsReadonly().catch(() => null)
   const doubts =
     threads?.status === 200
-      ? (threads.body?.threads ?? []).filter((thread) => thread.contextType === 'lesson_section')
+      ? (threads.body?.threads ?? []).filter((thread) => isParentHelpContext(thread.contextType))
       : []
   return <HelpContent parentName={session.firstName} doubts={doubts} />
 }

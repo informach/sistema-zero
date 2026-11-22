@@ -44,6 +44,8 @@ export interface ModeloCarregado {
   caixa: Box3
   triangulos: number
   raiz: Object3D
+  /** As chaves do cache de imagens que este modelo usou (vazio sem cache). */
+  imagensDoCache?: readonly string[]
   descartar(): void
 }
 
@@ -55,7 +57,7 @@ export interface ModeloCarregado {
  */
 export type CacheDeImagens = Map<string, Promise<Texture>>
 
-function novoLeitor(falhas: unknown[], imagens?: CacheDeImagens): GLTFLoader {
+function novoLeitor(falhas: unknown[], imagens?: CacheDeImagens, usadas?: Set<string>): GLTFLoader {
   const externas = new Set<string>(),
     gerenciador = new LoadingManager(),
     leitor = new GLTFLoader(gerenciador)
@@ -81,6 +83,7 @@ function novoLeitor(falhas: unknown[], imagens?: CacheDeImagens): GLTFLoader {
           return await carregarImagem(indice, carregador)
         const dados = (await parser.getDependency('bufferView', fonte.bufferView)) as ArrayBuffer,
           chave = `${fonte.mimeType ?? ''}:${await digestDosBytes(new Uint8Array(dados))}`
+        usadas?.add(chave)
         let pendente = imagens.get(chave)
         if (!pendente) {
           pendente = carregarImagem(indice, carregador)
@@ -129,7 +132,8 @@ export async function lerGlb(
   opcoes: { imagens?: CacheDeImagens } = {},
 ): Promise<ModeloCarregado> {
   const falhas: unknown[] = [],
-    gltf = await novoLeitor(falhas, opcoes.imagens).parseAsync(bytes, '')
+    usadas = new Set<string>(),
+    gltf = await novoLeitor(falhas, opcoes.imagens, usadas).parseAsync(bytes, '')
   const raiz = gltf.scene
   raiz.updateMatrixWorld(true)
   const partes: ParteDoModelo[] = []
@@ -206,6 +210,7 @@ export async function lerGlb(
       caixa,
       triangulos,
       raiz,
+      imagensDoCache: [...usadas],
       descartar() {
         if (descartado) return
         descartado = true

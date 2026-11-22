@@ -27,6 +27,7 @@ import { FragmentoDeCenarioSchema, PrefixoDeColagemSchema } from './fragmento-sc
 import { igual } from './igual'
 
 import { entidadesDoCenario, referenciaDeModelo } from './organizacao'
+import { RegiaoSchema, regioesSem } from './regioes'
 import { type OpcoesDeValidacao, validarDocumento } from './validacao'
 
 export { igual } from './igual'
@@ -135,6 +136,13 @@ export const ComandoDeCenarioSchema = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('base.definir'), base: BaseSchema }).strict(),
   z.object({ tipo: z.literal('iluminacao.definir'), iluminacao: IluminacaoSchema }).strict(),
   z.object({ tipo: z.literal('cenario.renomear'), nome: z.string().min(1).max(120) }).strict(),
+  /**
+   * As regiões (22/11/2026). `definir` cria ou troca uma região inteira; o par de vizinhas vai no
+   * MESMO lote (a validação do fim confere que toda vizinha cita de volta). `remover` apaga e tira
+   * o id das vizinhas das outras.
+   */
+  z.object({ tipo: z.literal('regiao.definir'), regiao: RegiaoSchema }).strict(),
+  z.object({ tipo: z.literal('regiao.remover'), id }).strict(),
 ])
 export const LoteDeCenarioSchema = z
   .object({
@@ -560,6 +568,19 @@ export function executarLote(
       case 'cenario.renomear':
         d.nome = c.nome
         break
+      case 'regiao.definir': {
+        const regioes = [...(d.regioes ?? [])]
+        definir(regioes, c.regiao)
+        d.regioes = regioes
+        break
+      }
+      case 'regiao.remover': {
+        existente(d.regioes ?? [], c.id)
+        const restantes = regioesSem(d.regioes ?? [], c.id)
+        if (restantes.length) d.regioes = restantes
+        else delete d.regioes
+        break
+      }
     }
   }
   return { documento: validarDocumento(d, opcoes), revisao: estado.revisao + 1 }

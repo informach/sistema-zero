@@ -235,18 +235,25 @@ async function dragAreaFromFlyout(page: Page, label: string): Promise<void> {
   if (!(await source.isVisible())) await category.click()
   await expect(source).toBeVisible()
   const sourceBox = await source.boundingBox()
-  const target = await page.evaluate(() => {
-    const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
-    if (!background) return null
-    for (let y = background.bottom - 64; y > background.top + 64; y -= 32) {
-      for (let x = background.right - 64; x > background.left + 64; x -= 32) {
-        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
-          return { x, y }
+  const freeSpot = () =>
+    page.evaluate(() => {
+      const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
+      if (!background) return null
+      for (let y = background.bottom - 64; y > background.top + 64; y -= 32) {
+        for (let x = background.right - 64; x > background.left + 64; x -= 32) {
+          if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
+            return { x, y }
+          }
         }
       }
-    }
-    return null
-  })
+      return null
+    })
+  // O workspace pode estar se rearrumando (a área anterior acabou de cair): espera um ponto livre.
+  let target = await freeSpot()
+  for (let tentativa = 0; tentativa < 50 && !target; tentativa++) {
+    await page.waitForTimeout(100)
+    target = await freeSpot()
+  }
   if (!sourceBox || !target) throw new Error('Área ou workspace sem ponto interativo')
   await page.mouse.move(sourceBox.x + 5, sourceBox.y + 5)
   await page.mouse.down()
@@ -374,41 +381,36 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }, te
 })
 
 /**
- * As cópias de saída deste projeto que guardam os blocos, decodificadas pelo transporte de
- * produção, dizendo se ainda têm um bloco do tipo pedido.
+ * Registra cada cópia de saída (`project-recovery`) DESTE projeto no instante em que ela é gravada.
+ * A gravação normal que confirma depois apaga a cópia (`commitProjectRecovery`), então ler o banco
+ * depois chegava tarde em parte das rodadas: a prova lê o que foi gravado, não o que sobrou.
  */
-async function exitDraftsWithBlockType(page: Page, blockType: string): Promise<boolean[]> {
-  const snapshot = await page.evaluate(async (version) => {
+async function recordExitCopies(page: Page) {
+  await page.evaluate((version) => {
     const id = decodeURIComponent(location.pathname.split('/').at(-1)!)
     const prefix = `sz:v${version}:project-recovery:${id}:`
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open('sistema-zero-studio')
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
-    try {
-      return await new Promise<{ id: string; drafts: Array<{ key: IDBValidKey; value: unknown }> }>(
-        (resolve, reject) => {
-          const tx = db.transaction('kv', 'readonly')
-          const range = IDBKeyRange.bound(prefix, `${prefix}￿`)
-          const keys = tx.objectStore('kv').getAllKeys(range)
-          const values = tx.objectStore('kv').getAll(range)
-          tx.oncomplete = () =>
-            resolve({
-              id,
-              drafts: keys.result.map((key, index) => ({ key, value: values.result[index] })),
-            })
-          tx.onabort = () => reject(tx.error)
-        },
-      )
-    } finally {
-      db.close()
+    const copies: Array<{ key: string; value: unknown }> = []
+    ;(window as typeof window & { __szExitCopies?: typeof copies }).__szExitCopies = copies
+    const put = IDBObjectStore.prototype.put
+    IDBObjectStore.prototype.put = function (value: unknown, key?: IDBValidKey) {
+      if (typeof key === 'string' && key.startsWith(prefix))
+        copies.push({ key, value: structuredClone(value) })
+      return put.call(this, value, key)
     }
   }, PROJECT_STORAGE_VERSION)
+}
+
+/** As cópias de saída registradas, decodificadas pelo transporte de produção: os tipos de bloco. */
+async function recordedExitCopies(page: Page): Promise<Array<{ start: boolean; events: boolean }>> {
+  const snapshot = await page.evaluate(() => ({
+    id: decodeURIComponent(location.pathname.split('/').at(-1)!),
+    copies:
+      (window as typeof window & { __szExitCopies?: Array<{ key: string; value: unknown }> })
+        .__szExitCopies ?? [],
+  }))
   const blocksKey = projectBlocksKey(snapshot.id)
-  const found: boolean[] = []
-  for (const { key, value } of snapshot.drafts) {
-    if (typeof key !== 'string') continue
+  const found: Array<{ start: boolean; events: boolean }> = []
+  for (const { key, value } of snapshot.copies) {
     const draft = nativeRecovery(
       decodeProjectStorageValue(key, value),
       key,
@@ -416,7 +418,9 @@ async function exitDraftsWithBlockType(page: Page, blockType: string): Promise<b
     )
     if (draft.projectId !== snapshot.id) continue
     const blocks = draft.write.puts?.find(([putKey]) => putKey === blocksKey)
-    if (blocks) found.push(JSON.stringify(blocks[1]).includes(blockType))
+    if (!blocks) continue
+    const text = JSON.stringify(blocks[1])
+    found.push({ start: text.includes('sz_frame_start'), events: text.includes('sz_frame_events') })
   }
   return found
 }
@@ -440,6 +444,7 @@ test('desfazer um bloco e esconder a aba na mesma tarefa: a cópia de saída já
   await dragAreaFromFlyout(page, 'Quando acontecer')
   await expect(topBlocks).toHaveCount(2)
   await saveNow(page)
+  await recordExitCopies(page)
 
   // Desfazer a segunda área e esconder a aba sem devolver o controle ao navegador entre os dois.
   await page.evaluate(() => {
@@ -450,11 +455,12 @@ test('desfazer um bloco e esconder a aba na mesma tarefa: a cópia de saída já
     document.dispatchEvent(new Event('visibilitychange'))
   })
 
-  const exitCopyDropsTheUndoneArea = async () => {
-    const withStart = await exitDraftsWithBlockType(page, 'sz_frame_start')
-    const withEvents = await exitDraftsWithBlockType(page, 'sz_frame_events')
-    return withStart.some((hasStart, index) => hasStart && withEvents[index] === false)
-  }
-  await expect.poll(exitCopyDropsTheUndoneArea, { timeout: 10_000 }).toBe(true)
+  // A cópia que a aba escondida grava já vem sem a área desfeita; nenhuma cópia leva a área.
+  await expect
+    .poll(async () => (await recordedExitCopies(page)).length, { timeout: 10_000 })
+    .toBeGreaterThan(0)
+  expect(await recordedExitCopies(page)).toEqual(
+    (await recordedExitCopies(page)).map(() => ({ start: true, events: false })),
+  )
   expect(errors).toEqual([])
 })

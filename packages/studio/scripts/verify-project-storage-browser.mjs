@@ -202,33 +202,40 @@ for (const [name, engine] of [
     phase('profile-switch-verified')
     // Cota no localStorage, sem diálogo: vale em todo motor, inclusive no WebKit do iPad, onde a
     // fase do diálogo abaixo não roda. A cópia síncrona falha e a nativa basta, tanto ao recarregar
-    // quanto com a aba escondida (página viva, sem "Erro ao salvar").
-    const quota = await context.newPage()
-    const quotaURL = new URL(fixtureURL(`quota-native-${name}`))
-    quotaURL.searchParams.set('deny-exit', '1')
-    await quota.goto(quotaURL.href)
-    await quota.waitForFunction(() => Boolean(window.storageHarness))
-    await quota.evaluate(() => window.storageHarness.edit('quota-native-reload'))
-    await quota.reload()
-    await quota.waitForFunction(() => Boolean(window.storageHarness))
-    assert.equal(
-      (await quota.evaluate(() => window.storageHarness.read())).text.content,
-      'quota-native-reload',
-    )
-    phase('quota-native-reload-verified')
-    await quota.evaluate(() => {
-      window.storageHarness.edit('quota-native-hidden')
-      Object.defineProperty(document, 'visibilityState', {
-        configurable: true,
-        get: () => 'hidden',
+    // quanto com a aba escondida (página viva, sem "Erro ao salvar"). Com a saída abortada
+    // (`STUDIO_STORAGE_EXIT_FAULT=abort`, a homologação), a gravação nativa da saída também falha
+    // de propósito: sem cópia nenhuma, perder a edição é o resultado certo, e a fase não roda.
+    if (process.env.STUDIO_STORAGE_EXIT_FAULT === 'abort')
+      phase('quota-native-skipped-aborted-exit')
+    else await verifyNativeQuota()
+    async function verifyNativeQuota() {
+      const quota = await context.newPage()
+      const quotaURL = new URL(fixtureURL(`quota-native-${name}`))
+      quotaURL.searchParams.set('deny-exit', '1')
+      await quota.goto(quotaURL.href)
+      await quota.waitForFunction(() => Boolean(window.storageHarness))
+      await quota.evaluate(() => window.storageHarness.edit('quota-native-reload'))
+      await quota.reload()
+      await quota.waitForFunction(() => Boolean(window.storageHarness))
+      assert.equal(
+        (await quota.evaluate(() => window.storageHarness.read())).text.content,
+        'quota-native-reload',
+      )
+      phase('quota-native-reload-verified')
+      await quota.evaluate(() => {
+        window.storageHarness.edit('quota-native-hidden')
+        Object.defineProperty(document, 'visibilityState', {
+          configurable: true,
+          get: () => 'hidden',
+        })
+        document.dispatchEvent(new Event('visibilitychange'))
       })
-      document.dispatchEvent(new Event('visibilitychange'))
-    })
-    await quota.waitForFunction(() => window.storageHarness.exitStatus().recoverable === true)
-    const hiddenQuota = await quota.evaluate(() => window.storageHarness.read())
-    assert.equal(hiddenQuota.error, null, JSON.stringify({ engine: name, hiddenQuota }))
-    await quota.close()
-    phase('quota-native-hidden-verified')
+      await quota.waitForFunction(() => window.storageHarness.exitStatus().recoverable === true)
+      const hiddenQuota = await quota.evaluate(() => window.storageHarness.read())
+      assert.equal(hiddenQuota.error, null, JSON.stringify({ engine: name, hiddenQuota }))
+      await quota.close()
+      phase('quota-native-hidden-verified')
+    }
     // Chromium exposes the native beforeunload dialog in headless automation.
     // Exercise a real trusted click: synthetic evaluation alone has no sticky activation.
     if (name === 'chromium') {

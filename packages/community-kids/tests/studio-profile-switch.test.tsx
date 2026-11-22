@@ -92,6 +92,8 @@ test('trocar de perfil com uma edição pendente: a saída grava no perfil de an
       showExamples={false}
       professional={false}
       taskSession={undefined}
+      pintaLibrary={undefined}
+      moldaLibrary={undefined}
     />,
   )
   await waitFor(() => expect(opened).toBe(true))

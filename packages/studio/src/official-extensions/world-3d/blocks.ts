@@ -2466,6 +2466,7 @@ const WORLD_THREE_D_RULES = gameRulesBlocks('w3d', {
     'random_between',
     'random_chance',
     'camera_shake',
+    'on_enter_region',
   ],
   restartTooltip:
     'Começa a partida de novo: o jogador volta ao começo, os coletáveis voltam e pontos, vida e contagem zeram. O mundo e a mochila ficam.',

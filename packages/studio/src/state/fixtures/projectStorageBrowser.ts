@@ -325,13 +325,11 @@ Object.assign(window, {
           copyAssets,
           copyBlocks,
         )
+        const tree = copy?.tree
         copies.push({
           id: copyId,
           name: typeof copy?.name === 'string' ? copy.name : '',
-          text:
-            copy?.tree && typeof copy.tree === 'object' && 'main.ts' in copy.tree
-              ? copy.tree['main.ts']
-              : null,
+          text: tree && typeof tree === 'object' && 'main.ts' in tree ? tree['main.ts'] : null,
         })
       }
       return copies

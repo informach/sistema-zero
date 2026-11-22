@@ -270,6 +270,8 @@ export interface AberturaDosCenarios {
   modo: ModoDosCenarios
   /** Contas liberadas no modo `lista`. */
   lista: ReadonlySet<string>
+  /** O interruptor `CENARIOS_REGIOES`: sem ele (ou `false`), nenhum lote mexe nas regiões. */
+  regioes?: boolean
   /**
    * Nos modos `lista` e `aberto`, quem não é da equipe precisa também do Molda: o produto da
    * conta e a ferramenta liberada na jornada de quem pede (no Kids, a do perfil da criança). Sem

@@ -473,6 +473,7 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   onKey: 2,
   onClickObject: 2,
   onTouchGroup: 3,
+  onEnterRegion: 3,
   gridPosition: 3,
   gridStep: 1,
   gridMove: 2,

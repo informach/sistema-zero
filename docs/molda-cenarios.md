@@ -16,6 +16,28 @@ A ferramenta está sendo refeita em lotes (plano aprovado em 16/11/2026). O que 
 - **Ver sem a plataforma**: `bun run dev:oficina` em `packages/molda-cenarios` (porta 4541), com
   dados em memória.
 
+### Regiões (aba Jogo, 22/11/2026)
+
+A ferramenta **Regiões** divide o cenário em lugares com nome (Vila, Floresta, Caverna). No
+Estúdio, o jogo carrega a região onde o personagem está e as vizinhas, e o bloco "Quando entrar
+na região" usa os nomes. Formato e regras em
+[`estudio-evolucao/regioes-3d-especificacao.md`](estudio-evolucao/regioes-3d-especificacao.md).
+
+- **Quando aparece**: com o interruptor `CENARIOS_REGIOES` do `members` ligado (o host pergunta em
+  `recursos()`, pelo `GET /members/cenarios/acesso`) e a faixa `jogo.regioes` (intermediária)
+  liberada. Desligado, a ferramenta some e o servidor recusa mudar as regiões (403).
+- **Como funciona** (o padrão das zonas): "Nova região" e dois toques em cantos opostos no chão;
+  nome, largura e comprimento em metros, "Mover os cantos" (a região continua retangular),
+  vizinhas (até 8, sugeridas as que encostam) e "Encaixar na vizinha" (encosta as bordas a até
+  2 m). Ver a prévia e guardar é um passo de desfazer; apagar também.
+- **Regras**: nomes únicos, sem sobreposição (borda comum pode), dentro da base, vizinhas sempre
+  em par (o lote grava as duas pontas: `comandosParaDefinirRegiao` do núcleo). As bordas aparecem
+  translúcidas sobre o relevo, com o nome no meio, só nas guias da aba Jogo.
+- **Código**: `molda-cenarios-core/src/v2/regioes.ts` (regras e autoria), `molda-cenarios-motor`
+  (`jogo/desenho-de-regiao.ts`), `molda-cenarios/src/oficina` (`regioes-formulario.ts`,
+  `useRegioes.ts`, `telas/Regioes.tsx`) e as ferramentas do agente `desenhar_regiao`,
+  `apagar_regiao` e `listar_regioes`.
+
 ### Agentes (CLI e MCP) na oficina nova
 
 O agente faz o mesmo caminho da mão (as mesmas rotas, os mesmos lotes e o mesmo desfazer), sem

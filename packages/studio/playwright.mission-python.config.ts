@@ -6,6 +6,8 @@ export default defineConfig(runtime, {
   testMatch: [
     'python-supervisor.spec.ts',
     'python-provider.spec.ts',
+    // O custo das abas Desempenho e Investigar (lote 3 da conclusão, 22/11/2026).
+    'python-devtools-cost.spec.ts',
     'python-host-isolation.spec.ts',
     'python-classic.spec.ts',
     'python-games.spec.ts',

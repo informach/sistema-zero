@@ -5,6 +5,7 @@ import {
   type ArquivoCompilado,
   avaliarOrcamentoDaCena,
   lerCenaCompilada,
+  malhasDaMaiorJanela,
   type OrcamentoDaCena,
   type PacoteCompilado,
 } from '@sistemazero/molda-cenarios-core/compilar'
@@ -90,6 +91,21 @@ function kindDoArquivo(a: ArquivoCompilado): 'model3d' | 'image' | 'scene3d-data
 }
 
 /** Pure, serializable preflight; commits and profile/project CAS belong to the existing store. */
+/**
+ * As malhas que o orçamento do Estúdio confere numa cena. No JavaScript, a maior janela (região,
+ * vizinhas e o que é de todas): o SDK carrega por regiões (lote 5 da conclusão, 22/11/2026). No
+ * Python, a cena inteira: o `cenario.py` desenha tudo até carregar por regiões (lote 7b), e a
+ * janela deixaria passar uma cena que o Raylib não aguenta (revisão do lote 5).
+ */
+export function malhasDaCenaParaOOrcamento(
+  cena: Parameters<typeof malhasDaMaiorJanela>[0],
+  python: boolean,
+): number {
+  if (!python) return malhasDaMaiorJanela(cena)
+  const { regioes: _porRegioes, ...inteira } = cena
+  return malhasDaMaiorJanela(inteira)
+}
+
 export async function prepararImportacaoDeCena3D(
   projeto: EditableStudioProject,
   entrada: PacoteCompilado,
@@ -263,11 +279,8 @@ export async function prepararImportacaoDeCena3D(
         (a.scene ? new TextEncoder().encode(JSON.stringify(a.scene)).byteLength : 0),
       tipo: a.kind === 'model3d' ? ('modelo' as const) : ('recurso' as const),
     })
-    if (a.kind === 'scene3d') {
-      const d = lerAssetDeCena3D(a),
-        metadados = new Map(d.cena.arquivos.map((f) => [f.caminho, f]))
-      malhas += d.cena.nos.reduce((s, n) => s + metadados.get(n.arquivo)!.malhas!, 0)
-    } else if (a.kind === 'model3d' && !referenciados.has(a.id))
+    if (a.kind === 'scene3d') malhas += malhasDaCenaParaOOrcamento(lerAssetDeCena3D(a).cena, python)
+    else if (a.kind === 'model3d' && !referenciados.has(a.id))
       malhas += malhasDeModeloComum(bytes, inspecionarGlbDaCompilacao)
   }
   const orcamento = avaliarOrcamentoDaCena({ malhas, arquivos }, 'studio')

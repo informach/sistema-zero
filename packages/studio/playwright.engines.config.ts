@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test'
 /**
  * As medidas dos motores (lote 4 da missão, seção 8, 21/11/2026): a GPU em 10 recomeços
  * (`engine-gpu-cycles.spec.ts`) e o custo de desenhar sprites fora do palco
- * (`engine-2d-offscreen.spec.ts`). Esperas fixas sobre a GPU emulada não entram na suíte que barra
+ * (`engine-2d-offscreen.spec.ts`), e o custo das abas Desempenho e Investigar no processo do jogo
+ * (`devtools-cost.spec.ts`, lote 3 da conclusão, 22/11/2026). Esperas fixas sobre a GPU emulada não entram na suíte que barra
  * o merge (`playwright.config.ts` as ignora); rodam no workflow `studio-engines.yml` e localmente
  * com `bunx playwright test --config playwright.engines.config.ts`.
  */
@@ -12,7 +13,11 @@ const baseURL = `http://127.0.0.1:${port}`
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: [/engine-gpu-cycles\.spec\.ts/, /engine-2d-offscreen\.spec\.ts/],
+  testMatch: [
+    /engine-gpu-cycles\.spec\.ts/,
+    /engine-2d-offscreen\.spec\.ts/,
+    /devtools-cost\.spec\.ts/,
+  ],
   outputDir: './.cache/engines-results',
   forbidOnly: !!process.env.CI,
   retries: 0,

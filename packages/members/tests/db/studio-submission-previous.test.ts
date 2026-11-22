@@ -190,7 +190,7 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     const blockId = randomUUID()
     const lessonId = randomUUID()
     await conn.sql`insert into members.lesson_blocks (id, lesson_id, kind, content, content_revision)
-      values (${blockId}, ${lessonId}, 'studio', ${conn.sql.json({ kind: 'studio' })}, ${'r1'})`
+      values (${blockId}, ${lessonId}, 'studio', ${JSON.stringify({ kind: 'studio' })}::jsonb, ${'r1'})`
     const t1 = new Date('2026-08-01T10:00:00.000Z')
     const t2 = new Date('2026-08-10T10:00:00.000Z')
     const t3 = new Date('2026-08-15T10:00:00.000Z')
@@ -215,7 +215,7 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     const blockId = randomUUID()
     const lessonId = randomUUID()
     await conn.sql`insert into members.lesson_blocks (id, lesson_id, kind, content, content_revision)
-      values (${blockId}, ${lessonId}, 'studio', ${conn.sql.json({ kind: 'studio' })}, ${'r1'})`
+      values (${blockId}, ${lessonId}, 'studio', ${JSON.stringify({ kind: 'studio' })}::jsonb, ${'r1'})`
     // O recado acima do varchar(1000) faz o INSERT da entrega falhar DEPOIS do da evidência.
     let failed = false
     try {

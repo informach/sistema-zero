@@ -21,6 +21,7 @@ import {
   aplicarFerramentaDeTerreno,
   type ComandoDeCenario,
   clonarEstadoDoTerreno,
+  comandosParaDefinirRegiao,
   conferirImplantacao,
   criarAmostradorDeEspalhamento,
   type DocumentoDeCenario,
@@ -555,7 +556,83 @@ export function criarIntencoes(host: CenariosHost) {
       }
     },
 
+    /**
+     * Desenha uma região do cenário (lote 7 da conclusão, 22/11/2026). Pelo NOME: se já existe,
+     * redesenha a mesma (o id fica). `vizinhas` são nomes; ausente, a região nova fica sem vizinhas
+     * e a que já existe guarda as dela. O lote mantém as vizinhas em par (o mesmo da oficina), e o
+     * servidor recusa se o interruptor das regiões estiver desligado.
+     */
+    async desenharRegiao(
+      cenarioId: string,
+      pedido: { nome: string; x0: number; z0: number; x1: number; z1: number; vizinhas?: string[] },
+      opcoes: OpcoesDoLote = {},
+    ): Promise<ResultadoDoLote> {
+      const aberto = await abrir(cenarioId, opcoes)
+      const regioes = aberto.documento.regioes ?? []
+      const chave = (nome: string) => nome.trim().toLocaleLowerCase('pt-BR')
+      const existente = regioes.find((r) => chave(r.nome) === chave(pedido.nome))
+      const vizinhas = pedido.vizinhas
+        ? pedido.vizinhas.map((nome) => {
+            const r = regioes.find((q) => chave(q.nome) === chave(nome))
+            if (!r) throw Error(`Não achei a região ${nome} neste cenário.`)
+            return r.id
+          })
+        : (existente?.vizinhas ?? [])
+      const id = existente?.id ?? `regiao-${crypto.randomUUID().slice(0, 8)}`
+      const regiao = {
+        id,
+        // Redesenhar pelo nome não renomeia: a região que já existe guarda o nome escrito.
+        nome: existente?.nome ?? pedido.nome.trim(),
+        caixa: {
+          x0: Math.min(pedido.x0, pedido.x1),
+          z0: Math.min(pedido.z0, pedido.z1),
+          x1: Math.max(pedido.x0, pedido.x1),
+          z1: Math.max(pedido.z0, pedido.z1),
+        },
+        vizinhas,
+      }
+      return gravar(
+        aberto,
+        cenarioId,
+        comandosParaDefinirRegiao(regioes, regiao),
+        null,
+        opcoes,
+        existente ? [] : [id],
+      )
+    },
+
+    /** Apaga a região pelo nome ou pelo id; quem a citava como vizinha deixa de citar. */
+    async apagarRegiao(
+      cenarioId: string,
+      alvo: string,
+      opcoes: OpcoesDoLote = {},
+    ): Promise<ResultadoDoLote> {
+      const aberto = await abrir(cenarioId, opcoes)
+      const chave = alvo.trim().toLocaleLowerCase('pt-BR')
+      const r = (aberto.documento.regioes ?? []).find(
+        (q) => q.id === alvo || q.nome.trim().toLocaleLowerCase('pt-BR') === chave,
+      )
+      if (!r) throw Error(`Não achei a região ${alvo} neste cenário.`)
+      return gravar(aberto, cenarioId, [{ tipo: 'regiao.remover', id: r.id }], null, opcoes)
+    },
+
     // ----- Consultas, sem imagem e sem gravar -----
+
+    /** As regiões do cenário: nome, retângulo no chão e as vizinhas pelo nome. */
+    async listarRegioes(cenarioId: string) {
+      const aberto = await host.abrirCenario(cenarioId)
+      const regioes = aberto.documento.regioes ?? []
+      const nomeDe = (id: string) => regioes.find((r) => r.id === id)?.nome ?? id
+      return {
+        revisao: aberto.revisao,
+        regioes: regioes.map((r) => ({
+          id: r.id,
+          nome: r.nome,
+          caixa: r.caixa,
+          vizinhas: r.vizinhas.map(nomeDe),
+        })),
+      }
+    },
 
     /** Altura do chão, se há chão e o nível da água em cada ponto. */
     async consultarPontos(cenarioId: string, pontos: readonly Ponto[]) {

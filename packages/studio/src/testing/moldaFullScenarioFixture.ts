@@ -7,6 +7,7 @@ import {
   type DocumentoDeCenario,
   digestDosBytes,
   LADO_DAS_AMOSTRAS,
+  type RegiaoDeCenario,
   referenciarConjunto,
 } from '@sistemazero/molda-cenarios-core/v2'
 import { criarHostEmMemoria } from '../../../molda-cenarios/src/oficina/host-memoria'
@@ -142,7 +143,29 @@ function pecaDeAlturas() {
   return codificarPecaDeAlturas(amostras, TERRENO_DO_CONTRATO.min, TERRENO_DO_CONTRATO.max)
 }
 
-export async function criarCenarioCompletoDeEnsaio(opcoes: { juntar?: boolean } = {}) {
+/**
+ * As regiões do contrato (lote 5 da conclusão, 22/11/2026): três faixas de oeste a leste no
+ * terreno de 128 m, a do meio vizinha das duas pontas (as pontas não se veem).
+ */
+export const REGIOES_DO_CONTRATO: readonly RegiaoDeCenario[] = [
+  {
+    id: 'oeste',
+    nome: 'Oeste',
+    caixa: { x0: -64, z0: -64, x1: -16, z1: 64 },
+    vizinhas: ['centro'],
+  },
+  {
+    id: 'centro',
+    nome: 'Centro',
+    caixa: { x0: -16, z0: -64, x1: 16, z1: 64 },
+    vizinhas: ['oeste', 'leste'],
+  },
+  { id: 'leste', nome: 'Leste', caixa: { x0: 16, z0: -64, x1: 64, z1: 64 }, vizinhas: ['centro'] },
+]
+
+export async function criarCenarioCompletoDeEnsaio(
+  opcoes: { juntar?: boolean; comRegioes?: boolean } = {},
+) {
   const nativo = await carregarCanvasNativo()
   if (!nativo)
     throw Error(
@@ -466,6 +489,9 @@ export async function criarCenarioCompletoDeEnsaio(opcoes: { juntar?: boolean } 
       },
     },
   ]
+  if (opcoes.comRegioes)
+    for (const regiao of REGIOES_DO_CONTRATO)
+      comandos.push({ tipo: 'regiao.definir', regiao: structuredClone(regiao) })
   const salvo = await host.editarCenario(resumo.id, aberto.revisao, comandos, 'montar-contrato'),
     autoria = (await host.abrirCenario(resumo.id)).documento
   const fonte: NonNullable<StudioMoldaLibraryAdapter['cenarios']> = {

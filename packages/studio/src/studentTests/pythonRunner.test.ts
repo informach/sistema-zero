@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import type {
-  StudioPythonMissionFrameObservation,
-  StudioPythonMissionProbe,
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import {
+  PYTHON_MISSION_UNRESPONSIVE_MESSAGE,
+  type StudioPythonMissionFrameObservation,
+  type StudioPythonMissionProbe,
 } from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import type { PythonClassicProjectDocument } from '../core/pythonProject'
@@ -43,6 +46,8 @@ interface Fake {
   missing?: boolean
   keysRefused?: boolean
   console?: string
+  /** O programa travado: a leitura não volta e o supervisor encerra a execução com o recado. */
+  unresponsive?: boolean
 }
 
 function fakeController(fake: Fake) {
@@ -82,6 +87,10 @@ function fakeController(fake: Fake) {
       },
       async observe(probe): Promise<StudioPythonMissionFrameObservation> {
         calls.probes.push(probe)
+        if (fake.unresponsive) {
+          publish({ status: 'failed', error: PYTHON_MISSION_UNRESPONSIVE_MESSAGE })
+          throw new Error('A execução foi interrompida.')
+        }
         if (probe.type === 'functionReturns')
           return {
             observation: fake.missing
@@ -212,6 +221,28 @@ describe('Meus testes no Python: testar uma função', () => {
     })
     expect(outcome.status).toBe('timeout')
     expect(calls.disposed).toBe(true)
+  })
+})
+
+describe('Meus testes no Python: o programa travado', () => {
+  it('a leitura que não volta é o tempo esgotado, como no JavaScript', async () => {
+    const { create, calls } = fakeController({ unresponsive: true })
+    const outcome = await runPythonStudentTest({
+      test: pontosSobem,
+      host: hostFor(comDesenho),
+      createController: create,
+    })
+    expect(outcome.status).toBe('timeout')
+    expect(calls.disposed).toBe(true)
+  })
+
+  it('o supervisor do Python encerra a execução com o mesmo recado que o piloto reconhece', () => {
+    // O supervisor mora na distribuição Python imutável: o texto é o contrato entre os dois.
+    const fonte = readFileSync(
+      fileURLToPath(new URL('../runtime/python/workerSupervisor.ts', import.meta.url)),
+      'utf8',
+    )
+    expect(fonte).toContain(`'${PYTHON_MISSION_UNRESPONSIVE_MESSAGE}'`)
   })
 })
 

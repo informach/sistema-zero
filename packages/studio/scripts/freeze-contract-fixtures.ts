@@ -6,7 +6,9 @@
  *   Pinta (`packages/pinta/scripts/homologacao/studio-assets.ts` → `examples/pintaScenes.generated.ts`);
  * - `pinta-scene-v3.json`: `exportPintaScene` do Pinta com um objeto de colisão (o que exige a 3);
  * - `molda-scene3d-v1.json`: os materiais que a importação do Estúdio monta a partir do pacote do
- *   compilador real do Molda Cenários (`testing/scene3dTransportFixture.ts`).
+ *   compilador real do Molda Cenários (`testing/scene3dTransportFixture.ts`);
+ * - `molda-scene3d-regioes-v1.json`: o mesmo, com duas regiões vizinhas no documento (a cena
+ *   compilada leva as listas de cada região; lote 5 da conclusão, 22/11/2026).
  *
  *   bun scripts/freeze-contract-fixtures.ts            # recusa sobrescrever o que já existe
  *   bun scripts/freeze-contract-fixtures.ts --nova pinta-scene-v4   # só grava a que falta
@@ -70,11 +72,19 @@ async function moldaScene3dV1(): Promise<unknown> {
   return assets
 }
 
+async function moldaScene3dRegioesV1(): Promise<unknown> {
+  const { GlobalRegistrator } = await import('@happy-dom/global-registrator')
+  if (typeof globalThis.FileReader === 'undefined') GlobalRegistrator.register()
+  const { assets } = await criarTransporteDeEnsaio({ comRegioes: true })
+  return assets
+}
+
 const produtores: Record<string, () => Promise<unknown>> = {
   'pinta-scene-v1': async () => sceneOfVersion(1),
   'pinta-scene-v2': async () => sceneOfVersion(2),
   'pinta-scene-v3': sceneV3,
   'molda-scene3d-v1': moldaScene3dV1,
+  'molda-scene3d-regioes-v1': moldaScene3dRegioesV1,
 }
 
 const pedida = process.argv.indexOf('--nova')

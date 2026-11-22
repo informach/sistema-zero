@@ -12,9 +12,16 @@ import {
 type Operacao = OperacaoDeAguaPreparada | OperacaoDeCaminhoPreparada
 export type ComandoDePreviaDoAmbiente = Extract<
   ComandoDeCenario,
-  { tipo: 'iluminacao.definir' | 'marcador.definir' | 'textura.definir' }
+  {
+    tipo:
+      | 'iluminacao.definir'
+      | 'marcador.definir'
+      | 'textura.definir'
+      | 'regiao.definir'
+      | 'regiao.remover'
+  }
 >
-export type DonoDaPreviaDoAmbiente = 'jogo' | 'luz'
+export type DonoDaPreviaDoAmbiente = 'jogo' | 'luz' | 'regioes'
 export class EdicaoComTerreno {
   private previa: {
     origem: DocumentoDeCenario
@@ -78,11 +85,18 @@ export class EdicaoComTerreno {
       throw Error('Termine a prévia atual antes de preparar outra ferramenta.')
     if (
       comandos.some(
-        (c) => !['iluminacao.definir', 'marcador.definir', 'textura.definir'].includes(c.tipo),
+        (c) =>
+          ![
+            'iluminacao.definir',
+            'marcador.definir',
+            'textura.definir',
+            'regiao.definir',
+            'regiao.remover',
+          ].includes(c.tipo),
       )
     )
       throw Error(
-        'A prévia de ambiente aceita somente iluminação, marcadores e referências de textura.',
+        'A prévia de ambiente aceita somente iluminação, marcadores, regiões e referências de textura.',
       )
     const visual = executarLote(
       { documento: origem, revisao: 0 },

@@ -29,6 +29,11 @@ export interface GameRulesBlockOptions {
    * e falam "do jogador" (o codec casa com `GAME_RULES_IMPLICIT_HERO_PREFIXES`).
    */
   implicitHero?: boolean
+  /**
+   * "Quando ⟨…⟩ entrar na região" segue um MOLDE (o seletor de grupo), não um objeto: o 3D
+   * Avançado (o codec casa com `GAME_RULES_REGION_BY_MOLD_PREFIXES`).
+   */
+  regionByMold?: boolean
   /** Só estes sufixos (a extensão não oferece os outros). Ausente = todos. */
   only?: readonly GameRulesBlockSuffix[]
   /** Dica própria do "Reiniciar o jogo" (o que volta e o que fica muda por extensão). */
@@ -111,6 +116,7 @@ export const GAME_RULES_BLOCK_SUFFIXES = [
   'on_click_object',
   'on_canvas_click',
   'on_touch_group',
+  'on_enter_region',
 ] as const
 export type GameRulesBlockSuffix = (typeof GAME_RULES_BLOCK_SUFFIXES)[number]
 
@@ -393,7 +399,31 @@ export function gameRulesBlocks(prefix: GameRulesPrefix, options: GameRulesBlock
       tooltip:
         'Roda o "fazer" uma vez quando o objeto começa a encostar em alguém do grupo. Quem foi encostado ganha o nome escolhido (ex.: tirar do grupo).',
     },
+
+    // ---- 🗺️ Regiões do cenário do Molda (lote 6 da conclusão, 22/11/2026) ----
+    {
+      type: t('on_enter_region'),
+      placement: 'event',
+      bodyContext: GAME_EVENT_BODY,
+      message0: 'Quando %1 entrar na região %2',
+      args0: [obj(), { type: 'field_scene_region_picker', name: 'REGION', text: 'Vila' }],
+      ...body,
+      ...stmt,
+      tooltip:
+        'Roda o "fazer" uma vez cada vez que o objeto entra na região do cenário (as regiões são desenhadas no Molda Cenários, na aba Jogo). Se ele já começa lá dentro, roda logo no começo.',
+    },
   ]
+
+  if (options.regionByMold) {
+    const region = blocks.find((block) => block.type === t('on_enter_region'))
+    if (region) {
+      region.args0 = region.args0.map((arg: RulesArg) =>
+        arg.name === 'OBJ' ? { ...arg, kind: options.groupPicker } : arg,
+      )
+      region.tooltip =
+        'Roda o "fazer" uma vez cada vez que o primeiro deste molde no jogo (o herói) entra na região do cenário (as regiões são desenhadas no Molda Cenários, na aba Jogo). Se ele já nasce lá dentro, roda logo.'
+    }
+  }
 
   if (options.implicitHero) {
     for (const block of blocks) {
@@ -458,5 +488,10 @@ const IMPLICIT_HERO_FACES: Partial<
     message0: 'Quando a vida do jogador acabar',
     tooltip:
       'Roda o "fazer" uma vez quando a vida do jogador chega a zero. Bom para o fim de jogo.',
+  },
+  on_enter_region: {
+    message0: 'Quando o jogador entrar na região %1',
+    tooltip:
+      'Roda o "fazer" uma vez cada vez que o jogador entra na região do cenário (as regiões são desenhadas no Molda Cenários, na aba Jogo). Se ele já começa lá dentro, roda logo no começo.',
   },
 }

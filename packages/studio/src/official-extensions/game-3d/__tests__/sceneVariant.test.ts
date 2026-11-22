@@ -25,7 +25,12 @@ describe('Cenário do Molda: o substituto cobre o fragmento', () => {
       .sort()
     // Anti-vácuo: o fragmento tem as funções do cenário.
     expect(names.length).toBeGreaterThanOrEqual(11)
-    for (const name of names)
+    // `sceneRegion` só é chamada pelo subfragmento das regiões das regras, que não entra no motor
+    // sem cenário (`withGameRules3DRuntime(fonte, false)`): ali ela não precisa de substituto, e a
+    // prova é o motor sem cenário não citá-la.
+    expect(names).toContain('sceneRegion')
+    expect(gameThreeDRuntimeForVariant(GAME_3D_WITHOUT_SCENE_VARIANT)).not.toContain('sceneRegion')
+    for (const name of names.filter((n) => n !== 'sceneRegion'))
       expect(
         new RegExp(String.raw`\bfunction ${name}\(|\b${name} = sceneAbsent\b`).test(
           gameThreeDSceneAbsentRuntimeSource,
@@ -72,7 +77,9 @@ describe('Cenário do Molda: as variantes do runtime', () => {
       expect(source).not.toContain(SCENE_LINE)
       expect(source).toContain(ABSENT_LINE)
     }
-    expect(gameThreeDRuntime.length - semCenario.length).toBeGreaterThan(6_500)
+    // O fragmento do cenário pesa: a variante sem ele economiza isto. Desceu de 6.500 para 6.000
+    // quando os dois laços de apoio foram para o SDK (`fisica.apoio`, lote 6 da conclusão).
+    expect(gameThreeDRuntime.length - semCenario.length).toBeGreaterThan(6_000)
   })
 
   it('compilam, sem crase nem cifrão-chave soltos, e a mesma variante não recompõe', () => {

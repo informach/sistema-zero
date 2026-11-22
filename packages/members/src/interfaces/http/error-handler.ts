@@ -16,6 +16,7 @@ import {
   CenarioDesatualizadoError,
   CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
+  CenarioRegioesDesligadasError,
 } from '../../domain/cenarios/cenarios.errors'
 import { CourseJourneyLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import {
@@ -288,6 +289,9 @@ export function buildErrorResponse(input: {
         details: { problemas: [...error.problemas].slice(0, 20) },
       },
     }
+  }
+  if (error instanceof CenarioRegioesDesligadasError) {
+    return { status: 403, body: envelope(error.code, error.message) }
   }
   if (error instanceof CenarioFerramentaTrancadaError) {
     return {

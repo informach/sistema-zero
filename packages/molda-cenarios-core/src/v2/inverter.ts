@@ -255,6 +255,20 @@ export function inverterLote(
   const definicoesAntes = new Set(antes.definicoesConjuntos?.map((d) => d.id))
   for (const d of depois.definicoesConjuntos ?? [])
     if (!definicoesAntes.has(d.id)) comandos.push({ tipo: 'conjunto.remover', id: d.id })
+  // As regiões não têm cadeado nem grupo: apagar as novas (o que também tira o id delas das
+  // vizinhas das outras) e regravar inteira cada uma que mudou devolve exatamente as de antes.
+  const regioesAntes = new Map(antes.regioes?.map((r) => [r.id, r]))
+  const regioesDepois = new Map(depois.regioes?.map((r) => [r.id, r]))
+  for (const r of depois.regioes ?? [])
+    if (!regioesAntes.has(r.id)) comandos.push({ tipo: 'regiao.remover', id: r.id })
+  for (const r of antes.regioes ?? []) {
+    const atual = regioesDepois.get(r.id)
+    const cortada = atual && {
+      ...atual,
+      vizinhas: atual.vizinhas.filter((v) => regioesAntes.has(v)),
+    }
+    if (!igual(r, cortada)) comandos.push({ tipo: 'regiao.definir', regiao: r })
+  }
   // Restaurar uma versão grande continua sendo uma ação atômica, sem exceder o teto de
   // comandos nem criar dezenas de revisões artificiais para um único desfazer.
   return comandos.length > LIMITES_CENARIO_V2.comandos

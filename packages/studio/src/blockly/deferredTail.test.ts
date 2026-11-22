@@ -228,6 +228,11 @@ describe('guarda de atualização do Blockly (o que as adaptações supõem)', (
       'setVisible(a){let b=[];if(this.visible===a)return b;this.visible=a;for(let c=0,d;d=this.fieldRow[c];c++)d.setVisible(a);if(this.connection&&this.connection instanceof RenderedConnection$$module$build$src$core$rendered_connection){a?b=this.connection.startTrackingAll():this.connection.stopTrackingAll();',
     )
     expect(compressed).toContain('startTrackingAll(){this.setTracking(!0);let a=[];')
+    // A recursão passa pelo método de CADA conexão de baixo (é ali que o gancho para no primeiro
+    // bloco adiado; revisão do lote 2): uma recursão por função interna escaparia dele.
+    expect(compressed).toContain(
+      'c=b.getConnections_(!0);for(let d=0;d<c.length;d++)a.push(...c[d].startTrackingAll());a.length||(a=[b])}return a}',
+    )
   })
 
   it('desenhar um bloco recolhido refaz o rótulo da forma recolhida (por isso o lote desliga os eventos)', () => {

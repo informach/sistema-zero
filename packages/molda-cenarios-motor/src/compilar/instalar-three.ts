@@ -138,11 +138,16 @@ export function criarInstaladorDeCenasThree<Extra extends object>(
       const preparado = ambiente(resultado.cena),
         antes = ambiente(alvo),
         anterior = vigente.ativo,
-        handle: CenaNoThree & Extra = {
-          ...resultado,
-          ...completar(resultado, () => !solto),
-          descartar: soltar,
-        }
+        // Os descritores, não um espalhar: o `colisoes` da carga por regiões é um getter (o
+        // mundo é refeito a cada troca de região), e `{ ...resultado }` o congelaria no primeiro.
+        handle = Object.assign(
+          Object.defineProperties(
+            {} as CenaNoThree & Extra,
+            Object.getOwnPropertyDescriptors(resultado),
+          ),
+          completar(resultado, () => !solto),
+          { descartar: soltar },
+        )
       entrada = { handle, ambienteCompleto: capturadas.ambiente !== 'luzes-locais' }
       try {
         alvo.add(resultado.cena)

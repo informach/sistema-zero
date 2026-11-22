@@ -79,6 +79,7 @@ import type { ConfiguracaoDaEscultura } from './escultura-tipos'
 import { chaveDaForma, criarModeloDaForma } from './formas'
 import { geometriaDaGrade } from './grade'
 import { ColisoesVisiveis } from './jogo/colisoes-visiveis'
+import { RegioesDoPalco } from './jogo/desenho-de-regiao'
 import { MarcadoresDoPalco } from './jogo/marcadores'
 import { Contornos, criarPartesDoFantasma, type ItemDoLote, LoteDoModelo } from './lotes'
 import {
@@ -184,6 +185,8 @@ class PalcoThree implements Palco {
   private readonly limitesDoChao = new Box3()
   private readonly limitesDasGuias = new Box3()
   private readonly marcadores = new MarcadoresDoPalco()
+  /** As regiões do cenário (lote 7 da conclusão): dentro das guias do jogo, como os marcadores. */
+  private readonly regioesDesenhadas = new RegioesDoPalco()
   private guiasDoJogo = false
   private aspectoDasGuias = 0
   private readonly contornos: Contornos
@@ -276,12 +279,14 @@ class PalcoThree implements Palco {
       this.terreno.prever(operacao.terreno, operacao.regioes)
       this.aguas.atualizarTerreno(operacao.regioes)
       this.marcadores.atualizarTerreno(operacao.regioes)
+      this.regioesDesenhadas.atualizarTerreno()
       this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(operacao.regioes))
     },
     restaurar: () => {
       this.terreno?.cancelarPrevia()
       this.aguas.atualizarTerreno()
       this.marcadores.atualizarTerreno()
+      this.regioesDesenhadas.atualizarTerreno()
       this.caminhos.atualizarTerreno()
     },
   })
@@ -345,6 +350,7 @@ class PalcoThree implements Palco {
     this.aguas = new AguasDoPalco(this.renderer.capabilities.maxTextureSize)
     this.cena.add(this.aguas.grupo, this.pontosDaAgua.grupo, this.caminhos.grupo)
     this.marcadores.grupo.visible = false
+    this.marcadores.grupo.add(this.regioesDesenhadas.grupo)
     this.cena.add(this.marcadores.grupo)
     this.colisoesVisiveis.grupo.visible = false
     this.cena.add(this.colisoesVisiveis.grupo)
@@ -472,6 +478,7 @@ class PalcoThree implements Palco {
       aoAtualizar: (regioes) => {
         this.aguas.atualizarTerreno(regioes)
         this.marcadores.atualizarTerreno(regioes)
+        this.regioesDesenhadas.atualizarTerreno()
         this.superficies.invalidarGeometrias(this.caminhos.atualizarTerreno(regioes))
         if (this.destruido) return
         // Com o pincel em uso, o relevo, a água e os caminhos já acompanham a cada quadro; os
@@ -1351,6 +1358,7 @@ class PalcoThree implements Palco {
     this.pontosDaAgua.descartar()
     this.aguas.descartar()
     this.caminhos.descartar()
+    this.regioesDesenhadas.descartar()
     this.marcadores.descartar()
     this.colisoesVisiveis.descartar()
     this.ambiente.descartar()
@@ -1688,11 +1696,13 @@ class PalcoThree implements Palco {
     if (!doc || !this.guiasDoJogo || this.opcoes.fotografia) {
       this.marcadores.grupo.visible = false
       this.marcadores.limpar()
+      this.regioesDesenhadas.limpar()
       this.opcoes.aoMarcadores?.({ carregando: 0, falhas: [] })
       return
     }
     this.marcadores.grupo.visible = true
     const estado = this.marcadores.definir(doc, this.fonteDeAlturas(), this.camera.aspect)
+    this.regioesDesenhadas.definir(doc, this.fonteDeAlturas())
     this.opcoes.aoMarcadores?.(estado)
   }
 

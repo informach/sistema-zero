@@ -1,0 +1,747 @@
+{
+  "measuredAt": "2026-11-22T11:37:20.773Z",
+  "sha": "5482c277847fa374ca184b2c8ee8393edb1f34ab",
+  "dirty": true,
+  "rows": [
+    {
+      "key": "jogo-2d",
+      "engine": "Jogo 2D",
+      "game": "Pegue a moeda",
+      "frameMs": 16.67,
+      "limit": 0.05,
+      "costs": {
+        "desempenho": {
+          "percentP50": -0.06,
+          "perRoundPercent": [-0.06, 0.07, -0.36]
+        },
+        "investigar": {
+          "percentP50": -0.23,
+          "perRoundPercent": [-0.23, -0.31, 0.05]
+        }
+      },
+      "samples": [
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.59,
+          "scriptMsPerFrame": 0.24,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.57,
+          "scriptMsPerFrame": 0.23,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.56,
+          "scriptMsPerFrame": 0.25,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.54,
+          "scriptMsPerFrame": 0.22,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 242,
+          "taskMsPerFrame": 0.55,
+          "scriptMsPerFrame": 0.22,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 0.6,
+          "scriptMsPerFrame": 0.25,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 0.62,
+          "scriptMsPerFrame": 0.24,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 0.54,
+          "scriptMsPerFrame": 0.21,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.58,
+          "scriptMsPerFrame": 0.26,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.47,
+          "scriptMsPerFrame": 0.19,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.48,
+          "scriptMsPerFrame": 0.18,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 2,
+          "frames": 240,
+          "taskMsPerFrame": 0.54,
+          "scriptMsPerFrame": 0.23,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        }
+      ]
+    },
+    {
+      "key": "jogo-2d-avancado",
+      "engine": "Jogo 2D Avançado",
+      "game": "Pong Profissional",
+      "frameMs": 16.67,
+      "limit": 0.05,
+      "costs": {
+        "desempenho": {
+          "percentP50": 0.17,
+          "perRoundPercent": [0.66, 0.17, -0.51]
+        },
+        "investigar": {
+          "percentP50": 0.35,
+          "perRoundPercent": [0.35, 1.01, -0.75]
+        }
+      },
+      "samples": [
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 0.49,
+          "scriptMsPerFrame": 0.19,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 0.65,
+          "scriptMsPerFrame": 0.23,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 0.6,
+          "scriptMsPerFrame": 0.21,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 0.6,
+          "scriptMsPerFrame": 0.2,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 0.56,
+          "scriptMsPerFrame": 0.19,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 0.58,
+          "scriptMsPerFrame": 0.21,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 0.54,
+          "scriptMsPerFrame": 0.18,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 1,
+          "frames": 243,
+          "taskMsPerFrame": 0.72,
+          "scriptMsPerFrame": 0.23,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 242,
+          "taskMsPerFrame": 0.89,
+          "scriptMsPerFrame": 0.31,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 2,
+          "frames": 243,
+          "taskMsPerFrame": 0.67,
+          "scriptMsPerFrame": 0.22,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.62,
+          "scriptMsPerFrame": 0.21,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 2,
+          "frames": 242,
+          "taskMsPerFrame": 0.63,
+          "scriptMsPerFrame": 0.21,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        }
+      ]
+    },
+    {
+      "key": "jogo-3d",
+      "engine": "Jogo 3D",
+      "game": "Desvie dos blocos",
+      "frameMs": 16.67,
+      "limit": 0.05,
+      "costs": {
+        "desempenho": {
+          "percentP50": -0.18,
+          "perRoundPercent": [0.78, -0.18, -0.82]
+        },
+        "investigar": {
+          "percentP50": 0.23,
+          "perRoundPercent": [0.78, 0.23, -0.41]
+        }
+      },
+      "samples": [
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 240,
+          "taskMsPerFrame": 0.66,
+          "scriptMsPerFrame": 0.4,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.89,
+          "scriptMsPerFrame": 0.53,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.85,
+          "scriptMsPerFrame": 0.52,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.89,
+          "scriptMsPerFrame": 0.53,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 0.85,
+          "scriptMsPerFrame": 0.51,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 0.75,
+          "scriptMsPerFrame": 0.45,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 0.7,
+          "scriptMsPerFrame": 0.44,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 0.82,
+          "scriptMsPerFrame": 0.48,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.74,
+          "scriptMsPerFrame": 0.46,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.68,
+          "scriptMsPerFrame": 0.41,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.9,
+          "scriptMsPerFrame": 0.52,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.75,
+          "scriptMsPerFrame": 0.44,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        }
+      ]
+    },
+    {
+      "key": "mundo-3d",
+      "engine": "Mundo 3D",
+      "game": "Meu Mundo",
+      "frameMs": 16.67,
+      "limit": 0.05,
+      "costs": {
+        "desempenho": {
+          "percentP50": 1.44,
+          "perRoundPercent": [0.51, 1.44, 1.71]
+        },
+        "investigar": {
+          "percentP50": 0.14,
+          "perRoundPercent": [1.72, 0.14, -2.31]
+        }
+      },
+      "samples": [
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 240,
+          "taskMsPerFrame": 1.03,
+          "scriptMsPerFrame": 0.8,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 1.31,
+          "scriptMsPerFrame": 1.03,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 1.43,
+          "scriptMsPerFrame": 1.11,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 1.51,
+          "scriptMsPerFrame": 1.18,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 1.16,
+          "scriptMsPerFrame": 0.9,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 1.42,
+          "scriptMsPerFrame": 1.11,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 1.19,
+          "scriptMsPerFrame": 0.94,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 1,
+          "frames": 241,
+          "taskMsPerFrame": 1.2,
+          "scriptMsPerFrame": 0.93,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 1.85,
+          "scriptMsPerFrame": 1.44,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 2.46,
+          "scriptMsPerFrame": 1.88,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 242,
+          "taskMsPerFrame": 2.5,
+          "scriptMsPerFrame": 1.96,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 2,
+          "frames": 242,
+          "taskMsPerFrame": 1.79,
+          "scriptMsPerFrame": 1.39,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        }
+      ]
+    },
+    {
+      "key": "jogo-3d-avancado",
+      "engine": "Jogo 3D Avançado",
+      "game": "Defesa da Torre Profissional",
+      "frameMs": 16.67,
+      "limit": 0.05,
+      "costs": {
+        "desempenho": {
+          "percentP50": 0.36,
+          "perRoundPercent": [-0.41, 0.44, 0.36]
+        },
+        "investigar": {
+          "percentP50": 0.64,
+          "perRoundPercent": [0.64, 1.13, -1.18]
+        }
+      },
+      "samples": [
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 1.23,
+          "scriptMsPerFrame": 0.76,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 1.19,
+          "scriptMsPerFrame": 0.71,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 242,
+          "taskMsPerFrame": 1.28,
+          "scriptMsPerFrame": 0.81,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 0,
+          "frames": 243,
+          "taskMsPerFrame": 1.36,
+          "scriptMsPerFrame": 0.87,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 243,
+          "taskMsPerFrame": 1.43,
+          "scriptMsPerFrame": 0.93,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 1,
+          "frames": 243,
+          "taskMsPerFrame": 1.6,
+          "scriptMsPerFrame": 1.02,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 243,
+          "taskMsPerFrame": 1.62,
+          "scriptMsPerFrame": 1.01,
+          "intervalP50": 16.7,
+          "intervalP95": 16.9
+        },
+        {
+          "arm": "investigar",
+          "round": 1,
+          "frames": 243,
+          "taskMsPerFrame": 1.71,
+          "scriptMsPerFrame": 1.13,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 243,
+          "taskMsPerFrame": 1.49,
+          "scriptMsPerFrame": 0.9,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 2,
+          "frames": 244,
+          "taskMsPerFrame": 1.54,
+          "scriptMsPerFrame": 0.97,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 243,
+          "taskMsPerFrame": 1.46,
+          "scriptMsPerFrame": 0.92,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "investigar",
+          "round": 2,
+          "frames": 242,
+          "taskMsPerFrame": 1.28,
+          "scriptMsPerFrame": 0.79,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        }
+      ]
+    },
+    {
+      "key": "pro-js",
+      "engine": "Pro (JavaScript)",
+      "game": "jogo de canvas sintético com a ponte da prévia do Pro",
+      "frameMs": 16.67,
+      "limit": 0.05,
+      "costs": {
+        "desempenho": {
+          "percentP50": 0.35,
+          "perRoundPercent": [-0.18, 0.58, 0.64, -0.81, 0.35]
+        }
+      },
+      "samples": [
+        {
+          "arm": "fechada",
+          "round": 0,
+          "frames": 241,
+          "taskMsPerFrame": 0.81,
+          "scriptMsPerFrame": 0.45,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 0,
+          "frames": 240,
+          "taskMsPerFrame": 0.78,
+          "scriptMsPerFrame": 0.44,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 1,
+          "frames": 240,
+          "taskMsPerFrame": 0.72,
+          "scriptMsPerFrame": 0.4,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 1,
+          "frames": 239,
+          "taskMsPerFrame": 0.81,
+          "scriptMsPerFrame": 0.47,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 2,
+          "frames": 241,
+          "taskMsPerFrame": 0.76,
+          "scriptMsPerFrame": 0.43,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 2,
+          "frames": 240,
+          "taskMsPerFrame": 0.86,
+          "scriptMsPerFrame": 0.48,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 3,
+          "frames": 240,
+          "taskMsPerFrame": 0.79,
+          "scriptMsPerFrame": 0.44,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 3,
+          "frames": 240,
+          "taskMsPerFrame": 0.66,
+          "scriptMsPerFrame": 0.38,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "fechada",
+          "round": 4,
+          "frames": 240,
+          "taskMsPerFrame": 0.6,
+          "scriptMsPerFrame": 0.35,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        },
+        {
+          "arm": "desempenho",
+          "round": 4,
+          "frames": 239,
+          "taskMsPerFrame": 0.66,
+          "scriptMsPerFrame": 0.39,
+          "intervalP50": 16.7,
+          "intervalP95": 16.8
+        }
+      ]
+    }
+  ]
+}

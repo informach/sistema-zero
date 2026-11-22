@@ -3,6 +3,7 @@ import {
   StudioRuntimeReleaseSchema,
 } from '../../packages/core/src/studio/runtime-catalog'
 import type { StudioStudentTest } from '../../packages/core/src/studio/student-tests'
+import { runPythonInvestigation } from '../../packages/studio/src/components/devtools/pythonInvestigation'
 import type { PythonProjectDocument } from '../../packages/studio/src/core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../packages/studio/src/runtime/environment'
 import {
@@ -13,6 +14,7 @@ import { createStudioRuntimeRegistry } from '../../packages/studio/src/runtime/r
 import type {
   StudioRuntimeEvent,
   StudioRuntimeInput,
+  StudioRuntimePerformanceSlice,
   StudioRuntimeProvider,
 } from '../../packages/studio/src/runtime/types'
 import { refinePythonProjectDocument } from '../../packages/studio/src/state/pythonProjectValidation'
@@ -50,6 +52,12 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
     events: StudioRuntimeEvent[]
     controller: PythonExecutionController
     container: HTMLDivElement
+    /** As fatias da aba Desempenho, quando a medida está ligada. */
+    perf: StudioRuntimePerformanceSlice[]
+    /** Quem encerra o laço da aba Investigar, quando ele está ligado. */
+    investigation: (() => void) | null
+    /** Quantas leituras o laço da aba Investigar entregou. */
+    readings: number
   }
   const entries = new Map<string, Entry>()
   const get = (slot: string) => {
@@ -136,12 +144,38 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
         allowed: true,
         writerEpoch: null,
         events: [],
+        perf: [],
+        investigation: null,
+        readings: 0,
       })
     },
     run: (slot: string) => get(slot).controller.run(),
     stop: (slot: string) => get(slot).controller.stop(),
     capture: (slot: string) => get(slot).controller.capture(),
     observe: (slot: string, path: string) => get(slot).controller.observe({ type: 'value', path }),
+    /** A aba Desempenho: liga (`true`) ou desliga a medida, sem recomeçar o programa. */
+    measure: (slot: string, on: boolean) =>
+      get(slot).controller.measurePerformance(on ? (slice) => get(slot).perf.push(slice) : null),
+    /**
+     * A aba Investigar: o MESMO laço do editor (`runPythonInvestigation`), lendo `names` a cada
+     * meio segundo, com o programa rodando no modo de observação (`create(…, {observation})`).
+     */
+    investigate(slot: string, names: string[] | null) {
+      const entry = get(slot)
+      entry.investigation?.()
+      entry.investigation = null
+      if (!names) return
+      entry.investigation = runPythonInvestigation({
+        controller: entry.controller,
+        names,
+        draws: true,
+        completed: false,
+        receive: () => {
+          entry.readings++
+        },
+        setSender: () => {},
+      })
+    },
     /** A aba Investigar: pausa (`true`) ou continua o programa na troca de quadro. */
     pause: (slot: string, on: boolean) => get(slot).controller.pause(on),
     /** A aba Investigar: avança 1 quadro com o programa pausado. */
@@ -209,11 +243,14 @@ export async function createControllerProbe(provider: StudioRuntimeProvider) {
         ...view,
         current: project === entry.project,
         events: entry.events,
+        perf: entry.perf,
+        readings: entry.readings,
         frames: entry.container.querySelectorAll('iframe').length,
       }
     },
     async dispose(slot: string) {
       const entry = get(slot)
+      entry.investigation?.()
       await entry.controller.dispose()
       entry.container.remove()
     },

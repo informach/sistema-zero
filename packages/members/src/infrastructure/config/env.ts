@@ -80,6 +80,13 @@ const EnvSchema = z
     CENARIOS_MODO: z.enum(['desligado', 'equipe', 'lista', 'aberto']).default('desligado'),
     /** Ids de conta liberados no modo `lista`, separados por vírgula. */
     CENARIOS_LISTA: z.string().max(20_000).optional(),
+    /**
+     * As regiões dos cenários 3D (22/11/2026). Desligado (padrão): nenhum lote cria, muda ou
+     * apaga regiões (403 `CENARIO_REGIOES_DESLIGADAS`) e a oficina não mostra a ferramenta. Só
+     * liga depois de os leitores (Estúdio, motor dos cenários e imagem do studio-runtime)
+     * aceitarem o campo `regioes`. Nome novo: criar no Railway antes do `.railway/variables.ts`.
+     */
+    CENARIOS_REGIOES: optionalBool(false),
     /** A cota de cada conta nos cenários, em MB (padrão 2048). Vale também para os espaços que
      * já existem. Opcional: só entra no Railway quando a cota mudar. */
     CENARIOS_COTA_DA_CONTA_MB: z.coerce.number().int().min(100).max(1_000_000).optional(),

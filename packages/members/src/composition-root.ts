@@ -464,6 +464,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const cenariosRepo = new DrizzleCenariosRepository(db)
   const cenariosService = new CenariosService(cenariosRepo, clock, {
     modo: env.CENARIOS_MODO,
+    regioes: env.CENARIOS_REGIOES,
     lista: new Set(
       (env.CENARIOS_LISTA ?? '')
         .split(',')
@@ -1252,8 +1253,8 @@ export async function createApplication(env: Env): Promise<Application> {
     quizAttempts,
     studioSubmissions,
   )
-  const listMemberCertificates = new ListMemberCertificatesService(certificates)
-  const listMemberRatings = new ListMemberRatingsService(ratings)
+  const listMemberCertificates = new ListMemberCertificatesService(certificates, courses)
+  const listMemberRatings = new ListMemberRatingsService(ratings, courses)
   const analytics = new GetCourseAnalyticsService(new DrizzleAnalyticsRepository(db))
   const grantManual = new GrantManualEntitlementService({
     catalog,

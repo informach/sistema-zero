@@ -44,6 +44,8 @@ interface GalleryGame {
 interface GalleryFamily {
   games: readonly GalleryGame[]
   directory: string
+  /** As edições de qualificação: `scripts/python/fixtures/<fixtures>/<jogo>.edits.json`. */
+  fixtures: string
   evidence: string
   manifest: string
   extension(game: GalleryGame): string
@@ -53,6 +55,7 @@ const families: GalleryFamily[] = [
   {
     games: VISUAL_REFERENCE_GAMES,
     directory: '',
+    fixtures: 'visual-reference-games',
     evidence: '2026-10-22-python-reference-games-visual-evidence',
     manifest: 'visualReferenceGames.manifest.ts',
     extension: () => 'python-turtle',
@@ -61,6 +64,7 @@ const families: GalleryFamily[] = [
   {
     games: PGZERO_GAMES,
     directory: 'pgzero',
+    fixtures: 'pgzero-games',
     evidence: '2026-10-24-python-pgzero-games-evidence',
     manifest: 'pgzeroGames.manifest.ts',
     extension: () => 'python-pgzero',
@@ -69,6 +73,7 @@ const families: GalleryFamily[] = [
   {
     games: RAYLIB_GAMES,
     directory: 'raylib',
+    fixtures: 'raylib-games',
     evidence: '2026-10-24-python-raylib-games-evidence',
     manifest: 'raylibGames.manifest.ts',
     extension: (game) => (game.extension === '3d' ? 'python-raylib-3d' : 'python-raylib-2d'),
@@ -98,9 +103,14 @@ try {
         })
       }
       const evidence = resolve(root, 'docs/continuity', family.evidence)
-      const previous = JSON.parse(await readFile(resolve(evidence, game.receipt), 'utf8')) as {
-        edits: VisualExampleEdit[]
-      }
+      // As edições vêm da fixture versionada (`example-edit-fixtures.ts`), não do recibo anterior:
+      // organizar o exemplo muda a posição das linhas, e a fixture é onde os caminhos são remapeados.
+      const edits = JSON.parse(
+        await readFile(
+          resolve(studio, 'scripts/python/fixtures', family.fixtures, `${game.key}.edits.json`),
+          'utf8',
+        ),
+      ) as VisualExampleEdit[]
       const codecs = orderPythonAuthoringCodecs(
         family.codecs(game),
         release.manifest.python?.features ?? [],
@@ -117,7 +127,7 @@ try {
         path,
         analysis: analysis!,
         authoring,
-        edits: previous.edits,
+        edits,
       })
       const match = /^(.*)-r(\d+)\.json\.snapshot$/.exec(game.receipt)
       assert(match, `Unrecognized receipt path: ${game.receipt}`)

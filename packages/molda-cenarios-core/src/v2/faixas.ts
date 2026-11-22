@@ -161,6 +161,13 @@ export const FAMILIAS_DA_OFICINA = [
     servidor: true,
   },
   {
+    id: 'jogo.regioes',
+    aba: 'jogo',
+    faixa: 'intermediate',
+    rotulo: 'Regiões',
+    servidor: true,
+  },
+  {
     id: 'luz.sol-e-ambiente',
     aba: 'luz',
     faixa: 'intermediate',
@@ -280,6 +287,7 @@ export const FAMILIA_DA_FERRAMENTA: Readonly<
     esfera: 'jogo.zonas-e-rotas',
     poligono: 'jogo.zonas-e-rotas',
     rota: 'jogo.zonas-e-rotas',
+    regiao: 'jogo.regioes',
     camera: 'jogo.cameras',
   },
   luz: {},
@@ -361,6 +369,8 @@ function marcas(doc: DocumentoDeCenario): Map<string, string> {
     else if (tipo === 'luz') marcar('luz.luzes-e-sombra', mk.id, mk.configuracao)
   }
 
+  for (const r of doc.regioes ?? []) marcar('jogo.regioes', r.id, r)
+
   const entidades = [
     ...doc.instancias,
     ...doc.grupos,
@@ -391,7 +401,20 @@ export function familiasMudadas(
   depois: DocumentoDeCenario,
 ): FamiliaDaOficinaId[] {
   const mudadas = new Set<FamiliaDaOficinaId>()
-  const marcasAntes = marcas(antes)
+  // Apagar uma região tira o id dela das vizinhas (`regiao.remover`): isso é parte de apagar, que
+  // é do básico, e não uma mudança na vizinha (revisão do lote 5).
+  const restantes = new Set((depois.regioes ?? []).map((r) => r.id))
+  const marcasAntes = marcas(
+    antes.regioes?.length
+      ? {
+          ...antes,
+          regioes: antes.regioes.map((r) => ({
+            ...r,
+            vizinhas: r.vizinhas.filter((v) => restantes.has(v)),
+          })),
+        }
+      : antes,
+  )
   for (const [chave, assinatura] of marcas(depois))
     if (marcasAntes.get(chave) !== assinatura)
       mudadas.add(chave.slice(0, chave.indexOf('|')) as FamiliaDaOficinaId)

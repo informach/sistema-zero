@@ -1,9 +1,12 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import {
   type CenaCompilada,
+  calcularPertencaDasRegioes,
   criarConsultaDeEntidadesDoNo,
   criarFonteDeAlturasCompilada,
   digestDoDocumentoDeCenario,
+  LIMITES_DA_EXPORTACAO,
+  malhasPorJanela,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import type { CenaParaStudio } from '@sistemazero/molda-cenarios-core/studio'
 import { prepararConsultaDaAgua } from '@sistemazero/molda-cenarios-core/v2'
@@ -16,6 +19,7 @@ import {
   carregarCanvasNativo,
   criarCenarioCompletoDeEnsaio,
   MATERIAL_DO_MODELO,
+  REGIOES_DO_CONTRATO,
   TERRENO_DO_CONTRATO,
 } from '../../../testing/moldaFullScenarioFixture'
 import { decodeProjectAsset, digestAssetBytes } from '../../assetBinary'
@@ -586,11 +590,91 @@ describe.skipIf(!nativo)(
       })
     })
 
-    test.todo('streaming: índice de regiões para carregar e descartar sob demanda — depende de entrega externa: o formato `molda-cena-compilada` v1 não tem lista de regiões (`CenaCompiladaSchema`, molda-cenarios-core/src/compilar/schema.ts) e o Estúdio carrega a cena inteira de uma vez (`carregarCena3DDoProjeto` → `carregarCenaNoThree`); "regiões e streaming genéricos" pedem proposta aprovada (mapa-da-missao, Etapa 4)', () => {})
     test.todo('textura de biblioteca no material (`textura.definir` → `cena.texturas` → material `image`): o formato e a importação a representam, mas o compilador decodifica a imagem por <img> (`decodificarImagem`, molda-cenarios-motor/src/texturas.ts) e o happy-dom não carrega imagens; a prova é no navegador', () => {})
     test.todo('carga no Three do cenário completo: `carregarCena3DDoProjeto` não termina no bun porque o GLB da água embute um PNG lido por <img> (`novoLeitor`, molda-cenarios-motor/src/modelos.ts); a prova no navegador é `e2e/scene3d-document.flow.ts` (cenário mais simples)', () => {})
   },
 )
+
+// O índice das regiões (lote 5 da conclusão, 22/11/2026; era um `test.todo` até aqui): o mesmo
+// cenário, com três regiões desenhadas pelos comandos `regiao.definir`, compilado sem e com
+// "Juntar peças". A carga por regiões no motor é o lote 6.
+describe.skipIf(!nativo)('regiões: o índice para carregar e descartar por região', () => {
+  let separado: ReturnType<typeof leituraDoEstudio>
+  let junto: ReturnType<typeof leituraDoEstudio>
+  beforeAll(async () => {
+    separado = leituraDoEstudio(await criarCenarioCompletoDeEnsaio({ comRegioes: true }))
+    junto = leituraDoEstudio(await criarCenarioCompletoDeEnsaio({ comRegioes: true, juntar: true }))
+  }, 240_000)
+
+  test('as regiões chegam ao Estúdio como a autora desenhou', () => {
+    for (const { cena } of [separado, junto])
+      expect(
+        cena.regioes?.map(({ id, nome, caixa, vizinhas }) => ({ id, nome, caixa, vizinhas })),
+      ).toEqual(REGIOES_DO_CONTRATO.map((r) => structuredClone(r)))
+  })
+
+  test('cada lista é a que a pertença calcula, e todo item listado existe na cena', () => {
+    for (const { cena } of [separado, junto]) {
+      const regioes = cena.regioes ?? []
+      expect(regioes).toEqual(calcularPertencaDasRegioes(regioes, cena))
+      const nos = new Set(cena.nos.map((n) => n.id)),
+        colisoes = new Set(cena.colisoes.map((c) => c.id)),
+        aguas = new Set(cena.aguas.map((a) => a.id))
+      for (const r of regioes) {
+        for (const id of r.nos) expect(nos.has(id), id).toBe(true)
+        for (const id of r.colisoes) expect(colisoes.has(id), id).toBe(true)
+        for (const id of r.aguas) expect(aguas.has(id), id).toBe(true)
+      }
+      // O relevo é dividido em setores: cada região leva os setores que toca.
+      expect(regioes.every((r) => r.nos.length > 0)).toBe(true)
+    }
+  })
+
+  test('o que é de todas fica fora das listas: objetos com propriedades e a colisão do relevo', () => {
+    const { cena } = separado
+    const listados = new Set(
+      (cena.regioes ?? []).flatMap((r) => [...r.nos, ...r.colisoes, ...r.aguas]),
+    )
+    const comPropriedades = new Set(
+      cena.entidades
+        .filter((e) => e.propriedades && Object.keys(e.propriedades).length > 0)
+        .map((e) => e.id),
+    )
+    expect(comPropriedades.size).toBeGreaterThan(0)
+    for (const item of [...cena.nos, ...cena.colisoes])
+      if (item.entidade !== null && comPropriedades.has(item.entidade))
+        expect(listados.has(item.id), item.id).toBe(false)
+    for (const c of cena.colisoes.filter((x) => x.tipo === 'terreno'))
+      expect(listados.has(c.id), c.id).toBe(false)
+    // O lago (x de 22 a 38) é do Leste, e só dele.
+    expect((cena.regioes ?? []).filter((r) => r.aguas.includes('lago')).map((r) => r.id)).toEqual([
+      'leste',
+    ])
+  })
+
+  test('com "Juntar peças", nenhum lote mistura peças de regiões diferentes', () => {
+    const regioesDo = (cena: CenaCompilada, id: string) =>
+      (cena.regioes ?? [])
+        .filter((r) => r.nos.includes(id))
+        .map((r) => r.id)
+        .join(',')
+    // Os conjuntos de regiões das peças compiladas uma a uma (a trilha atravessa as três).
+    const daPeca = new Set(separado.cena.nos.map((n) => regioesDo(separado.cena, n.id)))
+    const lotes = junto.cena.nos.filter((n) => n.faixas)
+    expect(lotes.length).toBeGreaterThan(0)
+    // Um lote que juntasse peças de regiões diferentes teria um conjunto que nenhuma peça tem.
+    for (const n of lotes) expect(daPeca.has(regioesDo(junto.cena, n.id)), n.id).toBe(true)
+  })
+
+  test('cada janela (a região e as vizinhas) cabe no orçamento do Estúdio', () => {
+    for (const { cena } of [separado, junto]) {
+      const janelas = malhasPorJanela(cena)
+      expect(Object.keys(janelas)).toEqual(['oeste', 'centro', 'leste'])
+      for (const malhas of Object.values(janelas))
+        expect(malhas).toBeLessThanOrEqual(LIMITES_DA_EXPORTACAO.janela.malhas)
+    }
+  })
+})
 
 describe.skipIf(!nativo)('com "Juntar peças" (regiões de 128 m do Estúdio)', () => {
   let r: Cenario

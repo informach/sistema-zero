@@ -62,7 +62,11 @@ import {
 } from '../../blockly/runtimeMark'
 import { saveWorkspaceState } from '../../blockly/savedWorkspaceState'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
-import { isBumpWhileShowing } from '../../blockly/transientExpansion'
+import {
+  differsOnlyInStackPositions,
+  forgetShownWhenTouched,
+  isBumpWhileShowing,
+} from '../../blockly/transientExpansion'
 import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
@@ -409,6 +413,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // Misturar os dois estados fazia um BLOCK_MOVE só-de-layout, entregue antes
   // do BLOCK_MOVE de conexão do mesmo gesto, envenenar o dedupe do compilador.
   const lastAppliedBlocksStateRef = useRef<string>('')
+  // Um afastamento causado por "Mostrar o bloco" ficou fora da gravação desde o último estado
+  // aplicado (`isBumpWhileShowing`): a comparação da saída e do Jogar ignora só essa diferença.
+  const bumpSkippedRef = useRef(false)
   // O OBJETO cujo texto é o `lastAppliedBlocksStateRef`, quando ele é o mesmo que foi à store (lote
   // 3, 21/11/2026). A store guarda o estado sem copiar e nunca o altera, então a volta do estado
   // que este painel acabou de gravar é reconhecida pela identidade, sem serializar de novo: com 10
@@ -601,6 +608,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       lastAppliedBlocksStateRef.current = serialized
       lastAppliedBlocksStateObjectRef.current = state
       lastRegeneratedBlocksStateRef.current = serialized
+      bumpSkippedRef.current = false
 
       const built = buildIRFromWorkspace(workspace)
       // Lê o projeto mais recente do store (evita closure obsoleta) e preserva a
@@ -760,6 +768,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) return
     const serialized = jsonStringify(saveWorkspaceState(workspace)) ?? ''
     if (serialized === lastAppliedBlocksStateRef.current) return
+    // Só a pilha que "Mostrar o bloco" afastou: mostrar não é editar, nem no Jogar.
+    if (
+      bumpSkippedRef.current &&
+      differsOnlyInStackPositions(serialized, lastAppliedBlocksStateRef.current)
+    )
+      return
     regenerateFromBlocks(workspace)
   }, [regenerateFromBlocks, workspace])
 
@@ -834,6 +848,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // ainda precisa processar o estado final quando o segundo evento chegar.
       lastAppliedBlocksStateRef.current = serialized
       lastAppliedBlocksStateObjectRef.current = state
+      bumpSkippedRef.current = false
       applyProjectState({ blocksState: state })
     },
     [applyProjectState],
@@ -926,6 +941,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   useEffect(() => {
     if (!workspace) return
     const listener = (event: Blockly.Events.Abstract) => {
+      // Antes de gravar: o gesto da criança num bloco aberto só para mostrar tira a marca dele.
+      forgetShownWhenTouched(workspace, event)
       if (event.type === Blockly.Events.FINISHED_LOADING) {
         isApplyingStateRef.current = false
         // Se havia posições a preservar (recarregamento durante edição), as
@@ -987,7 +1004,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         event.type === Blockly.Events.BLOCK_MOVE &&
         isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove)
       // O afastamento automático causado por uma função aberta só para mostrar não é gravado.
-      if (layoutOnly && isBumpWhileShowing(workspace, event)) return
+      if (layoutOnly && isBumpWhileShowing(workspace, event)) {
+        bumpSkippedRef.current = true
+        return
+      }
       const svgWorkspace = workspace as Blockly.WorkspaceSvg
       if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) {
         if (layoutOnly) shouldPersistLayoutAfterDragRef.current = true

@@ -12,4 +12,6 @@ export const LIMITES_DA_EXPORTACAO = {
     atributos: 16,
   },
   studio: { malhas: 48, bytesPorModelo: 5 * 1024 * 1024, bytesDoProjeto: 24 * 1024 * 1024 },
+  /** Numa cena com regiões, cada janela (região, vizinhas e o que é de todas) cabe nisto. */
+  janela: { malhas: 48, bytesDecodificados: 128 * 1024 * 1024 },
 } as const

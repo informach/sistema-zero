@@ -49,7 +49,12 @@ export interface LearningRepository {
     sections: LessonSection[],
   ): Promise<LessonStructure | null>
   getProgress(owner: LearningOwner, lessonId: string): Promise<LessonLearningProgress>
-  saveNavigation(owner: LearningOwner, lessonId: string, sectionId: string): Promise<void>
+  saveNavigation(
+    owner: LearningOwner,
+    lessonId: string,
+    sectionId: string,
+    options?: { opening?: boolean },
+  ): Promise<void>
   saveProgress(input: SaveLearningProgress): Promise<LearningBlockProgress>
   recordMaterialDownload(
     input: LearningOwner & {

@@ -760,3 +760,39 @@ vermelho), o `offscreen-lifecycle.spec.ts` inteiro, as guardas novas do `deferre
 (`setCollapsed` → `setVisible` → `startTrackingAll`; `renderEfficiently` → `updateCollapsed`) e o
 `classic-reveal-scale.spec.ts`, que exige o projeto salvo igual e limita leituras de estilo e
 blocos redesenhados. O tempo no Chrome conectado é registrado no staging, não prometido.
+
+### Revisão do lote 2 (22/11/2026)
+
+Dois defeitos confirmados e quatro menores, todos consertados com teste vermelho antes:
+
+1. **O resto do corpo cortado continuava sendo desenhado depois de a criança recolher a função.**
+   A fronteira que o `renderAround` deixa dentro da função não é filha direta do bloco recolhido,
+   e o `hiddenByCollapsed` só olhava o pai. Rolar, selecionar a unidade de baixo, "Organizar
+   blocos" ou a foto dos blocos desenhavam o corpo escondido e ligavam as conexões dele nas
+   posições de antes: um bloco arrastado encaixava dentro da função fechada e sumia. Agora
+   `hiddenByCollapsed` olha todos os blocos acima, e `fill`, `drawAll`, `completeBodyAbove`,
+   `drawThrough` e `drawBeforeUnplug` respeitam isso. Quando a função abre de novo com algo já
+   desenhado embaixo, o `revealBody` completa o corpo na hora (`drawnBelow`), como o
+   `completeBodyAbove` faria.
+2. **O Rodar depois de "Mostrar o bloco" gravava o projeto.** O afastamento da pilha solta não ia
+   para a gravação, mas a comparação da gravação de saída e do Rodar
+   (`flushScheduledRegeneration`) via a pilha no lugar novo e regenerava e gravava os 7 mil blocos.
+   Medido com o conserto desligado: `x 32 → 60`, `y 392 → 348` no salvo. Agora a diferença só de
+   posição das pilhas soltas é ignorada quando um afastamento foi deixado de fora
+   (`differsOnlyInStackPositions`), e o afastamento só é da abertura nos 2 s depois dela (antes,
+   todo afastamento deixava de ser gravado enquanto houvesse marca).
+3. Menores: o redesenho dos blocos em volta de um corte aninhado sobe todos os níveis (não só um);
+   um bloco escondido desencaixado vira raiz desenhada (antes ficava adiado e solto para sempre);
+   apagar um bloco quando só sobra corpo escondido sai da contagem; o ouvinte do painel tira a
+   marca de "só mostrado" antes de gravar um arrasto da função.
+
+Ficou registrado sem conserto: desfazer um "Fechar o bloco" com a função aberta só para mostrar não
+emite evento (o bloco já está aberto), então ela segue gravada recolhida até a criança mexer nela.
+
+Provas: `collapsed-reveal.spec.ts` ganhou a conta `trackedHidden` (conexões ligadas em blocos
+desenhados dentro de um bloco recolhido) e o caso "recolher a função depois de mostrar no corpo
+comprido", que passa pela vista que cresce, pelo "Organizar blocos" e pela reabertura; três
+sabotagens (só o pai, sem completar, desenhar a fronteira escondida) deixam esse caso vermelho.
+`classic-reveal-scale.spec.ts` aperta Rodar depois do gesto e exige o salvo igual (e recusa um
+salvo que não foi lido). `deferredTail.test.ts` prende também a recursão do `startTrackingAll`, onde
+o gancho intercepta. `transientExpansion.test.ts` cobre a comparação só de posição.

@@ -1,0 +1,34 @@
+[
+  {
+    "label": "tamanho do mundo",
+    "path": {
+      "body": 4,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "8",
+    "after": "6"
+  },
+  {
+    "label": "pulo",
+    "path": {
+      "body": 6,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "8",
+    "after": "10"
+  }
+]

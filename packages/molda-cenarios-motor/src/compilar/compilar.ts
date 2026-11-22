@@ -1,5 +1,6 @@
 import {
   type ContextoDeLicencas,
+  calcularPertencaDasRegioes,
   digestDoDocumentoDeCenario,
   type FonteDaCompilacao,
   type PacoteCompilado,
@@ -161,6 +162,19 @@ async function compilarBase(
         texturas,
         licencas: p.licencas,
         ambiente: original.iluminacao,
+        // As regiões do documento com o que pertence a cada uma; o "Juntar peças", se vier,
+        // calcula de novo sobre os lotes (lote 5 da conclusão, 22/11/2026).
+        ...(original.regioes
+          ? {
+              regioes: calcularPertencaDasRegioes(original.regioes, {
+                entidades: meta.entidades,
+                nos: saida.nos,
+                colisoes: saida.colisoes,
+                aguas: p.aguas,
+                ...(plano ? { plano } : {}),
+              }),
+            }
+          : {}),
       },
       arquivos.arquivos,
       sinal,

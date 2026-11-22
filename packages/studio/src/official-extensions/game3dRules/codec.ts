@@ -9,6 +9,7 @@ import {
   GAME_RULES_GLOBALS,
   GAME_RULES_IMPLICIT_HERO_PREFIXES,
   GAME_RULES_PREFIX_OFF,
+  GAME_RULES_REGION_BY_MOLD_PREFIXES,
   GAME_RULES_RESULTS,
   GAME_RULES_SCREENS,
   type GameRulesCorner,
@@ -71,6 +72,7 @@ function methodOfStatement(s: GameRulesStatement): string {
   if (event === 'clique') return 'onClickObject'
   if (event === 'clique-cena') return 'onCanvasClick'
   if (event === 'encostar') return 'onTouchGroup'
+  if (event === 'regiao') return 'onEnterRegion'
   return name
 }
 
@@ -104,6 +106,7 @@ const BLOCK_SUFFIX_METHOD: Readonly<Record<string, string>> = {
   on_click_object: 'onClickObject',
   on_canvas_click: 'onCanvasClick',
   on_touch_group: 'onTouchGroup',
+  on_enter_region: 'onEnterRegion',
 }
 
 /** Vida sem objeto só cabe no prefixo de jogador implícito (e vice-versa). */
@@ -230,6 +233,15 @@ export function gameRulesBlockToIR(
         body: body(),
       }
       break
+    case 'on_enter_region':
+      statement = {
+        type: rule(p, 'onGame'),
+        event: 'regiao',
+        ...(implicitHero(p) ? {} : { objVar: f('OBJ') }),
+        region: f('REGION'),
+        body: body(),
+      }
+      break
     default:
       return undefined
   }
@@ -353,6 +365,14 @@ export function gameRulesStatementToCode(s: GameRulesStatement, t: CodeTools): s
       if (r.event === 'tecla') return withBody('onKey', [JSON.stringify(r.key ?? '')], '', r.body)
       if (r.event === 'clique') return withBody('onClickObject', [obj], '', r.body)
       if (r.event === 'clique-cena') return withBody('onCanvasClick', [], '', r.body)
+      if (r.event === 'regiao') {
+        const nome = JSON.stringify(r.region ?? '')
+        const molde = GAME_RULES_REGION_BY_MOLD_PREFIXES.includes(
+          splitGameRulesType(s.type)?.[0] as GameRulesPrefix,
+        )
+        const quem = molde ? JSON.stringify(r.objVar) : obj
+        return withBody('onEnterRegion', r.objVar === undefined ? [nome] : [quem, nome], '', r.body)
+      }
       return withBody(
         'onTouchGroup',
         [obj, t.id(r.groupVar ?? '')],
@@ -483,6 +503,15 @@ export function gameRulesStatementToBlock(
       if (r.event === 'tecla') return make('on_key', { KEY: r.key ?? '' }, {}, r.body)
       if (r.event === 'clique') return make('on_click_object', { OBJ: r.objVar ?? '' }, {}, r.body)
       if (r.event === 'clique-cena') return make('on_canvas_click', {}, {}, r.body)
+      if (r.event === 'regiao')
+        return make(
+          'on_enter_region',
+          r.objVar === undefined
+            ? { REGION: r.region ?? '' }
+            : { OBJ: r.objVar, REGION: r.region ?? '' },
+          {},
+          r.body,
+        )
       return make(
         'on_touch_group',
         { OBJ: r.objVar ?? '', GROUP: r.groupVar ?? '', ITEM: r.itemName ?? 'item' },
@@ -697,6 +726,27 @@ export function gameRulesCallToIR(
       const body = fn(1, 0)
       if (size(2) && body && has(KEY_OPTIONS[p] ?? [], key))
         statement = { type: rule(p, 'onGame'), event: 'tecla', key: key ?? '', body }
+      break
+    }
+    case 'onEnterRegion': {
+      // "Quando ⟨obj⟩ entrar na região ⟨nome⟩"; no Mundo 3D o jogador é implícito e, no 3D
+      // Avançado, quem entra é o molde (entre aspas).
+      const solo = implicitHero(p)
+      const objVar = solo
+        ? undefined
+        : GAME_RULES_REGION_BY_MOLD_PREFIXES.includes(p)
+          ? stringArg(args, 0)
+          : id(0)
+      const region = stringArg(args, solo ? 0 : 1)
+      const body = fn(solo ? 1 : 2, 0)
+      if (size(solo ? 2 : 3) && (solo || objVar) && region && body)
+        statement = {
+          type: rule(p, 'onGame'),
+          event: 'regiao',
+          ...(objVar ? { objVar } : {}),
+          region,
+          body,
+        }
       break
     }
     case 'onTouchGroup': {

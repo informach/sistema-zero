@@ -17,6 +17,14 @@ export const PYTHON_MISSION_OBSERVATION_LIMITS = Object.freeze({
   jsonChars: 64_000,
   timeoutMs: 10_000,
 })
+/**
+ * O recado com que o supervisor do Python encerra a execução quando o programa não responde à
+ * observação no prazo (o laço que nunca devolve o controle). Quem lê o resultado reconhece o
+ * programa travado por ele: em "Meus testes" é o tempo esgotado, como no JavaScript. O supervisor
+ * mora na distribuição Python imutável, então o texto é o contrato (22/11/2026).
+ */
+export const PYTHON_MISSION_UNRESPONSIVE_MESSAGE =
+  'O programa não respondeu à observação da missão dentro do prazo.'
 const path = z
   .string()
   .max(200)

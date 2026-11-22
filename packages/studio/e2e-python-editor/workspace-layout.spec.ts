@@ -39,6 +39,41 @@ test('Pac-Man layout drag, undo, redo and reopen preserve the exact Python sourc
         throw new Error('Expected Python Classic')
       return project.files['main.py']
     })
+  // O exemplo se organiza pelas áreas no primeiro clique nos blocos (22/11/2026): a régua é o
+  // arquivo depois disso (com os exemplos já convertidos, o clique não muda nada).
+  // Um ponto LIVRE do espaço dos blocos (a paleta fica em coluna à esquerda).
+  const free = await page.evaluate(() => {
+    const svg = document.querySelector('section[aria-label="Editor de blocos Python"] .blocklySvg')
+    if (!svg) return undefined
+    const box = svg.getBoundingClientRect()
+    for (let y = box.bottom - 40; y > box.top + 40; y -= 16)
+      for (let x = box.right - 40; x > box.left + 40; x -= 16)
+        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
+          return { x, y }
+    return undefined
+  })
+  if (!free) throw new Error('Não há ponto livre no espaço dos blocos.')
+  await page.mouse.click(free.x, free.y)
+  // Pronto quando passa SEIS segundos sem mudar (o commit e o salvamento automático vêm em
+  // etapas); ler no meio da gravação pode dar conflito, e isso conta como "ainda mudando".
+  const deadline = Date.now() + 45_000
+  let last: string | undefined
+  let quietSince = Date.now()
+  for (;;) {
+    if (Date.now() > deadline) throw new Error('O arquivo não parou de mudar depois de organizar.')
+    await new Promise((done) => setTimeout(done, 500))
+    let now: string | undefined
+    try {
+      now = await source()
+    } catch {
+      quietSince = Date.now()
+      continue
+    }
+    if (now !== last) {
+      last = now
+      quietSince = Date.now()
+    } else if (now !== undefined && Date.now() - quietSince >= 6_000) break
+  }
   const original = await source()
   const id = await page.evaluate(() => studioFreeProbe.focusProgramRoot())
   const root = page.locator(`[data-id="${id}"]`)

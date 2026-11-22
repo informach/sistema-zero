@@ -21,9 +21,15 @@ Os números citados são exemplos com a fonte; o lugar de cada número é o docu
    justificativa escrita ao lado do número e a decisão da dona (seção 6).
 6. **A medida não pode pesar no jogo de todo dia.** As abas Investigar e Desempenho só ligam a coleta
    quando são abertas, e o documento padrão da prévia não ganha nenhum byte. O custo da coleta (meta:
-   menos de 5% do quadro) ainda não foi medido no navegador ([`mapa-da-missao.md`](mapa-da-missao.md),
-   seções 9 a 11). ⚠️ A tela da aba Desempenho já diz "Medir quase não pesa no jogo" (texto da
-   proposta aprovada dos painéis): a medida é o que falta para essa frase ter prova.
+   menos de 5% do quadro) é medido no navegador desde 22/11/2026, no processo do jogo
+   (`e2e/devtools-cost.spec.ts` no `studio-engines.yml`; o Python em
+   `e2e-runtime/python-devtools-cost.spec.ts` na homologação). Medido com placa de vídeo, nos cinco
+   motores do clássico e na ponte do Pro (num jogo de canvas sintético), ficou entre 0% e 1,7% do
+   quadro. O que cada lugar cobra: o Jogo 2D, o 2D Avançado e o Pro reprovam acima de 5% em
+   qualquer máquina; os três 3D só são cobrados com placa de vídeo (no CI, com a GPU emulada, o
+   ruído entre janelas passa de 40% e os números ficam só registrados); o Python é cobrado na
+   rodada da homologação, que ainda não trouxe o número. Números em
+   [`evidencias/custo-da-medida-2026-11-22/`](evidencias/custo-da-medida-2026-11-22/README.md).
 7. **Medida com profiler não se compara com medida sem profiler.** Iniciar o perfil de CPU dentro da
    janela medida já criou picos falsos de 100 a 250 ms
    ([`../qa/2026-11-08-python-classic-performance.md`](../qa/2026-11-08-python-classic-performance.md)).
@@ -308,8 +314,6 @@ como "emulado, não conferido em aparelho físico".
 
 ## 10. O que ainda não tem medida
 
-- O custo da coleta das abas Investigar e Desempenho (meta abaixo de 5% do quadro). A tela já diz
-  que medir quase não pesa; falta a prova.
 - O custo do interpretador Python, do transporte dos quadros, da renderização e do editor, cada um à
   parte.
 - A gravação no IndexedDB com 10 mil blocos no Estúdio livre.

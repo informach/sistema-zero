@@ -1,3 +1,4 @@
+import { PYTHON_AREA_MARKERS } from '../blocks/areas'
 import type { PythonSourceEdit } from './sourceEdits'
 import type { PythonParsedDocument, PythonSourceRange } from './types'
 
@@ -89,11 +90,25 @@ export function pythonSourceRangeMapper(edits: readonly PythonSourceEdit[]) {
   }
 }
 
+/** Só um comentário de área (texto exato) pode sair, e só quando a edição o pede. */
+export function isDroppedAreaMarker(
+  token: { kind: string; text: string; range: { start: number } },
+  dropped: ReadonlySet<number> | undefined,
+) {
+  return (
+    token.kind === 'COMMENT' &&
+    !!dropped?.has(token.range.start) &&
+    PYTHON_AREA_MARKERS.has(token.text.trimEnd())
+  )
+}
+
 /** Literal preservation alone is insufficient: a comment must remain a comment token. */
 export function assertPythonCommentsPreserved(
   before: PythonParsedDocument,
   after: PythonParsedDocument,
   edits: readonly PythonSourceEdit[],
+  /** Comentários de área que podem sair (offset de início no documento de antes). */
+  droppedComments?: ReadonlySet<number>,
 ) {
   if (pythonEncodingCookie(before.source) !== pythonEncodingCookie(after.source))
     throw new Error(
@@ -106,7 +121,7 @@ export function assertPythonCommentsPreserved(
       .map((token) => [token.range.start, token]),
   )
   for (const token of before.tokens) {
-    if (token.kind !== 'COMMENT') continue
+    if (token.kind !== 'COMMENT' || isDroppedAreaMarker(token, droppedComments)) continue
     const range = map(token.range)
     const match = range && actual.get(range.start)
     if (!match || match.range.end !== range!.end || match.text !== token.text)

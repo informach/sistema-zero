@@ -662,8 +662,9 @@ export function buildStudioTutorContext(input: {
     isCurrentStudioTutorSelection(requestedSelection, selectedFile.content)
       ? requestedSelection
       : undefined
-  // Python AST/cache is never SZIR. In Python every saved top-level statement runs;
-  // the JavaScript draft/area diagnostics therefore have no equivalent authority.
+  // Python AST/cache is never SZIR. In Python every top-level statement of the file runs (the
+  // project areas are sections of the file, in source order), so the JavaScript draft/area
+  // diagnostics have no equivalent authority.
   const behavior = includeCode || python ? undefined : buildTutorBehavior(project.ir)
   const storedDraft =
     python && project.kind === 'classic' ? readPythonWorkspaceDraft(project) : undefined

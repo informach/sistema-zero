@@ -20,6 +20,7 @@ export const GAME_KIT_THREE_D_PALETTE: ExtensionPaletteTree = [
         types: [
           'sz_g3k_setup',
           'sz_g3k_load_scene',
+          'sz_g3k_on_enter_region',
           'sz_g3k_world_size',
           'sz_g3k_scatter_decor',
           'sz_g3k_set_effects',

@@ -246,6 +246,13 @@ jobs:
       - name: Testes dos pacotes web e serviços
         run: node scripts/ci/test-service-packages.mjs
 
+      # As provas das áreas do Python com o CPython de verdade (`areas.differential` e
+      # `areas.transaction`) usam o analisador do Estúdio, que chama `ast.parse(..., optimize=0)`
+      # (Python 3.13, o do Pyodide). Sem o 3.13 elas pulam; aqui elas rodam (22/11/2026).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
       - name: Testes do Studio com CPU disponível para os projetos grandes
         run: bun run --filter '@sistemazero/studio' test
         env:
@@ -373,6 +380,7 @@ jobs:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
           PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
           LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
+          PARENTS_LEARNERS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_parents_members_ci
           STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
           STUDIO_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_ci
           ZAPPY_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_test_zappy_135

@@ -1,10 +1,11 @@
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import * as Blockly from 'blockly/core'
 import { loadWorkspaceState } from '../../blockly/loadWorkspaceState'
+import { pythonAreaFrames } from './areaFrames'
+import { PYTHON_AREA_FRAME_TYPES } from './areas'
 import { registerPythonBlocks } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import { type PythonBlockCodec, PYTHON_BLOCK_ROLES as roles } from './contract'
-import { PYTHON_PROGRAM, pythonProgramArea } from './programArea'
 
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
@@ -28,7 +29,7 @@ export function readPythonWorkspaceState(
   )
     fail()
   const allowed = new Set([
-    PYTHON_PROGRAM,
+    ...PYTHON_AREA_FRAME_TYPES,
     ...codecs.map((codec) => codec.id),
     ...roles.map((role) => `sz_py_source_${role}`),
   ])
@@ -153,7 +154,7 @@ export function readPythonWorkspaceState(
     // O carregador seguro: o estado que o load do Blockly muda é GLOBAL (desfazer, grupo de eventos,
     // cache de texto), não deste workspace descartável (full review final de 21/11/2026).
     loadWorkspaceState(state, scratch)
-    pythonProgramArea(scratch)
+    pythonAreaFrames(scratch)
     if (scratch.getAllBlocks(false).length !== blockIds.size) fail()
     for (const [id, fields] of savedFields) {
       const block = scratch.getBlockById(id)

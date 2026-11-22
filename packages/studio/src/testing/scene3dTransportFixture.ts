@@ -12,6 +12,7 @@ export async function criarTransporteDeEnsaio({
   comTeto = false,
   comRampa = false,
   comParedeAlta = false,
+  comRegioes = false,
   fundo = 0,
 }: {
   comBuraco?: boolean
@@ -21,6 +22,8 @@ export async function criarTransporteDeEnsaio({
   comTeto?: boolean
   comRampa?: boolean
   comParedeAlta?: boolean
+  /** Duas regiões vizinhas (Vila a oeste, Floresta a leste), como a oficina grava (lote 5). */
+  comRegioes?: boolean
   fundo?: number
 } = {}) {
   const { host, resumo, fonte } = await criarFonteDeCenarioDeEnsaio(1),
@@ -148,6 +151,29 @@ export async function criarTransporteDeEnsaio({
               pecas: [],
               ...(comBuraco ? { buracos } : {}),
             },
+            ...(comRegioes
+              ? {
+                  regioes: [
+                    {
+                      id: 'vila',
+                      nome: 'Vila',
+                      caixa: { x0: origem.x, z0: origem.z, x1: origem.x + 32, z1: origem.z + 64 },
+                      vizinhas: ['floresta'],
+                    },
+                    {
+                      id: 'floresta',
+                      nome: 'Floresta',
+                      caixa: {
+                        x0: origem.x + 32,
+                        z0: origem.z,
+                        x1: origem.x + 64,
+                        z1: origem.z + 64,
+                      },
+                      vizinhas: ['vila'],
+                    },
+                  ],
+                }
+              : {}),
           },
         },
         ...pisos,

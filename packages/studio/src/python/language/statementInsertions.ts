@@ -1,4 +1,4 @@
-import type { PythonSourceLines } from './sourceLines'
+import { type PythonSourceLines, pythonModuleHeaderEnd } from './sourceLines'
 import { pythonStatementLines } from './statementMoves'
 import type { PythonNode, PythonParsedDocument } from './types'
 
@@ -17,6 +17,12 @@ export function planPythonStatementInsertions(
   after: readonly PythonNode[],
   lines: PythonSourceLines,
   module: boolean,
+  /**
+   * Posição da área de cada linha nova/mantida (só no módulo). Uma linha nova de uma área anterior
+   * entra logo depois da linha de cima, antes do comentário de área e dos comentários colados à
+   * próxima linha: senão ela cairia, no código, dentro da próxima área.
+   */
+  areaIndexOf?: (value: PythonNode) => number | undefined,
 ):
   | {
       retained: { before: PythonNode; after: PythonNode }[]
@@ -37,6 +43,12 @@ export function planPythonStatementInsertions(
   const insertions: PythonStatementInsertion[] = []
   let index = 0
   let pending: PythonNode[] = []
+  const boundary = (group: readonly PythonNode[], next: PythonNode) => {
+    if (!module || !areaIndexOf) return false
+    const groupArea = areaIndexOf(group.at(-1)!)
+    const nextArea = areaIndexOf(next)
+    return groupArea !== undefined && nextArea !== undefined && groupArea < nextArea
+  }
   for (const value of after) {
     if (value.id && known.has(value.id)) {
       const old = originals[index++]
@@ -44,7 +56,19 @@ export function planPythonStatementInsertions(
       if (pending.length) {
         const range = pythonStatementLines(document, old, lines)
         if (!range) return
-        insertions.push({ offset: range.start, nodes: pending, leadingNewline: false, indent })
+        let offset = range.start
+        if (boundary(pending, value)) {
+          const previous = index >= 2 ? originals[index - 2] : undefined
+          const above = previous && pythonStatementLines(document, previous, lines)
+          if (previous && !above) return
+          offset = above ? above.end : pythonModuleHeaderEnd(document.source, lines)
+        }
+        insertions.push({
+          offset,
+          nodes: pending,
+          leadingNewline: offset > 0 && !/[\r\n]/.test(document.source[offset - 1]!),
+          indent,
+        })
         pending = []
       }
       retained.push({ before: old, after: value })

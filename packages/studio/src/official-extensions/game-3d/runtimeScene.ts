@@ -61,6 +61,8 @@ export const gameThreeDSceneRuntimeSource = `
   function sceneStart(obj) {
     var world = worldOf(obj);
     if (!world || world._disposed || obj._szRemoved) return;
+    // Quem começa no cenário é o foco da carga por regiões quando a câmera não segue ninguém.
+    world._sceneHero = obj;
     if (world._scenePending) {
       if (!world._sceneArrivals) world._sceneArrivals = new Set();
       world._sceneArrivals.add(obj);
@@ -77,16 +79,9 @@ export const gameThreeDSceneRuntimeSource = `
     var top = start.posicao.y + 1;
     for (var n = 0; n < handle.dados.nos.length; n++) top = Math.max(top, handle.dados.nos[n].volume.max.y + 1);
     var bottom = handle.colisoes.limiteInferior == null ? start.posicao.y - 100 : handle.colisoes.limiteInferior - 1;
-    var support = null;
-    for (var i = 0; i < 9; i++) {
-      var angle = (i - 1) * Math.PI / 4;
-      var x = start.posicao.x + (i ? Math.cos(angle) * radius * 0.75 : 0);
-      var z = start.posicao.z + (i ? Math.sin(angle) * radius * 0.75 : 0);
-      var hit = handle.colisoes.rastrear(new THREE.Vector3(x, top, z), new THREE.Vector3(x, bottom, z));
-      if (hit && hit.normal.y > 0 && (support == null || hit.ponto.y > support)) support = hit.ponto.y;
-    }
-    if (support == null) { warn('O ponto inicial do cenário não tem apoio físico.'); return; }
-    obj.position.set(start.posicao.x, support + Math.abs(halfY(obj, state)), start.posicao.z);
+    var support = handle.fisica.apoio(start.posicao.x, start.posicao.z, radius, top, bottom, 0);
+    if (!support) { warn('O ponto inicial do cenário não tem apoio físico.'); return; }
+    obj.position.set(start.posicao.x, support.y + Math.abs(halfY(obj, state)), start.posicao.z);
     if (obj.rotation) obj.rotation.y = start.giro + (world._cameraMode === 'fps' && world._fpsObj === obj ? 0 : Math.PI);
     state.vx = 0; state.vy = 0; state.vz = 0; state.grounded = true;
   }
@@ -105,7 +100,7 @@ export const gameThreeDSceneRuntimeSource = `
     var handle = world._sceneHandle;
     if (!handle || !handle.fisica.active()) return;
     handle.atualizar(dt);
-    var target = world._tpObj || world._camFollowTarget || world._fpsObj || world._orbitTarget;
+    var target = world._tpObj || world._camFollowTarget || world._fpsObj || world._orbitTarget || world._sceneHero;
     var focus = new THREE.Vector3();
     if (target && target.getWorldPosition) target.getWorldPosition(focus);
     else world.camera.getWorldPosition(focus);
@@ -120,16 +115,9 @@ export const gameThreeDSceneRuntimeSource = `
     var handle = world._sceneHandle;
     if (!handle || !handle.fisica.active()) return;
     var s = szData(obj), half = Math.abs(halfY(obj, s)), feet = obj.position.y - half;
-    var radius = importedBodyRadius(obj, s), support = null;
-    for (var i = 0; i < 9; i++) {
-      var angle = (i - 1) * Math.PI / 4;
-      var x = obj.position.x + (i ? Math.cos(angle) * radius * 0.75 : 0);
-      var z = obj.position.z + (i ? Math.sin(angle) * radius * 0.75 : 0);
-      var hit = handle.colisoes.rastrear(new THREE.Vector3(x, feet + half * 0.38, z), new THREE.Vector3(x, feet - half * 0.24, z));
-      if (hit && hit.normal.y > 0.5 && (support == null || hit.ponto.y > support)) support = hit.ponto.y;
-    }
-    if (support != null) {
-      obj.position.y = support + half;
+    var support = handle.fisica.apoio(obj.position.x, obj.position.z, importedBodyRadius(obj, s), feet + half * 0.38, feet - half * 0.24, 0.5);
+    if (support) {
+      obj.position.y = support.y + half;
       s.vy = 0; s.grounded = true;
       _recordHit(s, handle.raiz, 'pes');
     }
@@ -174,6 +162,9 @@ export const gameThreeDSceneRuntimeSource = `
     if (world.camera.parent) world.camera.parent.worldToLocal(to);
     world.camera.position.copy(to);
   }
+
+  // "Quando entrar na região" (as regras): a região do cenário onde o objeto está.
+  function sceneRegion(obj, at, name) { var w = _currentWorld(), h = w && w._sceneHandle; return h && h.regiao(obj, at, name); }
 `
 
 /**

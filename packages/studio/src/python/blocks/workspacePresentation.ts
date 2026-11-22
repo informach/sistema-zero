@@ -1,7 +1,7 @@
 import * as Blockly from 'blockly/core'
 import type { PythonNode } from '../language/types'
+import { executablePythonAreaFrames, isLegacyPythonRoots } from './areaFrames'
 import type { PythonBlockCodec } from './contract'
-import { pythonProgramArea } from './programArea'
 import { type PythonVisualNode, pythonASTToVisual } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
 import type { PythonProjectModules } from './scope'
@@ -12,8 +12,12 @@ export function orderPythonWorkspaceRoots(
   origins: PythonWorkspaceOrigins,
   previous: readonly string[],
 ): string[] {
-  const area = pythonProgramArea(workspace)
-  if (area) return [area.id]
+  // Áreas do projeto: as áreas com linhas, na ordem do arquivo (nunca a posição na tela). As
+  // pilhas soltas só são o programa no modo antigo, de quem monta o workspace sem áreas e passa
+  // as raízes (testes, scripts): raiz que sumiu (a área excluída) não volta a esse modo, senão
+  // os rascunhos virariam código.
+  if (!isLegacyPythonRoots(workspace, previous))
+    return executablePythonAreaFrames(workspace).map((frame) => frame.id)
   const roots = workspace.getTopBlocks(false)
   const order = new Map(
     [...new Set([...previous, ...roots.map((block) => block.id)])].map((id, index) => [id, index]),

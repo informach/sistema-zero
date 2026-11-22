@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import { ALUNOS_TABS, CATALOG_TABS, PAYMENTS_TABS } from './nav'
+import { usePlatform } from './platform-provider'
 
 interface Tab {
   label: string
@@ -47,7 +48,16 @@ export function SectionTabs({ tabs, label }: { tabs: readonly Tab[]; label: stri
 }
 
 export function AlunosTabs() {
-  return <SectionTabs tabs={ALUNOS_TABS} label="Alunos" />
+  const platform = usePlatform()
+  const tabs =
+    platform === 'kids'
+      ? [
+          ...ALUNOS_TABS.slice(0, 1),
+          { label: 'Pais', href: '/admin/membros/pais' },
+          ...ALUNOS_TABS.slice(1),
+        ]
+      : ALUNOS_TABS
+  return <SectionTabs tabs={tabs} label="Alunos" />
 }
 
 export function CatalogTabs() {

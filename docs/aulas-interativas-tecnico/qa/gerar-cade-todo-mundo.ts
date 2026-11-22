@@ -8,6 +8,7 @@ import {
   montarProjetoCadeTodoMundoCompleto,
 } from './cade-todo-mundo-projeto'
 import { gravarArquivo } from './gravar-arquivo'
+import { organizarManifestos } from './organizar-projetos'
 import { cadeTodoMundo } from './quizzes-cursos-curtos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
@@ -559,3 +560,5 @@ await gravarArquivo(
     2,
   )}\n`,
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([DIR])

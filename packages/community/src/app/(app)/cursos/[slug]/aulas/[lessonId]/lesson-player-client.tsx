@@ -7,6 +7,7 @@ import {
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
 import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
+import { LessonResume } from '@sistemazero/member-shell/components/lesson-resume'
 import {
   LessonSections,
   useLessonLearning,
@@ -59,7 +60,15 @@ interface Props {
   shareUrl: string | null
 }
 
-export function LessonPlayer({
+export function LessonPlayer(props: Props) {
+  return (
+    <LessonResume lesson={props.lesson} viewerId={props.viewerId}>
+      {(lesson) => <ResumedLessonPlayer {...props} lesson={lesson} />}
+    </LessonResume>
+  )
+}
+
+function ResumedLessonPlayer({
   course,
   lesson,
   nextLessonHref,

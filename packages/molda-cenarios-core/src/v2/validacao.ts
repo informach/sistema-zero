@@ -14,6 +14,7 @@ import { parteEstruturalExiste } from './estrutura-de-caminho'
 import { volumeDaReferencia } from './fontes'
 import { planoDeAmostragemDaRota } from './marcadores'
 import { comMemoriaDaValidacao } from './memoria-da-validacao'
+import { errosDasRegioes } from './regioes'
 import { errosDaTopologiaDaAgua } from './topologia-de-agua'
 import { curvaDoCaminho, errosDaTopologiaDoCaminho } from './topologia-de-caminho'
 
@@ -218,6 +219,8 @@ function validarDocumentoInterno(
       }
     }
   if (amostrasDeRotas > 262_144) erros.push('O cenário excede o orçamento de amostragem das rotas.')
+
+  erros.push(...errosDasRegioes(d.regioes, d.base))
 
   if (d.base.tipo === 'perfil') {
     const carimbos = new Set<string>()

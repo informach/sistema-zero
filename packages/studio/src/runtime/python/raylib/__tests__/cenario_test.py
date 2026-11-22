@@ -107,6 +107,25 @@ class CenarioTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             s.desenhar()
 
+    def test_scene_with_regions_loads_and_draws_everything(self):
+        # Regiões na cena compilada (lote 5 da conclusão, 22/11/2026): o leitor de hoje aceita o
+        # campo e desenha a cena inteira; a carga por regiões no Python é o lote 7b.
+        self.data['regioes'] = [
+            {'id': 'vila', 'nome': 'Vila', 'caixa': {'x0': -10, 'z0': -15, 'x1': 0, 'z1': 15},
+             'vizinhas': ['praia'], 'nos': [], 'colisoes': [], 'aguas': []},
+            {'id': 'praia', 'nome': 'Praia', 'caixa': {'x0': 0, 'z0': -15, 'x1': 10, 'z1': 15},
+             'vizinhas': ['vila'], 'nos': [], 'colisoes': [], 'aguas': []},
+        ]
+        s = cenario.carregar(self.guardar())
+        try:
+            self.assertEqual([r['nome'] for r in s.dados['regioes']], ['Vila', 'Praia'])
+            P.begin_drawing()
+            s.desenhar()
+            self.assertIn(_rt.OP_MESH, _rt.ops)
+            P.end_drawing()
+        finally:
+            s.descartar()
+
     def test_triangular_heights_holes_missing_pieces_and_cutouts(self):
         self.data.pop('plano')
         heights = [0.0] * (129 * 65)

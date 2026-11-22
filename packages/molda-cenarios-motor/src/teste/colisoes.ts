@@ -23,12 +23,70 @@ interface Entrada {
 }
 
 /** Árvores por geometria, caixas por instância; os triângulos finais são medidos no mundo. */
+interface ContatoDoApoio {
+  ponto: { y: number }
+  normal: { x: number; y: number; z: number }
+}
+
+/**
+ * O chão sob um corpo, a régua única do apoio (os motores 3D do Estúdio a repetiam; lote 6 da
+ * conclusão, 22/11/2026): nove raios de `topo` a `fundo` (o centro e oito em volta, a 3/4 do raio;
+ * sem raio positivo, só o do centro), e vale o contato mais alto (o primeiro, no empate) cuja
+ * normal sobe mais que `normalMinima` (ou pelo menos isso, com `incluiMinima`); `null` sem apoio.
+ */
+export function apoioPorRaios(
+  rastrear: (de: Vector3, ate: Vector3) => ContatoDoApoio | null | undefined,
+  x: number,
+  z: number,
+  raio: number,
+  topo: number,
+  fundo: number,
+  normalMinima: number,
+  incluiMinima = false,
+): { y: number; normal: { x: number; y: number; z: number } } | null {
+  const de = new Vector3(),
+    ate = new Vector3()
+  let melhor: { y: number; normal: { x: number; y: number; z: number } } | null = null
+  for (let i = 0; i < (raio > 0 ? 9 : 1); i++) {
+    const angulo = ((i - 1) * Math.PI) / 4,
+      px = x + (i ? Math.cos(angulo) * raio * 0.75 : 0),
+      pz = z + (i ? Math.sin(angulo) * raio * 0.75 : 0),
+      contato = rastrear(de.set(px, topo, pz), ate.set(px, fundo, pz))
+    if (
+      contato &&
+      (incluiMinima ? contato.normal.y >= normalMinima : contato.normal.y > normalMinima) &&
+      (melhor === null || contato.ponto.y > melhor.y)
+    )
+      melhor = {
+        y: contato.ponto.y,
+        normal: { x: contato.normal.x, y: contato.normal.y, z: contato.normal.z },
+      }
+  }
+  return melhor
+}
+
+/**
+ * As árvores (BVH) de cada geometria, que um mundo monta uma vez. Um cache passado de fora é do
+ * chamador: vários mundos dividem as árvores (a carga por regiões refaz o mundo a cada troca de
+ * região sem refazer árvore nenhuma) e o mundo não as descarta. Sem cache, o mundo é o dono, como
+ * sempre foi.
+ */
+export type CacheDeArvores = Map<BufferGeometry, { copia: BufferGeometry; arvore: MeshBVH }>
+
+/** Descarta as árvores de geometrias que saíram (o arquivo delas foi descarregado). */
+export function liberarArvores(cache: CacheDeArvores, geometrias: Iterable<BufferGeometry>) {
+  for (const g of geometrias) {
+    cache.get(g)?.copia.dispose()
+    cache.delete(g)
+  }
+}
+
 export class MundoDoTeste {
   readonly limiteInferior: number | null
-  private readonly geometrias = new Map<
-    BufferGeometry,
-    { copia: BufferGeometry; arvore: MeshBVH }
-  >()
+  private readonly geometrias: CacheDeArvores
+  private readonly donoDasArvores: boolean
+  /** As geometrias que este mundo usa (num cache dividido, o cache tem as dos outros também). */
+  private readonly usadas = new Set<BufferGeometry>()
   private readonly indice = new IndiceDeCaixas()
   private readonly entradas: Entrada[] = []
   private readonly segmento = new Line3()
@@ -43,10 +101,12 @@ export class MundoDoTeste {
   private readonly ponto = new Vector3()
   private descartado = false
   get arvores() {
-    return this.geometrias.size
+    return this.usadas.size
   }
 
-  constructor(fontes: readonly FonteDeColisao[]) {
+  constructor(fontes: readonly FonteDeColisao[], cache?: CacheDeArvores) {
+    this.geometrias = cache ?? new Map()
+    this.donoDasArvores = !cache
     try {
       for (const f of fontes) {
         if (
@@ -72,6 +132,7 @@ export class MundoDoTeste {
           }
           this.geometrias.set(f.geometria, entrada)
         }
+        this.usadas.add(f.geometria)
         if (!entrada.copia.boundingBox) entrada.copia.computeBoundingBox()
         this.entradas.push({
           objeto: f.objeto,
@@ -232,11 +293,36 @@ export class MundoDoTeste {
     return resposta
   }
 
+  /** O chão sob um corpo (`apoioPorRaios` com os raios deste mundo). */
+  apoio(
+    x: number,
+    z: number,
+    raio: number,
+    topo: number,
+    fundo: number,
+    normalMinima: number,
+    incluiMinima = false,
+  ) {
+    return apoioPorRaios(
+      (de, ate) => this.rastrear(de, ate),
+      x,
+      z,
+      raio,
+      topo,
+      fundo,
+      normalMinima,
+      incluiMinima,
+    )
+  }
+
   descartar() {
     if (this.descartado) return
     this.descartado = true
-    for (const g of this.geometrias.values()) g.copia.dispose()
-    this.geometrias.clear()
+    if (this.donoDasArvores) {
+      for (const g of this.geometrias.values()) g.copia.dispose()
+      this.geometrias.clear()
+    }
+    this.usadas.clear()
     this.entradas.length = 0
     this.indice.definir([])
   }

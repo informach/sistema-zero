@@ -15,18 +15,10 @@ export const world3DSceneRuntime = `
     var heights = importedScene.alturas;
     var height = heights && heights.temChao({ x: x, z: z }) ? heights(x, z) : null;
     var top = reference == null ? importedBounds.max.y + 1 : reference + 0.5;
-    // Consult the footprint as well as its center: a real foot spans narrow plank joints.
-    // Every support sample still hits the canonical triangles; no invisible bridge plane.
-    var samples = radius > 0 ? 9 : 1;
-    for (var i = 0; i < samples; i++) {
-      var angle = (i - 1) * Math.PI / 4;
-      var px = x + (i ? Math.cos(angle) * radius * 0.75 : 0);
-      var pz = z + (i ? Math.sin(angle) * radius * 0.75 : 0);
-      var hit = importedScene.colisoes.rastrear(new THREE.Vector3(px, top, pz), new THREE.Vector3(px, sceneFloorLimit(), pz));
-      // Arrival from above uses the actual first surface, as the canonical test controller.
-      // Walking keeps its slope check; capsule contacts provide support on rounded pieces.
-      if (hit && hit.normal.y > (reference == null ? 0 : 0.35) && (height == null || hit.ponto.y > height)) height = hit.ponto.y;
-    }
+    // The footprint as well as its center (the scene's nine rays): a real foot spans narrow plank
+    // joints. Arrival from above uses the first surface; walking keeps its slope check.
+    var hit = importedScene.colisoes.apoio(x, z, radius, top, sceneFloorLimit(), reference == null ? 0 : 0.35);
+    if (hit && (height == null || hit.y > height)) height = hit.y;
     return height;
   }
 
@@ -225,6 +217,9 @@ export const world3DSceneRuntime = `
     importedScene = null;
     importedBounds = null;
   }
+
+  // "Quando o jogador entrar na região" (as regras): a região do cenário onde ele está.
+  function sceneRegion(o, at, name) { return importedScene && importedScene.regiao(activePlayerGroup(), at, name); }
 `
 
 /**

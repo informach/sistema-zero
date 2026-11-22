@@ -1,10 +1,11 @@
 import * as Blockly from 'blockly/core'
 import type { PythonNode, PythonParsedDocument } from '../language/types'
+import { PYTHON_AREA_INPUT, pythonAreaFrames } from './areaFrames'
+import { PYTHON_AREA_FRAME_TYPES } from './areas'
 import { pythonWorkspaceToVisual } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import type { PythonBlockCodec } from './contract'
 import { nodes, pythonSemanticTree } from './nodes'
-import { pythonProgramArea } from './programArea'
 import { pythonVisualToAST } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
 import { readPythonWorkspaceState } from './readWorkspaceState'
@@ -53,6 +54,38 @@ export function preparePythonWorkspaceRestore(
   return { state, origins, rootIds }
 }
 
+const record = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === 'object' && !Array.isArray(value)
+
+/**
+ * Área VAZIA repetida nos rascunhos (salva antes da guarda que junta as áreas) fica uma só: ela
+ * não muda o código, e a repetida travava o arquivo inteiro nos blocos.
+ */
+function withoutRepeatedAreas(raw: Record<string, unknown>) {
+  const blocks = record(raw.blocks) ? raw.blocks.blocks : undefined
+  if (!Array.isArray(blocks)) return raw
+  const seen = new Set<string>()
+  const kept = blocks.filter((block) => {
+    if (
+      !record(block) ||
+      typeof block.type !== 'string' ||
+      !PYTHON_AREA_FRAME_TYPES.has(block.type)
+    )
+      return true
+    const inputs = record(block.inputs) ? block.inputs : {}
+    const empty = !(
+      record(inputs[PYTHON_AREA_INPUT]) &&
+      record((inputs[PYTHON_AREA_INPUT] as Record<string, unknown>).block)
+    )
+    if (empty && seen.has(block.type)) return false
+    seen.add(block.type)
+    return true
+  })
+  return kept.length === blocks.length
+    ? raw
+    : { ...raw, blocks: { ...(raw.blocks as object), blocks: kept } }
+}
+
 /** Validate separately, then append after binding Program origins to the current source. */
 export function preparePythonScratchRestore(
   raw: Record<string, unknown> | undefined,
@@ -60,9 +93,11 @@ export function preparePythonScratchRestore(
 ) {
   if (!raw) return
   let ids: string[] = []
-  const state = readPythonWorkspaceState(raw, codecs, (workspace) => {
-    if (pythonProgramArea(workspace))
-      throw new Error('Rascunhos não podem conter uma área Programa.')
+  const state = readPythonWorkspaceState(withoutRepeatedAreas(raw), codecs, (workspace) => {
+    // Só áreas VAZIAS acompanham os rascunhos (as com linhas são o programa).
+    for (const frame of pythonAreaFrames(workspace).values())
+      if (frame.getInputTargetBlock(PYTHON_AREA_INPUT))
+        throw new Error('Rascunhos não podem conter uma área com linhas do programa.')
     ids = workspace.getAllBlocks(false).map((block) => block.id)
   })
   // The preflight validator checked every serialized block, including nested IDs.
@@ -70,7 +105,13 @@ export function preparePythonScratchRestore(
     (state.blocks as { blocks: Blockly.serialization.blocks.State[] } | undefined)?.blocks ?? []
   return (workspace: Blockly.Workspace) => {
     if (ids.some((id) => workspace.getBlockById(id)))
-      throw new Error('Os rascunhos e o Programa precisam ter identificadores distintos.')
-    for (const block of blocks) Blockly.serialization.blocks.append(block, workspace)
+      throw new Error('Os rascunhos e o programa precisam ter identificadores distintos.')
+    const present = new Set(workspace.getTopBlocks(false).map((block) => block.type))
+    for (const block of blocks) {
+      // Uma área vazia guardada não volta se o programa já tem essa área.
+      if (PYTHON_AREA_FRAME_TYPES.has(block.type) && present.has(block.type)) continue
+      Blockly.serialization.blocks.append(block, workspace)
+      present.add(block.type)
+    }
   }
 }

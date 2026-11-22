@@ -91,6 +91,24 @@ t.write('AAAA\\nB', move=True, align='right', font=('Arial', 12, 'normal'))
 print('text-right', round(t.xcor()))
 s.update()
 `,
+  // Anima sem parar (o custo das abas Desempenho e Investigar é medido com o jogo andando).
+  turtleAnimation: `import turtle
+s = turtle.Screen()
+s.setup(400, 300)
+s.tracer(0)
+t = turtle.Turtle('turtle')
+t.penup()
+quadros = 0
+def passo():
+    global quadros
+    quadros += 1
+    t.setheading(quadros * 3)
+    t.forward(2)
+    s.update()
+    s.ontimer(passo, 16)
+passo()
+s.mainloop()
+`,
   turtleIdle: `import turtle
 s = turtle.Screen()
 s.setup(400, 300)

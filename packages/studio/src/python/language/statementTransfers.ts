@@ -1,4 +1,5 @@
 import { isNode, node, nodes } from '../blocks/nodes'
+import { isPythonAreaMarkerToken } from './areaMarkers'
 import type { PythonSourceFragment } from './sourceFragments'
 import { editPythonSourceFragment } from './sourceFragments'
 import { indexPythonSourceLines, type PythonSourceLines } from './sourceLines'
@@ -67,7 +68,19 @@ export function planPythonStatementTransfers(
       ? pythonStatementLines(document, old.siblings[old.index - 1]!, lines)
       : undefined
     if (old.index && (!preceding || preceding.end > own.start)) continue
-    const range = { start: preceding?.end ?? own.start, end: own.end }
+    let start = preceding?.end ?? own.start
+    // O comentário de área (`# ⚙️ Ao iniciar`) é do módulo, não da linha: ele fica onde está, e só
+    // os comentários colados à linha vão com ela. Recuado dentro da função, ele deixaria de ser
+    // comentário de área para sempre (full review das áreas, 22/11/2026).
+    if (old.parent.kind === 'Module' && old.node.range) {
+      const codeStart = old.node.range.start
+      for (const token of document.tokens) {
+        if (token.range.start >= codeStart) break
+        if (token.range.start >= start && isPythonAreaMarkerToken(token, lines))
+          start = lines.lineAt(token.range.start).next
+      }
+    }
+    const range = { start, end: own.end }
     const indent = /^[\t ]*/.exec(document.source.slice(own.start))![0]
     let header: PythonToken | undefined
     if (old.node.kind === 'If' && old.node.range) {

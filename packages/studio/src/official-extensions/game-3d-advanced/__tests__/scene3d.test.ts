@@ -530,3 +530,33 @@ test('o quique do molde continua respondendo ao chão compilado', async () => {
     limpar()
   }
 })
+
+test('"Quando o heroi entrar na região" segue o primeiro vivo do molde e conta cada entrada uma vez', async () => {
+  const origem = { x: 100, z: 200 }
+  const { api, step, limpar } = await preparar({ origem, comRegioes: true })
+  const regras = api as unknown as {
+    onEnterRegion(mold: string, name: string, fn: () => void): void
+  }
+  try {
+    const entradas: string[] = []
+    regras.onEnterRegion('heroi', 'Vila', () => entradas.push('Vila'))
+    regras.onEnterRegion('heroi', 'Floresta', () => entradas.push('Floresta'))
+    // Sem herói no jogo, ninguém entra em lugar nenhum.
+    step(3)
+    expect(entradas).toEqual([])
+    const heroi = api.spawn('heroi', 0, 0, 0)
+    api.place(heroi, origem.x + 10, 3, origem.z + 10)
+    step(3)
+    expect(entradas).toEqual(['Vila'])
+    api.place(heroi, origem.x + 40, 3, origem.z + 10)
+    step(3)
+    api.place(heroi, origem.x + 50, 3, origem.z + 20)
+    step(3)
+    expect(entradas).toEqual(['Vila', 'Floresta'])
+    api.place(heroi, origem.x + 10, 3, origem.z + 10)
+    step(3)
+    expect(entradas).toEqual(['Vila', 'Floresta', 'Vila'])
+  } finally {
+    limpar()
+  }
+})

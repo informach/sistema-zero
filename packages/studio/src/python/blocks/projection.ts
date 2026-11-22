@@ -1,4 +1,5 @@
 import type { PythonNode, PythonSourceRange } from '../language/types'
+import type { PythonAreaKind } from './areas'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import { pythonCodecIndex } from './codecIndex'
 import type {
@@ -39,6 +40,11 @@ export type PythonVisualNode = PythonVisualBlock | PythonOpaqueBlock
 export interface PythonBlockProjection {
   body: PythonVisualNode[]
   typeIgnores: PythonNode[]
+  /**
+   * Área de cada linha de topo (paralela a `body`), quando o editor mostra as áreas do projeto.
+   * Não entra na árvore: só acerta os comentários de área depois da edição.
+   */
+  areas?: PythonAreaKind[]
 }
 
 interface GuardedAttributes {
