@@ -1,4 +1,5 @@
-import type { Course, CourseAudience } from '../../domain/course/course'
+import { courseLearnerOf, isParentsCourse } from '@sistemazero/core/course/learner'
+import type { Course } from '../../domain/course/course'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
@@ -18,7 +19,7 @@ import {
  *
  * O progresso de um aprendiz é a UNIÃO de duas origens:
  * 1. matrículas ESPECÍFICAS de curso (`accessType === 'course'`) cujo curso é da
- *    PLATAFORMA do aprendiz (conta → `adult`, perfil → `kids`) — inclui curso
+ *    público do aprendiz (conta → adulto e pais, perfil → criança) — inclui curso
  *    nunca aberto (barra 0%, `lastActivityAt: null`);
  * 2. cursos com ATIVIDADE real do aprendiz (conclusão de aula OU acesso a vídeo,
  *    sem filtro de plataforma — atividade é evidência) — é o que faz a
@@ -81,10 +82,11 @@ export class GetMemberDetailService {
     const coursesByLearner = new Map<string, Map<string, Course>>()
     const allCourseIds = new Set<string>()
     for (const learnerId of learnerIds) {
-      const learnerAudience: CourseAudience = learnerId === userId ? 'adult' : 'kids'
       const union = new Map<string, Course>()
       for (const course of enrolledCourses) {
-        if (course.audience === learnerAudience) union.set(course.id, course)
+        const belongsToAccount = course.audience === 'adult' || isParentsCourse(course)
+        if (learnerId === userId ? belongsToAccount : !belongsToAccount)
+          union.set(course.id, course)
       }
       for (const courseId of activityByLearner.get(learnerId)?.keys() ?? []) {
         const course = activityCourseById.get(courseId)
@@ -141,6 +143,7 @@ function buildCourseProgress(
     title: course.title,
     status: course.status,
     audience: course.audience,
+    learner: courseLearnerOf(course.learner),
     completedLessons: p.completedLessons,
     totalLessons: p.totalLessons,
     percent: p.percent,
@@ -156,6 +159,7 @@ function orphanCourseProgress(courseRef: string): MemberCourseProgressView {
     title: null,
     status: null,
     audience: null,
+    learner: null,
     completedLessons: p.completedLessons,
     totalLessons: p.totalLessons,
     percent: p.percent,

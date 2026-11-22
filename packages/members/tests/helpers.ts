@@ -206,8 +206,12 @@ export function buildApp(
   const clockRef = { now: opts.now ?? new Date('2026-06-02T12:00:00.000Z') }
   const clock = () => clockRef.now
 
-  const entitlements = new InMemoryEntitlementRepository()
   const courses = new InMemoryCourseRepository()
+  const entitlements = new InMemoryEntitlementRepository(() =>
+    courses.courses
+      .filter((course) => course.audience === 'kids' && course.learner === 'parents')
+      .map((course) => course.slug),
+  )
   // O fake de progresso enxerga as aulas p/ espelhar o join das contagens `*Published`.
   const progress = new InMemoryProgressRepository(courses)
   const positions = new InMemoryVideoPositionRepository()
@@ -877,8 +881,8 @@ export function buildApp(
         quizAttempts,
         studioSubmissions,
       ),
-      listMemberCertificates: new ListMemberCertificatesService(certificates),
-      listMemberRatings: new ListMemberRatingsService(ratings),
+      listMemberCertificates: new ListMemberCertificatesService(certificates, courses),
+      listMemberRatings: new ListMemberRatingsService(ratings, courses),
       getGamification: new GetGamificationService(
         gamification,
         clock,

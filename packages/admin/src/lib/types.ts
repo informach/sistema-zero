@@ -150,6 +150,7 @@ export const PRODUCT_KIND_LABELS: Record<string, string> = {
 
 /** Progresso do membro num curso (no detalhe). */
 export interface MemberCourseProgressView {
+  learner?: 'child' | 'parents' | null
   courseRef: string
   title: string | null
   status: string | null

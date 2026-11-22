@@ -18,6 +18,7 @@ import {
   type StudioStateView,
   toLessonDetailView,
 } from '../mappers/views'
+import { resumeSectionId } from './resume-section'
 
 /** Detalhe da aula com o conteúdo COMPLETO (blocos + anexos) — exige acesso ativo. */
 export class GetLessonService {
@@ -168,13 +169,12 @@ export class GetLessonService {
           )
         : blocks
     const sectionState = (id: string) => sectionProgress?.sections.find((s) => s.id === id)
-    const savedSection = structure.progress.sectionId
-    const sectionId =
-      sectionProgress && (!savedSection || sectionState(savedSection)?.status === 'locked')
-        ? (sectionProgress.sections.find((s) => s.status === 'available')?.id ??
-          sectionProgress.sections[0]?.id ??
-          null)
-        : savedSection
+    const sectionId = resumeSectionId({
+      saved: structure.progress.sectionId,
+      progress: sectionProgress,
+      lessonCompleted: completedIds.includes(lessonId),
+      live: course.modality === 'live',
+    })
     return {
       ...view,
       ...(sectionProgress ? { sectionProgress } : {}),
