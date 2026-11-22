@@ -269,7 +269,7 @@ try {
       const scope = modern.privateRegionalProjectScope('chrome-compat')
       const raw = await modern.loadProjectById('marked', scope)
       const approved = await modern.prepareEditableStudioProject(raw, {
-        [modern.PRIVATE_REGIONAL_JS_PROJECT]: true,
+        [modern.PRIVATE_REGIONAL_PROJECT]: scope,
       })
       const saved = approved.assets[0]
       return {

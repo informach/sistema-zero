@@ -1,5 +1,6 @@
 import { createPreviewProbe } from '../../packages/studio/e2e-runtime/fixtures/previewHost'
 import { decodeProjectAsset, digestAssetBytes } from '../../packages/studio/src/core/assetBinary'
+import { PRIVATE_REGIONAL_PROJECT } from '../../packages/studio/src/core/pintaRegionalReference'
 import { createPythonRuntimeProvider } from '../../packages/studio/src/runtime/python/provider'
 import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtime/python/snapshot'
 import type {
@@ -8,6 +9,13 @@ import type {
   StudioRuntimePerformanceSlice,
   StudioRuntimeSession,
 } from '../../packages/studio/src/runtime/types'
+import { prepareEditableStudioProject } from '../../packages/studio/src/state/editableProjectValidation'
+import { persistProject } from '../../packages/studio/src/state/persistence'
+import {
+  privateRegionalProjectScope,
+  refreshPrivateRegionalProjectAsset,
+} from '../../packages/studio/src/state/pintaRegionalProjectRefresh'
+import { loadSanitizedProjectById } from '../../packages/studio/src/state/projectStore'
 import { createControllerProbe } from './controllerHost'
 
 interface Entry {
@@ -54,6 +62,11 @@ function get(slot: string) {
 }
 const api = {
   decodeMaterial: decodeProjectAsset,
+  async showPintaJavaScriptProject(
+    ...args: Parameters<typeof import('./pintaProjectJavaScriptProbe').showPintaJavaScriptProject>
+  ) {
+    return (await import('./pintaProjectJavaScriptProbe')).showPintaJavaScriptProject(...args)
+  },
   async measureMaterials(fixture: string) {
     const project = await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json()
     const samples: number[] = []
@@ -79,7 +92,13 @@ const api = {
       ),
     }
   },
-  async prepare(slot: string, fixture: string, mismatch = false, background = false) {
+  async prepare(
+    slot: string,
+    fixture: string,
+    mismatch = false,
+    background = false,
+    storedPinta: boolean | 'classic' = false,
+  ) {
     const previous = entries.get(slot)
     if (previous) {
       await previous.session?.dispose()
@@ -97,11 +116,54 @@ const api = {
     }
     entries.set(slot, entry)
     try {
-      const project = await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json()
-      const snapshot = await preparePythonExecutionSnapshot(project)
+      let project = await (await fetch(`/project/${encodeURIComponent(fixture)}`)).json()
+      const scope = storedPinta ? privateRegionalProjectScope('player-probe') : undefined
+      if (scope) {
+        if (storedPinta === 'classic') {
+          const { tree: _tree, proMeta: _proMeta, ...identity } = project
+          const source = project.tree?.[project.python.entrypoint]
+          if (source?.kind !== 'file') throw new Error('Fixture sem arquivo Python.')
+          project = {
+            ...identity,
+            mode: 'bridge',
+            kind: 'classic',
+            files: { [project.python.entrypoint]: source.content, 'requirements.txt': '' },
+          }
+        }
+        const { readPintaRegionImageWorld } = await import(
+          '../../packages/core/src/studio/pinta-region-image-world'
+        )
+        const original = project.assets[0]
+        const { bytes } = decodeProjectAsset(original.dataUrl)
+        const sourceId = readPintaRegionImageWorld(bytes).rootId
+        original.libId = `personal:${sourceId}`
+        const local = await prepareEditableStudioProject(project)
+        if (!local) throw new Error('Fixture inválida.')
+        await persistProject(local, {}, scope)
+        if (
+          !(await refreshPrivateRegionalProjectAsset({
+            scope,
+            projectId: local.id,
+            assetId: original.id,
+            capture: {
+              dataUrl: original.dataUrl,
+              width: original.width,
+              height: original.height,
+              regional: { dataVersion: 5, sourceId, sha256: await digestAssetBytes(bytes) },
+            },
+          }))
+        )
+          throw new Error('A captura da fixture não foi gravada.')
+        project = await loadSanitizedProjectById(local.id, scope)
+      }
+      const regional = scope ? { [PRIVATE_REGIONAL_PROJECT]: scope } : {}
+      const snapshot = await preparePythonExecutionSnapshot(project, regional)
       const session = await provider.prepare({
+        ...regional,
         ...(background ? { pythonBackground: true as const } : {}),
-        ...(fixture.endsWith('-fornecido') ? { requirePintaScenes: true as const } : {}),
+        ...(!storedPinta && fixture.endsWith('-fornecido')
+          ? { requirePintaScenes: true as const }
+          : {}),
         project,
         signal: entry.abort.signal,
         frame,

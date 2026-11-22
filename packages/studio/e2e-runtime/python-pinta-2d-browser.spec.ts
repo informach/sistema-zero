@@ -144,12 +144,19 @@ for (const engine of ['pgzero', 'raylib2d']) {
     await page.goto('/provider')
     await page.waitForFunction(() => !!globalThis.providerProbe)
     await page.evaluate(
-      ({ engine, supplied }) =>
+      ({ engine, supplied, stored }) =>
         globalThis.providerProbe.prepare(
           'game',
           `pinta-regional-${engine}${supplied ? '-fornecido' : ''}`,
+          false,
+          false,
+          stored && engine === 'pgzero' ? 'classic' : stored,
         ),
-      { engine, supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1' },
+      {
+        engine,
+        supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1',
+        stored: process.env.PYTHON_PROBE_PINTA_MATERIALS === '1',
+      },
     )
     const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
     expect(ready.status, JSON.stringify(ready)).toBe('ready')

@@ -10,12 +10,19 @@ for (const scale of [1, 2])
     await page.goto('/provider')
     await page.waitForFunction(() => !!globalThis.providerProbe)
     await page.evaluate(
-      ({ scale, supplied }) =>
+      ({ scale, supplied, stored }) =>
         globalThis.providerProbe.prepare(
           'game',
           `pinta-regional-pygame-${scale}x${supplied ? '-fornecido' : ''}`,
+          false,
+          false,
+          stored && scale === 1 ? 'classic' : stored,
         ),
-      { scale, supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1' },
+      {
+        scale,
+        supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1',
+        stored: process.env.PYTHON_PROBE_PINTA_MATERIALS === '1',
+      },
     )
     const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
     expect(ready.status, JSON.stringify(ready)).toBe('ready')
@@ -118,8 +125,16 @@ test('wrong bytes for the supplied module fail before learner code or a ready se
   })
   await page.goto('/provider')
   await page.waitForFunction(() => !!globalThis.providerProbe)
-  await page.evaluate(() =>
-    globalThis.providerProbe.prepare('game', 'pinta-regional-pygame-1x-fornecido'),
+  await page.evaluate(
+    (stored) =>
+      globalThis.providerProbe.prepare(
+        'game',
+        'pinta-regional-pygame-1x-fornecido',
+        false,
+        false,
+        stored,
+      ),
+    process.env.PYTHON_PROBE_PINTA_MATERIALS === '1',
   )
   const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
   expect(intercepted).toBe(1)

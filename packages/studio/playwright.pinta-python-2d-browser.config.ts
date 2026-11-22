@@ -5,7 +5,7 @@ const output = process.env.PYTHON_PROBE_OUTPUT_DIR ?? '../../.cache/pinta-python
 
 export default defineConfig({
   testDir: './e2e-runtime',
-  testMatch: ['python-pinta-2d-browser.spec.ts'],
+  testMatch: ['python-pinta-2d-browser.spec.ts', 'pinta-project-regional-js.spec.ts'],
   workers: 1,
   timeout: 60_000,
   expect: { timeout: 20_000 },

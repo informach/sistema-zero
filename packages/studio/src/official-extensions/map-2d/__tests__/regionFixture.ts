@@ -265,13 +265,15 @@ export function repeatedRegionalObjects() {
   }
 }
 
-export async function pngWorld() {
+export async function pngWorld(cabinX = -474, atlas = image) {
+  const parent = regional('legacy')
+  for (const sheet of parent.tilesets) sheet.image = atlas
   const child = await embedPintaRegionImage(
     png,
-    JSON.stringify(regional('precise', 'cabana', -474)),
+    JSON.stringify(regional('precise', 'cabana', cabinX)),
     { scale: 2 },
   )
-  const parent = await embedPintaRegionImage(png, JSON.stringify(regional('legacy')), {
+  const captured = await embedPintaRegionImage(png, JSON.stringify(parent), {
     scale: 2,
     world: {
       version: 1,
@@ -285,5 +287,5 @@ export async function pngWorld() {
       ],
     },
   })
-  return readPintaRegionImageWorld(parent.png)
+  return readPintaRegionImageWorld(captured.png)
 }
