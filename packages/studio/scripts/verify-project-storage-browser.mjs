@@ -128,6 +128,43 @@ for (const [name, engine] of [
       (await second.evaluate(() => window.storageHarness.read())).text.content,
       'first-wins',
     )
+    // A edição da aba que perdeu não some: a saída dela vira a cópia "(edição recuperada)".
+    const reloadedCopies = await second.evaluate(
+      (source) => window.storageHarness.recoveredCopies(source),
+      `two-${name}`,
+    )
+    assert.ok(
+      reloadedCopies.some(
+        (copy) =>
+          copy.name.endsWith('(edição recuperada)') && copy.text?.content === 'stale-second',
+      ),
+      JSON.stringify({ engine: name, reloadedCopies }),
+    )
+    phase('two-tabs-reload-copy-verified')
+    // Fechar a aba que perdeu (em vez de recarregar) também guarda a edição dela.
+    const loser = await context.newPage()
+    await loser.goto(fixtureURL(`two-${name}`))
+    await loser.waitForFunction(() => Boolean(window.storageHarness))
+    await first.evaluate(() => window.storageHarness.edit('first-wins-again'))
+    assert.equal(await first.evaluate(() => window.storageHarness.save()), 'saved')
+    await loser.evaluate(() => window.storageHarness.edit('stale-closed'))
+    assert.equal(await loser.evaluate(() => window.storageHarness.save()), 'ProjectWriteConflict')
+    await loser.close({ runBeforeUnload: true })
+    const reader = await context.newPage()
+    await reader.goto(fixtureURL(`two-${name}`))
+    await reader.waitForFunction(() => Boolean(window.storageHarness))
+    const closedCopies = await reader.evaluate(
+      (source) => window.storageHarness.recoveredCopies(source),
+      `two-${name}`,
+    )
+    assert.ok(
+      closedCopies.some(
+        (copy) =>
+          copy.name.endsWith('(edição recuperada)') && copy.text?.content === 'stale-closed',
+      ),
+      JSON.stringify({ engine: name, closedCopies }),
+    )
+    await reader.close()
     phase('two-tabs-verified')
     const archive = await first.evaluate(() => window.storageHarness.qualifyDeepAncestorArchive())
     assert.equal(archive.exact, true)
@@ -163,6 +200,35 @@ for (const [name, engine] of [
     assert.equal((await openProfile('perfil-b')).text, 'b-own')
     await profiles.close()
     phase('profile-switch-verified')
+    // Cota no localStorage, sem diálogo: vale em todo motor, inclusive no WebKit do iPad, onde a
+    // fase do diálogo abaixo não roda. A cópia síncrona falha e a nativa basta, tanto ao recarregar
+    // quanto com a aba escondida (página viva, sem "Erro ao salvar").
+    const quota = await context.newPage()
+    const quotaURL = new URL(fixtureURL(`quota-native-${name}`))
+    quotaURL.searchParams.set('deny-exit', '1')
+    await quota.goto(quotaURL.href)
+    await quota.waitForFunction(() => Boolean(window.storageHarness))
+    await quota.evaluate(() => window.storageHarness.edit('quota-native-reload'))
+    await quota.reload()
+    await quota.waitForFunction(() => Boolean(window.storageHarness))
+    assert.equal(
+      (await quota.evaluate(() => window.storageHarness.read())).text.content,
+      'quota-native-reload',
+    )
+    phase('quota-native-reload-verified')
+    await quota.evaluate(() => {
+      window.storageHarness.edit('quota-native-hidden')
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'hidden',
+      })
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    await quota.waitForFunction(() => window.storageHarness.exitStatus().recoverable === true)
+    const hiddenQuota = await quota.evaluate(() => window.storageHarness.read())
+    assert.equal(hiddenQuota.error, null, JSON.stringify({ engine: name, hiddenQuota }))
+    await quota.close()
+    phase('quota-native-hidden-verified')
     // Chromium exposes the native beforeunload dialog in headless automation.
     // Exercise a real trusted click: synthetic evaluation alone has no sticky activation.
     if (name === 'chromium') {
