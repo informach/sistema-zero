@@ -121,7 +121,7 @@ export function attachPythonAreaGuards(workspace: Blockly.Workspace): () => void
     if (!active || isWorkspaceLoading()) return
     // No meio do arraste a pilha ainda não chegou: as guardas esperam a criança soltar (o
     // evento do fim do arraste pede de novo, com os blocos de agora guardados).
-    if ((workspace as Partial<Blockly.WorkspaceSvg>).isDragging?.()) return
+    if (workspace instanceof Blockly.WorkspaceSvg && workspace.isDragging()) return
     const ids = moved
     moved = new Set()
     const names = renamed

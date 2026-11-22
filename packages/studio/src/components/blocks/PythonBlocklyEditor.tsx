@@ -718,7 +718,9 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           if (frames.size && [...frames.keys()].every((kind) => previousPositions.has(kind)))
             for (const [kind, frame] of frames) {
               const at = previousPositions.get(kind)!
-              frame.moveTo(new Blockly.utils.Coordinate(at.x, at.y))
+              // `moveTo` é do BlockSvg; o mapa das áreas é de Block.
+              if (frame instanceof Blockly.BlockSvg)
+                frame.moveTo(new Blockly.utils.Coordinate(at.x, at.y))
             }
           else layoutPythonAreaFrames(workspace)
         }

@@ -119,22 +119,19 @@ export const pythonWantedArea = (block: Blockly.Block) => wantedOf.get(block)
 export function pythonAreaNoteText(note: Pick<PythonAreaBlockNote, 'wanted' | 'conflict'>) {
   const wanted = PYTHON_AREA_BY_KIND.get(note.wanted)!.title
   const start = PYTHON_AREA_BY_KIND.get('start')!.title
-  const reason = (() => {
-    switch (note.conflict?.reason) {
-      case 'name':
-        return `Ela depende de "${note.conflict.name}", que é preparado ou trocado por outra linha antes dela.`
-      case 'barrier':
-        return 'Uma linha antes dela prende o programa (um laço ou o bloco que liga o jogo).'
-      case 'effects':
-        return 'Ela e outra linha do caminho fazem coisas na hora (desenhar, tocar, mudar valores), e a ordem conta.'
-      case 'fixed':
-        return 'Ela divide a mesma linha do código com outro comando. Separe os dois no código.'
-      case 'pinned':
-        return 'O começo do arquivo fica sempre no topo.'
-      default:
-        return 'Mudar o lugar dela mudaria o que o programa faz.'
-    }
-  })()
+  const conflict = note.conflict
+  const reason =
+    conflict?.reason === 'name'
+      ? `Ela depende de "${conflict.name}", que é preparado ou trocado por outra linha antes dela.`
+      : conflict?.reason === 'barrier'
+        ? 'Uma linha antes dela prende o programa (um laço ou o bloco que liga o jogo).'
+        : conflict?.reason === 'effects'
+          ? 'Ela e outra linha do caminho fazem coisas na hora (desenhar, tocar, mudar valores), e a ordem conta.'
+          : conflict?.reason === 'fixed'
+            ? 'Ela divide a mesma linha do código com outro comando. Separe os dois no código.'
+            : conflict?.reason === 'pinned'
+              ? 'O começo do arquivo fica sempre no topo.'
+              : 'Mudar o lugar dela mudaria o que o programa faz.'
   return `Este bloco é de ${wanted}, mas ficou em ${start} para o programa continuar igual.\n${reason}`
 }
 

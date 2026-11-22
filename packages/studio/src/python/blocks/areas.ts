@@ -792,7 +792,7 @@ function parameterNames(params: PythonNode | undefined) {
  * `variables` (atribuição, `for`, `with`, `except`…), `definitions` (def, classe, import) e os
  * declarados `global`/`nonlocal` (que NÃO são do escopo).
  */
-function scopeNames(params: PythonNode | undefined, body: PythonValue) {
+function scopeNames(params: PythonNode | undefined, body: PythonValue | undefined) {
   const variables = new Set<string>()
   const definitions = new Set<string>()
   const declared = new Set<string>()
@@ -837,7 +837,7 @@ function scopeNames(params: PythonNode | undefined, body: PythonValue) {
   return { params: parameterNames(params), variables, definitions, declared }
 }
 
-function scopeLocals(params: PythonNode | undefined, body: PythonValue) {
+function scopeLocals(params: PythonNode | undefined, body: PythonValue | undefined) {
   const names = scopeNames(params, body)
   const locals = new Set([...names.params, ...names.variables, ...names.definitions])
   for (const id of names.declared) locals.delete(id)
@@ -920,7 +920,7 @@ function decoratorTargets(
 /** O que o corpo faz quando roda (contando as funções, lambdas e compreensões de dentro). */
 function bodyFacts(
   params: PythonNode | undefined,
-  body: PythonValue,
+  body: PythonValue | undefined,
   user: UserCode,
   outer: ReadonlySet<string> = NO_LOCALS,
 ): BodyFacts {
