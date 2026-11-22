@@ -307,7 +307,7 @@ export function MemberDetailClient({
   // O "Mais" do cabeçalho: as ações de segunda linha, com as MESMAS regras de antes
   // (conceder = quem escreve; entrar como = `canImpersonate`). Quem só lê vê o "Conceder
   // acesso" apagado, com o motivo, e a faixa de só leitura explica.
-  const groupRecadoFor = learner?.kind === 'child' ? learner : null
+  const groupRecadoFor = platform === 'kids' && learner?.kind === 'child' ? learner : null
   const moreItems: MoreMenuItem[] = [
     {
       label: 'Ver recados',
@@ -1107,15 +1107,40 @@ function ActivityHistory({ learnerId }: { learnerId: string }) {
   )
 }
 
-function CertificatesTab({
-  learnerId,
-  historyQuery,
-  canWrite,
-}: {
+interface CertificatesTabProps {
   learnerId: string
   historyQuery: string
   canWrite: boolean
-}) {
+}
+
+function CertificatesTab(props: CertificatesTabProps) {
+  const [fullHistory, setFullHistory] = useState(false)
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          {fullHistory
+            ? 'Histórico completo desta pessoa, incluindo cursos que saíram do catálogo.'
+            : 'Certificados dos cursos do público selecionado.'}
+        </p>
+        <Button
+          variant="outline"
+          aria-pressed={fullHistory}
+          onClick={() => setFullHistory((value) => !value)}
+        >
+          {fullHistory ? 'Ver público selecionado' : 'Ver histórico completo'}
+        </Button>
+      </div>
+      <CertificateRecords
+        key={fullHistory ? 'all' : 'scoped'}
+        {...props}
+        historyQuery={fullHistory ? '' : props.historyQuery}
+      />
+    </div>
+  )
+}
+
+function CertificateRecords({ learnerId, historyQuery, canWrite }: CertificatesTabProps) {
   const { data, loading, error, reload } = useSection<{ certificates: MemberCertificateView[] }>(
     `/api/members/${learnerId}/certificates${historyQuery}`,
   )

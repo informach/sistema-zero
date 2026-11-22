@@ -6,7 +6,7 @@
 
 **Arquitetura:** o progresso existente continua no Members, por usuário, conta, aula, bloco e revisão. A entrada no player consulta a aula atual sem reutilizar o retrato do roteador; o registro de abertura conserva uma navegação existente. Em aula gravada ainda em andamento, uma parte já concluída dá lugar à primeira pendente; quando falta somente concluir a aula, a retomada abre seu fim. Aulas concluídas e encontros ao vivo preservam a revisão/navegação escolhida. Pais são um contexto da conta na comunidade Kids, identificado pelo `learner: parents` do curso, sem novo papel de autenticação ou migração de dados.
 
-**Restrições:** preservar direitos, respostas, conquistas e dados existentes; nenhuma alteração de produção; nenhum build ou suíte pesada nesta máquina. Usar checkout isolado. Testes completos e builds no GitHub.
+**Restrições:** preservar direitos, respostas, conquistas e dados existentes; nenhum build ou suíte pesada nesta máquina. Usar checkout isolado. Testes completos e builds no GitHub. Atualização de escopo autorizada pela usuária: publicar esta correção em produção pelo fluxo normal e integrar os mesmos ajustes no staging local antes da publicação.
 
 ## Evidências
 
@@ -27,4 +27,6 @@ Regressões reproduzidas antes da correção: o player montava com snapshot anti
 
 Time: Pais na lista Kids e na ficha, cursos/certificados/avaliações filtrados por público, chave-mestra ganha incluída. A atividade cronológica continua sendo o histórico geral da conta e informa esse alcance; a paginação existente não é filtrada no navegador. Recados gerais da equipe para a conta aparecem na Ajuda dos pais e não no perfil infantil.
 
-CI disparado na branch de correção, sem publicação de staging ou produção. Provas PostgreSQL novas usam apenas bancos descartáveis do GitHub: preservação atômica da navegação e paginação/contagem da lista de pais. Nenhum banco foi migrado para esta alteração.
+Provas PostgreSQL novas usam apenas bancos descartáveis do GitHub: preservação atômica da navegação e paginação/contagem da lista de pais. Nenhum banco precisa de migração para esta alteração. A liberação seletiva parte de main e contém os commits desta correção; o staging local recebe a correção antes da publicação.
+
+Revisão adicional: uma parte pode liberar a próxima aos 90% do vídeo. A retomada conserva a parte enquanto há vídeo ainda não terminado, inclusive numa revisão, e só avança ao próximo pendente depois do fim. A regressão HTTP de 109/120 segundos ficou vermelha e depois verde. Uma atualização de props durante a leitura de entrada também foi reproduzida e corrigida: a resposta atual vence os retratos recebidos enquanto estava em andamento. Certificados de cursos removidos continuam acessíveis pelo botão explícito de histórico completo, mesmo quando o resultado filtrado está vazio; recado em grupo de criança mantém a guarda da lente Kids.

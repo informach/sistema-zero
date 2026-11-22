@@ -7,14 +7,15 @@ export function resumeSectionId(input: {
   progress: SectionProgressView | undefined
   lessonCompleted: boolean
   live: boolean
+  savedVideoPending: boolean
 }): string | null {
-  const { saved, progress, lessonCompleted, live } = input
+  const { saved, progress, lessonCompleted, live, savedVideoPending } = input
   if (!progress) return saved
   const selected = progress.sections.find((section) => section.id === saved)
   if (
     selected &&
     selected.status !== 'locked' &&
-    (selected.status !== 'completed' || lessonCompleted || live)
+    (selected.status !== 'completed' || lessonCompleted || live || savedVideoPending)
   )
     return selected.id
   const available = progress.sections.find((section) => section.status === 'available')

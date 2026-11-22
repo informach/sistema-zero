@@ -40,7 +40,6 @@ function ResumeAccountLesson({
   const { id, courseSlug } = lesson
   useEffect(() => {
     const controller = new AbortController()
-    const snapshot = source.current
     setResult({ status: 'loading' })
     void apiGet<LessonDetailView>(
       `/api/members/courses/${encodeURIComponent(courseSlug)}/lessons/${encodeURIComponent(id)}`,
@@ -55,7 +54,10 @@ function ResumeAccountLesson({
           !Array.isArray(current.blocks)
         )
           throw new Error('A resposta não corresponde à aula.')
-        setResult({ status: 'ready', source: snapshot, current })
+        // Props recebidas durante a leitura podem ser o mesmo retrato antigo, recriado
+        // pelo roteador. A resposta atual vence todas elas; só um refresh posterior
+        // à conclusão desta leitura pode substituir a aula de entrada.
+        setResult({ status: 'ready', source: source.current, current })
       })
       .catch(() => {
         if (!controller.signal.aborted) setResult({ status: 'error' })
