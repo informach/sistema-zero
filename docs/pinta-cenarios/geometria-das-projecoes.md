@@ -50,6 +50,13 @@ considera imagens maiores que a célula e os giros hexagonais. O Canvas nativo
 produziu os mesmos pixels com e sem recorte para células assinadas nas duas
 projeções, em cenários de 10.000 × 10.000 com um chunk ocupado.
 
+O Jogo 2D e o Jogo 2D Avançado executam a cena admitida pela composição
+privada. As provas moveram um corpo contra o diamante, pousaram por cima
+de uma plataforma e atravessaram uma porta da ilha isométrica à praia
+hexagonal. As fontes, sem dados de desenhos, têm 421.286 e 463.527
+caracteres frente aos tetos de 422.000 e 464.000. O validador de cabeçalhos
+fica na admissão do documento, e o runtime restaura o wire já conferido.
+
 ## Integração
 
 1. Admitir o documento projetado e aplicar crescimento e pintura na mesma

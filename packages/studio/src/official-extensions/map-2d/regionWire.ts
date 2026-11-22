@@ -1,4 +1,13 @@
-import { encodePintaRegionLayers, type PintaRegionWire } from '@sistemazero/core/creations'
+import {
+  encodePintaHexRegionLayers,
+  encodePintaRegionLayers,
+  type PintaRegionWire,
+} from '@sistemazero/core/creations'
+import type {
+  PintaProjectedScene,
+  PintaProjectedSceneMap,
+  PintaProjectedSceneWire,
+} from '@sistemazero/core/studio/pinta-projected-scene'
 import type {
   PintaRegionScene,
   PintaRegionSceneMap,
@@ -8,18 +17,23 @@ import type { PintaSceneCellsLayer } from '@sistemazero/core/studio/pinta-scene'
 type WireMap = Omit<PintaRegionSceneMap, 'layers'> & {
   layers: PintaSceneCellsLayer<PintaRegionWire>[]
 }
-type WireScene = Omit<PintaRegionScene, 'layers' | 'sets' | 'physics'> &
-  WireMap & {
-    physics: 'legacy' | 'precise'
-    sets?: WireMap[]
-  }
+type WireScene =
+  | (Omit<PintaRegionScene, 'layers' | 'sets' | 'physics'> &
+      WireMap & {
+        physics: 'legacy' | 'precise'
+        sets?: WireMap[]
+      })
+  | PintaProjectedSceneWire
 
 /** Structural subset of Pinta's admitted PNG world. A separately admitted Scene4 can
  * use the same private entry point. PNG display scale does not change Studio units.
  */
 export interface AdmittedRegionWorld {
   readonly rootId: string
-  readonly maps: ReadonlyMap<string, { readonly data: { readonly scene: PintaRegionScene } }>
+  readonly maps: ReadonlyMap<
+    string,
+    { readonly data: { readonly scene: PintaRegionScene | PintaProjectedScene } }
+  >
 }
 
 export interface RegionWorldPayload {
@@ -51,6 +65,31 @@ export function packRegionWorld(
       ),
     }
   }
+  const packProjected = (
+    map: PintaProjectedSceneMap,
+  ): NonNullable<PintaProjectedSceneWire['sets']>[number] => {
+    const bounds = { ...map.origin, cols: map.cols, rows: map.rows }
+    const cells = map.layers.flatMap((layer) => (layer.kind === 'tiles' ? [layer.cells] : []))
+    const grids =
+      map.projection.kind === 'hexagonal'
+        ? encodePintaHexRegionLayers(
+            cells.filter((grid) => grid.kind === 'hex-regions'),
+            bounds,
+          )
+        : encodePintaRegionLayers(
+            cells.filter((grid) => grid.kind === 'regions'),
+            bounds,
+          )
+    if (!grids || grids.length !== cells.length)
+      throw new Error('A projeção precisa de regiões já admitidas.')
+    let index = 0
+    return {
+      ...map,
+      layers: map.layers.map((layer) =>
+        layer.kind === 'tiles' ? { ...layer, cells: grids[index++]! } : layer,
+      ),
+    }
+  }
   const scenes = [...world.maps].map(
     ([
       id,
@@ -58,12 +97,16 @@ export function packRegionWorld(
         data: { scene },
       },
     ]) => {
-      if (
-        scene.version !== 4 ||
-        id !== scene.id ||
-        (scene.physics !== 'legacy' && scene.physics !== 'precise')
-      )
+      if (id !== scene.id || (scene.physics !== 'legacy' && scene.physics !== 'precise'))
         throw new Error('O cenário precisa de identidade válida e um modo de física explícito.')
+      if (scene.version === 5) {
+        const { sets, ...root } = scene
+        return {
+          ...root,
+          ...packProjected(scene),
+          ...(sets ? { sets: sets.map(packProjected) } : {}),
+        }
+      }
       const { sets, physics, ...root } = scene
       return { ...root, ...packMap(scene), physics, ...(sets ? { sets: sets.map(packMap) } : {}) }
     },

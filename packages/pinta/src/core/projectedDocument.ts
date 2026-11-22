@@ -4,7 +4,6 @@ import {
   type PintaHexRegionCells,
   type PintaHexRegionWire,
   type PintaMapProjection,
-  PintaMapProjectionSchema,
   type PintaRegionCells,
   type PintaRegionWire,
   parsePintaHexRegionLayerLocations,
@@ -13,6 +12,7 @@ import {
   parsePintaRegionLayers,
   pintaHexCellTile,
 } from '@sistemazero/core/creations'
+import { PintaMapProjectionSchema } from '@sistemazero/core/creations/pinta-map-projection'
 import { pintaAssetToWire } from '../assets/wire'
 import { cellTile } from '../tiles/cell'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from './mapDocumentBoundary'

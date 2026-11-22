@@ -1,3 +1,4 @@
+import type { PintaProjectedCollisionView } from '@sistemazero/core/studio/pinta-scene-geometry'
 import type { PintaRegionSceneQuery } from '@sistemazero/core/studio/pinta-scene-query'
 import { sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { cellTile } from '../../../../pinta/src/tiles/cell'
@@ -8,7 +9,9 @@ type Cell = [row: number, col: number, material: 0 | 1]
 /** Same cell-center raster as the dense player, computed only within the collision query.
  * Stream bounded bands even when a scaled set projects one source cell to the entire world.
  */
-export function createRegionLegacyCollision(scene: PintaRegionSceneQuery) {
+export function createRegionLegacyCollision(
+  scene: PintaRegionSceneQuery | PintaProjectedCollisionView,
+) {
   const size = scene.tileSize
   const bounds = (map: Pick<PintaRegionSceneQuery, 'origin' | 'cols' | 'rows'>) => ({
     left: map.origin.col,
@@ -17,10 +20,10 @@ export function createRegionLegacyCollision(scene: PintaRegionSceneQuery) {
     bottom: map.origin.row + map.rows,
   })
   const world = bounds(scene)
-  type Layers = PintaRegionSceneQuery['layers']
+  type Layers = typeof scene.layers
   function tileLayers(layers: Layers) {
     return layers.flatMap((layer) => {
-      if (layer.kind !== 'tiles') return []
+      if (layer.kind !== 'tiles' || layer.cells.kind !== 'regions') return []
       const e = sceneLayerState(layers, layer)
       const sheet = scene.tilesets.find((t) => t.id === layer.tilesetId)
       if (!e.visible || !sheet) return []

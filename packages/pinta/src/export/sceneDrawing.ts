@@ -10,6 +10,7 @@ import {
 import type { PintaProjectedScene } from '@sistemazero/core/studio/pinta-projected-scene'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene, PintaSceneCellsLayer } from '@sistemazero/core/studio/pinta-scene'
+import type { PintaProjectedCollisionView } from '@sistemazero/core/studio/pinta-scene-geometry'
 import type { PintaRegionSceneQuery } from '@sistemazero/core/studio/pinta-scene-query'
 import { sceneArtFrame, sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { cellMatrix, cellTile } from '../tiles/cell'
@@ -30,7 +31,10 @@ type DrawableBounds = {
   projection?: PintaMapProjection
 }
 type ViewBox = { x: number; y: number; width: number; height: number }
-type SceneViewport = ViewBox & { regionCells?: PintaRegionSceneQuery['regionCells'] }
+type SceneViewport = ViewBox & {
+  regionCells?: PintaRegionSceneQuery['regionCells']
+  projectedCells?: PintaProjectedCollisionView['regionCells']
+}
 
 /** Compositor estático/animado compartilhado pela imagem de exportação e pelo teste no Pinta. */
 export async function loadSceneImages(
@@ -77,24 +81,26 @@ export function drawScene(
     grid: PintaRegionCells | PintaHexRegionCells,
     sheet: PintaScene['tilesets'][number],
     image: CanvasImageSource,
-    viewport?: ViewBox,
+    view?: ViewBox,
   ): void {
     const geometry = geometryOf(bounds.projection)
     const area = mapCellBounds(bounds)
     // An atlas frame can extend beyond its footprint, including on hex turns.
     // Admit conservatively before visiting occupied cells, then sort by feet.
     const padding = size * Math.SQRT2
-    const visible = viewport
+    const visible = view
       ? geometry.visibleCells(area, {
-          x: viewport.x - padding,
-          y: viewport.y - padding,
-          width: viewport.width + 2 * padding,
-          height: viewport.height + 2 * padding,
+          x: view.x - padding,
+          y: view.y - padding,
+          width: view.width + 2 * padding,
+          height: view.height + 2 * padding,
         })
       : area
     if (!visible) return
     const hex = grid.kind === 'hex-regions'
-    const reader = hex ? createHexRegionCellReader(grid) : createRegionCellReader(grid)
+    const reader =
+      viewport?.projectedCells?.(grid) ??
+      (hex ? createHexRegionCellReader(grid) : createRegionCellReader(grid))
     const painted: Array<{ value: number; x: number; y: number }> = []
     reader.visitOccupied(visible, (value, col, row) => {
       const { x, y } = geometry.center(col, row)

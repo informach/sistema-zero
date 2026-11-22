@@ -20,6 +20,7 @@
     "./course/module-animation": "./src/course/module-animation.ts",
     "./creations": "./src/creations/index.ts",
     "./creations/pinta-causal": "./src/creations/pinta-causal.ts",
+    "./creations/pinta-map-projection": "./src/creations/pinta-map-projection.ts",
     "./creations/pinta-palette-writer": "./src/creations/pinta-palette-writer.ts",
     "./creations/studio-sealed-storage": "./src/creations/studio-sealed-storage.ts",
     "./creations/studio-sealed-writer": "./src/creations/studio-sealed-writer.ts",

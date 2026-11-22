@@ -1,4 +1,13 @@
 import { expect, test } from 'bun:test'
+import {
+  encodePintaHexRegionLayers,
+  encodePintaRegionLayers,
+  PINTA_HEX_EMPTY_CELL,
+} from '@sistemazero/core/creations'
+import {
+  type PintaProjectedSceneWire,
+  readPintaProjectedScene,
+} from '@sistemazero/core/studio/pinta-projected-scene'
 import { mapTwoDBootstrap } from '../bootstrap'
 import type { MapTwoDApi } from '../contract'
 import { mapTwoDRegionBootstrap } from '../regionBootstrap'
@@ -40,7 +49,126 @@ function body(x: number, from: number, to: number, w = 4) {
   return { x, y: to, w, h: 4, vx: 0, vy: to - from, _prevX: x, _prevY: from, onGround: false }
 }
 
+function projectedWorld() {
+  const bounds = { col: -2, row: -2, cols: 8, rows: 8 }
+  const cells = new Int16Array(1024).fill(-1)
+  cells[0] = 0
+  cells[2 * 32 + 2] = 1
+  const hex = new Uint32Array(1024).fill(PINTA_HEX_EMPTY_CELL)
+  hex[0] = 0
+  const root: PintaProjectedSceneWire = {
+    id: 'ilha',
+    name: 'Ilha',
+    version: 5,
+    tileSize: 16,
+    physics: 'precise',
+    origin: { col: bounds.col, row: bounds.row },
+    cols: bounds.cols,
+    rows: bounds.rows,
+    projection: { kind: 'isometric', tileWidth: 32, tileHeight: 16 },
+    tilesets: [
+      { id: 'shore', name: 'Peças', image, columns: 2, count: 2, solid: [0], platform: [1] },
+    ],
+    layers: [
+      {
+        id: 'shore',
+        kind: 'tiles',
+        name: 'Chão',
+        visible: true,
+        tilesetId: 'shore',
+        cells: encodePintaRegionLayers(
+          [{ kind: 'regions', version: 1, side: 32, chunks: [{ col: 0, row: 0, cells }] }],
+          bounds,
+        )![0]!,
+      },
+      {
+        id: 'objects',
+        kind: 'objects',
+        name: 'Lugares',
+        visible: true,
+        objects: [
+          {
+            id: 'port',
+            type: '',
+            name: 'Porta',
+            role: 'door',
+            x: -32,
+            y: -12,
+            width: 16,
+            height: 16,
+            properties: { enabled: false, destination: { type: 'asset', value: 'beach' } },
+          },
+        ],
+      },
+    ],
+  }
+  const linked: PintaProjectedSceneWire = {
+    ...root,
+    id: 'beach',
+    name: 'Praia',
+    projection: {
+      kind: 'hexagonal',
+      tileWidth: 32,
+      tileHeight: 32,
+      hexSideLength: 16,
+      staggerAxis: 'y',
+      staggerIndex: 'odd',
+    },
+    layers: [
+      {
+        id: 'shore',
+        kind: 'tiles',
+        name: 'Chão',
+        visible: true,
+        tilesetId: 'shore',
+        cells: encodePintaHexRegionLayers(
+          [{ kind: 'hex-regions', version: 1, side: 32, chunks: [{ col: 0, row: 0, cells: hex }] }],
+          bounds,
+        )![0]!,
+      },
+    ],
+  }
+  return {
+    rootId: root.id,
+    maps: new Map(
+      [root, linked].map((wire) => [
+        wire.id,
+        {
+          data: { scene: readPintaProjectedScene(JSON.stringify(wire))! },
+        },
+      ]),
+    ),
+  }
+}
+
 for (const target of ['g2d', 'gk'] as const) {
+  test(`${target} plays Scene 5 with isometric solid geometry, one-way feet and a hexagonal door destination`, async () => {
+    const source = await mapTwoDRegionBootstrap(target, projectedWorld())
+    const { api, images } = boot(target, source)
+    api.createMapScene('mapa', 'ilha')
+    expect(api.mapSize('mapa', 'width')).toBe(256)
+    expect(api.mapSize('mapa', 'height')).toBe(128)
+    expect(api.mapSpawn('mapa', 'y')).toBe(8)
+    const sweep = body(20, 7, 7, 2)
+    sweep._prevX = -40
+    sweep.vx = 60
+    api.collideMapScene(sweep, 'mapa')
+    expect(sweep.x).toBeCloseTo(-18, 6)
+    const land = body(-1, 20, 49, 2)
+    api.collideMapScene(land, 'mapa')
+    expect(land.y).toBeCloseTo(28, 6)
+    const rise = body(-1, 49, 20, 2)
+    api.collideMapScene(rise, 'mapa')
+    expect(rise.y).toBe(20)
+    const marker = api.mapObjectById('mapa', 'port')
+    expect(api.mapObjectProperty(marker, 'enabled')).toBe(false)
+    const actor = body(-28, -9, -9)
+    api.useMapDoor('mapa', actor, marker)
+    expect({ x: actor.x, y: actor.y }).toEqual({ x: 16, y: 16 })
+    expect(api.mapSize('mapa', 'width')).toBe(272)
+    expect(images).toHaveLength(1)
+  })
+
   test(`${target} bounds automatic queries in a 512-by-512 object expansion`, async () => {
     let transforms = 0
     const tracker = new Proxy(Object, {

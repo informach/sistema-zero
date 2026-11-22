@@ -105,6 +105,8 @@ export function preparePintaProjectedScene(
       if (
         source.physics === 'legacy' &&
         (map.projection.kind !== 'orthogonal' ||
+          map.projection.tileWidth !== source.tileSize ||
+          map.projection.tileHeight !== source.tileSize ||
           map.layers.some(
             (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
           ))

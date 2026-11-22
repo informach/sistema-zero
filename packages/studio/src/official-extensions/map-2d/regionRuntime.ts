@@ -1,9 +1,20 @@
-import { parsePintaRegionLayers } from '@sistemazero/core/creations'
+import {
+  type PintaHexRegionCells,
+  type PintaRegionCells,
+  parsePintaHexRegionLayers,
+  parsePintaRegionLayers,
+} from '@sistemazero/core/creations'
 import type {
-  PintaRegionScene,
-  PintaRegionSceneMap,
-} from '@sistemazero/core/studio/pinta-region-scene'
-import type { PintaScene, PintaSceneObject } from '@sistemazero/core/studio/pinta-scene'
+  PintaProjectedScene,
+  PintaProjectedSceneWire,
+} from '@sistemazero/core/studio/pinta-projected-scene'
+import { createProjectedSceneQueries } from '@sistemazero/core/studio/pinta-projected-scene-query'
+import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
+import type {
+  PintaScene,
+  PintaSceneCellsLayer,
+  PintaSceneObject,
+} from '@sistemazero/core/studio/pinta-scene'
 import type { SceneBox } from '@sistemazero/core/studio/pinta-scene-geometry'
 import { createRegionSceneQueries } from '@sistemazero/core/studio/pinta-scene-query'
 import { drawScene } from '../../../../pinta/src/export/sceneDrawing'
@@ -15,7 +26,7 @@ type Api = MapTwoDApi & { reset(): void }
 type LegacyCells = ReturnType<typeof createRegionLegacyCollision>
 type Point = { x: number; y: number }
 type Body = { body?: { reset?: (x: number, y: number) => void } }
-type Scene = PintaRegionScene & { physics: 'legacy' | 'precise' }
+type Scene = (PintaRegionScene & { physics: 'legacy' | 'precise' }) | PintaProjectedScene
 
 interface Host {
   meta(asset: string, byId: boolean): { scene?: PintaScene } | undefined
@@ -49,7 +60,9 @@ interface WatchedArea {
 interface RunningScene {
   world: RunningWorld
   scene: Scene
-  query: ReturnType<typeof createRegionSceneQueries>
+  query:
+    | ReturnType<typeof createRegionSceneQueries>
+    | ReturnType<typeof createProjectedSceneQueries>
   spawn: Point
   art: Map<string, string>
   started: number
@@ -64,36 +77,56 @@ interface RunningWorld {
 }
 
 function restoreWorld(payload: RegionWorldPayload): Map<string, Scene> {
-  const restoreMap = (
+  const restoreLayers = <Cells extends PintaRegionCells | PintaHexRegionCells>(
     map:
       | RegionWorldPayload['scenes'][number]
       | NonNullable<RegionWorldPayload['scenes'][number]['sets']>[number],
-  ): PintaRegionSceneMap => {
-    const grids = parsePintaRegionLayers(
+    read: (grids: unknown, bounds: unknown) => Cells[] | null,
+  ): PintaSceneCellsLayer<Cells>[] => {
+    const grids = read(
       map.layers.flatMap((layer) => (layer.kind === 'tiles' ? [layer.cells] : [])),
       { ...map.origin, cols: map.cols, rows: map.rows },
     )
     if (!grids) throw new Error('As regiões do cenário não puderam ser restauradas.')
     let index = 0
-    return {
-      id: map.id,
-      origin: map.origin,
-      cols: map.cols,
-      rows: map.rows,
-      layers: map.layers.map((layer) =>
-        layer.kind === 'tiles' ? { ...layer, cells: grids[index++]! } : layer,
-      ),
-    }
+    return map.layers.map((layer) =>
+      layer.kind === 'tiles' ? { ...layer, cells: grids[index++]! } : layer,
+    )
   }
+  const restoreProjected = (map: NonNullable<PintaProjectedSceneWire['sets']>[number]) => ({
+    ...map,
+    layers:
+      map.projection.kind === 'hexagonal'
+        ? restoreLayers(map, parsePintaHexRegionLayers)
+        : restoreLayers(map, parsePintaRegionLayers),
+  })
   return new Map(
-    payload.scenes.map((scene) => {
+    payload.scenes.map((scene): [string, Scene] => {
+      if (scene.version === 5) {
+        const { sets, ...root } = scene
+        return [
+          scene.id,
+          {
+            ...root,
+            ...restoreProjected(root),
+            ...(sets ? { sets: sets.map(restoreProjected) } : {}),
+          },
+        ]
+      }
       const { sets, ...root } = scene
       return [
         scene.id,
         {
           ...root,
-          ...restoreMap(scene),
-          ...(sets ? { sets: sets.map(restoreMap) } : {}),
+          layers: restoreLayers(scene, parsePintaRegionLayers),
+          ...(sets
+            ? {
+                sets: sets.map((set) => ({
+                  ...set,
+                  layers: restoreLayers(set, parsePintaRegionLayers),
+                })),
+              }
+            : {}),
         },
       ]
     }),
@@ -122,7 +155,8 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
   let watching = false
 
   function install(name: string, world: RunningWorld, scene: Scene) {
-    const query = createRegionSceneQueries(scene)
+    const query =
+      scene.version === 5 ? createProjectedSceneQueries(scene) : createRegionSceneQueries(scene)
     const art = new Map<string, string>()
     for (const resource of [...scene.tilesets, ...(scene.art ?? [])]) {
       art.set(resource.id, resource.image)
@@ -262,6 +296,8 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
           width: host.width(),
           height: host.height(),
           regionCells: map.query.context.regionCells,
+          projectedCells:
+            map.query.context.version === 5 ? map.query.context.regionCells : undefined,
         })
       } finally {
         ctx.restore()
@@ -356,6 +392,8 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
     },
     mapSize(name, axis) {
       const map = maps.get(name)
+      const scene = map?.query.context
+      if (scene?.version === 5) return scene.worldBounds[axis]
       return map
         ? (axis === 'width' ? map.scene.cols : map.scene.rows) * map.scene.tileSize
         : legacy.mapSize(name, axis)
@@ -363,8 +401,9 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
   }
   return Object.assign(api, {
     signedBounds() {
-      const scene = maps.get(active)?.scene
+      const scene = maps.get(active)?.query.context
       if (!scene) return null
+      if (scene.version === 5) return scene.worldBounds
       const size = scene.tileSize
       return {
         x: scene.origin.col * size,

@@ -55,7 +55,10 @@ const built = await Bun.build({
 })
 if (!built.success || built.outputs.length !== 1 || !linkedGeometry)
   throw new Error('Falha ao compor o runtime regional dos jogos 2D.', { cause: built.logs })
-const { code } = await minify(await built.outputs[0]!.text(), { compress: false, mangle: true })
+const { code } = await minify(await built.outputs[0]!.text(), {
+  compress: { passes: 2 },
+  mangle: true,
+})
 if (!code) throw new Error('Falha ao compactar o runtime regional dos jogos 2D.')
 const source = `var _pintaRegionFactory;${code}`
 const literal = `'${JSON.stringify(source)
