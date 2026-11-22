@@ -1,0 +1,123 @@
+{
+  "browser": "157.0.8103.80",
+  "hashes": {
+    "fixture": "cd944bcd979d6248ee675647d75205de04bdee30aafdedee26d22f3b96487e22",
+    "old": "6e54e7f26feb3924ea26a785ea375b20286be92216290dedfa5078f7a1c3f4e6",
+    "modern": "50b3a361f0dc71d920b6c74a35b42194f923d9cfda1e026319a0e8985badb0cb",
+    "bench": "6f7d650c46effb044faeb35ee5750637aed014906876414f68cb3f7b8c875a44"
+  },
+  "results": [
+    {
+      "label": "pequena",
+      "assets": 1,
+      "extraFiles": 0,
+      "sourceGraphBytes": 3905,
+      "currentSourceBytes": 3049,
+      "withRegional": 12473,
+      "withFork": 14668,
+      "uniqueBodies": 12,
+      "reusedForkBodies": 3,
+      "maxPointReads": 24,
+      "checks": {
+        "oneByteUnder": true,
+        "lastPutAbort": true,
+        "staleV4": true,
+        "reopenedBoth": true
+      },
+      "ms": {
+        "preparar": 0.6,
+        "commit": 2.1,
+        "aberturaVerificada": 2,
+        "prepararFork": 0.4,
+        "commitFork": 1.3,
+        "reaberturaAmbas": 2.1
+      },
+      "heap": [
+        {
+          "phase": "dadosProntos",
+          "jsHeapBytes": 103320595
+        },
+        {
+          "phase": "preparar",
+          "jsHeapBytes": 103127814
+        },
+        {
+          "phase": "commit",
+          "jsHeapBytes": 103380794
+        },
+        {
+          "phase": "aberturaVerificada",
+          "jsHeapBytes": 103599728
+        },
+        {
+          "phase": "prepararFork",
+          "jsHeapBytes": 103977824
+        },
+        {
+          "phase": "commitFork",
+          "jsHeapBytes": 104106182
+        },
+        {
+          "phase": "reaberturaAmbas",
+          "jsHeapBytes": 104454136
+        }
+      ]
+    },
+    {
+      "label": "ampla",
+      "assets": 9,
+      "extraFiles": 5,
+      "sourceGraphBytes": 8132900,
+      "currentSourceBytes": 8132044,
+      "withRegional": 16270464,
+      "withFork": 24401654,
+      "uniqueBodies": 12,
+      "reusedForkBodies": 3,
+      "maxPointReads": 24,
+      "checks": {
+        "oneByteUnder": true,
+        "lastPutAbort": true,
+        "staleV4": true,
+        "reopenedBoth": true
+      },
+      "ms": {
+        "preparar": 39.9,
+        "commit": 58.4,
+        "aberturaVerificada": 46.7,
+        "prepararFork": 38,
+        "commitFork": 70,
+        "reaberturaAmbas": 96.3
+      },
+      "heap": [
+        {
+          "phase": "dadosProntos",
+          "jsHeapBytes": 147784460
+        },
+        {
+          "phase": "preparar",
+          "jsHeapBytes": 165648190
+        },
+        {
+          "phase": "commit",
+          "jsHeapBytes": 228203882
+        },
+        {
+          "phase": "aberturaVerificada",
+          "jsHeapBytes": 251701368
+        },
+        {
+          "phase": "prepararFork",
+          "jsHeapBytes": 205320397
+        },
+        {
+          "phase": "commitFork",
+          "jsHeapBytes": 251671919
+        },
+        {
+          "phase": "reaberturaAmbas",
+          "jsHeapBytes": 303499412
+        }
+      ]
+    }
+  ]
+}
