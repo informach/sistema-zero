@@ -22,6 +22,7 @@ import {
   montarProjetoMoedas,
 } from './moedas-projeto'
 import { moedasQuiz2d, moedasQuiz3d } from './moedas-quiz'
+import { organizarManifestos } from './organizar-projetos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/poder-moedas-no-caminho')
@@ -307,3 +308,5 @@ write(
 console.log(
   'Moedas: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([dir])

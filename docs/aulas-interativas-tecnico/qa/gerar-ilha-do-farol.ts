@@ -23,6 +23,7 @@ import {
 } from './ilha-do-farol-projeto'
 import { ilhaQuiz } from './ilha-do-farol-quiz'
 import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
+import { organizarManifestos } from './organizar-projetos'
 import {
   contextoDeEdicao,
   extrairPartesElevenLabs,
@@ -419,3 +420,5 @@ write(
 console.log(
   'Ilha do Farol: 3 manifestos, roteiros, derivados, inventário e projeto final gerados localmente.',
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([dir])

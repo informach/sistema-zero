@@ -141,6 +141,17 @@ e `installedExtensions`. Use a versão do manifesto da extensão oficial. `chain
 `content`. O mesmo `key` pode ser `workspaceKey` nas seções de construção e aparecer em `blockKeys`
 na seção de entrega.
 
+**Blocos já organizados (22/11/2026):** o `initialProject` e cada projeto de `projectExamples` chegam
+com as pilhas do topo no lugar do "Organizar blocos" do Estúdio e do Admin, sem uma área cobrir a outra.
+Antes a importação trazia as áreas nas posições fixas do gerador, e a responsável organizava à mão no
+Admin, bloco por bloco de Estúdio. Os geradores do Faísca terminam com `organizarManifestos` de
+`qa/organizar-projetos.ts`, que abre cada projeto num navegador com o Blockly do Estúdio e grava só x e
+y; as posições ficam num cache por conteúdo, então gerar de novo um curso que não mudou não abre o
+navegador. Para conferir: `bun docs/aulas-interativas-tecnico/qa/organizar-projetos.ts --conferir`. Um
+teste que compara o projeto do manifesto com o projeto montado pelo código usa `semPosicoesDoTopo`
+(`qa/posicoes-do-topo.ts`). Corre, Dino!, O Jogo do Meu Jeito e a Nave ficam de fora até serem
+refeitos no padrão do Faísca.
+
 **Exemplos privados por parte (`projectExamples`, 19/10/2026):** o bloco Estúdio carrega
 `{version: 1, examples: {UUID: projeto}, sections: {chaveDaParte: {entryExampleId?, solutionExampleId?}}}`.
 As chaves das partes são portáveis; a importação as converte para as identidades da aula.

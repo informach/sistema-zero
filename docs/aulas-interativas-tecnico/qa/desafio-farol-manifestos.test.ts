@@ -25,6 +25,7 @@ import type { SZIRV2 } from '../../../packages/studio/src/ir/schema'
 import { gameTwoDToolboxCategory } from '../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { farolDirecaoObservada } from './desafio-farol-direcao'
 import { montarProjetoFarol } from './desafio-farol-projeto'
+import { semPosicoesDoTopo } from './posicoes-do-topo'
 
 function manifesto(name: string): LearningManifest {
   const value = JSON.parse(
@@ -140,7 +141,8 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
         /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
       )
       const project = studio.initialProject as ReturnType<typeof montarProjetoFarol>
-      expect(project).toEqual(montarProjetoFarol(day))
+      // As posições das pilhas vêm do organizar-projetos.ts, não do código que monta o projeto.
+      expect(semPosicoesDoTopo(project)).toEqual(semPosicoesDoTopo(montarProjetoFarol(day)))
       // Todas as peças da versão final precisam estar disponíveis durante a montagem.
       const completedTypes = [
         ...JSON.stringify(montarProjetoFarol('concluido').blocksState).matchAll(

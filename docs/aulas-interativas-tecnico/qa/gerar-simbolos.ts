@@ -13,6 +13,7 @@ import { resolveCourseModels } from '../../../packages/studio/src/core/courseMod
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
 import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
+import { organizarManifestos } from './organizar-projetos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from './simbolos-conteudo'
 import { simbolosChecks } from './simbolos-criterios'
@@ -304,3 +305,5 @@ write(
 console.log(
   'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([dir])

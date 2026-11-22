@@ -21,6 +21,7 @@ import {
 } from './jardim-projeto'
 import { jardimQuiz } from './jardim-quiz'
 import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
+import { organizarManifestos } from './organizar-projetos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/o-jardim-secreto')
@@ -246,3 +247,5 @@ write(
 console.log(
   'Jardim: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([dir])

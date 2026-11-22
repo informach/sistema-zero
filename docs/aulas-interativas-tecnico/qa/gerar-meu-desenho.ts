@@ -21,6 +21,7 @@ import {
   projetoInicialMeuDesenho,
   VAGA_CHAVE,
 } from './meu-desenho-projeto'
+import { organizarManifestos } from './organizar-projetos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
 /**
@@ -232,3 +233,5 @@ write(
   `# Meu primeiro desenho no Pinta — organização do curso\n\nExtra 2 do posto Faísca (\`${MEU_DESENHO_CURSO}\`). Módulo: **Meu primeiro desenho no Pinta**. Preservar o ID do curso, do módulo reservado e da \`aula-1\` criados pelo seed da jornada.\n\n## Aula 1. ${aula.title}\n\nIdentificador: ${aula.slug}. Dimensão: 2D.\n\n${aula.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](meu-desenho-${aula.slug}.manifesto.json) · [Roteiro](meu-desenho-${aula.slug}.roteiro.md).\n\nDuas entregas: o desenho (vaga de arte \`${VAGA_CHAVE}\`, que substitui \`${CHAVE_DO_JOGO}\`) e o jogo com o desenho. Extra opcional: não conta para subir de posto. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar.\n`,
 )
 console.log('Meu primeiro desenho: aula, roteiro, voz, ajuda, inventário e dois projetos gerados.')
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([dir])
