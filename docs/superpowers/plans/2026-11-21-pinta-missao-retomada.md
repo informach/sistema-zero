@@ -141,6 +141,18 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    inventário de galeria, host e transporte precisam selecionar/integrar essa
    política antes da promoção. Ainda não é carregamento sob demanda nem fecha
    o item 4 ou a etapa macro 1.
+   A política autoral interna 8 foi integrada ao mesmo mecanismo de CAS,
+   recuperação, lápides e quota, com espelho compacto por ID/revisão. O clonador
+   comum conserva as células regionais. Provas em
+   `qa/autoridade-regional-interna-2026-11-22/`: 2.709 testes completos,
+   72 focados e 33 ensaios de navegador, tipos/lint aprovados. A revisão
+   reproduziu quota incorreta com identidades mutáveis; resumos da persistência
+   agora duram uma transação. Cinco mapas máximos cabem no JSON e o sexto é
+   recusado; excluir dados inalterados acima do teto continua possível.
+   O fluxo de negócio real grava cabeçalho, um chunk e referência, com rollback
+   conjunto. A fábrica pública, galeria/host e transporte não selecionam 8;
+   inventário parcial de nuvem, adaptadores e rollout seguem pendentes. Não
+   fechar o item por essa preparação interna nem anunciar SLA de autosave/heap.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

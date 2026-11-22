@@ -5,6 +5,7 @@
  * desenhos de um jogo de exemplo), que precisa saber QUAL id novo cada desenho ganhou.
  */
 
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import { cloneMapIds, mapPropertyRefs, remapMapAssets } from '../core/mapClone'
@@ -24,7 +25,7 @@ export function uniqueName(base: string, taken: Set<string>): string | null {
 }
 
 /** Clona um asset com ids NOVOS (asset + animações + camadas) p/ o Duplicar e a importação. */
-export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
+export function cloneWithNewIds<Asset extends PintaMemoryAsset>(asset: Asset, name: string): Asset {
   const now = Date.now()
   const copy = structuredClone(asset)
   copy.id = newId()
@@ -38,16 +39,16 @@ export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   } else if (copy.kind === 'vector-sprite') {
     copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
   } else if (copy.kind === 'tilemap') {
-    return cloneMapIds(copy, copy.id)
+    return cloneMapIds(copy, copy.id) as Asset
   } else if (copy.kind === 'map-set') {
     copy.map = cloneMapIds(copy.map)
   }
   return copy
 }
 
-export interface ImportPlan {
+export interface ImportPlan<Asset extends PintaMemoryAsset = PintaAsset> {
   /** O desenho como veio e o que vai ao disco (id novo, nome único, peças religadas). */
-  pairs: Array<{ source: PintaAsset; restored: PintaAsset }>
+  pairs: Array<{ source: Asset; restored: Asset }>
   /** id de origem → id novo. */
   idMap: Map<string, string>
   skipped: number
@@ -59,16 +60,16 @@ export interface ImportPlan {
  * `taken`. Um mapa cujas peças vieram junto mas não entraram no plano é pulado (ficaria órfão).
  * A peça de camada que não veio segue apontando para o id de antes.
  */
-export function planImport(
-  eligible: readonly PintaAsset[],
+export function planImport<Asset extends PintaMemoryAsset>(
+  eligible: readonly Asset[],
   incomingTilesetIds: ReadonlySet<string>,
   taken: Set<string>,
-  nameForCopy: (asset: PintaAsset) => string = (asset) => asset.name,
-): ImportPlan {
+  nameForCopy: (asset: Asset) => string = (asset) => asset.name,
+): ImportPlan<Asset> {
   const idMap = new Map<string, string>()
   const names = new Map<string, string>()
   const animations = new Map<string, ReadonlyMap<string, string>>()
-  const prepared: PintaAsset[] = []
+  const prepared: Asset[] = []
   const preparedTilesetIds = new Set<string>()
   let skipped = 0
   let error: string | null = null
@@ -127,5 +128,6 @@ export function planImport(
               }
             : source,
   }))
-  return { pairs, idMap, skipped, error }
+  // The shared cloner changes references and IDs, never the asset kind or cell representation.
+  return { pairs: pairs as ImportPlan<Asset>['pairs'], idMap, skipped, error }
 }

@@ -29,6 +29,15 @@ inventário/host, transporte e adaptadores. Abertura ainda lê os chunks do
 documento; não anunciar carregamento sob demanda. Provas em
 `qa/io-regional-interno-2026-11-21/`, no diretório da missão.
 
+`createLocalAssetAuthority` é o mesmo mecanismo para as políticas nativas;
+exports públicos conservam 0–7. `localRegionAssetAuthority.ts` seleciona 8 só
+internamente e usa espelho compacto vinculado à revisão exata da autoridade,
+sem repetir buffers. Validação conserva a origem causal da RAM. Quota da
+persistência usa resumos por transação: não reutilizar cache de identidades
+mutáveis entre gravações. Permitir exclusão estrita de dados inalterados para
+liberar espaço acima do teto. A fábrica pública/host ainda não selecionam 8.
+Provas e limites em `qa/autoridade-regional-interna-2026-11-22/`.
+
 `RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
 separação usam células por regiões e o clonador comum; a separação esparsa conserva
 a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto

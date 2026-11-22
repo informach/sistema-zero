@@ -1,24 +1,25 @@
+import type { PintaMemoryAsset } from './assetMemory'
 import type { PintaAsset } from './project'
 
 // Session-only provenance. Symbols survive object spreads used by editing commands,
 // but never enter IndexedDB structured clone, JSON, exported assets or cloud files.
 const LOCAL_ORIGIN = Symbol('pinta.localOrigin')
 type Origin = { database: string; id: string; revision: string | null }
-type WithOrigin = PintaAsset & { [LOCAL_ORIGIN]?: Origin }
+type WithOrigin = PintaMemoryAsset & { [LOCAL_ORIGIN]?: Origin }
 
 /** Opaque identity of the confirmed native revision, for adapters' sync baselines. */
-export function pintaLocalRevisionOf(asset: PintaAsset): string | undefined {
+export function pintaLocalRevisionOf(asset: PintaMemoryAsset): string | undefined {
   const origin = (asset as WithOrigin)[LOCAL_ORIGIN]
   return origin?.id === asset.id && origin.revision !== null ? origin?.revision : undefined
 }
 
-export function pintaLocalOriginOf(asset: PintaAsset, database: string): Origin | undefined {
+export function pintaLocalOriginOf(asset: PintaMemoryAsset, database: string): Origin | undefined {
   const origin = (asset as WithOrigin)[LOCAL_ORIGIN]
   return origin?.database === database && origin.id === asset.id ? origin : undefined
 }
 
 export function recordPintaLocalOrigin(
-  asset: PintaAsset,
+  asset: PintaMemoryAsset,
   database: string,
   revision: string | null,
 ): void {

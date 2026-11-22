@@ -319,3 +319,175 @@ test('IndexedDB keeps the full 32-layer 4-MiB native budget and writes one chunk
     }, namespace),
   ).toEqual({ count: 2048, bytes: 4194304, puts: 2, chunkPuts: 1 })
 })
+
+test('the common regional authority persists compact mirrors and forks stale RAM after an unrelated listing', async ({
+  page,
+}) => {
+  const namespace = `regional-authority-${Date.now()}`,
+    id = await initialize(page, namespace)
+  expect(
+    await page.evaluate(
+      async ({ namespace, id }) => {
+        const p = window.pintaPhysicalRegions,
+          mirror = `pinta:asset:${id}`
+        const store = p.createStore(`sistema-zero-pinta-${namespace}`, 'kv'),
+          authority = p.createLocalRegionAssetAuthority()
+        const initial = await p.withAssetTransaction(
+          store,
+          (records) => authority.resolveLocalRecords(records),
+          undefined,
+          p.localRegionStorageCodec,
+        )
+        const source = initial.assets.get(id)
+        if (source?.kind !== 'tilemap' || !('origin' in source))
+          throw Error('Mapa regional ausente')
+        const revision = initial.documents.get(id)!.revision
+        p.recordPintaLocalOrigin(source, 'regional-browser', revision)
+        const observed = new Map([[id, revision]])
+        const puts: string[] = [],
+          original = IDBObjectStore.prototype.put
+        IDBObjectStore.prototype.put = function (value, key) {
+          puts.push(String(key))
+          return original.call(this, value, key)
+        }
+        let changed: ReturnType<typeof authority.writeLocalRecords>
+        try {
+          changed = await p.withAssetTransaction(
+            store,
+            (records) =>
+              authority.writeLocalRecords(
+                records,
+                [p.setCell(structuredClone(source), source.layers[0]!.id, 0, 0, 8)],
+                observed,
+                'regional-browser',
+              ),
+            undefined,
+            p.localRegionStorageCodec,
+          )
+        } finally {
+          IDBObjectStore.prototype.put = original
+        }
+        const compact = await p.withAssetTransaction(
+          store,
+          (records) => records.get(mirror),
+          undefined,
+          p.localRegionStorageCodec,
+        )
+        // A later read can update observation bookkeeping, but cannot rewrite the old RAM origin.
+        observed.set(id, changed.documents.get(id)!.revision)
+        const stale = await p.withAssetTransaction(
+          store,
+          (records) =>
+            authority.writeLocalRecords(
+              records,
+              [p.setCell(source, source.layers[0]!.id, -64, -64, 9)],
+              observed,
+              'regional-browser',
+            ),
+          undefined,
+          p.localRegionStorageCodec,
+        )
+        const copy = stale.forks.get(id)
+        const independent = p.createLocalRegionAssetAuthority()
+        const reopened = await p.withAssetTransaction(
+          store,
+          (records) => independent.resolveLocalRecords(records),
+          undefined,
+          p.localRegionStorageCodec,
+        )
+        const originalMap = reopened.assets.get(id),
+          copied = copy && reopened.assets.get(copy.id)
+        if (originalMap?.kind !== 'tilemap' || copied?.kind !== 'tilemap' || !('origin' in copied))
+          throw Error('Recuperação ausente')
+        return {
+          writes: puts.length,
+          chunkWrites: puts.filter((key) => key.startsWith('pinta:local:chunk:')).length,
+          compact: compact && typeof compact === 'object' ? Object.keys(compact).sort() : [],
+          forks: stale.forks.size,
+          original: p.cellAt(originalMap, originalMap.layers[0]!.id, 0, 0),
+          recovered: p.cellAt(copied, copied.layers[0]!.id, -64, -64),
+        }
+      },
+      { namespace, id },
+    ),
+  ).toEqual({
+    writes: 3,
+    chunkWrites: 1,
+    compact: ['capability', 'id', 'kind', 'revision', 'version'],
+    forks: 1,
+    original: 8,
+    recovered: 9,
+  })
+})
+
+test('regional business recovery, mirror and chunks roll back together when a queued put fails', async ({
+  page,
+}) => {
+  const namespace = `regional-business-abort-${Date.now()}`,
+    id = await initialize(page, namespace)
+  expect(
+    await page.evaluate(
+      async ({ namespace, id }) => {
+        const p = window.pintaPhysicalRegions,
+          store = p.createStore(`sistema-zero-pinta-${namespace}`, 'kv'),
+          authority = p.createLocalRegionAssetAuthority()
+        const read = () =>
+          p.withAssetTransaction(
+            store,
+            (records) => authority.resolveLocalRecords(records),
+            undefined,
+            p.localRegionStorageCodec,
+          )
+        const initial = await read(),
+          source = initial.assets.get(id)
+        if (source?.kind !== 'tilemap' || !('origin' in source)) throw Error('Mapa ausente')
+        const observed = new Map([[id, initial.documents.get(id)!.revision]])
+        await p.withAssetTransaction(
+          store,
+          (records) =>
+            authority.writeLocalRecords(
+              records,
+              [{ ...source, name: 'outra-aba' }],
+              observed,
+              'regional-browser',
+            ),
+          undefined,
+          p.localRegionStorageCodec,
+        )
+        const before = await read()
+        let writes = 0,
+          error = ''
+        const original = IDBObjectStore.prototype.put
+        IDBObjectStore.prototype.put = function (...args) {
+          if (++writes === 2) throw Error('falha-copia-regional-qa')
+          return original.apply(this, args)
+        }
+        const recover = () =>
+          p.withAssetTransaction(
+            store,
+            (records) =>
+              authority.writeLocalRecords(records, [source], observed, 'regional-browser'),
+            undefined,
+            p.localRegionStorageCodec,
+          )
+        try {
+          await recover()
+        } catch (caught) {
+          error = String(caught)
+        } finally {
+          IDBObjectStore.prototype.put = original
+        }
+        const after = await read()
+        const retried = await recover()
+        return {
+          failed: error.includes('falha-copia-regional-qa'),
+          unchanged: JSON.stringify([...before.documents]) === JSON.stringify([...after.documents]),
+          before: before.assets.size,
+          after: after.assets.size,
+          copies: retried.forks.size,
+        }
+      },
+      { namespace, id },
+    ),
+  ).toEqual({ failed: true, unchanged: true, before: 1, after: 1, copies: 1 })
+})

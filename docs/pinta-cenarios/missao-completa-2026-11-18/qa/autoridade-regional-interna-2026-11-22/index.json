@@ -1,0 +1,172 @@
+{
+  "baseline": "e66cf7966e58eda2f4496525165878c6316fe9b3",
+  "records": [
+    {
+      "file": "region-authority-focused.log.gz",
+      "bytes": 2863,
+      "sha256": "6a056f3671078b770310412984a063b829d6aaec27317a8d4fe245fdaa572e9b",
+      "rawBytes": 7624,
+      "rawSha256": "efe7c287ddbe5984d12b8f6984e4ff529f0b84da6b1c86ca4aa23c043eba62ec"
+    },
+    {
+      "file": "region-authority-full-first.log.gz",
+      "bytes": 81465,
+      "sha256": "4417e12d08e7139a0def3d351ffb50a0a491cae601647239ee228d68e0f4becd",
+      "rawBytes": 301181,
+      "rawSha256": "71ecb25b219823f04451fa36b6e47994f6ef57548ab04f0056757d5e8ea91052"
+    },
+    {
+      "file": "region-authority-full.log.gz",
+      "bytes": 81207,
+      "sha256": "d0e388f37df03d7f7ca2fe5471c8361770f0dfb6eaa10dd9fbb81dbdc60a70f9",
+      "rawBytes": 300214,
+      "rawSha256": "2a0241fad125324e3f1f043bdf8017e14fd338beda5bd1e7ed5850678f71cba8"
+    },
+    {
+      "file": "region-authority-mutable-red.log.gz",
+      "bytes": 692,
+      "sha256": "1905d860a16ea56ec4a954828fa5e7a8a687b93adfcef6939ae61c522aa33042",
+      "rawBytes": 1179,
+      "rawSha256": "0544dbdd8159c46215933726ddaf5c8023760b08a2c37b76a0b1f3bde5704fef"
+    },
+    {
+      "file": "region-authority-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "region-authority-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "region-authority-browser-focused.log.gz",
+      "bytes": 771,
+      "sha256": "7d6d81d12b962d1a81497f269e5c5a2092fbdf1afe10973744a7c661393aa2fe",
+      "rawBytes": 2085,
+      "rawSha256": "bf57229f023e432de7cd10b9fed06ae27b95bef8e2e7845bb920fd3669a15e5a"
+    },
+    {
+      "file": "region-authority-browser.log.gz",
+      "bytes": 1872,
+      "sha256": "06dee63ddcf25a9e473d62ab2f94b7e11fa835c33e544c864b0c34a85cf42e41",
+      "rawBytes": 6629,
+      "rawSha256": "2580417ce26a50e639608103c1e9855041651492a81127763f8b5be9ef8e254c"
+    },
+    {
+      "file": "region-authority-biome.log.gz",
+      "bytes": 64,
+      "sha256": "05ec327f2cd821a23bd6bf3a3eea382c25430a670e3aa8b31d6e752553364c77",
+      "rawBytes": 44,
+      "rawSha256": "0eb0c767cf9e7e940f3659bbb52b3e8deb4a76702f4b2f221899a385c1b2eae5"
+    },
+    {
+      "file": "region-authority-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-report.json.gz",
+      "bytes": 228865,
+      "sha256": "ff23c837d8c2050bb910e9af6f46eb18c1ac011d6760ce66d2e7133f26a9d78e",
+      "rawBytes": 357291,
+      "rawSha256": "118e83f912084033faee803673b81e0986545d61503914eda8560589ad3384d9"
+    },
+    {
+      "file": "generalize-local-authority.py.gz",
+      "bytes": 1172,
+      "sha256": "b4e8afc2d6d744bc94e7874d7e7ca02c9821cad9c50b4f2d145ee23ec4ea1a88",
+      "rawBytes": 3339,
+      "rawSha256": "c77be12b295a86c5d4f1eb363d7e2f16b90a30c2dcdc0c27a46681de7fd4dd83"
+    },
+    {
+      "file": "archive-region-authority.cjs.gz",
+      "bytes": 1657,
+      "sha256": "44c20f819b01be123ff9c60f99a8d861c2c50634fdb3e3c539e18912daf0cfe0",
+      "rawBytes": 3647,
+      "rawSha256": "80355c1cd53a51635d5abd064ae71f8fde91296e03fc2447f8236dfc8fde6c6c"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/physical-region-proof.ts",
+      "sha256": "2d7cdb9804f919b64c41ed9a4979f511ccd830c3a7c85be092ff7e5c4c8d434b",
+      "previousSha256": "f06f7ec626c669d06c3c3b99abd0eb2433e8f33fe135103f750f8019e5684179"
+    },
+    {
+      "file": "packages/pinta/src/core/localAssetOrigin.ts",
+      "sha256": "4e0f0a0bdbf85dd4f4f2460b448801061cc5c6cc2a824a468e4c99024333f2e1",
+      "previousSha256": "f5986124b074f7074482a1674a2df1cba95498255cb70293cb3a3ff487c5cbdc"
+    },
+    {
+      "file": "packages/pinta/src/state/importPlan.ts",
+      "sha256": "e5809f9385e3fca129db03c9c79e415fa655354a2b1bf18c47fcbf9de9753367",
+      "previousSha256": "0bd46a9ee7607a32e790b9465d3983138621133c38be610b7a6711cded5622db"
+    },
+    {
+      "file": "packages/pinta/src/state/localAssetAuthority.ts",
+      "sha256": "9da751dba1e4d9d2b9434b4b0e1efe371c5a558269df5f67fe69d263e600944f",
+      "previousSha256": "3e101ac5cb5a477d48d54b5ea1712ba33be6f2f8803ff67a5ed31771af9dda00"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-physical-regions.flow.ts",
+      "sha256": "48431ec76a2459395032dd69cb98f05eedb61fde161178e28a7e82dfd971cbac",
+      "previousSha256": "d117413bd46e7a105284787982979e951ff1e5ff94a9a92353632e85f45b2d28"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionAssetAuthority.ts",
+      "sha256": "efc10b45579acbd2344aa5829d28e158ce38a6de940fbbd6612a1b29bad70d56"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionAuthority.test.ts",
+      "sha256": "64a7c8d8ffa9dc80572c08035a1e7d540b5f80e3bd82f374189cec9d199cfc4e"
+    }
+  ],
+  "suite": {
+    "pass": 2709,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 35249,
+    "files": 249
+  },
+  "focused": {
+    "pass": 72,
+    "assertions": 282,
+    "files": 5
+  },
+  "browser": {
+    "pass": 33,
+    "retries": 0,
+    "regionalBusiness": 4,
+    "regionalIO": 8,
+    "legacy": 21,
+    "profiles": [
+      "desktop",
+      "cpu-4x"
+    ],
+    "realIndexedDB": true
+  },
+  "mirror": {
+    "fields": 5,
+    "storesCellBuffers": false,
+    "requiredNativeCapability": 8,
+    "requiresExactAuthorityRevision": true,
+    "completeBusinessPutsPerEditedChunk": 3
+  },
+  "immutableSizing": {
+    "editorCacheRetained": true,
+    "persistenceCacheScope": "one transaction; mutable caller identities are not reused across writes",
+    "mutableRegressionReproduced": true
+  },
+  "publicNative8": false,
+  "publicPersistenceFactory8": false,
+  "partialCloudInventory": false,
+  "fullHeapOrLatencyQualification": false,
+  "stagingRollout": false
+}
