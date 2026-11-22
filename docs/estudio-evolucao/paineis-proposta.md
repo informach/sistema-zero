@@ -37,8 +37,8 @@ jogo (o navegador não informa) e Pausar ou Valores no Pro.
   Servem para entender o jogo, nunca para nota.
 - **Caminho até o erro**: o erro que o jogo já informa, com cada linha ligada ao bloco pelo mapa de blocos.
   A frase para a criança é a mesma do aviso do palco; Problemas continua contando o erro.
-- **Desempenho**: liga ao abrir a aba e para ao fechar a gaveta; lê uma vez por segundo o que os motores já
-  contam. Cada número leva a marca medido, estimado ou indisponível. O custo da medida fica abaixo de 5% do
+- **Desempenho**: liga ao abrir a aba e para ao fechar a gaveta; lê a cada meio segundo o que os motores já
+  contam (`DEVTOOLS_PERF_SLICE_MS`, 500 ms; corrigido em 22/11/2026, o texto dizia "uma vez por segundo"). Cada número leva a marca medido, estimado ou indisponível. O custo da medida fica abaixo de 5% do
   quadro, conferido por teste antes de ligar.
 - **Meus testes**: o formato e o julgamento dos objetivos das aulas (`SectionExecutionRule`,
   `judgeExecutionObservation`), com os mesmos limites (até 20 passos e 15 segundos por teste). Passos:
