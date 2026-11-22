@@ -787,6 +787,233 @@ const paletteSummaryOf = (library: PaletteLibrary, revision = 1): CloudCreationS
 })
 
 describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
+  test('o primeiro GET 404 recupera a subida de paletas salvas offline antes de montar o host', async () => {
+    const id = PALETTE_LIBRARY_ITEM_ID,
+      local = fakeLocal()
+    local.library.current = libraryOf(
+      [{ id: 'minha', name: 'Minha', updatedAt: 100, hex: '#112233' }],
+      110,
+      [{ id: 'apagada', removedAt: 110 }],
+    )
+    const { cloud, uploads } = fakeCloud(new Map())
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      marks: createMemorySyncedMarks(),
+      viewerId: 'perfil-offline',
+    })
+    try {
+      await mirrored.syncPaletteLibrary?.()
+      const snapshot = await uploads.get(id)?.produce()
+      expect(snapshot?.meta?.baseRevision).toBe(0)
+      expect(JSON.parse(snapshot?.json ?? 'null')).toEqual(local.library.current)
+    } finally {
+      mirrored.dispose()
+    }
+  })
+
+  test('404 confirma ausência sem recriar uma biblioteca inalterada; a edição seguinte usa base zero', async () => {
+    const id = PALETTE_LIBRARY_ITEM_ID,
+      local = fakeLocal(),
+      marks = createMemorySyncedMarks()
+    const library = libraryOf([{ id: 'minha', name: 'Minha', updatedAt: 10, hex: '#123456' }])
+    const { cloud, uploads } = fakeCloud(new Map())
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      marks,
+      viewerId: 'perfil-a',
+    })
+    try {
+      await mirrored.savePaletteLibrary?.(library)
+      const oldAck = uploads.get(id)?.onUploaded
+      oldAck?.({ itemId: id, updatedAt: 10, revision: 8 })
+      uploads.clear()
+      await mirrored.syncPaletteLibrary?.()
+      await mirrored.syncPaletteLibrary?.()
+      expect(marks.revision(id)).toBe(0)
+      expect(uploads.size).toBe(0)
+      expect(local.library.current).toEqual(library)
+      oldAck?.({ itemId: id, updatedAt: 10, revision: 8 })
+      expect(marks.revision(id)).toBe(0)
+      await mirrored.savePaletteLibrary?.(libraryOf([], 20, [{ id: 'minha', removedAt: 20 }]))
+      const candidate = await uploads.get(id)?.produce()
+      expect(candidate?.meta?.baseRevision).toBe(0)
+      expect(JSON.parse(candidate?.json ?? 'null')?.removed).toEqual([
+        { id: 'minha', removedAt: 20 },
+      ])
+    } finally {
+      mirrored.dispose()
+    }
+  })
+
+  test.each([
+    3,
+    undefined,
+  ])('um 409 de revisão %s confere os bytes após a leitura concorrente', async (currentRevision) => {
+    const local = fakeLocal()
+    const localLibrary = libraryOf([{ id: 'minha', name: 'Minha', updatedAt: 10, hex: '#112233' }])
+    const older = libraryOf([{ id: 'antiga', name: 'Antiga', updatedAt: 20, hex: '#223344' }])
+    const latest = libraryOf([{ id: 'nova', name: 'Nova', updatedAt: 30, hex: '#334455' }])
+    const remote = new Map([
+      [
+        PALETTE_LIBRARY_ITEM_ID,
+        {
+          summary: paletteSummaryOf(older, 2),
+          json: JSON.stringify(older),
+        },
+      ],
+    ])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    let resume!: () => void
+    const waiting = new Promise<void>((resolve) => {
+      resume = resolve
+    })
+    let reads = 0
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud: {
+        ...cloud,
+        download: async (id) => {
+          const result = await cloud.download(id)
+          if (++reads === 1) await waiting
+          return result
+        },
+      },
+      viewerId: 'p1',
+      marks,
+    })
+    try {
+      await mirrored.savePaletteLibrary?.(localLibrary)
+      const job = uploads.get(PALETTE_LIBRARY_ITEM_ID)
+      const open = mirrored.syncPaletteLibrary?.()
+      remote.set(PALETTE_LIBRARY_ITEM_ID, {
+        summary: paletteSummaryOf(latest, 3),
+        json: JSON.stringify(latest),
+      })
+      const conflict = job?.onStale?.({ itemId: PALETTE_LIBRARY_ITEM_ID, currentRevision })
+      resume()
+      await Promise.all([open, conflict])
+      expect(reads).toBe(2)
+      expect(local.library.current?.palettes.map(({ id }) => id)).toEqual(['minha', 'nova'])
+      expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(3)
+      job?.onUploaded?.({ itemId: PALETTE_LIBRARY_ITEM_ID, updatedAt: 20, revision: 2 })
+      expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(3)
+      expect(marks.get(PALETTE_LIBRARY_ITEM_ID)).toBe(30)
+    } finally {
+      resume()
+      mirrored.dispose()
+    }
+  })
+
+  test('encerra o GET de paleta da sessão antiga e descarta sua resposta tardia', async () => {
+    const local = fakeLocal()
+    const palette = libraryOf([{ id: 'a', name: 'Perfil A', updatedAt: 30, hex: '#334455' }])
+    const { cloud, uploads } = fakeCloud(
+      new Map([
+        [
+          PALETTE_LIBRARY_ITEM_ID,
+          {
+            json: JSON.stringify(palette),
+            summary: paletteSummaryOf(palette, 3),
+          },
+        ],
+      ]),
+    )
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const signals: AbortSignal[] = []
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud: {
+        ...cloud,
+        download: async (id, options) => {
+          if (options?.signal) signals.push(options.signal)
+          await gate
+          return cloud.download(id)
+        },
+      },
+      viewerId: 'perfil-a',
+      marks,
+    })
+    const read = mirrored.syncPaletteLibrary?.()
+    mirrored.dispose()
+    release()
+    await read?.catch(() => {})
+    expect(signals.map((signal) => signal.aborted)).toEqual([true])
+    expect(local.library.current).toBeNull()
+    expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBeUndefined()
+    expect(uploads.size).toBe(0)
+  })
+
+  test('leituras abaixo do piso devolvem erro sem merge e uma tentativa posterior recupera as lápides', async () => {
+    const id = PALETTE_LIBRARY_ITEM_ID
+    const local = fakeLocal()
+    const localLibrary = libraryOf([], 20, [{ id: 'antiga', removedAt: 20 }])
+    const old = libraryOf([{ id: 'antiga', name: 'Antiga', updatedAt: 10, hex: '#223344' }])
+    const remote = new Map([[id, { json: JSON.stringify(old), summary: paletteSummaryOf(old, 2) }]])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    let reads = 0
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud: {
+        ...cloud,
+        download: async (key) => {
+          reads++
+          return cloud.download(key)
+        },
+      },
+      viewerId: 'p',
+      marks,
+    })
+    try {
+      await mirrored.savePaletteLibrary?.(localLibrary)
+      const job = uploads.get(id)
+      if (!job?.onStale) throw Error('Subida de paletas não foi agendada')
+      await expect(
+        Promise.resolve(job.onStale({ itemId: id, currentRevision: 3 })),
+      ).rejects.toThrow()
+      expect(reads).toBe(2)
+      expect(local.library.current).toEqual(localLibrary)
+      expect(marks.revision(id)).toBeUndefined()
+      await expect(mirrored.syncPaletteLibrary?.()).rejects.toThrow()
+      expect(reads).toBe(4)
+      expect(marks.revision(id)).toBeUndefined()
+      remote.set(id, { json: JSON.stringify(old), summary: paletteSummaryOf(old, 3) })
+      await job.onStale({ itemId: id, currentRevision: 3 })
+      expect(marks.revision(id)).toBe(3)
+      expect(local.library.current?.removed).toEqual([{ id: 'antiga', removedAt: 20 }])
+      expect(await uploads.get(id)?.produce()).not.toBeNull()
+    } finally {
+      mirrored.dispose()
+    }
+  })
+
+  test('um registro remoto ilegível não autoriza regravação da biblioteca local sobre ele', async () => {
+    const id = PALETTE_LIBRARY_ITEM_ID
+    const local = fakeLocal()
+    const library = libraryOf([{ id: 'minha', name: 'Minha', updatedAt: 10, hex: '#112233' }])
+    local.library.current = library
+    const { cloud, uploads } = fakeCloud(
+      new Map([[id, { json: '{"incompleta":true}', summary: paletteSummaryOf(library, 3) }]]),
+    )
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p', marks })
+    try {
+      await expect(mirrored.syncPaletteLibrary?.()).rejects.toThrow()
+      expect(local.library.current).toEqual(library)
+      expect(marks.revision(id)).toBeUndefined()
+      expect(uploads.size).toBe(0)
+    } finally {
+      mirrored.dispose()
+    }
+  })
+
   test('a galeria causal sincroniza paletas sem ler o inventário individual protegido', async () => {
     const remoteLibrary = libraryOf([{ id: 'ceu', name: 'Céu', updatedAt: 100, hex: '#87f2ff' }])
     const remote = new Map([

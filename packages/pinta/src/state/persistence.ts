@@ -416,7 +416,7 @@ export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
    */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
   /** Devolve o valor autoritativo gravado depois do merge transacional. */
-  savePaletteLibrary?(library: PaletteLibrary): Promise<PaletteLibrary>
+  savePaletteLibrary?(library: PaletteLibrary, ready?: () => boolean): Promise<PaletteLibrary>
 }
 
 /**
@@ -1193,7 +1193,7 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       const raw = await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle)
       return sanitizePaletteLibrary(raw)
     },
-    async savePaletteLibrary(library) {
+    async savePaletteLibrary(library, ready) {
       // Ler-FUNDIR-gravar ATÔMICO: duas ABAS do mesmo perfil (o Estúdio abre o
       // Pinta em aba nova) escrevem o MESMO registro, e gravar cego era
       // last-write-wins — a paleta criada na outra aba sumia. ⚠️ O `update` do
@@ -1208,6 +1208,8 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         update<unknown>(
           PALETTE_LIBRARY_KEY,
           (raw) => {
+            if (ready && !ready())
+              throw new DOMException('A leitura da biblioteca mudou.', 'AbortError')
             const current = sanitizePaletteLibrary(raw)
             saved = current ? mergePaletteLibraries(current, library) : library
             return saved
