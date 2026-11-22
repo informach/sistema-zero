@@ -4144,3 +4144,13 @@ Não confundir CRC/perfil PNG com validação de IDAT/pixels ou superfícies: es
 prova pertence a cada adaptador. Os formatos públicos continuam inalterados.
 Provas e limites em
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/mundo-png-python-compartilhado-2026-11-22/`.
+
+Os adaptadores regionais Python são privados e compartilham CenaRegional,
+admissão e geometria. `pythonPygameRegional.ts` aplica tolerância float32 ao
+pouso e entrega FRect; o padrão do núcleo segue a precisão dupla. `objetos()`
+é iterador: não materializar conjuntos repetidos para achar a primeira porta.
+Raylib nativo usa descarte explícito/context manager na thread da janela.
+As provas CE/Wasm compõem o código no fonte do projeto QA; isso não instala
+novos módulos no runtime público nem homologa PGZero/Raylib do navegador.
+O fix de elipse subnormal deve conferir no gerador do pygame legado. Provas:
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/adaptadores-python-regionais-2026-11-22/`.

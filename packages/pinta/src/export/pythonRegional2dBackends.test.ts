@@ -244,7 +244,7 @@ try:
     source[:]=b'\\x00'*len(source)
     assert game.cena.mapa_id == data['rootId']
     assert game.limites[2:] == (160000,160000)
-    assert game.objetos() and game.tempo_decorrido >= 0
+    assert next(game.objetos(),None) is not None and game.tempo_decorrido >= 0
     before=frame(game)
     assert len(set(zip(*[iter(before)]*4))) > 8
     saved_scene=game.cena

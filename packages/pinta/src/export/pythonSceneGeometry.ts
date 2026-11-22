@@ -34,13 +34,20 @@ export const pythonSceneGeometryFunctions = `def objeto_intersecta_corpo(objeto,
     if shape == 'ellipse':
         if width <= 0 or height <= 0:
             return False
-        circle = [((p[0] - width / 2) / (width / 2), (p[1] - height / 2) / (height / 2)) for p in query]
+        rx, ry = width / 2, height / 2
+        # A positive subnormal radius can underflow to zero. JavaScript's
+        # normalized query is non-finite there and has no intersecting edge.
+        if rx == 0 or ry == 0:
+            return False
+        circle = [((p[0] - rx) / rx, (p[1] - ry) / ry) for p in query]
         if inside((0, 0), circle):
             return True
         for a, b in zip(circle, circle[1:] + circle[:1]):
             dx, dy = b[0] - a[0], b[1] - a[1]
             t = max(0, min(1, -(a[0] * dx + a[1] * dy) / (dx * dx + dy * dy or 1)))
-            if (a[0] + t * dx) ** 2 + (a[1] + t * dy) ** 2 < 1:
+            ex, ey = a[0] + t * dx, a[1] + t * dy
+            # Multiplication follows JS overflow to infinity; **2 can raise.
+            if ex * ex + ey * ey < 1:
                 return True
         return False
     points = [(p['x'], p['y']) for p in objeto.get('points', [])] if shape in ('polygon', 'polyline') else [(0, 0), (width, 0), (width, height), (0, height)]

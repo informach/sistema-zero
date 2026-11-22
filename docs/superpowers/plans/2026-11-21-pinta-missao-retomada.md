@@ -356,6 +356,19 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    e worktrees exclusivos, gates pesados coordenados e revisão central.
    Pygame-ce e integração permanecem na frente principal. Cada entrega passa
    por revisão e provas antes da integração; sem promoção pública antecipada.
+   Lotes integrados: núcleo Python comum, adaptadores nativos e os dois
+   jogadores JavaScript privados. A revisão independente reproduziu FRect sem
+   apoio em plataforma distante, expansão antecipada de objetos e contato
+   numérico divergente. O iterador evita alocar milhões de filhos; precisão
+   float32 é política do adaptador, mantendo o padrão Core de precisão dupla.
+   `qa/adaptadores-python-regionais-2026-11-22/` registra 20 testes focados
+   nativos, quatro provas CE/Wasm reais com pixels/portas e 40 quadros de apoio
+   fracionário, tipos Pinta e lint. O pequeno fix de elipse subnormal também
+   atualiza o helper gerado do compositor legado. A suíte completa deste
+   conjunto e tipos completos Studio pertencem ao gate integrado seguinte.
+   Permanecem em revisão: transporte browser PGZero/Raylib2D, culling de
+   conjuntos, watermark de inventário remoto, causalidade multi-item e todos
+   os consumidores públicos. Não considerar a etapa macro concluída.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

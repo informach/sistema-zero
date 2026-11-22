@@ -51,7 +51,9 @@ class _PintaSceneBackend:
         return self._cena_aberta().limites
 
     def objetos(self, tipo=None):
-        return list(self._cena_aberta().objetos(tipo))
+        # Sets can contain many repeated children. A first-match query must not
+        # allocate every expanded object before yielding its first candidate.
+        return self._cena_aberta().objetos(tipo)
 
     def objeto_por_id(self, referencia):
         return self._cena_aberta().objeto_por_id(referencia)

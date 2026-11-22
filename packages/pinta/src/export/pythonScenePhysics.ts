@@ -1,9 +1,13 @@
 /** Engine-free queries. Keep the two authored physics policies independent of storage version. */
 export const pythonScenePhysics = `def _tile_intersects(points, body):
-    if not _overlaps(points, body):
+    # Match the authored-shape query's inward margin, including tile seams.
+    inset = min(body.width, body.height, 1) * 1e-9
+    left, top, right, bottom = body.left+inset, body.top+inset, body.right-inset, body.bottom-inset
+    xs, ys = zip(*points)
+    if min(xs)>=right or max(xs)<=left or min(ys)>=bottom or max(ys)<=top:
         return False
-    # The box axes were tested by _overlaps. Only the two independent tile normals remain.
-    box = body.corners()
+    # The box axes were tested above. Only the two independent tile normals remain.
+    box = ((left,top),(right,top),(right,bottom),(left,bottom))
     origin = points[0]
     for end in (points[1], points[3]):
         nx, ny = end[1] - origin[1], origin[0] - end[0]
@@ -98,7 +102,7 @@ class _ScenePhysics:
                 return True
         return False
 
-    def pouso(self, anterior, atual, gravidade=1):
+    def pouso(self, anterior, atual, gravidade=1, *, _body_epsilon=1e-6):
         """Resolve a precise one-way platform after solid motion. Does not mutate either body."""
         before, after = _SceneBox(*anterior), _SceneBox(*atual)
         if (
@@ -107,10 +111,14 @@ class _ScenePhysics:
             or not after.valid()
             or not math.isfinite(gravidade)
             or not gravidade
+            or type(_body_epsilon) not in (float,int)
+            or not math.isfinite(_body_epsilon)
         ):
             return None
         direction = 1 if gravidade > 0 else -1
-        epsilon = 1e-6
+        # Default is Core's double-precision policy. A float32 backend may pass
+        # its body's representable rounding, without changing authored physics.
+        epsilon = max(1e-6,_body_epsilon)
         if (after.y - before.y) * direction < -epsilon:
             return None
         x, y = min(before.x, after.x) - epsilon, min(before.y, after.y) - epsilon

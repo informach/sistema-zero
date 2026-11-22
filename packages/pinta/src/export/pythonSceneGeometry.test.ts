@@ -6,7 +6,9 @@ import {
   sceneArtFrame,
   transformSceneSetObject,
 } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { runPurePython } from '../testing/runPurePython'
 import { pythonSceneGeometry } from './pythonSceneGeometry'
+import { pythonSceneRuntime } from './pythonSceneRuntime'
 
 const python = [process.env.PYTHON, 'python3', 'python'].find(
   (name) => name && spawnSync(name, ['-I', '-c', 'import json, math']).status === 0,
@@ -47,6 +49,52 @@ const bodyProtocol = `from types import SimpleNamespace
 def body(b):
     return SimpleNamespace(**b, left=b['x'], top=b['y'], right=b['x']+b['width'], bottom=b['y']+b['height'])
 `
+
+it.skipIf(!python)(
+  'admitted subnormal ellipses preserve Core results without raising numeric exceptions',
+  () => {
+    const cases = [
+      {
+        object: object({ shape: 'ellipse', x: 0, y: 0, width: Number.MIN_VALUE, height: 2 }),
+        box: { x: -1, y: -1, width: 4, height: 4 },
+      },
+      {
+        object: object({ shape: 'ellipse', x: 0, y: 0, width: 2, height: Number.MIN_VALUE }),
+        box: { x: -1, y: -1, width: 4, height: 4 },
+      },
+      {
+        object: object({ shape: 'ellipse', x: 0, y: 0, width: 1e-300, height: 1e-300 }),
+        box: { x: 1, y: 1, width: 2, height: 2 },
+      },
+    ]
+    expect(
+      run(
+        `${bodyProtocol}\nprint(json.dumps([objeto_intersecta_corpo(item['object'],body(item['box'])) for item in json.load(sys.stdin)]))`,
+        cases,
+      ),
+    ).toEqual(cases.map((item) => sceneObjectIntersectsBox(item.object, item.box)))
+  },
+)
+
+it.skipIf(!python)(
+  'tile seams use the same inward body margin as Core authored geometry',
+  async () => {
+    const tile = object({ shape: 'rect', x: 16, y: 48, width: 16, height: 16 })
+    const boxes = [0, 5e-10, 2e-9, -2e-9].map((overlap) => ({
+      x: 20,
+      y: 42,
+      width: 4,
+      height: 6 + overlap,
+    }))
+    expect(
+      await runPurePython(
+        pythonSceneRuntime,
+        `print(json.dumps([_tile_intersects(((16,48),(32,48),(32,64),(16,64)),_SceneBox(**item)) for item in json.load(sys.stdin)]))`,
+        boxes,
+      ),
+    ).toEqual(boxes.map((box) => sceneObjectIntersectsBox(tile, box)))
+  },
+)
 
 it.skipIf(!python)('Python shape queries match Core without importing a graphics engine', () => {
   const points = [

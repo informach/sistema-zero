@@ -175,6 +175,8 @@ export async function runtimeFixtureProject(
   if (isPygameExampleFixture(name)) return pygameExampleProject(name)
   const { isPintaWorldFixture, pintaWorldProject } = await import('./pintaWorldFixtures')
   if (isPintaWorldFixture(name)) return pintaWorldProject(name)
+  const { isPintaRegionalFixture, pintaRegionalProject } = await import('./pintaRegionalFixtures')
+  if (isPintaRegionalFixture(name)) return pintaRegionalProject(name)
   const { isPintaPhysicsFixture, pintaPhysicsProject } = await import('./pintaPhysicsFixtures')
   if (isPintaPhysicsFixture(name)) return pintaPhysicsProject(name)
   const { isPintaPlatformFixture, pintaPlatformProject } = await import('./pintaPlatformFixtures')
