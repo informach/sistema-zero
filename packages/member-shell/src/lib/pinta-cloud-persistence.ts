@@ -381,11 +381,29 @@ export function createCloudMirroredPintaPersistence(options: {
   let causalTimer: ReturnType<typeof setTimeout> | null = null
   async function reportCausalQueue(error?: unknown): Promise<void> {
     if (!causalLocal || !cloud.reportPintaQueue || causalSession.signal.aborted) return
-    const { sealed, pending, unbased, recovered } = await causalLocal.inspect()
+    const { sealed, pending, unbased, recovered, confirmed } = await causalLocal.inspect()
     if (causalSession.signal.aborted) return
     const ids = new Set(pending.flatMap((unit) => unit.members.map((member) => member.itemId)))
     for (const member of sealed?.local.members ?? []) ids.add(member.itemId)
     for (const member of unbased?.members ?? []) ids.add(member.itemId)
+    if (!ids.size && confirmed.size) {
+      const assets = new Map((await local.listAllAssets()).map((asset) => [asset.id, asset]))
+      const deviceChanges = [...confirmed]
+        .filter(([id, mark]) => {
+          const asset = assets.get(id)
+          return !mark.deleted && (!asset || mark.localRevision !== pintaLocalRevisionOf(asset))
+        })
+        .map(([id]) => id)
+      if (causalSession.signal.aborted) return
+      if (deviceChanges.length) {
+        cloud.reportPintaQueue(
+          deviceChanges,
+          'error',
+          'Há versões diferentes neste aparelho e na conta. Feche o editor para conferir os desenhos.',
+        )
+        return
+      }
+    }
     if (!ids.size) cloud.reportPintaQueue([], recovered?.size ? 'idle' : 'saved')
     else if (typeof navigator !== 'undefined' && !navigator.onLine)
       cloud.reportPintaQueue([...ids], 'offline')

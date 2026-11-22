@@ -59,6 +59,7 @@ import {
   localCausalBytes,
   localCausalPullImpact,
   localPreparedKey,
+  localRemovalsReturnedByPull,
   ownsLocalCausalMember,
   PINTA_CAUSAL_BLOBS_KEY,
   PINTA_CAUSAL_OUTBOX_KEY,
@@ -77,7 +78,6 @@ import {
   sealLocalCausalDraft,
   stageLocalCausalDraft,
   stageLocalUnbasedDraft,
-  unbasedRemovalsReturnedByPull,
 } from './localCausalOutbox'
 import type { LocalStorageCodec } from './localChunkStorage'
 
@@ -663,7 +663,7 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         const installed = await transaction((records) => {
           if (!ready()) return null
           const before = localCausalBytes(records)
-          const returned = unbasedRemovalsReturnedByPull(readLocalCausalState(records), pull)
+          const returned = localRemovalsReturnedByPull(readLocalCausalState(records), pull)
           const applied = installLocalCausalPull(records, pull, (authorize) =>
             applyAssetTransitions(records, pull.transitions, false, authorize),
           )

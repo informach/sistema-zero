@@ -36,7 +36,7 @@ import {
   PintaCausalRequestError,
   pintaCausalGzipHash,
 } from '../../src/lib/pinta-causal-cloud'
-import { flushPintaCausalOutbox } from '../../src/lib/pinta-causal-queue'
+import { flushPintaCausalOutbox, freezePintaCausalPending } from '../../src/lib/pinta-causal-queue'
 import {
   createCloudMirroredPintaPersistence,
   createMemoryPintaFormatMemory,
@@ -503,6 +503,148 @@ test('apagar uma criação não enviada remove só seu candidato local', async (
     const state = await local.causal.inspect()
     expect(state.pending[0]?.members.map(({ itemId }) => itemId)).toEqual([kept.id])
     expect(state.sealed).toBeNull()
+    expect(queued).toEqual([])
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
+test('um escritor antigo pode editar depois do candidato e as duas versões são conferidas', async () => {
+  const namespace = 'cloud-pre-causal-writer'
+  const local = createPintaCausalPersistence({ namespace })
+  const older = createPintaPersistence({ namespace })
+  const sheet = addTile(createTilesetAsset({ name: 'pecas', tileSize: 16 }), 0)
+  const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+  const archivedSheet = await cloudAsset(sheet, 1, '1')
+  let archivedMap = await cloudAsset(map, 1)
+  let epoch = '1'
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch,
+        transitions: [
+          {
+            id: sheet.id,
+            before: null,
+            beforeRevision: null,
+            after: sheet,
+            remote: archivedSheet.entry,
+          },
+          { id: map.id, before: null, beforeRevision: null, after: map, remote: archivedMap.entry },
+        ],
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  const { cloud, queued } = fakeCloud(map, 1)
+  const reports: { ids: readonly string[]; status: string }[] = []
+  const unused = async (): Promise<never> => {
+    throw Error('Operação inesperada')
+  }
+  const transport: PintaCausalCloud = {
+    snapshot: async () => ({
+      epoch,
+      requiredFormat: 6,
+      entries: [archivedSheet.entry, archivedMap.entry],
+    }),
+    download: async ({ itemId }) => (itemId === sheet.id ? archivedSheet.gzip : archivedMap.gzip),
+    verifyEpoch: async (expected) => {
+      expect(expected).toBe(epoch)
+    },
+    backfill: unused,
+    upload: async ({ intent, intentHash, blobs }) => {
+      const put = intent.members[0]
+      const gzip = blobs.get(map.id)
+      if (!gzip || put?.action !== 'put') throw Error('Candidato ausente')
+      expect(put.name).toBe('guardada')
+      epoch = '2'
+      archivedMap = {
+        entry: {
+          ...archivedMap.entry,
+          name: put.name,
+          revision: 2,
+          bytes: put.bytes,
+          sha256: put.sha256,
+        },
+        gzip: new Uint8Array(await gzip.arrayBuffer()),
+      }
+      return {
+        opId: intent.opId,
+        intentHash,
+        epoch,
+        members: [
+          { itemId: map.id, revision: 2, sha256: put.sha256, layoutRevision: null, deleted: false },
+        ],
+      }
+    },
+  }
+  let editorOpen = true
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    viewerId: 'old-writer',
+    reconcileMinIntervalMs: 0,
+    cloud: {
+      ...cloud,
+      pintaCausal: transport,
+      reportPintaQueue: (ids, status) => reports.push({ ids, status }),
+    },
+    isAssetOpen: (id) => editorOpen && id === map.id,
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  async function pull() {
+    const complete = Promise.withResolvers<void>()
+    const unsubscribe = wrapper.subscribe?.((event) => {
+      if (event.type === 'sync-end') complete.resolve()
+    })
+    try {
+      await wrapper.listAllAssets()
+      await complete.promise
+    } finally {
+      unsubscribe?.()
+    }
+  }
+  try {
+    const source = await local.loadAssetById(map.id)
+    const sourceSheet = await local.loadAssetById(sheet.id)
+    if (source?.kind !== 'tilemap' || !sourceSheet) throw Error('Acervo incompleto')
+    await wrapper.persistAsset(
+      { ...source, name: 'guardada' },
+      {
+        resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(sourceSheet) ?? null }],
+      },
+    )
+    const [draft] = (await local.causal.inspect()).pending
+    if (!draft) throw Error('Candidato ausente')
+    expect(
+      await freezePintaCausalPending(local.causal, draft.opId, new AbortController().signal),
+    ).toBe(true)
+    const oldCopy = await older.loadAssetById(map.id)
+    if (oldCopy?.kind !== 'tilemap') throw Error('Mapa ausente')
+    const oldLayers = oldCopy.layers.map((layer) =>
+      isTileLayer(layer) ? { ...layer, cells: new Int16Array([1, -1, -1, -1]) } : layer,
+    )
+    await older.persistAsset({ ...oldCopy, name: 'outra-edicao', layers: oldLayers })
+    await pull()
+    expect(reports.at(-1)).toEqual({ ids: [map.id], status: 'error' })
+    expect((await local.loadAssetById(map.id))?.name).toBe('outra-edicao')
+    editorOpen = false
+    await pull()
+    const gallery = await local.listAllAssets()
+    const copied = gallery.find((asset) => asset.name === 'outra-edicao-copia')
+    const copiedSheet = gallery.find((asset) => asset.name === 'pecas-copia')
+    if (copied?.kind !== 'tilemap' || copiedSheet?.kind !== 'tileset')
+      throw Error('Cópias ausentes')
+    expect(copied.tilesetId).toBe(copiedSheet.id)
+    expect(copied.layers.find(isTileLayer)?.cells[0]).toBe(1)
+    expect((await local.loadAssetById(sheet.id))?.name).toBe('pecas')
+    expect((await local.loadAssetById(map.id))?.name).toBe('guardada')
+    expect((await local.causal.inspect()).recovered?.size).toBe(2)
+    expect(reports.at(-1)).toEqual({ ids: [], status: 'idle' })
     expect(queued).toEqual([])
   } finally {
     wrapper.dispose?.()

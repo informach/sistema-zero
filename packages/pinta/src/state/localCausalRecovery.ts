@@ -12,28 +12,29 @@ import { planImport } from './importPlan'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import type { PintaCausalLocalPull } from './localCausalOutbox'
 
-export function initialRecoverySeeds<Asset extends PintaMemoryAsset>(
+export function localRecoverySeeds<Asset extends PintaMemoryAsset>(
   pull: PintaCausalLocalPull<Asset>,
   local: ReadonlyMap<string, Asset>,
+  official: ReadonlyMap<string, Asset>,
+  distinctLocal: (id: string) => boolean,
 ): Set<string> {
   const beforeByName = new Map([...local.values()].map((asset) => [asset.name, asset]))
-  const remoteNames = new Map(pull.transitions.map(({ id, after }) => [id, after?.name]))
+  const written = new Set(pull.transitions.map(({ id }) => id))
   const seeds = new Set<string>()
   for (const { id, before, after } of pull.transitions) {
+    if (before && distinctLocal(id) && !pintaValuesEqual(before, after)) seeds.add(id)
     if (!after) continue
-    if (before && !pintaValuesEqual(before, after)) seeds.add(id)
     const incumbent = beforeByName.get(after.name)
     if (
       incumbent &&
       incumbent.id !== id &&
-      (!remoteNames.has(incumbent.id) || remoteNames.get(incumbent.id) === incumbent.name)
+      (!written.has(incumbent.id) || official.get(incumbent.id)?.name === incumbent.name)
     )
       seeds.add(incumbent.id)
   }
-  const official = new Map(
-    pull.transitions.flatMap(({ id, after }) => (after ? [[id, after] as const] : [])),
+  const retained = [...local.values()].filter(
+    (asset) => !official.has(asset.id) && !written.has(asset.id),
   )
-  const retained = [...local.values()].filter((asset) => !remoteNames.has(asset.id))
   const projected = new Map([...official, ...retained.map((asset) => [asset.id, asset] as const)])
   const retainedByName = new Map(retained.map((asset) => [asset.name, asset]))
   for (const asset of official.values()) {
@@ -53,7 +54,7 @@ export function initialRecoverySeeds<Asset extends PintaMemoryAsset>(
 }
 
 /** Both sides keep their authored references, including readers of a restored sheet. */
-export function initialRecoveryClosure<Asset extends PintaMemoryAsset>(
+export function localRecoveryClosure<Asset extends PintaMemoryAsset>(
   seeds: ReadonlySet<string>,
   assets: ReadonlyMap<string, Asset>,
 ): { ids: string[]; incomplete: boolean } {
@@ -129,10 +130,11 @@ function restoreDoorTargets<Map extends TilemapAsset<TilemapCells>>(
   }
 }
 
-export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
+export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
   ids: readonly string[],
   pull: PintaCausalLocalPull<Asset>,
   snapshot: LocalSnapshot<Asset>,
+  official: ReadonlyMap<string, Asset>,
 ): { writes: LocalAssetTransition<Asset>[]; copies: Asset[] } | null {
   const selected = ids
     .flatMap((id) => {
@@ -141,17 +143,16 @@ export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
     })
     .sort((a, b) => Number(isTilesetKind(b)) - Number(isTilesetKind(a)))
   if (selected.length !== ids.length) return null
-  const remote = new Map(pull.transitions.map(({ id, after }) => [id, after]))
+  const written = new Set(pull.transitions.map(({ id }) => id))
   const names = new Set([
     ...[...snapshot.assets.values()]
-      .filter((asset) => !remote.has(asset.id))
+      .filter((asset) => !official.has(asset.id))
       .map(({ name }) => name),
-    ...[...remote.values()].flatMap((asset) => (asset ? [asset.name] : [])),
+    ...[...official.values()].map(({ name }) => name),
     ...snapshot.assets.keys(),
-    ...remote.keys(),
+    ...official.keys(),
   ])
-  for (const asset of [...snapshot.assets.values(), ...remote.values()]) {
-    if (!asset) continue
+  for (const asset of [...snapshot.assets.values(), ...official.values()]) {
     for (const { selector } of pintaDoorBindings(asset, snapshot.assets))
       if (typeof selector === 'string') names.add(selector)
   }
@@ -176,16 +177,14 @@ export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
   })
   const projected = new Map(snapshot.assets)
   for (const original of selected) projected.delete(original.id)
-  for (const [id, after] of remote) {
-    if (after) projected.set(id, after)
-    else projected.delete(id)
-  }
+  for (const id of written) projected.delete(id)
+  for (const [id, after] of official) projected.set(id, after)
   for (const copy of copies) {
     if (projected.has(copy.id)) return null
     projected.set(copy.id, copy)
   }
   for (const asset of snapshot.assets.values()) {
-    if (remote.has(asset.id) || imported.idMap.has(asset.id)) continue
+    if (written.has(asset.id) || imported.idMap.has(asset.id) || official.has(asset.id)) continue
     if (
       !pintaValuesEqual(
         pintaDoorBindings(asset, snapshot.assets),
@@ -194,9 +193,6 @@ export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
     )
       return null
   }
-  const official = new Map(
-    [...remote].flatMap(([id, asset]) => (asset ? [[id, asset] as const] : [])),
-  )
   for (const asset of official.values())
     if (!pintaValuesEqual(pintaDoorBindings(asset, official), pintaDoorBindings(asset, projected)))
       return null
@@ -217,7 +213,7 @@ export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
     after,
   }))
   for (const original of selected) {
-    if (remote.has(original.id)) continue
+    if (official.has(original.id) || written.has(original.id)) continue
     const beforeRevision = snapshot.documents.get(original.id)?.revision
     if (!beforeRevision) return null
     writes.push({ id: original.id, before: original, beforeRevision, after: null })

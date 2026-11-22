@@ -64,7 +64,9 @@ export async function pullPintaCausalSnapshot(options: {
   const { snapshot, local, cloud, signal } = options
   const state = await local.inspect()
   const visible = new Map(snapshot.entries.map((entry) => [entry.itemId, entry]))
-  const changed = snapshot.entries.filter((item) => {
+  const recoverDiverged =
+    state.epoch !== null && !state.sealed && !state.pending.length && !state.unbased
+  function differentRemote(item: PintaCloudSnapshot['entries'][number]): boolean {
     const previous = state.confirmed.get(item.itemId)
     return (
       !previous ||
@@ -73,14 +75,27 @@ export async function pullPintaCausalSnapshot(options: {
       previous.sha256 !== item.sha256 ||
       previous.layoutRevision !== item.layoutRevision
     )
-  })
+  }
   const removed = [...state.confirmed]
     .filter(([id, mark]) => !mark.deleted && !visible.has(id))
     .map(([id]) => id)
+  const captureIds = [
+    ...snapshot.entries
+      .filter((entry) => recoverDiverged || differentRemote(entry))
+      .map(({ itemId }) => itemId),
+    ...removed,
+  ]
+  const bases = new Map((await local.capture(captureIds)).map((base) => [base.id, base]))
+  const changed = snapshot.entries.filter(
+    (entry) =>
+      differentRemote(entry) ||
+      (recoverDiverged &&
+        state.confirmed.get(entry.itemId)?.localRevision !==
+          bases.get(entry.itemId)?.beforeRevision),
+  )
   const ids = [...changed.map(({ itemId }) => itemId), ...removed]
   if (ids.some(options.isOpen)) return false
   if (changed.some((entry) => !pintaCanReadFormatVersion(entry.formatVersion))) return false
-  const bases = new Map((await local.capture(ids)).map((base) => [base.id, base]))
   const staged = new Map<string, PintaAsset>()
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
   for (const entry of changed) {
@@ -112,6 +127,7 @@ export async function pullPintaCausalSnapshot(options: {
     epoch: snapshot.epoch,
     transitions,
     recoverInitial: true as const,
+    ...(recoverDiverged ? { recoverDiverged: true as const } : {}),
   }
   const impact = await local.pullImpact(pull)
   if (impact.blocked || impact.ids.some(options.isOpen)) return false
