@@ -37,11 +37,13 @@ export {
   // "Guardado na sua conta" (18/08/2026): o host embrulha o armazenamento local num
   // espelho que sobe/desce cada desenho da nuvem — o mesmo `PintaPersistence` que
   // a galeria E o editor usam (`usePintaApp().persistence`).
+  createPintaCausalPersistence,
   createPintaPersistence,
   // O host (a nuvem) NÃO grava por baixo de um desenho aberto no editor (ver o registro) e,
   // ao fechar, traz o que ficou pulado.
   isPintaAssetOpen,
   type PintaAssetOpenEvent,
+  type PintaCausalLocalPort,
   type PintaPersistence,
   type PintaPersistenceEvent,
   type PintaReadIssue,

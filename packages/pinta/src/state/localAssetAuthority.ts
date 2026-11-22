@@ -48,6 +48,14 @@ export interface LocalSnapshot<Asset extends PintaMemoryAsset = PintaAsset> {
   baseline: Asset[]
 }
 
+/** The local bytes and revision observed before preparing a multi-document change. */
+export interface LocalAssetTransition<Asset extends PintaMemoryAsset> {
+  id: string
+  before: Asset | null
+  beforeRevision: string | null
+  after: Asset | null
+}
+
 /** Internal format policy; the default exports retain the existing public 0–7 contract. */
 export interface LocalAssetFormat<Asset extends PintaMemoryAsset> {
   readonly maxSchema: number
@@ -364,11 +372,49 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
       throw new PintaLocalStorageError(
         'Este desenho mudou em outra janela. Abra de novo antes de apagar.',
       )
-    const tombstone = checkpoint(null, current?.isolation)
+    putTombstone(records, snapshot, id)
+    checkLocalBudget(snapshot.baseline, [...snapshot.assets.values()])
+    return snapshot
+  }
+
+  function putTombstone(
+    records: Map<string, unknown>,
+    snapshot: LocalSnapshot<Asset>,
+    id: string,
+  ): void {
+    const tombstone = checkpoint(null, snapshot.documents.get(id)?.isolation)
     records.set(authorityKey(id), tombstone)
     records.delete(mirrorKey(id))
     snapshot.assets.delete(id)
     snapshot.documents.set(id, tombstone)
+  }
+
+  /** An explicit unit either matches every local base or leaves the original unit intact. */
+  function applyAssetTransitions(
+    records: Map<string, unknown>,
+    transitions: readonly LocalAssetTransition<Asset>[],
+    requireKnownInventory: boolean,
+  ): LocalSnapshot<Asset> {
+    const snapshot = resolveLocalRecords(records, false)
+    const ids = new Set(transitions.map(({ id }) => id))
+    if (
+      ids.size !== transitions.length ||
+      snapshot.issues.some(({ id }) => requireKnownInventory || ids.has(id))
+    )
+      throw new PintaLocalStorageError('Não consegui conferir todos os desenhos desta mudança.')
+    for (const { id, before, beforeRevision, after } of transitions) {
+      if (
+        (before && before.id !== id) ||
+        (after && after.id !== id) ||
+        (snapshot.documents.get(id)?.revision ?? null) !== beforeRevision ||
+        !localValuesEqual(snapshot.assets.get(id) ?? null, before)
+      )
+        throw new PintaLocalStorageError('Um dos desenhos mudou. Confira antes de guardar de novo.')
+    }
+    for (const { id, after } of transitions) {
+      if (after) protectAsset(records, snapshot, format.stamp(after))
+      else putTombstone(records, snapshot, id)
+    }
     checkLocalBudget(snapshot.baseline, [...snapshot.assets.values()])
     return snapshot
   }
@@ -380,6 +426,7 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
     checkLocalBudget,
     writeLocalRecords,
     deleteLocalRecord,
+    applyAssetTransitions,
   }
 }
 
@@ -402,4 +449,5 @@ export const {
   checkLocalBudget,
   writeLocalRecords,
   deleteLocalRecord,
+  applyAssetTransitions,
 } = legacyAuthority

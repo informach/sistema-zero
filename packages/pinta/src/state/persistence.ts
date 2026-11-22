@@ -11,6 +11,7 @@
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
+import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
 import { createStore, get, getMany, keys, update } from 'idb-keyval'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { recordPintaLocalOrigin } from '../core/localAssetOrigin'
@@ -34,9 +35,11 @@ import { sceneMapClosure } from '../core/sceneMapClosure'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 import { type AssetRecordSelection, withAssetTransaction } from './assetAuthorityDb'
 import {
+  applyAssetTransitions,
   type createLocalAssetAuthority,
   deleteLocalRecord,
   LOCAL_ASSET_PREFIX,
+  type LocalAssetTransition,
   type LocalSnapshot,
   PintaLocalConflictError,
   PintaLocalStorageError,
@@ -45,6 +48,20 @@ import {
   selectLocalAssetRecords,
   writeLocalRecords,
 } from './localAssetAuthority'
+import {
+  acknowledgeLocalCausalDraft,
+  type LocalCausalState,
+  ownsLocalCausalMember,
+  PINTA_CAUSAL_BLOBS_KEY,
+  PINTA_CAUSAL_OUTBOX_KEY,
+  type PintaCausalLocalDraft,
+  type PintaCausalPending,
+  type PintaCausalSealed,
+  readLocalCausalState,
+  readLocalCausalUpload,
+  sealLocalCausalDraft,
+  stageLocalCausalDraft,
+} from './localCausalOutbox'
 import type { LocalStorageCodec } from './localChunkStorage'
 
 export {
@@ -412,11 +429,40 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
   return createLocalPintaPersistence(options, legacyPersistenceFormat)
 }
 
+export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsset> {
+  capture(ids: readonly string[]): Promise<readonly Omit<LocalAssetTransition<Asset>, 'after'>[]>
+  inspect(): Promise<LocalCausalState>
+  stage(draft: PintaCausalLocalDraft<Asset>): Promise<PintaCausalPending>
+  prepare(opId: string): Promise<{ pending: PintaCausalPending; assets: Asset[] } | null>
+  seal(
+    preparation: string,
+    intent: PintaCausalIntent,
+    intentHash: string,
+    blobs: ReadonlyMap<string, Blob>,
+  ): Promise<boolean>
+  inFlight(): Promise<{ sealed: PintaCausalSealed; blobs: ReadonlyMap<string, Blob> } | null>
+  acknowledge(receipt: PintaCausalResult): Promise<boolean>
+}
+
+/** Account host entry point. The local drawing format is the same as in the ordinary workshop. */
+export function createPintaCausalPersistence(options: { namespace: string }): PintaPersistence & {
+  causal: PintaCausalLocalPort
+} {
+  return createLocalPintaPersistence(
+    { ...options, guardCausalWrites: true },
+    legacyPersistenceFormat,
+  )
+}
+
 /** Internal policy boundary. Public callers continue to select native 0–7 and physical 1/2. */
 export interface LocalPersistenceFormat<Asset extends PintaMemoryAsset> {
   authority: Pick<
     ReturnType<typeof createLocalAssetAuthority<Asset>>,
-    'resolveLocalRecords' | 'selectLocalAssetRecords' | 'writeLocalRecords' | 'deleteLocalRecord'
+    | 'resolveLocalRecords'
+    | 'selectLocalAssetRecords'
+    | 'writeLocalRecords'
+    | 'deleteLocalRecord'
+    | 'applyAssetTransitions'
   >
   stamp(asset: Asset): Asset
   codec?: LocalStorageCodec
@@ -427,17 +473,28 @@ export interface LocalPersistenceFormat<Asset extends PintaMemoryAsset> {
 }
 
 const legacyPersistenceFormat: LocalPersistenceFormat<PintaAsset> = {
-  authority: { resolveLocalRecords, selectLocalAssetRecords, writeLocalRecords, deleteLocalRecord },
+  authority: {
+    resolveLocalRecords,
+    selectLocalAssetRecords,
+    writeLocalRecords,
+    deleteLocalRecord,
+    applyAssetTransitions,
+  },
   stamp: withPintaSchemaStamp,
   legacyAssets: (assets) => assets,
 }
 
 export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
-  options: { namespace?: string },
+  options: { namespace?: string; guardCausalWrites?: boolean },
   format: LocalPersistenceFormat<Asset>,
-): PintaPersistence<Asset> {
-  const { resolveLocalRecords, selectLocalAssetRecords, writeLocalRecords, deleteLocalRecord } =
-    format.authority
+): PintaPersistence<Asset> & { causal: PintaCausalLocalPort<Asset> } {
+  const {
+    resolveLocalRecords,
+    selectLocalAssetRecords,
+    writeLocalRecords,
+    deleteLocalRecord,
+    applyAssetTransitions,
+  } = format.authority
   const storeHandle = getStoreHandle(options.namespace)
   const dbName = dbNames.get(storeHandle) ?? ''
   const backupSizeCache = backupSizeCacheFor(storeHandle)
@@ -491,6 +548,99 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
     accept(snapshot, undefined, ids)
     return snapshot
   }
+  const causalKeys = [PINTA_CAUSAL_OUTBOX_KEY]
+  const withCausalState = (select?: AssetRecordSelection): AssetRecordSelection | undefined => {
+    if (!options.guardCausalWrites) return select
+    return (records) =>
+      records.has(PINTA_CAUSAL_OUTBOX_KEY) ? (select?.(records) ?? null) : causalKeys
+  }
+  const checkUnowned = (records: ReadonlyMap<string, unknown>, ids: readonly string[]): void => {
+    if (!options.guardCausalWrites) return
+    const state = readLocalCausalState(records)
+    if (ids.some((id) => ownsLocalCausalMember(state, id)))
+      throw new PintaLocalStorageError(
+        'Este desenho faz parte de mudanças que precisam ser guardadas juntas.',
+      )
+  }
+  const causalMembers =
+    (opId: string): AssetRecordSelection =>
+    (records) => {
+      if (!records.has(PINTA_CAUSAL_OUTBOX_KEY)) return causalKeys
+      const unit = readLocalCausalState(records).pending.find((pending) => pending.opId === opId)
+      return unit
+        ? selectLocalAssetRecords(unit.members.map((member) => member.itemId))(records)
+        : []
+    }
+  const causal: PintaCausalLocalPort<Asset> = {
+    capture: async (ids) => {
+      const snapshot = await readSnapshot(ids)
+      if (snapshot.issues.some(({ id }) => ids.includes(id)))
+        throw new PintaLocalStorageError('Não consegui conferir todos os desenhos desta mudança.')
+      return ids.map((id) => ({
+        id,
+        before: snapshot.assets.get(id) ?? null,
+        beforeRevision: snapshot.documents.get(id)?.revision ?? null,
+      }))
+    },
+    inspect: () => transaction(readLocalCausalState, () => causalKeys),
+    stage: (draft) =>
+      runSerializedWrite(storeHandle, async () => {
+        const { snapshot, pending } = await transaction(
+          (records) =>
+            stageLocalCausalDraft(records, draft, () =>
+              applyAssetTransitions(
+                records,
+                draft.transitions,
+                draft.requireKnownInventory === true,
+              ),
+            ),
+          (records) => (records.has(PINTA_CAUSAL_OUTBOX_KEY) ? null : causalKeys),
+        )
+        const ids = pending.members.map((member) => member.itemId)
+        backupSizeCache.invalidate(ids)
+        for (const { id, after } of draft.transitions)
+          if (after)
+            recordPintaLocalOrigin(after, dbName, snapshot.documents.get(id)?.revision ?? null)
+        accept(snapshot, ids)
+        notifyOtherTabs(storeHandle, dbName, ids)
+        return pending
+      }),
+    prepare: (opId) =>
+      transaction((records) => {
+        const pending = readLocalCausalState(records).pending.find((unit) => unit.opId === opId)
+        if (!pending) return null
+        const snapshot = resolveLocalRecords(records, false)
+        const assets: Asset[] = []
+        for (const member of pending.members) {
+          const doc = snapshot.documents.get(member.itemId)
+          if (!doc || doc.revision !== member.localRevision) return null
+          if (member.action === 'put') {
+            if (!doc.asset) return null
+            assets.push(doc.asset)
+          } else if (doc.asset) return null
+        }
+        return { pending, assets }
+      }, causalMembers(opId)),
+    seal: (preparation, intent, intentHash, blobs) =>
+      transaction((records) => {
+        const snapshot = resolveLocalRecords(records, false)
+        return sealLocalCausalDraft(
+          records,
+          preparation,
+          intent,
+          intentHash,
+          blobs,
+          (member) => snapshot.documents.get(member.itemId)?.revision === member.localRevision,
+        )
+      }, causalMembers(intent.opId)),
+    inFlight: () =>
+      transaction(readLocalCausalUpload, () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY]),
+    acknowledge: (receipt) =>
+      transaction(
+        (records) => acknowledgeLocalCausalDraft(records, receipt),
+        () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY],
+      ),
+  }
   const finishProtectedWrite = (
     snapshot: LocalSnapshot<Asset> & { forks: Map<string, Asset> },
     assets: readonly Asset[],
@@ -523,6 +673,7 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       (asset) => [assetKey(asset.id), asset] as [string, Asset],
     )
     const changed = [...unique.values()]
+    const changedIds = [...unique.keys()]
     const legacyChanged = format.legacyAssets?.(changed)
     // A mixed gallery budgets canonical maps, not legacy mirrors. The incremental
     // sprite-only path is retained only in galleries without protected documents.
@@ -540,9 +691,10 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       )
     ) {
       await runSerializedWrite(storeHandle, async () => {
-        const snapshot = await transaction((records) =>
-          writeLocalRecords(records, changed, observed, dbName),
-        )
+        const snapshot = await transaction((records) => {
+          checkUnowned(records, changedIds)
+          return writeLocalRecords(records, changed, observed, dbName)
+        }, withCausalState())
         finishProtectedWrite(snapshot, assets, changed)
       })
       return
@@ -593,11 +745,12 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         const protectedSnapshot = await perfSpanAsync('pinta:persist:write', () =>
           transaction(
             (records) => {
+              checkUnowned(records, changedIds)
               if (needsAuthority) return writeLocalRecords(records, changed, observed, dbName)
               for (const [key, asset] of pairs) records.set(key, asset)
               return null
             },
-            () => (needsAuthority ? null : pairs.map(([key]) => key)),
+            withCausalState(() => (needsAuthority ? null : pairs.map(([key]) => key))),
             (allKeys) => {
               // Same readwrite transaction as the eventual put: another tab cannot
               // introduce an opaque map after this classification and before the write.
@@ -633,13 +786,15 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
   // Liga o canal entre abas deste banco (recebe os ids que outra aba gravou/apagou).
   crossTabChannelFor(storeHandle, dbName)
   return {
+    causal,
     persistAsset: (asset) => persistAssetsForStore([asset]),
     persistAssets: persistAssetsForStore,
     deleteAsset: (id, base) =>
       runSerializedWrite(storeHandle, async () => {
-        const snapshot = await transaction((records) =>
-          deleteLocalRecord(records, id, observed, dbName, base),
-        )
+        const snapshot = await transaction((records) => {
+          checkUnowned(records, [id])
+          return deleteLocalRecord(records, id, observed, dbName, base)
+        }, withCausalState())
         accept(snapshot, [id])
         backupSizeCache.remove(id)
         notifyOtherTabs(storeHandle, dbNames.get(storeHandle) ?? '', [id])

@@ -176,7 +176,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       }
       accepted = editor
         .getState()
-        .commitLinked(next, { before: linked.before, after: linked.after })
+        .commitLinked(next, { before: linked.before, after: linked.after }, remap)
     } else {
       accepted = editor.getState().commit(next)
     }

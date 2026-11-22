@@ -7,6 +7,7 @@ export default defineConfig({
     'pinta-physical-regions.flow.ts',
     'pinta-local-chunks.flow.ts',
     'pinta-authority.flow.ts',
+    'pinta-causal-local.flow.ts',
     'pinta-future-recovery.flow.ts',
   ],
   outputDir: './.cache/pinta-physical-regions-results',
@@ -22,6 +23,7 @@ export default defineConfig({
             'pinta-physical-regions.flow.ts',
             'pinta-local-chunks.flow.ts',
             'pinta-authority.flow.ts',
+            'pinta-causal-local.flow.ts',
             'pinta-future-recovery.flow.ts',
           ]
         : [

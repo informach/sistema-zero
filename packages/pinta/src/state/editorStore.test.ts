@@ -4,12 +4,15 @@ import {
   createPixelBackgroundAsset,
   createTilemapAsset,
   createTilesetAsset,
+  isTilesetKind,
   type PintaAsset,
 } from '../core/project'
 import { addLayer } from '../tiles/tilemapOps'
+import { addTile, removeTile } from '../tiles/tilesetOps'
 import {
   assetBytes,
   createEditorStore as createEditorStoreBase,
+  type PintaEditorLayoutChange,
   type PintaEditorStoreOptions,
 } from './editorStore'
 
@@ -32,6 +35,39 @@ function edited(asset: PintaAsset): PintaAsset {
 }
 
 describe('editorStore — commit/undo/redo', () => {
+  it('persists the actual slot transformation through coalescing, undo and redo', async () => {
+    const sheet = addTile(addTile(createTilesetAsset({ name: 'peças', tileSize: 16 }), 0), 1)
+    const layouts: Array<PintaEditorLayoutChange | undefined> = []
+    const store = createEditorStore({
+      asset: sheet,
+      persist: async (_, _linked, layout) => {
+        layouts.push(layout)
+      },
+    })
+    const state = store.getState()
+    expect(
+      state.commitLinked(removeTile(sheet, 0), { before: [], after: [] }, { removedAt: 0 }),
+    ).toBe(true)
+    const surviving = store.getState().asset
+    if (!isTilesetKind(surviving)) throw Error('fixture')
+    expect(
+      state.commitLinked(addTile(surviving, 0), { before: [], after: [] }, { insertedAt: 1 }),
+    ).toBe(true)
+    await state.flush()
+    state.undo()
+    await state.flush()
+    state.undo()
+    await state.flush()
+    state.redo()
+    await state.flush()
+    expect(layouts).toEqual([
+      { oldToNew: [-1, 0, 2], count: 3 },
+      { oldToNew: [0, -1, 1], count: 2 },
+      { oldToNew: [1, 2], count: 3 },
+      { oldToNew: [-1, 0, 1], count: 2 },
+    ])
+  })
+
   it('admissão que adota outra revisão não deixa a escrita condicional sobrescrevê-la', async () => {
     const initial = makeAsset()
     const store = createEditorStore({

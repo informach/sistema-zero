@@ -9,14 +9,20 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { type PintaMemoryAsset, retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
 import { createHistory, type SharedPart } from '../core/history'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
-import type { PintaAsset } from '../core/project'
+import { isTilesetKind, type PintaAsset } from '../core/project'
 import { RegionBackupSizeCache } from '../export/regionBackupSize'
+import type { TileIndexChange } from '../tiles/tilesetOps'
 
 export { assetBytes } from '../core/assetMemory'
 
 export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
 
 export type PintaSaveResult = { ok: true } | { ok: false; error: string }
+
+export interface PintaEditorLayoutChange {
+  oldToNew: readonly number[]
+  count: number
+}
 
 export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
   asset: Asset
@@ -40,7 +46,11 @@ export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
    * juntos. `before` = mapas antes; `after` = mapas remapeados (já com
    * updatedAt). A galeria só recebe o conjunto depois da persistência confirmar.
    */
-  commitLinked(next: Asset, linked: { before: Asset[]; after: Asset[] }): boolean
+  commitLinked(
+    next: Asset,
+    linked: { before: Asset[]; after: Asset[] },
+    indices?: TileIndexChange,
+  ): boolean
   /** Substitui SEM entrada de undo (ex.: rename vindo da galeria). */
   replace(next: Asset): void
   /** Conditional gesture write; returns its surviving snapshot, or null if superseded/refused. */
@@ -70,6 +80,7 @@ export type PintaEditorStore<Asset extends PintaMemoryAsset = PintaAsset> = Stor
 interface EditorSnapshot<Asset extends PintaMemoryAsset> {
   asset: Asset
   linkedMaps: Asset[] | null
+  slots: readonly symbol[] | null
 }
 
 /** Mescla revisões ligadas por id, preservando assets tocados em commits anteriores. */
@@ -98,14 +109,20 @@ function snapshotBytes(snapshot: EditorSnapshot<PintaMemoryAsset>): number {
 export function* snapshotShared(snapshot: {
   asset: PintaMemoryAsset
   linkedMaps: readonly PintaMemoryAsset[] | null
+  slots?: readonly symbol[] | null
 }): Iterable<SharedPart> {
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
   for (const asset of maps) yield* sharedAssetParts(asset)
+  if (snapshot.slots) yield { key: snapshot.slots, bytes: snapshot.slots.length * 8 }
 }
 
 export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaAsset> {
   asset: Asset
-  persist: (asset: Asset, linkedAssets: readonly Asset[]) => Promise<void>
+  persist: (
+    asset: Asset,
+    linkedAssets: readonly Asset[],
+    layout?: PintaEditorLayoutChange,
+  ) => Promise<void>
   onSaved?: (asset: Asset, linkedAssets: readonly Asset[]) => void
   /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
   autosaveDelayMs?: number
@@ -149,6 +166,11 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
   let dirty = false
   // Mapas ligados ao ESTADO CORRENTE do asset (null até o 1º commitLinked).
   let currentLinked: Asset[] | null = null
+  // The same logical slots follow the snapshots already kept for undo, even when pixel data changes.
+  let currentSlots: readonly symbol[] | null = isTilesetKind(options.asset)
+    ? options.asset.tiles.map(() => Symbol())
+    : null
+  let savedSlots = currentSlots
 
   const store = createStore<PintaEditorState<Asset>>((set, get) => {
     async function saveNow(): Promise<PintaSaveResult> {
@@ -165,11 +187,18 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
         dirty = false
         const snapshot = get().asset
         const linkedSnapshot = currentLinked ? [...currentLinked] : []
+        const slots = currentSlots
+        const layout =
+          slots && savedSlots && slots !== savedSlots
+            ? { oldToNew: savedSlots.map((slot) => slots.indexOf(slot)), count: slots.length }
+            : undefined
         set({ dirty: false, saveState: 'saving', saveError: null })
 
         const request = (async (): Promise<PintaSaveResult> => {
           try {
-            await options.persist(snapshot, linkedSnapshot)
+            if (layout) await options.persist(snapshot, linkedSnapshot, layout)
+            else await options.persist(snapshot, linkedSnapshot)
+            savedSlots = slots
             options.onSaved?.(snapshot, linkedSnapshot)
             set(
               dirty
@@ -187,6 +216,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
             if (recovered && admitsSnapshot(recovered.asset, recovered.linked)) {
               history.clear()
               currentLinked = recovered.linked
+              savedSlots = slots
               options.onSaved?.(recovered.asset, recovered.linked)
               set({
                 asset: recovered.asset,
@@ -229,6 +259,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       next: Asset,
       recordHistory: boolean,
       linked?: { before: Asset[]; after: Asset[] },
+      indices?: TileIndexChange,
     ): Asset | null {
       const current = get().asset
       // A controller from a gesture that began before conflict recovery may still finish.
@@ -251,11 +282,29 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
         return null
       if (get().asset !== current) return null
+      let slots = currentSlots
+      if (indices) {
+        if (!slots || !isTilesetKind(applied)) return null
+        const inserted = 'insertedAt' in indices
+        const at = inserted ? indices.insertedAt : indices.removedAt
+        if (
+          !Number.isInteger(at) ||
+          at < 0 ||
+          at >= (inserted ? applied.tiles.length : slots.length) ||
+          applied.tiles.length !== slots.length + (inserted ? 1 : -1)
+        )
+          return null
+        const changed = [...slots]
+        if (inserted) changed.splice(at, 0, Symbol())
+        else changed.splice(at, 1)
+        slots = changed
+      }
       if (recordHistory) {
         // O snapshot restaurado por undo carrega o ESTADO ANTERIOR: para uma
         // edição com remap, os mapas ANTES; senão, o `currentLinked` corrente.
-        history.record({ asset: current, linkedMaps: previousLinked })
+        history.record({ asset: current, linkedMaps: previousLinked, slots: currentSlots })
       }
+      currentSlots = slots
       if (linked) currentLinked = proposedLinked
       set({
         asset: applied,
@@ -281,8 +330,8 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
         return apply(next, true) !== null
       },
 
-      commitLinked(next, linked) {
-        return apply(next, true, linked) !== null
+      commitLinked(next, linked, indices) {
+        return apply(next, true, linked, indices) !== null
       },
 
       replace(next) {
@@ -300,15 +349,20 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
           !admitsSnapshot(base, currentLinked ?? [])
         )
           return
-        history.record({ asset: base, linkedMaps: currentLinked })
+        history.record({ asset: base, linkedMaps: currentLinked, slots: currentSlots })
         set({ canUndo: history.canUndo(), canRedo: history.canRedo() })
         scheduleAutosave()
       },
 
       undo() {
-        const prev = history.undo({ asset: get().asset, linkedMaps: currentLinked })
+        const prev = history.undo({
+          asset: get().asset,
+          linkedMaps: currentLinked,
+          slots: currentSlots,
+        })
         if (!prev) return
         currentLinked = prev.linkedMaps
+        currentSlots = prev.slots
         set({
           asset: prev.asset,
           linkedAssets: currentLinked,
@@ -319,9 +373,14 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       },
 
       redo() {
-        const next = history.redo({ asset: get().asset, linkedMaps: currentLinked })
+        const next = history.redo({
+          asset: get().asset,
+          linkedMaps: currentLinked,
+          slots: currentSlots,
+        })
         if (!next) return
         currentLinked = next.linkedMaps
+        currentSlots = next.slots
         set({
           asset: next.asset,
           linkedAssets: currentLinked,
