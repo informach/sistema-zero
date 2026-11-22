@@ -56,9 +56,21 @@ export function errosDasRegioes(
   base: BaseDeCenario,
 ): string[] {
   if (!regioes?.length) return []
-  const erros: string[] = []
   const limite = retanguloDaBase(base)
   if (!limite) return ['Converta o relevo em terreno antes de desenhar regiões.']
+  return errosDasRegioesNoRetangulo(regioes, limite)
+}
+
+/**
+ * A mesma régua de `errosDasRegioes`, com o retângulo do chão já calculado. A cena compilada usa
+ * esta (ela guarda o piso plano ou o terreno, não a base do documento); sem retângulo (`null`), só
+ * não confere se a caixa cabe no chão.
+ */
+export function errosDasRegioesNoRetangulo(
+  regioes: readonly RegiaoDeCenario[],
+  limite: CaixaDeRegiao | null,
+): string[] {
+  const erros: string[] = []
   const porId = new Map<string, RegiaoDeCenario>()
   const nomes = new Set<string>()
   for (const r of regioes) {
@@ -70,7 +82,8 @@ export function errosDasRegioes(
     nomes.add(nome)
     if (!(r.caixa.x1 - r.caixa.x0 > FOLGA && r.caixa.z1 - r.caixa.z0 > FOLGA))
       erros.push(`A região ${r.nome} precisa ter largura e comprimento.`)
-    else if (!caixaDentro(r.caixa, limite)) erros.push(`A região ${r.nome} sai da base do cenário.`)
+    else if (limite && !caixaDentro(r.caixa, limite))
+      erros.push(`A região ${r.nome} sai da base do cenário.`)
   }
   for (const r of regioes) {
     const vistas = new Set<string>()

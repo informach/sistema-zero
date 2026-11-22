@@ -26,6 +26,7 @@ import {
   MarcadorCompiladoSchema,
   TerrenoCompiladoSchema,
 } from './schema-metadados'
+import { conferirPertencaDasRegioes, RegioesCompiladasSchema } from './schema-regioes'
 
 export const MAX_BYTES_DO_MANIFESTO = 16 * 1024 * 1024
 /** Procedência da cena: o que veio do acervo, por biblioteca, modelo e revisão do conjunto. */
@@ -70,6 +71,8 @@ export const CenaCompiladaSchema = z
     fontes: FontesDaCenaCompiladaSchema,
     licencas: z.array(LicencaDaBibliotecaSchema).max(8192),
     ambiente: IluminacaoSchema,
+    /** As regiões do documento com o que pertence a cada uma (opcional: cena sem regiões fica igual). */
+    regioes: RegioesCompiladasSchema.optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -315,6 +318,25 @@ export const CenaCompiladaSchema = z
       pontos += t.recortes.reduce((s, p) => s + p.length, 0)
     }
     if (pontos > 262144) falhar('Os metadados excedem o orçamento de pontos da cena compilada.')
+    if (d.regioes) {
+      // O chão que as regiões não podem passar: o piso plano (centrado) ou o terreno.
+      const limite = d.plano
+        ? {
+            x0: -d.plano.largura / 2,
+            z0: -d.plano.comprimento / 2,
+            x1: d.plano.largura / 2,
+            z1: d.plano.comprimento / 2,
+          }
+        : d.terreno
+          ? {
+              x0: d.terreno.origem.x,
+              z0: d.terreno.origem.z,
+              x1: d.terreno.origem.x + d.terreno.colunas * d.terreno.passo,
+              z1: d.terreno.origem.z + d.terreno.linhas * d.terreno.passo,
+            }
+          : null
+      for (const e of conferirPertencaDasRegioes({ ...d, limite })) falhar(e)
+    }
   })
 export type CenaCompilada = z.infer<typeof CenaCompiladaSchema>
 

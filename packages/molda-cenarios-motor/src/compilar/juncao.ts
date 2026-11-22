@@ -1,7 +1,10 @@
 import {
   type CenaCompilada,
+  calcularPertencaDasRegioes,
+  entidadesComPropriedades,
   LIMITES_DA_EXPORTACAO,
   type PacoteCompilado,
+  regioesQueOVolumeToca,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   Box3,
@@ -161,6 +164,12 @@ export async function juntarEstaticosDoPacote(
       }
     >(),
     nos: CenaCompilada['nos'] = [],
+    // Com regiões (lote 5 da conclusão, 22/11/2026): o objeto com propriedades fica fora dos lotes
+    // (o estado dele nunca descarrega) e um lote só junta peças das MESMAS regiões. Sem regiões,
+    // nada disto muda o pacote.
+    comPropriedades = cena.regioes ? entidadesComPropriedades(cena.entidades) : new Set<string>(),
+    assinaturaDasRegioes = (volume: CenaCompilada['nos'][number]['volume']) =>
+      cena.regioes ? `${regioesQueOVolumeToca(cena.regioes, volume).join(',')}|` : '',
     ids = new Set(cena.nos.map((n) => n.id)),
     ordemDosNos = new Map(cena.nos.map((no, i) => [no.id, i])),
     metadados = new Map(cena.arquivos.map((a) => [a.caminho, a])),
@@ -251,7 +260,8 @@ export async function juntarEstaticosDoPacote(
           (no.efeito && !doMar) ||
           no.preservarHierarquia ||
           no.faixas ||
-          preservados.has(no.arquivo)
+          preservados.has(no.arquivo) ||
+          (no.entidade !== null && comPropriedades.has(no.entidade))
         ) {
           nos.push(no)
           continue
@@ -324,7 +334,7 @@ export async function juntarEstaticosDoPacote(
               ? uvSegueOChao(unica.geometria, matrizDaPeca)
               : null
           if (chao && materialDoAtlas(unica.material)) {
-            const chaveDaRegiao = `${coluna}/${linha}`,
+            const chaveDaRegiao = `${assinaturaDasRegioes(no.volume)}${coluna}/${linha}`,
               geometria = unica.geometria.clone()
             let regiao = relevos.get(chaveDaRegiao)
             if (!regiao) {
@@ -346,7 +356,7 @@ export async function juntarEstaticosDoPacote(
         }
         for (const p of modelo.partes)
           adicionarAoGrupo(
-            `${coluna}/${linha}/${chaveDoMaterial(p.material)}/${layoutDaParteEstatica(p.geometria)}`,
+            `${assinaturaDasRegioes(no.volume)}${coluna}/${linha}/${chaveDoMaterial(p.material)}/${layoutDaParteEstatica(p.geometria)}`,
             p.material,
             matriz,
             { geometria: p.geometria, matriz: relativa.clone().multiply(p.matriz) },
@@ -560,15 +570,20 @@ export async function juntarEstaticosDoPacote(
         await arquivos.adicionar(caminho, bytes, meta)
         await cederDuranteCompilacao(sinal)
       }
+    // Água sem peças suficientes para juntar volta ao fim do processamento. Conservar
+    // a ordem dos nós retidos evita mudar o manifesto ao juntar o mesmo pacote de novo.
+    const nosEmOrdem = nos.sort(
+      (a, b) =>
+        (ordemDosNos.get(a.id) ?? cena.nos.length) - (ordemDosNos.get(b.id) ?? cena.nos.length),
+    )
     const resultado = await conferirConteudoCompilado(
       {
         ...cena,
-        // Água sem peças suficientes para juntar volta ao fim do processamento. Conservar
-        // a ordem dos nós retidos evita mudar o manifesto ao juntar o mesmo pacote de novo.
-        nos: nos.sort(
-          (a, b) =>
-            (ordemDosNos.get(a.id) ?? cena.nos.length) - (ordemDosNos.get(b.id) ?? cena.nos.length),
-        ),
+        nos: nosEmOrdem,
+        // Os lotes são nós novos: a pertença das regiões é calculada de novo sobre eles.
+        ...(cena.regioes
+          ? { regioes: calcularPertencaDasRegioes(cena.regioes, { ...cena, nos: nosEmOrdem }) }
+          : {}),
         arquivos: arquivos
           .descrever()
           .sort((a, b) => (a.caminho < b.caminho ? -1 : a.caminho > b.caminho ? 1 : 0)),
