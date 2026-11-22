@@ -4,7 +4,7 @@ import { CELL_MAX_TILES } from '../../tiles/cell'
  * engine's scaled CollisionShape2D approximation. Layer views retain the document;
  * candidate tile cells are visited through the inverse affine body bounds.
  */
-export const godotPhysics = `
+export const godotPhysicsFor = (regional: boolean) => `
 func _outline_hits(object: Dictionary, query: PackedVector2Array) -> bool:
     var kind: String = object.get("shape","rect")
     if kind == "point":
@@ -71,8 +71,10 @@ func _local_body(node: Node2D, rect: Rect2) -> PackedVector2Array:
 func bloqueado(rect: Rect2) -> bool:
     if not rect.position.is_finite() or not rect.size.is_finite() or rect.size.x <= 0 or rect.size.y <= 0:
         return false
-    if rect.position.x < 0 or rect.position.y < 0 or rect.end.x > scene_data.cols * scene_data.tileSize or rect.end.y > scene_data.rows * scene_data.tileSize:
-        return true
+${regional ? `    var area := Rect2(Vector2(_grid_origin(scene_data)) * scene_data.tileSize,Vector2(scene_data.cols,scene_data.rows) * scene_data.tileSize)
+    if not area.encloses(rect):
+` : `    if rect.position.x < 0 or rect.position.y < 0 or rect.end.x > scene_data.cols * scene_data.tileSize or rect.end.y > scene_data.rows * scene_data.tileSize:
+`}        return true
     for entry in map_objects:
         if entry.data.get("collision",false) and entry.node.is_visible_in_tree() and entry.node.global_transform.determinant() != 0:
             if _outline_hits(entry.data,_local_body(entry.node,rect)):
@@ -94,7 +96,19 @@ func _visit_tiles(rect: Rect2, platforms: bool, visit: Callable) -> bool:
         var bounds := Rect2(query[0],Vector2.ZERO)
         for point in query:
             bounds = bounds.expand(point)
-        for row in range(maxi(0,floori((bounds.position.y - 1e-7) / size)),mini(entry.rows,ceili((bounds.end.y + 1e-7) / size))):
+${regional ? `        var start := Vector2i(floori((bounds.position.x - 1e-7) / size),floori((bounds.position.y - 1e-7) / size))
+        var end := Vector2i(ceili((bounds.end.x + 1e-7) / size),ceili((bounds.end.y + 1e-7) / size))
+        var area: Rect2i = entry.area
+        var view := Rect2i(start,end - start).intersection(area)
+        if _visit_cells(entry.layer,area,view,func(cell: int,col: int,row: int) -> bool:
+            var index: int = cell & ${CELL_MAX_TILES - 1}
+            var solid: bool = entry.layer.get("collision",false) or index in entry.tileset.solid
+            if (platforms and (solid or not index in entry.tileset.platform)) or (not platforms and not solid):
+                return false
+            return visit.call(entry,col,row,query)
+        ):
+            return true
+` : `        for row in range(maxi(0,floori((bounds.position.y - 1e-7) / size)),mini(entry.rows,ceili((bounds.end.y + 1e-7) / size))):
             for col in range(maxi(0,floori((bounds.position.x - 1e-7) / size)),mini(entry.cols,ceili((bounds.end.x + 1e-7) / size))):
                 var cell: int = int(entry.layer.cells[row * entry.cols + col])
                 if cell < 0:
@@ -105,7 +119,7 @@ func _visit_tiles(rect: Rect2, platforms: bool, visit: Callable) -> bool:
                     continue
                 if visit.call(entry,col,row,query):
                     return true
-    return false
+`}    return false
 
 func _platform_surface(points: PackedVector2Array, body: Rect2, direction: float) -> Variant:
     var left := INF
