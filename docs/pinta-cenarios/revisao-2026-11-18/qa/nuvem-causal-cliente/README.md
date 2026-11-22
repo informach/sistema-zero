@@ -27,3 +27,20 @@ python ./repetir.py --members C:/caminho/do/checkout-members
 A terceira execução lê `PINTA_CAUSAL_TEST_DATABASE_URL` do ambiente. Use um banco PostgreSQL descartável em loopback para as migrações e registros de teste. O usuário deve ter permissão para executar as migrações do Members. Os casos usam identificadores de conta novos.
 
 O índice guarda tanto o hash dos logs originais quanto o dos logs UTF-8 com LF, nos quais o caminho de trabalho foi substituído por `⟨worktree⟩`. Os casos do host compartilham um prefixo textual arquivado. O verificador recompõe o arquivo individual antes de conferir seu hash. A cópia temporária do caso do Pinta ajusta apenas a distância dos imports relativos à pasta `src`.
+
+## Conflito com um escritor anterior
+
+O candidato `5ef94cc8593c847d9c4a25c395f7a8a6f5797b94` apresentou quatro falhas na recuperação de documentos que uma instalação anterior havia sobrescrito. Cada caso abre o mesmo banco do perfil por meio da API de persistência do escritor `64c197d5332a36b73af54de6ae5bf045a4a7699e`. O teste compartilha o adaptador de IndexedDB em memória entre as duas versões. O relógio de epoch, os estados da reserva e a interrupção de transporte são controlados.
+
+| Ensaio | Resultado observado em 5ef |
+| --- | --- |
+| Escrita selada com pixel 3, escritor anterior grava 5, conta traz 7 | Restaram os valores 5 e 7. O cliente apagou o gzip com valor 3 nos estados expirado, abortado e ausente após avanço de epoch. |
+| Escrita selada 3 e sucessor local 4, depois escritor anterior grava 5 | A API havia confirmado a edição 4 no aparelho. Antes da sobrescrita, o candidato pendente fornecia o valor 4. Depois, a preparação perdeu sua fonte e a resolução do conflito conservou somente 5 e 7. |
+| Escritor anterior apaga o último documento selado | O blob, o identificador e o digest sobreviveram a cada tentativa. A fila ficou em erro, com o epoch antigo. |
+| Último PUT falha e outra sessão confirma durante o abort | A fila conservou os dois blobs após o HTTP 503. No reinício, verificou novamente o primeiro objeto e escreveu o segundo. Recusou o recibo com digest diferente e confirmou os dois documentos com o recibo correto. |
+
+O comando abaixo repete as onze variações. No commit 5ef, as quatro perdas de autoria produzem código de saída 1. Os casos que caracterizam a fila bloqueada por exclusão verificam a retenção do Blob nesse candidato.
+
+```powershell
+python ./repetir.py --terminal C:/caminho/do/checkout-5ef --legado C:/caminho/do/checkout-64c
+```

@@ -78,6 +78,36 @@
       ],
       "sha256": "c5d690fd831f39fee7d59446708ad9215895c3c56be5d3dba4d545dd94fcbaa3",
       "lfAdicional": 1
+    },
+    {
+      "alvo": "terminal",
+      "nome": "terminal-http-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-http-review.inc"
+      ],
+      "sha256": "4d425fecf29130298a54e9189ab53af6c4dcebee838abead0e8301597dd1f634",
+      "originalSha256": "adcd2c18258ee5efb0f343350c1395cbe6bc5c76302ac914348820b63a540500"
+    },
+    {
+      "alvo": "terminal",
+      "nome": "terminal-legacy-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-legacy-review.inc"
+      ],
+      "sha256": "0fe7baa0bc656dfe9cc6ccbbe10d918d2a3f45bb0571ac2a7af3bb054ab1e967",
+      "originalSha256": "7c50939254cad92366da63411827022cba4c61b926a985947d75f468ef5bf298"
+    },
+    {
+      "alvo": "terminal",
+      "nome": "terminal-pending-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/terminal-pending-review.inc"
+      ],
+      "sha256": "16ef17088e21762328f8b01c801049014ef204d3461e2c86310d11c4420c368a",
+      "originalSha256": "d3a3317378c1846aea79aeecd04e914d371eb6d7cec7e27a3a6a7c5b584d962c"
     }
   ],
   "recibos": [
@@ -122,6 +152,27 @@
       "sha256": "2f837e5808f89dcea03dc20250d967a4f032be11c3efc9def7ea8466d41e5e2f",
       "commit": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
       "resultado": "2 passam/19 asserções"
+    },
+    {
+      "arquivo": "recibos/terminal-http-5ef.txt",
+      "originalSha256": "cd118a2e4670e903859ba30d6012678725e1f0dd6256f531ec72a3f919d02b67",
+      "sha256": "e6aab68c1b068c5dbc27c2ab59ecf117bea3b09a84e4027aa439f57528d552f9",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "1 passa/25 asserções"
+    },
+    {
+      "arquivo": "recibos/terminal-legacy-5ef.txt",
+      "originalSha256": "1b4fa205285e313e7e3b879e3c51cde9e7ea9e94baed1cf88b5a7035cd830a4c",
+      "sha256": "80731bdbe14c4255e0b3df1e002efbc92cdc5accfd5eb56e33b319c6a08a4fa0",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "6 passam/3 falham/45 asserções"
+    },
+    {
+      "arquivo": "recibos/terminal-pending-5ef.txt",
+      "originalSha256": "8a797f5773aaecc23dc96c3db0225c18b711a91d4c0b75303f7d29b0b8cc0b46",
+      "sha256": "f42cc0d6099449a41dbfc08cacd6be878ecfdd45436d31a46ede3e54d24ab8ba",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "1 falha/8 asserções"
     }
   ],
   "arvoresGit": {
@@ -133,6 +184,15 @@
     "members": {
       "packages/members/src": "d8f565037f48ec43e1458e77870d86bfa610621b",
       "packages/members/tests/db": "16819e3d6d7de93523fe3fbd05d67c3809d34d16"
+    },
+    "terminal": {
+      "packages/pinta/src": "28d25b7cb8b7f889ec7b48b7140a1cbaa2de6d41",
+      "packages/member-shell/src/lib": "7ace6c9ed16c90df08d521a24a416b45f97a59b0"
+    },
+    "legado": {
+      "packages/pinta/src": "af6608a9570ceec9d95a67fe01ce045b2fb4e4e4"
     }
-  }
+  },
+  "terminal": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+  "legado": "64c197d5332a36b73af54de6ae5bf045a4a7699e"
 }
