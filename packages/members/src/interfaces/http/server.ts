@@ -140,7 +140,17 @@ const CENARIOS_DOCUMENTO_BODY_BYTES = 8 * 1024 * 1024 + 64 * 1024
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
+const PINTA_CAUSAL_PROOF_BODY_BYTES = 2 * 1024 * 1024
+const PINTA_CAUSAL_PROOF_PATH =
+  /^\/members\/internal\/creations\/pinta\/(?:units\/(?:reserve|attest)|backfill\/attest)$/
+
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (
+    env.PINTA_CAUSAL_CANDIDATE &&
+    env.INTERNAL_API_TOKEN &&
+    PINTA_CAUSAL_PROOF_PATH.test(pathname)
+  )
+    return PINTA_CAUSAL_PROOF_BODY_BYTES
   // O resumo do pacote (inventário + procedência); o manifesto em si nunca vem no corpo.
   if (pathname === '/members/internal/cenarios/publicacoes/confirmar')
     return MAX_BYTES_DO_RESUMO_DE_PUBLICACAO
@@ -205,6 +215,9 @@ export function createServer(deps: HttpDeps) {
     CENARIOS_DOCUMENTO_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
+    deps.env.PINTA_CAUSAL_CANDIDATE && deps.env.INTERNAL_API_TOKEN
+      ? PINTA_CAUSAL_PROOF_BODY_BYTES
+      : 0,
     1024 * 1024,
   )
   const app = new Elysia({

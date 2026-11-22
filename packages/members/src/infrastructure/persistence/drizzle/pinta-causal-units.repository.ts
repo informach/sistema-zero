@@ -278,7 +278,9 @@ export class DrizzlePintaCausalRepository extends DrizzlePintaGraphRepository {
             (m.formatVersion > page.reader || m.formatVersion < (r?.formatVersion ?? 1)))
         )
           throw new PintaCausalError('client-outdated', m.itemId)
-        const revision = (r?.lastReservedRevision ?? 0) + 1
+        // Older or imported index rows can predate a reservation counter synchronized with revision.
+        const revision =
+          Math.max(r?.revision ?? 0, r?.pendingRevision ?? 0, r?.lastReservedRevision ?? 0) + 1
         if (revision > 2_147_483_647) throw new PintaCausalError('quota', m.itemId)
         const binding: PintaCausalBinding = {
           namespace: namespace(a),

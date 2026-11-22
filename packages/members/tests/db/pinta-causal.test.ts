@@ -205,6 +205,69 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     await conn.sql`insert into members.account_deletion_fences values (${a.accountId},now())`
     expect(await rejection(db.commit(a, free))).toMatchObject({ reason: 'account-deleting' })
   })
+  test('takes the next revision above a legacy pending ticket whose reservation counter fell behind', async () => {
+    const a = actor(),
+      old = put('pending', 1)
+    await conn.sql`insert into members.creations
+      (id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,pending_revision,last_reserved_revision,format_version,storage_ref,bytes,created_at,synced_at)
+      values(gen_random_uuid(),${a.userId},${a.accountId},'pinta','pending','pixel-sprite','pending',now(),3,9,1,6,'old.gz',5,now(),now())`
+    const { binding } = await db.backfillTicket(a, {
+      epoch: '1',
+      itemId: 'pending',
+      revision: 3,
+      reader: 6,
+    })
+    await db.backfillAttest(a, {
+      purpose: 'pinta-backfill-content-v1',
+      binding,
+      sha256: old.sha256,
+      manifest: manifest(old),
+    })
+    const next = put('pending', 2, 'pixel-sprite', 3)
+    const op = intent('2', [next])
+    const [ticket] = await reserve(a, op)
+    expect(ticket).toMatchObject({ baseRevision: 3, revision: 10 })
+    await complete(a, op, [manifest(next)])
+    expect((await visible(a)).entries).toMatchObject([
+      { itemId: 'pending', revision: 10, sha256: next.sha256 },
+    ])
+  })
+  test('legacy numerical ACK after compaction identifies neither the original bytes nor a causal base', async () => {
+    const a = actor()
+    const upload = {
+      ...a,
+      tool: 'pinta' as const,
+      itemId: 'file',
+      kind: 'pixel-sprite',
+      name: 'file',
+      bytes: 5,
+      itemUpdatedAt: new Date(time),
+      now: new Date(time),
+      thumb: null,
+      limits: CREATION_LIMITS,
+    }
+    await legacy.reserveUpload(upload)
+    const old = { ...upload, revision: 1, storageRef: 'first.gz' }
+    await legacy.commit(old)
+    await legacy.softDelete(a.userId, 'pinta', 'file', 1, new Date(time))
+    await conn.sql`delete from members.creations where user_id=${a.userId} and item_id='file' and deleted_at is not null`
+    await legacy.reserveUpload(upload)
+    await legacy.commit({ ...old, storageRef: 'next.gz' })
+    expect(await legacy.commit(old)).toMatchObject({ ok: true, alreadyCommitted: true })
+    expect((await legacy.get(a.userId, 'pinta', 'file'))?.storageRef).toBe('next.gz')
+    const snapshot = await visible(a)
+    expect(snapshot.entries).toMatchObject([
+      { itemId: 'file', revision: 1, coverage: 'unknown', sha256: null },
+    ])
+    expect(
+      await rejection(
+        db.item(a, { epoch: snapshot.epoch, itemId: 'file', revision: 1, reader: 6 }),
+      ),
+    ).toMatchObject({ reason: 'unverified-content' })
+    const separate = put('new', 2)
+    await complete(a, intent(snapshot.epoch, [separate]), [manifest(separate)])
+    expect(await rejection(legacy.commit(old))).toMatchObject({ reason: 'protocol-required' })
+  })
   test('retirement releases only expired exact keys and preserves the confirmed seal', async () => {
     const a = actor(),
       m = put('owned', 7),
