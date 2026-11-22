@@ -1,11 +1,13 @@
 import { createRoot, type Root } from 'react-dom/client'
 import { TilemapEditor } from '../src/components/editor/TilemapEditor'
+import { PintaApp } from '../src/components/PintaApp'
 import { ToastProvider } from '../src/components/ui/Toast'
 import { isTileLayer } from '../src/core/project'
 import type { LocalRegionAuthorSession } from '../src/state/localRegionAuthorSession'
 import { createRegionPintaPersistence } from '../src/state/localRegionPersistence'
 import { setPintaStorageNamespace } from '../src/state/persistence'
 import { createSessionStore, TILEMAP_ZOOM_LEVELS } from '../src/state/sessionStore'
+import { createWorkshopPintaPersistence } from '../src/state/workshopPersistence'
 import { cellAt, setCell } from '../src/tiles/tilemapOps'
 import { loadRegionalProofStyles } from './region-authoring-view-proof'
 import { measureRegionalIo, type seedRegionalIoProfile } from './region-io-proof'
@@ -13,6 +15,7 @@ import { measureRegionalIo, type seedRegionalIoProfile } from './region-io-proof
 type Seed = Awaited<ReturnType<typeof seedRegionalIoProfile>>
 let mounted: { root: Root; focal: LocalRegionAuthorSession } | null = null
 let gesture: ReturnType<typeof measureRegionalIo<boolean>> | null = null
+let workshopLoads = { fullListings: 0, fullDocuments: 0 }
 const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 const isBusy = () => document.querySelector('.pin-stage')?.getAttribute('aria-busy') !== 'false'
 
@@ -124,4 +127,46 @@ export async function inspectFocalRegionalCells(seed: Seed, change = false) {
     cellAt(map, ground.id, 1000, 800),
     cellAt(map, ground.id, -33, -53),
   ]
+}
+
+export async function mountRegionalWorkshop(seed: Seed) {
+  await loadRegionalProofStyles()
+  setPintaStorageNamespace(seed.namespace)
+  workshopLoads = { fullListings: 0, fullDocuments: 0 }
+  const local = createWorkshopPintaPersistence({ namespace: seed.namespace })
+  const persistence = {
+    ...local,
+    async listAllAssets() {
+      workshopLoads.fullListings++
+      return local.listAllAssets()
+    },
+    async loadAssetById(id: string) {
+      workshopLoads.fullDocuments++
+      return local.loadAssetById(id)
+    },
+  }
+  createRoot(document.body).render(
+    <main style={{ width: '100vw', height: '100vh' }}>
+      <PintaApp persistence={persistence} />
+    </main>,
+  )
+}
+
+export function regionalWorkshopLoads() {
+  return workshopLoads
+}
+
+export function regionalWorkshopPoint() {
+  const paper = document.querySelector('.pin-paper')?.getBoundingClientRect()
+  if (!paper) throw Error('Mapa ausente')
+  return { x: paper.left + 16, y: paper.top + 16 }
+}
+
+export async function inspectWorkshopFirstCell(seed: Seed) {
+  const local = createRegionPintaPersistence({ namespace: seed.namespace })
+  const map = await local.loadAssetById(seed.id)
+  if (map?.kind !== 'tilemap' || !('origin' in map)) throw Error('Mapa ausente')
+  const ground = map.layers.find(isTileLayer)
+  if (!ground) throw Error('Camada ausente')
+  return cellAt(map, ground.id, map.origin.col, map.origin.row)
 }

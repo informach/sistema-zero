@@ -21,6 +21,7 @@ import { REGION_EDIT_LIMIT } from '../../tiles/regionCells'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
+import { FocalRegionObjectsPreview } from './MapObjectsOverlay'
 import { MapPaper } from './MapStage'
 import { MapStatusBar } from './MapStatusBar'
 import { DEFAULT_MAP_BRUSH, MapBrushPanel } from './MapTerrainPanel'
@@ -307,6 +308,12 @@ export function FocalRegionMapStage({
               onLostPointerCapture={cancel}
               onPointerLeave={() => hover.current(null)}
             />
+            <FocalRegionObjectsPreview
+              map={document}
+              tileSize={tileSize}
+              scale={cellPx / tileSize}
+              catalog={focal.catalog}
+            />
           </MapPaper>
           {viewError ? (
             <p role="status" className="pin-float absolute left-3 top-3 p-2">
@@ -374,7 +381,14 @@ export function FocalRegionMapStage({
           >
             {COPY.editor.redo}
           </Button>
-          {error ? <p role="alert">{error}</p> : null}
+          {error ? (
+            <>
+              <Button variant="barOutline" disabled={saving} onClick={() => void focal.retry()}>
+                {COPY.gallery.retry}
+              </Button>
+              <p role="alert">{error}</p>
+            </>
+          ) : null}
         </div>
         <MapStatusBar
           cols={document.cols}

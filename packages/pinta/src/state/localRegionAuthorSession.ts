@@ -55,6 +55,7 @@ function visualDocument(map: RegionTilemapAsset) {
     cols: map.cols,
     rows: map.rows,
     tilesetId: map.tilesetId,
+    resources: map.resources,
     layers: map.layers.map((layer) => {
       const placement = effectiveLayer(map, layer)
       if (!isTileLayer(layer)) return { ...layer, placement }
@@ -195,6 +196,12 @@ export async function openLocalRegionAuthorSession(
     }>,
   ): Promise<RegionalGestureResult> {
     if (pending) return Promise.resolve({ ok: false, changed: false })
+    if (failed && action !== retryAction)
+      return Promise.resolve({
+        ok: false,
+        changed: false,
+        message: store.getState().error ?? undefined,
+      })
     retryAction = action
     store.setState({ saving: true, error: null })
     const queued = action()
@@ -287,6 +294,7 @@ export async function openLocalRegionAuthorSession(
     namespace,
     store,
     tilesets,
+    catalog: opened.assets as readonly (typeof opened.assets)[number][],
     apply,
     undo: () => restore('undo'),
     redo: () => restore('redo'),
@@ -302,7 +310,13 @@ export async function openLocalRegionAuthorSession(
         signal: options.signal ? AbortSignal.any([lifetime, options.signal]) : lifetime,
       })
     },
-    flush: () => pending ?? Promise.resolve({ ok: !failed, changed: false }),
+    flush: () =>
+      pending ??
+      Promise.resolve({
+        ok: !failed,
+        changed: false,
+        message: store.getState().error ?? undefined,
+      }),
     retry: () => (retryAction ? run(retryAction) : Promise.resolve({ ok: true, changed: false })),
     close: () => {
       scope.abort()

@@ -55,9 +55,13 @@ export {
   focalRegionalCamera,
   focalRegionalPoint,
   inspectFocalRegionalCells,
+  inspectWorkshopFirstCell,
   measuredFocalRegionalGesture,
   measureNextFocalRegionalGesture,
+  mountRegionalWorkshop,
   openFocalRegionalAuthoring,
+  regionalWorkshopLoads,
+  regionalWorkshopPoint,
 } from './region-focal-proof'
 export {
   compareStoredVilaViewports,

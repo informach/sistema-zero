@@ -23,7 +23,9 @@ import {
   sanitizeLocalRegionAsset,
   stampLocalRegionAsset,
 } from './localRegionAssetAuthority'
-import { persistLocalRegionRevision } from './localRegionEditing'
+import { openLocalRegionAuthorSession } from './localRegionAuthorSession'
+import { readRegionCaptureSnapshot } from './localRegionCapture'
+import { persistLocalRegionRevision, readLocalRegionGalleryIndex } from './localRegionEditing'
 import {
   captureLocalPintaAssetForImage,
   createLocalPintaPersistence,
@@ -117,12 +119,21 @@ export function createWorkshopPintaPersistence(
       return
     await local.persistAsset(asset, { resources })
   }
-  return { ...local, workshopReader: true as const, observesReferences: true, persistRevision }
+  return {
+    ...local,
+    workshopReader: true as const,
+    observesReferences: true,
+    persistRevision,
+    openRegionSession: (id: string, signal?: AbortSignal) =>
+      openLocalRegionAuthorSession(namespace, id, signal),
+    listGalleryIndex: () => readLocalRegionGalleryIndex(namespace),
+  }
 }
 export function captureWorkshopPintaAssetForImage(id: string, options: PintaCaptureOptions = {}) {
   return captureLocalPintaAssetForImage(
     id,
     { ...options, includeSceneMaps: options.includeSceneMaps ?? true },
     workshopPolicy(),
+    readRegionCaptureSnapshot,
   )
 }

@@ -1875,6 +1875,37 @@ test('cold map editor admits viewport and first gesture without hydrating either
   })
 })
 
+test('the workshop gallery opens and edits a regional card without a complete listing or document load', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Uma prova funcional em Chromium')
+  await proof(page)
+  const seed = await page.evaluate(() => window.pintaPhysicalRegions.seedRegionalIoProfile())
+  await page.evaluate((seed) => window.pintaPhysicalRegions.mountRegionalWorkshop(seed), seed)
+  const card = page.getByRole('button', { name: /Abrir vila-grande/i })
+  await expect(card).toBeVisible()
+  await expect(page.getByRole('button', { name: /Abrir mapa-fora-da-vila/i })).toBeVisible()
+  await context.setOffline(true)
+  await card.click()
+  await expect(page.locator('.pin-stage')).toHaveAttribute('aria-busy', 'false')
+  await page.getByRole('button', { name: 'Borracha', exact: true }).click()
+  const point = await page.evaluate(() => window.pintaPhysicalRegions.regionalWorkshopPoint())
+  await page.mouse.click(point.x, point.y)
+  await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeEnabled()
+  expect(
+    await page.evaluate((seed) => window.pintaPhysicalRegions.inspectWorkshopFirstCell(seed), seed),
+  ).toBe(-1)
+  await page.getByRole('button', { name: 'Voltar', exact: true }).click()
+  await expect(card).toBeVisible()
+  await card.click()
+  await expect(page.locator('.pin-stage')).toHaveAttribute('aria-busy', 'false')
+  expect(await page.evaluate(() => window.pintaPhysicalRegions.regionalWorkshopLoads())).toEqual({
+    fullListings: 0,
+    fullDocuments: 0,
+  })
+})
+
 test('stored map view refuses a foreign namespace, changed revision and corrupt selected chunk', async ({
   page,
 }) => {

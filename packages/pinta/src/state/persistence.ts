@@ -105,6 +105,7 @@ import {
   PALETTE_LIBRARY_KEY,
 } from './localPaletteAccount'
 import type { LocalRegionAuthorSession } from './localRegionAuthorSession'
+import type { RegionGalleryIndex } from './regionGalleryIndex'
 
 export {
   PintaLocalConflictError,
@@ -438,6 +439,7 @@ export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
     resources: readonly PintaResourceObservation[],
   ): Promise<void>
   openRegionSession?(id: string, signal?: AbortSignal): Promise<LocalRegionAuthorSession | null>
+  listGalleryIndex?(): Promise<RegionGalleryIndex | null>
   deleteAsset(id: string, base?: Asset): Promise<void>
   loadAssetById(id: string): Promise<Asset | null>
   listAllAssets(): Promise<Asset[]>

@@ -1,3 +1,4 @@
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import type { RegionMapSetAsset, RegionTilemapAsset } from '../../core/project'
 import { triggerDownload } from '../../export/download'
@@ -10,15 +11,17 @@ export function WorkshopMapDownload({
   open,
   asset,
   onClose,
+  catalog: snapshot,
 }: {
   open: boolean
   asset: RegionTilemapAsset | RegionMapSetAsset
   onClose: () => void
+  catalog?: readonly PintaMemoryAsset[]
 }) {
   const { gallery } = usePintaApp(),
     { showToast } = useToast()
   if (!open) return null
-  const catalog = gallery.getState().assets
+  const catalog = snapshot ?? gallery.getState().assets
   async function download() {
     const { collectAssetBundle } = await import('../../export/assetJson')
     const { pintaWorkshopBackup } = await import('../../export/workshopDocument')
@@ -30,7 +33,7 @@ export function WorkshopMapDownload({
       showToast(COPY.exportDialog.editableMissingTileset)
       return
     }
-    triggerDownload(new Blob([json], { type: 'application/json' }), asset.name + '.pinta.json')
+    triggerDownload(new Blob([json], { type: 'application/json' }), `${asset.name}.pinta.json`)
   }
   return (
     <Dialog open onClose={onClose} title={COPY.exportDialog.title}>

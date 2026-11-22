@@ -1,3 +1,4 @@
+import { PINTA_REGION_SIDE } from '@sistemazero/core/creations'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import {
@@ -36,6 +37,7 @@ import {
   readLocalPintaRecords,
   updateLocalPintaRecords,
 } from './persistence'
+import type { RegionalGalleryCard, RegionGalleryIndex } from './regionGalleryIndex'
 
 type RegionAsset = PreparedRegionDocument['empty']
 const mapOf = (asset: RegionAsset) => (asset.kind === 'map-set' ? asset.map : asset)
@@ -111,17 +113,78 @@ function inspectInventory(
  * profile. Any V4 record (outbox, sealed blobs, observed-resource pins or a prepared shadow)
  * means the account's canonical writer owns the candidates.
  */
-function assertRegionalLocalState(
+function hasCausalInventory(
   records: ReadonlyMap<string, unknown>,
   physicalKeys: ReadonlySet<IDBValidKey>,
-): void {
-  if (
+): boolean {
+  return (
     records.get(PINTA_CAUSAL_OUTBOX_KEY) !== undefined ||
     physicalKeys.has(PINTA_CAUSAL_BLOBS_KEY) ||
     physicalKeys.has(PINTA_CAUSAL_PIN_BLOBS_KEY) ||
     [...physicalKeys].some((key) => typeof key === 'string' && key.startsWith(localPreparedKey('')))
   )
+}
+
+function assertRegionalLocalState(
+  records: ReadonlyMap<string, unknown>,
+  physicalKeys: ReadonlySet<IDBValidKey>,
+): void {
+  if (hasCausalInventory(records, physicalKeys))
     throw new PintaLocalStorageError('Abra o cenário pela sua conta para guardar as mudanças.')
+}
+
+/** Cold gallery cards read complete directories and reuse the authority for inline assets. */
+export async function readLocalRegionGalleryIndex(
+  namespace: string,
+): Promise<RegionGalleryIndex | null> {
+  let headers: readonly string[] = []
+  let physicalKeys: ReadonlySet<IDBValidKey> = new Set()
+  return readLocalPintaRecords(
+    namespace,
+    () => [...new Set([...headers, PINTA_CAUSAL_OUTBOX_KEY])],
+    (records) => {
+      if (namespace !== getPintaStorageNamespace() || hasCausalInventory(records, physicalKeys))
+        return null
+      const { directories, assets, documents } = inspectInventory(records, headers, physicalKeys)
+      const cards: RegionalGalleryCard[] = []
+      for (const directory of directories.values()) {
+        const map = directory.empty
+        if (map.kind !== 'tilemap') return null
+        const { kind, id, name, updatedAt, projectRef, cols, rows } = map
+        const first = directory.locations.find((locations) => locations.length)?.[0]
+        const preview = first
+          ? {
+              col: Math.max(0, first.col * PINTA_REGION_SIDE - map.origin.col),
+              row: Math.max(0, first.row * PINTA_REGION_SIDE - map.origin.row),
+            }
+          : { col: 0, row: 0 }
+        cards.push({
+          regionalCard: true,
+          kind,
+          id,
+          name,
+          updatedAt,
+          projectRef,
+          cols,
+          rows,
+          namespace,
+          revision: directory.revision,
+          preview,
+          dependencies: pintaAssetDependencyIds(map),
+        })
+      }
+      for (const [id, asset] of assets)
+        recordPintaLocalOrigin(asset, dbNameFor(namespace), documents.get(id)?.revision ?? null)
+      return { assets: [...assets.values()].sort((a, b) => b.updatedAt - a.updatedAt), cards }
+    },
+    (keys, allKeys) => {
+      headers = keys
+      physicalKeys = new Set(allKeys)
+    },
+  ).catch((error) => {
+    if (error instanceof PintaRegionalEditUnavailable) return null
+    throw error
+  })
 }
 
 /** Directory and dependencies only. The incomplete domain values stay in the authority module. */

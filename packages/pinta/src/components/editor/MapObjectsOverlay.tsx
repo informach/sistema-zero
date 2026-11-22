@@ -26,6 +26,7 @@ import {
 } from '../../core/project'
 import { createEditorGesture, type EditorGesture } from '../../state/editorGesture'
 import type { PintaEditorStore } from '../../state/editorStore'
+import type { FocalRegionMap } from '../../state/localRegionAuthorSession'
 import type { MapObjectToolId } from '../../state/sessionStore'
 import { type AuthorMap, isAuthorMap } from '../../tiles/mapCellEdits'
 import {
@@ -132,6 +133,9 @@ const HIT_SLACK_PX = 8
 /** Raio do alvo de toque das alças e dos pontos (44 px de um lado ao outro). */
 const TOUCH_REACH_PX = MAP_EDITOR_LIMITS.touchTargetPx / 2
 const VERTEX_PX = 6
+
+const artworkTransform = (object: TilemapObject) =>
+  `translate(${object.flipX ? 2 * object.x + object.width : 0} ${object.flipY ? 2 * object.y + object.height : 0}) scale(${object.flipX ? -1 : 1} ${object.flipY ? -1 : 1})`
 
 interface MapObjectsOverlayProps {
   tilemap: AuthorMap
@@ -770,9 +774,7 @@ export function MapEditorObjectsOverlay<Asset extends PintaMemoryAsset>({
                   }
                 />
                 {object.art || object.setId ? (
-                  <g
-                    transform={`translate(${object.flipX ? 2 * object.x + object.width : 0} ${object.flipY ? 2 * object.y + object.height : 0}) scale(${object.flipX ? -1 : 1} ${object.flipY ? -1 : 1})`}
-                  >
+                  <g transform={artworkTransform(object)}>
                     {catalog ? (
                       <CatalogMapObjectArtwork
                         object={object}
@@ -823,6 +825,66 @@ export function MapEditorObjectsOverlay<Asset extends PintaMemoryAsset>({
           ))}
         </g>
       ) : null}
+    </svg>
+  )
+}
+
+export function FocalRegionObjectsPreview({
+  map,
+  tileSize,
+  scale,
+  catalog,
+}: {
+  map: FocalRegionMap
+  tileSize: number
+  scale: number
+  catalog: readonly PintaMemoryAsset[]
+}): JSX.Element | null {
+  const layers = map.layers.filter((layer) => layer.kind === 'objects' && layer.placement.visible)
+  if (!layers.length) return null
+  const unit = 1 / Math.max(scale, 0.0001)
+  return (
+    <svg
+      aria-label={COPY.tiles.objectsOverlay}
+      data-pin-objects-overlay=""
+      className="pointer-events-none absolute inset-0 block h-full w-full"
+      viewBox={`${map.origin.col * tileSize} ${map.origin.row * tileSize} ${map.cols * tileSize} ${map.rows * tileSize}`}
+      preserveAspectRatio="none"
+    >
+      <title>{COPY.tiles.objectsOverlay}</title>
+      {layers.map(({ id, objects, placement }) => (
+        <g
+          key={id}
+          data-layer-id={id}
+          opacity={0.45 * placement.opacity}
+          transform={`translate(${placement.offsetX} ${placement.offsetY})`}
+        >
+          {objects.map((object) => (
+            <g
+              key={object.id}
+              transform={`rotate(${object.rotation ?? 0} ${object.x} ${object.y})`}
+            >
+              <MapObjectShape
+                object={object}
+                unit={unit}
+                selected={false}
+                showLabel
+                vertexIndex={-1}
+                showVertices={false}
+              />
+              {object.art || object.setId ? (
+                <g transform={artworkTransform(object)}>
+                  <CatalogMapObjectArtwork
+                    object={object}
+                    assets={catalog}
+                    resources={map.resources}
+                  />
+                </g>
+              ) : null}
+            </g>
+          ))}
+        </g>
+      ))}
     </svg>
   )
 }

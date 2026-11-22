@@ -1,4 +1,3 @@
-import type {PintaMemoryAsset} from '../../core/assetMemory'
 /**
  * Card de um desenho na galeria: miniatura REAL do desenho (canvas 1:1
  * esticado por CSS pixelated para pixel; SVG inline para vetor; minimapa de
@@ -15,18 +14,23 @@ import type {PintaMemoryAsset} from '../../core/assetMemory'
  */
 import type { JSX } from 'react'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { thumbnailBitmap, thumbnailShapes } from '../../core/assetThumb'
 import { COPY } from '../../core/copy'
 import { perfSpan } from '../../core/perf'
-import {
-  assetStyle,
-  type PintaBitmap,
-  resolveAssetPalette,
-} from '../../core/project'
+import { assetStyle, type PintaBitmap, resolveAssetPalette } from '../../core/project'
 import { paintBitmapCapped } from '../../pixel/render'
+import {
+  isRegionalGalleryCard,
+  type PintaGalleryEntry,
+  type RegionalGalleryCard,
+} from '../../state/regionGalleryIndex'
+import { TileChunkCache } from '../../tiles/chunks'
 import { collectMapTilesets } from '../../tiles/mapTilesets'
 import { paintMinimap, tilemapOverview } from '../../tiles/minimap'
+import { loadVectorSheet, pixelSheetCanvas } from '../../tiles/sheetCanvas'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
+import { readStoredRegionMapViewport } from '../editor/mapTools/storedRegionMapCanvas'
 import { Check, Copy, Pencil, Trash2 } from '../ui/icons'
 
 // Os dois extratores da "cara" do asset mudaram de casa para `core/assetThumb`
@@ -205,6 +209,93 @@ const THUMB_SURFACE_CLASSES = {
   cover: 'sz-tool-cover',
 } as const
 
+function RegionalCardThumb({ asset, paint }: { asset: RegionalGalleryCard; paint: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!paint || !canvas) return
+    const controller = new AbortController()
+    const cellPx = 8
+    const stage = {
+      clientWidth: GALLERY_THUMB_MAX_PX,
+      clientHeight: GALLERY_THUMB_MAX_PX,
+      scrollLeft: asset.preview.col * cellPx + 8,
+      scrollTop: asset.preview.row * cellPx + 8,
+    }
+    const cache = new TileChunkCache()
+    const sheets = new Map<string, HTMLCanvasElement | null>()
+    const stop: (() => void)[] = []
+    let pendingSheets = 0
+    void readStoredRegionMapViewport(asset.id, {
+      stage,
+      cellPx,
+      pad: 0,
+      showCollision: false,
+      namespace: asset.namespace,
+      revision: asset.revision,
+      signal: controller.signal,
+    })
+      .then((view) => {
+        if (!view || controller.signal.aborted) return
+        const redraw = () => {
+          if (controller.signal.aborted) return
+          view.paint({
+            canvas,
+            cache,
+            time: 0,
+            sheetOf: (tileset) => {
+              if (!sheets.has(tileset.id)) {
+                if (tileset.kind === 'tileset') sheets.set(tileset.id, pixelSheetCanvas(tileset))
+                else {
+                  sheets.set(tileset.id, null)
+                  pendingSheets++
+                  stop.push(
+                    loadVectorSheet(
+                      tileset,
+                      (sheet) => {
+                        pendingSheets--
+                        sheets.set(tileset.id, sheet)
+                        redraw()
+                      },
+                      () => {
+                        pendingSheets--
+                        redraw()
+                      },
+                    ),
+                  )
+                }
+              }
+              return sheets.get(tileset.id) ?? null
+            },
+          })
+          canvas.style.transform = ''
+          if (!pendingSheets) {
+            cache.clear()
+            sheets.clear()
+            stop.length = 0
+          }
+        }
+        redraw()
+      })
+      .catch(() => {
+        // The cover is decorative. The editor reports storage errors when opening.
+      })
+    return () => {
+      controller.abort()
+      cache.clear()
+      for (const dispose of stop) dispose()
+    }
+  }, [asset, paint])
+  return (
+    <div className="sz-tool-cover relative flex aspect-square w-full items-center justify-center overflow-hidden">
+      <span aria-hidden="true" className="absolute text-4xl opacity-30">
+        {COPY.kinds.tilemap.emoji}
+      </span>
+      <canvas ref={canvasRef} className="pin-pixelated relative h-full w-full object-contain" />
+    </div>
+  )
+}
+
 /**
  * A miniatura do desenho. Exportada porque o seletor "Trazer um desenho" do
  * vetor usa a MESMA — é o que faz o seletor ser WYSIWYG com a galeria (entra
@@ -265,7 +356,7 @@ export const AssetCard = memo(function AssetCard({
   selected = false,
   onToggleSelect,
 }: {
-  asset: PintaMemoryAsset
+  asset: PintaGalleryEntry
   justCreated?: boolean
   /** Resolve outros assets do perfil (o tilemap precisa das peças p/ a thumb). */
   findAsset?: (id: string) => PintaMemoryAsset | null
@@ -354,7 +445,11 @@ export const AssetCard = memo(function AssetCard({
           selected ? 'ring-4 ring-pin-accent' : ''
         }`}
       >
-        <AssetThumb asset={asset} findAsset={findAsset} paint={near} surface="cover" />
+        {isRegionalGalleryCard(asset) ? (
+          <RegionalCardThumb asset={asset} paint={near} />
+        ) : (
+          <AssetThumb asset={asset} findAsset={findAsset} paint={near} surface="cover" />
+        )}
         {selectable && selected ? (
           <span
             aria-hidden="true"

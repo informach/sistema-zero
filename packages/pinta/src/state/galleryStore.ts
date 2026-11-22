@@ -7,7 +7,7 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
-import type { PintaResourceObservation } from '../core/localAssetOrigin'
+import { type PintaResourceObservation, pintaLocalRevisionOf } from '../core/localAssetOrigin'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import { createAsset, type NewAssetInput } from '../core/newAsset'
 import { perfSpanAsync } from '../core/perf'
@@ -32,12 +32,14 @@ import {
   type PintaPersistence,
   type PintaReadIssue,
 } from './persistence'
+import type { RegionalGalleryCard } from './regionGalleryIndex'
 
 /** A fábrica e o input moram em `core/newAsset.ts` (puros); aqui só o que tem EFEITO. */
 export type { NewAssetInput }
 
 export interface PintaGalleryState {
   assets: PintaMemoryAsset[]
+  regionCards: RegionalGalleryCard[]
   loaded: boolean
   loading: boolean
   /**
@@ -52,6 +54,8 @@ export interface PintaGalleryState {
    */
   readIssues: PintaReadIssue[]
   needsRetainedRecovery: boolean
+  /** Keep complete dependencies available while an integral map/tileset editor is open. */
+  holdFullInventory(): () => void
   /**
    * Liga a escuta do armazenamento (`persistence.subscribe?`): `sync-start`/`changed`/`sync-end`.
    * Idempotente; devolve o desligar. Sem `subscribe` na persistência, não faz nada.
@@ -130,7 +134,26 @@ const CHANGED_RELOAD_DELAY_MS = 250
 
 export function createGalleryStore(
   persistence: PintaPersistence<PintaMemoryAsset> = createPintaPersistence(),
+  options: { focalGallery?: boolean } = {},
 ): PintaGalleryStore {
+  let fullInventoryHolders = 0
+  function names(except?: string): Set<string> {
+    const { assets, regionCards } = store.getState()
+    return new Set(
+      [...assets, ...regionCards].filter(({ id }) => id !== except).map(({ name }) => name),
+    )
+  }
+  async function displayedAsset(id: string): Promise<PintaMemoryAsset | null> {
+    const { assets, regionCards } = store.getState()
+    const loaded = assets.find((asset) => asset.id === id)
+    if (loaded) return loaded
+    const card = regionCards.find((card) => card.id === id)
+    if (!card) return null
+    const actual = await persistence.loadAssetById(id)
+    if (!actual || pintaLocalRevisionOf(actual) !== card.revision)
+      throw Error(COPY.editor.saveError)
+    return actual
+  }
   function contextFor(assets: readonly PintaMemoryAsset[]) {
     const catalog = [...store.getState().assets, ...assets]
     const resources = new Map<string, PintaResourceObservation>()
@@ -159,11 +182,21 @@ export function createGalleryStore(
 
   const store = createStore<PintaGalleryState>((set, get) => ({
     assets: [],
+    regionCards: [],
     loaded: false,
     loading: false,
     syncing: false,
     readIssues: [],
     needsRetainedRecovery: persistence.needsRetainedRecovery?.() ?? false,
+    holdFullInventory() {
+      fullInventoryHolders++
+      let held = true
+      return () => {
+        if (!held) return
+        held = false
+        fullInventoryHolders--
+      }
+    },
     attachPersistence: () => () => {},
     loadError: null,
     mutateError: null,
@@ -174,13 +207,22 @@ export function createGalleryStore(
     async load() {
       set({ loading: true, loadError: null })
       try {
-        const assets = await perfSpanAsync('pinta:gallery:load', () => persistence.listAllAssets())
+        const { assets, cards } = await perfSpanAsync('pinta:gallery:load', async () => {
+          const index =
+            options.focalGallery && !fullInventoryHolders
+              ? await persistence.listGalleryIndex?.()
+              : null
+          return index && !fullInventoryHolders
+            ? index
+            : { assets: await persistence.listAllAssets(), cards: [] }
+        })
         // O estilo do asset mais recente vira o default do "Criar novo".
         const recentStyle = assets
           .map((a) => assetStyle(a.kind))
           .find((style): style is PintaAssetStyle => style !== null)
         set((state) => ({
           assets,
+          regionCards: cards,
           loaded: true,
           loading: false,
           lastStyle: recentStyle ?? state.lastStyle,
@@ -191,13 +233,12 @@ export function createGalleryStore(
     },
 
     async create(input) {
-      const { assets } = get()
       const name = normalizeAssetName(input.name)
       if (!name) {
         set({ mutateError: COPY.newAsset.nameInvalid })
         return null
       }
-      if (assets.some((a) => a.name === name)) {
+      if (names().has(name)) {
         set({ mutateError: COPY.newAsset.nameTaken })
         return null
       }
@@ -217,10 +258,9 @@ export function createGalleryStore(
     },
 
     async createPrepared(prepared) {
-      const { assets } = get()
       const base = normalizeAssetName(prepared.name)
       // Nome já usado por outro desenho: entra com sufixo (`molde-geladeira-2`), como o import.
-      const name = base ? uniqueName(base, new Set(assets.map((a) => a.name))) : null
+      const name = base ? uniqueName(base, names()) : null
       if (!name) {
         set({ mutateError: base ? COPY.newAsset.nameTaken : COPY.newAsset.nameInvalid })
         return null
@@ -243,14 +283,13 @@ export function createGalleryStore(
         return null
       }
       const built = template.build()
-      const { assets } = get()
       const chosen = normalizeAssetName(input.name)
       if (!chosen) {
         set({ mutateError: COPY.newAsset.nameInvalid })
         return null
       }
       const projectRef = sanitizeProjectRef(input.projectRef)
-      const taken = new Set(assets.map((a) => a.name))
+      const taken = names()
       // Nomeia: o principal com o nome escolhido, os companheiros com o próprio
       // (sufixo em colisão). Renomear NÃO mexe no `tilesetId` (é por id).
       const prepared: PintaAsset[] = []
@@ -295,18 +334,21 @@ export function createGalleryStore(
         set({ mutateError: COPY.newAsset.nameInvalid })
         return false
       }
-      const { assets } = get()
-      const asset = assets.find((a) => a.id === id)
-      if (!asset) return false
-      if (normalized === asset.name) return true
-      if (assets.some((a) => a.id !== id && a.name === normalized)) {
+      if (names(id).has(normalized)) {
         set({ mutateError: COPY.newAsset.nameTaken })
         return false
       }
-      const renamed = { ...asset, name: normalized, updatedAt: Date.now() }
       try {
+        const asset = await displayedAsset(id)
+        if (!asset) return false
+        if (normalized === asset.name) return true
+        const renamed = { ...asset, name: normalized, updatedAt: Date.now() }
         await persistOne(renamed)
-        set((state) => ({ assets: upsertSorted(state.assets, renamed), mutateError: null }))
+        set((state) => ({
+          assets: upsertSorted(state.assets, renamed),
+          regionCards: state.regionCards.filter((card) => card.id !== id),
+          mutateError: null,
+        }))
         return true
       } catch (error) {
         set({ mutateError: persistenceErrorMessage(error) })
@@ -316,15 +358,14 @@ export function createGalleryStore(
 
     async duplicate(id) {
       const { assets } = get()
-      const asset = assets.find((a) => a.id === id)
-      if (!asset) return null
-      const taken = new Set(assets.map((a) => a.name))
-      const name = uniqueName(asset.name, taken)
-      if (!name) {
-        set({ mutateError: COPY.newAsset.nameTaken })
-        return null
-      }
       try {
+        const asset = await displayedAsset(id)
+        if (!asset) return null
+        const name = uniqueName(asset.name, names())
+        if (!name) {
+          set({ mutateError: COPY.newAsset.nameTaken })
+          return null
+        }
         let copy: PintaMemoryAsset = cloneWithNewIds(pintaWorkshopBody(asset), name)
         if (isPintaAuthoredMap(asset)) {
           const { rebindCopiedAutomapBook } = await import('../tiles/automapping/native')
@@ -351,17 +392,26 @@ export function createGalleryStore(
     },
 
     async remove(id) {
-      const asset = get().assets.find((item) => item.id === id)
-      if (!asset) return false
-      if (get().assets.some((item) => pintaAssetDependencyIds(item).includes(asset.id))) {
-        set({
-          mutateError: isTilesetKind(asset) ? COPY.gallery.tilesetInUse : COPY.gallery.drawingInUse,
-        })
-        return false
-      }
       try {
+        const asset = await displayedAsset(id)
+        if (!asset) return false
+        if (
+          get().assets.some((item) => pintaAssetDependencyIds(item).includes(id)) ||
+          get().regionCards.some((card) => card.dependencies.includes(id))
+        ) {
+          set({
+            mutateError: isTilesetKind(asset)
+              ? COPY.gallery.tilesetInUse
+              : COPY.gallery.drawingInUse,
+          })
+          return false
+        }
         await persistence.deleteAsset(id, asset)
-        set((state) => ({ assets: state.assets.filter((a) => a.id !== id), mutateError: null }))
+        set((state) => ({
+          assets: state.assets.filter((a) => a.id !== id),
+          regionCards: state.regionCards.filter((card) => card.id !== id),
+          mutateError: null,
+        }))
         return true
       } catch {
         set({ mutateError: COPY.editor.saveError })
@@ -370,11 +420,18 @@ export function createGalleryStore(
     },
 
     absorb(asset) {
-      set((state) => ({ assets: upsertSorted(state.assets, asset) }))
+      set((state) => ({
+        assets: upsertSorted(state.assets, asset),
+        regionCards: state.regionCards.filter((card) => card.id !== asset.id),
+      }))
     },
 
     absorbMany(assets) {
-      set((state) => ({ assets: assets.reduce(upsertSorted, state.assets) }))
+      const ids = new Set(assets.map(({ id }) => id))
+      set((state) => ({
+        assets: assets.reduce(upsertSorted, state.assets),
+        regionCards: state.regionCards.filter((card) => !ids.has(card.id)),
+      }))
     },
 
     async importAssets(incoming, options = {}) {
@@ -413,11 +470,7 @@ export function createGalleryStore(
       // (as peças padrão E as de cada camada; peça de camada que não veio no
       // arquivo segue apontando para o id de antes: a camada volta sem aparência,
       // o mapa não se perde).
-      const plan = planImport(
-        eligible.map(pintaWorkshopBody),
-        incomingTilesetIds,
-        new Set(current.map((asset) => asset.name)),
-      )
+      const plan = planImport(eligible.map(pintaWorkshopBody), incomingTilesetIds, names())
       const idMap = plan.idMap
       skipped += plan.skipped
       importError ??= plan.error

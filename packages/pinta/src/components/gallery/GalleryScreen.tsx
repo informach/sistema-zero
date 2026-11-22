@@ -1,4 +1,3 @@
-import type {PintaMemoryAsset} from '../../core/assetMemory'
 /**
  * Tela inicial: a galeria de desenhos do perfil. CRUD completo (criar em 3
  * passos, renomear, duplicar, apagar com confirmação) + estados de
@@ -41,6 +40,7 @@ import { importPintaJson } from '../../export/projectJson'
 import { zipGallery, zipRetainedRecoveryFiles } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
+import { isRegionalGalleryCard, type PintaGalleryEntry } from '../../state/regionGalleryIndex'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { HostBackLink, HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
 import { Button } from '../ui/Button'
@@ -167,7 +167,15 @@ export function GalleryScreen(): JSX.Element {
     showToast(recoveryNotice)
     gallery.getState().acknowledgeRecovery()
   }, [gallery, recoveryNotice, showToast])
-  const assets = usePintaGallery((state) => state.assets)
+  const completeAssets = usePintaGallery((state) => state.assets)
+  const regionCards = usePintaGallery((state) => state.regionCards)
+  const assets = useMemo(
+    () =>
+      regionCards.length
+        ? [...completeAssets, ...regionCards].sort((a, b) => b.updatedAt - a.updatedAt)
+        : completeAssets,
+    [completeAssets, regionCards],
+  )
   const loaded = usePintaGallery((state) => state.loaded)
   const syncing = usePintaGallery((state) => state.syncing)
   const readIssues = usePintaGallery((state) => state.readIssues)
@@ -238,17 +246,27 @@ export function GalleryScreen(): JSX.Element {
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
   const dependentMaps =
-    removeTarget && isTilesetKind(removeTarget)
+    removeTarget && !isRegionalGalleryCard(removeTarget) && isTilesetKind(removeTarget)
       ? assets.filter(
-          (asset) => asset.kind === 'tilemap' && tilemapUsesTileset(asset, removeTarget.id),
+          (asset) =>
+            asset.kind === 'tilemap' &&
+            (isRegionalGalleryCard(asset)
+              ? asset.dependencies.includes(removeTarget.id)
+              : tilemapUsesTileset(asset, removeTarget.id)),
         )
       : []
-  const tilesets = useMemo(() => assets.filter(isTilesetKind), [assets])
+  const tilesets = useMemo(() => completeAssets.filter(isTilesetKind), [completeAssets])
   const lastStyle = usePintaGallery((state) => state.lastStyle)
   // Índice por id (o mapa de tiles procura as peças dele por card) e nomes já usados — uma vez
   // por lista, não uma busca linear por card nem um `Set` novo a cada render.
   const assetsById = useMemo(() => new Map(assets.map((a) => [a.id, a])), [assets])
-  const findAsset = useCallback((id: string) => assetsById.get(id) ?? null, [assetsById])
+  const findAsset = useCallback(
+    (id: string) => {
+      const asset = assetsById.get(id)
+      return asset && !isRegionalGalleryCard(asset) ? asset : null
+    },
+    [assetsById],
+  )
   const takenNames = useMemo(() => new Set(assets.map((a) => a.name)), [assets])
 
   // Agrupamento por jogo do Pensa: chave = projectRef.id (não o nome — dois
@@ -256,8 +274,8 @@ export function GalleryScreen(): JSX.Element {
   // recente (a lista já vem por updatedAt desc; o Map preserva a inserção).
   // A busca filtra ANTES do agrupamento: uma seção some quando nada nela casa.
   const { projectSections, looseAssets } = useMemo(() => {
-    const byProject = new Map<string, { name: string; assets: PintaMemoryAsset[] }>()
-    const loose: PintaMemoryAsset[] = []
+    const byProject = new Map<string, { name: string; assets: PintaGalleryEntry[] }>()
+    const loose: PintaGalleryEntry[] = []
     for (const asset of visibleAssets) {
       const ref = asset.projectRef
       if (!ref) {
@@ -298,7 +316,7 @@ export function GalleryScreen(): JSX.Element {
   )
   const onRemoveCard = useCallback((id: string) => setRemoveId(id), [])
 
-  const renderCard = (asset: PintaMemoryAsset): JSX.Element => (
+  const renderCard = (asset: PintaGalleryEntry): JSX.Element => (
     <AssetCard
       key={asset.id}
       asset={asset}
@@ -336,7 +354,10 @@ export function GalleryScreen(): JSX.Element {
     if (zipping) return
     setZipping(true)
     try {
-      const bytes = await zipGallery(gallery.getState().assets)
+      const snapshot = gallery.getState()
+      const bytes = await zipGallery(
+        snapshot.regionCards.length ? await persistence.listAllAssets() : snapshot.assets,
+      )
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
         'meus-desenhos-pinta.zip',
@@ -359,15 +380,17 @@ export function GalleryScreen(): JSX.Element {
     // NÃO pode engolir a sessão nova — todo toggle cria um Set novo, então
     // identidade igual = ninguém tocou.
     const markedAtClick = captureSelection()
-    const expanded = expandSelection(gallery.getState().assets, markedAtClick.ids)
-    if (expanded.assets.length === 0) {
-      // Corrida rara (a nuvem removeu os marcados entre o render e o clique):
-      // avisa em vez de um clique-morto silencioso.
-      showToast(COPY.gallery.drawingGone)
-      return
-    }
     setZipping(true)
     try {
+      const snapshot = gallery.getState()
+      const expanded = expandSelection(
+        snapshot.regionCards.length ? await persistence.listAllAssets() : snapshot.assets,
+        markedAtClick.ids,
+      )
+      if (expanded.assets.length === 0) {
+        showToast(COPY.gallery.drawingGone)
+        return
+      }
       const bytes = await zipGallery(expanded.assets, 'pack')
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
@@ -419,7 +442,9 @@ export function GalleryScreen(): JSX.Element {
         showToast(messages[read.reason])
         return
       }
-      const { assets: restored, warnings } = persistence.workshopReader?await (await import('../../export/workshopDocument')).readPintaWorkshopBackup(read.text):importPintaJson(read.text)
+      const { assets: restored, warnings } = persistence.workshopReader
+        ? await (await import('../../export/workshopDocument')).readPintaWorkshopBackup(read.text)
+        : importPintaJson(read.text)
       if (restored.length === 0) {
         showToast(warnings[0] ?? COPY.gallery.restoreError)
         return

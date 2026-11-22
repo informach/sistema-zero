@@ -21,4 +21,10 @@ $env:PINTA_AUTHORITY_PORT='5492'
 bun --no-env-file x playwright test --config=playwright.pinta-physical-regions.config.ts --project=desktop --grep='cold map editor admits viewport'
 ```
 
-Execute em `packages/studio`. A ligação desta porta com a abertura pela galeria da Oficina segue em um delta próprio sobre a integração do host.
+## Abertura pela Oficina local
+
+O clique no cartão usa a sessão focal quando a persistência local oferece a leitura por diretório e o perfil é compatível. A galeria mantém os cartões regionais separados dos assets completos. A capa pinta um recorte real perto de um chunk ocupado e libera a memória temporária. O backup continua lendo a autoridade completa, e a captura do desenho no editor confere a revisão salva antes de abrir as opções de download.
+
+O editor focal reúne lápis, borracha, linha, retângulo, terreno e histórico. O botão Avançado abre as ferramentas que precisam da criação inteira. A galeria conserva o inventário completo enquanto um editor que pode remapear peças estiver aberto. Edições de objetos continuam disponíveis nesse editor. Conta, formatos fora da política rápida e relações que exigem um inventário integral usam a autoridade correspondente.
+
+Execute em `packages/studio`. O ensaio de ponta a ponta usa `--project=desktop --grep='the workshop gallery opens and edits'`. Ele abre o cartão, guarda o primeiro lápis na galeria offline e reabre o mesmo desenho, contando as chamadas às APIs de inventário e documento completos.
