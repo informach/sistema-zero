@@ -133,7 +133,7 @@ test.skipIf(!raylib)(
     runNative(
       raylib!,
       `${atlas}
-${pythonSceneBackend}
+${worldSource}
 ${pythonRaylib2dRegional}
 from concurrent.futures import ThreadPoolExecutor
 ray=_pinta_raylib
