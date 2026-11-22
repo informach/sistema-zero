@@ -5,52 +5,66 @@ const port = Number(process.env.PINTA_MEMORY_PORT ?? 5570)
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('Porta inválida')
 const directory = resolve(import.meta.dir, `../.cache/memory-regions-${port}`)
 const probe = process.env.PINTA_MEMORY_PROBE ?? 'memory'
-if (probe !== 'memory' && probe !== 'layers' && probe !== 'queries' && probe !== 'metadata')
+if (
+  probe !== 'memory' &&
+  probe !== 'layers' &&
+  probe !== 'queries' &&
+  probe !== 'metadata' &&
+  probe !== 'backup'
+)
   throw Error('Laboratório inválido')
 const selected =
-  probe === 'metadata'
+  probe === 'backup'
     ? {
-        baseline: '36c3ab7a826d8f5150ed73e41120e859613548af',
-        entry: 'metadata-regions-probe',
-        fn: 'runMetadataRegionsProbe',
-        global: 'metadata',
-        files: ['src/core/project.ts', 'src/state/editorStore.ts'],
+        baseline: '45bee622ecfac73da7bbfd47cfdcff0a94e1cb35',
+        entry: 'backup-legacy-probe',
+        fn: 'runLegacyBackupProbe',
+        global: 'backupLegacy',
+        files: ['src/export/projectJson.ts'],
       }
-    : probe === 'queries'
+    : probe === 'metadata'
       ? {
-          baseline: 'dd34e6f99b00a7e219c67e63e4535312d0a2a2da',
-          entry: 'queries-regions-probe',
-          fn: 'runQueriesRegionsProbe',
-          global: 'queries',
-          files: ['src/tiles/tilemapOps.ts'],
+          baseline: '36c3ab7a826d8f5150ed73e41120e859613548af',
+          entry: 'metadata-regions-probe',
+          fn: 'runMetadataRegionsProbe',
+          global: 'metadata',
+          files: ['src/core/project.ts', 'src/state/editorStore.ts'],
         }
-      : probe === 'layers'
+      : probe === 'queries'
         ? {
-            baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
-            entry: 'layers-regions-probe',
-            fn: 'runLayerRegionsProbe',
-            global: 'layers',
-            files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+            baseline: 'dd34e6f99b00a7e219c67e63e4535312d0a2a2da',
+            entry: 'queries-regions-probe',
+            fn: 'runQueriesRegionsProbe',
+            global: 'queries',
+            files: ['src/tiles/tilemapOps.ts'],
           }
-        : {
-            baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
-            entry: 'memory-regions-probe',
-            fn: 'runMemoryRegionsProbe',
-            global: 'memory',
-            files: [
-              'src/core/assetMemory.ts',
-              'src/core/mapResourceVersions.ts',
-              'src/core/project.ts',
-              'src/state/editorStore.ts',
-              'src/tiles/resourceVersions.ts',
-            ],
-          }
+        : probe === 'layers'
+          ? {
+              baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
+              entry: 'layers-regions-probe',
+              fn: 'runLayerRegionsProbe',
+              global: 'layers',
+              files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+            }
+          : {
+              baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
+              entry: 'memory-regions-probe',
+              fn: 'runMemoryRegionsProbe',
+              global: 'memory',
+              files: [
+                'src/core/assetMemory.ts',
+                'src/core/mapResourceVersions.ts',
+                'src/core/project.ts',
+                'src/state/editorStore.ts',
+                'src/tiles/resourceVersions.ts',
+              ],
+            }
 const baseline = selected.baseline,
   previousFiles = new Set(selected.files)
 const historical: Bun.BunPlugin = {
   name: 'previous-memory-contract',
   setup(build) {
-    build.onLoad({ filter: /[\\/]src[\\/](core|state|tiles)[\\/].*\.ts$/ }, (args) => {
+    build.onLoad({ filter: /[\\/]src[\\/](core|state|tiles|export)[\\/].*\.ts$/ }, (args) => {
       const path = args.path.replaceAll('\\', '/').split('/packages/pinta/')[1]
       if (!path || !previousFiles.has(path)) return undefined
       const result = Bun.spawnSync(['git', 'show', `${baseline}:packages/pinta/${path}`], {
@@ -79,15 +93,28 @@ for (const previous of [false, true]) {
   })
   if (!result.success) throw new AggregateError(result.logs, 'Laboratório de regiões não compilou')
 }
+if (probe === 'backup') {
+  const entry = resolve(directory, 'regions.ts')
+  await writeFile(
+    entry,
+    `import {runRegionBackupProbe} from '../../scripts/backup-regions-probe';Object.assign(window,{backupRegionCurrent:runRegionBackupProbe});`,
+  )
+  const result = await Bun.build({ entrypoints: [entry], target: 'browser', outdir: directory })
+  if (!result.success) throw new AggregateError(result.logs, 'Laboratório de backup não compilou')
+}
 Bun.serve({
   hostname: '127.0.0.1',
   port,
   fetch(request) {
     const path = new URL(request.url).pathname
-    if (path === '/current.js' || path === '/previous.js')
+    if (
+      path === '/current.js' ||
+      path === '/previous.js' ||
+      (probe === 'backup' && path === '/regions.js')
+    )
       return new Response(Bun.file(resolve(directory, `.${path}`)))
     return new Response(
-      '<!doctype html><html lang="pt-BR"><title>Histórico por regiões</title><script type="module" src="/current.js"></script><script type="module" src="/previous.js"></script><body>QA do núcleo de memória; formato 8 interno.</body></html>',
+      `<!doctype html><html lang="pt-BR"><title>Histórico por regiões</title><script type="module" src="/current.js"></script><script type="module" src="/previous.js"></script>${probe === 'backup' ? '<script type="module" src="/regions.js"></script>' : ''}<body>QA do núcleo de memória; formato 8 interno.</body></html>`,
       { headers: { 'Content-Type': 'text/html' } },
     )
   },

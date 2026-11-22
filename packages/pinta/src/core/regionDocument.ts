@@ -2,6 +2,7 @@ import { encodePintaRegionLayers, type PintaRegionWire } from '@sistemazero/core
 import { pintaAssetToWire } from '../assets/wire'
 import {
   isTileLayer,
+  type PintaAsset,
   type RegionMapSetAsset,
   type RegionTilemapAsset,
   sanitizeRegionMapSetAsset,
@@ -25,10 +26,13 @@ export function decodeRegionSetDocument(raw: unknown): RegionMapSetAsset | null 
   return sanitizeRegionMapSetAsset(raw)
 }
 
-export function encodeRegionSetDocument(raw: RegionMapSetAsset): RegionSetDocument | null {
+export function encodeRegionSetDocument(
+  raw: RegionMapSetAsset,
+  serializeResource: (asset: PintaAsset) => unknown = pintaAssetToWire,
+): RegionSetDocument | null {
   const set = sanitizeRegionMapSetAsset(raw)
   if (!set) return null
-  const map = encodeRegionMapDocument(set.map)
+  const map = encodeRegionMapDocument(set.map, serializeResource)
   return map ? { ...set, map } : null
 }
 
@@ -37,7 +41,10 @@ export function decodeRegionMapDocument(raw: unknown): RegionTilemapAsset | null
   return sanitizeRegionTilemapAsset(raw)
 }
 
-export function encodeRegionMapDocument(raw: RegionTilemapAsset): RegionMapDocument | null {
+export function encodeRegionMapDocument(
+  raw: RegionTilemapAsset,
+  serializeResource: (asset: PintaAsset) => unknown = pintaAssetToWire,
+): RegionMapDocument | null {
   const map = sanitizeRegionTilemapAsset(raw)
   if (!map) return null
   const grids = encodePintaRegionLayers(
@@ -52,7 +59,7 @@ export function encodeRegionMapDocument(raw: RegionTilemapAsset): RegionMapDocum
       ? {
           resources: map.resources.map((version) => ({
             ...version,
-            asset: pintaAssetToWire(version.asset),
+            asset: serializeResource(version.asset),
           })),
         }
       : {}),

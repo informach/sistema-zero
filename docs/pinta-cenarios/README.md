@@ -19,6 +19,13 @@ ao host; conjuntos somam seus dados ao mapa antes de decodificar chunks.
 Suíte de 2.650 testes e 18 percursos de navegador. O formato 8 continua interno;
 orçamento JSON, persistência regional e adaptadores permanecem no plano.
 
+O [backup regional interno](missao-completa-2026-11-18/qa/backup-regional-interno-2026-11-21/README.md)
+reutiliza os codecs atuais, mede o JSON antes de montar o texto e recusa
+expansão excessiva de buffers antes de decodificar. Suíte de 2.665 testes e
+18 percursos de navegador, com os backups legados conservados byte a byte.
+O contêiner 8 ainda precisa ser integrado à admissão do editor e aos demais
+consumidores antes de aparecer na oficina.
+
 O gravador de nuvem 6 teve seu ciclo autenticado e rollback publicado B → A → B
 homologados em staging. A edição feita durante o rollback foi conservada e sincronizada
 intacta após a restauração. Serviço temporário removido e publicações compartilhadas

@@ -13,6 +13,8 @@
 
 import { tileLayerToWire } from '../assets/wire'
 import { decodeBitmap, type EncodedBitmap, encodeBitmap } from '../core/bitmapCodec'
+import { JsonByteSizeCache } from '../core/jsonBytes'
+import { REGION_METADATA_BUDGET } from '../core/mapDocumentBoundary'
 import {
   isTileLayer,
   type PintaAsset,
@@ -136,7 +138,11 @@ function utf8ByteLength(value: string): number {
 
 /** Um asset com a indentação exata que ocupa dentro de `assets: [...]`. */
 function assetJsonFragment(asset: PintaAsset): string {
-  return JSON.stringify(encodeAsset(asset), null, 2)
+  return encodedAssetJsonFragment(encodeAsset(asset))
+}
+
+function encodedAssetJsonFragment(asset: unknown): string {
+  return JSON.stringify(asset, null, 2)
     .split('\n')
     .map((line) => `    ${line}`)
     .join('\n')
@@ -314,13 +320,28 @@ export class GalleryBackupSizeCache {
  * bitmap solto, antes das camadas): o sanitize também tolera, mas normalizar
  * aqui deixa o decode previsível.
  */
-function decodeFrame(raw: unknown): unknown[] {
+function decodeBackupBitmap(raw: unknown, strict: boolean): unknown {
+  if (
+    strict &&
+    (!raw ||
+      typeof raw !== 'object' ||
+      Array.isArray(raw) ||
+      Object.keys(raw).length !== 3 ||
+      !['width', 'height', 'rle'].every((key) => Object.hasOwn(raw, key)))
+  )
+    throw new Error('Bitmap de backup com campos não reconhecidos.')
+  const bitmap = decodeBitmap(raw as EncodedBitmap)
+  if (strict && !bitmap) throw new Error('Bitmap de backup inválido.')
+  return bitmap
+}
+
+function decodeFrame(raw: unknown, strict = false): unknown[] {
   const list = Array.isArray(raw) ? raw : [raw]
-  return list.map((cel) => decodeBitmap(cel as EncodedBitmap))
+  return list.map((cel) => decodeBackupBitmap(cel, strict))
 }
 
 /** Reverte a codificação p/ o shape que o `sanitizePintaAsset` valida. */
-function decodeAsset(raw: unknown): unknown {
+function decodeAsset(raw: unknown, strictBitmap = false): unknown {
   if (!raw || typeof raw !== 'object') return raw
   const a = raw as Record<string, unknown>
   switch (a.kind) {
@@ -329,7 +350,7 @@ function decodeAsset(raw: unknown): unknown {
         ...a,
         map:
           a.map && typeof a.map === 'object' && 'kind' in a.map && a.map.kind === 'tilemap'
-            ? decodeAsset(a.map)
+            ? decodeAsset(a.map, strictBitmap)
             : a.map,
       }
     case 'pixel-sprite': {
@@ -341,16 +362,18 @@ function decodeAsset(raw: unknown): unknown {
           const anim = animation as Record<string, unknown>
           if (!Array.isArray(anim.frames)) return anim
           // Backup ANTIGO: o quadro era um bitmap só (o sanitize também aceita).
-          return { ...anim, frames: anim.frames.map((f) => decodeFrame(f)) }
+          return { ...anim, frames: anim.frames.map((f) => decodeFrame(f, strictBitmap)) }
         }),
       }
     }
     case 'pixel-background':
-      return { ...a, cels: decodeFrame(a.cels ?? a.bitmap) }
+      return { ...a, cels: decodeFrame(a.cels ?? a.bitmap, strictBitmap) }
     case 'tileset':
       return {
         ...a,
-        tiles: Array.isArray(a.tiles) ? a.tiles.map((t) => decodeBitmap(t)) : [],
+        tiles: Array.isArray(a.tiles)
+          ? a.tiles.map((t) => decodeBackupBitmap(t, strictBitmap))
+          : [],
       }
     case 'tilemap': {
       if (!Array.isArray(a.layers)) return a
@@ -370,7 +393,7 @@ function decodeAsset(raw: unknown): unknown {
                     'kind' in resource &&
                     resource.kind !== 'tilemap' &&
                     resource.kind !== 'map-set'
-                      ? decodeAsset(resource)
+                      ? decodeAsset(resource, strictBitmap)
                       : resource,
                 }
               }),
@@ -393,11 +416,26 @@ export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
 
 /** A galeria inteira → texto do `.pinta.json`. */
 export function galleryToPintaJson(assets: PintaAsset[]): string {
-  if (assets.length === 0) return EMPTY_JSON
-  const version = envelopeVersionFor(assets)
-  const prefix = version === BASE_VERSION ? NON_EMPTY_PREFIX : `${jsonHeader(version)}\n`
-  return `${prefix}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+  return pintaBackupFromEncoded(assets.map(encodeAsset), envelopeVersionFor(assets))
 }
+
+/** Shared container layout; callers own version admission and asset codecs. */
+export function pintaBackupFromEncoded(assets: readonly unknown[], version: number): string {
+  if (assets.length === 0) return `${jsonHeader(version)}]\n}`
+  const prefix = version === BASE_VERSION ? NON_EMPTY_PREFIX : `${jsonHeader(version)}\n`
+  return `${prefix}${assets.map(encodedAssetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+}
+
+/** Measure each encoded asset before assembling a potentially oversized gallery string. */
+export function pintaEncodedBackupByteLength(assets: readonly unknown[], version: number): number {
+  return new JsonByteSizeCache(REGION_METADATA_BUDGET.maxDepth + 2).byteLength(
+    { format: FORMAT, version, assets },
+    MAX_BACKUP_FILE_BYTES,
+  )
+}
+
+// Internal building blocks for new containers; the public writer/reader still admits 0–7.
+export { decodeAsset as decodePintaBackupAsset, encodeAsset as encodePintaBackupAsset }
 
 /** O desenho usa algo que o envelope v2 não descreve (pede o v3 ou o v4)? */
 export function assetNeedsV3(asset: PintaAsset): boolean {

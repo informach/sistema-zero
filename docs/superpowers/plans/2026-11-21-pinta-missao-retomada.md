@@ -105,6 +105,16 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    O padrão público continua `PintaAsset`; a parametrização interna não ativa
    oficina/IO 8. Seguir ao orçamento JSON com encoder efetivo, backup/transporte,
    físico 3 e adaptadores antes de fechar este item ou promover os formatos.
+   O contêiner de backup 8 foi preparado internamente em
+   `qa/backup-regional-interno-2026-11-21/`, reutilizando RLE, codec de chunks e
+   layout da galeria. Medição UTF-8 antes de montar o texto e restauro atômico;
+   campos futuros de bitmap não são descartados pelo decoder legado. Orçamento
+   de trabalho novo, exclusivo do contêiner 8: 32 MiB de buffers decodificados
+   por arquivo, conferidos globalmente por cabeçalhos antes de alocar; separado
+   dos 32 MiB de texto e sem alterar 0–7. Não é orçamento de heap total ou limite
+   por quantidade. Suíte 2.665 e 46 testes focados. Ainda falta ligar o medidor
+   antes de histórico/autosave sem reencodar o mapa por gesto, integrar o backup
+   público/transporte, físico 3 e adaptadores. O item 4 e a etapa macro 1 seguem abertos.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

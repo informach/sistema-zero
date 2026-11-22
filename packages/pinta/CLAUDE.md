@@ -15,7 +15,7 @@ removido, frontends compartilhados preservados. Alcance e recibos em
 prova com ativação dos futuros contratos de regiões ou com o ciclo final do jogo.
 
 `RegionTilemapAsset`/codec 8 continuam preparação interna: não integram ainda
-a união pública, o escritor de backup ou o protocolo físico 3. Não subir constantes
+a união pública, o escritor público de backup ou o protocolo físico 3. Não subir constantes
 para anunciar suporte de oficina antes de completar seus consumidores.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
 Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
@@ -210,6 +210,16 @@ revisões imutáveis; não reutilizar seus resumos para wire mutável. O conjunt
 seu mapa compartilham o orçamento antes de decodificar chunks. Isso não ativa
 backup/transporte 8, físico 3, cena 4 ou PNG 5; o orçamento JSON com encoder
 efetivo ainda precisa ser integrado. Provas em `qa/admissao-de-metadados-2026-11-21/`.
+
+**Backup regional interno:** `export/regionBackup.ts` prepara o contêiner 8 com
+RLE/codec/layout existentes, restauro atômico e medição exata de UTF-8 antes da
+string final. Bitmap com campo futuro precisa recusar antes do decoder legado
+o descartar. O arquivo 8 tem orçamento separado de 32 MiB de buffers decodificados,
+além dos 32 MiB de texto: somar cabeçalhos antes do primeiro decoder, contando
+cópias repetidas. Não aplicar essa política retroativamente a 0–7 nem alegar
+heap de 32 MiB. O escritor/importador públicos continuam em 7; medição antes do
+histórico, IO 3 e adaptadores seguem pendentes. Provas em
+`qa/backup-regional-interno-2026-11-21/`.
 
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
 clonagem/remapeamento usada por importação e conjuntos. IDs de camadas e objetos

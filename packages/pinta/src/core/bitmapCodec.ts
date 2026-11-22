@@ -65,8 +65,8 @@ export function encodeBitmap(bitmap: PintaBitmap): EncodedBitmap {
   }
 }
 
-/** `null` = registro corrompido (o import descarta com aviso). */
-export function decodeBitmap(raw: unknown): PintaBitmap | null {
+/** Header-only admission for a caller's aggregate decompression budget. */
+export function decodedBitmapByteLength(raw: unknown): number | null {
   if (!raw || typeof raw !== 'object') return null
   const e = raw as Record<string, unknown>
   if (typeof e.width !== 'number' || typeof e.height !== 'number' || typeof e.rle !== 'string') {
@@ -81,9 +81,17 @@ export function decodeBitmap(raw: unknown): PintaBitmap | null {
   if (e.width > PINTA_LIMITS.maxBitmapSize || e.height > PINTA_LIMITS.maxBitmapSize) {
     return null
   }
+  return e.width * e.height
+}
+
+/** `null` = registro corrompido (o import descarta com aviso). */
+export function decodeBitmap(raw: unknown): PintaBitmap | null {
+  const size = decodedBitmapByteLength(raw)
+  if (size === null) return null
+  const e = raw as EncodedBitmap
   const bytes = base64ToBytes(e.rle)
   if (!bytes) return null
-  const data = rleDecode(bytes, e.width * e.height)
+  const data = rleDecode(bytes, size)
   if (!data) return null
   return { width: e.width, height: e.height, data }
 }

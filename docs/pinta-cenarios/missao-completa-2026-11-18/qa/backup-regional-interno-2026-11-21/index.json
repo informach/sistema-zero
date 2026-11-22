@@ -1,0 +1,789 @@
+{
+  "baseline": "45bee622ecfac73da7bbfd47cfdcff0a94e1cb35",
+  "records": [
+    {
+      "file": "region-backup-red.log.gz",
+      "bytes": 530,
+      "sha256": "a03103f82820ad8228532cb27271d93d06655f2d46c230d5553770f71930c04f",
+      "rawBytes": 875,
+      "rawSha256": "fef60e64e73e6405181d8acb17964aae1f4dc0d1280032624c4fb3f6253cbada"
+    },
+    {
+      "file": "region-backup-bitmap-red.log.gz",
+      "bytes": 533,
+      "sha256": "42bde5fb02fc67a90a98b58935250a487c43a67d20ef1adad99313d0c5580e40",
+      "rawBytes": 966,
+      "rawSha256": "5e019dc5ba17dcb3c48c446214be7960e7ed7e6e5dd506afc75543019511c5c1"
+    },
+    {
+      "file": "region-backup-expansion-first.log.gz",
+      "bytes": 521,
+      "sha256": "a67b2403a628659ece11748f649cea2e86ecc3ae41653057185def2116724f1a",
+      "rawBytes": 858,
+      "rawSha256": "bda2f9bfcd3ec18415a601b506e261c764079f6b6b0d18983bf014e763843338"
+    },
+    {
+      "file": "region-backup-expansion-red.log.gz",
+      "bytes": 500,
+      "sha256": "b86aa0f02f293bb7f341fc1f51f6964df98d633142ff93a9bb01a842cd0d43f4",
+      "rawBytes": 819,
+      "rawSha256": "386dae03d176ffd5adc1234a6ceb9ae86948260c90ee0b7b88fb07c2875723b5"
+    },
+    {
+      "file": "region-backup-focused.log.gz",
+      "bytes": 1997,
+      "sha256": "5af9988ca9cf7abd475599fa8e59ee7cb25906c9bd46d7574da7ac46b6bbac10",
+      "rawBytes": 4940,
+      "rawSha256": "8de21af4799900a385ebe10fb5df02a1b98a46853928b4ff07bea2c171913f6b"
+    },
+    {
+      "file": "region-backup-full-before-expansion.log.gz",
+      "bytes": 79838,
+      "sha256": "9254ae8b03b6e4bdf685082496d502dc0ab9f22c7aef5b36569b57c99798e320",
+      "rawBytes": 296648,
+      "rawSha256": "1a474d098d4a5fe482986a44c47f89e204bc336155f15f3f81d3d113b615fb9f"
+    },
+    {
+      "file": "region-backup-full.log.gz",
+      "bytes": 79934,
+      "sha256": "5841f77f85dce169baeec656d9a46ecd9f3e9f166e29057b26131099ef0fb785",
+      "rawBytes": 296820,
+      "rawSha256": "2ba240cb38a79405e64c85e4d9d005e36dc080bd0c21e4218db592a298728bb5"
+    },
+    {
+      "file": "region-backup-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "region-backup-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "region-backup-browser.log.gz",
+      "bytes": 339,
+      "sha256": "e4b8c23ccfc84db470559d751d6e04350371d252f28ebea9754c401d301da3a2",
+      "rawBytes": 1021,
+      "rawSha256": "635284fbfb8cc89491cb7378f26af55cbfca166b01f54ed4bc5136339c55f9b2"
+    },
+    {
+      "file": "region-backup-workshop-browser.log.gz",
+      "bytes": 575,
+      "sha256": "8a127684063599ec0395c99e38b6d15139fcde9082b26a10eb04cd48f829fbd5",
+      "rawBytes": 1633,
+      "rawSha256": "6338fc4c0a90d2c119d6b65cae0cc71aa03b1e21e95fdc80d0a43f4a28b00ae2"
+    },
+    {
+      "file": "region-backup-integration-browser.log.gz",
+      "bytes": 2106,
+      "sha256": "6b18deb28cadd3510db9e315b0a2b1033c3b875214459b454ce78cf4adfaf8cd",
+      "rawBytes": 7990,
+      "rawSha256": "ed2888149f1b946c85522cf10c1279b5e2bfca401b9d5b0a23ce36a6ab4b0ffd"
+    },
+    {
+      "file": "region-backup-biome.log.gz",
+      "bytes": 65,
+      "sha256": "dc4e95437b1cb07fc83f4feb064e12fa0d15a15ccfce62bec8250056e7e14f0d",
+      "rawBytes": 45,
+      "rawSha256": "0302c9bc16e804fb49b063a6dd21f481a8fff5ddffb0325b7db71dcd10d6a486"
+    },
+    {
+      "file": "region-backup-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 5069,
+      "sha256": "10a5c911d91147f578c9be2a463abaad755620faeb7d449e262eddddc8313071",
+      "rawBytes": 68811,
+      "rawSha256": "589e3c9e57b8f6d5cf9e22820110877480382ec40b784c83ecdf9ea4ab93bc8d"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 328164,
+      "sha256": "7b3a552381f4dc593b7d526474dc979475281f5237b6ffbd1d4dc95ba69e25e9",
+      "rawBytes": 456063,
+      "rawSha256": "df3a0d7fe8f2dcf5048bacae771dcdfba2dbc06fce4688fdf117d99a244a0843"
+    },
+    {
+      "file": "playwright-2-report.json.gz",
+      "bytes": 928210,
+      "sha256": "135ee2ba0acac08e9ae24c1662b4464e692c1a22d9991120d31c4b610143f88f",
+      "rawBytes": 1286650,
+      "rawSha256": "5887fb9e4a92b9583970bdf387224eb67506fcd9485ce7617e40ad908638b15f"
+    },
+    {
+      "file": "archive-region-backup.cjs.gz",
+      "bytes": 1717,
+      "sha256": "ae75d9b9463f998c358ce8f9e2665532d750f037d9b5b4f0e100c4ca5363e330",
+      "rawBytes": 4099,
+      "rawSha256": "6bce49dd2f4d84af68882288cbea059e654a818da31abad95f7bc4fa03ca7457"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/serve-memory-regions-e2e.ts",
+      "sha256": "db05e8385ec98f29ee75e55603af858ec941a3a0898dfe86077aab392f7121c1",
+      "previousSha256": "8ba17a2f0bfe59c2f8d39c088e76bf244255d155c5b769fa846da7fcd8c68b9b"
+    },
+    {
+      "file": "packages/pinta/src/core/bitmapCodec.ts",
+      "sha256": "9c4a40111de4f5d67e49551a55ff5a59348e54c3f6edf29e35a64a457b708da8",
+      "previousSha256": "f9113b8512f490fe6c47036653e2397a161c23851916b2b9bec4fd5c3ef15cb2"
+    },
+    {
+      "file": "packages/pinta/src/core/regionDocument.ts",
+      "sha256": "ea3e3a62166ab02e61f2fbcc6a6a29b914e16588f0c5feea4a79ccdf6e4a7bde",
+      "previousSha256": "761c9e67d80f14ab8795ecd78f38487c1a7db0e0be19ef951f59213431fc1148"
+    },
+    {
+      "file": "packages/pinta/src/export/projectJson.ts",
+      "sha256": "2aebcf653991117a048af74857df6177bea2341b52b4f3ea759392b07c562949",
+      "previousSha256": "3e23f175e5254254fc5920ca97ebd0e20cde8303e13215590a868ce6315b9e62"
+    },
+    {
+      "file": "packages/pinta/scripts/backup-legacy-probe.ts",
+      "sha256": "5b8e2ebc7ebeacbeb1f4bf9e3c36f2511fa8b616bdcfd258bad0c017f6fab16b"
+    },
+    {
+      "file": "packages/pinta/scripts/backup-regions-probe.ts",
+      "sha256": "4bf9bea75f553e896d38b9a234eb17032a8dc34817e453097a256c5670d6d84a"
+    },
+    {
+      "file": "packages/pinta/src/core/jsonBytes.test.ts",
+      "sha256": "ebc06272537ae08ed6035ec5a1199d3ffefb6a3a29e4eb1c209472d1cbd465e9"
+    },
+    {
+      "file": "packages/pinta/src/core/jsonBytes.ts",
+      "sha256": "db0446188d9356d6c60bea714cab9aa11ad6e4d7ebbda8828e0c31e39b1d98d1"
+    },
+    {
+      "file": "packages/pinta/src/core/regionResourceEncoding.test.ts",
+      "sha256": "a6d9bad88f7a67c94b144668f21f8c4b29518cde276f0018cc399b41fe7ca2ae"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackup.test.ts",
+      "sha256": "17a385c1c7730fd37777a95fb04bc0703131630bca5470344f47bfb99ee3b07c"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackup.ts",
+      "sha256": "b2715135dd6d76f19ee46f240097399d253315a0c9df9ce7a65ab86db819fc7c"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-backup-regions.flow.ts",
+      "sha256": "c1648a46ee8507547e025156df0fe52ab2c36266c6b8522969ae2643b4c9ddb7"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-backup-regions.config.ts",
+      "sha256": "6e906880719aa0adb3f5300086c9a9a67bbe2882fb70c9fbdafb66a32ce1d0cb"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "desktop",
+      "cpu": 1,
+      "before": [
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": []\n}",
+          "warnings": [],
+          "restored": 0
+        },
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": [\n    {\n      \"id\": \"sprite\",\n      \"kind\": \"pixel-sprite\",\n      \"name\": \"heroi\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"frameWidth\": 16,\n      \"frameHeight\": 16,\n      \"paletteId\": \"arcade\",\n      \"layers\": [\n        {\n          \"id\": \"pixels\",\n          \"name\": \"Camada 1\",\n          \"visible\": true\n        }\n      ],\n      \"animations\": [\n        {\n          \"id\": \"parado\",\n          \"name\": \"parado\",\n          \"fps\": 8,\n          \"loop\": true,\n          \"frames\": [\n            [\n              {\n                \"width\": 16,\n                \"height\": 16,\n                \"rle\": \"/wABAA==\"\n              }\n            ]\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 2,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 2,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {}\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 3,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 3,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"opacity\": 1\n        }\n      ],\n      \"schema\": 3\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 4,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 4,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {},\n              \"shape\": \"point\"\n            }\n          ]\n        }\n      ],\n      \"schema\": 4\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 5,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 5,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"offsetX\": 0.25\n        }\n      ],\n      \"schema\": 5\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 6,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 6,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"resources\": [\n        {\n          \"sourceId\": \"original\",\n          \"capturedAt\": 200,\n          \"asset\": {\n            \"id\": \"sprite\",\n            \"kind\": \"pixel-sprite\",\n            \"name\": \"heroi\",\n            \"createdAt\": 100,\n            \"updatedAt\": 100,\n            \"frameWidth\": 16,\n            \"frameHeight\": 16,\n            \"paletteId\": \"arcade\",\n            \"layers\": [\n              {\n                \"id\": \"pixels\",\n                \"name\": \"Camada 1\",\n                \"visible\": true\n              }\n            ],\n            \"animations\": [\n              {\n                \"id\": \"parado\",\n                \"name\": \"parado\",\n                \"fps\": 8,\n                \"loop\": true,\n                \"frames\": [\n                  [\n                    {\n                      \"width\": 16,\n                      \"height\": 16,\n                      \"rle\": \"/wABAA==\"\n                    }\n                  ]\n                ]\n              }\n            ]\n          }\n        }\n      ],\n      \"schema\": 6\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 7,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 7,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"physics\": \"precise\",\n      \"schema\": 7\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        }
+      ],
+      "after": [
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": []\n}",
+          "warnings": [],
+          "restored": 0
+        },
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": [\n    {\n      \"id\": \"sprite\",\n      \"kind\": \"pixel-sprite\",\n      \"name\": \"heroi\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"frameWidth\": 16,\n      \"frameHeight\": 16,\n      \"paletteId\": \"arcade\",\n      \"layers\": [\n        {\n          \"id\": \"pixels\",\n          \"name\": \"Camada 1\",\n          \"visible\": true\n        }\n      ],\n      \"animations\": [\n        {\n          \"id\": \"parado\",\n          \"name\": \"parado\",\n          \"fps\": 8,\n          \"loop\": true,\n          \"frames\": [\n            [\n              {\n                \"width\": 16,\n                \"height\": 16,\n                \"rle\": \"/wABAA==\"\n              }\n            ]\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 2,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 2,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {}\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 3,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 3,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"opacity\": 1\n        }\n      ],\n      \"schema\": 3\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 4,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 4,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {},\n              \"shape\": \"point\"\n            }\n          ]\n        }\n      ],\n      \"schema\": 4\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 5,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 5,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"offsetX\": 0.25\n        }\n      ],\n      \"schema\": 5\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 6,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 6,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"resources\": [\n        {\n          \"sourceId\": \"original\",\n          \"capturedAt\": 200,\n          \"asset\": {\n            \"id\": \"sprite\",\n            \"kind\": \"pixel-sprite\",\n            \"name\": \"heroi\",\n            \"createdAt\": 100,\n            \"updatedAt\": 100,\n            \"frameWidth\": 16,\n            \"frameHeight\": 16,\n            \"paletteId\": \"arcade\",\n            \"layers\": [\n              {\n                \"id\": \"pixels\",\n                \"name\": \"Camada 1\",\n                \"visible\": true\n              }\n            ],\n            \"animations\": [\n              {\n                \"id\": \"parado\",\n                \"name\": \"parado\",\n                \"fps\": 8,\n                \"loop\": true,\n                \"frames\": [\n                  [\n                    {\n                      \"width\": 16,\n                      \"height\": 16,\n                      \"rle\": \"/wABAA==\"\n                    }\n                  ]\n                ]\n              }\n            ]\n          }\n        }\n      ],\n      \"schema\": 6\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 7,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 7,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"physics\": \"precise\",\n      \"schema\": 7\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        }
+      ],
+      "regions": {
+        "sparse": {
+          "bytes": 8389,
+          "exactBytes": 8389,
+          "roundTrip": true,
+          "warnings": [],
+          "logicalCells": 100000000,
+          "bitmapRLE": true
+        },
+        "set": {
+          "roundTrip": true
+        },
+        "full": {
+          "bytes": 5834543,
+          "roundTrip": true
+        },
+        "oldReaderRejected": true,
+        "futureBitmapRejected": true,
+        "malformedRejected": true,
+        "escapedRejected": true,
+        "expansion": {
+          "refused": true,
+          "decodes": 0
+        },
+        "sizes": [
+          176,
+          179,
+          179,
+          179,
+          179,
+          179,
+          179,
+          179,
+          167,
+          167,
+          168,
+          180,
+          168,
+          168,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          165,
+          165,
+          168,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165
+        ],
+        "public8": false
+      }
+    },
+    {
+      "profile": "touch",
+      "cpu": 1,
+      "before": [
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": []\n}",
+          "warnings": [],
+          "restored": 0
+        },
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": [\n    {\n      \"id\": \"sprite\",\n      \"kind\": \"pixel-sprite\",\n      \"name\": \"heroi\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"frameWidth\": 16,\n      \"frameHeight\": 16,\n      \"paletteId\": \"arcade\",\n      \"layers\": [\n        {\n          \"id\": \"pixels\",\n          \"name\": \"Camada 1\",\n          \"visible\": true\n        }\n      ],\n      \"animations\": [\n        {\n          \"id\": \"parado\",\n          \"name\": \"parado\",\n          \"fps\": 8,\n          \"loop\": true,\n          \"frames\": [\n            [\n              {\n                \"width\": 16,\n                \"height\": 16,\n                \"rle\": \"/wABAA==\"\n              }\n            ]\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 2,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 2,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {}\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 3,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 3,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"opacity\": 1\n        }\n      ],\n      \"schema\": 3\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 4,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 4,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {},\n              \"shape\": \"point\"\n            }\n          ]\n        }\n      ],\n      \"schema\": 4\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 5,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 5,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"offsetX\": 0.25\n        }\n      ],\n      \"schema\": 5\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 6,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 6,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"resources\": [\n        {\n          \"sourceId\": \"original\",\n          \"capturedAt\": 200,\n          \"asset\": {\n            \"id\": \"sprite\",\n            \"kind\": \"pixel-sprite\",\n            \"name\": \"heroi\",\n            \"createdAt\": 100,\n            \"updatedAt\": 100,\n            \"frameWidth\": 16,\n            \"frameHeight\": 16,\n            \"paletteId\": \"arcade\",\n            \"layers\": [\n              {\n                \"id\": \"pixels\",\n                \"name\": \"Camada 1\",\n                \"visible\": true\n              }\n            ],\n            \"animations\": [\n              {\n                \"id\": \"parado\",\n                \"name\": \"parado\",\n                \"fps\": 8,\n                \"loop\": true,\n                \"frames\": [\n                  [\n                    {\n                      \"width\": 16,\n                      \"height\": 16,\n                      \"rle\": \"/wABAA==\"\n                    }\n                  ]\n                ]\n              }\n            ]\n          }\n        }\n      ],\n      \"schema\": 6\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 7,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 7,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"physics\": \"precise\",\n      \"schema\": 7\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        }
+      ],
+      "after": [
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": []\n}",
+          "warnings": [],
+          "restored": 0
+        },
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": [\n    {\n      \"id\": \"sprite\",\n      \"kind\": \"pixel-sprite\",\n      \"name\": \"heroi\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"frameWidth\": 16,\n      \"frameHeight\": 16,\n      \"paletteId\": \"arcade\",\n      \"layers\": [\n        {\n          \"id\": \"pixels\",\n          \"name\": \"Camada 1\",\n          \"visible\": true\n        }\n      ],\n      \"animations\": [\n        {\n          \"id\": \"parado\",\n          \"name\": \"parado\",\n          \"fps\": 8,\n          \"loop\": true,\n          \"frames\": [\n            [\n              {\n                \"width\": 16,\n                \"height\": 16,\n                \"rle\": \"/wABAA==\"\n              }\n            ]\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 2,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 2,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {}\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 3,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 3,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"opacity\": 1\n        }\n      ],\n      \"schema\": 3\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 4,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 4,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {},\n              \"shape\": \"point\"\n            }\n          ]\n        }\n      ],\n      \"schema\": 4\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 5,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 5,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"offsetX\": 0.25\n        }\n      ],\n      \"schema\": 5\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 6,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 6,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"resources\": [\n        {\n          \"sourceId\": \"original\",\n          \"capturedAt\": 200,\n          \"asset\": {\n            \"id\": \"sprite\",\n            \"kind\": \"pixel-sprite\",\n            \"name\": \"heroi\",\n            \"createdAt\": 100,\n            \"updatedAt\": 100,\n            \"frameWidth\": 16,\n            \"frameHeight\": 16,\n            \"paletteId\": \"arcade\",\n            \"layers\": [\n              {\n                \"id\": \"pixels\",\n                \"name\": \"Camada 1\",\n                \"visible\": true\n              }\n            ],\n            \"animations\": [\n              {\n                \"id\": \"parado\",\n                \"name\": \"parado\",\n                \"fps\": 8,\n                \"loop\": true,\n                \"frames\": [\n                  [\n                    {\n                      \"width\": 16,\n                      \"height\": 16,\n                      \"rle\": \"/wABAA==\"\n                    }\n                  ]\n                ]\n              }\n            ]\n          }\n        }\n      ],\n      \"schema\": 6\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 7,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 7,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"physics\": \"precise\",\n      \"schema\": 7\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        }
+      ],
+      "regions": {
+        "sparse": {
+          "bytes": 8389,
+          "exactBytes": 8389,
+          "roundTrip": true,
+          "warnings": [],
+          "logicalCells": 100000000,
+          "bitmapRLE": true
+        },
+        "set": {
+          "roundTrip": true
+        },
+        "full": {
+          "bytes": 5834543,
+          "roundTrip": true
+        },
+        "oldReaderRejected": true,
+        "futureBitmapRejected": true,
+        "malformedRejected": true,
+        "escapedRejected": true,
+        "expansion": {
+          "refused": true,
+          "decodes": 0
+        },
+        "sizes": [
+          176,
+          179,
+          179,
+          179,
+          179,
+          179,
+          179,
+          179,
+          167,
+          167,
+          168,
+          180,
+          168,
+          168,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          165,
+          165,
+          168,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165
+        ],
+        "public8": false
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "cpu": 4,
+      "before": [
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": []\n}",
+          "warnings": [],
+          "restored": 0
+        },
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": [\n    {\n      \"id\": \"sprite\",\n      \"kind\": \"pixel-sprite\",\n      \"name\": \"heroi\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"frameWidth\": 16,\n      \"frameHeight\": 16,\n      \"paletteId\": \"arcade\",\n      \"layers\": [\n        {\n          \"id\": \"pixels\",\n          \"name\": \"Camada 1\",\n          \"visible\": true\n        }\n      ],\n      \"animations\": [\n        {\n          \"id\": \"parado\",\n          \"name\": \"parado\",\n          \"fps\": 8,\n          \"loop\": true,\n          \"frames\": [\n            [\n              {\n                \"width\": 16,\n                \"height\": 16,\n                \"rle\": \"/wABAA==\"\n              }\n            ]\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 2,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 2,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {}\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 3,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 3,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"opacity\": 1\n        }\n      ],\n      \"schema\": 3\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 4,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 4,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {},\n              \"shape\": \"point\"\n            }\n          ]\n        }\n      ],\n      \"schema\": 4\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 5,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 5,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"offsetX\": 0.25\n        }\n      ],\n      \"schema\": 5\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 6,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 6,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"resources\": [\n        {\n          \"sourceId\": \"original\",\n          \"capturedAt\": 200,\n          \"asset\": {\n            \"id\": \"sprite\",\n            \"kind\": \"pixel-sprite\",\n            \"name\": \"heroi\",\n            \"createdAt\": 100,\n            \"updatedAt\": 100,\n            \"frameWidth\": 16,\n            \"frameHeight\": 16,\n            \"paletteId\": \"arcade\",\n            \"layers\": [\n              {\n                \"id\": \"pixels\",\n                \"name\": \"Camada 1\",\n                \"visible\": true\n              }\n            ],\n            \"animations\": [\n              {\n                \"id\": \"parado\",\n                \"name\": \"parado\",\n                \"fps\": 8,\n                \"loop\": true,\n                \"frames\": [\n                  [\n                    {\n                      \"width\": 16,\n                      \"height\": 16,\n                      \"rle\": \"/wABAA==\"\n                    }\n                  ]\n                ]\n              }\n            ]\n          }\n        }\n      ],\n      \"schema\": 6\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 7,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 7,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"physics\": \"precise\",\n      \"schema\": 7\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        }
+      ],
+      "after": [
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": []\n}",
+          "warnings": [],
+          "restored": 0
+        },
+        {
+          "version": 1,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 1,\n  \"assets\": [\n    {\n      \"id\": \"sprite\",\n      \"kind\": \"pixel-sprite\",\n      \"name\": \"heroi\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"frameWidth\": 16,\n      \"frameHeight\": 16,\n      \"paletteId\": \"arcade\",\n      \"layers\": [\n        {\n          \"id\": \"pixels\",\n          \"name\": \"Camada 1\",\n          \"visible\": true\n        }\n      ],\n      \"animations\": [\n        {\n          \"id\": \"parado\",\n          \"name\": \"parado\",\n          \"fps\": 8,\n          \"loop\": true,\n          \"frames\": [\n            [\n              {\n                \"width\": 16,\n                \"height\": 16,\n                \"rle\": \"/wABAA==\"\n              }\n            ]\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 2,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 2,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {}\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 3,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 3,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"opacity\": 1\n        }\n      ],\n      \"schema\": 3\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 4,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 4,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        },\n        {\n          \"kind\": \"objects\",\n          \"id\": \"objects\",\n          \"name\": \"Objetos\",\n          \"visible\": true,\n          \"objects\": [\n            {\n              \"id\": \"o\",\n              \"name\": \"Ponto\",\n              \"type\": \"\",\n              \"x\": 0,\n              \"y\": 0,\n              \"width\": 0,\n              \"height\": 0,\n              \"properties\": {},\n              \"shape\": \"point\"\n            }\n          ]\n        }\n      ],\n      \"schema\": 4\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 5,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 5,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ],\n          \"offsetX\": 0.25\n        }\n      ],\n      \"schema\": 5\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 6,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 6,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"resources\": [\n        {\n          \"sourceId\": \"original\",\n          \"capturedAt\": 200,\n          \"asset\": {\n            \"id\": \"sprite\",\n            \"kind\": \"pixel-sprite\",\n            \"name\": \"heroi\",\n            \"createdAt\": 100,\n            \"updatedAt\": 100,\n            \"frameWidth\": 16,\n            \"frameHeight\": 16,\n            \"paletteId\": \"arcade\",\n            \"layers\": [\n              {\n                \"id\": \"pixels\",\n                \"name\": \"Camada 1\",\n                \"visible\": true\n              }\n            ],\n            \"animations\": [\n              {\n                \"id\": \"parado\",\n                \"name\": \"parado\",\n                \"fps\": 8,\n                \"loop\": true,\n                \"frames\": [\n                  [\n                    {\n                      \"width\": 16,\n                      \"height\": 16,\n                      \"rle\": \"/wABAA==\"\n                    }\n                  ]\n                ]\n              }\n            ]\n          }\n        }\n      ],\n      \"schema\": 6\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        },
+        {
+          "version": 7,
+          "text": "{\n  \"format\": \"pinta-gallery\",\n  \"version\": 7,\n  \"assets\": [\n    {\n      \"id\": \"map\",\n      \"kind\": \"tilemap\",\n      \"name\": \"fase\",\n      \"createdAt\": 100,\n      \"updatedAt\": 100,\n      \"tilesetId\": \"ground\",\n      \"cols\": 2,\n      \"rows\": 2,\n      \"layers\": [\n        {\n          \"id\": \"floor\",\n          \"name\": \"Chão\",\n          \"visible\": true,\n          \"cells\": [\n            -1,\n            -1,\n            -1,\n            -1\n          ]\n        }\n      ],\n      \"physics\": \"precise\",\n      \"schema\": 7\n    }\n  ]\n}",
+          "warnings": [],
+          "restored": 1
+        }
+      ],
+      "regions": {
+        "sparse": {
+          "bytes": 8389,
+          "exactBytes": 8389,
+          "roundTrip": true,
+          "warnings": [],
+          "logicalCells": 100000000,
+          "bitmapRLE": true
+        },
+        "set": {
+          "roundTrip": true
+        },
+        "full": {
+          "bytes": 5834543,
+          "roundTrip": true
+        },
+        "oldReaderRejected": true,
+        "futureBitmapRejected": true,
+        "malformedRejected": true,
+        "escapedRejected": true,
+        "expansion": {
+          "refused": true,
+          "decodes": 0
+        },
+        "sizes": [
+          176,
+          179,
+          179,
+          179,
+          179,
+          179,
+          179,
+          179,
+          167,
+          167,
+          168,
+          180,
+          168,
+          168,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          180,
+          165,
+          165,
+          168,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165,
+          165
+        ],
+        "public8": false
+      }
+    }
+  ],
+  "browserTests": 18,
+  "retries": 0,
+  "publicNative8": false,
+  "physicalIO3": false,
+  "storeJsonAdmission": false,
+  "initialFixtureFailure": {
+    "count": 4,
+    "reason": "Nome da arte não canônico era recusado por captura estrita; fixture corrigida para nome canônico, sem mudar a política legada.",
+    "originalLogRetained": false
+  }
+}
