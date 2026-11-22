@@ -9,6 +9,7 @@ import {
   type PintaCausalIntent,
   PintaCausalIntentSchema,
   type PintaCausalManifest,
+  type PintaCausalOperation,
   type PintaCausalReservePage,
   type PintaCausalResult,
   type PintaCausalStatus,
@@ -132,7 +133,30 @@ async function quota(
     throw new PintaCausalError('quota')
 }
 
+// The written sheet maps old slots to new. The receipt keeps the projection in the other
+// direction, including newly authored positions that disappear when the edit is undone.
+function inverseSlots(operation: PintaCausalOperation, beforeCount: number) {
+  if (operation.type !== 'remap' && operation.type !== 'append') return undefined
+  const slots: number[] = Array(operation.count).fill(-1)
+  for (let from = 0; from < beforeCount; from++) {
+    const to = operation.type === 'remap' ? operation.oldToNew[from]! : from
+    if (to >= 0) slots[to] = from
+  }
+  return slots
+}
+
+function matchesHistoricalSlots(operation: PintaCausalOperation, count: number, slots?: number[]) {
+  if (slots && slots.length !== count) return false
+  for (let from = 0; from < count; from++) {
+    const historical = slots?.[from] ?? from
+    const proposed = operation.type === 'remap' ? operation.oldToNew[from] : from
+    if (historical !== proposed) return false
+  }
+  return true
+}
+
 const revisionColumns = {
+  rowId: c.id,
   itemId: c.itemId,
   kind: c.kind,
   name: c.name,
@@ -508,8 +532,20 @@ export class DrizzlePintaCausalRepository extends DrizzlePintaGraphRepository {
           source.result.receipt.members.length !== intent.members.length
         )
           throw new PintaCausalError('operation-conflict')
+        const members = new Map(intent.members.map((m) => [m.itemId, m]))
         for (const previous of source.result.receipt.members) {
           const proof = proofs.get(previous.itemId)
+          const member = members.get(previous.itemId)
+          const guard = source.result.undoGuards?.[previous.itemId]
+          if (!guard || rows.get(previous.itemId)?.rowId !== guard.rowId)
+            throw new PintaCausalError('stale-base', previous.itemId)
+          const currentSheet = before.get(previous.itemId)?.manifest?.sheet
+          if (
+            member?.action === 'put' &&
+            currentSheet &&
+            !matchesHistoricalSlots(member.operation, currentSheet.count, guard.slots)
+          )
+            throw new PintaCausalError('unverified-content', previous.itemId)
           const originalSha = source.result.priorDigests[previous.itemId]
           const originalAuthored = source.result.priorAuthored?.[previous.itemId]
           const repacked =
@@ -534,6 +570,7 @@ export class DrizzlePintaCausalRepository extends DrizzlePintaGraphRepository {
         epoch: nextEpoch,
         members: [],
       }
+      const undoGuards: Record<string, { rowId: string; slots?: number[] }> = Object.create(null)
       const priorDigests: Record<string, string | null> = Object.create(null)
       const priorAuthored: Record<string, PintaCausalAuthoredFingerprint> = Object.create(null)
       for (const m of intent.members) {
@@ -548,6 +585,10 @@ export class DrizzlePintaCausalRepository extends DrizzlePintaGraphRepository {
           now,
         )
         const layoutRevision = after.get(m.itemId)?.layoutRevision ?? null
+        const oldSheet = before.get(m.itemId)?.manifest?.sheet
+        const slots =
+          oldSheet && m.action === 'put' ? inverseSlots(m.operation, oldSheet.count) : undefined
+        undoGuards[m.itemId] = { rowId: rows.get(m.itemId)!.rowId, ...(slots ? { slots } : {}) }
         priorDigests[m.itemId] = b.baseSha256
         const prevFingerprint = before.get(m.itemId)?.manifest?.authoredFingerprint
         if (prevFingerprint) priorAuthored[m.itemId] = prevFingerprint
@@ -593,7 +634,7 @@ export class DrizzlePintaCausalRepository extends DrizzlePintaGraphRepository {
         .update(u)
         .set({
           state: 'committed',
-          result: { receipt: result, priorDigests, priorAuthored },
+          result: { receipt: result, priorDigests, priorAuthored, undoGuards },
           pages: null,
           intent: null,
         })

@@ -418,6 +418,24 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     await complete(a, intent('2', [newMap], [newRead]), [
       manifest(newMap, { refs: [{ id: 'sheet', roles: ['art'], implicitArtSlotZero: true }] }),
     ])
+    for (const operation of [
+      { type: 'append', count: 2 },
+      { type: 'update' },
+      { type: 'remap', count: 2, oldToNew: [0] },
+    ] as const) {
+      const sheetOperation =
+        operation.type === 'remap' ? { ...operation, oldToNew: [0] } : operation
+      const mislabeled = {
+        ...intent('3', [origMap, { ...origSheet, operation: sheetOperation }], [read]),
+        inverseOf: cut.opId,
+      }
+      expect(await rejection(complete(a, mislabeled, [m1, s1]))).toMatchObject({
+        reason: 'unverified-content',
+        itemId: 'sheet',
+      })
+      await db.abort(a, mislabeled)
+      expect((await visible(a)).epoch).toBe('3')
+    }
     const blocked = { ...intent('3', [origMap, origSheet], [read]), inverseOf: cut.opId }
     expect(await rejection(complete(a, blocked, [m1, s1]))).toMatchObject({
       reason: 'missing-consumer',
@@ -428,6 +446,73 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     const restore = { ...intent('4', [origMap, origSheet], [read]), inverseOf: cut.opId }
     await complete(a, restore, [m1, s1])
     expect((await visible(a)).entries.map((e) => e.sha256)).toEqual([map.sha256, sheet.sha256])
+  })
+  test('undo of append drops only the former suffix and preserves later users of the prefix', async () => {
+    const a = actor(),
+      sheet = put('sheet', 1, 'tileset'),
+      before = manifest(sheet, { sheet: { tileSize: 8, count: 2 } })
+    await complete(a, intent('0', [sheet]), [before])
+    const grown = {
+      ...sheet,
+      baseRevision: 1,
+      sha256: sha(2),
+      operation: { type: 'append' as const, count: 3 },
+    }
+    const append = intent('1', [grown])
+    await complete(a, append, [manifest(grown, { sheet: { tileSize: 8, count: 3 } })])
+    const consumer = put('later', 3, 'tilemap')
+    const read: PintaCausalRead = {
+      source: 'snapshot',
+      consumerId: 'later',
+      targetId: 'sheet',
+      sha256: grown.sha256,
+      revision: 2,
+      layoutRevision: '1',
+    }
+    await complete(a, intent('2', [consumer], [read]), [
+      manifest(consumer, { refs: [{ id: 'sheet', roles: ['art'], indices: slots(3) }] }),
+    ])
+    const undo = (mapping: number[]) => ({
+      ...intent('3', [
+        { ...sheet, baseRevision: 2, operation: { type: 'remap', oldToNew: mapping, count: 2 } },
+      ]),
+      inverseOf: append.opId,
+    })
+    const wrong = undo([-1, 0, 1])
+    expect(await rejection(complete(a, wrong, [before]))).toMatchObject({
+      reason: 'unverified-content',
+      itemId: 'sheet',
+    })
+    await db.abort(a, wrong)
+    await complete(a, undo([0, 1, -1]), [before])
+    expect(await visible(a)).toMatchObject({
+      epoch: '4',
+      entries: [
+        { itemId: 'later', revision: 1, sha256: consumer.sha256 },
+        { itemId: 'sheet', sha256: sheet.sha256 },
+      ],
+    })
+  })
+  test('inverse of a compacted creation cannot delete a recreated identical revision and digest', async () => {
+    const a = actor(),
+      doc = put('same', 5),
+      first = intent('0', [doc])
+    await complete(a, first, [manifest(doc)])
+    await complete(a, intent('1', [{ action: 'delete', itemId: 'same', baseRevision: 1 }]), [null])
+    await conn.sql`delete from members.creations where user_id=${a.userId} and item_id='same' and deleted_at is not null`
+    await complete(a, intent('2', [doc]), [manifest(doc)])
+    const inverse = {
+      ...intent('3', [{ action: 'delete', itemId: 'same', baseRevision: 1 }]),
+      inverseOf: first.opId,
+    }
+    expect(await rejection(complete(a, inverse, [null]))).toMatchObject({
+      reason: 'stale-base',
+      itemId: 'same',
+    })
+    expect(await visible(a)).toMatchObject({
+      epoch: '3',
+      entries: [{ revision: 1, sha256: doc.sha256 }],
+    })
   })
   test('opaque future bytes have an explicit owner archive and cannot be admitted or mutated by reader 7', async () => {
     const a = actor()

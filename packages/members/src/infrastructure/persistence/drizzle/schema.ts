@@ -2360,6 +2360,7 @@ export const pintaCausalUnits = members.table(
     intent: jsonb('intent').$type<PintaCausalIntent>(),
     result: jsonb('result').$type<{
       receipt: PintaCausalResult
+      undoGuards?: Record<string, { rowId: string; slots?: number[] }>
       priorDigests: Record<string, string | null>
       priorAuthored?: Record<string, PintaCausalAuthoredFingerprint>
     }>(),
