@@ -7,6 +7,8 @@ if (typeof document === 'undefined') GlobalRegistrator.register()
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { RankingContent } = await import('../src/app/admin/membros/ranking/ranking-content')
+const { PlatformProvider } = await import('../src/components/admin/platform-provider')
+const { getPlatform, setPlatform } = await import('../src/components/admin/platform-store')
 
 async function waitFor(condition: () => boolean): Promise<void> {
   for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -25,6 +27,7 @@ afterEach(() => {
 describe('ranking administrativo por plataforma', () => {
   test('a primeira consulta da nova plataforma começa no offset zero', async () => {
     const originalFetch = globalThis.fetch
+    const originalPlatform = getPlatform()
     const requests: URL[] = []
     globalThis.fetch = Object.assign(
       async (input: RequestInfo | URL) => {
@@ -47,8 +50,14 @@ describe('ranking administrativo por plataforma', () => {
 
     try {
       await act(async () => {
-        root.render(<RankingContent key="kids" platform="kids" />)
+        setPlatform('kids')
+        root.render(
+          <PlatformProvider initialPlatform="kids">
+            <RankingContent key="kids" platform="kids" />
+          </PlatformProvider>,
+        )
       })
+      expect(container.querySelector('a[href="/admin/membros/pais"]')).not.toBeNull()
       await waitFor(
         () =>
           requests.some(
@@ -72,7 +81,15 @@ describe('ranking administrativo por plataforma', () => {
       )
 
       const beforeSwitch = requests.length
-      await act(async () => root.render(<RankingContent key="adult" platform="adult" />))
+      await act(async () => {
+        setPlatform('adult')
+        root.render(
+          <PlatformProvider initialPlatform="adult">
+            <RankingContent key="adult" platform="adult" />
+          </PlatformProvider>,
+        )
+      })
+      expect(container.querySelector('a[href="/admin/membros/pais"]')).toBeNull()
       await waitFor(() => requests.length > beforeSwitch)
       const firstAdult = requests
         .slice(beforeSwitch)
@@ -81,6 +98,7 @@ describe('ranking administrativo por plataforma', () => {
     } finally {
       globalThis.fetch = originalFetch
       await act(async () => root.unmount())
+      setPlatform(originalPlatform)
       container.remove()
     }
   })
